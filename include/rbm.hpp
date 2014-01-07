@@ -13,6 +13,7 @@ namespace dbn {
 /*!
  * \brief Restricted Boltzmann Machine
  */
+template<typename Weight = double>
 struct rbm {
 
 };
