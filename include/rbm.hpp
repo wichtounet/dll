@@ -13,9 +13,17 @@ namespace dbn {
 /*!
  * \brief Restricted Boltzmann Machine
  */
-template<typename Weight = double>
+template<typename Visible, typename Hidden, typename Bias, typename Weight = double>
 struct rbm {
+    Visible[] visibles;
+    Hidden[] hiddens;
+    Bias bias;
+    Weight[][] weights;
 
+    std::size_t num_hidden;
+    std::size_t num_visible;
+
+    double learning_rate;
 };
 
 } //end of dbn namespace
