@@ -9,6 +9,14 @@
 
 #include "rbm.hpp"
 
-void main(){
+int main(){
+    dbn::rbm<char,char,char> rbm(6, 2);
+
+    std::vector<std::vector<char>> training = {{1,1,1,0,0,0},{1,1,1,0,0,0},{0,0,1,1,0,0},{0,0,1,1,0,0},{0,0,1,1,1,0}};
+    rbm.train(training, 1000);
+
     //TODO
+    //
+
+    return 0;
 }
