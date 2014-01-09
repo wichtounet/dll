@@ -8,6 +8,8 @@
 #ifndef DBN_RBM_HPP
 #define DBN_RBM_HPP
 
+#include <vector>
+
 namespace dbn {
 
 /*!
