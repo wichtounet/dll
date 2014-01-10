@@ -238,13 +238,18 @@ struct rbm {
 
         //4. Update the weights by using the gradients
 
+        //TODO Check the bias weights updates...
+
         for(size_t i = 0; i < num_visible; ++i){
             for(size_t j = 0; j < num_hidden; ++j){
                 w(i,j) += learning_rate * (pos_hidden_p[j] * items[i] - neg_hidden_p[j] * neg_visible_p[i]);
+                b(j) += learning_rate * (pos_hidden_p[j] - neg_hidden_p[j]);
             }
         }
 
-        //TODO Update bias weights
+        for(size_t i = 0; i < num_visible; ++i){
+            a(i) += learning_rate * (items[i] - v(i));
+        }
 
         //5. Compute the reconstruction error
 
