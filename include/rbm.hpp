@@ -86,6 +86,22 @@ struct rbm {
         return weights[num_visible * i + j];
     }
 
+    inline Visible& v(std::size_t i){
+        return visibles[i];
+    }
+
+    inline Hidden& h(std::size_t j){
+        return hiddens[j];
+    }
+
+    inline const Visible& v(std::size_t i) const {
+        return visibles[i];
+    }
+
+    inline const Hidden& h(std::size_t j) const {
+        return hiddens[j];
+    }
+
     ~rbm(){
         delete[] weights;
         delete[] a;
@@ -110,8 +126,8 @@ struct rbm {
         //Size should match
 
         // ??????? Set the states of the visible units
-        for(size_t v = 0; v < num_visible; ++v){
-            visibles[v] = items[v];
+        for(size_t i = 0; i < num_visible; ++i){
+            v(i) = items[i];
         }
 
         std::vector<double> pos_hidden_p(num_hidden, 0.0);;
@@ -126,7 +142,7 @@ struct rbm {
             //sum = Sum(i)(v_i * w_ij)
             auto sum = 0.0;
             for(size_t i = 0; i < num_visible; ++i){
-                sum += visibles[i] * w(i, j);
+                sum += v(i) * w(i, j);
             }
 
             auto activation = b[j] + sum;
@@ -134,9 +150,9 @@ struct rbm {
             //Probability of turning one
             auto p = logistic_sigmoid(activation);
             if(p > generator()){
-                hiddens[j] = 1;
+                h(j) = 1;
             } else {
-                hiddens[j] = 0;
+                h(j) = 0;
             }
 
             pos_hidden_p[j] = p;
@@ -151,7 +167,7 @@ struct rbm {
             auto sum = 0.0;
             for(size_t j = 0; j < num_hidden; ++j){
                 //TODO Check if we really need hiddens[j] here
-                sum += hiddens[j] * w(i, j);
+                sum += h(j) * w(i, j);
             }
 
             auto activation = a[i] + sum;
@@ -159,9 +175,9 @@ struct rbm {
             //Probability of turning one
             auto p = logistic_sigmoid(activation);
             if(p > generator()){
-                visibles[i] = 1;
+                v(i) = 1;
             } else {
-                visibles[i] = 0;
+                v(i) = 0;
             }
 
             neg_visible_p[i] = p;
@@ -183,9 +199,9 @@ struct rbm {
             //Probability of turning one
             auto p = logistic_sigmoid(activation);
             if(p > generator()){
-                hiddens[j] = 1;
+                h(j) = 1;
             } else {
-                hiddens[j] = 0;
+                h(j) = 0;
             }
 
             neg_hidden_p[j] = p;
@@ -208,8 +224,8 @@ struct rbm {
         auto generator = std::bind(distribution, rand_engine);
 
         //Set the state of the visible units
-        for(size_t v = 0; v < num_visible; ++v){
-            visibles[v] = items[v];
+        for(size_t i = 0; i < num_visible; ++i){
+            v(i) = items[i];
         }
 
         //Sample the hidden units from the visible units
@@ -217,7 +233,7 @@ struct rbm {
             //sum = Sum(i)(v_i * w_ij)
             auto sum = 0.0;
             for(size_t i = 0; i < num_visible; ++i){
-                sum += visibles[i] * w(i, j);
+                sum += v(i) * w(i, j);
             }
 
             auto activation = b[j] + sum;
@@ -225,9 +241,9 @@ struct rbm {
             //Probability of turning one
             auto p = logistic_sigmoid(activation);
             if(p > generator()){
-                hiddens[j] = 1;
+                h(j) = 1;
             } else {
-                hiddens[j] = 0;
+                h(j) = 0;
             }
         }
     }
@@ -240,16 +256,16 @@ struct rbm {
     void display_visible_units() const {
         std::cout << "Visible  Value" << std::endl;
 
-        for(size_t v = 0; v < num_visible; ++v){
-            printf("%ld %d\n", v, visibles[v]);
+        for(size_t i = 0; i < num_visible; ++i){
+            printf("%ld %d\n", i, v(i));
         }
     }
 
     void display_hidden_units() const {
         std::cout << "Hidden Value" << std::endl;
 
-        for(size_t v = 0; v < num_hidden; ++v){
-            printf("%ld %d\n", v, hiddens[v]);
+        for(size_t j = 0; j < num_visible; ++j){
+            printf("%ld %d\n", j, h(j));
         }
     }
 };
