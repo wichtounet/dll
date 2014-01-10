@@ -14,6 +14,8 @@ int main(){
 
     std::vector<std::vector<char>> training = {{1,1,1,0,0,0},{1,1,1,0,0,0},{0,0,1,1,0,0},{0,0,1,1,0,0},{0,0,1,1,1,0}};
     rbm.train(training, 1000);
+    rbm.run_visible(std::vector<char>({0,0,0,1,1,0}));
+    rbm.display();
 
     //TODO
     //

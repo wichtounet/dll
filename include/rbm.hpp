@@ -47,6 +47,9 @@ double logistic_sigmoid(double x){
  */
 template<typename Visible, typename Hidden, typename Bias, typename Weight = double>
 struct rbm {
+    std::size_t num_visible;
+    std::size_t num_hidden;
+
     std::vector<Visible> visibles;
     std::vector<Hidden> hiddens;
     Bias bias_unit = 1;
@@ -55,14 +58,14 @@ struct rbm {
     Weight* a;
     Weight* b;
 
-    std::size_t num_hidden;
-    std::size_t num_visible;
-
     double learning_rate;
 
     std::mt19937_64 rand_engine;
 
-    rbm(std::size_t num_hidden, std::size_t num_visible) : num_hidden(num_hidden), num_visible(num_visible) {
+    rbm(std::size_t num_visible, std::size_t num_hidden) :
+            num_visible(num_visible), num_hidden(num_hidden),
+            visibles(num_visible), hiddens(num_hidden) {
+
         weights = new Weight[num_visible * num_hidden];
 
         std::normal_distribution<double> distribution(0.0, 0.1);
@@ -111,7 +114,13 @@ struct rbm {
             visibles[v] = items[v];
         }
 
-        //1. Update the hidden states
+        std::vector<double> pos_hidden_p(num_hidden, 0.0);;
+        std::vector<double> neg_visible_p(num_visible, 0.0);;
+        std::vector<double> neg_hidden_p(num_hidden, 0.0);;
+
+        //This is the "positive CD phase" (reality phase)
+
+        //1. Update the hidden states from the visibles states
 
         for(size_t j = 0; j < num_hidden; ++j){
             //sum = Sum(i)(v_i * w_ij)
@@ -129,16 +138,19 @@ struct rbm {
             } else {
                 hiddens[j] = 0;
             }
+
+            pos_hidden_p[j] = p;
         }
 
-        std::vector<double> neg_probabilities(num_visible, 0.0);;
+        //This is the "negative CD phase" (daydream phase)
 
-        //2. Update the visible states
+        //2. Reconstruct the visible units
 
         for(size_t i = 0; i < num_visible; ++i){
             //sum = Sum(j)(h_j * w_ij)
             auto sum = 0.0;
             for(size_t j = 0; j < num_hidden; ++j){
+                //TODO Check if we really need hiddens[j] here
                 sum += hiddens[j] * w(i, j);
             }
 
@@ -152,20 +164,93 @@ struct rbm {
                 visibles[i] = 0;
             }
 
-            neg_probabilities[i] = p;
+            neg_visible_p[i] = p;
         }
 
+        //3. Sample again from the hidden units
 
+        //This time, the hidden units are sampled from the probabilities
+        //and not the stochastic state of the visible units
+        for(size_t j = 0; j < num_hidden; ++j){
+            //sum = Sum(i)(v_i * w_ij)
+            auto sum = 0.0;
+            for(size_t i = 0; i < num_visible; ++i){
+                sum += neg_visible_p[i] * w(i, j);
+            }
 
-        //Update the states of the hidden units
-        //auto energy_vh = -mul_sum(visibles, bias_visibles) - mul_sum(hiddens, bias_hidden);
+            auto activation = b[j] + sum;
 
-        //auto pos_hidden_activations = dot(data, weights);
-        //auto pos_hidden_probabilities = logistic_sigmoid(pos_hidden_activations);
+            //Probability of turning one
+            auto p = logistic_sigmoid(activation);
+            if(p > generator()){
+                hiddens[j] = 1;
+            } else {
+                hiddens[j] = 0;
+            }
 
+            neg_hidden_p[j] = p;
+        }
 
+        //4. Update the weights by using the gradients
 
+        for(size_t i = 0; i < num_visible; ++i){
+            for(size_t j = 0; j < num_hidden; ++j){
+                w(i,j) += learning_rate * (pos_hidden_p[j] * items[i] - neg_hidden_p[j] * neg_visible_p[i]);
+            }
+        }
 
+        //TODO Update bias weights
+    }
+
+    template<typename TrainingItem>
+    void run_visible(const std::vector<TrainingItem>& items){
+        std::uniform_real_distribution<> distribution(0.0, 1.0);
+        auto generator = std::bind(distribution, rand_engine);
+
+        //Set the state of the visible units
+        for(size_t v = 0; v < num_visible; ++v){
+            visibles[v] = items[v];
+        }
+
+        //Sample the hidden units from the visible units
+        for(size_t j = 0; j < num_hidden; ++j){
+            //sum = Sum(i)(v_i * w_ij)
+            auto sum = 0.0;
+            for(size_t i = 0; i < num_visible; ++i){
+                sum += visibles[i] * w(i, j);
+            }
+
+            auto activation = b[j] + sum;
+
+            //Probability of turning one
+            auto p = logistic_sigmoid(activation);
+            if(p > generator()){
+                hiddens[j] = 1;
+            } else {
+                hiddens[j] = 0;
+            }
+        }
+    }
+
+    void display() const {
+        display_visible_units();
+        display_hidden_units();
+    }
+
+    void display_visible_units() const {
+        std::cout << "Visible  Value" << std::endl;
+
+        for(size_t v = 0; v < num_visible; ++v){
+            printf("%ld %d\n", v, visibles[v]);
+        }
+    }
+
+    void display_hidden_units() const {
+        std::cout << "Hidden Value" << std::endl;
+
+        for(size_t v = 0; v < num_hidden; ++v){
+            printf("%ld %d\n", v, hiddens[v]);
+        }
     }
 };
 
