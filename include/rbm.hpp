@@ -13,6 +13,8 @@
 #include <random>
 #include <functional>
 
+#include "assert.hpp"
+
 namespace dbn {
 
 template<typename A, typename B, typename Ret = double>
@@ -39,7 +41,7 @@ double mul_sum(const std::vector<A>& as, B* bs){
 }
 
 double logistic_sigmoid(double x){
-    return 1 / (1 / exp(-x));
+    return 1 / (1 + exp(-x));
 }
 
 /*!
@@ -52,13 +54,12 @@ struct rbm {
 
     std::vector<Visible> visibles;
     std::vector<Hidden> hiddens;
-    Bias bias_unit = 1;
 
     Weight* weights;
-    Weight* a;
-    Weight* b;
+    Weight* bias_visible;
+    Weight* bias_hidden;
 
-    double learning_rate;
+    double learning_rate = 0.1; //TODO Init that
 
     std::mt19937_64 rand_engine;
 
@@ -78,34 +79,60 @@ struct rbm {
         }
 
         //Init all the bias weights to zero
-        a = new Weight[num_visible]();
-        b = new Weight[num_hidden]();
+        bias_visible = new Weight[num_visible];
+        bias_hidden = new Weight[num_hidden];
+
+        std::fill(bias_visible, bias_visible + num_visible, 0.0);
+        std::fill(bias_hidden, bias_hidden + num_hidden, 0.0);
     }
 
     inline Weight& w(std::size_t i, std::size_t j){
-        return weights[num_visible * i + j];
+        dbn_assert(i < num_visible, "i Out of bounds");
+        dbn_assert(j < num_hidden, "j Out of bounds");
+
+        return weights[num_hidden * i + j];
     }
 
     inline Visible& v(std::size_t i){
+        dbn_assert(i < num_visible, "i Out of bounds");
+
         return visibles[i];
     }
 
     inline Hidden& h(std::size_t j){
+        dbn_assert(j < num_hidden, "j Out of bounds");
+
         return hiddens[j];
     }
 
+    inline Weight& a(std::size_t i){
+        dbn_assert(i < num_visible, "i Out of bounds");
+
+        return bias_visible[i];
+    }
+
+    inline Weight& b(std::size_t j){
+        dbn_assert(j < num_hidden, "j Out of bounds");
+
+        return bias_hidden[j];
+    }
+
     inline const Visible& v(std::size_t i) const {
+        dbn_assert(i < num_visible, "i Out of bounds");
+
         return visibles[i];
     }
 
     inline const Hidden& h(std::size_t j) const {
+        dbn_assert(j < num_hidden, "j Out of bounds");
+
         return hiddens[j];
     }
 
     ~rbm(){
         delete[] weights;
-        delete[] a;
-        delete[] b;
+        delete[] bias_visible;
+        delete[] bias_hidden;
     }
 
     template<typename TrainingItem>
@@ -114,12 +141,12 @@ struct rbm {
         auto generator = std::bind(distribution, rand_engine);
 
         for(size_t i = 0; i < max_epochs; ++i){
-            epoch(training_data[generator()]);
+            cd_step(i, training_data[generator()]);
         }
     }
 
     template<typename TrainingItem>
-    void epoch(const std::vector<TrainingItem>& items){
+    void cd_step(size_t epoch, const std::vector<TrainingItem>& items){
         std::uniform_real_distribution<> distribution(0.0, 1.0);
         auto generator = std::bind(distribution, rand_engine);
 
@@ -145,7 +172,7 @@ struct rbm {
                 sum += v(i) * w(i, j);
             }
 
-            auto activation = b[j] + sum;
+            auto activation = b(j) + sum;
 
             //Probability of turning one
             auto p = logistic_sigmoid(activation);
@@ -170,7 +197,7 @@ struct rbm {
                 sum += h(j) * w(i, j);
             }
 
-            auto activation = a[i] + sum;
+            auto activation = a(i) + sum;
 
             //Probability of turning one
             auto p = logistic_sigmoid(activation);
@@ -194,7 +221,7 @@ struct rbm {
                 sum += neg_visible_p[i] * w(i, j);
             }
 
-            auto activation = b[j] + sum;
+            auto activation = b(j) + sum;
 
             //Probability of turning one
             auto p = logistic_sigmoid(activation);
@@ -216,6 +243,17 @@ struct rbm {
         }
 
         //TODO Update bias weights
+
+        //5. Compute the reconstruction error
+
+        double error = 0.0;
+        for(size_t i = 0; i < num_visible; ++i){
+            error += (items[i] - neg_visible_p[i]) * (items[i] - neg_visible_p[i]);
+        }
+
+        if(epoch % 10 == 0){
+            std::cout << "Reconstruction error: " << error << std::endl;
+        }
     }
 
     template<typename TrainingItem>
@@ -236,7 +274,7 @@ struct rbm {
                 sum += v(i) * w(i, j);
             }
 
-            auto activation = b[j] + sum;
+            auto activation = b(j) + sum;
 
             //Probability of turning one
             auto p = logistic_sigmoid(activation);
@@ -257,15 +295,15 @@ struct rbm {
         std::cout << "Visible  Value" << std::endl;
 
         for(size_t i = 0; i < num_visible; ++i){
-            printf("%ld %d\n", i, v(i));
+            printf("%-8ld %d\n", i, v(i));
         }
     }
 
     void display_hidden_units() const {
         std::cout << "Hidden Value" << std::endl;
 
-        for(size_t j = 0; j < num_visible; ++j){
-            printf("%ld %d\n", j, h(j));
+        for(size_t j = 0; j < num_hidden; ++j){
+            printf("%-8ld %d\n", j, h(j));
         }
     }
 };
