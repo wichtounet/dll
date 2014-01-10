@@ -147,6 +147,8 @@ struct rbm {
 
     template<typename TrainingItem>
     void cd_step(size_t epoch, const std::vector<TrainingItem>& items){
+        dbn_assert(items.size() == num_visible, "The size of the training sample must match visible units");
+
         std::uniform_real_distribution<> distribution(0.0, 1.0);
         auto generator = std::bind(distribution, rand_engine);
 
@@ -251,13 +253,15 @@ struct rbm {
             error += (items[i] - neg_visible_p[i]) * (items[i] - neg_visible_p[i]);
         }
 
-        if(epoch % 10 == 0){
+        if(epoch % 100 == 0){
             std::cout << "Reconstruction error: " << error << std::endl;
         }
     }
 
     template<typename TrainingItem>
     void run_visible(const std::vector<TrainingItem>& items){
+        dbn_assert(items.size() == num_visible, "The size of the training sample must match visible units");
+
         std::uniform_real_distribution<> distribution(0.0, 1.0);
         auto generator = std::bind(distribution, rand_engine);
 
