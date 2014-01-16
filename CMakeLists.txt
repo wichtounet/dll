@@ -30,6 +30,20 @@ set(EXECUTABLE_OUTPUT_PATH bin)
 # All the headers are in the include directory
 include_directories(include)
 
+# Create a fake library grouping all object files
+
+file(
+    GLOB_RECURSE
+    source_files
+    src/*.cpp
+)
+
+file(GLOB executable_files src/rbm_simple.cpp src/rbm_mnist.cpp)
+list(REMOVE_ITEM source_files ${executable_files})
+
+add_library(RBM OBJECT ${source_files})
+
 # Create the executable
 
-add_executable(simple_rbm src/rbm_simple.cpp)
+add_executable(rbm_simple $<TARGET_OBJECTS:RBM> src/rbm_simple.cpp)
+add_executable(rbm_mnist $<TARGET_OBJECTS:RBM> src/rbm_mnist.cpp)
