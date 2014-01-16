@@ -12,7 +12,7 @@
 #include "image_utils.hpp"
 
 int main(){
-    dbn::rbm<char,char,char> rbm(28 * 28, 30);
+    dbn::rbm<char,char,char> rbm(28 * 28, 60);
 
     auto training_images = mnist::read_training_images();
 
@@ -21,6 +21,9 @@ int main(){
     binarize_each(training_images);
 
     std::cout << "Images binarized" << std::endl;
+    std::cout << "Start training..." << std::endl;
+
+    rbm.train(training_images, 25000);
 
     //TODO
 
