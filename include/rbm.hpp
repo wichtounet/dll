@@ -63,12 +63,20 @@ struct rbm {
 
     std::mt19937_64 rand_engine;
 
+    std::uniform_real_distribution<> uniform_distribution;
+    std::function<double()> uniform_generator;
+
     rbm(std::size_t num_visible, std::size_t num_hidden) :
             num_visible(num_visible), num_hidden(num_hidden),
-            visibles(num_visible), hiddens(num_hidden) {
+            visibles(num_visible), hiddens(num_hidden),
+            uniform_distribution(0.0, 1.0) {
+
+        uniform_generator = std::bind(uniform_distribution, rand_engine);
 
         weights = new Weight[num_visible * num_hidden];
 
+        //Initialize the weights using a Gaussian distribution of mean 0 and
+        //variance 0.0.1
         std::normal_distribution<double> distribution(0.0, 0.01);
         auto generator = std::bind(distribution, rand_engine);
 
@@ -162,11 +170,6 @@ struct rbm {
     void cd_step(size_t epoch, const std::vector<TrainingItem>& items){
         dbn_assert(items.size() == num_visible, "The size of the training sample must match visible units");
 
-        std::uniform_real_distribution<> distribution(0.0, 1.0);
-        auto generator = std::bind(distribution, rand_engine);
-
-        //Size should match
-
         // ??????? Set the states of the visible units
         for(size_t i = 0; i < num_visible; ++i){
             v(i) = items[i];
@@ -191,7 +194,7 @@ struct rbm {
 
             //Probability of turning one
             auto p = logistic_sigmoid(activation);
-            if(p > generator()){
+            if(p > uniform_generator()){
                 h(j) = 1;
             } else {
                 h(j) = 0;
@@ -216,7 +219,7 @@ struct rbm {
 
             //Probability of turning one
             auto p = logistic_sigmoid(activation);
-            if(p > generator()){
+            if(p > uniform_generator()){
                 v(i) = 1;
             } else {
                 v(i) = 0;
@@ -240,7 +243,7 @@ struct rbm {
 
             //Probability of turning one
             auto p = logistic_sigmoid(activation);
-            if(p > generator()){
+            if(p > uniform_generator()){
                 h(j) = 1;
             } else {
                 h(j) = 0;
