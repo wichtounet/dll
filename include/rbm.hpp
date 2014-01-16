@@ -69,7 +69,7 @@ struct rbm {
 
         weights = new Weight[num_visible * num_hidden];
 
-        std::normal_distribution<double> distribution(0.0, 0.1);
+        std::normal_distribution<double> distribution(0.0, 0.01);
         auto generator = std::bind(distribution, rand_engine);
 
         for(size_t v = 0; v < num_visible; ++v){
@@ -137,6 +137,19 @@ struct rbm {
 
     template<typename TrainingItem>
     void train(const std::vector<std::vector<TrainingItem>>& training_data, std::size_t max_epochs){
+        //Initialize the visible biases to log(pi/(1-pi))
+        for(size_t i = 0; i < num_visible; ++i){
+            auto c = 0;
+            for(auto& item : training_data){
+                if(item[i] == 1){
+                    ++c;
+                }
+            }
+
+            auto pi = static_cast<double>(c) / training_data.size();
+            bias_visible[i] = log(pi / (1 - pi));
+        }
+
         std::uniform_int_distribution<> distribution(0, training_data.size() - 1);
         auto generator = std::bind(distribution, rand_engine);
 
