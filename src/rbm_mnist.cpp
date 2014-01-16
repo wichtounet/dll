@@ -9,11 +9,18 @@
 
 #include "rbm.hpp"
 #include "mnist_reader.hpp"
+#include "image_utils.hpp"
 
 int main(){
     dbn::rbm<char,char,char> rbm(28 * 28, 30);
 
     auto training_images = mnist::read_training_images();
+
+    std::cout << "Training set loaded" << std::endl;
+
+    binarize_each(training_images);
+
+    std::cout << "Images binarized" << std::endl;
 
     //TODO
 
