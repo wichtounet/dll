@@ -13,7 +13,7 @@ typename std::enable_if<!std::numeric_limits<T>::is_signed, void>::type binarize
     auto middle = std::numeric_limits<T>::max() / 2;
 
     for(auto& v : values){
-        v = v > middle ? 1 : 0;
+        v = v > 10 ? 1 : 0;
     }
 }
 
