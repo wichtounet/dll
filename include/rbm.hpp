@@ -24,7 +24,7 @@ double logistic_sigmoid(double x){
 /*!
  * \brief Restricted Boltzmann Machine
  */
-template<typename Visible, typename Hidden, int Batch = 1, int BatchSize = 1, bool Momentum = false>
+template<typename Visible, typename Hidden, int BatchSize = 1, bool Momentum = false>
 struct rbm {
     typedef double weight;
 
@@ -172,17 +172,15 @@ struct rbm {
             bias_visible[i] = log(pi / (1 - pi));
         }
 
-        std::mt19937_64 rand_engine(::time(NULL));
-        std::uniform_int_distribution<size_t> distribution(0, training_data.size() - BatchSize);
-        auto generator = std::bind(distribution, rand_engine);
+        auto batches = training_data.size() / BatchSize;
 
         for(size_t epoch= 0; epoch < max_epochs; ++epoch){
-            for(size_t i = 0; i < Batch; ++i){
-                auto error = cd_step(training_data, generator());
-
-                //std::cout << "epoch " << epoch << ", batch" << i << ": Reconstruction error: " << error << std::endl;
-                std::cout << error << std::endl;
+            double error = 0.0;
+            for(size_t i = 0; i < batches; ++i){
+                error += cd_step(training_data.begin() + i * BatchSize, training_data.begin() + (i+1) * BatchSize);
             }
+
+            std::cout << "epoch " << epoch << ": Reconstruction error average: " << (error / batches) << std::endl;
 
             if(Momentum && epoch == 20){
                 momentum = 0.9;
@@ -230,11 +228,10 @@ struct rbm {
         }
     }
 
-    template<typename TrainingItem>
-    double cd_step(const std::vector<std::vector<TrainingItem>>& data, size_t batch_start){
-        dbn_assert(!data.empty(), "Cannot train on empty batch");
-        dbn_assert(batch_start + BatchSize <= data.size(), "Out of bounds");
-        dbn_assert(data[batch_start].size() == num_visible, "The size of the training sample must match visible units");
+    template<typename Iterator>
+    double cd_step(Iterator it, Iterator end){
+        dbn_assert(end - it == BatchSize, "Invalid size");
+        dbn_assert(it->size() == num_visible, "The size of the training sample must match visible units");
 
         //Temporary data
         std::vector<double> v1(num_visible, 0.0);;
@@ -248,8 +245,8 @@ struct rbm {
         std::vector<double> gb(num_hidden, 0.0);;
         std::vector<double> gw(num_visible * num_hidden, 0.0);;
 
-        for(size_t t = 0; t < BatchSize; ++t){
-            auto & items = data[batch_start + t];
+        while(it != end){
+            auto& items = *it++;
 
             for(size_t i = 0; i < num_visible; ++i){
                 v1[i] = items[i];
@@ -388,6 +385,26 @@ struct rbm {
 
         for(size_t j = 0; j < num_hidden; ++j){
             printf("%-8ld %d\n", j, h(j));
+        }
+    }
+
+    void display_weights(){
+        for(size_t j = 0; j < num_hidden; ++j){
+            for(size_t i = 0; i < num_visible; ++i){
+                std::cout << w(i, j) << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+
+    void display_weights(size_t matrix){
+        for(size_t j = 0; j < num_hidden; ++j){
+            for(size_t i = 0; i < num_visible;){
+                for(size_t m = 0; m < matrix; ++m){
+                    std::cout << w(i++, j) << " ";
+                }
+                std::cout << std::endl;
+            }
         }
     }
 };

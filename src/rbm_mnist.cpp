@@ -12,18 +12,15 @@
 #include "image_utils.hpp"
 
 int main(){
-    dbn::rbm<uint8_t, uint8_t, 10, 10, true> rbm(28 * 28, 300);
+    dbn::rbm<uint8_t, uint8_t, 50, true> rbm(28 * 28, 60);
 
     auto training_images = mnist::read_training_images();
 
-    std::cout << "Training set loaded" << std::endl;
-
     binarize_each(training_images);
 
-    std::cout << "Images binarized" << std::endl;
-    std::cout << "Start training..." << std::endl;
+    rbm.train(training_images, 100);
 
-    rbm.train(training_images, 500);
+    rbm.display_weights(28);
 
     //TODO
 
