@@ -352,8 +352,7 @@ struct rbm {
         for(size_t i = 0; i < num_visible; ++i){
             error += ga(i) * ga(i);
         }
-        error /= num_visible;
-        error = sqrt(error);
+        error = sqrt(error / num_visible);
 
         return error;
     }
@@ -409,7 +408,8 @@ struct rbm {
             while(i > 0){
                 --i;
 
-                file << w(i, j) << " ";
+                auto value = w(i,j);
+                file << static_cast<size_t>(value > 0 ? static_cast<size_t>(value * 255.0) << 8 : static_cast<size_t>(-value * 255.0) << 16) << " ";
             }
 
             file << std::endl;

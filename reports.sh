@@ -17,7 +17,7 @@ do
         echo "set lmargin 0" >> test.plt
         echo "set terminal png size 50,50 enhanced font '/usr/share/fonts/liberation-fonts/LiberationSans-Regular.ttf'" >> test.plt
         echo "set output '$file.png'" >> test.plt
-        echo "set palette gray" >> test.plt
+        #echo "set palette gray" >> test.plt
         echo "plot '$file' binary array=28x28 notitle with image" >> test.plt
         echo "quit" >> test.plt
 
@@ -25,7 +25,6 @@ do
 
         echo "unset ytics" > test.plt
         echo "set terminal png size 200,200 enhanced font '/usr/share/fonts/liberation-fonts/LiberationSans-Regular.ttf'" >> test.plt
-        echo "set palette gray" >> test.plt
         echo "set output '$epoch/weights.png'" >> test.plt
         echo "binwidth=0.01" >> test.plt
         echo "bin(x,width)=width*floor(x/width)" >> test.plt
