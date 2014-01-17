@@ -123,17 +123,18 @@ double logistic_sigmoid(double x){
 /*!
  * \brief Restricted Boltzmann Machine
  */
-template<typename Visible, typename Hidden, int BatchSize = 1, bool Momentum = false>
+template<int BatchSize = 1, bool Momentum = false>
 struct rbm {
     static_assert(BatchSize > 0, "Batch size must be at least 1");
 
     typedef double weight;
+    typedef double value_t;
 
     std::size_t num_visible;
     std::size_t num_hidden;
 
-    vector<Visible> visibles;
-    vector<Hidden> hiddens;
+    vector<value_t> visibles;
+    vector<value_t> hiddens;
 
     matrix<weight> w;
     vector<weight> a;
@@ -367,22 +368,37 @@ struct rbm {
             visibles(i) = items[i];
         }
 
+        vector<double> h1(num_hidden, 0.0);
+        activate_hidden(h1, visibles);
+
         //Sample the hidden units from the visible units
         for(size_t j = 0; j < num_hidden; ++j){
-            //sum = Sum(i)(v_i * w_ij)
-            auto sum = 0.0;
-            for(size_t i = 0; i < num_visible; ++i){
-                sum += visibles(i) * w(i, j);
-            }
-
-            auto activation = b(j) + sum;
-
             //Probability of turning one
-            auto p = logistic_sigmoid(activation);
+            auto p = logistic_sigmoid(h1(j));
             if(p > generator()){
                 hiddens(j) = 1;
             } else {
                 hiddens(j) = 0;
+            }
+        }
+    }
+
+    void run_hidden(){
+        static std::mt19937_64 rand_engine(::time(nullptr));
+        static std::uniform_real_distribution<> distribution(0.0, 1.0);
+        static auto generator = std::bind(distribution, rand_engine);
+
+        vector<double> v1(num_visible, 0.0);
+        activate_visible(hiddens, v1);
+
+        //Sample the hidden units from the visible units
+        for(size_t i = 0; i < num_visible; ++i){
+            //Probability of turning one
+            auto p = logistic_sigmoid(v1(i));
+            if(p > generator()){
+                visibles(i) = 1;
+            } else {
+                visibles(i) = 0;
             }
         }
     }
@@ -454,6 +470,15 @@ struct rbm {
 
         for(size_t i = 0; i < num_visible; ++i){
             printf("%-8ld %d\n", i, visibles(i));
+        }
+    }
+
+    void display_visible_units(size_t matrix) const {
+        for(size_t i = 0; i < matrix; ++i){
+            for(size_t j = 0; j < matrix; ++j){
+                std::cout << visibles(i * matrix + j) << " ";
+            }
+            std::cout << std::endl;
         }
     }
 
