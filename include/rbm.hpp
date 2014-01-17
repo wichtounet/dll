@@ -291,7 +291,7 @@ struct rbm {
             auto& items = *it++;
 
             for(size_t i = 0; i < num_visible; ++i){
-                v1[i] = items[i] == 1 ? 1.0 : 0.0;
+                v1[i] = items[i];
             }
 
             activate_hidden(h1, v1);
