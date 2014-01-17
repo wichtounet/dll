@@ -4,7 +4,7 @@ mkdir -p reports/finals/
 
 for epoch in reports/epoch_*
 do
-    for file in $epoch/*.dat
+    for file in $epoch/h_*.dat
     do
         echo "unset colorbox" > test.plt
         echo "unset xtics" >> test.plt
@@ -22,11 +22,28 @@ do
         echo "quit" >> test.plt
 
         gnuplot < test.plt
+
+        echo "unset ytics" > test.plt
+        echo "set terminal png size 200,200 enhanced font '/usr/share/fonts/liberation-fonts/LiberationSans-Regular.ttf'" >> test.plt
+        echo "set palette gray" >> test.plt
+        echo "set output '$epoch/weights.png'" >> test.plt
+        echo "binwidth=0.01" >> test.plt
+        echo "bin(x,width)=width*floor(x/width)" >> test.plt
+        echo "plot '$epoch/weights.dat' using (bin(\$1,binwidth)):(1.0) smooth freq notitle with boxes" >> test.plt
+        echo "set output '$epoch/hiddens.png'" >> test.plt
+        echo "plot '$epoch/hiddens.dat' using (bin(\$1,binwidth)):(1.0) smooth freq notitle with boxes" >> test.plt
+        echo "set output '$epoch/visibles.png'" >> test.plt
+        echo "plot '$epoch/visibles.dat' using (bin(\$1,binwidth)):(1.0) smooth freq notitle with boxes" >> test.plt
+        echo "quit" >> test.plt
+
+        gnuplot < test.plt
     done
 
-    montage -mode concatenate -tile 6x6 $epoch/*.dat.png $epoch/final.png
+    montage -mode concatenate -tile 6x6 $epoch/h_*.dat.png $epoch/hiddens_weights.png
+    montage -mode concatenate -tile 3x  $epoch/hiddens.png $epoch/weights.png $epoch/visibles.png $epoch/histograms.png
 
-    cp $epoch/final.png reports/finals/`basename $epoch`.png
+    cp $epoch/hiddens_weights.png reports/finals/hiddens_weights_`basename $epoch`.png
+    cp $epoch/histograms.png reports/finals/histograms_`basename $epoch`.png
 done
 
 rm test.plt
