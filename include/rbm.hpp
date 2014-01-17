@@ -344,10 +344,6 @@ struct rbm {
 
         //Compute the reconstruction error
 
-        for(size_t i = 0; i < num_visible; ++i){
-            ga(i) *= (1.0 / n_samples);
-        }
-
         double error = 0.0;
         for(size_t i = 0; i < num_visible; ++i){
             error += ga(i) * ga(i);
