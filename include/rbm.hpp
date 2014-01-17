@@ -12,10 +12,64 @@
 #include <vector>
 #include <random>
 #include <functional>
+#include <fstream>
+
+//TODO Find a better way to use mkdir
+#include <sys/stat.h>
 
 #include "assert.hpp"
 
 namespace dbn {
+
+template<typename T>
+struct matrix {
+    const size_t rows;
+    const size_t columns;
+    T* const _data;
+
+    matrix(size_t rows, size_t columns) :
+            rows(rows), columns(columns), _data(new T[rows * columns]){
+        //Nothing else to init
+    }
+
+    matrix(size_t rows, size_t columns, const T& value) :
+            rows(rows), columns(columns), _data(new T[rows * columns]){
+        std::fill(_data, _data + size(), value);
+    }
+
+    matrix(const matrix& rhs) = delete;
+    matrix& operator=(const matrix& rhs) = delete;
+
+    ~matrix(){
+        delete[] _data;
+    }
+
+    size_t size(){
+        return rows * columns;
+    }
+
+    void operator=(const T& value){
+        std::fill(_data, _data + size(), value);
+    }
+
+    T& operator()(size_t i, size_t j){
+        dbn_assert(i < rows, "Out of bounds");
+        dbn_assert(j < columns, "Out of bounds");
+
+        return _data[i * columns + j];
+    }
+
+    const T& operator()(size_t i, size_t j) const {
+        dbn_assert(i < rows, "Out of bounds");
+        dbn_assert(j < columns, "Out of bounds");
+
+        return _data[i * columns + j];
+    }
+
+    const T* data() const {
+        return _data;
+    }
+};
 
 double logistic_sigmoid(double x){
     return 1 / (1 + exp(-x));
@@ -26,6 +80,8 @@ double logistic_sigmoid(double x){
  */
 template<typename Visible, typename Hidden, int BatchSize = 1, bool Momentum = false>
 struct rbm {
+    static_assert(BatchSize > 0, "Batch size must be at least 1");
+
     typedef double weight;
 
     std::size_t num_visible;
@@ -34,24 +90,23 @@ struct rbm {
     std::vector<Visible> visibles;
     std::vector<Hidden> hiddens;
 
-    weight* weights;
+    matrix<weight> w;
     weight* bias_visible;
     weight* bias_hidden;
 
     //Weights for momentum
-    weight* weights_inc;
+    matrix<weight> w_inc;
     weight* bias_visible_inc;
     weight* bias_hidden_inc;
 
     //TODO Add a way to configure that
     double learning_rate = 0.01;
-    double momentum = 0.5;
+    double momentum = 0.2;
 
     rbm(std::size_t num_visible, std::size_t num_hidden) :
             num_visible(num_visible), num_hidden(num_hidden),
-            visibles(num_visible), hiddens(num_hidden) {
-
-        weights = new weight[num_visible * num_hidden];
+            visibles(num_visible), hiddens(num_hidden),
+            w(num_visible, num_hidden), w_inc(num_visible, num_hidden) {
 
         //Initialize the weights using a Gaussian distribution of mean 0 and
         //variance 0.0.1
@@ -73,40 +128,24 @@ struct rbm {
         std::fill(bias_hidden, bias_hidden + num_hidden, 0.0);
 
         if(Momentum){
-            weights_inc = new weight[num_visible * num_hidden];
+            w_inc = 0;
+
             bias_visible_inc = new weight[num_visible];
             bias_hidden_inc = new weight[num_hidden];
 
-            std::fill(weights_inc, weights_inc + num_hidden * num_visible, 0.0);
             std::fill(bias_visible_inc, bias_visible_inc + num_visible, 0.0);
             std::fill(bias_hidden_inc, bias_hidden_inc + num_hidden, 0.0);
         }
     }
 
     ~rbm(){
-        delete[] weights;
         delete[] bias_visible;
         delete[] bias_hidden;
 
         if(Momentum){
-            delete[] weights_inc;
             delete[] bias_visible_inc;
             delete[] bias_hidden_inc;
         }
-    }
-
-    inline weight& w(std::size_t i, std::size_t j){
-        dbn_assert(i < num_visible, "i Out of bounds");
-        dbn_assert(j < num_hidden, "j Out of bounds");
-
-        return weights[num_hidden * i + j];
-    }
-
-    inline const weight& w(std::size_t i, std::size_t j) const {
-        dbn_assert(i < num_visible, "i Out of bounds");
-        dbn_assert(j < num_hidden, "j Out of bounds");
-
-        return weights[num_hidden * i + j];
     }
 
     inline Visible& v(std::size_t i){
@@ -183,8 +222,11 @@ struct rbm {
             std::cout << "epoch " << epoch << ": Reconstruction error average: " << (error / batches) << std::endl;
 
             if(Momentum && epoch == 20){
-                momentum = 0.9;
+                momentum = 0.7;
             }
+
+            generate_hidden_images(epoch);
+            generate_histograms(epoch);
         }
     }
 
@@ -234,22 +276,22 @@ struct rbm {
         dbn_assert(it->size() == num_visible, "The size of the training sample must match visible units");
 
         //Temporary data
-        std::vector<double> v1(num_visible, 0.0);;
-        std::vector<double> h1(num_hidden, 0.0);;
-        std::vector<double> v2(num_visible, 0.0);;
-        std::vector<double> h2(num_hidden, 0.0);;
-        std::vector<double> hs(num_hidden, 0.0);;
+        std::vector<double> v1(num_visible, 0.0);
+        std::vector<double> h1(num_hidden, 0.0);
+        std::vector<double> v2(num_visible, 0.0);
+        std::vector<double> h2(num_hidden, 0.0);
+        std::vector<double> hs(num_hidden, 0.0);
 
         //Deltas
-        std::vector<double> ga(num_visible, 0.0);;
-        std::vector<double> gb(num_hidden, 0.0);;
-        std::vector<double> gw(num_visible * num_hidden, 0.0);;
+        std::vector<double> ga(num_visible, 0.0);
+        std::vector<double> gb(num_hidden, 0.0);
+        matrix<double> gw(num_visible, num_hidden, 0.0);
 
         while(it != end){
             auto& items = *it++;
 
             for(size_t i = 0; i < num_visible; ++i){
-                v1[i] = items[i];
+                v1[i] = items[i] == 1 ? 1.0 : 0.0;
             }
 
             activate_hidden(h1, v1);
@@ -258,7 +300,7 @@ struct rbm {
 
             for(size_t i = 0; i < num_visible; ++i){
                 for(size_t j = 0; j < num_hidden; ++j){
-                    gw[j * num_visible + i] += h1[j] * v1[i] - h2[j] * v2[i];
+                    gw(i, j) += h1[j] * v1[i] - h2[j] * v2[i];
                 }
             }
 
@@ -276,19 +318,19 @@ struct rbm {
         //gw / BatchSize
         for(size_t i = 0; i < num_visible; ++i){
             for(size_t j = 0; j < num_hidden; ++j){
-                gw[j * num_visible + i] /= n_samples;
+                gw(i, j) /= n_samples;
             }
         }
 
         for(size_t i = 0; i < num_visible; ++i){
             for(size_t j = 0; j < num_hidden; ++j){
-                weights_inc[j * num_visible + i] = weights_inc[j * num_visible + i] * momentum + gw[j * num_visible + i] * learning_rate;
+                w_inc(i, j) = w_inc(i, j) * momentum + gw(i,j) * learning_rate;
             }
         }
 
         for(size_t i = 0; i < num_visible; ++i){
             for(size_t j = 0; j < num_hidden; ++j){
-                w(i,j) += weights_inc[j * num_visible + i];
+                w(i,j) += w_inc(i, j);
             }
         }
 
@@ -311,7 +353,7 @@ struct rbm {
         }
 
         for(size_t j = 0; j < num_hidden; ++j){
-            bias_hidden_inc[j] /= bias_hidden_inc[j] * momentum + learning_rate * gb[j];
+            bias_hidden_inc[j] = bias_hidden_inc[j] * momentum + learning_rate * gb[j];
         }
 
         for(size_t j = 0; j < num_hidden; ++j){
@@ -365,6 +407,58 @@ struct rbm {
                 h(j) = 0;
             }
         }
+    }
+
+    void generate_hidden_images(size_t epoch){
+        mkdir("reports", 0777);
+
+        auto folder = "reports/epoch_" + std::to_string(epoch);
+        mkdir(folder.c_str(), 0777);
+
+        for(size_t j = 0; j < num_hidden; ++j){
+            auto path = folder + "/h_" + std::to_string(j) + ".dat";
+            std::ofstream file(path, std::ios::out);
+
+            if(!file){
+                std::cout << "Could not open file " << path << std::endl;
+            }
+
+            size_t i = num_visible;
+            while(i > 0){
+                --i;
+
+                file << w(i, j) << " ";
+            }
+
+            file << std::endl;
+            file.close();
+        }
+    }
+
+    void generate_histograms(size_t epoch){
+        mkdir("reports", 0777);
+
+        auto folder = "reports/epoch_" + std::to_string(epoch);
+        mkdir(folder.c_str(), 0777);
+
+        generate_histogram(folder + "/weights.dat", w.data(), num_visible * num_hidden);
+        generate_histogram(folder + "/visibles.dat", bias_visible, num_visible);
+        generate_histogram(folder + "/hiddens.dat", bias_hidden, num_hidden);
+    }
+
+    void generate_histogram(const std::string& path, const double* weights, size_t size){
+        std::ofstream file(path, std::ios::out);
+
+        if(!file){
+            std::cout << "Could not open file " << path << std::endl;
+        }
+
+        for(size_t i = 0; i < size; ++i){
+            file << weights[i] << std::endl;
+        }
+
+        file << std::endl;
+        file.close();
     }
 
     void display() const {
