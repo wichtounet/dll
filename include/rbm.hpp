@@ -184,7 +184,7 @@ struct rbm {
                 std::cout << error << std::endl;
             }
 
-            if(epoch == 10){
+            if(Momentum && epoch == 20){
                 momentum = 0.9;
             }
         }
