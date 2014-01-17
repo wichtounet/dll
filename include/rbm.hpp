@@ -101,7 +101,7 @@ struct rbm {
 
     //TODO Add a way to configure that
     double learning_rate = 0.01;
-    double momentum = 0.2;
+    double momentum = 0.5;
 
     rbm(std::size_t num_visible, std::size_t num_hidden) :
             num_visible(num_visible), num_hidden(num_hidden),
@@ -222,7 +222,7 @@ struct rbm {
             std::cout << "epoch " << epoch << ": Reconstruction error average: " << (error / batches) << std::endl;
 
             if(Momentum && epoch == 20){
-                momentum = 0.7;
+                momentum = 0.9;
             }
 
             generate_hidden_images(epoch);
