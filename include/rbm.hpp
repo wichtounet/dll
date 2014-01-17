@@ -182,7 +182,7 @@ struct rbm {
     void train(const std::vector<std::vector<TrainingItem>>& training_data, std::size_t max_epochs){
         //Initialize the visible biases to log(pi/(1-pi))
         for(size_t i = 0; i < num_visible; ++i){
-            auto c = 0;
+            size_t c = 0;
             for(auto& item : training_data){
                 if(item[i] == 1){
                     ++c;
@@ -190,7 +190,8 @@ struct rbm {
             }
 
             auto pi = static_cast<double>(c) / training_data.size();
-            a(i) = log(pi / (1 - pi));
+            pi += 0.0001;
+            a(i) = log(pi / (1.0 - pi));
         }
 
         auto batches = training_data.size() / BatchSize;
@@ -422,6 +423,10 @@ struct rbm {
         generate_histogram(folder + "/weights.dat", w.data(), num_visible * num_hidden);
         generate_histogram(folder + "/visibles.dat", a.data(), num_visible);
         generate_histogram(folder + "/hiddens.dat", b.data(), num_hidden);
+
+        generate_histogram(folder + "/weights_inc.dat", w_inc.data(), num_visible * num_hidden);
+        generate_histogram(folder + "/visibles_inc.dat", a_inc.data(), num_visible);
+        generate_histogram(folder + "/hiddens_inc.dat", b_inc.data(), num_hidden);
     }
 
     void generate_histogram(const std::string& path, const double* weights, size_t size){

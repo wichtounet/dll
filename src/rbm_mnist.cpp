@@ -12,7 +12,7 @@
 #include "image_utils.hpp"
 
 int main(){
-    dbn::rbm<double, double, 50, true> rbm(28 * 28, 36);
+    dbn::rbm<double, double, 50, true> rbm(28 * 28, 100);
 
     auto training_images = mnist::read_training_images();
 
