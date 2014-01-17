@@ -223,7 +223,6 @@ struct rbm {
         std::vector<double> gw(num_visible * num_hidden, 0.0);;
 
         for(size_t t = 0; t < BatchSize; ++t){
-            std::cout << "one" << std::endl;
             auto & items = data[batch_start + t];
 
             for(size_t i = 0; i < num_visible; ++i){
