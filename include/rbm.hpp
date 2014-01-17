@@ -38,6 +38,11 @@ struct rbm {
     weight* bias_visible;
     weight* bias_hidden;
 
+    //Weights for momentum
+    weight* weights_inc;
+    weight* bias_visible_inc;
+    weight* bias_hidden_inc;
+
     //TODO Add a way to configure that
     double learning_rate = 0.01;
     double momentum = 0.5;
@@ -66,6 +71,28 @@ struct rbm {
 
         std::fill(bias_visible, bias_visible + num_visible, 0.0);
         std::fill(bias_hidden, bias_hidden + num_hidden, 0.0);
+
+        if(Momentum){
+            weights_inc = new weight[num_visible * num_hidden];
+            bias_visible_inc = new weight[num_visible];
+            bias_hidden_inc = new weight[num_hidden];
+
+            std::fill(weights_inc, weights_inc + num_hidden * num_visible, 0.0);
+            std::fill(bias_visible_inc, bias_visible_inc + num_visible, 0.0);
+            std::fill(bias_hidden_inc, bias_hidden_inc + num_hidden, 0.0);
+        }
+    }
+
+    ~rbm(){
+        delete[] weights;
+        delete[] bias_visible;
+        delete[] bias_hidden;
+
+        if(Momentum){
+            delete[] weights_inc;
+            delete[] bias_visible_inc;
+            delete[] bias_hidden_inc;
+        }
     }
 
     inline weight& w(std::size_t i, std::size_t j){
@@ -130,12 +157,6 @@ struct rbm {
         return bias_hidden[j];
     }
 
-    ~rbm(){
-        delete[] weights;
-        delete[] bias_visible;
-        delete[] bias_hidden;
-    }
-
     template<typename TrainingItem>
     void train(const std::vector<std::vector<TrainingItem>>& training_data, std::size_t max_epochs){
         //Initialize the visible biases to log(pi/(1-pi))
@@ -159,7 +180,12 @@ struct rbm {
             for(size_t i = 0; i < Batch; ++i){
                 auto error = cd_step(training_data, generator());
 
-                std::cout << "epoch " << epoch << ", batch" << i << ": Reconstruction error: " << error << std::endl;
+                //std::cout << "epoch " << epoch << ", batch" << i << ": Reconstruction error: " << error << std::endl;
+                std::cout << error << std::endl;
+            }
+
+            if(epoch == 10){
+                momentum = 0.9;
             }
         }
     }
@@ -248,41 +274,57 @@ struct rbm {
             }
         }
 
+        auto n_samples = static_cast<double>(BatchSize);
+
         //gw / BatchSize
         for(size_t i = 0; i < num_visible; ++i){
             for(size_t j = 0; j < num_hidden; ++j){
-                gw[j * num_visible + i] /= static_cast<double>(BatchSize);
+                gw[j * num_visible + i] /= n_samples;
             }
         }
 
-        //TODO Implement weight decay
+        for(size_t i = 0; i < num_visible; ++i){
+            for(size_t j = 0; j < num_hidden; ++j){
+                weights_inc[j * num_visible + i] = weights_inc[j * num_visible + i] * momentum + gw[j * num_visible + i] * learning_rate;
+            }
+        }
 
         for(size_t i = 0; i < num_visible; ++i){
             for(size_t j = 0; j < num_hidden; ++j){
-                w(i,j) += learning_rate * gw[j * num_visible + i];
+                w(i,j) += weights_inc[j * num_visible + i];
             }
         }
 
         //ga /= BatchSize
         for(size_t i = 0; i < num_visible; ++i){
-            ga[i] /= static_cast<double>(BatchSize);
+            ga[i] /= n_samples;
         }
 
         for(size_t i = 0; i < num_visible; ++i){
-            a(i) += ga[i];
+            bias_visible_inc[i] = bias_visible_inc[i] * momentum + learning_rate * ga[i];
+        }
+
+        for(size_t i = 0; i < num_visible; ++i){
+            a(i) += bias_visible_inc[i];
         }
 
         //gb /= BatchSize
         for(size_t j = 0; j < num_hidden; ++j){
-            gb[j] /= static_cast<double>(BatchSize);
+            gb[j] /= n_samples;
         }
 
         for(size_t j = 0; j < num_hidden; ++j){
-            b(j) += gb[j];
+            bias_hidden_inc[j] /= bias_hidden_inc[j] * momentum + learning_rate * gb[j];
         }
 
+        for(size_t j = 0; j < num_hidden; ++j){
+            b(j) += bias_hidden_inc[j];
+        }
+
+        //Compute the reconstruction error
+
         for(size_t i = 0; i < num_visible; ++i){
-            ga[i] *= (1.0 / BatchSize);
+            ga[i] *= (1.0 / n_samples);
         }
 
         double error = 0.0;
