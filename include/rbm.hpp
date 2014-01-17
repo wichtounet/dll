@@ -182,7 +182,7 @@ struct rbm {
     template<typename TrainingItem>
     void train(const std::vector<std::vector<TrainingItem>>& training_data, std::size_t max_epochs){
         //Initialize the visible biases to log(pi/(1-pi))
-        for(size_t i = 0; i < num_visible; ++i){
+        /*for(size_t i = 0; i < num_visible; ++i){
             size_t c = 0;
             for(auto& item : training_data){
                 if(item[i] == 1){
@@ -193,7 +193,7 @@ struct rbm {
             auto pi = static_cast<double>(c) / training_data.size();
             pi += 0.0001;
             a(i) = log(pi / (1.0 - pi));
-        }
+        }*/
 
         auto batches = training_data.size() / BatchSize;
 
