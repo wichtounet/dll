@@ -273,9 +273,6 @@ struct rbm {
             auto& items = *it++;
 
             for(size_t i = 0; i < num_visible; ++i){
-                if(items[i] > 1.0){
-                    std::cout << "year" << std::endl;
-                }
                 v1(i) = items[i];
             }
 
