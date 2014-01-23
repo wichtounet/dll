@@ -27,13 +27,13 @@ struct matrix {
     const size_t columns;
     T* const _data;
 
-    matrix(size_t rows, size_t columns) :
-            rows(rows), columns(columns), _data(new T[rows * columns]){
+    matrix(size_t r, size_t c) :
+            rows(r), columns(c), _data(new T[r* c]){
         //Nothing else to init
     }
 
-    matrix(size_t rows, size_t columns, const T& value) :
-            rows(rows), columns(columns), _data(new T[rows * columns]){
+    matrix(size_t r, size_t c, const T& value) :
+            rows(r), columns(c), _data(new T[r * c]){
         std::fill(_data, _data + size(), value);
     }
 
@@ -76,11 +76,11 @@ struct vector {
     const size_t rows;
     T* const _data;
 
-    vector(size_t rows) : rows(rows), _data(new T[rows]){
+    vector(size_t r) : rows(r), _data(new T[r]){
         //Nothing else to init
     }
 
-    vector(size_t rows, const T& value) : rows(rows), _data(new T[rows]){
+    vector(size_t r, const T& value) : rows(r), _data(new T[r]){
         std::fill(_data, _data + size(), value);
     }
 
@@ -117,7 +117,7 @@ struct vector {
 };
 
 double logistic_sigmoid(double x){
-    return 1 / (1 + exp(-x));
+    return 1.0 / (1.0 + exp(-x));
 }
 
 /*!
@@ -130,8 +130,8 @@ struct rbm {
     typedef double weight;
     typedef double value_t;
 
-    std::size_t num_visible;
-    std::size_t num_hidden;
+    const std::size_t num_visible;
+    const std::size_t num_hidden;
 
     vector<value_t> visibles;
     vector<value_t> hiddens;
@@ -149,21 +149,21 @@ struct rbm {
     double learning_rate = 0.01;
     double momentum = 0.5;
 
-    rbm(std::size_t num_visible, std::size_t num_hidden) :
-            num_visible(num_visible), num_hidden(num_hidden),
-            visibles(num_visible), hiddens(num_hidden),
-            w(num_visible, num_hidden), a(num_visible), b(num_hidden),
-            w_inc(num_visible, num_hidden), a_inc(num_visible), b_inc(num_hidden) {
+    rbm(std::size_t nv, std::size_t nh) :
+            num_visible(nv), num_hidden(nh),
+            visibles(nv), hiddens(nh),
+            w(nv, nh), a(nv), b(nh),
+            w_inc(nv, nh), a_inc(nv), b_inc(nh) {
 
         //Initialize the weights using a Gaussian distribution of mean 0 and
         //variance 0.0.1
         std::mt19937_64 rand_engine(::time(nullptr));
-        std::normal_distribution<double> distribution(0.0, 0.01);
+        std::normal_distribution<double> distribution(0.0, 1.0);
         auto generator = std::bind(distribution, rand_engine);
 
         for(size_t v = 0; v < num_visible; ++v){
             for(size_t h = 0; h < num_hidden; ++h){
-                w(v, h) = generator();
+                w(v, h) = generator() * 0.1;
             }
         }
 
@@ -215,7 +215,9 @@ struct rbm {
     }
 
     const vector<double>& bernoulli(const vector<double>& input, vector<double>& output) const {
-        static std::mt19937_64 rand_engine(::time(NULL));
+        dbn_assert(input.size() == output.size(), "vector must the same sizes");
+
+        static std::mt19937_64 rand_engine(::time(nullptr));
         static std::uniform_real_distribution<double> distribution(0.0, 1.0);
         static auto generator = bind(distribution, rand_engine);
 
@@ -226,31 +228,31 @@ struct rbm {
         return output;
     }
 
-    void activate_hidden(vector<double>& hiddens, const vector<double>& visibles) const {
-        hiddens = 0;
+    void activate_hidden(vector<double>& h, const vector<double>& v) const {
+        h = 0.0;
 
         for(size_t j = 0; j < num_hidden; ++j){
             double s = 0.0;
             for(size_t i = 0; i < num_visible; ++i){
-                s += w(i, j) * visibles(i);
+                s += w(i, j) * v(i);
             }
 
             auto activation = b(j) + s;
-            hiddens(j) = logistic_sigmoid(activation);
+            h(j) = logistic_sigmoid(activation);
         }
     }
 
-    void activate_visible(const vector<double>& hiddens, vector<double>& visibles) const {
-        visibles = 0;
+    void activate_visible(const vector<double>& h, vector<double>& v) const {
+        v = 0;
 
         for(size_t i = 0; i < num_visible; ++i){
             double s = 0.0;
             for(size_t j = 0; j < num_hidden; ++j){
-                s += w(i, j) * hiddens(j);
+                s += w(i, j) * h(j);
             }
 
             auto activation = a(i) + s;
-            visibles(i) = logistic_sigmoid(activation);
+            v(i) = logistic_sigmoid(activation);
         }
     }
 
@@ -260,16 +262,16 @@ struct rbm {
         dbn_assert(it->size() == num_visible, "The size of the training sample must match visible units");
 
         //Temporary data
-        vector<double> v1(num_visible, 0.0);
-        vector<double> h1(num_hidden, 0.0);
-        vector<double> v2(num_visible, 0.0);
-        vector<double> h2(num_hidden, 0.0);
-        vector<double> hs(num_hidden, 0.0);
+        vector<weight> v1(num_visible, 0.0);
+        vector<weight> h1(num_hidden, 0.0);
+        vector<weight> v2(num_visible, 0.0);
+        vector<weight> h2(num_hidden, 0.0);
+        vector<weight> hs(num_hidden, 0.0);
 
         //Deltas
-        vector<double> ga(num_visible, 0.0);
-        vector<double> gb(num_hidden, 0.0);
-        matrix<double> gw(num_visible, num_hidden, 0.0);
+        vector<weight> ga(num_visible, 0.0);
+        vector<weight> gb(num_hidden, 0.0);
+        matrix<weight> gw(num_visible, num_hidden, 0.0);
 
         while(it != end){
             auto& items = *it++;
@@ -297,7 +299,7 @@ struct rbm {
             }
         }
 
-        auto n_samples = static_cast<double>(BatchSize);
+        auto n_samples = static_cast<weight>(BatchSize);
 
         //gw / BatchSize
         for(size_t i = 0; i < num_visible; ++i){
@@ -308,7 +310,7 @@ struct rbm {
 
         for(size_t i = 0; i < num_visible; ++i){
             for(size_t j = 0; j < num_hidden; ++j){
-                w_inc(i, j) = w_inc(i, j) * momentum + gw(i,j) * learning_rate;
+                w_inc(i, j) = w_inc(i, j) * momentum + learning_rate * gw(i,j);
             }
         }
 
@@ -469,7 +471,7 @@ struct rbm {
         std::cout << "Visible  Value" << std::endl;
 
         for(size_t i = 0; i < num_visible; ++i){
-            printf("%-8ld %d\n", i, visibles(i));
+            printf("%-8lu %d\n", i, visibles(i));
         }
     }
 
@@ -486,7 +488,7 @@ struct rbm {
         std::cout << "Hidden Value" << std::endl;
 
         for(size_t j = 0; j < num_hidden; ++j){
-            printf("%-8ld %d\n", j, hiddens(j));
+            printf("%-8lu %d\n", j, hiddens(j));
         }
     }
 

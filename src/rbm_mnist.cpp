@@ -12,14 +12,13 @@
 #include "image_utils.hpp"
 
 int main(){
-    dbn::rbm<50, true> rbm(28 * 28, 100);
+    dbn::rbm<50, true> rbm(28 * 28, 36);
 
     auto training_images = mnist::read_training_images();
 
     binarize_each(training_images);
 
-    rbm.train(training_images, 5);
-
+    rbm.train(training_images, 20);
 
     for(size_t t = 0; t < 10; ++t){
         auto& image = training_images[666 * t];

@@ -10,10 +10,8 @@
 
 template<typename T>
 typename std::enable_if<!std::numeric_limits<T>::is_signed, void>::type binarize(std::vector<T>& values){
-    auto middle = std::numeric_limits<T>::max() / 2;
-
     for(auto& v : values){
-        v = v > 10 ? 1 : 0;
+        v = v > 10.0 ? 1.0 : 0.0;
     }
 }
 
