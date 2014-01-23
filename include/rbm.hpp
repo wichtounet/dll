@@ -370,51 +370,17 @@ struct rbm {
     }
 
     template<typename TrainingItem>
-    void run_visible(const std::vector<TrainingItem>& items){
+    void reconstruct(const std::vector<TrainingItem>& items){
         dbn_assert(items.size() == num_visible, "The size of the training sample must match visible units");
-
-        static std::mt19937_64 rand_engine(::time(nullptr));
-        static std::uniform_real_distribution<> distribution(0.0, 1.0);
-        static auto generator = std::bind(distribution, rand_engine);
 
         //Set the state of the visible units
         for(size_t i = 0; i < num_visible; ++i){
             visibles(i) = items[i];
         }
 
-        h1 = 0.0;
         activate_hidden(h1, visibles);
-
-        //Sample the hidden units from the visible units
-        for(size_t j = 0; j < num_hidden; ++j){
-            //Probability of turning one
-            auto p = logistic_sigmoid(h1(j));
-            if(p > generator()){
-                hiddens(j) = 1;
-            } else {
-                hiddens(j) = 0;
-            }
-        }
-    }
-
-    void run_hidden(){
-        static std::mt19937_64 rand_engine(::time(nullptr));
-        static std::uniform_real_distribution<> distribution(0.0, 1.0);
-        static auto generator = std::bind(distribution, rand_engine);
-
-        v1 = 0.0;
-        activate_visible(hiddens, v1);
-
-        //Sample the hidden units from the visible units
-        for(size_t i = 0; i < num_visible; ++i){
-            //Probability of turning one
-            auto p = logistic_sigmoid(v1(i));
-            if(p > generator()){
-                visibles(i) = 1;
-            } else {
-                visibles(i) = 0;
-            }
-        }
+        activate_visible(bernoulli(h1, hs), v1);
+        bernoulli(v1, visibles);
     }
 
     void generate_hidden_images(size_t epoch){
