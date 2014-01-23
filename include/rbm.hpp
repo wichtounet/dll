@@ -18,6 +18,7 @@
 #include <sys/stat.h>
 
 #include "assert.hpp"
+#include "stop_watch.hpp"
 
 namespace dbn {
 
@@ -191,6 +192,8 @@ struct rbm {
 
     template<typename TrainingItem>
     void train(const std::vector<std::vector<TrainingItem>>& training_data, std::size_t max_epochs){
+        stop_watch<std::chrono::seconds> watch;
+
         //Initialize the visible biases to log(pi/(1-pi))
         /*for(size_t i = 0; i < num_visible; ++i){
             size_t c = 0;
@@ -222,6 +225,8 @@ struct rbm {
             generate_hidden_images(epoch);
             generate_histograms(epoch);
         }
+
+        std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
     }
 
     static double logistic_sigmoid(double x){
