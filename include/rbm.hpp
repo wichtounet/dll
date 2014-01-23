@@ -23,10 +23,16 @@
 namespace dbn {
 
 template<typename T>
-struct matrix {
+class matrix {
+private:
     const size_t rows;
     const size_t columns;
     T* const _data;
+
+public:
+    matrix() : rows(0), columns(0), _data(nullptr) {
+        //Nothing else to init
+    }
 
     matrix(size_t r, size_t c) :
             rows(r), columns(c), _data(new T[r* c]){
@@ -73,9 +79,15 @@ struct matrix {
 };
 
 template<typename T>
-struct vector {
+class vector {
+private:
     const size_t rows;
     T* const _data;
+
+public:
+    vector() : rows(0), _data(nullptr){
+        //Nothing else to init
+    }
 
     vector(size_t r) : rows(r), _data(new T[r]){
         //Nothing else to init
@@ -120,8 +132,9 @@ struct vector {
 /*!
  * \brief Restricted Boltzmann Machine
  */
-template<int BatchSize = 1, bool Momentum = false>
-struct rbm {
+template<bool Momentum = true, int BatchSize = 1>
+class rbm {
+public:
     static_assert(BatchSize > 0, "Batch size must be at least 1");
 
     typedef double weight;
@@ -130,6 +143,7 @@ struct rbm {
     const std::size_t num_visible;
     const std::size_t num_hidden;
 
+private:
     vector<value_t> visibles;
     vector<value_t> hiddens;
 
@@ -158,14 +172,7 @@ struct rbm {
     double learning_rate = 0.1;
     double momentum = 0.5;
 
-    rbm(std::size_t nv, std::size_t nh) :
-            num_visible(nv), num_hidden(nh),
-            visibles(nv), hiddens(nh),
-            w(nv, nh), a(nv), b(nh),
-            w_inc(nv, nh), a_inc(nv), b_inc(nh),
-            v1(nv), h1(nh), v2(nv), h2(nh), hs(nh),
-            ga(nv), gb(nh), gw(nv, nh) {
-
+    void init_weights(){
         //Initialize the weights using a Gaussian distribution of mean 0 and
         //variance 0.0.1
         std::mt19937_64 rand_engine(::time(nullptr));
@@ -177,17 +184,52 @@ struct rbm {
                 w(v, h) = generator() * 0.1;
             }
         }
+    }
 
-        //Init all the bias weights to zero
-        a = 0;
-        b = 0;
+    static double logistic_sigmoid(double x){
+        return 1.0 / (1.0 + exp(-x));
+    }
 
-        //TODO If !Momentum, avoid allocating memory for *_inc
-        if(Momentum){
-            w_inc = 0;
-            a_inc= 0;
-            b_inc = 0;
+    static const vector<double>& bernoulli(const vector<double>& input, vector<double>& output){
+        dbn_assert(input.size() == output.size(), "vector must the same sizes");
+
+        static std::mt19937_64 rand_engine(::time(nullptr));
+        static std::uniform_real_distribution<double> distribution(0.0, 1.0);
+        static auto generator = bind(distribution, rand_engine);
+
+        for(size_t i = 0; i < input.size(); ++i){
+            output(i) = generator() < input(i) ? 1.0 : 0.0;
         }
+
+        return output;
+    }
+
+public:
+    template<bool M = Momentum, typename std::enable_if<(!M), bool>::type = false>
+    rbm(std::size_t nv, std::size_t nh) :
+            num_visible(nv), num_hidden(nh),
+            visibles(nv), hiddens(nh),
+            w(nv, nh), a(nv, 0.0), b(nh, 0.0),
+            v1(nv), h1(nh), v2(nv), h2(nh), hs(nh),
+            ga(nv), gb(nh), gw(nv, nh) {
+
+        static_assert(!Momentum, "This constructor should only be used without momentum support");
+
+        init_weights();
+    }
+
+    template<bool M = Momentum, typename std::enable_if<(M), bool>::type = false>
+    rbm(std::size_t nv, std::size_t nh) :
+            num_visible(nv), num_hidden(nh),
+            visibles(nv), hiddens(nh),
+            w(nv, nh), a(nv, 0.0), b(nh, 0.0),
+            w_inc(nv, nh, 0.0), a_inc(nv, 0.0), b_inc(nh, 0.0),
+            v1(nv), h1(nh), v2(nv), h2(nh), hs(nh),
+            ga(nv), gb(nh), gw(nv, nh) {
+
+        static_assert(Momentum, "This constructor should only be used with momentum support");
+
+        init_weights();
     }
 
     template<typename TrainingItem>
@@ -227,24 +269,6 @@ struct rbm {
         }
 
         std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
-    }
-
-    static double logistic_sigmoid(double x){
-        return 1.0 / (1.0 + exp(-x));
-    }
-
-    static const vector<double>& bernoulli(const vector<double>& input, vector<double>& output){
-        dbn_assert(input.size() == output.size(), "vector must the same sizes");
-
-        static std::mt19937_64 rand_engine(::time(nullptr));
-        static std::uniform_real_distribution<double> distribution(0.0, 1.0);
-        static auto generator = bind(distribution, rand_engine);
-
-        for(size_t i = 0; i < input.size(); ++i){
-            output(i) = generator() < input(i) ? 1.0 : 0.0;
-        }
-
-        return output;
     }
 
     void activate_hidden(vector<double>& h, const vector<double>& v) const {
