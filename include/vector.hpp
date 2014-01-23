@@ -30,6 +30,19 @@ public:
     vector(const vector& rhs) = delete;
     vector& operator=(const vector& rhs) = delete;
 
+    vector(vector&& rhs) : rows(rhs.rows), _data(rhs._data) {
+        rhs.rows = 0;
+        rhs._data = nullptr;
+    }
+
+    vector& operator=(vector&& rhs){
+        rows = rhs.rows;
+        _data = rhs._data;
+
+        rhs.rows = 0;
+        rhs._data = nullptr;
+    }
+
     ~vector(){
         delete[] _data;
     }

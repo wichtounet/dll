@@ -33,6 +33,22 @@ public:
     matrix(const matrix& rhs) = delete;
     matrix& operator=(const matrix& rhs) = delete;
 
+    matrix(matrix&& rhs) : rows(rhs.rows), columns(rhs.columns), _data(rhs._data) {
+        rhs.rows = 0;
+        rhs.columns = 0;
+        rhs._data = nullptr;
+    }
+
+    matrix& operator=(matrix&& rhs){
+        rows = rhs.rows;
+        columns = rhs.colums;
+        _data = rhs._data;
+
+        rhs.rows = 0;
+        rhs.columns = 0;
+        rhs._data = nullptr;
+    }
+
     ~matrix(){
         delete[] _data;
     }
