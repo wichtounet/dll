@@ -116,10 +116,6 @@ struct vector {
     }
 };
 
-double logistic_sigmoid(double x){
-    return 1.0 / (1.0 + exp(-x));
-}
-
 /*!
  * \brief Restricted Boltzmann Machine
  */
@@ -145,15 +141,29 @@ struct rbm {
     vector<weight> a_inc;
     vector<weight> b_inc;
 
+    //Temporary data
+    vector<weight> v1;
+    vector<weight> h1;
+    vector<weight> v2;
+    vector<weight> h2;
+    vector<weight> hs;
+
+    //Deltas
+    vector<weight> ga;
+    vector<weight> gb;
+    matrix<weight> gw;
+
     //TODO Add a way to configure that
-    double learning_rate = 0.01;
+    double learning_rate = 0.1;
     double momentum = 0.5;
 
     rbm(std::size_t nv, std::size_t nh) :
             num_visible(nv), num_hidden(nh),
             visibles(nv), hiddens(nh),
             w(nv, nh), a(nv), b(nh),
-            w_inc(nv, nh), a_inc(nv), b_inc(nh) {
+            w_inc(nv, nh), a_inc(nv), b_inc(nh),
+            v1(nv), h1(nh), v2(nv), h2(nh), hs(nh),
+            ga(nv), gb(nh), gw(nv, nh) {
 
         //Initialize the weights using a Gaussian distribution of mean 0 and
         //variance 0.0.1
@@ -214,7 +224,11 @@ struct rbm {
         }
     }
 
-    const vector<double>& bernoulli(const vector<double>& input, vector<double>& output) const {
+    static double logistic_sigmoid(double x){
+        return 1.0 / (1.0 + exp(-x));
+    }
+
+    static const vector<double>& bernoulli(const vector<double>& input, vector<double>& output){
         dbn_assert(input.size() == output.size(), "vector must the same sizes");
 
         static std::mt19937_64 rand_engine(::time(nullptr));
@@ -243,7 +257,7 @@ struct rbm {
     }
 
     void activate_visible(const vector<double>& h, vector<double>& v) const {
-        v = 0;
+        v = 0.0;
 
         for(size_t i = 0; i < num_visible; ++i){
             double s = 0.0;
@@ -261,17 +275,15 @@ struct rbm {
         dbn_assert(end - it == BatchSize, "Invalid size");
         dbn_assert(it->size() == num_visible, "The size of the training sample must match visible units");
 
-        //Temporary data
-        vector<weight> v1(num_visible, 0.0);
-        vector<weight> h1(num_hidden, 0.0);
-        vector<weight> v2(num_visible, 0.0);
-        vector<weight> h2(num_hidden, 0.0);
-        vector<weight> hs(num_hidden, 0.0);
+        v1 = 0.0;
+        h1 = 0.0;
+        v2 = 0.0;
+        h2 = 0.0;
+        hs = 0.0;
 
-        //Deltas
-        vector<weight> ga(num_visible, 0.0);
-        vector<weight> gb(num_hidden, 0.0);
-        matrix<weight> gw(num_visible, num_hidden, 0.0);
+        ga = 0.0;
+        gb = 0.0;
+        gw = 0.0;
 
         while(it != end){
             auto& items = *it++;
@@ -370,7 +382,7 @@ struct rbm {
             visibles(i) = items[i];
         }
 
-        vector<double> h1(num_hidden, 0.0);
+        h1 = 0.0;
         activate_hidden(h1, visibles);
 
         //Sample the hidden units from the visible units
@@ -390,7 +402,7 @@ struct rbm {
         static std::uniform_real_distribution<> distribution(0.0, 1.0);
         static auto generator = std::bind(distribution, rand_engine);
 
-        vector<double> v1(num_visible, 0.0);
+        v1 = 0.0;
         activate_visible(hiddens, v1);
 
         //Sample the hidden units from the visible units
