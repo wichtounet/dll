@@ -319,6 +319,8 @@ public:
     void reconstruct(const std::vector<TrainingItem>& items){
         dbn_assert(items.size() == num_visible, "The size of the training sample must match visible units");
 
+        stop_watch<> watch;
+
         //Set the state of the visible units
         for(size_t i = 0; i < num_visible; ++i){
             visibles(i) = items[i];
@@ -327,6 +329,8 @@ public:
         activate_hidden(h1, visibles);
         activate_visible(bernoulli(h1, hs), v1);
         bernoulli(v1, visibles);
+
+        std::cout << "Reconstruction took " << watch.elapsed() << "ms" << std::endl;
     }
 
     void generate_hidden_images(size_t epoch){
