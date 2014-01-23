@@ -128,14 +128,14 @@ public:
     }
 
     template<typename TrainingItem>
-    void train(const std::vector<std::vector<TrainingItem>>& training_data, std::size_t max_epochs){
+    void train(const std::vector<vector<TrainingItem>>& training_data, std::size_t max_epochs){
         stop_watch<std::chrono::seconds> watch;
 
         //Initialize the visible biases to log(pi/(1-pi))
         for(size_t i = 0; i < num_visible; ++i){
             size_t c = 0;
-            for(auto& item : training_data){
-                if(item[i] == 1){
+            for(auto& items : training_data){
+                if(items(i) == 1){
                     ++c;
                 }
             }
@@ -198,7 +198,7 @@ public:
 
     template<typename Iterator>
     double cd_step(Iterator it, Iterator end){
-        dbn_assert(end - it == BatchSize, "Invalid size");
+        dbn_assert(std::distance(it, end) == BatchSize, "Invalid size");
         dbn_assert(it->size() == num_visible, "The size of the training sample must match visible units");
 
         v1 = 0.0;
@@ -215,7 +215,7 @@ public:
             auto& items = *it++;
 
             for(size_t i = 0; i < num_visible; ++i){
-                v1(i) = items[i];
+                v1(i) = items(i);
             }
 
             activate_hidden(h1, v1);
@@ -316,14 +316,14 @@ public:
     }
 
     template<typename TrainingItem>
-    void reconstruct(const std::vector<TrainingItem>& items){
+    void reconstruct(const vector<TrainingItem>& items){
         dbn_assert(items.size() == num_visible, "The size of the training sample must match visible units");
 
         stop_watch<> watch;
 
         //Set the state of the visible units
         for(size_t i = 0; i < num_visible; ++i){
-            visibles(i) = items[i];
+            visibles(i) = items(i);
         }
 
         activate_hidden(h1, visibles);
