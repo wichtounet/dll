@@ -8,6 +8,8 @@
 #ifndef DBN_MATRIX_HPP
 #define DBN_MATRIX_HPP
 
+#include "assert.hpp"
+
 template<typename T>
 class matrix {
 private:
