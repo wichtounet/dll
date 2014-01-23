@@ -8,13 +8,19 @@
 #ifndef DBN_VECTOR_HPP
 #define DBN_VECTOR_HPP
 
+#include "assert.hpp"
+
 template<typename T>
 class vector {
 private:
-    const size_t rows;
-    T* const _data;
+    size_t rows;
+    T* _data;
 
 public:
+    typedef T value_type;
+    typedef T* iterator;
+    typedef const T* const_iterator;
+
     vector() : rows(0), _data(nullptr){
         //Nothing else to init
     }
@@ -69,6 +75,22 @@ public:
 
     const T* data() const {
         return _data;
+    }
+
+    const_iterator begin() const {
+        return &_data[0];
+    }
+
+    iterator begin(){
+        return &_data[0];
+    }
+
+    const_iterator end() const {
+        return &_data[rows];
+    }
+
+    iterator end(){
+        return &_data[rows];
     }
 };
 
