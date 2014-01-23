@@ -27,7 +27,7 @@ namespace dbn {
 /*!
  * \brief Restricted Boltzmann Machine
  */
-template<bool Momentum = true, int BatchSize = 1>
+template<bool Momentum = true, int BatchSize = 1, bool Debug = false>
 class rbm {
 public:
     static_assert(BatchSize > 0, "Batch size must be at least 1");
@@ -159,8 +159,10 @@ public:
                 momentum = 0.9;
             }
 
-            generate_hidden_images(epoch);
-            generate_histograms(epoch);
+            if(Debug){
+                generate_hidden_images(epoch);
+                generate_histograms(epoch);
+            }
         }
 
         std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
@@ -244,15 +246,23 @@ public:
             }
         }
 
-        for(size_t i = 0; i < num_visible; ++i){
-            for(size_t j = 0; j < num_hidden; ++j){
-                w_inc(i, j) = w_inc(i, j) * momentum + learning_rate * gw(i,j);
+        if(Momentum){
+            for(size_t i = 0; i < num_visible; ++i){
+                for(size_t j = 0; j < num_hidden; ++j){
+                    w_inc(i, j) = w_inc(i, j) * momentum + learning_rate * gw(i,j);
+                }
             }
-        }
 
-        for(size_t i = 0; i < num_visible; ++i){
-            for(size_t j = 0; j < num_hidden; ++j){
-                w(i,j) += w_inc(i, j);
+            for(size_t i = 0; i < num_visible; ++i){
+                for(size_t j = 0; j < num_hidden; ++j){
+                    w(i,j) += w_inc(i, j);
+                }
+            }
+        } else {
+            for(size_t i = 0; i < num_visible; ++i){
+                for(size_t j = 0; j < num_hidden; ++j){
+                    w(i,j) += learning_rate * gw(i, j);
+                }
             }
         }
 
@@ -261,12 +271,18 @@ public:
             ga(i) /= n_samples;
         }
 
-        for(size_t i = 0; i < num_visible; ++i){
-            a_inc(i) = a_inc(i) * momentum + learning_rate * ga(i);
-        }
+        if(Momentum){
+            for(size_t i = 0; i < num_visible; ++i){
+                a_inc(i) = a_inc(i) * momentum + learning_rate * ga(i);
+            }
 
-        for(size_t i = 0; i < num_visible; ++i){
-            a(i) += a_inc(i);
+            for(size_t i = 0; i < num_visible; ++i){
+                a(i) += a_inc(i);
+            }
+        } else {
+            for(size_t i = 0; i < num_visible; ++i){
+                a(i) += learning_rate * ga(i);
+            }
         }
 
         //gb /= BatchSize
@@ -274,12 +290,18 @@ public:
             gb(j) /= n_samples;
         }
 
-        for(size_t j = 0; j < num_hidden; ++j){
-            b_inc(j) = b_inc(j) * momentum + learning_rate * gb(j);
-        }
+        if(Momentum){
+            for(size_t j = 0; j < num_hidden; ++j){
+                b_inc(j) = b_inc(j) * momentum + learning_rate * gb(j);
+            }
 
-        for(size_t j = 0; j < num_hidden; ++j){
-            b(j) += b_inc(j);
+            for(size_t j = 0; j < num_hidden; ++j){
+                b(j) += b_inc(j);
+            }
+        } else {
+            for(size_t j = 0; j < num_hidden; ++j){
+                b(j) += learning_rate * gb(j);
+            }
         }
 
         //Compute the reconstruction error
@@ -319,18 +341,18 @@ public:
 
             if(!file){
                 std::cout << "Could not open file " << path << std::endl;
+            } else {
+                size_t i = num_visible;
+                while(i > 0){
+                    --i;
+
+                    auto value = w(i,j);
+                    file << static_cast<size_t>(value > 0 ? static_cast<size_t>(value * 255.0) << 8 : static_cast<size_t>(-value * 255.0) << 16) << " ";
+                }
+
+                file << std::endl;
+                file.close();
             }
-
-            size_t i = num_visible;
-            while(i > 0){
-                --i;
-
-                auto value = w(i,j);
-                file << static_cast<size_t>(value > 0 ? static_cast<size_t>(value * 255.0) << 8 : static_cast<size_t>(-value * 255.0) << 16) << " ";
-            }
-
-            file << std::endl;
-            file.close();
         }
     }
 
@@ -344,9 +366,11 @@ public:
         generate_histogram(folder + "/visibles.dat", a.data(), num_visible);
         generate_histogram(folder + "/hiddens.dat", b.data(), num_hidden);
 
-        generate_histogram(folder + "/weights_inc.dat", w_inc.data(), num_visible * num_hidden);
-        generate_histogram(folder + "/visibles_inc.dat", a_inc.data(), num_visible);
-        generate_histogram(folder + "/hiddens_inc.dat", b_inc.data(), num_hidden);
+        if(Momentum){
+            generate_histogram(folder + "/weights_inc.dat", w_inc.data(), num_visible * num_hidden);
+            generate_histogram(folder + "/visibles_inc.dat", a_inc.data(), num_visible);
+            generate_histogram(folder + "/hiddens_inc.dat", b_inc.data(), num_hidden);
+        }
     }
 
     void generate_histogram(const std::string& path, const double* weights, size_t size){
@@ -354,14 +378,14 @@ public:
 
         if(!file){
             std::cout << "Could not open file " << path << std::endl;
-        }
+        } else {
+            for(size_t i = 0; i < size; ++i){
+                file << weights[i] << std::endl;
+            }
 
-        for(size_t i = 0; i < size; ++i){
-            file << weights[i] << std::endl;
+            file << std::endl;
+            file.close();
         }
-
-        file << std::endl;
-        file.close();
     }
 
     void display() const {
