@@ -232,13 +232,8 @@ public:
                 }
             }
 
-            for(size_t i = 0; i < num_visible; ++i){
-                ga(i) += v1(i) - v2(i);
-            }
-
-            for(size_t j = 0; j < num_hidden; ++j){
-                gb(j) += h1(j) - h2(j);
-            }
+            ga += v1 - v2;
+            gb += h1 - h2;
         }
 
         auto n_samples = static_cast<weight>(BatchSize);
@@ -265,7 +260,7 @@ public:
         } else {
             for(size_t i = 0; i < num_visible; ++i){
                 for(size_t j = 0; j < num_hidden; ++j){
-                    w(i,j) += learning_rate * gw(i, j);
+                    w(i,j) += gw(i, j) * learning_rate;
                 }
             }
         }
@@ -277,7 +272,7 @@ public:
 
         if(Momentum){
             for(size_t i = 0; i < num_visible; ++i){
-                a_inc(i) = a_inc(i) * momentum + learning_rate * ga(i);
+                a_inc(i) = a_inc(i) * momentum + ga(i) * learning_rate;
             }
 
             for(size_t i = 0; i < num_visible; ++i){
@@ -296,7 +291,7 @@ public:
 
         if(Momentum){
             for(size_t j = 0; j < num_hidden; ++j){
-                b_inc(j) = b_inc(j) * momentum + learning_rate * gb(j);
+                b_inc(j) = b_inc(j) * momentum + gb(j) * learning_rate;
             }
 
             for(size_t j = 0; j < num_hidden; ++j){

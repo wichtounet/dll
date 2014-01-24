@@ -21,6 +21,9 @@ class fast_vector_expr;
 template<typename T>
 struct plus_binary_op;
 
+template<typename T>
+struct minus_binary_op;
+
 template<typename T, std::size_t Rows>
 class fast_vector {
     static_assert(Rows > 0, "Vector of size 0 do no make sense");
@@ -105,6 +108,12 @@ public:
     template<typename RE>
     auto operator+(RE&& re) const ->
     fast_vector_expr<const fast_vector&, plus_binary_op<T>, decltype(std::forward<RE>(re))> {
+        return {*this, std::forward<RE>(re)};
+    }
+
+    template<typename RE>
+    auto operator-(RE&& re) const ->
+    fast_vector_expr<const fast_vector&, minus_binary_op<T>, decltype(std::forward<RE>(re))> {
         return {*this, std::forward<RE>(re)};
     }
 
@@ -208,6 +217,11 @@ public:
         return {*this, std::forward<RE>(re)};
     }
 
+    template<typename RE>
+    auto operator-(RE&& re) const -> fast_vector_expr<this_type const&, BinaryOp, decltype(std::forward<RE>(re))>{
+        return {*this, std::forward<RE>(re)};
+    }
+
     //Apply the expression
 
     auto operator[](std::size_t i) const -> decltype(BinaryOp::apply(this->lhs()[i], this->rhs()[i])) {
@@ -219,6 +233,13 @@ template<typename T>
 struct plus_binary_op {
     static T apply(const T& lhs, const T& rhs){
         return lhs + rhs;
+    }
+};
+
+template<typename T>
+struct minus_binary_op {
+    static T apply(const T& lhs, const T& rhs){
+        return lhs - rhs;
     }
 };
 
