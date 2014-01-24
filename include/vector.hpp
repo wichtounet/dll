@@ -33,9 +33,11 @@ public:
         std::fill(_data, _data + size(), value);
     }
 
+    //Prohibit copy
     vector(const vector& rhs) = delete;
     vector& operator=(const vector& rhs) = delete;
 
+    //Allow move
     vector(vector&& rhs) : rows(rhs.rows), _data(rhs._data) {
         rhs.rows = 0;
         rhs._data = nullptr;
@@ -53,12 +55,16 @@ public:
         delete[] _data;
     }
 
-    size_t size() const {
-        return rows;
-    }
+    //Modifiers
 
     void operator=(const T& value){
         std::fill(_data, _data + size(), value);
+    }
+
+    //Accessors
+
+    size_t size() const {
+        return rows;
     }
 
     T& operator()(size_t i){

@@ -81,7 +81,7 @@ private:
         }
     }
 
-    static double logistic_sigmoid(double x){
+    static constexpr double logistic_sigmoid(double x){
         return 1.0 / (1.0 + exp(-x));
     }
 
