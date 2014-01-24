@@ -248,7 +248,7 @@ public:
         if(Momentum){
             for(size_t i = 0; i < num_visible; ++i){
                 for(size_t j = 0; j < num_hidden; ++j){
-                    w_inc(i, j) = w_inc(i, j) * momentum + learning_rate * gw(i,j);
+                    w_inc(i, j) = w_inc(i, j) * momentum + gw(i,j) * learning_rate;
                 }
             }
 
@@ -280,7 +280,7 @@ public:
             }
         } else {
             for(size_t i = 0; i < num_visible; ++i){
-                a(i) += learning_rate * ga(i);
+                a(i) += ga(i) * learning_rate;
             }
         }
 
@@ -299,7 +299,7 @@ public:
             }
         } else {
             for(size_t j = 0; j < num_hidden; ++j){
-                b(j) += learning_rate * gb(j);
+                b(j) += gb(j) * learning_rate;
             }
         }
 
