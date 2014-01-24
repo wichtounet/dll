@@ -24,10 +24,16 @@
 
 namespace dbn {
 
+template<std::size_t visibles, std::size_t hiddens>
+struct layer {
+    static constexpr const std::size_t num_visible = visibles;
+    static constexpr const std::size_t num_hidden = hiddens;
+};
+
 /*!
  * \brief Restricted Boltzmann Machine
  */
-template<bool Momentum = true, int BatchSize = 1, bool Debug = false>
+template<typename Layer, bool Momentum = true, int BatchSize = 1, bool Debug = false>
 class rbm {
 public:
     static_assert(BatchSize > 0, "Batch size must be at least 1");
@@ -35,8 +41,8 @@ public:
     typedef double weight;
     typedef double value_t;
 
-    const std::size_t num_visible;
-    const std::size_t num_hidden;
+    static constexpr const std::size_t num_visible = Layer::num_visible;
+    static constexpr const std::size_t num_hidden = Layer::num_hidden;
 
 private:
     vector<value_t> visibles;
@@ -101,12 +107,11 @@ private:
 
 public:
     template<bool M = Momentum, typename std::enable_if<(!M), bool>::type = false>
-    rbm(std::size_t nv, std::size_t nh) :
-            num_visible(nv), num_hidden(nh),
-            visibles(nv), hiddens(nh),
-            w(nv, nh), a(nv, 0.0), b(nh, 0.0),
-            v1(nv), h1(nh), v2(nv), h2(nh), hs(nh),
-            ga(nv), gb(nh), gw(nv, nh) {
+    rbm() :
+            visibles(num_visible), hiddens(num_hidden),
+            w(num_visible, num_hidden), a(num_visible, 0.0), b(num_hidden, 0.0),
+            v1(num_visible), h1(num_hidden), v2(num_visible), h2(num_hidden), hs(num_hidden),
+            ga(num_visible), gb(num_hidden), gw(num_visible, num_hidden) {
 
         static_assert(!Momentum, "This constructor should only be used without momentum support");
 
@@ -114,13 +119,12 @@ public:
     }
 
     template<bool M = Momentum, typename std::enable_if<(M), bool>::type = false>
-    rbm(std::size_t nv, std::size_t nh) :
-            num_visible(nv), num_hidden(nh),
-            visibles(nv), hiddens(nh),
-            w(nv, nh), a(nv, 0.0), b(nh, 0.0),
-            w_inc(nv, nh, 0.0), a_inc(nv, 0.0), b_inc(nh, 0.0),
-            v1(nv), h1(nh), v2(nv), h2(nh), hs(nh),
-            ga(nv), gb(nh), gw(nv, nh) {
+    rbm() :
+            visibles(num_visible), hiddens(num_hidden),
+            w(num_visible, num_hidden), a(num_visible, 0.0), b(num_hidden, 0.0),
+            w_inc(num_visible, num_hidden, 0.0), a_inc(num_visible, 0.0), b_inc(num_hidden, 0.0),
+            v1(num_visible), h1(num_hidden), v2(num_visible), h2(num_hidden), hs(num_hidden),
+            ga(num_visible), gb(num_hidden), gw(num_visible, num_hidden) {
 
         static_assert(Momentum, "This constructor should only be used with momentum support");
 
