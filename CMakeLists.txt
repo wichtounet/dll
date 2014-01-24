@@ -39,7 +39,7 @@ file(
     src/*.cpp
 )
 
-file(GLOB executable_files src/rbm_simple.cpp src/rbm_mnist.cpp)
+file(GLOB executable_files src/rbm_simple.cpp src/rbm_mnist.cpp src/fast_vector_test.cpp)
 list(REMOVE_ITEM source_files ${executable_files})
 
 add_library(RBM OBJECT ${source_files})
@@ -48,3 +48,4 @@ add_library(RBM OBJECT ${source_files})
 
 add_executable(rbm_simple $<TARGET_OBJECTS:RBM> src/rbm_simple.cpp)
 add_executable(rbm_mnist $<TARGET_OBJECTS:RBM> src/rbm_mnist.cpp)
+add_executable(fast_vector_test src/fast_vector_test.cpp)
