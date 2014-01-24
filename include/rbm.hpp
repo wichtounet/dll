@@ -21,6 +21,7 @@
 #include "stop_watch.hpp"
 #include "matrix.hpp"
 #include "vector.hpp"
+#include "fast_vector.hpp"
 
 namespace dbn {
 
@@ -45,29 +46,29 @@ public:
     static constexpr const std::size_t num_hidden = Layer::num_hidden;
 
 private:
-    vector<value_t> visibles;
-    vector<value_t> hiddens;
+    fast_vector<value_t, num_visible> visibles;
+    fast_vector<value_t, num_hidden> hiddens;
 
     matrix<weight> w;
-    vector<weight> a;
-    vector<weight> b;
+    fast_vector<weight, num_visible> a;
+    fast_vector<weight, num_hidden> b;
 
     //Weights for momentum
     matrix<weight> w_inc;
-    vector<weight> a_inc;
-    vector<weight> b_inc;
+    fast_vector<weight, Momentum ? num_visible : 0> a_inc;
+    fast_vector<weight, Momentum ? num_hidden : 0> b_inc;
 
     //Temporary data
-    vector<weight> v1;
-    vector<weight> h1;
-    vector<weight> v2;
-    vector<weight> h2;
-    vector<weight> hs;
+    fast_vector<weight, num_visible> v1;
+    fast_vector<weight, num_hidden> h1;
+    fast_vector<weight, num_visible> v2;
+    fast_vector<weight, num_hidden> h2;
+    fast_vector<weight, num_hidden> hs;
 
     //Deltas
-    vector<weight> ga;
-    vector<weight> gb;
     matrix<weight> gw;
+    fast_vector<weight, num_visible> ga;
+    fast_vector<weight, num_hidden> gb;
 
     //TODO Add a way to configure that
     double learning_rate = 0.1;
@@ -91,7 +92,8 @@ private:
         return 1.0 / (1.0 + exp(-x));
     }
 
-    static const vector<double>& bernoulli(const vector<double>& input, vector<double>& output){
+    template<typename V1, typename V2>
+    static const V2& bernoulli(const V1& input, V2& output){
         dbn_assert(input.size() == output.size(), "vector must the same sizes");
 
         static std::mt19937_64 rand_engine(::time(nullptr));
@@ -108,10 +110,8 @@ private:
 public:
     template<bool M = Momentum, typename std::enable_if<(!M), bool>::type = false>
     rbm() :
-            visibles(num_visible), hiddens(num_hidden),
-            w(num_visible, num_hidden), a(num_visible, 0.0), b(num_hidden, 0.0),
-            v1(num_visible), h1(num_hidden), v2(num_visible), h2(num_hidden), hs(num_hidden),
-            ga(num_visible), gb(num_hidden), gw(num_visible, num_hidden) {
+            w(num_visible, num_hidden), a(0.0), b(0.0),
+            gw(num_visible, num_hidden) {
 
         static_assert(!Momentum, "This constructor should only be used without momentum support");
 
@@ -120,11 +120,9 @@ public:
 
     template<bool M = Momentum, typename std::enable_if<(M), bool>::type = false>
     rbm() :
-            visibles(num_visible), hiddens(num_hidden),
-            w(num_visible, num_hidden), a(num_visible, 0.0), b(num_hidden, 0.0),
-            w_inc(num_visible, num_hidden, 0.0), a_inc(num_visible, 0.0), b_inc(num_hidden, 0.0),
-            v1(num_visible), h1(num_hidden), v2(num_visible), h2(num_hidden), hs(num_hidden),
-            ga(num_visible), gb(num_hidden), gw(num_visible, num_hidden) {
+            w(num_visible, num_hidden), a(0.0), b(0.0),
+            w_inc(num_visible, num_hidden, 0.0),
+            gw(num_visible, num_hidden) {
 
         static_assert(Momentum, "This constructor should only be used with momentum support");
 
@@ -172,7 +170,8 @@ public:
         std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
     }
 
-    void activate_hidden(vector<double>& h, const vector<double>& v) const {
+    template<typename V1, typename V2>
+    void activate_hidden(V1& h, const V2& v) const {
         h = 0.0;
 
         for(size_t j = 0; j < num_hidden; ++j){
@@ -186,7 +185,8 @@ public:
         }
     }
 
-    void activate_visible(const vector<double>& h, vector<double>& v) const {
+    template<typename V1, typename V2>
+    void activate_visible(const V1& h, V2& v) const {
         v = 0.0;
 
         for(size_t i = 0; i < num_visible; ++i){
