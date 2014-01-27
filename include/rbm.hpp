@@ -366,13 +366,13 @@ public:
         mkdir(folder.c_str(), 0777);
 
         generate_histogram(folder + "/weights.dat", w.data(), num_visible * num_hidden);
-        generate_histogram(folder + "/visibles.dat", a.data(), num_visible);
-        generate_histogram(folder + "/hiddens.dat", b.data(), num_hidden);
+//        generate_histogram(folder + "/visibles.dat", a.data(), num_visible);
+//        generate_histogram(folder + "/hiddens.dat", b.data(), num_hidden);
 
         if(Momentum){
             generate_histogram(folder + "/weights_inc.dat", w_inc.data(), num_visible * num_hidden);
-            generate_histogram(folder + "/visibles_inc.dat", a_inc.data(), num_visible);
-            generate_histogram(folder + "/hiddens_inc.dat", b_inc.data(), num_hidden);
+//            generate_histogram(folder + "/visibles_inc.dat", a_inc.data(), num_visible);
+//            generate_histogram(folder + "/hiddens_inc.dat", b_inc.data(), num_hidden);
         }
     }
 
