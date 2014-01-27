@@ -13,40 +13,29 @@
 template<typename T, size_t Rows, size_t Columns>
 class matrix {
 private:
-    T* const _data;
+    std::array<T, Rows * Columns> _data;
 
 public:
-    matrix() : _data(new T[Rows * Columns]){
-        //Nothing else to init
+    matrix(){
+        //Nothing to init
     }
 
-    matrix(const T& value) : _data(new T[Rows * Columns]){
-        std::fill(_data, _data + size(), value);
+    matrix(const T& value){
+        std::fill(_data.begin(), _data.end(), value);
     }
 
     matrix(const matrix& rhs) = delete;
     matrix& operator=(const matrix& rhs) = delete;
 
-    matrix(matrix&& rhs) : _data(rhs._data) {
-        rhs._data = nullptr;
-    }
-
-    matrix& operator=(matrix&& rhs){
-        _data = rhs._data;
-
-        rhs._data = nullptr;
-    }
-
-    ~matrix(){
-        delete[] _data;
-    }
+    matrix(matrix&& rhs) = default;
+    matrix& operator=(matrix&& rhs) = default;
 
     size_t size() const {
         return Rows * Columns;
     }
 
     void operator=(const T& value){
-        std::fill(_data, _data + size(), value);
+        std::fill(_data.begin(), _data.end(), value);
     }
 
     T& operator()(size_t i, size_t j){
