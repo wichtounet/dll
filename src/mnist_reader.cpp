@@ -20,7 +20,7 @@ uint32_t read_header(const std::unique_ptr<char[]>& buffer, size_t position){
     return (value << 24) | ((value << 8) & 0x00FF0000) | ((value >> 8) & 0X0000FF00) | (value >> 24);
 }
 
-std::vector<vector<uint8_t>> read_mnist_image_file(const std::string& path){
+std::vector<std::vector<uint8_t>> read_mnist_image_file(const std::string& path){
     std::ifstream file;
     file.open(path, std::ios::in | std::ios::binary | std::ios::ate);
 
@@ -50,14 +50,14 @@ std::vector<vector<uint8_t>> read_mnist_image_file(const std::string& path){
                 //Skip the header
                 auto image_buffer = buffer.get() + 16;
 
-                std::vector<vector<uint8_t>> images;
+                std::vector<std::vector<uint8_t>> images;
                 images.reserve(count);
 
                 for(size_t i = 0; i < count; ++i){
                     images.emplace_back(rows * columns);
 
                     for(size_t j = 0; j < rows * columns; ++j){
-                        images[i](j) = *image_buffer++;
+                        images[i][j] = *image_buffer++;
                     }
                 }
 
@@ -71,10 +71,10 @@ std::vector<vector<uint8_t>> read_mnist_image_file(const std::string& path){
 
 } //end of anonymous namespace
 
-std::vector<vector<uint8_t>> mnist::read_training_images(){
+std::vector<std::vector<uint8_t>> mnist::read_training_images(){
     return read_mnist_image_file("datasets/mnist/train-images-idx3-ubyte");
 }
 
-std::vector<vector<uint8_t>> read_test_images(){
+std::vector<std::vector<uint8_t>> read_test_images(){
     return read_mnist_image_file("datasets/mnist/t10k-images-idx3-ubyte");
 }

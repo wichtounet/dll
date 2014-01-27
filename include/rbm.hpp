@@ -19,8 +19,7 @@
 
 #include "assert.hpp"
 #include "stop_watch.hpp"
-#include "matrix.hpp"
-#include "vector.hpp"
+#include "fast_matrix.hpp"
 #include "fast_vector.hpp"
 
 namespace dbn {
@@ -49,12 +48,12 @@ private:
     fast_vector<value_t, num_visible> visibles;
     fast_vector<value_t, num_hidden> hiddens;
 
-    matrix<weight, num_visible, num_hidden> w;
+    fast_matrix<weight, num_visible, num_hidden> w;
     fast_vector<weight, num_visible> a;
     fast_vector<weight, num_hidden> b;
 
     //Weights for momentum
-    matrix<weight, Momentum ? num_visible: 0, Momentum ? num_hidden : 0> w_inc;
+    fast_matrix<weight, Momentum ? num_visible: 0, Momentum ? num_hidden : 0> w_inc;
     fast_vector<weight, Momentum ? num_visible : 0> a_inc;
     fast_vector<weight, Momentum ? num_hidden : 0> b_inc;
 
@@ -66,7 +65,7 @@ private:
     fast_vector<weight, num_hidden> hs;
 
     //Deltas
-    matrix<weight, num_visible, num_hidden> gw;
+    fast_matrix<weight, num_visible, num_hidden> gw;
     fast_vector<weight, num_visible> ga;
     fast_vector<weight, num_hidden> gb;
 
@@ -124,14 +123,14 @@ public:
     }
 
     template<typename TrainingItem>
-    void train(const std::vector<vector<TrainingItem>>& training_data, std::size_t max_epochs){
+    void train(const std::vector<std::vector<TrainingItem>>& training_data, std::size_t max_epochs){
         stop_watch<std::chrono::seconds> watch;
 
         //Initialize the visible biases to log(pi/(1-pi))
         for(size_t i = 0; i < num_visible; ++i){
             size_t c = 0;
             for(auto& items : training_data){
-                if(items(i) == 1){
+                if(items[i] == 1){
                     ++c;
                 }
             }
@@ -213,7 +212,7 @@ public:
             auto& items = *it++;
 
             for(size_t i = 0; i < num_visible; ++i){
-                v1(i) = items(i);
+                v1(i) = items[i];
             }
 
             activate_hidden(h1, v1);
@@ -285,14 +284,14 @@ public:
     }
 
     template<typename TrainingItem>
-    void reconstruct(const vector<TrainingItem>& items){
+    void reconstruct(const std::vector<TrainingItem>& items){
         dbn_assert(items.size() == num_visible, "The size of the training sample must match visible units");
 
         stop_watch<> watch;
 
         //Set the state of the visible units
         for(size_t i = 0; i < num_visible; ++i){
-            visibles(i) = items(i);
+            visibles(i) = items[i];
         }
 
         activate_hidden(h1, visibles);

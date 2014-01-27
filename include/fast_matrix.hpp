@@ -11,24 +11,24 @@
 #include "assert.hpp"
 
 template<typename T, size_t Rows, size_t Columns>
-class matrix {
+class fast_matrix {
 private:
     std::array<T, Rows * Columns> _data;
 
 public:
-    matrix(){
+    fast_matrix(){
         //Nothing to init
     }
 
-    matrix(const T& value){
+    fast_matrix(const T& value){
         std::fill(_data.begin(), _data.end(), value);
     }
 
-    matrix(const matrix& rhs) = delete;
-    matrix& operator=(const matrix& rhs) = delete;
+    fast_matrix(const fast_matrix& rhs) = delete;
+    fast_matrix& operator=(const fast_matrix& rhs) = delete;
 
-    matrix(matrix&& rhs) = default;
-    matrix& operator=(matrix&& rhs) = default;
+    fast_matrix(fast_matrix&& rhs) = default;
+    fast_matrix& operator=(fast_matrix&& rhs) = default;
 
     size_t size() const {
         return Rows * Columns;

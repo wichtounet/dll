@@ -11,12 +11,10 @@
 #include <vector>
 #include <cstdint>
 
-#include "vector.hpp"
-
 namespace mnist {
 
-std::vector<vector<uint8_t>> read_training_images();
-std::vector<vector<uint8_t>> read_test_images();
+std::vector<std::vector<uint8_t>> read_training_images();
+std::vector<std::vector<uint8_t>> read_test_images();
 
 }
 

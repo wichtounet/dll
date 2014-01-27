@@ -37,7 +37,7 @@ int main(int argc, char* argv[]){
             std::cout << "Source image" << std::endl;
             for(size_t i = 0; i < 28; ++i){
                 for(size_t j = 0; j < 28; ++j){
-                    std::cout << static_cast<size_t>(image(i * 28 + j)) << " ";
+                    std::cout << static_cast<size_t>(image[i * 28 + j]) << " ";
                 }
                 std::cout << std::endl;
             }
