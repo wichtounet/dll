@@ -49,12 +49,12 @@ private:
     fast_vector<value_t, num_visible> visibles;
     fast_vector<value_t, num_hidden> hiddens;
 
-    matrix<weight> w;
+    matrix<weight, num_visible, num_hidden> w;
     fast_vector<weight, num_visible> a;
     fast_vector<weight, num_hidden> b;
 
     //Weights for momentum
-    matrix<weight> w_inc;
+    matrix<weight, Momentum ? num_visible: 0, Momentum ? num_hidden : 0> w_inc;
     fast_vector<weight, Momentum ? num_visible : 0> a_inc;
     fast_vector<weight, Momentum ? num_hidden : 0> b_inc;
 
@@ -66,7 +66,7 @@ private:
     fast_vector<weight, num_hidden> hs;
 
     //Deltas
-    matrix<weight> gw;
+    matrix<weight, num_visible, num_hidden> gw;
     fast_vector<weight, num_visible> ga;
     fast_vector<weight, num_hidden> gb;
 
@@ -109,20 +109,14 @@ private:
 
 public:
     template<bool M = Momentum, typename std::enable_if<(!M), bool>::type = false>
-    rbm() :
-            w(num_visible, num_hidden), a(0.0), b(0.0),
-            gw(num_visible, num_hidden) {
-
+    rbm() : a(0.0), b(0.0){
         static_assert(!Momentum, "This constructor should only be used without momentum support");
 
         init_weights();
     }
 
     template<bool M = Momentum, typename std::enable_if<(M), bool>::type = false>
-    rbm() :
-            w(num_visible, num_hidden), a(0.0), b(0.0),
-            w_inc(num_visible, num_hidden, 0.0),
-            gw(num_visible, num_hidden) {
+    rbm() : a(0.0), b(0.0), w_inc(0.0){
 
         static_assert(Momentum, "This constructor should only be used with momentum support");
 

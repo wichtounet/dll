@@ -10,44 +10,30 @@
 
 #include "assert.hpp"
 
-template<typename T>
+template<typename T, size_t Rows, size_t Columns>
 class matrix {
 private:
-    const size_t rows;
-    const size_t columns;
     T* const _data;
 
 public:
-    matrix() : rows(0), columns(0), _data(nullptr) {
+    matrix() : _data(new T[Rows * Columns]){
         //Nothing else to init
     }
 
-    matrix(size_t r, size_t c) :
-            rows(r), columns(c), _data(new T[r* c]){
-        //Nothing else to init
-    }
-
-    matrix(size_t r, size_t c, const T& value) :
-            rows(r), columns(c), _data(new T[r * c]){
+    matrix(const T& value) : _data(new T[Rows * Columns]){
         std::fill(_data, _data + size(), value);
     }
 
     matrix(const matrix& rhs) = delete;
     matrix& operator=(const matrix& rhs) = delete;
 
-    matrix(matrix&& rhs) : rows(rhs.rows), columns(rhs.columns), _data(rhs._data) {
-        rhs.rows = 0;
-        rhs.columns = 0;
+    matrix(matrix&& rhs) : _data(rhs._data) {
         rhs._data = nullptr;
     }
 
     matrix& operator=(matrix&& rhs){
-        rows = rhs.rows;
-        columns = rhs.colums;
         _data = rhs._data;
 
-        rhs.rows = 0;
-        rhs.columns = 0;
         rhs._data = nullptr;
     }
 
@@ -56,7 +42,7 @@ public:
     }
 
     size_t size() const {
-        return rows * columns;
+        return Rows * Columns;
     }
 
     void operator=(const T& value){
@@ -64,17 +50,17 @@ public:
     }
 
     T& operator()(size_t i, size_t j){
-        dbn_assert(i < rows, "Out of bounds");
-        dbn_assert(j < columns, "Out of bounds");
+        dbn_assert(i < Rows, "Out of bounds");
+        dbn_assert(j < Columns, "Out of bounds");
 
-        return _data[i * columns + j];
+        return _data[i * Columns + j];
     }
 
     const T& operator()(size_t i, size_t j) const {
-        dbn_assert(i < rows, "Out of bounds");
-        dbn_assert(j < columns, "Out of bounds");
+        dbn_assert(i < Rows, "Out of bounds");
+        dbn_assert(j < Columns, "Out of bounds");
 
-        return _data[i * columns + j];
+        return _data[i * Columns + j];
     }
 
     const T* data() const {
