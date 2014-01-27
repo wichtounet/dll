@@ -29,6 +29,9 @@ template<typename T>
 struct mul_binary_op;
 
 template<typename T>
+struct div_binary_op;
+
+template<typename T>
 struct scalar;
 
 template<typename T, std::size_t Rows>
@@ -126,6 +129,19 @@ public:
     template<typename RE>
     auto operator*(RE&& re) const ->
     fast_vector_expr<T, const fast_vector&, mul_binary_op<T>, decltype(std::forward<RE>(re))> {
+        return {*this, std::forward<RE>(re)};
+    }
+
+    //Div each element by a scalar
+    auto operator/(T re) const ->
+    fast_vector_expr<T, const fast_vector&, div_binary_op<T>, scalar<T>> {
+        return {*this, re};
+    }
+
+    //Div elements of vector togethers
+    template<typename RE>
+    auto operator/(RE&& re) const ->
+    fast_vector_expr<T, const fast_vector&, div_binary_op<T>, decltype(std::forward<RE>(re))> {
         return {*this, std::forward<RE>(re)};
     }
 
@@ -243,6 +259,15 @@ public:
         return {*this, std::forward<RE>(re)};
     }
 
+    auto operator/(T re) const -> fast_vector_expr<T, this_type const&, div_binary_op<T>, scalar<T>> {
+        return {*this, re};
+    }
+
+    template<typename RE>
+    auto operator/(RE&& re) const -> fast_vector_expr<T, this_type const&, div_binary_op<T>, decltype(std::forward<RE>(re))>{
+        return {*this, std::forward<RE>(re)};
+    }
+
     //Apply the expression
 
     auto operator[](std::size_t i) const -> decltype(BinaryOp::apply(this->lhs()[i], this->rhs()[i])) {
@@ -280,5 +305,13 @@ struct mul_binary_op {
         return lhs * rhs;
     }
 };
+
+template<typename T>
+struct div_binary_op {
+    static T apply(const T& lhs, const T& rhs){
+        return lhs / rhs;
+    }
+};
+
 
 #endif

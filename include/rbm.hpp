@@ -265,49 +265,25 @@ public:
             }
         }
 
-        //ga /= BatchSize
-        for(size_t i = 0; i < num_visible; ++i){
-            ga(i) /= n_samples;
+        if(Momentum){
+            a_inc = a_inc * momentum + (ga / n_samples) * learning_rate;
+            a += a_inc;
+        } else {
+            a += (ga / n_samples) * learning_rate;
         }
 
         if(Momentum){
-            for(size_t i = 0; i < num_visible; ++i){
-                a_inc(i) = a_inc(i) * momentum + ga(i) * learning_rate;
-            }
-
-            for(size_t i = 0; i < num_visible; ++i){
-                a(i) += a_inc(i);
-            }
+            b_inc = b_inc * momentum + (gb / n_samples) * learning_rate;
+            b += b_inc;
         } else {
-            for(size_t i = 0; i < num_visible; ++i){
-                a(i) += ga(i) * learning_rate;
-            }
-        }
-
-        //gb /= BatchSize
-        for(size_t j = 0; j < num_hidden; ++j){
-            gb(j) /= n_samples;
-        }
-
-        if(Momentum){
-            for(size_t j = 0; j < num_hidden; ++j){
-                b_inc(j) = b_inc(j) * momentum + gb(j) * learning_rate;
-            }
-
-            for(size_t j = 0; j < num_hidden; ++j){
-                b(j) += b_inc(j);
-            }
-        } else {
-            for(size_t j = 0; j < num_hidden; ++j){
-                b(j) += gb(j) * learning_rate;
-            }
+            b += (gb / n_samples) * learning_rate;
         }
 
         //Compute the reconstruction error
 
         double error = 0.0;
         for(size_t i = 0; i < num_visible; ++i){
-            error += ga(i) * ga(i);
+            error += (ga(i)/ n_samples) * (ga(i) / n_samples);
         }
         error = sqrt(error / num_visible);
 
