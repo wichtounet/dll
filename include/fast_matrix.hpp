@@ -9,6 +9,8 @@
 #define DBN_MATRIX_HPP
 
 #include "assert.hpp"
+#include "fast_op.hpp"
+#include "fast_expr.hpp"
 
 //TODO Ensure that the fast_expr that is taken comes from a matrix
 //or least from a vector of Rows * Columns size
@@ -30,6 +32,24 @@ public:
         std::fill(_data.begin(), _data.end(), value);
     }
 
+    //Construct from expression
+
+    template<typename LE, typename Op, typename RE>
+    fast_matrix(fast_expr<T, LE, Op, RE>&& e){
+        for(std::size_t i = 0; i < size(); ++i){
+            _data[i] = e[i];
+        }
+    }
+
+    template<typename LE, typename Op, typename RE>
+    fast_matrix& operator=(fast_expr<T, LE, Op, RE>&& e){
+        for(std::size_t i = 0; i < size(); ++i){
+            _data[i] = e[i];
+        }
+
+        return *this;
+    }
+
     //Prohibit copy
     fast_matrix(const fast_matrix& rhs) = delete;
     fast_matrix& operator=(const fast_matrix& rhs) = delete;
@@ -45,9 +65,62 @@ public:
         std::fill(_data.begin(), _data.end(), value);
     }
 
+    template<typename RE>
+    fast_matrix& operator+=(RE&& rhs){
+        for(size_t i = 0; i < size(); ++i){
+            _data[i] += rhs[i];
+        }
+
+        return *this;
+    }
+
+    //Add a scalar to each element
+    auto operator+(T re) const -> fast_expr<T, const fast_matrix&, plus_binary_op<T>, scalar<T>> {
+        return {*this, re};
+    }
+
+    //Add elements of matrix together
+    template<typename RE>
+    auto operator+(RE&& re) const -> fast_expr<T, const fast_matrix&, plus_binary_op<T>, decltype(std::forward<RE>(re))> {
+        return {*this, std::forward<RE>(re)};
+    }
+
+    //Remove each element by a scalar
+    auto operator-(T re) const -> fast_expr<T, const fast_matrix&, minus_binary_op<T>, scalar<T>> {
+        return {*this, re};
+    }
+
+    //Sub elements of matrix together
+    template<typename RE>
+    auto operator-(RE&& re) const -> fast_expr<T, const fast_matrix&, minus_binary_op<T>, decltype(std::forward<RE>(re))> {
+        return {*this, std::forward<RE>(re)};
+    }
+
+    //Mul each element by a scalar
+    auto operator*(T re) const -> fast_expr<T, const fast_matrix&, mul_binary_op<T>, scalar<T>> {
+        return {*this, re};
+    }
+
+    //Mul elements of matrix togethers
+    template<typename RE>
+    auto operator*(RE&& re) const -> fast_expr<T, const fast_matrix&, mul_binary_op<T>, decltype(std::forward<RE>(re))> {
+        return {*this, std::forward<RE>(re)};
+    }
+
+    //Div each element by a scalar
+    auto operator/(T re) const -> fast_expr<T, const fast_matrix&, div_binary_op<T>, scalar<T>> {
+        return {*this, re};
+    }
+
+    //Div elements of matrix togethers
+    template<typename RE>
+    auto operator/(RE&& re) const -> fast_expr<T, const fast_matrix&, div_binary_op<T>, decltype(std::forward<RE>(re))> {
+        return {*this, std::forward<RE>(re)};
+    }
+
     //Accessors
 
-    size_t size() const {
+    constexpr size_t size() const {
         return Rows * Columns;
     }
 

@@ -231,31 +231,11 @@ public:
 
         auto n_samples = static_cast<weight>(BatchSize);
 
-        //gw / BatchSize
-        for(size_t i = 0; i < num_visible; ++i){
-            for(size_t j = 0; j < num_hidden; ++j){
-                gw(i, j) /= n_samples;
-            }
-        }
-
         if(Momentum){
-            for(size_t i = 0; i < num_visible; ++i){
-                for(size_t j = 0; j < num_hidden; ++j){
-                    w_inc(i, j) = w_inc(i, j) * momentum + gw(i,j) * learning_rate;
-                }
-            }
-
-            for(size_t i = 0; i < num_visible; ++i){
-                for(size_t j = 0; j < num_hidden; ++j){
-                    w(i,j) += w_inc(i, j);
-                }
-            }
+            w_inc = w_inc * momentum + (gw / n_samples) * learning_rate;
+            w += w_inc;
         } else {
-            for(size_t i = 0; i < num_visible; ++i){
-                for(size_t j = 0; j < num_hidden; ++j){
-                    w(i,j) += gw(i, j) * learning_rate;
-                }
-            }
+            w += (gw / n_samples) * learning_rate;
         }
 
         if(Momentum){
@@ -276,7 +256,7 @@ public:
 
         double error = 0.0;
         for(size_t i = 0; i < num_visible; ++i){
-            error += (ga(i)/ n_samples) * (ga(i) / n_samples);
+            error += (ga(i) / n_samples) * (ga(i) / n_samples);
         }
         error = sqrt(error / num_visible);
 
