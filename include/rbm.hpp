@@ -171,7 +171,6 @@ public:
             double s = 0.0;
             for(size_t i = 0; i < num_visible; ++i){
                 s += w(i, j) * v(i);
-//sdf
             }
 
             auto activation = b(j) + s;
