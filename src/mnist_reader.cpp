@@ -75,6 +75,6 @@ std::vector<std::vector<uint8_t>> mnist::read_training_images(){
     return read_mnist_image_file("datasets/mnist/train-images-idx3-ubyte");
 }
 
-std::vector<std::vector<uint8_t>> read_test_images(){
+std::vector<std::vector<uint8_t>> mnist::read_test_images(){
     return read_mnist_image_file("datasets/mnist/t10k-images-idx3-ubyte");
 }

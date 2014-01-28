@@ -31,8 +31,11 @@ int main(int argc, char* argv[]){
     rbm.train(training_images, 10);
 
     if(reconstruction){
+        auto test_images = mnist::read_test_images();
+        binarize_each(test_images);
+
         for(size_t t = 0; t < 10; ++t){
-            auto& image = training_images[666 * t];
+            auto& image = test_images[666 * t];
 
             std::cout << "Source image" << std::endl;
             for(size_t i = 0; i < 28; ++i){
