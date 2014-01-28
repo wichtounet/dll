@@ -41,14 +41,14 @@ public:
     }
 
     template<typename LE, typename Op, typename RE>
-    fast_vector(fast_vector_expr<T, LE, Op, RE>&& e){
+    fast_vector(fast_expr<T, LE, Op, RE>&& e){
         for(std::size_t i = 0; i < Rows; ++i){
             _data[i] = e[i];
         }
     }
 
     template<typename LE, typename Op, typename RE>
-    fast_vector& operator=(fast_vector_expr<T, LE, Op, RE>&& e){
+    fast_vector& operator=(fast_expr<T, LE, Op, RE>&& e){
         for(std::size_t i = 0; i < Rows; ++i){
             _data[i] = e[i];
         }
@@ -91,53 +91,53 @@ public:
 
     //Add a scalar to each element
     auto operator+(T re) const ->
-    fast_vector_expr<T, const fast_vector&, plus_binary_op<T>, scalar<T>> {
+    fast_expr<T, const fast_vector&, plus_binary_op<T>, scalar<T>> {
         return {*this, re};
     }
 
     //Add elements of vector together
     template<typename RE>
     auto operator+(RE&& re) const ->
-    fast_vector_expr<T, const fast_vector&, plus_binary_op<T>, decltype(std::forward<RE>(re))> {
+    fast_expr<T, const fast_vector&, plus_binary_op<T>, decltype(std::forward<RE>(re))> {
         return {*this, std::forward<RE>(re)};
     }
 
     //Remove each element by a scalar
     auto operator-(T re) const ->
-    fast_vector_expr<T, const fast_vector&, minus_binary_op<T>, scalar<T>> {
+    fast_expr<T, const fast_vector&, minus_binary_op<T>, scalar<T>> {
         return {*this, re};
     }
 
     //Sub elements of vector together
     template<typename RE>
     auto operator-(RE&& re) const ->
-    fast_vector_expr<T, const fast_vector&, minus_binary_op<T>, decltype(std::forward<RE>(re))> {
+    fast_expr<T, const fast_vector&, minus_binary_op<T>, decltype(std::forward<RE>(re))> {
         return {*this, std::forward<RE>(re)};
     }
 
     //Mul each element by a scalar
     auto operator*(T re) const ->
-    fast_vector_expr<T, const fast_vector&, mul_binary_op<T>, scalar<T>> {
+    fast_expr<T, const fast_vector&, mul_binary_op<T>, scalar<T>> {
         return {*this, re};
     }
 
     //Mul elements of vector togethers
     template<typename RE>
     auto operator*(RE&& re) const ->
-    fast_vector_expr<T, const fast_vector&, mul_binary_op<T>, decltype(std::forward<RE>(re))> {
+    fast_expr<T, const fast_vector&, mul_binary_op<T>, decltype(std::forward<RE>(re))> {
         return {*this, std::forward<RE>(re)};
     }
 
     //Div each element by a scalar
     auto operator/(T re) const ->
-    fast_vector_expr<T, const fast_vector&, div_binary_op<T>, scalar<T>> {
+    fast_expr<T, const fast_vector&, div_binary_op<T>, scalar<T>> {
         return {*this, re};
     }
 
     //Div elements of vector togethers
     template<typename RE>
     auto operator/(RE&& re) const ->
-    fast_vector_expr<T, const fast_vector&, div_binary_op<T>, decltype(std::forward<RE>(re))> {
+    fast_expr<T, const fast_vector&, div_binary_op<T>, decltype(std::forward<RE>(re))> {
         return {*this, std::forward<RE>(re)};
     }
 

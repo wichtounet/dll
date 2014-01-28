@@ -11,26 +11,26 @@
 #include "fast_op.hpp"
 
 template <typename T, typename LeftExpr, typename BinaryOp, typename RightExpr>
-class fast_vector_expr {
+class fast_expr {
 private:
     LeftExpr _lhs;
     RightExpr _rhs;
 
-    typedef fast_vector_expr<T, LeftExpr, BinaryOp, RightExpr> this_type;
+    typedef fast_expr<T, LeftExpr, BinaryOp, RightExpr> this_type;
 
 public:
-    fast_vector_expr(LeftExpr l, RightExpr r) :
+    fast_expr(LeftExpr l, RightExpr r) :
             _lhs(std::forward<LeftExpr>(l)), _rhs(std::forward<RightExpr>(r)){
         //Nothing else to init
     }
 
     //No copying
-    fast_vector_expr(const fast_vector_expr&) = delete;
-    fast_vector_expr& operator=(const fast_vector_expr&) = delete;
+    fast_expr(const fast_expr&) = delete;
+    fast_expr& operator=(const fast_expr&) = delete;
 
     //Make sure move is supported
-    fast_vector_expr(fast_vector_expr&&) = default;
-    fast_vector_expr& operator=(fast_vector_expr&&) = default;
+    fast_expr(fast_expr&&) = default;
+    fast_expr& operator=(fast_expr&&) = default;
 
     //Accessors
 
@@ -52,39 +52,39 @@ public:
 
     //Create more complex expressions
 
-    auto operator+(T re) const -> fast_vector_expr<T, this_type const&, plus_binary_op<T>, scalar<T>> {
+    auto operator+(T re) const -> fast_expr<T, this_type const&, plus_binary_op<T>, scalar<T>> {
         return {*this, re};
     }
 
     template<typename RE>
-    auto operator+(RE&& re) const -> fast_vector_expr<T, this_type const&, plus_binary_op<T>, decltype(std::forward<RE>(re))>{
+    auto operator+(RE&& re) const -> fast_expr<T, this_type const&, plus_binary_op<T>, decltype(std::forward<RE>(re))>{
         return {*this, std::forward<RE>(re)};
     }
 
-    auto operator-(T re) const -> fast_vector_expr<T, this_type const&, minus_binary_op<T>, scalar<T>> {
+    auto operator-(T re) const -> fast_expr<T, this_type const&, minus_binary_op<T>, scalar<T>> {
         return {*this, re};
     }
 
     template<typename RE>
-    auto operator-(RE&& re) const -> fast_vector_expr<T, this_type const&, minus_binary_op<T>, decltype(std::forward<RE>(re))>{
+    auto operator-(RE&& re) const -> fast_expr<T, this_type const&, minus_binary_op<T>, decltype(std::forward<RE>(re))>{
         return {*this, std::forward<RE>(re)};
     }
 
-    auto operator*(T re) const -> fast_vector_expr<T, this_type const&, mul_binary_op<T>, scalar<T>> {
+    auto operator*(T re) const -> fast_expr<T, this_type const&, mul_binary_op<T>, scalar<T>> {
         return {*this, re};
     }
 
     template<typename RE>
-    auto operator*(RE&& re) const -> fast_vector_expr<T, this_type const&, mul_binary_op<T>, decltype(std::forward<RE>(re))>{
+    auto operator*(RE&& re) const -> fast_expr<T, this_type const&, mul_binary_op<T>, decltype(std::forward<RE>(re))>{
         return {*this, std::forward<RE>(re)};
     }
 
-    auto operator/(T re) const -> fast_vector_expr<T, this_type const&, div_binary_op<T>, scalar<T>> {
+    auto operator/(T re) const -> fast_expr<T, this_type const&, div_binary_op<T>, scalar<T>> {
         return {*this, re};
     }
 
     template<typename RE>
-    auto operator/(RE&& re) const -> fast_vector_expr<T, this_type const&, div_binary_op<T>, decltype(std::forward<RE>(re))>{
+    auto operator/(RE&& re) const -> fast_expr<T, this_type const&, div_binary_op<T>, decltype(std::forward<RE>(re))>{
         return {*this, std::forward<RE>(re)};
     }
 
