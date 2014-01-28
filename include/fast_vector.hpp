@@ -105,11 +105,23 @@ public:
         return *this;
     }
 
+    //Add a scalar to each element
+    auto operator+(T re) const ->
+    fast_vector_expr<T, const fast_vector&, plus_binary_op<T>, scalar<T>> {
+        return {*this, re};
+    }
+
     //Add elements of vector together
     template<typename RE>
     auto operator+(RE&& re) const ->
     fast_vector_expr<T, const fast_vector&, plus_binary_op<T>, decltype(std::forward<RE>(re))> {
         return {*this, std::forward<RE>(re)};
+    }
+
+    //Remove each element by a scalar
+    auto operator-(T re) const ->
+    fast_vector_expr<T, const fast_vector&, minus_binary_op<T>, scalar<T>> {
+        return {*this, re};
     }
 
     //Sub elements of vector together
@@ -205,8 +217,6 @@ private:
     typedef fast_vector_expr<T, LeftExpr, BinaryOp, RightExpr> this_type;
 
 public:
-    fast_vector_expr() = delete;
-
     fast_vector_expr(LeftExpr l, RightExpr r) :
             _lhs(std::forward<LeftExpr>(l)), _rhs(std::forward<RightExpr>(r)){
         //Nothing else to init
@@ -240,9 +250,17 @@ public:
 
     //Create more complex expressions
 
+    auto operator+(T re) const -> fast_vector_expr<T, this_type const&, plus_binary_op<T>, scalar<T>> {
+        return {*this, re};
+    }
+
     template<typename RE>
     auto operator+(RE&& re) const -> fast_vector_expr<T, this_type const&, plus_binary_op<T>, decltype(std::forward<RE>(re))>{
         return {*this, std::forward<RE>(re)};
+    }
+
+    auto operator-(T re) const -> fast_vector_expr<T, this_type const&, minus_binary_op<T>, scalar<T>> {
+        return {*this, re};
     }
 
     template<typename RE>
@@ -312,6 +330,5 @@ struct div_binary_op {
         return lhs / rhs;
     }
 };
-
 
 #endif
