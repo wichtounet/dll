@@ -150,7 +150,7 @@ public:
 
             std::cout << "epoch " << epoch << ": Reconstruction error average: " << (error / batches) << std::endl;
 
-            if(Momentum && epoch == 20){
+            if(Momentum && epoch == 6){
                 momentum = 0.9;
             }
 

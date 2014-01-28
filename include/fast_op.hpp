@@ -10,38 +10,38 @@
 
 template<typename T>
 struct scalar {
-    T value;
-    scalar(T v) : value(v) {}
+    const T value;
+    constexpr scalar(T v) : value(v) {}
 
-    T operator[](std::size_t) const {
+    constexpr const T operator[](std::size_t) const {
         return value;
     }
 };
 
 template<typename T>
 struct plus_binary_op {
-    static T apply(const T& lhs, const T& rhs){
+    static constexpr T apply(const T& lhs, const T& rhs){
         return lhs + rhs;
     }
 };
 
 template<typename T>
 struct minus_binary_op {
-    static T apply(const T& lhs, const T& rhs){
+    static constexpr T apply(const T& lhs, const T& rhs){
         return lhs - rhs;
     }
 };
 
 template<typename T>
 struct mul_binary_op {
-    static T apply(const T& lhs, const T& rhs){
+    static constexpr T apply(const T& lhs, const T& rhs){
         return lhs * rhs;
     }
 };
 
 template<typename T>
 struct div_binary_op {
-    static T apply(const T& lhs, const T& rhs){
+    static constexpr T apply(const T& lhs, const T& rhs){
         return lhs / rhs;
     }
 };

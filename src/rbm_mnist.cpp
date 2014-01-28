@@ -28,7 +28,7 @@ int main(int argc, char* argv[]){
 
     binarize_each(training_images);
 
-    rbm.train(training_images, 5);
+    rbm.train(training_images, 10);
 
     if(reconstruction){
         for(size_t t = 0; t < 10; ++t){
