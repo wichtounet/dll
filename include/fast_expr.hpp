@@ -19,6 +19,10 @@ private:
     typedef fast_expr<T, LeftExpr, BinaryOp, RightExpr> this_type;
 
 public:
+    //Cannot be constructed with no args
+    fast_expr() = delete;
+
+    //Construct a new expression
     fast_expr(LeftExpr l, RightExpr r) :
             _lhs(std::forward<LeftExpr>(l)), _rhs(std::forward<RightExpr>(r)){
         //Nothing else to init
