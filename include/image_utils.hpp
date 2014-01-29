@@ -8,6 +8,8 @@
 #ifndef DBN_IMAGE_UTILS_HPP
 #define DBN_IMAGE_UTILS_HPP
 
+#include <limits>
+
 template<typename Container>
 typename std::enable_if<!std::numeric_limits<typename Container::value_type>::is_signed, void>::type binarize(Container& values){
     for(auto& v : values){

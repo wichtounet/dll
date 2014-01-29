@@ -24,12 +24,6 @@
 
 namespace dbn {
 
-template<std::size_t visibles, std::size_t hiddens>
-struct layer {
-    static constexpr const std::size_t num_visible = visibles;
-    static constexpr const std::size_t num_hidden = hiddens;
-};
-
 /*!
  * \brief Restricted Boltzmann Machine
  */

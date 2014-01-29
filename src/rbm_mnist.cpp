@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include "rbm.hpp"
+#include "layer.hpp"
 #include "mnist_reader.hpp"
 #include "image_utils.hpp"
 
