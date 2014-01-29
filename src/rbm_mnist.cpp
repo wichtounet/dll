@@ -9,6 +9,7 @@
 
 #include "rbm.hpp"
 #include "layer.hpp"
+#include "conf.hpp"
 #include "mnist_reader.hpp"
 #include "image_utils.hpp"
 
@@ -23,7 +24,7 @@ int main(int argc, char* argv[]){
         }
     }
 
-    dbn::rbm<dbn::layer<28 * 28, 100>, true, 50> rbm;
+    dbn::rbm<dbn::layer<28 * 28, 100>, dbn::conf<true, 50>> rbm;
 
     auto training_images = mnist::read_training_images();
 

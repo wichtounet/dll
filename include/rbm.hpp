@@ -27,16 +27,20 @@ namespace dbn {
 /*!
  * \brief Restricted Boltzmann Machine
  */
-template<typename Layer, bool Momentum = true, int BatchSize = 1, bool Debug = false>
+template<typename Layer, typename Conf>
 class rbm {
 public:
-    static_assert(BatchSize > 0, "Batch size must be at least 1");
-
     typedef double weight;
     typedef double value_t;
 
     static constexpr const std::size_t num_visible = Layer::num_visible;
     static constexpr const std::size_t num_hidden = Layer::num_hidden;
+
+    static constexpr const bool Momentum = Conf::Momentum;
+    static constexpr const std::size_t BatchSize = Conf::BatchSize;
+    static constexpr const bool Debug = Conf::Debug;
+
+    static_assert(BatchSize > 0, "Batch size must be at least 1");
 
 private:
     fast_vector<value_t, num_visible> visibles;
