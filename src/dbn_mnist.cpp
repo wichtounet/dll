@@ -33,6 +33,8 @@ int main(int argc, char* argv[]){
 
     auto dbn = std::make_shared<dbn_t>();
 
+    dbn->train(training_images, 5);
+
     //TODO Train
 
     if(prediction){
