@@ -121,7 +121,7 @@ public:
     }
 
     template<typename TrainingItem>
-    void train(const std::vector<std::vector<TrainingItem>>& training_data, std::size_t max_epochs){
+    void train(const std::vector<TrainingItem>& training_data, std::size_t max_epochs){
         stop_watch<std::chrono::seconds> watch;
 
         //Initialize the visible biases to log(pi/(1-pi))
@@ -168,7 +168,7 @@ public:
         for(size_t j = 0; j < num_hidden; ++j){
             double s = 0.0;
             for(size_t i = 0; i < num_visible; ++i){
-                s += w(i, j) * v(i);
+                s += w(i, j) * v[i];
             }
 
             auto activation = b(j) + s;

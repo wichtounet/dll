@@ -11,6 +11,7 @@
 #include <tuple>
 
 #include "rbm.hpp"
+#include "vector.hpp"
 
 template< bool B, class T = void >
 using enable_if_t = typename std::enable_if<B, T>::type;
@@ -49,27 +50,32 @@ public:
         return rbm_type<N>::num_hidden;
     }
 
-    template<typename TrainingItem, std::size_t I>
-    inline enable_if_t<(I == layers - 1), void> train_rbm_layers(const std::vector<std::vector<TrainingItem>>& training_data, std::size_t max_epochs){
+    template<size_t I, typename TrainingItem>
+    inline enable_if_t<(I == layers - 1), void> train_rbm_layers(const std::vector<TrainingItem>& training_data, std::size_t max_epochs){
         std::get<I>(tuples).train(training_data, max_epochs);
     }
 
-    template<typename TrainingItem, std::size_t I>
-    inline enable_if_t<(I < layers - 1), void> train_rbm_layers(const std::vector<std::vector<TrainingItem>>& training_data, std::size_t max_epochs){
+    template<size_t I, typename TrainingItem>
+    inline enable_if_t<(I < layers - 1), void> train_rbm_layers(const std::vector<TrainingItem>& training_data, std::size_t max_epochs){
         auto& rbm = layer<I>();
-        if(I == 0){
-            rbm.train(training_data, max_epochs);
-        } else {
-            //TODO Train with data of previous layer
-            //rbm.train(training_data, max_epochs);
+
+        rbm.train(training_data, max_epochs);
+
+        std::vector<vector<double>> next;
+        next.reserve(training_data.size());
+
+        for(auto& training_item : training_data){
+            vector<double> next_item(num_hidden<I>());
+            rbm.activate_hidden(next_item, training_item);
+            next.emplace_back(std::move(next_item));
         }
 
-        train_rbm_layers<TrainingItem, I + 1>(training_data, max_epochs);
+        train_rbm_layers<I + 1>(next, max_epochs);
     }
 
     template<typename TrainingItem>
     void train(const std::vector<std::vector<TrainingItem>>& training_data, std::size_t max_epochs){
-        train_rbm_layers<TrainingItem, 0>(training_data, max_epochs);
+        train_rbm_layers<0>(training_data, max_epochs);
     }
 };
 
