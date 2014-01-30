@@ -146,7 +146,7 @@ public:
                 error += cd_step(training_data.begin() + i * BatchSize, training_data.begin() + (i+1) * BatchSize);
             }
 
-            std::cout << "epoch " << epoch << ": Reconstruction error average: " << (error / batches) << std::endl;
+            std::cout << "epoch " << epoch << ": Reconstruction error average: " << (error / batches) << " Free energy: " << free_energy() << std::endl;
 
             if(Momentum && epoch == 6){
                 momentum = 0.9;
@@ -259,6 +259,18 @@ public:
         error = sqrt(error / num_visible);
 
         return error;
+    }
+
+    weight free_energy() const {
+        weight energy = 0.0;
+
+        for(size_t i = 0; i < num_visible; ++i){
+            for(size_t j = 0; j < num_hidden; ++j){
+                energy += w(i, j) * b(j) * a(i);
+            }
+        }
+
+        return -energy;
     }
 
     template<typename TrainingItem>
