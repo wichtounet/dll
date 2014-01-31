@@ -52,11 +52,15 @@ public:
 
     template<size_t I, typename TrainingItem>
     inline enable_if_t<(I == layers - 1), void> train_rbm_layers(const std::vector<TrainingItem>& training_data, std::size_t max_epochs){
+        std::cout << "Train layer " << I << std::endl;
+
         std::get<I>(tuples).train(training_data, max_epochs);
     }
 
     template<size_t I, typename TrainingItem>
     inline enable_if_t<(I < layers - 1), void> train_rbm_layers(const std::vector<TrainingItem>& training_data, std::size_t max_epochs){
+        std::cout << "Train layer " << I << std::endl;
+
         auto& rbm = layer<I>();
 
         rbm.train(training_data, max_epochs);
