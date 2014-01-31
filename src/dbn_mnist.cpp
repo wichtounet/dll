@@ -29,7 +29,7 @@ int main(int argc, char* argv[]){
 
     binarize_each(training_images);
 
-    typedef dbn::dbn<dbn::conf<>, dbn::layer<28 * 28, 500>, dbn::layer<500, 2000>, dbn::layer<2000, 10>> dbn_t;
+    typedef dbn::dbn<dbn::conf<true, 50>, dbn::layer<28 * 28, 100>, dbn::layer<100, 300>, dbn::layer<300, 500>> dbn_t;
 
     auto dbn = std::make_shared<dbn_t>();
 
