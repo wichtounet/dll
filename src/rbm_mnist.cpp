@@ -37,7 +37,7 @@ int main(int argc, char* argv[]){
         binarize_each(test_images);
 
         for(size_t t = 0; t < 10; ++t){
-            auto& image = test_images[666 * t];
+            auto& image = test_images[666 + t];
 
             std::cout << "Source image" << std::endl;
             for(size_t i = 0; i < 28; ++i){

@@ -123,9 +123,9 @@ std::vector<std::vector<uint8_t>> mnist::read_test_images(){
 }
 
 std::vector<uint8_t> mnist::read_training_labels(){
-    return read_mnist_label_file("datasets/mnist/train-labels-idx3-ubyte");
+    return read_mnist_label_file("datasets/mnist/train-labels-idx1-ubyte");
 }
 
 std::vector<uint8_t> mnist::read_test_labels(){
-    return read_mnist_label_file("datasets/mnist/t10k-labels-idx3-ubyte");
+    return read_mnist_label_file("datasets/mnist/t10k-labels-idx1-ubyte");
 }

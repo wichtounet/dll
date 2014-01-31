@@ -91,21 +91,6 @@ private:
         return 1.0 / (1.0 + exp(-x));
     }
 
-    template<typename V1, typename V2>
-    static const V2& bernoulli(const V1& input, V2& output){
-        dbn_assert(input.size() == output.size(), "vector must the same sizes");
-
-        static std::mt19937_64 rand_engine(::time(nullptr));
-        static std::uniform_real_distribution<double> distribution(0.0, 1.0);
-        static auto generator = bind(distribution, rand_engine);
-
-        for(size_t i = 0; i < input.size(); ++i){
-            output(i) = generator() < input(i) ? 1.0 : 0.0;
-        }
-
-        return output;
-    }
-
 public:
     template<bool M = Momentum, typename std::enable_if<(!M), bool>::type = false>
     rbm() : a(0.0), b(0.0){
@@ -120,6 +105,21 @@ public:
         static_assert(Momentum, "This constructor should only be used with momentum support");
 
         init_weights();
+    }
+
+    template<typename V1, typename V2>
+    static const V2& bernoulli(const V1& input, V2& output){
+        dbn_assert(input.size() == output.size(), "vector must the same sizes");
+
+        static std::mt19937_64 rand_engine(::time(nullptr));
+        static std::uniform_real_distribution<double> distribution(0.0, 1.0);
+        static auto generator = bind(distribution, rand_engine);
+
+        for(size_t i = 0; i < input.size(); ++i){
+            output(i) = generator() < input(i) ? 1.0 : 0.0;
+        }
+
+        return output;
     }
 
     template<typename TrainingItem>
