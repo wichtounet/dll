@@ -21,6 +21,7 @@
 #include "stop_watch.hpp"
 #include "fast_matrix.hpp"
 #include "fast_vector.hpp"
+#include "conf.hpp"
 
 namespace dbn {
 
@@ -39,6 +40,7 @@ public:
     static constexpr const bool Momentum = Conf::Momentum;
     static constexpr const std::size_t BatchSize = Conf::BatchSize;
     static constexpr const bool Debug = Conf::Debug;
+    static constexpr const Type Unit = Conf::Unit;
 
     static_assert(BatchSize > 0, "Batch size must be at least 1");
 
@@ -172,7 +174,11 @@ public:
             }
 
             auto activation = b(j) + s;
-            h(j) = logistic_sigmoid(activation);
+            if(Unit == Type::SIGMOID){
+                h(j) = logistic_sigmoid(activation);
+            } else {
+                h(j) = exp(activation);
+            }
         }
     }
 
@@ -187,7 +193,11 @@ public:
             }
 
             auto activation = a(i) + s;
-            v(i) = logistic_sigmoid(activation);
+            if(Unit == Type::SIGMOID){
+                v(i) = logistic_sigmoid(activation);
+            } else {
+                v(i) = exp(activation);
+            }
         }
     }
 

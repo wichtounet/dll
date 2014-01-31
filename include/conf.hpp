@@ -12,11 +12,17 @@
 
 namespace dbn {
 
-template<bool M = true, std::size_t B = 1, bool D = false>
+enum class Type {
+    SIGMOID,
+    EXP
+};
+
+template<bool M = true, std::size_t B = 1, bool D = false, Type T = Type::SIGMOID>
 struct conf {
     static constexpr const bool Momentum = M;
     static constexpr const std::size_t BatchSize = B;
     static constexpr const bool Debug = D;
+    static constexpr const Type Unit = T;
 };
 
 } //end of dbn namespace
