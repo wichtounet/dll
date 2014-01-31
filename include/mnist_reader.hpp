@@ -16,6 +16,9 @@ namespace mnist {
 std::vector<std::vector<uint8_t>> read_training_images();
 std::vector<std::vector<uint8_t>> read_test_images();
 
+std::vector<uint8_t> read_training_labels();
+std::vector<uint8_t> read_test_labels();
+
 }
 
 #endif
