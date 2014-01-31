@@ -81,6 +81,12 @@ public:
     void train(const std::vector<std::vector<TrainingItem>>& training_data, std::size_t max_epochs){
         train_rbm_layers<0>(training_data, max_epochs);
     }
+
+    template<typename TrainingItem, typename Label>
+    void train_with_labels(const std::vector<TrainingItem>& training_data, const std::vector<Label>& training_labels, std::size_t labels, std::size_t max_epochs){
+        dbn_assert(training_data.size() == training_labels.size(), "There must be the same number of values than labels");
+        //TODO
+    }
 };
 
 } //end of namespace dbn

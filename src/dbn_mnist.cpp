@@ -26,6 +26,7 @@ int main(int argc, char* argv[]){
     }
 
     auto training_images = mnist::read_training_images();
+    auto training_labels = mnist::read_training_labels();
 
     binarize_each(training_images);
 
@@ -33,6 +34,7 @@ int main(int argc, char* argv[]){
 
     auto dbn = std::make_shared<dbn_t>();
 
+    dbn->train_with_labels(training_images, training_labels, 10, 5);
     dbn->train(training_images, 5);
 
     //TODO Train
