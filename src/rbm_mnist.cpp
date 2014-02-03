@@ -24,7 +24,7 @@ int main(int argc, char* argv[]){
         }
     }
 
-    dbn::rbm<dbn::layer<28 * 28, 100>, dbn::conf<true, 50>> rbm;
+    dbn::rbm<dbn::layer<dbn::conf<true, 50>, 28 * 28, 100>> rbm;
 
     auto training_images = mnist::read_training_images();
 

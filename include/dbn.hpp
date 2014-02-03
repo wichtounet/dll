@@ -18,10 +18,10 @@ using enable_if_t = typename std::enable_if<B, T>::type;
 
 namespace dbn {
 
-template<typename Conf, typename... Layers>
+template<typename... Layers>
 struct dbn {
 private:
-    typedef std::tuple<rbm<Layers, Conf>...> tuple_type;
+    typedef std::tuple<rbm<Layers>...> tuple_type;
     tuple_type tuples;
 
     template <std::size_t N>

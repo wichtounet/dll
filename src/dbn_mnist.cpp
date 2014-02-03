@@ -14,7 +14,7 @@
 #include "mnist_reader.hpp"
 #include "image_utils.hpp"
 
-int main(int argc, char* argv[]){
+int main(int, char*[]){
     auto training_images = mnist::read_training_images();
     auto training_labels = mnist::read_training_labels();
 
@@ -31,7 +31,10 @@ int main(int argc, char* argv[]){
 
     binarize_each(training_images);
 
-    typedef dbn::dbn<dbn::conf<true, 50>, dbn::layer<28 * 28, 100>, dbn::layer<100, 300>, dbn::layer<310, 500>> dbn_t;
+    typedef dbn::dbn<
+        dbn::layer<dbn::conf<true, 50>, 28 * 28, 100>,
+        dbn::layer<dbn::conf<true, 50>, 100, 300>,
+        dbn::layer<dbn::conf<true, 50>, 310, 500>> dbn_t;
 
     auto dbn = std::make_shared<dbn_t>();
 
