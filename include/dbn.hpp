@@ -52,7 +52,7 @@ public:
 
     template<std::size_t I, typename TrainingItems, typename LabelItems>
     inline enable_if_t<(I == layers - 1), void>
-    train_rbm_layers(const TrainingItems& training_data, std::size_t max_epochs, const LabelItems&, std::size_t){
+    train_rbm_layers(TrainingItems& training_data, std::size_t max_epochs, const LabelItems&, std::size_t){
         std::cout << "Train layer " << I << std::endl;
 
         std::get<I>(tuples).train(training_data, max_epochs);
@@ -60,7 +60,7 @@ public:
 
     template<std::size_t I, typename TrainingItems, typename LabelItems>
     inline enable_if_t<(I < layers - 1), void>
-    train_rbm_layers(const TrainingItems& training_data, std::size_t max_epochs, const LabelItems& training_labels = {}, std::size_t labels = 0){
+    train_rbm_layers(TrainingItems& training_data, std::size_t max_epochs, const LabelItems& training_labels = {}, std::size_t labels = 0){
         std::cout << "Train layer " << I << std::endl;
 
         auto& rbm = layer<I>();
@@ -102,7 +102,7 @@ public:
     }
 
     template<typename TrainingItem, typename Label>
-    void train_with_labels(const std::vector<TrainingItem>& training_data, const std::vector<Label>& training_labels, std::size_t labels, std::size_t max_epochs){
+    void train_with_labels(std::vector<TrainingItem>& training_data, const std::vector<Label>& training_labels, std::size_t labels, std::size_t max_epochs){
         dbn_assert(training_data.size() == training_labels.size(), "There must be the same number of values than labels");
         dbn_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 

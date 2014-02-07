@@ -49,6 +49,8 @@ public:
 
         rhs.rows = 0;
         rhs._data = nullptr;
+
+        return *this;
     }
 
     ~vector(){

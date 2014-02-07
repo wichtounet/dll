@@ -132,7 +132,7 @@ public:
     }
 
     template<typename TrainingItem>
-    void train(const std::vector<TrainingItem>& training_data, std::size_t max_epochs){
+    void train(std::vector<TrainingItem>& training_data, std::size_t max_epochs){
         stop_watch<std::chrono::seconds> watch;
 
         if(Init){
@@ -154,6 +154,10 @@ public:
         }
 
         auto batches = training_data.size() / BatchSize;
+        batches = 100;
+
+//        std::mt19937_64 rand_engine(::time(nullptr));
+//        std::shuffle(training_data.begin(), training_data.end(), rand_engine);
 
         for(size_t epoch= 0; epoch < max_epochs; ++epoch){
             double error = 0.0;
