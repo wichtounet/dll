@@ -287,9 +287,9 @@ public:
 
         double error = 0.0;
         for(size_t i = 0; i < num_visible; ++i){
-            error += (ga(i) / n_samples) * (ga(i) / n_samples);
+            error += ga(i) * ga(i);
         }
-        error = sqrt(error / num_visible);
+        error = sqrt((error / (n_samples * n_samples)) / num_visible);
 
         return error;
     }
