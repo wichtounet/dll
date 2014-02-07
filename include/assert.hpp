@@ -8,9 +8,14 @@
 #ifndef DBN_ASSERT_HPP
 #define DBN_ASSERT_HPP
 
-#include <cassert>
-
 #include <boost/assert.hpp>
+
+#ifdef NDEBUG
+
+#define dbn_assert(condition, message)
+#define dbn_unreachable(message) __builtin_unreachable();
+
+#else
 
 #define dbn_assert(condition, message) BOOST_ASSERT_MSG(condition, message);
 
@@ -18,7 +23,7 @@
 
 #define dbn_unreachable(message) BOOST_ASSERT_MSG(false, message); assert(false); __builtin_unreachable();
 
-#endif
+#endif //__GNUC__
 
 #ifdef __clang__
 
@@ -28,6 +33,8 @@
 #define dbn_unreachable(message) BOOST_ASSERT_MSG(false, message); assert(false);
 #endif
 
-#endif
+#endif //__clang__
 
-#endif
+#endif //NDEBUG
+
+#endif //DBN_ASSERT_HPP
