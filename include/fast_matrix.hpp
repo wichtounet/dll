@@ -17,8 +17,13 @@
 
 template<typename T, size_t Rows, size_t Columns>
 class fast_matrix {
+public:
+    typedef std::array<T, Rows * Columns> array_impl;
+    typedef typename array_impl::iterator iterator;
+    typedef typename array_impl::const_iterator const_iterator;
+
 private:
-    std::array<T, Rows * Columns> _data;
+    array_impl _data;
 
 public:
     static constexpr const std::size_t rows = Rows;
@@ -152,6 +157,22 @@ public:
 
     const T* data() const {
         return _data;
+    }
+
+    const_iterator begin() const {
+        return _data.begin();
+    }
+
+    const_iterator end() const {
+        return _data.end();
+    }
+
+    iterator begin(){
+        return _data.begin();
+    }
+
+    iterator end(){
+        return _data.end();
     }
 };
 

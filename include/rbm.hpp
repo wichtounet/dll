@@ -13,6 +13,7 @@
 #include <random>
 #include <functional>
 #include <fstream>
+#include <cmath>
 
 //TODO Find a better way to use mkdir
 #include <sys/stat.h>
@@ -22,6 +23,13 @@
 #include "fast_matrix.hpp"
 #include "fast_vector.hpp"
 #include "conf.hpp"
+
+#ifdef NDEBUG
+#define nan_check(list)
+#else
+#define nan_check(list) for(auto& nantest : ((list))){dbn_assert(!std::isnan(nantest), "NaN Verify");}
+#endif
+
 
 namespace dbn {
 
@@ -39,6 +47,7 @@ public:
 
     static constexpr const bool Momentum = Layer::Conf::Momentum;
     static constexpr const std::size_t BatchSize = Layer::Conf::BatchSize;
+    static constexpr const bool Init = Layer::Conf::Debug;
     static constexpr const bool Debug = Layer::Conf::Debug;
     static constexpr const Type Unit = Layer::Conf::Unit;
 
@@ -100,7 +109,7 @@ public:
     }
 
     template<bool M = Momentum, typename std::enable_if<(M), bool>::type = false>
-    rbm() : a(0.0), b(0.0), w_inc(0.0){
+    rbm() : a(0.0), b(0.0), w_inc(0.0), a_inc(0.0), b_inc(0.0) {
 
         static_assert(Momentum, "This constructor should only be used with momentum support");
 
@@ -126,18 +135,22 @@ public:
     void train(const std::vector<TrainingItem>& training_data, std::size_t max_epochs){
         stop_watch<std::chrono::seconds> watch;
 
-        //Initialize the visible biases to log(pi/(1-pi))
-        for(size_t i = 0; i < num_visible; ++i){
-            size_t c = 0;
-            for(auto& items : training_data){
-                if(items[i] == 1){
-                    ++c;
+        if(Init){
+            //Initialize the visible biases to log(pi/(1-pi))
+            for(size_t i = 0; i < num_visible; ++i){
+                size_t c = 0;
+                for(auto& items : training_data){
+                    if(items[i] == 1){
+                        ++c;
+                    }
                 }
-            }
 
-            auto pi = static_cast<double>(c) / training_data.size();
-            pi += 0.0001;
-            a(i) = log(pi / (1.0 - pi));
+                auto pi = static_cast<double>(c) / training_data.size();
+                pi += 0.0001;
+                a(i) = log(pi / (1.0 - pi));
+
+                dbn_assert(!std::isnan(a(i)), "NaN verify");
+            }
         }
 
         auto batches = training_data.size() / BatchSize;
@@ -179,6 +192,8 @@ public:
             } else {
                 h(j) = exp(activation);
             }
+
+            dbn_assert(!std::isnan(h(j)), "NaN verify");
         }
     }
 
@@ -198,12 +213,14 @@ public:
             } else {
                 v(i) = exp(activation);
             }
+
+            dbn_assert(!std::isnan(v(i)), "NaN verify");
         }
     }
 
     template<typename Iterator>
     double cd_step(Iterator it, Iterator end){
-        dbn_assert(std::distance(it, end) == BatchSize, "Invalid size");
+        dbn_assert(std::distance(it, end) == static_cast<typename std::iterator_traits<Iterator>::difference_type>(BatchSize), "Invalid size");
         dbn_assert(it->size() == num_visible, "The size of the training sample must match visible units");
 
         v1 = 0.0;
@@ -240,25 +257,31 @@ public:
         auto n_samples = static_cast<weight>(BatchSize);
 
         if(Momentum){
-            w_inc = w_inc * momentum + (gw / n_samples) * learning_rate;
+            w_inc = w_inc * momentum + gw * (learning_rate / n_samples);
             w += w_inc;
         } else {
             w += (gw / n_samples) * learning_rate;
         }
 
+        nan_check(w);
+
         if(Momentum){
-            a_inc = a_inc * momentum + (ga / n_samples) * learning_rate;
+            a_inc = a_inc * momentum + ga * (learning_rate / n_samples);
             a += a_inc;
         } else {
             a += (ga / n_samples) * learning_rate;
         }
 
+        nan_check(a);
+
         if(Momentum){
-            b_inc = b_inc * momentum + (gb / n_samples) * learning_rate;
+            b_inc = b_inc * momentum + gb * (learning_rate / n_samples);
             b += b_inc;
         } else {
             b += (gb / n_samples) * learning_rate;
         }
+
+        nan_check(b);
 
         //Compute the reconstruction error
 

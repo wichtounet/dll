@@ -32,13 +32,18 @@ int main(int, char*[]){
     binarize_each(training_images);
 
     typedef dbn::dbn<
-        dbn::layer<dbn::conf<true, 50>, 28 * 28, 100>,
-        dbn::layer<dbn::conf<true, 50>, 100, 300>,
-        dbn::layer<dbn::conf<true, 50>, 310, 500>> dbn_t;
+        dbn::layer<dbn::conf<true, 50, true>, 28 * 28, 100>,
+        //dbn::layer<dbn::conf<true, 50, false>, 500, 500>,
+        dbn::layer<dbn::conf<true, 50, false>, 110, 300>> dbn_t;
 
     auto dbn = std::make_shared<dbn_t>();
 
-    dbn->train_with_labels(training_images, training_labels, 10, 5);
+    std::cout << "Start training" << std::endl;
+
+    dbn->train_with_labels(training_images, training_labels, 10, 10);
+
+    std::cout << "Start testing" << std::endl;
+    stop_watch<std::chrono::milliseconds> watch;
 
     size_t success = 0;
     for(size_t i = 0; i < training_images.size(); ++i){
@@ -67,6 +72,8 @@ int main(int, char*[]){
     }
 
     std::cout << "Test Set Error rate: " << ((test_images.size() - success) / static_cast<double>(test_images.size())) << std::endl;
+
+    std::cout << "Training took " << watch.elapsed() << "ms" << std::endl;
 
     return 0;
 }

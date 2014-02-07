@@ -17,10 +17,11 @@ enum class Type {
     EXP
 };
 
-template<bool M = true, std::size_t B = 1, Type T = Type::SIGMOID, bool D = false>
+template<bool M = true, std::size_t B = 1, bool I = true, Type T = Type::SIGMOID, bool D = false>
 struct conf {
     static constexpr const bool Momentum = M;
     static constexpr const std::size_t BatchSize = B;
+    static constexpr const bool Init = I;
     static constexpr const Type Unit = T;
     static constexpr const bool Debug = D;
 };

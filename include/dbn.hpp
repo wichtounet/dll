@@ -114,8 +114,9 @@ public:
     activate_layers(const TrainingItem& input, size_t, Output& output){
         auto& rbm = layer<I>();
 
-        vector<double> h1(num_hidden<I>());
-        vector<double> hs(num_hidden<I>());
+        static vector<double> h1(num_hidden<I>());
+        static vector<double> hs(num_hidden<I>());
+
         rbm.activate_hidden(h1, input);
         rbm.activate_visible(rbm_type<I>::bernoulli(h1, hs), output);
     }
@@ -125,13 +126,14 @@ public:
     activate_layers(const TrainingItem& input, std::size_t labels, Output& output){
         auto& rbm = layer<I>();
 
-        vector<double> next(num_visible<I+1>());
+        static vector<double> next(num_visible<I+1>());
+
         rbm.activate_hidden(next, input);
 
         //If the next layers is the last layer
         if(I + 1 == layers - 1){
             for(size_t l = 0; l < labels; ++l){
-                next[num_hidden<I>() + l] = 0;
+                next[num_hidden<I>() + l] = 0.1;
             }
         }
 
@@ -142,8 +144,76 @@ public:
     size_t predict(TrainingItem& item, std::size_t labels){
         dbn_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
-        vector<double> output(num_visible<layers - 1>());
+        static vector<double> output(num_visible<layers - 1>());
+
         activate_layers<0>(item, labels, output);
+
+        size_t label = 0;
+        double max = 0;
+        for(size_t l = 0; l < labels; ++l){
+            auto value = output[num_visible<layers - 1>() - labels + l];
+
+            if(value > max){
+                max = value;
+                label = l;
+            }
+        }
+
+        return label;
+    }
+
+    template<std::size_t I, typename TrainingItem, typename Output>
+    inline enable_if_t<(I == layers - 1), void>
+    deep_activate_layers(const TrainingItem& input, size_t, Output& output, std::size_t sampling){
+        auto& rbm = layer<I>();
+
+        static vector<double> v1(num_visible<I>());
+        static vector<double> v2(num_visible<I>());
+
+        for(size_t i = 0; i < input.size(); ++i){
+            v1(i) = input[i];
+        }
+
+        static vector<double> h1(num_hidden<I>());
+        static vector<double> h2(num_hidden<I>());
+        static vector<double> hs(num_hidden<I>());
+
+        for(size_t i = 0; i< sampling; ++i){
+            rbm.activate_hidden(h1, v1);
+            rbm.activate_visible(rbm_type<I>::bernoulli(h1, hs), v1);
+
+            //TODO Perhaps we should apply a new bernoulli on v1 ?
+        }
+
+        rbm.activate_hidden(h1, input);
+        rbm.activate_visible(rbm_type<I>::bernoulli(h1, hs), output);
+    }
+
+    template<std::size_t I, typename TrainingItem, typename Output>
+    inline enable_if_t<(I < layers - 1), void>
+    deep_activate_layers(const TrainingItem& input, std::size_t labels, Output& output, std::size_t sampling){
+        auto& rbm = layer<I>();
+
+        static vector<double> next(num_visible<I+1>());
+
+        rbm.activate_hidden(next, input);
+
+        //If the next layers is the last layer
+        if(I + 1 == layers - 1){
+            for(size_t l = 0; l < labels; ++l){
+                next[num_hidden<I>() + l] = 0.1;
+            }
+        }
+
+        deep_activate_layers<I + 1>(next, labels, output, sampling);
+    }
+
+    template<typename TrainingItem>
+    size_t deep_predict(TrainingItem& item, std::size_t labels, std::size_t sampling){
+        dbn_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
+
+        vector<double> output(num_visible<layers - 1>());
+        deep_activate_layers<0>(item, labels, output, sampling);
 
         size_t label = 0;
         double max = 0;
