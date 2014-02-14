@@ -87,10 +87,13 @@ int main(int argc, char* argv[]){
         std::cout << "Testing took " << watch.elapsed() << "ms" << std::endl;
     } else {
         typedef dbn::dbn<
-            dbn::layer<dbn::conf<true, 50, true>, 28 * 28, 50>,
-            dbn::layer<dbn::conf<true, 50, false>, 50, 50>,
-            dbn::layer<dbn::conf<true, 50, false>, 50, 100>,
-            dbn::layer<dbn::conf<true, 50, false>, 100, 10>> dbn_t;
+            dbn::layer<dbn::conf<true, 50, true, true>, 28 * 28, 50>,
+            dbn::layer<dbn::conf<true, 50, false, true>, 50, 50>,
+            dbn::layer<dbn::conf<true, 50, false, true>, 50, 100>,
+            dbn::layer<dbn::conf<true, 50, false, true>, 100, 10>> dbn_t;
+
+        std::cout << (sizeof(dbn_t) / 1024) << "KiB" << std::endl;
+        std::cout << (sizeof(dbn_t) / 1024 / 1024) << "MiB" << std::endl;
 
         auto dbn = std::make_shared<dbn_t>();
 

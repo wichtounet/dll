@@ -50,8 +50,15 @@ public:
     static constexpr const bool Init = Layer::Conf::Debug;
     static constexpr const bool Debug = Layer::Conf::Debug;
     static constexpr const Type Unit = Layer::Conf::Unit;
+    static constexpr const bool DBN = Layer::Conf::DBN;
 
     static_assert(BatchSize > 0, "Batch size must be at least 1");
+
+    static constexpr const std::size_t num_visible_mom = Momentum ? num_visible : 0;
+    static constexpr const std::size_t num_hidden_mom = Momentum ? num_hidden : 0;
+
+    static constexpr const std::size_t num_visible_gra = DBN ? num_visible : 0;
+    static constexpr const std::size_t num_hidden_gra = DBN ? num_hidden : 0;
 
 private:
     fast_vector<value_t, num_visible> visibles;
@@ -62,11 +69,12 @@ private:
     fast_vector<weight, num_hidden> b;
 
     //Weights for momentum
-    fast_matrix<weight, Momentum ? num_visible: 0, Momentum ? num_hidden : 0> w_inc;
-    fast_vector<weight, Momentum ? num_visible : 0> a_inc;
-    fast_vector<weight, Momentum ? num_hidden : 0> b_inc;
+    fast_matrix<weight, num_visible_mom, num_hidden_mom> w_inc;
+    fast_vector<weight, num_visible_mom> a_inc;
+    fast_vector<weight, num_hidden_mom> b_inc;
 
     //Temporary data
+    //TODO Perhaps it is better has static data in the functions
     fast_vector<weight, num_visible> v1;
     fast_vector<weight, num_hidden> h1;
     fast_vector<weight, num_visible> v2;
@@ -77,6 +85,31 @@ private:
     fast_matrix<weight, num_visible, num_hidden> gw;
     fast_vector<weight, num_visible> ga;
     fast_vector<weight, num_hidden> gb;
+
+    //Gradients computations for DBN
+    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_weights;
+    fast_vector<weight, num_hidden_gra> gr_b;
+
+    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_weights_incs;
+    fast_vector<weight, num_hidden_gra> gr_b_incs;
+
+    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_weights_best;
+    fast_vector<weight, num_hidden_gra> gr_b_best;
+
+    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_weights_best_incs;
+    fast_vector<weight, num_hidden_gra> gr_b_best_incs;
+
+    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_weights_df0s;
+    fast_vector<weight, num_hidden_gra> gr_b_df0s;
+
+    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_weights_df3s;
+    fast_vector<weight, num_hidden_gra> gr_b_df3s;
+
+    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_weights_s;
+    fast_vector<weight, num_hidden_gra> gr_b_s;
+
+    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_weights_tmp;
+    fast_vector<weight, num_hidden_gra> gr_b_tmp;
 
     //TODO Add a way to configure that
     double learning_rate = 0.1;

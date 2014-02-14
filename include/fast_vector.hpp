@@ -20,8 +20,6 @@
 
 template<typename T, std::size_t Rows>
 class fast_vector {
-    static_assert(Rows > 0, "Vector of size 0 do no make sense");
-
 private:
     std::array<T, Rows> _data;
 
