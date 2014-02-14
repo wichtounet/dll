@@ -97,12 +97,12 @@ public:
     }
 
     template<typename TrainingItem>
-    void train(const std::vector<std::vector<TrainingItem>>& training_data, std::size_t max_epochs){
-        train_rbm_layers<0>(training_data, max_epochs);
+    void pretrain(std::vector<TrainingItem>& training_data, std::size_t max_epochs){
+        train_rbm_layers<0, decltype(training_data), std::vector<uint8_t>>(training_data, max_epochs);
     }
 
     template<typename TrainingItem, typename Label>
-    void train_with_labels(std::vector<TrainingItem>& training_data, const std::vector<Label>& training_labels, std::size_t labels, std::size_t max_epochs){
+    void pretrain_with_labels(std::vector<TrainingItem>& training_data, const std::vector<Label>& training_labels, std::size_t labels, std::size_t max_epochs){
         dbn_assert(training_data.size() == training_labels.size(), "There must be the same number of values than labels");
         dbn_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
