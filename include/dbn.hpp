@@ -18,6 +18,23 @@ using enable_if_t = typename std::enable_if<B, T>::type;
 
 namespace dbn {
 
+template<typename Input, typename Target, typename V>
+struct gradient_context {
+    size_t max_iterations;
+    size_t epoch;
+    batch<Input> inputs;
+    batch<Target> targets;
+    size_t start_layer;
+
+    std::vector<std::vector<V>>& probs;
+
+    gradient_context(batch<Input> i, std::vector<std::vector<V>>& p, size_t e)
+        : max_iterations(3), epoch(e), inputs(i), start_layer(0), probs(p)
+    {
+        //Nothing else to init
+    }
+};
+
 template<typename... Layers>
 struct dbn {
 private:
