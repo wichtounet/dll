@@ -248,8 +248,8 @@ public:
 
     /* Gradient */
 
-    template<typename Input, typename Target, typename V1, typename V2>
-    size_t gradient(gradient_context<Input, Target>& context, V1& weights, V2& weights_incs, weight& cost){
+    template<typename Input, typename Target>
+    size_t gradient(gradient_context<Input, Target>& context, weight& cost){
 
     }
 
@@ -264,6 +264,7 @@ public:
         auto max_iteration = context.max_iteration;
 
         double cost = 0.0;
+        gradient(context, cost);
 
 
 

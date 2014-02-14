@@ -111,6 +111,8 @@ private:
     fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_weights_tmp;
     fast_vector<weight, num_hidden_gra> gr_b_tmp;
 
+    std::vector<fast_vector<weight, num_hidden_gra>> gr_probs;
+
     //TODO Add a way to configure that
     double learning_rate = 0.1;
     double momentum = 0.5;
