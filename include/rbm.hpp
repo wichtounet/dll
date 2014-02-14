@@ -23,13 +23,13 @@
 #include "fast_matrix.hpp"
 #include "fast_vector.hpp"
 #include "conf.hpp"
+#include "batch.hpp"
 
 #ifdef NDEBUG
 #define nan_check(list)
 #else
 #define nan_check(list) for(auto& nantest : ((list))){dbn_assert(!std::isnan(nantest), "NaN Verify");}
 #endif
-
 
 namespace dbn {
 
@@ -162,7 +162,7 @@ public:
         for(size_t epoch= 0; epoch < max_epochs; ++epoch){
             double error = 0.0;
             for(size_t i = 0; i < batches; ++i){
-                error += cd_step(training_data.begin() + i * BatchSize, training_data.begin() + (i+1) * BatchSize);
+                error += cd_step(dbn::batch<TrainingItem>(training_data.begin() + i * BatchSize, training_data.begin() + (i+1) * BatchSize));
             }
 
             std::cout << "epoch " << epoch << ": Reconstruction error average: " << (error / batches) << " Free energy: " << free_energy() << std::endl;
@@ -222,10 +222,10 @@ public:
         }
     }
 
-    template<typename Iterator>
-    double cd_step(Iterator it, Iterator end){
-        dbn_assert(std::distance(it, end) == static_cast<typename std::iterator_traits<Iterator>::difference_type>(BatchSize), "Invalid size");
-        dbn_assert(it->size() == num_visible, "The size of the training sample must match visible units");
+    template<typename T>
+    double cd_step(const dbn::batch<T> batch){
+        dbn_assert(batch.size() == static_cast<typename dbn::batch<T>::size_type>(BatchSize), "Invalid size");
+        dbn_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
 
         v1 = 0.0;
         h1 = 0.0;
@@ -237,9 +237,7 @@ public:
         gb = 0.0;
         gw = 0.0;
 
-        while(it != end){
-            auto& items = *it++;
-
+        for(auto& items : batch){
             for(size_t i = 0; i < num_visible; ++i){
                 v1(i) = items[i];
             }
