@@ -18,7 +18,7 @@ using enable_if_t = typename std::enable_if<B, T>::type;
 
 namespace dbn {
 
-template<typename Input, typename Target, typename V>
+template<typename Input, typename Target>
 struct gradient_context {
     size_t max_iterations;
     size_t epoch;
@@ -26,10 +26,8 @@ struct gradient_context {
     batch<Target> targets;
     size_t start_layer;
 
-    std::vector<std::vector<V>>& probs;
-
-    gradient_context(batch<Input> i, std::vector<std::vector<V>>& p, size_t e)
-        : max_iterations(3), epoch(e), inputs(i), start_layer(0), probs(p)
+    gradient_context(batch<Input> i, batch<Target> t, size_t e)
+        : max_iterations(3), epoch(e), inputs(i), targets(t), start_layer(0)
     {
         //Nothing else to init
     }
@@ -45,6 +43,8 @@ private:
     using rbm_type = typename std::tuple_element<N, tuple_type>::type;
 
     static constexpr const std::size_t layers = sizeof...(Layers);
+
+    typedef typename rbm_type<0>::weight weight;
 
 public:
     template<std::size_t N>
@@ -244,6 +244,51 @@ public:
         }
 
         return label;
+    }
+
+    /* Gradient */
+
+    template<typename Input, typename Target, typename V1, typename V2>
+    size_t gradient(gradient_context<Input, Target>& context, V1& weights, V2& weights_incs, weight& cost){
+
+    }
+
+    template<typename Input, typename Target>
+    size_t minimize(gradient_context<Input, Target>& context){
+        constexpr const double INT = 0.1;
+        constexpr const double EXT = 3.0;
+        constexpr const double SIG = 0.1;
+        constexpr const double RHO = SIG / 2.0;
+        constexpr const double RATIO = 10.0;
+
+        auto max_iteration = context.max_iteration;
+
+        double cost = 0.0;
+
+
+
+    }
+
+    template<typename TrainingItem, typename Label>
+    void fine_tune(std::vector<TrainingItem>& training_data, std::vector<Label>& labels, size_t epochs, size_t batch_size = rbm_type<0>::BatchSize){
+        //TODO Put probs in each RBM
+
+        auto batches = training_data.size() / batch_size;
+        batches = 100;
+
+        for(size_t epoch = 0; epoch < epochs; ++epoch){
+            for(size_t i = 0; i < batches; ++i){
+                auto start = i * batch_size;
+                auto end = (i+1) * batch_size;
+
+                gradient_context<TrainingItem, Label> context(
+                    batch<TrainingItem>(training_data.begin() + start, training_data.begin() + end),
+                    batch<Label>(labels.egin() + start, labels.begin() + end),
+                    epoch);
+
+                minimize(context);
+            }
+        }
     }
 };
 
