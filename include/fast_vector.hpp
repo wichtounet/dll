@@ -40,6 +40,14 @@ public:
 
     //Construct from expression
 
+    fast_vector& operator=(const fast_vector& rhs){
+        for(std::size_t i = 0; i < Rows; ++i){
+            _data[i] = rhs[i];
+        }
+
+        return *this;
+    }
+
     template<typename LE, typename Op, typename RE>
     fast_vector(fast_expr<T, LE, Op, RE>&& e){
         for(std::size_t i = 0; i < Rows; ++i){
@@ -58,7 +66,6 @@ public:
 
     //Prohibit copy
     fast_vector(const fast_vector& rhs) = delete;
-    fast_vector& operator=(const fast_vector& rhs) = delete;
 
     //Allow move
     fast_vector(fast_vector&& rhs) = default;
@@ -69,6 +76,15 @@ public:
     //Set every element to the same scalar
     void operator=(const T& value){
         std::fill(_data.begin(), _data.end(), value);
+    }
+
+    //Multiply each element by a scalar
+    fast_vector& operator*=(const T& value){
+        for(size_t i = 0; i < Rows; ++i){
+            _data[i] *= value;
+        }
+
+        return *this;
     }
 
     //Divide each element by a scalar

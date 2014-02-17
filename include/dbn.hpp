@@ -12,6 +12,7 @@
 
 #include "rbm.hpp"
 #include "vector.hpp"
+#include "utils.hpp"
 
 template< bool B, class T = void >
 using enable_if_t = typename std::enable_if<B, T>::type;
@@ -248,34 +249,494 @@ public:
 
     /* Gradient */
 
-    template<typename Input, typename Target>
-    size_t gradient(gradient_context<Input, Target>& context, weight& cost){
+    struct clear_weigths_incs {
+        template<typename T>
+        void operator()(T& a) const {
+            a.gr_weights_incs = 0.0;
+            a.gr_b_incs = 0.0;
+        }
+    };
 
+    struct resize_probs {
+        size_t size;
+
+        resize_probs(size_t s) : size(s){}
+
+        template<typename T>
+        void operator()(T& a) const {
+            a.gr_probs.resize(size);
+        }
+    };
+
+    template<std::size_t I, typename TrainingItem>
+    inline enable_if_t<(I == layers - 1), void>
+    gr_activate_layers(const TrainingItem& input, size_t sample){
+        auto& rbm = layer<I>();
+        auto& probs = rbm.gr_probs[sample];
+
+        rbm.gr_activate_hidden(probs, layer<I-1>().gr_probs[sample]);
+    }
+
+    template<std::size_t I, typename TrainingItem>
+    inline enable_if_t<(I > 0 && I < layers - 1), void>
+    gr_activate_layers(const TrainingItem& input, size_t sample){
+        auto& rbm = layer<I>();
+
+        auto& probs = rbm.gr_probs[sample];
+
+        rbm.gr_activate_hidden(probs, layer<I-1>().gr_probs[sample]);
+        gr_activate_layers<I + 1>(input, sample);
+    }
+
+    template<std::size_t I, typename TrainingItem>
+    inline enable_if_t<(I == 0), void>
+    gr_activate_layers(const TrainingItem& input, size_t sample){
+        auto& rbm = layer<I>();
+
+        auto& probs = rbm.gr_probs[sample];
+
+        rbm.gr_activate_hidden(probs, input);
+        gr_activate_layers<I + 1>(input, sample);
+    }
+
+    template<typename R1, typename R2, typename D>
+    void update_diffs(R1& r1, R2& r2,std::vector<D>& diffs, size_t n_samples){
+        auto n_visible = R2::num_visible;
+        auto n_hidden = R2::num_hidden;
+
+        for(size_t sample = 0;  sample < n_samples; ++sample){
+            D diff(n_visible);
+
+            for(size_t i = 0; i < n_visible; ++i){
+                float s = 0.0;
+                for(size_t j = 0; j < n_hidden; ++j){
+                    s+= diffs[sample][j] * r2.gr_weights(i, j);
+                }
+                s *= r1.gr_probs[sample][i] * (1.0 - r1.gr_probs[sample][i]);
+                diff[i] = s;
+            }
+            diffs[sample].swap(diff);
+        }
+    }
+
+    template<typename R, typename D, typename V>
+    void update_incs(R& rbm, std::vector<D>& diffs, size_t n_samples, const V& visibles){
+        auto n_visible = R::num_visible;
+        auto n_hidden = R::num_hidden;
+
+        for(size_t sample = 0;  sample < n_samples; ++sample){
+            auto& v = visibles[sample];
+            auto& d = diffs[sample];
+
+            for(size_t i = 0; i < n_visible; ++i){
+                for(size_t j = 0; j < n_hidden; ++j){
+                    rbm.gr_weights_incs(i, j) += v[i] * d[j];
+                }
+            }
+
+            for(size_t j = 0; j < n_hidden; ++j){
+                rbm.gr_b_incs(j) += d[j];
+            }
+        }
+    }
+
+    template<std::size_t I, typename Input, typename D>
+    inline enable_if_t<(I == layers - 1), void>
+    gradient_descent(Input& inputs, std::vector<D>& diffs, size_t n_samples){
+        auto& rbm = layer<I>();
+
+        update_incs(layer<I>(), diffs, n_samples, layer<I-1>().gr_probs);
+
+        gradient_descent<I -1>(inputs, diffs, n_samples);
+    }
+
+    template<std::size_t I, typename Input, typename D>
+    inline enable_if_t<(I > 0 && I != layers - 1), void>
+    gradient_descent(Input& inputs, std::vector<D>& diffs, size_t n_samples){
+        update_diffs(layer<I>(), layer<I+1>(), diffs, n_samples);
+
+        update_incs(layer<I>(), diffs, n_samples, layer<I-1>().gr_probs);
+
+        gradient_descent<I -1>(inputs, diffs, n_samples);
+    }
+
+    template<std::size_t I, typename Input, typename D>
+    inline enable_if_t<(I == 0), void>
+    gradient_descent(Input& inputs, std::vector<D>& diffs, size_t n_samples){
+        update_diffs(layer<I>(), layer<I+1>(), diffs, n_samples);
+
+        update_incs(layer<I>(), diffs, n_samples, inputs);
     }
 
     template<typename Input, typename Target>
-    size_t minimize(gradient_context<Input, Target>& context){
+    void gradient(gradient_context<Input, Target>& context, weight& cost){
+        cost = 0.0;
+
+        auto n_samples = context.inputs.size();
+
+        for_each(tuples, clear_weigths_incs());
+        std::vector<std::vector<double>> diffs(n_samples);
+
+        double error = 0.0;
+
+        for(size_t sample = 0; sample < n_samples; ++sample){
+            auto& input = context.inputs[sample];
+
+            gr_activate_layers<0>(input, sample);
+
+            auto& result = layer<layers - 1>().gr_probs[sample];
+            auto& diff = diffs[sample];
+            diff.resize(num_hidden<layers - 1>());
+
+            double scale = std::accumulate(result.begin(), result.end(), 0.0);
+            result *= (1.0 / scale);
+
+            auto& target = context.targets[sample];
+            for(size_t i = 0; i < num_hidden<layers -1>(); ++i){
+                diff[i] = (result[i] - target[i]);
+                cost += target[i] * log(result[i]);
+                error += diff[i] * diff[i];
+            }
+        }
+
+        cost = -cost;
+
+        gradient_descent<layers - 1>(context.inputs, diffs, n_samples);
+
+        std::cout << "evaluating: cost:" << cost << " error: " << (error / n_samples) << std::endl;
+    }
+
+    struct gr_init_weights {
+        template<typename T>
+        void operator()(T& a) const {
+            a.gr_weights = a.w;
+            a.gr_b = a.b;
+        }
+    };
+
+    struct gr_copy_init {
+        template<typename T>
+        void operator()(T& a) const {
+            a.gr_weights_s = a.gr_weights_df0 = a.gr_weights_incs;
+            a.gr_b_s = a.gr_b_df0 = a.gr_b_incs;
+
+            a.gr_b_s *= -1.0;
+            a.gr_weights_s *= -1.0;
+        }
+    };
+
+    struct gr_copy_best {
+        template<typename T>
+        void operator()(T& a) const {
+            a.gr_weights_best = a.gr_weights;
+            a.gr_weights_best_incs = a.gr_weights_incs;
+
+            a.gr_b_best = a.gr_b;
+            a.gr_b_best_incs = a.gr_b_incs;
+
+            a.gr_weights_df3 = 0.0;
+            a.gr_b_df3 = 0.0;
+        }
+    };
+
+    struct gr_df0_to_df3 {
+        template<typename T>
+        void operator()(T& a) const {
+            a.gr_weights_df3 = a.gr_weights_df0;
+            a.gr_b_df3 = a.gr_b_df0;
+        }
+    };
+
+    struct gr_w_incs_to_df3 {
+        template<typename T>
+        void operator()(T& a) const {
+            a.gr_weights_df3 = a.gr_weights_incs;
+            a.gr_b_df3 = a.gr_b_incs;
+        }
+    };
+
+    struct gr_tmp_to_best {
+        template<typename T>
+        void operator()(T& a) const {
+            a.gr_weights_best = a.gr_weights_tmp;
+            a.gr_b_best = a.gr_b_tmp;
+
+            a.gr_weights_best_incs = a.gr_weights_incs;
+            a.gr_b_best_incs = a.gr_b_incs;
+        }
+    };
+
+    struct gr_apply_weights {
+        template<typename T>
+        void operator()(T& a) const {
+            a.w = a.gr_weights_best;
+            a.b = a.gr_b_best;
+        }
+    };
+
+    struct gr_save_tmp {
+        double x3 = 0.0;
+
+        gr_save_tmp(double x) : x3(x){}
+
+        template<typename T>
+        void operator()(T& a) const {
+            a.gr_weights_tmp = a.gr_weights;
+            a.gr_b_tmp = a.gr_b;
+
+            a.gr_weights_tmp += a.gr_weights_s * x3;
+            a.gr_b_tmp += a.gr_b_s * x3;
+        }
+    };
+
+    struct gr_check_finite {
+        bool finite = true;
+
+        template<typename T>
+        void operator()(T& a){
+            if(!finite){
+                return;
+            }
+
+            for(auto value : a.gr_weights_incs){
+                if(!std::isfinite(value)){
+                    finite = false;
+                    return;
+                }
+            }
+
+            for(auto value : a.gr_b_incs){
+                if(!std::isfinite(value)){
+                    finite = false;
+                    break;
+                }
+            }
+        }
+    };
+
+    bool is_finite(){
+        gr_check_finite check;
+        for_each(tuples, check);
+        return check.finite;
+    }
+
+    struct gr_s_dot {
+        double acc = 0.0;
+
+        template<typename T>
+        void operator()(T& a){
+            for(size_t i = 0; i < a.gr_weights_s.size(); ++i){
+                auto value = a.gr_weights_s[i];
+                acc += value * value;
+            }
+            for(size_t i = 0; i < a.gr_b_s.size(); ++i){
+                auto value = a.gr_b_s[i];
+                acc += value * value;
+            }
+        }
+    };
+
+    double s_dot_s(){
+        gr_s_dot f;
+        for_each(tuples, f);
+        return f.acc;
+    }
+
+    template<typename Input, typename Target>
+    void minimize(gradient_context<Input, Target>& context){
         constexpr const double INT = 0.1;
         constexpr const double EXT = 3.0;
         constexpr const double SIG = 0.1;
         constexpr const double RHO = SIG / 2.0;
         constexpr const double RATIO = 10.0;
 
-        auto max_iteration = context.max_iteration;
+        for_each(tuples, gr_init_weights());
+
+        auto max_iteration = context.max_iterations;
 
         double cost = 0.0;
         gradient(context, cost);
 
+        for_each(tuples, gr_copy_init());
 
+        auto d0 = s_dot_s();
+        auto f0 = cost;
+        double d3 = 0.0;
+        double x3 = 1.0 / (1 - d0);
 
+        bool failed = false;
+        for(size_t i = 0; i < max_iteration; ++i){
+            auto best_cost = f0;
+            double f3 = 0.0;
+
+            for_each(tuples, gr_copy_best());
+
+            int64_t M = 20;
+            double f1 = 0.0;
+            double x1 = 0.0;
+            double d1 = 0.0;
+            double f2 = 0.0;
+            double x2 = 0.0;
+            double d2 = 0.0;
+
+            while(true){
+                x2 = 0.0;
+                f2 = f0;
+                d2 = d0;
+                f3 = f0;
+
+                for_each(tuples, gr_df0_to_df3());
+
+                while(true){
+                    if(M-- < 0){
+                        break;
+                    }
+
+                    //tmp_weights = weights + s * x3;
+                    for_each(tuples, gr_save_tmp(x3));
+
+                    //TODO Use tmp
+                    gradient(context, cost);
+
+                    f3 = cost;
+                    for_each(tuples, gr_w_incs_to_df3());
+
+                    if(std::isfinite(cost) && is_finite()){
+                        if(f3 < best_cost){
+                            best_cost = f3;
+                            for_each(tuples, gr_tmp_to_best());
+                        }
+                        break;
+                    }
+
+                    x3 = (x2 + x3) / 2.0;
+                }
+
+                //TODO x3 = dot(df3, s);
+                if(d3 > SIG * d0 || f3 > f0 + x3 * RHO * d0 || M <= 0){
+                    break;
+                }
+
+                x1 = x2;
+                f1 = f2;
+                d1 = d2;
+                x2 = x3;
+                f2 = f3;
+                d2 = d3;
+
+                //Cubic extrapolation
+                auto dx = x2 - x1;
+                auto A = 6.0 * (f1 - f2) + 3.0 * (d2 + d1) * dx;
+                auto B = 3.0 * (f2 - f1) - (2.0 * d1 + d2) * dx;
+                x3 = x1 - d1 * dx * dx / (B + sqrt(B * B - A * d1 * dx));
+
+                auto upper = x2 * EXT;
+                auto lower = x2 + INT * dx;
+                if(!std::isfinite(x3) || x3 < 0 || x3 > upper){
+                    x3 = upper;
+                } else if(x3 < lower){
+                    x3 = lower;
+                }
+            }
+
+            //Interpolation
+            double f4 = 0.0;
+            double x4 = 0.0;
+            double d4 = 0.0;
+
+            while((std::abs(d3) > -SIG * d0 || f3 > f0 + x3 * RHO * d0) && M > 0){
+                if(d3 > 0 || f3 > f0 + x3 * RHO * d0){
+                    x4 = x3;
+                    f4 = f4;
+                    d4 = d3;
+                } else {
+                    x2 = x3;
+                    f2 = f4;
+                    d2 = d3;
+                }
+
+                auto dx = x4 - x2;
+                if(f4 > f0){
+                    x3 = x2 - (0.5 * d2 * dx * dx) / (f4 - f2 - d2 * dx); //Quadratic interpolation
+                } else {
+                    auto A = 6.0 * (f2 - f4) / dx + 3.0 * (d4 + d2);
+                    auto B = 3.0 * (f4 - f2) - (2.0 * d2 + d4) * dx;
+                    x3 = x2 + (sqrt(B * B - A * d2 * dx * dx) - B) / A;
+                }
+
+                if(!std::isfinite(x3)){
+                    x3 = (x2 + x4) / 2.0;
+                }
+
+                x3 = std::max(std::min(x3, x4 - INT * (x4 - x2)), x2 + INT * (x4 -x2));
+
+                //tmp_weights = weights + s * x3;
+                for_each(tuples, gr_save_tmp(x3));
+
+                //TODO Use tmp
+                gradient(context, cost);
+
+                f3 = cost;
+                for_each(tuples, gr_w_incs_to_df3());
+
+                if(f3 < best_cost){
+                    best_cost = f3;
+                    for_each(tuples, gr_tmp_to_best());
+                }
+
+                --M;
+
+                //TODO d3 = d0t(df3, s);
+            }
+
+            if(std::abs(d3) < -SIG * d0 && f3 < f0 + x3 * RHO * d0){
+                //TODO weights += s * x3
+
+                f0 = f3;
+
+                //TODO float g = (v::dot(df3,df3) - v::dot(df3, df0)) / v::dot(df0, df0);¬
+                //v::saxpy(g, s, -1.0, df3);
+
+                d3 = d0;
+                //TODO d0 = dot(df3, s);
+                //TODO df0 = df3;
+
+                if(d0 > 0){
+                    //TODO s = df0
+                    //TODO s *= -1.0
+                    //TODO d0 = -dot(df0, df0);
+                }
+
+                x3 = x3 * std::min(RATIO, double(d3 / (d0 - 1e-37)));
+                failed = false;
+            } else {
+                std::cout << "x3 = " << x3 << " failed" << std::endl;
+
+                if(failed){
+                    break;
+                }
+
+                //TODO x= df0
+                //s *= -1.0
+                //d0 -dot(s, s)
+
+                x3 = 1.0 / (1.0 - d0);
+
+                failed = true;
+            }
+        }
+
+        std::cout << "Apply new weights to RBMs" << std::endl;
+
+        for_each(tuples, gr_apply_weights());
     }
 
     template<typename TrainingItem, typename Label>
     void fine_tune(std::vector<TrainingItem>& training_data, std::vector<Label>& labels, size_t epochs, size_t batch_size = rbm_type<0>::BatchSize){
-        //TODO Put probs in each RBM
-
         auto batches = training_data.size() / batch_size;
         batches = 100;
+
+        for_each(tuples, resize_probs(batch_size));
 
         for(size_t epoch = 0; epoch < epochs; ++epoch){
             for(size_t i = 0; i < batches; ++i){
@@ -284,7 +745,7 @@ public:
 
                 gradient_context<TrainingItem, Label> context(
                     batch<TrainingItem>(training_data.begin() + start, training_data.begin() + end),
-                    batch<Label>(labels.egin() + start, labels.begin() + end),
+                    batch<Label>(labels.begin() + start, labels.begin() + end),
                     epoch);
 
                 minimize(context);

@@ -64,10 +64,12 @@ private:
     fast_vector<value_t, num_visible> visibles;
     fast_vector<value_t, num_hidden> hiddens;
 
+public:
     fast_matrix<weight, num_visible, num_hidden> w;
     fast_vector<weight, num_visible> a;
     fast_vector<weight, num_hidden> b;
 
+private:
     //Weights for momentum
     fast_matrix<weight, num_visible_mom, num_hidden_mom> w_inc;
     fast_vector<weight, num_visible_mom> a_inc;
@@ -86,6 +88,7 @@ private:
     fast_vector<weight, num_visible> ga;
     fast_vector<weight, num_hidden> gb;
 
+public:
     //Gradients computations for DBN
     fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_weights;
     fast_vector<weight, num_hidden_gra> gr_b;
@@ -99,11 +102,11 @@ private:
     fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_weights_best_incs;
     fast_vector<weight, num_hidden_gra> gr_b_best_incs;
 
-    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_weights_df0s;
-    fast_vector<weight, num_hidden_gra> gr_b_df0s;
+    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_weights_df0;
+    fast_vector<weight, num_hidden_gra> gr_b_df0;
 
-    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_weights_df3s;
-    fast_vector<weight, num_hidden_gra> gr_b_df3s;
+    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_weights_df3;
+    fast_vector<weight, num_hidden_gra> gr_b_df3;
 
     fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_weights_s;
     fast_vector<weight, num_hidden_gra> gr_b_s;
@@ -113,6 +116,7 @@ private:
 
     std::vector<fast_vector<weight, num_hidden_gra>> gr_probs;
 
+private:
     //TODO Add a way to configure that
     double learning_rate = 0.1;
     double momentum = 0.5;
@@ -217,6 +221,16 @@ public:
 
     template<typename V1, typename V2>
     void activate_hidden(V1& h, const V2& v) const {
+        return activate_hidden(h, v, b, w);
+    }
+
+    template<typename V1, typename V2>
+    void gr_activate_hidden(V1& h, const V2& v) const {
+        return activate_hidden(h, v, gr_b, gr_weights);
+    }
+
+    template<typename V1, typename V2, typename V3, typename V4>
+    static void activate_hidden(V1& h, const V2& v, const V3& b, const V4& w){
         h = 0.0;
 
         for(size_t j = 0; j < num_hidden; ++j){

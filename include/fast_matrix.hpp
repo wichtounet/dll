@@ -37,6 +37,14 @@ public:
         std::fill(_data.begin(), _data.end(), value);
     }
 
+    fast_matrix& operator=(const fast_matrix& rhs){
+        for(std::size_t i = 0; i < size(); ++i){
+            _data[i] = rhs[i];
+        }
+
+        return *this;
+    }
+
     //Construct from expression
 
     template<typename LE, typename Op, typename RE>
@@ -57,7 +65,6 @@ public:
 
     //Prohibit copy
     fast_matrix(const fast_matrix& rhs) = delete;
-    fast_matrix& operator=(const fast_matrix& rhs) = delete;
 
     //Make sure
     fast_matrix(fast_matrix&& rhs) = default;
@@ -66,8 +73,19 @@ public:
     //Modifiers
 
     //Set the same value to each element of the matrix
-    void operator=(const T& value){
+    fast_matrix& operator=(const T& value){
         std::fill(_data.begin(), _data.end(), value);
+
+        return *this;
+    }
+
+    //Multiply each element by a scalar
+    fast_matrix& operator*=(const T& value){
+        for(size_t i = 0; i < size(); ++i){
+            _data[i] *= value;
+        }
+
+        return *this;
     }
 
     template<typename RE>

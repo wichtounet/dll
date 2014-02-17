@@ -14,6 +14,37 @@
 #include "mnist_reader.hpp"
 #include "image_utils.hpp"
 
+namespace {
+
+template<typename V>
+struct fake_label_array {
+    V value;
+
+    fake_label_array(V v) : value(v) {}
+
+    double operator[](size_t i) const {
+        if(i == value){
+            return 1.0;
+        } else {
+            return 0.0;
+        }
+    }
+};
+
+template<typename T>
+typename std::vector<fake_label_array<T>> make_fake(const std::vector<T>& values){
+    std::vector<fake_label_array<T>> fake;
+    fake.reserve(values.size());
+
+    for(auto v: values){
+        fake.emplace_back(v);
+    }
+
+    return std::move(fake);
+}
+
+} //end of anonymous namespace
+
 int main(int argc, char* argv[]){
     auto simple = false;
 
@@ -98,8 +129,12 @@ int main(int argc, char* argv[]){
         auto dbn = std::make_shared<dbn_t>();
 
         std::cout << "Start pretraining" << std::endl;
-
         dbn->pretrain(training_images, 5);
+
+        auto labels = make_fake(training_labels);
+
+        std::cout << "Start fine-tuning" << std::endl;
+        dbn->fine_tune(training_images, labels, 5);
     }
 
     return 0;
