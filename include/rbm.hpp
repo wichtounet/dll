@@ -51,6 +51,7 @@ public:
     static constexpr const bool Debug = Layer::Conf::Debug;
     static constexpr const Type Unit = Layer::Conf::Unit;
     static constexpr const bool DBN = Layer::Conf::DBN;
+    static constexpr const bool Decay = Layer::Conf::Decay;
 
     static_assert(BatchSize > 0, "Batch size must be at least 1");
 
@@ -120,6 +121,7 @@ private:
     //TODO Add a way to configure that
     double learning_rate = 0.1;
     double momentum = 0.5;
+    double weight_cost = 0.0002;
 
     void init_weights(){
         //Initialize the weights using a Gaussian distribution of mean 0 and
@@ -312,16 +314,25 @@ public:
         auto n_samples = static_cast<weight>(BatchSize);
 
         if(Momentum){
-            w_inc = w_inc * momentum + gw * (learning_rate / n_samples);
+            if(Decay){
+                w_inc = w_inc * momentum + ((gw / n_samples) - (w * weight_cost)) * learning_rate;
+            } else {
+                w_inc = w_inc * momentum + gw * (learning_rate / n_samples);
+            }
+
             w += w_inc;
         } else {
-            w += (gw / n_samples) * learning_rate;
+            if(Decay){
+                w += ((gw / n_samples) - (w * weight_cost)) * learning_rate;
+            } else {
+                w += (gw / n_samples) * learning_rate;
+            }
         }
 
         nan_check(w);
 
         if(Momentum){
-            a_inc = a_inc * momentum + ga * (learning_rate / n_samples);
+            a_inc = a_inc * momentum + (ga  / n_samples) * learning_rate;
             a += a_inc;
         } else {
             a += (ga / n_samples) * learning_rate;
@@ -330,7 +341,7 @@ public:
         nan_check(a);
 
         if(Momentum){
-            b_inc = b_inc * momentum + gb * (learning_rate / n_samples);
+            b_inc = b_inc * momentum + (gb / n_samples) * learning_rate;
             b += b_inc;
         } else {
             b += (gb / n_samples) * learning_rate;
