@@ -11,18 +11,20 @@
 #include <utility>
 #include <vector>
 
+#include "assert.hpp"
+
 namespace dbn {
 
 template<typename T>
 struct batch {
     typedef typename std::vector<T>::iterator iterator_t;
     typedef typename std::vector<T>::const_iterator const_iterator_t;
-    typedef typename std::iterator_traits<iterator_t>::difference_type size_type;
+    typedef typename std::size_t size_type;
 
     std::pair<iterator_t, iterator_t> values;
 
     batch(iterator_t&& it, iterator_t&& end): values(std::forward<iterator_t>(it), std::forward<iterator_t>(end)){
-        //Nothing else to init
+        dbn_assert(std::distance(it, end) > 0, "Batch cannot be empty or reversed");
     }
 
     iterator_t begin(){

@@ -28,7 +28,7 @@
 #ifdef NDEBUG
 #define nan_check(list)
 #else
-#define nan_check(list) for(auto& nantest : ((list))){dbn_assert(!std::isnan(nantest), "NaN Verify");}
+#define nan_check(list) for(auto& nantest : ((list))){dbn_assert(std::isfinite(nantest), "NaN Verify");}
 #endif
 
 namespace dbn {
@@ -188,7 +188,7 @@ public:
                 pi += 0.0001;
                 a(i) = log(pi / (1.0 - pi));
 
-                dbn_assert(!std::isnan(a(i)), "NaN verify");
+                dbn_assert(std::isfinite(a(i)), "NaN verify");
             }
         }
 
@@ -224,9 +224,9 @@ public:
         return activate_hidden(h, v, b, w);
     }
 
-    template<typename V1, typename V2>
+    template<bool Temp, typename V1, typename V2>
     void gr_activate_hidden(V1& h, const V2& v) const {
-        return activate_hidden(h, v, gr_b, gr_weights);
+        return activate_hidden(h, v, Temp ? gr_b_tmp : gr_b, Temp ? gr_weights_tmp : gr_weights);
     }
 
     template<typename V1, typename V2, typename V3, typename V4>
@@ -246,7 +246,13 @@ public:
                 h(j) = exp(activation);
             }
 
-            dbn_assert(!std::isnan(h(j)), "NaN verify");
+            if(!std::isfinite(h(j))){
+                std::cout << activation << std::endl;
+            }
+
+            dbn_assert(std::isfinite(s), "NaN verify");
+            dbn_assert(std::isfinite(activation), "NaN verify");
+            dbn_assert(std::isfinite(h(j)), "NaN verify");
         }
     }
 
@@ -261,13 +267,11 @@ public:
             }
 
             auto activation = a(i) + s;
-            if(Unit == Type::SIGMOID){
-                v(i) = logistic_sigmoid(activation);
-            } else {
-                v(i) = exp(activation);
-            }
+            v(i) = logistic_sigmoid(activation);
 
-            dbn_assert(!std::isnan(v(i)), "NaN verify");
+            dbn_assert(std::isfinite(s), "NaN verify");
+            dbn_assert(std::isfinite(activation), "NaN verify");
+            dbn_assert(std::isfinite(v(i)), "NaN verify");
         }
     }
 
@@ -304,6 +308,8 @@ public:
             ga += v1 - v2;
             gb += h1 - h2;
         }
+
+        nan_check(gw);
 
         auto n_samples = static_cast<weight>(BatchSize);
 

@@ -105,6 +105,15 @@ public:
         return *this;
     }
 
+    template<typename RE>
+    fast_vector& operator-=(RE&& rhs){
+        for(size_t i = 0; i < Rows; ++i){
+            _data[i] -= rhs[i];
+        }
+
+        return *this;
+    }
+
     //Add a scalar to each element
     auto operator+(T re) const -> fast_expr<T, const fast_vector&, plus_binary_op<T>, scalar<T>> {
         return {*this, re};
