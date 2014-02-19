@@ -121,7 +121,7 @@ int main(int argc, char* argv[]){
             dbn::layer<dbn::conf<true, 50, true, true>, 28 * 28, 50>,
             dbn::layer<dbn::conf<true, 50, false, true>, 50, 50>,
             dbn::layer<dbn::conf<true, 50, false, true>, 50, 100>,
-            dbn::layer<dbn::conf<true, 50, false, true>, 100, 10>> dbn_t;
+            dbn::layer<dbn::conf<true, 50, false, true, true, dbn::Type::EXP>, 100, 10>> dbn_t;
 
         std::cout << (sizeof(dbn_t) / 1024) << "KiB" << std::endl;
         std::cout << (sizeof(dbn_t) / 1024 / 1024) << "MiB" << std::endl;

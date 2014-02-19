@@ -119,15 +119,15 @@ public:
 
 private:
     //TODO Add a way to configure that
-    double learning_rate = 0.1;
-    double momentum = 0.5;
-    double weight_cost = 0.0002;
+    weight learning_rate = 0.1;
+    weight momentum = 0.5;
+    weight weight_cost = 0.0002;
 
     void init_weights(){
         //Initialize the weights using a Gaussian distribution of mean 0 and
         //variance 0.0.1
         std::mt19937_64 rand_engine(::time(nullptr));
-        std::normal_distribution<double> distribution(0.0, 1.0);
+        std::normal_distribution<weight> distribution(0.0, 1.0);
         auto generator = std::bind(distribution, rand_engine);
 
         for(size_t v = 0; v < num_visible; ++v){
@@ -137,7 +137,7 @@ private:
         }
     }
 
-    static constexpr double logistic_sigmoid(double x){
+    static constexpr weight logistic_sigmoid(weight x){
         return 1.0 / (1.0 + exp(-x));
     }
 
@@ -162,7 +162,7 @@ public:
         dbn_assert(input.size() == output.size(), "vector must the same sizes");
 
         static std::mt19937_64 rand_engine(::time(nullptr));
-        static std::uniform_real_distribution<double> distribution(0.0, 1.0);
+        static std::uniform_real_distribution<weight> distribution(0.0, 1.0);
         static auto generator = bind(distribution, rand_engine);
 
         for(size_t i = 0; i < input.size(); ++i){
@@ -186,7 +186,7 @@ public:
                     }
                 }
 
-                auto pi = static_cast<double>(c) / training_data.size();
+                auto pi = static_cast<weight>(c) / training_data.size();
                 pi += 0.0001;
                 a(i) = log(pi / (1.0 - pi));
 
@@ -199,7 +199,7 @@ public:
         batches = 100;
 
         for(size_t epoch= 0; epoch < max_epochs; ++epoch){
-            double error = 0.0;
+            weight error = 0.0;
             for(size_t i = 0; i < batches; ++i){
                 error += cd_step(dbn::batch<TrainingItem>(training_data.begin() + i * BatchSize, training_data.begin() + (i+1) * BatchSize));
             }
@@ -234,7 +234,7 @@ public:
         h = 0.0;
 
         for(size_t j = 0; j < num_hidden; ++j){
-            double s = 0.0;
+            weight s = 0.0;
             for(size_t i = 0; i < num_visible; ++i){
                 s += w(i, j) * v[i];
             }
@@ -261,7 +261,7 @@ public:
         v = 0.0;
 
         for(size_t i = 0; i < num_visible; ++i){
-            double s = 0.0;
+            weight s = 0.0;
             for(size_t j = 0; j < num_hidden; ++j){
                 s += w(i, j) * h(j);
             }
@@ -276,7 +276,7 @@ public:
     }
 
     template<typename T>
-    double cd_step(const dbn::batch<T> batch){
+    weight cd_step(const dbn::batch<T> batch){
         dbn_assert(batch.size() == static_cast<typename dbn::batch<T>::size_type>(BatchSize), "Invalid size");
         dbn_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
 
@@ -302,6 +302,13 @@ public:
             for(size_t i = 0; i < num_visible; ++i){
                 for(size_t j = 0; j < num_hidden; ++j){
                     gw(i, j) += h1(j) * v1(i) - h2(j) * v2(i);
+
+                    static weight max = 0.0;
+
+                    if(gw(i,j) > max){
+                        std::cout << gw(i,j) << std::endl;
+                        max = gw(i,j);
+                    }
                 }
             }
 
@@ -351,7 +358,7 @@ public:
 
         //Compute the reconstruction error
 
-        double error = 0.0;
+        weight error = 0.0;
         for(size_t i = 0; i < num_visible; ++i){
             error += ga(i) * ga(i);
         }

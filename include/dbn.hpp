@@ -87,11 +87,11 @@ public:
 
         auto append_labels = I + 1 == layers - 1 && !training_labels.empty();
 
-        std::vector<vector<double>> next;
+        std::vector<vector<weight>> next;
         next.reserve(training_data.size());
 
         for(auto& training_item : training_data){
-            vector<double> next_item(num_hidden<I>() + (append_labels ? labels : 0));
+            vector<weight> next_item(num_hidden<I>() + (append_labels ? labels : 0));
             rbm.activate_hidden(next_item, training_item);
             next.emplace_back(std::move(next_item));
         }
@@ -132,8 +132,8 @@ public:
     activate_layers(const TrainingItem& input, size_t, Output& output){
         auto& rbm = layer<I>();
 
-        static vector<double> h1(num_hidden<I>());
-        static vector<double> hs(num_hidden<I>());
+        static vector<weight> h1(num_hidden<I>());
+        static vector<weight> hs(num_hidden<I>());
 
         rbm.activate_hidden(h1, input);
         rbm.activate_visible(rbm_type<I>::bernoulli(h1, hs), output);
@@ -144,7 +144,7 @@ public:
     activate_layers(const TrainingItem& input, std::size_t labels, Output& output){
         auto& rbm = layer<I>();
 
-        static vector<double> next(num_visible<I+1>());
+        static vector<weight> next(num_visible<I+1>());
 
         rbm.activate_hidden(next, input);
 
@@ -162,12 +162,12 @@ public:
     size_t predict(TrainingItem& item, std::size_t labels){
         dbn_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
-        static vector<double> output(num_visible<layers - 1>());
+        static vector<weight> output(num_visible<layers - 1>());
 
         activate_layers<0>(item, labels, output);
 
         size_t label = 0;
-        double max = 0;
+        weight max = 0;
         for(size_t l = 0; l < labels; ++l){
             auto value = output[num_visible<layers - 1>() - labels + l];
 
@@ -185,16 +185,16 @@ public:
     deep_activate_layers(const TrainingItem& input, size_t, Output& output, std::size_t sampling){
         auto& rbm = layer<I>();
 
-        static vector<double> v1(num_visible<I>());
-        static vector<double> v2(num_visible<I>());
+        static vector<weight> v1(num_visible<I>());
+        static vector<weight> v2(num_visible<I>());
 
         for(size_t i = 0; i < input.size(); ++i){
             v1(i) = input[i];
         }
 
-        static vector<double> h1(num_hidden<I>());
-        static vector<double> h2(num_hidden<I>());
-        static vector<double> hs(num_hidden<I>());
+        static vector<weight> h1(num_hidden<I>());
+        static vector<weight> h2(num_hidden<I>());
+        static vector<weight> hs(num_hidden<I>());
 
         for(size_t i = 0; i< sampling; ++i){
             rbm.activate_hidden(h1, v1);
@@ -212,7 +212,7 @@ public:
     deep_activate_layers(const TrainingItem& input, std::size_t labels, Output& output, std::size_t sampling){
         auto& rbm = layer<I>();
 
-        static vector<double> next(num_visible<I+1>());
+        static vector<weight> next(num_visible<I+1>());
 
         rbm.activate_hidden(next, input);
 
@@ -230,11 +230,11 @@ public:
     size_t deep_predict(TrainingItem& item, std::size_t labels, std::size_t sampling){
         dbn_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
-        vector<double> output(num_visible<layers - 1>());
+        vector<weight> output(num_visible<layers - 1>());
         deep_activate_layers<0>(item, labels, output, sampling);
 
         size_t label = 0;
-        double max = 0;
+        weight max = 0;
         for(size_t l = 0; l < labels; ++l){
             auto value = output[num_visible<layers - 1>() - labels + l];
 
@@ -372,10 +372,10 @@ public:
         auto n_hidden = num_hidden<layers - 1>();
 
         for_each(tuples, clear_weigths_incs());
-        std::vector<std::vector<double>> diffs(n_samples);
+        std::vector<std::vector<weight>> diffs(n_samples);
 
         cost = 0.0;
-        double error = 0.0;
+        weight error = 0.0;
 
         for(size_t sample = 0; sample < n_samples; ++sample){
             auto& input = context.inputs[sample];
@@ -386,7 +386,7 @@ public:
             auto& diff = diffs[sample];
             diff.resize(n_hidden);
 
-            double scale = std::accumulate(result.begin(), result.end(), 0.0);
+            weight scale = std::accumulate(result.begin(), result.end(), 0.0);
             result *= (1.0 / scale);
 
             auto& target = context.targets[sample];
@@ -454,9 +454,9 @@ public:
     };
 
     struct gr_gs_minus_df3 {
-        double g;
+        weight g;
 
-        gr_gs_minus_df3(double g1) : g(g1){}
+        gr_gs_minus_df3(weight g1) : g(g1){}
 
         template<typename T>
         void operator()(T& a) const {
@@ -501,9 +501,9 @@ public:
     };
 
     struct gr_save_tmp {
-        double x3 = 0.0;
+        weight x3 = 0.0;
 
-        gr_save_tmp(double x) : x3(x){}
+        gr_save_tmp(weight x) : x3(x){}
 
         template<typename T>
         void operator()(T& a) const {
@@ -513,9 +513,9 @@ public:
     };
 
     struct gr_add_sx3_to_weights {
-        double x3 = 0.0;
+        weight x3 = 0.0;
 
-        gr_add_sx3_to_weights(double x) : x3(x) {}
+        gr_add_sx3_to_weights(weight x) : x3(x) {}
 
         template<typename T>
         void operator()(T& a) const {
@@ -556,8 +556,8 @@ public:
     }
 
     template<typename C1, typename C2>
-    static double dot(const C1& c1, const C2& c2){
-        double d = 0.0;
+    static weight dot(const C1& c1, const C2& c2){
+        weight d = 0.0;
         for(size_t i = 0; i < c1.size(); ++i){
             d += c1[i] * c2[i];
         }
@@ -565,7 +565,7 @@ public:
     }
 
     struct gr_s_dot_s {
-        double acc = 0.0;
+        weight acc = 0.0;
 
         template<typename T>
         void operator()(T& a){
@@ -574,7 +574,7 @@ public:
     };
 
     struct gr_df3_dot_s {
-        double acc = 0.0;
+        weight acc = 0.0;
 
         template<typename T>
         void operator()(T& a){
@@ -583,7 +583,7 @@ public:
     };
 
     struct gr_df3_dot_df3 {
-        double acc = 0.0;
+        weight acc = 0.0;
 
         template<typename T>
         void operator()(T& a){
@@ -592,7 +592,7 @@ public:
     };
 
     struct gr_df0_dot_df0 {
-        double acc = 0.0;
+        weight acc = 0.0;
 
         template<typename T>
         void operator()(T& a){
@@ -601,7 +601,7 @@ public:
     };
 
     struct gr_df0_dot_df3 {
-        double acc = 0.0;
+        weight acc = 0.0;
 
         template<typename T>
         void operator()(T& a){
@@ -609,31 +609,31 @@ public:
         }
     };
 
-    double s_dot_s(){
+    weight s_dot_s(){
         gr_s_dot_s f;
         for_each(tuples, f);
         return f.acc;
     }
 
-    double df3_dot_s(){
+    weight df3_dot_s(){
         gr_df3_dot_s f;
         for_each(tuples, f);
         return f.acc;
     }
 
-    double df3_dot_df3(){
+    weight df3_dot_df3(){
         gr_df3_dot_df3 f;
         for_each(tuples, f);
         return f.acc;
     }
 
-    double df0_dot_df0(){
+    weight df0_dot_df0(){
         gr_df0_dot_df0 f;
         for_each(tuples, f);
         return f.acc;
     }
 
-    double df0_dot_df3(){
+    weight df0_dot_df3(){
         gr_df0_dot_df3 f;
         for_each(tuples, f);
         return f.acc;
@@ -641,40 +641,40 @@ public:
 
     template<typename Input, typename Target>
     void minimize(const gradient_context<Input, Target>& context){
-        constexpr const double INT = 0.1;
-        constexpr const double EXT = 3.0;
-        constexpr const double SIG = 0.1;
-        constexpr const double RHO = SIG / 2.0;
-        constexpr const double RATIO = 10.0;
+        constexpr const weight INT = 0.1;
+        constexpr const weight EXT = 3.0;
+        constexpr const weight SIG = 0.1;
+        constexpr const weight RHO = SIG / 2.0;
+        constexpr const weight RATIO = 10.0;
 
         for_each(tuples, gr_init_weights());
 
         auto max_iteration = context.max_iterations;
 
-        double cost = 0.0;
+        weight cost = 0.0;
         gradient<false>(context, cost);
 
         for_each(tuples, gr_copy_init());
 
         auto d0 = s_dot_s();
         auto f0 = cost;
-        double d3 = 0.0;
-        double x3 = 1.0 / (1 - d0);
+        weight d3 = 0.0;
+        weight x3 = 1.0 / (1 - d0);
 
         bool failed = false;
         for(size_t i = 0; i < max_iteration; ++i){
             auto best_cost = f0;
-            double f3 = 0.0;
+            weight f3 = 0.0;
 
             for_each(tuples, gr_copy_best());
 
             int64_t M = 20;
-            double f1 = 0.0;
-            double x1 = 0.0;
-            double d1 = 0.0;
-            double f2 = 0.0;
-            double x2 = 0.0;
-            double d2 = 0.0;
+            weight f1 = 0.0;
+            weight x1 = 0.0;
+            weight d1 = 0.0;
+            weight f2 = 0.0;
+            weight x2 = 0.0;
+            weight d2 = 0.0;
 
             while(true){
                 x2 = 0.0;
@@ -736,9 +736,9 @@ public:
             }
 
             //Interpolation
-            double f4 = 0.0;
-            double x4 = 0.0;
-            double d4 = 0.0;
+            weight f4 = 0.0;
+            weight x4 = 0.0;
+            weight d4 = 0.0;
 
             while((std::abs(d3) > -SIG * d0 || f3 > f0 + x3 * RHO * d0) && M > 0){
                 if(d3 > 0 || f3 > f0 + x3 * RHO * d0){
@@ -801,7 +801,7 @@ public:
                     d0 = -df0_dot_df0();
                 }
 
-                x3 = x3 * std::min(RATIO, double(d3 / (d0 - 1e-37)));
+                x3 = x3 * std::min(RATIO, weight(d3 / (d0 - 1e-37)));
                 failed = false;
                 std::cout << "Found iteration i" <<i << ", cost =" << f3 << std::endl;
             } else {
