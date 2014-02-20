@@ -9,6 +9,7 @@
 #define DBN_FAST_EXPR_HPP
 
 #include "fast_op.hpp"
+#include "utils.hpp"
 
 template <typename T, typename LeftExpr, typename BinaryOp, typename RightExpr>
 class fast_expr {
@@ -56,38 +57,42 @@ public:
 
     //Create more complex expressions
 
-    auto operator+(T re) const -> fast_expr<T, this_type const&, plus_binary_op<T>, scalar<T>> {
+    template<typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
+    auto operator+(RE re) const -> fast_expr<T, this_type const&, plus_binary_op<T>, scalar<T>> {
         return {*this, re};
     }
 
-    template<typename RE>
+    template<typename RE, typename = disable_if_t<std::is_convertible<RE, T>::value>>
     auto operator+(RE&& re) const -> fast_expr<T, this_type const&, plus_binary_op<T>, decltype(std::forward<RE>(re))>{
         return {*this, std::forward<RE>(re)};
     }
 
-    auto operator-(T re) const -> fast_expr<T, this_type const&, minus_binary_op<T>, scalar<T>> {
+    template<typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
+    auto operator-(RE re) const -> fast_expr<T, this_type const&, minus_binary_op<T>, scalar<T>> {
         return {*this, re};
     }
 
-    template<typename RE>
+    template<typename RE, typename = disable_if_t<std::is_convertible<RE, T>::value>>
     auto operator-(RE&& re) const -> fast_expr<T, this_type const&, minus_binary_op<T>, decltype(std::forward<RE>(re))>{
         return {*this, std::forward<RE>(re)};
     }
 
-    auto operator*(T re) const -> fast_expr<T, this_type const&, mul_binary_op<T>, scalar<T>> {
+    template<typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
+    auto operator*(RE re) const -> fast_expr<T, this_type const&, mul_binary_op<T>, scalar<T>> {
         return {*this, re};
     }
 
-    template<typename RE>
+    template<typename RE, typename = disable_if_t<std::is_convertible<RE, T>::value>>
     auto operator*(RE&& re) const -> fast_expr<T, this_type const&, mul_binary_op<T>, decltype(std::forward<RE>(re))>{
         return {*this, std::forward<RE>(re)};
     }
 
-    auto operator/(T re) const -> fast_expr<T, this_type const&, div_binary_op<T>, scalar<T>> {
+    template<typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
+    auto operator/(RE re) const -> fast_expr<T, this_type const&, div_binary_op<T>, scalar<T>> {
         return {*this, re};
     }
 
-    template<typename RE>
+    template<typename RE, typename = disable_if_t<std::is_convertible<RE, T>::value>>
     auto operator/(RE&& re) const -> fast_expr<T, this_type const&, div_binary_op<T>, decltype(std::forward<RE>(re))>{
         return {*this, std::forward<RE>(re)};
     }

@@ -39,8 +39,8 @@ namespace dbn {
 template<typename Layer>
 class rbm {
 public:
-    typedef double weight;
-    typedef double value_t;
+    typedef float weight;
+    typedef float value_t;
 
     static constexpr const std::size_t num_visible = Layer::num_visible;
     static constexpr const std::size_t num_hidden = Layer::num_hidden;
@@ -126,14 +126,12 @@ private:
     void init_weights(){
         //Initialize the weights using a Gaussian distribution of mean 0 and
         //variance 0.0.1
-        std::mt19937_64 rand_engine(::time(nullptr));
-        std::normal_distribution<weight> distribution(0.0, 1.0);
-        auto generator = std::bind(distribution, rand_engine);
+        static std::default_random_engine rand_engine(::time(nullptr));
+        static std::normal_distribution<weight> distribution(0.0, 1.0);
+        static auto generator = std::bind(distribution, rand_engine);
 
-        for(size_t v = 0; v < num_visible; ++v){
-            for(size_t h = 0; h < num_hidden; ++h){
-                w(v, h) = generator() * 0.1;
-            }
+        for(auto& weight : w){
+            weight = generator() * 0.1;
         }
     }
 
@@ -142,6 +140,14 @@ private:
     }
 
 public:
+    //No copying
+    rbm(const rbm& rbm) = delete;
+    rbm& operator=(const rbm& rbm) = delete;
+
+    //No moving
+    rbm(rbm&& rbm) = delete;
+    rbm& operator=(rbm&& rbm) = delete;
+
     template<bool M = Momentum, typename std::enable_if<(!M), bool>::type = false>
     rbm() : a(0.0), b(0.0){
         static_assert(!Momentum, "This constructor should only be used without momentum support");
@@ -151,7 +157,6 @@ public:
 
     template<bool M = Momentum, typename std::enable_if<(M), bool>::type = false>
     rbm() : a(0.0), b(0.0), w_inc(0.0), a_inc(0.0), b_inc(0.0) {
-
         static_assert(Momentum, "This constructor should only be used with momentum support");
 
         init_weights();
@@ -161,7 +166,7 @@ public:
     static const V2& bernoulli(const V1& input, V2& output){
         dbn_assert(input.size() == output.size(), "vector must the same sizes");
 
-        static std::mt19937_64 rand_engine(::time(nullptr));
+        static std::default_random_engine rand_engine(::time(nullptr));
         static std::uniform_real_distribution<weight> distribution(0.0, 1.0);
         static auto generator = bind(distribution, rand_engine);
 
@@ -196,7 +201,6 @@ public:
 
         //TODO batches should be configured at higher level
         auto batches = training_data.size() / BatchSize;
-        batches = 100;
 
         for(size_t epoch= 0; epoch < max_epochs; ++epoch){
             weight error = 0.0;
@@ -247,7 +251,7 @@ public:
             }
 
             if(!std::isfinite(h(j))){
-                std::cout << activation << std::endl;
+                //std::cout << activation << std::endl;
             }
 
             dbn_assert(std::isfinite(s), "NaN verify");
@@ -302,13 +306,6 @@ public:
             for(size_t i = 0; i < num_visible; ++i){
                 for(size_t j = 0; j < num_hidden; ++j){
                     gw(i, j) += h1(j) * v1(i) - h2(j) * v2(i);
-
-                    static weight max = 0.0;
-
-                    if(gw(i,j) > max){
-                        std::cout << gw(i,j) << std::endl;
-                        max = gw(i,j);
-                    }
                 }
             }
 

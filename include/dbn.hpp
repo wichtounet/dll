@@ -14,9 +14,6 @@
 #include "vector.hpp"
 #include "utils.hpp"
 
-template< bool B, class T = void >
-using enable_if_t = typename std::enable_if<B, T>::type;
-
 namespace dbn {
 
 template<typename Input, typename Target>
@@ -48,6 +45,17 @@ private:
     typedef typename rbm_type<0>::weight weight;
 
 public:
+    //No arguments by default
+    dbn(){};
+
+    //No copying
+    dbn(const dbn& dbn) = delete;
+    dbn& operator=(const dbn& dbn) = delete;
+
+    //No moving
+    dbn(dbn&& dbn) = delete;
+    dbn& operator=(dbn&& dbn) = delete;
+
     template<std::size_t N>
     auto layer() -> typename std::add_lvalue_reference<rbm_type<N>>::type {
         return std::get<N>(tuples);
@@ -59,33 +67,66 @@ public:
     }
 
     template<std::size_t N>
-    constexpr std::size_t num_visible() const {
+    static constexpr std::size_t num_visible(){
         return rbm_type<N>::num_visible;
     }
 
     template<std::size_t N>
-    constexpr std::size_t num_hidden() const {
+    static constexpr std::size_t num_hidden(){
         return rbm_type<N>::num_hidden;
     }
 
-    template<std::size_t I, typename TrainingItems, typename LabelItems>
-    inline enable_if_t<(I == layers - 1), void>
-    train_rbm_layers(TrainingItems& training_data, std::size_t max_epochs, const LabelItems&, std::size_t){
+    template<std::size_t I, typename TrainingItems>
+    inline enable_if_t<(I == layers - 2), void>
+    pretrain_rbm_layers(TrainingItems& training_data, std::size_t max_epochs){
         std::cout << "Train layer " << I << std::endl;
 
-        std::get<I>(tuples).train(training_data, max_epochs);
+        layer<I>().train(training_data, max_epochs);
     }
 
-    template<std::size_t I, typename TrainingItems, typename LabelItems>
-    inline enable_if_t<(I < layers - 1), void>
-    train_rbm_layers(TrainingItems& training_data, std::size_t max_epochs, const LabelItems& training_labels = {}, std::size_t labels = 0){
+    template<std::size_t I, typename TrainingItems>
+    inline enable_if_t<(I < layers - 2), void>
+    pretrain_rbm_layers(TrainingItems& training_data, std::size_t max_epochs){
+        static_assert(num_hidden<I>() == num_visible<I+1>(), "Layers should have a common unit size");
+
         std::cout << "Train layer " << I << std::endl;
 
         auto& rbm = layer<I>();
 
         rbm.train(training_data, max_epochs);
 
-        auto append_labels = I + 1 == layers - 1 && !training_labels.empty();
+        std::vector<fast_vector<weight, num_hidden<I>()>> next(training_data.size());
+
+        for(size_t i = 0; i < training_data.size(); ++i){
+            rbm.activate_hidden(next[i], training_data[i]);
+        }
+
+        pretrain_rbm_layers<I + 1>(next, max_epochs);
+    }
+
+    template<typename TrainingItem>
+    void pretrain(std::vector<TrainingItem>& training_data, std::size_t max_epochs){
+        pretrain_rbm_layers<0>(training_data, max_epochs);
+    }
+
+    template<std::size_t I, typename TrainingItems, typename LabelItems>
+    inline enable_if_t<(I == layers - 1), void>
+    train_rbm_layers_labels(TrainingItems& training_data, std::size_t max_epochs, const LabelItems&, std::size_t){
+        std::cout << "Train layer " << I << " with labels " << std::endl;
+
+        std::get<I>(tuples).train(training_data, max_epochs);
+    }
+
+    template<std::size_t I, typename TrainingItems, typename LabelItems>
+    inline enable_if_t<(I < layers - 1), void>
+    train_rbm_layers_labels(TrainingItems& training_data, std::size_t max_epochs, const LabelItems& training_labels, std::size_t labels){
+        std::cout << "Train layer " << I << " with labels " << std::endl;
+
+        auto& rbm = layer<I>();
+
+        rbm.train(training_data, max_epochs);
+
+        auto append_labels = (I + 1 == layers - 1);
 
         std::vector<vector<weight>> next;
         next.reserve(training_data.size());
@@ -111,12 +152,7 @@ public:
             }
         }
 
-        train_rbm_layers<I + 1>(next, max_epochs, training_labels, labels);
-    }
-
-    template<typename TrainingItem>
-    void pretrain(std::vector<TrainingItem>& training_data, std::size_t max_epochs){
-        train_rbm_layers<0, decltype(training_data), std::vector<uint8_t>>(training_data, max_epochs);
+        train_rbm_layers_labels<I + 1>(next, max_epochs, training_labels, labels);
     }
 
     template<typename TrainingItem, typename Label>
@@ -124,7 +160,7 @@ public:
         dbn_assert(training_data.size() == training_labels.size(), "There must be the same number of values than labels");
         dbn_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
-        train_rbm_layers<0>(training_data, max_epochs, training_labels, labels);
+        train_rbm_layers_labels<0>(training_data, max_epochs, training_labels, labels);
     }
 
     template<std::size_t I, typename TrainingItem, typename Output>
@@ -300,7 +336,7 @@ public:
     }
 
     template<bool Temp, typename R1, typename R2, typename D>
-    void update_diffs(R1& r1, R2& r2,std::vector<D>& diffs, size_t n_samples){
+    void update_diffs(R1& r1, R2& r2, std::vector<D>& diffs, size_t n_samples){
         auto n_visible = R2::num_visible;
         auto n_hidden = R2::num_hidden;
 
@@ -308,9 +344,9 @@ public:
             D diff(n_visible);
 
             for(size_t i = 0; i < n_visible; ++i){
-                float s = 0.0;
+                double s = 0.0;
                 for(size_t j = 0; j < n_hidden; ++j){
-                    s+= diffs[sample][j] * (Temp ? r2.gr_weights_tmp(i, j) : r2.gr_weights(i, j));
+                    s += diffs[sample][j] * (Temp ? r2.gr_weights_tmp(i, j) : r2.gr_weights(i, j));
                 }
                 s *= r1.gr_probs[sample][i] * (1.0 - r1.gr_probs[sample][i]);
                 diff[i] = s;
@@ -342,7 +378,7 @@ public:
 
     template<std::size_t I, bool Temp, typename Input, typename D>
     inline enable_if_t<(I == layers - 1), void>
-    gradient_descent(Input& inputs, std::vector<D>& diffs, size_t n_samples){
+    gradient_descent(const Input& inputs, std::vector<D>& diffs, size_t n_samples){
         update_incs<Temp>(layer<I>(), diffs, n_samples, layer<I-1>().gr_probs);
 
         gradient_descent<I - 1, Temp>(inputs, diffs, n_samples);
@@ -350,7 +386,7 @@ public:
 
     template<std::size_t I, bool Temp, typename Input, typename D>
     inline enable_if_t<(I > 0 && I != layers - 1), void>
-    gradient_descent(Input& inputs, std::vector<D>& diffs, size_t n_samples){
+    gradient_descent(const Input& inputs, std::vector<D>& diffs, size_t n_samples){
         update_diffs<Temp>(layer<I>(), layer<I+1>(), diffs, n_samples);
 
         update_incs<Temp>(layer<I>(), diffs, n_samples, layer<I-1>().gr_probs);
@@ -360,7 +396,7 @@ public:
 
     template<std::size_t I, bool Temp, typename Input, typename D>
     inline enable_if_t<(I == 0), void>
-    gradient_descent(Input& inputs, std::vector<D>& diffs, size_t n_samples){
+    gradient_descent(const Input& inputs, std::vector<D>& diffs, size_t n_samples){
         update_diffs<Temp>(layer<I>(), layer<I+1>(), diffs, n_samples);
 
         update_incs<Temp>(layer<I>(), diffs, n_samples, inputs);
@@ -379,20 +415,45 @@ public:
 
         for(size_t sample = 0; sample < n_samples; ++sample){
             auto& input = context.inputs[sample];
+            auto& target = context.targets[sample];
+            auto& result = layer<layers - 1>().gr_probs[sample];
+
+            /*std::cout << "target" << std::endl;
+            for(size_t i = 0; i < n_hidden; ++i){
+                std::cout << target[i] << std::endl;
+            }
+            std::cout << std::endl;
+
+            std::cout << "before" << std::endl;
+            for(auto& v : result){
+                std::cout << v << std::endl;
+            }
+            std::cout << std::endl;
 
             gr_activate_layers<0, Temp>(input, sample);
 
-            auto& result = layer<layers - 1>().gr_probs[sample];
+            std::cout << "after" << std::endl;
+            for(auto& v : result){
+                std::cout << v << std::endl;
+            }
+            std::cout << std::endl;*/
+
             auto& diff = diffs[sample];
             diff.resize(n_hidden);
 
             weight scale = std::accumulate(result.begin(), result.end(), 0.0);
             result *= (1.0 / scale);
 
-            auto& target = context.targets[sample];
             for(size_t i = 0; i < n_hidden; ++i){
-                diff[i] = (result[i] - target[i]);
+                diff[i] = result[i] - target[i];
+
+                auto old_cost = cost;
                 cost += target[i] * log(result[i]);
+
+                if(std::isfinite(old_cost) && !std::isfinite(cost)){
+                    printf("i=%lu, cost=%f, was= %f, target[i]=%f, result[i]=%f, scale=%f\n", i, cost, old_cost, target[i], result[i], scale);
+                }
+
                 error += diff[i] * diff[i];
             }
         }
@@ -401,7 +462,7 @@ public:
 
         gradient_descent<layers - 1, Temp>(context.inputs, diffs, n_samples);
 
-        std::cout << "evaluating: cost:" << cost << " error: " << (error / n_samples) << std::endl;
+        std::cout << "evaluating(" << Temp << "): cost:" << cost << " error: " << (error / n_samples) << std::endl;
     }
 
     struct gr_init_weights {
@@ -415,11 +476,11 @@ public:
     struct gr_copy_init {
         template<typename T>
         void operator()(T& a) const {
-            a.gr_weights_s = a.gr_weights_df0 = a.gr_weights_incs;
-            a.gr_b_s = a.gr_b_df0 = a.gr_b_incs;
+            a.gr_weights_df0 = a.gr_weights_incs;
+            a.gr_b_df0 = a.gr_b_incs;
 
-            a.gr_b_s *= -1.0;
-            a.gr_weights_s *= -1.0;
+            a.gr_weights_s = a.gr_weights_df0 * -1.0;
+            a.gr_b_s = a.gr_b_df0 * -1.0;
         }
     };
 
@@ -501,7 +562,7 @@ public:
     };
 
     struct gr_save_tmp {
-        weight x3 = 0.0;
+        const weight x3;
 
         gr_save_tmp(weight x) : x3(x){}
 
@@ -513,7 +574,7 @@ public:
     };
 
     struct gr_add_sx3_to_weights {
-        weight x3 = 0.0;
+        const weight x3;
 
         gr_add_sx3_to_weights(weight x) : x3(x) {}
 
@@ -665,7 +726,6 @@ public:
         for(size_t i = 0; i < max_iteration; ++i){
             auto best_cost = f0;
             weight f3 = 0.0;
-
             for_each(tuples, gr_copy_best());
 
             int64_t M = 20;

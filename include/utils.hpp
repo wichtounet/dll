@@ -8,6 +8,12 @@
 #ifndef DBN_UTILS_HPP
 #define DBN_UTILS_HPP
 
+template< bool B, class T = void >
+using enable_if_t = typename std::enable_if<B, T>::type;
+
+template< bool B, class T = void >
+using disable_if_t = typename std::enable_if<!B, T>::type;
+
 namespace dbn {
 
 template<size_t I, class Tuple, typename F>

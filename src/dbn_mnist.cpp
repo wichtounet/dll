@@ -118,10 +118,15 @@ int main(int argc, char* argv[]){
         std::cout << "Testing took " << watch.elapsed() << "ms" << std::endl;
     } else {
         typedef dbn::dbn<
-            dbn::layer<dbn::conf<true, 50, true, true>, 28 * 28, 50>,
-            dbn::layer<dbn::conf<true, 50, false, true>, 50, 50>,
-            dbn::layer<dbn::conf<true, 50, false, true>, 50, 100>,
-            dbn::layer<dbn::conf<true, 50, false, true, true, dbn::Type::EXP>, 100, 10>> dbn_t;
+            dbn::layer<dbn::conf<true, 100, true, true>, 28 * 28, 50>,
+            //dbn::layer<dbn::conf<true, 100, false, true>, 300, 300>,
+            dbn::layer<dbn::conf<true, 100, false, true>, 50, 10>,
+            dbn::layer<dbn::conf<true, 100, false, true, true, dbn::Type::EXP>, 10, 10>> dbn_t;
+
+        std::cout << "RBM: " << dbn_t::num_visible<0>() << "<>" << dbn_t::num_hidden<0>() << std::endl;
+        std::cout << "RBM: " << dbn_t::num_visible<1>() << "<>" << dbn_t::num_hidden<1>() << std::endl;
+        std::cout << "RBM: " << dbn_t::num_visible<2>() << "<>" << dbn_t::num_hidden<2>() << std::endl;
+        //std::cout << "RBM: " << dbn_t::num_visible<3>() << "<>" << dbn_t::num_hidden<3>() << std::endl;
 
         std::cout << (sizeof(dbn_t) / 1024) << "KiB" << std::endl;
         std::cout << (sizeof(dbn_t) / 1024 / 1024) << "MiB" << std::endl;
@@ -129,7 +134,7 @@ int main(int argc, char* argv[]){
         auto dbn = std::make_shared<dbn_t>();
 
         std::cout << "Start pretraining" << std::endl;
-        dbn->pretrain(training_images, 5);
+        dbn->pretrain(training_images, 10);
 
         auto labels = make_fake(training_labels);
 
