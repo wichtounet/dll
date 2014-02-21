@@ -43,6 +43,81 @@ typename std::vector<fake_label_array<T>> make_fake(const std::vector<T>& values
     return std::move(fake);
 }
 
+struct predictor {
+    template<typename T, typename V>
+    size_t operator()(T& dbn, const V& image){
+        return dbn->predict(image);
+    }
+};
+
+struct deep_predictor {
+    template<typename T, typename V>
+    size_t operator()(T& dbn, const V& image){
+        return dbn->deep_predict(image, 5);
+    }
+};
+
+struct label_predictor {
+    template<typename T, typename V>
+    size_t operator()(T& dbn, const V& image){
+        return dbn->predict_labels(image, 10);
+    }
+};
+
+struct deep_label_predictor {
+    template<typename T, typename V>
+    size_t operator()(T& dbn, const V& image){
+        return dbn->deep_predict_labels(image, 10, 5);
+    }
+};
+
+template<typename DBN, typename Functor>
+double test_set(DBN& dbn, const std::vector<std::vector<uint8_t>>& images, const std::vector<uint8_t>& labels, Functor f){
+    size_t success = 0;
+    for(size_t i = 0; i < images.size(); ++i){
+        auto& image = images[i];
+        auto& label = labels[i];
+
+        auto predicted = f(dbn, image);
+
+        if(predicted == label){
+            ++success;
+        }
+    }
+
+    return (images.size() - success) / static_cast<double>(images.size());
+}
+
+template<typename DBN, typename P1, typename P2>
+void test_all(DBN& dbn, const std::vector<std::vector<uint8_t>>& training_images, const std::vector<uint8_t>& training_labels, P1 predictor, P2 deep_predictor){
+    auto test_images = mnist::read_test_images();
+    auto test_labels = mnist::read_test_labels();
+
+    if(test_images.empty() || test_labels.empty()){
+        std::cout << "Impossible to read test set" << std::endl;
+        return;
+    }
+
+    std::cout << "Start testing" << std::endl;
+    stop_watch<std::chrono::milliseconds> watch;
+
+    std::cout << "Training Set" << std::endl;
+    auto error_rate = test_set(dbn, training_images, training_labels, predictor);
+    std::cout << "\tError rate (normal): " << 100.0 * error_rate << std::endl;
+
+    error_rate = test_set(dbn, training_images, training_labels, deep_predictor);
+    std::cout << "\tError rate (deep): " << 100.0 * error_rate << std::endl;
+
+    std::cout << "Test Set" << std::endl;
+    error_rate = test_set(dbn, test_images, test_labels, predictor);
+    std::cout << "\tError rate (normal): " << 100.0 * error_rate << std::endl;
+
+    error_rate = test_set(dbn, test_images, test_labels, deep_predictor);
+    std::cout << "\tError rate (deep): " << 100.0 * error_rate << std::endl;
+
+    std::cout << "Testing took " << watch.elapsed() << "ms" << std::endl;
+}
+
 } //end of anonymous namespace
 
 int main(int argc, char* argv[]){
@@ -63,73 +138,30 @@ int main(int argc, char* argv[]){
         return 1;
     }
 
-    auto test_images = mnist::read_test_images();
-    auto test_labels = mnist::read_test_labels();
-
-    if(test_images.empty() || test_labels.empty()){
-        return 1;
-    }
-
     binarize_each(training_images);
 
     if(simple){
         typedef dbn::dbn<
-            dbn::layer<dbn::conf<true, 50, true>, 28 * 28, 300>,
-            dbn::layer<dbn::conf<true, 50, false>, 300, 300>,
-            dbn::layer<dbn::conf<true, 50, false>, 310, 500>> dbn_simple_t;
+            dbn::layer<dbn::conf<true, 50, true>, 28 * 28, 50>,
+            dbn::layer<dbn::conf<true, 50, false>, 50, 50>,
+            dbn::layer<dbn::conf<true, 50, false>, 60, 100>> dbn_simple_t;
 
         auto dbn = std::make_shared<dbn_simple_t>();
 
-        std::cout << "Start pretraining" << std::endl;
+        dbn->train_with_labels(training_images, training_labels, 10, 5);
 
-        dbn->pretrain_with_labels(training_images, training_labels, 10, 5);
-
-        std::cout << "Start testing" << std::endl;
-        stop_watch<std::chrono::milliseconds> watch;
-
-        size_t success = 0;
-        for(size_t i = 0; i < training_images.size(); ++i){
-            auto& image = training_images[i];
-            auto& label = training_labels[i];
-
-            auto predicted = dbn->predict(image, 10);
-
-            if(predicted == label){
-                ++success;
-            }
-        }
-
-        std::cout << "Training Set Error rate: " << 100.0 * ((training_images.size() - success) / static_cast<double>(training_images.size())) << std::endl;
-
-        success = 0;
-        for(size_t i = 0; i < test_images.size(); ++i){
-            auto& image = test_images[i];
-            auto& label = test_labels[i];
-
-            auto predicted = dbn->predict(image, 10);
-
-            if(predicted == label){
-                ++success;
-            }
-        }
-
-        std::cout << "Test Set Error rate: " << 100.0 * ((test_images.size() - success) / static_cast<double>(test_images.size())) << std::endl;
-
-        std::cout << "Testing took " << watch.elapsed() << "ms" << std::endl;
+        test_all(dbn, training_images, training_labels, label_predictor(), deep_label_predictor());
     } else {
         typedef dbn::dbn<
-            dbn::layer<dbn::conf<true, 100, true, true>, 28 * 28, 50>,
-            dbn::layer<dbn::conf<true, 100, false, true>, 50, 50>,
-            dbn::layer<dbn::conf<true, 100, false, true>, 50, 10>,
-            dbn::layer<dbn::conf<true, 100, false, true, true, dbn::Type::EXP>, 10, 10>> dbn_t;
+            dbn::layer<dbn::conf<true, 100, true, true>, 28 * 28, 300>,
+            dbn::layer<dbn::conf<true, 100, false, true>, 300, 300>,
+            dbn::layer<dbn::conf<true, 100, false, true>, 300, 500>,
+            dbn::layer<dbn::conf<true, 100, false, true, true, dbn::Type::EXP>, 500, 10>> dbn_t;
 
         std::cout << "RBM: " << dbn_t::num_visible<0>() << "<>" << dbn_t::num_hidden<0>() << std::endl;
         std::cout << "RBM: " << dbn_t::num_visible<1>() << "<>" << dbn_t::num_hidden<1>() << std::endl;
         std::cout << "RBM: " << dbn_t::num_visible<2>() << "<>" << dbn_t::num_hidden<2>() << std::endl;
         std::cout << "RBM: " << dbn_t::num_visible<3>() << "<>" << dbn_t::num_hidden<3>() << std::endl;
-
-        std::cout << (sizeof(dbn_t) / 1024) << "KiB" << std::endl;
-        std::cout << (sizeof(dbn_t) / 1024 / 1024) << "MiB" << std::endl;
 
         auto dbn = std::make_shared<dbn_t>();
 
@@ -139,7 +171,9 @@ int main(int argc, char* argv[]){
         auto labels = make_fake(training_labels);
 
         std::cout << "Start fine-tuning" << std::endl;
-        dbn->fine_tune(training_images, labels, 5, 1000);
+        dbn->fine_tune(training_images, labels, 10, 1000);
+
+        test_all(dbn, training_images, training_labels, predictor(), deep_predictor());
     }
 
     return 0;

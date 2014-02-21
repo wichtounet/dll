@@ -39,8 +39,8 @@ namespace dbn {
 template<typename Layer>
 class rbm {
 public:
-    typedef float weight;
-    typedef float value_t;
+    typedef double weight;
+    typedef double value_t;
 
     static constexpr const std::size_t num_visible = Layer::num_visible;
     static constexpr const std::size_t num_hidden = Layer::num_hidden;
@@ -91,8 +91,8 @@ private:
 
 public:
     //Gradients computations for DBN
-    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w;
-    fast_vector<weight, num_hidden_gra> gr_b;
+    fast_matrix<weight, num_visible, num_hidden>& gr_w = w;
+    fast_vector<weight, num_hidden>& gr_b = b;
 
     fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_incs;
     fast_vector<weight, num_hidden_gra> gr_b_incs;

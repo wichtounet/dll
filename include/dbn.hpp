@@ -76,6 +76,8 @@ public:
         return rbm_type<N>::num_hidden;
     }
 
+    /*{{{ Pretrain */
+
     template<std::size_t I, typename TrainingItems>
     inline enable_if_t<(I == layers - 2), void>
     pretrain_rbm_layers(TrainingItems& training_data, std::size_t max_epochs){
@@ -108,6 +110,10 @@ public:
     void pretrain(std::vector<TrainingItem>& training_data, std::size_t max_epochs){
         pretrain_rbm_layers<0>(training_data, max_epochs);
     }
+
+    /*}}}*/
+
+    /*{{{ Train with labels */
 
     template<std::size_t I, typename TrainingItems, typename LabelItems>
     inline enable_if_t<(I == layers - 1), void>
@@ -156,16 +162,123 @@ public:
     }
 
     template<typename TrainingItem, typename Label>
-    void pretrain_with_labels(std::vector<TrainingItem>& training_data, const std::vector<Label>& training_labels, std::size_t labels, std::size_t max_epochs){
+    void train_with_labels(std::vector<TrainingItem>& training_data, const std::vector<Label>& training_labels, std::size_t labels, std::size_t max_epochs){
         dbn_assert(training_data.size() == training_labels.size(), "There must be the same number of values than labels");
         dbn_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
         train_rbm_layers_labels<0>(training_data, max_epochs, training_labels, labels);
     }
 
+    /*}}}*/
+
+    /*{{{ Predict */
+
     template<std::size_t I, typename TrainingItem, typename Output>
     inline enable_if_t<(I == layers - 1), void>
-    activate_layers(const TrainingItem& input, size_t, Output& output){
+    activate(const TrainingItem& input, Output& output){
+        layer<I>().activate_hidden(output, input);
+    }
+
+    template<std::size_t I, typename TrainingItem, typename Output>
+    inline enable_if_t<(I < layers - 1), void>
+    activate(const TrainingItem& input, Output& output){
+        static vector<weight> next(num_hidden<I>());
+
+        layer<I>().activate_hidden(next, input);
+
+        activate<I + 1>(next, output);
+    }
+
+    template<typename TrainingItem>
+    size_t predict(TrainingItem& item){
+        static vector<weight> output(num_hidden<layers - 1>());
+
+        activate<0>(item, output);
+
+        size_t label = 0;
+        weight max = 0;
+        for(size_t l = 0; l < output.size(); ++l){
+            auto value = output[l];
+
+            if(value > max){
+                max = value;
+                label = l;
+            }
+        }
+
+        return label;
+    }
+
+    /*}}}*/
+
+    /*{{{ Deep predict */
+
+    template<std::size_t I, typename TrainingItem, typename Output>
+    inline enable_if_t<(I == layers - 1), void>
+    deep_activate(const TrainingItem& input, Output& output, std::size_t sampling){
+        auto& rbm = layer<I>();
+
+        static vector<weight> v1(num_visible<I>());
+        static vector<weight> v2(num_visible<I>());
+
+        for(size_t i = 0; i < input.size(); ++i){
+            v1(i) = input[i];
+        }
+
+        static vector<weight> h1(num_hidden<I>());
+        static vector<weight> h2(num_hidden<I>());
+        static vector<weight> hs(num_hidden<I>());
+
+        for(size_t i = 0; i< sampling; ++i){
+            rbm.activate_hidden(h1, v1);
+            rbm.activate_visible(rbm_type<I>::bernoulli(h1, hs), v1);
+
+            //TODO Perhaps we should apply a new bernoulli on v1 ?
+        }
+
+        rbm.activate_hidden(output, v1);
+    }
+
+    template<std::size_t I, typename TrainingItem, typename Output>
+    inline enable_if_t<(I < layers - 1), void>
+    deep_activate(const TrainingItem& input, Output& output, std::size_t sampling){
+        auto& rbm = layer<I>();
+
+        static vector<weight> next(num_hidden<I>());
+
+        rbm.activate_hidden(next, input);
+
+        deep_activate<I + 1>(next, output, sampling);
+    }
+
+    template<typename TrainingItem>
+    size_t deep_predict(TrainingItem& item, std::size_t sampling){
+        constexpr auto labels = num_hidden<layers - 1>();
+
+        vector<weight> output(labels);
+        deep_activate<0>(item, output, sampling);
+
+        size_t label = 0;
+        weight max = 0;
+        for(size_t l = 0; l < labels; ++l){
+            auto value = output[l];
+
+            if(value > max){
+                max = value;
+                label = l;
+            }
+        }
+
+        return label;
+    }
+
+    /*}}}*/
+
+    /*{{{ Predict with labels */
+
+    template<std::size_t I, typename TrainingItem, typename Output>
+    inline enable_if_t<(I == layers - 1), void>
+    labels_activate(const TrainingItem& input, size_t, Output& output){
         auto& rbm = layer<I>();
 
         static vector<weight> h1(num_hidden<I>());
@@ -177,7 +290,7 @@ public:
 
     template<std::size_t I, typename TrainingItem, typename Output>
     inline enable_if_t<(I < layers - 1), void>
-    activate_layers(const TrainingItem& input, std::size_t labels, Output& output){
+    labels_activate(const TrainingItem& input, std::size_t labels, Output& output){
         auto& rbm = layer<I>();
 
         static vector<weight> next(num_visible<I+1>());
@@ -191,16 +304,16 @@ public:
             }
         }
 
-        activate_layers<I + 1>(next, labels, output);
+        labels_activate<I + 1>(next, labels, output);
     }
 
     template<typename TrainingItem>
-    size_t predict(TrainingItem& item, std::size_t labels){
+    size_t predict_labels(TrainingItem& item, std::size_t labels){
         dbn_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
         static vector<weight> output(num_visible<layers - 1>());
 
-        activate_layers<0>(item, labels, output);
+        labels_activate<0>(item, labels, output);
 
         size_t label = 0;
         weight max = 0;
@@ -216,9 +329,13 @@ public:
         return label;
     }
 
+    /*}}}*/
+
+    /*{{{ Deep predict with labels */
+
     template<std::size_t I, typename TrainingItem, typename Output>
     inline enable_if_t<(I == layers - 1), void>
-    deep_activate_layers(const TrainingItem& input, size_t, Output& output, std::size_t sampling){
+    deep_activate_labels(const TrainingItem& input, size_t, Output& output, std::size_t sampling){
         auto& rbm = layer<I>();
 
         static vector<weight> v1(num_visible<I>());
@@ -245,7 +362,7 @@ public:
 
     template<std::size_t I, typename TrainingItem, typename Output>
     inline enable_if_t<(I < layers - 1), void>
-    deep_activate_layers(const TrainingItem& input, std::size_t labels, Output& output, std::size_t sampling){
+    deep_activate_labels(const TrainingItem& input, std::size_t labels, Output& output, std::size_t sampling){
         auto& rbm = layer<I>();
 
         static vector<weight> next(num_visible<I+1>());
@@ -259,15 +376,15 @@ public:
             }
         }
 
-        deep_activate_layers<I + 1>(next, labels, output, sampling);
+        deep_activate_labels<I + 1>(next, labels, output, sampling);
     }
 
     template<typename TrainingItem>
-    size_t deep_predict(TrainingItem& item, std::size_t labels, std::size_t sampling){
+    size_t deep_predict_labels(TrainingItem& item, std::size_t labels, std::size_t sampling){
         dbn_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
         vector<weight> output(num_visible<layers - 1>());
-        deep_activate_layers<0>(item, labels, output, sampling);
+        deep_activate_labels<0>(item, labels, output, sampling);
 
         size_t label = 0;
         weight max = 0;
@@ -282,6 +399,8 @@ public:
 
         return label;
     }
+
+    /*}}}*/
 
     /* Gradient */
 
@@ -429,14 +548,7 @@ public:
 
             for(size_t i = 0; i < n_hidden; ++i){
                 diff[i] = result[i] - target[i];
-
-                //auto old_cost = cost;
                 cost += target[i] * log(result[i]);
-
-                /*if(std::isfinite(old_cost) && !std::isfinite(cost)){
-                    printf("i=%lu, cost=%f, was= %f, target[i]=%f, result[i]=%f, scale=%f\n", i, cost, old_cost, target[i], result[i], scale);
-                }*/
-
                 error += diff[i] * diff[i];
             }
         }
@@ -445,16 +557,8 @@ public:
 
         gradient_descent<layers - 1, Temp>(context.inputs, diffs, n_samples);
 
-        std::cout << "evaluating(" << Temp << "): cost:" << cost << " error: " << (error / n_samples) << std::endl;
+        //std::cout << "evaluating(" << Temp << "): cost:" << cost << " error: " << (error / n_samples) << std::endl;
     }
-
-    struct gr_init_weights {
-        template<typename T>
-        void operator()(T& a) const {
-            a.gr_w = a.w;
-            a.gr_b = a.b;
-        }
-    };
 
     struct gr_copy_init {
         template<typename T>
@@ -533,14 +637,6 @@ public:
 
             a.gr_w_best_incs = a.gr_w_incs;
             a.gr_b_best_incs = a.gr_b_incs;
-        }
-    };
-
-    struct gr_apply_weights {
-        template<typename T>
-        void operator()(T& a) const {
-            a.w = a.gr_w_best;
-            a.b = a.gr_b_best;
         }
     };
 
@@ -844,10 +940,7 @@ public:
 
                 x3 = x3 * std::min(RATIO, weight(d3 / (d0 - 1e-37)));
                 failed = false;
-                std::cout << "Found iteration i" <<i << ", cost =" << f3 << std::endl;
             } else {
-                std::cout << "x3 = " << x3 << " failed" << std::endl;
-
                 if(failed){
                     break;
                 }
@@ -871,7 +964,7 @@ public:
         auto batches = training_data.size() / batch_size;
 
         for_each(tuples, resize_probs(batch_size));
-        for_each(tuples, gr_init_weights());
+        //for_each(tuples, gr_init_weights());
 
         for(size_t epoch = 0; epoch < epochs; ++epoch){
             for(size_t i = 0; i < batches; ++i){
@@ -884,6 +977,8 @@ public:
                     epoch);
 
                 minimize(context);
+
+                std::cout << "epoch(" << epoch << ") batch:" << i << "/" << batches << std::endl;
             }
         }
     }
