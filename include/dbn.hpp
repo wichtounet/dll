@@ -288,7 +288,7 @@ public:
     struct clear_weigths_incs {
         template<typename T>
         void operator()(T& a) const {
-            a.gr_weights_incs = 0.0;
+            a.gr_w_incs = 0.0;
             a.gr_b_incs = 0.0;
         }
     };
@@ -346,7 +346,7 @@ public:
             for(size_t i = 0; i < n_visible; ++i){
                 double s = 0.0;
                 for(size_t j = 0; j < n_hidden; ++j){
-                    s += diffs[sample][j] * (Temp ? r2.gr_weights_tmp(i, j) : r2.gr_weights(i, j));
+                    s += diffs[sample][j] * (Temp ? r2.gr_w_tmp(i, j) : r2.gr_w(i, j));
                 }
                 s *= r1.gr_probs[sample][i] * (1.0 - r1.gr_probs[sample][i]);
                 diff[i] = s;
@@ -366,7 +366,7 @@ public:
 
             for(size_t i = 0; i < n_visible; ++i){
                 for(size_t j = 0; j < n_hidden; ++j){
-                    rbm.gr_weights_incs(i, j) += v[i] * d[j];
+                    rbm.gr_w_incs(i, j) += v[i] * d[j];
                 }
             }
 
@@ -404,55 +404,38 @@ public:
 
     template<bool Temp, typename Input, typename Target>
     void gradient(const gradient_context<Input, Target>& context, weight& cost){
-        auto n_samples = context.inputs.size();
         auto n_hidden = num_hidden<layers - 1>();
+        auto n_samples = context.inputs.size();
 
-        for_each(tuples, clear_weigths_incs());
         std::vector<std::vector<weight>> diffs(n_samples);
 
+        for_each(tuples, clear_weigths_incs());
         cost = 0.0;
         weight error = 0.0;
 
         for(size_t sample = 0; sample < n_samples; ++sample){
             auto& input = context.inputs[sample];
             auto& target = context.targets[sample];
-            auto& result = layer<layers - 1>().gr_probs[sample];
-
-            /*std::cout << "target" << std::endl;
-            for(size_t i = 0; i < n_hidden; ++i){
-                std::cout << target[i] << std::endl;
-            }
-            std::cout << std::endl;
-
-            std::cout << "before" << std::endl;
-            for(auto& v : result){
-                std::cout << v << std::endl;
-            }
-            std::cout << std::endl;
 
             gr_activate_layers<0, Temp>(input, sample);
-
-            std::cout << "after" << std::endl;
-            for(auto& v : result){
-                std::cout << v << std::endl;
-            }
-            std::cout << std::endl;*/
 
             auto& diff = diffs[sample];
             diff.resize(n_hidden);
 
+            auto& result = layer<layers - 1>().gr_probs[sample];
             weight scale = std::accumulate(result.begin(), result.end(), 0.0);
+
             result *= (1.0 / scale);
 
             for(size_t i = 0; i < n_hidden; ++i){
                 diff[i] = result[i] - target[i];
 
-                auto old_cost = cost;
+                //auto old_cost = cost;
                 cost += target[i] * log(result[i]);
 
-                if(std::isfinite(old_cost) && !std::isfinite(cost)){
+                /*if(std::isfinite(old_cost) && !std::isfinite(cost)){
                     printf("i=%lu, cost=%f, was= %f, target[i]=%f, result[i]=%f, scale=%f\n", i, cost, old_cost, target[i], result[i], scale);
-                }
+                }*/
 
                 error += diff[i] * diff[i];
             }
@@ -468,7 +451,7 @@ public:
     struct gr_init_weights {
         template<typename T>
         void operator()(T& a) const {
-            a.gr_weights = a.w;
+            a.gr_w = a.w;
             a.gr_b = a.b;
         }
     };
@@ -476,10 +459,10 @@ public:
     struct gr_copy_init {
         template<typename T>
         void operator()(T& a) const {
-            a.gr_weights_df0 = a.gr_weights_incs;
+            a.gr_w_df0 = a.gr_w_incs;
             a.gr_b_df0 = a.gr_b_incs;
 
-            a.gr_weights_s = a.gr_weights_df0 * -1.0;
+            a.gr_w_s = a.gr_w_df0 * -1.0;
             a.gr_b_s = a.gr_b_df0 * -1.0;
         }
     };
@@ -487,13 +470,13 @@ public:
     struct gr_copy_best {
         template<typename T>
         void operator()(T& a) const {
-            a.gr_weights_best = a.gr_weights;
-            a.gr_weights_best_incs = a.gr_weights_incs;
-
+            a.gr_w_best = a.gr_w;
             a.gr_b_best = a.gr_b;
+
+            a.gr_w_best_incs = a.gr_w_incs;
             a.gr_b_best_incs = a.gr_b_incs;
 
-            a.gr_weights_df3 = 0.0;
+            a.gr_w_df3 = 0.0;
             a.gr_b_df3 = 0.0;
         }
     };
@@ -501,7 +484,7 @@ public:
     struct gr_df0_to_df3 {
         template<typename T>
         void operator()(T& a) const {
-            a.gr_weights_df3 = a.gr_weights_df0;
+            a.gr_w_df3 = a.gr_w_df0;
             a.gr_b_df3 = a.gr_b_df0;
         }
     };
@@ -509,7 +492,7 @@ public:
     struct gr_minus_df0_to_s {
         template<typename T>
         void operator()(T& a) const {
-            a.gr_weights_s = a.gr_weights_df0 * -1.0;
+            a.gr_w_s = a.gr_w_df0 * -1.0;
             a.gr_b_s = a.gr_b_df0 * -1.0;
         }
     };
@@ -521,7 +504,7 @@ public:
 
         template<typename T>
         void operator()(T& a) const {
-            a.gr_weights_s = (a.gr_weights_s * g) + (a.gr_weights_df3 * -1.0);
+            a.gr_w_s = (a.gr_w_s * g) + (a.gr_w_df3 * -1.0);
             a.gr_b_s = (a.gr_b_s * g) + (a.gr_b_df3 * -1.0);
         }
     };
@@ -529,7 +512,7 @@ public:
     struct gr_df3_to_df0 {
         template<typename T>
         void operator()(T& a) const {
-            a.gr_weights_df0 = a.gr_weights_df3;
+            a.gr_w_df0 = a.gr_w_df3;
             a.gr_b_df0 = a.gr_b_df3;
         }
     };
@@ -537,7 +520,7 @@ public:
     struct gr_w_incs_to_df3 {
         template<typename T>
         void operator()(T& a) const {
-            a.gr_weights_df3 = a.gr_weights_incs;
+            a.gr_w_df3 = a.gr_w_incs;
             a.gr_b_df3 = a.gr_b_incs;
         }
     };
@@ -545,10 +528,10 @@ public:
     struct gr_tmp_to_best {
         template<typename T>
         void operator()(T& a) const {
-            a.gr_weights_best = a.gr_weights_tmp;
+            a.gr_w_best = a.gr_w_tmp;
             a.gr_b_best = a.gr_b_tmp;
 
-            a.gr_weights_best_incs = a.gr_weights_incs;
+            a.gr_w_best_incs = a.gr_w_incs;
             a.gr_b_best_incs = a.gr_b_incs;
         }
     };
@@ -556,7 +539,7 @@ public:
     struct gr_apply_weights {
         template<typename T>
         void operator()(T& a) const {
-            a.w = a.gr_weights_best;
+            a.w = a.gr_w_best;
             a.b = a.gr_b_best;
         }
     };
@@ -568,7 +551,7 @@ public:
 
         template<typename T>
         void operator()(T& a) const {
-            a.gr_weights_tmp = a.gr_weights + a.gr_weights_s * x3;
+            a.gr_w_tmp = a.gr_w + a.gr_w_s * x3;
             a.gr_b_tmp = a.gr_b + a.gr_b_s * x3;
         }
     };
@@ -580,7 +563,7 @@ public:
 
         template<typename T>
         void operator()(T& a) const {
-            a.gr_weights += a.gr_weights_s * x3;
+            a.gr_w += a.gr_w_s * x3;
             a.gr_b += a.gr_b_s * x3;
         }
     };
@@ -594,7 +577,7 @@ public:
                 return;
             }
 
-            for(auto value : a.gr_weights_incs){
+            for(auto value : a.gr_w_incs){
                 if(!std::isfinite(value)){
                     finite = false;
                     return;
@@ -604,7 +587,7 @@ public:
             for(auto value : a.gr_b_incs){
                 if(!std::isfinite(value)){
                     finite = false;
-                    break;
+                    return;
                 }
             }
         }
@@ -630,7 +613,7 @@ public:
 
         template<typename T>
         void operator()(T& a){
-            acc += dot(a.gr_weights_s, a.gr_weights_s) + dot(a.gr_b_s, a.gr_b_s);
+            acc += dot(a.gr_w_s, a.gr_w_s) + dot(a.gr_b_s, a.gr_b_s);
         }
     };
 
@@ -639,7 +622,7 @@ public:
 
         template<typename T>
         void operator()(T& a){
-            acc += dot(a.gr_weights_df3, a.gr_weights_s) + dot(a.gr_b_df3, a.gr_b_s);
+            acc += dot(a.gr_w_df3, a.gr_w_s) + dot(a.gr_b_df3, a.gr_b_s);
         }
     };
 
@@ -648,7 +631,7 @@ public:
 
         template<typename T>
         void operator()(T& a){
-            acc += dot(a.gr_weights_df3, a.gr_weights_df3) + dot(a.gr_b_df3, a.gr_b_df3);
+            acc += dot(a.gr_w_df3, a.gr_w_df3) + dot(a.gr_b_df3, a.gr_b_df3);
         }
     };
 
@@ -657,7 +640,7 @@ public:
 
         template<typename T>
         void operator()(T& a){
-            acc += dot(a.gr_weights_df0, a.gr_weights_df0) + dot(a.gr_b_df0, a.gr_b_df0);
+            acc += dot(a.gr_w_df0, a.gr_w_df0) + dot(a.gr_b_df0, a.gr_b_df0);
         }
     };
 
@@ -666,7 +649,7 @@ public:
 
         template<typename T>
         void operator()(T& a){
-            acc += dot(a.gr_weights_df0, a.gr_weights_df3) + dot(a.gr_b_df0, a.gr_b_df3);
+            acc += dot(a.gr_w_df0, a.gr_w_df3) + dot(a.gr_b_df0, a.gr_b_df3);
         }
     };
 
@@ -707,8 +690,6 @@ public:
         constexpr const weight SIG = 0.1;
         constexpr const weight RHO = SIG / 2.0;
         constexpr const weight RATIO = 10.0;
-
-        for_each(tuples, gr_init_weights());
 
         auto max_iteration = context.max_iterations;
 
@@ -768,7 +749,7 @@ public:
                     x3 = (x2 + x3) / 2.0;
                 }
 
-                x3 = df3_dot_s();
+                d3 = df3_dot_s();
                 if(d3 > SIG * d0 || f3 > f0 + x3 * RHO * d0 || M <= 0){
                     break;
                 }
@@ -880,17 +861,17 @@ public:
             }
         }
 
-        std::cout << "Apply new weights to RBMs" << std::endl;
+        //std::cout << "Apply new weights to RBMs" << std::endl;
 
-        for_each(tuples, gr_apply_weights());
+        //for_each(tuples, gr_apply_weights());
     }
 
     template<typename TrainingItem, typename Label>
     void fine_tune(std::vector<TrainingItem>& training_data, std::vector<Label>& labels, size_t epochs, size_t batch_size = rbm_type<0>::BatchSize){
         auto batches = training_data.size() / batch_size;
-        batches = 100;
 
         for_each(tuples, resize_probs(batch_size));
+        for_each(tuples, gr_init_weights());
 
         for(size_t epoch = 0; epoch < epochs; ++epoch){
             for(size_t i = 0; i < batches; ++i){

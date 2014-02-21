@@ -91,28 +91,28 @@ private:
 
 public:
     //Gradients computations for DBN
-    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_weights;
+    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w;
     fast_vector<weight, num_hidden_gra> gr_b;
 
-    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_weights_incs;
+    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_incs;
     fast_vector<weight, num_hidden_gra> gr_b_incs;
 
-    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_weights_best;
+    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_best;
     fast_vector<weight, num_hidden_gra> gr_b_best;
 
-    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_weights_best_incs;
+    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_best_incs;
     fast_vector<weight, num_hidden_gra> gr_b_best_incs;
 
-    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_weights_df0;
+    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_df0;
     fast_vector<weight, num_hidden_gra> gr_b_df0;
 
-    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_weights_df3;
+    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_df3;
     fast_vector<weight, num_hidden_gra> gr_b_df3;
 
-    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_weights_s;
+    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_s;
     fast_vector<weight, num_hidden_gra> gr_b_s;
 
-    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_weights_tmp;
+    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_tmp;
     fast_vector<weight, num_hidden_gra> gr_b_tmp;
 
     std::vector<fast_vector<weight, num_hidden_gra>> gr_probs;
@@ -230,7 +230,7 @@ public:
 
     template<bool Temp, typename V1, typename V2>
     void gr_activate_hidden(V1& h, const V2& v) const {
-        return activate_hidden(h, v, Temp ? gr_b_tmp : gr_b, Temp ? gr_weights_tmp : gr_weights);
+        return activate_hidden(h, v, Temp ? gr_b_tmp : gr_b, Temp ? gr_w_tmp : gr_w);
     }
 
     template<typename V1, typename V2, typename V3, typename V4>
