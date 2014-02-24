@@ -22,6 +22,7 @@
 #include "stop_watch.hpp"
 #include "fast_matrix.hpp"
 #include "fast_vector.hpp"
+#include "vector.hpp"
 #include "conf.hpp"
 #include "batch.hpp"
 
@@ -115,7 +116,7 @@ public:
     fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_tmp;
     fast_vector<weight, num_hidden_gra> gr_b_tmp;
 
-    std::vector<fast_vector<weight, num_hidden_gra>> gr_probs;
+    std::vector<vector<weight>> gr_probs;
 
 private:
     //TODO Add a way to configure that
@@ -147,6 +148,10 @@ public:
     //No moving
     rbm(rbm&& rbm) = delete;
     rbm& operator=(rbm&& rbm) = delete;
+
+    std::size_t n_hiddens(){
+        return num_hidden;
+    }
 
     template<bool M = Momentum, typename std::enable_if<(!M), bool>::type = false>
     rbm() : a(0.0), b(0.0){

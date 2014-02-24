@@ -341,56 +341,6 @@ public:
 
     /* Gradient */
 
-    struct clear_weigths_incs {
-        template<typename T>
-        void operator()(T& a) const {
-            a.gr_w_incs = 0.0;
-            a.gr_b_incs = 0.0;
-        }
-    };
-
-    struct resize_probs {
-        size_t size;
-
-        resize_probs(size_t s) : size(s){}
-
-        template<typename T>
-        void operator()(T& a) const {
-            a.gr_probs.resize(size);
-        }
-    };
-
-    template<std::size_t I, bool Temp, typename TrainingItem>
-    inline enable_if_t<(I == layers - 1), void>
-    gr_activate_layers(const TrainingItem&, size_t sample){
-        auto& rbm = layer<I>();
-        auto& output = rbm.gr_probs[sample];
-
-        rbm.template gr_activate_hidden<Temp>(output, layer<I-1>().gr_probs[sample]);
-    }
-
-    template<std::size_t I, bool Temp, typename TrainingItem>
-    inline enable_if_t<(I > 0 && I < layers - 1), void>
-    gr_activate_layers(const TrainingItem& input, size_t sample){
-        auto& rbm = layer<I>();
-
-        auto& output = rbm.gr_probs[sample];
-
-        rbm.template gr_activate_hidden<Temp>(output, layer<I-1>().gr_probs[sample]);
-        gr_activate_layers<I + 1, Temp>(input, sample);
-    }
-
-    template<std::size_t I, bool Temp, typename TrainingItem>
-    inline enable_if_t<(I == 0), void>
-    gr_activate_layers(const TrainingItem& input, size_t sample){
-        auto& rbm = layer<I>();
-
-        auto& output = rbm.gr_probs[sample];
-
-        rbm.template gr_activate_hidden<Temp>(output, input);
-        gr_activate_layers<I + 1, Temp>(input, sample);
-    }
-
     template<bool Temp, typename R1, typename R2, typename D>
     void update_diffs(R1& r1, R2& r2, std::vector<D>& diffs, size_t n_samples){
         auto n_visible = R2::num_visible;
@@ -465,15 +415,28 @@ public:
 
         std::vector<std::vector<weight>> diffs(n_samples);
 
-        for_each(tuples, clear_weigths_incs());
+        for_each(tuples, [](auto& rbm){
+            rbm.gr_w_incs = 0.0;
+            rbm.gr_b_incs = 0.0;
+        });
+
         cost = 0.0;
         weight error = 0.0;
 
         for(size_t sample = 0; sample < n_samples; ++sample){
             auto& input = context.inputs[sample];
+            auto output = std::ref(layer<0>().gr_probs[sample]);
             auto& target = context.targets[sample];
 
-            gr_activate_layers<0, Temp>(input, sample);
+            for_each_i(tuples, [&input,&output,sample](std::size_t I, auto& rbm){
+                if(I == 0){
+                    rbm.template gr_activate_hidden<Temp>(static_cast<vector<weight>&>(output), input);
+                } else {
+                    auto& next_output = rbm.gr_probs[sample];
+                    rbm.template gr_activate_hidden<Temp>(next_output, static_cast<vector<weight>&>(output));
+                    output = std::ref(rbm.gr_probs[sample]);
+                }
+            });
 
             auto& diff = diffs[sample];
             diff.resize(n_hidden);
@@ -481,7 +444,9 @@ public:
             auto& result = layer<layers - 1>().gr_probs[sample];
             weight scale = std::accumulate(result.begin(), result.end(), 0.0);
 
-            result *= (1.0 / scale);
+            for(auto& r : result){
+                r *= (1.0 / scale);
+            }
 
             for(size_t i = 0; i < n_hidden; ++i){
                 diff[i] = result[i] - target[i];
@@ -497,39 +462,6 @@ public:
         //std::cout << "evaluating(" << Temp << "): cost:" << cost << " error: " << (error / n_samples) << std::endl;
     }
 
-    struct gr_copy_init {
-        template<typename T>
-        void operator()(T& a) const {
-            a.gr_w_df0 = a.gr_w_incs;
-            a.gr_b_df0 = a.gr_b_incs;
-
-            a.gr_w_s = a.gr_w_df0 * -1.0;
-            a.gr_b_s = a.gr_b_df0 * -1.0;
-        }
-    };
-
-    struct gr_copy_best {
-        template<typename T>
-        void operator()(T& a) const {
-            a.gr_w_best = a.gr_w;
-            a.gr_b_best = a.gr_b;
-
-            a.gr_w_best_incs = a.gr_w_incs;
-            a.gr_b_best_incs = a.gr_b_incs;
-
-            a.gr_w_df3 = 0.0;
-            a.gr_b_df3 = 0.0;
-        }
-    };
-
-    struct gr_df0_to_df3 {
-        template<typename T>
-        void operator()(T& a) const {
-            a.gr_w_df3 = a.gr_w_df0;
-            a.gr_b_df3 = a.gr_b_df0;
-        }
-    };
-
     struct gr_gs_minus_df3 {
         weight g;
 
@@ -539,14 +471,6 @@ public:
         void operator()(T& a) const {
             a.gr_w_s = (a.gr_w_s * g) + (a.gr_w_df3 * -1.0);
             a.gr_b_s = (a.gr_b_s * g) + (a.gr_b_df3 * -1.0);
-        }
-    };
-
-    struct gr_df3_to_df0 {
-        template<typename T>
-        void operator()(T& a) const {
-            a.gr_w_df0 = a.gr_w_df3;
-            a.gr_b_df0 = a.gr_b_df3;
         }
     };
 
@@ -696,7 +620,13 @@ public:
         weight cost = 0.0;
         gradient<false>(context, cost);
 
-        for_each(tuples, gr_copy_init());
+        for_each(tuples, [](auto& rbm){
+            rbm.gr_w_df0 = rbm.gr_w_incs;
+            rbm.gr_b_df0 = rbm.gr_b_incs;
+
+            rbm.gr_w_s = rbm.gr_w_df0 * -1.0;
+            rbm.gr_b_s = rbm.gr_b_df0 * -1.0;
+        });
 
         int_t i0 = {cost, s_dot_s(), 0.0};
         int_t i3 = {0.0, 0.0, 1.0 / (1 - i0.d)};
@@ -705,7 +635,17 @@ public:
         for(size_t i = 0; i < max_iteration; ++i){
             auto best_cost = i0.f;
             i3.f = 0.0;
-            for_each(tuples, gr_copy_best());
+
+            for_each(tuples, [](auto& rbm){
+                rbm.gr_w_best = rbm.gr_w;
+                rbm.gr_b_best = rbm.gr_b;
+
+                rbm.gr_w_best_incs = rbm.gr_w_incs;
+                rbm.gr_b_best_incs = rbm.gr_b_incs;
+
+                rbm.gr_w_df3 = 0.0;
+                rbm.gr_b_df3 = 0.0;
+            });
 
             int64_t M = 20;
             int_t i1 = {0.0, 0.0, 0.0};
@@ -717,7 +657,10 @@ public:
                 i2.d = i0.d;
                 i3.f = i0.f;
 
-                for_each(tuples, gr_df0_to_df3());
+                for_each(tuples, [](auto& rbm){
+                    rbm.gr_w_df3 = rbm.gr_w_df0;
+                    rbm.gr_b_df3 = rbm.gr_b_df0;
+                });
 
                 while(true){
                     if(M-- < 0){
@@ -826,7 +769,11 @@ public:
 
                 i3.d = i0.d;
                 i0.d = df3_dot_s();
-                for_each(tuples, gr_df3_to_df0());
+
+                for_each(tuples, [](auto& rbm){
+                    rbm.gr_w_df0 = rbm.gr_w_df3;
+                    rbm.gr_b_df0 = rbm.gr_b_df3;
+                });
 
                 if(i0.d > 0){
                     for_each(tuples, [] (auto& rbm) {
@@ -860,7 +807,11 @@ public:
     void fine_tune(std::vector<TrainingItem>& training_data, std::vector<Label>& labels, size_t epochs, size_t batch_size = rbm_type<0>::BatchSize){
         auto batches = training_data.size() / batch_size;
 
-        for_each(tuples, resize_probs(batch_size));
+        for_each(tuples, [batch_size](auto& rbm){
+            for(size_t i = 0; i < batch_size; ++i){
+                rbm.gr_probs.emplace_back(rbm.n_hiddens());
+            }
+        });
 
         for(size_t epoch = 0; epoch < epochs; ++epoch){
             for(size_t i = 0; i < batches; ++i){
