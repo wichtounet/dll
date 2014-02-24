@@ -88,7 +88,7 @@ double test_set(DBN& dbn, const std::vector<std::vector<uint8_t>>& images, const
     return (images.size() - success) / static_cast<double>(images.size());
 }
 
-template<typename DBN, typename P1, typename P2>
+template<typename DBN, typename P1>
 void test_all(DBN& dbn, const std::vector<std::vector<uint8_t>>& training_images, const std::vector<uint8_t>& training_labels, P1 predictor){
     auto test_images = mnist::read_test_images();
     auto test_labels = mnist::read_test_labels();
