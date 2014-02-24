@@ -89,7 +89,7 @@ double test_set(DBN& dbn, const std::vector<std::vector<uint8_t>>& images, const
 }
 
 template<typename DBN, typename P1, typename P2>
-void test_all(DBN& dbn, const std::vector<std::vector<uint8_t>>& training_images, const std::vector<uint8_t>& training_labels, P1 predictor, P2 deep_predictor){
+void test_all(DBN& dbn, const std::vector<std::vector<uint8_t>>& training_images, const std::vector<uint8_t>& training_labels, P1 predictor){
     auto test_images = mnist::read_test_images();
     auto test_labels = mnist::read_test_labels();
 
@@ -105,15 +105,9 @@ void test_all(DBN& dbn, const std::vector<std::vector<uint8_t>>& training_images
     auto error_rate = test_set(dbn, training_images, training_labels, predictor);
     std::cout << "\tError rate (normal): " << 100.0 * error_rate << std::endl;
 
-    error_rate = test_set(dbn, training_images, training_labels, deep_predictor);
-    std::cout << "\tError rate (deep): " << 100.0 * error_rate << std::endl;
-
     std::cout << "Test Set" << std::endl;
     error_rate = test_set(dbn, test_images, test_labels, predictor);
     std::cout << "\tError rate (normal): " << 100.0 * error_rate << std::endl;
-
-    error_rate = test_set(dbn, test_images, test_labels, deep_predictor);
-    std::cout << "\tError rate (deep): " << 100.0 * error_rate << std::endl;
 
     std::cout << "Testing took " << watch.elapsed() << "ms" << std::endl;
 }
@@ -150,7 +144,7 @@ int main(int argc, char* argv[]){
 
         dbn->train_with_labels(training_images, training_labels, 10, 5);
 
-        test_all(dbn, training_images, training_labels, label_predictor(), deep_label_predictor());
+        test_all(dbn, training_images, training_labels, label_predictor());
     } else {
         typedef dbn::dbn<
             dbn::layer<dbn::conf<true, 100, true, true>, 28 * 28, 300>,
@@ -173,7 +167,7 @@ int main(int argc, char* argv[]){
         std::cout << "Start fine-tuning" << std::endl;
         dbn->fine_tune(training_images, labels, 10, 1000);
 
-        test_all(dbn, training_images, training_labels, predictor(), deep_predictor());
+        test_all(dbn, training_images, training_labels, predictor());
     }
 
     return 0;

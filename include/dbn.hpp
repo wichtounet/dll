@@ -211,69 +211,6 @@ public:
 
     /*}}}*/
 
-    /*{{{ Deep predict */
-
-    template<std::size_t I, typename TrainingItem, typename Output>
-    inline enable_if_t<(I == layers - 1), void>
-    deep_activate(const TrainingItem& input, Output& output, std::size_t sampling){
-        auto& rbm = layer<I>();
-
-        static vector<weight> v1(num_visible<I>());
-        static vector<weight> v2(num_visible<I>());
-
-        for(size_t i = 0; i < input.size(); ++i){
-            v1(i) = input[i];
-        }
-
-        static vector<weight> h1(num_hidden<I>());
-        static vector<weight> h2(num_hidden<I>());
-        static vector<weight> hs(num_hidden<I>());
-
-        for(size_t i = 0; i< sampling; ++i){
-            rbm.activate_hidden(h1, v1);
-            rbm.activate_visible(rbm_type<I>::bernoulli(h1, hs), v1);
-
-            //TODO Perhaps we should apply a new bernoulli on v1 ?
-        }
-
-        rbm.activate_hidden(output, v1);
-    }
-
-    template<std::size_t I, typename TrainingItem, typename Output>
-    inline enable_if_t<(I < layers - 1), void>
-    deep_activate(const TrainingItem& input, Output& output, std::size_t sampling){
-        auto& rbm = layer<I>();
-
-        static vector<weight> next(num_hidden<I>());
-
-        rbm.activate_hidden(next, input);
-
-        deep_activate<I + 1>(next, output, sampling);
-    }
-
-    template<typename TrainingItem>
-    size_t deep_predict(TrainingItem& item, std::size_t sampling){
-        constexpr auto labels = num_hidden<layers - 1>();
-
-        vector<weight> output(labels);
-        deep_activate<0>(item, output, sampling);
-
-        size_t label = 0;
-        weight max = 0;
-        for(size_t l = 0; l < labels; ++l){
-            auto value = output[l];
-
-            if(value > max){
-                max = value;
-                label = l;
-            }
-        }
-
-        return label;
-    }
-
-    /*}}}*/
-
     /*{{{ Predict with labels */
 
     template<std::size_t I, typename TrainingItem, typename Output>
@@ -953,10 +890,6 @@ public:
                 failed = true;
             }
         }
-
-        //std::cout << "Apply new weights to RBMs" << std::endl;
-
-        //for_each(tuples, gr_apply_weights());
     }
 
     template<typename TrainingItem, typename Label>
@@ -964,12 +897,11 @@ public:
         auto batches = training_data.size() / batch_size;
 
         for_each(tuples, resize_probs(batch_size));
-        //for_each(tuples, gr_init_weights());
 
         for(size_t epoch = 0; epoch < epochs; ++epoch){
             for(size_t i = 0; i < batches; ++i){
                 auto start = i * batch_size;
-                auto end = (i+1) * batch_size;
+                auto end = start + batch_size;
 
                 gradient_context<TrainingItem, Label> context(
                     batch<TrainingItem>(training_data.begin() + start, training_data.begin() + end),
