@@ -530,14 +530,6 @@ public:
         }
     };
 
-    struct gr_minus_df0_to_s {
-        template<typename T>
-        void operator()(T& a) const {
-            a.gr_w_s = a.gr_w_df0 * -1.0;
-            a.gr_b_s = a.gr_b_df0 * -1.0;
-        }
-    };
-
     struct gr_gs_minus_df3 {
         weight g;
 
@@ -577,35 +569,9 @@ public:
         }
     };
 
-    struct gr_save_tmp {
-        const weight x3;
-
-        gr_save_tmp(weight x) : x3(x){}
-
-        template<typename T>
-        void operator()(T& a) const {
-            a.gr_w_tmp = a.gr_w + a.gr_w_s * x3;
-            a.gr_b_tmp = a.gr_b + a.gr_b_s * x3;
-        }
-    };
-
-    struct gr_add_sx3_to_weights {
-        const weight x3;
-
-        gr_add_sx3_to_weights(weight x) : x3(x) {}
-
-        template<typename T>
-        void operator()(T& a) const {
-            a.gr_w += a.gr_w_s * x3;
-            a.gr_b += a.gr_b_s * x3;
-        }
-    };
-
-    struct gr_check_finite {
+    bool is_finite(){
         bool finite = true;
-
-        template<typename T>
-        void operator()(T& a){
+        for_each(tuples, [&finite](auto& a){
             if(!finite){
                 return;
             }
@@ -623,13 +589,8 @@ public:
                     return;
                 }
             }
-        }
-    };
-
-    bool is_finite(){
-        gr_check_finite check;
-        for_each(tuples, check);
-        return check.finite;
+        });
+        return finite;
     }
 
     template<typename C1, typename C2>
@@ -716,6 +677,12 @@ public:
         return f.acc;
     }
 
+    struct int_t {
+        weight f;
+        weight d;
+        weight x;
+    };
+
     template<typename Input, typename Target>
     void minimize(const gradient_context<Input, Target>& context){
         constexpr const weight INT = 0.1;
@@ -731,30 +698,24 @@ public:
 
         for_each(tuples, gr_copy_init());
 
-        auto d0 = s_dot_s();
-        auto f0 = cost;
-        weight d3 = 0.0;
-        weight x3 = 1.0 / (1 - d0);
+        int_t i0 = {cost, s_dot_s(), 0.0};
+        int_t i3 = {0.0, 0.0, 1.0 / (1 - i0.d)};
 
         bool failed = false;
         for(size_t i = 0; i < max_iteration; ++i){
-            auto best_cost = f0;
-            weight f3 = 0.0;
+            auto best_cost = i0.f;
+            i3.f = 0.0;
             for_each(tuples, gr_copy_best());
 
             int64_t M = 20;
-            weight f1 = 0.0;
-            weight x1 = 0.0;
-            weight d1 = 0.0;
-            weight f2 = 0.0;
-            weight x2 = 0.0;
-            weight d2 = 0.0;
+            int_t i1 = {0.0, 0.0, 0.0};
+            int_t i2 = {0.0, 0.0, 0.0};
 
             while(true){
-                x2 = 0.0;
-                f2 = f0;
-                d2 = d0;
-                f3 = f0;
+                i2.x = 0.0;
+                i2.f = i0.f;
+                i2.d = i0.d;
+                i3.f = i0.f;
 
                 for_each(tuples, gr_df0_to_df3());
 
@@ -763,129 +724,132 @@ public:
                         break;
                     }
 
-                    //tmp_weights = weights + s * x3;
-                    for_each(tuples, gr_save_tmp(x3));
+                    for_each(tuples, [&i3](auto& rbm){
+                        rbm.gr_w_tmp = rbm.gr_w + rbm.gr_w_s * i3.x;
+                        rbm.gr_b_tmp = rbm.gr_b + rbm.gr_b_s * i3.x;
+                    });
 
                     gradient<true>(context, cost);
 
-                    f3 = cost;
+                    i3.f = cost;
                     for_each(tuples, gr_w_incs_to_df3());
 
                     if(std::isfinite(cost) && is_finite()){
-                        if(f3 < best_cost){
-                            best_cost = f3;
+                        if(i3.f < best_cost){
+                            best_cost = i3.f;
                             for_each(tuples, gr_tmp_to_best());
                         }
                         break;
                     }
 
-                    x3 = (x2 + x3) / 2.0;
+                    i3.x = (i2.x + i3.x) / 2.0;
                 }
 
-                d3 = df3_dot_s();
-                if(d3 > SIG * d0 || f3 > f0 + x3 * RHO * d0 || M <= 0){
+                i3.d = df3_dot_s();
+                if(i3.d > SIG * i0.d || i3.f > i0.f + i3.x * RHO * i0.d || M <= 0){
                     break;
                 }
 
-                x1 = x2;
-                f1 = f2;
-                d1 = d2;
-                x2 = x3;
-                f2 = f3;
-                d2 = d3;
+                i1 = i2;
+                i2 = i3;
 
                 //Cubic extrapolation
-                auto dx = x2 - x1;
-                auto A = 6.0 * (f1 - f2) + 3.0 * (d2 + d1) * dx;
-                auto B = 3.0 * (f2 - f1) - (2.0 * d1 + d2) * dx;
-                x3 = x1 - d1 * dx * dx / (B + sqrt(B * B - A * d1 * dx));
+                auto dx = i2.x - i1.x;
+                auto A = 6.0 * (i1.f - i2.f) + 3.0 * (i2.d + i1.d) * dx;
+                auto B = 3.0 * (i2.f - i1.f) - (2.0 * i1.d + i2.d) * dx;
+                i3.x = i1.x - i1.d * dx * dx / (B + sqrt(B * B - A * i1.d * dx));
 
-                auto upper = x2 * EXT;
-                auto lower = x2 + INT * dx;
-                if(!std::isfinite(x3) || x3 < 0 || x3 > upper){
-                    x3 = upper;
-                } else if(x3 < lower){
-                    x3 = lower;
+                auto upper = i2.x * EXT;
+                auto lower = i2.x + INT * dx;
+                if(!std::isfinite(i3.x) || i3.x < 0 || i3.x > upper){
+                    i3.x = upper;
+                } else if(i3.x < lower){
+                    i3.x = lower;
                 }
             }
 
             //Interpolation
-            weight f4 = 0.0;
-            weight x4 = 0.0;
-            weight d4 = 0.0;
+            int_t i4 = {0.0, 0.0, 0.0};
 
-            while((std::abs(d3) > -SIG * d0 || f3 > f0 + x3 * RHO * d0) && M > 0){
-                if(d3 > 0 || f3 > f0 + x3 * RHO * d0){
-                    x4 = x3;
-                    f4 = f3;
-                    d4 = d3;
+            while((std::abs(i3.d) > -SIG * i0.d || i3.f > i0.f + i3.x * RHO * i0.d) && M > 0){
+                if(i3.d > 0 || i3.f > i0.f + i3.x * RHO * i0.d){
+                    i4 = i3;
                 } else {
-                    x2 = x3;
-                    f2 = f3;
-                    d2 = d3;
+                    i2 = i3;
                 }
 
-                auto dx = x4 - x2;
-                if(f4 > f0){
-                    x3 = x2 - (0.5 * d2 * dx * dx) / (f4 - f2 - d2 * dx); //Quadratic interpolation
+                auto dx = i4.x - i2.x;
+                if(i4.f > i0.f){
+                    i3.x = i2.x - (0.5 * i2.d * dx * dx) / (i4.f - i2.f - i2.d * dx); //Quadratic interpolation
                 } else {
-                    auto A = 6.0 * (f2 - f4) / dx + 3.0 * (d4 + d2);
-                    auto B = 3.0 * (f4 - f2) - (2.0 * d2 + d4) * dx;
-                    x3 = x2 + (sqrt(B * B - A * d2 * dx * dx) - B) / A;
+                    auto A = 6.0 * (i2.f - i4.f) / dx + 3.0 * (i4.d + i2.d);
+                    auto B = 3.0 * (i4.f - i2.f) - (2.0 * i2.d + i4.d) * dx;
+                    i3.x = i2.x + (sqrt(B * B - A * i2.d * dx * dx) - B) / A;
                 }
 
-                if(!std::isfinite(x3)){
-                    x3 = (x2 + x4) / 2.0;
+                if(!std::isfinite(i3.x)){
+                    i3.x = (i2.x + i4.x) / 2.0;
                 }
 
-                x3 = std::max(std::min(x3, x4 - INT * (x4 - x2)), x2 + INT * (x4 -x2));
+                i3.x = std::max(std::min(i3.x, i4.x - INT * (i4.x - i2.x)), i2.x + INT * (i4.x -i2.x));
 
-                //tmp_weights = weights + s * x3;
-                for_each(tuples, gr_save_tmp(x3));
+                for_each(tuples, [&i3](auto& rbm){
+                    rbm.gr_w_tmp = rbm.gr_w + rbm.gr_w_s * i3.x;
+                    rbm.gr_b_tmp = rbm.gr_b + rbm.gr_b_s * i3.x;
+                });
 
                 gradient<true>(context, cost);
 
-                f3 = cost;
+                i3.f = cost;
                 for_each(tuples, gr_w_incs_to_df3());
 
-                if(f3 < best_cost){
-                    best_cost = f3;
+                if(i3.f < best_cost){
+                    best_cost = i3.f;
                     for_each(tuples, gr_tmp_to_best());
                 }
 
                 --M;
 
-                d3 = df3_dot_s();
+                i3.d = df3_dot_s();
             }
 
-            if(std::abs(d3) < -SIG * d0 && f3 < f0 + x3 * RHO * d0){
-                for_each(tuples, gr_add_sx3_to_weights(x3));
+            if(std::abs(i3.d) < -SIG * i0.d && i3.f < i0.f + i3.x * RHO * i0.d){
+                for_each(tuples, [&i3](auto& rbm){
+                    rbm.gr_w += rbm.gr_w_s * i3.x;
+                    rbm.gr_b += rbm.gr_b_s * i3.x;
+                });
 
-                f0 = f3;
+                i0.f = i3.f;
 
                 auto g = (df3_dot_df3() - df0_dot_df3()) / df0_dot_df0();
                 for_each(tuples, gr_gs_minus_df3(g));
 
-                d3 = d0;
-                d0 = df3_dot_s();
+                i3.d = i0.d;
+                i0.d = df3_dot_s();
                 for_each(tuples, gr_df3_to_df0());
 
-                if(d0 > 0){
-                    for_each(tuples, gr_minus_df0_to_s());
-                    d0 = -df0_dot_df0();
+                if(i0.d > 0){
+                    for_each(tuples, [] (auto& rbm) {
+                        rbm.gr_w_s = rbm.gr_w_df0 * -1.0;
+                        rbm.gr_b_s = rbm.gr_b_df0 * -1.0;
+                    });
+                    i0.d = -df0_dot_df0();
                 }
 
-                x3 = x3 * std::min(RATIO, weight(d3 / (d0 - 1e-37)));
+                i3.x = i3.x * std::min(RATIO, weight(i3.d / (i0.d - 1e-37)));
                 failed = false;
             } else {
                 if(failed){
                     break;
                 }
 
-                for_each(tuples, gr_minus_df0_to_s());
-                d0 = -s_dot_s();
+                for_each(tuples, [] (auto& rbm) {
+                    rbm.gr_w_s = rbm.gr_w_df0 * -1.0;
+                    rbm.gr_b_s = rbm.gr_b_df0 * -1.0;
+                });
+                i0.d = -s_dot_s();
 
-                x3 = 1.0 / (1.0 - d0);
+                i3.x = 1.0 / (1.0 - i0.d);
 
                 failed = true;
             }

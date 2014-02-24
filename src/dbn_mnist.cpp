@@ -147,25 +147,25 @@ int main(int argc, char* argv[]){
         test_all(dbn, training_images, training_labels, label_predictor());
     } else {
         typedef dbn::dbn<
-            dbn::layer<dbn::conf<true, 100, true, true>, 28 * 28, 300>,
-            dbn::layer<dbn::conf<true, 100, false, true>, 300, 300>,
-            dbn::layer<dbn::conf<true, 100, false, true>, 300, 500>,
-            dbn::layer<dbn::conf<true, 100, false, true, true, dbn::Type::EXP>, 500, 10>> dbn_t;
+            dbn::layer<dbn::conf<true, 100, true, true>, 28 * 28, 30>,
+            //dbn::layer<dbn::conf<true, 100, false, true>, 300, 300>,
+            //dbn::layer<dbn::conf<true, 100, false, true>, 40, 40>,
+            dbn::layer<dbn::conf<true, 100, false, true, true, dbn::Type::EXP>, 30, 10>> dbn_t;
 
         std::cout << "RBM: " << dbn_t::num_visible<0>() << "<>" << dbn_t::num_hidden<0>() << std::endl;
         std::cout << "RBM: " << dbn_t::num_visible<1>() << "<>" << dbn_t::num_hidden<1>() << std::endl;
-        std::cout << "RBM: " << dbn_t::num_visible<2>() << "<>" << dbn_t::num_hidden<2>() << std::endl;
-        std::cout << "RBM: " << dbn_t::num_visible<3>() << "<>" << dbn_t::num_hidden<3>() << std::endl;
+        //std::cout << "RBM: " << dbn_t::num_visible<2>() << "<>" << dbn_t::num_hidden<2>() << std::endl;
+        //std::cout << "RBM: " << dbn_t::num_visible<3>() << "<>" << dbn_t::num_hidden<3>() << std::endl;
 
         auto dbn = std::make_shared<dbn_t>();
 
         std::cout << "Start pretraining" << std::endl;
-        dbn->pretrain(training_images, 10);
+        dbn->pretrain(training_images, 5);
 
         auto labels = make_fake(training_labels);
 
         std::cout << "Start fine-tuning" << std::endl;
-        dbn->fine_tune(training_images, labels, 10, 1000);
+        dbn->fine_tune(training_images, labels, 5, 1000);
 
         test_all(dbn, training_images, training_labels, predictor());
     }
