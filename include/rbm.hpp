@@ -182,8 +182,7 @@ public:
         return output;
     }
 
-    template<typename TrainingItem>
-    void train(std::vector<TrainingItem>& training_data, std::size_t max_epochs){
+    void train(std::vector<vector<weight>>& training_data, std::size_t max_epochs){
         stop_watch<std::chrono::seconds> watch;
 
         if(Init){
@@ -210,7 +209,7 @@ public:
         for(size_t epoch= 0; epoch < max_epochs; ++epoch){
             weight error = 0.0;
             for(size_t i = 0; i < batches; ++i){
-                error += cd_step(dbn::batch<TrainingItem>(training_data.begin() + i * BatchSize, training_data.begin() + (i+1) * BatchSize));
+                error += cd_step(dbn::batch<vector<weight>>(training_data.begin() + i * BatchSize, training_data.begin() + (i+1) * BatchSize));
             }
 
             std::cout << "epoch " << epoch << ": Reconstruction error average: " << (error / batches) << " Free energy: " << free_energy() << std::endl;
@@ -381,8 +380,7 @@ public:
         return -energy;
     }
 
-    template<typename TrainingItem>
-    void reconstruct(const std::vector<TrainingItem>& items){
+    void reconstruct(const vector<weight>& items){
         dbn_assert(items.size() == num_visible, "The size of the training sample must match visible units");
 
         stop_watch<> watch;
