@@ -191,9 +191,28 @@ public:
 
     template<typename TrainingItem>
     size_t predict(TrainingItem& item){
-        static vector<weight> output(num_hidden<layers - 1>());
+        vector<weight> output(num_hidden<layers - 1>());
 
-        activate<0>(item, output);
+        auto input = std::ref(output);
+
+        //TODO That can probably be solved in a more elegant way
+        for_each_i(tuples, [&item, &input, &output](std::size_t I, auto& rbm){
+            typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
+
+            if(I == layers - 1){
+                rbm.activate_hidden(output, static_cast<vector<weight>&>(input));
+            } else {
+                static vector<weight> next(rbm_t::num_hidden);
+
+                if(I == 0){
+                    rbm.activate_hidden(next, item);
+                } else {
+                    rbm.activate_hidden(next, static_cast<vector<weight>&>(input));
+                }
+
+                input = std::ref(next);
+            }
+        });
 
         size_t label = 0;
         weight max = 0;
@@ -462,37 +481,6 @@ public:
         //std::cout << "evaluating(" << Temp << "): cost:" << cost << " error: " << (error / n_samples) << std::endl;
     }
 
-    struct gr_gs_minus_df3 {
-        weight g;
-
-        gr_gs_minus_df3(weight g1) : g(g1){}
-
-        template<typename T>
-        void operator()(T& a) const {
-            a.gr_w_s = (a.gr_w_s * g) + (a.gr_w_df3 * -1.0);
-            a.gr_b_s = (a.gr_b_s * g) + (a.gr_b_df3 * -1.0);
-        }
-    };
-
-    struct gr_w_incs_to_df3 {
-        template<typename T>
-        void operator()(T& a) const {
-            a.gr_w_df3 = a.gr_w_incs;
-            a.gr_b_df3 = a.gr_b_incs;
-        }
-    };
-
-    struct gr_tmp_to_best {
-        template<typename T>
-        void operator()(T& a) const {
-            a.gr_w_best = a.gr_w_tmp;
-            a.gr_b_best = a.gr_b_tmp;
-
-            a.gr_w_best_incs = a.gr_w_incs;
-            a.gr_b_best_incs = a.gr_b_incs;
-        }
-    };
-
     bool is_finite(){
         bool finite = true;
         for_each(tuples, [&finite](auto& a){
@@ -526,79 +514,44 @@ public:
         return d;
     }
 
-    struct gr_s_dot_s {
-        weight acc = 0.0;
-
-        template<typename T>
-        void operator()(T& a){
-            acc += dot(a.gr_w_s, a.gr_w_s) + dot(a.gr_b_s, a.gr_b_s);
-        }
-    };
-
-    struct gr_df3_dot_s {
-        weight acc = 0.0;
-
-        template<typename T>
-        void operator()(T& a){
-            acc += dot(a.gr_w_df3, a.gr_w_s) + dot(a.gr_b_df3, a.gr_b_s);
-        }
-    };
-
-    struct gr_df3_dot_df3 {
-        weight acc = 0.0;
-
-        template<typename T>
-        void operator()(T& a){
-            acc += dot(a.gr_w_df3, a.gr_w_df3) + dot(a.gr_b_df3, a.gr_b_df3);
-        }
-    };
-
-    struct gr_df0_dot_df0 {
-        weight acc = 0.0;
-
-        template<typename T>
-        void operator()(T& a){
-            acc += dot(a.gr_w_df0, a.gr_w_df0) + dot(a.gr_b_df0, a.gr_b_df0);
-        }
-    };
-
-    struct gr_df0_dot_df3 {
-        weight acc = 0.0;
-
-        template<typename T>
-        void operator()(T& a){
-            acc += dot(a.gr_w_df0, a.gr_w_df3) + dot(a.gr_b_df0, a.gr_b_df3);
-        }
-    };
-
     weight s_dot_s(){
-        gr_s_dot_s f;
-        for_each(tuples, f);
-        return f.acc;
+        weight acc = 0.0;
+        for_each(tuples, [&acc](auto& rbm){
+            acc += dot(rbm.gr_w_s, rbm.gr_w_s) + dot(rbm.gr_b_s, rbm.gr_b_s);
+        });
+        return acc;
     }
 
     weight df3_dot_s(){
-        gr_df3_dot_s f;
-        for_each(tuples, f);
-        return f.acc;
+        weight acc = 0.0;
+        for_each(tuples, [&acc](auto& rbm){
+            acc += dot(rbm.gr_w_df3, rbm.gr_w_s) + dot(rbm.gr_b_df3, rbm.gr_b_s);
+        });
+        return acc;
     }
 
     weight df3_dot_df3(){
-        gr_df3_dot_df3 f;
-        for_each(tuples, f);
-        return f.acc;
+        weight acc = 0.0;
+        for_each(tuples, [&acc](auto& rbm){
+            acc += dot(rbm.gr_w_df3, rbm.gr_w_df3) + dot(rbm.gr_b_df3, rbm.gr_b_df3);
+        });
+        return acc;
     }
 
     weight df0_dot_df0(){
-        gr_df0_dot_df0 f;
-        for_each(tuples, f);
-        return f.acc;
+        weight acc = 0.0;
+        for_each(tuples, [&acc](auto& rbm){
+            acc += dot(rbm.gr_w_df0, rbm.gr_w_df0) + dot(rbm.gr_b_df0, rbm.gr_b_df0);
+        });
+        return acc;
     }
 
     weight df0_dot_df3(){
-        gr_df0_dot_df3 f;
-        for_each(tuples, f);
-        return f.acc;
+        weight acc = 0.0;
+        for_each(tuples, [&acc](auto& rbm){
+            acc += dot(rbm.gr_w_df0, rbm.gr_w_df3) + dot(rbm.gr_b_df0, rbm.gr_b_df3);
+        });
+        return acc;
     }
 
     struct int_t {
@@ -675,12 +628,21 @@ public:
                     gradient<true>(context, cost);
 
                     i3.f = cost;
-                    for_each(tuples, gr_w_incs_to_df3());
+                    for_each(tuples, [](auto& rbm){
+                        rbm.gr_w_df3 = rbm.gr_w_incs;
+                        rbm.gr_b_df3 = rbm.gr_b_incs;
+                    });
 
                     if(std::isfinite(cost) && is_finite()){
                         if(i3.f < best_cost){
                             best_cost = i3.f;
-                            for_each(tuples, gr_tmp_to_best());
+                            for_each(tuples, [](auto& rbm){
+                                rbm.gr_w_best = rbm.gr_w_tmp;
+                                rbm.gr_b_best = rbm.gr_b_tmp;
+
+                                rbm.gr_w_best_incs = rbm.gr_w_incs;
+                                rbm.gr_b_best_incs = rbm.gr_b_incs;
+                            });
                         }
                         break;
                     }
@@ -744,11 +706,20 @@ public:
                 gradient<true>(context, cost);
 
                 i3.f = cost;
-                for_each(tuples, gr_w_incs_to_df3());
+                for_each(tuples, [](auto& rbm){
+                    rbm.gr_w_df3 = rbm.gr_w_incs;
+                    rbm.gr_b_df3 = rbm.gr_b_incs;
+                });
 
                 if(i3.f < best_cost){
                     best_cost = i3.f;
-                    for_each(tuples, gr_tmp_to_best());
+                    for_each(tuples, [](auto& rbm){
+                        rbm.gr_w_best = rbm.gr_w_tmp;
+                        rbm.gr_b_best = rbm.gr_b_tmp;
+
+                        rbm.gr_w_best_incs = rbm.gr_w_incs;
+                        rbm.gr_b_best_incs = rbm.gr_b_incs;
+                    });
                 }
 
                 --M;
@@ -765,7 +736,11 @@ public:
                 i0.f = i3.f;
 
                 auto g = (df3_dot_df3() - df0_dot_df3()) / df0_dot_df0();
-                for_each(tuples, gr_gs_minus_df3(g));
+
+                for_each(tuples, [g](auto& rbm){
+                    rbm.gr_w_s = (rbm.gr_w_s * g) + (rbm.gr_w_df3 * -1.0);
+                    rbm.gr_b_s = (rbm.gr_b_s * g) + (rbm.gr_b_df3 * -1.0);
+                });
 
                 i3.d = i0.d;
                 i0.d = df3_dot_s();
