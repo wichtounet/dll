@@ -45,34 +45,34 @@ typename std::vector<fake_label_array<T>> make_fake(const std::vector<T>& values
 
 struct predictor {
     template<typename T, typename V>
-    size_t operator()(T& dbn, const V& image){
+    size_t operator()(T& dbn, V& image){
         return dbn->predict(image);
     }
 };
 
 struct deep_predictor {
     template<typename T, typename V>
-    size_t operator()(T& dbn, const V& image){
+    size_t operator()(T& dbn, V& image){
         return dbn->deep_predict(image, 5);
     }
 };
 
 struct label_predictor {
     template<typename T, typename V>
-    size_t operator()(T& dbn, const V& image){
+    size_t operator()(T& dbn, V& image){
         return dbn->predict_labels(image, 10);
     }
 };
 
 struct deep_label_predictor {
     template<typename T, typename V>
-    size_t operator()(T& dbn, const V& image){
+    size_t operator()(T& dbn, V& image){
         return dbn->deep_predict_labels(image, 10, 5);
     }
 };
 
 template<typename DBN, typename Functor>
-double test_set(DBN& dbn, const std::vector<vector<double>>& images, const std::vector<uint8_t>& labels, Functor f){
+double test_set(DBN& dbn, std::vector<vector<double>>& images, const std::vector<uint8_t>& labels, Functor f){
     size_t success = 0;
     for(size_t i = 0; i < images.size(); ++i){
         auto& image = images[i];
@@ -89,7 +89,7 @@ double test_set(DBN& dbn, const std::vector<vector<double>>& images, const std::
 }
 
 template<typename DBN, typename P1>
-void test_all(DBN& dbn, const std::vector<vector<double>>& training_images, const std::vector<uint8_t>& training_labels, P1 predictor){
+void test_all(DBN& dbn, std::vector<vector<double>>& training_images, const std::vector<uint8_t>& training_labels, P1 predictor){
     auto test_images = mnist::read_test_images();
     auto test_labels = mnist::read_test_labels();
 

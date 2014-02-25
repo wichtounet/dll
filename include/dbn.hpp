@@ -173,51 +173,27 @@ public:
 
     /*{{{ Predict */
 
-    template<std::size_t I, typename TrainingItem, typename Output>
-    inline enable_if_t<(I == layers - 1), void>
-    activate(const TrainingItem& input, Output& output){
-        layer<I>().activate_hidden(output, input);
-    }
+    size_t predict(vector<weight>& item){
+        vector<weight> result(num_hidden<layers - 1>());
 
-    template<std::size_t I, typename TrainingItem, typename Output>
-    inline enable_if_t<(I < layers - 1), void>
-    activate(const TrainingItem& input, Output& output){
-        static vector<weight> next(num_hidden<I>());
-
-        layer<I>().activate_hidden(next, input);
-
-        activate<I + 1>(next, output);
-    }
-
-    template<typename TrainingItem>
-    size_t predict(TrainingItem& item){
-        vector<weight> output(num_hidden<layers - 1>());
-
-        auto input = std::ref(output);
+        auto input = std::ref(item);
 
         //TODO That can probably be solved in a more elegant way
-        for_each_i(tuples, [&item, &input, &output](std::size_t I, auto& rbm){
+        for_each_i(tuples, [&item, &input, &result](std::size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
 
-            if(I == layers - 1){
-                rbm.activate_hidden(output, static_cast<vector<weight>&>(input));
-            } else {
-                static vector<weight> next(rbm_t::num_hidden);
+            static vector<weight> next(rbm_t::num_hidden);
+            auto& output = (I == layers - 1) ? result : next;
 
-                if(I == 0){
-                    rbm.activate_hidden(next, item);
-                } else {
-                    rbm.activate_hidden(next, static_cast<vector<weight>&>(input));
-                }
+            rbm.activate_hidden(output, static_cast<vector<weight>&>(input));
 
-                input = std::ref(next);
-            }
+            input = std::ref(next);
         });
 
         size_t label = 0;
         weight max = 0;
-        for(size_t l = 0; l < output.size(); ++l){
-            auto value = output[l];
+        for(size_t l = 0; l < result.size(); ++l){
+            auto value = result[l];
 
             if(value > max){
                 max = value;
