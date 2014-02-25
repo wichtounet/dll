@@ -16,15 +16,15 @@
 
 namespace dbn {
 
-template<typename Input, typename Target>
+template<typename Target>
 struct gradient_context {
     size_t max_iterations;
     size_t epoch;
-    batch<Input> inputs;
+    batch<vector<double>> inputs;
     batch<Target> targets;
     size_t start_layer;
 
-    gradient_context(batch<Input> i, batch<Target> t, size_t e)
+    gradient_context(batch<vector<double>> i, batch<Target> t, size_t e)
         : max_iterations(3), epoch(e), inputs(i), targets(t), start_layer(0)
     {
         //Nothing else to init
@@ -78,37 +78,35 @@ public:
 
     /*{{{ Pretrain */
 
-    template<std::size_t I, typename TrainingItems>
-    inline enable_if_t<(I == layers - 2), void>
-    pretrain_rbm_layers(TrainingItems& training_data, std::size_t max_epochs){
-        std::cout << "Train layer " << I << std::endl;
+    void pretrain(std::vector<vector<weight>>& training_data, std::size_t max_epochs){
+        typedef std::vector<vector<weight>> training_t;
+        training_t next;
 
-        layer<I>().train(training_data, max_epochs);
-    }
+        auto input = std::ref(training_data);
 
-    template<std::size_t I, typename TrainingItems>
-    inline enable_if_t<(I < layers - 2), void>
-    pretrain_rbm_layers(TrainingItems& training_data, std::size_t max_epochs){
-        static_assert(num_hidden<I>() == num_visible<I+1>(), "Layers should have a common unit size");
+        for_each_i(tuples, [&input, &next, max_epochs](std::size_t I, auto& rbm){
+            typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
 
-        std::cout << "Train layer " << I << std::endl;
+            if(I <= layers - 2){
+                std::cout << "Train layer " << I << std::endl;
 
-        auto& rbm = layer<I>();
+                rbm.train(static_cast<training_t&>(input), max_epochs);
 
-        rbm.train(training_data, max_epochs);
+                if(I < layers - 2){
+                    next.clear();
+                    next.reserve(static_cast<training_t&>(input).size());
+                    for(std::size_t i = 0; i < static_cast<training_t&>(input).size(); ++i){
+                        next.emplace_back(rbm_t::num_hidden);
+                    }
 
-        std::vector<fast_vector<weight, num_hidden<I>()>> next(training_data.size());
+                    for(size_t i = 0; i < static_cast<training_t&>(input).size(); ++i){
+                        rbm.activate_hidden(next[i], static_cast<training_t&>(input)[i]);
+                    }
 
-        for(size_t i = 0; i < training_data.size(); ++i){
-            rbm.activate_hidden(next[i], training_data[i]);
-        }
-
-        pretrain_rbm_layers<I + 1>(next, max_epochs);
-    }
-
-    template<typename TrainingItem>
-    void pretrain(std::vector<TrainingItem>& training_data, std::size_t max_epochs){
-        pretrain_rbm_layers<0>(training_data, max_epochs);
+                    input = std::ref(next);
+                }
+            }
+        });
     }
 
     /*}}}*/
@@ -377,17 +375,17 @@ public:
         }
     }
 
-    template<std::size_t I, bool Temp, typename Input, typename D>
+    template<std::size_t I, bool Temp, typename D>
     inline enable_if_t<(I == layers - 1), void>
-    gradient_descent(const Input& inputs, std::vector<D>& diffs, size_t n_samples){
+    gradient_descent(const batch<vector<weight>>& inputs, std::vector<D>& diffs, size_t n_samples){
         update_incs<Temp>(layer<I>(), diffs, n_samples, layer<I-1>().gr_probs);
 
         gradient_descent<I - 1, Temp>(inputs, diffs, n_samples);
     }
 
-    template<std::size_t I, bool Temp, typename Input, typename D>
+    template<std::size_t I, bool Temp, typename D>
     inline enable_if_t<(I > 0 && I != layers - 1), void>
-    gradient_descent(const Input& inputs, std::vector<D>& diffs, size_t n_samples){
+    gradient_descent(const batch<vector<weight>>& inputs, std::vector<D>& diffs, size_t n_samples){
         update_diffs<Temp>(layer<I>(), layer<I+1>(), diffs, n_samples);
 
         update_incs<Temp>(layer<I>(), diffs, n_samples, layer<I-1>().gr_probs);
@@ -395,16 +393,16 @@ public:
         gradient_descent<I -1, Temp>(inputs, diffs, n_samples);
     }
 
-    template<std::size_t I, bool Temp, typename Input, typename D>
+    template<std::size_t I, bool Temp, typename D>
     inline enable_if_t<(I == 0), void>
-    gradient_descent(const Input& inputs, std::vector<D>& diffs, size_t n_samples){
+    gradient_descent(const batch<vector<weight>>& inputs, std::vector<D>& diffs, size_t n_samples){
         update_diffs<Temp>(layer<I>(), layer<I+1>(), diffs, n_samples);
 
         update_incs<Temp>(layer<I>(), diffs, n_samples, inputs);
     }
 
-    template<bool Temp, typename Input, typename Target>
-    void gradient(const gradient_context<Input, Target>& context, weight& cost){
+    template<bool Temp, typename Target>
+    void gradient(const gradient_context<Target>& context, weight& cost){
         auto n_hidden = num_hidden<layers - 1>();
         auto n_samples = context.inputs.size();
 
@@ -536,8 +534,8 @@ public:
         weight x;
     };
 
-    template<typename Input, typename Target>
-    void minimize(const gradient_context<Input, Target>& context){
+    template<typename Target>
+    void minimize(const gradient_context<Target>& context){
         constexpr const weight INT = 0.1;
         constexpr const weight EXT = 3.0;
         constexpr const weight SIG = 0.1;
@@ -754,8 +752,8 @@ public:
         }
     }
 
-    template<typename TrainingItem, typename Label>
-    void fine_tune(std::vector<TrainingItem>& training_data, std::vector<Label>& labels, size_t epochs, size_t batch_size = rbm_type<0>::BatchSize){
+    template<typename Label>
+    void fine_tune(std::vector<vector<weight>>& training_data, std::vector<Label>& labels, size_t epochs, size_t batch_size = rbm_type<0>::BatchSize){
         auto batches = training_data.size() / batch_size;
 
         for_each(tuples, [batch_size](auto& rbm){
@@ -769,8 +767,8 @@ public:
                 auto start = i * batch_size;
                 auto end = start + batch_size;
 
-                gradient_context<TrainingItem, Label> context(
-                    batch<TrainingItem>(training_data.begin() + start, training_data.begin() + end),
+                gradient_context<Label> context(
+                    batch<vector<weight>>(training_data.begin() + start, training_data.begin() + end),
                     batch<Label>(labels.begin() + start, labels.begin() + end),
                     epoch);
 
