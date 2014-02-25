@@ -57,7 +57,8 @@ std::vector<vector<double>> read_mnist_image_file(const std::string& path){
                     images.emplace_back(rows * columns);
 
                     for(size_t j = 0; j < rows * columns; ++j){
-                        images[i][j] = *image_buffer++;
+                        uint8_t pixel = *image_buffer++;
+                        images[i][j] = static_cast<double>(pixel);
                     }
                 }
 
