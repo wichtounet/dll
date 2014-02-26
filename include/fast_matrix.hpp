@@ -186,7 +186,7 @@ public:
         return _data[i];
     }
 
-    const T* data() const {
+    const array_impl& data() const {
         return _data;
     }
 
