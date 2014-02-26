@@ -186,10 +186,6 @@ public:
         return _data[i];
     }
 
-    const array_impl& data() const {
-        return _data;
-    }
-
     const_iterator begin() const {
         return _data.begin();
     }

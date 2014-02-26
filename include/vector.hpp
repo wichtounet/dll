@@ -93,10 +93,6 @@ public:
         return _data[i];
     }
 
-    const T* data() const {
-        return _data;
-    }
-
     const_iterator begin() const {
         return &_data[0];
     }
