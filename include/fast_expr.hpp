@@ -99,7 +99,7 @@ public:
 
     //Apply the expression
 
-    auto operator[](std::size_t i) const -> decltype(BinaryOp::apply(this->lhs()[i], this->rhs()[i])) {
+    decltype(auto) operator[](std::size_t i) const {
         return BinaryOp::apply(lhs()[i], rhs()[i]);
     }
 };
