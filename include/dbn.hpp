@@ -113,58 +113,51 @@ public:
 
     /*{{{ Train with labels */
 
-    template<std::size_t I, typename TrainingItems, typename LabelItems>
-    inline enable_if_t<(I == layers - 1), void>
-    train_rbm_layers_labels(const TrainingItems& training_data, std::size_t max_epochs, const LabelItems&, std::size_t){
-        std::cout << "Train layer " << I << " with labels " << std::endl;
-
-        std::get<I>(tuples).train(training_data, max_epochs);
-    }
-
-    template<std::size_t I, typename TrainingItems, typename LabelItems>
-    inline enable_if_t<(I < layers - 1), void>
-    train_rbm_layers_labels(const TrainingItems& training_data, std::size_t max_epochs, const LabelItems& training_labels, std::size_t labels){
-        std::cout << "Train layer " << I << " with labels " << std::endl;
-
-        auto& rbm = layer<I>();
-
-        rbm.train(training_data, max_epochs);
-
-        auto append_labels = (I + 1 == layers - 1);
-
-        std::vector<vector<weight>> next;
-        next.reserve(training_data.size());
-
-        for(auto& training_item : training_data){
-            vector<weight> next_item(num_hidden<I>() + (append_labels ? labels : 0));
-            rbm.activate_hidden(next_item, training_item);
-            next.emplace_back(std::move(next_item));
-        }
-
-        //If the next layers is the last layer
-        if(append_labels){
-            for(size_t i = 0; i < training_labels.size(); ++i){
-                auto label = training_labels[i];
-
-                for(size_t l = 0; l < labels; ++l){
-                    if(label == l){
-                        next[i][num_hidden<I>() + l] = 1;
-                    } else {
-                        next[i][num_hidden<I>() + l] = 0;
-                    }
-                }
-            }
-        }
-
-        train_rbm_layers_labels<I + 1>(next, max_epochs, training_labels, labels);
-    }
-
-    template<typename TrainingItem, typename Label>
-    void train_with_labels(const std::vector<TrainingItem>& training_data, const std::vector<Label>& training_labels, std::size_t labels, std::size_t max_epochs){
+    template<typename Label>
+    void train_with_labels(const std::vector<vector<weight>>& training_data, const std::vector<Label>& training_labels, std::size_t labels, std::size_t max_epochs){
         dbn_assert(training_data.size() == training_labels.size(), "There must be the same number of values than labels");
         dbn_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
-        train_rbm_layers_labels<0>(training_data, max_epochs, training_labels, labels);
+        auto input = std::cref(training_data);
+
+        typedef std::vector<vector<weight>> training_t;
+        training_t next;
+
+        for_each_i(tuples, [&input, &next, &training_labels, labels, max_epochs](size_t I, auto& rbm){
+            typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
+
+            rbm.train(input, max_epochs);
+
+            if(I < layers - 1){
+                auto append_labels = (I+1 == layers - 1);
+
+                next.clear();
+                next.reserve(static_cast<const training_t&>(input).size());
+
+                for(auto& training_item : static_cast<const training_t&>(input)){
+                    vector<weight> next_item(rbm_t::num_hidden + (append_labels ? labels : 0));
+                    rbm.activate_hidden(next_item, training_item);
+                    next.emplace_back(std::move(next_item));
+                }
+
+                //If the next layers is the last layer
+                if(append_labels){
+                    for(size_t i = 0; i < training_labels.size(); ++i){
+                        auto label = training_labels[i];
+
+                        for(size_t l = 0; l < labels; ++l){
+                            if(label == l){
+                                next[i][rbm_t::num_hidden + l] = 1;
+                            } else {
+                                next[i][rbm_t::num_hidden + l] = 0;
+                            }
+                        }
+                    }
+                }
+            }
+
+            input = std::cref(next);
+        });
     }
 
     /*}}}*/
@@ -206,115 +199,37 @@ public:
 
     /*{{{ Predict with labels */
 
-    template<std::size_t I, typename TrainingItem, typename Output>
-    inline enable_if_t<(I == layers - 1), void>
-    labels_activate(const TrainingItem& input, size_t, Output& output){
-        auto& rbm = layer<I>();
-
-        static vector<weight> h1(num_hidden<I>());
-        static vector<weight> hs(num_hidden<I>());
-
-        rbm.activate_hidden(h1, input);
-        rbm.activate_visible(rbm_type<I>::bernoulli(h1, hs), output);
-    }
-
-    template<std::size_t I, typename TrainingItem, typename Output>
-    inline enable_if_t<(I < layers - 1), void>
-    labels_activate(const TrainingItem& input, std::size_t labels, Output& output){
-        auto& rbm = layer<I>();
-
-        static vector<weight> next(num_visible<I+1>());
-
-        rbm.activate_hidden(next, input);
-
-        //If the next layers is the last layer
-        if(I + 1 == layers - 1){
-            for(size_t l = 0; l < labels; ++l){
-                next[num_hidden<I>() + l] = 0.1;
-            }
-        }
-
-        labels_activate<I + 1>(next, labels, output);
-    }
-
     template<typename TrainingItem>
     size_t predict_labels(const TrainingItem& item, std::size_t labels){
         dbn_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
-        static vector<weight> output(num_visible<layers - 1>());
-
-        labels_activate<0>(item, labels, output);
-
-        size_t label = 0;
-        weight max = 0;
-        for(size_t l = 0; l < labels; ++l){
-            auto value = output[num_visible<layers - 1>() - labels + l];
-
-            if(value > max){
-                max = value;
-                label = l;
-            }
-        }
-
-        return label;
-    }
-
-    /*}}}*/
-
-    /*{{{ Deep predict with labels */
-
-    template<std::size_t I, typename TrainingItem, typename Output>
-    inline enable_if_t<(I == layers - 1), void>
-    deep_activate_labels(const TrainingItem& input, size_t, Output& output, std::size_t sampling){
-        auto& rbm = layer<I>();
-
-        static vector<weight> v1(num_visible<I>());
-        static vector<weight> v2(num_visible<I>());
-
-        for(size_t i = 0; i < input.size(); ++i){
-            v1(i) = input[i];
-        }
-
-        static vector<weight> h1(num_hidden<I>());
-        static vector<weight> h2(num_hidden<I>());
-        static vector<weight> hs(num_hidden<I>());
-
-        for(size_t i = 0; i< sampling; ++i){
-            rbm.activate_hidden(h1, v1);
-            rbm.activate_visible(rbm_type<I>::bernoulli(h1, hs), v1);
-
-            //TODO Perhaps we should apply a new bernoulli on v1 ?
-        }
-
-        rbm.activate_hidden(h1, input);
-        rbm.activate_visible(rbm_type<I>::bernoulli(h1, hs), output);
-    }
-
-    template<std::size_t I, typename TrainingItem, typename Output>
-    inline enable_if_t<(I < layers - 1), void>
-    deep_activate_labels(const TrainingItem& input, std::size_t labels, Output& output, std::size_t sampling){
-        auto& rbm = layer<I>();
-
-        static vector<weight> next(num_visible<I+1>());
-
-        rbm.activate_hidden(next, input);
-
-        //If the next layers is the last layer
-        if(I + 1 == layers - 1){
-            for(size_t l = 0; l < labels; ++l){
-                next[num_hidden<I>() + l] = 0.1;
-            }
-        }
-
-        deep_activate_labels<I + 1>(next, labels, output, sampling);
-    }
-
-    template<typename TrainingItem>
-    size_t deep_predict_labels(const TrainingItem& item, std::size_t labels, std::size_t sampling){
-        dbn_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
-
         vector<weight> output(num_visible<layers - 1>());
-        deep_activate_labels<0>(item, labels, output, sampling);
+        auto input = std::cref(output);
+
+        for_each_i(tuples, [labels,&input,&output](size_t I, auto& rbm){
+            typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
+
+            if(I == layers -1){
+                static vector<weight> h1(rbm_t::num_hidden);
+                static vector<weight> hs(rbm_t::num_hidden);
+
+                rbm.activate_hidden(h1, static_cast<const vector<weight>&>(input));
+                rbm.activate_visible(rbm_t::bernoulli(h1, hs), output);
+            } else {
+                static vector<weight> next(rbm_t::num_hidden);
+
+                rbm.activate_hidden(next, static_cast<const vector<weight>&>(input));
+
+                //If the next layers is the last layer
+                if(I + 1 == layers - 1){
+                    for(size_t l = 0; l < labels; ++l){
+                        next[rbm_t::num_hidden + l] = 0.1;
+                    }
+                }
+
+                input = std::cref(next);
+            }
+        });
 
         size_t label = 0;
         weight max = 0;
