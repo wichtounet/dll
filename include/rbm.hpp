@@ -182,7 +182,7 @@ public:
         return output;
     }
 
-    void train(std::vector<vector<weight>>& training_data, std::size_t max_epochs){
+    void train(const std::vector<vector<weight>>& training_data, std::size_t max_epochs){
         stop_watch<std::chrono::seconds> watch;
 
         if(Init){

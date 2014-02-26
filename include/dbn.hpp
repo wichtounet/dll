@@ -78,7 +78,7 @@ public:
 
     /*{{{ Pretrain */
 
-    void pretrain(std::vector<vector<weight>>& training_data, std::size_t max_epochs){
+    void pretrain(const std::vector<vector<weight>>& training_data, std::size_t max_epochs){
         typedef std::vector<vector<weight>> training_t;
         training_t next;
 
@@ -90,20 +90,20 @@ public:
             if(I <= layers - 2){
                 std::cout << "Train layer " << I << std::endl;
 
-                rbm.train(static_cast<training_t&>(input), max_epochs);
+                rbm.train(static_cast<const training_t&>(input), max_epochs);
 
                 if(I < layers - 2){
                     next.clear();
-                    next.reserve(static_cast<training_t&>(input).size());
-                    for(std::size_t i = 0; i < static_cast<training_t&>(input).size(); ++i){
+                    next.reserve(static_cast<const training_t&>(input).size());
+                    for(std::size_t i = 0; i < static_cast<const training_t&>(input).size(); ++i){
                         next.emplace_back(rbm_t::num_hidden);
                     }
 
-                    for(size_t i = 0; i < static_cast<training_t&>(input).size(); ++i){
-                        rbm.activate_hidden(next[i], static_cast<training_t&>(input)[i]);
+                    for(size_t i = 0; i < static_cast<const training_t&>(input).size(); ++i){
+                        rbm.activate_hidden(next[i], static_cast<const training_t&>(input)[i]);
                     }
 
-                    input = std::ref(next);
+                    input = std::cref(next);
                 }
             }
         });
@@ -115,7 +115,7 @@ public:
 
     template<std::size_t I, typename TrainingItems, typename LabelItems>
     inline enable_if_t<(I == layers - 1), void>
-    train_rbm_layers_labels(TrainingItems& training_data, std::size_t max_epochs, const LabelItems&, std::size_t){
+    train_rbm_layers_labels(const TrainingItems& training_data, std::size_t max_epochs, const LabelItems&, std::size_t){
         std::cout << "Train layer " << I << " with labels " << std::endl;
 
         std::get<I>(tuples).train(training_data, max_epochs);
@@ -123,7 +123,7 @@ public:
 
     template<std::size_t I, typename TrainingItems, typename LabelItems>
     inline enable_if_t<(I < layers - 1), void>
-    train_rbm_layers_labels(TrainingItems& training_data, std::size_t max_epochs, const LabelItems& training_labels, std::size_t labels){
+    train_rbm_layers_labels(const TrainingItems& training_data, std::size_t max_epochs, const LabelItems& training_labels, std::size_t labels){
         std::cout << "Train layer " << I << " with labels " << std::endl;
 
         auto& rbm = layer<I>();
@@ -160,7 +160,7 @@ public:
     }
 
     template<typename TrainingItem, typename Label>
-    void train_with_labels(std::vector<TrainingItem>& training_data, const std::vector<Label>& training_labels, std::size_t labels, std::size_t max_epochs){
+    void train_with_labels(const std::vector<TrainingItem>& training_data, const std::vector<Label>& training_labels, std::size_t labels, std::size_t max_epochs){
         dbn_assert(training_data.size() == training_labels.size(), "There must be the same number of values than labels");
         dbn_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
@@ -171,10 +171,10 @@ public:
 
     /*{{{ Predict */
 
-    size_t predict(vector<weight>& item){
+    size_t predict(const vector<weight>& item){
         vector<weight> result(num_hidden<layers - 1>());
 
-        auto input = std::ref(item);
+        auto input = std::cref(item);
 
         //TODO That can probably be solved in a more elegant way
         for_each_i(tuples, [&item, &input, &result](std::size_t I, auto& rbm){
@@ -183,9 +183,9 @@ public:
             static vector<weight> next(rbm_t::num_hidden);
             auto& output = (I == layers - 1) ? result : next;
 
-            rbm.activate_hidden(output, static_cast<vector<weight>&>(input));
+            rbm.activate_hidden(output, static_cast<const vector<weight>&>(input));
 
-            input = std::ref(next);
+            input = std::cref(next);
         });
 
         size_t label = 0;
@@ -238,7 +238,7 @@ public:
     }
 
     template<typename TrainingItem>
-    size_t predict_labels(TrainingItem& item, std::size_t labels){
+    size_t predict_labels(const TrainingItem& item, std::size_t labels){
         dbn_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
         static vector<weight> output(num_visible<layers - 1>());
@@ -310,7 +310,7 @@ public:
     }
 
     template<typename TrainingItem>
-    size_t deep_predict_labels(TrainingItem& item, std::size_t labels, std::size_t sampling){
+    size_t deep_predict_labels(const TrainingItem& item, std::size_t labels, std::size_t sampling){
         dbn_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
         vector<weight> output(num_visible<layers - 1>());
@@ -457,6 +457,7 @@ public:
 
     bool is_finite(){
         bool finite = true;
+
         for_each(tuples, [&finite](auto& a){
             if(!finite){
                 return;
@@ -476,6 +477,7 @@ public:
                 }
             }
         });
+
         return finite;
     }
 
@@ -753,7 +755,7 @@ public:
     }
 
     template<typename Label>
-    void fine_tune(std::vector<vector<weight>>& training_data, std::vector<Label>& labels, size_t epochs, size_t batch_size = rbm_type<0>::BatchSize){
+    void fine_tune(const std::vector<vector<weight>>& training_data, std::vector<Label>& labels, size_t epochs, size_t batch_size = rbm_type<0>::BatchSize){
         auto batches = training_data.size() / batch_size;
 
         for_each(tuples, [batch_size](auto& rbm){
