@@ -56,6 +56,18 @@ public:
     dbn(dbn&& dbn) = delete;
     dbn& operator=(dbn&& dbn) = delete;
 
+    void store(std::ostream& os) const {
+        for_each(tuples, [&os](auto& rbm){
+            rbm.store(os);
+        });
+    }
+
+    void load(std::istream& is){
+        for_each(tuples, [&is](auto& rbm){
+            rbm.load(is);
+        });
+    }
+
     template<std::size_t N>
     auto layer() -> typename std::add_lvalue_reference<rbm_type<N>>::type {
         return std::get<N>(tuples);
@@ -86,6 +98,7 @@ public:
 
         for_each_i(tuples, [&input, &next, max_epochs](std::size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
+            constexpr const auto num_hidden = rbm_t::num_hidden;
 
             if(I <= layers - 2){
                 std::cout << "Train layer " << I << std::endl;
@@ -96,7 +109,7 @@ public:
                     next.clear();
                     next.reserve(static_cast<const training_t&>(input).size());
                     for(std::size_t i = 0; i < static_cast<const training_t&>(input).size(); ++i){
-                        next.emplace_back(rbm_t::num_hidden);
+                        next.emplace_back(num_hidden);
                     }
 
                     for(size_t i = 0; i < static_cast<const training_t&>(input).size(); ++i){
@@ -125,6 +138,7 @@ public:
 
         for_each_i(tuples, [&input, &next, &training_labels, labels, max_epochs](size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
+            constexpr const auto num_hidden = rbm_t::num_hidden;
 
             rbm.train(input, max_epochs);
 
@@ -135,7 +149,7 @@ public:
                 next.reserve(static_cast<const training_t&>(input).size());
 
                 for(auto& training_item : static_cast<const training_t&>(input)){
-                    vector<weight> next_item(rbm_t::num_hidden + (append_labels ? labels : 0));
+                    vector<weight> next_item(num_hidden + (append_labels ? labels : 0));
                     rbm.activate_hidden(next_item, training_item);
                     next.emplace_back(std::move(next_item));
                 }
@@ -147,9 +161,9 @@ public:
 
                         for(size_t l = 0; l < labels; ++l){
                             if(label == l){
-                                next[i][rbm_t::num_hidden + l] = 1;
+                                next[i][num_hidden + l] = 1;
                             } else {
-                                next[i][rbm_t::num_hidden + l] = 0;
+                                next[i][num_hidden + l] = 0;
                             }
                         }
                     }
@@ -172,8 +186,9 @@ public:
         //TODO That can probably be solved in a more elegant way
         for_each_i(tuples, [&item, &input, &result](std::size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
+            constexpr const auto num_hidden = rbm_t::num_hidden;
 
-            static vector<weight> next(rbm_t::num_hidden);
+            static vector<weight> next(num_hidden);
             auto& output = (I == layers - 1) ? result : next;
 
             rbm.activate_hidden(output, static_cast<const vector<weight>&>(input));
@@ -208,22 +223,23 @@ public:
 
         for_each_i(tuples, [labels,&input,&output](size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
+            constexpr const auto num_hidden = rbm_t::num_hidden;
 
             if(I == layers -1){
-                static vector<weight> h1(rbm_t::num_hidden);
-                static vector<weight> hs(rbm_t::num_hidden);
+                static vector<weight> h1(num_hidden);
+                static vector<weight> hs(num_hidden);
 
                 rbm.activate_hidden(h1, static_cast<const vector<weight>&>(input));
                 rbm.activate_visible(rbm_t::bernoulli(h1, hs), output);
             } else {
-                static vector<weight> next(rbm_t::num_hidden);
+                static vector<weight> next(num_hidden);
 
                 rbm.activate_hidden(next, static_cast<const vector<weight>&>(input));
 
                 //If the next layers is the last layer
                 if(I + 1 == layers - 1){
                     for(size_t l = 0; l < labels; ++l){
-                        next[rbm_t::num_hidden + l] = 0.1;
+                        next[num_hidden + l] = 0.1;
                     }
                 }
 
@@ -291,7 +307,7 @@ public:
     }
 
     template<std::size_t I, bool Temp, typename D>
-    inline enable_if_t<(I == layers - 1), void>
+    inline std::enable_if_t<(I == layers - 1), void>
     gradient_descent(const batch<vector<weight>>& inputs, std::vector<D>& diffs, size_t n_samples){
         update_incs<Temp>(layer<I>(), diffs, n_samples, layer<I-1>().gr_probs);
 
@@ -299,7 +315,7 @@ public:
     }
 
     template<std::size_t I, bool Temp, typename D>
-    inline enable_if_t<(I > 0 && I != layers - 1), void>
+    inline std::enable_if_t<(I > 0 && I != layers - 1), void>
     gradient_descent(const batch<vector<weight>>& inputs, std::vector<D>& diffs, size_t n_samples){
         update_diffs<Temp>(layer<I>(), layer<I+1>(), diffs, n_samples);
 
@@ -309,7 +325,7 @@ public:
     }
 
     template<std::size_t I, bool Temp, typename D>
-    inline enable_if_t<(I == 0), void>
+    inline std::enable_if_t<(I == 0), void>
     gradient_descent(const batch<vector<weight>>& inputs, std::vector<D>& diffs, size_t n_samples){
         update_diffs<Temp>(layer<I>(), layer<I+1>(), diffs, n_samples);
 
@@ -674,8 +690,11 @@ public:
         auto batches = training_data.size() / batch_size;
 
         for_each(tuples, [batch_size](auto& rbm){
+            typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
+            constexpr const auto num_hidden = rbm_t::num_hidden;
+
             for(size_t i = 0; i < batch_size; ++i){
-                rbm.gr_probs.emplace_back(rbm.n_hiddens());
+                rbm.gr_probs.emplace_back(num_hidden);
             }
         });
 

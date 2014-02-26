@@ -147,11 +147,6 @@ public:
     rbm(rbm&& rbm) = delete;
     rbm& operator=(rbm&& rbm) = delete;
 
-    //TODO Find out why this is necessary in dbn.hpp
-    std::size_t n_hiddens(){
-        return num_hidden;
-    }
-
     template<bool M = Momentum, typename std::enable_if<(!M), bool>::type = false>
     rbm() : a(0.0), b(0.0){
         static_assert(!Momentum, "This constructor should only be used without momentum support");

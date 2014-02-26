@@ -116,12 +116,17 @@ void test_all(DBN& dbn, std::vector<vector<double>>& training_images, const std:
 
 int main(int argc, char* argv[]){
     auto simple = false;
+    auto load = false;
 
-    if(argc > 1){
-        std::string command(argv[1]);
+    for(int i = 1; i < argc; ++i){
+        std::string command(argv[i]);
 
         if(command == "simple"){
             simple = true;
+        }
+
+        if(command == "load"){
+            load = true;
         }
     }
 
@@ -149,23 +154,33 @@ int main(int argc, char* argv[]){
         typedef dbn::dbn<
             dbn::layer<dbn::conf<true, 100, true, true>, 28 * 28, 30>,
             //dbn::layer<dbn::conf<true, 100, false, true>, 300, 300>,
-            //dbn::layer<dbn::conf<true, 100, false, true>, 40, 40>,
+            dbn::layer<dbn::conf<true, 100, false, true>, 30, 30>,
             dbn::layer<dbn::conf<true, 100, false, true, true, dbn::Type::EXP>, 30, 10>> dbn_t;
 
-        std::cout << "RBM: " << dbn_t::num_visible<0>() << "<>" << dbn_t::num_hidden<0>() << std::endl;
-        std::cout << "RBM: " << dbn_t::num_visible<1>() << "<>" << dbn_t::num_hidden<1>() << std::endl;
+        //std::cout << "RBM: " << dbn_t::num_visible<0>() << "<>" << dbn_t::num_hidden<0>() << std::endl;
+        //std::cout << "RBM: " << dbn_t::num_visible<1>() << "<>" << dbn_t::num_hidden<1>() << std::endl;
         //std::cout << "RBM: " << dbn_t::num_visible<2>() << "<>" << dbn_t::num_hidden<2>() << std::endl;
         //std::cout << "RBM: " << dbn_t::num_visible<3>() << "<>" << dbn_t::num_hidden<3>() << std::endl;
 
-        auto dbn = std::make_shared<dbn_t>();
-
-        std::cout << "Start pretraining" << std::endl;
-        dbn->pretrain(training_images, 5);
-
         auto labels = make_fake(training_labels);
 
-        std::cout << "Start fine-tuning" << std::endl;
-        dbn->fine_tune(training_images, labels, 5, 1000);
+        auto dbn = std::make_shared<dbn_t>();
+
+        if(load){
+            std::cout << "Load from file" << std::endl;
+
+            std::ifstream is("dbn.data", std::ifstream::binary);
+            dbn->load(is);
+        } else {
+            std::cout << "Start pretraining" << std::endl;
+            dbn->pretrain(training_images, 5);
+
+            std::cout << "Start fine-tuning" << std::endl;
+            dbn->fine_tune(training_images, labels, 5, 1000);
+
+            std::ofstream os("dbn.data", std::ofstream::binary);
+            dbn->store(os);
+        }
 
         test_all(dbn, training_images, training_labels, predictor());
     }
