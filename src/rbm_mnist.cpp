@@ -15,12 +15,17 @@
 
 int main(int argc, char* argv[]){
     auto reconstruction = false;
+    auto load = false;
 
-    if(argc > 1){
-        std::string command(argv[1]);
+    for(int i = 1; i < argc; ++i){
+        std::string command(argv[i]);
 
         if(command == "sample"){
             reconstruction = true;
+        }
+
+        if(command == "load"){
+            load = true;
         }
     }
 
@@ -30,7 +35,15 @@ int main(int argc, char* argv[]){
 
     binarize_each(training_images);
 
-    rbm.train(training_images, 10);
+    if(load){
+        std::ifstream is("rbm-1.dat", std::ofstream::binary);
+        rbm.load(is);
+    } else {
+        rbm.train(training_images, 10);
+
+        std::ofstream os("rbm-1.dat", std::ofstream::binary);
+        rbm.store(os);
+    }
 
     if(reconstruction){
         auto test_images = mnist::read_test_images();

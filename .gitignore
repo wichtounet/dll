@@ -6,3 +6,4 @@ bin
 reports
 perf.data
 perf.data.old
+*.dat

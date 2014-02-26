@@ -66,19 +66,17 @@ private:
     fast_vector<value_t, num_visible> visibles;
     fast_vector<value_t, num_hidden> hiddens;
 
-public:
     fast_matrix<weight, num_visible, num_hidden> w;
     fast_vector<weight, num_visible> a;
     fast_vector<weight, num_hidden> b;
 
-private:
     //Weights for momentum
     fast_matrix<weight, num_visible_mom, num_hidden_mom> w_inc;
     fast_vector<weight, num_visible_mom> a_inc;
     fast_vector<weight, num_hidden_mom> b_inc;
 
     //Temporary data
-    //TODO Perhaps it is better has static data in the functions
+    //TODO Perhaps it is better as static data in the functions
     fast_vector<weight, num_visible> v1;
     fast_vector<weight, num_hidden> h1;
     fast_vector<weight, num_visible> v2;
@@ -149,6 +147,7 @@ public:
     rbm(rbm&& rbm) = delete;
     rbm& operator=(rbm&& rbm) = delete;
 
+    //TODO Find out why this is necessary in dbn.hpp
     std::size_t n_hiddens(){
         return num_hidden;
     }
@@ -165,6 +164,42 @@ public:
         static_assert(Momentum, "This constructor should only be used with momentum support");
 
         init_weights();
+    }
+
+    template<typename T>
+    static void binary_write(std::ostream& os, const T& v){
+        os.write(reinterpret_cast<const char*>(&v), sizeof(v));
+    }
+
+    template<typename Container>
+    static void binary_write_all(std::ostream& os, const Container& c){
+        for(auto& v : c){
+            binary_write(os, v);
+        }
+    }
+
+    void store(std::ostream& os) const {
+        binary_write_all(os, w);
+        binary_write_all(os, a);
+        binary_write_all(os, b);
+    }
+
+    template<typename T>
+    static void binary_load(std::istream& is, T& v){
+        is.read(reinterpret_cast<char*>(&v), sizeof(v));
+    }
+
+    template<typename Container>
+    static void binary_load_all(std::istream& is, Container& c){
+        for(auto& v : c){
+            binary_load(is, v);
+        }
+    }
+
+    void load(std::istream& is){
+        binary_load_all(is, w);
+        binary_load_all(is, a);
+        binary_load_all(is, b);
     }
 
     template<typename V1, typename V2>
