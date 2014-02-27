@@ -73,6 +73,8 @@ struct deep_label_predictor {
 
 template<typename DBN, typename Functor>
 double test_set(DBN& dbn, std::vector<vector<double>>& images, const std::vector<uint8_t>& labels, Functor f){
+    stop_watch<std::chrono::milliseconds> watch;
+
     size_t success = 0;
     for(size_t i = 0; i < images.size(); ++i){
         auto& image = images[i];
@@ -84,6 +86,10 @@ double test_set(DBN& dbn, std::vector<vector<double>>& images, const std::vector
             ++success;
         }
     }
+
+    auto elapsed = watch.elapsed();
+
+    std::cout << "Testing took " << watch.elapsed() << "ms, average: " << (elapsed / images.size()) << "ms" << std::endl;
 
     return (images.size() - success) / static_cast<double>(images.size());
 }
@@ -99,7 +105,6 @@ void test_all(DBN& dbn, std::vector<vector<double>>& training_images, const std:
     }
 
     std::cout << "Start testing" << std::endl;
-    stop_watch<std::chrono::milliseconds> watch;
 
     std::cout << "Training Set" << std::endl;
     auto error_rate = test_set(dbn, training_images, training_labels, predictor);
@@ -108,8 +113,6 @@ void test_all(DBN& dbn, std::vector<vector<double>>& training_images, const std:
     std::cout << "Test Set" << std::endl;
     error_rate = test_set(dbn, test_images, test_labels, predictor);
     std::cout << "\tError rate (normal): " << 100.0 * error_rate << std::endl;
-
-    std::cout << "Testing took " << watch.elapsed() << "ms" << std::endl;
 }
 
 } //end of anonymous namespace
