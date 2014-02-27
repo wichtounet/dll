@@ -169,7 +169,7 @@ int main(int argc, char* argv[]){
         if(load){
             std::cout << "Load from file" << std::endl;
 
-            std::ifstream is("dbn.data", std::ifstream::binary);
+            std::ifstream is("dbn.dat", std::ifstream::binary);
             dbn->load(is);
         } else {
             std::cout << "Start pretraining" << std::endl;
@@ -178,7 +178,7 @@ int main(int argc, char* argv[]){
             std::cout << "Start fine-tuning" << std::endl;
             dbn->fine_tune(training_images, labels, 5, 1000);
 
-            std::ofstream os("dbn.data", std::ofstream::binary);
+            std::ofstream os("dbn.dat", std::ofstream::binary);
             dbn->store(os);
         }
 
