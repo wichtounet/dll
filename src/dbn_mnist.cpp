@@ -160,14 +160,11 @@ int main(int argc, char* argv[]){
             dbn::layer<dbn::conf<true, 100, false, true>, 30, 30>,
             dbn::layer<dbn::conf<true, 100, false, true, true, dbn::Type::EXP>, 30, 10>> dbn_t;
 
-        //std::cout << "RBM: " << dbn_t::num_visible<0>() << "<>" << dbn_t::num_hidden<0>() << std::endl;
-        //std::cout << "RBM: " << dbn_t::num_visible<1>() << "<>" << dbn_t::num_hidden<1>() << std::endl;
-        //std::cout << "RBM: " << dbn_t::num_visible<2>() << "<>" << dbn_t::num_hidden<2>() << std::endl;
-        //std::cout << "RBM: " << dbn_t::num_visible<3>() << "<>" << dbn_t::num_hidden<3>() << std::endl;
-
         auto labels = make_fake(training_labels);
 
         auto dbn = std::make_shared<dbn_t>();
+
+        dbn->display();
 
         if(load){
             std::cout << "Load from file" << std::endl;

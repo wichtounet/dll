@@ -56,6 +56,16 @@ public:
     dbn(dbn&& dbn) = delete;
     dbn& operator=(dbn&& dbn) = delete;
 
+    void display() const {
+        for_each(tuples, [](auto& rbm){
+            typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
+            constexpr const auto num_visible = rbm_t::num_visible;
+            constexpr const auto num_hidden = rbm_t::num_hidden;
+
+            std::cout << "RBM: " << num_visible << "->" << num_hidden << std::endl;
+        });
+    }
+
     void store(std::ostream& os) const {
         for_each(tuples, [&os](auto& rbm){
             rbm.store(os);
@@ -183,7 +193,6 @@ public:
 
         auto input = std::cref(item);
 
-        //TODO That can probably be solved in a more elegant way
         for_each_i(tuples, [&item, &input, &result](std::size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
             constexpr const auto num_hidden = rbm_t::num_hidden;
@@ -267,8 +276,8 @@ public:
 
     template<bool Temp, typename R1, typename R2, typename D>
     void update_diffs(R1& r1, R2& r2, std::vector<D>& diffs, size_t n_samples){
-        auto n_visible = R2::num_visible;
-        auto n_hidden = R2::num_hidden;
+        constexpr auto n_visible = R2::num_visible;
+        constexpr auto n_hidden = R2::num_hidden;
 
         for(size_t sample = 0;  sample < n_samples; ++sample){
             D diff(n_visible);
@@ -281,14 +290,15 @@ public:
                 s *= r1.gr_probs[sample][i] * (1.0 - r1.gr_probs[sample][i]);
                 diff[i] = s;
             }
+
             diffs[sample].swap(diff);
         }
     }
 
     template<bool Temp, typename R, typename D, typename V>
     void update_incs(R& rbm, std::vector<D>& diffs, size_t n_samples, const V& visibles){
-        auto n_visible = R::num_visible;
-        auto n_hidden = R::num_hidden;
+        constexpr auto n_visible = R::num_visible;
+        constexpr auto n_hidden = R::num_hidden;
 
         for(size_t sample = 0;  sample < n_samples; ++sample){
             auto& v = visibles[sample];
@@ -334,10 +344,11 @@ public:
 
     template<bool Temp, typename Target>
     void gradient(const gradient_context<Target>& context, weight& cost){
-        auto n_hidden = num_hidden<layers - 1>();
+        constexpr const auto n_hidden = num_hidden<layers - 1>();
         auto n_samples = context.inputs.size();
 
-        std::vector<std::vector<weight>> diffs(n_samples);
+        static std::vector<std::vector<weight>> diffs;
+        diffs.resize(n_samples);
 
         for_each(tuples, [](auto& rbm){
             rbm.gr_w_incs = 0.0;
