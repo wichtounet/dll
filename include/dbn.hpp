@@ -275,7 +275,7 @@ public:
     /* Gradient */
 
     template<bool Temp, typename R1, typename R2, typename D>
-    void update_diffs(R1& r1, R2& r2, std::vector<D>& diffs, size_t n_samples){
+    static void update_diffs(R1& r1, R2& r2, std::vector<D>& diffs, size_t n_samples){
         constexpr auto n_visible = R2::num_visible;
         constexpr auto n_hidden = R2::num_hidden;
 
@@ -296,7 +296,7 @@ public:
     }
 
     template<bool Temp, typename R, typename D, typename V>
-    void update_incs(R& rbm, std::vector<D>& diffs, size_t n_samples, const V& visibles){
+    static void update_incs(R& rbm, std::vector<D>& diffs, size_t n_samples, const V& visibles){
         constexpr auto n_visible = R::num_visible;
         constexpr auto n_hidden = R::num_hidden;
 
@@ -314,32 +314,6 @@ public:
                 rbm.gr_b_incs(j) += d[j];
             }
         }
-    }
-
-    template<std::size_t I, bool Temp, typename D>
-    inline std::enable_if_t<(I == layers - 1), void>
-    gradient_descent(const batch<vector<weight>>& inputs, std::vector<D>& diffs, size_t n_samples){
-        update_incs<Temp>(layer<I>(), diffs, n_samples, layer<I-1>().gr_probs);
-
-        gradient_descent<I - 1, Temp>(inputs, diffs, n_samples);
-    }
-
-    template<std::size_t I, bool Temp, typename D>
-    inline std::enable_if_t<(I > 0 && I != layers - 1), void>
-    gradient_descent(const batch<vector<weight>>& inputs, std::vector<D>& diffs, size_t n_samples){
-        update_diffs<Temp>(layer<I>(), layer<I+1>(), diffs, n_samples);
-
-        update_incs<Temp>(layer<I>(), diffs, n_samples, layer<I-1>().gr_probs);
-
-        gradient_descent<I -1, Temp>(inputs, diffs, n_samples);
-    }
-
-    template<std::size_t I, bool Temp, typename D>
-    inline std::enable_if_t<(I == 0), void>
-    gradient_descent(const batch<vector<weight>>& inputs, std::vector<D>& diffs, size_t n_samples){
-        update_diffs<Temp>(layer<I>(), layer<I+1>(), diffs, n_samples);
-
-        update_incs<Temp>(layer<I>(), diffs, n_samples, inputs);
     }
 
     template<bool Temp, typename Target>
@@ -364,11 +338,12 @@ public:
             auto& target = context.targets[sample];
 
             for_each_i(tuples, [&input,&output,sample](std::size_t I, auto& rbm){
+                auto& output_ref = static_cast<vector<weight>&>(output);
+
                 if(I == 0){
-                    rbm.template gr_activate_hidden<Temp>(static_cast<vector<weight>&>(output), input);
+                    rbm.template gr_activate_hidden<Temp>(output_ref, input);
                 } else {
-                    auto& next_output = rbm.gr_probs[sample];
-                    rbm.template gr_activate_hidden<Temp>(next_output, static_cast<vector<weight>&>(output));
+                    rbm.template gr_activate_hidden<Temp>(rbm.gr_probs[sample], output_ref);
                     output = std::ref(rbm.gr_probs[sample]);
                 }
             });
@@ -392,7 +367,27 @@ public:
 
         cost = -cost;
 
-        gradient_descent<layers - 1, Temp>(context.inputs, diffs, n_samples);
+        //Get pointers to the different gr_probs
+        std::array<std::vector<vector<weight>>*, layers> probs_refs;
+        for_each_i(tuples, [&probs_refs](std::size_t I, auto& rbm){
+            probs_refs[I] = &rbm.gr_probs;
+        });
+
+        auto diffs_ref = std::ref(diffs);
+
+        update_incs<Temp>(layer<layers-1>(), diffs, n_samples, layer<layers-2>().gr_probs);
+
+        for_each_rpair_i(tuples, [&diffs_ref, n_samples, &probs_refs](std::size_t I, auto& r1, auto& r2){
+            auto& diffs = static_cast<std::vector<std::vector<weight>>&>(diffs_ref);
+
+            update_diffs<Temp>(r1, r2, diffs, n_samples);
+
+            if(I > 0){
+                update_incs<Temp>(r1, diffs, n_samples, *probs_refs[I-1]);
+            }
+        });
+
+        update_incs<Temp>(layer<0>(), diffs, n_samples, context.inputs);
 
         //std::cout << "evaluating(" << Temp << "): cost:" << cost << " error: " << (error / n_samples) << std::endl;
     }
