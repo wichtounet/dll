@@ -38,12 +38,12 @@ public:
     vector& operator=(const vector& rhs) = delete;
 
     //Allow move
-    vector(vector&& rhs) : rows(rhs.rows), _data(rhs._data) {
+    vector(vector&& rhs) noexcept : rows(rhs.rows), _data(rhs._data) {
         rhs.rows = 0;
         rhs._data = nullptr;
     }
 
-    vector& operator=(vector&& rhs){
+    vector& operator=(vector&& rhs) noexcept {
         rows = rhs.rows;
         _data = rhs._data;
 
