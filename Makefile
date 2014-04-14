@@ -38,11 +38,11 @@ release/src/%.cpp.o: src/%.cpp
 
 debug/bin/%: debug/src/%.cpp.o $(NON_EXEC_DEBUG_O_FILES)
 	@ mkdir -p debug/bin/
-	$(LD) $(LD_FLAGS) $(DEBUG_FLAGS) -o $@ $?
+	$(LD) $(LD_FLAGS) $(DEBUG_FLAGS) -o $@ $+
 
 release/bin/%: release/src/%.cpp.o $(NON_EXEC_RELEASE_O_FILES)
 	@ mkdir -p release/bin/
-	$(LD) $(LD_FLAGS) $(RELEASE_FLAGS) -o $@ $?
+	$(LD) $(LD_FLAGS) $(RELEASE_FLAGS) -o $@ $+
 
 debug/src/%.cpp.d: $(CPP_FILES)
 	@ mkdir -p debug/src/
