@@ -13,35 +13,9 @@
 #include "dbn/conf.hpp"
 #include "dbn/mnist_reader.hpp"
 #include "dbn/image_utils.hpp"
+#include "dbn/labels.hpp"
 
 namespace {
-
-template<typename V>
-struct fake_label_array {
-    V value;
-
-    fake_label_array(V v) : value(v) {}
-
-    double operator[](size_t i) const {
-        if(i == value){
-            return 1.0;
-        } else {
-            return 0.0;
-        }
-    }
-};
-
-template<typename T>
-typename std::vector<fake_label_array<T>> make_fake(const std::vector<T>& values){
-    std::vector<fake_label_array<T>> fake;
-    fake.reserve(values.size());
-
-    for(auto v: values){
-        fake.emplace_back(v);
-    }
-
-    return std::move(fake);
-}
 
 struct predictor {
     template<typename T, typename V>
@@ -160,7 +134,7 @@ int main(int argc, char* argv[]){
             dbn::layer<dbn::conf<true, 100, false, true>, 30, 30>,
             dbn::layer<dbn::conf<true, 100, false, true, true, dbn::Type::EXP>, 30, 10>> dbn_t;
 
-        auto labels = make_fake(training_labels);
+        auto labels = dbn::make_fake(training_labels);
 
         auto dbn = std::make_shared<dbn_t>();
 
