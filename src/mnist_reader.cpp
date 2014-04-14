@@ -9,7 +9,7 @@
 #include <iostream>
 #include <memory>
 
-#include "mnist_reader.hpp"
+#include "dbn/mnist_reader.hpp"
 
 namespace {
 

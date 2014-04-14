@@ -8,11 +8,11 @@
 #include <iostream>
 #include <memory>
 
-#include "dbn.hpp"
-#include "layer.hpp"
-#include "conf.hpp"
-#include "mnist_reader.hpp"
-#include "image_utils.hpp"
+#include "dbn/dbn.hpp"
+#include "dbn/layer.hpp"
+#include "dbn/conf.hpp"
+#include "dbn/mnist_reader.hpp"
+#include "dbn/image_utils.hpp"
 
 namespace {
 

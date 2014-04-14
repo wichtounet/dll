@@ -7,11 +7,11 @@
 
 #include <iostream>
 
-#include "rbm.hpp"
-#include "layer.hpp"
-#include "conf.hpp"
-#include "mnist_reader.hpp"
-#include "image_utils.hpp"
+#include "dbn/rbm.hpp"
+#include "dbn/layer.hpp"
+#include "dbn/conf.hpp"
+#include "dbn/mnist_reader.hpp"
+#include "dbn/image_utils.hpp"
 
 int main(int argc, char* argv[]){
     auto reconstruction = false;

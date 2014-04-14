@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-#include "rbm.hpp"
+#include "dbn/rbm.hpp"
 
 int main(){
 /*    dbn::rbm<double,double> rbm(6, 2);
