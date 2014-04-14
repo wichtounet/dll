@@ -136,7 +136,7 @@ int main(int argc, char* argv[]){
 
         auto labels = dbn::make_fake(training_labels);
 
-        auto dbn = std::make_shared<dbn_t>();
+        auto dbn = std::make_unique<dbn_t>();
 
         dbn->display();
 
