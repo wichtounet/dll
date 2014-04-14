@@ -14,62 +14,12 @@
 #include "dbn/mnist_reader.hpp"
 #include "dbn/image_utils.hpp"
 #include "dbn/labels.hpp"
+#include "dbn/test.hpp"
 
 namespace {
 
-struct predictor {
-    template<typename T, typename V>
-    size_t operator()(T& dbn, V& image){
-        return dbn->predict(image);
-    }
-};
-
-struct deep_predictor {
-    template<typename T, typename V>
-    size_t operator()(T& dbn, V& image){
-        return dbn->deep_predict(image, 5);
-    }
-};
-
-struct label_predictor {
-    template<typename T, typename V>
-    size_t operator()(T& dbn, V& image){
-        return dbn->predict_labels(image, 10);
-    }
-};
-
-struct deep_label_predictor {
-    template<typename T, typename V>
-    size_t operator()(T& dbn, V& image){
-        return dbn->deep_predict_labels(image, 10, 5);
-    }
-};
-
-template<typename DBN, typename Functor>
-double test_set(DBN& dbn, std::vector<vector<double>>& images, const std::vector<uint8_t>& labels, Functor f){
-    stop_watch<std::chrono::milliseconds> watch;
-
-    size_t success = 0;
-    for(size_t i = 0; i < images.size(); ++i){
-        auto& image = images[i];
-        auto& label = labels[i];
-
-        auto predicted = f(dbn, image);
-
-        if(predicted == label){
-            ++success;
-        }
-    }
-
-    auto elapsed = watch.elapsed();
-
-    std::cout << "Testing took " << watch.elapsed() << "ms, average: " << (elapsed / images.size()) << "ms" << std::endl;
-
-    return (images.size() - success) / static_cast<double>(images.size());
-}
-
-template<typename DBN, typename P1>
-void test_all(DBN& dbn, std::vector<vector<double>>& training_images, const std::vector<uint8_t>& training_labels, P1 predictor){
+template<typename DBN, typename P>
+void test_all(DBN& dbn, std::vector<vector<double>>& training_images, const std::vector<uint8_t>& training_labels, P&& predictor){
     auto test_images = mnist::read_test_images();
     auto test_labels = mnist::read_test_labels();
 
@@ -81,11 +31,11 @@ void test_all(DBN& dbn, std::vector<vector<double>>& training_images, const std:
     std::cout << "Start testing" << std::endl;
 
     std::cout << "Training Set" << std::endl;
-    auto error_rate = test_set(dbn, training_images, training_labels, predictor);
+    auto error_rate = dbn::test_set(dbn, training_images, training_labels, predictor);
     std::cout << "\tError rate (normal): " << 100.0 * error_rate << std::endl;
 
     std::cout << "Test Set" << std::endl;
-    error_rate = test_set(dbn, test_images, test_labels, predictor);
+    error_rate =  dbn::test_set(dbn, test_images, test_labels, predictor);
     std::cout << "\tError rate (normal): " << 100.0 * error_rate << std::endl;
 }
 
@@ -126,7 +76,7 @@ int main(int argc, char* argv[]){
 
         dbn->train_with_labels(training_images, training_labels, 10, 5);
 
-        test_all(dbn, training_images, training_labels, label_predictor());
+        test_all(dbn, training_images, training_labels, dbn::label_predictor());
     } else {
         typedef dbn::dbn<
             dbn::layer<dbn::conf<true, 100, true, true>, 28 * 28, 30>,
@@ -156,7 +106,7 @@ int main(int argc, char* argv[]){
             dbn->store(os);
         }
 
-        test_all(dbn, training_images, training_labels, predictor());
+        test_all(dbn, training_images, training_labels, dbn::predictor());
     }
 
     return 0;
