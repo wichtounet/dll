@@ -57,13 +57,20 @@ public:
     dbn& operator=(dbn&& dbn) = delete;
 
     void display() const {
-        for_each(tuples, [](auto& rbm){
+        std::size_t parameters = 0;
+
+        for_each(tuples, [&parameters](auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
             constexpr const auto num_visible = rbm_t::num_visible;
             constexpr const auto num_hidden = rbm_t::num_hidden;
 
-            std::cout << "RBM: " << num_visible << "->" << num_hidden << std::endl;
+            parameters += num_visible * num_hidden;
+
+            std::cout << "RBM: " << num_visible << "->" << num_hidden
+                << ": " << (num_visible * num_hidden) << " parameters" << std::endl;
         });
+
+        std::cout << "Total parameters: " << parameters << std::endl;
     }
 
     void store(std::ostream& os) const {
