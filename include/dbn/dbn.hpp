@@ -108,10 +108,11 @@ public:
 
         for_each_i(tuples, [&input, &next, max_epochs](std::size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
+            constexpr const auto num_visible = rbm_t::num_visible;
             constexpr const auto num_hidden = rbm_t::num_hidden;
 
             if(I <= layers - 2){
-                std::cout << "Train layer " << I << std::endl;
+                std::cout << "Train layer " << I << " (" << num_visible << "->" << num_hidden << ")" << std::endl;
 
                 rbm.train(static_cast<const training_t&>(input), max_epochs);
 
