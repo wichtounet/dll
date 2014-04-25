@@ -111,19 +111,21 @@ public:
             constexpr const auto num_visible = rbm_t::num_visible;
             constexpr const auto num_hidden = rbm_t::num_hidden;
 
+            auto input_size = static_cast<const training_t&>(input).size();
+
             if(I <= layers - 2){
-                std::cout << "Train layer " << I << " (" << num_visible << "->" << num_hidden << ")" << std::endl;
+                std::cout << "Train layer " << I << " (" << num_visible << "->" << num_hidden << ") with " << input_size << " entries" << std::endl;
 
                 rbm.train(static_cast<const training_t&>(input), max_epochs);
 
                 if(I < layers - 2){
                     next.clear();
-                    next.reserve(static_cast<const training_t&>(input).size());
-                    for(std::size_t i = 0; i < static_cast<const training_t&>(input).size(); ++i){
+                    next.reserve(input_size);
+                    for(std::size_t i = 0; i < input_size; ++i){
                         next.emplace_back(num_hidden);
                     }
 
-                    for(size_t i = 0; i < static_cast<const training_t&>(input).size(); ++i){
+                    for(size_t i = 0; i < input_size; ++i){
                         rbm.activate_hidden(next[i], static_cast<const training_t&>(input)[i]);
                     }
 
