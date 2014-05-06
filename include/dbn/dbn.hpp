@@ -198,7 +198,7 @@ public:
 
     /*{{{ Predict */
 
-    size_t predict(const vector<weight>& item){
+    vector<weight> predict_weights(const vector<weight>& item){
         vector<weight> result(num_hidden<layers - 1>());
 
         auto input = std::cref(item);
@@ -215,6 +215,10 @@ public:
             input = std::cref(next);
         });
 
+        return result;
+    }
+
+    size_t predict_final(const vector<weight>& result){
         size_t label = 0;
         weight max = 0;
         for(size_t l = 0; l < result.size(); ++l){
@@ -227,6 +231,11 @@ public:
         }
 
         return label;
+    }
+
+    size_t predict(const vector<weight>& item){
+        auto result = predict_weights(item);
+        return predict_final(result);;
     }
 
     /*}}}*/
