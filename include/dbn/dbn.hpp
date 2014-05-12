@@ -714,7 +714,7 @@ public:
     void fine_tune(const std::vector<vector<weight>>& training_data, std::vector<Label>& labels, size_t epochs, size_t batch_size = rbm_type<0>::BatchSize){
         stop_watch<std::chrono::seconds> watch;
 
-        auto batches = training_data.size() / batch_size;
+        auto batches = training_data.size() / batch_size + (training_data.size() % batch_size == 0 ? 0 : 1);
 
         for_each(tuples, [batch_size](auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
@@ -728,7 +728,7 @@ public:
         for(size_t epoch = 0; epoch < epochs; ++epoch){
             for(size_t i = 0; i < batches; ++i){
                 auto start = i * batch_size;
-                auto end = start + batch_size;
+                auto end = std::min(start + batch_size, training_data.size());
 
                 gradient_context<Label> context(
                     batch<vector<weight>>(training_data.begin() + start, training_data.begin() + end),
