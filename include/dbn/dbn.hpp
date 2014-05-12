@@ -712,6 +712,8 @@ public:
 
     template<typename Label>
     void fine_tune(const std::vector<vector<weight>>& training_data, std::vector<Label>& labels, size_t epochs, size_t batch_size = rbm_type<0>::BatchSize){
+        stop_watch<std::chrono::seconds> watch;
+
         auto batches = training_data.size() / batch_size;
 
         for_each(tuples, [batch_size](auto& rbm){
@@ -738,6 +740,8 @@ public:
                 std::cout << "epoch(" << epoch << ") batch:" << i << "/" << batches << std::endl;
             }
         }
+
+        std::cout << "Fine-tuning took " << watch.elapsed() << "s" << std::endl;
     }
 };
 
