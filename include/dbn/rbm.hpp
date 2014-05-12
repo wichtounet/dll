@@ -233,13 +233,15 @@ public:
             }
         }
 
-        //TODO batches should be configured at higher level
-        auto batches = training_data.size() / BatchSize;
+        auto batches = training_data.size() / BatchSize + (training_data.size() % BatchSize == 0 ? 0 : 1);
 
         for(size_t epoch= 0; epoch < max_epochs; ++epoch){
             weight error = 0.0;
             for(size_t i = 0; i < batches; ++i){
-                error += cd_step(dbn::batch<vector<weight>>(training_data.begin() + i * BatchSize, training_data.begin() + (i+1) * BatchSize));
+                auto start = i * BatchSize;
+                auto end = std::min(start + BatchSize, training_data.size());
+
+                error += cd_step(dbn::batch<vector<weight>>(training_data.begin() + start, training_data.begin() + end));
             }
 
             std::cout << "epoch " << epoch << ": Reconstruction error average: " << (error / batches) << " Free energy: " << free_energy() << std::endl;
@@ -315,7 +317,7 @@ public:
 
     template<typename T>
     weight cd_step(const dbn::batch<T> batch){
-        dbn_assert(batch.size() == static_cast<typename dbn::batch<T>::size_type>(BatchSize), "Invalid size");
+        dbn_assert(batch.size() <= static_cast<typename dbn::batch<T>::size_type>(BatchSize), "Invalid size");
         dbn_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
 
         v1 = 0.0;
@@ -349,7 +351,7 @@ public:
 
         nan_check(gw);
 
-        auto n_samples = static_cast<weight>(BatchSize);
+        auto n_samples = static_cast<weight>(batch.size());
 
         if(Momentum){
             if(Decay){
