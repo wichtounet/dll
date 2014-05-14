@@ -462,19 +462,19 @@ public:
         auto folder = "reports/epoch_" + std::to_string(epoch);
         mkdir(folder.c_str(), 0777);
 
-        generate_histogram(folder + "/weights.dat", w, num_visible * num_hidden);
-        generate_histogram(folder + "/visibles.dat", a, num_visible);
-        generate_histogram(folder + "/hiddens.dat", b, num_hidden);
+        generate_histogram(folder + "/weights.dat", w);
+        generate_histogram(folder + "/visibles.dat", a);
+        generate_histogram(folder + "/hiddens.dat", b);
 
         if(Momentum){
-            generate_histogram(folder + "/weights_inc.dat", w_inc, num_visible * num_hidden);
-            generate_histogram(folder + "/visibles_inc.dat", a_inc, num_visible);
-            generate_histogram(folder + "/hiddens_inc.dat", b_inc, num_hidden);
+            generate_histogram(folder + "/weights_inc.dat", w_inc);
+            generate_histogram(folder + "/visibles_inc.dat", a_inc);
+            generate_histogram(folder + "/hiddens_inc.dat", b_inc);
         }
     }
 
     template<typename Container>
-    void generate_histogram(const std::string& path, const Container& weights, size_t size){
+    void generate_histogram(const std::string& path, const Container& weights){
         std::ofstream file(path, std::ios::out);
 
         if(!file){

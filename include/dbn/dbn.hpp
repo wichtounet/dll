@@ -247,7 +247,7 @@ public:
         dbn_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
         vector<weight> output(num_visible<layers - 1>());
-        auto input = std::cref(output);
+        auto input = std::cref(item);
 
         for_each_i(tuples, [labels,&input,&output](size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
