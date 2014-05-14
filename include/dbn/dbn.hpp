@@ -392,13 +392,9 @@ public:
             probs_refs[I] = &rbm.gr_probs;
         });
 
-        auto diffs_ref = std::ref(diffs);
-
         update_incs<Temp>(layer<layers-1>(), diffs, n_samples, layer<layers-2>().gr_probs);
 
-        for_each_rpair_i(tuples, [&diffs_ref, n_samples, &probs_refs](std::size_t I, auto& r1, auto& r2){
-            auto& diffs = static_cast<std::vector<std::vector<weight>>&>(diffs_ref);
-
+        for_each_rpair_i(tuples, [n_samples, &probs_refs](std::size_t I, auto& r1, auto& r2){
             update_diffs<Temp>(r1, r2, diffs, n_samples);
 
             if(I > 0){
