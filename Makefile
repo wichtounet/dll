@@ -22,7 +22,7 @@ CC=clang++
 LD=clang++
 
 WARNING_FLAGS=-Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation
-CXX_FLAGS=-Iinclude -std=c++1y -stdlib=libc++ $(WARNING_FLAGS)
+CXX_FLAGS=-Iinclude -Imnist/include -std=c++1y -stdlib=libc++ $(WARNING_FLAGS)
 LD_FLAGS=$(CXX_FLAGS)
 
 DEBUG_FLAGS=-g
