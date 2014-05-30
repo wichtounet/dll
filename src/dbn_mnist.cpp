@@ -11,17 +11,18 @@
 #include "dbn/dbn.hpp"
 #include "dbn/layer.hpp"
 #include "dbn/conf.hpp"
-#include "dbn/mnist_reader.hpp"
 #include "dbn/image_utils.hpp"
 #include "dbn/labels.hpp"
 #include "dbn/test.hpp"
+
+#include "mnist/mnist_reader.hpp"
 
 namespace {
 
 template<typename DBN, typename P>
 void test_all(DBN& dbn, std::vector<vector<double>>& training_images, const std::vector<uint8_t>& training_labels, P&& predictor){
-    auto test_images = mnist::read_test_images();
-    auto test_labels = mnist::read_test_labels();
+    auto test_images = mnist::read_test_images<std::vector, vector, double>();
+    auto test_labels = mnist::read_test_labels<std::vector>();
 
     if(test_images.empty() || test_labels.empty()){
         std::cout << "Impossible to read test set" << std::endl;
@@ -57,8 +58,8 @@ int main(int argc, char* argv[]){
         }
     }
 
-    auto training_images = mnist::read_training_images();
-    auto training_labels = mnist::read_training_labels();
+    auto training_images = mnist::read_training_images<std::vector, vector, double>();
+    auto training_labels = mnist::read_training_labels<std::vector>();
 
     if(training_images.empty() || training_labels.empty()){
         return 1;

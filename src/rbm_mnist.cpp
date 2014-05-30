@@ -10,8 +10,9 @@
 #include "dbn/rbm.hpp"
 #include "dbn/layer.hpp"
 #include "dbn/conf.hpp"
-#include "dbn/mnist_reader.hpp"
 #include "dbn/image_utils.hpp"
+
+#include "mnist/mnist_reader.hpp"
 
 int main(int argc, char* argv[]){
     auto reconstruction = false;
@@ -31,7 +32,7 @@ int main(int argc, char* argv[]){
 
     dbn::rbm<dbn::layer<dbn::conf<true, 50>, 28 * 28, 100>> rbm;
 
-    auto training_images = mnist::read_training_images();
+    auto training_images = mnist::read_training_images<std::vector, vector, double>();
 
     binarize_each(training_images);
 
@@ -46,7 +47,7 @@ int main(int argc, char* argv[]){
     }
 
     if(reconstruction){
-        auto test_images = mnist::read_test_images();
+        auto test_images = mnist::read_test_images<std::vector, vector, double>();
         binarize_each(test_images);
 
         for(size_t t = 0; t < 10; ++t){
