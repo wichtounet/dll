@@ -309,7 +309,7 @@ public:
                 auto x = b(j) + s;
                 if(Unit == Type::SIGMOID){
                     h(j) = logistic_sigmoid(x);
-                } else if(Unit == Type::EXP{
+                } else if(Unit == Type::EXP){
                     h(j) = exp(x);
                 }
 
