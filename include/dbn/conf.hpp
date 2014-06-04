@@ -14,7 +14,8 @@ namespace dbn {
 
 enum class Type {
     SIGMOID,
-    EXP
+    EXP,
+    SOFTMAX
 };
 
 template<bool M = true, std::size_t B = 1, bool I = true, bool DB = false, bool WD = true, Type T = Type::SIGMOID, bool D = false>

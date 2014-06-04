@@ -273,26 +273,50 @@ public:
     static void activate_hidden(V1& h, const V2& v, const V3& b, const V4& w){
         h = 0.0;
 
-        for(size_t j = 0; j < num_hidden; ++j){
-            weight s = 0.0;
-            for(size_t i = 0; i < num_visible; ++i){
-                s += w(i, j) * v[i];
+        if(Unit == Type::SOFTMAX){
+            weight exp_sum = 0.0;
+
+            for(size_t j = 0; j < num_hidden; ++j){
+                weight s = 0.0;
+                for(size_t i = 0; i < num_visible; ++i){
+                    s += w(i, j) * v[i];
+                }
+
+                auto x = b(j) + s;
+                exp_sum += exp(x);
             }
 
-            auto activation = b(j) + s;
-            if(Unit == Type::SIGMOID){
-                h(j) = logistic_sigmoid(activation);
-            } else {
-                h(j) = exp(activation);
-            }
+            for(size_t j = 0; j < num_hidden; ++j){
+                weight s = 0.0;
+                for(size_t i = 0; i < num_visible; ++i){
+                    s += w(i, j) * v[i];
+                }
 
-            if(!std::isfinite(h(j))){
-                //std::cout << activation << std::endl;
-            }
+                auto x = b(j) + s;
+                h(j) = exp(x) / exp_sum;
 
-            dbn_assert(std::isfinite(s), "NaN verify");
-            dbn_assert(std::isfinite(activation), "NaN verify");
-            dbn_assert(std::isfinite(h(j)), "NaN verify");
+                dbn_assert(std::isfinite(s), "NaN verify");
+                dbn_assert(std::isfinite(x), "NaN verify");
+                dbn_assert(std::isfinite(h(j)), "NaN verify");
+            }
+        } else {
+            for(size_t j = 0; j < num_hidden; ++j){
+                weight s = 0.0;
+                for(size_t i = 0; i < num_visible; ++i){
+                    s += w(i, j) * v[i];
+                }
+
+                auto x = b(j) + s;
+                if(Unit == Type::SIGMOID){
+                    h(j) = logistic_sigmoid(x);
+                } else if(Unit == Type::EXP{
+                    h(j) = exp(x);
+                }
+
+                dbn_assert(std::isfinite(s), "NaN verify");
+                dbn_assert(std::isfinite(x), "NaN verify");
+                dbn_assert(std::isfinite(h(j)), "NaN verify");
+            }
         }
     }
 
