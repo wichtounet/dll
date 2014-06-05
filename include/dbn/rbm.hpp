@@ -227,7 +227,7 @@ public:
         static auto generator = bind(distribution, rand_engine);
 
         for(size_t i = 0; i < input.size(); ++i){
-            output(i) = input(i) + generator();
+            output(i) = input(i);
         }
 
         return output;
