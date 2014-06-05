@@ -50,11 +50,14 @@ public:
     static constexpr const std::size_t BatchSize = Layer::Conf::BatchSize;
     static constexpr const bool Init = Layer::Conf::Debug;
     static constexpr const bool Debug = Layer::Conf::Debug;
-    static constexpr const Type Unit = Layer::Conf::Unit;
+    static constexpr const Type VisibleUnit = Layer::Conf::VisibleUnit;
+    static constexpr const Type HiddenUnit = Layer::Conf::HiddenUnit;
     static constexpr const bool DBN = Layer::Conf::DBN;
     static constexpr const bool Decay = Layer::Conf::Decay;
 
     static_assert(BatchSize > 0, "Batch size must be at least 1");
+
+    static_assert(VisibleUnit == Type::SIGMOID, "Only stochastic binary visible units are supported");
 
     static constexpr const std::size_t num_visible_mom = Momentum ? num_visible : 0;
     static constexpr const std::size_t num_hidden_mom = Momentum ? num_hidden : 0;
@@ -273,7 +276,7 @@ public:
     static void activate_hidden(V1& h, const V2& v, const V3& b, const V4& w){
         h = 0.0;
 
-        if(Unit == Type::SOFTMAX){
+        if(HiddenUnit == Type::SOFTMAX){
             weight exp_sum = 0.0;
 
             for(size_t j = 0; j < num_hidden; ++j){
@@ -307,9 +310,9 @@ public:
                 }
 
                 auto x = b(j) + s;
-                if(Unit == Type::SIGMOID){
+                if(HiddenUnit == Type::SIGMOID){
                     h(j) = logistic_sigmoid(x);
-                } else if(Unit == Type::EXP){
+                } else if(HiddenUnit == Type::EXP){
                     h(j) = exp(x);
                 }
 

@@ -13,20 +13,22 @@
 namespace dbn {
 
 enum class Type {
-    SIGMOID,
-    EXP,
-    SOFTMAX
+    SIGMOID,    //Stochastic binary unity
+    EXP,        //Exponential unit (for last layer)
+    SOFTMAX     //Softmay unit (for last layer)
 };
 
-template<bool M = true, std::size_t B = 1, bool I = true, bool DB = false, bool WD = true, Type T = Type::SIGMOID, bool D = false>
+template<bool M = true, std::size_t B = 1, bool I = true, bool DB = false, bool WD = true,
+         Type VT = Type::SIGMOID, Type HT = Type::SIGMOID, bool D = false>
 struct conf {
     static constexpr const bool Momentum = M;
     static constexpr const std::size_t BatchSize = B;
     static constexpr const bool Init = I;
-    static constexpr const Type Unit = T;
-    static constexpr const bool Debug = D;
+    static constexpr const Type VisibleUnit = VT;
+    static constexpr const Type HiddenUnit = HT;
     static constexpr const bool DBN = DB;
     static constexpr const bool Decay = WD;
+    static constexpr const bool Debug = D;
 };
 
 } //end of dbn namespace
