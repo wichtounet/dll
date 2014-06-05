@@ -218,6 +218,21 @@ public:
         return output;
     }
 
+    template<typename V1, typename V2>
+    static const V2& noise(const V1& input, V2& output){
+        dbn_assert(input.size() == output.size(), "vector must the same sizes");
+
+        static std::default_random_engine rand_engine(::time(nullptr));
+        static std::normal_distribution<weight> distribution(0.0, 1.0);
+        static auto generator = bind(distribution, rand_engine);
+
+        for(size_t i = 0; i < input.size(); ++i){
+            output(i) = input(i) + generator();
+        }
+
+        return output;
+    }
+
     void train(const std::vector<vector<weight>>& training_data, std::size_t max_epochs){
         stop_watch<std::chrono::seconds> watch;
 
@@ -371,7 +386,7 @@ public:
             }
 
             activate_hidden(h1, v1);
-            activate_visible(bernoulli(h1, hs), v2);
+            activate_visible(VisibleUnit == Type::SIGMOID ? bernoulli(h1, hs) : noise(h1, hs), v2);
             activate_hidden(h2, v2);
 
             for(size_t i = 0; i < num_visible; ++i){
