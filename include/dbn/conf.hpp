@@ -15,7 +15,8 @@ namespace dbn {
 enum class Type {
     SIGMOID,    //Stochastic binary unity
     EXP,        //Exponential unit (for last layer)
-    SOFTMAX     //Softmay unit (for last layer)
+    SOFTMAX,    //Softmax unit (for last layer)
+    GAUSSIAN    //Gaussian visible layers
 };
 
 template<bool M = true, std::size_t B = 1, bool I = true, bool DB = false, bool WD = true,

@@ -57,7 +57,10 @@ public:
 
     static_assert(BatchSize > 0, "Batch size must be at least 1");
 
-    static_assert(VisibleUnit == Type::SIGMOID, "Only stochastic binary visible units are supported");
+    static_assert(VisibleUnit == Type::SIGMOID || VisibleUnit == Type::GAUSSIAN,
+        "Only logistic and gaussian visible units are supported");
+    static_assert(HiddenUnit != Type::GAUSSIAN,
+        "Gaussian hidden units are not supported");
 
     static constexpr const std::size_t num_visible_mom = Momentum ? num_visible : 0;
     static constexpr const std::size_t num_hidden_mom = Momentum ? num_hidden : 0;
@@ -334,7 +337,12 @@ public:
             }
 
             auto activation = a(i) + s;
-            v(i) = logistic_sigmoid(activation);
+
+            if(VisibleUnit == Type::SIGMOID){
+                v(i) = logistic_sigmoid(activation);
+            } else if(VisibleUnit == Type::GAUSSIAN){
+                v(i) = activation;
+            }
 
             dbn_assert(std::isfinite(s), "NaN verify");
             dbn_assert(std::isfinite(activation), "NaN verify");
