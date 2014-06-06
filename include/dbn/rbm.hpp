@@ -147,7 +147,7 @@ private:
     }
 
     static constexpr weight softplus(weight x){
-        return std::log(1 + std::exp(x));
+        return std::log(1.0 + std::exp(x));
     }
 
     //Binary I/O utility functions
