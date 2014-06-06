@@ -451,7 +451,7 @@ public:
 
         activate_hidden(h1, visibles);
         activate_visible(h1, v1);
-        bernoulli(v1, visibles);
+        activate_hidden(v1, visibles);
 
         std::cout << "Reconstruction took " << watch.elapsed() << "ms" << std::endl;
     }
