@@ -93,6 +93,10 @@ private:
     fast_vector<weight, num_visible> ga;
     fast_vector<weight, num_hidden> gb;
 
+    const std::default_random_engine global_rand_engine(::time(nullptr));
+    const std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
+    const auto normal_generator = bind(normal_distribution, global_rand_engine);
+
 public:
     //Gradients computations for DBN
     fast_matrix<weight, num_visible, num_hidden>& gr_w = w;
@@ -139,9 +143,17 @@ private:
         }
     }
 
+    //Math functions
+
     static constexpr weight logistic_sigmoid(weight x){
         return 1.0 / (1.0 + std::exp(-x));
     }
+
+    static constexpr weight softplus(weight x){
+        return std::log(1 + std::exp(x));
+    }
+
+    //Binary I/O utility functions
 
     template<typename T>
     static void binary_write(std::ostream& os, const T& v){
@@ -296,11 +308,17 @@ public:
                     s += w(i, j) * v[i];
                 }
 
+                //Total input
                 auto x = b(j) + s;
+
                 if(HiddenUnit == Type::SIGMOID){
                     h(j) = logistic_sigmoid(x);
                 } else if(HiddenUnit == Type::EXP){
                     h(j) = exp(x);
+                } else if(HiddenUnit == Type::RLU){
+                    h(j) = softplus(x);
+                } else if(HiddenUnit == Type::NRLU){
+                    h(j) = std::max(0, x + normal_generator());
                 }
 
                 dbn_assert(std::isfinite(s), "NaN verify");
@@ -314,11 +332,7 @@ public:
     void activate_visible(const V1& h, V2& v) const {
         v = 0.0;
 
-        static std::default_random_engine rand_engine(::time(nullptr));
-        static std::uniform_real_distribution<weight> distribution(0.0, 1.0);
-        static auto generator = bind(distribution, rand_engine);
-
-        auto bernoulli = [](weight v){ return generator() < v ? 1.0 : 0.0; };
+        auto bernoulli = [](weight v){ return normal_generator() < v ? 1.0 : 0.0; };
         auto identity = [](weight v){ return v; };
 
         auto ht = VisibleUnit == Type::SIGMOID ? bernoulli : identity;
@@ -329,12 +343,13 @@ public:
                 s += w(i, j) * ht(h(j));
             }
 
-            auto activation = a(i) + s;
+            //Total input
+            auto x = a(i) + s;
 
             if(VisibleUnit == Type::SIGMOID){
-                v(i) = logistic_sigmoid(activation);
+                v(i) = logistic_sigmoid(x);
             } else if(VisibleUnit == Type::GAUSSIAN){
-                v(i) = activation;
+                v(i) = x;
             }
 
             dbn_assert(std::isfinite(s), "NaN verify");
