@@ -94,8 +94,9 @@ private:
     fast_vector<weight, num_visible> ga;
     fast_vector<weight, num_hidden> gb;
 
-    const std::default_random_engine global_rand_engine(std::time(nullptr));
-    const std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
+    static const std::default_random_engine global_rand_engine(std::time(nullptr));
+    static const std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
+    static const auto normal_generator = std::bind(normal_distribution, global_rand_engine);
 
 public:
     //Gradients computations for DBN
@@ -308,8 +309,6 @@ public:
                     s += w(i, j) * v[i];
                 }
 
-                static const auto normal_generator = std::bind(normal_distribution, global_rand_engine);
-
                 //Total input
                 auto x = b(j) + s;
 
@@ -333,8 +332,6 @@ public:
     template<typename V1, typename V2>
     void activate_visible(const V1& h, V2& v) const {
         v = 0.0;
-
-        static const auto normal_generator = std::bind(normal_distribution, global_rand_engine);
 
         auto bernoulli = [](weight v){ return normal_generator() < v ? 1.0 : 0.0; };
         auto identity = [](weight v){ return v; };
