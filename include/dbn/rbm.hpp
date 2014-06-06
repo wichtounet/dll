@@ -94,10 +94,6 @@ private:
     fast_vector<weight, num_visible> ga;
     fast_vector<weight, num_hidden> gb;
 
-    static const std::default_random_engine global_rand_engine(std::time(nullptr));
-    static const std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
-    static const auto normal_generator = std::bind(normal_distribution, global_rand_engine);
-
 public:
     //Gradients computations for DBN
     fast_matrix<weight, num_visible, num_hidden>& gr_w = w;
@@ -274,6 +270,10 @@ public:
 
     template<typename V1, typename V2, typename V3, typename V4>
     void activate_hidden(V1& h, const V2& v, const V3& b, const V4& w) const {
+        static const std::default_random_engine global_rand_engine(std::time(nullptr));
+        static const std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
+        static const auto normal_generator = std::bind(normal_distribution, global_rand_engine);
+
         h = 0.0;
 
         if(HiddenUnit == Type::SOFTMAX){
@@ -331,12 +331,16 @@ public:
 
     template<typename V1, typename V2>
     void activate_visible(const V1& h, V2& v) const {
-        v = 0.0;
+        static const std::default_random_engine global_rand_engine(std::time(nullptr));
+        static const std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
+        static const auto normal_generator = std::bind(normal_distribution, global_rand_engine);
 
         auto bernoulli = [](weight v){ return normal_generator() < v ? 1.0 : 0.0; };
         auto identity = [](weight v){ return v; };
 
         auto ht = VisibleUnit == Type::SIGMOID ? bernoulli : identity;
+
+        v = 0.0;
 
         for(size_t i = 0; i < num_visible; ++i){
             weight s = 0.0;
