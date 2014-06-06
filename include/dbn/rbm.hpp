@@ -93,7 +93,7 @@ private:
     fast_vector<weight, num_visible> ga;
     fast_vector<weight, num_hidden> gb;
 
-    const std::default_random_engine global_rand_engine(::time(nullptr));
+    const std::default_random_engine global_rand_engine(std::time(nullptr));
     const std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
     const auto normal_generator = bind(normal_distribution, global_rand_engine);
 
@@ -134,7 +134,7 @@ private:
     void init_weights(){
         //Initialize the weights using a Gaussian distribution of mean 0 and
         //variance 0.0.1
-        static std::default_random_engine rand_engine(::time(nullptr));
+        static std::default_random_engine rand_engine(std::time(nullptr));
         static std::normal_distribution<weight> distribution(0.0, 1.0);
         static auto generator = std::bind(distribution, rand_engine);
 
@@ -272,7 +272,7 @@ public:
     }
 
     template<typename V1, typename V2, typename V3, typename V4>
-    static void activate_hidden(V1& h, const V2& v, const V3& b, const V4& w){
+    void activate_hidden(V1& h, const V2& v, const V3& b, const V4& w) const {
         h = 0.0;
 
         if(HiddenUnit == Type::SOFTMAX){
