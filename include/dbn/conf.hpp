@@ -16,7 +16,9 @@ enum class Type {
     SIGMOID,    //Stochastic binary unity
     EXP,        //Exponential unit (for last layer)
     SOFTMAX,    //Softmax unit (for last layer)
-    GAUSSIAN    //Gaussian visible layers
+    GAUSSIAN,   //Gaussian visible layers
+    RLU,        //Rectified Linear Unit
+    NRLU        //Noisy Rectified Linear Unit
 };
 
 template<bool M = true, std::size_t B = 1, bool I = true, bool DB = false, bool WD = true,
