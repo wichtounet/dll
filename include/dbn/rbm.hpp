@@ -140,7 +140,31 @@ private:
     }
 
     static constexpr weight logistic_sigmoid(weight x){
-        return 1.0 / (1.0 + exp(-x));
+        return 1.0 / (1.0 + std::exp(-x));
+    }
+
+    template<typename T>
+    static void binary_write(std::ostream& os, const T& v){
+        os.write(reinterpret_cast<const char*>(&v), sizeof(v));
+    }
+
+    template<typename Container>
+    static void binary_write_all(std::ostream& os, const Container& c){
+        for(auto& v : c){
+            binary_write(os, v);
+        }
+    }
+
+    template<typename T>
+    static void binary_load(std::istream& is, T& v){
+        is.read(reinterpret_cast<char*>(&v), sizeof(v));
+    }
+
+    template<typename Container>
+    static void binary_load_all(std::istream& is, Container& c){
+        for(auto& v : c){
+            binary_load(is, v);
+        }
     }
 
 public:
@@ -166,34 +190,10 @@ public:
         init_weights();
     }
 
-    template<typename T>
-    static void binary_write(std::ostream& os, const T& v){
-        os.write(reinterpret_cast<const char*>(&v), sizeof(v));
-    }
-
-    template<typename Container>
-    static void binary_write_all(std::ostream& os, const Container& c){
-        for(auto& v : c){
-            binary_write(os, v);
-        }
-    }
-
     void store(std::ostream& os) const {
         binary_write_all(os, w);
         binary_write_all(os, a);
         binary_write_all(os, b);
-    }
-
-    template<typename T>
-    static void binary_load(std::istream& is, T& v){
-        is.read(reinterpret_cast<char*>(&v), sizeof(v));
-    }
-
-    template<typename Container>
-    static void binary_load_all(std::istream& is, Container& c){
-        for(auto& v : c){
-            binary_load(is, v);
-        }
     }
 
     void load(std::istream& is){
