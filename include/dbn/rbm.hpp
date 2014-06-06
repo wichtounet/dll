@@ -87,7 +87,6 @@ private:
     fast_vector<weight, num_hidden> h1;
     fast_vector<weight, num_visible> v2;
     fast_vector<weight, num_hidden> h2;
-    fast_vector<weight, num_hidden> hs;
 
     //Deltas
     fast_matrix<weight, num_visible, num_hidden> gw;
@@ -201,21 +200,6 @@ public:
         binary_load_all(is, w);
         binary_load_all(is, a);
         binary_load_all(is, b);
-    }
-
-    template<typename V1, typename V2>
-    static const V2& bernoulli(const V1& input, V2& output){
-        dbn_assert(input.size() == output.size(), "vector must the same sizes");
-
-        static std::default_random_engine rand_engine(::time(nullptr));
-        static std::uniform_real_distribution<weight> distribution(0.0, 1.0);
-        static auto generator = bind(distribution, rand_engine);
-
-        for(size_t i = 0; i < input.size(); ++i){
-            output(i) = generator() < input(i) ? 1.0 : 0.0;
-        }
-
-        return output;
     }
 
     void train(const std::vector<vector<weight>>& training_data, std::size_t max_epochs){
@@ -368,7 +352,6 @@ public:
         h1 = 0.0;
         v2 = 0.0;
         h2 = 0.0;
-        hs = 0.0;
 
         ga = 0.0;
         gb = 0.0;
@@ -467,7 +450,7 @@ public:
         }
 
         activate_hidden(h1, visibles);
-        activate_visible(bernoulli(h1, hs), v1);
+        activate_visible(h1, v1);
         bernoulli(v1, visibles);
 
         std::cout << "Reconstruction took " << watch.elapsed() << "ms" << std::endl;
