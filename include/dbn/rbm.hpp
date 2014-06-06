@@ -269,7 +269,7 @@ public:
     }
 
     template<typename V1, typename V2, typename V3, typename V4>
-    void activate_hidden(V1& h, const V2& v, const V3& b, const V4& w) const {
+    static void activate_hidden(V1& h, const V2& v, const V3& b, const V4& w){
         static std::default_random_engine global_rand_engine(std::time(nullptr));
         static std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
         static auto normal_generator = std::bind(normal_distribution, global_rand_engine);
@@ -319,7 +319,7 @@ public:
                 } else if(HiddenUnit == Type::RLU){
                     h(j) = softplus(x);
                 } else if(HiddenUnit == Type::NRLU){
-                    h(j) = std::max(0, x + normal_generator());
+                    h(j) = std::max(0.0, x + normal_generator());
                 }
 
                 dbn_assert(std::isfinite(s), "NaN verify");
@@ -358,7 +358,7 @@ public:
             }
 
             dbn_assert(std::isfinite(s), "NaN verify");
-            dbn_assert(std::isfinite(activation), "NaN verify");
+            dbn_assert(std::isfinite(x), "NaN verify");
             dbn_assert(std::isfinite(v(i)), "NaN verify");
         }
     }
