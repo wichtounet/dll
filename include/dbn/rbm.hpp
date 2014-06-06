@@ -330,10 +330,19 @@ public:
     void activate_visible(const V1& h, V2& v) const {
         v = 0.0;
 
+        static std::default_random_engine rand_engine(::time(nullptr));
+        static std::uniform_real_distribution<weight> distribution(0.0, 1.0);
+        static auto generator = bind(distribution, rand_engine);
+
+        auto bernoulli = [](weight v){ return generator() < v ? 1.0 : 0.0; };
+        auto identity = [](weight v){ return v; };
+
+        auto ht = VisibleUnit == Type::SIGMOID ? bernoulli : identity;
+
         for(size_t i = 0; i < num_visible; ++i){
             weight s = 0.0;
             for(size_t j = 0; j < num_hidden; ++j){
-                s += w(i, j) * h(j);
+                s += w(i, j) * ht(h(j));
             }
 
             auto activation = a(i) + s;
@@ -371,7 +380,7 @@ public:
             }
 
             activate_hidden(h1, v1);
-            activate_visible(VisibleUnit == Type::SIGMOID ? bernoulli(h1, hs) : h1, v2);
+            activate_visible(h1, v2);
             activate_hidden(h2, v2);
 
             for(size_t i = 0; i < num_visible; ++i){
