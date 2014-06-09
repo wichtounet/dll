@@ -255,10 +255,9 @@ public:
 
             if(I == layers -1){
                 static vector<weight> h1(num_hidden);
-                static vector<weight> hs(num_hidden);
 
                 rbm.activate_hidden(h1, static_cast<const vector<weight>&>(input));
-                rbm.activate_visible(rbm_t::bernoulli(h1, hs), output);
+                rbm.activate_visible(h1, output);
             } else {
                 static vector<weight> next(num_hidden);
 

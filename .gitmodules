@@ -1,3 +1,0 @@
-[submodule "mnist"]
-	path = mnist
-	url = git@github.com:wichtounet/mnist.git

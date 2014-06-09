@@ -14,6 +14,7 @@
 #include <functional>
 #include <fstream>
 #include <cmath>
+#include <ctime>
 
 //TODO Find a better way to use mkdir
 #include <sys/stat.h>
@@ -50,11 +51,17 @@ public:
     static constexpr const std::size_t BatchSize = Layer::Conf::BatchSize;
     static constexpr const bool Init = Layer::Conf::Debug;
     static constexpr const bool Debug = Layer::Conf::Debug;
-    static constexpr const Type Unit = Layer::Conf::Unit;
+    static constexpr const Type VisibleUnit = Layer::Conf::VisibleUnit;
+    static constexpr const Type HiddenUnit = Layer::Conf::HiddenUnit;
     static constexpr const bool DBN = Layer::Conf::DBN;
     static constexpr const bool Decay = Layer::Conf::Decay;
 
     static_assert(BatchSize > 0, "Batch size must be at least 1");
+
+    static_assert(VisibleUnit == Type::SIGMOID || VisibleUnit == Type::GAUSSIAN,
+        "Only logistic and gaussian visible units are supported");
+    static_assert(HiddenUnit != Type::GAUSSIAN,
+        "Gaussian hidden units are not supported");
 
     static constexpr const std::size_t num_visible_mom = Momentum ? num_visible : 0;
     static constexpr const std::size_t num_hidden_mom = Momentum ? num_hidden : 0;
@@ -81,7 +88,6 @@ private:
     fast_vector<weight, num_hidden> h1;
     fast_vector<weight, num_visible> v2;
     fast_vector<weight, num_hidden> h2;
-    fast_vector<weight, num_hidden> hs;
 
     //Deltas
     fast_matrix<weight, num_visible, num_hidden> gw;
@@ -118,14 +124,14 @@ public:
 
 private:
     //TODO Add a way to configure that
-    weight learning_rate = 0.1;
+    weight learning_rate = VisibleUnit == Type::SIGMOID ? 0.1 : 0.0001;
     weight momentum = 0.5;
     weight weight_cost = 0.0002;
 
     void init_weights(){
         //Initialize the weights using a Gaussian distribution of mean 0 and
         //variance 0.0.1
-        static std::default_random_engine rand_engine(::time(nullptr));
+        static std::default_random_engine rand_engine(std::time(nullptr));
         static std::normal_distribution<weight> distribution(0.0, 1.0);
         static auto generator = std::bind(distribution, rand_engine);
 
@@ -134,8 +140,40 @@ private:
         }
     }
 
+    //Math functions
+
     static constexpr weight logistic_sigmoid(weight x){
-        return 1.0 / (1.0 + exp(-x));
+        return 1.0 / (1.0 + std::exp(-x));
+    }
+
+    static constexpr weight softplus(weight x){
+        return std::log(1.0 + std::exp(x));
+    }
+
+    //Binary I/O utility functions
+
+    template<typename T>
+    static void binary_write(std::ostream& os, const T& v){
+        os.write(reinterpret_cast<const char*>(&v), sizeof(v));
+    }
+
+    template<typename Container>
+    static void binary_write_all(std::ostream& os, const Container& c){
+        for(auto& v : c){
+            binary_write(os, v);
+        }
+    }
+
+    template<typename T>
+    static void binary_load(std::istream& is, T& v){
+        is.read(reinterpret_cast<char*>(&v), sizeof(v));
+    }
+
+    template<typename Container>
+    static void binary_load_all(std::istream& is, Container& c){
+        for(auto& v : c){
+            binary_load(is, v);
+        }
     }
 
 public:
@@ -161,55 +199,16 @@ public:
         init_weights();
     }
 
-    template<typename T>
-    static void binary_write(std::ostream& os, const T& v){
-        os.write(reinterpret_cast<const char*>(&v), sizeof(v));
-    }
-
-    template<typename Container>
-    static void binary_write_all(std::ostream& os, const Container& c){
-        for(auto& v : c){
-            binary_write(os, v);
-        }
-    }
-
     void store(std::ostream& os) const {
         binary_write_all(os, w);
         binary_write_all(os, a);
         binary_write_all(os, b);
     }
 
-    template<typename T>
-    static void binary_load(std::istream& is, T& v){
-        is.read(reinterpret_cast<char*>(&v), sizeof(v));
-    }
-
-    template<typename Container>
-    static void binary_load_all(std::istream& is, Container& c){
-        for(auto& v : c){
-            binary_load(is, v);
-        }
-    }
-
     void load(std::istream& is){
         binary_load_all(is, w);
         binary_load_all(is, a);
         binary_load_all(is, b);
-    }
-
-    template<typename V1, typename V2>
-    static const V2& bernoulli(const V1& input, V2& output){
-        dbn_assert(input.size() == output.size(), "vector must the same sizes");
-
-        static std::default_random_engine rand_engine(::time(nullptr));
-        static std::uniform_real_distribution<weight> distribution(0.0, 1.0);
-        static auto generator = bind(distribution, rand_engine);
-
-        for(size_t i = 0; i < input.size(); ++i){
-            output(i) = generator() < input(i) ? 1.0 : 0.0;
-        }
-
-        return output;
     }
 
     void train(const std::vector<vector<weight>>& training_data, std::size_t max_epochs){
@@ -271,52 +270,101 @@ public:
 
     template<typename V1, typename V2, typename V3, typename V4>
     static void activate_hidden(V1& h, const V2& v, const V3& b, const V4& w){
+        static std::default_random_engine rand_engine(std::time(nullptr));
+        static std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
+        static auto normal_generator = std::bind(normal_distribution, rand_engine);
+
         h = 0.0;
 
-        for(size_t j = 0; j < num_hidden; ++j){
-            weight s = 0.0;
-            for(size_t i = 0; i < num_visible; ++i){
-                s += w(i, j) * v[i];
+        if(HiddenUnit == Type::SOFTMAX){
+            weight exp_sum = 0.0;
+
+            for(size_t j = 0; j < num_hidden; ++j){
+                weight s = 0.0;
+                for(size_t i = 0; i < num_visible; ++i){
+                    s += w(i, j) * v[i];
+                }
+
+                auto x = b(j) + s;
+                exp_sum += exp(x);
             }
 
-            auto activation = b(j) + s;
-            if(Unit == Type::SIGMOID){
-                h(j) = logistic_sigmoid(activation);
-            } else {
-                h(j) = exp(activation);
-            }
+            for(size_t j = 0; j < num_hidden; ++j){
+                weight s = 0.0;
+                for(size_t i = 0; i < num_visible; ++i){
+                    s += w(i, j) * v[i];
+                }
 
-            if(!std::isfinite(h(j))){
-                //std::cout << activation << std::endl;
-            }
+                auto x = b(j) + s;
+                h(j) = exp(x) / exp_sum;
 
-            dbn_assert(std::isfinite(s), "NaN verify");
-            dbn_assert(std::isfinite(activation), "NaN verify");
-            dbn_assert(std::isfinite(h(j)), "NaN verify");
+                dbn_assert(std::isfinite(s), "NaN verify");
+                dbn_assert(std::isfinite(x), "NaN verify");
+                dbn_assert(std::isfinite(h(j)), "NaN verify");
+            }
+        } else {
+            for(size_t j = 0; j < num_hidden; ++j){
+                weight s = 0.0;
+                for(size_t i = 0; i < num_visible; ++i){
+                    s += w(i, j) * v[i];
+                }
+
+                //Total input
+                auto x = b(j) + s;
+
+                if(HiddenUnit == Type::SIGMOID){
+                    h(j) = logistic_sigmoid(x);
+                } else if(HiddenUnit == Type::EXP){
+                    h(j) = exp(x);
+                } else if(HiddenUnit == Type::RLU){
+                    h(j) = softplus(x);
+                } else if(HiddenUnit == Type::NRLU){
+                    h(j) = std::max(0.0, x + normal_generator());
+                }
+
+                dbn_assert(std::isfinite(s), "NaN verify");
+                dbn_assert(std::isfinite(x), "NaN verify");
+                dbn_assert(std::isfinite(h(j)), "NaN verify");
+            }
         }
     }
 
     template<typename V1, typename V2>
     void activate_visible(const V1& h, V2& v) const {
+        static std::default_random_engine rand_engine(std::time(nullptr));
+        static std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
+        static auto normal_generator = std::bind(normal_distribution, rand_engine);
+
+        auto bernoulli = [](weight v){ return normal_generator() < v ? 1.0 : 0.0; };
+        auto identity = [](weight v){ return v; };
+
+        auto ht = VisibleUnit == Type::SIGMOID ? bernoulli : identity;
+
         v = 0.0;
 
         for(size_t i = 0; i < num_visible; ++i){
             weight s = 0.0;
             for(size_t j = 0; j < num_hidden; ++j){
-                s += w(i, j) * h(j);
+                s += w(i, j) * ht(h(j));
             }
 
-            auto activation = a(i) + s;
-            v(i) = logistic_sigmoid(activation);
+            //Total input
+            auto x = a(i) + s;
+
+            if(VisibleUnit == Type::SIGMOID){
+                v(i) = logistic_sigmoid(x);
+            } else if(VisibleUnit == Type::GAUSSIAN){
+                v(i) = x;
+            }
 
             dbn_assert(std::isfinite(s), "NaN verify");
-            dbn_assert(std::isfinite(activation), "NaN verify");
+            dbn_assert(std::isfinite(x), "NaN verify");
             dbn_assert(std::isfinite(v(i)), "NaN verify");
         }
     }
 
     template<typename T>
-    weight cd_step(const dbn::batch<T> batch){
+    weight cd_step(const dbn::batch<T>& batch){
         dbn_assert(batch.size() <= static_cast<typename dbn::batch<T>::size_type>(BatchSize), "Invalid size");
         dbn_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
 
@@ -324,7 +372,6 @@ public:
         h1 = 0.0;
         v2 = 0.0;
         h2 = 0.0;
-        hs = 0.0;
 
         ga = 0.0;
         gb = 0.0;
@@ -336,7 +383,7 @@ public:
             }
 
             activate_hidden(h1, v1);
-            activate_visible(bernoulli(h1, hs), v2);
+            activate_visible(h1, v2);
             activate_hidden(h2, v2);
 
             for(size_t i = 0; i < num_visible; ++i){
@@ -423,8 +470,8 @@ public:
         }
 
         activate_hidden(h1, visibles);
-        activate_visible(bernoulli(h1, hs), v1);
-        bernoulli(v1, visibles);
+        activate_visible(h1, v1);
+        activate_hidden(v1, visibles);
 
         std::cout << "Reconstruction took " << watch.elapsed() << "ms" << std::endl;
     }
