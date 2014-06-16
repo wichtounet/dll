@@ -109,34 +109,41 @@ public:
 
     void pretrain(const std::vector<vector<weight>>& training_data, std::size_t max_epochs){
         typedef std::vector<vector<weight>> training_t;
-        training_t next;
+        training_t next_a;
+        training_t next_s;
 
         auto input = std::ref(training_data);
 
-        for_each_i(tuples, [&input, &next, max_epochs](std::size_t I, auto& rbm){
+        for_each_i(tuples, [&input, &next_a, &next_s, max_epochs](std::size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
             constexpr const auto num_visible = rbm_t::num_visible;
             constexpr const auto num_hidden = rbm_t::num_hidden;
 
             auto input_size = static_cast<const training_t&>(input).size();
 
+            //Train each layer but the last one
             if(I <= layers - 2){
                 std::cout << "Train layer " << I << " (" << num_visible << "->" << num_hidden << ") with " << input_size << " entries" << std::endl;
 
                 rbm.train(static_cast<const training_t&>(input), max_epochs);
 
+                //Get the activation probabilities for the next level
                 if(I < layers - 2){
-                    next.clear();
-                    next.reserve(input_size);
+                    next_a.clear();
+                    next_a.reserve(input_size);
+                    next_s.clear();
+                    next_s.reserve(input_size);
+
                     for(std::size_t i = 0; i < input_size; ++i){
-                        next.emplace_back(num_hidden);
+                        next_a.emplace_back(num_hidden);
+                        next_s.emplace_back(num_hidden);
                     }
 
                     for(size_t i = 0; i < input_size; ++i){
-                        rbm.activate_hidden(next[i], static_cast<const training_t&>(input)[i]);
+                        rbm.activate_hidden(next_a[i], next_s[i], static_cast<const training_t&>(input)[i], static_cast<const training_t&>(input)[i]);
                     }
 
-                    input = std::cref(next);
+                    input = std::cref(next_a);
                 }
             }
         });
@@ -144,7 +151,7 @@ public:
 
     /*}}}*/
 
-    /*{{{ Train with labels */
+    /*{{{ With labels */
 
     template<typename Label>
     void train_with_labels(const std::vector<vector<weight>>& training_data, const std::vector<Label>& training_labels, std::size_t labels, std::size_t max_epochs){
@@ -170,7 +177,7 @@ public:
 
                 for(auto& training_item : static_cast<const training_t&>(input)){
                     vector<weight> next_item(num_hidden + (append_labels ? labels : 0));
-                    rbm.activate_hidden(next_item, training_item);
+                    //TODO rbm.activate_hidden(next_item, training_item);
                     next.emplace_back(std::move(next_item));
                 }
 
@@ -194,6 +201,52 @@ public:
         });
     }
 
+    template<typename TrainingItem>
+    size_t predict_labels(const TrainingItem& item, std::size_t labels){
+        dbn_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
+
+        vector<weight> output(num_visible<layers - 1>());
+        auto input = std::cref(item);
+
+        for_each_i(tuples, [labels,&input,&output](size_t I, auto& rbm){
+            typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
+            constexpr const auto num_hidden = rbm_t::num_hidden;
+
+            if(I == layers -1){
+                static vector<weight> h1(num_hidden);
+
+                //TODO rbm.activate_hidden(h1, static_cast<const vector<weight>&>(input));
+                //TODO rbm.activate_visible(h1, output);
+            } else {
+                static vector<weight> next(num_hidden);
+
+                //TODO rbm.activate_hidden(next, static_cast<const vector<weight>&>(input));
+
+                //If the next layers is the last layer
+                if(I + 1 == layers - 1){
+                    for(size_t l = 0; l < labels; ++l){
+                        next[num_hidden + l] = 0.1;
+                    }
+                }
+
+                input = std::cref(next);
+            }
+        });
+
+        size_t label = 0;
+        weight max = 0;
+        for(size_t l = 0; l < labels; ++l){
+            auto value = output[num_visible<layers - 1>() - labels + l];
+
+            if(value > max){
+                max = value;
+                label = l;
+            }
+        }
+
+        return label;
+    }
+
     /*}}}*/
 
     /*{{{ Predict */
@@ -208,9 +261,10 @@ public:
             constexpr const auto num_hidden = rbm_t::num_hidden;
 
             static vector<weight> next(num_hidden);
+            static vector<weight> next_s(num_hidden);
             auto& output = (I == layers - 1) ? result : next;
 
-            rbm.activate_hidden(output, static_cast<const vector<weight>&>(input));
+            rbm.activate_hidden(output, next_s, static_cast<const vector<weight>&>(input), static_cast<const vector<weight>&>(input));
 
             input = std::cref(next);
         });
@@ -236,56 +290,6 @@ public:
     size_t predict(const vector<weight>& item){
         auto result = predict_weights(item);
         return predict_final(result);;
-    }
-
-    /*}}}*/
-
-    /*{{{ Predict with labels */
-
-    template<typename TrainingItem>
-    size_t predict_labels(const TrainingItem& item, std::size_t labels){
-        dbn_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
-
-        vector<weight> output(num_visible<layers - 1>());
-        auto input = std::cref(item);
-
-        for_each_i(tuples, [labels,&input,&output](size_t I, auto& rbm){
-            typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
-            constexpr const auto num_hidden = rbm_t::num_hidden;
-
-            if(I == layers -1){
-                static vector<weight> h1(num_hidden);
-
-                rbm.activate_hidden(h1, static_cast<const vector<weight>&>(input));
-                rbm.activate_visible(h1, output);
-            } else {
-                static vector<weight> next(num_hidden);
-
-                rbm.activate_hidden(next, static_cast<const vector<weight>&>(input));
-
-                //If the next layers is the last layer
-                if(I + 1 == layers - 1){
-                    for(size_t l = 0; l < labels; ++l){
-                        next[num_hidden + l] = 0.1;
-                    }
-                }
-
-                input = std::cref(next);
-            }
-        });
-
-        size_t label = 0;
-        weight max = 0;
-        for(size_t l = 0; l < labels; ++l){
-            auto value = output[num_visible<layers - 1>() - labels + l];
-
-            if(value > max){
-                max = value;
-                label = l;
-            }
-        }
-
-        return label;
     }
 
     /*}}}*/
@@ -359,9 +363,9 @@ public:
                 auto& output_ref = static_cast<vector<weight>&>(output);
 
                 if(I == 0){
-                    rbm.template gr_activate_hidden<Temp>(output_ref, input);
+                    rbm.template gr_activate_hidden<Temp>(output_ref, rbm.gr_probs_s[sample], input, input);
                 } else {
-                    rbm.template gr_activate_hidden<Temp>(rbm.gr_probs[sample], output_ref);
+                    rbm.template gr_activate_hidden<Temp>(rbm.gr_probs[sample], rbm.gr_probs_s[sample], output_ref, output_ref);
                     output = std::ref(rbm.gr_probs[sample]);
                 }
             });
@@ -717,6 +721,7 @@ public:
 
             for(size_t i = 0; i < batch_size; ++i){
                 rbm.gr_probs.emplace_back(num_hidden);
+                rbm.gr_probs_s.emplace_back(num_hidden);
             }
         });
 

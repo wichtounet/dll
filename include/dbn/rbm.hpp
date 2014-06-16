@@ -86,10 +86,16 @@ private:
     fast_vector<weight, num_hidden> gb;
 
     //CD reconstruction data
-    fast_vector<weight, num_visible> v1;
-    fast_vector<weight, num_hidden> h1;
-    fast_vector<weight, num_visible> v2;
-    fast_vector<weight, num_hidden> h2;
+    fast_vector<weight, num_visible> v1; //!< State of the visible units
+
+    fast_vector<weight, num_hidden> h1_a; //!< Activation probabilities of hidden units after first CD-step
+    fast_vector<weight, num_hidden> h1_s; //!< Sampled value of hidden units after first CD-step
+    
+    fast_vector<weight, num_visible> v2_a; //!< Activation probabilities of visible units after first CD-step
+    fast_vector<weight, num_visible> v2_s; //!< Sampled value of visible units after first CD-step
+    
+    fast_vector<weight, num_hidden> h2_a; //!< Activation probabilities of hidden units after last CD-step
+    fast_vector<weight, num_hidden> h2_s; //!< Sampled value of hidden units after last CD-step
     
     //TODO Remove this later
     fast_vector<value_t, num_visible> visibles;
@@ -122,6 +128,7 @@ public:
     fast_vector<weight, num_hidden_gra> gr_b_tmp;
 
     std::vector<vector<weight>> gr_probs;
+    std::vector<vector<weight>> gr_probs_s;
 
 private:
     //TODO Add a way to configure that
@@ -259,23 +266,24 @@ public:
         std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
     }
 
-    template<typename V1, typename V2>
-    void activate_hidden(V1& h, const V2& v) const {
-        return activate_hidden(h, v, b, w);
+    template<typename H, typename V>
+    void activate_hidden(H& h_a, H& h_s, const V& v_a, const V& v_s) const {
+        return activate_hidden(h_a, h_s, v_a, v_s, b, w);
     }
 
-    template<bool Temp, typename V1, typename V2>
-    void gr_activate_hidden(V1& h, const V2& v) const {
-        return activate_hidden(h, v, Temp ? gr_b_tmp : gr_b, Temp ? gr_w_tmp : gr_w);
+    template<bool Temp, typename H, typename V>
+    void gr_activate_hidden(H& h_a, H& h_s, const V& v_a, const V& v_s) const {
+        return activate_hidden(h_a, h_s, v_a, v_s, Temp ? gr_b_tmp : gr_b, Temp ? gr_w_tmp : gr_w);
     }
 
-    template<typename V1, typename V2, typename V3, typename V4>
-    static void activate_hidden(V1& h, const V2& v, const V3& b, const V4& w){
+    template<typename H, typename V, typename B, typename W>
+    static void activate_hidden(H& h_a, H& h_s, const V& v_a, const V& v_s, const B& b, const W& w){
         static std::default_random_engine rand_engine(std::time(nullptr));
         static std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
         static auto normal_generator = std::bind(normal_distribution, rand_engine);
 
-        h = 0.0;
+        h_a = 0.0;
+        h_s = 0.0;
 
         if(HiddenUnit == Type::SOFTMAX){
             weight exp_sum = 0.0;
@@ -283,7 +291,7 @@ public:
             for(size_t j = 0; j < num_hidden; ++j){
                 weight s = 0.0;
                 for(size_t i = 0; i < num_visible; ++i){
-                    s += w(i, j) * v[i];
+                    s += w(i, j) * v_a[i];
                 }
 
                 auto x = b(j) + s;
@@ -293,74 +301,92 @@ public:
             for(size_t j = 0; j < num_hidden; ++j){
                 weight s = 0.0;
                 for(size_t i = 0; i < num_visible; ++i){
-                    s += w(i, j) * v[i];
+                    s += w(i, j) * v_a[i];
                 }
 
                 auto x = b(j) + s;
-                h(j) = exp(x) / exp_sum;
+                h_a(j) = exp(x) / exp_sum;
 
                 dbn_assert(std::isfinite(s), "NaN verify");
                 dbn_assert(std::isfinite(x), "NaN verify");
-                dbn_assert(std::isfinite(h(j)), "NaN verify");
+                dbn_assert(std::isfinite(h_a(j)), "NaN verify");
             }
+            
+            std::size_t max_j = 0;
+            for(size_t j = 1; j < num_hidden; ++j){
+                if(h_a(j) > h_a(max_j)){
+                    max_j = j;
+                }
+            }
+
+            h_s = 0.0;
+            h_s(max_j) = 1.0;
         } else {
             for(size_t j = 0; j < num_hidden; ++j){
                 weight s = 0.0;
                 for(size_t i = 0; i < num_visible; ++i){
-                    s += w(i, j) * v[i];
+                    s += w(i, j) * v_a[i];
                 }
 
                 //Total input
                 auto x = b(j) + s;
 
                 if(HiddenUnit == Type::SIGMOID){
-                    h(j) = logistic_sigmoid(x);
+                    h_a(j) = logistic_sigmoid(x);
+                    h_s(j) = h_a(j) > normal_generator() ? 1.0 : 0.0;
                 } else if(HiddenUnit == Type::EXP){
-                    h(j) = exp(x);
+                    h_a(j) = exp(x);
+                    h_s(j) = h_a(j) > normal_generator() ? 1.0 : 0.0;
                 } else if(HiddenUnit == Type::RLU){
-                    h(j) = softplus(x);
+                    h_a(j) = softplus(x);
+                    h_s(j) = h_a(j) > normal_generator() ? 1.0 : 0.0;
                 } else if(HiddenUnit == Type::NRLU){
-                    h(j) = std::max(0.0, x + normal_generator());
+                    h_a(j) = std::max(0.0, x + normal_generator());
+                    h_s(j) = h_a(j) > normal_generator() ? 1.0 : 0.0;
+                } else {
+                    dbn_unreachable("Invalid path");
                 }
 
                 dbn_assert(std::isfinite(s), "NaN verify");
                 dbn_assert(std::isfinite(x), "NaN verify");
-                dbn_assert(std::isfinite(h(j)), "NaN verify");
+                dbn_assert(std::isfinite(h_a(j)), "NaN verify");
+                dbn_assert(std::isfinite(h_s(j)), "NaN verify");
             }
         }
     }
 
-    template<typename V1, typename V2>
-    void activate_visible(const V1& h, V2& v) const {
+    template<typename H, typename V>
+    void activate_visible(const H& h_a, const H& h_s, V& v_a, V& v_s) const {
         static std::default_random_engine rand_engine(std::time(nullptr));
         static std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
         static auto normal_generator = std::bind(normal_distribution, rand_engine);
 
-        auto bernoulli = [](weight v){ return normal_generator() < v ? 1.0 : 0.0; };
-        auto identity = [](weight v){ return v; };
-
-        auto ht = VisibleUnit == Type::SIGMOID ? bernoulli : identity;
-
-        v = 0.0;
+        v_a = 0.0;
+        v_s = 0.0;
 
         for(size_t i = 0; i < num_visible; ++i){
             weight s = 0.0;
             for(size_t j = 0; j < num_hidden; ++j){
-                s += w(i, j) * ht(h(j));
+                s += w(i, j) * h_s(j);
             }
 
             //Total input
             auto x = a(i) + s;
 
             if(VisibleUnit == Type::SIGMOID){
-                v(i) = logistic_sigmoid(x);
+                v_a(i) = logistic_sigmoid(x);
+                v_s(i) = v_a(i) > normal_generator() ? 1.0 : 0.0;
             } else if(VisibleUnit == Type::GAUSSIAN){
-                v(i) = x;
+                v_a(i) = x;
+                v_s(i) = v_a(i) > normal_generator() ? 1.0 : 0.0;
+            } else {
+                dbn_unreachable("Invalid path");
             }
 
             dbn_assert(std::isfinite(s), "NaN verify");
             dbn_assert(std::isfinite(x), "NaN verify");
-            dbn_assert(std::isfinite(v(i)), "NaN verify");
+            dbn_assert(std::isfinite(v_a(i)), "NaN verify");
+            dbn_assert(std::isfinite(v_s(i)), "NaN verify");
         }
     }
 
@@ -369,30 +395,34 @@ public:
         dbn_assert(batch.size() <= static_cast<typename dbn::batch<T>::size_type>(BatchSize), "Invalid size");
         dbn_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
 
-        v1 = 0.0;
-        h1 = 0.0;
-        v2 = 0.0;
-        h2 = 0.0;
-
+        //Clear the deltas
         ga = 0.0;
         gb = 0.0;
         gw = 0.0;
 
+        v1 = 0.0;
+        h1_a = 0.0;
+        h1_s = 0.0;
+        h2_a = 0.0;
+        h2_s = 0.0;
+        v2_a = 0.0;
+        v2_s = 0.0;
+
         for(auto& items : batch){
             v1 = items;
 
-            activate_hidden(h1, v1);
-            activate_visible(h1, v2);
-            activate_hidden(h2, v2);
+            activate_hidden(h1_a, h1_s, v1, v1);
+            activate_visible(h1_a, h1_s, v2_a, v2_s);
+            activate_hidden(h2_a, h2_s, v2_a, v2_s);
 
             for(size_t i = 0; i < num_visible; ++i){
                 for(size_t j = 0; j < num_hidden; ++j){
-                    gw(i, j) += h1(j) * v1(i) - h2(j) * v2(i);
+                    gw(i, j) += h1_a(j) * v1(i) - h2_a(j) * v2_a(i);
                 }
             }
 
-            ga += v1 - v2;
-            gb += h1 - h2;
+            ga += v1 - v2_a;
+            gb += h1_a - h2_a;
         }
 
         nan_check(gw);
@@ -468,9 +498,9 @@ public:
             visibles(i) = items[i];
         }
 
-        activate_hidden(h1, visibles);
-        activate_visible(h1, v1);
-        activate_hidden(v1, visibles);
+        //TODO activate_hidden(h1, visibles);
+        //TODO activate_visible(h1, v1);
+        //TODO activate_hidden(v1, visibles);
 
         std::cout << "Reconstruction took " << watch.elapsed() << "ms" << std::endl;
     }
