@@ -8,11 +8,18 @@
 #ifndef DBN_UTILS_HPP
 #define DBN_UTILS_HPP
 
+#include <memory>
+
 template< bool B, class T = void >
 using disable_if_t = typename std::enable_if<!B, T>::type;
 
 template< bool B, class T = void >
 using enable_if_t = typename std::enable_if<B,T>::type;
+
+template<typename T, typename... Args >
+std::unique_ptr<T> make_unique(Args&&... args){
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
 
 namespace dbn {
 
