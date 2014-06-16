@@ -127,7 +127,7 @@ public:
     fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_tmp;
     fast_vector<weight, num_hidden_gra> gr_b_tmp;
 
-    std::vector<vector<weight>> gr_probs;
+    std::vector<vector<weight>> gr_probs_a;
     std::vector<vector<weight>> gr_probs_s;
 
 private:

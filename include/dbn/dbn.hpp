@@ -309,7 +309,7 @@ public:
                 for(size_t j = 0; j < n_hidden; ++j){
                     s += diffs[sample][j] * (Temp ? r2.gr_w_tmp(i, j) : r2.gr_w(i, j));
                 }
-                s *= r1.gr_probs[sample][i] * (1.0 - r1.gr_probs[sample][i]);
+                s *= r1.gr_probs_a[sample][i] * (1.0 - r1.gr_probs_a[sample][i]);
                 diff[i] = s;
             }
 
@@ -356,7 +356,7 @@ public:
 
         for(size_t sample = 0; sample < n_samples; ++sample){
             auto& input = context.inputs[sample];
-            auto output = std::ref(layer<0>().gr_probs[sample]);
+            auto output = std::ref(layer<0>().gr_probs_a[sample]);
             auto& target = context.targets[sample];
 
             for_each_i(tuples, [&input,&output,sample](std::size_t I, auto& rbm){
@@ -365,15 +365,15 @@ public:
                 if(I == 0){
                     rbm.template gr_activate_hidden<Temp>(output_ref, rbm.gr_probs_s[sample], input, input);
                 } else {
-                    rbm.template gr_activate_hidden<Temp>(rbm.gr_probs[sample], rbm.gr_probs_s[sample], output_ref, output_ref);
-                    output = std::ref(rbm.gr_probs[sample]);
+                    rbm.template gr_activate_hidden<Temp>(rbm.gr_probs_a[sample], rbm.gr_probs_s[sample], output_ref, output_ref);
+                    output = std::ref(rbm.gr_probs_a[sample]);
                 }
             });
 
             auto& diff = diffs[sample];
             diff.resize(n_hidden);
 
-            auto& result = layer<layers - 1>().gr_probs[sample];
+            auto& result = layer<layers - 1>().gr_probs_a[sample];
             weight scale = std::accumulate(result.begin(), result.end(), 0.0);
 
             for(auto& r : result){
@@ -392,10 +392,10 @@ public:
         //Get pointers to the different gr_probs
         std::array<std::vector<vector<weight>>*, layers> probs_refs;
         for_each_i(tuples, [&probs_refs](std::size_t I, auto& rbm){
-            probs_refs[I] = &rbm.gr_probs;
+            probs_refs[I] = &rbm.gr_probs_a;
         });
 
-        update_incs<Temp>(layer<layers-1>(), diffs, n_samples, layer<layers-2>().gr_probs);
+        update_incs<Temp>(layer<layers-1>(), diffs, n_samples, layer<layers-2>().gr_probs_a);
 
         for_each_rpair_i(tuples, [n_samples, &probs_refs](std::size_t I, auto& r1, auto& r2){
             update_diffs<Temp>(r1, r2, diffs, n_samples);
@@ -720,7 +720,7 @@ public:
             constexpr const auto num_hidden = rbm_t::num_hidden;
 
             for(size_t i = 0; i < batch_size; ++i){
-                rbm.gr_probs.emplace_back(num_hidden);
+                rbm.gr_probs_a.emplace_back(num_hidden);
                 rbm.gr_probs_s.emplace_back(num_hidden);
             }
         });
