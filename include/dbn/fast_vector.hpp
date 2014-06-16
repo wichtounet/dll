@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "assert.hpp"
+#include "utils.hpp"
 #include "fast_op.hpp"
 #include "fast_expr.hpp"
 #include "vector.hpp"
@@ -137,7 +138,7 @@ public:
     }
 
     //Add a scalar to each element
-    template<typename RE, typename = std::enable_if_t<std::is_convertible<RE, T>::value>>
+    template<typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
     auto operator+(RE re) const -> fast_expr<T, const fast_vector&, plus_binary_op<T>, scalar<T>> {
         return {*this, re};
     }
@@ -149,7 +150,7 @@ public:
     }
 
     //Remove each element by a scalar
-    template<typename RE, typename = std::enable_if_t<std::is_convertible<RE, T>::value>>
+    template<typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
     auto operator-(RE re) const -> fast_expr<T, const fast_vector&, minus_binary_op<T>, scalar<T>> {
         return {*this, re};
     }
@@ -161,7 +162,7 @@ public:
     }
 
     //Mul each element by a scalar
-    template<typename RE, typename = std::enable_if_t<std::is_convertible<RE, T>::value>>
+    template<typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
     auto operator*(RE re) const -> fast_expr<T, const fast_vector&, mul_binary_op<T>, scalar<T>> {
         return {*this, re};
     }
@@ -173,7 +174,7 @@ public:
     }
 
     //Div each element by a scalar
-    template<typename RE, typename = std::enable_if_t<std::is_convertible<RE, T>::value>>
+    template<typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
     auto operator/(RE re) const -> fast_expr<T, const fast_vector&, div_binary_op<T>, scalar<T>> {
         return {*this, re};
     }

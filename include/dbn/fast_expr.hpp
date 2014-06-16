@@ -57,7 +57,7 @@ public:
 
     //Create more complex expressions
 
-    template<typename RE, typename = std::enable_if_t<std::is_convertible<RE, T>::value>>
+    template<typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
     auto operator+(RE re) const -> fast_expr<T, this_type const&, plus_binary_op<T>, scalar<T>> {
         return {*this, re};
     }
@@ -67,7 +67,7 @@ public:
         return {*this, std::forward<RE>(re)};
     }
 
-    template<typename RE, typename = std::enable_if_t<std::is_convertible<RE, T>::value>>
+    template<typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
     auto operator-(RE re) const -> fast_expr<T, this_type const&, minus_binary_op<T>, scalar<T>> {
         return {*this, re};
     }
@@ -77,7 +77,7 @@ public:
         return {*this, std::forward<RE>(re)};
     }
 
-    template<typename RE, typename = std::enable_if_t<std::is_convertible<RE, T>::value>>
+    template<typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
     auto operator*(RE re) const -> fast_expr<T, this_type const&, mul_binary_op<T>, scalar<T>> {
         return {*this, re};
     }
@@ -87,7 +87,7 @@ public:
         return {*this, std::forward<RE>(re)};
     }
 
-    template<typename RE, typename = std::enable_if_t<std::is_convertible<RE, T>::value>>
+    template<typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
     auto operator/(RE re) const -> fast_expr<T, this_type const&, div_binary_op<T>, scalar<T>> {
         return {*this, re};
     }

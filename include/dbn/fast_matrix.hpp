@@ -107,7 +107,7 @@ public:
     }
 
     //Add a scalar to each element
-    template<typename RE, typename = std::enable_if_t<std::is_convertible<RE, T>::value>>
+    template<typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
     auto operator+(RE re) const -> fast_expr<T, const fast_matrix&, plus_binary_op<T>, scalar<T>> {
         return {*this, re};
     }
@@ -119,7 +119,7 @@ public:
     }
 
     //Remove each element by a scalar
-    template<typename RE, typename = std::enable_if_t<std::is_convertible<RE, T>::value>>
+    template<typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
     auto operator-(RE re) const -> fast_expr<T, const fast_matrix&, minus_binary_op<T>, scalar<T>> {
         return {*this, re};
     }
@@ -131,7 +131,7 @@ public:
     }
 
     //Mul each element by a scalar
-    template<typename RE, typename = std::enable_if_t<std::is_convertible<RE, T>::value>>
+    template<typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
     auto operator*(RE re) const -> fast_expr<T, const fast_matrix&, mul_binary_op<T>, scalar<T>> {
         return {*this, re};
     }
@@ -143,7 +143,7 @@ public:
     }
 
     //Div each element by a scalar
-    template<typename RE, typename = std::enable_if_t<std::is_convertible<RE, T>::value>>
+    template<typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
     auto operator/(RE re) const -> fast_expr<T, const fast_matrix&, div_binary_op<T>, scalar<T>> {
         return {*this, re};
     }
