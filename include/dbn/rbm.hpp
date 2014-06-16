@@ -378,9 +378,7 @@ public:
         gw = 0.0;
 
         for(auto& items : batch){
-            for(size_t i = 0; i < num_visible; ++i){
-                v1(i) = items[i];
-            }
+            v1 = items;
 
             activate_hidden(h1, v1);
             activate_visible(h1, v2);

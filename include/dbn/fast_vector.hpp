@@ -13,10 +13,12 @@
 #include <utility>
 #include <algorithm>
 #include <array>
+#include <vector>
 
 #include "assert.hpp"
 #include "fast_op.hpp"
 #include "fast_expr.hpp"
+#include "vector.hpp"
 
 template<typename T, std::size_t Rows>
 class fast_vector {
@@ -59,6 +61,26 @@ public:
     fast_vector& operator=(fast_expr<T, LE, Op, RE>&& e){
         for(std::size_t i = 0; i < Rows; ++i){
             _data[i] = e[i];
+        }
+
+        return *this;
+    }
+
+    fast_vector& operator=(const std::vector<T>& vec){
+        dbn_assert(vec.size() == Rows, "Cannot copy from a vector of different size");
+
+        for(std::size_t i = 0; i < Rows; ++i){
+            _data[i] = vec[i];
+        }
+
+        return *this;
+    }
+
+    fast_vector& operator=(const vector<T>& vec){
+        dbn_assert(vec.size() == Rows, "Cannot copy from a vector of different size");
+
+        for(std::size_t i = 0; i < Rows; ++i){
+            _data[i] = vec[i];
         }
 
         return *this;
