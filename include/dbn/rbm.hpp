@@ -70,29 +70,30 @@ public:
     static constexpr const std::size_t num_hidden_gra = DBN ? num_hidden : 0;
 
 private:
-    fast_vector<value_t, num_visible> visibles;
-    fast_vector<value_t, num_hidden> hiddens;
-
+    //Weights and biases
     fast_matrix<weight, num_visible, num_hidden> w;
     fast_vector<weight, num_visible> a;
     fast_vector<weight, num_hidden> b;
 
-    //Weights for momentum
+    //Weights and biases for momentum
     fast_matrix<weight, num_visible_mom, num_hidden_mom> w_inc;
     fast_vector<weight, num_visible_mom> a_inc;
     fast_vector<weight, num_hidden_mom> b_inc;
-
-    //Temporary data
-    //TODO Perhaps it is better as static data in the functions
-    fast_vector<weight, num_visible> v1;
-    fast_vector<weight, num_hidden> h1;
-    fast_vector<weight, num_visible> v2;
-    fast_vector<weight, num_hidden> h2;
 
     //Deltas
     fast_matrix<weight, num_visible, num_hidden> gw;
     fast_vector<weight, num_visible> ga;
     fast_vector<weight, num_hidden> gb;
+
+    //CD reconstruction data
+    fast_vector<weight, num_visible> v1;
+    fast_vector<weight, num_hidden> h1;
+    fast_vector<weight, num_visible> v2;
+    fast_vector<weight, num_hidden> h2;
+    
+    //TODO Remove this later
+    fast_vector<value_t, num_visible> visibles;
+    fast_vector<value_t, num_hidden> hiddens;
 
 public:
     //Gradients computations for DBN
