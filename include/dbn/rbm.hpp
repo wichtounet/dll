@@ -341,8 +341,11 @@ public:
                     h_a(j) = softplus(x);
                     h_s(j) = h_a(j) > normal_generator() ? 1.0 : 0.0;
                 } else if(HiddenUnit == Type::NRLU){
-                    h_a(j) = std::max(0.0, x + normal_generator());
-                    h_s(j) = h_a(j) > normal_generator() ? 1.0 : 0.0;
+                    std::normal_distribution<weight> noise_distribution(0.0, logistic_sigmoid(x));
+                    auto noise = std::bind(noise_distribution, rand_engine);
+
+                    h_a(j) = std::max(0.0, x);
+                    h_s(j) = std::max(0.0, x + noise());
                 } else {
                     dbn_unreachable("Invalid path");
                 }
