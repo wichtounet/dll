@@ -137,8 +137,7 @@ private:
     weight weight_cost = 0.0002;
 
     void init_weights(){
-        //Initialize the weights using a Gaussian distribution of mean 0 and
-        //variance 0.0.1
+        //Initialize the weights with a zero-mean and unit variance Gaussian distribution
         static std::default_random_engine rand_engine(std::time(nullptr));
         static std::normal_distribution<weight> distribution(0.0, 1.0);
         static auto generator = std::bind(distribution, rand_engine);
