@@ -163,24 +163,25 @@ public:
         auto input = std::cref(training_data);
 
         typedef std::vector<vector<weight>> training_t;
-        training_t next;
 
-        for_each_i(tuples, [&input, &next, &training_labels, labels, max_epochs](size_t I, auto& rbm){
+        for_each_i(tuples, [&input, &training_labels, labels, max_epochs](size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
             constexpr const auto num_hidden = rbm_t::num_hidden;
+
+            static training_t next;
+
+            next.reserve(static_cast<const training_t&>(input).size());
 
             rbm.train(input, max_epochs);
 
             if(I < layers - 1){
-                auto append_labels = (I+1 == layers - 1);
-
-                next.clear();
-                next.reserve(static_cast<const training_t&>(input).size());
+                auto append_labels = (I + 1 == layers - 1);
 
                 for(auto& training_item : static_cast<const training_t&>(input)){
-                    vector<weight> next_item(num_hidden + (append_labels ? labels : 0));
-                    //TODO rbm.activate_hidden(next_item, training_item);
-                    next.emplace_back(std::move(next_item));
+                    vector<weight> next_item_a(num_hidden + (append_labels ? labels : 0));
+                    vector<weight> next_item_s(num_hidden + (append_labels ? labels : 0));
+                    rbm.activate_hidden(next_item_a, next_item_s, training_item, training_item);
+                    next.emplace_back(std::move(next_item_a));
                 }
 
                 //If the next layers is the last layer
@@ -189,11 +190,7 @@ public:
                         auto label = training_labels[i];
 
                         for(size_t l = 0; l < labels; ++l){
-                            if(label == l){
-                                next[i][num_hidden + l] = 1;
-                            } else {
-                                next[i][num_hidden + l] = 0;
-                            }
+                            next[i][num_hidden + l] = label == l ? 1.0 : 0.0;
                         }
                     }
                 }
@@ -207,38 +204,44 @@ public:
     size_t predict_labels(const TrainingItem& item, std::size_t labels){
         dbn_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
-        vector<weight> output(num_visible<layers - 1>());
-        auto input = std::cref(item);
+        vector<weight> output_a(num_visible<layers - 1>());
+        vector<weight> output_s(num_visible<layers - 1>());
 
-        for_each_i(tuples, [labels,&input,&output](size_t I, auto& rbm){
+        auto input_ref = std::cref(item);
+
+        for_each_i(tuples, [labels,&input_ref,&output_a,&output_s](size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
             constexpr const auto num_hidden = rbm_t::num_hidden;
 
-            if(I == layers -1){
-                static vector<weight> h1(num_hidden);
+            auto& input = static_cast<const vector<weight>&>(input_ref);
 
-                //TODO rbm.activate_hidden(h1, static_cast<const vector<weight>&>(input));
-                //TODO rbm.activate_visible(h1, output);
+            if(I == layers - 1){
+                static vector<weight> h1_a(num_hidden);
+                static vector<weight> h1_s(num_hidden);
+
+                rbm.activate_hidden(h1_a, h1_s, input, input);
+                rbm.activate_visible(h1_a, h1_s, output_a, output_s);
             } else {
-                static vector<weight> next(num_hidden);
+                static vector<weight> next_a(num_hidden);
+                static vector<weight> next_s(num_hidden);
 
-                //TODO rbm.activate_hidden(next, static_cast<const vector<weight>&>(input));
+                rbm.activate_hidden(next_a, next_s, input, input);
 
                 //If the next layers is the last layer
                 if(I + 1 == layers - 1){
                     for(size_t l = 0; l < labels; ++l){
-                        next[num_hidden + l] = 0.1;
+                        next_a[num_hidden + l] = 0.1;
                     }
                 }
 
-                input = std::cref(next);
+                input_ref = std::cref(next_a);
             }
         });
 
         size_t label = 0;
         weight max = 0;
         for(size_t l = 0; l < labels; ++l){
-            auto value = output[num_visible<layers - 1>() - labels + l];
+            auto value = output_a[num_visible<layers - 1>() - labels + l];
 
             if(value > max){
                 max = value;
