@@ -25,7 +25,7 @@ struct gradient_context {
     size_t start_layer;
 
     gradient_context(batch<vector<double>> i, batch<Target> t, size_t e)
-        : max_iterations(3), epoch(e), inputs(i), targets(t), start_layer(0)
+        : max_iterations(5), epoch(e), inputs(i), targets(t), start_layer(0)
     {
         //Nothing else to init
     }
