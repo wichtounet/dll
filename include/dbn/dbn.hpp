@@ -506,8 +506,9 @@ public:
         constexpr const weight SIG = 0.1;       //Maximum allowed maximum ration between previous and new slopes
         constexpr const weight RHO = SIG / 2.0; //mimimum allowd fraction of the expected
         constexpr const weight RATIO = 10.0;    //Maximum allowed slope ratio
+        constexpr const size_t MAX = 20;        //Maximum number of function evaluations per line search
 
-        //Maximum number of function evaluations per line search
+        //Maximum number of try
         auto max_iteration = context.max_iterations;
 
         weight cost = 0.0;
@@ -540,7 +541,8 @@ public:
                 rbm.gr_b_df3 = 0.0;
             });
 
-            int64_t M = 20;
+            int64_t M = MAX;
+
             int_t i1 = {0.0, 0.0, 0.0};
             int_t i2 = {0.0, 0.0, 0.0};
 
