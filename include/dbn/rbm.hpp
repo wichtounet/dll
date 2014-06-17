@@ -69,6 +69,16 @@ public:
     static constexpr const std::size_t num_visible_gra = DBN ? num_visible : 0;
     static constexpr const std::size_t num_hidden_gra = DBN ? num_hidden : 0;
 
+//Configurable properties
+public:
+    weight learning_rate =
+            VisibleUnit == Type::GAUSSIAN && HiddenUnit == Type::NRLU ? 1e-5
+        :   VisibleUnit == Type::GAUSSIAN || HiddenUnit == Type::NRLU ? 1e-4
+        :   /* Only NRLU and Gaussian Units needs lower rate */         1e-1;
+
+    weight momentum = 0.5;
+    weight weight_cost = 0.0002;
+
 private:
     //Weights and biases
     fast_matrix<weight, num_visible, num_hidden> w;
@@ -131,15 +141,6 @@ public:
     std::vector<vector<weight>> gr_probs_s;
 
 private:
-    //TODO Add a way to configure that
-    weight learning_rate =
-            VisibleUnit == Type::GAUSSIAN && HiddenUnit == Type::NRLU ? 1e-5
-        :   VisibleUnit == Type::GAUSSIAN || HiddenUnit == Type::NRLU ? 1e-4
-        :   /* Only NRLU and Gaussian Units needs lower rate */         1e-1;
-
-    weight momentum = 0.5;
-    weight weight_cost = 0.0002;
-
     void init_weights(){
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
         static std::default_random_engine rand_engine(std::time(nullptr));
