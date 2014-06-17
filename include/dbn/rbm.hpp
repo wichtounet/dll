@@ -100,13 +100,13 @@ private:
 
     fast_vector<weight, num_hidden> h1_a; //!< Activation probabilities of hidden units after first CD-step
     fast_vector<weight, num_hidden> h1_s; //!< Sampled value of hidden units after first CD-step
-    
+
     fast_vector<weight, num_visible> v2_a; //!< Activation probabilities of visible units after first CD-step
     fast_vector<weight, num_visible> v2_s; //!< Sampled value of visible units after first CD-step
-    
+
     fast_vector<weight, num_hidden> h2_a; //!< Activation probabilities of hidden units after last CD-step
     fast_vector<weight, num_hidden> h2_s; //!< Sampled value of hidden units after last CD-step
-    
+
     //TODO Remove this later
     fast_vector<value_t, num_visible> visibles;
     fast_vector<value_t, num_hidden> hiddens;
@@ -327,7 +327,7 @@ public:
                 dbn_assert(std::isfinite(x), "NaN verify");
                 dbn_assert(std::isfinite(h_a(j)), "NaN verify");
             }
-            
+
             std::size_t max_j = 0;
             for(size_t j = 1; j < num_hidden; ++j){
                 if(h_a(j) > h_a(max_j)){
