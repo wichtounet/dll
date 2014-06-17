@@ -309,7 +309,11 @@ public:
                 for(size_t j = 0; j < n_hidden; ++j){
                     s += diffs[sample][j] * (Temp ? r2.gr_w_tmp(i, j) : r2.gr_w(i, j));
                 }
-                s *= r1.gr_probs_a[sample][i] * (1.0 - r1.gr_probs_a[sample][i]);
+
+                if(R1::HiddenUnit != Type::NRLU){
+                    s *= r1.gr_probs_a[sample][i] * (1.0 - r1.gr_probs_a[sample][i]);
+                }
+
                 diff[i] = s;
             }
 
