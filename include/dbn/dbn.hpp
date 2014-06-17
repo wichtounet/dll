@@ -56,6 +56,8 @@ public:
     dbn(dbn&& dbn) = delete;
     dbn& operator=(dbn&& dbn) = delete;
 
+    bool debug_cg = false;
+
     void display() const {
         std::size_t parameters = 0;
 
@@ -411,7 +413,9 @@ public:
 
         update_incs<Temp>(layer<0>(), diffs, n_samples, context.inputs);
 
-        //std::cout << "evaluating(" << Temp << "): cost:" << cost << " error: " << (error / n_samples) << std::endl;
+        if(debug_cg){
+            std::cout << "evaluating(" << Temp << "): cost:" << cost << " error: " << (error / n_samples) << std::endl;
+        }
     }
 
     bool is_finite(){
