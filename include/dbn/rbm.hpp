@@ -132,7 +132,11 @@ public:
 
 private:
     //TODO Add a way to configure that
-    weight learning_rate = VisibleUnit == Type::SIGMOID ? 0.1 : 0.0001;
+    weight learning_rate =
+            VisibleUnit == Type::GAUSSIAN && HiddenUnit == Type::NRLU ? 1e-5
+        :   VisibleUnit == Type::GAUSSIAN || HiddenUnit == Type::NRLU ? 1e-4
+        :   /* Only NRLU and Gaussian Units needs lower rate */         1e-1;
+
     weight momentum = 0.5;
     weight weight_cost = 0.0002;
 
