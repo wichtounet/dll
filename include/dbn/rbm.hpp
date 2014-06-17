@@ -58,8 +58,8 @@ public:
 
     static_assert(BatchSize > 0, "Batch size must be at least 1");
 
-    static_assert(VisibleUnit == Type::SIGMOID || VisibleUnit == Type::GAUSSIAN,
-        "Only logistic and gaussian visible units are supported");
+    static_assert(VisibleUnit != Type::SOFTMAX && VisibleUnit != Type::EXP,
+        "Exponential and softmax Visible units are not support");
     static_assert(HiddenUnit != Type::GAUSSIAN,
         "Gaussian hidden units are not supported");
 
@@ -353,9 +353,6 @@ public:
                 } else if(HiddenUnit == Type::EXP){
                     h_a(j) = exp(x);
                     h_s(j) = h_a(j) > normal_generator() ? 1.0 : 0.0;
-                } else if(HiddenUnit == Type::RLU){
-                    h_a(j) = softplus(x);
-                    h_s(j) = h_a(j) > normal_generator() ? 1.0 : 0.0;
                 } else if(HiddenUnit == Type::NRLU){
                     std::normal_distribution<weight> noise_distribution(0.0, logistic_sigmoid(x));
                     auto noise = std::bind(noise_distribution, rand_engine);
@@ -396,8 +393,17 @@ public:
                 v_a(i) = logistic_sigmoid(x);
                 v_s(i) = v_a(i) > normal_generator() ? 1.0 : 0.0;
             } else if(VisibleUnit == Type::GAUSSIAN){
+                std::normal_distribution<weight> noise_distribution(0.0, 1.0);
+                auto noise = std::bind(noise_distribution, rand_engine);
+
                 v_a(i) = x;
-                v_s(i) = v_a(i) > normal_generator() ? 1.0 : 0.0;
+                v_s(i) = x + noise();
+            } else if(VisibleUnit == Type::NRLU){
+                std::normal_distribution<weight> noise_distribution(0.0, logistic_sigmoid(x));
+                auto noise = std::bind(noise_distribution, rand_engine);
+
+                v_a(j) = std::max(0.0, x);
+                v_s(j) = std::max(0.0, x + noise());
             } else {
                 dbn_unreachable("Invalid path");
             }
