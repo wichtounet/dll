@@ -221,6 +221,18 @@ public:
     void train(const std::vector<vector<weight>>& training_data, std::size_t max_epochs){
         stop_watch<std::chrono::seconds> watch;
 
+        std::cout << "RBM: Train with learning_rate=" << learning_rate;
+
+        if(Momentum){
+            std::cout << ", momentum=" << momentum;
+        }
+
+        if(Decay){
+            std::cout << ", weight_cost=" << weight_cost;
+        }
+
+        std::cout << std::endl;
+
         if(Init){
             //Initialize the visible biases to log(pi/(1-pi))
             for(size_t i = 0; i < num_visible; ++i){

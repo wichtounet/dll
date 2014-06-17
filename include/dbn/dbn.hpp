@@ -123,7 +123,7 @@ public:
 
             //Train each layer but the last one
             if(I <= layers - 2){
-                std::cout << "Train layer " << I << " (" << num_visible << "->" << num_hidden << ") with " << input_size << " entries" << std::endl;
+                std::cout << "DBN: Train layer " << I << " (" << num_visible << "->" << num_hidden << ") with " << input_size << " entries" << std::endl;
 
                 rbm.train(static_cast<const training_t&>(input), max_epochs);
 
