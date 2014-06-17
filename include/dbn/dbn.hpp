@@ -493,12 +493,13 @@ public:
 
     template<typename Target>
     void minimize(const gradient_context<Target>& context){
-        constexpr const weight INT = 0.1;
-        constexpr const weight EXT = 3.0;
-        constexpr const weight SIG = 0.1;
-        constexpr const weight RHO = SIG / 2.0;
-        constexpr const weight RATIO = 10.0;
+        constexpr const weight INT = 0.1;       //Don't reevaluate within 0.1 of the limit of the current bracket
+        constexpr const weight EXT = 3.0;       //Extrapolate maximum 3 times the current step-size
+        constexpr const weight SIG = 0.1;       //Maximum allowed maximum ration between previous and new slopes
+        constexpr const weight RHO = SIG / 2.0; //mimimum allowd fraction of the expected
+        constexpr const weight RATIO = 10.0;    //Maximum allowed slope ratio
 
+        //Maximum number of function evaluations per line search
         auto max_iteration = context.max_iterations;
 
         weight cost = 0.0;
