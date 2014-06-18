@@ -21,13 +21,16 @@ struct cd1_trainer {
             
         typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
 
+        //Size of a minibatch
+        auto n_samples = static_cast<typename rbm_t::weight>(batch.size());
+
         constexpr const auto num_hidden = rbm_t::num_hidden;
         constexpr const auto num_visible = rbm_t::num_visible;
 
-        //Clear the deltas
-        rbm.ga = 0.0;
-        rbm.gb = 0.0;
-        rbm.gw = 0.0;
+        //Clear the gradients
+        rbm.vbias_grad = 0.0;
+        rbm.hbias_grad = 0.0;
+        rbm.w_grad = 0.0;
 
         rbm.v1 = 0.0;
         rbm.h1_a = 0.0;
@@ -46,50 +49,53 @@ struct cd1_trainer {
 
             for(size_t i = 0; i < num_visible; ++i){
                 for(size_t j = 0; j < num_hidden; ++j){
-                    rbm.gw(i, j) += rbm.h1_a(j) * rbm.v1(i) - rbm.h2_a(j) * rbm.v2_a(i);
+                    rbm.w_grad(i, j) += rbm.h1_a(j) * rbm.v1(i) - rbm.h2_a(j) * rbm.v2_a(i);
                 }
             }
 
-            rbm.ga += rbm.v1 - rbm.v2_a;
-            rbm.gb += rbm.h1_a - rbm.h2_a;
+            rbm.vbias_grad += rbm.v1 - rbm.v2_a;
+            rbm.hbias_grad += rbm.h1_a - rbm.h2_a;
         }
 
-        nan_check(rbm.gw);
+        //Keep only the mean of the gradients
+        rbm.w_grad /= n_samples;
+        rbm.vbias_grad /= n_samples;
+        rbm.hbias_grad /= n_samples;
 
-        auto n_samples = static_cast<typename rbm_t::weight>(batch.size());
+        nan_check(rbm.w_grad);
 
         if(rbm_t::Momentum){
             if(rbm_t::Decay){
-                rbm.w_inc = rbm.w_inc * rbm.momentum + ((rbm.gw / n_samples) - (rbm.w * rbm.weight_cost)) * rbm.learning_rate;
+                rbm.w_inc = rbm.w_inc * rbm.momentum + ((rbm.w_grad / n_samples) - (rbm.w * rbm.weight_cost)) * rbm.learning_rate;
             } else {
-                rbm.w_inc = rbm.w_inc * rbm.momentum + rbm.gw * (rbm.learning_rate / n_samples);
+                rbm.w_inc = rbm.w_inc * rbm.momentum + rbm.w_grad * (rbm.learning_rate / n_samples);
             }
 
             rbm.w += rbm.w_inc;
         } else {
             if(rbm_t::Decay){
-                rbm.w += ((rbm.gw / n_samples) - (rbm.w * rbm.weight_cost)) * rbm.learning_rate;
+                rbm.w += ((rbm.w_grad / n_samples) - (rbm.w * rbm.weight_cost)) * rbm.learning_rate;
             } else {
-                rbm.w += (rbm.gw / n_samples) * rbm.learning_rate;
+                rbm.w += (rbm.w_grad / n_samples) * rbm.learning_rate;
             }
         }
 
         nan_check(rbm.w);
 
         if(rbm_t::Momentum){
-            rbm.a_inc = rbm.a_inc * rbm.momentum + (rbm.ga  / n_samples) * rbm.learning_rate;
+            rbm.a_inc = rbm.a_inc * rbm.momentum + (rbm.vbias_grad  / n_samples) * rbm.learning_rate;
             rbm.a += rbm.a_inc;
         } else {
-            rbm.a += (rbm.ga / n_samples) * rbm.learning_rate;
+            rbm.a += (rbm.vbias_grad / n_samples) * rbm.learning_rate;
         }
 
         nan_check(rbm.a);
 
         if(rbm_t::Momentum){
-            rbm.b_inc = rbm.b_inc * rbm.momentum + (rbm.gb / n_samples) * rbm.learning_rate;
+            rbm.b_inc = rbm.b_inc * rbm.momentum + (rbm.hbias_grad / n_samples) * rbm.learning_rate;
             rbm.b += rbm.b_inc;
         } else {
-            rbm.b += (rbm.gb / n_samples) * rbm.learning_rate;
+            rbm.b += (rbm.hbias_grad / n_samples) * rbm.learning_rate;
         }
 
         nan_check(rbm.b);
@@ -98,7 +104,7 @@ struct cd1_trainer {
 
         typename rbm_t::weight error = 0.0;
         for(size_t i = 0; i < num_visible; ++i){
-            error += rbm.ga(i) * rbm.ga(i);
+            error += rbm.vbias_grad(i) * rbm.vbias_grad(i);
         }
         error = sqrt((error / (n_samples * n_samples)) / num_visible);
 

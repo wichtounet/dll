@@ -54,8 +54,8 @@ public:
 
     static_assert(BatchSize > 0, "Batch size must be at least 1");
 
-    static_assert(VisibleUnit == Type::SIGMOID || VisibleUnit == Type::GAUSSIAN,
-        "Only logistic and gaussian visible units are supported");
+    static_assert(VisibleUnit != Type::SOFTMAX && VisibleUnit != Type::EXP,
+        "Exponential and softmax Visible units are not support");
     static_assert(HiddenUnit != Type::GAUSSIAN,
         "Gaussian hidden units are not supported");
 
@@ -64,6 +64,16 @@ public:
 
     static constexpr const std::size_t num_visible_gra = DBN ? num_visible : 0;
     static constexpr const std::size_t num_hidden_gra = DBN ? num_hidden : 0;
+
+//Configurable properties
+public:
+    weight learning_rate =
+            VisibleUnit == Type::GAUSSIAN && HiddenUnit == Type::NRLU ? 1e-5
+        :   VisibleUnit == Type::GAUSSIAN || HiddenUnit == Type::NRLU ? 1e-4
+        :   /* Only NRLU and Gaussian Units needs lower rate */         1e-1;
+
+    weight momentum = 0.5;
+    weight weight_cost = 0.0002;
 
 public:
     //Weights and biases
@@ -77,22 +87,22 @@ public:
     fast_vector<weight, num_hidden_mom> b_inc;
 
     //Deltas
-    fast_matrix<weight, num_visible, num_hidden> gw;
-    fast_vector<weight, num_visible> ga;
-    fast_vector<weight, num_hidden> gb;
+    fast_matrix<weight, num_visible, num_hidden> w_grad;
+    fast_vector<weight, num_visible> vbias_grad;
+    fast_vector<weight, num_hidden> hbias_grad;
 
     //CD reconstruction data
     fast_vector<weight, num_visible> v1; //!< State of the visible units
 
     fast_vector<weight, num_hidden> h1_a; //!< Activation probabilities of hidden units after first CD-step
     fast_vector<weight, num_hidden> h1_s; //!< Sampled value of hidden units after first CD-step
-    
+
     fast_vector<weight, num_visible> v2_a; //!< Activation probabilities of visible units after first CD-step
     fast_vector<weight, num_visible> v2_s; //!< Sampled value of visible units after first CD-step
-    
+
     fast_vector<weight, num_hidden> h2_a; //!< Activation probabilities of hidden units after last CD-step
     fast_vector<weight, num_hidden> h2_s; //!< Sampled value of hidden units after last CD-step
-    
+
     //TODO Remove this later
     fast_vector<value_t, num_visible> visibles;
     fast_vector<value_t, num_hidden> hiddens;
@@ -126,15 +136,9 @@ public:
     std::vector<vector<weight>> gr_probs_a;
     std::vector<vector<weight>> gr_probs_s;
 
-    //TODO Add a way to configure that
-    weight learning_rate = VisibleUnit == Type::SIGMOID ? 0.1 : 0.0001;
-    weight momentum = 0.5;
-    weight weight_cost = 0.0002;
-
 private:
     void init_weights(){
-        //Initialize the weights using a Gaussian distribution of mean 0 and
-        //variance 0.0.1
+        //Initialize the weights with a zero-mean and unit variance Gaussian distribution
         static std::default_random_engine rand_engine(std::time(nullptr));
         static std::normal_distribution<weight> distribution(0.0, 1.0);
         static auto generator = std::bind(distribution, rand_engine);
@@ -217,6 +221,18 @@ public:
 
     void train(const std::vector<vector<weight>>& training_data, std::size_t max_epochs){
         stop_watch<std::chrono::seconds> watch;
+
+        std::cout << "RBM: Train with learning_rate=" << learning_rate;
+
+        if(Momentum){
+            std::cout << ", momentum=" << momentum;
+        }
+
+        if(Decay){
+            std::cout << ", weight_cost=" << weight_cost;
+        }
+
+        std::cout << std::endl;
 
         if(Init){
             //Initialize the visible biases to log(pi/(1-pi))
@@ -307,7 +323,7 @@ public:
                 dbn_assert(std::isfinite(x), "NaN verify");
                 dbn_assert(std::isfinite(h_a(j)), "NaN verify");
             }
-            
+
             std::size_t max_j = 0;
             for(size_t j = 1; j < num_hidden; ++j){
                 if(h_a(j) > h_a(max_j)){
@@ -332,9 +348,6 @@ public:
                     h_s(j) = h_a(j) > normal_generator() ? 1.0 : 0.0;
                 } else if(HiddenUnit == Type::EXP){
                     h_a(j) = exp(x);
-                    h_s(j) = h_a(j) > normal_generator() ? 1.0 : 0.0;
-                } else if(HiddenUnit == Type::RLU){
-                    h_a(j) = softplus(x);
                     h_s(j) = h_a(j) > normal_generator() ? 1.0 : 0.0;
                 } else if(HiddenUnit == Type::NRLU){
                     std::normal_distribution<weight> noise_distribution(0.0, logistic_sigmoid(x));
@@ -376,8 +389,17 @@ public:
                 v_a(i) = logistic_sigmoid(x);
                 v_s(i) = v_a(i) > normal_generator() ? 1.0 : 0.0;
             } else if(VisibleUnit == Type::GAUSSIAN){
+                std::normal_distribution<weight> noise_distribution(0.0, 1.0);
+                auto noise = std::bind(noise_distribution, rand_engine);
+
                 v_a(i) = x;
-                v_s(i) = v_a(i) > normal_generator() ? 1.0 : 0.0;
+                v_s(i) = x + noise();
+            } else if(VisibleUnit == Type::NRLU){
+                std::normal_distribution<weight> noise_distribution(0.0, logistic_sigmoid(x));
+                auto noise = std::bind(noise_distribution, rand_engine);
+
+                v_a(i) = std::max(0.0, x);
+                v_s(i) = std::max(0.0, x + noise());
             } else {
                 dbn_unreachable("Invalid path");
             }
@@ -388,7 +410,7 @@ public:
             dbn_assert(std::isfinite(v_s(i)), "NaN verify");
         }
     }
-
+    
     weight free_energy() const {
         weight energy = 0.0;
 
