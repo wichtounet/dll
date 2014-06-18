@@ -91,9 +91,9 @@ private:
     fast_vector<weight, num_hidden_mom> b_inc;
 
     //Deltas
-    fast_matrix<weight, num_visible, num_hidden> gw;
-    fast_vector<weight, num_visible> ga;
-    fast_vector<weight, num_hidden> gb;
+    fast_matrix<weight, num_visible, num_hidden> w_grad;
+    fast_vector<weight, num_visible> vbias_grad;
+    fast_vector<weight, num_hidden> hbias_grad;
 
     //CD reconstruction data
     fast_vector<weight, num_visible> v1; //!< State of the visible units
@@ -420,10 +420,13 @@ public:
         dbn_assert(batch.size() <= static_cast<typename dbn::batch<T>::size_type>(BatchSize), "Invalid size");
         dbn_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
 
-        //Clear the deltas
-        ga = 0.0;
-        gb = 0.0;
-        gw = 0.0;
+        //The size of a minibatch
+        auto n_samples = static_cast<weight>(batch.size());
+
+        //Clear the gradients
+        vbias_grad = 0.0;
+        hbias_grad = 0.0;
+        w_grad = 0.0;
 
         v1 = 0.0;
         h1_a = 0.0;
@@ -442,50 +445,53 @@ public:
 
             for(size_t i = 0; i < num_visible; ++i){
                 for(size_t j = 0; j < num_hidden; ++j){
-                    gw(i, j) += h1_a(j) * v1(i) - h2_a(j) * v2_a(i);
+                    w_grad(i, j) += h1_a(j) * v1(i) - h2_a(j) * v2_a(i);
                 }
             }
 
-            ga += v1 - v2_a;
-            gb += h1_a - h2_a;
+            vbias_grad += v1 - v2_a;
+            hbias_grad += h1_a - h2_a;
         }
 
-        nan_check(gw);
+        //Keep only the mean of the gradients
+        w_grad /= n_samples;
+        vbias_grad /= n_samples;
+        hbias_grad /= n_samples;
 
-        auto n_samples = static_cast<weight>(batch.size());
+        nan_check(w_grad);
 
         if(Momentum){
             if(Decay){
-                w_inc = w_inc * momentum + ((gw / n_samples) - (w * weight_cost)) * learning_rate;
+                w_inc = w_inc * momentum + (w_grad - (w * weight_cost)) * learning_rate;
             } else {
-                w_inc = w_inc * momentum + gw * (learning_rate / n_samples);
+                w_inc = w_inc * momentum + w_grad * learning_rate;
             }
 
             w += w_inc;
         } else {
             if(Decay){
-                w += ((gw / n_samples) - (w * weight_cost)) * learning_rate;
+                w += (w_grad - (w * weight_cost)) * learning_rate;
             } else {
-                w += (gw / n_samples) * learning_rate;
+                w += w_grad * learning_rate;
             }
         }
 
         nan_check(w);
 
         if(Momentum){
-            a_inc = a_inc * momentum + (ga  / n_samples) * learning_rate;
+            a_inc = a_inc * momentum + vbias_grad * learning_rate;
             a += a_inc;
         } else {
-            a += (ga / n_samples) * learning_rate;
+            a += vbias_grad * learning_rate;
         }
 
         nan_check(a);
 
         if(Momentum){
-            b_inc = b_inc * momentum + (gb / n_samples) * learning_rate;
+            b_inc = b_inc * momentum + hbias_grad * learning_rate;
             b += b_inc;
         } else {
-            b += (gb / n_samples) * learning_rate;
+            b += hbias_grad * learning_rate;
         }
 
         nan_check(b);
@@ -494,9 +500,9 @@ public:
 
         weight error = 0.0;
         for(size_t i = 0; i < num_visible; ++i){
-            error += ga(i) * ga(i);
+            error += vbias_grad(i) * vbias_grad(i);
         }
-        error = sqrt((error / (n_samples * n_samples)) / num_visible);
+        error = sqrt(error / num_visible);
 
         return error;
     }
