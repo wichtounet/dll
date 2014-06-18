@@ -402,8 +402,8 @@ public:
                 std::normal_distribution<weight> noise_distribution(0.0, logistic_sigmoid(x));
                 auto noise = std::bind(noise_distribution, rand_engine);
 
-                v_a(j) = std::max(0.0, x);
-                v_s(j) = std::max(0.0, x + noise());
+                v_a(i) = std::max(0.0, x);
+                v_s(i) = std::max(0.0, x + noise());
             } else {
                 dbn_unreachable("Invalid path");
             }
