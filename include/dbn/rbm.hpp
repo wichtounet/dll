@@ -60,14 +60,10 @@ public:
     static_assert(HiddenUnit != Type::GAUSSIAN,
         "Gaussian hidden units are not supported");
 
-    static constexpr const std::size_t num_visible_mom = Momentum ? num_visible : 0;
-    static constexpr const std::size_t num_hidden_mom = Momentum ? num_hidden : 0;
-
     static constexpr const std::size_t num_visible_gra = DBN ? num_visible : 0;
     static constexpr const std::size_t num_hidden_gra = DBN ? num_hidden : 0;
 
-//Configurable properties
-public:
+    //Configurable properties
     weight learning_rate =
             VisibleUnit == Type::GAUSSIAN && HiddenUnit == Type::NRLU ? 1e-5
         :   VisibleUnit == Type::GAUSSIAN || HiddenUnit == Type::NRLU ? 1e-4
@@ -76,23 +72,12 @@ public:
     weight momentum = 0.5;
     weight weight_cost = 0.0002;
 
-public:
     //Weights and biases
     fast_matrix<weight, num_visible, num_hidden> w;
     fast_vector<weight, num_visible> a;
     fast_vector<weight, num_hidden> b;
 
-    //Weights and biases for momentum
-    fast_matrix<weight, num_visible_mom, num_hidden_mom> w_inc;
-    fast_vector<weight, num_visible_mom> a_inc;
-    fast_vector<weight, num_hidden_mom> b_inc;
-
-    //Deltas
-    fast_matrix<weight, num_visible, num_hidden> w_grad;
-    fast_vector<weight, num_visible> vbias_grad;
-    fast_vector<weight, num_hidden> hbias_grad;
-
-    //CD reconstruction data
+    //Reconstruction data
     fast_vector<weight, num_visible> v1; //!< State of the visible units
 
     fast_vector<weight, num_hidden> h1_a; //!< Activation probabilities of hidden units after first CD-step
@@ -104,7 +89,6 @@ public:
     fast_vector<weight, num_hidden> h2_a; //!< Activation probabilities of hidden units after last CD-step
     fast_vector<weight, num_hidden> h2_s; //!< Sampled value of hidden units after last CD-step
 
-public:
     //Gradients computations for DBN
     fast_matrix<weight, num_visible, num_hidden>& gr_w = w;
     fast_vector<weight, num_hidden>& gr_b = b;
@@ -190,17 +174,7 @@ public:
     rbm(rbm&& rbm) = delete;
     rbm& operator=(rbm&& rbm) = delete;
 
-    template<bool M = Momentum, typename std::enable_if<(!M), bool>::type = false>
-    rbm() : a(0.0), b(0.0){
-        static_assert(!Momentum, "This constructor should only be used without momentum support");
-
-        init_weights();
-    }
-
-    template<bool M = Momentum, typename std::enable_if<(M), bool>::type = false>
-    rbm() : a(0.0), b(0.0), w_inc(0.0), a_inc(0.0), b_inc(0.0) {
-        static_assert(Momentum, "This constructor should only be used with momentum support");
-
+    rbm() : a(0.0), b(0.0) {
         init_weights();
     }
 
@@ -475,12 +449,6 @@ public:
         generate_histogram(folder + "/weights.dat", w);
         generate_histogram(folder + "/visibles.dat", a);
         generate_histogram(folder + "/hiddens.dat", b);
-
-        if(Momentum){
-            generate_histogram(folder + "/weights_inc.dat", w_inc);
-            generate_histogram(folder + "/visibles_inc.dat", a_inc);
-            generate_histogram(folder + "/hiddens_inc.dat", b_inc);
-        }
     }
 
     template<typename Container>
