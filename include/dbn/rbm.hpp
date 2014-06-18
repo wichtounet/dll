@@ -104,10 +104,6 @@ public:
     fast_vector<weight, num_hidden> h2_a; //!< Activation probabilities of hidden units after last CD-step
     fast_vector<weight, num_hidden> h2_s; //!< Sampled value of hidden units after last CD-step
 
-    //TODO Remove this later
-    fast_vector<value_t, num_visible> visibles;
-    fast_vector<value_t, num_hidden> hiddens;
-
 public:
     //Gradients computations for DBN
     fast_matrix<weight, num_visible, num_hidden>& gr_w = w;
@@ -434,13 +430,11 @@ public:
         stop_watch<> watch;
 
         //Set the state of the visible units
-        for(size_t i = 0; i < num_visible; ++i){
-            visibles(i) = items[i];
-        }
+        v1 = items;
 
-        //TODO activate_hidden(h1, visibles);
-        //TODO activate_visible(h1, v1);
-        //TODO activate_hidden(v1, visibles);
+        activate_hidden(h1_a, h1_s, v1, v1);
+        activate_visible(h1_a, h1_s, v2_a, v2_s);
+        activate_hidden(h2_a, h2_s, v2_a, v2_s);
 
         std::cout << "Reconstruction took " << watch.elapsed() << "ms" << std::endl;
     }
@@ -514,14 +508,14 @@ public:
         std::cout << "Visible  Value" << std::endl;
 
         for(size_t i = 0; i < num_visible; ++i){
-            printf("%-8lu %d\n", i, visibles(i));
+            printf("%-8lu %d\n", i, v2_s(i));
         }
     }
 
     void display_visible_units(size_t matrix) const {
         for(size_t i = 0; i < matrix; ++i){
             for(size_t j = 0; j < matrix; ++j){
-                std::cout << visibles(i * matrix + j) << " ";
+                std::cout << v2_s(i * matrix + j) << " ";
             }
             std::cout << std::endl;
         }
@@ -531,7 +525,7 @@ public:
         std::cout << "Hidden Value" << std::endl;
 
         for(size_t j = 0; j < num_hidden; ++j){
-            printf("%-8lu %d\n", j, hiddens(j));
+            printf("%-8lu %d\n", j, h2_s(j));
         }
     }
 
