@@ -88,10 +88,7 @@ struct cd1_trainer {
         vbias_grad /= n_samples;
         hbias_grad /= n_samples;
 
-        //Check for NaN
-        nan_check(w_grad);
-        nan_check(vbias_grad);
-        nan_check(hbias_grad);
+        nan_check_3(w_grad, vbias_grad, hbias_grad);
 
         //Update weights
         if(rbm_t::Momentum){
@@ -127,9 +124,7 @@ struct cd1_trainer {
         }
 
         //Check for NaN
-        nan_check(rbm.w);
-        nan_check(rbm.a);
-        nan_check(rbm.b);
+        nan_check_3(rbm.w, rbm.a, rbm.b);
 
         //Compute the reconstruction error
 

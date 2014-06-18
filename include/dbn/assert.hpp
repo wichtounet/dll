@@ -15,6 +15,7 @@
 #ifdef NDEBUG
 
 #define nan_check(list) ((void)0)
+#define nan_check_3(l1, l2, l3) ((void)0)
 
 #define dbn_assert(condition, message) ((void)0)
 
@@ -35,6 +36,7 @@
 #else
 
 #define nan_check(list) for(auto& nantest : ((list))){dbn_assert(std::isfinite(nantest), "NaN Verify");}
+#define nan_check_3(l1,l2,l3) nan_check(l1); nan_check(l2); nan_check(l3);
 
 #define dbn_assert(condition, message) (likely(condition) \
     ? ((void)0) \
