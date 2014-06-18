@@ -88,6 +88,15 @@ public:
         return *this;
     }
 
+    //Divide each element by a scalar
+    fast_matrix& operator/=(const T& value){
+        for(size_t i = 0; i < size(); ++i){
+            _data[i] /= value;
+        }
+
+        return *this;
+    }
+
     template<typename RE>
     fast_matrix& operator+=(RE&& rhs){
         for(size_t i = 0; i < size(); ++i){
