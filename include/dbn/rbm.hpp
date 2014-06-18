@@ -38,7 +38,8 @@ public:
     typedef double weight;
     typedef double value_t;
 
-    typedef typename Layer::Conf::trainer_t trainer_t;
+    template<typename RBM>
+    using trainer_t = typename Layer::Conf::template trainer_t<RBM>;
 
     static constexpr const std::size_t num_visible = Layer::num_visible;
     static constexpr const std::size_t num_hidden = Layer::num_hidden;
@@ -251,6 +252,10 @@ public:
                 dbn_assert(std::isfinite(a(i)), "NaN verify");
             }
         }
+        
+        typedef typename std::remove_reference<decltype(*this)>::type this_type;
+
+        auto trainer = make_unique<trainer_t<this_type>>();
 
         auto batches = training_data.size() / BatchSize + (training_data.size() % BatchSize == 0 ? 0 : 1);
 
@@ -260,7 +265,7 @@ public:
                 auto start = i * BatchSize;
                 auto end = std::min(start + BatchSize, training_data.size());
 
-                error += trainer_t::train_batch(dbn::batch<vector<weight>>(training_data.begin() + start, training_data.begin() + end), *this);
+                error += trainer->train_batch(dbn::batch<vector<weight>>(training_data.begin() + start, training_data.begin() + end), *this);
             }
 
             std::cout << "epoch " << epoch << ": Reconstruction error average: " << (error / batches) << " Free energy: " << free_energy() << std::endl;

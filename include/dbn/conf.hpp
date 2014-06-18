@@ -23,7 +23,7 @@ enum class Type {
 };
 
 template<bool M = true, std::size_t B = 1, bool I = true, bool DB = false, bool WD = true,
-         Type VT = Type::SIGMOID, Type HT = Type::SIGMOID, typename T = cd1_trainer, bool D = false>
+         Type VT = Type::SIGMOID, Type HT = Type::SIGMOID, template<typename> class T = cd1_trainer, bool D = false>
 struct conf {
     static constexpr const bool Momentum = M;
     static constexpr const std::size_t BatchSize = B;
@@ -34,7 +34,8 @@ struct conf {
     static constexpr const bool Decay = WD;
     static constexpr const bool Debug = D;
 
-    typedef T trainer_t;
+    template <typename RBM>
+    using trainer_t = T<RBM>;
 };
 
 } //end of dbn namespace
