@@ -27,12 +27,6 @@
 #include "conf.hpp"
 #include "batch.hpp"
 
-#ifdef NDEBUG
-#define nan_check(list)
-#else
-#define nan_check(list) for(auto& nantest : ((list))){dbn_assert(std::isfinite(nantest), "NaN Verify");}
-#endif
-
 namespace dbn {
 
 /*!
@@ -43,6 +37,8 @@ class rbm {
 public:
     typedef double weight;
     typedef double value_t;
+
+    typedef typename Layer::Conf::trainer_t trainer_t;
 
     static constexpr const std::size_t num_visible = Layer::num_visible;
     static constexpr const std::size_t num_hidden = Layer::num_hidden;
@@ -69,7 +65,7 @@ public:
     static constexpr const std::size_t num_visible_gra = DBN ? num_visible : 0;
     static constexpr const std::size_t num_hidden_gra = DBN ? num_hidden : 0;
 
-private:
+public:
     //Weights and biases
     fast_matrix<weight, num_visible, num_hidden> w;
     fast_vector<weight, num_visible> a;
@@ -130,12 +126,12 @@ public:
     std::vector<vector<weight>> gr_probs_a;
     std::vector<vector<weight>> gr_probs_s;
 
-private:
     //TODO Add a way to configure that
     weight learning_rate = VisibleUnit == Type::SIGMOID ? 0.1 : 0.0001;
     weight momentum = 0.5;
     weight weight_cost = 0.0002;
 
+private:
     void init_weights(){
         //Initialize the weights using a Gaussian distribution of mean 0 and
         //variance 0.0.1
@@ -248,7 +244,7 @@ public:
                 auto start = i * BatchSize;
                 auto end = std::min(start + BatchSize, training_data.size());
 
-                error += cd_step(dbn::batch<vector<weight>>(training_data.begin() + start, training_data.begin() + end));
+                error += trainer_t::train_batch(dbn::batch<vector<weight>>(training_data.begin() + start, training_data.begin() + end), *this);
             }
 
             std::cout << "epoch " << epoch << ": Reconstruction error average: " << (error / batches) << " Free energy: " << free_energy() << std::endl;
@@ -391,92 +387,6 @@ public:
             dbn_assert(std::isfinite(v_a(i)), "NaN verify");
             dbn_assert(std::isfinite(v_s(i)), "NaN verify");
         }
-    }
-
-    template<typename T>
-    weight cd_step(const dbn::batch<T>& batch){
-        dbn_assert(batch.size() <= static_cast<typename dbn::batch<T>::size_type>(BatchSize), "Invalid size");
-        dbn_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
-
-        //Clear the deltas
-        ga = 0.0;
-        gb = 0.0;
-        gw = 0.0;
-
-        v1 = 0.0;
-        h1_a = 0.0;
-        h1_s = 0.0;
-        h2_a = 0.0;
-        h2_s = 0.0;
-        v2_a = 0.0;
-        v2_s = 0.0;
-
-        for(auto& items : batch){
-            v1 = items;
-
-            activate_hidden(h1_a, h1_s, v1, v1);
-            activate_visible(h1_a, h1_s, v2_a, v2_s);
-            activate_hidden(h2_a, h2_s, v2_a, v2_s);
-
-            for(size_t i = 0; i < num_visible; ++i){
-                for(size_t j = 0; j < num_hidden; ++j){
-                    gw(i, j) += h1_a(j) * v1(i) - h2_a(j) * v2_a(i);
-                }
-            }
-
-            ga += v1 - v2_a;
-            gb += h1_a - h2_a;
-        }
-
-        nan_check(gw);
-
-        auto n_samples = static_cast<weight>(batch.size());
-
-        if(Momentum){
-            if(Decay){
-                w_inc = w_inc * momentum + ((gw / n_samples) - (w * weight_cost)) * learning_rate;
-            } else {
-                w_inc = w_inc * momentum + gw * (learning_rate / n_samples);
-            }
-
-            w += w_inc;
-        } else {
-            if(Decay){
-                w += ((gw / n_samples) - (w * weight_cost)) * learning_rate;
-            } else {
-                w += (gw / n_samples) * learning_rate;
-            }
-        }
-
-        nan_check(w);
-
-        if(Momentum){
-            a_inc = a_inc * momentum + (ga  / n_samples) * learning_rate;
-            a += a_inc;
-        } else {
-            a += (ga / n_samples) * learning_rate;
-        }
-
-        nan_check(a);
-
-        if(Momentum){
-            b_inc = b_inc * momentum + (gb / n_samples) * learning_rate;
-            b += b_inc;
-        } else {
-            b += (gb / n_samples) * learning_rate;
-        }
-
-        nan_check(b);
-
-        //Compute the reconstruction error
-
-        weight error = 0.0;
-        for(size_t i = 0; i < num_visible; ++i){
-            error += ga(i) * ga(i);
-        }
-        error = sqrt((error / (n_samples * n_samples)) / num_visible);
-
-        return error;
     }
 
     weight free_energy() const {

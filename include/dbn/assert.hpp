@@ -11,6 +11,12 @@
 #include <boost/assert.hpp>
 
 #ifdef NDEBUG
+#define nan_check(list)
+#else
+#define nan_check(list) for(auto& nantest : ((list))){dbn_assert(std::isfinite(nantest), "NaN Verify");}
+#endif
+
+#ifdef NDEBUG
 
 #define dbn_assert(condition, message)
 #define dbn_unreachable(message) __builtin_unreachable();
