@@ -7,16 +7,16 @@ Machine (RBM) and Deep Belief Network (DBN).
 Features
 --------
 
-1. Restricted Boltzmann Machine
+* **Restricted Boltzmann Machine**
 
-* Various units: Stochastic binary, Gaussian, Softmax and nRLU units
-* CD1 Learning
-* Momentum and weight decay
+   * Various units: Stochastic binary, Gaussian, Softmax and nRLU units
+   * CD1 Learning
+   * Momentum and weight decay
 
-2. Deep Belief Network
+* **Deep Belief Network**
 
-* Pretraining with RBMs
-* Fine tuning with Conjugate Gradient
+   * Pretraining with RBMs
+   * Fine tuning with Conjugate Gradient
 
 License
 -------
