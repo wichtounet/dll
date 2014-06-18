@@ -93,6 +93,7 @@ struct cd1_trainer {
         nan_check(vbias_grad);
         nan_check(hbias_grad);
 
+        //Update weights
         if(rbm_t::Momentum){
             if(rbm_t::Decay){
                 w_inc = w_inc * rbm.momentum + (w_grad - (rbm.w * rbm.weight_cost)) * rbm.learning_rate;
@@ -109,7 +110,7 @@ struct cd1_trainer {
             }
         }
 
-
+        //Update visible biases
         if(rbm_t::Momentum){
             a_inc = a_inc * rbm.momentum + vbias_grad * rbm.learning_rate;
             rbm.a += a_inc;
@@ -117,7 +118,7 @@ struct cd1_trainer {
             rbm.a += vbias_grad * rbm.learning_rate;
         }
 
-
+        //Update hidden biases
         if(rbm_t::Momentum){
             b_inc = b_inc * rbm.momentum + hbias_grad * rbm.learning_rate;
             rbm.b += b_inc;
