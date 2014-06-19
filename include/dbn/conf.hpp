@@ -23,7 +23,7 @@ enum class Type {
 };
 
 template <typename RBM>
-using cd1_trainer_t = cd_trainer<5, RBM>;
+using cd1_trainer_t = cd_trainer<1, RBM>;
 
 template<bool M = true, std::size_t B = 1, bool I = true, bool DB = false, bool WD = true,
          Type VT = Type::SIGMOID, Type HT = Type::SIGMOID, template<typename> class T = cd1_trainer_t, bool D = false>
