@@ -10,7 +10,7 @@ Features
 * **Restricted Boltzmann Machine**
 
    * Various units: Stochastic binary, Gaussian, Softmax and nRLU units
-   * CD1 Learning
+   * CD-1 learning by default, CD-k learning available
    * Momentum and weight decay
 
 * **Deep Belief Network**
