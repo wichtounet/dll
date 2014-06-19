@@ -60,14 +60,6 @@ struct cd_trainer {
         hbias_grad = 0.0;
         w_grad = 0.0;
 
-        rbm.v1 = 0.0;
-        rbm.h1_a = 0.0;
-        rbm.h1_s = 0.0;
-        rbm.h2_a = 0.0;
-        rbm.h2_s = 0.0;
-        rbm.v2_a = 0.0;
-        rbm.v2_s = 0.0;
-
         for(auto& items : batch){
             rbm.v1 = items;
 
