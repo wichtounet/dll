@@ -13,8 +13,10 @@
 
 namespace dbn {
 
-template<typename RBM>
-struct cd1_trainer {
+template<std::size_t K, typename RBM>
+struct cd_trainer {
+    static_assert(K > 0, "CD-0 is not a valid training method");
+
     typedef RBM rbm_t; 
 
     static constexpr const auto num_hidden = rbm_t::num_hidden;
@@ -36,12 +38,12 @@ struct cd1_trainer {
     fast_vector<weight, num_hidden_mom> b_inc;
     
     template<bool M = rbm_t::Momentum, typename std::enable_if<(!M), bool>::type = false>
-    cd1_trainer(){
+    cd_trainer(){
         static_assert(!rbm_t::Momentum, "This constructor should only be used without momentum support");
     }
 
     template<bool M = rbm_t::Momentum, typename std::enable_if<(M), bool>::type = false>
-    cd1_trainer() : w_inc(0.0), a_inc(0.0), b_inc(0.0) {
+    cd_trainer() : w_inc(0.0), a_inc(0.0), b_inc(0.0) {
         static_assert(rbm_t::Momentum, "This constructor should only be used with momentum support");
     }
 
@@ -69,9 +71,18 @@ struct cd1_trainer {
         for(auto& items : batch){
             rbm.v1 = items;
 
+            //First step
             rbm.activate_hidden(rbm.h1_a, rbm.h1_s, rbm.v1, rbm.v1);
+
+            //CD-1
             rbm.activate_visible(rbm.h1_a, rbm.h1_s, rbm.v2_a, rbm.v2_s);
             rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
+
+            //CD-k
+            for(std::size_t k = 1; k < K; ++k){
+                rbm.activate_visible(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
+                rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
+            }
 
             for(size_t i = 0; i < num_visible; ++i){
                 for(size_t j = 0; j < num_hidden; ++j){

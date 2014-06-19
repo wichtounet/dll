@@ -22,8 +22,11 @@ enum class Type {
     NRLU        //Noisy Rectified Linear Unit (nRLU)
 };
 
+template <typename RBM>
+using cd1_trainer_t = cd_trainer<5, RBM>;
+
 template<bool M = true, std::size_t B = 1, bool I = true, bool DB = false, bool WD = true,
-         Type VT = Type::SIGMOID, Type HT = Type::SIGMOID, template<typename> class T = cd1_trainer, bool D = false>
+         Type VT = Type::SIGMOID, Type HT = Type::SIGMOID, template<typename> class T = cd1_trainer_t, bool D = false>
 struct conf {
     static constexpr const bool Momentum = M;
     static constexpr const std::size_t BatchSize = B;
