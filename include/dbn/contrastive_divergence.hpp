@@ -165,6 +165,106 @@ public:
     }
 };
 
+template<std::size_t K, typename RBM>
+struct persistent_cd_trainer : base_cd_trainer<RBM> {
+private:
+    static_assert(K > 0, "PCD-0 is not a valid training method");
+    
+    typedef RBM rbm_t; 
+    typedef typename rbm_t::weight weight;
+    
+    using base_cd_trainer<RBM>::num_visible;
+    using base_cd_trainer<RBM>::num_hidden;
+
+    using base_cd_trainer<RBM>::w_grad;
+    using base_cd_trainer<RBM>::vbias_grad;
+    using base_cd_trainer<RBM>::hbias_grad;
+    
+    std::vector<fast_vector<weight, num_hidden>> p_h_a; 
+    std::vector<fast_vector<weight, num_hidden>> p_h_s; 
+
+public:
+    persistent_cd_trainer() : base_cd_trainer<RBM>() {
+        //Nothing else to init here
+    }
+
+    template<typename T>
+    weight train_batch(const dbn::batch<T>& batch, RBM& rbm){
+        dbn_assert(batch.size() <= static_cast<typename dbn::batch<T>::size_type>(rbm_t::BatchSize), "Invalid size");
+        dbn_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
+
+        //Size of a minibatch
+        auto n_samples = static_cast<weight>(batch.size());
+
+        //Clear the gradients
+        vbias_grad = 0.0;
+        hbias_grad = 0.0;
+        w_grad = 0.0;
+
+        bool init = p_h_a.empty();;
+        if(init){
+            p_h_a.resize(static_cast<typename dbn::batch<T>::size_type>(rbm_t::BatchSize));
+            p_h_s.resize(static_cast<typename dbn::batch<T>::size_type>(rbm_t::BatchSize));
+        }
+
+        for(std::size_t i = 0; i < batch.size(); ++i){
+            auto& items = batch[i];
+
+            rbm.v1 = items;
+
+            //First step
+            rbm.activate_hidden(rbm.h1_a, rbm.h1_s, rbm.v1, rbm.v1);
+
+            if(init){
+                p_h_a[i] = rbm.h1_a;
+                p_h_s[i] = rbm.h1_s;
+            }
+
+            //CD-1
+            rbm.activate_visible(p_h_a[i], p_h_a[i], rbm.v2_a, rbm.v2_s);
+            rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
+
+            //CD-k
+            for(std::size_t k = 1; k < K; ++k){
+                rbm.activate_visible(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
+                rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
+            }
+
+            p_h_a[i] = rbm.h2_a;
+            p_h_s[i] = rbm.h2_s;
+
+            for(size_t i = 0; i < num_visible; ++i){
+                for(size_t j = 0; j < num_hidden; ++j){
+                    w_grad(i, j) += rbm.h1_a(j) * rbm.v1(i) - rbm.h2_a(j) * rbm.v2_a(i);
+                }
+            }
+
+            vbias_grad += rbm.v1 - rbm.v2_a;
+            hbias_grad += rbm.h1_a - rbm.h2_a;
+        }
+
+        //Keep only the mean of the gradients
+        w_grad /= n_samples;
+        vbias_grad /= n_samples;
+        hbias_grad /= n_samples;
+
+        nan_check_3(w_grad, vbias_grad, hbias_grad);
+
+        //Update the weights and biases based on the gradients
+        this->update_weights(rbm);
+
+        //Compute the reconstruction error
+
+        weight error = 0.0;
+        for(size_t i = 0; i < num_visible; ++i){
+            error += vbias_grad(i) * vbias_grad(i);
+        }
+        error = sqrt(error / num_visible);
+
+        return error;
+    }
+};
+
 } //end of dbn namespace
 
 #endif
