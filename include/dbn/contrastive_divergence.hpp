@@ -13,10 +13,8 @@
 
 namespace dbn {
 
-template<std::size_t K, typename RBM>
-struct cd_trainer {
-    static_assert(K > 0, "CD-0 is not a valid training method");
-
+template<typename RBM>
+struct base_cd_trainer {
     typedef RBM rbm_t; 
 
     static constexpr const auto num_hidden = rbm_t::num_hidden;
@@ -38,13 +36,38 @@ struct cd_trainer {
     fast_vector<weight, num_hidden_mom> b_inc;
     
     template<bool M = rbm_t::Momentum, typename std::enable_if<(!M), bool>::type = false>
-    cd_trainer(){
+    base_cd_trainer(){
         static_assert(!rbm_t::Momentum, "This constructor should only be used without momentum support");
     }
 
     template<bool M = rbm_t::Momentum, typename std::enable_if<(M), bool>::type = false>
-    cd_trainer() : w_inc(0.0), a_inc(0.0), b_inc(0.0) {
+    base_cd_trainer() : w_inc(0.0), a_inc(0.0), b_inc(0.0) {
         static_assert(rbm_t::Momentum, "This constructor should only be used with momentum support");
+    }
+};
+
+template<std::size_t K, typename RBM>
+struct cd_trainer : base_cd_trainer<RBM> {
+private:
+    static_assert(K > 0, "CD-0 is not a valid training method");
+    
+    typedef RBM rbm_t; 
+    typedef typename rbm_t::weight weight;
+    
+    using base_cd_trainer<RBM>::num_visible;
+    using base_cd_trainer<RBM>::num_hidden;
+
+    using base_cd_trainer<RBM>::w_inc;
+    using base_cd_trainer<RBM>::a_inc;
+    using base_cd_trainer<RBM>::b_inc;
+    
+    using base_cd_trainer<RBM>::w_grad;
+    using base_cd_trainer<RBM>::vbias_grad;
+    using base_cd_trainer<RBM>::hbias_grad;
+
+public:
+    cd_trainer() : base_cd_trainer<RBM>() {
+        //Nothing else to init here
     }
 
     template<typename T>
