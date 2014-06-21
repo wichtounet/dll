@@ -44,6 +44,44 @@ struct base_cd_trainer {
     base_cd_trainer() : w_inc(0.0), a_inc(0.0), b_inc(0.0) {
         static_assert(rbm_t::Momentum, "This constructor should only be used with momentum support");
     }
+
+    void update_weights(RBM& rbm){
+        //Update weights
+        if(rbm_t::Momentum){
+            if(rbm_t::Decay){
+                w_inc = w_inc * rbm.momentum + (w_grad - (rbm.w * rbm.weight_cost)) * rbm.learning_rate;
+            } else {
+                w_inc = w_inc * rbm.momentum + w_grad * rbm.learning_rate;
+            }
+
+            rbm.w += w_inc;
+        } else {
+            if(rbm_t::Decay){
+                rbm.w += (w_grad - (rbm.w * rbm.weight_cost)) * rbm.learning_rate;
+            } else {
+                rbm.w += w_grad * rbm.learning_rate;
+            }
+        }
+
+        //Update visible biases
+        if(rbm_t::Momentum){
+            a_inc = a_inc * rbm.momentum + vbias_grad * rbm.learning_rate;
+            rbm.a += a_inc;
+        } else {
+            rbm.a += vbias_grad * rbm.learning_rate;
+        }
+
+        //Update hidden biases
+        if(rbm_t::Momentum){
+            b_inc = b_inc * rbm.momentum + hbias_grad * rbm.learning_rate;
+            rbm.b += b_inc;
+        } else {
+            rbm.b += hbias_grad * rbm.learning_rate;
+        }
+
+        //Check for NaN
+        nan_check_3(rbm.w, rbm.a, rbm.b);
+    }
 };
 
 template<std::size_t K, typename RBM>
@@ -57,10 +95,6 @@ private:
     using base_cd_trainer<RBM>::num_visible;
     using base_cd_trainer<RBM>::num_hidden;
 
-    using base_cd_trainer<RBM>::w_inc;
-    using base_cd_trainer<RBM>::a_inc;
-    using base_cd_trainer<RBM>::b_inc;
-    
     using base_cd_trainer<RBM>::w_grad;
     using base_cd_trainer<RBM>::vbias_grad;
     using base_cd_trainer<RBM>::hbias_grad;
@@ -71,7 +105,7 @@ public:
     }
 
     template<typename T>
-    double train_batch(const dbn::batch<T>& batch, RBM& rbm){
+    weight train_batch(const dbn::batch<T>& batch, RBM& rbm){
         dbn_assert(batch.size() <= static_cast<typename dbn::batch<T>::size_type>(BatchSize), "Invalid size");
         dbn_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
 
@@ -116,41 +150,8 @@ public:
 
         nan_check_3(w_grad, vbias_grad, hbias_grad);
 
-        //Update weights
-        if(rbm_t::Momentum){
-            if(rbm_t::Decay){
-                w_inc = w_inc * rbm.momentum + (w_grad - (rbm.w * rbm.weight_cost)) * rbm.learning_rate;
-            } else {
-                w_inc = w_inc * rbm.momentum + w_grad * rbm.learning_rate;
-            }
-
-            rbm.w += w_inc;
-        } else {
-            if(rbm_t::Decay){
-                rbm.w += (w_grad - (rbm.w * rbm.weight_cost)) * rbm.learning_rate;
-            } else {
-                rbm.w += w_grad * rbm.learning_rate;
-            }
-        }
-
-        //Update visible biases
-        if(rbm_t::Momentum){
-            a_inc = a_inc * rbm.momentum + vbias_grad * rbm.learning_rate;
-            rbm.a += a_inc;
-        } else {
-            rbm.a += vbias_grad * rbm.learning_rate;
-        }
-
-        //Update hidden biases
-        if(rbm_t::Momentum){
-            b_inc = b_inc * rbm.momentum + hbias_grad * rbm.learning_rate;
-            rbm.b += b_inc;
-        } else {
-            rbm.b += hbias_grad * rbm.learning_rate;
-        }
-
-        //Check for NaN
-        nan_check_3(rbm.w, rbm.a, rbm.b);
+        //Update the weights and biases based on the gradients
+        this->update_weights(rbm);
 
         //Compute the reconstruction error
 
