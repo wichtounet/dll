@@ -48,38 +48,38 @@ struct base_cd_trainer {
     void update_weights(RBM& rbm){
         auto learning_rate = rbm.learning_rate;
 
-        //Update weights
+        //Update momentum gradients
         if(rbm_t::Momentum){
-            if(rbm_t::Decay){
-                w_inc = w_inc * rbm.momentum + w_grad - (rbm.w * rbm.weight_cost);
-            } else {
-                w_inc = w_inc * rbm.momentum + w_grad;
-            }
+            auto momentum = rbm.momentum;
 
-            rbm.w += learning_rate * w_inc;
+            w_inc = momentum * w_inc + (1 - momentum) * w_grad;
+            a_inc = momentum * a_inc + (1 - momentum) * vbias_grad;
+            b_inc = momentum * b_inc + (1 - momentum) * hbias_grad;
+        }
+
+        //The final gradients;
+        const auto& w_fgrad = rbm_t::Momentum ? w_inc : w_grad;
+        const auto& a_fgrad = rbm_t::Momentum ? a_inc : vbias_grad;
+        const auto& b_fgrad = rbm_t::Momentum ? b_inc : hbias_grad;
+
+        //Weight decay is only applied to weights and not biases
+        //Note: According to G. Hinton, Weight Decay should not be applied to
+        //biases by default due to their limited number and therefore their weak
+        //contribution to overfitting
+        //TODO Perhaps this should be configurable
+
+        //Update weights
+        if(rbm_t::Decay){
+            rbm.w += learning_rate * (w_fgrad - rbm.weight_cost * rbm.w);
         } else {
-            if(rbm_t::Decay){
-                rbm.w += learning_rate * (w_grad - (rbm.w * rbm.weight_cost));
-            } else {
-                rbm.w += learning_rate * w_grad;
-            }
+            rbm.w += learning_rate * w_fgrad;
         }
 
         //Update visible biases
-        if(rbm_t::Momentum){
-            a_inc = a_inc * rbm.momentum + vbias_grad;
-            rbm.a += learning_rate * a_inc;
-        } else {
-            rbm.a += learning_rate * vbias_grad;
-        }
+        rbm.a += learning_rate * a_fgrad;
 
         //Update hidden biases
-        if(rbm_t::Momentum){
-            b_inc = b_inc * rbm.momentum + hbias_grad;
-            rbm.b += learning_rate * b_inc;
-        } else {
-            rbm.b += learning_rate * hbias_grad;
-        }
+        rbm.b += learning_rate * b_fgrad;
 
         //Check for NaN
         nan_check_3(rbm.w, rbm.a, rbm.b);
