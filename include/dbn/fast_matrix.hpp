@@ -139,18 +139,6 @@ public:
         return {*this, std::forward<RE>(re)};
     }
 
-    //Mul each element by a scalar
-    template<typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
-    auto operator*(RE re) const -> fast_expr<T, const fast_matrix&, mul_binary_op<T>, scalar<T>> {
-        return {*this, re};
-    }
-
-    //Mul elements of matrix togethers
-    template<typename RE, typename = disable_if_t<std::is_convertible<RE, T>::value>>
-    auto operator*(RE&& re) const -> fast_expr<T, const fast_matrix&, mul_binary_op<T>, decltype(std::forward<RE>(re))> {
-        return {*this, std::forward<RE>(re)};
-    }
-
     //Div each element by a scalar
     template<typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
     auto operator/(RE re) const -> fast_expr<T, const fast_matrix&, div_binary_op<T>, scalar<T>> {
@@ -212,5 +200,16 @@ public:
     }
 };
 
+//Mul each element by a scalar
+template<typename T, size_t Rows, size_t Columns, typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
+auto operator*(const fast_matrix<T, Rows, Columns>& lhs, RE rhs) -> fast_expr<T, const fast_matrix<T, Rows, Columns>&, mul_binary_op<T>, scalar<T>> {
+    return {lhs, rhs};
+}
+
+//Mul each element by a scalar
+template<typename T, size_t Rows, size_t Columns, typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
+auto operator*(RE lhs, const fast_matrix<T, Rows, Columns>& rhs) -> fast_expr<T, scalar<T>, mul_binary_op<T>, const fast_matrix<T, Rows, Columns>&> {
+    return {lhs, rhs};
+}
 
 #endif
