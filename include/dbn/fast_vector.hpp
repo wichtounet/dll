@@ -161,22 +161,10 @@ public:
         return {*this, std::forward<RE>(re)};
     }
 
-    //Mul each element by a scalar
-    template<typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
-    auto operator*(RE re) const -> fast_expr<T, const fast_vector&, mul_binary_op<T>, scalar<T>> {
-        return {*this, re};
-    }
-
     //Mul elements of vector togethers
     template<typename RE, typename = disable_if_t<std::is_convertible<RE, T>::value>>
     auto operator*(RE&& re) const -> fast_expr<T, const fast_vector&, mul_binary_op<T>, decltype(std::forward<RE>(re))> {
         return {*this, std::forward<RE>(re)};
-    }
-
-    //Div each element by a scalar
-    template<typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
-    auto operator/(RE re) const -> fast_expr<T, const fast_vector&, div_binary_op<T>, scalar<T>> {
-        return {*this, re};
     }
 
     //Div elements of vector togethers
@@ -231,5 +219,20 @@ public:
         return _data.end();
     }
 };
+
+template<typename T, std::size_t Rows, typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
+auto operator*(const fast_vector<T, Rows>& lhs, RE rhs) -> fast_expr<T, const fast_vector<T, Rows>&, mul_binary_op<T>, scalar<T>> {
+    return {lhs, rhs};
+}
+
+template<typename T, std::size_t Rows, typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
+auto operator*(RE lhs, const fast_vector<T, Rows>& rhs) -> fast_expr<T, scalar<T>, mul_binary_op<T>, const fast_vector<T, Rows>&> {
+    return {lhs, rhs};
+}
+
+template<typename T, std::size_t Rows, typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
+auto operator/(const fast_vector<T, Rows>& lhs, RE rhs) -> fast_expr<T, const fast_vector<T, Rows>&, div_binary_op<T>, scalar<T>> {
+    return {lhs, rhs};
+}
 
 #endif
