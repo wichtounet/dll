@@ -51,12 +51,12 @@ struct base_cd_trainer {
         //Update weights
         if(rbm_t::Momentum){
             if(rbm_t::Decay){
-                w_inc = w_inc * rbm.momentum + learning_rate * (w_grad - (rbm.w * rbm.weight_cost));
+                w_inc = w_inc * rbm.momentum + w_grad - (rbm.w * rbm.weight_cost);
             } else {
-                w_inc = w_inc * rbm.momentum + learning_rate * w_grad;
+                w_inc = w_inc * rbm.momentum + w_grad;
             }
 
-            rbm.w += w_inc;
+            rbm.w += learning_rate * w_inc;
         } else {
             if(rbm_t::Decay){
                 rbm.w += learning_rate * (w_grad - (rbm.w * rbm.weight_cost));
@@ -67,16 +67,16 @@ struct base_cd_trainer {
 
         //Update visible biases
         if(rbm_t::Momentum){
-            a_inc = a_inc * rbm.momentum + learning_rate * vbias_grad;
-            rbm.a += a_inc;
+            a_inc = a_inc * rbm.momentum + vbias_grad;
+            rbm.a += learning_rate * a_inc;
         } else {
             rbm.a += learning_rate * vbias_grad;
         }
 
         //Update hidden biases
         if(rbm_t::Momentum){
-            b_inc = b_inc * rbm.momentum + learning_rate * hbias_grad;
-            rbm.b += b_inc;
+            b_inc = b_inc * rbm.momentum + hbias_grad;
+            rbm.b += learning_rate * b_inc;
         } else {
             rbm.b += learning_rate * hbias_grad;
         }
