@@ -109,4 +109,58 @@ auto operator*(Scalar lhs, const binary_expr<T, LE, Op, RE>& rhs) -> binary_expr
     return {lhs, rhs};
 }
 
+template <typename T, typename Expr, typename UnaryOp>
+class unary_expr {
+private:
+    Expr _value;
+
+    typedef unary_expr<T, Expr, UnaryOp> this_type;
+
+public:
+    //Cannot be constructed with no args
+    unary_expr() = delete;
+
+    //Construct a new expression
+    unary_expr(Expr l) : _value(std::forward<Expr>(l)){
+        //Nothing else to init
+    }
+
+    //No copying
+    unary_expr(const unary_expr&) = delete;
+    unary_expr& operator=(const unary_expr&) = delete;
+
+    //Make sure move is supported
+    unary_expr(unary_expr&&) = default;
+    unary_expr& operator=(unary_expr&&) = default;
+
+    //Accessors
+
+    typename std::add_lvalue_reference<Expr>::type value(){
+        return _value;
+    }
+
+    typename std::add_lvalue_reference<typename std::add_const<Expr>::type>::type value() const {
+        return _value;
+    }
+
+    //Apply the expression
+
+    decltype(auto) operator[](std::size_t i) const {
+        return UnaryOp::apply(value()[i]);
+    }
+};
+
+//Convert x * unary_expr and unary_expr * x into binary_expr
+
+template <typename T, typename E, typename Op, typename Scalar, typename = enable_if_t<std::is_convertible<Scalar, T>::value>>
+auto operator*(const unary_expr<T, E, Op>& lhs, Scalar rhs) -> binary_expr<T, const unary_expr<T, E, Op>&, mul_binary_op<T>, scalar<T>> {
+    return {lhs, rhs};
+}
+
+template <typename T, typename E, typename Op, typename Scalar, typename = enable_if_t<std::is_convertible<Scalar, T>::value>>
+auto operator*(Scalar lhs, const unary_expr<T, E, Op>& rhs) -> binary_expr<T, scalar<T>, mul_binary_op<T>, const unary_expr<T, E, Op>&> {
+    return {lhs, rhs};
+}
+
+
 #endif

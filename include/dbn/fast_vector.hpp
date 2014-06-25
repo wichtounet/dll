@@ -235,4 +235,14 @@ auto operator/(const fast_vector<T, Rows>& lhs, RE rhs) -> binary_expr<T, const 
     return {lhs, rhs};
 }
 
+template<typename T, std::size_t Rows>
+auto abs(const fast_vector<T, Rows>& value) -> unary_expr<T, const fast_vector<T, Rows>&, abs_unary_op<T>> {
+    return {value};
+}
+
+template<typename T, std::size_t Rows>
+auto sign(const fast_vector<T, Rows>& value) -> unary_expr<T, const fast_vector<T, Rows>&, sign_unary_op<T>> {
+    return {value};
+}
+
 #endif

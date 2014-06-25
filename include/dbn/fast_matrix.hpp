@@ -218,4 +218,14 @@ auto operator*(RE lhs, const fast_matrix<T, Rows, Columns>& rhs) -> binary_expr<
     return {lhs, rhs};
 }
 
+template<typename T, std::size_t Rows, std::size_t Columns>
+auto abs(const fast_matrix<T, Rows, Columns>& value) -> unary_expr<T, const fast_matrix<T, Rows, Columns>&, abs_unary_op<T>> {
+    return {value};
+}
+
+template<typename T, std::size_t Rows, std::size_t Columns>
+auto sign(const fast_matrix<T, Rows, Columns>& value) -> unary_expr<T, const fast_matrix<T, Rows, Columns>&, sign_unary_op<T>> {
+    return {value};
+}
+
 #endif

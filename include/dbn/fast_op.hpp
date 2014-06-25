@@ -56,7 +56,7 @@ struct abs_unary_op {
 template<typename T>
 struct sign_unary_op {
     static constexpr T apply(const T& x){
-        return x / std::abs(x);
+        return x > 0.0 ? 1.0 : x < 0.0 ? -1.0 : 0.0;
     }
 };
 
