@@ -63,11 +63,13 @@ struct base_cd_trainer {
         const auto& a_fgrad = rbm_t::Momentum ? a_inc : vbias_grad;
         const auto& b_fgrad = rbm_t::Momentum ? b_inc : hbias_grad;
 
+        //Weight decay is applied on biases only on demand
         //Note: According to G. Hinton, Weight Decay should not be applied to
         //biases by default due to their limited number and therefore their weak
         //contribution to overfitting
 
         //Update weights
+        
         if(rbm_t::Decay == DecayType::L1 || rbm_t::Decay == DecayType::L1_FULL){
             rbm.w += learning_rate * (w_fgrad - rbm.weight_cost * abs(rbm.w));
         } else if(rbm_t::Decay == DecayType::L2 || rbm_t::Decay == DecayType::L2_FULL){
