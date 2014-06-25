@@ -77,11 +77,6 @@ public:
         return {*this, std::forward<RE>(re)};
     }
 
-    template<typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
-    auto operator*(RE re) const -> fast_expr<T, this_type const&, mul_binary_op<T>, scalar<T>> {
-        return {*this, re};
-    }
-
     template<typename RE, typename = disable_if_t<std::is_convertible<RE, T>::value>>
     auto operator*(RE&& re) const -> fast_expr<T, this_type const&, mul_binary_op<T>, decltype(std::forward<RE>(re))>{
         return {*this, std::forward<RE>(re)};
@@ -103,5 +98,15 @@ public:
         return BinaryOp::apply(lhs()[i], rhs()[i]);
     }
 };
+
+template <typename T, typename LE, typename Op, typename RE, typename Scalar, typename = enable_if_t<std::is_convertible<Scalar, T>::value>>
+auto operator*(const fast_expr<T, LE, Op, RE>& lhs, Scalar rhs) -> fast_expr<T, const fast_expr<T, LE, Op, RE>&, mul_binary_op<T>, scalar<T>> {
+    return {lhs, rhs};
+}
+
+template <typename T, typename LE, typename Op, typename RE, typename Scalar, typename = enable_if_t<std::is_convertible<Scalar, T>::value>>
+auto operator*(Scalar lhs, const fast_expr<T, LE, Op, RE>& rhs) -> fast_expr<T, scalar<T>, mul_binary_op<T>, const fast_expr<T, LE, Op, RE>&> {
+    return {lhs, rhs};
+}
 
 #endif
