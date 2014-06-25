@@ -11,6 +11,7 @@
 #include <cstddef>
 
 #include "contrastive_divergence.hpp"
+#include "decay_type.hpp"
 
 namespace dbn {
 
@@ -25,7 +26,7 @@ enum class Type {
 template <typename RBM>
 using cd1_trainer_t = cd_trainer<1, RBM>;
 
-template<bool M = true, std::size_t B = 1, bool I = true, bool DB = false, bool WD = true,
+template<bool M = true, std::size_t B = 1, bool I = true, bool DB = false, DecayType WD = DecayType::NONE,
          Type VT = Type::SIGMOID, Type HT = Type::SIGMOID, template<typename> class T = cd1_trainer_t, bool D = false>
 struct conf {
     static constexpr const bool Momentum = M;
@@ -34,7 +35,7 @@ struct conf {
     static constexpr const Type VisibleUnit = VT;
     static constexpr const Type HiddenUnit = HT;
     static constexpr const bool DBN = DB;
-    static constexpr const bool Decay = WD;
+    static constexpr const DecayType Decay = WD;
     static constexpr const bool Debug = D;
 
     template <typename RBM>

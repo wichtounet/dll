@@ -10,6 +10,7 @@
 
 #include "assert.hpp"
 #include "batch.hpp"
+#include "decay_type.hpp"
 
 namespace dbn {
 
@@ -62,24 +63,38 @@ struct base_cd_trainer {
         const auto& a_fgrad = rbm_t::Momentum ? a_inc : vbias_grad;
         const auto& b_fgrad = rbm_t::Momentum ? b_inc : hbias_grad;
 
-        //Weight decay is only applied to weights and not biases
         //Note: According to G. Hinton, Weight Decay should not be applied to
         //biases by default due to their limited number and therefore their weak
         //contribution to overfitting
-        //TODO Perhaps this should be configurable
 
         //Update weights
-        if(rbm_t::Decay){
+        if(rbm_t::Decay == DecayType::L1 || rbm_t::Decay == DecayType::L1_FULL){
+            rbm.w += learning_rate * (w_fgrad - rbm.weight_cost * abs(rbm.w));
+        } else if(rbm_t::Decay == DecayType::L2 || rbm_t::Decay == DecayType::L2_FULL){
             rbm.w += learning_rate * (w_fgrad - rbm.weight_cost * rbm.w);
         } else {
             rbm.w += learning_rate * w_fgrad;
         }
 
         //Update visible biases
-        rbm.a += learning_rate * a_fgrad;
 
+        if(rbm_t::Decay == DecayType::L1_FULL){
+            rbm.a += learning_rate * (a_fgrad - rbm.weight_cost * abs(rbm.a));
+        } else if(rbm_t::Decay == DecayType::L2_FULL){
+            rbm.a += learning_rate * (a_fgrad - rbm.weight_cost * rbm.a);
+        } else {
+            rbm.a += learning_rate * a_fgrad;
+        }
+        
         //Update hidden biases
-        rbm.b += learning_rate * b_fgrad;
+
+        if(rbm_t::Decay == DecayType::L1_FULL){
+            rbm.b += learning_rate * (b_fgrad - rbm.weight_cost * abs(rbm.b));
+        } else if(rbm_t::Decay == DecayType::L2_FULL){
+            rbm.b += learning_rate * (b_fgrad - rbm.weight_cost * rbm.b);
+        } else {
+            rbm.b += learning_rate * b_fgrad;
+        }
 
         //Check for NaN
         nan_check_3(rbm.w, rbm.a, rbm.b);
