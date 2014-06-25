@@ -15,7 +15,7 @@ namespace dbn {
 
 template<typename RBM>
 struct base_cd_trainer {
-    typedef RBM rbm_t; 
+    typedef RBM rbm_t;
 
     static constexpr const auto num_hidden = rbm_t::num_hidden;
     static constexpr const auto num_visible = rbm_t::num_visible;
@@ -34,7 +34,7 @@ struct base_cd_trainer {
     fast_matrix<weight, num_visible_mom, num_hidden_mom> w_inc;
     fast_vector<weight, num_visible_mom> a_inc;
     fast_vector<weight, num_hidden_mom> b_inc;
-    
+
     template<bool M = rbm_t::Momentum, typename std::enable_if<(!M), bool>::type = false>
     base_cd_trainer(){
         static_assert(!rbm_t::Momentum, "This constructor should only be used without momentum support");
@@ -46,37 +46,39 @@ struct base_cd_trainer {
     }
 
     void update_weights(RBM& rbm){
+        auto learning_rate = rbm.learning_rate;
+
         //Update weights
         if(rbm_t::Momentum){
             if(rbm_t::Decay){
-                w_inc = w_inc * rbm.momentum + (w_grad - (rbm.w * rbm.weight_cost)) * rbm.learning_rate;
+                w_inc = w_inc * rbm.momentum + learning_rate * (w_grad - (rbm.w * rbm.weight_cost));
             } else {
-                w_inc = w_inc * rbm.momentum + w_grad * rbm.learning_rate;
+                w_inc = w_inc * rbm.momentum + learning_rate * w_grad;
             }
 
             rbm.w += w_inc;
         } else {
             if(rbm_t::Decay){
-                rbm.w += (w_grad - (rbm.w * rbm.weight_cost)) * rbm.learning_rate;
+                rbm.w += learning_rate * (w_grad - (rbm.w * rbm.weight_cost));
             } else {
-                rbm.w += w_grad * rbm.learning_rate;
+                rbm.w += learning_rate * w_grad;
             }
         }
 
         //Update visible biases
         if(rbm_t::Momentum){
-            a_inc = a_inc * rbm.momentum + vbias_grad * rbm.learning_rate;
+            a_inc = a_inc * rbm.momentum + learning_rate * vbias_grad;
             rbm.a += a_inc;
         } else {
-            rbm.a += vbias_grad * rbm.learning_rate;
+            rbm.a += learning_rate * vbias_grad;
         }
 
         //Update hidden biases
         if(rbm_t::Momentum){
-            b_inc = b_inc * rbm.momentum + hbias_grad * rbm.learning_rate;
+            b_inc = b_inc * rbm.momentum + learning_rate * hbias_grad;
             rbm.b += b_inc;
         } else {
-            rbm.b += hbias_grad * rbm.learning_rate;
+            rbm.b += learning_rate * hbias_grad;
         }
 
         //Check for NaN
@@ -88,10 +90,10 @@ template<std::size_t K, typename RBM>
 struct cd_trainer : base_cd_trainer<RBM> {
 private:
     static_assert(K > 0, "CD-0 is not a valid training method");
-    
-    typedef RBM rbm_t; 
+
+    typedef RBM rbm_t;
     typedef typename rbm_t::weight weight;
-    
+
     using base_cd_trainer<RBM>::num_visible;
     using base_cd_trainer<RBM>::num_hidden;
 
@@ -169,19 +171,19 @@ template<std::size_t K, typename RBM>
 struct persistent_cd_trainer : base_cd_trainer<RBM> {
 private:
     static_assert(K > 0, "PCD-0 is not a valid training method");
-    
-    typedef RBM rbm_t; 
+
+    typedef RBM rbm_t;
     typedef typename rbm_t::weight weight;
-    
+
     using base_cd_trainer<RBM>::num_visible;
     using base_cd_trainer<RBM>::num_hidden;
 
     using base_cd_trainer<RBM>::w_grad;
     using base_cd_trainer<RBM>::vbias_grad;
     using base_cd_trainer<RBM>::hbias_grad;
-    
-    std::vector<fast_vector<weight, num_hidden>> p_h_a; 
-    std::vector<fast_vector<weight, num_hidden>> p_h_s; 
+
+    std::vector<fast_vector<weight, num_hidden>> p_h_a;
+    std::vector<fast_vector<weight, num_hidden>> p_h_s;
 
 public:
     persistent_cd_trainer() : base_cd_trainer<RBM>() {
