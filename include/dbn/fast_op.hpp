@@ -46,4 +46,32 @@ struct div_binary_op {
     }
 };
 
+template<typename T>
+struct abs_unary_op {
+    static constexpr T apply(const T& x){
+        return std::abs(x);
+    }
+};
+
+template<typename T>
+struct sign_unary_op {
+    static constexpr T apply(const T& x){
+        return x / std::abs(x);
+    }
+};
+
+template<typename T>
+struct minus_unary_op {
+    static constexpr T apply(const T& x){
+        return -x;
+    }
+};
+
+template<typename T>
+struct plus_unary_op {
+    static constexpr T apply(const T& x){
+        return +x;
+    }
+};
+
 #endif
