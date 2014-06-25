@@ -138,6 +138,12 @@ public:
     auto operator-(RE&& re) const -> fast_expr<T, const fast_matrix&, minus_binary_op<T>, decltype(std::forward<RE>(re))> {
         return {*this, std::forward<RE>(re)};
     }
+    
+    //Mull elements of matrix togethers
+    template<typename RE, typename = disable_if_t<std::is_convertible<RE, T>::value>>
+    auto operator*(RE&& re) const -> fast_expr<T, const fast_matrix&, mul_binary_op<T>, decltype(std::forward<RE>(re))> {
+        return {*this, std::forward<RE>(re)};
+    }
 
     //Div each element by a scalar
     template<typename RE, typename = enable_if_t<std::is_convertible<RE, T>::value>>
