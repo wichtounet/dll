@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <array>
 #include <vector>
+#include <numeric>
 
 #include "assert.hpp"
 #include "utils.hpp"
