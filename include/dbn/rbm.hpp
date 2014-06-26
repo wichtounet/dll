@@ -26,6 +26,7 @@
 #include "vector.hpp"
 #include "conf.hpp"
 #include "batch.hpp"
+#include "layer.hpp"
 
 namespace dbn {
 
@@ -222,7 +223,7 @@ public:
                 dbn_assert(std::isfinite(a(i)), "NaN verify");
             }
         }
-        
+
         typedef typename std::remove_reference<decltype(*this)>::type this_type;
 
         auto trainer = make_unique<trainer_t<this_type>>();
@@ -385,7 +386,7 @@ public:
             dbn_assert(std::isfinite(v_s(i)), "NaN verify");
         }
     }
-    
+
     weight free_energy() const {
         weight energy = 0.0;
 

@@ -1,0 +1,4 @@
+[submodule "make-utils"]
+	path = make-utils
+	url = https://github.com/wichtounet/make-utils.git
+	branch = master
