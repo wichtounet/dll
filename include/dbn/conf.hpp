@@ -11,17 +11,10 @@
 #include <cstddef>
 
 #include "contrastive_divergence.hpp"
+#include "unit_type.hpp"
 #include "decay_type.hpp"
 
 namespace dbn {
-
-enum class Type {
-    SIGMOID,    //Stochastic binary unity
-    EXP,        //Exponential unit (for last layer)
-    SOFTMAX,    //Softmax unit (for last layer)
-    GAUSSIAN,   //Gaussian visible layers
-    NRLU        //Noisy Rectified Linear Unit (nRLU)
-};
 
 template <typename RBM>
 using cd1_trainer_t = cd_trainer<1, RBM>;
