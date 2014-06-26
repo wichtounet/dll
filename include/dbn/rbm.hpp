@@ -52,6 +52,7 @@ public:
     static constexpr const Type VisibleUnit = Layer::Conf::VisibleUnit;
     static constexpr const Type HiddenUnit = Layer::Conf::HiddenUnit;
     static constexpr const bool DBN = Layer::Conf::DBN;
+    static constexpr const bool Sparsity = Layer::Conf::Sparsity;
     static constexpr const DecayType Decay = Layer::Conf::Decay;
 
     static_assert(BatchSize > 0, "Batch size must be at least 1");

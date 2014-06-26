@@ -26,7 +26,7 @@ enum class Type {
 template <typename RBM>
 using cd1_trainer_t = cd_trainer<1, RBM>;
 
-template<bool M = true, std::size_t B = 1, bool I = true, bool DB = false, DecayType WD = DecayType::NONE,
+template<bool M = true, std::size_t B = 1, bool I = true, bool DB = false, DecayType WD = DecayType::NONE, bool S = false,
          Type VT = Type::SIGMOID, Type HT = Type::SIGMOID, template<typename> class T = cd1_trainer_t, bool D = false>
 struct conf {
     static constexpr const bool Momentum = M;
@@ -37,6 +37,7 @@ struct conf {
     static constexpr const bool DBN = DB;
     static constexpr const DecayType Decay = WD;
     static constexpr const bool Debug = D;
+    static constexpr const bool Sparsity = S;
 
     template <typename RBM>
     using trainer_t = T<RBM>;
