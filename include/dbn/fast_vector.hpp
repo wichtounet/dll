@@ -245,4 +245,9 @@ auto sign(const fast_vector<T, Rows>& value) -> unary_expr<T, const fast_vector<
     return {value};
 }
 
+template<typename T, std::size_t Rows>
+T sum(const fast_vector<T, Rows>& values){
+    return std::accumulate(values.begin(), values.end(), static_cast<T>(0));
+}
+
 #endif
