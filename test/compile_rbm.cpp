@@ -3,6 +3,9 @@
 template<typename RBM>
 void test_rbm(){
     RBM rbm;
+
+    std::vector<vector<double>> training;
+    rbm.train(training, 10);
 }
 
 int main(){
