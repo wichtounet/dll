@@ -5,6 +5,11 @@ default: release
 include make-utils/flags.mk
 include make-utils/cpp-utils.mk
 
+CPP_FILES=$(wildcard test/*.cpp)
+
+DEBUG_D_FILES=$(CPP_FILES:%.cpp=debug/%.cpp.d)
+RELEASE_D_FILES=$(CPP_FILES:%.cpp=release/%.cpp.d)
+
 $(eval $(call test_folder_compile,))
 
 $(eval $(call add_test_executable,compile_rbm,compile_rbm.cpp))
