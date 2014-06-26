@@ -11,6 +11,7 @@
 #include <cstddef>
 
 #include "unit_type.hpp"
+#include "fast_vector.hpp"
 
 namespace dbn {
 
@@ -28,6 +29,12 @@ public:
     static constexpr const Type VisibleUnit = Layer::Conf::VisibleUnit;
     static constexpr const Type HiddenUnit = Layer::Conf::HiddenUnit;
 
+    static constexpr const std::size_t NV = Layer::NV;
+    static constexpr const std::size_t NH = Layer::NH;
+    static constexpr const std::size_t K = Layer::K;
+
+    static constexpr const std::size_t NW = NV - NH + 1; //By definition
+
     static_assert(BatchSize > 0, "Batch size must be at least 1");
 
     static_assert(VisibleUnit == Type::SIGMOID,
@@ -38,6 +45,21 @@ public:
     //Configurable properties
     weight learning_rate = 1e-1;
     weight momentum = 0.5;
+
+    fast_vector<fast_vector<weight, NW * NW>, K> w;     //shared weights
+    fast_vector<weight, K> b;                           //hidden biases bk
+    weight c;                                           //visible single bias c
+
+    fast_vector<weight, NV * NV> v1;                    //visible units
+
+    fast_vector<fast_vector<weight, NH * NH>, K> h1_a;  //Activation probabilities of reconstructed hidden units
+    fast_vector<fast_vector<weight, NH * NH>, K> h1_s;  //Sampled values of reconstructed hidden units
+
+    fast_vector<weight, NV * NV> v2_a;                  //Activation probabilities of reconstructed visible units
+    fast_vector<weight, NV * NV> v2_s;                  //Sampled values of reconstructed visible units
+
+    fast_vector<fast_vector<weight, NH * NH>, K> h2_a;  //Activation probabilities of reconstructed hidden units
+    fast_vector<fast_vector<weight, NH * NH>, K> h2_s;  //Sampled values of reconstructed hidden units
 
 public:
     //No copying
