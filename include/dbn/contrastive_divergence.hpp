@@ -21,9 +21,6 @@ struct base_cd_trainer {
     static constexpr const auto num_hidden = rbm_t::num_hidden;
     static constexpr const auto num_visible = rbm_t::num_visible;
 
-    static constexpr const std::size_t num_visible_mom = rbm_t::Momentum ? num_visible : 0;
-    static constexpr const std::size_t num_hidden_mom = rbm_t::Momentum ? num_hidden : 0;
-
     typedef typename rbm_t::weight weight;
 
     //Gradients
@@ -31,18 +28,33 @@ struct base_cd_trainer {
     fast_vector<weight, num_visible> vbias_grad;
     fast_vector<weight, num_hidden> hbias_grad;
 
-    //Weights and biases for momentum
+    //{{{ Momentum
+
+    //Compute sizes so that collections are empty if Momentum not enabled
+    static constexpr const std::size_t num_visible_mom = rbm_t::Momentum ? num_visible : 0;
+    static constexpr const std::size_t num_hidden_mom = rbm_t::Momentum ? num_hidden : 0;
+
     fast_matrix<weight, num_visible_mom, num_hidden_mom> w_inc;
     fast_vector<weight, num_visible_mom> a_inc;
     fast_vector<weight, num_hidden_mom> b_inc;
 
+    //}}} Momentum end
+
+    //{{{ Sparsity
+
+    weight q_old;
+    weight q_batch;
+    weight q_t;
+
+    //}}} Sparsity end
+
     template<bool M = rbm_t::Momentum, typename std::enable_if<(!M), bool>::type = false>
-    base_cd_trainer(){
+    base_cd_trainer() : q_old(0.0) {
         static_assert(!rbm_t::Momentum, "This constructor should only be used without momentum support");
     }
 
     template<bool M = rbm_t::Momentum, typename std::enable_if<(M), bool>::type = false>
-    base_cd_trainer() : w_inc(0.0), a_inc(0.0), b_inc(0.0) {
+    base_cd_trainer() : w_inc(0.0), a_inc(0.0), b_inc(0.0), q_old(0.0) {
         static_assert(rbm_t::Momentum, "This constructor should only be used with momentum support");
     }
 
@@ -58,6 +70,20 @@ struct base_cd_trainer {
             b_inc = momentum * b_inc + (1 - momentum) * hbias_grad;
         }
 
+        //Penalty to be applied to weights and hidden biases
+        weight h_penalty = 0.0;
+
+        //Update sparsity
+        if(rbm_t::Sparsity){
+            auto decay_rate = rbm.decay_rate;
+            auto p = rbm.sparsity_target;
+            auto cost = rbm.sparsity_cost;
+
+            q_t = decay_rate * q_old + (1.0 - decay_rate) * q_batch;
+
+            h_penalty = cost * (q_t - p);
+        }
+
         //The final gradients;
         const auto& w_fgrad = rbm_t::Momentum ? w_inc : w_grad;
         const auto& a_fgrad = rbm_t::Momentum ? a_inc : vbias_grad;
@@ -69,13 +95,23 @@ struct base_cd_trainer {
         //contribution to overfitting
 
         //Update weights
-        
+
         if(rbm_t::Decay == DecayType::L1 || rbm_t::Decay == DecayType::L1_FULL){
-            rbm.w += learning_rate * (w_fgrad - rbm.weight_cost * abs(rbm.w));
+            rbm.w += learning_rate * (w_fgrad - rbm.weight_cost * abs(rbm.w) - h_penalty);
         } else if(rbm_t::Decay == DecayType::L2 || rbm_t::Decay == DecayType::L2_FULL){
-            rbm.w += learning_rate * (w_fgrad - rbm.weight_cost * rbm.w);
+            rbm.w += learning_rate * (w_fgrad - rbm.weight_cost * rbm.w - h_penalty);
         } else {
-            rbm.w += learning_rate * w_fgrad;
+            rbm.w += learning_rate * w_fgrad - h_penalty;
+        }
+
+        //Update hidden biases
+
+        if(rbm_t::Decay == DecayType::L1_FULL){
+            rbm.b += learning_rate * (b_fgrad - rbm.weight_cost * abs(rbm.b) - h_penalty);
+        } else if(rbm_t::Decay == DecayType::L2_FULL){
+            rbm.b += learning_rate * (b_fgrad - rbm.weight_cost * rbm.b - h_penalty);
+        } else {
+            rbm.b += learning_rate * b_fgrad - h_penalty;
         }
 
         //Update visible biases
@@ -86,16 +122,6 @@ struct base_cd_trainer {
             rbm.a += learning_rate * (a_fgrad - rbm.weight_cost * rbm.a);
         } else {
             rbm.a += learning_rate * a_fgrad;
-        }
-        
-        //Update hidden biases
-
-        if(rbm_t::Decay == DecayType::L1_FULL){
-            rbm.b += learning_rate * (b_fgrad - rbm.weight_cost * abs(rbm.b));
-        } else if(rbm_t::Decay == DecayType::L2_FULL){
-            rbm.b += learning_rate * (b_fgrad - rbm.weight_cost * rbm.b);
-        } else {
-            rbm.b += learning_rate * b_fgrad;
         }
 
         //Check for NaN
@@ -118,6 +144,8 @@ private:
     using base_cd_trainer<RBM>::vbias_grad;
     using base_cd_trainer<RBM>::hbias_grad;
 
+    using base_cd_trainer<RBM>::q_batch;
+
 public:
     cd_trainer() : base_cd_trainer<RBM>() {
         //Nothing else to init here
@@ -135,6 +163,11 @@ public:
         vbias_grad = 0.0;
         hbias_grad = 0.0;
         w_grad = 0.0;
+
+        //Reset mean activation probability if necessary
+        if(rbm_t::Sparsity){
+            q_batch = 0.0;
+        }
 
         for(auto& items : batch){
             rbm.v1 = items;
@@ -160,12 +193,21 @@ public:
 
             vbias_grad += rbm.v1 - rbm.v2_a;
             hbias_grad += rbm.h1_a - rbm.h2_a;
+
+            if(rbm_t::Sparsity){
+                q_batch += sum(rbm.h2_a);
+            }
         }
 
         //Keep only the mean of the gradients
         w_grad /= n_samples;
         vbias_grad /= n_samples;
         hbias_grad /= n_samples;
+
+        //Compute the mean activation probabilities
+        if(rbm_t::Sparsity){
+            q_batch /= n_samples * num_hidden;
+        }
 
         nan_check_3(w_grad, vbias_grad, hbias_grad);
 
@@ -199,6 +241,8 @@ private:
     using base_cd_trainer<RBM>::vbias_grad;
     using base_cd_trainer<RBM>::hbias_grad;
 
+    using base_cd_trainer<RBM>::q_batch;
+
     std::vector<fast_vector<weight, num_hidden>> p_h_a;
     std::vector<fast_vector<weight, num_hidden>> p_h_s;
 
@@ -219,6 +263,11 @@ public:
         vbias_grad = 0.0;
         hbias_grad = 0.0;
         w_grad = 0.0;
+
+        //Reset mean activation probability if necessary
+        if(rbm_t::Sparsity){
+            q_batch = 0.0;
+        }
 
         bool init = p_h_a.empty();;
         if(init){
@@ -260,12 +309,21 @@ public:
 
             vbias_grad += rbm.v1 - rbm.v2_a;
             hbias_grad += rbm.h1_a - rbm.h2_a;
+
+            if(rbm_t::Sparsity){
+                q_batch += sum(rbm.h2_a);
+            }
         }
 
         //Keep only the mean of the gradients
         w_grad /= n_samples;
         vbias_grad /= n_samples;
         hbias_grad /= n_samples;
+
+        //Compute the mean activation probabilities
+        if(rbm_t::Sparsity){
+            q_batch /= n_samples * num_hidden;
+        }
 
         nan_check_3(w_grad, vbias_grad, hbias_grad);
 

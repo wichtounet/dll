@@ -62,6 +62,9 @@ public:
     static_assert(HiddenUnit != Type::GAUSSIAN,
         "Gaussian hidden units are not supported");
 
+    static_assert(!Sparsity || (Sparsity && HiddenUnit == Type::SIGMOID),
+        "Sparsity only works with binary hidden units");
+
     static constexpr const std::size_t num_visible_gra = DBN ? num_visible : 0;
     static constexpr const std::size_t num_hidden_gra = DBN ? num_hidden : 0;
 
@@ -73,6 +76,10 @@ public:
 
     weight momentum = 0.5;
     weight weight_cost = 0.0002;
+
+    weight sparsity_target = 0.01;
+    weight decay_rate = 0.99;
+    weight sparsity_cost = 1.0;
 
     //Weights and biases
     fast_matrix<weight, num_visible, num_hidden> w;
@@ -203,6 +210,10 @@ public:
 
         if(Decay != DecayType::NONE){
             std::cout << ", weight_cost=" << weight_cost;
+        }
+
+        if(Sparsity){
+            std::cout << ", sparsity_target=" << sparsity_target;
         }
 
         std::cout << std::endl;
