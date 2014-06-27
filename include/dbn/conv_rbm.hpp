@@ -16,7 +16,7 @@
 namespace dbn {
 
 /*!
- * \brief Convolutioal Restricted Boltzmann Machine
+ * \brief Convolutional Restricted Boltzmann Machine
  */
 template<typename Layer>
 class conv_rbm {
@@ -24,10 +24,10 @@ public:
     typedef double weight;
     typedef double value_t;
 
-    static constexpr const bool Momentum = Layer::Conf::Momentum;
-    static constexpr const std::size_t BatchSize = Layer::Conf::BatchSize;
-    static constexpr const Type VisibleUnit = Layer::Conf::VisibleUnit;
-    static constexpr const Type HiddenUnit = Layer::Conf::HiddenUnit;
+    static constexpr const bool Momentum = Layer::Momentum;
+    static constexpr const std::size_t BatchSize = Layer::BatchSize;
+    static constexpr const Type VisibleUnit = Layer::VisibleUnit;
+    static constexpr const Type HiddenUnit = Layer::HiddenUnit;
 
     static constexpr const std::size_t NV = Layer::NV;
     static constexpr const std::size_t NH = Layer::NH;
@@ -37,10 +37,8 @@ public:
 
     static_assert(BatchSize > 0, "Batch size must be at least 1");
 
-    static_assert(VisibleUnit == Type::SIGMOID,
-        "Only stochastic binary units are supported");
-    static_assert(HiddenUnit == Type::SIGMOID,
-        "Only stochastic binary units are supported");
+    static_assert(VisibleUnit == Type::SIGMOID, "Only binary visible units are supported");
+    static_assert(HiddenUnit == Type::SIGMOID, "Only binary hidden units are supported");
 
     //Configurable properties
     weight learning_rate = 1e-1;
