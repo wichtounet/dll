@@ -19,10 +19,11 @@
 //TODO Find a better way to use mkdir
 #include <sys/stat.h>
 
+#include "etl/fast_matrix.hpp"
+#include "etl/fast_vector.hpp"
+
 #include "assert.hpp"
 #include "stop_watch.hpp"
-#include "fast_matrix.hpp"
-#include "fast_vector.hpp"
 #include "vector.hpp"
 #include "conf.hpp"
 #include "batch.hpp"
@@ -82,46 +83,46 @@ public:
     weight sparsity_cost = 1.0;
 
     //Weights and biases
-    fast_matrix<weight, num_visible, num_hidden> w;
-    fast_vector<weight, num_visible> a;
-    fast_vector<weight, num_hidden> b;
+    etl::fast_matrix<weight, num_visible, num_hidden> w;
+    etl::fast_vector<weight, num_visible> a;
+    etl::fast_vector<weight, num_hidden> b;
 
     //Reconstruction data
-    fast_vector<weight, num_visible> v1; //!< State of the visible units
+    etl::fast_vector<weight, num_visible> v1; //!< State of the visible units
 
-    fast_vector<weight, num_hidden> h1_a; //!< Activation probabilities of hidden units after first CD-step
-    fast_vector<weight, num_hidden> h1_s; //!< Sampled value of hidden units after first CD-step
+    etl::fast_vector<weight, num_hidden> h1_a; //!< Activation probabilities of hidden units after first CD-step
+    etl::fast_vector<weight, num_hidden> h1_s; //!< Sampled value of hidden units after first CD-step
 
-    fast_vector<weight, num_visible> v2_a; //!< Activation probabilities of visible units after first CD-step
-    fast_vector<weight, num_visible> v2_s; //!< Sampled value of visible units after first CD-step
+    etl::fast_vector<weight, num_visible> v2_a; //!< Activation probabilities of visible units after first CD-step
+    etl::fast_vector<weight, num_visible> v2_s; //!< Sampled value of visible units after first CD-step
 
-    fast_vector<weight, num_hidden> h2_a; //!< Activation probabilities of hidden units after last CD-step
-    fast_vector<weight, num_hidden> h2_s; //!< Sampled value of hidden units after last CD-step
+    etl::fast_vector<weight, num_hidden> h2_a; //!< Activation probabilities of hidden units after last CD-step
+    etl::fast_vector<weight, num_hidden> h2_s; //!< Sampled value of hidden units after last CD-step
 
     //Gradients computations for DBN
-    fast_matrix<weight, num_visible, num_hidden>& gr_w = w;
-    fast_vector<weight, num_hidden>& gr_b = b;
+    etl::fast_matrix<weight, num_visible, num_hidden>& gr_w = w;
+    etl::fast_vector<weight, num_hidden>& gr_b = b;
 
-    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_incs;
-    fast_vector<weight, num_hidden_gra> gr_b_incs;
+    etl::fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_incs;
+    etl::fast_vector<weight, num_hidden_gra> gr_b_incs;
 
-    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_best;
-    fast_vector<weight, num_hidden_gra> gr_b_best;
+    etl::fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_best;
+    etl::fast_vector<weight, num_hidden_gra> gr_b_best;
 
-    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_best_incs;
-    fast_vector<weight, num_hidden_gra> gr_b_best_incs;
+    etl::fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_best_incs;
+    etl::fast_vector<weight, num_hidden_gra> gr_b_best_incs;
 
-    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_df0;
-    fast_vector<weight, num_hidden_gra> gr_b_df0;
+    etl::fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_df0;
+    etl::fast_vector<weight, num_hidden_gra> gr_b_df0;
 
-    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_df3;
-    fast_vector<weight, num_hidden_gra> gr_b_df3;
+    etl::fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_df3;
+    etl::fast_vector<weight, num_hidden_gra> gr_b_df3;
 
-    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_s;
-    fast_vector<weight, num_hidden_gra> gr_b_s;
+    etl::fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_s;
+    etl::fast_vector<weight, num_hidden_gra> gr_b_s;
 
-    fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_tmp;
-    fast_vector<weight, num_hidden_gra> gr_b_tmp;
+    etl::fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_tmp;
+    etl::fast_vector<weight, num_hidden_gra> gr_b_tmp;
 
     std::vector<vector<weight>> gr_probs_a;
     std::vector<vector<weight>> gr_probs_s;

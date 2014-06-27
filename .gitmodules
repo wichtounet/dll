@@ -2,3 +2,7 @@
 	path = make-utils
 	url = https://github.com/wichtounet/make-utils.git
 	branch = master
+[submodule "etl"]
+	path = etl
+	url = https://github.com/wichtounet/etl.git
+	branch = master

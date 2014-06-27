@@ -5,6 +5,8 @@ default: release
 include make-utils/flags.mk
 include make-utils/cpp-utils.mk
 
+CXX_FLAGS += -Ietl/include/
+
 CPP_FILES=$(wildcard test/*.cpp)
 
 DEBUG_D_FILES=$(CPP_FILES:%.cpp=debug/%.cpp.d)

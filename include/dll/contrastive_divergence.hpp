@@ -24,9 +24,9 @@ struct base_cd_trainer {
     typedef typename rbm_t::weight weight;
 
     //Gradients
-    fast_matrix<weight, num_visible, num_hidden> w_grad;
-    fast_vector<weight, num_visible> vbias_grad;
-    fast_vector<weight, num_hidden> hbias_grad;
+    etl::fast_matrix<weight, num_visible, num_hidden> w_grad;
+    etl::fast_vector<weight, num_visible> vbias_grad;
+    etl::fast_vector<weight, num_hidden> hbias_grad;
 
     //{{{ Momentum
 
@@ -34,9 +34,9 @@ struct base_cd_trainer {
     static constexpr const std::size_t num_visible_mom = rbm_t::Momentum ? num_visible : 0;
     static constexpr const std::size_t num_hidden_mom = rbm_t::Momentum ? num_hidden : 0;
 
-    fast_matrix<weight, num_visible_mom, num_hidden_mom> w_inc;
-    fast_vector<weight, num_visible_mom> a_inc;
-    fast_vector<weight, num_hidden_mom> b_inc;
+    etl::fast_matrix<weight, num_visible_mom, num_hidden_mom> w_inc;
+    etl::fast_vector<weight, num_visible_mom> a_inc;
+    etl::fast_vector<weight, num_hidden_mom> b_inc;
 
     //}}} Momentum end
 
@@ -253,8 +253,8 @@ private:
 
     using base_cd_trainer<RBM>::q_batch;
 
-    std::vector<fast_vector<weight, num_hidden>> p_h_a;
-    std::vector<fast_vector<weight, num_hidden>> p_h_s;
+    std::vector<etl::fast_vector<weight, num_hidden>> p_h_a;
+    std::vector<etl::fast_vector<weight, num_hidden>> p_h_s;
 
 public:
     persistent_cd_trainer() : base_cd_trainer<RBM>() {
