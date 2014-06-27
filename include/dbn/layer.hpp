@@ -15,6 +15,9 @@ struct layer {
     static constexpr const std::size_t num_visible = visibles;
     static constexpr const std::size_t num_hidden = hiddens;
 
+    static_assert(num_visible > 0, "There must be at least 1 visible unit");
+    static_assert(num_hidden > 0, "There must be at least 1 hidden unit");
+
     typedef C Conf;
 };
 
