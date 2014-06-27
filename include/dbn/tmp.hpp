@@ -8,11 +8,26 @@
 #ifndef DBN_TMP_HPP
 #define DBN_TMP_HPP
 
-template< bool B, class T = void >
-using disable_if_t = typename std::enable_if<!B, T>::type;
+namespace detail {
+
+struct enabler_t {
+    constexpr enabler_t(){}
+};
+constexpr const enabler_t dummy;
+
+}
 
 template< bool B, class T = void >
 using enable_if_t = typename std::enable_if<B,T>::type;
+
+template< bool B, class T = void >
+using disable_if_t = typename std::enable_if<!B, T>::type;
+
+template< bool B>
+using enable_if_u = typename std::enable_if<B, detail::enabler_t>::type;
+
+template< bool B>
+using disable_if_u = typename std::enable_if<!B, detail::enabler_t>::type;
 
 namespace dbn {
 
