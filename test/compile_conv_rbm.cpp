@@ -1,5 +1,5 @@
-#include "dbn/conv_rbm.hpp"
-#include "dbn/conv_layer.hpp"
+#include "dll/conv_rbm.hpp"
+#include "dll/conv_layer.hpp"
 
 template<typename RBM>
 void test_rbm(){

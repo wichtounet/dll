@@ -1,4 +1,4 @@
-#include "dbn/dbn.hpp"
+#include "dll/dbn.hpp"
 
 template<typename DBN>
 void test_dbn(){

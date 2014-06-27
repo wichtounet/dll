@@ -1,4 +1,4 @@
-#include "dbn/rbm.hpp"
+#include "dll/rbm.hpp"
 
 template<typename RBM>
 void test_rbm(){
