@@ -40,20 +40,20 @@ public:
     typedef double value_t;
 
     template<typename RBM>
-    using trainer_t = typename Layer::Conf::template trainer_t<RBM>;
+    using trainer_t = typename Layer::template trainer_t<RBM>;
 
     static constexpr const std::size_t num_visible = Layer::num_visible;
     static constexpr const std::size_t num_hidden = Layer::num_hidden;
 
-    static constexpr const bool Momentum = Layer::Conf::Momentum;
-    static constexpr const std::size_t BatchSize = Layer::Conf::BatchSize;
-    static constexpr const bool Init = Layer::Conf::Debug;
-    static constexpr const bool Debug = Layer::Conf::Debug;
-    static constexpr const Type VisibleUnit = Layer::Conf::VisibleUnit;
-    static constexpr const Type HiddenUnit = Layer::Conf::HiddenUnit;
-    static constexpr const bool DBN = Layer::Conf::DBN;
-    static constexpr const bool Sparsity = Layer::Conf::Sparsity;
-    static constexpr const DecayType Decay = Layer::Conf::Decay;
+    static constexpr const bool Momentum = Layer::Momentum;
+    static constexpr const std::size_t BatchSize = Layer::BatchSize;
+    static constexpr const bool Init = Layer::Debug;
+    static constexpr const bool Debug = Layer::Debug;
+    static constexpr const Type VisibleUnit = Layer::VisibleUnit;
+    static constexpr const Type HiddenUnit = Layer::HiddenUnit;
+    static constexpr const bool DBN = Layer::DBN;
+    static constexpr const bool Sparsity = Layer::Sparsity;
+    static constexpr const DecayType Decay = Layer::Decay;
 
     static_assert(BatchSize > 0, "Batch size must be at least 1");
 

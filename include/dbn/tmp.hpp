@@ -78,6 +78,56 @@ struct get_value<D> {
     static constexpr const auto value = D::value;
 };
 
+template<typename D, typename... Args>
+struct get_type {};
+
+template<typename D, typename T2, typename... Args>
+struct get_type<D, T2, Args...> {
+    template<typename D2, typename T22, typename Enable = void>
+    struct get_type_2 {
+        using type = typename get_type<D, Args...>::type;
+    };
+
+    template<typename D2, typename T22>
+    struct get_type_2 <D2, T22, enable_if_t<std::is_same<typename D2::type, typename T22::type>::value>> {
+        using type = typename T22::value;
+    };
+
+    using type = typename get_type_2<D, T2>::type;
+};
+
+template<typename D>
+struct get_type<D> {
+    using type = typename D::value;
+};
+
+template<typename D, typename... Args>
+struct get_template_type {};
+
+template<typename D, typename T2, typename... Args>
+struct get_template_type<D, T2, Args...> {
+    template<typename D2, typename T22, typename Enable = void>
+    struct get_template_type_2 {
+        template<typename RBM>
+        using type = typename get_template_type<D, Args...>::template type<RBM>;
+    };
+
+    template<typename D2, typename T22>
+    struct get_template_type_2 <D2, T22, enable_if_t<std::is_same<typename D2::type, typename T22::type>::value>> {
+        template<typename RBM>
+        using type = typename T22::template value<RBM>;
+    };
+
+    template<typename RBM>
+    using type = typename get_template_type_2<D, T2>::template type<RBM>;
+};
+
+template<typename D>
+struct get_template_type<D> {
+    template<typename RBM>
+    using type = typename D::template value<RBM>;
+};
+
 } //end of dbn namespace
 
 #endif

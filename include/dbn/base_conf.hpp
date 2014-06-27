@@ -23,6 +23,7 @@ struct batch_size_id;
 struct visible_unit_id;
 struct hidden_unit_id;
 struct weight_decay_id;
+struct trainer_id;
 
 template<std::size_t B>
 struct batch_size : conf_elt {
@@ -55,6 +56,8 @@ struct weight_decay : conf_elt  {
 
 template<template<typename> class T>
 struct trainer : conf_elt  {
+    using type = trainer_id;
+
     template <typename RBM>
     using value = T<RBM>;
 };
