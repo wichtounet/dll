@@ -8,25 +8,27 @@
 #ifndef DBN_TMP_HPP
 #define DBN_TMP_HPP
 
-namespace detail {
-
-struct enabler_t {
-    constexpr enabler_t(){}
-};
-constexpr const enabler_t dummy;
-
-}
-
 template< bool B, class T = void >
 using enable_if_t = typename std::enable_if<B,T>::type;
 
 template< bool B, class T = void >
 using disable_if_t = typename std::enable_if<!B, T>::type;
 
-template< bool B>
+namespace detail {
+
+//Note: Unfortunately, CLang is bugged (Bug 11723), therefore, it is not
+//possible to use universal enable_if/disable_if directly, it is necessary to
+//use the dummy :( FU Clang!
+
+enum class enabler_t { DUMMY };
+constexpr const enabler_t dummy = enabler_t::DUMMY;
+
+} //end of detail
+
+template<bool B>
 using enable_if_u = typename std::enable_if<B, detail::enabler_t>::type;
 
-template< bool B>
+template<bool B>
 using disable_if_u = typename std::enable_if<!B, detail::enabler_t>::type;
 
 namespace dbn {
