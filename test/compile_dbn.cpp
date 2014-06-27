@@ -14,9 +14,10 @@ int main(){
     //Basic example
 
     typedef dbn::dbn<
-        dbn::layer<dbn::conf<true, 50, true, false, dbn::DecayType::L2, true>, 28 * 28, 100>,
-        dbn::layer<dbn::conf<true, 50, false, false, dbn::DecayType::L2, true>, 100, 100>,
-        dbn::layer<dbn::conf<true, 50, false, false, dbn::DecayType::L2, true>, 110, 200>> dbn_1;
+        dbn::layer<28 * 28, 100, dbn::momentum, dbn::batch_size<50>, dbn::init_weights, dbn::weight_decay<dbn::DecayType::L2>, dbn::sparsity>,
+        dbn::layer<100, 100, dbn::momentum, dbn::batch_size<50>>,
+        dbn::layer<110, 200, dbn::batch_size<50>, dbn::momentum, dbn::weight_decay<dbn::DecayType::L2_FULL>>
+    > dbn_1;
 
     //Test them all
 
