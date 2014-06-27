@@ -344,7 +344,7 @@ public:
                     h_a(j) = std::max(0.0, x);
                     h_s(j) = std::max(0.0, x + noise());
                 } else {
-                    dbn_unreachable("Invalid path");
+                    dll_unreachable("Invalid path");
                 }
 
                 dll_assert(std::isfinite(s), "NaN verify");
@@ -389,7 +389,7 @@ public:
                 v_a(i) = std::max(0.0, x);
                 v_s(i) = std::max(0.0, x + noise());
             } else {
-                dbn_unreachable("Invalid path");
+                dll_unreachable("Invalid path");
             }
 
             dll_assert(std::isfinite(s), "NaN verify");

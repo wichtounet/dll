@@ -22,14 +22,14 @@
 #if defined __clang__
 
 #if __has_builtin(__builtin_unreachable)
-#define dbn_unreachable(message) __builtin_unreachable();
+#define dll_unreachable(message) __builtin_unreachable();
 #else
-#define dbn_unreachable(message) ((void)0)
+#define dll_unreachable(message) ((void)0)
 #endif //__has_builtin(__builtin_unreachable)
 
 #elif defined __GNUC__
 
-#define dbn_unreachable(message) __builtin_unreachable();
+#define dll_unreachable(message) __builtin_unreachable();
 
 #endif //__clang__
 
@@ -46,14 +46,14 @@
 #if defined __clang__
 
 #if __has_builtin(__builtin_unreachable)
-#define dbn_unreachable(message) dll_assert(false, message); __builtin_unreachable();
+#define dll_unreachable(message) dll_assert(false, message); __builtin_unreachable();
 #else
-#define dbn_unreachable(message) dll_assert(false, message);
+#define dll_unreachable(message) dll_assert(false, message);
 #endif //__has_builtin(__builtin_unreachable)
 
 #elif defined __GNUC__
 
-#define dbn_unreachable(message) dll_assert(false, message); __builtin_unreachable();
+#define dll_unreachable(message) dll_assert(false, message); __builtin_unreachable();
 
 #endif //__clang__
 
