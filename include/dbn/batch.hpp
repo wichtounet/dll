@@ -13,7 +13,7 @@
 
 #include "assert.hpp"
 
-namespace dbn {
+namespace dll {
 
 template<typename T>
 struct batch {

@@ -14,7 +14,7 @@
 #include "vector.hpp"
 #include "utils.hpp"
 
-namespace dbn {
+namespace dll {
 
 template<typename Target>
 struct gradient_context {
@@ -759,6 +759,6 @@ public:
     }
 };
 
-} //end of namespace dbn
+} //end of namespace dll
 
 #endif

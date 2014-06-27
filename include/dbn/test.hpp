@@ -8,7 +8,7 @@
 #ifndef DBN_TEST_HPP
 #define DBN_TEST_HPP
 
-namespace dbn {
+namespace dll {
 
 struct predictor {
     template<typename T, typename V>

@@ -10,7 +10,7 @@
 
 #include <vector>
 
-namespace dbn {
+namespace dll {
 
 template<typename V>
 struct fake_label_array {

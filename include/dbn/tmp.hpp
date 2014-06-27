@@ -31,7 +31,7 @@ using enable_if_u = typename std::enable_if<B, detail::enabler_t>::type;
 template<bool B>
 using disable_if_u = typename std::enable_if<!B, detail::enabler_t>::type;
 
-namespace dbn {
+namespace dll {
 
 template<typename T1, typename... Args>
 struct is_present;

@@ -12,7 +12,7 @@
 #include "utils.hpp"
 #include "tmp.hpp"
 
-namespace dbn {
+namespace dll {
 
 template <typename RBM>
 using cd1_trainer_t = cd_trainer<1, RBM>;

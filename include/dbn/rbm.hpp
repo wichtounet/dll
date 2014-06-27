@@ -28,7 +28,7 @@
 #include "batch.hpp"
 #include "layer.hpp"
 
-namespace dbn {
+namespace dll {
 
 /*!
  * \brief Restricted Boltzmann Machine
@@ -248,7 +248,7 @@ public:
                 auto start = i * BatchSize;
                 auto end = std::min(start + BatchSize, training_data.size());
 
-                error += trainer->train_batch(dbn::batch<vector<weight>>(training_data.begin() + start, training_data.begin() + end), *this);
+                error += trainer->train_batch(dll::batch<vector<weight>>(training_data.begin() + start, training_data.begin() + end), *this);
             }
 
             std::cout << "epoch " << epoch << ": Reconstruction error average: " << (error / batches) << " Free energy: " << free_energy() << std::endl;

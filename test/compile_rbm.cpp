@@ -9,25 +9,25 @@ void test_rbm(){
 }
 
 template <typename RBM>
-using pcd2_trainer_t = dbn::persistent_cd_trainer<2, RBM>;
+using pcd2_trainer_t = dll::persistent_cd_trainer<2, RBM>;
 
 int main(){
     //Very basic RBM that must compile
-    typedef dbn::rbm<dbn::layer<100, 100, dbn::weight_decay<dbn::DecayType::L2>>> rbm_1;
+    typedef dll::rbm<dll::layer<100, 100, dll::weight_decay<dll::DecayType::L2>>> rbm_1;
 
     //Mix units
-    typedef dbn::rbm<dbn::layer<100, 100, dbn::momentum, dbn::batch_size<50>, dbn::visible_unit<dbn::Type::GAUSSIAN>, dbn::hidden_unit<dbn::Type::NRLU>>> rbm_2;
+    typedef dll::rbm<dll::layer<100, 100, dll::momentum, dll::batch_size<50>, dll::visible_unit<dll::Type::GAUSSIAN>, dll::hidden_unit<dll::Type::NRLU>>> rbm_2;
 
     //Sparsity
-    typedef dbn::rbm<dbn::layer<100, 100, dbn::momentum, dbn::sparsity>> rbm_3;
+    typedef dll::rbm<dll::layer<100, 100, dll::momentum, dll::sparsity>> rbm_3;
 
     //PCD-2
 
-    typedef dbn::rbm<dbn::layer<100, 100, dbn::trainer<pcd2_trainer_t>>> rbm_4;
+    typedef dll::rbm<dll::layer<100, 100, dll::trainer<pcd2_trainer_t>>> rbm_4;
 
     //PCD-2 and sparsity
 
-    typedef dbn::rbm<dbn::layer<100, 100, dbn::trainer<pcd2_trainer_t>, dbn::sparsity>> rbm_5;
+    typedef dll::rbm<dll::layer<100, 100, dll::trainer<pcd2_trainer_t>, dll::sparsity>> rbm_5;
 
     //Test them all
 

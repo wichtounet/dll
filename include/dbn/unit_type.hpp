@@ -8,7 +8,7 @@
 #ifndef DBN_UNIT_TYPE_HPP
 #define DBN_UNIT_TYPE_HPP
 
-namespace dbn {
+namespace dll {
 
 enum class Type {
     SIGMOID,    //Stochastic binary unity

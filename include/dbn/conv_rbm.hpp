@@ -13,7 +13,7 @@
 #include "unit_type.hpp"
 #include "fast_vector.hpp"
 
-namespace dbn {
+namespace dll {
 
 /*!
  * \brief Convolutional Restricted Boltzmann Machine

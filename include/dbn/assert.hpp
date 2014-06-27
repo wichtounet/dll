@@ -40,7 +40,7 @@
 
 #define dbn_assert(condition, message) (likely(condition) \
     ? ((void)0) \
-    : ::dbn::assertion::detail::assertion_failed_msg(#condition, message, \
+    : ::dll::assertion::detail::assertion_failed_msg(#condition, message, \
     __PRETTY_FUNCTION__, __FILE__, __LINE__))
 
 #if defined __clang__
@@ -59,7 +59,7 @@
 
 #endif //NDEBUG
 
-namespace dbn {
+namespace dll {
 namespace assertion {
 namespace detail {
 

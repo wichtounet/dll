@@ -8,7 +8,7 @@
 #ifndef DBN_DECAY_TYPE_HPP
 #define DBN_DECAY_TYPE_HPP
 
-namespace dbn {
+namespace dll {
 
 enum class DecayType {
     NONE,

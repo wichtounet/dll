@@ -13,7 +13,7 @@
 #include "unit_type.hpp"
 #include "decay_type.hpp"
 
-namespace dbn {
+namespace dll {
 
 struct conf_elt {
     static constexpr const bool marker = true;

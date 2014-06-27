@@ -8,7 +8,7 @@
 #ifndef DBN_TUPLE_UTILS_HPP
 #define DBN_TUPLE_UTILS_HPP
 
-namespace dbn {
+namespace dll {
 
 template<size_t I, class Tuple, typename F>
 struct for_each_impl {
@@ -76,6 +76,6 @@ void for_each_rpair_i(Tuple& t, F&& f) {
     }
 }
 
-} //end of namespace dbn
+} //end of namespace dll
 
 #endif

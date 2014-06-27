@@ -12,7 +12,7 @@
 #include "batch.hpp"
 #include "decay_type.hpp"
 
-namespace dbn {
+namespace dll {
 
 template<typename RBM>
 struct base_cd_trainer {
@@ -162,8 +162,8 @@ public:
     }
 
     template<typename T>
-    weight train_batch(const dbn::batch<T>& batch, RBM& rbm){
-        dbn_assert(batch.size() <= static_cast<typename dbn::batch<T>::size_type>(BatchSize), "Invalid size");
+    weight train_batch(const dll::batch<T>& batch, RBM& rbm){
+        dbn_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(BatchSize), "Invalid size");
         dbn_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
 
         //Size of a minibatch
@@ -262,8 +262,8 @@ public:
     }
 
     template<typename T>
-    weight train_batch(const dbn::batch<T>& batch, RBM& rbm){
-        dbn_assert(batch.size() <= static_cast<typename dbn::batch<T>::size_type>(rbm_t::BatchSize), "Invalid size");
+    weight train_batch(const dll::batch<T>& batch, RBM& rbm){
+        dbn_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_t::BatchSize), "Invalid size");
         dbn_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
 
         //Size of a minibatch
@@ -281,8 +281,8 @@ public:
 
         bool init = p_h_a.empty();;
         if(init){
-            p_h_a.resize(static_cast<typename dbn::batch<T>::size_type>(rbm_t::BatchSize));
-            p_h_s.resize(static_cast<typename dbn::batch<T>::size_type>(rbm_t::BatchSize));
+            p_h_a.resize(static_cast<typename dll::batch<T>::size_type>(rbm_t::BatchSize));
+            p_h_s.resize(static_cast<typename dll::batch<T>::size_type>(rbm_t::BatchSize));
         }
 
         for(std::size_t i = 0; i < batch.size(); ++i){

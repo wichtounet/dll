@@ -12,7 +12,7 @@
 #include "utils.hpp"
 #include "tmp.hpp"
 
-namespace dbn {
+namespace dll {
 
 template<std::size_t NV_T, std::size_t NH_T, std::size_t K_T, typename... Parameters>
 struct conv_layer {
