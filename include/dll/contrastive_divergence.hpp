@@ -48,12 +48,12 @@ struct base_cd_trainer {
 
     //}}} Sparsity end
 
-    template<bool M = rbm_t::Momentum, typename std::enable_if<(!M), bool>::type = false>
+    template<bool M = rbm_t::Momentum, disable_if_u<M> = detail::dummy>
     base_cd_trainer() : q_old(0.0) {
         static_assert(!rbm_t::Momentum, "This constructor should only be used without momentum support");
     }
 
-    template<bool M = rbm_t::Momentum, typename std::enable_if<(M), bool>::type = false>
+    template<bool M = rbm_t::Momentum, enable_if_u<M> = detail::dummy>
     base_cd_trainer() : w_inc(0.0), a_inc(0.0), b_inc(0.0), q_old(0.0) {
         static_assert(rbm_t::Momentum, "This constructor should only be used with momentum support");
     }

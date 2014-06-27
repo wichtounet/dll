@@ -73,7 +73,10 @@ struct is_valid <V> {
 };
 
 template<typename D, typename... Args>
-struct get_value {};
+struct get_value;
+
+//TODO Find an easier way to achieve that
+//Default template argument are not supported in partial class specialization :(
 
 template<typename D, typename T2, typename... Args>
 struct get_value<D, T2, Args...> {
@@ -96,7 +99,7 @@ struct get_value<D> {
 };
 
 template<typename D, typename... Args>
-struct get_type {};
+struct get_type;
 
 template<typename D, typename T2, typename... Args>
 struct get_type<D, T2, Args...> {
@@ -119,7 +122,7 @@ struct get_type<D> {
 };
 
 template<typename D, typename... Args>
-struct get_template_type {};
+struct get_template_type;
 
 template<typename D, typename T2, typename... Args>
 struct get_template_type<D, T2, Args...> {
