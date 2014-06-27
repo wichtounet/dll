@@ -163,8 +163,8 @@ public:
 
     template<typename T>
     weight train_batch(const dll::batch<T>& batch, RBM& rbm){
-        dbn_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(BatchSize), "Invalid size");
-        dbn_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
+        dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(BatchSize), "Invalid size");
+        dll_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
 
         //Size of a minibatch
         auto n_samples = static_cast<weight>(batch.size());
@@ -263,8 +263,8 @@ public:
 
     template<typename T>
     weight train_batch(const dll::batch<T>& batch, RBM& rbm){
-        dbn_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_t::BatchSize), "Invalid size");
-        dbn_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
+        dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_t::BatchSize), "Invalid size");
+        dll_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
 
         //Size of a minibatch
         auto n_samples = static_cast<weight>(batch.size());

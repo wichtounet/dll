@@ -23,7 +23,7 @@ struct batch {
     std::pair<const_iterator_t, const_iterator_t> values;
 
     batch(const_iterator_t&& it, const_iterator_t&& end): values(std::forward<const_iterator_t>(it), std::forward<const_iterator_t>(end)){
-        dbn_assert(std::distance(it, end) > 0, "Batch cannot be empty or reversed");
+        dll_assert(std::distance(it, end) > 0, "Batch cannot be empty or reversed");
     }
 
     const_iterator_t begin() const {

@@ -157,8 +157,8 @@ public:
 
     template<typename Label>
     void train_with_labels(const std::vector<vector<weight>>& training_data, const std::vector<Label>& training_labels, std::size_t labels, std::size_t max_epochs){
-        dbn_assert(training_data.size() == training_labels.size(), "There must be the same number of values than labels");
-        dbn_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
+        dll_assert(training_data.size() == training_labels.size(), "There must be the same number of values than labels");
+        dll_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
         auto input = std::cref(training_data);
 
@@ -202,7 +202,7 @@ public:
 
     template<typename TrainingItem>
     size_t predict_labels(const TrainingItem& item, std::size_t labels){
-        dbn_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
+        dll_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
         vector<weight> output_a(num_visible<layers - 1>());
         vector<weight> output_s(num_visible<layers - 1>());

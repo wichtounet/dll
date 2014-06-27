@@ -232,7 +232,7 @@ public:
                 pi += 0.0001;
                 a(i) = log(pi / (1.0 - pi));
 
-                dbn_assert(std::isfinite(a(i)), "NaN verify");
+                dll_assert(std::isfinite(a(i)), "NaN verify");
             }
         }
 
@@ -307,9 +307,9 @@ public:
                 auto x = b(j) + s;
                 h_a(j) = exp(x) / exp_sum;
 
-                dbn_assert(std::isfinite(s), "NaN verify");
-                dbn_assert(std::isfinite(x), "NaN verify");
-                dbn_assert(std::isfinite(h_a(j)), "NaN verify");
+                dll_assert(std::isfinite(s), "NaN verify");
+                dll_assert(std::isfinite(x), "NaN verify");
+                dll_assert(std::isfinite(h_a(j)), "NaN verify");
             }
 
             std::size_t max_j = 0;
@@ -347,10 +347,10 @@ public:
                     dbn_unreachable("Invalid path");
                 }
 
-                dbn_assert(std::isfinite(s), "NaN verify");
-                dbn_assert(std::isfinite(x), "NaN verify");
-                dbn_assert(std::isfinite(h_a(j)), "NaN verify");
-                dbn_assert(std::isfinite(h_s(j)), "NaN verify");
+                dll_assert(std::isfinite(s), "NaN verify");
+                dll_assert(std::isfinite(x), "NaN verify");
+                dll_assert(std::isfinite(h_a(j)), "NaN verify");
+                dll_assert(std::isfinite(h_s(j)), "NaN verify");
             }
         }
     }
@@ -392,10 +392,10 @@ public:
                 dbn_unreachable("Invalid path");
             }
 
-            dbn_assert(std::isfinite(s), "NaN verify");
-            dbn_assert(std::isfinite(x), "NaN verify");
-            dbn_assert(std::isfinite(v_a(i)), "NaN verify");
-            dbn_assert(std::isfinite(v_s(i)), "NaN verify");
+            dll_assert(std::isfinite(s), "NaN verify");
+            dll_assert(std::isfinite(x), "NaN verify");
+            dll_assert(std::isfinite(v_a(i)), "NaN verify");
+            dll_assert(std::isfinite(v_s(i)), "NaN verify");
         }
     }
 
@@ -412,7 +412,7 @@ public:
     }
 
     void reconstruct(const vector<weight>& items){
-        dbn_assert(items.size() == num_visible, "The size of the training sample must match visible units");
+        dll_assert(items.size() == num_visible, "The size of the training sample must match visible units");
 
         stop_watch<> watch;
 

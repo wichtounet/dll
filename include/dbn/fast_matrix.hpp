@@ -164,27 +164,27 @@ public:
     }
 
     T& operator()(size_t i, size_t j){
-        dbn_assert(i < Rows, "Out of bounds");
-        dbn_assert(j < Columns, "Out of bounds");
+        dll_assert(i < Rows, "Out of bounds");
+        dll_assert(j < Columns, "Out of bounds");
 
         return _data[i * Columns + j];
     }
 
     const T& operator()(size_t i, size_t j) const {
-        dbn_assert(i < Rows, "Out of bounds");
-        dbn_assert(j < Columns, "Out of bounds");
+        dll_assert(i < Rows, "Out of bounds");
+        dll_assert(j < Columns, "Out of bounds");
 
         return _data[i * Columns + j];
     }
 
     const T& operator[](size_t i) const {
-        dbn_assert(i < size(), "Out of bounds");
+        dll_assert(i < size(), "Out of bounds");
 
         return _data[i];
     }
 
     T& operator[](size_t i){
-        dbn_assert(i < size(), "Out of bounds");
+        dll_assert(i < size(), "Out of bounds");
 
         return _data[i];
     }

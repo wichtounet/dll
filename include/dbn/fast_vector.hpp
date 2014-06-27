@@ -69,7 +69,7 @@ public:
     }
 
     fast_vector& operator=(const std::vector<T>& vec){
-        dbn_assert(vec.size() == Rows, "Cannot copy from a vector of different size");
+        dll_assert(vec.size() == Rows, "Cannot copy from a vector of different size");
 
         for(std::size_t i = 0; i < Rows; ++i){
             _data[i] = vec[i];
@@ -79,7 +79,7 @@ public:
     }
 
     fast_vector& operator=(const vector<T>& vec){
-        dbn_assert(vec.size() == Rows, "Cannot copy from a vector of different size");
+        dll_assert(vec.size() == Rows, "Cannot copy from a vector of different size");
 
         for(std::size_t i = 0; i < Rows; ++i){
             _data[i] = vec[i];
@@ -181,25 +181,25 @@ public:
     }
 
     T& operator()(size_t i){
-        dbn_assert(i < rows, "Out of bounds");
+        dll_assert(i < rows, "Out of bounds");
 
         return _data[i];
     }
 
     const T& operator()(size_t i) const {
-        dbn_assert(i < rows, "Out of bounds");
+        dll_assert(i < rows, "Out of bounds");
 
         return _data[i];
     }
 
     T& operator[](size_t i){
-        dbn_assert(i < rows, "Out of bounds");
+        dll_assert(i < rows, "Out of bounds");
 
         return _data[i];
     }
 
     const T& operator[](size_t i) const {
-        dbn_assert(i < rows, "Out of bounds");
+        dll_assert(i < rows, "Out of bounds");
 
         return _data[i];
     }

@@ -70,25 +70,25 @@ public:
     }
 
     T& operator()(size_t i){
-        dbn_assert(i < rows, "Out of bounds");
+        dll_assert(i < rows, "Out of bounds");
 
         return _data[i];
     }
 
     const T& operator()(size_t i) const {
-        dbn_assert(i < rows, "Out of bounds");
+        dll_assert(i < rows, "Out of bounds");
 
         return _data[i];
     }
 
     T& operator[](size_t i){
-        dbn_assert(i < rows, "Out of bounds");
+        dll_assert(i < rows, "Out of bounds");
 
         return _data[i];
     }
 
     const T& operator[](size_t i) const {
-        dbn_assert(i < rows, "Out of bounds");
+        dll_assert(i < rows, "Out of bounds");
 
         return _data[i];
     }

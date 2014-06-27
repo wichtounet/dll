@@ -17,7 +17,7 @@
 #define nan_check(list) ((void)0)
 #define nan_check_3(l1, l2, l3) ((void)0)
 
-#define dbn_assert(condition, message) ((void)0)
+#define dll_assert(condition, message) ((void)0)
 
 #if defined __clang__
 
@@ -35,10 +35,10 @@
 
 #else
 
-#define nan_check(list) for(auto& nantest : ((list))){dbn_assert(std::isfinite(nantest), "NaN Verify");}
+#define nan_check(list) for(auto& nantest : ((list))){dll_assert(std::isfinite(nantest), "NaN Verify");}
 #define nan_check_3(l1,l2,l3) nan_check(l1); nan_check(l2); nan_check(l3);
 
-#define dbn_assert(condition, message) (likely(condition) \
+#define dll_assert(condition, message) (likely(condition) \
     ? ((void)0) \
     : ::dll::assertion::detail::assertion_failed_msg(#condition, message, \
     __PRETTY_FUNCTION__, __FILE__, __LINE__))
@@ -46,14 +46,14 @@
 #if defined __clang__
 
 #if __has_builtin(__builtin_unreachable)
-#define dbn_unreachable(message) dbn_assert(false, message); __builtin_unreachable();
+#define dbn_unreachable(message) dll_assert(false, message); __builtin_unreachable();
 #else
-#define dbn_unreachable(message) dbn_assert(false, message);
+#define dbn_unreachable(message) dll_assert(false, message);
 #endif //__has_builtin(__builtin_unreachable)
 
 #elif defined __GNUC__
 
-#define dbn_unreachable(message) dbn_assert(false, message); __builtin_unreachable();
+#define dbn_unreachable(message) dll_assert(false, message); __builtin_unreachable();
 
 #endif //__clang__
 
