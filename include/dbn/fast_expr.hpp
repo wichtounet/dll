@@ -9,7 +9,7 @@
 #define DBN_binary_expr_HPP
 
 #include "fast_op.hpp"
-#include "utils.hpp"
+#include "tmp.hpp"
 
 template <typename T, typename LeftExpr, typename BinaryOp, typename RightExpr>
 class binary_expr {
