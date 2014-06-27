@@ -1,7 +1,7 @@
-dbn
-===
+Deep Learning Library (DLL)
+===========================
 
-This library aims to provide a C++ implementation of Restricted Boltzmann
+DLL is a small library aims to provide a C++ implementation of Restricted Boltzmann
 Machine (RBM) and Deep Belief Network (DBN).
 
 Features
@@ -12,7 +12,9 @@ Features
    * Various units: Stochastic binary, Gaussian, Softmax and nRLU units
    * Contrastive Divergence and Persistence Contrastive Divergence
       * CD-1 learning by default
-   * Momentum and weight decay
+   * Momentum
+   * Weight decay
+   * Sparsity target
 
 * **Deep Belief Network**
 
