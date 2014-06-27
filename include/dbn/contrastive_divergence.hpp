@@ -58,6 +58,16 @@ struct base_cd_trainer {
         static_assert(rbm_t::Momentum, "This constructor should only be used with momentum support");
     }
 
+    template<typename T1, typename T2, bool M = rbm_t::Momentum, enable_if_u<M> = detail::dummy>
+    T2& get_fgrad(T1& , T2& inc){
+        return inc;
+    }
+
+    template<typename T1, typename T2, bool M = rbm_t::Momentum, disable_if_u<M> = detail::dummy>
+    T1& get_fgrad(T1& grad, T2& ){
+        return grad;
+    }
+
     void update_weights(RBM& rbm){
         auto learning_rate = rbm.learning_rate;
 
@@ -85,9 +95,9 @@ struct base_cd_trainer {
         }
 
         //The final gradients;
-        const auto& w_fgrad = rbm_t::Momentum ? w_inc : w_grad;
-        const auto& a_fgrad = rbm_t::Momentum ? a_inc : vbias_grad;
-        const auto& b_fgrad = rbm_t::Momentum ? b_inc : hbias_grad;
+        const auto& w_fgrad = get_fgrad(w_grad, w_inc);
+        const auto& a_fgrad = get_fgrad(vbias_grad, a_inc);
+        const auto& b_fgrad = get_fgrad(hbias_grad, b_inc);
 
         //Weight decay is applied on biases only on demand
         //Note: According to G. Hinton, Weight Decay should not be applied to
