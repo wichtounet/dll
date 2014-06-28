@@ -4,7 +4,13 @@ template<typename DBN>
 void test_dbn(){
     DBN dbn;
 
-    //TODO Train
+    dbn.display();
+
+    std::vector<vector<double>> images;
+    std::vector<vector<double>> labels;
+
+    dbn.pretrain(images, 10);
+    dbn.fine_tune(images, labels, 10);
 }
 
 template <typename RBM>
