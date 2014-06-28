@@ -31,6 +31,19 @@ struct gradient_context {
     }
 };
 
+template<typename... R>
+struct check_rbm ;
+
+template<typename R1, typename... R>
+struct check_rbm<R1, R...> {
+    static constexpr const bool value = R1::DBN && check_rbm<R...>::value;
+};
+
+template<typename R1>
+struct check_rbm<R1> {
+    static constexpr const bool value = R1::DBN;
+};
+
 template<typename... Layers>
 struct dbn {
 private:
@@ -43,6 +56,8 @@ private:
     static constexpr const std::size_t layers = sizeof...(Layers);
 
     typedef typename rbm_type<0>::weight weight;
+
+    static_assert(check_rbm<Layers...>::value, "RBM must be in DBN mode");
 
 public:
     //No arguments by default
