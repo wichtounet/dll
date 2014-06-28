@@ -25,7 +25,6 @@
 #include "assert.hpp"
 #include "stop_watch.hpp"
 #include "vector.hpp"
-#include "conf.hpp"
 #include "batch.hpp"
 #include "layer.hpp"
 
