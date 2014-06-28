@@ -12,7 +12,7 @@
 
 #include "rbm.hpp"
 #include "vector.hpp"
-#include "utils.hpp"
+#include "tuple_utils.hpp"
 
 namespace dll {
 
