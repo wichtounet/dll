@@ -46,16 +46,16 @@ public:
     weight momentum = 0.5;
 
     etl::fast_vector<etl::fast_vector<weight, NW * NW>, K> w;     //shared weights
-    etl::fast_vector<weight, K> b;                           //hidden biases bk
-    weight c;                                           //visible single bias c
+    etl::fast_vector<weight, K> b;                                //hidden biases bk
+    weight c;                                                     //visible single bias c
 
-    etl::fast_vector<weight, NV * NV> v1;                    //visible units
+    etl::fast_vector<weight, NV * NV> v1;                         //visible units
 
     etl::fast_vector<etl::fast_vector<weight, NH * NH>, K> h1_a;  //Activation probabilities of reconstructed hidden units
     etl::fast_vector<etl::fast_vector<weight, NH * NH>, K> h1_s;  //Sampled values of reconstructed hidden units
 
-    etl::fast_vector<weight, NV * NV> v2_a;                  //Activation probabilities of reconstructed visible units
-    etl::fast_vector<weight, NV * NV> v2_s;                  //Sampled values of reconstructed visible units
+    etl::fast_vector<weight, NV * NV> v2_a;                       //Activation probabilities of reconstructed visible units
+    etl::fast_vector<weight, NV * NV> v2_s;                       //Sampled values of reconstructed visible units
 
     etl::fast_vector<etl::fast_vector<weight, NH * NH>, K> h2_a;  //Activation probabilities of reconstructed hidden units
     etl::fast_vector<etl::fast_vector<weight, NH * NH>, K> h2_s;  //Sampled values of reconstructed hidden units
