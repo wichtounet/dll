@@ -8,6 +8,9 @@
 #ifndef DBN_CONTRASTIVE_DIVERGENCE_HPP
 #define DBN_CONTRASTIVE_DIVERGENCE_HPP
 
+#include "etl/fast_matrix.hpp"
+#include "etl/fast_vector.hpp"
+
 #include "assert.hpp"
 #include "batch.hpp"
 #include "decay_type.hpp"
@@ -351,6 +354,9 @@ public:
         return error;
     }
 };
+
+template <typename RBM>
+using cd1_trainer_t = cd_trainer<1, RBM>;
 
 } //end of dbn namespace
 

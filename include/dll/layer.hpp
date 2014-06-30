@@ -15,9 +15,6 @@
 
 namespace dll {
 
-template <typename RBM>
-using cd1_trainer_t = cd_trainer<1, RBM>;
-
 template<std::size_t visibles, std::size_t hiddens, typename... Parameters>
 struct layer {
     static constexpr const std::size_t num_visible = visibles;

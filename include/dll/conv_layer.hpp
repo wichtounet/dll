@@ -9,6 +9,7 @@
 #define DBN_CONV_LAYER_HPP
 
 #include "base_conf.hpp"
+#include "contrastive_divergence.hpp"
 #include "utils.hpp"
 #include "tmp.hpp"
 
@@ -33,6 +34,9 @@ struct conv_layer {
     static constexpr const std::size_t BatchSize = get_value<batch_size<1>, Parameters...>::value;
     static constexpr const Type VisibleUnit = get_value<visible_unit<Type::SIGMOID>, Parameters...>::value;
     static constexpr const Type HiddenUnit = get_value<visible_unit<Type::SIGMOID>, Parameters...>::value;
+
+    template <typename RBM>
+    using trainer_t = typename get_template_type<trainer<cd1_trainer_t>, Parameters...>::template type<RBM>;
 };
 
 } //end of dbn namespace
