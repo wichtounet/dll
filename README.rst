@@ -1,8 +1,8 @@
 Deep Learning Library (DLL)
 ===========================
 
-DLL is a small library aims to provide a C++ implementation of Restricted Boltzmann
-Machine (RBM) and Deep Belief Network (DBN).
+DLL is a small library aims to provide a C++ implementation of Restricted
+Boltzmann Machine (RBM) and Deep Belief Network (DBN).
 
 Features
 --------
@@ -21,15 +21,21 @@ Features
    * Pretraining with RBMs
    * Fine tuning with Conjugate Gradient
 
-License
--------
-
-This library is distributed under the terms of the MIT license, see `LICENSE` file for details.
-
 Building
 --------
 
 This library is completely header-only, there is no need to build it.
 
-However, this library makes extensive use of C++11 and C++1y, therefore, a recent compiler is necessary to use it.
-This library has only been tested on CLang 3.4.
+The folder **include** must be included with the **-I** option, as well as the
+**etl/include** folder
+
+However, this library makes extensive use of C++11 and C++1y, therefore, a
+recent compiler is necessary to use it.
+This library has only been tested on CLang 3.4, but should work on latest
+version of GCC too.
+
+License
+-------
+
+This library is distributed under the terms of the MIT license, see `LICENSE`
+file for details.
