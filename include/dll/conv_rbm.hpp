@@ -169,6 +169,14 @@ public:
         trainer.train(*this, training_data, max_epochs);
     }
 
+    weight free_energy() const {
+        weight energy = 0.0;
+
+        //TODO Compute the exact free energy
+
+        return energy;
+    }
+
     void reconstruct(const vector<weight>& items){
         dll_assert(items.size() == num_visible, "The size of the training sample must match visible units");
 
