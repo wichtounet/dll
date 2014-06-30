@@ -18,7 +18,7 @@
 
 namespace dll {
 
-template<typename RBM>
+template<typename RBM, typename Enable = void>
 struct base_cd_trainer {
     typedef RBM rbm_t;
 
@@ -110,9 +110,9 @@ struct base_cd_trainer {
 
         //Update weights
 
-        if(rbm_t::Decay == DecayType::L1 || rbm_t::Decay == DecayType::L1_FULL){
+        if(rbm_traits<rbm_t>::decay_type() == DecayType::L1 || rbm_traits<rbm_t>::decay_type() == DecayType::L1_FULL){
             rbm.w += learning_rate * (w_fgrad - rbm.weight_cost * abs(rbm.w) - h_penalty);
-        } else if(rbm_t::Decay == DecayType::L2 || rbm_t::Decay == DecayType::L2_FULL){
+        } else if(rbm_traits<rbm_t>::decay_type() == DecayType::L2 || rbm_traits<rbm_t>::decay_type() == DecayType::L2_FULL){
             rbm.w += learning_rate * (w_fgrad - rbm.weight_cost * rbm.w - h_penalty);
         } else {
             rbm.w += learning_rate * w_fgrad - h_penalty;
@@ -120,9 +120,9 @@ struct base_cd_trainer {
 
         //Update hidden biases
 
-        if(rbm_t::Decay == DecayType::L1_FULL){
+        if(rbm_traits<rbm_t>::decay_type() == DecayType::L1_FULL){
             rbm.b += learning_rate * (b_fgrad - rbm.weight_cost * abs(rbm.b) - h_penalty);
-        } else if(rbm_t::Decay == DecayType::L2_FULL){
+        } else if(rbm_traits<rbm_t>::decay_type() == DecayType::L2_FULL){
             rbm.b += learning_rate * (b_fgrad - rbm.weight_cost * rbm.b - h_penalty);
         } else {
             rbm.b += learning_rate * b_fgrad - h_penalty;
@@ -130,9 +130,88 @@ struct base_cd_trainer {
 
         //Update visible biases
 
-        if(rbm_t::Decay == DecayType::L1_FULL){
+        if(rbm_traits<rbm_t>::decay_type() == DecayType::L1_FULL){
             rbm.a += learning_rate * (a_fgrad - rbm.weight_cost * abs(rbm.a));
-        } else if(rbm_t::Decay == DecayType::L2_FULL){
+        } else if(rbm_traits<rbm_t>::decay_type() == DecayType::L2_FULL){
+            rbm.a += learning_rate * (a_fgrad - rbm.weight_cost * rbm.a);
+        } else {
+            rbm.a += learning_rate * a_fgrad;
+        }
+
+        //Check for NaN
+        nan_check_3(rbm.w, rbm.a, rbm.b);
+    }
+};
+
+template<typename RBM>
+struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
+    typedef RBM rbm_t;
+
+    static constexpr const auto K = rbm_t::K;
+    static constexpr const auto NV = rbm_t::NV;
+    static constexpr const auto NH = rbm_t::NH;
+    static constexpr const auto NW = rbm_t::NW;
+
+    static constexpr const auto num_hidden = rbm_t::num_hidden;
+    static constexpr const auto num_visible = rbm_t::num_visible;
+
+    typedef typename rbm_t::weight weight;
+
+    //Gradients
+    etl::fast_matrix<weight, K, NW * NW> w_grad;     //Gradients of shared weights
+    etl::fast_vector<weight, K> hbias_grad;          //Gradients of hidden biases bk
+    weight vbias_grad;                               //Gradient of visible single bias c
+
+    //TODO Momentum
+    //TODO Sparsity
+
+    base_cd_trainer(){}
+
+    void update_weights(RBM& rbm){
+        auto learning_rate = rbm.learning_rate;
+
+        //Penalty to be applied to weights and hidden biases
+        weight h_penalty = 0.0;
+
+        //TODO Momentum
+
+        //TODO Sparsity
+
+        //The final gradients;
+        const auto& w_fgrad = w_grad;
+        const auto& a_fgrad = vbias_grad;
+        const auto& b_fgrad = hbias_grad;
+
+        //Weight decay is applied on biases only on demand
+        //Note: According to G. Hinton, Weight Decay should not be applied to
+        //biases by default due to their limited number and therefore their weak
+        //contribution to overfitting
+
+        //Update weights
+
+        if(rbm_traits<rbm_t>::decay_type() == DecayType::L1 || rbm_traits<rbm_t>::decay_type() == DecayType::L1_FULL){
+            rbm.w += learning_rate * (w_fgrad - rbm.weight_cost * abs(rbm.w) - h_penalty);
+        } else if(rbm_traits<rbm_t>::decay_type() == DecayType::L2 || rbm_traits<rbm_t>::decay_type() == DecayType::L2_FULL){
+            rbm.w += learning_rate * (w_fgrad - rbm.weight_cost * rbm.w - h_penalty);
+        } else {
+            rbm.w += learning_rate * w_fgrad - h_penalty;
+        }
+
+        //Update hidden biases
+
+        if(rbm_traits<rbm_t>::decay_type() == DecayType::L1_FULL){
+            rbm.b += learning_rate * (b_fgrad - rbm.weight_cost * abs(rbm.b) - h_penalty);
+        } else if(rbm_traits<rbm_t>::decay_type() == DecayType::L2_FULL){
+            rbm.b += learning_rate * (b_fgrad - rbm.weight_cost * rbm.b - h_penalty);
+        } else {
+            rbm.b += learning_rate * b_fgrad - h_penalty;
+        }
+
+        //Update visible biases
+
+        if(rbm_traits<rbm_t>::decay_type() == DecayType::L1_FULL){
+            rbm.a += learning_rate * (a_fgrad - rbm.weight_cost * abs(rbm.a));
+        } else if(rbm_traits<rbm_t>::decay_type() == DecayType::L2_FULL){
             rbm.a += learning_rate * (a_fgrad - rbm.weight_cost * rbm.a);
         } else {
             rbm.a += learning_rate * a_fgrad;
@@ -148,8 +227,8 @@ struct cd_trainer : base_cd_trainer<RBM> {
 private:
     static_assert(K > 0, "CD-0 is not a valid training method");
 
-    typedef RBM rbm_t;
-    typedef typename rbm_t::weight weight;
+    using rbm_t = RBM;
+    using weight = typename rbm_t::weight;
 
     using base_cd_trainer<RBM>::num_visible;
     using base_cd_trainer<RBM>::num_hidden;

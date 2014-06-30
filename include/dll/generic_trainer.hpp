@@ -23,16 +23,28 @@ struct generic_trainer {
     template<typename R>
     using trainer_t = typename rbm_t::template trainer_t<R>;
 
+    template<typename R = RBM, enable_if_u<rbm_traits<R>::init_weights()> = detail::dummy>
+    static void init_weights(RBM& rbm, const std::vector<vector<typename RBM::weight>>& training_data){
+        rbm.init_weights(training_data);
+    }
+
+    template<typename R = RBM, disable_if_u<rbm_traits<R>::init_weights()> = detail::dummy>
+    static void init_weights(RBM&, const std::vector<vector<typename RBM::weight>>&){
+        //NOP
+    }
+
     void train(RBM& rbm, const std::vector<vector<typename RBM::weight>>& training_data, std::size_t max_epochs) const {
         stop_watch<std::chrono::seconds> watch;
 
+        auto batch_size = rbm_traits<rbm_t>::batch_size();
+
         std::cout << "RBM: Train with learning_rate=" << rbm.learning_rate;
 
-        if(rbm_t::Momentum){
+        if(rbm_traits<rbm_t>::has_momentum()){
             std::cout << ", momentum=" << rbm.momentum;
         }
 
-        if(rbm_t::Decay != DecayType::NONE){
+        if(rbm_traits<rbm_t>::decay_type() != DecayType::NONE){
             std::cout << ", weight_cost=" << rbm.weight_cost;
         }
 
@@ -42,35 +54,19 @@ struct generic_trainer {
 
         std::cout << std::endl;
 
-        //TODO Probably shouldn't be here
-        if(rbm_t::Init){
-            //Initialize the visible biases to log(pi/(1-pi))
-            for(size_t i = 0; i < rbm.num_visible; ++i){
-                size_t c = 0;
-                for(auto& items : training_data){
-                    if(items[i] == 1){
-                        ++c;
-                    }
-                }
-
-                auto pi = static_cast<typename rbm_t::weight>(c) / training_data.size();
-                pi += 0.0001;
-                rbm.a(i) = log(pi / (1.0 - pi));
-
-                dll_assert(std::isfinite(a(i)), "NaN verify");
-            }
-        }
+        //Some RBM may init weights based on the training data
+        init_weights(rbm, training_data);
 
         auto trainer = make_unique<trainer_t<rbm_t>>();
 
-        auto batches = training_data.size() / rbm_t::BatchSize + (training_data.size() % rbm_t::BatchSize == 0 ? 0 : 1);
+        auto batches = training_data.size() / batch_size + (training_data.size() % batch_size == 0 ? 0 : 1);
 
         for(size_t epoch= 0; epoch < max_epochs; ++epoch){
             typename rbm_t::weight error = 0.0;
 
             for(size_t i = 0; i < batches; ++i){
-                auto start = i * rbm_t::BatchSize;
-                auto end = std::min(start + rbm_t::BatchSize, training_data.size());
+                auto start = i * batch_size;
+                auto end = std::min(start + batch_size, training_data.size());
 
                 dll::batch<vector<typename rbm_t::weight>> batch(training_data.begin() + start, training_data.begin() + end);
                 error += trainer->train_batch(batch, rbm);
@@ -79,14 +75,14 @@ struct generic_trainer {
             printf("epoch %ld - Reconstruction error average: %.3f - Free energy: %.3f\n",
                 epoch, error / batches, rbm.free_energy());
 
-            if(rbm_t::Momentum && epoch == 6){
+            if(rbm_traits<rbm_t>::has_momentum() && epoch == 6){
                 rbm.momentum = 0.9;
             }
 
             //TODO Move that elsewhere
-            if(rbm_t::Debug){
-                rbm.generate_hidden_images(epoch);
-                rbm.generate_histograms(epoch);
+            if(rbm_traits<rbm_t>::debug_mode()){
+                //TODO rbm.generate_hidden_images(epoch);
+                //TODO rbm.generate_histograms(epoch);
             }
         }
 

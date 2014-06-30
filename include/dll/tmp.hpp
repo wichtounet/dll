@@ -12,6 +12,24 @@
 
 namespace dll {
 
+#define HAS_STATIC_FIELD(field, name) \
+template <typename T> \
+class name { \
+    template<typename U, typename = \
+    typename std::enable_if<!std::is_member_pointer<decltype(&U::field)>::value>::type> \
+    static std::true_type check(int); \
+    template <typename> \
+    static std::false_type check(...); \
+    public: \
+    static constexpr const bool value = decltype(check<T>(0))::value; \
+};
+
+template<template<typename...> class Template, typename T>
+struct is_instantiation_of : std::false_type {};
+
+template<template<typename...> class Template, typename... Args >
+struct is_instantiation_of< Template, Template<Args...>> : std::true_type {};
+
 template<typename T1, typename... Args>
 struct is_present;
 

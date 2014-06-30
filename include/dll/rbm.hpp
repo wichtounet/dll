@@ -21,21 +21,25 @@
 #include "etl/fast_matrix.hpp"
 #include "etl/fast_vector.hpp"
 
+#include "rbm_base.hpp"      //The base class
+#include "stop_watch.hpp"    //Performance counter
 #include "assert.hpp"
-#include "stop_watch.hpp"
 #include "vector.hpp"
 #include "layer.hpp"
 #include "math.hpp"
-#include "generic_trainer.hpp"
+//#include "generic_trainer.hpp"
 #include "io.hpp"
 
 namespace dll {
+
+template<typename RBM>
+struct generic_trainer;
 
 /*!
  * \brief Restricted Boltzmann Machine
  */
 template<typename Layer>
-class rbm {
+class rbm : public rbm_base<Layer> {
 public:
     typedef double weight;
     typedef double value_t;
@@ -67,19 +71,6 @@ public:
 
     static constexpr const std::size_t num_visible_gra = DBN ? num_visible : 0;
     static constexpr const std::size_t num_hidden_gra = DBN ? num_hidden : 0;
-
-    //Configurable properties
-    weight learning_rate =
-            VisibleUnit == Type::GAUSSIAN && HiddenUnit == Type::NRLU ? 1e-5
-        :   VisibleUnit == Type::GAUSSIAN || HiddenUnit == Type::NRLU ? 1e-4
-        :   /* Only NRLU and Gaussian Units needs lower rate */         1e-1;
-
-    weight momentum = 0.5;
-    weight weight_cost = 0.0002;
-
-    weight sparsity_target = 0.01;
-    weight decay_rate = 0.99;
-    weight sparsity_cost = 1.0;
 
     //Weights and biases
     etl::fast_matrix<weight, num_visible, num_hidden> w;
@@ -126,18 +117,6 @@ public:
     std::vector<vector<weight>> gr_probs_a;
     std::vector<vector<weight>> gr_probs_s;
 
-private:
-    void init_weights(){
-        //Initialize the weights with a zero-mean and unit variance Gaussian distribution
-        static std::default_random_engine rand_engine(std::time(nullptr));
-        static std::normal_distribution<weight> distribution(0.0, 1.0);
-        static auto generator = std::bind(distribution, rand_engine);
-
-        for(auto& weight : w){
-            weight = generator() * 0.1;
-        }
-    }
-
 public:
     //No copying
     rbm(const rbm& rbm) = delete;
@@ -148,7 +127,20 @@ public:
     rbm& operator=(rbm&& rbm) = delete;
 
     rbm() : a(0.0), b(0.0) {
-        init_weights();
+        //Initialize the weights with a zero-mean and unit variance Gaussian distribution
+        static std::default_random_engine rand_engine(std::time(nullptr));
+        static std::normal_distribution<weight> distribution(0.0, 1.0);
+        static auto generator = std::bind(distribution, rand_engine);
+
+        for(auto& weight : w){
+            weight = generator() * 0.1;
+        }
+
+        //Better initialization of learning rate
+        rbm_base<Layer>::learning_rate =
+                VisibleUnit == Type::GAUSSIAN && HiddenUnit == Type::NRLU ? 1e-5
+            :   VisibleUnit == Type::GAUSSIAN || HiddenUnit == Type::NRLU ? 1e-4
+            :   /* Only NRLU and Gaussian Units needs lower rate */         1e-1;
     }
 
     void store(std::ostream& os) const {
@@ -168,6 +160,24 @@ public:
 
         dll::generic_trainer<this_type> trainer;
         trainer.train(*this, training_data, max_epochs);
+    }
+
+    void init_weights(const std::vector<vector<weight>>& training_data){
+        //Initialize the visible biases to log(pi/(1-pi))
+        for(size_t i = 0; i < num_visible; ++i){
+            size_t c = 0;
+            for(auto& items : training_data){
+                if(items[i] == 1){
+                    ++c;
+                }
+            }
+
+            auto pi = static_cast<weight>(c) / training_data.size();
+            pi += 0.0001;
+            a(i) = log(pi / (1.0 - pi));
+
+            dll_assert(std::isfinite(a(i)), "NaN verify");
+        }
     }
 
     template<typename H, typename V>

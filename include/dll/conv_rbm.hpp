@@ -13,20 +13,25 @@
 
 #include "etl/fast_vector.hpp"
 
-#include "assert.hpp"
+#include "rbm_base.hpp"           //The base class
+#include "assert.hpp"             //Assertions
+#include "stop_watch.hpp"         //Performance counter
+#include "math.hpp"               //Logistic sigmoid
+
 #include "unit_type.hpp"
 #include "vector.hpp"
-#include "stop_watch.hpp"
-#include "math.hpp"
-#include "generic_trainer.hpp"
+//#include "generic_trainer.hpp"
 
 namespace dll {
+
+template<typename RBM>
+struct generic_trainer;
 
 /*!
  * \brief Convolutional Restricted Boltzmann Machine
  */
 template<typename Layer>
-class conv_rbm {
+class conv_rbm : public rbm_base<Layer> {
 public:
     typedef double weight;
     typedef double value_t;
@@ -50,10 +55,6 @@ public:
 
     static_assert(VisibleUnit == Type::SIGMOID, "Only binary visible units are supported");
     static_assert(HiddenUnit == Type::SIGMOID, "Only binary hidden units are supported");
-
-    //Configurable properties
-    weight learning_rate = 1e-1;
-    weight momentum = 0.5;
 
     etl::fast_vector<etl::fast_vector<weight, NW * NW>, K> w;     //shared weights
     etl::fast_vector<weight, K> b;                                //hidden biases bk

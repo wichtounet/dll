@@ -1,5 +1,6 @@
 #include "dll/conv_rbm.hpp"
 #include "dll/conv_layer.hpp"
+#include "dll/generic_trainer.hpp"
 
 template<typename RBM>
 void test_rbm(){

@@ -1,4 +1,5 @@
 #include "dll/rbm.hpp"
+#include "dll/generic_trainer.hpp"
 
 template<typename RBM>
 void test_rbm(){
