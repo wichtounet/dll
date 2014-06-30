@@ -14,6 +14,7 @@
 #include "assert.hpp"
 #include "batch.hpp"
 #include "decay_type.hpp"
+#include "layer_traits.hpp"
 
 namespace dll {
 
@@ -87,7 +88,7 @@ struct base_cd_trainer {
         weight h_penalty = 0.0;
 
         //Update sparsity
-        if(rbm_t::Sparsity){
+        if(rbm_traits<rbm_t>::has_sparsity()){
             auto decay_rate = rbm.decay_rate;
             auto p = rbm.sparsity_target;
             auto cost = rbm.sparsity_cost;
@@ -178,7 +179,7 @@ public:
         w_grad = 0.0;
 
         //Reset mean activation probability if necessary
-        if(rbm_t::Sparsity){
+        if(rbm_traits<rbm_t>::has_sparsity()){
             q_batch = 0.0;
         }
 
@@ -207,7 +208,7 @@ public:
             vbias_grad += rbm.v1 - rbm.v2_a;
             hbias_grad += rbm.h1_a - rbm.h2_a;
 
-            if(rbm_t::Sparsity){
+            if(rbm_traits<rbm_t>::has_sparsity()){
                 q_batch += sum(rbm.h2_a);
             }
         }
@@ -218,7 +219,7 @@ public:
         hbias_grad /= n_samples;
 
         //Compute the mean activation probabilities
-        if(rbm_t::Sparsity){
+        if(rbm_traits<rbm_t>::has_sparsity()){
             q_batch /= n_samples * num_hidden;
         }
 
@@ -278,7 +279,7 @@ public:
         w_grad = 0.0;
 
         //Reset mean activation probability if necessary
-        if(rbm_t::Sparsity){
+            if(rbm_traits<rbm_t>::has_sparsity()){
             q_batch = 0.0;
         }
 
@@ -323,7 +324,7 @@ public:
             vbias_grad += rbm.v1 - rbm.v2_a;
             hbias_grad += rbm.h1_a - rbm.h2_a;
 
-            if(rbm_t::Sparsity){
+            if(rbm_traits<rbm_t>::has_sparsity()){
                 q_batch += sum(rbm.h2_a);
             }
         }
@@ -334,7 +335,7 @@ public:
         hbias_grad /= n_samples;
 
         //Compute the mean activation probabilities
-        if(rbm_t::Sparsity){
+            if(rbm_traits<rbm_t>::has_sparsity()){
             q_batch /= n_samples * num_hidden;
         }
 

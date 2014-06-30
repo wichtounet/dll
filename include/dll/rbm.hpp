@@ -46,6 +46,8 @@ public:
     template<typename RBM>
     using trainer_t = typename Layer::template trainer_t<RBM>;
 
+    using conf = Layer;
+
     static constexpr const std::size_t num_visible = Layer::num_visible;
     static constexpr const std::size_t num_hidden = Layer::num_hidden;
 
@@ -56,16 +58,12 @@ public:
     static constexpr const Type VisibleUnit = Layer::VisibleUnit;
     static constexpr const Type HiddenUnit = Layer::HiddenUnit;
     static constexpr const bool DBN = Layer::DBN;
-    static constexpr const bool Sparsity = Layer::Sparsity;
     static constexpr const DecayType Decay = Layer::Decay;
 
     static_assert(VisibleUnit != Type::SOFTMAX && VisibleUnit != Type::EXP,
         "Exponential and softmax Visible units are not support");
     static_assert(HiddenUnit != Type::GAUSSIAN,
         "Gaussian hidden units are not supported");
-
-    static_assert(!Sparsity || (Sparsity && HiddenUnit == Type::SIGMOID),
-        "Sparsity only works with binary hidden units");
 
     static constexpr const std::size_t num_visible_gra = DBN ? num_visible : 0;
     static constexpr const std::size_t num_hidden_gra = DBN ? num_hidden : 0;

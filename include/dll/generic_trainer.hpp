@@ -12,6 +12,7 @@
 #include "stop_watch.hpp"
 #include "utils.hpp"
 #include "batch.hpp"
+#include "layer_traits.hpp"
 
 namespace dll {
 
@@ -35,7 +36,7 @@ struct generic_trainer {
             std::cout << ", weight_cost=" << rbm.weight_cost;
         }
 
-        if(rbm_t::Sparsity){
+        if(rbm_traits<rbm_t>::has_sparsity()){
             std::cout << ", sparsity_target=" << rbm.sparsity_target;
         }
 

@@ -42,6 +42,9 @@ struct layer {
     using trainer_t = typename get_template_type<trainer<cd1_trainer_t>, Parameters...>::template type<RBM>;
 
     static_assert(BatchSize > 0, "Batch size must be at least 1");
+
+    static_assert(!Sparsity || (Sparsity && HiddenUnit == Type::SIGMOID),
+        "Sparsity only works with binary hidden units");
 };
 
 } //end of dbn namespace
