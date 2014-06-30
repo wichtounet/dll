@@ -27,6 +27,7 @@
 #include "batch.hpp"
 #include "layer.hpp"
 #include "math.hpp"
+#include "generic_trainer.hpp"
 
 namespace dll {
 
@@ -200,70 +201,10 @@ public:
     }
 
     void train(const std::vector<vector<weight>>& training_data, std::size_t max_epochs){
-        stop_watch<std::chrono::seconds> watch;
-
-        std::cout << "RBM: Train with learning_rate=" << learning_rate;
-
-        if(Momentum){
-            std::cout << ", momentum=" << momentum;
-        }
-
-        if(Decay != DecayType::NONE){
-            std::cout << ", weight_cost=" << weight_cost;
-        }
-
-        if(Sparsity){
-            std::cout << ", sparsity_target=" << sparsity_target;
-        }
-
-        std::cout << std::endl;
-
-        if(Init){
-            //Initialize the visible biases to log(pi/(1-pi))
-            for(size_t i = 0; i < num_visible; ++i){
-                size_t c = 0;
-                for(auto& items : training_data){
-                    if(items[i] == 1){
-                        ++c;
-                    }
-                }
-
-                auto pi = static_cast<weight>(c) / training_data.size();
-                pi += 0.0001;
-                a(i) = log(pi / (1.0 - pi));
-
-                dll_assert(std::isfinite(a(i)), "NaN verify");
-            }
-        }
-
         typedef typename std::remove_reference<decltype(*this)>::type this_type;
 
-        auto trainer = make_unique<trainer_t<this_type>>();
-
-        auto batches = training_data.size() / BatchSize + (training_data.size() % BatchSize == 0 ? 0 : 1);
-
-        for(size_t epoch= 0; epoch < max_epochs; ++epoch){
-            weight error = 0.0;
-            for(size_t i = 0; i < batches; ++i){
-                auto start = i * BatchSize;
-                auto end = std::min(start + BatchSize, training_data.size());
-
-                error += trainer->train_batch(dll::batch<vector<weight>>(training_data.begin() + start, training_data.begin() + end), *this);
-            }
-
-            std::cout << "epoch " << epoch << ": Reconstruction error average: " << (error / batches) << " Free energy: " << free_energy() << std::endl;
-
-            if(Momentum && epoch == 6){
-                momentum = 0.9;
-            }
-
-            if(Debug){
-                generate_hidden_images(epoch);
-                generate_histograms(epoch);
-            }
-        }
-
-        std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
+        dll::generic_trainer<this_type> trainer;
+        trainer.train(*this, training_data, max_epochs);
     }
 
     template<typename H, typename V>
