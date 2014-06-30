@@ -44,8 +44,6 @@ public:
     static constexpr const std::size_t num_visible = NV * NV;
     static constexpr const std::size_t num_hidden = NH * NH;
 
-    static_assert(BatchSize > 0, "Batch size must be at least 1");
-
     static_assert(VisibleUnit == Type::SIGMOID, "Only binary visible units are supported");
     static_assert(HiddenUnit == Type::SIGMOID, "Only binary hidden units are supported");
 

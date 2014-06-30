@@ -60,8 +60,6 @@ public:
     static constexpr const bool Sparsity = Layer::Sparsity;
     static constexpr const DecayType Decay = Layer::Decay;
 
-    static_assert(BatchSize > 0, "Batch size must be at least 1");
-
     static_assert(VisibleUnit != Type::SOFTMAX && VisibleUnit != Type::EXP,
         "Exponential and softmax Visible units are not support");
     static_assert(HiddenUnit != Type::GAUSSIAN,

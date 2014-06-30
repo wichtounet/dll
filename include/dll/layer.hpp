@@ -41,6 +41,8 @@ struct layer {
 
     template <typename RBM>
     using trainer_t = typename get_template_type<trainer<cd1_trainer_t>, Parameters...>::template type<RBM>;
+
+    static_assert(BatchSize > 0, "Batch size must be at least 1");
 };
 
 } //end of dbn namespace
