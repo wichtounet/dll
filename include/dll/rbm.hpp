@@ -41,6 +41,9 @@ public:
     typedef double weight;
     typedef double value_t;
 
+    //TODO Some things, should not be duplicated but used
+    //directly from the layer conf
+
     template<typename RBM>
     using trainer_t = typename Layer::template trainer_t<RBM>;
 
@@ -49,7 +52,7 @@ public:
 
     static constexpr const bool Momentum = Layer::Momentum;
     static constexpr const std::size_t BatchSize = Layer::BatchSize;
-    static constexpr const bool Init = Layer::Debug;
+    static constexpr const bool Init = Layer::Init;
     static constexpr const bool Debug = Layer::Debug;
     static constexpr const Type VisibleUnit = Layer::VisibleUnit;
     static constexpr const Type HiddenUnit = Layer::HiddenUnit;
