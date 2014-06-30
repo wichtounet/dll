@@ -18,6 +18,7 @@
 #include "vector.hpp"
 #include "stop_watch.hpp"
 #include "math.hpp"
+#include "generic_trainer.hpp"
 
 namespace dll {
 
@@ -29,6 +30,9 @@ class conv_rbm {
 public:
     typedef double weight;
     typedef double value_t;
+
+    template<typename RBM>
+    using trainer_t = typename Layer::template trainer_t<RBM>;
 
     static constexpr const bool Momentum = Layer::Momentum;
     static constexpr const std::size_t BatchSize = Layer::BatchSize;
@@ -156,6 +160,13 @@ public:
             dll_assert(std::isfinite(v_a(i)), "NaN verify");
             dll_assert(std::isfinite(v_s(i)), "NaN verify");
         }
+    }
+
+    void train(const std::vector<vector<weight>>& training_data, std::size_t max_epochs){
+        typedef typename std::remove_reference<decltype(*this)>::type this_type;
+
+        dll::generic_trainer<this_type> trainer;
+        trainer.train(*this, training_data, max_epochs);
     }
 
     void reconstruct(const vector<weight>& items){

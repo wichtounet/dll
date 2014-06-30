@@ -24,7 +24,6 @@
 #include "assert.hpp"
 #include "stop_watch.hpp"
 #include "vector.hpp"
-#include "batch.hpp"
 #include "layer.hpp"
 #include "math.hpp"
 #include "generic_trainer.hpp"

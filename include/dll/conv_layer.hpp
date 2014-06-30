@@ -10,7 +10,6 @@
 
 #include "base_conf.hpp"
 #include "contrastive_divergence.hpp"
-#include "utils.hpp"
 #include "tmp.hpp"
 
 namespace dll {

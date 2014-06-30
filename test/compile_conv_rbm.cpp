@@ -7,6 +7,9 @@ void test_rbm(){
 
     vector<double> test(32 * 32, 1.0);
     rbm.reconstruct(test);
+
+    std::vector<vector<double>> test_full;
+    rbm.train(test_full, 40);
 }
 
 int main(){

@@ -8,6 +8,11 @@
 #ifndef DBN_GENERIC_TRAINER_HPP
 #define DBN_GENERIC_TRAINER_HPP
 
+#include "decay_type.hpp"
+#include "stop_watch.hpp"
+#include "utils.hpp"
+#include "batch.hpp"
+
 namespace dll {
 
 template<typename RBM>
