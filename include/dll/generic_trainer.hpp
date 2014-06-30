@@ -18,7 +18,6 @@ struct generic_trainer {
     using trainer_t = typename rbm_t::template trainer_t<R>;
 
     void train(RBM& rbm, const std::vector<vector<typename RBM::weight>>& training_data, std::size_t max_epochs) const {
-
         stop_watch<std::chrono::seconds> watch;
 
         std::cout << "RBM: Train with learning_rate=" << rbm.learning_rate;
@@ -71,7 +70,8 @@ struct generic_trainer {
                 error += trainer->train_batch(batch, rbm);
             }
 
-            std::cout << "epoch " << epoch << ": Reconstruction error average: " << (error / batches) << " Free energy: " << rbm.free_energy() << std::endl;
+            printf("epoch %ld - Reconstruction error average: %.3f - Free energy: %.3f\n",
+                epoch, error / batches, rbm.free_energy());
 
             if(rbm_t::Momentum && epoch == 6){
                 rbm.momentum = 0.9;
