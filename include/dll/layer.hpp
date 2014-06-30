@@ -26,6 +26,12 @@ struct layer {
     static_assert(num_visible > 0, "There must be at least 1 visible unit");
     static_assert(num_hidden > 0, "There must be at least 1 hidden unit");
 
+    //Make sure only valid types are passed to the configuration list
+    static_assert(
+        is_valid<tmp_list<momentum, batch_size_id, visible_unit_id, hidden_unit_id, weight_decay_id,
+              init_weights, in_dbn, debug, sparsity, trainer_id>, Parameters...>::value,
+        "Invalid parameters type");
+
     static constexpr const bool Momentum = is_present<momentum, Parameters...>::value;
     static constexpr const std::size_t BatchSize = get_value<batch_size<1>, Parameters...>::value;
     static constexpr const Type VisibleUnit = get_value<visible_unit<Type::SIGMOID>, Parameters...>::value;
