@@ -28,6 +28,7 @@
 #include "layer.hpp"
 #include "math.hpp"
 #include "generic_trainer.hpp"
+#include "io.hpp"
 
 namespace dll {
 
@@ -136,42 +137,6 @@ private:
 
         for(auto& weight : w){
             weight = generator() * 0.1;
-        }
-    }
-
-    //Math functions
-
-    static constexpr weight logistic_sigmoid(weight x){
-        return 1.0 / (1.0 + std::exp(-x));
-    }
-
-    static constexpr weight softplus(weight x){
-        return std::log(1.0 + std::exp(x));
-    }
-
-    //Binary I/O utility functions
-
-    template<typename T>
-    static void binary_write(std::ostream& os, const T& v){
-        os.write(reinterpret_cast<const char*>(&v), sizeof(v));
-    }
-
-    template<typename Container>
-    static void binary_write_all(std::ostream& os, const Container& c){
-        for(auto& v : c){
-            binary_write(os, v);
-        }
-    }
-
-    template<typename T>
-    static void binary_load(std::istream& is, T& v){
-        is.read(reinterpret_cast<char*>(&v), sizeof(v));
-    }
-
-    template<typename Container>
-    static void binary_load_all(std::istream& is, Container& c){
-        for(auto& v : c){
-            binary_load(is, v);
         }
     }
 
