@@ -13,7 +13,6 @@
 #include <random>
 #include <functional>
 #include <fstream>
-#include <cmath>
 #include <ctime>
 
 //TODO Find a better way to use mkdir
@@ -27,6 +26,7 @@
 #include "vector.hpp"
 #include "batch.hpp"
 #include "layer.hpp"
+#include "math.hpp"
 
 namespace dll {
 

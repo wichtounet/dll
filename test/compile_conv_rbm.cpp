@@ -4,6 +4,9 @@
 template<typename RBM>
 void test_rbm(){
     RBM rbm;
+
+    vector<double> test(32 * 32, 1.0);
+    rbm.reconstruct(test);
 }
 
 int main(){
