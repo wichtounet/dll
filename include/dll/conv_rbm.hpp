@@ -21,6 +21,7 @@
 #include "math.hpp"               //Logistic sigmoid
 #include "io.hpp"                 //Binary load/store functions
 #include "vector.hpp"             //For samples
+#include "tmp.hpp"
 
 namespace dll {
 
@@ -79,30 +80,56 @@ public:
     etl::fast_vector<etl::fast_vector<weight, NV * NV>, K+1> h_cv_1;   //Temporary convolution
     etl::fast_vector<etl::fast_vector<weight, NV * NV>, K+1> h_cv_2;   //Temporary convolution
 
-    template<typename V, typename K, typename O>
-    static void convolve(const V& input, const K& kernel, O& output){
-        //TODO Add assertions for the sizes
+    template<typename I, typename K, typename C>
+    static void convolve_1d_full(const I& input, const K& kernel, C& conv){
+        static_assert(ct_sqrt(C::etl_size) == ct_sqrt(I::etl_size) + ct_sqrt(K::etl_size) - 1, "Invalid output vector size");
 
         //Clear the output
-        output = 0.0;
+        conv = 0.0;
 
-        /*for(std::size_t n = 0 ; n < output.size(); n++){
-            for(std::size_t k = 0; k < kernel.size(); ++k){
-                output[n] = input[n + k] * kernel[kernel.size() - k - 1];
-            }
-        }*/
+        for(std::size_t n = 0 ; n < conv.size(); n++){
+            typename I::value_type sum = 0;
 
-        for(std::size_t i = 0; i < input.size() + kernel.size() + 1; ++i){
-            double sum = 0.0;
-
-            auto n_lo = 0 > (i - kernel.size() + 1) ? 0 : i - kernel.size() + 1;
-            auto n_hi = input.size() - 1 < i ? input.size() - 1 : i;
-
-            for(std::size_t n = n_lo; n <= n_hi; ++n){
-                sum += input[n_lo + n] * kernel[i - n_lo - n];
+            for(std::size_t k = 0; k < kernel.size() && n + k < input.size(); ++k){
+                sum += input[n + k] * kernel[kernel.size() - k - 1];
             }
 
-            output[i] = sum;
+            conv[n] = sum;
+        }
+    }
+
+    template<typename I, typename K, typename C>
+    static void convolve_1d_valid(const I& input, const K& kernel, C& conv){
+        static_assert(ct_sqrt(C::etl_size) == ct_sqrt(I::etl_size) - ct_sqrt(K::etl_size) + 1, "Invalid output vector size");
+
+        std::cout << "size(I)" << I::etl_size << std::endl;
+        std::cout << "size(K)" << K::etl_size << std::endl;
+        std::cout << "size(C)" << C::etl_size << std::endl;
+
+        //Clear the output
+        conv = 0.0;
+        
+        for(std::size_t i = 0 ; i < ct_sqrt(C::etl_size) ; ++i){
+            for(std::size_t j = 0 ; j < ct_sqrt(C::etl_size) ; ++j){
+                auto n_c = i * ct_sqrt(C::etl_size) + j;
+
+                std::cout << "n_c:" << n_c << std::endl;
+
+                double temp = 0.0;
+                for(std::size_t k = i ; k <= i + ct_sqrt(K::etl_size)-1; ++k){
+                    for(std::size_t l = j ; l <= j + ct_sqrt(K::etl_size)-1 ; ++l){
+                        auto n_i = k * ct_sqrt(I::etl_size) + l;
+                        auto n_k = (i+ct_sqrt(K::etl_size)-1-k) * ct_sqrt(K::etl_size) + (j+ct_sqrt(K::etl_size)-1-l);
+                
+                        std::cout << "  n_i:" << n_i << std::endl;
+                        std::cout << "  n_k:" << n_k << std::endl;
+
+                        temp += input[n_i] * kernel[n_k];
+                    }
+                }
+
+                conv[n_c] = temp;
+            }
         }
     }
 
@@ -148,7 +175,7 @@ public:
             h_a(k) = 0.0;
             h_s(k) = 0.0;
 
-            convolve(v_a, w(k), v_cv(k));
+            convolve_1d_valid(v_a, w(k), v_cv(k));
 
             for(size_t j = 0; j < num_hidden; ++j){
                 //Total input
@@ -183,7 +210,7 @@ public:
         v_s = 0.0;
 
         for(std::size_t k = 0; k < K; ++k){
-            convolve(h_s(k), w(k), h_cv(k));
+            convolve_1d_full(h_s(k), w(k), h_cv(k));
             h_cv(K) += h_cv(k);
         }
 
