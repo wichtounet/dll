@@ -158,9 +158,9 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
     typedef typename rbm_t::weight weight;
 
     //Gradients
-    etl::fast_matrix<weight, K, NW * NW> w_grad;     //Gradients of shared weights
-    etl::fast_vector<weight, K> hbias_grad;          //Gradients of hidden biases bk
-    weight vbias_grad;                               //Gradient of visible single bias c
+    etl::fast_vector<etl::fast_vector<weight, NW * NW>, K>  w_grad;     //Gradients of shared weights
+    etl::fast_vector<weight, K> hbias_grad;                             //Gradients of hidden biases bk
+    weight vbias_grad;                                                  //Gradient of visible single bias c
 
     //TODO Momentum
     //TODO Sparsity
@@ -189,12 +189,14 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
 
         //Update weights
 
-        if(rbm_traits<rbm_t>::decay_type() == DecayType::L1 || rbm_traits<rbm_t>::decay_type() == DecayType::L1_FULL){
-            rbm.w += learning_rate * (w_fgrad - rbm.weight_cost * abs(rbm.w) - h_penalty);
-        } else if(rbm_traits<rbm_t>::decay_type() == DecayType::L2 || rbm_traits<rbm_t>::decay_type() == DecayType::L2_FULL){
-            rbm.w += learning_rate * (w_fgrad - rbm.weight_cost * rbm.w - h_penalty);
-        } else {
-            rbm.w += learning_rate * w_fgrad - h_penalty;
+        for(std::size_t k = 0; k < K; ++k){
+            if(rbm_traits<rbm_t>::decay_type() == DecayType::L1 || rbm_traits<rbm_t>::decay_type() == DecayType::L1_FULL){
+                rbm.w(k) += learning_rate * (w_fgrad(k) - rbm.weight_cost * abs(rbm.w(k)) - h_penalty);
+            } else if(rbm_traits<rbm_t>::decay_type() == DecayType::L2 || rbm_traits<rbm_t>::decay_type() == DecayType::L2_FULL){
+                rbm.w(k) += learning_rate * (w_fgrad(k) - rbm.weight_cost * rbm.w(k) - h_penalty);
+            } else {
+                rbm.w(k) += learning_rate * w_fgrad(k) - h_penalty;
+            }
         }
 
         //Update hidden biases
@@ -352,7 +354,10 @@ public:
         //Clear the gradients
         vbias_grad = 0.0;
         hbias_grad = 0.0;
-        w_grad = 0.0;
+
+        for(std::size_t k = 0; k < K; ++k){
+            w_grad(k) = 0.0;
+        }
 
         for(auto& items : batch){
             rbm.v1 = items;
@@ -374,9 +379,12 @@ public:
         }
 
         //Keep only the mean of the gradients
-        w_grad /= n_samples;
         vbias_grad /= n_samples;
         hbias_grad /= n_samples;
+
+        for(std::size_t k = 0; k < K; ++k){
+            w_grad(k) /= n_samples;
+        }
 
         nan_check_3(w_grad, vbias_grad, hbias_grad);
 
