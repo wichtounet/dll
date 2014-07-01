@@ -86,10 +86,23 @@ public:
         //Clear the output
         output = 0.0;
 
-        for(std::size_t n = 0 ; n < output.size(); n++){
+        /*for(std::size_t n = 0 ; n < output.size(); n++){
             for(std::size_t k = 0; k < kernel.size(); ++k){
                 output[n] = input[n + k] * kernel[kernel.size() - k - 1];
             }
+        }*/
+
+        for(std::size_t i = 0; i < input.size() + kernel.size() + 1; ++i){
+            double sum = 0.0;
+
+            auto n_lo = 0 > (i - kernel.size() + 1) ? 0 : i - kernel.size() + 1;
+            auto n_hi = input.size() - 1 < i ? input.size() - 1 : i;
+
+            for(std::size_t n = n_lo; n <= n_hi; ++n){
+                sum += input[n_lo + n] * kernel[i - n_lo - n];
+            }
+
+            output[i] = sum;
         }
     }
 
