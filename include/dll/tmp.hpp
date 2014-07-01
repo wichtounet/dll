@@ -34,40 +34,30 @@ template<typename T1, typename... Args>
 struct is_present;
 
 template<typename T1, typename T2, typename... Args>
-struct is_present<T1, T2, Args...> {
-    static constexpr const bool value = std::is_same<T1, T2>::value || is_present<T1, Args...>::value;
-};
+struct is_present<T1, T2, Args...> :
+    std::integral_constant<bool, or_u<std::is_same<T1, T2>::value, is_present<T1, Args...>::value>::value> {};
 
 template<typename T1>
-struct is_present<T1> {
-    static constexpr const bool value = false;
-};
+struct is_present<T1> : std::false_type{};
 
 template<typename... Valid>
 struct tmp_list {
     template<typename T, typename Enable = void>
-    struct check {
-        static constexpr const bool value = is_present<T, Valid...>::value;
-    };
+    struct check : std::integral_constant<bool,is_present<T, Valid...>::value> {};
 
     template<typename T>
-    struct check<T, enable_if_t<T::marker>> {
-        static constexpr const bool value = is_present<typename T::type, Valid...>::value;;
-    };
+    struct check<T, enable_if_t<T::marker>> : std::integral_constant<bool, is_present<typename T::type, Valid...>::value> {};
 };
 
 template<typename V, typename... Args>
 struct is_valid;
 
 template<typename V, typename T1, typename... Args>
-struct is_valid <V, T1, Args...> {
-    static constexpr const bool value = V::template check<T1>::value && is_valid<V, Args...>::value;
-};
+struct is_valid <V, T1, Args...> :
+    std::integral_constant<bool, and_u<V::template check<T1>::value, is_valid<V, Args...>::value>::value> {};
 
 template<typename V>
-struct is_valid <V> {
-    static constexpr const bool value = true;
-};
+struct is_valid <V> : std::true_type {};
 
 template<typename D, typename... Args>
 struct get_value;

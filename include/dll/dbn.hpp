@@ -35,14 +35,10 @@ template<typename... R>
 struct check_rbm ;
 
 template<typename R1, typename... R>
-struct check_rbm<R1, R...> {
-    static constexpr const bool value = R1::DBN && check_rbm<R...>::value;
-};
+struct check_rbm<R1, R...> : std::integral_constant<bool, and_u<R1::DBN, check_rbm<R...>::value>::value> {};
 
 template<typename R1>
-struct check_rbm<R1> {
-    static constexpr const bool value = R1::DBN;
-};
+struct check_rbm<R1> : std::integral_constant<bool, R1::DBN> {};
 
 template<typename... Layers>
 struct dbn {
