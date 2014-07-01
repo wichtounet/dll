@@ -15,13 +15,12 @@
 #include "etl/fast_vector.hpp"
 
 #include "rbm_base.hpp"           //The base class
+#include "unit_type.hpp"          //unit_ype enum
 #include "assert.hpp"             //Assertions
 #include "stop_watch.hpp"         //Performance counter
 #include "math.hpp"               //Logistic sigmoid
-
-#include "unit_type.hpp"
-#include "vector.hpp"
-//#include "generic_trainer.hpp"
+#include "io.hpp"                 //Binary load/store functions
+#include "vector.hpp"             //For samples
 
 namespace dll {
 
@@ -80,17 +79,6 @@ public:
     etl::fast_vector<etl::fast_vector<weight, NV * NV>, K+1> h_cv_1;   //Temporary convolution
     etl::fast_vector<etl::fast_vector<weight, NV * NV>, K+1> h_cv_2;   //Temporary convolution
 
-public:
-    //No copying
-    conv_rbm(const conv_rbm& rbm) = delete;
-    conv_rbm& operator=(const conv_rbm& rbm) = delete;
-
-    //No moving
-    conv_rbm(conv_rbm&& rbm) = delete;
-    conv_rbm& operator=(conv_rbm&& rbm) = delete;
-
-    conv_rbm(){}
-
     template<typename V, typename K, typename O>
     static void convolve(const V& input, const K& kernel, O& output){
         //TODO Add assertions for the sizes
@@ -103,6 +91,33 @@ public:
                 output[n] = input[n + k] * kernel[kernel.size() - k - 1];
             }
         }
+    }
+
+public:
+    //No copying
+    conv_rbm(const conv_rbm& rbm) = delete;
+    conv_rbm& operator=(const conv_rbm& rbm) = delete;
+
+    //No moving
+    conv_rbm(conv_rbm&& rbm) = delete;
+    conv_rbm& operator=(conv_rbm&& rbm) = delete;
+
+    conv_rbm(){}
+
+    void store(std::ostream& os) const {
+        for(std::size_t k = 0; k < K; ++k){
+            binary_write_all(os, w(k));
+        }
+        binary_write_all(os, b);
+        binary_write(os, c);
+    }
+
+    void load(std::istream& is){
+        for(std::size_t k = 0; k < K; ++k){
+            binary_load_all(is, w(k));
+        }
+        binary_load_all(is, b);
+        binary_load(is, c);
     }
 
     template<typename H, typename V>
