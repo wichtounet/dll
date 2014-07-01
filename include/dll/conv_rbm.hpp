@@ -148,7 +148,6 @@ public:
                     dll_unreachable("Invalid path");
                 }
 
-                dll_assert(std::isfinite(s), "NaN verify");
                 dll_assert(std::isfinite(x), "NaN verify");
                 dll_assert(std::isfinite(h_a(k)(j)), "NaN verify");
                 dll_assert(std::isfinite(h_s(k)(j)), "NaN verify");
@@ -186,7 +185,6 @@ public:
                 dll_unreachable("Invalid path");
             }
 
-            dll_assert(std::isfinite(s), "NaN verify");
             dll_assert(std::isfinite(x), "NaN verify");
             dll_assert(std::isfinite(v_a(i)), "NaN verify");
             dll_assert(std::isfinite(v_s(i)), "NaN verify");

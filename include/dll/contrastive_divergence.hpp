@@ -139,7 +139,7 @@ struct base_cd_trainer {
         }
 
         //Check for NaN
-        nan_check_3(rbm.w, rbm.a, rbm.b);
+        nan_check_deep_3(rbm.w, rbm.a, rbm.b);
     }
 };
 
@@ -220,7 +220,9 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
         }
 
         //Check for NaN
-        nan_check_3(rbm.w, rbm.a, rbm.b);
+        nan_check_deep_deep(rbm.w);
+        nan_check_deep(rbm.b);
+        nan_check(rbm.c);
     }
 };
 
@@ -304,7 +306,7 @@ public:
             q_batch /= n_samples * num_hidden;
         }
 
-        nan_check_3(w_grad, vbias_grad, hbias_grad);
+        nan_check_deep_3(w_grad, vbias_grad, hbias_grad);
 
         //Update the weights and biases based on the gradients
         this->update_weights(rbm);
@@ -398,7 +400,9 @@ public:
             w_grad(k) /= n_samples;
         }
 
-        nan_check_3(w_grad, vbias_grad, hbias_grad);
+        nan_check_deep_deep(w_grad);
+        nan_check_deep(vbias_grad);
+        nan_check_deep(hbias_grad);
 
         //Update the weights and biases based on the gradients
         this->update_weights(rbm);
@@ -515,7 +519,7 @@ public:
             q_batch /= n_samples * num_hidden;
         }
 
-        nan_check_3(w_grad, vbias_grad, hbias_grad);
+        nan_check_deep_3(w_grad, vbias_grad, hbias_grad);
 
         //Update the weights and biases based on the gradients
         this->update_weights(rbm);
