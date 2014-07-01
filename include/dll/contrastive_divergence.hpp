@@ -210,11 +210,11 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
         //Update visible biases
 
         if(rbm_traits<rbm_t>::decay_type() == DecayType::L1_FULL){
-            rbm.a += learning_rate * (a_fgrad - rbm.weight_cost * abs(rbm.a));
+            rbm.c += learning_rate * (a_fgrad - rbm.weight_cost * abs(rbm.c));
         } else if(rbm_traits<rbm_t>::decay_type() == DecayType::L2_FULL){
-            rbm.a += learning_rate * (a_fgrad - rbm.weight_cost * rbm.a);
+            rbm.c += learning_rate * (a_fgrad - rbm.weight_cost * rbm.c);
         } else {
-            rbm.a += learning_rate * a_fgrad;
+            rbm.c += learning_rate * a_fgrad;
         }
 
         //Check for NaN
@@ -222,10 +222,10 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
     }
 };
 
-template<std::size_t K, typename RBM>
+template<std::size_t N, typename RBM, typename Enable = void>
 struct cd_trainer : base_cd_trainer<RBM> {
 private:
-    static_assert(K > 0, "CD-0 is not a valid training method");
+    static_assert(N > 0, "CD-0 is not a valid training method");
 
     using rbm_t = RBM;
     using weight = typename rbm_t::weight;
@@ -273,7 +273,7 @@ public:
             rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
 
             //CD-k
-            for(std::size_t k = 1; k < K; ++k){
+            for(std::size_t n = 1; n < N; ++n){
                 rbm.activate_visible(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
                 rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
             }
@@ -314,6 +314,79 @@ public:
             error += vbias_grad(i) * vbias_grad(i);
         }
         error = sqrt(error / num_visible);
+
+        return error;
+    }
+};
+
+template<std::size_t N, typename RBM>
+struct cd_trainer<N, RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> : base_cd_trainer<RBM> {
+private:
+    static_assert(N > 0, "CD-0 is not a valid training method");
+
+    using rbm_t = RBM;
+    using weight = typename rbm_t::weight;
+
+    using base_cd_trainer<RBM>::K;
+
+    using base_cd_trainer<RBM>::num_visible;
+    using base_cd_trainer<RBM>::num_hidden;
+
+    using base_cd_trainer<RBM>::w_grad;
+    using base_cd_trainer<RBM>::vbias_grad;
+    using base_cd_trainer<RBM>::hbias_grad;
+
+public:
+    cd_trainer() : base_cd_trainer<RBM>() {
+        //Nothing else to init here
+    }
+
+    template<typename T>
+    weight train_batch(const dll::batch<T>& batch, RBM& rbm){
+        dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_t::BatchSize), "Invalid size");
+        dll_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
+
+        //Size of a minibatch
+        auto n_samples = static_cast<weight>(batch.size());
+
+        //Clear the gradients
+        vbias_grad = 0.0;
+        hbias_grad = 0.0;
+        w_grad = 0.0;
+
+        for(auto& items : batch){
+            rbm.v1 = items;
+
+            //First step
+            rbm.activate_hidden(rbm.h1_a, rbm.h1_s, rbm.v1, rbm.v1);
+
+            //CD-1
+            rbm.activate_visible(rbm.h1_a, rbm.h1_s, rbm.v2_a, rbm.v2_s);
+            rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
+
+            //CD-k
+            for(std::size_t n = 1; n < N; ++n){
+                rbm.activate_visible(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
+                rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
+            }
+
+            //TODO Compute gradients
+        }
+
+        //Keep only the mean of the gradients
+        w_grad /= n_samples;
+        vbias_grad /= n_samples;
+        hbias_grad /= n_samples;
+
+        nan_check_3(w_grad, vbias_grad, hbias_grad);
+
+        //Update the weights and biases based on the gradients
+        this->update_weights(rbm);
+
+        //Compute the reconstruction error
+
+        //TODO Fix that
+        weight error = sqrt(vbias_grad);
 
         return error;
     }
