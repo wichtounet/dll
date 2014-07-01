@@ -160,7 +160,7 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
     //Gradients
     etl::fast_vector<etl::fast_vector<weight, NW * NW>, K>  w_grad;     //Gradients of shared weights
     etl::fast_vector<weight, K> hbias_grad;                             //Gradients of hidden biases bk
-    weight vbias_grad;                                                  //Gradient of visible single bias c
+    etl::fast_vector<weight, NV * NV> vbias_grad;                       //Visible gradients
 
     //TODO Momentum
     //TODO Sparsity
@@ -212,11 +212,11 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
         //Update visible biases
 
         if(rbm_traits<rbm_t>::decay_type() == DecayType::L1_FULL){
-            rbm.c += learning_rate * (a_fgrad - rbm.weight_cost * abs(rbm.c));
+            rbm.c += learning_rate * sum((a_fgrad - rbm.weight_cost * abs(rbm.c)));
         } else if(rbm_traits<rbm_t>::decay_type() == DecayType::L2_FULL){
-            rbm.c += learning_rate * (a_fgrad - rbm.weight_cost * rbm.c);
+            rbm.c += learning_rate * sum((a_fgrad - rbm.weight_cost * rbm.c));
         } else {
-            rbm.c += learning_rate * a_fgrad;
+            rbm.c += learning_rate * sum(a_fgrad);
         }
 
         //Check for NaN
@@ -376,6 +376,12 @@ public:
             }
 
             //TODO Compute gradients
+
+            vbias_grad += rbm.v1 - rbm.v2_a;
+
+            for(std::size_t k = 0; k < K; ++k){
+                hbias_grad(k) += sum(rbm.h1_a(k) - rbm.h2_a(k));
+            }
         }
 
         //Keep only the mean of the gradients
@@ -393,8 +399,12 @@ public:
 
         //Compute the reconstruction error
 
-        //TODO Fix that
-        weight error = sqrt(vbias_grad);
+        //TODO Probably not correct
+        weight error = 0.0;
+        for(size_t i = 0; i < num_visible; ++i){
+            error += vbias_grad(i) * vbias_grad(i);
+        }
+        error = sqrt(error / num_visible);
 
         return error;
     }
