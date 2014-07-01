@@ -363,16 +363,22 @@ public:
             rbm.v1 = items;
 
             //First step
-            rbm.activate_hidden(rbm.h1_a, rbm.h1_s, rbm.v1, rbm.v1);
+            rbm.activate_hidden(rbm.h1_a, rbm.h1_s, rbm.v1, rbm.v1, rbm.v_cv_1);
 
             //CD-1
-            rbm.activate_visible(rbm.h1_a, rbm.h1_s, rbm.v2_a, rbm.v2_s);
-            rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
+            rbm.activate_visible(rbm.h1_a, rbm.h1_s, rbm.v2_a, rbm.v2_s, rbm.h_cv_1);
+            rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s, rbm.v_cv_2);
 
             //CD-k
             for(std::size_t n = 1; n < N; ++n){
                 rbm.activate_visible(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
                 rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
+            }
+
+            //Compute gradients
+
+            for(std::size_t k = 0; k < K; ++k){
+                w_grad(k) += rbm.v_cv_1(k) - rbm.v_cv_2(k);
             }
 
             //TODO Compute gradients

@@ -71,9 +71,13 @@ public:
     etl::fast_vector<etl::fast_vector<weight, NH * NH>, K> h2_a;  //Activation probabilities of reconstructed hidden units
     etl::fast_vector<etl::fast_vector<weight, NH * NH>, K> h2_s;  //Sampled values of reconstructed hidden units
 
-    //TODO Perhaps store them as static member of function
-    etl::fast_vector<etl::fast_vector<weight, NH * NH>, K> v_cv;   //Temporary convolution
-    etl::fast_vector<etl::fast_vector<weight, NV * NV>, K+1> h_cv;   //Temporary convolution
+    //Convolution data
+
+    etl::fast_vector<etl::fast_vector<weight, NH * NH>, K> v_cv_1;   //Temporary convolution
+    etl::fast_vector<etl::fast_vector<weight, NH * NH>, K> v_cv_2;   //Temporary convolution
+
+    etl::fast_vector<etl::fast_vector<weight, NV * NV>, K> h_cv_1;   //Temporary convolution
+    etl::fast_vector<etl::fast_vector<weight, NV * NV>, K> h_cv_2;   //Temporary convolution
 
 public:
     //No copying
@@ -102,6 +106,11 @@ public:
 
     template<typename H, typename V>
     void activate_hidden(H& h_a, H& h_s, const V& v_a, const V& v_s){
+        activate_hidden(h_a, h_s, v_a, v_s, v_cv_1);
+    }
+
+    template<typename H, typename V, typename CV>
+    void activate_hidden(H& h_a, H& h_s, const V& v_a, const V& v_s, CV& v_cv){
         static std::default_random_engine rand_engine(std::time(nullptr));
         static std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
         static auto normal_generator = std::bind(normal_distribution, rand_engine);
@@ -133,6 +142,11 @@ public:
 
     template<typename H, typename V>
     void activate_visible(const H& h_a, const H& h_s, V& v_a, V& v_s){
+        activate_visible(h_a, h_s, v_a, v_s, h_cv_1);
+    }
+
+    template<typename H, typename V, typename CV>
+    void activate_visible(const H& h_a, const H& h_s, V& v_a, V& v_s, CV& h_cv){
         static std::default_random_engine rand_engine(std::time(nullptr));
         static std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
         static auto normal_generator = std::bind(normal_distribution, rand_engine);
