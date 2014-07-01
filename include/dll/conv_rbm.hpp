@@ -193,6 +193,8 @@ public:
         return energy;
     }
 
+    //Utility functions
+
     void reconstruct(const vector<weight>& items){
         dll_assert(items.size() == num_visible, "The size of the training sample must match visible units");
 
@@ -206,6 +208,15 @@ public:
         activate_hidden(h2_a, h2_s, v2_a, v2_s);
 
         std::cout << "Reconstruction took " << watch.elapsed() << "ms" << std::endl;
+    }
+
+    void display_visible_units(size_t matrix) const {
+        for(size_t i = 0; i < matrix; ++i){
+            for(size_t j = 0; j < matrix; ++j){
+                std::cout << v2_s(i * matrix + j) << " ";
+            }
+            std::cout << std::endl;
+        }
     }
 };
 
