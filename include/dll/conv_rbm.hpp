@@ -13,6 +13,8 @@
 #include <random>
 
 #include "etl/fast_vector.hpp"
+#include "etl/fast_matrix.hpp"
+#include "etl/convolution.hpp"
 
 #include "rbm_base.hpp"           //The base class
 #include "unit_type.hpp"          //unit_ype enum
@@ -57,28 +59,28 @@ public:
     static_assert(VisibleUnit == Type::SIGMOID, "Only binary visible units are supported");
     static_assert(HiddenUnit == Type::SIGMOID, "Only binary hidden units are supported");
 
-    etl::fast_vector<etl::fast_vector<weight, NW * NW>, K> w;     //shared weights
+    etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K> w;     //shared weights
     etl::fast_vector<weight, K> b;                                //hidden biases bk
     weight c;                                                     //visible single bias c
 
-    etl::fast_vector<weight, NV * NV> v1;                         //visible units
+    etl::fast_matrix<weight, NV, NV> v1;                         //visible units
 
-    etl::fast_vector<etl::fast_vector<weight, NH * NH>, K> h1_a;  //Activation probabilities of reconstructed hidden units
-    etl::fast_vector<etl::fast_vector<weight, NH * NH>, K> h1_s;  //Sampled values of reconstructed hidden units
+    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> h1_a;  //Activation probabilities of reconstructed hidden units
+    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> h1_s;  //Sampled values of reconstructed hidden units
 
-    etl::fast_vector<weight, NV * NV> v2_a;                       //Activation probabilities of reconstructed visible units
-    etl::fast_vector<weight, NV * NV> v2_s;                       //Sampled values of reconstructed visible units
+    etl::fast_matrix<weight, NV, NV> v2_a;                       //Activation probabilities of reconstructed visible units
+    etl::fast_matrix<weight, NV, NV> v2_s;                       //Sampled values of reconstructed visible units
 
-    etl::fast_vector<etl::fast_vector<weight, NH * NH>, K> h2_a;  //Activation probabilities of reconstructed hidden units
-    etl::fast_vector<etl::fast_vector<weight, NH * NH>, K> h2_s;  //Sampled values of reconstructed hidden units
+    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> h2_a;  //Activation probabilities of reconstructed hidden units
+    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> h2_s;  //Sampled values of reconstructed hidden units
 
     //Convolution data
 
-    etl::fast_vector<etl::fast_vector<weight, NH * NH>, K> v_cv_1;   //Temporary convolution
-    etl::fast_vector<etl::fast_vector<weight, NH * NH>, K> v_cv_2;   //Temporary convolution
+    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> v_cv_1;   //Temporary convolution
+    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> v_cv_2;   //Temporary convolution
 
-    etl::fast_vector<etl::fast_vector<weight, NV * NV>, K+1> h_cv_1;   //Temporary convolution
-    etl::fast_vector<etl::fast_vector<weight, NV * NV>, K+1> h_cv_2;   //Temporary convolution
+    etl::fast_vector<etl::fast_matrix<weight, NV, NV>, K+1> h_cv_1;   //Temporary convolution
+    etl::fast_vector<etl::fast_matrix<weight, NV, NV>, K+1> h_cv_2;   //Temporary convolution
 
 public:
     //No copying
@@ -122,22 +124,24 @@ public:
             h_a(k) = 0.0;
             h_s(k) = 0.0;
 
-            convolve_1d_valid(v_a, w(k), v_cv(k));
+            etl::convolve_2d_valid(v_a, w(k), v_cv(k));
 
-            for(size_t j = 0; j < num_hidden; ++j){
-                //Total input
-                auto x = v_cv(k)(j) + b(k);
+            for(size_t i = 0; i < NH; ++i){
+                for(size_t j = 0; j < NH; ++j){
+                    //Total input
+                    auto x = v_cv(k)(i,j) + b(k);
 
-                if(HiddenUnit == Type::SIGMOID){
-                    h_a(k)(j) = logistic_sigmoid(x);
-                    h_s(k)(j) = h_a(k)(j) > normal_generator() ? 1.0 : 0.0;
-                } else {
-                    dll_unreachable("Invalid path");
+                    if(HiddenUnit == Type::SIGMOID){
+                        h_a(k)(i,j) = logistic_sigmoid(x);
+                        h_s(k)(i,j) = h_a(k)(i,j) > normal_generator() ? 1.0 : 0.0;
+                    } else {
+                        dll_unreachable("Invalid path");
+                    }
+
+                    dll_assert(std::isfinite(x), "NaN verify");
+                    dll_assert(std::isfinite(h_a(k)(i,j)), "NaN verify");
+                    dll_assert(std::isfinite(h_s(k)(i,j)), "NaN verify");
                 }
-
-                dll_assert(std::isfinite(x), "NaN verify");
-                dll_assert(std::isfinite(h_a(k)(j)), "NaN verify");
-                dll_assert(std::isfinite(h_s(k)(j)), "NaN verify");
             }
         }
     }
@@ -157,24 +161,26 @@ public:
         v_s = 0.0;
 
         for(std::size_t k = 0; k < K; ++k){
-            convolve_1d_full(h_s(k), w(k), h_cv(k));
+            etl::convolve_2d_full(h_s(k), w(k), h_cv(k));
             h_cv(K) += h_cv(k);
         }
 
-        for(size_t i = 0; i < num_visible; ++i){
-            //Total input
-            auto x = h_cv(K)(i) + c;
+        for(size_t i = 0; i < NV; ++i){
+            for(size_t j = 0; j < NV; ++j){
+                //Total input
+                auto x = h_cv(K)(i,j) + c;
 
-            if(HiddenUnit == Type::SIGMOID){
-                v_a(i) = logistic_sigmoid(x);
-                v_s(i) = v_a(i) > normal_generator() ? 1.0 : 0.0;
-            } else {
-                dll_unreachable("Invalid path");
+                if(HiddenUnit == Type::SIGMOID){
+                    v_a(i,j) = logistic_sigmoid(x);
+                    v_s(i,j) = v_a(i,j) > normal_generator() ? 1.0 : 0.0;
+                } else {
+                    dll_unreachable("Invalid path");
+                }
+
+                dll_assert(std::isfinite(x), "NaN verify");
+                dll_assert(std::isfinite(v_a(i,j)), "NaN verify");
+                dll_assert(std::isfinite(v_s(i,j)), "NaN verify");
             }
-
-            dll_assert(std::isfinite(x), "NaN verify");
-            dll_assert(std::isfinite(v_a(i)), "NaN verify");
-            dll_assert(std::isfinite(v_s(i)), "NaN verify");
         }
     }
 
