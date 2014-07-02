@@ -216,7 +216,16 @@ public:
         std::cout << "Reconstruction took " << watch.elapsed() << "ms" << std::endl;
     }
 
-    void display_visible_units() const {
+    void display_visible_unit_activations() const {
+        for(size_t i = 0; i < NV; ++i){
+            for(size_t j = 0; j < NV; ++j){
+                std::cout << v2_a(i, j) << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+
+    void display_visible_unit_samples() const {
         for(size_t i = 0; i < NV; ++i){
             for(size_t j = 0; j < NV; ++j){
                 std::cout << v2_s(i, j) << " ";
@@ -225,7 +234,19 @@ public:
         }
     }
 
-    void display_hidden_units() const {
+    void display_hidden_unit_activations() const {
+        for(size_t k = 0; k < K; ++k){
+            for(size_t i = 0; i < NV; ++i){
+                for(size_t j = 0; j < NV; ++j){
+                    std::cout << h2_a(k)(i, j) << " ";
+                }
+                std::cout << std::endl;
+            }
+            std::cout << std::endl << std::endl;
+        }
+    }
+
+    void display_hidden_unit_samples() const {
         for(size_t k = 0; k < K; ++k){
             for(size_t i = 0; i < NV; ++i){
                 for(size_t j = 0; j < NV; ++j){
