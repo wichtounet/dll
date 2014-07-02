@@ -216,12 +216,24 @@ public:
         std::cout << "Reconstruction took " << watch.elapsed() << "ms" << std::endl;
     }
 
-    void display_visible_units(size_t matrix) const {
-        for(size_t i = 0; i < matrix; ++i){
-            for(size_t j = 0; j < matrix; ++j){
-                std::cout << v2_s(i * matrix + j) << " ";
+    void display_visible_units() const {
+        for(size_t i = 0; i < NV; ++i){
+            for(size_t j = 0; j < NV; ++j){
+                std::cout << v2_s(i, j) << " ";
             }
             std::cout << std::endl;
+        }
+    }
+
+    void display_hidden_units() const {
+        for(size_t k = 0; k < K; ++k){
+            for(size_t i = 0; i < NV; ++i){
+                for(size_t j = 0; j < NV; ++j){
+                    std::cout << h2_s(i, j) << " ";
+                }
+                std::cout << std::endl;
+            }
+            std::cout << std::endl << std::endl;
         }
     }
 };
