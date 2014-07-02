@@ -229,7 +229,7 @@ public:
         for(size_t k = 0; k < K; ++k){
             for(size_t i = 0; i < NV; ++i){
                 for(size_t j = 0; j < NV; ++j){
-                    std::cout << h2_s(i, j) << " ";
+                    std::cout << h2_s(k)(i, j) << " ";
                 }
                 std::cout << std::endl;
             }
