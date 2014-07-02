@@ -115,7 +115,7 @@ public:
     }
 
     template<typename H, typename V, typename CV>
-    void activate_hidden(H& h_a, H& h_s, const V& v_a, const V& v_s, CV& v_cv) const {
+    void activate_hidden(H& h_a, H& h_s, const V& v_a, const V& v_s, CV& v_cv){
         static std::default_random_engine rand_engine(std::time(nullptr));
         static std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
         static auto normal_generator = std::bind(normal_distribution, rand_engine);
@@ -124,7 +124,9 @@ public:
             h_a(k) = 0.0;
             h_s(k) = 0.0;
 
+            std::reverse(w(k).begin(), w(k).end());
             etl::convolve_2d_valid(v_a, w(k), v_cv(k));
+            std::reverse(w(k).begin(), w(k).end());
 
             for(size_t i = 0; i < NH; ++i){
                 for(size_t j = 0; j < NH; ++j){
