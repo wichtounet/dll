@@ -10,17 +10,20 @@
 
 #include <cstddef>
 #include <ctime>
+#include <random>
 
 #include "etl/fast_vector.hpp"
+#include "etl/fast_matrix.hpp"
+#include "etl/convolution.hpp"
 
 #include "rbm_base.hpp"           //The base class
+#include "unit_type.hpp"          //unit_ype enum
 #include "assert.hpp"             //Assertions
 #include "stop_watch.hpp"         //Performance counter
 #include "math.hpp"               //Logistic sigmoid
-
-#include "unit_type.hpp"
-#include "vector.hpp"
-//#include "generic_trainer.hpp"
+#include "io.hpp"                 //Binary load/store functions
+#include "vector.hpp"             //For samples
+#include "tmp.hpp"
 
 namespace dll {
 
@@ -56,28 +59,28 @@ public:
     static_assert(VisibleUnit == Type::SIGMOID, "Only binary visible units are supported");
     static_assert(HiddenUnit == Type::SIGMOID, "Only binary hidden units are supported");
 
-    etl::fast_vector<etl::fast_vector<weight, NW * NW>, K> w;     //shared weights
+    etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K> w;     //shared weights
     etl::fast_vector<weight, K> b;                                //hidden biases bk
     weight c;                                                     //visible single bias c
 
-    etl::fast_vector<weight, NV * NV> v1;                         //visible units
+    etl::fast_matrix<weight, NV, NV> v1;                         //visible units
 
-    etl::fast_vector<etl::fast_vector<weight, NH * NH>, K> h1_a;  //Activation probabilities of reconstructed hidden units
-    etl::fast_vector<etl::fast_vector<weight, NH * NH>, K> h1_s;  //Sampled values of reconstructed hidden units
+    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> h1_a;  //Activation probabilities of reconstructed hidden units
+    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> h1_s;  //Sampled values of reconstructed hidden units
 
-    etl::fast_vector<weight, NV * NV> v2_a;                       //Activation probabilities of reconstructed visible units
-    etl::fast_vector<weight, NV * NV> v2_s;                       //Sampled values of reconstructed visible units
+    etl::fast_matrix<weight, NV, NV> v2_a;                       //Activation probabilities of reconstructed visible units
+    etl::fast_matrix<weight, NV, NV> v2_s;                       //Sampled values of reconstructed visible units
 
-    etl::fast_vector<etl::fast_vector<weight, NH * NH>, K> h2_a;  //Activation probabilities of reconstructed hidden units
-    etl::fast_vector<etl::fast_vector<weight, NH * NH>, K> h2_s;  //Sampled values of reconstructed hidden units
+    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> h2_a;  //Activation probabilities of reconstructed hidden units
+    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> h2_s;  //Sampled values of reconstructed hidden units
 
     //Convolution data
 
-    etl::fast_vector<etl::fast_vector<weight, NH * NH>, K> v_cv_1;   //Temporary convolution
-    etl::fast_vector<etl::fast_vector<weight, NH * NH>, K> v_cv_2;   //Temporary convolution
+    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> v_cv_1;   //Temporary convolution
+    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> v_cv_2;   //Temporary convolution
 
-    etl::fast_vector<etl::fast_vector<weight, NV * NV>, K> h_cv_1;   //Temporary convolution
-    etl::fast_vector<etl::fast_vector<weight, NV * NV>, K> h_cv_2;   //Temporary convolution
+    etl::fast_vector<etl::fast_matrix<weight, NV, NV>, K+1> h_cv_1;   //Temporary convolution
+    etl::fast_vector<etl::fast_matrix<weight, NV, NV>, K+1> h_cv_2;   //Temporary convolution
 
 public:
     //No copying
@@ -109,18 +112,20 @@ public:
         c = scale * generator();
     }
 
-    template<typename V, typename K, typename O>
-    static void convolve(const V& input, const K& kernel, O& output){
-        //TODO Add assertions for the sizes
-
-        //Clear the output
-        output = 0.0;
-
-        for(std::size_t n = 0 ; n < output.size(); n++){
-            for(std::size_t k = 0; k < kernel.size(); ++k){
-                output[n] = input[n + k] * kernel[kernel.size() - k - 1];
-            }
+    void store(std::ostream& os) const {
+        for(std::size_t k = 0; k < K; ++k){
+            binary_write_all(os, w(k));
         }
+        binary_write_all(os, b);
+        binary_write(os, c);
+    }
+
+    void load(std::istream& is){
+        for(std::size_t k = 0; k < K; ++k){
+            binary_load_all(is, w(k));
+        }
+        binary_load_all(is, b);
+        binary_load(is, c);
     }
 
     template<typename H, typename V>
@@ -138,23 +143,26 @@ public:
             h_a(k) = 0.0;
             h_s(k) = 0.0;
 
-            convolve(v_a, w(k), v_cv(k));
+            std::reverse(w(k).begin(), w(k).end());
+            etl::convolve_2d_valid(v_a, w(k), v_cv(k));
+            std::reverse(w(k).begin(), w(k).end());
 
-            for(size_t j = 0; j < num_hidden; ++j){
-                //Total input
-                auto x = v_cv(k)(j) + b(k);
+            for(size_t i = 0; i < NH; ++i){
+                for(size_t j = 0; j < NH; ++j){
+                    //Total input
+                    auto x = v_cv(k)(i,j) + b(k);
 
-                if(HiddenUnit == Type::SIGMOID){
-                    h_a(k)(j) = logistic_sigmoid(x);
-                    h_s(k)(j) = h_a(k)(j) > normal_generator() ? 1.0 : 0.0;
-                } else {
-                    dll_unreachable("Invalid path");
+                    if(HiddenUnit == Type::SIGMOID){
+                        h_a(k)(i,j) = logistic_sigmoid(x);
+                        h_s(k)(i,j) = h_a(k)(i,j) > normal_generator() ? 1.0 : 0.0;
+                    } else {
+                        dll_unreachable("Invalid path");
+                    }
+
+                    dll_assert(std::isfinite(x), "NaN verify");
+                    dll_assert(std::isfinite(h_a(k)(i,j)), "NaN verify");
+                    dll_assert(std::isfinite(h_s(k)(i,j)), "NaN verify");
                 }
-
-                dll_assert(std::isfinite(s), "NaN verify");
-                dll_assert(std::isfinite(x), "NaN verify");
-                dll_assert(std::isfinite(h_a(k)(j)), "NaN verify");
-                dll_assert(std::isfinite(h_s(k)(j)), "NaN verify");
             }
         }
     }
@@ -165,7 +173,7 @@ public:
     }
 
     template<typename H, typename V, typename CV>
-    void activate_visible(const H& h_a, const H& h_s, V& v_a, V& v_s, CV& h_cv){
+    void activate_visible(const H& h_a, const H& h_s, V& v_a, V& v_s, CV& h_cv) const {
         static std::default_random_engine rand_engine(std::time(nullptr));
         static std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
         static auto normal_generator = std::bind(normal_distribution, rand_engine);
@@ -174,25 +182,26 @@ public:
         v_s = 0.0;
 
         for(std::size_t k = 0; k < K; ++k){
-            convolve(h_s(k), w(k), h_cv(k));
+            etl::convolve_2d_full(h_s(k), w(k), h_cv(k));
             h_cv(K) += h_cv(k);
         }
 
-        for(size_t i = 0; i < num_visible; ++i){
-            //Total input
-            auto x = h_cv(K)(i) + c;
+        for(size_t i = 0; i < NV; ++i){
+            for(size_t j = 0; j < NV; ++j){
+                //Total input
+                auto x = h_cv(K)(i,j) + c;
 
-            if(HiddenUnit == Type::SIGMOID){
-                v_a(i) = logistic_sigmoid(x);
-                v_s(i) = v_a(i) > normal_generator() ? 1.0 : 0.0;
-            } else {
-                dll_unreachable("Invalid path");
+                if(HiddenUnit == Type::SIGMOID){
+                    v_a(i,j) = logistic_sigmoid(x);
+                    v_s(i,j) = v_a(i,j) > normal_generator() ? 1.0 : 0.0;
+                } else {
+                    dll_unreachable("Invalid path");
+                }
+
+                dll_assert(std::isfinite(x), "NaN verify");
+                dll_assert(std::isfinite(v_a(i,j)), "NaN verify");
+                dll_assert(std::isfinite(v_s(i,j)), "NaN verify");
             }
-
-            dll_assert(std::isfinite(s), "NaN verify");
-            dll_assert(std::isfinite(x), "NaN verify");
-            dll_assert(std::isfinite(v_a(i)), "NaN verify");
-            dll_assert(std::isfinite(v_s(i)), "NaN verify");
         }
     }
 
@@ -211,6 +220,8 @@ public:
         return energy;
     }
 
+    //Utility functions
+
     void reconstruct(const vector<weight>& items){
         dll_assert(items.size() == num_visible, "The size of the training sample must match visible units");
 
@@ -224,6 +235,48 @@ public:
         activate_hidden(h2_a, h2_s, v2_a, v2_s);
 
         std::cout << "Reconstruction took " << watch.elapsed() << "ms" << std::endl;
+    }
+
+    void display_visible_unit_activations() const {
+        for(size_t i = 0; i < NV; ++i){
+            for(size_t j = 0; j < NV; ++j){
+                std::cout << v2_a(i, j) << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+
+    void display_visible_unit_samples() const {
+        for(size_t i = 0; i < NV; ++i){
+            for(size_t j = 0; j < NV; ++j){
+                std::cout << v2_s(i, j) << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+
+    void display_hidden_unit_activations() const {
+        for(size_t k = 0; k < K; ++k){
+            for(size_t i = 0; i < NV; ++i){
+                for(size_t j = 0; j < NV; ++j){
+                    std::cout << h2_a(k)(i, j) << " ";
+                }
+                std::cout << std::endl;
+            }
+            std::cout << std::endl << std::endl;
+        }
+    }
+
+    void display_hidden_unit_samples() const {
+        for(size_t k = 0; k < K; ++k){
+            for(size_t i = 0; i < NV; ++i){
+                for(size_t j = 0; j < NV; ++j){
+                    std::cout << h2_s(k)(i, j) << " ";
+                }
+                std::cout << std::endl;
+            }
+            std::cout << std::endl << std::endl;
+        }
     }
 };
 

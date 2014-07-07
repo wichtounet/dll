@@ -14,8 +14,10 @@
 
 #ifdef NDEBUG
 
-#define nan_check(list) ((void)0)
-#define nan_check_3(l1, l2, l3) ((void)0)
+#define nan_check(value) ((void)0)
+#define nan_check_deep(list) ((void)0)
+#define nan_check_deep_deep(list) ((void)0)
+#define nan_check_deep_3(l1, l2, l3) ((void)0)
 
 #define dll_assert(condition, message) ((void)0)
 
@@ -35,8 +37,10 @@
 
 #else
 
-#define nan_check(list) for(auto& nantest : ((list))){dll_assert(std::isfinite(nantest), "NaN Verify");}
-#define nan_check_3(l1,l2,l3) nan_check(l1); nan_check(l2); nan_check(l3);
+#define nan_check(value) dll_assert(std::isfinite(((value))), "NaN Verify");
+#define nan_check_deep(list) for(auto& _nan : ((list))){dll_assert(std::isfinite(_nan), "NaN Verify");}
+#define nan_check_deep_deep(l) for(auto& _nan_a : ((l))){for(auto& _nan_b : _nan_a){dll_assert(std::isfinite(_nan_b), "NaN Verify");}}
+#define nan_check_deep_3(l1,l2,l3) nan_check_deep(l1); nan_check_deep(l2); nan_check_deep(l3);
 
 #define dll_assert(condition, message) (likely(condition) \
     ? ((void)0) \
