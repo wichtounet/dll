@@ -158,9 +158,9 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
     typedef typename rbm_t::weight weight;
 
     //Gradients
-    etl::fast_vector<etl::fast_vector<weight, NW * NW>, K>  w_grad;     //Gradients of shared weights
+    etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_grad;      //Gradients of shared weights
     etl::fast_vector<weight, K> hbias_grad;                             //Gradients of hidden biases bk
-    etl::fast_vector<weight, NV * NV> vbias_grad;                       //Visible gradients
+    etl::fast_matrix<weight, NV, NV> vbias_grad;                        //Visible gradients
 
     //TODO Momentum
     //TODO Sparsity
@@ -330,6 +330,7 @@ private:
     using weight = typename rbm_t::weight;
 
     using base_cd_trainer<RBM>::K;
+    using base_cd_trainer<RBM>::NW;
 
     using base_cd_trainer<RBM>::num_visible;
     using base_cd_trainer<RBM>::num_hidden;
@@ -337,6 +338,9 @@ private:
     using base_cd_trainer<RBM>::w_grad;
     using base_cd_trainer<RBM>::vbias_grad;
     using base_cd_trainer<RBM>::hbias_grad;
+
+    etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_pos;
+    etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_neg;
 
 public:
     cd_trainer() : base_cd_trainer<RBM>() {
@@ -378,10 +382,16 @@ public:
             //Compute gradients
 
             for(std::size_t k = 0; k < K; ++k){
-                w_grad(k) += rbm.v_cv_1(k) - rbm.v_cv_2(k);
-            }
+                std::reverse(rbm.h1_a(k).begin(), rbm.h1_a(k).end());
+                etl::convolve_2d_valid(rbm.v1, rbm.h1_a(k), w_pos(k));
+                std::reverse(rbm.h1_a(k).begin(), rbm.h1_a(k).end());
 
-            //TODO Compute gradients
+                std::reverse(rbm.h2_a(k).begin(), rbm.h2_a(k).end());
+                etl::convolve_2d_valid(rbm.v2_a, rbm.h2_a(k), w_neg(k));
+                std::reverse(rbm.h2_a(k).begin(), rbm.h2_a(k).end());
+
+                w_grad(k) += w_pos(k) - w_neg(k);
+            }
 
             vbias_grad += rbm.v1 - rbm.v2_a;
 
@@ -403,16 +413,8 @@ public:
         //Update the weights and biases based on the gradients
         this->update_weights(rbm);
 
-        //Compute the reconstruction error
-
-        //TODO Probably not correct
-        weight error = 0.0;
-        for(size_t i = 0; i < num_visible; ++i){
-            error += vbias_grad(i) * vbias_grad(i);
-        }
-        error = sqrt(error / num_visible);
-
-        return error;
+        //Return the reconstruction error
+        return mean(vbias_grad * vbias_grad);
     }
 };
 
