@@ -88,7 +88,26 @@ public:
     conv_rbm(conv_rbm&& rbm) = delete;
     conv_rbm& operator=(conv_rbm&& rbm) = delete;
 
-    conv_rbm(){}
+    conv_rbm(){
+        //Initialize the weights with a zero-mean and unit variance Gaussian distribution
+        static std::default_random_engine rand_engine(std::time(nullptr));
+        static std::normal_distribution<weight> distribution(0.0, 1.0);
+        static auto generator = std::bind(distribution, rand_engine);
+
+        double scale = 0.01;
+
+        for(std::size_t k = 0; k < K; ++k){
+            for(auto& weight : w(k)){
+                weight = scale * generator();
+            }
+        }
+
+        for(std::size_t k = 0; k < K; ++k){
+            b(k) = 2 * scale * generator();
+        }
+
+        c = scale * generator();
+    }
 
     template<typename V, typename K, typename O>
     static void convolve(const V& input, const K& kernel, O& output){
