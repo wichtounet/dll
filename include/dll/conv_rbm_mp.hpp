@@ -150,7 +150,7 @@ public:
         for(std::size_t ii = start_ii; ii < start_ii + C; ++ii){
             for(std::size_t jj  = start_jj; jj < start_jj + C; ++jj){
                 auto x = v_cv(k)(ii, jj) + b(k);
-                p += exp(x);
+                p += std::exp(x);
             }
         }
 
@@ -173,8 +173,13 @@ public:
             h_s(k) = 0.0;
 
             std::reverse(w(k).begin(), w(k).end());
+
+            //std::cout << "conv2(" << etl::to_octave(v_a) << "," << etl::to_octave(w(k)) << ",\"valid\")" << std::endl;
+
             etl::convolve_2d_valid(v_a, w(k), v_cv(k));
             std::reverse(w(k).begin(), w(k).end());
+
+            //std::cout << " = " << to_octave(v_cv(k)) << std::endl;
 
             for(size_t i = 0; i < NH; ++i){
                 for(size_t j = 0; j < NH; ++j){
@@ -182,7 +187,7 @@ public:
                     auto x = v_cv(k)(i,j) + b(k);
 
                     if(HiddenUnit == Type::SIGMOID){
-                        h_a(k)(i, j) = exp(x) / (1.0 + pool(k, i, j, v_cv));
+                        h_a(k)(i, j) = std::exp(x) / (1.0 + pool(k, i, j, v_cv));
                         h_s(k)(i,j) = h_a(k)(i,j) > normal_generator() ? 1.0 : 0.0;
                     } else {
                         dll_unreachable("Invalid path");
@@ -212,7 +217,9 @@ public:
         v_s = 0.0;
 
         for(std::size_t k = 0; k < K; ++k){
+            //std::cout << "conv2(" << etl::to_octave(h_s(k)) << "," << etl::to_octave(w(k)) << ",\"full\")" << std::endl;
             etl::convolve_2d_full(h_s(k), w(k), h_cv(k));
+            //std::cout << " = " << etl::to_octave(h_cv(k)) << std::endl;
             h_cv(K) += h_cv(k);
         }
 
