@@ -447,8 +447,12 @@ private:
     std::vector<etl::fast_vector<weight, num_hidden>> p_h_a;
     std::vector<etl::fast_vector<weight, num_hidden>> p_h_s;
 
+    bool init = true;
+
 public:
-    persistent_cd_trainer() : base_cd_trainer<RBM>() {
+    persistent_cd_trainer() : base_cd_trainer<RBM>(),
+            p_h_a(rbm_t::BatchSize),
+            p_h_s(rbm_t::BatchSize) {
         //Nothing else to init here
     }
 
@@ -466,14 +470,8 @@ public:
         w_grad = 0.0;
 
         //Reset mean activation probability if necessary
-            if(rbm_traits<rbm_t>::has_sparsity()){
+        if(rbm_traits<rbm_t>::has_sparsity()){
             q_batch = 0.0;
-        }
-
-        bool init = p_h_a.empty();;
-        if(init){
-            p_h_a.resize(static_cast<typename dll::batch<T>::size_type>(rbm_t::BatchSize));
-            p_h_s.resize(static_cast<typename dll::batch<T>::size_type>(rbm_t::BatchSize));
         }
 
         for(std::size_t i = 0; i < batch.size(); ++i){
@@ -516,13 +514,15 @@ public:
             }
         }
 
+        init = false;
+
         //Keep only the mean of the gradients
         w_grad /= n_samples;
         vbias_grad /= n_samples;
         hbias_grad /= n_samples;
 
         //Compute the mean activation probabilities
-            if(rbm_traits<rbm_t>::has_sparsity()){
+        if(rbm_traits<rbm_t>::has_sparsity()){
             q_batch /= n_samples * num_hidden;
         }
 
@@ -545,6 +545,9 @@ public:
 
 template <typename RBM>
 using cd1_trainer_t = cd_trainer<1, RBM>;
+
+template <typename RBM>
+using pcd1_trainer_t = persistent_cd_trainer<1, RBM>;
 
 } //end of dbn namespace
 
