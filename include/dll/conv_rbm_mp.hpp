@@ -144,8 +144,11 @@ public:
     weight pool(std::size_t k, std::size_t i, std::size_t j, const CV& v_cv) const {
         weight p = 0;
 
-        for(std::size_t ii = i / C; ii < (i / C) + C; ++ii){
-            for(std::size_t jj  = j / C; jj < (j / C) + C; ++jj){
+        auto start_ii = (i / C) * C;
+        auto start_jj = (j / C) * C;
+
+        for(std::size_t ii = start_ii; ii < start_ii + C; ++ii){
+            for(std::size_t jj  = start_jj; jj < start_jj + C; ++jj){
                 auto x = v_cv(k)(ii, jj) + b(k);
                 p += exp(x);
             }
