@@ -186,6 +186,7 @@ public:
                     }
 
                     dll_assert(std::isfinite(x), "NaN verify");
+                    dll_assert(std::isfinite(pool(k,i,j,v_cv)), "NaN verify");
                     dll_assert(std::isfinite(h_a(k)(i,j)), "NaN verify");
                     dll_assert(std::isfinite(h_s(k)(i,j)), "NaN verify");
                 }
