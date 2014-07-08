@@ -21,6 +21,12 @@ Features
    * Pretraining with RBMs
    * Fine tuning with Conjugate Gradient
 
+In development
+--------------
+
+conv_rbm is still in heavy development and should not be used unless if you
+intend to fix it ;)
+
 Building
 --------
 
