@@ -11,6 +11,7 @@
 #include "tmp.hpp"
 #include "decay_type.hpp"
 #include "conv_rbm.hpp"
+#include "conv_rbm_mp.hpp"
 
 namespace dll {
 
@@ -26,7 +27,8 @@ struct rbm_traits {
     HAS_STATIC_FIELD(Momentum, has_momentum_field)
 
     static constexpr bool is_convolutional(){
-        return is_instantiation_of<conv_rbm, rbm_t>::value;
+        return is_instantiation_of<conv_rbm, rbm_t>::value
+            || is_instantiation_of<conv_rbm_mp, rbm_t>::value;
     }
 
     template<typename R = RBM, enable_if_u<has_batch_size_field<R>::value> = detail::dummy>
