@@ -18,6 +18,7 @@
 
 #include "rbm_base.hpp"           //The base class
 #include "unit_type.hpp"          //unit_ype enum
+#include "decay_type.hpp"         //decay_ype enum
 #include "assert.hpp"             //Assertions
 #include "stop_watch.hpp"         //Performance counter
 #include "math.hpp"               //Logistic sigmoid
@@ -46,6 +47,7 @@ public:
     static constexpr const std::size_t BatchSize = Layer::BatchSize;
     static constexpr const Type VisibleUnit = Layer::VisibleUnit;
     static constexpr const Type HiddenUnit = Layer::HiddenUnit;
+    static constexpr const DecayType Decay = Layer::Decay;
 
     static constexpr const std::size_t NV = Layer::NV;
     static constexpr const std::size_t NH = Layer::NH;
@@ -56,10 +58,12 @@ public:
     static constexpr const std::size_t num_visible = NV * NV;
     static constexpr const std::size_t num_hidden = NH * NH;
 
-    static_assert(VisibleUnit == Type::SIGMOID, "Only binary visible units are supported");
-    static_assert(HiddenUnit == Type::SIGMOID, "Only binary hidden units are supported");
+    static_assert(VisibleUnit == Type::SIGMOID || VisibleUnit == Type::GAUSSIAN,
+        "Only binary and linear visible units are supported");
+    static_assert(HiddenUnit == Type::SIGMOID,
+        "Only binary hidden units are supported");
 
-    etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K> w;     //shared weights
+    etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K> w;      //shared weights
     etl::fast_vector<weight, K> b;                                //hidden biases bk
     weight c;                                                     //visible single bias c
 
@@ -97,7 +101,7 @@ public:
         static std::normal_distribution<weight> distribution(0.0, 1.0);
         static auto generator = std::bind(distribution, rand_engine);
 
-        double scale = 0.01;
+        double scale = 0.001;
 
         for(std::size_t k = 0; k < K; ++k){
             for(auto& weight : w(k)){
@@ -191,9 +195,15 @@ public:
                 //Total input
                 auto x = h_cv(K)(i,j) + c;
 
-                if(HiddenUnit == Type::SIGMOID){
+                if(VisibleUnit == Type::SIGMOID){
                     v_a(i,j) = logistic_sigmoid(x);
                     v_s(i,j) = v_a(i,j) > normal_generator() ? 1.0 : 0.0;
+                } else if(VisibleUnit == Type::GAUSSIAN){
+                    std::normal_distribution<weight> noise_distribution(0.0, 1.0);
+                    auto noise = std::bind(noise_distribution, rand_engine);
+
+                    v_a(i,j) = x;
+                    v_s(i,j) = x + noise();
                 } else {
                     dll_unreachable("Invalid path");
                 }
@@ -231,6 +241,7 @@ public:
         v1 = items;
 
         activate_hidden(h1_a, h1_s, v1, v1);
+
         activate_visible(h1_a, h1_s, v2_a, v2_s);
         activate_hidden(h2_a, h2_s, v2_a, v2_s);
 
