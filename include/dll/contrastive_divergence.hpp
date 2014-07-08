@@ -18,6 +18,11 @@
 
 namespace dll {
 
+//Sign for scalars
+double sign(double v){
+    return v == 0.0 ? 0.0 : (v > 0.0 ? 1.0 : -1.0);
+}
+
 template<typename RBM, typename Enable = void>
 struct base_cd_trainer {
     typedef RBM rbm_t;
