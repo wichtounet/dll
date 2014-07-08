@@ -191,7 +191,7 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
 
         for(std::size_t k = 0; k < K; ++k){
             if(rbm_traits<rbm_t>::decay_type() == DecayType::L1 || rbm_traits<rbm_t>::decay_type() == DecayType::L1_FULL){
-                rbm.w(k) += learning_rate * (w_fgrad(k) - rbm.weight_cost * abs(rbm.w(k)) - h_penalty);
+                rbm.w(k) += learning_rate * (w_fgrad(k) - rbm.weight_cost * sign(rbm.w(k)) - h_penalty);
             } else if(rbm_traits<rbm_t>::decay_type() == DecayType::L2 || rbm_traits<rbm_t>::decay_type() == DecayType::L2_FULL){
                 rbm.w(k) += learning_rate * (w_fgrad(k) - rbm.weight_cost * rbm.w(k) - h_penalty);
             } else {
@@ -202,7 +202,7 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
         //Update hidden biases
 
         if(rbm_traits<rbm_t>::decay_type() == DecayType::L1_FULL){
-            rbm.b += learning_rate * (b_fgrad - rbm.weight_cost * abs(rbm.b) - h_penalty);
+            rbm.b += learning_rate * (b_fgrad - rbm.weight_cost * sign(rbm.b) - h_penalty);
         } else if(rbm_traits<rbm_t>::decay_type() == DecayType::L2_FULL){
             rbm.b += learning_rate * (b_fgrad - rbm.weight_cost * rbm.b - h_penalty);
         } else {
@@ -212,7 +212,7 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
         //Update visible biases
 
         if(rbm_traits<rbm_t>::decay_type() == DecayType::L1_FULL){
-            rbm.c += learning_rate * sum((a_fgrad - rbm.weight_cost * abs(rbm.c)));
+            rbm.c += learning_rate * sum((a_fgrad - rbm.weight_cost * sign(rbm.c)));
         } else if(rbm_traits<rbm_t>::decay_type() == DecayType::L2_FULL){
             rbm.c += learning_rate * sum((a_fgrad - rbm.weight_cost * rbm.c));
         } else {
@@ -398,7 +398,7 @@ public:
             vbias_grad += rbm.v1 - rbm.v2_a;
 
             for(std::size_t k = 0; k < K; ++k){
-                hbias_grad(k) += sum(rbm.h1_a(k) - rbm.h2_a(k));
+                hbias_grad(k) += mean(rbm.h1_a(k) - rbm.h2_a(k));
             }
         }
 
