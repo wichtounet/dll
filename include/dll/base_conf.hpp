@@ -22,6 +22,7 @@ struct conf_elt {
 struct batch_size_id;
 struct visible_unit_id;
 struct hidden_unit_id;
+struct pooling_unit_id;
 struct weight_decay_id;
 struct trainer_id;
 
@@ -29,7 +30,6 @@ template<std::size_t B>
 struct batch_size : conf_elt {
     using type = batch_size_id;
 
-    static constexpr const bool marker = true;
     static constexpr const std::size_t value = B;
 };
 
@@ -45,6 +45,13 @@ struct hidden_unit : conf_elt  {
     using type = hidden_unit_id;
 
     static constexpr const Type value = HT;
+};
+
+template<Type PT>
+struct pooling_unit : conf_elt  {
+    using type = pooling_unit_id;
+
+    static constexpr const Type value = PT;
 };
 
 template<DecayType T>

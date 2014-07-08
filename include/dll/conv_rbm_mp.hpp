@@ -55,6 +55,7 @@ public:
     static constexpr const std::size_t C = Layer::C;
 
     static constexpr const std::size_t NW = NV - NH + 1; //By definition
+    static constexpr const std::size_t NP = NH / C;      //By definition
 
     static constexpr const std::size_t num_visible = NV * NV;
     static constexpr const std::size_t num_hidden = NH * NH;
@@ -73,11 +74,17 @@ public:
     etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> h1_a;  //Activation probabilities of reconstructed hidden units
     etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> h1_s;  //Sampled values of reconstructed hidden units
 
+    etl::fast_vector<etl::fast_matrix<weight, NP, NP>, K> p1_a;  //Activation probabilities of reconstructed hidden units
+    etl::fast_vector<etl::fast_matrix<weight, NP, NP>, K> p1_s;  //Sampled values of reconstructed hidden units
+
     etl::fast_matrix<weight, NV, NV> v2_a;                       //Activation probabilities of reconstructed visible units
     etl::fast_matrix<weight, NV, NV> v2_s;                       //Sampled values of reconstructed visible units
 
     etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> h2_a;  //Activation probabilities of reconstructed hidden units
     etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> h2_s;  //Sampled values of reconstructed hidden units
+
+    etl::fast_vector<etl::fast_matrix<weight, NP, NP>, K> p2_a;  //Activation probabilities of reconstructed hidden units
+    etl::fast_vector<etl::fast_matrix<weight, NP, NP>, K> p2_s;  //Sampled values of reconstructed hidden units
 
     //Convolution data
 
@@ -133,6 +140,20 @@ public:
         binary_load(is, c);
     }
 
+    template<typename CV>
+    weight pool(std::size_t k, std::size_t i, std::size_t j, const CV& v_cv) const {
+        weight p = 0;
+
+        for(std::size_t ii = i / C; ii < (i / C) + C; ++ii){
+            for(std::size_t jj  = j / C; jj < (j / C) + C; ++jj){
+                auto x = v_cv(k)(ii, jj) + b(k);
+                p += exp(x);
+            }
+        }
+
+        return p;
+    }
+
     template<typename H, typename V>
     void activate_hidden(H& h_a, H& h_s, const V& v_a, const V& v_s){
         activate_hidden(h_a, h_s, v_a, v_s, v_cv_1);
@@ -158,7 +179,7 @@ public:
                     auto x = v_cv(k)(i,j) + b(k);
 
                     if(HiddenUnit == Type::SIGMOID){
-                        h_a(k)(i,j) = logistic_sigmoid(x);
+                        h_a(k)(i, j) = exp(x) / (1.0 + pool(k, i, j, v_cv));
                         h_s(k)(i,j) = h_a(k)(i,j) > normal_generator() ? 1.0 : 0.0;
                     } else {
                         dll_unreachable("Invalid path");
