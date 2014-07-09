@@ -26,9 +26,6 @@ int main(){
 
     typedef dll::conv_rbm<dll::conv_layer<28, 12, 40, dll::momentum, dll::batch_size<50>>> crbm_2;
 
-    std::cout << crbm_2::Momentum << std::endl;
-    std::cout << crbm_2::BatchSize << std::endl;
-
     //Test them all
 
     test_rbm<crbm_1>();
