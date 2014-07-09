@@ -21,7 +21,7 @@ struct generic_trainer {
     using rbm_t = RBM;
 
     template<typename R>
-    using trainer_t = typename rbm_t::template trainer_t<R>;
+    using trainer_t = typename rbm_t::layer::template trainer_t<R>;
 
     template<typename R = RBM, enable_if_u<rbm_traits<R>::init_weights()> = detail::dummy>
     static void init_weights(RBM& rbm, const std::vector<vector<typename RBM::weight>>& training_data){

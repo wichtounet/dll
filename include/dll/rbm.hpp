@@ -46,24 +46,13 @@ public:
 
     using layer = Layer;
 
-    //TODO Some things, should not be duplicated but used
-    //directly from the layer conf
-
-    template<typename RBM>
-    using trainer_t = typename Layer::template trainer_t<RBM>;
-
-    using conf = Layer;
-
     static constexpr const std::size_t num_visible = Layer::num_visible;
     static constexpr const std::size_t num_hidden = Layer::num_hidden;
 
-    static constexpr const std::size_t BatchSize = Layer::BatchSize;
-    static constexpr const bool Init = Layer::Init;
-    static constexpr const bool Debug = Layer::Debug;
     static constexpr const unit_type VisibleUnit = Layer::VisibleUnit;
     static constexpr const unit_type HiddenUnit = Layer::HiddenUnit;
+
     static constexpr const bool DBN = Layer::DBN;
-    static constexpr const decay_type Decay = Layer::Decay;
 
     static_assert(VisibleUnit != unit_type::SOFTMAX && VisibleUnit != unit_type::EXP,
         "Exponential and softmax Visible units are not support");

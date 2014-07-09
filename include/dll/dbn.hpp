@@ -735,8 +735,10 @@ public:
     }
 
     template<typename Label>
-    void fine_tune(const std::vector<vector<weight>>& training_data, std::vector<Label>& labels, size_t epochs, size_t batch_size = rbm_type<0>::BatchSize){
+    void fine_tune(const std::vector<vector<weight>>& training_data, std::vector<Label>& labels, size_t epochs){
         stop_watch<std::chrono::seconds> watch;
+
+        constexpr const auto batch_size = rbm_traits<rbm_type<0>>::batch_size();
 
         auto batches = training_data.size() / batch_size + (training_data.size() % batch_size == 0 ? 0 : 1);
 
