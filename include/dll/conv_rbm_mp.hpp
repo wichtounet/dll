@@ -156,14 +156,7 @@ public:
             h_a(k) = 0.0;
             h_s(k) = 0.0;
 
-            std::reverse(w(k).begin(), w(k).end());
-
-            //std::cout << "conv2(" << etl::to_octave(v_a) << "," << etl::to_octave(w(k)) << ",\"valid\")" << std::endl;
-
-            etl::convolve_2d_valid(v_a, w(k), v_cv(k));
-            std::reverse(w(k).begin(), w(k).end());
-
-            //std::cout << " = " << to_octave(v_cv(k)) << std::endl;
+            etl::convolve_2d_valid(v_a, fflip(w(k)), v_cv(k));
 
             for(size_t i = 0; i < NH; ++i){
                 for(size_t j = 0; j < NH; ++j){

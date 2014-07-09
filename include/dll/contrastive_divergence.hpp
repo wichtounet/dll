@@ -383,13 +383,8 @@ public:
             //Compute gradients
 
             for(std::size_t k = 0; k < K; ++k){
-                std::reverse(rbm.h1_a(k).begin(), rbm.h1_a(k).end());
-                etl::convolve_2d_valid(rbm.v1, rbm.h1_a(k), w_pos(k));
-                std::reverse(rbm.h1_a(k).begin(), rbm.h1_a(k).end());
-
-                std::reverse(rbm.h2_a(k).begin(), rbm.h2_a(k).end());
-                etl::convolve_2d_valid(rbm.v2_a, rbm.h2_a(k), w_neg(k));
-                std::reverse(rbm.h2_a(k).begin(), rbm.h2_a(k).end());
+                etl::convolve_2d_valid(rbm.v1, fflip(rbm.h1_a(k)), w_pos(k));
+                etl::convolve_2d_valid(rbm.v2_a, fflip(rbm.h2_a(k)), w_neg(k));
 
                 w_grad(k) += w_pos(k) - w_neg(k);
             }

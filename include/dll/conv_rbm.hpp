@@ -132,9 +132,7 @@ public:
             h_a(k) = 0.0;
             h_s(k) = 0.0;
 
-            std::reverse(w(k).begin(), w(k).end());
-            etl::convolve_2d_valid(v_a, w(k), v_cv(k));
-            std::reverse(w(k).begin(), w(k).end());
+            etl::convolve_2d_valid(v_a, fflip(w(k)), v_cv(k));
 
             for(size_t i = 0; i < NH; ++i){
                 for(size_t j = 0; j < NH; ++j){
