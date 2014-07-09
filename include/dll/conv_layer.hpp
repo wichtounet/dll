@@ -27,15 +27,15 @@ struct conv_layer {
     //Make sure only valid types are passed to the configuration list
     static_assert(
         is_valid<tmp_list<
-                momentum, batch_size_id, visible_unit_id, hidden_unit_id,
+                momentum, batch_size_id, visible_id, hidden_id,
                 weight_decay_id>
             , Parameters...>::value,
         "Invalid parameters type");
 
     static constexpr const bool Momentum = is_present<momentum, Parameters...>::value;
     static constexpr const std::size_t BatchSize = get_value<batch_size<1>, Parameters...>::value;
-    static constexpr const unit_type VisibleUnit = get_value<visible_unit<unit_type::BINARY>, Parameters...>::value;
-    static constexpr const unit_type HiddenUnit = get_value<hidden_unit<unit_type::BINARY>, Parameters...>::value;
+    static constexpr const unit_type visible_unit = get_value<visible<unit_type::BINARY>, Parameters...>::value;
+    static constexpr const unit_type hidden_unit = get_value<hidden<unit_type::BINARY>, Parameters...>::value;
     static constexpr const decay_type Decay = get_value<weight_decay<decay_type::NONE>, Parameters...>::value;
 
     template <typename RBM>

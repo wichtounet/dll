@@ -20,8 +20,8 @@ struct conf_elt {
 };
 
 struct batch_size_id;
-struct visible_unit_id;
-struct hidden_unit_id;
+struct visible_id;
+struct hidden_id;
 struct pooling_unit_id;
 struct weight_decay_id;
 struct trainer_id;
@@ -34,15 +34,15 @@ struct batch_size : conf_elt {
 };
 
 template<unit_type VT>
-struct visible_unit : conf_elt {
-    using type = visible_unit_id;
+struct visible : conf_elt {
+    using type = visible_id;
 
     static constexpr const unit_type value = VT;
 };
 
 template<unit_type HT>
-struct hidden_unit : conf_elt  {
-    using type = hidden_unit_id;
+struct hidden : conf_elt  {
+    using type = hidden_id;
 
     static constexpr const unit_type value = HT;
 };

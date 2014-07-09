@@ -42,8 +42,8 @@ public:
 
     using layer = Layer;
 
-    static constexpr const unit_type VisibleUnit = Layer::VisibleUnit;
-    static constexpr const unit_type HiddenUnit = Layer::HiddenUnit;
+    static constexpr const unit_type visible_unit = Layer::visible_unit;
+    static constexpr const unit_type hidden_unit = Layer::hidden_unit;
 
     static constexpr const std::size_t NV = Layer::NV;
     static constexpr const std::size_t NH = Layer::NH;
@@ -51,9 +51,9 @@ public:
 
     static constexpr const std::size_t NW = NV - NH + 1; //By definition
 
-    static_assert(VisibleUnit == unit_type::BINARY || VisibleUnit == unit_type::GAUSSIAN,
+    static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN,
         "Only binary and linear visible units are supported");
-    static_assert(HiddenUnit == unit_type::BINARY,
+    static_assert(hidden_unit == unit_type::BINARY,
         "Only binary hidden units are supported");
 
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K> w;      //shared weights
@@ -141,7 +141,7 @@ public:
                     //Total input
                     auto x = v_cv(k)(i,j) + b(k);
 
-                    if(HiddenUnit == unit_type::BINARY){
+                    if(hidden_unit == unit_type::BINARY){
                         h_a(k)(i,j) = logistic_sigmoid(x);
                         h_s(k)(i,j) = h_a(k)(i,j) > normal_generator() ? 1.0 : 0.0;
                     } else {
@@ -175,10 +175,10 @@ public:
                 //Total input
                 auto x = h_cv(K)(i,j) + c;
 
-                if(VisibleUnit == unit_type::BINARY){
+                if(visible_unit == unit_type::BINARY){
                     v_a(i,j) = logistic_sigmoid(x);
                     v_s(i,j) = v_a(i,j) > normal_generator() ? 1.0 : 0.0;
-                } else if(VisibleUnit == unit_type::GAUSSIAN){
+                } else if(visible_unit == unit_type::GAUSSIAN){
                     std::normal_distribution<weight> noise_distribution(0.0, 1.0);
                     auto noise = std::bind(noise_distribution, rand_engine);
 
