@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_LAYER_TRAITS_HPP
-#define DBN_LAYER_TRAITS_HPP
+#ifndef DBN_rbm_traits_HPP
+#define DBN_rbm_traits_HPP
 
 #include "tmp.hpp"
 #include "decay_type.hpp"

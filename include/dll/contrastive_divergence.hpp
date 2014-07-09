@@ -14,7 +14,7 @@
 #include "assert.hpp"
 #include "batch.hpp"
 #include "decay_type.hpp"
-#include "layer_traits.hpp"
+#include "rbm_traits.hpp"
 
 namespace dll {
 

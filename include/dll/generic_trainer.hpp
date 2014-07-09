@@ -12,7 +12,7 @@
 #include "stop_watch.hpp"
 #include "utils.hpp"
 #include "batch.hpp"
-#include "layer_traits.hpp"
+#include "rbm_traits.hpp"
 
 namespace dll {
 
