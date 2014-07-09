@@ -53,9 +53,6 @@ public:
     static constexpr const std::size_t NW = NV - NH + 1; //By definition
     static constexpr const std::size_t NP = NH / C;      //By definition
 
-    static constexpr const std::size_t num_visible = NV * NV;
-    static constexpr const std::size_t num_hidden = NH * NH;
-
     static_assert(VisibleUnit == unit_type::BINARY || VisibleUnit == unit_type::GAUSSIAN,
         "Only binary and linear visible units are supported");
     static_assert(HiddenUnit == unit_type::BINARY,
@@ -262,7 +259,7 @@ public:
     //Utility functions
 
     void reconstruct(const vector<weight>& items){
-        dll_assert(items.size() == num_visible, "The size of the training sample must match visible units");
+        dll_assert(items.size() == NV * NV, "The size of the training sample must match visible units");
 
         stop_watch<> watch;
 

@@ -157,9 +157,6 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
     static constexpr const auto NH = rbm_t::NH;
     static constexpr const auto NW = rbm_t::NW;
 
-    static constexpr const auto num_hidden = rbm_t::num_hidden;
-    static constexpr const auto num_visible = rbm_t::num_visible;
-
     typedef typename rbm_t::weight weight;
 
     //Gradients
@@ -339,9 +336,6 @@ private:
     using base_cd_trainer<RBM>::K;
     using base_cd_trainer<RBM>::NW;
 
-    using base_cd_trainer<RBM>::num_visible;
-    using base_cd_trainer<RBM>::num_hidden;
-
     using base_cd_trainer<RBM>::w_grad;
     using base_cd_trainer<RBM>::vbias_grad;
     using base_cd_trainer<RBM>::hbias_grad;
@@ -357,7 +351,7 @@ public:
     template<typename T>
     weight train_batch(const dll::batch<T>& batch, RBM& rbm){
         dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<rbm_t>::batch_size()), "Invalid size");
-        dll_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
+        dll_assert(batch[0].size() == rbm_t::NV * rbm_t::NV, "The size of the training sample must match visible units");
 
         //Size of a minibatch
         auto n_samples = static_cast<weight>(batch.size());
