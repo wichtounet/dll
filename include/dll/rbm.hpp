@@ -44,6 +44,8 @@ public:
     typedef double weight;
     typedef double value_t;
 
+    using layer = Layer;
+
     //TODO Some things, should not be duplicated but used
     //directly from the layer conf
 
@@ -55,7 +57,6 @@ public:
     static constexpr const std::size_t num_visible = Layer::num_visible;
     static constexpr const std::size_t num_hidden = Layer::num_hidden;
 
-    static constexpr const bool Momentum = Layer::Momentum;
     static constexpr const std::size_t BatchSize = Layer::BatchSize;
     static constexpr const bool Init = Layer::Init;
     static constexpr const bool Debug = Layer::Debug;

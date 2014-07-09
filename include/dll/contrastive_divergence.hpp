@@ -40,8 +40,8 @@ struct base_cd_trainer {
     //{{{ Momentum
 
     //Compute sizes so that collections are empty if Momentum not enabled
-    static constexpr const std::size_t num_visible_mom = rbm_t::Momentum ? num_visible : 0;
-    static constexpr const std::size_t num_hidden_mom = rbm_t::Momentum ? num_hidden : 0;
+    static constexpr const std::size_t num_visible_mom = rbm_traits<rbm_t>::has_momentum() ? num_visible : 0;
+    static constexpr const std::size_t num_hidden_mom = rbm_traits<rbm_t>::has_momentum() ? num_hidden : 0;
 
     etl::fast_matrix<weight, num_visible_mom, num_hidden_mom> w_inc;
     etl::fast_vector<weight, num_visible_mom> a_inc;
@@ -57,22 +57,22 @@ struct base_cd_trainer {
 
     //}}} Sparsity end
 
-    template<bool M = rbm_t::Momentum, disable_if_u<M> = detail::dummy>
+    template<bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = detail::dummy>
     base_cd_trainer() : q_old(0.0) {
-        static_assert(!rbm_t::Momentum, "This constructor should only be used without momentum support");
+        static_assert(!rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
-    template<bool M = rbm_t::Momentum, enable_if_u<M> = detail::dummy>
+    template<bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = detail::dummy>
     base_cd_trainer() : w_inc(0.0), a_inc(0.0), b_inc(0.0), q_old(0.0) {
-        static_assert(rbm_t::Momentum, "This constructor should only be used with momentum support");
+        static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
-    template<typename T1, typename T2, bool M = rbm_t::Momentum, enable_if_u<M> = detail::dummy>
+    template<typename T1, typename T2, bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = detail::dummy>
     T2& get_fgrad(T1& , T2& inc){
         return inc;
     }
 
-    template<typename T1, typename T2, bool M = rbm_t::Momentum, disable_if_u<M> = detail::dummy>
+    template<typename T1, typename T2, bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = detail::dummy>
     T1& get_fgrad(T1& grad, T2& ){
         return grad;
     }
@@ -81,7 +81,7 @@ struct base_cd_trainer {
         auto learning_rate = rbm.learning_rate;
 
         //Update momentum gradients
-        if(rbm_t::Momentum){
+        if(rbm_traits<rbm_t>::has_momentum()){
             auto momentum = rbm.momentum;
 
             w_inc = momentum * w_inc + (1 - momentum) * w_grad;

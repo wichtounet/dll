@@ -40,10 +40,11 @@ public:
     typedef double weight;
     typedef double value_t;
 
+    using layer = Layer;
+
     template<typename RBM>
     using trainer_t = typename Layer::template trainer_t<RBM>;
 
-    static constexpr const bool Momentum = Layer::Momentum;
     static constexpr const std::size_t BatchSize = Layer::BatchSize;
     static constexpr const unit_type VisibleUnit = Layer::VisibleUnit;
     static constexpr const unit_type HiddenUnit = Layer::HiddenUnit;

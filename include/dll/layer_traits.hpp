@@ -36,17 +36,17 @@ struct rbm_traits {
         return rbm_t::BatchSize;
     }
 
-    template<typename R = RBM, disable_if_u<has_momentum_field<R>::value> = detail::dummy>
+    template<typename R = RBM, disable_if_u<has_batch_size_field<R>::value> = detail::dummy>
     static constexpr std::size_t batch_size(){
         return 1;
     }
 
-    template<typename R = RBM, enable_if_u<has_momentum_field<R>::value> = detail::dummy>
+    template<typename R = RBM, enable_if_u<has_momentum_field<typename R::layer>::value> = detail::dummy>
     static constexpr bool has_momentum(){
-        return rbm_t::Momentum;
+        return rbm_t::layer::Momentum;
     }
 
-    template<typename R = RBM, disable_if_u<has_momentum_field<R>::value> = detail::dummy>
+    template<typename R = RBM, disable_if_u<has_momentum_field<typename R::layer>::value> = detail::dummy>
     static constexpr bool has_momentum(){
         return false;
     }
