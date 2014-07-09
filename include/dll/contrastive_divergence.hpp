@@ -368,11 +368,11 @@ public:
             rbm.v1 = items;
 
             //First step
-            rbm.activate_hidden(rbm.h1_a, rbm.h1_s, rbm.v1, rbm.v1, rbm.v_cv_1);
+            rbm.activate_hidden(rbm.h1_a, rbm.h1_s, rbm.v1, rbm.v1);
 
             //CD-1
-            rbm.activate_visible(rbm.h1_a, rbm.h1_s, rbm.v2_a, rbm.v2_s, rbm.h_cv_1);
-            rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s, rbm.v_cv_2);
+            rbm.activate_visible(rbm.h1_a, rbm.h1_s, rbm.v2_a, rbm.v2_s);
+            rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
 
             //CD-k
             for(std::size_t n = 1; n < N; ++n){

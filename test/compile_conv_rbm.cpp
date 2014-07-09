@@ -21,8 +21,6 @@ int main(){
     std::cout << "NV*NV=" << std::remove_reference<decltype(crbm_1::v1)>::type::etl_size << std::endl;
     std::cout << "NH*NH=" << std::remove_reference<decltype(crbm_1::h1_a(0))>::type::etl_size << std::endl;
     std::cout << "NW*NW=" << std::remove_reference<decltype(crbm_1::w(0))>::type::etl_size << std::endl;
-    std::cout << "v_cv=" << std::remove_reference<decltype(crbm_1::v_cv_1(0))>::type::etl_size << std::endl;
-    std::cout << "h_cv=" << std::remove_reference<decltype(crbm_1::h_cv_1(0))>::type::etl_size << std::endl;
 
     typedef dll::conv_rbm<dll::conv_layer<28, 12, 40, dll::momentum, dll::batch_size<50>>> crbm_2;
 

@@ -81,11 +81,8 @@ public:
 
     //Convolution data
 
-    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> v_cv_1;   //Temporary convolution
-    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> v_cv_2;   //Temporary convolution
-
-    etl::fast_vector<etl::fast_matrix<weight, NV, NV>, K+1> h_cv_1;   //Temporary convolution
-    etl::fast_vector<etl::fast_matrix<weight, NV, NV>, K+1> h_cv_2;   //Temporary convolution
+    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> v_cv;   //Temporary convolution
+    etl::fast_vector<etl::fast_matrix<weight, NV, NV>, K+1> h_cv;   //Temporary convolution
 
 public:
     //No copying
@@ -133,8 +130,7 @@ public:
         binary_load(is, c);
     }
 
-    template<typename CV>
-    weight pool(std::size_t k, std::size_t i, std::size_t j, const CV& v_cv) const {
+    weight pool(std::size_t k, std::size_t i, std::size_t j) const {
         weight p = 0;
 
         auto start_ii = (i / C) * C;
@@ -151,12 +147,7 @@ public:
     }
 
     template<typename H, typename V>
-    void activate_hidden(H& h_a, H& h_s, const V& v_a, const V& v_s){
-        activate_hidden(h_a, h_s, v_a, v_s, v_cv_1);
-    }
-
-    template<typename H, typename V, typename CV>
-    void activate_hidden(H& h_a, H& h_s, const V& v_a, const V&, CV& v_cv){
+    void activate_hidden(H& h_a, H& h_s, const V& v_a, const V&){
         static std::default_random_engine rand_engine(std::time(nullptr));
         static std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
         static auto normal_generator = std::bind(normal_distribution, rand_engine);
@@ -180,14 +171,14 @@ public:
                     auto x = v_cv(k)(i,j) + b(k);
 
                     if(HiddenUnit == unit_type::BINARY){
-                        h_a(k)(i, j) = std::exp(x) / (1.0 + pool(k, i, j, v_cv));
+                        h_a(k)(i, j) = std::exp(x) / (1.0 + pool(k, i, j));
                         h_s(k)(i,j) = h_a(k)(i,j) > normal_generator() ? 1.0 : 0.0;
                     } else {
                         dll_unreachable("Invalid path");
                     }
 
                     dll_assert(std::isfinite(x), "NaN verify");
-                    dll_assert(std::isfinite(pool(k,i,j,v_cv)), "NaN verify");
+                    dll_assert(std::isfinite(pool(k,i,j)), "NaN verify");
                     dll_assert(std::isfinite(h_a(k)(i,j)), "NaN verify");
                     dll_assert(std::isfinite(h_s(k)(i,j)), "NaN verify");
                 }
@@ -196,12 +187,7 @@ public:
     }
 
     template<typename H, typename V>
-    void activate_visible(const H& h_a, const H& h_s, V& v_a, V& v_s){
-        activate_visible(h_a, h_s, v_a, v_s, h_cv_1);
-    }
-
-    template<typename H, typename V, typename CV>
-    void activate_visible(const H&, const H& h_s, V& v_a, V& v_s, CV& h_cv) const {
+    void activate_visible(const H&, const H& h_s, V& v_a, V& v_s){
         static std::default_random_engine rand_engine(std::time(nullptr));
         static std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
         static auto normal_generator = std::bind(normal_distribution, rand_engine);
