@@ -138,7 +138,7 @@ public:
     }
 
     template<typename H, typename V, typename CV>
-    void activate_hidden(H& h_a, H& h_s, const V& v_a, const V& v_s, CV& v_cv){
+    void activate_hidden(H& h_a, H& h_s, const V& v_a, const V&, CV& v_cv){
         static std::default_random_engine rand_engine(std::time(nullptr));
         static std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
         static auto normal_generator = std::bind(normal_distribution, rand_engine);
@@ -177,7 +177,7 @@ public:
     }
 
     template<typename H, typename V, typename CV>
-    void activate_visible(const H& h_a, const H& h_s, V& v_a, V& v_s, CV& h_cv) const {
+    void activate_visible(const H&, const H& h_s, V& v_a, V& v_s, CV& h_cv) const {
         static std::default_random_engine rand_engine(std::time(nullptr));
         static std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
         static auto normal_generator = std::bind(normal_distribution, rand_engine);
