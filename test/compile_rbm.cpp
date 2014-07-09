@@ -17,7 +17,7 @@ int main(){
     typedef dll::rbm<dll::layer<100, 100, dll::weight_decay<dll::decay_type::L2>>> rbm_1;
 
     //Mix units
-    typedef dll::rbm<dll::layer<100, 100, dll::momentum, dll::batch_size<50>, dll::visible_unit<dll::Type::GAUSSIAN>, dll::hidden_unit<dll::Type::NRLU>>> rbm_2;
+    typedef dll::rbm<dll::layer<100, 100, dll::momentum, dll::batch_size<50>, dll::visible_unit<dll::unit_type::GAUSSIAN>, dll::hidden_unit<dll::unit_type::NRLU>>> rbm_2;
 
     //Sparsity
     typedef dll::rbm<dll::layer<100, 100, dll::momentum, dll::sparsity>> rbm_3;

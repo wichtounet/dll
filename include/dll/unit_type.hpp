@@ -10,7 +10,7 @@
 
 namespace dll {
 
-enum class Type {
+enum class unit_type {
     BINARY,    //Stochastic binary unity
     EXP,        //Exponential unit (for last layer)
     SOFTMAX,    //Softmax unit (for last layer)

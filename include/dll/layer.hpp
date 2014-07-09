@@ -30,8 +30,8 @@ struct layer {
 
     static constexpr const bool Momentum = is_present<momentum, Parameters...>::value;
     static constexpr const std::size_t BatchSize = get_value<batch_size<1>, Parameters...>::value;
-    static constexpr const Type VisibleUnit = get_value<visible_unit<Type::BINARY>, Parameters...>::value;
-    static constexpr const Type HiddenUnit = get_value<hidden_unit<Type::BINARY>, Parameters...>::value;
+    static constexpr const unit_type VisibleUnit = get_value<visible_unit<unit_type::BINARY>, Parameters...>::value;
+    static constexpr const unit_type HiddenUnit = get_value<hidden_unit<unit_type::BINARY>, Parameters...>::value;
     static constexpr const decay_type Decay = get_value<weight_decay<decay_type::NONE>, Parameters...>::value;
     static constexpr const bool Init = is_present<init_weights, Parameters...>::value;
     static constexpr const bool DBN = is_present<in_dbn, Parameters...>::value;
@@ -43,7 +43,7 @@ struct layer {
 
     static_assert(BatchSize > 0, "Batch size must be at least 1");
 
-    static_assert(!Sparsity || (Sparsity && HiddenUnit == Type::BINARY),
+    static_assert(!Sparsity || (Sparsity && HiddenUnit == unit_type::BINARY),
         "Sparsity only works with binary hidden units");
 };
 

@@ -15,7 +15,7 @@ void test_rbm(){
 
 int main(){
     //Very basic RBM that must compile
-    //typedef dll::conv_rbm<dll::conv_layer<dll::conv_conf<true, 50, dll::Type::BINARY, dll::Type::SIGMOID>, 32, 12, 40>> crbm_1;
+    //typedef dll::conv_rbm<dll::conv_layer<dll::conv_conf<true, 50, dll::unit_type::BINARY, dll::unit_type::SIGMOID>, 32, 12, 40>> crbm_1;
     typedef dll::conv_rbm_mp<dll::conv_mp_layer<28, 12, 40, 2>> crbm_1;
 
     std::cout << "NV*NV=" << std::remove_reference<decltype(crbm_1::v1)>::type::etl_size << std::endl;

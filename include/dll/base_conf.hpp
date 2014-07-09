@@ -33,25 +33,25 @@ struct batch_size : conf_elt {
     static constexpr const std::size_t value = B;
 };
 
-template<Type VT>
+template<unit_type VT>
 struct visible_unit : conf_elt {
     using type = visible_unit_id;
 
-    static constexpr const Type value = VT;
+    static constexpr const unit_type value = VT;
 };
 
-template<Type HT>
+template<unit_type HT>
 struct hidden_unit : conf_elt  {
     using type = hidden_unit_id;
 
-    static constexpr const Type value = HT;
+    static constexpr const unit_type value = HT;
 };
 
-template<Type PT>
+template<unit_type PT>
 struct pooling_unit : conf_elt  {
     using type = pooling_unit_id;
 
-    static constexpr const Type value = PT;
+    static constexpr const unit_type value = PT;
 };
 
 template<decay_type T>

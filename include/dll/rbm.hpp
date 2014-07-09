@@ -59,14 +59,14 @@ public:
     static constexpr const std::size_t BatchSize = Layer::BatchSize;
     static constexpr const bool Init = Layer::Init;
     static constexpr const bool Debug = Layer::Debug;
-    static constexpr const Type VisibleUnit = Layer::VisibleUnit;
-    static constexpr const Type HiddenUnit = Layer::HiddenUnit;
+    static constexpr const unit_type VisibleUnit = Layer::VisibleUnit;
+    static constexpr const unit_type HiddenUnit = Layer::HiddenUnit;
     static constexpr const bool DBN = Layer::DBN;
     static constexpr const decay_type Decay = Layer::Decay;
 
-    static_assert(VisibleUnit != Type::SOFTMAX && VisibleUnit != Type::EXP,
+    static_assert(VisibleUnit != unit_type::SOFTMAX && VisibleUnit != unit_type::EXP,
         "Exponential and softmax Visible units are not support");
-    static_assert(HiddenUnit != Type::GAUSSIAN,
+    static_assert(HiddenUnit != unit_type::GAUSSIAN,
         "Gaussian hidden units are not supported");
 
     static constexpr const std::size_t num_visible_gra = DBN ? num_visible : 0;
@@ -138,8 +138,8 @@ public:
 
         //Better initialization of learning rate
         rbm_base<Layer>::learning_rate =
-                VisibleUnit == Type::GAUSSIAN && HiddenUnit == Type::NRLU ? 1e-5
-            :   VisibleUnit == Type::GAUSSIAN || HiddenUnit == Type::NRLU ? 1e-4
+                VisibleUnit == unit_type::GAUSSIAN && HiddenUnit == unit_type::NRLU ? 1e-5
+            :   VisibleUnit == unit_type::GAUSSIAN || HiddenUnit == unit_type::NRLU ? 1e-4
             :   /* Only NRLU and Gaussian Units needs lower rate */         1e-1;
     }
 
@@ -199,7 +199,7 @@ public:
         h_a = 0.0;
         h_s = 0.0;
 
-        if(HiddenUnit == Type::SOFTMAX){
+        if(HiddenUnit == unit_type::SOFTMAX){
             weight exp_sum = 0.0;
 
             for(size_t j = 0; j < num_hidden; ++j){
@@ -245,13 +245,13 @@ public:
                 //Total input
                 auto x = b(j) + s;
 
-                if(HiddenUnit == Type::BINARY){
+                if(HiddenUnit == unit_type::BINARY){
                     h_a(j) = logistic_sigmoid(x);
                     h_s(j) = h_a(j) > normal_generator() ? 1.0 : 0.0;
-                } else if(HiddenUnit == Type::EXP){
+                } else if(HiddenUnit == unit_type::EXP){
                     h_a(j) = exp(x);
                     h_s(j) = h_a(j) > normal_generator() ? 1.0 : 0.0;
-                } else if(HiddenUnit == Type::NRLU){
+                } else if(HiddenUnit == unit_type::NRLU){
                     std::normal_distribution<weight> noise_distribution(0.0, logistic_sigmoid(x));
                     auto noise = std::bind(noise_distribution, rand_engine);
 
@@ -287,16 +287,16 @@ public:
             //Total input
             auto x = a(i) + s;
 
-            if(VisibleUnit == Type::BINARY){
+            if(VisibleUnit == unit_type::BINARY){
                 v_a(i) = logistic_sigmoid(x);
                 v_s(i) = v_a(i) > normal_generator() ? 1.0 : 0.0;
-            } else if(VisibleUnit == Type::GAUSSIAN){
+            } else if(VisibleUnit == unit_type::GAUSSIAN){
                 std::normal_distribution<weight> noise_distribution(0.0, 1.0);
                 auto noise = std::bind(noise_distribution, rand_engine);
 
                 v_a(i) = x;
                 v_s(i) = x + noise();
-            } else if(VisibleUnit == Type::NRLU){
+            } else if(VisibleUnit == unit_type::NRLU){
                 std::normal_distribution<weight> noise_distribution(0.0, logistic_sigmoid(x));
                 auto noise = std::bind(noise_distribution, rand_engine);
 
