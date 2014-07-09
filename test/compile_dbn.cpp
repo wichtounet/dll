@@ -11,7 +11,7 @@ void test_dbn(){
     std::vector<vector<double>> labels;
 
     dbn.pretrain(images, 10);
-    dbn.fine_tune(images, labels, 10);
+    dbn.fine_tune(images, labels, 10, 10);
 }
 
 template <typename RBM>
