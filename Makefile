@@ -5,7 +5,7 @@ default: release
 include make-utils/flags.mk
 include make-utils/cpp-utils.mk
 
-CXX_FLAGS += -Ietl/include/
+CXX_FLAGS += -Ietl/include/ -Werror
 
 CPP_FILES=$(wildcard test/*.cpp)
 
