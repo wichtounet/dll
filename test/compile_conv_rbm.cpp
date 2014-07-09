@@ -24,9 +24,6 @@ int main(){
     std::cout << "v_cv=" << std::remove_reference<decltype(crbm_1::v_cv_1(0))>::type::etl_size << std::endl;
     std::cout << "h_cv=" << std::remove_reference<decltype(crbm_1::h_cv_1(0))>::type::etl_size << std::endl;
 
-    std::cout << crbm_1::Momentum << std::endl;
-    std::cout << crbm_1::BatchSize << std::endl;
-
     typedef dll::conv_rbm<dll::conv_layer<28, 12, 40, dll::momentum, dll::batch_size<50>>> crbm_2;
 
     std::cout << crbm_2::Momentum << std::endl;
