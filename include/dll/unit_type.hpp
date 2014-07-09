@@ -11,7 +11,7 @@
 namespace dll {
 
 enum class Type {
-    SIGMOID,    //Stochastic binary unity
+    BINARY,    //Stochastic binary unity
     EXP,        //Exponential unit (for last layer)
     SOFTMAX,    //Softmax unit (for last layer)
     GAUSSIAN,   //Gaussian visible layers

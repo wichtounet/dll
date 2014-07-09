@@ -58,9 +58,9 @@ public:
     static constexpr const std::size_t num_visible = NV * NV;
     static constexpr const std::size_t num_hidden = NH * NH;
 
-    static_assert(VisibleUnit == Type::SIGMOID || VisibleUnit == Type::GAUSSIAN,
+    static_assert(VisibleUnit == Type::BINARY || VisibleUnit == Type::GAUSSIAN,
         "Only binary and linear visible units are supported");
-    static_assert(HiddenUnit == Type::SIGMOID,
+    static_assert(HiddenUnit == Type::BINARY,
         "Only binary hidden units are supported");
 
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K> w;      //shared weights
@@ -156,7 +156,7 @@ public:
                     //Total input
                     auto x = v_cv(k)(i,j) + b(k);
 
-                    if(HiddenUnit == Type::SIGMOID){
+                    if(HiddenUnit == Type::BINARY){
                         h_a(k)(i,j) = logistic_sigmoid(x);
                         h_s(k)(i,j) = h_a(k)(i,j) > normal_generator() ? 1.0 : 0.0;
                     } else {
@@ -195,7 +195,7 @@ public:
                 //Total input
                 auto x = h_cv(K)(i,j) + c;
 
-                if(VisibleUnit == Type::SIGMOID){
+                if(VisibleUnit == Type::BINARY){
                     v_a(i,j) = logistic_sigmoid(x);
                     v_s(i,j) = v_a(i,j) > normal_generator() ? 1.0 : 0.0;
                 } else if(VisibleUnit == Type::GAUSSIAN){

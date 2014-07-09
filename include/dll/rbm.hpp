@@ -245,7 +245,7 @@ public:
                 //Total input
                 auto x = b(j) + s;
 
-                if(HiddenUnit == Type::SIGMOID){
+                if(HiddenUnit == Type::BINARY){
                     h_a(j) = logistic_sigmoid(x);
                     h_s(j) = h_a(j) > normal_generator() ? 1.0 : 0.0;
                 } else if(HiddenUnit == Type::EXP){
@@ -287,7 +287,7 @@ public:
             //Total input
             auto x = a(i) + s;
 
-            if(VisibleUnit == Type::SIGMOID){
+            if(VisibleUnit == Type::BINARY){
                 v_a(i) = logistic_sigmoid(x);
                 v_s(i) = v_a(i) > normal_generator() ? 1.0 : 0.0;
             } else if(VisibleUnit == Type::GAUSSIAN){

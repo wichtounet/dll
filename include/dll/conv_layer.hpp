@@ -34,8 +34,8 @@ struct conv_layer {
 
     static constexpr const bool Momentum = is_present<momentum, Parameters...>::value;
     static constexpr const std::size_t BatchSize = get_value<batch_size<1>, Parameters...>::value;
-    static constexpr const Type VisibleUnit = get_value<visible_unit<Type::SIGMOID>, Parameters...>::value;
-    static constexpr const Type HiddenUnit = get_value<hidden_unit<Type::SIGMOID>, Parameters...>::value;
+    static constexpr const Type VisibleUnit = get_value<visible_unit<Type::BINARY>, Parameters...>::value;
+    static constexpr const Type HiddenUnit = get_value<hidden_unit<Type::BINARY>, Parameters...>::value;
     static constexpr const DecayType Decay = get_value<weight_decay<DecayType::NONE>, Parameters...>::value;
 
     template <typename RBM>
