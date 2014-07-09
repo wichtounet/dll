@@ -163,6 +163,8 @@ public:
         v_a = 0.0;
         v_s = 0.0;
 
+        h_cv(K) = 0.0;
+
         for(std::size_t k = 0; k < K; ++k){
             etl::convolve_2d_full(h_s(k), w(k), h_cv(k));
             h_cv(K) += h_cv(k);

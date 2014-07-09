@@ -188,6 +188,8 @@ public:
         v_a = 0.0;
         v_s = 0.0;
 
+        h_cv(K) = 0.0;
+
         for(std::size_t k = 0; k < K; ++k){
             //std::cout << "conv2(" << etl::to_octave(h_s(k)) << "," << etl::to_octave(w(k)) << ",\"full\")" << std::endl;
             etl::convolve_2d_full(h_s(k), w(k), h_cv(k));
