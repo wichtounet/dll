@@ -115,9 +115,9 @@ struct base_cd_trainer {
 
         //Update weights
 
-        if(rbm_traits<rbm_t>::decay_type() == DecayType::L1 || rbm_traits<rbm_t>::decay_type() == DecayType::L1_FULL){
+        if(rbm_traits<rbm_t>::decay() == decay_type::L1 || rbm_traits<rbm_t>::decay() == decay_type::L1_FULL){
             rbm.w += learning_rate * (w_fgrad - rbm.weight_cost * abs(rbm.w) - h_penalty);
-        } else if(rbm_traits<rbm_t>::decay_type() == DecayType::L2 || rbm_traits<rbm_t>::decay_type() == DecayType::L2_FULL){
+        } else if(rbm_traits<rbm_t>::decay() == decay_type::L2 || rbm_traits<rbm_t>::decay() == decay_type::L2_FULL){
             rbm.w += learning_rate * (w_fgrad - rbm.weight_cost * rbm.w - h_penalty);
         } else {
             rbm.w += learning_rate * w_fgrad - h_penalty;
@@ -125,9 +125,9 @@ struct base_cd_trainer {
 
         //Update hidden biases
 
-        if(rbm_traits<rbm_t>::decay_type() == DecayType::L1_FULL){
+        if(rbm_traits<rbm_t>::decay() == decay_type::L1_FULL){
             rbm.b += learning_rate * (b_fgrad - rbm.weight_cost * abs(rbm.b) - h_penalty);
-        } else if(rbm_traits<rbm_t>::decay_type() == DecayType::L2_FULL){
+        } else if(rbm_traits<rbm_t>::decay() == decay_type::L2_FULL){
             rbm.b += learning_rate * (b_fgrad - rbm.weight_cost * rbm.b - h_penalty);
         } else {
             rbm.b += learning_rate * b_fgrad - h_penalty;
@@ -135,9 +135,9 @@ struct base_cd_trainer {
 
         //Update visible biases
 
-        if(rbm_traits<rbm_t>::decay_type() == DecayType::L1_FULL){
+        if(rbm_traits<rbm_t>::decay() == decay_type::L1_FULL){
             rbm.a += learning_rate * (a_fgrad - rbm.weight_cost * abs(rbm.a));
-        } else if(rbm_traits<rbm_t>::decay_type() == DecayType::L2_FULL){
+        } else if(rbm_traits<rbm_t>::decay() == decay_type::L2_FULL){
             rbm.a += learning_rate * (a_fgrad - rbm.weight_cost * rbm.a);
         } else {
             rbm.a += learning_rate * a_fgrad;
@@ -195,9 +195,9 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
         //Update weights
 
         for(std::size_t k = 0; k < K; ++k){
-            if(rbm_traits<rbm_t>::decay_type() == DecayType::L1 || rbm_traits<rbm_t>::decay_type() == DecayType::L1_FULL){
+            if(rbm_traits<rbm_t>::decay() == decay_type::L1 || rbm_traits<rbm_t>::decay() == decay_type::L1_FULL){
                 rbm.w(k) += learning_rate * (w_fgrad(k) - rbm.weight_cost * sign(rbm.w(k)) - h_penalty);
-            } else if(rbm_traits<rbm_t>::decay_type() == DecayType::L2 || rbm_traits<rbm_t>::decay_type() == DecayType::L2_FULL){
+            } else if(rbm_traits<rbm_t>::decay() == decay_type::L2 || rbm_traits<rbm_t>::decay() == decay_type::L2_FULL){
                 rbm.w(k) += learning_rate * (w_fgrad(k) - rbm.weight_cost * rbm.w(k) - h_penalty);
             } else {
                 rbm.w(k) += learning_rate * w_fgrad(k) - h_penalty;
@@ -206,9 +206,9 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
 
         //Update hidden biases
 
-        if(rbm_traits<rbm_t>::decay_type() == DecayType::L1_FULL){
+        if(rbm_traits<rbm_t>::decay() == decay_type::L1_FULL){
             rbm.b += learning_rate * (b_fgrad - rbm.weight_cost * sign(rbm.b) - h_penalty);
-        } else if(rbm_traits<rbm_t>::decay_type() == DecayType::L2_FULL){
+        } else if(rbm_traits<rbm_t>::decay() == decay_type::L2_FULL){
             rbm.b += learning_rate * (b_fgrad - rbm.weight_cost * rbm.b - h_penalty);
         } else {
             rbm.b += learning_rate * b_fgrad - h_penalty;
@@ -216,9 +216,9 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
 
         //Update visible biases
 
-        if(rbm_traits<rbm_t>::decay_type() == DecayType::L1_FULL){
+        if(rbm_traits<rbm_t>::decay() == decay_type::L1_FULL){
             rbm.c += learning_rate * sum((a_fgrad - rbm.weight_cost * sign(rbm.c)));
-        } else if(rbm_traits<rbm_t>::decay_type() == DecayType::L2_FULL){
+        } else if(rbm_traits<rbm_t>::decay() == decay_type::L2_FULL){
             rbm.c += learning_rate * sum((a_fgrad - rbm.weight_cost * rbm.c));
         } else {
             rbm.c += learning_rate * sum(a_fgrad);

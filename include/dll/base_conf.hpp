@@ -54,11 +54,11 @@ struct pooling_unit : conf_elt  {
     static constexpr const Type value = PT;
 };
 
-template<DecayType T>
+template<decay_type T>
 struct weight_decay : conf_elt  {
     using type = weight_decay_id;
 
-    static constexpr const DecayType value = T;
+    static constexpr const decay_type value = T;
 };
 
 template<template<typename> class T>

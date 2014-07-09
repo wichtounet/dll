@@ -72,13 +72,13 @@ struct rbm_traits {
     }
 
     template<typename R = RBM, enable_if_u<has_decay_field<R>::value> = detail::dummy>
-    static constexpr DecayType decay_type(){
+    static constexpr decay_type decay(){
         return rbm_t::Decay;
     }
 
     template<typename R = RBM, disable_if_u<has_decay_field<R>::value> = detail::dummy>
-    static constexpr DecayType decay_type(){
-        return DecayType::NONE;
+    static constexpr decay_type decay(){
+        return decay_type::NONE;
     }
 
     template<typename R = RBM, enable_if_u<has_init_field<R>::value> = detail::dummy>

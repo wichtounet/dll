@@ -32,7 +32,7 @@ struct layer {
     static constexpr const std::size_t BatchSize = get_value<batch_size<1>, Parameters...>::value;
     static constexpr const Type VisibleUnit = get_value<visible_unit<Type::BINARY>, Parameters...>::value;
     static constexpr const Type HiddenUnit = get_value<hidden_unit<Type::BINARY>, Parameters...>::value;
-    static constexpr const DecayType Decay = get_value<weight_decay<DecayType::NONE>, Parameters...>::value;
+    static constexpr const decay_type Decay = get_value<weight_decay<decay_type::NONE>, Parameters...>::value;
     static constexpr const bool Init = is_present<init_weights, Parameters...>::value;
     static constexpr const bool DBN = is_present<in_dbn, Parameters...>::value;
     static constexpr const bool Debug = is_present<debug, Parameters...>::value;

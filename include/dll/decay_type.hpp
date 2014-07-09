@@ -10,7 +10,7 @@
 
 namespace dll {
 
-enum class DecayType {
+enum class decay_type {
     NONE,
     L1,
     L2,

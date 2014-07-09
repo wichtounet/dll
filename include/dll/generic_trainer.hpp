@@ -44,7 +44,7 @@ struct generic_trainer {
             std::cout << ", momentum=" << rbm.momentum;
         }
 
-        if(rbm_traits<rbm_t>::decay_type() != DecayType::NONE){
+        if(rbm_traits<rbm_t>::decay() != decay_type::NONE){
             std::cout << ", weight_cost=" << rbm.weight_cost;
         }
 

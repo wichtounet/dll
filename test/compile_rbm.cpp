@@ -14,7 +14,7 @@ using pcd2_trainer_t = dll::persistent_cd_trainer<2, RBM>;
 
 int main(){
     //Very basic RBM that must compile
-    typedef dll::rbm<dll::layer<100, 100, dll::weight_decay<dll::DecayType::L2>>> rbm_1;
+    typedef dll::rbm<dll::layer<100, 100, dll::weight_decay<dll::decay_type::L2>>> rbm_1;
 
     //Mix units
     typedef dll::rbm<dll::layer<100, 100, dll::momentum, dll::batch_size<50>, dll::visible_unit<dll::Type::GAUSSIAN>, dll::hidden_unit<dll::Type::NRLU>>> rbm_2;

@@ -62,7 +62,7 @@ public:
     static constexpr const Type VisibleUnit = Layer::VisibleUnit;
     static constexpr const Type HiddenUnit = Layer::HiddenUnit;
     static constexpr const bool DBN = Layer::DBN;
-    static constexpr const DecayType Decay = Layer::Decay;
+    static constexpr const decay_type Decay = Layer::Decay;
 
     static_assert(VisibleUnit != Type::SOFTMAX && VisibleUnit != Type::EXP,
         "Exponential and softmax Visible units are not support");

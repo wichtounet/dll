@@ -47,7 +47,7 @@ public:
     static constexpr const std::size_t BatchSize = Layer::BatchSize;
     static constexpr const Type VisibleUnit = Layer::VisibleUnit;
     static constexpr const Type HiddenUnit = Layer::HiddenUnit;
-    static constexpr const DecayType Decay = Layer::Decay;
+    static constexpr const decay_type Decay = Layer::Decay;
 
     static constexpr const std::size_t NV = Layer::NV;
     static constexpr const std::size_t NH = Layer::NH;

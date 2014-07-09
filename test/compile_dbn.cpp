@@ -21,9 +21,9 @@ int main(){
     //Basic example
 
     typedef dll::dbn<
-        dll::layer<28 * 28, 100, dll::in_dbn, dll::momentum, dll::batch_size<50>, dll::init_weights, dll::weight_decay<dll::DecayType::L2>, dll::sparsity>,
+        dll::layer<28 * 28, 100, dll::in_dbn, dll::momentum, dll::batch_size<50>, dll::init_weights, dll::weight_decay<dll::decay_type::L2>, dll::sparsity>,
         dll::layer<100, 100, dll::in_dbn, dll::momentum, dll::batch_size<50>>,
-        dll::layer<110, 200, dll::in_dbn, dll::batch_size<50>, dll::momentum, dll::weight_decay<dll::DecayType::L2_FULL>>
+        dll::layer<110, 200, dll::in_dbn, dll::batch_size<50>, dll::momentum, dll::weight_decay<dll::decay_type::L2_FULL>>
     > dbn_1;
 
     //Test them all

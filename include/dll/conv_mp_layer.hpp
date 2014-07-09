@@ -39,7 +39,7 @@ struct conv_mp_layer {
     static constexpr const Type VisibleUnit = get_value<visible_unit<Type::BINARY>, Parameters...>::value;
     static constexpr const Type HiddenUnit = get_value<hidden_unit<Type::BINARY>, Parameters...>::value;
     static constexpr const Type PoolingUnit = get_value<pooling_unit<Type::BINARY>, Parameters...>::value;
-    static constexpr const DecayType Decay = get_value<weight_decay<DecayType::NONE>, Parameters...>::value;
+    static constexpr const decay_type Decay = get_value<weight_decay<decay_type::NONE>, Parameters...>::value;
 
     template <typename RBM>
     using trainer_t = typename get_template_type<trainer<cd1_trainer_t>, Parameters...>::template type<RBM>;
