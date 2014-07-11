@@ -91,19 +91,14 @@ public:
         static std::normal_distribution<weight> distribution(0.0, 1.0);
         static auto generator = std::bind(distribution, rand_engine);
 
-        double scale = 0.001;
-
         for(std::size_t k = 0; k < K; ++k){
             for(auto& weight : w(k)){
-                weight = scale * generator();
+                weight = 0.01 * generator();
             }
         }
 
-        for(std::size_t k = 0; k < K; ++k){
-            b(k) = 2 * scale * generator();
-        }
-
-        c = scale * generator();
+        b = -0.1;
+        c = 0.0;
     }
 
     void store(std::ostream& os) const {
