@@ -99,19 +99,14 @@ public:
         static std::normal_distribution<weight> distribution(0.0, 1.0);
         static auto generator = std::bind(distribution, rand_engine);
 
-        double scale = 0.001;
-
         for(std::size_t k = 0; k < K; ++k){
             for(auto& weight : w(k)){
-                weight = scale * generator();
+                weight = 0.01 * generator();
             }
         }
 
-        for(std::size_t k = 0; k < K; ++k){
-            b(k) = 2 * scale * generator();
-        }
-
-        c = scale * generator();
+        b = -0.1;
+        c = 0.0;
     }
 
     void store(std::ostream& os) const {
@@ -152,10 +147,10 @@ public:
         static std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
         static auto normal_generator = std::bind(normal_distribution, rand_engine);
 
-        for(size_t k = 0; k < K; ++k){
-            h_a(k) = 0.0;
-            h_s(k) = 0.0;
+        h_a = 0.0;
+        h_s = 0.0;
 
+        for(size_t k = 0; k < K; ++k){
             etl::convolve_2d_valid(v_a, fflip(w(k)), v_cv(k));
 
             for(size_t i = 0; i < NH; ++i){
@@ -187,13 +182,10 @@ public:
 
         v_a = 0.0;
         v_s = 0.0;
-
-        h_cv(K) = 0.0;
+        h_cv = 0.0;
 
         for(std::size_t k = 0; k < K; ++k){
-            //std::cout << "conv2(" << etl::to_octave(h_s(k)) << "," << etl::to_octave(w(k)) << ",\"full\")" << std::endl;
             etl::convolve_2d_full(h_s(k), w(k), h_cv(k));
-            //std::cout << " = " << etl::to_octave(h_cv(k)) << std::endl;
             h_cv(K) += h_cv(k);
         }
 
