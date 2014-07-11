@@ -39,13 +39,9 @@ struct base_cd_trainer {
 
     //{{{ Momentum
 
-    //Compute sizes so that collections are empty if Momentum not enabled
-    static constexpr const std::size_t num_visible_mom = rbm_traits<rbm_t>::has_momentum() ? num_visible : 0;
-    static constexpr const std::size_t num_hidden_mom = rbm_traits<rbm_t>::has_momentum() ? num_hidden : 0;
-
-    etl::fast_matrix<weight, num_visible_mom, num_hidden_mom> w_inc;
-    etl::fast_vector<weight, num_visible_mom> a_inc;
-    etl::fast_vector<weight, num_hidden_mom> b_inc;
+    etl::fast_matrix<weight, num_visible, num_hidden> w_inc;
+    etl::fast_vector<weight, num_visible> a_inc;
+    etl::fast_vector<weight, num_hidden> b_inc;
 
     //}}} Momentum end
 
