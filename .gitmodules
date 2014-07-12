@@ -6,3 +6,7 @@
 	path = etl
 	url = https://github.com/wichtounet/etl.git
 	branch = master
+[submodule "Catch"]
+	path = Catch
+	url = https://github.com/philsquared/Catch.git
+	branch = master
