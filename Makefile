@@ -7,17 +7,17 @@ include make-utils/cpp-utils.mk
 
 CXX_FLAGS += -Ietl/include/ -Werror
 
-CPP_FILES=$(wildcard test/*.cpp)
+CPP_FILES=$(wildcard test_compile/*.cpp)
 
 DEBUG_D_FILES=$(CPP_FILES:%.cpp=debug/%.cpp.d)
 RELEASE_D_FILES=$(CPP_FILES:%.cpp=release/%.cpp.d)
 
-$(eval $(call test_folder_compile,))
+$(eval $(call folder_compile,test_compile))
 
-$(eval $(call add_test_executable,compile_rbm,compile_rbm.cpp))
-$(eval $(call add_test_executable,compile_conv_rbm,compile_conv_rbm.cpp))
-$(eval $(call add_test_executable,compile_conv_rbm_mp,compile_conv_rbm_mp.cpp))
-$(eval $(call add_test_executable,compile_dbn,compile_dbn.cpp))
+$(eval $(call add_executable,compile_rbm,test_compile/compile_rbm.cpp))
+$(eval $(call add_executable,compile_conv_rbm,test_compile/compile_conv_rbm.cpp))
+$(eval $(call add_executable,compile_conv_rbm_mp,test_compile/compile_conv_rbm_mp.cpp))
+$(eval $(call add_executable,compile_dbn,test_compile/compile_dbn.cpp))
 
 $(eval $(call add_executable_set,compile_rbm,compile_rbm))
 $(eval $(call add_executable_set,compile_conv_rbm,compile_conv_rbm))
