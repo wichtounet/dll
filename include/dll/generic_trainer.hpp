@@ -33,7 +33,7 @@ struct generic_trainer {
         //NOP
     }
 
-    void train(RBM& rbm, const std::vector<vector<typename RBM::weight>>& training_data, std::size_t max_epochs) const {
+    typename rbm_t::weight train(RBM& rbm, const std::vector<vector<typename RBM::weight>>& training_data, std::size_t max_epochs) const {
         stop_watch<std::chrono::seconds> watch;
 
         auto batch_size = rbm_traits<rbm_t>::batch_size();
@@ -61,6 +61,8 @@ struct generic_trainer {
 
         auto batches = training_data.size() / batch_size + (training_data.size() % batch_size == 0 ? 0 : 1);
 
+        typename rbm_t::weight last_error = 0.0;
+
         for(size_t epoch= 0; epoch < max_epochs; ++epoch){
             typename rbm_t::weight error = 0.0;
 
@@ -72,8 +74,10 @@ struct generic_trainer {
                 error += trainer->train_batch(batch, rbm);
             }
 
+            last_error = error / batches;
+
             printf("epoch %ld - Reconstruction error average: %.3f - Free energy: %.3f\n",
-                epoch, error / batches, rbm.free_energy());
+                epoch, last_error, rbm.free_energy());
 
             if(rbm_traits<rbm_t>::has_momentum() && epoch == 6){
                 rbm.momentum = 0.9;
@@ -87,6 +91,8 @@ struct generic_trainer {
         }
 
         std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
+
+        return last_error;
     }
 };
 
