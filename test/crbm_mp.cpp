@@ -1,16 +1,16 @@
 #include "catch.hpp"
 
-#include "dll/conv_rbm.hpp"
-#include "dll/conv_layer.hpp"
+#include "dll/conv_rbm_mp.hpp"
+#include "dll/conv_mp_layer.hpp"
 #include "dll/vector.hpp"
 #include "dll/generic_trainer.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE( "crbm/mnist_1", "crbm::simple" ) {
-    dll::conv_rbm<dll::conv_layer<
-            28, 12, 40,
+TEST_CASE( "crbm_mp/mnist_1", "crbm::simple" ) {
+    dll::conv_rbm_mp<dll::conv_mp_layer<
+            28, 12, 40, 2,
             dll::batch_size<25>
             >> rbm;
 
@@ -24,5 +24,5 @@ TEST_CASE( "crbm/mnist_1", "crbm::simple" ) {
     rbm.learning_rate = 0.001;
     auto error = rbm.train(dataset.training_images, 100);
 
-    REQUIRE(error < 1e-1);
+    REQUIRE(error < 1e-2);
 }
