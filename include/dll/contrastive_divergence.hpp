@@ -355,10 +355,7 @@ public:
         //Clear the gradients
         vbias_grad = 0.0;
         hbias_grad = 0.0;
-
-        for(std::size_t k = 0; k < K; ++k){
-            w_grad(k) = 0.0;
-        }
+        w_grad = 0.0;
 
         for(auto& items : batch){
             rbm.v1 = items;
@@ -395,10 +392,7 @@ public:
         //Keep only the mean of the gradients
         vbias_grad /= n_samples;
         hbias_grad /= n_samples;
-
-        for(std::size_t k = 0; k < K; ++k){
-            w_grad(k) /= n_samples;
-        }
+        w_grad /= n_samples;
 
         nan_check_deep_deep(w_grad);
         nan_check_deep(vbias_grad);
