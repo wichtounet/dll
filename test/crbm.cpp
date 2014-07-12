@@ -25,5 +25,5 @@ TEST_CASE( "crbm/mnist_1", "crbm::simple" ) {
     rbm.learning_rate = 0.001;
     auto error = rbm.train(dataset.training_images, 100);
 
-    REQUIRE(error < 1e-4);
+    REQUIRE(error < 2e-3);
 }
