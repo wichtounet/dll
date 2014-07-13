@@ -44,3 +44,23 @@ TEST_CASE( "rbm/mnist_2", "rbm::momentum" ) {
 
     REQUIRE(error < 1e-2);
 }
+
+TEST_CASE( "rbm/mnist_3", "rbm::pcd_trainer" ) {
+    dll::rbm<dll::layer<
+            28 * 28, 100,
+            dll::batch_size<25>,
+            dll::momentum,
+            dll::trainer<dll::pcd1_trainer_t>
+            >> rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(100);
+
+    mnist::binarize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 100);
+
+    REQUIRE(error < 1e-2);
+}
