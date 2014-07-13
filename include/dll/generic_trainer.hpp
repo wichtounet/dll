@@ -40,20 +40,22 @@ struct generic_trainer {
 
         watcher.training_begin(rbm);
 
-        auto batch_size = rbm_traits<rbm_t>::batch_size();
-
         //Some RBM may init weights based on the training data
         init_weights(rbm, training_data);
 
         auto trainer = make_unique<trainer_t<rbm_t>>();
 
+        //Compute the number of batches
+        auto batch_size = rbm_traits<rbm_t>::batch_size();
         auto batches = training_data.size() / batch_size + (training_data.size() % batch_size == 0 ? 0 : 1);
 
         typename rbm_t::weight last_error = 0.0;
 
+        //Train for max_epochs epoch
         for(size_t epoch= 0; epoch < max_epochs; ++epoch){
             typename rbm_t::weight error = 0.0;
 
+            //Train one mini-batch at a time
             for(size_t i = 0; i < batches; ++i){
                 auto start = i * batch_size;
                 auto end = std::min(start + batch_size, training_data.size());
@@ -64,6 +66,10 @@ struct generic_trainer {
 
             last_error = error / batches;
 
+            //TODO The epoch at which momentum should increase should be
+            //configurable
+
+            //After some time increase the momentum
             if(rbm_traits<rbm_t>::has_momentum() && epoch == 6){
                 rbm.momentum = 0.9;
             }
