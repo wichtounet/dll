@@ -1,9 +1,7 @@
 #include "catch.hpp"
 
 #include "dll/conv_rbm.hpp"
-#include "dll/conv_layer.hpp"
 #include "dll/vector.hpp"
-#include "dll/generic_trainer.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"

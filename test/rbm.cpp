@@ -1,9 +1,7 @@
 #include "catch.hpp"
 
 #include "dll/rbm.hpp"
-#include "dll/layer.hpp"
 #include "dll/vector.hpp"
-#include "dll/generic_trainer.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -62,5 +60,5 @@ TEST_CASE( "rbm/mnist_3", "rbm::pcd_trainer" ) {
 
     auto error = rbm.train(dataset.training_images, 100);
 
-    REQUIRE(error < 1e-2);
+    REQUIRE(error < 1e-1);
 }

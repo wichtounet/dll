@@ -10,6 +10,7 @@
 
 #include "etl/fast_matrix.hpp"
 #include "etl/fast_vector.hpp"
+#include "etl/convolution.hpp"
 
 #include "assert.hpp"
 #include "batch.hpp"

@@ -1,5 +1,4 @@
 #include "dll/dbn.hpp"
-#include "dll/generic_trainer.hpp"
 
 template<typename DBN>
 void test_dbn(){

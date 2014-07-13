@@ -10,10 +10,14 @@
 
 #include "tmp.hpp"
 #include "decay_type.hpp"
-#include "conv_rbm.hpp"
-#include "conv_rbm_mp.hpp"
 
 namespace dll {
+
+template<typename Layer>
+class conv_rbm;
+
+template<typename Layer>
+class conv_rbm_mp;
 
 template<typename RBM>
 struct rbm_traits {
