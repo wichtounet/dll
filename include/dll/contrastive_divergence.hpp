@@ -309,15 +309,8 @@ public:
         //Update the weights and biases based on the gradients
         this->update_weights(rbm);
 
-        //Compute the reconstruction error
-
-        weight error = 0.0;
-        for(size_t i = 0; i < num_visible; ++i){
-            error += vbias_grad(i) * vbias_grad(i);
-        }
-        error = sqrt(error / num_visible);
-
-        return error;
+        //Return the reconstruction error
+        return mean(vbias_grad * vbias_grad);
     }
 };
 
