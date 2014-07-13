@@ -59,8 +59,8 @@ public:
 
     //Weights and biases
     etl::fast_matrix<weight, num_visible, num_hidden> w;
-    etl::fast_vector<weight, num_visible> a;
     etl::fast_vector<weight, num_hidden> b;
+    etl::fast_vector<weight, num_visible> c;
 
     //Reconstruction data
     etl::fast_vector<weight, num_visible> v1; //!< State of the visible units
@@ -111,7 +111,7 @@ public:
     rbm(rbm&& rbm) = delete;
     rbm& operator=(rbm&& rbm) = delete;
 
-    rbm() : a(0.0), b(0.0) {
+    rbm() : b(0.0), c(0.0) {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
         static std::default_random_engine rand_engine(std::time(nullptr));
         static std::normal_distribution<weight> distribution(0.0, 1.0);
@@ -130,14 +130,14 @@ public:
 
     void store(std::ostream& os) const {
         binary_write_all(os, w);
-        binary_write_all(os, a);
         binary_write_all(os, b);
+        binary_write_all(os, c);
     }
 
     void load(std::istream& is){
         binary_load_all(is, w);
-        binary_load_all(is, a);
         binary_load_all(is, b);
+        binary_load_all(is, c);
     }
 
     double train(const std::vector<vector<weight>>& training_data, std::size_t max_epochs){
@@ -150,18 +150,18 @@ public:
     void init_weights(const std::vector<vector<weight>>& training_data){
         //Initialize the visible biases to log(pi/(1-pi))
         for(size_t i = 0; i < num_visible; ++i){
-            size_t c = 0;
+            size_t count = 0;
             for(auto& items : training_data){
                 if(items[i] == 1){
-                    ++c;
+                    ++count;
                 }
             }
 
-            auto pi = static_cast<weight>(c) / training_data.size();
+            auto pi = static_cast<weight>(count) / training_data.size();
             pi += 0.0001;
-            a(i) = log(pi / (1.0 - pi));
+            c(i) = log(pi / (1.0 - pi));
 
-            dll_assert(std::isfinite(a(i)), "NaN verify");
+            dll_assert(std::isfinite(c(i)), "NaN verify");
         }
     }
 
@@ -270,7 +270,7 @@ public:
             }
 
             //Total input
-            auto x = a(i) + s;
+            auto x = c(i) + s;
 
             if(visible_unit == unit_type::BINARY){
                 v_a(i) = logistic_sigmoid(x);
@@ -303,7 +303,7 @@ public:
 
         for(size_t i = 0; i < num_visible; ++i){
             for(size_t j = 0; j < num_hidden; ++j){
-                energy += w(i, j) * b(j) * a(i);
+                energy += w(i, j) * b(j) * c(i);
             }
         }
 

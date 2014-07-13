@@ -35,14 +35,14 @@ struct base_cd_trainer {
 
     //Gradients
     etl::fast_matrix<weight, num_visible, num_hidden> w_grad;
-    etl::fast_vector<weight, num_visible> vbias_grad;
-    etl::fast_vector<weight, num_hidden> hbias_grad;
+    etl::fast_vector<weight, num_hidden> b_grad;
+    etl::fast_vector<weight, num_visible> c_grad;
 
     //{{{ Momentum
 
     etl::fast_matrix<weight, num_visible, num_hidden> w_inc;
-    etl::fast_vector<weight, num_visible> a_inc;
     etl::fast_vector<weight, num_hidden> b_inc;
+    etl::fast_vector<weight, num_visible> c_inc;
 
     //}}} Momentum end
 
@@ -60,7 +60,7 @@ struct base_cd_trainer {
     }
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = detail::dummy>
-    base_cd_trainer() : w_inc(0.0), a_inc(0.0), b_inc(0.0), q_old(0.0) {
+    base_cd_trainer() : w_inc(0.0), b_inc(0.0), c_inc(0.0), q_old(0.0) {
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
@@ -82,8 +82,8 @@ struct base_cd_trainer {
             auto momentum = rbm.momentum;
 
             w_inc = momentum * w_inc + (1 - momentum) * w_grad;
-            a_inc = momentum * a_inc + (1 - momentum) * vbias_grad;
-            b_inc = momentum * b_inc + (1 - momentum) * hbias_grad;
+            b_inc = momentum * b_inc + (1 - momentum) * b_grad;
+            c_inc = momentum * c_inc + (1 - momentum) * c_grad;
         }
 
         //Penalty to be applied to weights and hidden biases
@@ -102,8 +102,8 @@ struct base_cd_trainer {
 
         //The final gradients;
         const auto& w_fgrad = get_fgrad(w_grad, w_inc);
-        const auto& a_fgrad = get_fgrad(vbias_grad, a_inc);
-        const auto& b_fgrad = get_fgrad(hbias_grad, b_inc);
+        const auto& b_fgrad = get_fgrad(b_grad, b_inc);
+        const auto& c_fgrad = get_fgrad(c_grad, c_inc);
 
         //Weight decay is applied on biases only on demand
         //Note: According to G. Hinton, Weight Decay should not be applied to
@@ -133,15 +133,15 @@ struct base_cd_trainer {
         //Update visible biases
 
         if(rbm_traits<rbm_t>::decay() == decay_type::L1_FULL){
-            rbm.a += learning_rate * (a_fgrad - rbm.weight_cost * abs(rbm.a));
+            rbm.c += learning_rate * (c_fgrad - rbm.weight_cost * abs(rbm.c));
         } else if(rbm_traits<rbm_t>::decay() == decay_type::L2_FULL){
-            rbm.a += learning_rate * (a_fgrad - rbm.weight_cost * rbm.a);
+            rbm.c += learning_rate * (c_fgrad - rbm.weight_cost * rbm.c);
         } else {
-            rbm.a += learning_rate * a_fgrad;
+            rbm.c += learning_rate * c_fgrad;
         }
 
         //Check for NaN
-        nan_check_deep_3(rbm.w, rbm.a, rbm.b);
+        nan_check_deep_3(rbm.w, rbm.b, rbm.c);
     }
 };
 
@@ -272,8 +272,8 @@ private:
     using base_cd_trainer<RBM>::num_hidden;
 
     using base_cd_trainer<RBM>::w_grad;
-    using base_cd_trainer<RBM>::vbias_grad;
-    using base_cd_trainer<RBM>::hbias_grad;
+    using base_cd_trainer<RBM>::b_grad;
+    using base_cd_trainer<RBM>::c_grad;
 
     using base_cd_trainer<RBM>::q_batch;
 
@@ -291,9 +291,9 @@ public:
         auto n_samples = static_cast<weight>(batch.size());
 
         //Clear the gradients
-        vbias_grad = 0.0;
-        hbias_grad = 0.0;
         w_grad = 0.0;
+        b_grad = 0.0;
+        c_grad = 0.0;
 
         //Reset mean activation probability if necessary
         if(rbm_traits<rbm_t>::has_sparsity()){
@@ -322,8 +322,8 @@ public:
                 }
             }
 
-            vbias_grad += rbm.v1 - rbm.v2_a;
-            hbias_grad += rbm.h1_a - rbm.h2_a;
+            b_grad += rbm.h1_a - rbm.h2_a;
+            c_grad += rbm.v1 - rbm.v2_a;
 
             if(rbm_traits<rbm_t>::has_sparsity()){
                 q_batch += sum(rbm.h2_a);
@@ -332,21 +332,21 @@ public:
 
         //Keep only the mean of the gradients
         w_grad /= n_samples;
-        vbias_grad /= n_samples;
-        hbias_grad /= n_samples;
+        b_grad /= n_samples;
+        c_grad /= n_samples;
 
         //Compute the mean activation probabilities
         if(rbm_traits<rbm_t>::has_sparsity()){
             q_batch /= n_samples * num_hidden;
         }
 
-        nan_check_deep_3(w_grad, vbias_grad, hbias_grad);
+        nan_check_deep_3(w_grad, b_grad, c_grad);
 
         //Update the weights and biases based on the gradients
         this->update_weights(rbm);
 
         //Return the reconstruction error
-        return mean(vbias_grad * vbias_grad);
+        return mean(c_grad * c_grad);
     }
 };
 
@@ -447,8 +447,8 @@ private:
     using base_cd_trainer<RBM>::num_hidden;
 
     using base_cd_trainer<RBM>::w_grad;
-    using base_cd_trainer<RBM>::vbias_grad;
-    using base_cd_trainer<RBM>::hbias_grad;
+    using base_cd_trainer<RBM>::b_grad;
+    using base_cd_trainer<RBM>::c_grad;
 
     using base_cd_trainer<RBM>::q_batch;
 
@@ -473,9 +473,9 @@ public:
         auto n_samples = static_cast<weight>(batch.size());
 
         //Clear the gradients
-        vbias_grad = 0.0;
-        hbias_grad = 0.0;
         w_grad = 0.0;
+        b_grad = 0.0;
+        c_grad = 0.0;
 
         //Reset mean activation probability if necessary
         if(rbm_traits<rbm_t>::has_sparsity()){
@@ -514,8 +514,8 @@ public:
                 }
             }
 
-            vbias_grad += rbm.v1 - rbm.v2_a;
-            hbias_grad += rbm.h1_a - rbm.h2_a;
+            b_grad += rbm.h1_a - rbm.h2_a;
+            c_grad += rbm.v1 - rbm.v2_a;
 
             if(rbm_traits<rbm_t>::has_sparsity()){
                 q_batch += sum(rbm.h2_a);
@@ -526,21 +526,21 @@ public:
 
         //Keep only the mean of the gradients
         w_grad /= n_samples;
-        vbias_grad /= n_samples;
-        hbias_grad /= n_samples;
+        b_grad /= n_samples;
+        c_grad /= n_samples;
 
         //Compute the mean activation probabilities
         if(rbm_traits<rbm_t>::has_sparsity()){
             q_batch /= n_samples * num_hidden;
         }
 
-        nan_check_deep_3(w_grad, vbias_grad, hbias_grad);
+        nan_check_deep_3(w_grad, b_grad, c_grad);
 
         //Update the weights and biases based on the gradients
         this->update_weights(rbm);
 
         //Return the reconstruction error
-        return mean(vbias_grad * vbias_grad);
+        return mean(c_grad * c_grad);
     }
 };
 
