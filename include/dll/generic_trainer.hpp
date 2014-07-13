@@ -9,7 +9,6 @@
 #define DBN_GENERIC_TRAINER_HPP
 
 #include "decay_type.hpp"
-#include "stop_watch.hpp"
 #include "utils.hpp"
 #include "batch.hpp"
 #include "rbm_traits.hpp"
@@ -23,6 +22,9 @@ struct generic_trainer {
     template<typename R>
     using trainer_t = typename rbm_t::layer::template trainer_t<R>;
 
+    template<typename R>
+    using watcher_t = typename rbm_t::layer::template watcher_t<R>;
+
     template<typename R = RBM, enable_if_u<rbm_traits<R>::init_weights()> = detail::dummy>
     static void init_weights(RBM& rbm, const std::vector<vector<typename RBM::weight>>& training_data){
         rbm.init_weights(training_data);
@@ -34,25 +36,11 @@ struct generic_trainer {
     }
 
     typename rbm_t::weight train(RBM& rbm, const std::vector<vector<typename RBM::weight>>& training_data, std::size_t max_epochs) const {
-        stop_watch<std::chrono::seconds> watch;
+        watcher_t<rbm_t> watcher;
+
+        watcher.training_begin(rbm);
 
         auto batch_size = rbm_traits<rbm_t>::batch_size();
-
-        std::cout << "RBM: Train with learning_rate=" << rbm.learning_rate;
-
-        if(rbm_traits<rbm_t>::has_momentum()){
-            std::cout << ", momentum=" << rbm.momentum;
-        }
-
-        if(rbm_traits<rbm_t>::decay() != decay_type::NONE){
-            std::cout << ", weight_cost=" << rbm.weight_cost;
-        }
-
-        if(rbm_traits<rbm_t>::has_sparsity()){
-            std::cout << ", sparsity_target=" << rbm.sparsity_target;
-        }
-
-        std::cout << std::endl;
 
         //Some RBM may init weights based on the training data
         init_weights(rbm, training_data);
@@ -76,21 +64,14 @@ struct generic_trainer {
 
             last_error = error / batches;
 
-            printf("epoch %ld - Reconstruction error average: %.3f - Free energy: %.3f\n",
-                epoch, last_error, rbm.free_energy());
-
             if(rbm_traits<rbm_t>::has_momentum() && epoch == 6){
                 rbm.momentum = 0.9;
             }
 
-            //TODO Move that elsewhere
-            if(rbm_traits<rbm_t>::debug_mode()){
-                //TODO rbm.generate_hidden_images(epoch);
-                //TODO rbm.generate_histograms(epoch);
-            }
+            watcher.epoch_end(epoch, last_error, rbm);
         }
 
-        std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
+        watcher.training_begin(rbm);
 
         return last_error;
     }

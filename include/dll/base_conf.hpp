@@ -25,6 +25,7 @@ struct hidden_id;
 struct pooling_unit_id;
 struct weight_decay_id;
 struct trainer_id;
+struct watcher_id;
 
 template<std::size_t B>
 struct batch_size : conf_elt {
@@ -64,6 +65,14 @@ struct weight_decay : conf_elt  {
 template<template<typename> class T>
 struct trainer : conf_elt  {
     using type = trainer_id;
+
+    template <typename RBM>
+    using value = T<RBM>;
+};
+
+template<template<typename> class T>
+struct watcher : conf_elt  {
+    using type = watcher_id;
 
     template <typename RBM>
     using value = T<RBM>;

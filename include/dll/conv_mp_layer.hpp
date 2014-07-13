@@ -10,6 +10,7 @@
 
 #include "base_conf.hpp"
 #include "contrastive_divergence.hpp"
+#include "watcher.hpp"
 #include "tmp.hpp"
 
 namespace dll {
@@ -43,6 +44,9 @@ struct conv_mp_layer {
 
     template <typename RBM>
     using trainer_t = typename get_template_type<trainer<cd1_trainer_t>, Parameters...>::template type<RBM>;
+
+    template <typename RBM>
+    using watcher_t = typename get_template_type<watcher<default_watcher>, Parameters...>::template type<RBM>;
 
     static_assert(BatchSize > 0, "Batch size must be at least 1");
 };
