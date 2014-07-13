@@ -158,8 +158,8 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
 
     //Gradients
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_grad;      //Gradients of shared weights
-    etl::fast_vector<weight, K> hbias_grad;                             //Gradients of hidden biases bk
-    etl::fast_matrix<weight, NV, NV> vbias_grad;                        //Visible gradients
+    etl::fast_vector<weight, K> b_grad;                                 //Gradients of hidden biases bk
+    etl::fast_matrix<weight, NV, NV> c_grad;                            //Visible gradients
     
     //{{{ Momentum
 
@@ -202,8 +202,8 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
                 w_inc(k) = momentum * w_inc(k) + (1 - momentum) * w_grad(k);
             }
 
-            b_inc = momentum * b_inc + (1 - momentum) * hbias_grad;
-            c_inc = momentum * c_inc + (1 - momentum) * vbias_grad;
+            b_inc = momentum * b_inc + (1 - momentum) * b_grad;
+            c_inc = momentum * c_inc + (1 - momentum) * c_grad;
         }
 
         //Penalty to be applied to weights and hidden biases
@@ -213,8 +213,8 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
 
         //The final gradients;
         const auto& w_fgrad = get_fgrad(w_grad, w_inc);
-        const auto& b_fgrad = get_fgrad(hbias_grad, b_inc);
-        const auto& c_fgrad = get_fgrad(vbias_grad, c_inc);
+        const auto& b_fgrad = get_fgrad(b_grad, b_inc);
+        const auto& c_fgrad = get_fgrad(c_grad, c_inc);
 
         //Weight decay is applied on biases only on demand
         //Note: According to G. Hinton, Weight Decay should not be applied to
@@ -362,8 +362,8 @@ private:
     using base_cd_trainer<RBM>::NW;
 
     using base_cd_trainer<RBM>::w_grad;
-    using base_cd_trainer<RBM>::vbias_grad;
-    using base_cd_trainer<RBM>::hbias_grad;
+    using base_cd_trainer<RBM>::b_grad;
+    using base_cd_trainer<RBM>::c_grad;
 
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_pos;
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_neg;
@@ -382,9 +382,9 @@ public:
         auto n_samples = static_cast<weight>(batch.size());
 
         //Clear the gradients
-        vbias_grad = 0.0;
-        hbias_grad = 0.0;
         w_grad = 0.0;
+        b_grad = 0.0;
+        c_grad = 0.0;
 
         for(auto& items : batch){
             rbm.v1 = items;
@@ -411,27 +411,27 @@ public:
                 w_grad(k) += w_pos(k) - w_neg(k);
             }
 
-            vbias_grad += rbm.v1 - rbm.v2_a;
-
             for(std::size_t k = 0; k < K; ++k){
-                hbias_grad(k) += mean(rbm.h1_a(k) - rbm.h2_a(k));
+                b_grad(k) += mean(rbm.h1_a(k) - rbm.h2_a(k));
             }
+
+            c_grad += rbm.v1 - rbm.v2_a;
         }
 
         //Keep only the mean of the gradients
-        vbias_grad /= n_samples;
-        hbias_grad /= n_samples;
         w_grad /= n_samples;
+        b_grad /= n_samples;
+        c_grad /= n_samples;
 
         nan_check_deep_deep(w_grad);
-        nan_check_deep(vbias_grad);
-        nan_check_deep(hbias_grad);
+        nan_check_deep(b_grad);
+        nan_check_deep(c_grad);
 
         //Update the weights and biases based on the gradients
         this->update_weights(rbm);
 
         //Return the reconstruction error
-        return mean(vbias_grad * vbias_grad);
+        return mean(c_grad * c_grad);
     }
 };
 
