@@ -38,6 +38,8 @@ struct generic_trainer {
     typename rbm_t::weight train(RBM& rbm, const std::vector<vector<typename RBM::weight>>& training_data, std::size_t max_epochs) const {
         watcher_t<rbm_t> watcher;
 
+        rbm.momentum = rbm.initial_momentum;
+
         watcher.training_begin(rbm);
 
         //Some RBM may init weights based on the training data
@@ -50,8 +52,6 @@ struct generic_trainer {
         auto batches = training_data.size() / batch_size + (training_data.size() % batch_size == 0 ? 0 : 1);
 
         typename rbm_t::weight last_error = 0.0;
-
-        rbm.momentum = rbm.initial_momentum;
 
         //Train for max_epochs epoch
         for(size_t epoch= 0; epoch < max_epochs; ++epoch){
@@ -76,7 +76,7 @@ struct generic_trainer {
             watcher.epoch_end(epoch, last_error, rbm);
         }
 
-        watcher.training_begin(rbm);
+        watcher.training_end(rbm);
 
         return last_error;
     }
