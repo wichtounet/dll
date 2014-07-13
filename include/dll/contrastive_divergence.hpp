@@ -160,26 +160,61 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_grad;      //Gradients of shared weights
     etl::fast_vector<weight, K> hbias_grad;                             //Gradients of hidden biases bk
     etl::fast_matrix<weight, NV, NV> vbias_grad;                        //Visible gradients
+    
+    //{{{ Momentum
 
-    //TODO Momentum
+    etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_inc;
+    etl::fast_vector<weight, K> b_inc;
+    etl::fast_matrix<weight, NV, NV> c_inc;
+
+    //}}} Momentum end
+
     //TODO Sparsity
 
-    base_cd_trainer(){}
+    template<bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = detail::dummy>
+    base_cd_trainer(){
+        static_assert(!rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
+    }
+
+    template<bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = detail::dummy>
+    base_cd_trainer() : w_inc(0.0), b_inc(0.0), c_inc(0.0) {
+        static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
+    }
+
+    template<typename T1, typename T2, bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = detail::dummy>
+    T2& get_fgrad(T1& , T2& inc){
+        return inc;
+    }
+
+    template<typename T1, typename T2, bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = detail::dummy>
+    T1& get_fgrad(T1& grad, T2& ){
+        return grad;
+    }
 
     void update_weights(RBM& rbm){
         auto learning_rate = rbm.learning_rate;
 
+        //Update momentum gradients
+        if(rbm_traits<rbm_t>::has_momentum()){
+            auto momentum = rbm.momentum;
+
+            for(std::size_t k = 0; k < K; ++k){
+                w_inc(k) = momentum * w_inc(k) + (1 - momentum) * w_grad(k);
+            }
+
+            b_inc = momentum * b_inc + (1 - momentum) * hbias_grad;
+            c_inc = momentum * c_inc + (1 - momentum) * vbias_grad;
+        }
+
         //Penalty to be applied to weights and hidden biases
         weight h_penalty = 0.0;
-
-        //TODO Momentum
 
         //TODO Sparsity
 
         //The final gradients;
-        const auto& w_fgrad = w_grad;
-        const auto& a_fgrad = vbias_grad;
-        const auto& b_fgrad = hbias_grad;
+        const auto& w_fgrad = get_fgrad(w_grad, w_inc);
+        const auto& b_fgrad = get_fgrad(hbias_grad, b_inc);
+        const auto& c_fgrad = get_fgrad(vbias_grad, c_inc);
 
         //Weight decay is applied on biases only on demand
         //Note: According to G. Hinton, Weight Decay should not be applied to
@@ -211,11 +246,11 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
         //Update visible biases
 
         if(rbm_traits<rbm_t>::decay() == decay_type::L1_FULL){
-            rbm.c += learning_rate * sum((a_fgrad - rbm.weight_cost * sign(rbm.c)));
+            rbm.c += learning_rate * sum((c_fgrad - rbm.weight_cost * sign(rbm.c)));
         } else if(rbm_traits<rbm_t>::decay() == decay_type::L2_FULL){
-            rbm.c += learning_rate * sum((a_fgrad - rbm.weight_cost * rbm.c));
+            rbm.c += learning_rate * sum((c_fgrad - rbm.weight_cost * rbm.c));
         } else {
-            rbm.c += learning_rate * sum(a_fgrad);
+            rbm.c += learning_rate * sum(c_fgrad);
         }
 
         //Check for NaN

@@ -28,7 +28,7 @@ public:
     weight final_momentum = 0.9;
     weight final_momentum_epoch = 6;
 
-    weight momentum;
+    weight momentum = 0;
 
     weight weight_cost = 0.0002;
 
