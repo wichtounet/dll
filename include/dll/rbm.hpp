@@ -145,11 +145,11 @@ public:
         binary_load_all(is, b);
     }
 
-    void train(const std::vector<vector<weight>>& training_data, std::size_t max_epochs){
+    double train(const std::vector<vector<weight>>& training_data, std::size_t max_epochs){
         typedef typename std::remove_reference<decltype(*this)>::type this_type;
 
         dll::generic_trainer<this_type> trainer;
-        trainer.train(*this, training_data, max_epochs);
+        return trainer.train(*this, training_data, max_epochs);
     }
 
     void init_weights(const std::vector<vector<weight>>& training_data){
