@@ -80,7 +80,6 @@ struct watcher : conf_elt  {
 
 struct momentum {};
 struct sparsity {};
-struct debug {};
 struct init_weights {};
 struct in_dbn {};
 

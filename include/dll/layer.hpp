@@ -26,7 +26,7 @@ struct layer {
     //Make sure only valid types are passed to the configuration list
     static_assert(
         is_valid<tmp_list<momentum, batch_size_id, visible_id, hidden_id, weight_decay_id,
-              init_weights, in_dbn, debug, sparsity, trainer_id>, Parameters...>::value,
+              init_weights, in_dbn, sparsity, trainer_id>, Parameters...>::value,
         "Invalid parameters type");
 
     static constexpr const bool Momentum = is_present<momentum, Parameters...>::value;
@@ -36,7 +36,6 @@ struct layer {
     static constexpr const decay_type Decay = get_value<weight_decay<decay_type::NONE>, Parameters...>::value;
     static constexpr const bool Init = is_present<init_weights, Parameters...>::value;
     static constexpr const bool DBN = is_present<in_dbn, Parameters...>::value;
-    static constexpr const bool Debug = is_present<debug, Parameters...>::value;
     static constexpr const bool Sparsity = is_present<sparsity, Parameters...>::value;
 
     template <typename RBM>

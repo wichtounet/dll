@@ -12,11 +12,7 @@
 #include <vector>
 #include <random>
 #include <functional>
-#include <fstream>
 #include <ctime>
-
-//TODO Find a better way to use mkdir
-#include <sys/stat.h>
 
 #include "etl/fast_matrix.hpp"
 #include "etl/fast_vector.hpp"
@@ -327,60 +323,6 @@ public:
         activate_hidden(h2_a, h2_s, v2_a, v2_s);
 
         std::cout << "Reconstruction took " << watch.elapsed() << "ms" << std::endl;
-    }
-
-    void generate_hidden_images(size_t epoch){
-        mkdir("reports", 0777);
-
-        auto folder = "reports/epoch_" + std::to_string(epoch);
-        mkdir(folder.c_str(), 0777);
-
-        for(size_t j = 0; j < num_hidden; ++j){
-            auto path = folder + "/h_" + std::to_string(j) + ".dat";
-            std::ofstream file(path, std::ios::out);
-
-            if(!file){
-                std::cout << "Could not open file " << path << std::endl;
-            } else {
-                size_t i = num_visible;
-                while(i > 0){
-                    --i;
-
-                    auto value = w(i,j);
-                    file << static_cast<size_t>(value > 0 ? static_cast<size_t>(value * 255.0) << 8 : static_cast<size_t>(-value * 255.0) << 16) << " ";
-                }
-
-                file << std::endl;
-                file.close();
-            }
-        }
-    }
-
-    void generate_histograms(size_t epoch){
-        mkdir("reports", 0777);
-
-        auto folder = "reports/epoch_" + std::to_string(epoch);
-        mkdir(folder.c_str(), 0777);
-
-        generate_histogram(folder + "/weights.dat", w);
-        generate_histogram(folder + "/visibles.dat", a);
-        generate_histogram(folder + "/hiddens.dat", b);
-    }
-
-    template<typename Container>
-    void generate_histogram(const std::string& path, const Container& weights){
-        std::ofstream file(path, std::ios::out);
-
-        if(!file){
-            std::cout << "Could not open file " << path << std::endl;
-        } else {
-            for(auto& weight : weights){
-                file << weight << std::endl;
-            }
-
-            file << std::endl;
-            file.close();
-        }
     }
 
     void display() const {
