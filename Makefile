@@ -46,9 +46,14 @@ test: all
 	./debug/bin/dll_test
 	./release/bin/dll_test
 
+update_tests: release_dll_test
+	bash tools/generate_tests.sh
+
 clean:
 	rm -rf release/
 	rm -rf debug/
+
+-include tests.mk
 
 -include $(DEBUG_D_FILES)
 -include $(RELEASE_D_FILES)

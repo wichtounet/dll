@@ -4,3 +4,4 @@ reports
 perf.data
 perf.data.old
 *.dat
+test_reports
