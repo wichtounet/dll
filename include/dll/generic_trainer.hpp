@@ -51,6 +51,8 @@ struct generic_trainer {
 
         typename rbm_t::weight last_error = 0.0;
 
+        rbm.momentum = rbm.initial_momentum;
+
         //Train for max_epochs epoch
         for(size_t epoch= 0; epoch < max_epochs; ++epoch){
             typename rbm_t::weight error = 0.0;
@@ -66,12 +68,9 @@ struct generic_trainer {
 
             last_error = error / batches;
 
-            //TODO The epoch at which momentum should increase should be
-            //configurable
-
             //After some time increase the momentum
-            if(rbm_traits<rbm_t>::has_momentum() && epoch == 6){
-                rbm.momentum = 0.9;
+            if(rbm_traits<rbm_t>::has_momentum() && epoch == rbm.final_momentum_epoch){
+                rbm.momentum = rbm.final_momentum;
             }
 
             watcher.epoch_end(epoch, last_error, rbm);

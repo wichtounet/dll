@@ -24,7 +24,12 @@ public:
     //Configurable properties
     weight learning_rate = 1e-1;
 
-    weight momentum = 0.5;
+    weight initial_momentum = 0.5;
+    weight final_momentum = 0.9;
+    weight final_momentum_epoch = 6;
+
+    weight momentum;
+
     weight weight_cost = 0.0002;
 
     weight sparsity_target = 0.01;
