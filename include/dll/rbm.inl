@@ -21,7 +21,7 @@
 #include "stop_watch.hpp"    //Performance counter
 #include "assert.hpp"
 #include "vector.hpp"
-#include "layer.hpp"
+#include "base_conf.hpp"
 #include "math.hpp"
 #include "io.hpp"
 

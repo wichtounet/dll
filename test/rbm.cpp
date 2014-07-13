@@ -7,10 +7,10 @@
 #include "mnist/mnist_utils.hpp"
 
 TEST_CASE( "rbm/mnist_1", "rbm::simple" ) {
-    dll::rbm<dll::layer<
-            28 * 28, 100,
-            dll::batch_size<25>
-            >> rbm;
+    dll::layer<
+        28 * 28, 100,
+        dll::batch_size<25>
+    >::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, vector, double>();
 
@@ -25,11 +25,11 @@ TEST_CASE( "rbm/mnist_1", "rbm::simple" ) {
 }
 
 TEST_CASE( "rbm/mnist_2", "rbm::momentum" ) {
-    dll::rbm<dll::layer<
-            28 * 28, 100,
-            dll::batch_size<25>,
-            dll::momentum
-            >> rbm;
+    dll::layer<
+        28 * 28, 100,
+       dll::batch_size<25>,
+       dll::momentum
+    >::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, vector, double>();
 
@@ -44,12 +44,12 @@ TEST_CASE( "rbm/mnist_2", "rbm::momentum" ) {
 }
 
 TEST_CASE( "rbm/mnist_3", "rbm::pcd_trainer" ) {
-    dll::rbm<dll::layer<
-            28 * 28, 100,
-            dll::batch_size<25>,
-            dll::momentum,
-            dll::trainer<dll::pcd1_trainer_t>
-            >> rbm;
+    dll::layer<
+        28 * 28, 100,
+        dll::batch_size<25>,
+        dll::momentum,
+        dll::trainer<dll::pcd1_trainer_t>
+    >::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, vector, double>();
 

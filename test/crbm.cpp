@@ -7,10 +7,10 @@
 #include "mnist/mnist_utils.hpp"
 
 TEST_CASE( "crbm/mnist_1", "crbm::simple" ) {
-    dll::conv_rbm<dll::conv_layer<
-            28, 12, 40,
-            dll::batch_size<25>
-            >> rbm;
+    dll::conv_layer<
+        28, 12, 40,
+        dll::batch_size<25>
+    >::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, vector, double>();
 

@@ -46,6 +46,8 @@ struct conv_layer {
     using watcher_t = typename get_template_type<watcher<default_watcher>, Parameters...>::template type<RBM>;
 
     static_assert(BatchSize > 0, "Batch size must be at least 1");
+
+    using rbm_t = conv_rbm<conv_layer<NV_T, NH_T, K_T, Parameters...>>;
 };
 
 } //end of dbn namespace

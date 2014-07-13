@@ -13,21 +13,21 @@ using pcd2_trainer_t = dll::persistent_cd_trainer<2, RBM>;
 
 int main(){
     //Very basic RBM that must compile
-    typedef dll::rbm<dll::layer<100, 100, dll::weight_decay<dll::decay_type::L2>>> rbm_1;
+    typedef dll::layer<100, 100, dll::weight_decay<dll::decay_type::L2>>::rbm_t rbm_1;
 
     //Mix units
-    typedef dll::rbm<dll::layer<100, 100, dll::momentum, dll::batch_size<50>, dll::visible<dll::unit_type::GAUSSIAN>, dll::hidden<dll::unit_type::NRLU>>> rbm_2;
+    typedef dll::layer<100, 100, dll::momentum, dll::batch_size<50>, dll::visible<dll::unit_type::GAUSSIAN>, dll::hidden<dll::unit_type::NRLU>>::rbm_t rbm_2;
 
     //Sparsity
-    typedef dll::rbm<dll::layer<100, 100, dll::momentum, dll::sparsity>> rbm_3;
+    typedef dll::layer<100, 100, dll::momentum, dll::sparsity>::rbm_t rbm_3;
 
     //PCD-2
 
-    typedef dll::rbm<dll::layer<100, 100, dll::trainer<pcd2_trainer_t>>> rbm_4;
+    typedef dll::layer<100, 100, dll::trainer<pcd2_trainer_t>>::rbm_t rbm_4;
 
     //PCD-2 and sparsity
 
-    typedef dll::rbm<dll::layer<100, 100, dll::trainer<pcd2_trainer_t>, dll::sparsity>> rbm_5;
+    typedef dll::layer<100, 100, dll::trainer<pcd2_trainer_t>, dll::sparsity>::rbm_t rbm_5;
 
     //Test them all
 

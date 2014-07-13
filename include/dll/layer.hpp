@@ -48,6 +48,8 @@ struct layer {
 
     static_assert(!Sparsity || (Sparsity && hidden_unit == unit_type::BINARY),
         "Sparsity only works with binary hidden units");
+
+    using rbm_t = rbm<layer<visibles, hiddens, Parameters...>>;
 };
 
 } //end of dbn namespace
