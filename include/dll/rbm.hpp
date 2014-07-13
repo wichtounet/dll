@@ -27,7 +27,6 @@
 #include "vector.hpp"
 #include "layer.hpp"
 #include "math.hpp"
-//#include "generic_trainer.hpp"
 #include "io.hpp"
 
 namespace dll {
