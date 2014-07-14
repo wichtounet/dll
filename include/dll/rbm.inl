@@ -123,9 +123,9 @@ public:
 
         //Better initialization of learning rate
         rbm_base<Layer>::learning_rate =
-                visible_unit == unit_type::GAUSSIAN && hidden_unit == unit_type::NRLU ? 1e-5
-            :   visible_unit == unit_type::GAUSSIAN || hidden_unit == unit_type::NRLU ? 1e-4
-            :   /* Only NRLU and Gaussian Units needs lower rate */         1e-1;
+                visible_unit == unit_type::GAUSSIAN && hidden_unit == unit_type::RELU ? 1e-5
+            :   visible_unit == unit_type::GAUSSIAN || hidden_unit == unit_type::RELU ? 1e-4
+            :   /* Only RELU and Gaussian Units needs lower rate */         1e-1;
     }
 
     void store(std::ostream& os) const {
@@ -236,7 +236,7 @@ public:
                 } else if(hidden_unit == unit_type::EXP){
                     h_a(j) = exp(x);
                     h_s(j) = h_a(j) > normal_generator() ? 1.0 : 0.0;
-                } else if(hidden_unit == unit_type::NRLU){
+                } else if(hidden_unit == unit_type::RELU){
                     std::normal_distribution<weight> noise_distribution(0.0, logistic_sigmoid(x));
                     auto noise = std::bind(noise_distribution, rand_engine);
 
@@ -281,7 +281,7 @@ public:
 
                 v_a(i) = x;
                 v_s(i) = x + noise();
-            } else if(visible_unit == unit_type::NRLU){
+            } else if(visible_unit == unit_type::RELU){
                 std::normal_distribution<weight> noise_distribution(0.0, logistic_sigmoid(x));
                 auto noise = std::bind(noise_distribution, rand_engine);
 

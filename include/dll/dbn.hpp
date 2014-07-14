@@ -326,7 +326,7 @@ public:
                     s += diffs[sample][j] * (Temp ? r2.gr_w_tmp(i, j) : r2.gr_w(i, j));
                 }
 
-                if(R1::hidden_unit != unit_type::NRLU){
+                if(R1::hidden_unit != unit_type::RELU){
                     s *= r1.gr_probs_a[sample][i] * (1.0 - r1.gr_probs_a[sample][i]);
                 }
 

@@ -15,7 +15,7 @@ enum class unit_type {
     EXP,        //Exponential unit (for last layer)
     SOFTMAX,    //Softmax unit (for last layer)
     GAUSSIAN,   //Gaussian visible layers
-    NRLU        //Noisy Rectified Linear Unit (nRLU)
+    RELU        //Noisy Rectified Linear Unit (nRLU)
 };
 
 } //end of dbn namespace

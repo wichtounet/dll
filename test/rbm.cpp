@@ -165,7 +165,7 @@ TEST_CASE( "rbm/mnist_9", "rbm::nrlu" ) {
     dll::layer<
         28 * 28, 100,
        dll::batch_size<25>,
-       dll::hidden<dll::unit_type::NRLU>
+       dll::hidden<dll::unit_type::RELU>
     >::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, vector, double>();
