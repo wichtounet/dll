@@ -138,3 +138,25 @@ TEST_CASE( "rbm/mnist_7", "rbm::gaussian" ) {
 
     REQUIRE(error < 7e-2);
 }
+
+TEST_CASE( "rbm/mnist_8", "rbm::softmax" ) {
+    dll::layer<
+        28 * 28, 100,
+       dll::batch_size<25>,
+       dll::hidden<dll::unit_type::SOFTMAX>
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(100);
+
+    mnist::binarize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 100);
+
+    //This test is kind of fake since softmax unit are not really made for
+    //reconstruction. It is here to ensure that softmax units are working.
+
+    REQUIRE(error < 1e-2);
+}
