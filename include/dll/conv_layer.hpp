@@ -29,7 +29,7 @@ struct conv_layer {
     static_assert(
         is_valid<tmp_list<
                 momentum, batch_size_id, visible_id, hidden_id,
-                weight_decay_id>
+                weight_decay_id, sparsity>
             , Parameters...>::value,
         "Invalid parameters type");
 
@@ -38,6 +38,7 @@ struct conv_layer {
     static constexpr const unit_type visible_unit = get_value<visible<unit_type::BINARY>, Parameters...>::value;
     static constexpr const unit_type hidden_unit = get_value<hidden<unit_type::BINARY>, Parameters...>::value;
     static constexpr const decay_type Decay = get_value<weight_decay<decay_type::NONE>, Parameters...>::value;
+    static constexpr const bool Sparsity = is_present<sparsity, Parameters...>::value;
 
     template <typename RBM>
     using trainer_t = typename get_template_type<trainer<cd1_trainer_t>, Parameters...>::template type<RBM>;

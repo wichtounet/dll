@@ -84,3 +84,23 @@ TEST_CASE( "crbm_mp/mnist_4", "crbm::decay_l2" ) {
 
     REQUIRE(error < 1e-2);
 }
+
+TEST_CASE( "crbm_mp/mnist_5", "crbm::sparsity" ) {
+    dll::conv_mp_layer<
+        28, 12, 40, 2,
+        dll::batch_size<25>,
+        dll::sparsity
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(100);
+
+    mnist::binarize_dataset(dataset);
+
+    rbm.learning_rate = 0.001;
+    auto error = rbm.train(dataset.training_images, 100);
+
+    REQUIRE(error < 1e-1);
+}
