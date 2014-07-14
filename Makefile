@@ -12,8 +12,8 @@ CPP_FILES=$(wildcard test_compile/*.cpp)
 TEST_CPP_FILES=$(wildcard test/*.cpp)
 TEST_FILES=$(TEST_CPP_FILES:test/%=%)
 
-DEBUG_D_FILES=$(CPP_FILES:%.cpp=debug/%.cpp.d)
-RELEASE_D_FILES=$(CPP_FILES:%.cpp=release/%.cpp.d)
+DEBUG_D_FILES=$(CPP_FILES:%.cpp=debug/%.cpp.d) $(TEST_CPP_FILES:%.cpp=debug/%.cpp.d)
+RELEASE_D_FILES=$(CPP_FILES:%.cpp=release/%.cpp.d) $(TEST_CPP_FILES:%.cpp=release/%.cpp.d)
 
 $(eval $(call folder_compile,test_compile))
 $(eval $(call test_folder_compile,))
