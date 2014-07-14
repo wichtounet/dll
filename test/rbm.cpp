@@ -62,3 +62,60 @@ TEST_CASE( "rbm/mnist_3", "rbm::pcd_trainer" ) {
 
     REQUIRE(error < 1e-1);
 }
+
+TEST_CASE( "rbm/mnist_4", "rbm::decay_l1" ) {
+    dll::layer<
+        28 * 28, 100,
+       dll::batch_size<25>,
+       dll::weight_decay<dll::decay_type::L1>
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(100);
+
+    mnist::binarize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 100);
+
+    REQUIRE(error < 1e-2);
+}
+
+TEST_CASE( "rbm/mnist_5", "rbm::decay_l2" ) {
+    dll::layer<
+        28 * 28, 100,
+       dll::batch_size<25>,
+       dll::weight_decay<dll::decay_type::L2>
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(100);
+
+    mnist::binarize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 100);
+
+    REQUIRE(error < 1e-2);
+}
+
+TEST_CASE( "rbm/mnist_6", "rbm::sparsity" ) {
+    dll::layer<
+        28 * 28, 100,
+       dll::batch_size<25>,
+       dll::sparsity
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(100);
+
+    mnist::binarize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 100);
+
+    REQUIRE(error < 1e-2);
+}
