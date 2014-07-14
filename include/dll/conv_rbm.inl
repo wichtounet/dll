@@ -53,7 +53,7 @@ public:
 
     static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN,
         "Only binary and linear visible units are supported");
-    static_assert(hidden_unit == unit_type::BINARY,
+    static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit),
         "Only binary hidden units are supported");
 
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K> w;      //shared weights
@@ -105,6 +105,7 @@ public:
         //Better initialization of learning rate
         rbm_base<Layer>::learning_rate =
                 visible_unit == unit_type::GAUSSIAN  ?             1e-5
+            :   is_relu(hidden_unit)                 ?             1e-4
             :   /* Only Gaussian Units needs lower rate */         1e-3;
     }
 
@@ -135,7 +136,6 @@ public:
         v_cv = 0.0;
 
         for(size_t k = 0; k < K; ++k){
-
             etl::convolve_2d_valid(v_a, fflip(w(k)), v_cv(k));
 
             for(size_t i = 0; i < NH; ++i){
@@ -146,6 +146,34 @@ public:
                     if(hidden_unit == unit_type::BINARY){
                         h_a(k)(i,j) = logistic_sigmoid(x);
                         h_s(k)(i,j) = h_a(k)(i,j) > normal_generator() ? 1.0 : 0.0;
+                    } else if(hidden_unit == unit_type::RELU){
+                        std::normal_distribution<weight> noise_distribution(0.0, logistic_sigmoid(x));
+                        auto noise = std::bind(noise_distribution, rand_engine);
+
+                        h_a(k)(i,j) = std::max(0.0, x);
+                        h_s(k)(i,j) = std::max(0.0, x + noise());
+                    } else if(hidden_unit == unit_type::RELU6){
+                        h_a(k)(i,j) = std::min(std::max(0.0, x), 6.0);
+
+                        if(h_a(k)(i,j) == 0.0 || h_a(k)(i,j) == 6.0){
+                            h_s(k)(i,j) = h_a(k)(i,j);
+                        } else {
+                            std::normal_distribution<weight> noise_distribution(0.0, 1.0);
+                            auto noise = std::bind(noise_distribution, rand_engine);
+
+                            h_s(k)(i,j) = std::min(std::max(0.0, x + noise()), 6.0);
+                        }
+                    } else if(hidden_unit == unit_type::RELU1){
+                        h_a(k)(i,j) = std::min(std::max(0.0, x), 1.0);
+
+                        if(h_a(k)(i,j) == 0.0 || h_a(k)(i,j) == 1.0){
+                            h_s(k)(i,j) = h_a(k)(i,j);
+                        } else {
+                            std::normal_distribution<weight> noise_distribution(0.0, 1.0);
+                            auto noise = std::bind(noise_distribution, rand_engine);
+
+                            h_s(k)(i,j) = std::min(std::max(0.0, x + noise()), 1.0);
+                        }
                     } else {
                         dll_unreachable("Invalid path");
                     }

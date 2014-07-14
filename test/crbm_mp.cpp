@@ -118,3 +118,24 @@ TEST_CASE( "crbm_mp/mnist_6", "crbm::gaussian" ) {
 
     REQUIRE(error < 1e-1);
 }
+
+TEST_CASE( "crbm_mp/mnist_7", "crbm::relu" ) {
+    //TODO This does not work right now
+
+    dll::conv_mp_layer<
+        28, 12, 40, 2,
+        dll::batch_size<25>,
+        dll::hidden<dll::unit_type::RELU>
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(100);
+
+    mnist::normalize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 100);
+
+    REQUIRE(error < 1e-1);
+}
