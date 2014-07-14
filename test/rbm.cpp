@@ -160,3 +160,22 @@ TEST_CASE( "rbm/mnist_8", "rbm::softmax" ) {
 
     REQUIRE(error < 1e-2);
 }
+
+TEST_CASE( "rbm/mnist_9", "rbm::nrlu" ) {
+    dll::layer<
+        28 * 28, 100,
+       dll::batch_size<25>,
+       dll::hidden<dll::unit_type::NRLU>
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(100);
+
+    mnist::binarize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 200);
+
+    REQUIRE(error < 1e-1);
+}
