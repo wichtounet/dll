@@ -40,7 +40,7 @@ struct default_watcher {
     }
 
     void epoch_end(std::size_t epoch, double error, const RBM& rbm){
-        printf("epoch %ld - Reconstruction error average: %.3f - Free energy: %.3f\n",
+        printf("epoch %ld - Reconstruction error average: %.5f - Free energy: %.3f\n",
             epoch, error, rbm.free_energy());
     }
 
