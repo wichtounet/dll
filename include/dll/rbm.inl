@@ -123,9 +123,9 @@ public:
 
         //Better initialization of learning rate
         rbm_base<Layer>::learning_rate =
-                visible_unit == unit_type::GAUSSIAN && hidden_unit == unit_type::RELU ? 1e-5
-            :   visible_unit == unit_type::GAUSSIAN || hidden_unit == unit_type::RELU ? 1e-4
-            :   /* Only RELU and Gaussian Units needs lower rate */         1e-1;
+                visible_unit == unit_type::GAUSSIAN && is_relu(hidden_unit) ? 1e-5
+            :   visible_unit == unit_type::GAUSSIAN || is_relu(hidden_unit) ? 1e-3
+            :   /* Only ReLU and Gaussian Units needs lower rate */           1e-1;
     }
 
     void store(std::ostream& os) const {
@@ -242,6 +242,28 @@ public:
 
                     h_a(j) = std::max(0.0, x);
                     h_s(j) = std::max(0.0, x + noise());
+                } else if(hidden_unit == unit_type::RELU6){
+                    h_a(j) = std::min(std::max(0.0, x), 6.0);
+
+                    if(h_a(j) == 0.0 || h_a(j) == 6.0){
+                        h_s(j) = h_a(j);
+                    } else {
+                        std::normal_distribution<weight> noise_distribution(0.0, 1.0);
+                        auto noise = std::bind(noise_distribution, rand_engine);
+
+                        h_s(j) = std::min(std::max(0.0, x + noise()), 6.0);
+                    }
+                } else if(hidden_unit == unit_type::RELU1){
+                    h_a(j) = std::min(std::max(0.0, x), 1.0);
+
+                    if(h_a(j) == 0.0 || h_a(j) == 1.0){
+                        h_s(j) = h_a(j);
+                    } else {
+                        std::normal_distribution<weight> noise_distribution(0.0, 1.0);
+                        auto noise = std::bind(noise_distribution, rand_engine);
+
+                        h_s(j) = std::min(std::max(0.0, x + noise()), 1.0);
+                    }
                 } else {
                     dll_unreachable("Invalid path");
                 }

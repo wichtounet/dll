@@ -179,3 +179,43 @@ TEST_CASE( "rbm/mnist_9", "rbm::nrlu" ) {
 
     REQUIRE(error < 1e-1);
 }
+
+TEST_CASE( "rbm/mnist_10", "rbm::nrlu1" ) {
+    dll::layer<
+        28 * 28, 100,
+       dll::batch_size<25>,
+       dll::hidden<dll::unit_type::RELU1>
+    >::rbm_t rbm;
+
+    rbm.learning_rate *= 2.0;
+
+    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(100);
+
+    mnist::binarize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 200);
+
+    REQUIRE(error < 1e-1);
+}
+
+TEST_CASE( "rbm/mnist_11", "rbm::nrlu6" ) {
+    dll::layer<
+        28 * 28, 100,
+       dll::batch_size<25>,
+       dll::hidden<dll::unit_type::RELU6>
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(100);
+
+    mnist::binarize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 200);
+
+    REQUIRE(error < 1e-1);
+}
