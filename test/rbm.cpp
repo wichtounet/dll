@@ -119,3 +119,22 @@ TEST_CASE( "rbm/mnist_6", "rbm::sparsity" ) {
 
     REQUIRE(error < 1e-2);
 }
+
+TEST_CASE( "rbm/mnist_7", "rbm::gaussian" ) {
+    dll::layer<
+        28 * 28, 100,
+       dll::batch_size<25>,
+       dll::visible<dll::unit_type::GAUSSIAN>
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(100);
+
+    mnist::normalize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 200);
+
+    REQUIRE(error < 7e-2);
+}
