@@ -99,6 +99,13 @@ public:
 
         b = -0.1;
         c = 0.0;
+
+        //Note: Convolutional RBM needs lower learning rate than standard RBM
+
+        //Better initialization of learning rate
+        rbm_base<Layer>::learning_rate =
+                visible_unit == unit_type::GAUSSIAN  ?             1e-5
+            :   /* Only Gaussian Units needs lower rate */         1e-3;
     }
 
     void store(std::ostream& os) const {
