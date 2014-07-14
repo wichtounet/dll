@@ -11,12 +11,18 @@
 namespace dll {
 
 enum class unit_type {
-    BINARY,    //Stochastic binary unity
+    BINARY,     //Stochastic binary unity
     EXP,        //Exponential unit (for last layer)
     SOFTMAX,    //Softmax unit (for last layer)
-    GAUSSIAN,   //Gaussian visible layers
-    RELU        //Noisy Rectified Linear Unit (nRLU)
+    GAUSSIAN,   //Gaussian unit
+    RELU,       //Rectified Linear Unit (ReLU) (Nair and Hinton, 2010)
+    RELU1,      //Rectified Linear Unit (ReLU) capped at 1 (Krizhevsky, 2010)
+    RELU6,      //Rectified Linear Unit (ReLU) capped at 6 (Krizhevsky,. 2010)
 };
+
+constexpr bool is_relu(unit_type t){
+    return t == unit_type::RELU || t == unit_type::RELU1 || t == unit_type::RELU6;
+}
 
 } //end of dbn namespace
 
