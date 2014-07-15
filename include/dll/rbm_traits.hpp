@@ -6,7 +6,7 @@
 //=======================================================================
 
 #ifndef DBN_RBM_TRAITS_HPP
-#define DBN_RBM_TRAITS_HPP 
+#define DBN_RBM_TRAITS_HPP
 
 #include "tmp.hpp"
 #include "decay_type.hpp"
@@ -32,6 +32,10 @@ struct rbm_traits {
     static constexpr bool is_convolutional(){
         return is_instantiation_of<conv_rbm, rbm_t>::value
             || is_instantiation_of<conv_rbm_mp, rbm_t>::value;
+    }
+
+    static constexpr bool has_probabilistic_max_pooling(){
+        return is_instantiation_of<conv_rbm_mp, rbm_t>::value;
     }
 
     template<typename R = RBM, enable_if_u<has_batch_size_field<typename R::layer>::value> = detail::dummy>
