@@ -175,3 +175,25 @@ TEST_CASE( "crbm/mnist_9", "crbm::relu1" ) {
 
     REQUIRE(error < 5e-2);
 }
+
+TEST_CASE( "crbm/mnist_10", "crbm::pcd" ) {
+    dll::conv_layer<
+        28, 12, 40,
+        dll::batch_size<25>,
+        dll::momentum,
+        dll::trainer<dll::pcd1_trainer_t>
+    >::rbm_t rbm;
+
+    rbm.learning_rate *= 0.01;
+
+    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(100);
+
+    mnist::binarize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 100);
+
+    REQUIRE(error < 5e-2);
+}

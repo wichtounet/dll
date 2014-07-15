@@ -467,7 +467,7 @@ public:
     }
 };
 
-template<std::size_t K, typename RBM>
+template<std::size_t K, typename RBM, typename Enable = void>
 struct persistent_cd_trainer : base_cd_trainer<RBM> {
 private:
     static_assert(K > 0, "PCD-0 is not a valid training method");
@@ -566,6 +566,125 @@ public:
         //Compute the mean activation probabilities
         if(rbm_traits<rbm_t>::has_sparsity()){
             q_batch /= n_samples * num_hidden;
+        }
+
+        //Update the weights and biases based on the gradients
+        this->update_weights(rbm);
+
+        //Return the reconstruction error
+        return mean(c_grad * c_grad);
+    }
+};
+
+template<std::size_t N, typename RBM>
+struct persistent_cd_trainer<N, RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> : base_cd_trainer<RBM> {
+private:
+    static_assert(N > 0, "PCD-0 is not a valid training method");
+
+    typedef RBM rbm_t;
+    typedef typename rbm_t::weight weight;
+
+    using base_cd_trainer<RBM>::NW;
+    using base_cd_trainer<RBM>::NH;
+    using base_cd_trainer<RBM>::K;
+
+    using base_cd_trainer<RBM>::w_grad;
+    using base_cd_trainer<RBM>::b_grad;
+    using base_cd_trainer<RBM>::c_grad;
+
+    using base_cd_trainer<RBM>::q_batch;
+
+    etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_pos;
+    etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_neg;
+
+    std::vector<etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K>> p_h_a;
+    std::vector<etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K>> p_h_s;
+
+    bool init = true;
+
+public:
+    persistent_cd_trainer() : base_cd_trainer<RBM>(),
+            p_h_a(rbm_traits<rbm_t>::batch_size()),
+            p_h_s(rbm_traits<rbm_t>::batch_size()) {
+        //Nothing else to init here
+    }
+
+    template<typename T>
+    weight train_batch(const dll::batch<T>& batch, RBM& rbm){
+        dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<rbm_t>::batch_size()), "Invalid size");
+        dll_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
+
+        //Size of a minibatch
+        auto n_samples = static_cast<weight>(batch.size());
+
+        //Clear the gradients
+        w_grad = 0.0;
+        b_grad = 0.0;
+        c_grad = 0.0;
+
+        //Reset mean activation probability if necessary
+        if(rbm_traits<rbm_t>::has_sparsity()){
+            q_batch = 0.0;
+        }
+
+        for(std::size_t i = 0; i < batch.size(); ++i){
+            auto& items = batch[i];
+
+            rbm.v1 = items;
+
+            //First step
+            rbm.activate_hidden(rbm.h1_a, rbm.h1_s, rbm.v1, rbm.v1);
+
+            if(init){
+                p_h_a[i] = rbm.h1_a;
+                p_h_s[i] = rbm.h1_s;
+            }
+
+            //CD-1
+            rbm.activate_visible(p_h_a[i], p_h_a[i], rbm.v2_a, rbm.v2_s);
+            rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
+
+            //CD-k
+            for(std::size_t k = 1; k < N; ++k){
+                rbm.activate_visible(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
+                rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
+            }
+
+            p_h_a[i] = rbm.h2_a;
+            p_h_s[i] = rbm.h2_s;
+
+            for(std::size_t k = 0; k < K; ++k){
+                etl::convolve_2d_valid(rbm.v1, fflip(rbm.h1_a(k)), w_pos(k));
+                etl::convolve_2d_valid(rbm.v2_a, fflip(rbm.h2_a(k)), w_neg(k));
+
+                w_grad(k) += w_pos(k) - w_neg(k);
+            }
+
+            for(std::size_t k = 0; k < K; ++k){
+                b_grad(k) += mean(rbm.h1_a(k) - rbm.h2_a(k));
+            }
+
+            c_grad += rbm.v1 - rbm.v2_a;
+
+            if(rbm_traits<rbm_t>::has_sparsity()){
+                q_batch += sum(sum(rbm.h2_a));
+            }
+        }
+
+        init = false;
+
+        //Keep only the mean of the gradients
+        w_grad /= n_samples;
+        b_grad /= n_samples;
+        c_grad /= n_samples;
+
+        nan_check_deep_deep(w_grad);
+        nan_check_deep(b_grad);
+        nan_check_deep(c_grad);
+
+        //Compute the mean activation probabilities
+        if(rbm_traits<rbm_t>::has_sparsity()){
+            q_batch /= n_samples * K * NH * NH;
         }
 
         //Update the weights and biases based on the gradients

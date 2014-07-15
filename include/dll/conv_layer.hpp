@@ -29,7 +29,7 @@ struct conv_layer {
     static_assert(
         is_valid<tmp_list<
                 momentum, batch_size_id, visible_id, hidden_id,
-                weight_decay_id, sparsity>
+                weight_decay_id, sparsity, trainer_id>
             , Parameters...>::value,
         "Invalid parameters type");
 
