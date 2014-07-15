@@ -5,6 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+/*! \file Contrastive Divergence Implementations */
+
 #ifndef DBN_CONTRASTIVE_DIVERGENCE_HPP
 #define DBN_CONTRASTIVE_DIVERGENCE_HPP
 
@@ -24,6 +26,11 @@ inline double sign(double v){
     return v == 0.0 ? 0.0 : (v > 0.0 ? 1.0 : -1.0);
 }
 
+/*!
+ * \brief Indicates the type of decay that is to be applied to weights
+ * \param t The RBM weight decay type.
+ * \return one of L1,L2,NONE
+ */
 constexpr decay_type w_decay(decay_type t){
     if(t == decay_type::L1 || t == decay_type::L1_FULL){
         return decay_type::L1;
@@ -34,6 +41,11 @@ constexpr decay_type w_decay(decay_type t){
     }
 }
 
+/*!
+ * \brief Indicates the type of decay that is to be applied to biases
+ * \param t The RBM weight decay type.
+ * \return one of L1,L2,NONE
+ */
 constexpr decay_type b_decay(decay_type t){
     if(t == decay_type::L1_FULL){
         return decay_type::L1;
@@ -44,13 +56,12 @@ constexpr decay_type b_decay(decay_type t){
     }
 }
 
+/*!
+ * \brief Base class for all standard trainer
+ */
 template<typename RBM>
 struct base_trainer {
     typedef RBM rbm_t;
-
-    typedef typename rbm_t::weight weight;
-
-    base_trainer(){}
 
     template<typename T1, typename T2, bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = detail::dummy>
     T2& get_fgrad(T1& , T2& inc){
@@ -74,6 +85,11 @@ struct base_trainer {
     }
 };
 
+/*!
+ * \brief Base class for all Contrastive Divergence Trainer.
+ *
+ * This class provides update_weights which applies the gradients to the RBM.
+ */
 template<typename RBM, typename Enable = void>
 struct base_cd_trainer : base_trainer<RBM> {
     typedef RBM rbm_t;
@@ -158,6 +174,11 @@ struct base_cd_trainer : base_trainer<RBM> {
     }
 };
 
+/*!
+ * \brief Specialization of base_cd_trainer for Convolutional RBM.
+ *
+ * This class provides update_weights which applies the gradients to the RBM.
+ */
 template<typename RBM>
 struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> : base_trainer<RBM> {
     typedef RBM rbm_t;
@@ -255,6 +276,9 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> : 
     }
 };
 
+/*!
+ * \brief Contrastive divergence trainer for RBM.
+ */
 template<std::size_t N, typename RBM, typename Enable = void>
 struct cd_trainer : base_cd_trainer<RBM> {
 private:
@@ -345,6 +369,9 @@ public:
     }
 };
 
+/*!
+ * \brief Specialization of cd_trainer for Convolutional RBM.
+ */
 template<std::size_t N, typename RBM>
 struct cd_trainer<N, RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> : base_cd_trainer<RBM> {
 private:
@@ -452,6 +479,9 @@ public:
     }
 };
 
+/*!
+ * \brief Persistent Contrastive Divergence Trainer for RBM.
+ */
 template<std::size_t K, typename RBM, typename Enable = void>
 struct persistent_cd_trainer : base_cd_trainer<RBM> {
 private:
@@ -561,6 +591,9 @@ public:
     }
 };
 
+/*!
+ * \brief Specialization of persistent_cd_trainer for Convolutional RBM.
+ */
 template<std::size_t N, typename RBM>
 struct persistent_cd_trainer<N, RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> : base_cd_trainer<RBM> {
 private:
@@ -685,9 +718,15 @@ public:
     }
 };
 
+/*!
+ * \brief CD-1 trainer for RBM
+ */
 template <typename RBM>
 using cd1_trainer_t = cd_trainer<1, RBM>;
 
+/*!
+ * \brief PCD-1 trainer for RBM
+ */
 template <typename RBM>
 using pcd1_trainer_t = persistent_cd_trainer<1, RBM>;
 

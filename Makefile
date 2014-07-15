@@ -49,9 +49,13 @@ test: all
 update_tests: release_dll_test
 	bash tools/generate_tests.sh
 
+doc:
+	doxygen Doxyfile
+
 clean:
 	rm -rf release/
 	rm -rf debug/
+	rm -rf latex/ html/
 
 -include tests.mk
 

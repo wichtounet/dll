@@ -10,14 +10,17 @@
 
 namespace dll {
 
+/*!
+ * \brief A type of unit inside a RBM
+ */
 enum class unit_type {
-    BINARY,     //Stochastic binary unity
-    EXP,        //Exponential unit (for last layer)
-    SOFTMAX,    //Softmax unit (for last layer)
-    GAUSSIAN,   //Gaussian unit
-    RELU,       //Rectified Linear Unit (ReLU) (Nair and Hinton, 2010)
-    RELU1,      //Rectified Linear Unit (ReLU) capped at 1 (Krizhevsky, 2010)
-    RELU6,      //Rectified Linear Unit (ReLU) capped at 6 (Krizhevsky,. 2010)
+    BINARY,     ///< Stochastic binary unity
+    EXP,        ///< Exponential unit (for last layer)
+    SOFTMAX,    ///< Softmax unit (for last layer)
+    GAUSSIAN,   ///< Gaussian unit
+    RELU,       ///< Rectified Linear Unit (ReLU) (Nair and Hinton, 2010)
+    RELU1,      ///< Rectified Linear Unit (ReLU) capped at 1 (Krizhevsky, 2010)
+    RELU6,      ///< Rectified Linear Unit (ReLU) capped at 6 (Krizhevsky,. 2010)
 };
 
 constexpr bool is_relu(unit_type t){

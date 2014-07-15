@@ -19,6 +19,9 @@ class conv_rbm;
 template<typename Layer>
 class conv_rbm_mp;
 
+/*!
+ * \brief Type Traits to get information on RBM type
+ */
 template<typename RBM>
 struct rbm_traits {
     using rbm_t = RBM;
@@ -29,11 +32,18 @@ struct rbm_traits {
     HAS_STATIC_FIELD(Init, has_init_field)
     HAS_STATIC_FIELD(Momentum, has_momentum_field)
 
+    /*!
+     * \brief Indicates if the RBM is convolutional
+     */
     static constexpr bool is_convolutional(){
         return is_instantiation_of<conv_rbm, rbm_t>::value
             || is_instantiation_of<conv_rbm_mp, rbm_t>::value;
     }
 
+    /*!
+     * \brief Indicates if the RBM is convolutional and has probabilistic max
+     * pooling
+     */
     static constexpr bool has_probabilistic_max_pooling(){
         return is_instantiation_of<conv_rbm_mp, rbm_t>::value;
     }
