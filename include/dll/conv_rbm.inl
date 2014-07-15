@@ -33,6 +33,8 @@ struct generic_trainer;
 
 /*!
  * \brief Convolutional Restricted Boltzmann Machine
+ *
+ * This follows the definition of a CRBM by Honglak Lee.
  */
 template<typename Layer>
 class conv_rbm : public rbm_base<Layer> {

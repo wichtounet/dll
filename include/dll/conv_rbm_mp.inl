@@ -34,6 +34,8 @@ struct generic_trainer;
 /*!
  * \brief Convolutional Restricted Boltzmann Machine with Probabilistic
  * Max-Pooling.
+ *
+ * This follows the definition of a CRBM by Honglak Lee.
  */
 template<typename Layer>
 class conv_rbm_mp : public rbm_base<Layer> {
@@ -167,7 +169,7 @@ public:
                     //Total input
                     auto x = v_cv(k)(i,j) + b(k);
 
-                    //TODO RELU does not work 
+                    //TODO RELU does not work
 
                     if(hidden_unit == unit_type::BINARY){
                         h_a(k)(i, j) = std::exp(x) / (1.0 + pool(k, i, j));

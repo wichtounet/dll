@@ -31,7 +31,9 @@ template<typename RBM>
 struct generic_trainer;
 
 /*!
- * \brief Restricted Boltzmann Machine
+ * \brief Standard version of Restricted Boltzmann Machine
+ *
+ * This follows the definition of a RBM by Geoffrey Hinton.
  */
 template<typename Layer>
 class rbm : public rbm_base<Layer> {
@@ -58,9 +60,9 @@ public:
     static constexpr const std::size_t num_hidden_gra = DBN ? num_hidden : 0;
 
     //Weights and biases
-    etl::fast_matrix<weight, num_visible, num_hidden> w;
-    etl::fast_vector<weight, num_hidden> b;
-    etl::fast_vector<weight, num_visible> c;
+    etl::fast_matrix<weight, num_visible, num_hidden> w;    //!< Weights
+    etl::fast_vector<weight, num_hidden> b;                 //!< Hidden biases
+    etl::fast_vector<weight, num_visible> c;                //!< Visible biases
 
     //Reconstruction data
     etl::fast_vector<weight, num_visible> v1; //!< State of the visible units
@@ -111,6 +113,12 @@ public:
     rbm(rbm&& rbm) = delete;
     rbm& operator=(rbm&& rbm) = delete;
 
+    /*!
+     * \brief Initialize a RBM with basic weights.
+     *
+     * The weights are initialized from a normal distribution of
+     * zero-mean and 0.1 variance.
+     */
     rbm() : b(0.0), c(0.0) {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
         static std::default_random_engine rand_engine(std::time(nullptr));
