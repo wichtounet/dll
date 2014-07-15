@@ -108,6 +108,9 @@ TEST_CASE( "rbm/mnist_6", "rbm::sparsity" ) {
        dll::sparsity
     >::rbm_t rbm;
 
+    //0.01 (default) is way too low for 100 hidden units
+    rbm.sparsity_target = 0.1;
+
     auto dataset = mnist::read_dataset<std::vector, vector, double>();
 
     REQUIRE(!dataset.training_images.empty());
