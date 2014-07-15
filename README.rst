@@ -16,6 +16,16 @@ Features
    * Weight decay
    * Sparsity target
 
+* **Convolutional Restricted Boltzmann Machine**
+
+  * Standard version
+  * Version with Probabilistic Max Pooling (Honglak Lee)
+  * Binary and Gaussian visible units
+  * Binary and ReLU hidden units for the standard version
+  * Binary hidden units for the Probabilistic Max Pooling version
+  * Training with CD-k
+  * Momentum, Weight Decay, Sparsity Target
+
 * **Deep Belief Network**
 
    * Pretraining with RBMs
@@ -24,8 +34,8 @@ Features
 In development
 --------------
 
-conv_rbm is still in heavy development and should not be used unless if you
-intend to fix it ;)
+conv_rbm is still in heavy development and should not be used unless you intend
+to fix it ;)
 
 Building
 --------
