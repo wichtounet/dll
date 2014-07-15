@@ -23,7 +23,7 @@ Features
   * Binary and Gaussian visible units
   * Binary and ReLU hidden units for the standard version
   * Binary hidden units for the Probabilistic Max Pooling version
-  * Training with CD-k
+  * Training with CD-k or PCD-k (only for standard version)
   * Momentum, Weight Decay, Sparsity Target
 
 * **Deep Belief Network**
