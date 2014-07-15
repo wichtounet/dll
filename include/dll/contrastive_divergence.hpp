@@ -44,8 +44,38 @@ constexpr decay_type b_decay(decay_type t){
     }
 }
 
+template<typename RBM>
+struct base_trainer {
+    typedef RBM rbm_t;
+
+    typedef typename rbm_t::weight weight;
+
+    base_trainer(){}
+
+    template<typename T1, typename T2, bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = detail::dummy>
+    T2& get_fgrad(T1& , T2& inc){
+        return inc;
+    }
+
+    template<typename T1, typename T2, bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = detail::dummy>
+    T1& get_fgrad(T1& grad, T2& ){
+        return grad;
+    }
+
+    template<typename V, typename G>
+    void update(V& value, const G& grad, const RBM& rbm, decay_type decay, double penalty){
+        if(decay == decay_type::L1){
+            value += rbm.learning_rate * grad - rbm.weight_cost * abs(value) - penalty;
+        } else if(decay == decay_type::L2){
+            value += rbm.learning_rate * grad - rbm.weight_cost * value - penalty;
+        } else {
+            value += rbm.learning_rate * grad - penalty;
+        }
+    }
+};
+
 template<typename RBM, typename Enable = void>
-struct base_cd_trainer {
+struct base_cd_trainer : base_trainer<RBM> {
     typedef RBM rbm_t;
 
     static constexpr const auto num_hidden = rbm_t::num_hidden;
@@ -83,27 +113,6 @@ struct base_cd_trainer {
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
-    template<typename T1, typename T2, bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = detail::dummy>
-    T2& get_fgrad(T1& , T2& inc){
-        return inc;
-    }
-
-    template<typename T1, typename T2, bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = detail::dummy>
-    T1& get_fgrad(T1& grad, T2& ){
-        return grad;
-    }
-
-    template<typename V, typename G>
-    void update(V& value, const G& grad, const RBM& rbm, decay_type decay, double penalty){
-        if(decay == decay_type::L1){
-            value += rbm.learning_rate * grad - rbm.weight_cost * abs(value) - penalty;
-        } else if(decay == decay_type::L2){
-            value += rbm.learning_rate * grad - rbm.weight_cost * value - penalty;
-        } else {
-            value += rbm.learning_rate * grad - penalty;
-        }
-    }
-
     void update_weights(RBM& rbm){
         //Update momentum gradients
         if(rbm_traits<rbm_t>::has_momentum()){
@@ -129,9 +138,9 @@ struct base_cd_trainer {
         }
 
         //The final gradients;
-        const auto& w_fgrad = get_fgrad(w_grad, w_inc);
-        const auto& b_fgrad = get_fgrad(b_grad, b_inc);
-        const auto& c_fgrad = get_fgrad(c_grad, c_inc);
+        const auto& w_fgrad = base_trainer<RBM>::get_fgrad(w_grad, w_inc);
+        const auto& b_fgrad = base_trainer<RBM>::get_fgrad(b_grad, b_inc);
+        const auto& c_fgrad = base_trainer<RBM>::get_fgrad(c_grad, c_inc);
 
         //Weight decay is applied on biases only on demand
         //Note: According to G. Hinton, Weight Decay should not be applied to
@@ -140,9 +149,9 @@ struct base_cd_trainer {
 
         //Update weights and biases
 
-        update(rbm.w, w_fgrad, rbm, w_decay(rbm_traits<rbm_t>::decay()), h_penalty);
-        update(rbm.b, b_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), h_penalty);
-        update(rbm.c, c_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), 0.0);
+        base_trainer<RBM>::update(rbm.w, w_fgrad, rbm, w_decay(rbm_traits<rbm_t>::decay()), h_penalty);
+        base_trainer<RBM>::update(rbm.b, b_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), h_penalty);
+        base_trainer<RBM>::update(rbm.c, c_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), 0.0);
 
         //Check for NaN
         nan_check_deep_3(rbm.w, rbm.b, rbm.c);
