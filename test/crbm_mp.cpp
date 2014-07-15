@@ -139,3 +139,29 @@ TEST_CASE( "crbm_mp/mnist_7", "crbm::relu" ) {
 
     REQUIRE(error < 1e-1);
 }
+
+//TODO Test other ReLU versions
+
+TEST_CASE( "crbm_mp/mnist_10", "crbm::pcd_trainer" ) {
+    //TODO This test does not work right now
+
+    dll::conv_mp_layer<
+        28, 12, 40, 2,
+        dll::batch_size<25>,
+        dll::momentum,
+        dll::trainer<dll::pcd1_trainer_t>
+    >::rbm_t rbm;
+
+    rbm.learning_rate *= 0.05;
+
+    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(100);
+
+    mnist::normalize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 100);
+
+    REQUIRE(error < 1e-1);
+}
