@@ -24,6 +24,26 @@ inline double sign(double v){
     return v == 0.0 ? 0.0 : (v > 0.0 ? 1.0 : -1.0);
 }
 
+constexpr decay_type w_decay(decay_type t){
+    if(t == decay_type::L1 || t == decay_type::L1_FULL){
+        return decay_type::L1;
+    } else if(t == decay_type::L2 || t == decay_type::L2_FULL){
+        return decay_type::L2;
+    } else {
+        return decay_type::NONE;
+    }
+}
+
+constexpr decay_type b_decay(decay_type t){
+    if(t == decay_type::L1_FULL){
+        return decay_type::L1;
+    } else if(t == decay_type::L2_FULL){
+        return decay_type::L2;
+    } else {
+        return decay_type::NONE;
+    }
+}
+
 template<typename RBM, typename Enable = void>
 struct base_cd_trainer {
     typedef RBM rbm_t;
@@ -73,9 +93,18 @@ struct base_cd_trainer {
         return grad;
     }
 
-    void update_weights(RBM& rbm){
-        auto learning_rate = rbm.learning_rate;
+    template<typename V, typename G>
+    void update(V& value, const G& grad, const RBM& rbm, decay_type decay, double penalty){
+        if(decay == decay_type::L1){
+            value += rbm.learning_rate * grad - rbm.weight_cost * abs(value) - penalty;
+        } else if(decay == decay_type::L2){
+            value += rbm.learning_rate * grad - rbm.weight_cost * value - penalty;
+        } else {
+            value += rbm.learning_rate * grad - penalty;
+        }
+    }
 
+    void update_weights(RBM& rbm){
         //Update momentum gradients
         if(rbm_traits<rbm_t>::has_momentum()){
             auto momentum = rbm.momentum;
@@ -109,35 +138,11 @@ struct base_cd_trainer {
         //biases by default due to their limited number and therefore their weak
         //contribution to overfitting
 
-        //Update weights
+        //Update weights and biases
 
-        if(rbm_traits<rbm_t>::decay() == decay_type::L1 || rbm_traits<rbm_t>::decay() == decay_type::L1_FULL){
-            rbm.w += learning_rate * (w_fgrad - rbm.weight_cost * abs(rbm.w) - h_penalty);
-        } else if(rbm_traits<rbm_t>::decay() == decay_type::L2 || rbm_traits<rbm_t>::decay() == decay_type::L2_FULL){
-            rbm.w += learning_rate * (w_fgrad - rbm.weight_cost * rbm.w - h_penalty);
-        } else {
-            rbm.w += learning_rate * w_fgrad - h_penalty;
-        }
-
-        //Update hidden biases
-
-        if(rbm_traits<rbm_t>::decay() == decay_type::L1_FULL){
-            rbm.b += learning_rate * (b_fgrad - rbm.weight_cost * abs(rbm.b) - h_penalty);
-        } else if(rbm_traits<rbm_t>::decay() == decay_type::L2_FULL){
-            rbm.b += learning_rate * (b_fgrad - rbm.weight_cost * rbm.b - h_penalty);
-        } else {
-            rbm.b += learning_rate * b_fgrad - h_penalty;
-        }
-
-        //Update visible biases
-
-        if(rbm_traits<rbm_t>::decay() == decay_type::L1_FULL){
-            rbm.c += learning_rate * (c_fgrad - rbm.weight_cost * abs(rbm.c));
-        } else if(rbm_traits<rbm_t>::decay() == decay_type::L2_FULL){
-            rbm.c += learning_rate * (c_fgrad - rbm.weight_cost * rbm.c);
-        } else {
-            rbm.c += learning_rate * c_fgrad;
-        }
+        update(rbm.w, w_fgrad, rbm, w_decay(rbm_traits<rbm_t>::decay()), h_penalty);
+        update(rbm.b, b_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), h_penalty);
+        update(rbm.c, c_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), 0.0);
 
         //Check for NaN
         nan_check_deep_3(rbm.w, rbm.b, rbm.c);
