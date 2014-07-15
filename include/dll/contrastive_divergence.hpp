@@ -48,19 +48,18 @@ struct base_cd_trainer {
 
     //{{{ Sparsity
 
-    weight q_old;
     weight q_batch;
     weight q_t;
 
     //}}} Sparsity end
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = detail::dummy>
-    base_cd_trainer() : q_old(0.0) {
+    base_cd_trainer() : q_t(0.0) {
         static_assert(!rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = detail::dummy>
-    base_cd_trainer() : w_inc(0.0), b_inc(0.0), c_inc(0.0), q_old(0.0) {
+    base_cd_trainer() : w_inc(0.0), b_inc(0.0), c_inc(0.0), q_t(0.0) {
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
@@ -95,7 +94,7 @@ struct base_cd_trainer {
             auto p = rbm.sparsity_target;
             auto cost = rbm.sparsity_cost;
 
-            q_t = decay_rate * q_old + (1.0 - decay_rate) * q_batch;
+            q_t = decay_rate * q_t + (1.0 - decay_rate) * q_batch;
 
             h_penalty = cost * (q_t - p);
         }
@@ -171,19 +170,18 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
 
     //{{{ Sparsity
 
-    weight q_old;
     weight q_batch;
     weight q_t;
 
     //}}} Sparsity end
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = detail::dummy>
-    base_cd_trainer(){
+    base_cd_trainer() : q_t(0.0) {
         static_assert(!rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = detail::dummy>
-    base_cd_trainer() : w_inc(0.0), b_inc(0.0), c_inc(0.0) {
+    base_cd_trainer() : w_inc(0.0), b_inc(0.0), c_inc(0.0), q_t(0.0) {
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
@@ -221,7 +219,7 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
             auto p = rbm.sparsity_target;
             auto cost = rbm.sparsity_cost;
 
-            q_t = decay_rate * q_old + (1.0 - decay_rate) * q_batch;
+            q_t = decay_rate * q_t + (1.0 - decay_rate) * q_batch;
 
             h_penalty = cost * (q_t - p);
         }
