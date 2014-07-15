@@ -21,7 +21,7 @@ TEST_CASE( "crbm/mnist_1", "crbm::simple" ) {
 
     auto error = rbm.train(dataset.training_images, 100);
 
-    REQUIRE(error < 1e-1);
+    REQUIRE(error < 1e-2);
 }
 
 TEST_CASE( "crbm/mnist_2", "crbm::momentum" ) {
