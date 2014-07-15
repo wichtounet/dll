@@ -158,12 +158,8 @@ public:
     void init_weights(const std::vector<vector<weight>>& training_data){
         //Initialize the visible biases to log(pi/(1-pi))
         for(size_t i = 0; i < num_visible; ++i){
-            size_t count = 0;
-            for(auto& items : training_data){
-                if(items[i] == 1){
-                    ++count;
-                }
-            }
+            auto count = std::count_if(training_data.begin(), training_data.end(),
+                [i](auto& a){return a[i] == 1; });
 
             auto pi = static_cast<weight>(count) / training_data.size();
             pi += 0.0001;
