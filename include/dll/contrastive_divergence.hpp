@@ -172,13 +172,14 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> : 
     //Gradients
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_grad;      //Gradients of shared weights
     etl::fast_vector<weight, K> b_grad;                                 //Gradients of hidden biases bk
-    etl::fast_matrix<weight, NV, NV> c_grad;                            //Visible gradients
+
+    weight c_grad;                                      //Visible gradient
 
     //{{{ Momentum
 
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_inc;
     etl::fast_vector<weight, K> b_inc;
-    etl::fast_matrix<weight, NV, NV> c_inc;
+    weight c_inc;
 
     //}}} Momentum end
 
@@ -200,8 +201,6 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> : 
     }
 
     void update_weights(RBM& rbm){
-        auto learning_rate = rbm.learning_rate;
-
         //Update momentum gradients
         if(rbm_traits<rbm_t>::has_momentum()){
             auto momentum = rbm.momentum;
@@ -238,28 +237,16 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> : 
         //biases by default due to their limited number and therefore their weak
         //contribution to overfitting
 
-        //Update weights
+        //Update weights and biases
 
         for(std::size_t k = 0; k < K; ++k){
             //TODO Ideally, the loop should be removed and the
-            //update be done diretly on w
+            //update be done diretly on rbm.w
             base_trainer<RBM>::update(rbm.w(k), w_fgrad(k), rbm, w_decay(rbm_traits<rbm_t>::decay()), h_penalty);
         }
 
-        //Update hidden biases
-
         base_trainer<RBM>::update(rbm.b, b_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), h_penalty);
-
-        //Update visible biases
-
-        //TODO Should be able to use update here
-        if(b_decay(rbm_traits<rbm_t>::decay()) == decay_type::L1){
-            rbm.c += learning_rate * sum((c_fgrad - rbm.weight_cost * sign(rbm.c)));
-        } else if(b_decay(rbm_traits<rbm_t>::decay()) == decay_type::L2){
-            rbm.c += learning_rate * sum((c_fgrad - rbm.weight_cost * rbm.c));
-        } else {
-            rbm.c += learning_rate * sum(c_fgrad);
-        }
+        base_trainer<RBM>::update(rbm.c, c_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), 0.0);
 
         //Check for NaN
         nan_check_deep_deep(rbm.w);
@@ -369,10 +356,13 @@ private:
     using base_cd_trainer<RBM>::K;
     using base_cd_trainer<RBM>::NW;
     using base_cd_trainer<RBM>::NH;
+    using base_cd_trainer<RBM>::NV;
 
     using base_cd_trainer<RBM>::w_grad;
     using base_cd_trainer<RBM>::b_grad;
     using base_cd_trainer<RBM>::c_grad;
+
+    etl::fast_matrix<weight, NV, NV> c_grad_org;
 
     using base_cd_trainer<RBM>::q_batch;
 
@@ -395,7 +385,7 @@ public:
         //Clear the gradients
         w_grad = 0.0;
         b_grad = 0.0;
-        c_grad = 0.0;
+        c_grad_org = 0.0;
 
         //Reset mean activation probability if necessary
         if(rbm_traits<rbm_t>::has_sparsity()){
@@ -431,7 +421,7 @@ public:
                 b_grad(k) += mean(rbm.h1_a(k) - rbm.h2_a(k));
             }
 
-            c_grad += rbm.v1 - rbm.v2_a;
+            c_grad_org += rbm.v1 - rbm.v2_a;
 
             if(rbm_traits<rbm_t>::has_sparsity()){
                 q_batch += sum(sum(rbm.h2_a));
@@ -441,11 +431,13 @@ public:
         //Keep only the mean of the gradients
         w_grad /= n_samples;
         b_grad /= n_samples;
-        c_grad /= n_samples;
+        c_grad_org /= n_samples;
 
         nan_check_deep_deep(w_grad);
         nan_check_deep(b_grad);
-        nan_check_deep(c_grad);
+        nan_check_deep(c_grad_org);
+
+        c_grad = mean(c_grad_org);
 
         //Compute the mean activation probabilities
         if(rbm_traits<rbm_t>::has_sparsity()){
@@ -456,7 +448,7 @@ public:
         this->update_weights(rbm);
 
         //Return the reconstruction error
-        return mean(c_grad * c_grad);
+        return mean(c_grad_org * c_grad_org);
     }
 };
 
@@ -579,11 +571,14 @@ private:
 
     using base_cd_trainer<RBM>::NW;
     using base_cd_trainer<RBM>::NH;
+    using base_cd_trainer<RBM>::NV;
     using base_cd_trainer<RBM>::K;
 
     using base_cd_trainer<RBM>::w_grad;
     using base_cd_trainer<RBM>::b_grad;
     using base_cd_trainer<RBM>::c_grad;
+
+    etl::fast_matrix<weight, NV, NV> c_grad_org;
 
     using base_cd_trainer<RBM>::q_batch;
 
@@ -613,7 +608,7 @@ public:
         //Clear the gradients
         w_grad = 0.0;
         b_grad = 0.0;
-        c_grad = 0.0;
+        c_grad_org = 0.0;
 
         //Reset mean activation probability if necessary
         if(rbm_traits<rbm_t>::has_sparsity()){
@@ -657,7 +652,7 @@ public:
                 b_grad(k) += mean(rbm.h1_a(k) - rbm.h2_a(k));
             }
 
-            c_grad += rbm.v1 - rbm.v2_a;
+            c_grad_org += rbm.v1 - rbm.v2_a;
 
             if(rbm_traits<rbm_t>::has_sparsity()){
                 q_batch += sum(sum(rbm.h2_a));
@@ -669,11 +664,13 @@ public:
         //Keep only the mean of the gradients
         w_grad /= n_samples;
         b_grad /= n_samples;
-        c_grad /= n_samples;
+        c_grad_org /= n_samples;
 
         nan_check_deep_deep(w_grad);
         nan_check_deep(b_grad);
-        nan_check_deep(c_grad);
+        nan_check_deep(c_grad_org);
+
+        c_grad = mean(c_grad_org);
 
         //Compute the mean activation probabilities
         if(rbm_traits<rbm_t>::has_sparsity()){
@@ -684,7 +681,7 @@ public:
         this->update_weights(rbm);
 
         //Return the reconstruction error
-        return mean(c_grad * c_grad);
+        return mean(c_grad_org * c_grad_org);
     }
 };
 
