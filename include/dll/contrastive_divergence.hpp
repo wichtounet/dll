@@ -159,7 +159,7 @@ struct base_cd_trainer : base_trainer<RBM> {
 };
 
 template<typename RBM>
-struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
+struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> : base_trainer<RBM> {
     typedef RBM rbm_t;
 
     static constexpr const auto K = rbm_t::K;
@@ -199,16 +199,6 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
-    template<typename T1, typename T2, bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = detail::dummy>
-    T2& get_fgrad(T1& , T2& inc){
-        return inc;
-    }
-
-    template<typename T1, typename T2, bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = detail::dummy>
-    T1& get_fgrad(T1& grad, T2& ){
-        return grad;
-    }
-
     void update_weights(RBM& rbm){
         auto learning_rate = rbm.learning_rate;
 
@@ -239,9 +229,9 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
         }
 
         //The final gradients;
-        const auto& w_fgrad = get_fgrad(w_grad, w_inc);
-        const auto& b_fgrad = get_fgrad(b_grad, b_inc);
-        const auto& c_fgrad = get_fgrad(c_grad, c_inc);
+        const auto& w_fgrad = base_trainer<RBM>::get_fgrad(w_grad, w_inc);
+        const auto& b_fgrad = base_trainer<RBM>::get_fgrad(b_grad, b_inc);
+        const auto& c_fgrad = base_trainer<RBM>::get_fgrad(c_grad, c_inc);
 
         //Weight decay is applied on biases only on demand
         //Note: According to G. Hinton, Weight Decay should not be applied to
@@ -251,30 +241,21 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> {
         //Update weights
 
         for(std::size_t k = 0; k < K; ++k){
-            if(rbm_traits<rbm_t>::decay() == decay_type::L1 || rbm_traits<rbm_t>::decay() == decay_type::L1_FULL){
-                rbm.w(k) += learning_rate * (w_fgrad(k) - rbm.weight_cost * sign(rbm.w(k)) - h_penalty);
-            } else if(rbm_traits<rbm_t>::decay() == decay_type::L2 || rbm_traits<rbm_t>::decay() == decay_type::L2_FULL){
-                rbm.w(k) += learning_rate * (w_fgrad(k) - rbm.weight_cost * rbm.w(k) - h_penalty);
-            } else {
-                rbm.w(k) += learning_rate * w_fgrad(k) - h_penalty;
-            }
+            //TODO Ideally, the loop should be removed and the
+            //update be done diretly on w
+            base_trainer<RBM>::update(rbm.w(k), w_fgrad(k), rbm, w_decay(rbm_traits<rbm_t>::decay()), h_penalty);
         }
 
         //Update hidden biases
 
-        if(rbm_traits<rbm_t>::decay() == decay_type::L1_FULL){
-            rbm.b += learning_rate * (b_fgrad - rbm.weight_cost * sign(rbm.b) - h_penalty);
-        } else if(rbm_traits<rbm_t>::decay() == decay_type::L2_FULL){
-            rbm.b += learning_rate * (b_fgrad - rbm.weight_cost * rbm.b - h_penalty);
-        } else {
-            rbm.b += learning_rate * b_fgrad - h_penalty;
-        }
+        base_trainer<RBM>::update(rbm.b, b_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), h_penalty);
 
         //Update visible biases
 
-        if(rbm_traits<rbm_t>::decay() == decay_type::L1_FULL){
+        //TODO Should be able to use update here
+        if(b_decay(rbm_traits<rbm_t>::decay()) == decay_type::L1){
             rbm.c += learning_rate * sum((c_fgrad - rbm.weight_cost * sign(rbm.c)));
-        } else if(rbm_traits<rbm_t>::decay() == decay_type::L2_FULL){
+        } else if(b_decay(rbm_traits<rbm_t>::decay()) == decay_type::L2){
             rbm.c += learning_rate * sum((c_fgrad - rbm.weight_cost * rbm.c));
         } else {
             rbm.c += learning_rate * sum(c_fgrad);
