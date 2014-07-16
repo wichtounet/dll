@@ -40,6 +40,9 @@ struct check_rbm<R1, R...> : std::integral_constant<bool, and_u<R1::DBN, check_r
 template<typename R1>
 struct check_rbm<R1> : std::integral_constant<bool, R1::DBN> {};
 
+/*!
+ * \brief A Deep Belief Network implementation
+ */
 template<typename... Layers>
 struct dbn {
 private:
