@@ -15,19 +15,16 @@
 
 namespace dll {
 
+/*!
+ * \brief Describe a RBM layer
+ *
+ * This struct should be used to define a RBM either as standalone or for a DBN.
+ * Once configured, the ::rbm_t member returns the type of the configured RBM.
+ */
 template<std::size_t visibles, std::size_t hiddens, typename... Parameters>
 struct layer {
     static constexpr const std::size_t num_visible = visibles;
     static constexpr const std::size_t num_hidden = hiddens;
-
-    static_assert(num_visible > 0, "There must be at least 1 visible unit");
-    static_assert(num_hidden > 0, "There must be at least 1 hidden unit");
-
-    //Make sure only valid types are passed to the configuration list
-    static_assert(
-        is_valid<tmp_list<momentum, batch_size_id, visible_id, hidden_id, weight_decay_id,
-              init_weights, in_dbn, sparsity, trainer_id>, Parameters...>::value,
-        "Invalid parameters type");
 
     static constexpr const bool Momentum = is_present<momentum, Parameters...>::value;
     static constexpr const std::size_t BatchSize = get_value<batch_size<1>, Parameters...>::value;
@@ -38,18 +35,30 @@ struct layer {
     static constexpr const bool DBN = is_present<in_dbn, Parameters...>::value;
     static constexpr const bool Sparsity = is_present<sparsity, Parameters...>::value;
 
+    /*! The type of the trainer to use to train the RBM */
     template <typename RBM>
     using trainer_t = typename get_template_type<trainer<cd1_trainer_t>, Parameters...>::template type<RBM>;
 
+    /*! The type of the watched to use during training */
     template <typename RBM>
     using watcher_t = typename get_template_type<watcher<default_watcher>, Parameters...>::template type<RBM>;
+
+    /*! The RBM type */
+    using rbm_t = rbm<layer<visibles, hiddens, Parameters...>>;
+
+    static_assert(num_visible > 0, "There must be at least 1 visible unit");
+    static_assert(num_hidden > 0, "There must be at least 1 hidden unit");
+
+    //Make sure only valid types are passed to the configuration list
+    static_assert(
+        is_valid<tmp_list<momentum, batch_size_id, visible_id, hidden_id, weight_decay_id,
+              init_weights, in_dbn, sparsity, trainer_id>, Parameters...>::value,
+        "Invalid parameters type");
 
     static_assert(BatchSize > 0, "Batch size must be at least 1");
 
     static_assert(!Sparsity || (Sparsity && hidden_unit == unit_type::BINARY),
         "Sparsity only works with binary hidden units");
-
-    using rbm_t = rbm<layer<visibles, hiddens, Parameters...>>;
 };
 
 } //end of dbn namespace
