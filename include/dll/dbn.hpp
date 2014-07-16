@@ -31,6 +31,8 @@ struct gradient_context {
     }
 };
 
+namespace detail {
+
 template<typename... R>
 struct check_rbm ;
 
@@ -39,6 +41,8 @@ struct check_rbm<R1, R...> : std::integral_constant<bool, and_u<R1::DBN, check_r
 
 template<typename R1>
 struct check_rbm<R1> : std::integral_constant<bool, R1::DBN> {};
+
+} //end of namespace detail
 
 /*!
  * \brief A Deep Belief Network implementation
@@ -56,7 +60,7 @@ private:
 
     typedef typename rbm_type<0>::weight weight;
 
-    static_assert(check_rbm<Layers...>::value, "RBM must be in DBN mode");
+    static_assert(detail::check_rbm<Layers...>::value, "RBM must be in DBN mode");
 
 public:
     //No arguments by default
