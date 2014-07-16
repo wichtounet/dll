@@ -36,8 +36,8 @@ struct rbm_traits {
      * \brief Indicates if the RBM is convolutional
      */
     static constexpr bool is_convolutional(){
-        return is_instantiation_of<conv_rbm, rbm_t>::value
-            || is_instantiation_of<conv_rbm_mp, rbm_t>::value;
+        return detail::is_instantiation_of<conv_rbm, rbm_t>::value
+            || detail::is_instantiation_of<conv_rbm_mp, rbm_t>::value;
     }
 
     /*!
@@ -45,55 +45,55 @@ struct rbm_traits {
      * pooling
      */
     static constexpr bool has_probabilistic_max_pooling(){
-        return is_instantiation_of<conv_rbm_mp, rbm_t>::value;
+        return detail::is_instantiation_of<conv_rbm_mp, rbm_t>::value;
     }
 
-    template<typename R = RBM, enable_if_u<has_batch_size_field<typename R::layer>::value> = detail::dummy>
+    template<typename R = RBM, enable_if_u<has_batch_size_field<typename R::layer>::value> = ::detail::dummy>
     static constexpr std::size_t batch_size(){
         return rbm_t::layer::BatchSize;
     }
 
-    template<typename R = RBM, disable_if_u<has_batch_size_field<typename R::layer>::value> = detail::dummy>
+    template<typename R = RBM, disable_if_u<has_batch_size_field<typename R::layer>::value> = ::detail::dummy>
     static constexpr std::size_t batch_size(){
         return 1;
     }
 
-    template<typename R = RBM, enable_if_u<has_momentum_field<typename R::layer>::value> = detail::dummy>
+    template<typename R = RBM, enable_if_u<has_momentum_field<typename R::layer>::value> = ::detail::dummy>
     static constexpr bool has_momentum(){
         return rbm_t::layer::Momentum;
     }
 
-    template<typename R = RBM, disable_if_u<has_momentum_field<typename R::layer>::value> = detail::dummy>
+    template<typename R = RBM, disable_if_u<has_momentum_field<typename R::layer>::value> = ::detail::dummy>
     static constexpr bool has_momentum(){
         return false;
     }
 
-    template<typename R = RBM, enable_if_u<has_sparsity_field<typename R::layer>::value> = detail::dummy>
+    template<typename R = RBM, enable_if_u<has_sparsity_field<typename R::layer>::value> = ::detail::dummy>
     static constexpr bool has_sparsity(){
         return rbm_t::layer::Sparsity;
     }
 
-    template<typename R = RBM, disable_if_u<has_sparsity_field<typename R::layer>::value> = detail::dummy>
+    template<typename R = RBM, disable_if_u<has_sparsity_field<typename R::layer>::value> = ::detail::dummy>
     static constexpr bool has_sparsity(){
         return false;
     }
 
-    template<typename R = RBM, enable_if_u<has_decay_field<typename R::layer>::value> = detail::dummy>
+    template<typename R = RBM, enable_if_u<has_decay_field<typename R::layer>::value> = ::detail::dummy>
     static constexpr decay_type decay(){
         return rbm_t::layer::Decay;
     }
 
-    template<typename R = RBM, disable_if_u<has_decay_field<typename R::layer>::value> = detail::dummy>
+    template<typename R = RBM, disable_if_u<has_decay_field<typename R::layer>::value> = ::detail::dummy>
     static constexpr decay_type decay(){
         return decay_type::NONE;
     }
 
-    template<typename R = RBM, enable_if_u<has_init_field<typename R::layer>::value> = detail::dummy>
+    template<typename R = RBM, enable_if_u<has_init_field<typename R::layer>::value> = ::detail::dummy>
     static constexpr bool init_weights(){
         return rbm_t::layer::Init;
     }
 
-    template<typename R = RBM, disable_if_u<has_init_field<typename R::layer>::value> = detail::dummy>
+    template<typename R = RBM, disable_if_u<has_init_field<typename R::layer>::value> = ::detail::dummy>
     static constexpr bool init_weights(){
         return false;
     }

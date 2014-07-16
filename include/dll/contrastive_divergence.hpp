@@ -63,12 +63,12 @@ template<typename RBM>
 struct base_trainer {
     typedef RBM rbm_t;
 
-    template<typename T1, typename T2, bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = detail::dummy>
+    template<typename T1, typename T2, bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = ::detail::dummy>
     T2& get_fgrad(T1& , T2& inc){
         return inc;
     }
 
-    template<typename T1, typename T2, bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = detail::dummy>
+    template<typename T1, typename T2, bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = ::detail::dummy>
     T1& get_fgrad(T1& grad, T2& ){
         return grad;
     }
@@ -119,12 +119,12 @@ struct base_cd_trainer : base_trainer<RBM> {
 
     //}}} Sparsity end
 
-    template<bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = detail::dummy>
+    template<bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = ::detail::dummy>
     base_cd_trainer() : q_t(0.0) {
         static_assert(!rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
-    template<bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = detail::dummy>
+    template<bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = ::detail::dummy>
     base_cd_trainer() : w_inc(0.0), b_inc(0.0), c_inc(0.0), q_t(0.0) {
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
@@ -211,12 +211,12 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> : 
 
     //}}} Sparsity end
 
-    template<bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = detail::dummy>
+    template<bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = ::detail::dummy>
     base_cd_trainer() : q_t(0.0) {
         static_assert(!rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
-    template<bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = detail::dummy>
+    template<bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = ::detail::dummy>
     base_cd_trainer() : w_inc(0.0), b_inc(0.0), c_inc(0.0), q_t(0.0) {
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }

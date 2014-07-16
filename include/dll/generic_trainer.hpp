@@ -25,12 +25,12 @@ struct generic_trainer {
     template<typename R>
     using watcher_t = typename rbm_t::layer::template watcher_t<R>;
 
-    template<typename R = RBM, enable_if_u<rbm_traits<R>::init_weights()> = detail::dummy>
+    template<typename R = RBM, enable_if_u<rbm_traits<R>::init_weights()> = ::detail::dummy>
     static void init_weights(RBM& rbm, const std::vector<vector<typename RBM::weight>>& training_data){
         rbm.init_weights(training_data);
     }
 
-    template<typename R = RBM, disable_if_u<rbm_traits<R>::init_weights()> = detail::dummy>
+    template<typename R = RBM, disable_if_u<rbm_traits<R>::init_weights()> = ::detail::dummy>
     static void init_weights(RBM&, const std::vector<vector<typename RBM::weight>>&){
         //NOP
     }

@@ -10,8 +10,6 @@
 
 #include "etl/tmp.hpp" //for enable_if/disable_if stuff
 
-namespace dll {
-
 #define HAS_STATIC_FIELD(field, name) \
 template <typename T> \
 class name { \
@@ -23,6 +21,10 @@ class name { \
     public: \
     static constexpr const bool value = decltype(check<T>(0))::value; \
 };
+
+namespace dll {
+
+namespace detail {
 
 template<template<typename...> class Template, typename T>
 struct is_instantiation_of : std::false_type {};
@@ -43,7 +45,7 @@ struct is_present<T1> : std::false_type{};
 template<typename... Valid>
 struct tmp_list {
     template<typename T, typename Enable = void>
-    struct check : std::integral_constant<bool,is_present<T, Valid...>::value> {};
+    struct check : std::integral_constant<bool, is_present<T, Valid...>::value> {};
 
     template<typename T>
     struct check<T, enable_if_t<T::marker>> : std::integral_constant<bool, is_present<typename T::type, Valid...>::value> {};
@@ -134,6 +136,8 @@ struct get_template_type<D> {
     template<typename RBM>
     using type = typename D::template value<RBM>;
 };
+
+} //end of namespace detail
 
 } //end of dbn namespace
 
