@@ -12,4 +12,11 @@
 /*!
  * namespace for Deep Learning Library (DLL)
  */
-namespace dll {}
+namespace dll {
+
+/*!
+ * namespace keeping implementation details, mostly TMP stuff.
+ */
+namespace detail {}
+
+} //end of namespace detail

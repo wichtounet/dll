@@ -72,7 +72,7 @@ public:
     void display() const {
         std::size_t parameters = 0;
 
-        for_each(tuples, [&parameters](auto& rbm){
+        detail::for_each(tuples, [&parameters](auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
             constexpr const auto num_visible = rbm_t::num_visible;
             constexpr const auto num_hidden = rbm_t::num_hidden;
@@ -87,13 +87,13 @@ public:
     }
 
     void store(std::ostream& os) const {
-        for_each(tuples, [&os](auto& rbm){
+        detail::for_each(tuples, [&os](auto& rbm){
             rbm.store(os);
         });
     }
 
     void load(std::istream& is){
-        for_each(tuples, [&is](auto& rbm){
+        detail::for_each(tuples, [&is](auto& rbm){
             rbm.load(is);
         });
     }
@@ -127,7 +127,7 @@ public:
 
         auto input = std::ref(training_data);
 
-        for_each_i(tuples, [&input, &next_a, &next_s, max_epochs](std::size_t I, auto& rbm){
+        detail::for_each_i(tuples, [&input, &next_a, &next_s, max_epochs](std::size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
             constexpr const auto num_visible = rbm_t::num_visible;
             constexpr const auto num_hidden = rbm_t::num_hidden;
@@ -175,7 +175,7 @@ public:
 
         typedef std::vector<vector<weight>> training_t;
 
-        for_each_i(tuples, [&input, &training_labels, labels, max_epochs](size_t I, auto& rbm){
+        detail::for_each_i(tuples, [&input, &training_labels, labels, max_epochs](size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
             constexpr const auto num_hidden = rbm_t::num_hidden;
 
@@ -220,7 +220,7 @@ public:
 
         auto input_ref = std::cref(item);
 
-        for_each_i(tuples, [labels,&input_ref,&output_a,&output_s](size_t I, auto& rbm){
+        detail::for_each_i(tuples, [labels,&input_ref,&output_a,&output_s](size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
             constexpr const auto num_hidden = rbm_t::num_hidden;
 
@@ -272,7 +272,7 @@ public:
 
         auto input = std::cref(item);
 
-        for_each_i(tuples, [&item, &input, &result](std::size_t I, auto& rbm){
+        detail::for_each_i(tuples, [&item, &input, &result](std::size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
             constexpr const auto num_hidden = rbm_t::num_hidden;
 
@@ -366,7 +366,7 @@ public:
         static std::vector<std::vector<weight>> diffs;
         diffs.resize(n_samples);
 
-        for_each(tuples, [](auto& rbm){
+        detail::for_each(tuples, [](auto& rbm){
             rbm.gr_w_incs = 0.0;
             rbm.gr_b_incs = 0.0;
         });
@@ -379,7 +379,7 @@ public:
             auto output = std::ref(layer<0>().gr_probs_a[sample]);
             auto& target = context.targets[sample];
 
-            for_each_i(tuples, [&input,&output,sample](std::size_t I, auto& rbm){
+            detail::for_each_i(tuples, [&input,&output,sample](std::size_t I, auto& rbm){
                 auto& output_ref = static_cast<vector<weight>&>(output);
 
                 if(I == 0){
@@ -411,13 +411,13 @@ public:
 
         //Get pointers to the different gr_probs
         std::array<std::vector<vector<weight>>*, layers> probs_refs;
-        for_each_i(tuples, [&probs_refs](std::size_t I, auto& rbm){
+        detail::for_each_i(tuples, [&probs_refs](std::size_t I, auto& rbm){
             probs_refs[I] = &rbm.gr_probs_a;
         });
 
         update_incs<Temp>(layer<layers-1>(), diffs, n_samples, layer<layers-2>().gr_probs_a);
 
-        for_each_rpair_i(tuples, [n_samples, &probs_refs](std::size_t I, auto& r1, auto& r2){
+        detail::for_each_rpair_i(tuples, [n_samples, &probs_refs](std::size_t I, auto& r1, auto& r2){
             update_diffs<Temp>(r1, r2, diffs, n_samples);
 
             if(I > 0){
@@ -435,7 +435,7 @@ public:
     bool is_finite(){
         bool finite = true;
 
-        for_each(tuples, [&finite](auto& a){
+        detail::for_each(tuples, [&finite](auto& a){
             if(!finite){
                 return;
             }
@@ -469,7 +469,7 @@ public:
 
     weight s_dot_s(){
         weight acc = 0.0;
-        for_each(tuples, [&acc](auto& rbm){
+        detail::for_each(tuples, [&acc](auto& rbm){
             acc += dot(rbm.gr_w_s, rbm.gr_w_s) + dot(rbm.gr_b_s, rbm.gr_b_s);
         });
         return acc;
@@ -477,7 +477,7 @@ public:
 
     weight df3_dot_s(){
         weight acc = 0.0;
-        for_each(tuples, [&acc](auto& rbm){
+        detail::for_each(tuples, [&acc](auto& rbm){
             acc += dot(rbm.gr_w_df3, rbm.gr_w_s) + dot(rbm.gr_b_df3, rbm.gr_b_s);
         });
         return acc;
@@ -485,7 +485,7 @@ public:
 
     weight df3_dot_df3(){
         weight acc = 0.0;
-        for_each(tuples, [&acc](auto& rbm){
+        detail::for_each(tuples, [&acc](auto& rbm){
             acc += dot(rbm.gr_w_df3, rbm.gr_w_df3) + dot(rbm.gr_b_df3, rbm.gr_b_df3);
         });
         return acc;
@@ -493,7 +493,7 @@ public:
 
     weight df0_dot_df0(){
         weight acc = 0.0;
-        for_each(tuples, [&acc](auto& rbm){
+        detail::for_each(tuples, [&acc](auto& rbm){
             acc += dot(rbm.gr_w_df0, rbm.gr_w_df0) + dot(rbm.gr_b_df0, rbm.gr_b_df0);
         });
         return acc;
@@ -501,7 +501,7 @@ public:
 
     weight df0_dot_df3(){
         weight acc = 0.0;
-        for_each(tuples, [&acc](auto& rbm){
+        detail::for_each(tuples, [&acc](auto& rbm){
             acc += dot(rbm.gr_w_df0, rbm.gr_w_df3) + dot(rbm.gr_b_df0, rbm.gr_b_df3);
         });
         return acc;
@@ -528,7 +528,7 @@ public:
         weight cost = 0.0;
         gradient<false>(context, cost);
 
-        for_each(tuples, [](auto& rbm){
+        detail::for_each(tuples, [](auto& rbm){
             rbm.gr_w_df0 = rbm.gr_w_incs;
             rbm.gr_b_df0 = rbm.gr_b_incs;
 
@@ -544,7 +544,7 @@ public:
             auto best_cost = i0.f;
             i3.f = 0.0;
 
-            for_each(tuples, [](auto& rbm){
+            detail::for_each(tuples, [](auto& rbm){
                 rbm.gr_w_best = rbm.gr_w;
                 rbm.gr_b_best = rbm.gr_b;
 
@@ -566,7 +566,7 @@ public:
                 i2.d = i0.d;
                 i3.f = i0.f;
 
-                for_each(tuples, [](auto& rbm){
+                detail::for_each(tuples, [](auto& rbm){
                     rbm.gr_w_df3 = rbm.gr_w_df0;
                     rbm.gr_b_df3 = rbm.gr_b_df0;
                 });
@@ -576,7 +576,7 @@ public:
                         break;
                     }
 
-                    for_each(tuples, [&i3](auto& rbm){
+                    detail::for_each(tuples, [&i3](auto& rbm){
                         rbm.gr_w_tmp = rbm.gr_w + rbm.gr_w_s * i3.x;
                         rbm.gr_b_tmp = rbm.gr_b + rbm.gr_b_s * i3.x;
                     });
@@ -584,7 +584,7 @@ public:
                     gradient<true>(context, cost);
 
                     i3.f = cost;
-                    for_each(tuples, [](auto& rbm){
+                    detail::for_each(tuples, [](auto& rbm){
                         rbm.gr_w_df3 = rbm.gr_w_incs;
                         rbm.gr_b_df3 = rbm.gr_b_incs;
                     });
@@ -592,7 +592,7 @@ public:
                     if(std::isfinite(cost) && is_finite()){
                         if(i3.f < best_cost){
                             best_cost = i3.f;
-                            for_each(tuples, [](auto& rbm){
+                            detail::for_each(tuples, [](auto& rbm){
                                 rbm.gr_w_best = rbm.gr_w_tmp;
                                 rbm.gr_b_best = rbm.gr_b_tmp;
 
@@ -654,7 +654,7 @@ public:
 
                 i3.x = std::max(std::min(i3.x, i4.x - INT * (i4.x - i2.x)), i2.x + INT * (i4.x -i2.x));
 
-                for_each(tuples, [&i3](auto& rbm){
+                detail::for_each(tuples, [&i3](auto& rbm){
                     rbm.gr_w_tmp = rbm.gr_w + rbm.gr_w_s * i3.x;
                     rbm.gr_b_tmp = rbm.gr_b + rbm.gr_b_s * i3.x;
                 });
@@ -662,14 +662,14 @@ public:
                 gradient<true>(context, cost);
 
                 i3.f = cost;
-                for_each(tuples, [](auto& rbm){
+                detail::for_each(tuples, [](auto& rbm){
                     rbm.gr_w_df3 = rbm.gr_w_incs;
                     rbm.gr_b_df3 = rbm.gr_b_incs;
                 });
 
                 if(i3.f < best_cost){
                     best_cost = i3.f;
-                    for_each(tuples, [](auto& rbm){
+                    detail::for_each(tuples, [](auto& rbm){
                         rbm.gr_w_best = rbm.gr_w_tmp;
                         rbm.gr_b_best = rbm.gr_b_tmp;
 
@@ -684,7 +684,7 @@ public:
             }
 
             if(std::abs(i3.d) < -SIG * i0.d && i3.f < i0.f + i3.x * RHO * i0.d){
-                for_each(tuples, [&i3](auto& rbm){
+                detail::for_each(tuples, [&i3](auto& rbm){
                     rbm.gr_w += rbm.gr_w_s * i3.x;
                     rbm.gr_b += rbm.gr_b_s * i3.x;
                 });
@@ -693,7 +693,7 @@ public:
 
                 auto g = (df3_dot_df3() - df0_dot_df3()) / df0_dot_df0();
 
-                for_each(tuples, [g](auto& rbm){
+                detail::for_each(tuples, [g](auto& rbm){
                     rbm.gr_w_s = (rbm.gr_w_s * g) + (rbm.gr_w_df3 * -1.0);
                     rbm.gr_b_s = (rbm.gr_b_s * g) + (rbm.gr_b_df3 * -1.0);
                 });
@@ -701,13 +701,13 @@ public:
                 i3.d = i0.d;
                 i0.d = df3_dot_s();
 
-                for_each(tuples, [](auto& rbm){
+                detail::for_each(tuples, [](auto& rbm){
                     rbm.gr_w_df0 = rbm.gr_w_df3;
                     rbm.gr_b_df0 = rbm.gr_b_df3;
                 });
 
                 if(i0.d > 0){
-                    for_each(tuples, [] (auto& rbm) {
+                    detail::for_each(tuples, [] (auto& rbm) {
                         rbm.gr_w_s = rbm.gr_w_df0 * -1.0;
                         rbm.gr_b_s = rbm.gr_b_df0 * -1.0;
                     });
@@ -721,7 +721,7 @@ public:
                     break;
                 }
 
-                for_each(tuples, [] (auto& rbm) {
+                detail::for_each(tuples, [] (auto& rbm) {
                     rbm.gr_w_s = rbm.gr_w_df0 * -1.0;
                     rbm.gr_b_s = rbm.gr_b_df0 * -1.0;
                 });
@@ -740,7 +740,7 @@ public:
 
         auto batches = training_data.size() / batch_size + (training_data.size() % batch_size == 0 ? 0 : 1);
 
-        for_each(tuples, [batch_size](auto& rbm){
+        detail::for_each(tuples, [batch_size](auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
             constexpr const auto num_hidden = rbm_t::num_hidden;
 

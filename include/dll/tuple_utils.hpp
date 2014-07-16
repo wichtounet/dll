@@ -10,6 +10,8 @@
 
 namespace dll {
 
+namespace detail {
+
 template<size_t I, typename Tuple, typename F>
 struct for_each_impl {
     static void for_each(Tuple& t, F&& f) {
@@ -75,6 +77,8 @@ void for_each_rpair_i(Tuple& t, F&& f) {
         for_each_impl<std::tuple_size<Tuple>::value - 2, Tuple, F>::for_each_rpair_i(t, std::forward<F>(f));
     }
 }
+
+} //end of namespace detail
 
 } //end of namespace dll
 
