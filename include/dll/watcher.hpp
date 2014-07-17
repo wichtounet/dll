@@ -58,7 +58,7 @@ struct default_dbn_watcher {
     }
 
     void epoch_end(std::size_t epoch, const DBN&){
-        printf("epoch %ld\n finished", epoch);
+        printf("epoch %ld finished\n", epoch);
     }
 
     void training_end(const DBN&){

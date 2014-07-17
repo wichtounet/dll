@@ -26,13 +26,15 @@ struct dbn_trainer {
     template<typename R>
     using watcher_t = typename dbn_t::template watcher_t<R>;
 
-    template<typename Label>
-    typename dbn_t::weight train(DBN& dbn, const std::vector<vector<weight>>& training_data, std::vector<Label>& labels, size_t max_epochs, size_t batch_size) const {
+    template<typename T, typename Label>
+    typename dbn_t::weight train(DBN& dbn, const std::vector<vector<T>>& training_data, std::vector<Label>& labels, size_t max_epochs, size_t batch_size) const {
         watcher_t<dbn_t> watcher;
 
         watcher.training_begin(dbn);
 
         auto trainer = make_unique<trainer_t<dbn_t>>(dbn);
+
+        trainer->init_training(batch_size);
 
         //Compute the number of batches
         auto batches = training_data.size() / batch_size + (training_data.size() % batch_size == 0 ? 0 : 1);
@@ -45,15 +47,15 @@ struct dbn_trainer {
                 auto end = std::min(start + batch_size, training_data.size());
 
                 dll::batch<vector<typename dbn_t::weight>> data_batch(training_data.begin() + start, training_data.begin() + end);
-                dll::batch<Label> label_batch(labels.begin() + start, labels.begin() + end),
+                dll::batch<Label> label_batch(labels.begin() + start, labels.begin() + end);
 
-                trainer->train_batch(epoch, data_batch, label_batch, dbn);
+                trainer->train_batch(epoch, data_batch, label_batch);
             }
 
             watcher.epoch_end(epoch, dbn);
         }
 
-        watcher.training_end(rbm);
+        watcher.training_end(dbn);
 
         return 0.0; //TODO
     }

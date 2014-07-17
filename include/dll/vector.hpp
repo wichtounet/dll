@@ -54,7 +54,9 @@ public:
     }
 
     ~vector(){
-        delete[] _data;
+        if(_data){
+            delete[] _data;
+        }
     }
 
     //Modifiers

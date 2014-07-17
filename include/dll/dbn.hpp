@@ -13,6 +13,7 @@
 #include "rbm.hpp"
 #include "vector.hpp"
 #include "tuple_utils.hpp"
+#include "dbn_trainer.hpp"
 #include "conjugate_gradient.hpp"
 
 namespace dll {
@@ -50,25 +51,23 @@ struct check_rbm<R1> : std::integral_constant<bool, R1::DBN> {};
  */
 template<typename... Layers>
 struct dbn {
-private:
+    static_assert(detail::check_rbm<Layers...>::value, "RBM must be in DBN mode");
+
     typedef std::tuple<rbm<Layers>...> tuple_type;
     tuple_type tuples;
+
+    static constexpr const std::size_t layers = sizeof...(Layers);
 
     template <std::size_t N>
     using rbm_type = typename std::tuple_element<N, tuple_type>::type;
 
-    static constexpr const std::size_t layers = sizeof...(Layers);
-
-    typedef typename rbm_type<0>::weight weight;
-
-    static_assert(detail::check_rbm<Layers...>::value, "RBM must be in DBN mode");
-
-public:
     template<typename DBN>
     using watcher_t = default_dbn_watcher<DBN>;
 
     template<typename DBN>
     using trainer_t = cg_trainer<DBN>;
+
+    using weight = typename rbm_type<0>::weight;
 
     //No arguments by default
     dbn(){};
@@ -753,38 +752,11 @@ public:
     }
 
     template<typename Label>
-    void fine_tune(const std::vector<vector<weight>>& training_data, std::vector<Label>& labels, size_t epochs, size_t batch_size){
-        stop_watch<std::chrono::seconds> watch;
+    weight fine_tune(const std::vector<vector<weight>>& training_data, std::vector<Label>& labels, size_t max_epochs, size_t batch_size){
+        typedef typename std::remove_reference<decltype(*this)>::type this_type;
 
-        auto batches = training_data.size() / batch_size + (training_data.size() % batch_size == 0 ? 0 : 1);
-
-        detail::for_each(tuples, [batch_size](auto& rbm){
-            typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
-            constexpr const auto num_hidden = rbm_t::num_hidden;
-
-            for(size_t i = 0; i < batch_size; ++i){
-                rbm.gr_probs_a.emplace_back(num_hidden);
-                rbm.gr_probs_s.emplace_back(num_hidden);
-            }
-        });
-
-        for(size_t epoch = 0; epoch < epochs; ++epoch){
-            for(size_t i = 0; i < batches; ++i){
-                auto start = i * batch_size;
-                auto end = std::min(start + batch_size, training_data.size());
-
-                gradient_context<Label> context(
-                    batch<vector<weight>>(training_data.begin() + start, training_data.begin() + end),
-                    batch<Label>(labels.begin() + start, labels.begin() + end),
-                    epoch);
-
-                minimize(context);
-
-                std::cout << "epoch(" << epoch << ") batch:" << i << "/" << batches << std::endl;
-            }
-        }
-
-        std::cout << "Fine-tuning took " << watch.elapsed() << "s" << std::endl;
+        dll::dbn_trainer<this_type> trainer;
+        return trainer.train(*this, training_data, labels, max_epochs, batch_size);
     }
 };
 
