@@ -296,13 +296,15 @@ private:
 
     using base_cd_trainer<RBM>::q_batch;
 
+    rbm_t& rbm;
+
 public:
-    cd_trainer() : base_cd_trainer<RBM>() {
+    cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(), rbm(rbm) {
         //Nothing else to init here
     }
 
     template<typename T>
-    weight train_batch(const dll::batch<T>& batch, RBM& rbm){
+    weight train_batch(const dll::batch<T>& batch){
         dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<rbm_t>::batch_size()), "Invalid size");
         dll_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
 
@@ -396,13 +398,15 @@ private:
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_pos;
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_neg;
 
+    rbm_t& rbm;
+
 public:
-    cd_trainer() : base_cd_trainer<RBM>() {
+    cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(), rbm(rbm) {
         //Nothing else to init here
     }
 
     template<typename T>
-    weight train_batch(const dll::batch<T>& batch, RBM& rbm){
+    weight train_batch(const dll::batch<T>& batch){
         dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<rbm_t>::batch_size()), "Invalid size");
         dll_assert(batch[0].size() == rbm_t::NV * rbm_t::NV, "The size of the training sample must match visible units");
 
@@ -504,15 +508,17 @@ private:
 
     bool init = true;
 
+    rbm_t& rbm;
+
 public:
-    persistent_cd_trainer() : base_cd_trainer<RBM>(),
+    persistent_cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(),
             p_h_a(rbm_traits<rbm_t>::batch_size()),
-            p_h_s(rbm_traits<rbm_t>::batch_size()) {
+            p_h_s(rbm_traits<rbm_t>::batch_size()), rbm(rbm) {
         //Nothing else to init here
     }
 
     template<typename T>
-    weight train_batch(const dll::batch<T>& batch, RBM& rbm){
+    weight train_batch(const dll::batch<T>& batch){
         dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<rbm_t>::batch_size()), "Invalid size");
         dll_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
 
@@ -623,15 +629,17 @@ private:
 
     bool init = true;
 
+    rbm_t& rbm;
+
 public:
-    persistent_cd_trainer() : base_cd_trainer<RBM>(),
+    persistent_cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(),
             p_h_a(rbm_traits<rbm_t>::batch_size()),
-            p_h_s(rbm_traits<rbm_t>::batch_size()) {
+            p_h_s(rbm_traits<rbm_t>::batch_size()), rbm(rbm) {
         //Nothing else to init here
     }
 
     template<typename T>
-    weight train_batch(const dll::batch<T>& batch, RBM& rbm){
+    weight train_batch(const dll::batch<T>& batch){
         dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<rbm_t>::batch_size()), "Invalid size");
         dll_assert(batch[0].size() == NV * NV, "The size of the training sample must match visible units");
 

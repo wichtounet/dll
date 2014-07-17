@@ -51,7 +51,7 @@ struct rbm_trainer {
         //Some RBM may init weights based on the training data
         init_weights(rbm, training_data);
 
-        auto trainer = make_unique<trainer_t<rbm_t>>();
+        auto trainer = make_unique<trainer_t<rbm_t>>(rbm);
 
         //Compute the number of batches
         auto batch_size = rbm_traits<rbm_t>::batch_size();
@@ -69,7 +69,7 @@ struct rbm_trainer {
                 auto end = std::min(start + batch_size, training_data.size());
 
                 dll::batch<vector<typename rbm_t::weight>> batch(training_data.begin() + start, training_data.begin() + end);
-                error += trainer->train_batch(batch, rbm);
+                error += trainer->train_batch(batch);
             }
 
             last_error = error / batches;
