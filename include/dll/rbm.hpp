@@ -10,6 +10,6 @@
 
 #include "dll/rbm.inl"
 #include "dll/layer.hpp"
-#include "dll/generic_trainer.hpp"
+#include "dll/rbm_trainer.hpp"
 
 #endif

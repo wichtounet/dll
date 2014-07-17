@@ -10,6 +10,6 @@
 
 #include "dll/conv_rbm_mp.inl"
 #include "dll/conv_mp_layer.hpp"
-#include "dll/generic_trainer.hpp"
+#include "dll/rbm_trainer.hpp"
 
 #endif

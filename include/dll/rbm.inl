@@ -28,7 +28,7 @@
 namespace dll {
 
 template<typename RBM>
-struct generic_trainer;
+struct rbm_trainer;
 
 /*!
  * \brief Standard version of Restricted Boltzmann Machine
@@ -151,7 +151,7 @@ public:
     double train(const std::vector<vector<weight>>& training_data, std::size_t max_epochs){
         typedef typename std::remove_reference<decltype(*this)>::type this_type;
 
-        dll::generic_trainer<this_type> trainer;
+        dll::rbm_trainer<this_type> trainer;
         return trainer.train(*this, training_data, max_epochs);
     }
 

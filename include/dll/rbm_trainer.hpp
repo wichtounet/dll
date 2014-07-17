@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_GENERIC_TRAINER_HPP
-#define DBN_GENERIC_TRAINER_HPP
+#ifndef DBN_RBM_TRAINER_HPP
+#define DBN_RBM_TRAINER_HPP
 
 #include "decay_type.hpp"
 #include "utils.hpp"
@@ -15,8 +15,14 @@
 
 namespace dll {
 
+/*!
+ * \brief A generic trainer for Restricted Boltzmann Machine
+ *
+ * This trainer use the specified trainer of the RBM to perform unsupervised
+ * training.
+ */
 template<typename RBM>
-struct generic_trainer {
+struct rbm_trainer {
     using rbm_t = RBM;
 
     template<typename R>
