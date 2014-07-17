@@ -206,15 +206,6 @@ struct cg_trainer {
         return finite;
     }
 
-    template<typename C1, typename C2>
-    static weight dot(const C1& c1, const C2& c2){
-        weight d = 0.0;
-        for(size_t i = 0; i < c1.size(); ++i){
-            d += c1[i] * c2[i];
-        }
-        return d;
-    }
-
     weight s_dot_s(){
         weight acc = 0.0;
         detail::for_each(tuples, [&acc](auto& rbm){
