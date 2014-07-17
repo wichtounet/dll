@@ -17,7 +17,7 @@ struct cg_trainer {
     using dbn_t = DBN;
 
     template<typename T, typename L>
-    void train_batch(std::size_t epoch, const dll::batch<T>& data_batch, const dll::batch<L>& label_batch, DBN& dbn){
+    void train_batch(std::size_t, const dll::batch<T>&, const dll::batch<L>&, DBN&){
         //TODO :)
     }
 };
