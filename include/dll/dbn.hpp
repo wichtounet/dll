@@ -200,7 +200,7 @@ struct dbn {
 
             next.reserve(static_cast<const training_t&>(input).size());
 
-            rbm.train(input, max_epochs);
+            rbm.train(static_cast<const training_t&>(input), max_epochs);
 
             if(I < layers - 1){
                 auto append_labels = (I + 1 == layers - 1);
