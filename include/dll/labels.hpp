@@ -14,9 +14,12 @@ namespace dll {
 
 template<typename V>
 struct fake_label_array {
-    V value;
+    using value_type = V;
+    using this_type = fake_label_array<value_type>;
 
-    fake_label_array(V v) : value(v) {}
+    value_type value;
+
+    fake_label_array(value_type v) : value(v) {}
 
     double operator[](size_t i) const {
         if(i == value){

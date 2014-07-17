@@ -57,8 +57,8 @@ struct default_dbn_watcher {
         std::cout << "Start fine-tuning" << std::endl;
     }
 
-    void epoch_end(std::size_t epoch, const DBN&){
-        printf("epoch %ld finished\n", epoch);
+    void epoch_end(std::size_t epoch, double error, const DBN&){
+        printf("epoch %ld - Classification error: %.5f \n", epoch, error);
     }
 
     void training_end(const DBN&){

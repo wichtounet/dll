@@ -39,7 +39,7 @@ struct deep_label_predictor {
 };
 
 template<typename DBN, typename Functor, typename Label>
-double test_set(DBN& dbn, std::vector<vector<double>>& images, const std::vector<Label>& labels, Functor&& f){
+double test_set(DBN& dbn, const std::vector<vector<double>>& images, const std::vector<Label>& labels, Functor&& f){
     stop_watch<std::chrono::milliseconds> watch;
 
     size_t success = 0;

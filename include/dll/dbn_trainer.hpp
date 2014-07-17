@@ -8,6 +8,9 @@
 #ifndef DBN_DBN_TRAINER_HPP
 #define DBN_DBN_TRAINER_HPP
 
+#include "dll/labels.hpp"
+#include "dll/test.hpp"
+
 namespace dll {
 
 /*!
@@ -34,10 +37,16 @@ struct dbn_trainer {
 
         auto trainer = make_unique<trainer_t<dbn_t>>(dbn);
 
+        auto fake_labels = dll::make_fake(labels);
+
+        using fake_label_t = typename std::remove_reference<decltype(*fake_labels.begin())>::type::this_type;
+
         trainer->init_training(batch_size);
 
         //Compute the number of batches
         auto batches = training_data.size() / batch_size + (training_data.size() % batch_size == 0 ? 0 : 1);
+
+        typename dbn_t::weight error = 0.0;
 
         //Train for max_epochs epoch
         for(size_t epoch= 0; epoch < max_epochs; ++epoch){
@@ -47,17 +56,19 @@ struct dbn_trainer {
                 auto end = std::min(start + batch_size, training_data.size());
 
                 dll::batch<vector<typename dbn_t::weight>> data_batch(training_data.begin() + start, training_data.begin() + end);
-                dll::batch<Label> label_batch(labels.begin() + start, labels.begin() + end);
+                dll::batch<fake_label_t> label_batch(fake_labels.begin() + start, fake_labels.begin() + end);
 
                 trainer->train_batch(epoch, data_batch, label_batch);
             }
 
-            watcher.epoch_end(epoch, dbn);
+            error = test_set(dbn, training_data, labels, [](dbn_t& dbn, auto& image){return dbn.predict(image);});
+
+            watcher.epoch_end(epoch, error, dbn);
         }
 
         watcher.training_end(dbn);
 
-        return 0.0; //TODO
+        return error;
     }
 };
 

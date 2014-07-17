@@ -3,8 +3,6 @@
 #include "dll/rbm.hpp"
 #include "dll/dbn.hpp"
 #include "dll/vector.hpp"
-#include "dll/labels.hpp"
-#include "dll/test.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -23,14 +21,10 @@ TEST_CASE( "dbn/mnist_1", "rbm::simple" ) {
 
     mnist::binarize_dataset(dataset);
 
-    auto labels = dll::make_fake(dataset.training_labels);
-
     auto dbn = make_unique<dbn_t>();
 
     dbn->pretrain(dataset.training_images, 5);
-    dbn->fine_tune(dataset.training_images, labels, 5, 50);
-
-    auto error = test_set(dbn, dataset.training_images, dataset.training_labels, dll::predictor());
+    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 5, 50);
 
     REQUIRE(error < 5e-2);
 }
