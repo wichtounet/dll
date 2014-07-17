@@ -13,6 +13,7 @@
 #include "rbm.hpp"
 #include "vector.hpp"
 #include "tuple_utils.hpp"
+#include "conjugate_gradient.hpp"
 
 namespace dll {
 
@@ -63,6 +64,12 @@ private:
     static_assert(detail::check_rbm<Layers...>::value, "RBM must be in DBN mode");
 
 public:
+    template<typename DBN>
+    using watcher_t = default_dbn_watcher<DBN>;
+
+    template<typename DBN>
+    using trainer_t = cg_trainer<DBN>;
+
     //No arguments by default
     dbn(){};
 

@@ -49,6 +49,23 @@ struct default_watcher {
     }
 };
 
+template<typename DBN>
+struct default_dbn_watcher {
+    stop_watch<std::chrono::seconds> watch;
+
+    void training_begin(const DBN&){
+        std::cout << "Start fine-tuning" << std::endl;
+    }
+
+    void epoch_end(std::size_t epoch, const DBN&){
+        printf("epoch %ld\n finished", epoch);
+    }
+
+    void training_end(const DBN&){
+        std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
+    }
+};
+
 template<typename RBM>
 struct histogram_watcher {
     default_watcher<RBM> parent;
