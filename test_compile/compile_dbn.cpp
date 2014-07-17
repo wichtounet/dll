@@ -6,7 +6,7 @@ void test_dbn(){
 
     dbn.display();
 
-    std::vector<vector<double>> images;
+    std::vector<etl::dyn_vector<double>> images;
     std::vector<uint8_t> labels;
 
     dbn.pretrain(images, 10);

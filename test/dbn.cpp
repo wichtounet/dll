@@ -2,7 +2,6 @@
 
 #include "dll/rbm.hpp"
 #include "dll/dbn.hpp"
-#include "dll/vector.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -13,7 +12,7 @@ TEST_CASE( "dbn/mnist_1", "rbm::simple" ) {
         dll::layer<100, 200, dll::in_dbn, dll::momentum, dll::batch_size<25>>,
         dll::layer<200, 10, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>> dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
     REQUIRE(!dataset.training_images.empty());
     dataset.training_images.resize(200);

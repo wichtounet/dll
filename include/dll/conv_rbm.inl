@@ -13,6 +13,7 @@
 #include <random>
 
 #include "etl/fast_vector.hpp"
+#include "etl/dyn_vector.hpp"
 #include "etl/fast_matrix.hpp"
 #include "etl/convolution.hpp"
 
@@ -23,7 +24,6 @@
 #include "stop_watch.hpp"         //Performance counter
 #include "math.hpp"               //Logistic sigmoid
 #include "io.hpp"                 //Binary load/store functions
-#include "vector.hpp"             //For samples
 #include "tmp.hpp"
 
 namespace dll {

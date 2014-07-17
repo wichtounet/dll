@@ -11,7 +11,6 @@
 #include <tuple>
 
 #include "rbm.hpp"
-#include "vector.hpp"
 #include "tuple_utils.hpp"
 #include "dbn_trainer.hpp"
 #include "conjugate_gradient.hpp"
@@ -120,12 +119,22 @@ struct dbn {
      * \brief Pretrain the network by training all layers in an unsupervised
      * manner.
      */
-    void pretrain(const std::vector<vector<weight>>& training_data, std::size_t max_epochs){
-        typedef std::vector<vector<weight>> training_t;
+    template<typename Samples>
+    void pretrain(const Samples& training_data, std::size_t max_epochs){
+        using training_t = std::vector<etl::dyn_vector<typename Samples::value_type::value_type>>;
+
+        //Convert data to an useful form
+        training_t data;
+        data.reserve(training_data.size());
+
+        for(auto& sample : training_data){
+            data.emplace_back(sample);
+        }
+
         training_t next_a;
         training_t next_s;
 
-        auto input = std::ref(training_data);
+        auto input = std::ref(data);
 
         detail::for_each_i(tuples, [&input, &next_a, &next_s, max_epochs](std::size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
@@ -156,7 +165,7 @@ struct dbn {
                         rbm.activate_hidden(next_a[i], next_s[i], static_cast<const training_t&>(input)[i], static_cast<const training_t&>(input)[i]);
                     }
 
-                    input = std::cref(next_a);
+                    input = std::ref(next_a);
                 }
             }
         });
@@ -166,14 +175,22 @@ struct dbn {
 
     /*{{{ With labels */
 
-    template<typename Label>
-    void train_with_labels(const std::vector<vector<weight>>& training_data, const std::vector<Label>& training_labels, std::size_t labels, std::size_t max_epochs){
+    template<typename Samples, typename Labels>
+    void train_with_labels(const Samples& training_data, const Labels& training_labels, std::size_t labels, std::size_t max_epochs){
         dll_assert(training_data.size() == training_labels.size(), "There must be the same number of values than labels");
         dll_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
-        auto input = std::cref(training_data);
+        using training_t = std::vector<etl::dyn_vector<typename Samples::value_type::value_type>>;
 
-        typedef std::vector<vector<weight>> training_t;
+        //Convert data to an useful form
+        training_t data;
+        data.reserve(training_data.size());
+
+        for(auto& sample : training_data){
+            data.emplace_back(sample);
+        }
+
+        auto input = std::cref(data);
 
         detail::for_each_i(tuples, [&input, &training_labels, labels, max_epochs](size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
@@ -189,8 +206,8 @@ struct dbn {
                 auto append_labels = (I + 1 == layers - 1);
 
                 for(auto& training_item : static_cast<const training_t&>(input)){
-                    vector<weight> next_item_a(num_hidden + (append_labels ? labels : 0));
-                    vector<weight> next_item_s(num_hidden + (append_labels ? labels : 0));
+                    etl::dyn_vector<weight> next_item_a(num_hidden + (append_labels ? labels : 0));
+                    etl::dyn_vector<weight> next_item_s(num_hidden + (append_labels ? labels : 0));
                     rbm.activate_hidden(next_item_a, next_item_s, training_item, training_item);
                     next.emplace_back(std::move(next_item_a));
                 }
@@ -212,11 +229,13 @@ struct dbn {
     }
 
     template<typename TrainingItem>
-    size_t predict_labels(const TrainingItem& item, std::size_t labels){
+    size_t predict_labels(const TrainingItem& item_data, std::size_t labels){
         dll_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
-        vector<weight> output_a(num_visible<layers - 1>());
-        vector<weight> output_s(num_visible<layers - 1>());
+        etl::dyn_vector<typename TrainingItem::value_type> item(item_data);
+
+        etl::dyn_vector<weight> output_a(num_visible<layers - 1>());
+        etl::dyn_vector<weight> output_s(num_visible<layers - 1>());
 
         auto input_ref = std::cref(item);
 
@@ -224,17 +243,17 @@ struct dbn {
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
             constexpr const auto num_hidden = rbm_t::num_hidden;
 
-            auto& input = static_cast<const vector<weight>&>(input_ref);
+            auto& input = static_cast<const etl::dyn_vector<weight>&>(input_ref);
 
             if(I == layers - 1){
-                static vector<weight> h1_a(num_hidden);
-                static vector<weight> h1_s(num_hidden);
+                static etl::dyn_vector<weight> h1_a(num_hidden);
+                static etl::dyn_vector<weight> h1_s(num_hidden);
 
                 rbm.activate_hidden(h1_a, h1_s, input, input);
                 rbm.activate_visible(h1_a, h1_s, output_a, output_s);
             } else {
-                static vector<weight> next_a(num_hidden);
-                static vector<weight> next_s(num_hidden);
+                static etl::dyn_vector<weight> next_a(num_hidden);
+                static etl::dyn_vector<weight> next_s(num_hidden);
 
                 rbm.activate_hidden(next_a, next_s, input, input);
 
@@ -267,8 +286,11 @@ struct dbn {
 
     /*{{{ Predict */
 
-    vector<weight> predict_weights(const vector<weight>& item){
-        vector<weight> result(num_hidden<layers - 1>());
+    template<typename Sample>
+    etl::dyn_vector<weight> predict_weights(const Sample& item_data){
+        etl::dyn_vector<weight> result(num_hidden<layers - 1>());
+
+        etl::dyn_vector<typename Sample::value_type> item(item_data);
 
         auto input = std::cref(item);
 
@@ -276,11 +298,11 @@ struct dbn {
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
             constexpr const auto num_hidden = rbm_t::num_hidden;
 
-            static vector<weight> next(num_hidden);
-            static vector<weight> next_s(num_hidden);
+            static etl::dyn_vector<weight> next(num_hidden);
+            static etl::dyn_vector<weight> next_s(num_hidden);
             auto& output = (I == layers - 1) ? result : next;
 
-            rbm.activate_hidden(output, next_s, static_cast<const vector<weight>&>(input), static_cast<const vector<weight>&>(input));
+            rbm.activate_hidden(output, next_s, static_cast<const Sample&>(input), static_cast<const Sample&>(input));
 
             input = std::cref(next);
         });
@@ -288,7 +310,8 @@ struct dbn {
         return result;
     }
 
-    size_t predict_final(const vector<weight>& result){
+    template<typename Weights>
+    size_t predict_final(const Weights& result){
         size_t label = 0;
         weight max = 0;
         for(size_t l = 0; l < result.size(); ++l){
@@ -303,15 +326,16 @@ struct dbn {
         return label;
     }
 
-    size_t predict(const vector<weight>& item){
+    template<typename Sample>
+    size_t predict(const Sample& item){
         auto result = predict_weights(item);
         return predict_final(result);;
     }
 
     /*}}}*/
 
-    template<typename Label>
-    weight fine_tune(const std::vector<vector<weight>>& training_data, std::vector<Label>& labels, size_t max_epochs, size_t batch_size){
+    template<typename Samples, typename Labels>
+    weight fine_tune(const Samples& training_data, Labels& labels, size_t max_epochs, size_t batch_size){
         typedef typename std::remove_reference<decltype(*this)>::type this_type;
 
         dll::dbn_trainer<this_type> trainer;

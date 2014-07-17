@@ -1,13 +1,15 @@
+#include "etl/dyn_vector.hpp"
+
 #include "dll/conv_rbm.hpp"
 
 template<typename RBM>
 void test_rbm(){
     RBM rbm;
 
-    vector<double> test(28 * 28, 1.0);
+    etl::dyn_vector<double> test(28 * 28, 1.0);
     rbm.reconstruct(test);
 
-    std::vector<vector<double>> test_full;
+    std::vector<etl::dyn_vector<double>> test_full;
     rbm.train(test_full, 40);
 }
 

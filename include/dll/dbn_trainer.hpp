@@ -37,14 +37,26 @@ struct dbn_trainer {
 
         auto trainer = make_unique<trainer_t<dbn_t>>(dbn);
 
-        auto fake_labels = dll::make_fake(labels);
-
-        using fake_label_t = typename std::remove_reference<decltype(fake_labels)>::type;
-
+        //Initialize the trainer if necessary
         trainer->init_training(batch_size);
 
+        //Convert labels to an useful form
+        auto fake_labels = dll::make_fake(labels);
+
+        //Get types for the batch
+        using fake_label_t = typename std::remove_reference<decltype(fake_labels)>::type;
+        using samples_t = std::vector<etl::dyn_vector<typename Samples::value_type::value_type>>;
+
+        //Convert data to an useful form
+        samples_t data;
+        data.reserve(training_data.size());
+
+        for(auto& sample : training_data){
+            data.emplace_back(sample);
+        }
+
         //Compute the number of batches
-        auto batches = training_data.size() / batch_size + (training_data.size() % batch_size == 0 ? 0 : 1);
+        auto batches = data.size() / batch_size + (data.size() % batch_size == 0 ? 0 : 1);
 
         typename dbn_t::weight error = 0.0;
 
@@ -53,15 +65,15 @@ struct dbn_trainer {
             //Train one mini-batch at a time
             for(size_t i = 0; i < batches; ++i){
                 auto start = i * batch_size;
-                auto end = std::min(start + batch_size, training_data.size());
+                auto end = std::min(start + batch_size, data.size());
 
-                dll::batch<Samples> data_batch(training_data.begin() + start, training_data.begin() + end);
+                dll::batch<samples_t> data_batch(data.begin() + start, data.begin() + end);
                 dll::batch<fake_label_t> label_batch(fake_labels.begin() + start, fake_labels.begin() + end);
 
                 trainer->train_batch(epoch, data_batch, label_batch);
             }
 
-            error = test_set(dbn, training_data, labels, [](dbn_t& dbn, auto& image){return dbn.predict(image);});
+            error = test_set(dbn, data, labels, [](dbn_t& dbn, auto& image){return dbn.predict(image);});
 
             watcher.epoch_end(epoch, error, dbn);
         }

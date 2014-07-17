@@ -127,7 +127,7 @@ struct cg_trainer {
             auto& target = context.targets[sample];
 
             detail::for_each_i(tuples, [&input,&output,sample](std::size_t I, auto& rbm){
-                auto& output_ref = static_cast<vector<weight>&>(output);
+                auto& output_ref = static_cast<etl::dyn_vector<weight>&>(output);
 
                 if(I == 0){
                     rbm.template gr_activate_hidden<Temp>(output_ref, rbm.gr_probs_s[sample], input, input);
@@ -157,7 +157,7 @@ struct cg_trainer {
         cost = -cost;
 
         //Get pointers to the different gr_probs
-        std::array<std::vector<vector<weight>>*, layers> probs_refs;
+        std::array<std::vector<etl::dyn_vector<weight>>*, layers> probs_refs;
         detail::for_each_i(tuples, [&probs_refs](std::size_t I, auto& rbm){
             probs_refs[I] = &rbm.gr_probs_a;
         });

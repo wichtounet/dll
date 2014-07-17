@@ -16,11 +16,11 @@
 
 #include "etl/fast_matrix.hpp"
 #include "etl/fast_vector.hpp"
+#include "etl/dyn_vector.hpp"
 
 #include "rbm_base.hpp"      //The base class
 #include "stop_watch.hpp"    //Performance counter
 #include "assert.hpp"
-#include "vector.hpp"
 #include "base_conf.hpp"
 #include "math.hpp"
 #include "io.hpp"
@@ -101,8 +101,8 @@ public:
     etl::fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_tmp;
     etl::fast_vector<weight, num_hidden_gra> gr_b_tmp;
 
-    std::vector<vector<weight>> gr_probs_a;
-    std::vector<vector<weight>> gr_probs_s;
+    std::vector<etl::dyn_vector<weight>> gr_probs_a;
+    std::vector<etl::dyn_vector<weight>> gr_probs_s;
 
 public:
     //No copying
