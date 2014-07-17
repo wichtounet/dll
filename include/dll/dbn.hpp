@@ -127,6 +127,10 @@ public:
 
     /*{{{ Pretrain */
 
+    /*!
+     * \brief Pretrain the network by training all layers in an unsupervised
+     * manner.
+     */
     void pretrain(const std::vector<vector<weight>>& training_data, std::size_t max_epochs){
         typedef std::vector<vector<weight>> training_t;
         training_t next_a;
