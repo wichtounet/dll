@@ -30,9 +30,9 @@ struct fake_label_array {
     }
 };
 
-template<typename T>
-std::vector<fake_label_array<T>> make_fake(const std::vector<T>& values){
-    std::vector<fake_label_array<T>> fake;
+template<typename Labels>
+std::vector<fake_label_array<typename Labels::value_type>> make_fake(const Labels& values){
+    std::vector<fake_label_array<typename Labels::value_type>> fake;
     fake.reserve(values.size());
 
     for(auto v: values){
