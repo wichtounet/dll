@@ -254,17 +254,25 @@ struct dbn {
             } else {
                 static etl::dyn_vector<weight> next_a(num_hidden);
                 static etl::dyn_vector<weight> next_s(num_hidden);
+                static etl::dyn_vector<weight> big_next_a(num_hidden + labels);
 
                 rbm.activate_hidden(next_a, next_s, input, input);
 
                 //If the next layers is the last layer
                 if(I + 1 == layers - 1){
-                    for(size_t l = 0; l < labels; ++l){
-                        next_a[num_hidden + l] = 0.1;
+                    for(std::size_t i = 0; i < next_a.size(); ++i){
+                        big_next_a[i] = next_a[i];
                     }
+
+                    for(size_t l = 0; l < labels; ++l){
+                        big_next_a[num_hidden + l] = 0.1;
+                    }
+
+                    input_ref = std::cref(big_next_a);
+                } else {
+                    input_ref = std::cref(next_a);
                 }
 
-                input_ref = std::cref(next_a);
             }
         });
 
