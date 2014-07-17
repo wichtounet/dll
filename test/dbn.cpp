@@ -32,5 +32,5 @@ TEST_CASE( "dbn/mnist_1", "rbm::simple" ) {
 
     auto error = test_set(dbn, dataset.training_images, dataset.training_labels, dll::predictor());
 
-    REQUIRE(error < 1e-2);
+    REQUIRE(error < 5e-2);
 }
