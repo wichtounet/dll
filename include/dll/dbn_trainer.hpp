@@ -29,8 +29,8 @@ struct dbn_trainer {
     template<typename R>
     using watcher_t = typename dbn_t::template watcher_t<R>;
 
-    template<typename T, typename Label>
-    typename dbn_t::weight train(DBN& dbn, const std::vector<vector<T>>& training_data, std::vector<Label>& labels, size_t max_epochs, size_t batch_size) const {
+    template<typename Samples, typename Labels>
+    typename dbn_t::weight train(DBN& dbn, const Samples& training_data, Labels& labels, size_t max_epochs, size_t batch_size) const {
         watcher_t<dbn_t> watcher;
 
         watcher.training_begin(dbn);
@@ -39,7 +39,7 @@ struct dbn_trainer {
 
         auto fake_labels = dll::make_fake(labels);
 
-        using fake_label_t = typename std::remove_reference<decltype(*fake_labels.begin())>::type::this_type;
+        using fake_label_t = typename std::remove_reference<decltype(fake_labels)>::type;
 
         trainer->init_training(batch_size);
 
@@ -55,7 +55,7 @@ struct dbn_trainer {
                 auto start = i * batch_size;
                 auto end = std::min(start + batch_size, training_data.size());
 
-                dll::batch<vector<typename dbn_t::weight>> data_batch(training_data.begin() + start, training_data.begin() + end);
+                dll::batch<Samples> data_batch(training_data.begin() + start, training_data.begin() + end);
                 dll::batch<fake_label_t> label_batch(fake_labels.begin() + start, fake_labels.begin() + end);
 
                 trainer->train_batch(epoch, data_batch, label_batch);

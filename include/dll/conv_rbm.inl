@@ -228,7 +228,8 @@ public:
         }
     }
 
-    weight train(const std::vector<vector<weight>>& training_data, std::size_t max_epochs){
+    template<typename Samples>
+    weight train(const Samples& training_data, std::size_t max_epochs){
         typedef typename std::remove_reference<decltype(*this)>::type this_type;
 
         dll::rbm_trainer<this_type> trainer;
@@ -245,7 +246,8 @@ public:
 
     //Utility functions
 
-    void reconstruct(const vector<weight>& items){
+    template<typename Sample>
+    void reconstruct(const Sample& items){
         dll_assert(items.size() == NV * NV, "The size of the training sample must match visible units");
 
         stop_watch<> watch;

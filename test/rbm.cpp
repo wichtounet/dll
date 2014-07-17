@@ -1,7 +1,6 @@
 #include "catch.hpp"
 
 #include "dll/rbm.hpp"
-#include "dll/vector.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -12,7 +11,7 @@ TEST_CASE( "rbm/mnist_1", "rbm::simple" ) {
         dll::batch_size<25>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
     REQUIRE(!dataset.training_images.empty());
     dataset.training_images.resize(100);
@@ -31,7 +30,7 @@ TEST_CASE( "rbm/mnist_2", "rbm::momentum" ) {
        dll::momentum
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
     REQUIRE(!dataset.training_images.empty());
     dataset.training_images.resize(100);
@@ -51,7 +50,7 @@ TEST_CASE( "rbm/mnist_3", "rbm::pcd_trainer" ) {
         dll::trainer<dll::pcd1_trainer_t>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
     REQUIRE(!dataset.training_images.empty());
     dataset.training_images.resize(100);
@@ -70,7 +69,7 @@ TEST_CASE( "rbm/mnist_4", "rbm::decay_l1" ) {
        dll::weight_decay<dll::decay_type::L1>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
     REQUIRE(!dataset.training_images.empty());
     dataset.training_images.resize(100);
@@ -89,7 +88,7 @@ TEST_CASE( "rbm/mnist_5", "rbm::decay_l2" ) {
        dll::weight_decay<dll::decay_type::L2>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
     REQUIRE(!dataset.training_images.empty());
     dataset.training_images.resize(100);
@@ -111,7 +110,7 @@ TEST_CASE( "rbm/mnist_6", "rbm::sparsity" ) {
     //0.01 (default) is way too low for 100 hidden units
     rbm.sparsity_target = 0.1;
 
-    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
     REQUIRE(!dataset.training_images.empty());
     dataset.training_images.resize(100);
@@ -130,7 +129,7 @@ TEST_CASE( "rbm/mnist_7", "rbm::gaussian" ) {
        dll::visible<dll::unit_type::GAUSSIAN>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
     REQUIRE(!dataset.training_images.empty());
     dataset.training_images.resize(100);
@@ -149,7 +148,7 @@ TEST_CASE( "rbm/mnist_8", "rbm::softmax" ) {
        dll::hidden<dll::unit_type::SOFTMAX>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
     REQUIRE(!dataset.training_images.empty());
     dataset.training_images.resize(100);
@@ -171,7 +170,7 @@ TEST_CASE( "rbm/mnist_9", "rbm::nrlu" ) {
        dll::hidden<dll::unit_type::RELU>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
     REQUIRE(!dataset.training_images.empty());
     dataset.training_images.resize(100);
@@ -192,7 +191,7 @@ TEST_CASE( "rbm/mnist_10", "rbm::nrlu1" ) {
 
     rbm.learning_rate *= 2.0;
 
-    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
     REQUIRE(!dataset.training_images.empty());
     dataset.training_images.resize(100);
@@ -211,7 +210,7 @@ TEST_CASE( "rbm/mnist_11", "rbm::nrlu6" ) {
        dll::hidden<dll::unit_type::RELU6>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
     REQUIRE(!dataset.training_images.empty());
     dataset.training_images.resize(100);
@@ -230,7 +229,7 @@ TEST_CASE( "rbm/mnist_12", "rbm::init_weights" ) {
        dll::init_weights
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, vector, double>();
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
     REQUIRE(!dataset.training_images.empty());
     dataset.training_images.resize(100);

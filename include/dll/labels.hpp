@@ -31,7 +31,7 @@ struct fake_label_array {
 };
 
 template<typename T>
-typename std::vector<fake_label_array<T>> make_fake(const std::vector<T>& values){
+std::vector<fake_label_array<T>> make_fake(const std::vector<T>& values){
     std::vector<fake_label_array<T>> fake;
     fake.reserve(values.size());
 

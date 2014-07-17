@@ -12,17 +12,16 @@
 
 namespace dll {
 
-template<typename Target>
+template<typename Sample, typename Label>
 struct gradient_context {
     size_t max_iterations;
     size_t epoch;
-    batch<vector<double>> inputs;
-    batch<Target> targets;
+    batch<Sample> inputs;
+    batch<Label> targets;
     size_t start_layer;
 
-    gradient_context(batch<vector<double>> i, batch<Target> t, size_t e)
-        : max_iterations(5), epoch(e), inputs(i), targets(t), start_layer(0)
-    {
+    gradient_context(batch<Sample> i, batch<Label> t, size_t e)
+        : max_iterations(5), epoch(e), inputs(i), targets(t), start_layer(0){
         //Nothing else to init
     }
 };
@@ -53,7 +52,7 @@ struct cg_trainer {
 
     template<typename T, typename L>
     void train_batch(std::size_t epoch, const dll::batch<T>& data_batch, const dll::batch<L>& label_batch){
-        gradient_context<L> context(data_batch, label_batch, epoch);
+        gradient_context<T, L> context(data_batch, label_batch, epoch);
 
         minimize(context);
     }
@@ -106,8 +105,8 @@ struct cg_trainer {
         }
     }
 
-    template<bool Temp, typename Target>
-    void gradient(const gradient_context<Target>& context, weight& cost){
+    template<bool Temp, typename Sample, typename Target>
+    void gradient(const gradient_context<Sample, Target>& context, weight& cost){
         constexpr const auto n_hidden = dbn_t::template num_hidden<layers - 1>();
         auto n_samples = context.inputs.size();
 
@@ -252,8 +251,8 @@ struct cg_trainer {
         weight x;
     };
 
-    template<typename Target>
-    void minimize(const gradient_context<Target>& context){
+    template<typename Sample, typename Target>
+    void minimize(const gradient_context<Sample, Target>& context){
         constexpr const weight INT = 0.1;       //Don't reevaluate within 0.1 of the limit of the current bracket
         constexpr const weight EXT = 3.0;       //Extrapolate maximum 3 times the current step-size
         constexpr const weight SIG = 0.1;       //Maximum allowed maximum ration between previous and new slopes

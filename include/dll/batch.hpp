@@ -15,9 +15,10 @@
 
 namespace dll {
 
-template<typename T>
+template<typename Container>
 struct batch {
-    typedef typename std::vector<T>::const_iterator const_iterator_t;
+    typedef typename Container::const_iterator const_iterator_t;
+    typedef typename Container::value_type value_type;
     typedef typename std::size_t size_type;
 
     std::pair<const_iterator_t, const_iterator_t> values;
@@ -38,7 +39,7 @@ struct batch {
         return std::distance(begin(), end());
     }
 
-    const T& operator[](size_t i) const {
+    const value_type& operator[](size_t i) const {
         return *(begin() + i);
     }
 };

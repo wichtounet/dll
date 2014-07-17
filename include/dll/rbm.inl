@@ -148,14 +148,16 @@ public:
         binary_load_all(is, c);
     }
 
-    double train(const std::vector<vector<weight>>& training_data, std::size_t max_epochs){
+    template<typename Samples>
+    double train(const Samples& training_data, std::size_t max_epochs){
         typedef typename std::remove_reference<decltype(*this)>::type this_type;
 
         dll::rbm_trainer<this_type> trainer;
         return trainer.train(*this, training_data, max_epochs);
     }
 
-    void init_weights(const std::vector<vector<weight>>& training_data){
+    template<typename Samples>
+    void init_weights(const Samples& training_data){
         //Initialize the visible biases to log(pi/(1-pi))
         for(size_t i = 0; i < num_visible; ++i){
             auto count = std::count_if(training_data.begin(), training_data.end(),
@@ -336,7 +338,8 @@ public:
         return -energy;
     }
 
-    void reconstruct(const vector<weight>& items){
+    template<typename Sample>
+    void reconstruct(const Sample& items){
         dll_assert(items.size() == num_visible, "The size of the training sample must match visible units");
 
         stop_watch<> watch;

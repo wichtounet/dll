@@ -31,17 +31,18 @@ struct rbm_trainer {
     template<typename R>
     using watcher_t = typename rbm_t::layer::template watcher_t<R>;
 
-    template<typename R = RBM, enable_if_u<rbm_traits<R>::init_weights()> = ::detail::dummy>
-    static void init_weights(RBM& rbm, const std::vector<vector<typename RBM::weight>>& training_data){
+    template<typename Samples, typename R = RBM, enable_if_u<rbm_traits<R>::init_weights()> = ::detail::dummy>
+    static void init_weights(RBM& rbm, const Samples& training_data){
         rbm.init_weights(training_data);
     }
 
-    template<typename R = RBM, disable_if_u<rbm_traits<R>::init_weights()> = ::detail::dummy>
-    static void init_weights(RBM&, const std::vector<vector<typename RBM::weight>>&){
+    template<typename Samples, typename R = RBM, disable_if_u<rbm_traits<R>::init_weights()> = ::detail::dummy>
+    static void init_weights(RBM&, const Samples&){
         //NOP
     }
 
-    typename rbm_t::weight train(RBM& rbm, const std::vector<vector<typename RBM::weight>>& training_data, std::size_t max_epochs) const {
+    template<typename Samples>
+    typename rbm_t::weight train(RBM& rbm, const Samples& training_data, std::size_t max_epochs) const {
         watcher_t<rbm_t> watcher;
 
         rbm.momentum = rbm.initial_momentum;
@@ -68,7 +69,7 @@ struct rbm_trainer {
                 auto start = i * batch_size;
                 auto end = std::min(start + batch_size, training_data.size());
 
-                dll::batch<vector<typename rbm_t::weight>> batch(training_data.begin() + start, training_data.begin() + end);
+                dll::batch<Samples> batch(training_data.begin() + start, training_data.begin() + end);
                 error += trainer->train_batch(batch);
             }
 
