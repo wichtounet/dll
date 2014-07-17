@@ -7,7 +7,7 @@ void test_dbn(){
     dbn.display();
 
     std::vector<vector<double>> images;
-    std::vector<vector<double>> labels;
+    std::vector<uint8_t> labels;
 
     dbn.pretrain(images, 10);
     dbn.fine_tune(images, labels, 10, 10);
