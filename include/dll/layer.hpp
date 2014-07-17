@@ -41,7 +41,7 @@ struct layer {
 
     /*! The type of the watched to use during training */
     template <typename RBM>
-    using watcher_t = typename detail::get_template_type<watcher<default_watcher>, Parameters...>::template type<RBM>;
+    using watcher_t = typename detail::get_template_type<watcher<default_rbm_watcher>, Parameters...>::template type<RBM>;
 
     /*! The RBM type */
     using rbm_t = rbm<layer<visibles, hiddens, Parameters...>>;

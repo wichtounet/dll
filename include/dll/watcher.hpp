@@ -18,7 +18,7 @@
 namespace dll {
 
 template<typename RBM>
-struct default_watcher {
+struct default_rbm_watcher {
     stop_watch<std::chrono::seconds> watch;
 
     void training_begin(const RBM& rbm){
@@ -68,7 +68,7 @@ struct default_dbn_watcher {
 
 template<typename RBM>
 struct histogram_watcher {
-    default_watcher<RBM> parent;
+    default_rbm_watcher<RBM> parent;
 
     void training_begin(const RBM& rbm){
         parent.training_begin(rbm);
