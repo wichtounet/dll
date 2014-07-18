@@ -262,7 +262,7 @@ public:
                         std::normal_distribution<weight> noise_distribution(0.0, 1.0);
                         auto noise = std::bind(noise_distribution, rand_engine);
 
-                        h_s(j) = std::min(std::max(0.0, x + noise()), 6.0);
+                        h_s(j) = h_a(j) + noise();
                     }
                 } else if(hidden_unit == unit_type::RELU1){
                     h_a(j) = std::min(std::max(0.0, x), 1.0);
@@ -273,7 +273,7 @@ public:
                         std::normal_distribution<weight> noise_distribution(0.0, 1.0);
                         auto noise = std::bind(noise_distribution, rand_engine);
 
-                        h_s(j) = std::min(std::max(0.0, x + noise()), 1.0);
+                        h_s(j) = h_a(j) + noise();
                     }
                 } else {
                     dll_unreachable("Invalid path");
