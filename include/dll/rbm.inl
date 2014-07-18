@@ -17,6 +17,7 @@
 #include "etl/fast_matrix.hpp"
 #include "etl/fast_vector.hpp"
 #include "etl/dyn_vector.hpp"
+#include "etl/multiplication.hpp"
 
 #include "rbm_base.hpp"      //The base class
 #include "stop_watch.hpp"    //Performance counter
@@ -190,7 +191,14 @@ public:
         h_a = 0.0;
         h_s = 0.0;
 
-        if(hidden_unit == unit_type::SOFTMAX){
+        using namespace etl;
+
+        if(hidden_unit == unit_type::BINARY){
+            static fast_matrix<weight, 1, num_hidden> t;
+
+            h_a = sigmoid(b + mmul(reshape<1, num_visible>(v_a), w, t));
+            h_s = bernoulli(h_a);
+        } else if(hidden_unit == unit_type::SOFTMAX){
             weight exp_sum = 0.0;
 
             for(size_t j = 0; j < num_hidden; ++j){
@@ -236,10 +244,7 @@ public:
                 //Total input
                 auto x = b(j) + s;
 
-                if(hidden_unit == unit_type::BINARY){
-                    h_a(j) = logistic_sigmoid(x);
-                    h_s(j) = h_a(j) > normal_generator() ? 1.0 : 0.0;
-                } else if(hidden_unit == unit_type::EXP){
+                if(hidden_unit == unit_type::EXP){
                     h_a(j) = exp(x);
                     h_s(j) = h_a(j) > normal_generator() ? 1.0 : 0.0;
                 } else if(hidden_unit == unit_type::RELU){
