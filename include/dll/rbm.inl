@@ -186,9 +186,6 @@ public:
     static void activate_hidden(H& h_a, H& h_s, const V& v_a, const V&, const B& b, const W& w){
         static std::default_random_engine rand_engine(std::time(nullptr));
 
-        h_a = 0.0;
-        h_s = 0.0;
-
         using namespace etl;
 
         static fast_matrix<weight, 1, num_hidden> t;
@@ -199,6 +196,15 @@ public:
         } else if(hidden_unit == unit_type::EXP){
             h_a = exp(b + mmul(reshape<1, num_visible>(v_a), w, t));
             h_s = bernoulli(h_a);
+        } else if(hidden_unit == unit_type::RELU){
+            h_a = max(b + mmul(reshape<1, num_visible>(v_a), w, t), 0.0);
+            h_s = logistic_noise(h_a);
+        } else if(hidden_unit == unit_type::RELU6){
+            h_a = min(max(b + mmul(reshape<1, num_visible>(v_a), w, t), 0.0), 6.0);
+            h_s = ranged_noise(h_a, 6.0);
+        } else if(hidden_unit == unit_type::RELU1){
+            h_a = min(max(b + mmul(reshape<1, num_visible>(v_a), w, t), 0.0), 1.0);
+            h_s = ranged_noise(h_a, 1.0);
         } else if(hidden_unit == unit_type::SOFTMAX){
             weight exp_sum = 0.0;
 
@@ -220,10 +226,6 @@ public:
 
                 auto x = b(j) + s;
                 h_a(j) = exp(x) / exp_sum;
-
-                dll_assert(std::isfinite(s), "NaN verify");
-                dll_assert(std::isfinite(x), "NaN verify");
-                dll_assert(std::isfinite(h_a(j)), "NaN verify");
             }
 
             std::size_t max_j = 0;
@@ -236,67 +238,22 @@ public:
             h_s = 0.0;
             h_s(max_j) = 1.0;
         } else {
-            for(size_t j = 0; j < num_hidden; ++j){
-                weight s = 0.0;
-                for(size_t i = 0; i < num_visible; ++i){
-                    s += w(i, j) * v_a[i];
-                }
-
-                //Total input
-                auto x = b(j) + s;
-
-                if(hidden_unit == unit_type::RELU){
-                    std::normal_distribution<weight> noise_distribution(0.0, logistic_sigmoid(x));
-                    auto noise = std::bind(noise_distribution, rand_engine);
-
-                    h_a(j) = std::max(0.0, x);
-                    h_s(j) = h_a(j) + noise();
-                } else if(hidden_unit == unit_type::RELU6){
-                    h_a(j) = std::min(std::max(0.0, x), 6.0);
-
-                    if(h_a(j) == 0.0 || h_a(j) == 6.0){
-                        h_s(j) = h_a(j);
-                    } else {
-                        std::normal_distribution<weight> noise_distribution(0.0, 1.0);
-                        auto noise = std::bind(noise_distribution, rand_engine);
-
-                        h_s(j) = h_a(j) + noise();
-                    }
-                } else if(hidden_unit == unit_type::RELU1){
-                    h_a(j) = std::min(std::max(0.0, x), 1.0);
-
-                    if(h_a(j) == 0.0 || h_a(j) == 1.0){
-                        h_s(j) = h_a(j);
-                    } else {
-                        std::normal_distribution<weight> noise_distribution(0.0, 1.0);
-                        auto noise = std::bind(noise_distribution, rand_engine);
-
-                        h_s(j) = h_a(j) + noise();
-                    }
-                } else {
-                    dll_unreachable("Invalid path");
-                }
-
-                dll_assert(std::isfinite(s), "NaN verify");
-                dll_assert(std::isfinite(x), "NaN verify");
-                dll_assert(std::isfinite(h_a(j)), "NaN verify");
-                dll_assert(std::isfinite(h_s(j)), "NaN verify");
-            }
+            dll_unreachable("Invalid path");
         }
+
+        nan_check_deep(h_a);
+        nan_check_deep(h_s);
     }
 
     template<typename H, typename V>
     void activate_visible(const H&, const H& h_s, V& v_a, V& v_s) const {
         static std::default_random_engine rand_engine(std::time(nullptr));
 
-        v_a = 0.0;
-        v_s = 0.0;
-
         using namespace etl;
 
-        if(visible_unit == unit_type::BINARY){
-            static fast_matrix<weight, num_visible, 1> t;
+        static fast_matrix<weight, num_visible, 1> t;
 
+        if(visible_unit == unit_type::BINARY){
             v_a = sigmoid(c + mmul(w, reshape<num_hidden, 1>(h_s), t));
             v_s = bernoulli(v_a);
         } else {
@@ -324,13 +281,11 @@ public:
                 } else {
                     dll_unreachable("Invalid path");
                 }
-
-                dll_assert(std::isfinite(s), "NaN verify");
-                dll_assert(std::isfinite(x), "NaN verify");
-                dll_assert(std::isfinite(v_a(i)), "NaN verify");
-                dll_assert(std::isfinite(v_s(i)), "NaN verify");
             }
         }
+
+        nan_check_deep(v_a);
+        nan_check_deep(v_s);
     }
 
     weight free_energy() const {
