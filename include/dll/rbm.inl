@@ -290,44 +290,48 @@ public:
     template<typename H, typename V>
     void activate_visible(const H&, const H& h_s, V& v_a, V& v_s) const {
         static std::default_random_engine rand_engine(std::time(nullptr));
-        static std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
-        static auto normal_generator = std::bind(normal_distribution, rand_engine);
 
         v_a = 0.0;
         v_s = 0.0;
 
-        for(size_t i = 0; i < num_visible; ++i){
-            weight s = 0.0;
-            for(size_t j = 0; j < num_hidden; ++j){
-                s += w(i, j) * h_s(j);
+        using namespace etl;
+
+        if(visible_unit == unit_type::BINARY){
+            static fast_matrix<weight, num_visible, 1> t;
+
+            v_a = sigmoid(c + mmul(w, reshape<num_hidden, 1>(h_s), t));
+            v_s = bernoulli(v_a);
+        } else {
+            for(size_t i = 0; i < num_visible; ++i){
+                weight s = 0.0;
+                for(size_t j = 0; j < num_hidden; ++j){
+                    s += w(i, j) * h_s(j);
+                }
+
+                //Total input
+                auto x = c(i) + s;
+
+                if(visible_unit == unit_type::GAUSSIAN){
+                    std::normal_distribution<weight> noise_distribution(0.0, 1.0);
+                    auto noise = std::bind(noise_distribution, rand_engine);
+
+                    v_a(i) = x;
+                    v_s(i) = x + noise();
+                } else if(visible_unit == unit_type::RELU){
+                    std::normal_distribution<weight> noise_distribution(0.0, logistic_sigmoid(x));
+                    auto noise = std::bind(noise_distribution, rand_engine);
+
+                    v_a(i) = std::max(0.0, x);
+                    v_s(i) = std::max(0.0, x + noise());
+                } else {
+                    dll_unreachable("Invalid path");
+                }
+
+                dll_assert(std::isfinite(s), "NaN verify");
+                dll_assert(std::isfinite(x), "NaN verify");
+                dll_assert(std::isfinite(v_a(i)), "NaN verify");
+                dll_assert(std::isfinite(v_s(i)), "NaN verify");
             }
-
-            //Total input
-            auto x = c(i) + s;
-
-            if(visible_unit == unit_type::BINARY){
-                v_a(i) = logistic_sigmoid(x);
-                v_s(i) = v_a(i) > normal_generator() ? 1.0 : 0.0;
-            } else if(visible_unit == unit_type::GAUSSIAN){
-                std::normal_distribution<weight> noise_distribution(0.0, 1.0);
-                auto noise = std::bind(noise_distribution, rand_engine);
-
-                v_a(i) = x;
-                v_s(i) = x + noise();
-            } else if(visible_unit == unit_type::RELU){
-                std::normal_distribution<weight> noise_distribution(0.0, logistic_sigmoid(x));
-                auto noise = std::bind(noise_distribution, rand_engine);
-
-                v_a(i) = std::max(0.0, x);
-                v_s(i) = std::max(0.0, x + noise());
-            } else {
-                dll_unreachable("Invalid path");
-            }
-
-            dll_assert(std::isfinite(s), "NaN verify");
-            dll_assert(std::isfinite(x), "NaN verify");
-            dll_assert(std::isfinite(v_a(i)), "NaN verify");
-            dll_assert(std::isfinite(v_s(i)), "NaN verify");
         }
     }
 
