@@ -250,7 +250,7 @@ public:
                     auto noise = std::bind(noise_distribution, rand_engine);
 
                     h_a(j) = std::max(0.0, x);
-                    h_s(j) = std::max(0.0, x + noise());
+                    h_s(j) = h_a(j) + noise();
                 } else if(hidden_unit == unit_type::RELU6){
                     h_a(j) = std::min(std::max(0.0, x), 6.0);
 
