@@ -185,18 +185,19 @@ public:
     template<typename H, typename V, typename B, typename W>
     static void activate_hidden(H& h_a, H& h_s, const V& v_a, const V&, const B& b, const W& w){
         static std::default_random_engine rand_engine(std::time(nullptr));
-        static std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
-        static auto normal_generator = std::bind(normal_distribution, rand_engine);
 
         h_a = 0.0;
         h_s = 0.0;
 
         using namespace etl;
 
-        if(hidden_unit == unit_type::BINARY){
-            static fast_matrix<weight, 1, num_hidden> t;
+        static fast_matrix<weight, 1, num_hidden> t;
 
+        if(hidden_unit == unit_type::BINARY){
             h_a = sigmoid(b + mmul(reshape<1, num_visible>(v_a), w, t));
+            h_s = bernoulli(h_a);
+        } else if(hidden_unit == unit_type::EXP){
+            h_a = exp(b + mmul(reshape<1, num_visible>(v_a), w, t));
             h_s = bernoulli(h_a);
         } else if(hidden_unit == unit_type::SOFTMAX){
             weight exp_sum = 0.0;
@@ -244,10 +245,7 @@ public:
                 //Total input
                 auto x = b(j) + s;
 
-                if(hidden_unit == unit_type::EXP){
-                    h_a(j) = exp(x);
-                    h_s(j) = h_a(j) > normal_generator() ? 1.0 : 0.0;
-                } else if(hidden_unit == unit_type::RELU){
+                if(hidden_unit == unit_type::RELU){
                     std::normal_distribution<weight> noise_distribution(0.0, logistic_sigmoid(x));
                     auto noise = std::bind(noise_distribution, rand_engine);
 
