@@ -206,37 +206,14 @@ public:
             h_a = min(max(b + mmul(reshape<1, num_visible>(v_a), w, t), 0.0), 1.0);
             h_s = ranged_noise(h_a, 1.0);
         } else if(hidden_unit == unit_type::SOFTMAX){
-            weight exp_sum = 0.0;
+            weight exp_sum = sum(exp(b + mmul(reshape<1, num_visible>(v_a), w, t)));
 
-            for(size_t j = 0; j < num_hidden; ++j){
-                weight s = 0.0;
-                for(size_t i = 0; i < num_visible; ++i){
-                    s += w(i, j) * v_a[i];
-                }
+            h_a = exp(b + mmul(reshape<1, num_visible>(v_a), w, t)) / exp_sum;
 
-                auto x = b(j) + s;
-                exp_sum += exp(x);
-            }
-
-            for(size_t j = 0; j < num_hidden; ++j){
-                weight s = 0.0;
-                for(size_t i = 0; i < num_visible; ++i){
-                    s += w(i, j) * v_a[i];
-                }
-
-                auto x = b(j) + s;
-                h_a(j) = exp(x) / exp_sum;
-            }
-
-            std::size_t max_j = 0;
-            for(size_t j = 1; j < num_hidden; ++j){
-                if(h_a(j) > h_a(max_j)){
-                    max_j = j;
-                }
-            }
+            auto max = std::max_element(h_a.begin(), h_a.end());
 
             h_s = 0.0;
-            h_s(max_j) = 1.0;
+            h_s(std::distance(h_a.begin(), max)) = 1.0;
         } else {
             dll_unreachable("Invalid path");
         }
