@@ -136,6 +136,8 @@ TEST_CASE( "rbm/mnist_7", "rbm::gaussian" ) {
        dll::visible<dll::unit_type::GAUSSIAN>
     >::rbm_t rbm;
 
+    rbm.learning_rate *= 10;
+
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
     REQUIRE(!dataset.training_images.empty());
@@ -145,7 +147,7 @@ TEST_CASE( "rbm/mnist_7", "rbm::gaussian" ) {
 
     auto error = rbm.train(dataset.training_images, 200);
 
-    REQUIRE(error < 7e-2);
+    REQUIRE(error < 1e-2);
 }
 
 TEST_CASE( "rbm/mnist_8", "rbm::softmax" ) {
