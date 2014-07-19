@@ -256,32 +256,14 @@ public:
         if(visible_unit == unit_type::BINARY){
             v_a = sigmoid(c + mmul(w, reshape<num_hidden, 1>(h_s), t));
             v_s = bernoulli(v_a);
+        } else if(visible_unit == unit_type::GAUSSIAN){
+            v_a = c + mmul(w, reshape<num_hidden, 1>(h_s), t);
+            v_s = noise(v_a);
+        } else if(visible_unit == unit_type::RELU){
+            v_a = max(c + mmul(w, reshape<num_hidden, 1>(h_s), t), 0.0);
+            v_s = noise(v_a);
         } else {
-            for(size_t i = 0; i < num_visible; ++i){
-                weight s = 0.0;
-                for(size_t j = 0; j < num_hidden; ++j){
-                    s += w(i, j) * h_s(j);
-                }
-
-                //Total input
-                auto x = c(i) + s;
-
-                if(visible_unit == unit_type::GAUSSIAN){
-                    std::normal_distribution<weight> noise_distribution(0.0, 1.0);
-                    auto noise = std::bind(noise_distribution, rand_engine);
-
-                    v_a(i) = x;
-                    v_s(i) = x + noise();
-                } else if(visible_unit == unit_type::RELU){
-                    std::normal_distribution<weight> noise_distribution(0.0, logistic_sigmoid(x));
-                    auto noise = std::bind(noise_distribution, rand_engine);
-
-                    v_a(i) = std::max(0.0, x);
-                    v_s(i) = std::max(0.0, x + noise());
-                } else {
-                    dll_unreachable("Invalid path");
-                }
-            }
+            dll_unreachable("Invalid path");
         }
 
         nan_check_deep(v_a);
