@@ -129,73 +129,36 @@ public:
 
     template<typename H, typename V>
     void activate_hidden(H& h_a, H& h_s, const V& v_a, const V&){
-        static std::default_random_engine rand_engine(std::time(nullptr));
-        static std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
-        static auto normal_generator = std::bind(normal_distribution, rand_engine);
-
-        h_a = 0.0;
-        h_s = 0.0;
-        v_cv = 0.0;
+        using namespace etl;
 
         for(size_t k = 0; k < K; ++k){
             etl::convolve_2d_valid(v_a, fflip(w(k)), v_cv(k));
 
-            for(size_t i = 0; i < NH; ++i){
-                for(size_t j = 0; j < NH; ++j){
-                    //Total input
-                    auto x = v_cv(k)(i,j) + b(k);
-
-                    if(hidden_unit == unit_type::BINARY){
-                        h_a(k)(i,j) = logistic_sigmoid(x);
-                        h_s(k)(i,j) = h_a(k)(i,j) > normal_generator() ? 1.0 : 0.0;
-                    } else if(hidden_unit == unit_type::RELU){
-                        std::normal_distribution<weight> noise_distribution(0.0, logistic_sigmoid(x));
-                        auto noise = std::bind(noise_distribution, rand_engine);
-
-                        h_a(k)(i,j) = std::max(0.0, x);
-                        h_s(k)(i,j) = std::max(0.0, x + noise());
-                    } else if(hidden_unit == unit_type::RELU6){
-                        h_a(k)(i,j) = std::min(std::max(0.0, x), 6.0);
-
-                        if(h_a(k)(i,j) == 0.0 || h_a(k)(i,j) == 6.0){
-                            h_s(k)(i,j) = h_a(k)(i,j);
-                        } else {
-                            std::normal_distribution<weight> noise_distribution(0.0, 1.0);
-                            auto noise = std::bind(noise_distribution, rand_engine);
-
-                            h_s(k)(i,j) = std::min(std::max(0.0, x + noise()), 6.0);
-                        }
-                    } else if(hidden_unit == unit_type::RELU1){
-                        h_a(k)(i,j) = std::min(std::max(0.0, x), 1.0);
-
-                        if(h_a(k)(i,j) == 0.0 || h_a(k)(i,j) == 1.0){
-                            h_s(k)(i,j) = h_a(k)(i,j);
-                        } else {
-                            std::normal_distribution<weight> noise_distribution(0.0, 1.0);
-                            auto noise = std::bind(noise_distribution, rand_engine);
-
-                            h_s(k)(i,j) = std::min(std::max(0.0, x + noise()), 1.0);
-                        }
-                    } else {
-                        dll_unreachable("Invalid path");
-                    }
-
-                    dll_assert(std::isfinite(x), "NaN verify");
-                    dll_assert(std::isfinite(h_a(k)(i,j)), "NaN verify");
-                    dll_assert(std::isfinite(h_s(k)(i,j)), "NaN verify");
-                }
+            if(hidden_unit == unit_type::BINARY){
+                h_a(k) = sigmoid(b(k) + v_cv(k));
+                h_s(k) = bernoulli(h_a(k));
+            } else if(hidden_unit == unit_type::RELU){
+                h_a(k) = max(b(k) + v_cv(k), 0.0);
+                h_s(k) = logistic_noise(h_a(k));
+            } else if(hidden_unit == unit_type::RELU6){
+                h_a(k) = min(max(b(k) + v_cv(k), 0.0), 6.0);
+                h_s(k) = ranged_noise(h_a(k), 6.0);
+            } else if(hidden_unit == unit_type::RELU1){
+                h_a(k) = min(max(b(k) + v_cv(k), 0.0), 1.0);
+                h_s(k) = ranged_noise(h_a(k), 1.0);
+            } else {
+                dll_unreachable("Invalid path");
             }
+
+            nan_check_deep(h_a);
+            nan_check_deep(h_s);
         }
     }
 
     template<typename H, typename V>
     void activate_visible(const H&, const H& h_s, V& v_a, V& v_s){
-        static std::default_random_engine rand_engine(std::time(nullptr));
-        static std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
-        static auto normal_generator = std::bind(normal_distribution, rand_engine);
+        using namespace etl;
 
-        v_a = 0.0;
-        v_s = 0.0;
         h_cv(K) = 0.0;
 
         for(std::size_t k = 0; k < K; ++k){
@@ -203,29 +166,18 @@ public:
             h_cv(K) += h_cv(k);
         }
 
-        for(size_t i = 0; i < NV; ++i){
-            for(size_t j = 0; j < NV; ++j){
-                //Total input
-                auto x = h_cv(K)(i,j) + c;
-
-                if(visible_unit == unit_type::BINARY){
-                    v_a(i,j) = logistic_sigmoid(x);
-                    v_s(i,j) = v_a(i,j) > normal_generator() ? 1.0 : 0.0;
-                } else if(visible_unit == unit_type::GAUSSIAN){
-                    std::normal_distribution<weight> noise_distribution(0.0, 1.0);
-                    auto noise = std::bind(noise_distribution, rand_engine);
-
-                    v_a(i,j) = x;
-                    v_s(i,j) = x + noise();
-                } else {
-                    dll_unreachable("Invalid path");
-                }
-
-                dll_assert(std::isfinite(x), "NaN verify");
-                dll_assert(std::isfinite(v_a(i,j)), "NaN verify");
-                dll_assert(std::isfinite(v_s(i,j)), "NaN verify");
-            }
+        if(visible_unit == unit_type::BINARY){
+            v_a = sigmoid(c + h_cv(K));
+            v_s = bernoulli(v_a);
+        } else if(visible_unit == unit_type::GAUSSIAN){
+            v_a = c + h_cv(K);
+            v_s = noise(v_a);
+        } else {
+            dll_unreachable("Invalid path");
         }
+
+        nan_check_deep(v_a);
+        nan_check_deep(v_s);
     }
 
     template<typename Samples>
