@@ -150,8 +150,8 @@ public:
                 dll_unreachable("Invalid path");
             }
 
-            nan_check_deep(h_a);
-            nan_check_deep(h_s);
+            nan_check_deep(h_a(k));
+            nan_check_deep(h_s(k));
         }
     }
 
