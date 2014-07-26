@@ -28,13 +28,6 @@ struct sgd_trainer {
         //TODO 
     }
 
-    template<typename RBM>
-    static void reset_gradients(RBM& rbm){
-        rbm.w_grad = 0.0;
-        rbm.b_grad = 0.0;
-        rbm.c_grad = 0.0;
-    }
-
     template<typename RBM, typename Output, typename Errors>
     static void compute_gradients(RBM& rbm, const Output& output, const Errors& errors){
         using rbm_t = RBM;
@@ -51,13 +44,6 @@ struct sgd_trainer {
         }
 
         rbm.b_grad += errors;
-    }
-    
-    template<typename RBM>
-    static void finalize_gradients(RBM& rbm, std::size_t n_samples){
-        rbm.w_grad /= n_samples;
-        rbm.b_grad /= n_samples;
-        rbm.c_grad /= n_samples;
     }
 
     template<typename RBM>
@@ -84,7 +70,11 @@ struct sgd_trainer {
 
         //TODO Update also the lower levels weights
 
-        reset_gradients(dbn.template layer<layers - 1>());
+        detail::for_each(tuples, [](auto& rbm){
+            rbm.w_grad = 0.0;
+            rbm.b_grad = 0.0;
+            rbm.c_grad = 0.0;
+        });
 
         for(std::size_t i = 0; i < n_samples; ++i){
             static etl::fast_vector<weight, n_outputs> outputs;
@@ -102,7 +92,11 @@ struct sgd_trainer {
             compute_gradients(dbn.template layer<layers - 1>(), outputs, errors);
         }
 
-        finalize_gradients(dbn.template layer<layers - 1>(), n_samples);
+        detail::for_each(tuples, [n_samples](auto& rbm){
+            rbm.w_grad /= n_samples;
+            rbm.b_grad /= n_samples;
+            rbm.c_grad /= n_samples;
+        });
 
         apply_gradients(dbn.template layer<layers - 1>());
     }
