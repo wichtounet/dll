@@ -33,6 +33,16 @@ struct for_each_impl {
         f(I, std::get<I>(t), std::get<I+1>(t));
         for_each_impl<I - 1, Tuple, F>::for_each_rpair_i(t, std::forward<F>(f));
     }
+
+    static void for_each_pair(Tuple& t, F&& f) {
+        for_each_impl<I - 1, Tuple, F>::for_each_pair(t, std::forward<F>(f));
+        f(std::get<I>(t), std::get<I+1>(t));
+    }
+
+    static void for_each_rpair(Tuple& t, F&& f) {
+        f(std::get<I>(t), std::get<I+1>(t));
+        for_each_impl<I - 1, Tuple, F>::for_each_rpair(t, std::forward<F>(f));
+    }
 };
 
 template<typename Tuple, typename F>
@@ -51,6 +61,14 @@ struct for_each_impl<0, Tuple, F> {
 
     static void for_each_rpair_i(Tuple& t, F&& f) {
         f(0, std::get<0>(t), std::get<1>(t));
+    }
+
+    static void for_each_pair(Tuple& t, F&& f) {
+        f(std::get<0>(t), std::get<1>(t));
+    }
+
+    static void for_each_rpair(Tuple& t, F&& f) {
+        f(std::get<0>(t), std::get<1>(t));
     }
 };
 
@@ -75,6 +93,20 @@ template<typename Tuple, typename F>
 void for_each_rpair_i(Tuple& t, F&& f) {
     if(std::tuple_size<Tuple>::value > 1){
         for_each_impl<std::tuple_size<Tuple>::value - 2, Tuple, F>::for_each_rpair_i(t, std::forward<F>(f));
+    }
+}
+
+template<typename Tuple, typename F>
+void for_each_pair(Tuple& t, F&& f) {
+    if(std::tuple_size<Tuple>::value > 1){
+        for_each_impl<std::tuple_size<Tuple>::value - 2, Tuple, F>::for_each_pair(t, std::forward<F>(f));
+    }
+}
+
+template<typename Tuple, typename F>
+void for_each_rpair(Tuple& t, F&& f) {
+    if(std::tuple_size<Tuple>::value > 1){
+        for_each_impl<std::tuple_size<Tuple>::value - 2, Tuple, F>::for_each_rpair(t, std::forward<F>(f));
     }
 }
 
