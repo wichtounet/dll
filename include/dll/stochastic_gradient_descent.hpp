@@ -28,8 +28,8 @@ struct sgd_trainer {
         //TODO 
     }
 
-    template<typename RBM>
-    static void compute_gradients(RBM& rbm){
+    template<typename RBM, typename Inputs>
+    void compute_gradients(RBM& rbm, const Inputs& inputs){
         using rbm_t = RBM;
 
         constexpr const auto n_inputs = rbm_t::num_visible;
@@ -39,7 +39,7 @@ struct sgd_trainer {
 
         for(std::size_t a = 0; a < n_inputs; ++a){
             for(std::size_t b = 0; b < n_outputs; ++b){
-                rbm.w_grad(a,b) += rbm.o_a[b] * rbm.errors[b];
+                rbm.w_grad(a,b) += inputs[a] * rbm.errors[b];
             }
         }
 
@@ -97,10 +97,11 @@ struct sgd_trainer {
             // Compute dE/dz_j for each output neuron
             for(std::size_t j = 0; j < n_outputs; ++j){
                 auto observed = last_rbm.o_a[j];
-                last_rbm.errors[j] = observed * (1 - observed) * (label_batch[i][j] - observed);
+                auto desired = label_batch[i][j];
+                last_rbm.errors[j] = observed * (1 - observed) * (desired - observed);
             }
 
-            compute_gradients(last_rbm);
+            compute_gradients(last_rbm, dbn.template layer<layers - 2>().o_a);
         }
 
         detail::for_each(tuples, [n_samples](auto& rbm){
