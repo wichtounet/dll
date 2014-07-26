@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include "dll/dbn.hpp"
+#include "dll/dbn_desc.hpp"
 #include "dll/dbn_layers.hpp"
 
 template<typename DBN>
@@ -27,12 +28,11 @@ using pcd2_trainer_t = dll::persistent_cd_trainer<2, RBM>;
 int main(){
     //Basic example
 
-    typedef dll::dbn<
+    typedef dll::dbn_desc<
         dll::dbn_layers<
         dll::layer<28 * 28, 100, dll::in_dbn, dll::momentum, dll::batch_size<50>, dll::init_weights, dll::weight_decay<dll::decay_type::L2>, dll::sparsity>::rbm_t,
         dll::layer<100, 100, dll::in_dbn, dll::momentum, dll::batch_size<50>>::rbm_t,
-        dll::layer<110, 200, dll::in_dbn, dll::batch_size<50>, dll::momentum, dll::weight_decay<dll::decay_type::L2_FULL>>::rbm_t>
-    > dbn_1;
+        dll::layer<110, 200, dll::in_dbn, dll::batch_size<50>, dll::momentum, dll::weight_decay<dll::decay_type::L2_FULL>>::rbm_t>>::dbn_t dbn_1;
 
     //Test them all
 

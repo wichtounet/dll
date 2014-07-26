@@ -20,21 +20,17 @@ namespace dll {
 /*!
  * \brief A Deep Belief Network implementation
  */
-template<typename Layers>
+template<typename Desc>
 struct dbn {
-    using tuple_type = typename Layers::tuple_type;
+    using desc = Desc;
+
+    using tuple_type = typename desc::layers::tuple_type;
     tuple_type tuples;
 
-    static constexpr const std::size_t layers = Layers::layers;
+    static constexpr const std::size_t layers = desc::layers::layers;
 
     template <std::size_t N>
     using rbm_type = typename std::tuple_element<N, tuple_type>::type;
-
-    template<typename DBN>
-    using watcher_t = default_dbn_watcher<DBN>;
-
-    template<typename DBN>
-    using trainer_t = cg_trainer<DBN>;
 
     using weight = typename rbm_type<0>::weight;
 

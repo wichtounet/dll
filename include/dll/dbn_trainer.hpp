@@ -24,10 +24,10 @@ struct dbn_trainer {
     using dbn_t = DBN;
 
     template<typename R>
-    using trainer_t = typename dbn_t::template trainer_t<R>;
+    using trainer_t = typename dbn_t::desc::template trainer_t<R>;
 
     template<typename R>
-    using watcher_t = typename dbn_t::template watcher_t<R>;
+    using watcher_t = typename dbn_t::desc::template watcher_t<R>;
 
     template<typename Samples, typename Labels>
     typename dbn_t::weight train(DBN& dbn, const Samples& training_data, Labels& labels, size_t max_epochs, size_t batch_size) const {
