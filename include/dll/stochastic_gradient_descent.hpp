@@ -48,14 +48,16 @@ struct sgd_trainer {
                 }
             }
 
-            for(std::size_t b = 0; b < n_outputs; ++b){
-                rbm.b_grad(b) += errors[i][b];
-            }
+            rbm.b_grad += errors[i];
         }
+
+        rbm.w_grad /= n_samples;
+        rbm.b_grad /= n_samples;
+        rbm.c_grad /= n_samples;
     }
 
     template<typename RBM>
-    void apply_gradients(RBM& rbm, std::size_t n_samples){
+    void apply_gradients(RBM& rbm){
         using rbm_t = RBM;
 
         constexpr const auto n_inputs = rbm_t::num_visible;
@@ -63,9 +65,9 @@ struct sgd_trainer {
 
         auto learning_rate = dbn.learning_rate;
 
-        rbm.w += learning_rate * rbm.w_grad / n_samples;
-        rbm.b += learning_rate * rbm.b_grad / n_samples;
-        rbm.c += learning_rate * rbm.c_grad / n_samples;
+        rbm.w += learning_rate * rbm.w_grad;
+        rbm.b += learning_rate * rbm.b_grad;
+        rbm.c += learning_rate * rbm.c_grad;
     }
 
     template<typename T, typename L>
@@ -97,7 +99,7 @@ struct sgd_trainer {
 
         compute_gradients(dbn.template layer<layers -1>(), n_samples, outputs, errors);
 
-        apply_gradients(dbn.template layer<layers - 1>(), n_samples);
+        apply_gradients(dbn.template layer<layers - 1>());
     }
 };
 
