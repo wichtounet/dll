@@ -13,6 +13,7 @@
 #include "dll/dbn.hpp"
 #include "dll/dbn_desc.hpp"
 #include "dll/dbn_layers.hpp"
+#include "dll/stochastic_gradient_descent.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -84,4 +85,27 @@ TEST_CASE( "dbn/mnist_3", "dbn::labels" ) {
 
     auto error = dll::test_set(dbn, dataset.training_images, dataset.training_labels, dll::label_predictor());
     REQUIRE(error < 0.3);
+}
+
+TEST_CASE( "dbn/mnist_4", "dbn::sgd" ) {
+    typedef dll::dbn_desc<
+        dll::dbn_layers<
+        dll::rbm_desc<28 * 28, 100, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
+        dll::rbm_desc<100, 200, dll::in_dbn, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::rbm_desc<200, 10, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>, dll::trainer<dll::sgd_trainer>>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(200);
+    dataset.training_labels.resize(200);
+
+    mnist::binarize_dataset(dataset);
+
+    auto dbn = make_unique<dbn_t>();
+
+    dbn->pretrain(dataset.training_images, 5);
+    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 5, 10);
+
+    REQUIRE(error < 5e-2);
 }
