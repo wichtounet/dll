@@ -28,8 +28,8 @@ struct sgd_trainer {
         //TODO 
     }
 
-    template<typename RBM, typename Output, typename Errors>
-    static void compute_gradients(RBM& rbm, const Output& output, const Errors& errors){
+    template<typename RBM>
+    static void compute_gradients(RBM& rbm){
         using rbm_t = RBM;
 
         constexpr const auto n_inputs = rbm_t::num_visible;
@@ -39,11 +39,11 @@ struct sgd_trainer {
 
         for(std::size_t a = 0; a < n_inputs; ++a){
             for(std::size_t b = 0; b < n_outputs; ++b){
-                rbm.w_grad(a,b) += output[b] * errors[b];
+                rbm.w_grad(a,b) += rbm.o_a[b] * rbm.errors[b];
             }
         }
 
-        rbm.b_grad += errors;
+        rbm.b_grad += rbm.errors;
     }
 
     template<typename RBM>
@@ -58,6 +58,19 @@ struct sgd_trainer {
         rbm.w += learning_rate * rbm.w_grad;
         rbm.b += learning_rate * rbm.b_grad;
         rbm.c += learning_rate * rbm.c_grad;
+    }
+
+    template<typename Sample>
+    void compute_outputs(const Sample& item_data){
+        etl::dyn_vector<typename Sample::value_type> item(item_data);
+
+        auto& first_rbm = dbn.template layer<0>();
+
+        first_rbm.activate_hidden(first_rbm.o_a, first_rbm.o_s, item, item);
+
+        detail::for_each_pair(tuples, [](auto& r1, auto& r2){
+            r2.activate_hidden(r2.o_a, r2.o_s, r1.o_a, r1.o_s);
+        });
     }
 
     template<typename T, typename L>
@@ -77,19 +90,17 @@ struct sgd_trainer {
         });
 
         for(std::size_t i = 0; i < n_samples; ++i){
-            static etl::fast_vector<weight, n_outputs> outputs;
+            compute_outputs(data_batch[i]);
 
-            dbn.predict_weights(data_batch[i], outputs);
-
-            static etl::fast_vector<weight, n_outputs> errors;
+            auto& last_rbm = dbn.template layer<layers - 1>();
 
             // Compute dE/dz_j for each output neuron
             for(std::size_t j = 0; j < n_outputs; ++j){
-                auto observed = outputs[j];
-                errors[j] = observed * (1 - observed) * (label_batch[i][j] - observed);
+                auto observed = last_rbm.o_a[j];
+                last_rbm.errors[j] = observed * (1 - observed) * (label_batch[i][j] - observed);
             }
 
-            compute_gradients(dbn.template layer<layers - 1>(), outputs, errors);
+            compute_gradients(last_rbm);
         }
 
         detail::for_each(tuples, [n_samples](auto& rbm){

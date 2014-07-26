@@ -111,6 +111,10 @@ public:
     etl::fast_vector<weight, num_hidden> b_grad;
     etl::fast_vector<weight, num_visible> c_grad;
 
+    etl::fast_vector<weight, num_hidden> o_a;
+    etl::fast_vector<weight, num_hidden> o_s;
+    etl::fast_vector<weight, num_hidden> errors;
+
 public:
     //No copying
     rbm(const rbm& rbm) = delete;
