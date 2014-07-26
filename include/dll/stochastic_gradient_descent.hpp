@@ -28,29 +28,33 @@ struct sgd_trainer {
         //TODO 
     }
 
+    template<typename RBM>
+    static void reset_gradients(RBM& rbm){
+        rbm.w_grad = 0.0;
+        rbm.b_grad = 0.0;
+        rbm.c_grad = 0.0;
+    }
+
     template<typename RBM, typename Output, typename Errors>
-    static void compute_gradients(RBM& rbm, std::size_t n_samples, const Output& output, const Errors& errors){
+    static void compute_gradients(RBM& rbm, const Output& output, const Errors& errors){
         using rbm_t = RBM;
 
         constexpr const auto n_inputs = rbm_t::num_visible;
         constexpr const auto n_outputs = rbm_t::num_hidden;
 
-        rbm.w_grad = 0.0;
-        rbm.b_grad = 0.0;
-        rbm.c_grad = 0.0;
-
         //TODO Rewrite that as ETL expressions
 
-        for(std::size_t i = 0; i < n_samples; ++i){
-            for(std::size_t a = 0; a < n_inputs; ++a){
-                for(std::size_t b = 0; b < n_outputs; ++b){
-                    rbm.w_grad(a,b) += output[i][b] * errors[i][b];
-                }
+        for(std::size_t a = 0; a < n_inputs; ++a){
+            for(std::size_t b = 0; b < n_outputs; ++b){
+                rbm.w_grad(a,b) += output[b] * errors[b];
             }
-
-            rbm.b_grad += errors[i];
         }
 
+        rbm.b_grad += errors;
+    }
+    
+    template<typename RBM>
+    static void finalize_gradients(RBM& rbm, std::size_t n_samples){
         rbm.w_grad /= n_samples;
         rbm.b_grad /= n_samples;
         rbm.c_grad /= n_samples;
@@ -75,29 +79,30 @@ struct sgd_trainer {
         dll_assert(data_batch.size() == label_batch.size(), "Invalid sizes");
 
         auto n_samples = label_batch.size();
+
         constexpr const auto n_outputs = dbn_t::template num_hidden<layers - 1>();
-
-        static std::vector<etl::fast_vector<weight, n_outputs>> outputs;
-        outputs.resize(n_samples);
-
-        for(std::size_t i = 0; i < n_samples; ++i){
-            dbn.predict_weights(data_batch[i], outputs[i]);
-        }
-
-        static std::vector<etl::fast_vector<weight, n_outputs>> errors;
-        errors.resize(n_samples);
-
-        // Compute dE/dz_j for each output neuron
-        for(std::size_t i = 0; i < n_samples; ++i){
-            for(std::size_t j = 0; j < n_outputs; ++j){
-                auto output = outputs[i][j];
-                errors[i][j] = output * (1 - output) * (label_batch[i][j] - output);
-            }
-        }
 
         //TODO Update also the lower levels weights
 
-        compute_gradients(dbn.template layer<layers -1>(), n_samples, outputs, errors);
+        reset_gradients(dbn.template layer<layers - 1>());
+
+        for(std::size_t i = 0; i < n_samples; ++i){
+            static etl::fast_vector<weight, n_outputs> outputs;
+
+            dbn.predict_weights(data_batch[i], outputs);
+
+            static etl::fast_vector<weight, n_outputs> errors;
+
+            // Compute dE/dz_j for each output neuron
+            for(std::size_t j = 0; j < n_outputs; ++j){
+                auto observed = outputs[j];
+                errors[j] = observed * (1 - observed) * (label_batch[i][j] - observed);
+            }
+
+            compute_gradients(dbn.template layer<layers - 1>(), outputs, errors);
+        }
+
+        finalize_gradients(dbn.template layer<layers - 1>(), n_samples);
 
         apply_gradients(dbn.template layer<layers - 1>());
     }
