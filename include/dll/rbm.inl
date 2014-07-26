@@ -105,6 +105,12 @@ public:
     std::vector<etl::dyn_vector<weight>> gr_probs_a;
     std::vector<etl::dyn_vector<weight>> gr_probs_s;
 
+    //SGD
+
+    etl::fast_matrix<weight, num_visible, num_hidden> w_grad;
+    etl::fast_vector<weight, num_hidden> b_grad;
+    etl::fast_vector<weight, num_visible> c_grad;
+
 public:
     //No copying
     rbm(const rbm& rbm) = delete;
@@ -172,18 +178,18 @@ public:
         }
     }
 
-    template<typename H, typename V>
-    void activate_hidden(H& h_a, H& h_s, const V& v_a, const V& v_s) const {
+    template<typename H1, typename H2, typename V>
+    void activate_hidden(H1& h_a, H2& h_s, const V& v_a, const V& v_s) const {
         return activate_hidden(h_a, h_s, v_a, v_s, b, w);
     }
 
-    template<bool Temp, typename H, typename V>
-    void gr_activate_hidden(H& h_a, H& h_s, const V& v_a, const V& v_s) const {
+    template<bool Temp, typename H1, typename H2, typename V>
+    void gr_activate_hidden(H1& h_a, H2& h_s, const V& v_a, const V& v_s) const {
         return activate_hidden(h_a, h_s, v_a, v_s, Temp ? gr_b_tmp : gr_b, Temp ? gr_w_tmp : gr_w);
     }
 
-    template<typename H, typename V, typename B, typename W>
-    static void activate_hidden(H& h_a, H& h_s, const V& v_a, const V&, const B& b, const W& w){
+    template<typename H1, typename H2, typename V, typename B, typename W>
+    static void activate_hidden(H1& h_a, H2& h_s, const V& v_a, const V&, const B& b, const W& w){
         static std::default_random_engine rand_engine(std::time(nullptr));
 
         using namespace etl;
