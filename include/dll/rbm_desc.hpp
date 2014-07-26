@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_LAYER_HPP
-#define DBN_LAYER_HPP
+#ifndef DLL_RBM_DESC_HPP
+#define DLL_RBM_DESC_HPP
 
 #include "base_conf.hpp"
 #include "contrastive_divergence.hpp"
@@ -16,13 +16,13 @@
 namespace dll {
 
 /*!
- * \brief Describe a RBM layer
+ * \brief Describe a RBM.
  *
  * This struct should be used to define a RBM either as standalone or for a DBN.
  * Once configured, the ::rbm_t member returns the type of the configured RBM.
  */
 template<std::size_t visibles, std::size_t hiddens, typename... Parameters>
-struct layer {
+struct rbm_desc {
     static constexpr const std::size_t num_visible = visibles;
     static constexpr const std::size_t num_hidden = hiddens;
 
@@ -44,7 +44,7 @@ struct layer {
     using watcher_t = typename detail::get_template_type<watcher<default_rbm_watcher>, Parameters...>::template type<RBM>;
 
     /*! The RBM type */
-    using rbm_t = rbm<layer<visibles, hiddens, Parameters...>>;
+    using rbm_t = rbm<rbm_desc<visibles, hiddens, Parameters...>>;
 
     static_assert(num_visible > 0, "There must be at least 1 visible unit");
     static_assert(num_hidden > 0, "There must be at least 1 hidden unit");

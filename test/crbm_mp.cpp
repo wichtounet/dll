@@ -13,7 +13,7 @@
 #include "mnist/mnist_utils.hpp"
 
 TEST_CASE( "crbm_mp/mnist_1", "crbm::simple" ) {
-    dll::conv_mp_layer<
+    dll::conv_rbm_mp_desc<
         28, 12, 40, 2,
         dll::batch_size<25>
     >::rbm_t rbm;
@@ -31,7 +31,7 @@ TEST_CASE( "crbm_mp/mnist_1", "crbm::simple" ) {
 }
 
 TEST_CASE( "crbm_mp/mnist_2", "crbm::momentum" ) {
-    dll::conv_mp_layer<
+    dll::conv_rbm_mp_desc<
         28, 12, 40, 2,
         dll::batch_size<25>,
         dll::momentum
@@ -50,7 +50,7 @@ TEST_CASE( "crbm_mp/mnist_2", "crbm::momentum" ) {
 }
 
 TEST_CASE( "crbm_mp/mnist_3", "crbm::decay_l1" ) {
-    dll::conv_mp_layer<
+    dll::conv_rbm_mp_desc<
         28, 12, 40, 2,
         dll::batch_size<25>,
         dll::weight_decay<dll::decay_type::L1_FULL>
@@ -69,7 +69,7 @@ TEST_CASE( "crbm_mp/mnist_3", "crbm::decay_l1" ) {
 }
 
 TEST_CASE( "crbm_mp/mnist_4", "crbm::decay_l2" ) {
-    dll::conv_mp_layer<
+    dll::conv_rbm_mp_desc<
         28, 12, 40, 2,
         dll::batch_size<25>,
         dll::weight_decay<dll::decay_type::L2_FULL>
@@ -88,7 +88,7 @@ TEST_CASE( "crbm_mp/mnist_4", "crbm::decay_l2" ) {
 }
 
 TEST_CASE( "crbm_mp/mnist_5", "crbm::sparsity" ) {
-    dll::conv_mp_layer<
+    dll::conv_rbm_mp_desc<
         28, 12, 40, 2,
         dll::batch_size<25>,
         dll::sparsity
@@ -107,7 +107,7 @@ TEST_CASE( "crbm_mp/mnist_5", "crbm::sparsity" ) {
 }
 
 TEST_CASE( "crbm_mp/mnist_6", "crbm::gaussian" ) {
-    dll::conv_mp_layer<
+    dll::conv_rbm_mp_desc<
         28, 12, 40, 2,
         dll::batch_size<25>,
         dll::visible<dll::unit_type::GAUSSIAN>
@@ -128,7 +128,7 @@ TEST_CASE( "crbm_mp/mnist_6", "crbm::gaussian" ) {
 TEST_CASE( "crbm_mp/mnist_7", "crbm::relu" ) {
     //TODO This does not work right now
 
-    dll::conv_mp_layer<
+    dll::conv_rbm_mp_desc<
         28, 12, 40, 2,
         dll::batch_size<25>,
         dll::hidden<dll::unit_type::RELU>
@@ -151,7 +151,7 @@ TEST_CASE( "crbm_mp/mnist_7", "crbm::relu" ) {
 TEST_CASE( "crbm_mp/mnist_10", "crbm::pcd_trainer" ) {
     //TODO This test does not work right now
 
-    dll::conv_mp_layer<
+    dll::conv_rbm_mp_desc<
         28, 12, 40, 2,
         dll::batch_size<25>,
         dll::momentum,

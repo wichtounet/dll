@@ -20,9 +20,9 @@
 TEST_CASE( "dbn/mnist_1", "dbn::simple" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::layer<28 * 28, 100, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
-        dll::layer<100, 200, dll::in_dbn, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::layer<200, 10, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>>::dbn_t dbn_t;
+        dll::rbm_desc<28 * 28, 100, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
+        dll::rbm_desc<100, 200, dll::in_dbn, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::rbm_desc<200, 10, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
@@ -43,9 +43,9 @@ TEST_CASE( "dbn/mnist_1", "dbn::simple" ) {
 TEST_CASE( "dbn/mnist_2", "dbn::containers" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::layer<28 * 28, 100, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
-        dll::layer<100, 200, dll::in_dbn, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::layer<200, 10, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>>::dbn_t dbn_t;
+        dll::rbm_desc<28 * 28, 100, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
+        dll::rbm_desc<100, 200, dll::in_dbn, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::rbm_desc<200, 10, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::deque, double>();
 
@@ -74,9 +74,9 @@ TEST_CASE( "dbn/mnist_3", "dbn::labels" ) {
 
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::layer<28 * 28, 200, dll::in_dbn, dll::batch_size<50>, dll::init_weights, dll::momentum>::rbm_t,
-        dll::layer<200, 300, dll::in_dbn, dll::batch_size<50>, dll::momentum>::rbm_t,
-        dll::layer<310, 500, dll::in_dbn, dll::batch_size<50>, dll::momentum>::rbm_t>>::dbn_t dbn_simple_t;
+        dll::rbm_desc<28 * 28, 200, dll::in_dbn, dll::batch_size<50>, dll::init_weights, dll::momentum>::rbm_t,
+        dll::rbm_desc<200, 300, dll::in_dbn, dll::batch_size<50>, dll::momentum>::rbm_t,
+        dll::rbm_desc<310, 500, dll::in_dbn, dll::batch_size<50>, dll::momentum>::rbm_t>>::dbn_t dbn_simple_t;
 
     auto dbn = make_unique<dbn_simple_t>();
 

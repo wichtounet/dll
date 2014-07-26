@@ -36,20 +36,20 @@ struct rbm_trainer;
  *
  * This follows the definition of a CRBM by Honglak Lee.
  */
-template<typename Layer>
-class conv_rbm : public rbm_base<Layer> {
+template<typename Desc>
+class conv_rbm : public rbm_base<Desc> {
 public:
     typedef double weight;
     typedef double value_t;
 
-    using layer = Layer;
+    using desc = Desc;
 
-    static constexpr const unit_type visible_unit = Layer::visible_unit;
-    static constexpr const unit_type hidden_unit = Layer::hidden_unit;
+    static constexpr const unit_type visible_unit = desc::visible_unit;
+    static constexpr const unit_type hidden_unit = desc::hidden_unit;
 
-    static constexpr const std::size_t NV = Layer::NV;
-    static constexpr const std::size_t NH = Layer::NH;
-    static constexpr const std::size_t K = Layer::K;
+    static constexpr const std::size_t NV = desc::NV;
+    static constexpr const std::size_t NH = desc::NH;
+    static constexpr const std::size_t K = desc::K;
 
     static constexpr const std::size_t NW = NV - NH + 1; //By definition
 
@@ -105,7 +105,7 @@ public:
         //Note: Convolutional RBM needs lower learning rate than standard RBM
 
         //Better initialization of learning rate
-        rbm_base<Layer>::learning_rate =
+        rbm_base<desc>::learning_rate =
                 visible_unit == unit_type::GAUSSIAN  ?             1e-5
             :   is_relu(hidden_unit)                 ?             1e-4
             :   /* Only Gaussian Units needs lower rate */         1e-3;

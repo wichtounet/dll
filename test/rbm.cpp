@@ -13,7 +13,7 @@
 #include "mnist/mnist_utils.hpp"
 
 TEST_CASE( "rbm/mnist_1", "rbm::simple" ) {
-    dll::layer<
+    dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>
     >::rbm_t rbm;
@@ -31,7 +31,7 @@ TEST_CASE( "rbm/mnist_1", "rbm::simple" ) {
 }
 
 TEST_CASE( "rbm/mnist_2", "rbm::momentum" ) {
-    dll::layer<
+    dll::rbm_desc<
         28 * 28, 100,
        dll::batch_size<25>,
        dll::momentum
@@ -50,7 +50,7 @@ TEST_CASE( "rbm/mnist_2", "rbm::momentum" ) {
 }
 
 TEST_CASE( "rbm/mnist_3", "rbm::pcd_trainer" ) {
-    dll::layer<
+    dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
         dll::momentum,
@@ -70,7 +70,7 @@ TEST_CASE( "rbm/mnist_3", "rbm::pcd_trainer" ) {
 }
 
 TEST_CASE( "rbm/mnist_4", "rbm::decay_l1" ) {
-    dll::layer<
+    dll::rbm_desc<
         28 * 28, 100,
        dll::batch_size<25>,
        dll::weight_decay<dll::decay_type::L1>
@@ -89,7 +89,7 @@ TEST_CASE( "rbm/mnist_4", "rbm::decay_l1" ) {
 }
 
 TEST_CASE( "rbm/mnist_5", "rbm::decay_l2" ) {
-    dll::layer<
+    dll::rbm_desc<
         28 * 28, 100,
        dll::batch_size<25>,
        dll::weight_decay<dll::decay_type::L2>
@@ -108,7 +108,7 @@ TEST_CASE( "rbm/mnist_5", "rbm::decay_l2" ) {
 }
 
 TEST_CASE( "rbm/mnist_6", "rbm::sparsity" ) {
-    dll::layer<
+    dll::rbm_desc<
         28 * 28, 100,
        dll::batch_size<25>,
        dll::sparsity
@@ -130,7 +130,7 @@ TEST_CASE( "rbm/mnist_6", "rbm::sparsity" ) {
 }
 
 TEST_CASE( "rbm/mnist_7", "rbm::gaussian" ) {
-    dll::layer<
+    dll::rbm_desc<
         28 * 28, 100,
        dll::batch_size<25>,
        dll::visible<dll::unit_type::GAUSSIAN>
@@ -151,7 +151,7 @@ TEST_CASE( "rbm/mnist_7", "rbm::gaussian" ) {
 }
 
 TEST_CASE( "rbm/mnist_8", "rbm::softmax" ) {
-    dll::layer<
+    dll::rbm_desc<
         28 * 28, 100,
        dll::batch_size<25>,
        dll::hidden<dll::unit_type::SOFTMAX>
@@ -173,7 +173,7 @@ TEST_CASE( "rbm/mnist_8", "rbm::softmax" ) {
 }
 
 TEST_CASE( "rbm/mnist_9", "rbm::nrlu" ) {
-    dll::layer<
+    dll::rbm_desc<
         28 * 28, 100,
        dll::batch_size<25>,
        dll::hidden<dll::unit_type::RELU>
@@ -192,7 +192,7 @@ TEST_CASE( "rbm/mnist_9", "rbm::nrlu" ) {
 }
 
 TEST_CASE( "rbm/mnist_10", "rbm::nrlu1" ) {
-    dll::layer<
+    dll::rbm_desc<
         28 * 28, 100,
        dll::batch_size<25>,
        dll::hidden<dll::unit_type::RELU1>
@@ -213,7 +213,7 @@ TEST_CASE( "rbm/mnist_10", "rbm::nrlu1" ) {
 }
 
 TEST_CASE( "rbm/mnist_11", "rbm::nrlu6" ) {
-    dll::layer<
+    dll::rbm_desc<
         28 * 28, 100,
        dll::batch_size<25>,
        dll::hidden<dll::unit_type::RELU6>
@@ -232,7 +232,7 @@ TEST_CASE( "rbm/mnist_11", "rbm::nrlu6" ) {
 }
 
 TEST_CASE( "rbm/mnist_12", "rbm::init_weights" ) {
-    dll::layer<
+    dll::rbm_desc<
         28 * 28, 100,
        dll::batch_size<25>,
        dll::init_weights
@@ -251,7 +251,7 @@ TEST_CASE( "rbm/mnist_12", "rbm::init_weights" ) {
 }
 
 TEST_CASE( "rbm/mnist_13", "rbm::exp" ) {
-    dll::layer<
+    dll::rbm_desc<
         28 * 28, 100,
        dll::batch_size<25>,
        dll::hidden<dll::unit_type::EXP>

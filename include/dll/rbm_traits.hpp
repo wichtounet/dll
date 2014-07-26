@@ -13,10 +13,10 @@
 
 namespace dll {
 
-template<typename Layer>
+template<typename Desc>
 class conv_rbm;
 
-template<typename Layer>
+template<typename Desc>
 class conv_rbm_mp;
 
 /*!
@@ -49,62 +49,62 @@ struct rbm_traits {
         return detail::is_instantiation_of<conv_rbm_mp, rbm_t>::value;
     }
 
-    template<typename R = RBM, enable_if_u<has_batch_size_field<typename R::layer>::value> = ::detail::dummy>
+    template<typename R = RBM, enable_if_u<has_batch_size_field<typename R::desc>::value> = ::detail::dummy>
     static constexpr std::size_t batch_size(){
-        return rbm_t::layer::BatchSize;
+        return rbm_t::desc::BatchSize;
     }
 
-    template<typename R = RBM, disable_if_u<has_batch_size_field<typename R::layer>::value> = ::detail::dummy>
+    template<typename R = RBM, disable_if_u<has_batch_size_field<typename R::desc>::value> = ::detail::dummy>
     static constexpr std::size_t batch_size(){
         return 1;
     }
 
-    template<typename R = RBM, enable_if_u<has_momentum_field<typename R::layer>::value> = ::detail::dummy>
+    template<typename R = RBM, enable_if_u<has_momentum_field<typename R::desc>::value> = ::detail::dummy>
     static constexpr bool has_momentum(){
-        return rbm_t::layer::Momentum;
+        return rbm_t::desc::Momentum;
     }
 
-    template<typename R = RBM, disable_if_u<has_momentum_field<typename R::layer>::value> = ::detail::dummy>
+    template<typename R = RBM, disable_if_u<has_momentum_field<typename R::desc>::value> = ::detail::dummy>
     static constexpr bool has_momentum(){
         return false;
     }
 
-    template<typename R = RBM, enable_if_u<has_sparsity_field<typename R::layer>::value> = ::detail::dummy>
+    template<typename R = RBM, enable_if_u<has_sparsity_field<typename R::desc>::value> = ::detail::dummy>
     static constexpr bool has_sparsity(){
-        return rbm_t::layer::Sparsity;
+        return rbm_t::desc::Sparsity;
     }
 
-    template<typename R = RBM, disable_if_u<has_sparsity_field<typename R::layer>::value> = ::detail::dummy>
+    template<typename R = RBM, disable_if_u<has_sparsity_field<typename R::desc>::value> = ::detail::dummy>
     static constexpr bool has_sparsity(){
         return false;
     }
 
-    template<typename R = RBM, enable_if_u<has_decay_field<typename R::layer>::value> = ::detail::dummy>
+    template<typename R = RBM, enable_if_u<has_decay_field<typename R::desc>::value> = ::detail::dummy>
     static constexpr decay_type decay(){
-        return rbm_t::layer::Decay;
+        return rbm_t::desc::Decay;
     }
 
-    template<typename R = RBM, disable_if_u<has_decay_field<typename R::layer>::value> = ::detail::dummy>
+    template<typename R = RBM, disable_if_u<has_decay_field<typename R::desc>::value> = ::detail::dummy>
     static constexpr decay_type decay(){
         return decay_type::NONE;
     }
 
-    template<typename R = RBM, enable_if_u<has_dbn_field<typename R::layer>::value> = ::detail::dummy>
+    template<typename R = RBM, enable_if_u<has_dbn_field<typename R::desc>::value> = ::detail::dummy>
     static constexpr bool in_dbn(){
-        return rbm_t::layer::DBN;
+        return rbm_t::desc::DBN;
     }
 
-    template<typename R = RBM, disable_if_u<has_dbn_field<typename R::layer>::value> = ::detail::dummy>
+    template<typename R = RBM, disable_if_u<has_dbn_field<typename R::desc>::value> = ::detail::dummy>
     static constexpr bool in_dbn(){
         return false;
     }
 
-    template<typename R = RBM, enable_if_u<has_init_field<typename R::layer>::value> = ::detail::dummy>
+    template<typename R = RBM, enable_if_u<has_init_field<typename R::desc>::value> = ::detail::dummy>
     static constexpr bool init_weights(){
-        return rbm_t::layer::Init;
+        return rbm_t::desc::Init;
     }
 
-    template<typename R = RBM, disable_if_u<has_init_field<typename R::layer>::value> = ::detail::dummy>
+    template<typename R = RBM, disable_if_u<has_init_field<typename R::desc>::value> = ::detail::dummy>
     static constexpr bool init_weights(){
         return false;
     }

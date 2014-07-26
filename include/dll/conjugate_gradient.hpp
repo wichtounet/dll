@@ -123,7 +123,7 @@ struct cg_trainer {
 
         for(size_t sample = 0; sample < n_samples; ++sample){
             auto& input = context.inputs[sample];
-            auto output = std::ref(dbn.layer<0>().gr_probs_a[sample]);
+            auto output = std::ref(dbn.template layer<0>().gr_probs_a[sample]);
             auto& target = context.targets[sample];
 
             detail::for_each_i(tuples, [&input,&output,sample](std::size_t I, auto& rbm){
@@ -140,7 +140,7 @@ struct cg_trainer {
             auto& diff = diffs[sample];
             diff.resize(n_hidden);
 
-            auto& result = dbn.layer<layers - 1>().gr_probs_a[sample];
+            auto& result = dbn.template layer<layers - 1>().gr_probs_a[sample];
             weight scale = std::accumulate(result.begin(), result.end(), 0.0);
 
             for(auto& r : result){
@@ -162,7 +162,7 @@ struct cg_trainer {
             probs_refs[I] = &rbm.gr_probs_a;
         });
 
-        update_incs<Temp>(dbn.layer<layers-1>(), diffs, n_samples, dbn.layer<layers-2>().gr_probs_a);
+        update_incs<Temp>(dbn.template layer<layers-1>(), diffs, n_samples, dbn.template layer<layers-2>().gr_probs_a);
 
         detail::for_each_rpair_i(tuples, [n_samples, &probs_refs](std::size_t I, auto& r1, auto& r2){
             update_diffs<Temp>(r1, r2, diffs, n_samples);
@@ -172,7 +172,7 @@ struct cg_trainer {
             }
         });
 
-        update_incs<Temp>(dbn.layer<0>(), diffs, n_samples, context.inputs);
+        update_incs<Temp>(dbn.template layer<0>(), diffs, n_samples, context.inputs);
 
         if(Debug){
             std::cout << "evaluating(" << Temp << "): cost:" << cost << " error: " << (error / n_samples) << std::endl;

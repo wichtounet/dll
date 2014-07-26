@@ -36,21 +36,21 @@ struct rbm_trainer;
  *
  * This follows the definition of a RBM by Geoffrey Hinton.
  */
-template<typename Layer>
-class rbm : public rbm_base<Layer> {
+template<typename Desc>
+class rbm : public rbm_base<Desc> {
 public:
     typedef double weight;
     typedef double value_t;
 
-    using layer = Layer;
+    using desc = Desc;
 
-    static constexpr const std::size_t num_visible = Layer::num_visible;
-    static constexpr const std::size_t num_hidden = Layer::num_hidden;
+    static constexpr const std::size_t num_visible = desc::num_visible;
+    static constexpr const std::size_t num_hidden = desc::num_hidden;
 
-    static constexpr const unit_type visible_unit = Layer::visible_unit;
-    static constexpr const unit_type hidden_unit = Layer::hidden_unit;
+    static constexpr const unit_type visible_unit = desc::visible_unit;
+    static constexpr const unit_type hidden_unit = desc::hidden_unit;
 
-    static constexpr const bool DBN = Layer::DBN;
+    static constexpr const bool DBN = desc::DBN;
 
     static_assert(visible_unit != unit_type::SOFTMAX && visible_unit != unit_type::EXP,
         "Exponential and softmax Visible units are not support");
@@ -131,7 +131,7 @@ public:
         }
 
         //Better initialization of learning rate
-        rbm_base<Layer>::learning_rate =
+        rbm_base<desc>::learning_rate =
                 visible_unit == unit_type::GAUSSIAN && is_relu(hidden_unit) ? 1e-5
             :   visible_unit == unit_type::GAUSSIAN || is_relu(hidden_unit) ? 1e-3
             :   /* Only ReLU and Gaussian Units needs lower rate */           1e-1;

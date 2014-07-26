@@ -9,7 +9,7 @@
 #define DBN_RBM_HPP
 
 #include "dll/rbm.inl"
-#include "dll/layer.hpp"
+#include "dll/rbm_desc.hpp"
 #include "dll/rbm_trainer.hpp"
 
 #endif

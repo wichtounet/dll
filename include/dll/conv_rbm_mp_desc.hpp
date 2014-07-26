@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_CONV_MP_LAYER_HPP
-#define DBN_CONV_MP_LAYER_HPP
+#ifndef DBN_CONV_RBM_MP_DESC_HPP
+#define DBN_CONV_RBM_MP_DESC_HPP
 
 #include "base_conf.hpp"
 #include "contrastive_divergence.hpp"
@@ -23,7 +23,7 @@ namespace dll {
  * Once configured, the ::rbm_t member returns the type of the configured RBM.
  */
 template<std::size_t NV_T, std::size_t NH_T, std::size_t K_T, std::size_t C_T, typename... Parameters>
-struct conv_mp_layer {
+struct conv_rbm_mp_desc {
     static constexpr const std::size_t NV = NV_T;
     static constexpr const std::size_t NH = NH_T;
     static constexpr const std::size_t K = K_T;
@@ -46,7 +46,7 @@ struct conv_mp_layer {
     using watcher_t = typename detail::get_template_type<watcher<default_rbm_watcher>, Parameters...>::template type<RBM>;
 
     /*! The RBM type */
-    using rbm_t = conv_rbm_mp<conv_mp_layer<NV_T, NH_T, K_T, C_T, Parameters...>>;
+    using rbm_t = conv_rbm_mp<conv_rbm_mp_desc<NV_T, NH_T, K_T, C_T, Parameters...>>;
 
     //Validate all parameters
 

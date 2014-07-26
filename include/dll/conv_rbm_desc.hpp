@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_CONV_LAYER_HPP
-#define DBN_CONV_LAYER_HPP
+#ifndef DLL_CONV_RBM_DESC_HPP
+#define DLL_CONV_RBM_DESC_HPP
 
 #include "base_conf.hpp"
 #include "contrastive_divergence.hpp"
@@ -16,13 +16,13 @@
 namespace dll {
 
 /*!
- * \brief Describe a Convolutional Restricted Boltzmann Machine layer.
+ * \brief Describe a Convolutional Restricted Boltzmann Machine.
  *
  * This struct should be used to define a RBM either as standalone or for a DBN.
  * Once configured, the ::rbm_t member returns the type of the configured RBM.
  */
 template<std::size_t NV_T, std::size_t NH_T, std::size_t K_T, typename... Parameters>
-struct conv_layer {
+struct conv_rbm_desc {
     static constexpr const std::size_t NV = NV_T;
     static constexpr const std::size_t NH = NH_T;
     static constexpr const std::size_t K = K_T;
@@ -43,7 +43,7 @@ struct conv_layer {
     using watcher_t = typename detail::get_template_type<watcher<default_rbm_watcher>, Parameters...>::template type<RBM>;
 
     /*! The RBM type */
-    using rbm_t = conv_rbm<conv_layer<NV_T, NH_T, K_T, Parameters...>>;
+    using rbm_t = conv_rbm<conv_rbm_desc<NV_T, NH_T, K_T, Parameters...>>;
 
     //Validate all parameters
 

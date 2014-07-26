@@ -26,10 +26,10 @@ struct rbm_trainer {
     using rbm_t = RBM;
 
     template<typename R>
-    using trainer_t = typename rbm_t::layer::template trainer_t<R>;
+    using trainer_t = typename rbm_t::desc::template trainer_t<R>;
 
     template<typename R>
-    using watcher_t = typename rbm_t::layer::template watcher_t<R>;
+    using watcher_t = typename rbm_t::desc::template watcher_t<R>;
 
     template<typename Samples, typename R = RBM, enable_if_u<rbm_traits<R>::init_weights()> = ::detail::dummy>
     static void init_weights(RBM& rbm, const Samples& training_data){
