@@ -33,6 +33,8 @@ struct dbn_trainer {
     typename dbn_t::weight train(DBN& dbn, const Samples& training_data, Labels& labels, size_t max_epochs, size_t batch_size) const {
         watcher_t<dbn_t> watcher;
 
+        dbn.momentum = dbn.initial_momentum;
+
         watcher.training_begin(dbn);
 
         auto trainer = make_unique<trainer_t<dbn_t>>(dbn);
@@ -74,6 +76,11 @@ struct dbn_trainer {
             }
 
             error = test_set(dbn, data, labels, [](dbn_t& dbn, auto& image){return dbn.predict(image);});
+
+            //After some time increase the momentum
+            if(epoch == dbn.final_momentum_epoch){
+                dbn.momentum = dbn.final_momentum;
+            }
 
             watcher.epoch_end(epoch, error, dbn);
         }

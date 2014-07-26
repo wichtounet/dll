@@ -34,7 +34,13 @@ struct dbn {
 
     using weight = typename rbm_type<0>::weight;
 
-    double learning_rate = 0.77;
+    weight learning_rate = 0.77;
+
+    weight initial_momentum = 0.5;      ///< The initial momentum
+    weight final_momentum = 0.9;        ///< The final momentum applied after *final_momentum_epoch* epoch
+    weight final_momentum_epoch = 6;    ///< The epoch at which momentum change
+
+    weight momentum = 0;                ///< The current momentum
 
     //No arguments by default
     dbn(){};
