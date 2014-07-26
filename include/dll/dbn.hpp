@@ -34,7 +34,7 @@ struct dbn {
 
     using weight = typename rbm_type<0>::weight;
 
-    double learning_rate = 0.1;
+    double learning_rate = 0.77;
 
     //No arguments by default
     dbn(){};
