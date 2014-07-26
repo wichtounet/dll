@@ -34,6 +34,8 @@ struct dbn {
 
     using weight = typename rbm_type<0>::weight;
 
+    double learning_rate = 0.1;
+
     //No arguments by default
     dbn(){};
 
@@ -274,6 +276,33 @@ struct dbn {
     /*}}}*/
 
     /*{{{ Predict */
+    
+    template<typename Sample, typename Output>
+    void predict_weights(const Sample& item_data, Output& result){
+        etl::dyn_vector<typename Sample::value_type> item(item_data);
+
+        auto input = std::cref(item);
+
+        detail::for_each_i(tuples, [&item, &input, &result](std::size_t I, auto& rbm){
+            if(I != layers - 1){
+                typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
+                constexpr const auto num_hidden = rbm_t::num_hidden;
+
+                static etl::dyn_vector<weight> next(num_hidden);
+                static etl::dyn_vector<weight> next_s(num_hidden);
+
+                rbm.activate_hidden(next, next_s, static_cast<const Sample&>(input), static_cast<const Sample&>(input));
+
+                input = std::cref(next);
+            }
+        });
+
+        constexpr const auto num_hidden = rbm_type<layers - 1>::num_hidden;
+
+        static etl::dyn_vector<weight> next_s(num_hidden);
+
+        layer<layers - 1>().activate_hidden(result, next_s, static_cast<const Sample&>(input), static_cast<const Sample&>(input));
+    }
 
     template<typename Sample>
     etl::dyn_vector<weight> predict_weights(const Sample& item_data){
