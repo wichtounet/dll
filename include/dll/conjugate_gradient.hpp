@@ -31,6 +31,8 @@ struct cg_trainer {
     using dbn_t = DBN;
     using weight = typename dbn_t::weight;
 
+    using this_type = cg_trainer<DBN, Debug>;
+
     static constexpr const std::size_t layers = dbn_t::layers;
 
     dbn_t& dbn;
@@ -164,11 +166,13 @@ struct cg_trainer {
 
         update_incs<Temp>(dbn.template layer<layers-1>(), diffs, n_samples, dbn.template layer<layers-2>().gr_probs_a);
 
-        detail::for_each_rpair_i(tuples, [n_samples, &probs_refs](std::size_t I, auto& r1, auto& r2){
-            update_diffs<Temp>(r1, r2, diffs, n_samples);
+        std::vector<std::vector<weight>>& diffs_p = diffs;
+
+        detail::for_each_rpair_i(tuples, [&diffs_p, n_samples, &probs_refs](std::size_t I, auto& r1, auto& r2){
+            this_type::update_diffs<Temp>(r1, r2, diffs_p, n_samples);
 
             if(I > 0){
-                update_incs<Temp>(r1, diffs, n_samples, *probs_refs[I-1]);
+                this_type::update_incs<Temp>(r1, diffs_p, n_samples, *probs_refs[I-1]);
             }
         });
 
