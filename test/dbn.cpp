@@ -105,7 +105,7 @@ TEST_CASE( "dbn/mnist_4", "dbn::sgd" ) {
     auto dbn = make_unique<dbn_t>();
 
     dbn->pretrain(dataset.training_images, 5);
-    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 5, 10);
+    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 200, 10);
 
     REQUIRE(error < 5e-2);
 }
