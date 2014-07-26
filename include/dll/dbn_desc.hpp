@@ -28,6 +28,8 @@ template<typename Layers, typename... Parameters>
 struct dbn_desc {
     using layers = Layers;
 
+    static constexpr const bool Momentum = detail::is_present<momentum, Parameters...>::value;
+
     /*! The type of the trainer to use to train the DBN */
     template <typename DBN>
     using trainer_t = typename detail::get_template_type<trainer<default_dbn_trainer_t>, Parameters...>::template type<DBN>;

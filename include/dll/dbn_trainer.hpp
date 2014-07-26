@@ -10,6 +10,7 @@
 
 #include "dll/labels.hpp"
 #include "dll/test.hpp"
+#include "dll/dbn_traits.hpp"
 
 namespace dll {
 
@@ -78,7 +79,7 @@ struct dbn_trainer {
             error = test_set(dbn, data, labels, [](dbn_t& dbn, auto& image){return dbn.predict(image);});
 
             //After some time increase the momentum
-            if(epoch == dbn.final_momentum_epoch){
+            if(dbn_traits<dbn_t>::has_momentum() && epoch == dbn.final_momentum_epoch){
                 dbn.momentum = dbn.final_momentum;
             }
 
