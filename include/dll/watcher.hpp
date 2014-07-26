@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_WATCHER_HPP
-#define DBN_WATCHER_HPP
+#ifndef DLL_WATCHER_HPP
+#define DLL_WATCHER_HPP
 
 #include <fstream>
 

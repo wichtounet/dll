@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_UNIT_TYPE_HPP
-#define DBN_UNIT_TYPE_HPP
+#ifndef DLL_UNIT_TYPE_HPP
+#define DLL_UNIT_TYPE_HPP
 
 namespace dll {
 

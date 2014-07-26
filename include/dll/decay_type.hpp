@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_DECAY_TYPE_HPP
-#define DBN_DECAY_TYPE_HPP
+#ifndef DLL_DECAY_TYPE_HPP
+#define DLL_DECAY_TYPE_HPP
 
 namespace dll {
 

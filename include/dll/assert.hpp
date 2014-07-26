@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_ASSERT_HPP
-#define DBN_ASSERT_HPP
+#ifndef DLL_ASSERT_HPP
+#define DLL_ASSERT_HPP
 
 #include <iostream>
 

@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_CONV_RBM_MP_HPP
-#define DBN_CONV_RBM_MP_HPP
+#ifndef DLL_CONV_RBM_MP_HPP
+#define DLL_CONV_RBM_MP_HPP
 
 #include "dll/conv_rbm_mp.inl"
 #include "dll/conv_rbm_mp_desc.hpp"

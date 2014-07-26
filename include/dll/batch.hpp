@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_BATCH_HPP
-#define DBN_BATCH_HPP
+#ifndef DLL_BATCH_HPP
+#define DLL_BATCH_HPP
 
 #include <utility>
 #include <vector>

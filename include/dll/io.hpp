@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_IO_HPP
-#define DBN_IO_HPP
+#ifndef DLL_IO_HPP
+#define DLL_IO_HPP
 
 namespace dll {
 

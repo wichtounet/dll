@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_CONV_RBM_MP_DESC_HPP
-#define DBN_CONV_RBM_MP_DESC_HPP
+#ifndef DLL_CONV_RBM_MP_DESC_HPP
+#define DLL_CONV_RBM_MP_DESC_HPP
 
 #include "base_conf.hpp"
 #include "contrastive_divergence.hpp"

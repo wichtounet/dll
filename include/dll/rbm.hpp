@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_RBM_HPP
-#define DBN_RBM_HPP
+#ifndef DLL_RBM_HPP
+#define DLL_RBM_HPP
 
 #include "dll/rbm.inl"
 #include "dll/rbm_desc.hpp"

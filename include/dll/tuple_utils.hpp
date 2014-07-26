@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_TUPLE_UTILS_HPP
-#define DBN_TUPLE_UTILS_HPP
+#ifndef DLL_TUPLE_UTILS_HPP
+#define DLL_TUPLE_UTILS_HPP
 
 namespace dll {
 

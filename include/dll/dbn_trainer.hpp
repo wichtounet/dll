@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_DBN_TRAINER_HPP
-#define DBN_DBN_TRAINER_HPP
+#ifndef DLL_DBN_TRAINER_HPP
+#define DLL_DBN_TRAINER_HPP
 
 #include "dll/labels.hpp"
 #include "dll/test.hpp"

@@ -7,8 +7,8 @@
 
 /*! \file Contrastive Divergence Implementations */
 
-#ifndef DBN_CONTRASTIVE_DIVERGENCE_HPP
-#define DBN_CONTRASTIVE_DIVERGENCE_HPP
+#ifndef DLL_CONTRASTIVE_DIVERGENCE_HPP
+#define DLL_CONTRASTIVE_DIVERGENCE_HPP
 
 #include "etl/fast_matrix.hpp"
 #include "etl/fast_vector.hpp"

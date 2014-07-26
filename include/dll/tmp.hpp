@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_TMP_HPP
-#define DBN_TMP_HPP
+#ifndef DLL_TMP_HPP
+#define DLL_TMP_HPP
 
 #include "etl/tmp.hpp" //for enable_if/disable_if stuff
 

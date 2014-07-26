@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_TEST_HPP
-#define DBN_TEST_HPP
+#ifndef DLL_TEST_HPP
+#define DLL_TEST_HPP
 
 namespace dll {
 

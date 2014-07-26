@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_MATH_HPP
-#define DBN_MATH_HPP
+#ifndef DLL_MATH_HPP
+#define DLL_MATH_HPP
 
 #include <cmath>
 

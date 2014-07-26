@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_DBN_HPP
-#define DBN_DBN_HPP
+#ifndef DLL_DBN_HPP
+#define DLL_DBN_HPP
 
 #include <tuple>
 

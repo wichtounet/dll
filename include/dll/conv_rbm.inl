@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_CONV_RBM_INL
-#define DBN_CONV_RBM_INL
+#ifndef DLL_CONV_RBM_INL
+#define DLL_CONV_RBM_INL
 
 #include <cstddef>
 #include <ctime>

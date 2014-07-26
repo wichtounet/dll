@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_RBM_BASE_HPP
-#define DBN_RBM_BASE_HPP
+#ifndef DLL_RBM_BASE_HPP
+#define DLL_RBM_BASE_HPP
 
 namespace dll {
 

@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_UTILS_HPP
-#define DBN_UTILS_HPP
+#ifndef DLL_UTILS_HPP
+#define DLL_UTILS_HPP
 
 #include <memory>
 

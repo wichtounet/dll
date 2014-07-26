@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_LIKELY_HPP
-#define DBN_LIKELY_HPP
+#ifndef DLL_LIKELY_HPP
+#define DLL_LIKELY_HPP
 
 #if defined __clang__
 

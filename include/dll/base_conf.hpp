@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_BASE_CONF_HPP
-#define DBN_BASE_CONF_HPP
+#ifndef DLL_BASE_CONF_HPP
+#define DLL_BASE_CONF_HPP
 
 #include <cstddef>
 

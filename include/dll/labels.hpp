@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DBN_LABELS_HPP
-#define DBN_LABELS_HPP
+#ifndef DLL_LABELS_HPP
+#define DLL_LABELS_HPP
 
 #include <vector>
 

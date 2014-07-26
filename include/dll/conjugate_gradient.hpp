@@ -7,8 +7,8 @@
 
 /*! \file Conjugate Gradient (CG) descent Implementation */
 
-#ifndef DBN_CONJUGATE_GRADIENT_HPP
-#define DBN_CONJUGATE_GRADIENT_HPP
+#ifndef DLL_CONJUGATE_GRADIENT_HPP
+#define DLL_CONJUGATE_GRADIENT_HPP
 
 namespace dll {
 

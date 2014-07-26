@@ -7,8 +7,8 @@
 
 /*! \file Stochastic Gradient Descent (SGD) Implementation */
 
-#ifndef DBN_STOCHASTIC_GRADIENT_DESCENT
-#define DBN_STOCHASTIC_GRADIENT_DESCENT
+#ifndef DLL_STOCHASTIC_GRADIENT_DESCENT
+#define DLL_STOCHASTIC_GRADIENT_DESCENT
 
 namespace dll {
 
