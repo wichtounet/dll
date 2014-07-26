@@ -24,9 +24,7 @@ struct sgd_trainer {
 
     sgd_trainer(dbn_t& dbn) : dbn(dbn), tuples(dbn.tuples) {}
 
-    void init_training(std::size_t /*batch_size*/){
-        //TODO 
-    }
+    void init_training(std::size_t){}
 
     template<typename Sample>
     void compute_outputs(const Sample& item_data){
@@ -43,18 +41,13 @@ struct sgd_trainer {
 
     template<typename RBM, typename Inputs>
     static void compute_gradients(RBM& rbm, const Inputs& inputs){
+        using namespace etl;
+
         using rbm_t = RBM;
 
-        constexpr const auto n_inputs = rbm_t::num_visible;
-        constexpr const auto n_outputs = rbm_t::num_hidden;
+        static fast_matrix<weight, rbm_t::num_visible, rbm_t::num_hidden> t;
 
-        //TODO Rewrite that as ETL expressions
-
-        for(std::size_t a = 0; a < n_inputs; ++a){
-            for(std::size_t b = 0; b < n_outputs; ++b){
-                rbm.w_grad(a,b) += inputs[a] * rbm.errors[b];
-            }
-        }
+        rbm.w_grad += etl::mmul(reshape<rbm_t::num_visible, 1>(inputs), reshape<1, rbm_t::num_hidden>(rbm.errors), t);
 
         rbm.b_grad += rbm.errors;
     }
@@ -67,41 +60,40 @@ struct sgd_trainer {
 
         constexpr const auto n_outputs = dbn_t::template num_hidden<layers - 1>();
 
-        //TODO Update also the lower levels weights
-
         detail::for_each(tuples, [](auto& rbm){
             rbm.w_grad = 0.0;
             rbm.b_grad = 0.0;
             rbm.c_grad = 0.0;
         });
 
+        //Compute the total gradients for the mini batch
+
         for(std::size_t i = 0; i < n_samples; ++i){
+            //Compute the outputs of each layer one after another
             compute_outputs(data_batch[i]);
+
+            //Compute the errors of the last layer
 
             auto& last_rbm = dbn.template layer<layers - 1>();
 
-            // Compute dE/dz_j for each output neuron
             for(std::size_t j = 0; j < n_outputs; ++j){
                 auto observed = last_rbm.o_a[j];
                 auto desired = label_batch[i][j];
                 last_rbm.errors[j] = observed * (1 - observed) * (desired - observed);
             }
 
+            //Compute the gradients of each layer
+
             detail::for_each_rpair_i(tuples, [](std::size_t, auto& r1, auto& r2){
                 compute_gradients(r2, r1.o_a);
 
                 typedef typename std::remove_reference<decltype(r2)>::type r2_t;
 
-                constexpr const auto n_inputs = r2_t::num_visible;
-                constexpr const auto n_outputs = r2_t::num_hidden;
+                using namespace etl;
 
-                for(std::size_t a = 0; a < n_inputs; ++a){
-                    r1.errors[a] = 0.0;
-                    for(std::size_t b = 0; b < n_outputs; ++b){
-                        r1.errors[a] += r2.errors[b] * r2.w(a,b);
-                    }
-                    r1.errors[a] *= r1.o_a[a] * (1 - r1.o_a[a]);
-                }
+                static fast_matrix<weight, r2_t::num_visible, 1> t;
+
+                r1.errors = r1.o_a * (1 - r1.o_a) * mmul(r2.w, reshape<n_outputs, 1>(r2.errors), t);
             });
         }
 
