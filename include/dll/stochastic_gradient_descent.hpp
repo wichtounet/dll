@@ -28,8 +28,21 @@ struct sgd_trainer {
         //TODO 
     }
 
+    template<typename Sample>
+    void compute_outputs(const Sample& item_data){
+        etl::dyn_vector<typename Sample::value_type> item(item_data);
+
+        auto& first_rbm = dbn.template layer<0>();
+
+        first_rbm.activate_hidden(first_rbm.o_a, first_rbm.o_s, item, item);
+
+        detail::for_each_pair(tuples, [](auto& r1, auto& r2){
+            r2.activate_hidden(r2.o_a, r2.o_s, r1.o_a, r1.o_s);
+        });
+    }
+
     template<typename RBM, typename Inputs>
-    void compute_gradients(RBM& rbm, const Inputs& inputs){
+    static void compute_gradients(RBM& rbm, const Inputs& inputs){
         using rbm_t = RBM;
 
         constexpr const auto n_inputs = rbm_t::num_visible;
@@ -44,33 +57,6 @@ struct sgd_trainer {
         }
 
         rbm.b_grad += rbm.errors;
-    }
-
-    template<typename RBM>
-    void apply_gradients(RBM& rbm){
-        using rbm_t = RBM;
-
-        constexpr const auto n_inputs = rbm_t::num_visible;
-        constexpr const auto n_outputs = rbm_t::num_hidden;
-
-        auto learning_rate = dbn.learning_rate;
-
-        rbm.w += learning_rate * rbm.w_grad;
-        rbm.b += learning_rate * rbm.b_grad;
-        rbm.c += learning_rate * rbm.c_grad;
-    }
-
-    template<typename Sample>
-    void compute_outputs(const Sample& item_data){
-        etl::dyn_vector<typename Sample::value_type> item(item_data);
-
-        auto& first_rbm = dbn.template layer<0>();
-
-        first_rbm.activate_hidden(first_rbm.o_a, first_rbm.o_s, item, item);
-
-        detail::for_each_pair(tuples, [](auto& r1, auto& r2){
-            r2.activate_hidden(r2.o_a, r2.o_s, r1.o_a, r1.o_s);
-        });
     }
 
     template<typename T, typename L>
@@ -101,8 +87,25 @@ struct sgd_trainer {
                 last_rbm.errors[j] = observed * (1 - observed) * (desired - observed);
             }
 
-            compute_gradients(last_rbm, dbn.template layer<layers - 2>().o_a);
+            detail::for_each_rpair_i(tuples, [](std::size_t, auto& r1, auto& r2){
+                compute_gradients(r2, r1.o_a);
+
+                typedef typename std::remove_reference<decltype(r2)>::type r2_t;
+
+                constexpr const auto n_inputs = r2_t::num_visible;
+                constexpr const auto n_outputs = r2_t::num_hidden;
+
+                for(std::size_t a = 0; a < n_inputs; ++a){
+                    r1.errors[a] = 0.0;
+                    for(std::size_t b = 0; b < n_outputs; ++b){
+                        r1.errors[a] += r2.errors[b] * r2.w(a,b);
+                    }
+                    r1.errors[a] *= r1.o_a[a] * (1 - r1.o_a[a]);
+                }
+            });
         }
+
+        //Finalize gradients
 
         detail::for_each(tuples, [n_samples](auto& rbm){
             rbm.w_grad /= n_samples;
@@ -110,7 +113,15 @@ struct sgd_trainer {
             rbm.c_grad /= n_samples;
         });
 
-        apply_gradients(dbn.template layer<layers - 1>());
+        //Apply gradients
+
+        detail::for_each(tuples, [this](auto& rbm){
+            auto learning_rate = dbn.learning_rate;
+
+            rbm.w += learning_rate * rbm.w_grad;
+            rbm.b += learning_rate * rbm.b_grad;
+            rbm.c += learning_rate * rbm.c_grad;
+        });
     }
 };
 
