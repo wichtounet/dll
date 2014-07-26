@@ -31,6 +31,7 @@ struct rbm_traits {
     HAS_STATIC_FIELD(Decay, has_decay_field)
     HAS_STATIC_FIELD(Init, has_init_field)
     HAS_STATIC_FIELD(Momentum, has_momentum_field)
+    HAS_STATIC_FIELD(DBN, has_dbn_field)
 
     /*!
      * \brief Indicates if the RBM is convolutional
@@ -86,6 +87,16 @@ struct rbm_traits {
     template<typename R = RBM, disable_if_u<has_decay_field<typename R::layer>::value> = ::detail::dummy>
     static constexpr decay_type decay(){
         return decay_type::NONE;
+    }
+
+    template<typename R = RBM, enable_if_u<has_dbn_field<typename R::layer>::value> = ::detail::dummy>
+    static constexpr bool in_dbn(){
+        return rbm_t::layer::DBN;
+    }
+
+    template<typename R = RBM, disable_if_u<has_dbn_field<typename R::layer>::value> = ::detail::dummy>
+    static constexpr bool in_dbn(){
+        return false;
     }
 
     template<typename R = RBM, enable_if_u<has_init_field<typename R::layer>::value> = ::detail::dummy>

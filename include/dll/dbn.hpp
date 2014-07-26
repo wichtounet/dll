@@ -23,7 +23,7 @@ template<typename... R>
 struct check_rbm ;
 
 template<typename R1, typename... R>
-struct check_rbm<R1, R...> : std::integral_constant<bool, and_u<R1::DBN, check_rbm<R...>::value>::value> {};
+struct check_rbm<R1, R...> : std::integral_constant<bool, and_u<rbm_traits<R1>::in_dbn(), check_rbm<R...>::value>::value> {};
 
 template<typename R1>
 struct check_rbm<R1> : std::integral_constant<bool, R1::DBN> {};
@@ -37,7 +37,7 @@ template<typename... Layers>
 struct dbn {
     static_assert(detail::check_rbm<Layers...>::value, "RBM must be in DBN mode");
 
-    using tuple_type = std::tuple<rbm<Layers>...>;
+    using tuple_type = std::tuple<Layers...>;
     tuple_type tuples;
 
     static constexpr const std::size_t layers = sizeof...(Layers);
