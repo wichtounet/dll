@@ -52,12 +52,12 @@ struct sgd_trainer {
         rbm.b_grad += rbm.errors;
     }
 
-    template<typename T1, typename T2, bool M = rbm_traits<dbn_t>::has_momentum(), enable_if_u<M> = ::detail::dummy>
+    template<typename T1, typename T2, bool M = dbn_traits<dbn_t>::has_momentum(), enable_if_u<M> = ::detail::dummy>
     T2& get_fgrad(T1& , T2& inc){
         return inc;
     }
 
-    template<typename T1, typename T2, bool M = rbm_traits<dbn_t>::has_momentum(), disable_if_u<M> = ::detail::dummy>
+    template<typename T1, typename T2, bool M = dbn_traits<dbn_t>::has_momentum(), disable_if_u<M> = ::detail::dummy>
     T1& get_fgrad(T1& grad, T2& ){
         return grad;
     }
