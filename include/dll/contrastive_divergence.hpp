@@ -363,6 +363,10 @@ public:
         //Return the reconstruction error
         return mean(c_grad * c_grad);
     }
+
+    static std::string name(){
+        return "Contrastive Divergence";
+    }
 };
 
 /*!
@@ -474,6 +478,10 @@ public:
 
         //Return the reconstruction error
         return mean(c_grad_org * c_grad_org);
+    }
+
+    static std::string name(){
+        return "Contrastive Divergence (convolutional)";
     }
 };
 
@@ -588,6 +596,10 @@ public:
 
         //Return the reconstruction error
         return mean(c_grad * c_grad);
+    }
+
+    static std::string name(){
+        return "Persistent Contrastive Divergence";
     }
 };
 
@@ -717,6 +729,10 @@ public:
 
         //Return the reconstruction error
         return mean(c_grad_org * c_grad_org);
+    }
+
+    static std::string name(){
+        return "Persistent Contrastive Divergence (convolutional)";
     }
 };
 

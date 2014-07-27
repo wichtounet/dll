@@ -14,6 +14,7 @@
 
 #include "stop_watch.hpp"
 #include "rbm_traits.hpp"
+#include "dbn_traits.hpp"
 
 namespace dll {
 
@@ -22,21 +23,25 @@ struct default_rbm_watcher {
     stop_watch<std::chrono::seconds> watch;
 
     void training_begin(const RBM& rbm){
-        std::cout << "RBM: Train with learning_rate=" << rbm.learning_rate;
+        std::cout << "Train RBM with \"" << RBM::desc::template trainer_t<RBM>::name() << "\"" << std::endl;
+        std::cout << "With parameters:" << std::endl;
+        std::cout << "   learning_rate=" << rbm.learning_rate << std::endl;
 
         if(rbm_traits<RBM>::has_momentum()){
-            std::cout << ", momentum=" << rbm.momentum;
+            std::cout << "   momentum=" << rbm.momentum << std::endl;
         }
 
-        if(rbm_traits<RBM>::decay() != decay_type::NONE){
-            std::cout << ", weight_cost=" << rbm.weight_cost;
+        if(rbm_traits<RBM>::decay() == decay_type::L1 || rbm_traits<RBM>::decay() == decay_type::L1_FULL){
+            std::cout << "   weight_cost(L1)=" << rbm.weight_cost << std::endl;
+        }
+
+        if(rbm_traits<RBM>::decay() == decay_type::L2 || rbm_traits<RBM>::decay() == decay_type::L2_FULL){
+            std::cout << "   weight_cost(L2)=" << rbm.weight_cost << std::endl;
         }
 
         if(rbm_traits<RBM>::has_sparsity()){
-            std::cout << ", sparsity_target=" << rbm.sparsity_target;
+            std::cout << "   sparsity_target=" << rbm.sparsity_target << std::endl;
         }
-
-        std::cout << std::endl;
     }
 
     void epoch_end(std::size_t epoch, double error, const RBM& rbm){
@@ -53,8 +58,14 @@ template<typename DBN>
 struct default_dbn_watcher {
     stop_watch<std::chrono::seconds> watch;
 
-    void training_begin(const DBN&){
-        std::cout << "Start fine-tuning" << std::endl;
+    void training_begin(const DBN& dbn){
+        std::cout << "Train DBN with \"" << DBN::desc::template trainer_t<DBN>::name() << "\"" << std::endl;
+        std::cout << "With parameters:" << std::endl;
+        std::cout << "   learning_rate=" << dbn.learning_rate << std::endl;
+
+        if(dbn_traits<DBN>::has_momentum()){
+            std::cout << "   momentum=" << dbn.momentum << std::endl;
+        }
     }
 
     void epoch_end(std::size_t epoch, double error, const DBN&){

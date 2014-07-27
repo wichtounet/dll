@@ -145,6 +145,10 @@ struct sgd_trainer {
             rbm.c += learning_rate * c_fgrad;
         });
     }
+
+    static std::string name(){
+        return "Stochastic Gradient Descent";
+    }
 };
 
 } //end of dbn namespace

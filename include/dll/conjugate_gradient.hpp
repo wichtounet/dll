@@ -476,6 +476,9 @@ struct cg_trainer {
         }
     }
 
+    static std::string name(){
+        return "Conjugate Gradient";
+    }
 };
 
 } //end of dbn namespace
