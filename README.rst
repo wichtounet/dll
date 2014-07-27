@@ -30,12 +30,13 @@ Features
 
    * Pretraining with RBMs
    * Fine tuning with Conjugate Gradient
+   * Fine tuning with Stochastic Gradient Descent
 
 In development
 --------------
 
 conv_rbm is still in heavy development and should not be used unless you intend
-to fix it ;)
+to improve it ;)
 
 Building
 --------
