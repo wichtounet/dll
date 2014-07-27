@@ -52,6 +52,16 @@ struct sgd_trainer {
         rbm.b_grad += rbm.errors;
     }
 
+    template<typename T1, typename T2, bool M = rbm_traits<dbn_t>::has_momentum(), enable_if_u<M> = ::detail::dummy>
+    T2& get_fgrad(T1& , T2& inc){
+        return inc;
+    }
+
+    template<typename T1, typename T2, bool M = rbm_traits<dbn_t>::has_momentum(), disable_if_u<M> = ::detail::dummy>
+    T1& get_fgrad(T1& grad, T2& ){
+        return grad;
+    }
+
     template<typename T, typename L>
     void train_batch(std::size_t /*epoch*/, const dll::batch<T>& data_batch, const dll::batch<L>& label_batch){
         dll_assert(data_batch.size() == label_batch.size(), "Invalid sizes");
@@ -64,6 +74,12 @@ struct sgd_trainer {
             rbm.w_grad = 0.0;
             rbm.b_grad = 0.0;
             rbm.c_grad = 0.0;
+
+            if(dbn_traits<dbn_t>::has_momentum()){
+                rbm.w_inc = 0.0;
+                rbm.b_inc = 0.0;
+                rbm.c_inc = 0.0;
+            }
         });
 
         //Compute the total gradients for the mini batch
@@ -108,11 +124,25 @@ struct sgd_trainer {
         //Apply gradients
 
         detail::for_each(tuples, [this](auto& rbm){
+            //Update momentum gradients
+            if(dbn_traits<dbn_t>::has_momentum()){
+                auto momentum = dbn.momentum;
+
+                rbm.w_inc = momentum * rbm.w_inc + (1 - momentum) * rbm.w_grad;
+                rbm.b_inc = momentum * rbm.b_inc + (1 - momentum) * rbm.b_grad;
+                rbm.c_inc = momentum * rbm.c_inc + (1 - momentum) * rbm.c_grad;
+            }
+
+            //The final gradients;
+            const auto& w_fgrad = get_fgrad(rbm.w_grad, rbm.w_inc);
+            const auto& b_fgrad = get_fgrad(rbm.b_grad, rbm.b_inc);
+            const auto& c_fgrad = get_fgrad(rbm.c_grad, rbm.c_inc);
+
             auto learning_rate = dbn.learning_rate;
 
-            rbm.w += learning_rate * rbm.w_grad;
-            rbm.b += learning_rate * rbm.b_grad;
-            rbm.c += learning_rate * rbm.c_grad;
+            rbm.w += learning_rate * w_fgrad;
+            rbm.b += learning_rate * b_fgrad;
+            rbm.c += learning_rate * c_fgrad;
         });
     }
 };
