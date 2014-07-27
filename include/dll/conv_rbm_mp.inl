@@ -161,6 +161,8 @@ public:
         h_a = 0.0;
         h_s = 0.0;
 
+        //TODO Ideally, pooling should be done with an ETL expression
+
         for(size_t k = 0; k < K; ++k){
             etl::convolve_2d_valid(v_a, fflip(w(k)), v_cv(k));
 
