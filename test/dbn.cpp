@@ -133,3 +133,104 @@ TEST_CASE( "dbn/mnist_5", "dbn::sgd_momentum" ) {
 
     REQUIRE(error < 5e-2);
 }
+
+TEST_CASE( "dbn/mnist_6", "dbn::cg_gaussian" ) {
+    typedef dll::dbn_desc<
+        dll::dbn_layers<
+        dll::rbm_desc<28 * 28, 100, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::visible<dll::unit_type::GAUSSIAN>, dll::init_weights>::rbm_t,
+        dll::rbm_desc<100, 200, dll::in_dbn, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::rbm_desc<200, 10, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset<std::vector, std::deque, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(200);
+    dataset.training_labels.resize(200);
+
+    mnist::normalize_dataset(dataset);
+
+    auto dbn = make_unique<dbn_t>();
+
+    dbn->pretrain(dataset.training_images, 5);
+    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 10, 50);
+
+    REQUIRE(error < 5e-2);
+}
+
+//TODO This test is not very convincing
+TEST_CASE( "dbn/mnist_7", "dbn::sgd_gaussian" ) {
+    typedef dll::dbn_desc<
+        dll::dbn_layers<
+        dll::rbm_desc<28 * 28, 100, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::visible<dll::unit_type::GAUSSIAN>, dll::init_weights>::rbm_t,
+        dll::rbm_desc<100, 200, dll::in_dbn, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::rbm_desc<200, 10, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
+        dll::trainer<dll::sgd_trainer>>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset<std::vector, std::deque, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(200);
+    dataset.training_labels.resize(200);
+
+    mnist::normalize_dataset(dataset);
+
+    auto dbn = make_unique<dbn_t>();
+
+    dbn->learning_rate = 0.01;
+
+    dbn->pretrain(dataset.training_images, 100);
+    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 200, 20);
+
+    REQUIRE(error < 5e-2);
+}
+
+//TODO This test does not work
+TEST_CASE( "dbn/mnist_8", "dbn::cg_relu" ) {
+    typedef dll::dbn_desc<
+        dll::dbn_layers<
+        dll::rbm_desc<28 * 28, 100, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::RELU>, dll::init_weights>::rbm_t,
+        dll::rbm_desc<100, 200, dll::in_dbn, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::rbm_desc<200, 10, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset<std::vector, std::deque, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(200);
+    dataset.training_labels.resize(200);
+
+    mnist::binarize_dataset(dataset);
+
+    auto dbn = make_unique<dbn_t>();
+
+    dbn->pretrain(dataset.training_images, 5);
+    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 10, 50);
+
+    REQUIRE(error < 5e-2);
+}
+
+//TODO This test is not very convincing
+TEST_CASE( "dbn/mnist_9", "dbn::sgd_relu" ) {
+    typedef dll::dbn_desc<
+        dll::dbn_layers<
+        dll::rbm_desc<28 * 28, 100, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::RELU>, dll::init_weights>::rbm_t,
+        dll::rbm_desc<100, 200, dll::in_dbn, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::rbm_desc<200, 10, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
+        dll::trainer<dll::sgd_trainer>>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset<std::vector, std::deque, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(200);
+    dataset.training_labels.resize(200);
+
+    mnist::binarize_dataset(dataset);
+
+    auto dbn = make_unique<dbn_t>();
+
+    dbn->learning_rate = 0.05;
+
+    dbn->pretrain(dataset.training_images, 100);
+    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 300, 10);
+
+    REQUIRE(error < 5e-2);
+}
