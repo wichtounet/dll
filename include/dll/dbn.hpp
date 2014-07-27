@@ -132,6 +132,8 @@ struct dbn {
 
             auto input_size = static_cast<const training_t&>(input).size();
 
+            //TODO Train every layers but the one with EXP hidden unit
+
             //Train each layer but the last one
             if(I <= layers - 2){
                 std::cout << "DBN: Train layer " << I << " (" << num_visible << "->" << num_hidden << ") with " << input_size << " entries" << std::endl;
