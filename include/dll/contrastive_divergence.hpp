@@ -302,6 +302,11 @@ public:
         dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<rbm_t>::batch_size()), "Invalid size");
         dll_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
 
+        using namespace etl;
+
+        static fast_matrix<weight, num_visible, num_hidden> t1;
+        static fast_matrix<weight, num_visible, num_hidden> t2;
+
         //Size of a minibatch
         auto n_samples = static_cast<weight>(batch.size());
 
@@ -331,12 +336,7 @@ public:
                 rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
             }
 
-            for(size_t i = 0; i < num_visible; ++i){
-                for(size_t j = 0; j < num_hidden; ++j){
-                    w_grad(i, j) += rbm.h1_a(j) * rbm.v1(i) - rbm.h2_a(j) * rbm.v2_a(i);
-                }
-            }
-
+            w_grad += mmul(reshape<num_visible, 1>(rbm.v1), reshape<1, num_hidden>(rbm.h1_a), t1) - mmul(reshape<num_visible, 1>(rbm.v2_a), reshape<1, num_hidden>(rbm.h2_a), t2);
             b_grad += rbm.h1_a - rbm.h2_a;
             c_grad += rbm.v1 - rbm.v2_a;
 
@@ -524,6 +524,11 @@ public:
         dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<rbm_t>::batch_size()), "Invalid size");
         dll_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
 
+        using namespace etl;
+
+        static fast_matrix<weight, num_visible, num_hidden> t1;
+        static fast_matrix<weight, num_visible, num_hidden> t2;
+
         //Size of a minibatch
         auto n_samples = static_cast<weight>(batch.size());
 
@@ -563,12 +568,7 @@ public:
             p_h_a[i] = rbm.h2_a;
             p_h_s[i] = rbm.h2_s;
 
-            for(size_t i = 0; i < num_visible; ++i){
-                for(size_t j = 0; j < num_hidden; ++j){
-                    w_grad(i, j) += rbm.h1_a(j) * rbm.v1(i) - rbm.h2_a(j) * rbm.v2_a(i);
-                }
-            }
-
+            w_grad += mmul(reshape<num_visible, 1>(rbm.v1), reshape<1, num_hidden>(rbm.h1_a), t1) - mmul(reshape<num_visible, 1>(rbm.v2_a), reshape<1, num_hidden>(rbm.h2_a), t2);
             b_grad += rbm.h1_a - rbm.h2_a;
             c_grad += rbm.v1 - rbm.v2_a;
 
