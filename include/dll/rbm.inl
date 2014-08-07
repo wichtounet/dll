@@ -78,9 +78,6 @@ public:
     etl::fast_vector<weight, num_hidden> h2_s; //!< Sampled value of hidden units after last CD-step
 
     //Gradients computations for DBN
-    etl::fast_matrix<weight, num_visible, num_hidden>& gr_w = w;
-    etl::fast_vector<weight, num_hidden>& gr_b = b;
-
     etl::fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_incs;
     etl::fast_vector<weight, num_hidden_gra> gr_b_incs;
 
@@ -179,7 +176,7 @@ public:
 
     template<bool Temp, typename H1, typename H2, typename V>
     void gr_activate_hidden(H1& h_a, H2& h_s, const V& v_a, const V& v_s) const {
-        return activate_hidden(h_a, h_s, v_a, v_s, Temp ? gr_b_tmp : gr_b, Temp ? gr_w_tmp : gr_w);
+        return activate_hidden(h_a, h_s, v_a, v_s, Temp ? gr_b_tmp : b, Temp ? gr_w_tmp : w);
     }
 
     template<typename H1, typename H2, typename V, typename B, typename W>

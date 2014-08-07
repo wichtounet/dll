@@ -72,7 +72,7 @@ struct cg_trainer {
             for(size_t i = 0; i < n_visible; ++i){
                 double s = 0.0;
                 for(size_t j = 0; j < n_hidden; ++j){
-                    s += diffs[sample][j] * (Temp ? r2.gr_w_tmp(i, j) : r2.gr_w(i, j));
+                    s += diffs[sample][j] * (Temp ? r2.gr_w_tmp(i, j) : r2.w(i, j));
                 }
 
                 if(R1::hidden_unit != unit_type::RELU){
@@ -287,8 +287,8 @@ struct cg_trainer {
             i3.f = 0.0;
 
             detail::for_each(tuples, [](auto& rbm){
-                rbm.gr_w_best = rbm.gr_w;
-                rbm.gr_b_best = rbm.gr_b;
+                rbm.gr_w_best = rbm.w;
+                rbm.gr_b_best = rbm.b;
 
                 rbm.gr_w_best_incs = rbm.gr_w_incs;
                 rbm.gr_b_best_incs = rbm.gr_b_incs;
@@ -319,8 +319,8 @@ struct cg_trainer {
                     }
 
                     detail::for_each(tuples, [&i3](auto& rbm){
-                        rbm.gr_w_tmp = rbm.gr_w + rbm.gr_w_s * i3.x;
-                        rbm.gr_b_tmp = rbm.gr_b + rbm.gr_b_s * i3.x;
+                        rbm.gr_w_tmp = rbm.w + rbm.gr_w_s * i3.x;
+                        rbm.gr_b_tmp = rbm.b + rbm.gr_b_s * i3.x;
                     });
 
                     gradient<true>(context, cost);
@@ -397,8 +397,8 @@ struct cg_trainer {
                 i3.x = std::max(std::min(i3.x, i4.x - INT * (i4.x - i2.x)), i2.x + INT * (i4.x -i2.x));
 
                 detail::for_each(tuples, [&i3](auto& rbm){
-                    rbm.gr_w_tmp = rbm.gr_w + rbm.gr_w_s * i3.x;
-                    rbm.gr_b_tmp = rbm.gr_b + rbm.gr_b_s * i3.x;
+                    rbm.gr_w_tmp = rbm.w + rbm.gr_w_s * i3.x;
+                    rbm.gr_b_tmp = rbm.b + rbm.gr_b_s * i3.x;
                 });
 
                 gradient<true>(context, cost);
@@ -427,8 +427,8 @@ struct cg_trainer {
 
             if(std::abs(i3.d) < -SIG * i0.d && i3.f < i0.f + i3.x * RHO * i0.d){
                 detail::for_each(tuples, [&i3](auto& rbm){
-                    rbm.gr_w += rbm.gr_w_s * i3.x;
-                    rbm.gr_b += rbm.gr_b_s * i3.x;
+                    rbm.w += rbm.gr_w_s * i3.x;
+                    rbm.b += rbm.gr_b_s * i3.x;
                 });
 
                 i0.f = i3.f;
