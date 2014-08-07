@@ -77,31 +77,6 @@ public:
     etl::fast_vector<weight, num_hidden> h2_a; //!< Activation probabilities of hidden units after last CD-step
     etl::fast_vector<weight, num_hidden> h2_s; //!< Sampled value of hidden units after last CD-step
 
-    //Gradients computations for DBN
-    etl::fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_incs;
-    etl::fast_vector<weight, num_hidden_gra> gr_b_incs;
-
-    etl::fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_best;
-    etl::fast_vector<weight, num_hidden_gra> gr_b_best;
-
-    etl::fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_best_incs;
-    etl::fast_vector<weight, num_hidden_gra> gr_b_best_incs;
-
-    etl::fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_df0;
-    etl::fast_vector<weight, num_hidden_gra> gr_b_df0;
-
-    etl::fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_df3;
-    etl::fast_vector<weight, num_hidden_gra> gr_b_df3;
-
-    etl::fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_s;
-    etl::fast_vector<weight, num_hidden_gra> gr_b_s;
-
-    etl::fast_matrix<weight, num_visible_gra, num_hidden_gra> gr_w_tmp;
-    etl::fast_vector<weight, num_hidden_gra> gr_b_tmp;
-
-    std::vector<etl::dyn_vector<weight>> gr_probs_a;
-    std::vector<etl::dyn_vector<weight>> gr_probs_s;
-
 public:
     //No copying
     rbm(const rbm& rbm) = delete;
@@ -172,11 +147,6 @@ public:
     template<typename H1, typename H2, typename V>
     void activate_hidden(H1& h_a, H2& h_s, const V& v_a, const V& v_s) const {
         return activate_hidden(h_a, h_s, v_a, v_s, b, w);
-    }
-
-    template<bool Temp, typename H1, typename H2, typename V>
-    void gr_activate_hidden(H1& h_a, H2& h_s, const V& v_a, const V& v_s) const {
-        return activate_hidden(h_a, h_s, v_a, v_s, Temp ? gr_b_tmp : b, Temp ? gr_w_tmp : w);
     }
 
     template<typename H1, typename H2, typename V, typename B, typename W>

@@ -79,6 +79,11 @@ struct dual_for_each_impl {
         f(std::get<I>(t1), std::get<I>(t2));
     }
 
+    static void for_each_i(Tuple1& t1, Tuple2& t2, F&& f) {
+        dual_for_each_impl<I - 1, Tuple1, Tuple2, F>::for_each_i(t1, t2, std::forward<F>(f));
+        f(I, std::get<I>(t1), std::get<I>(t2));
+    }
+
     static void for_each_pair(Tuple1& t1, Tuple2& t2, F&& f) {
         dual_for_each_impl<I - 1, Tuple1, Tuple2, F>::for_each_pair(t1, t2, std::forward<F>(f));
         f(std::get<I>(t1), std::get<I+1>(t1), std::get<I>(t2), std::get<I+1>(t2));
@@ -94,6 +99,10 @@ template<typename Tuple1, typename Tuple2, typename F>
 struct dual_for_each_impl<0, Tuple1, Tuple2, F> {
     static void for_each(Tuple1& t1, Tuple2& t2, F&& f) {
         f(std::get<0>(t1), std::get<0>(t2));
+    }
+
+    static void for_each_i(Tuple1& t1, Tuple2& t2, F&& f) {
+        f(0, std::get<0>(t1), std::get<0>(t2));
     }
 
     static void for_each_pair(Tuple1& t1, Tuple2& t2, F&& f) {
@@ -152,6 +161,13 @@ void for_each(Tuple1& t1, Tuple2& t2, F&& f) {
     static_assert(std::tuple_size<Tuple1>::value == std::tuple_size<Tuple2>::value, "Can only iterate tuples of same size");
 
     dual_for_each_impl<std::tuple_size<Tuple1>::value - 1, Tuple1, Tuple2, F>::for_each(t1, t2, std::forward<F>(f));
+}
+
+template<typename Tuple1, typename Tuple2, typename F>
+void for_each_i(Tuple1& t1, Tuple2& t2, F&& f) {
+    static_assert(std::tuple_size<Tuple1>::value == std::tuple_size<Tuple2>::value, "Can only iterate tuples of same size");
+
+    dual_for_each_impl<std::tuple_size<Tuple1>::value - 1, Tuple1, Tuple2, F>::for_each_i(t1, t2, std::forward<F>(f));
 }
 
 template<typename Tuple1, typename Tuple2, typename F>

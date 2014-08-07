@@ -10,6 +10,8 @@
 #ifndef DLL_CONJUGATE_GRADIENT_HPP
 #define DLL_CONJUGATE_GRADIENT_HPP
 
+#include "context.hpp"
+
 namespace dll {
 
 template<typename Sample, typename Label>
@@ -26,6 +28,39 @@ struct gradient_context {
     }
 };
 
+template<typename RBM>
+struct cg_context {
+    using rbm_t = RBM;
+    using weight = typename rbm_t::weight;
+
+    static constexpr const std::size_t num_visible = rbm_t::num_visible;
+    static constexpr const std::size_t num_hidden = rbm_t::num_hidden;
+
+    etl::fast_matrix<weight, num_visible, num_hidden> gr_w_incs;
+    etl::fast_vector<weight, num_hidden> gr_b_incs;
+
+    etl::fast_matrix<weight, num_visible, num_hidden> gr_w_best;
+    etl::fast_vector<weight, num_hidden> gr_b_best;
+
+    etl::fast_matrix<weight, num_visible, num_hidden> gr_w_best_incs;
+    etl::fast_vector<weight, num_hidden> gr_b_best_incs;
+
+    etl::fast_matrix<weight, num_visible, num_hidden> gr_w_df0;
+    etl::fast_vector<weight, num_hidden> gr_b_df0;
+
+    etl::fast_matrix<weight, num_visible, num_hidden> gr_w_df3;
+    etl::fast_vector<weight, num_hidden> gr_b_df3;
+
+    etl::fast_matrix<weight, num_visible, num_hidden> gr_w_s;
+    etl::fast_vector<weight, num_hidden> gr_b_s;
+
+    etl::fast_matrix<weight, num_visible, num_hidden> gr_w_tmp;
+    etl::fast_vector<weight, num_hidden> gr_b_tmp;
+
+    std::vector<etl::dyn_vector<weight>> gr_probs_a;
+    std::vector<etl::dyn_vector<weight>> gr_probs_s;
+};
+
 template<typename DBN, bool Debug = false>
 struct cg_trainer {
     using dbn_t = DBN;
@@ -33,21 +68,25 @@ struct cg_trainer {
 
     using this_type = cg_trainer<DBN, Debug>;
 
+    using rbm_context_tuple_t = typename context_builder<cg_context, typename dbn_t::tuple_type>::type;
+
     static constexpr const std::size_t layers = dbn_t::layers;
 
     dbn_t& dbn;
     typename dbn_t::tuple_type& tuples;
 
+    rbm_context_tuple_t rbm_contexts;
+
     cg_trainer(dbn_t& dbn) : dbn(dbn), tuples(dbn.tuples) {}
 
     void init_training(std::size_t batch_size){
-        detail::for_each(dbn.tuples, [batch_size](auto& rbm){
-            typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
-            constexpr const auto num_hidden = rbm_t::num_hidden;
+        detail::for_each(rbm_contexts, [batch_size](auto& ctx){
+            typedef typename std::remove_reference<decltype(ctx)>::type ctx_t;
+            constexpr const auto num_hidden = ctx_t::num_hidden;
 
             for(size_t i = 0; i < batch_size; ++i){
-                rbm.gr_probs_a.emplace_back(num_hidden);
-                rbm.gr_probs_s.emplace_back(num_hidden);
+                ctx.gr_probs_a.emplace_back(num_hidden);
+                ctx.gr_probs_s.emplace_back(num_hidden);
             }
         });
     }
@@ -61,10 +100,10 @@ struct cg_trainer {
 
     /* Gradient */
 
-    template<bool Temp, typename R1, typename R2, typename D>
-    static void update_diffs(R1& r1, R2& r2, std::vector<D>& diffs, size_t n_samples){
-        constexpr auto n_visible = R2::num_visible;
-        constexpr auto n_hidden = R2::num_hidden;
+    template<bool Temp, typename R1, typename R2, typename C1, typename C2, typename D>
+    static void update_diffs(R1&, R2& r2, C1& c1, C2& c2, std::vector<D>& diffs, size_t n_samples){
+        constexpr auto n_visible = C2::num_visible;
+        constexpr auto n_hidden = C2::num_hidden;
 
         for(size_t sample = 0;  sample < n_samples; ++sample){
             D diff(n_visible);
@@ -72,11 +111,11 @@ struct cg_trainer {
             for(size_t i = 0; i < n_visible; ++i){
                 double s = 0.0;
                 for(size_t j = 0; j < n_hidden; ++j){
-                    s += diffs[sample][j] * (Temp ? r2.gr_w_tmp(i, j) : r2.w(i, j));
+                    s += diffs[sample][j] * (Temp ? c2.gr_w_tmp(i, j) : r2.w(i, j));
                 }
 
                 if(R1::hidden_unit != unit_type::RELU){
-                    s *= r1.gr_probs_a[sample][i] * (1.0 - r1.gr_probs_a[sample][i]);
+                    s *= c1.gr_probs_a[sample][i] * (1.0 - c1.gr_probs_a[sample][i]);
                 }
 
                 diff[i] = s;
@@ -86,10 +125,10 @@ struct cg_trainer {
         }
     }
 
-    template<bool Temp, typename R, typename D, typename V>
-    static void update_incs(R& rbm, std::vector<D>& diffs, size_t n_samples, const V& visibles){
-        constexpr auto n_visible = R::num_visible;
-        constexpr auto n_hidden = R::num_hidden;
+    template<bool Temp, typename C, typename D, typename V>
+    static void update_incs(C& ctx, std::vector<D>& diffs, size_t n_samples, const V& visibles){
+        constexpr auto n_visible = C::num_visible;
+        constexpr auto n_hidden = C::num_hidden;
 
         for(size_t sample = 0;  sample < n_samples; ++sample){
             auto& v = visibles[sample];
@@ -97,12 +136,12 @@ struct cg_trainer {
 
             for(size_t i = 0; i < n_visible; ++i){
                 for(size_t j = 0; j < n_hidden; ++j){
-                    rbm.gr_w_incs(i, j) += v[i] * d[j];
+                    ctx.gr_w_incs(i, j) += v[i] * d[j];
                 }
             }
 
             for(size_t j = 0; j < n_hidden; ++j){
-                rbm.gr_b_incs(j) += d[j];
+                ctx.gr_b_incs(j) += d[j];
             }
         }
     }
@@ -115,9 +154,9 @@ struct cg_trainer {
         static std::vector<std::vector<weight>> diffs;
         diffs.resize(n_samples);
 
-        detail::for_each(tuples, [](auto& rbm){
-            rbm.gr_w_incs = 0.0;
-            rbm.gr_b_incs = 0.0;
+        detail::for_each(rbm_contexts, [](auto& ctx){
+            ctx.gr_w_incs = 0.0;
+            ctx.gr_b_incs = 0.0;
         });
 
         cost = 0.0;
@@ -125,24 +164,24 @@ struct cg_trainer {
 
         for(size_t sample = 0; sample < n_samples; ++sample){
             auto& input = context.inputs[sample];
-            auto output = std::ref(dbn.template layer<0>().gr_probs_a[sample]);
+            auto output = std::ref(std::get<0>(rbm_contexts).gr_probs_a[sample]);
             auto& target = context.targets[sample];
 
-            detail::for_each_i(tuples, [&input,&output,sample](std::size_t I, auto& rbm){
+            detail::for_each_i(tuples, rbm_contexts, [&input,&output,sample](std::size_t I, auto& rbm, auto& ctx){
                 auto& output_ref = static_cast<etl::dyn_vector<weight>&>(output);
 
                 if(I == 0){
-                    rbm.template gr_activate_hidden<Temp>(output_ref, rbm.gr_probs_s[sample], input, input);
+                    rbm.activate_hidden(output_ref, ctx.gr_probs_s[sample], input, input, Temp ? ctx.gr_b_tmp : rbm.b, Temp ? ctx.gr_w_tmp : rbm.w);
                 } else {
-                    rbm.template gr_activate_hidden<Temp>(rbm.gr_probs_a[sample], rbm.gr_probs_s[sample], output_ref, output_ref);
-                    output = std::ref(rbm.gr_probs_a[sample]);
+                    rbm.activate_hidden(ctx.gr_probs_a[sample], ctx.gr_probs_s[sample], output_ref, output_ref, Temp ? ctx.gr_b_tmp : rbm.b, Temp ? ctx.gr_w_tmp : rbm.w);
+                    output = std::ref(ctx.gr_probs_a[sample]);
                 }
             });
 
             auto& diff = diffs[sample];
             diff.resize(n_hidden);
 
-            auto& result = dbn.template layer<layers - 1>().gr_probs_a[sample];
+            auto& result = std::get<layers - 1>(rbm_contexts).gr_probs_a[sample];
             weight scale = std::accumulate(result.begin(), result.end(), 0.0);
 
             for(auto& r : result){
@@ -160,23 +199,23 @@ struct cg_trainer {
 
         //Get pointers to the different gr_probs
         std::array<std::vector<etl::dyn_vector<weight>>*, layers> probs_refs;
-        detail::for_each_i(tuples, [&probs_refs](std::size_t I, auto& rbm){
-            probs_refs[I] = &rbm.gr_probs_a;
+        detail::for_each_i(rbm_contexts, [&probs_refs](std::size_t I, auto& ctx){
+            probs_refs[I] = &ctx.gr_probs_a;
         });
 
-        update_incs<Temp>(dbn.template layer<layers-1>(), diffs, n_samples, dbn.template layer<layers-2>().gr_probs_a);
+        update_incs<Temp>(std::get<layers-1>(rbm_contexts), diffs, n_samples, std::get<layers-2>(rbm_contexts).gr_probs_a);
 
         std::vector<std::vector<weight>>& diffs_p = diffs;
 
-        detail::for_each_rpair_i(tuples, [&diffs_p, n_samples, &probs_refs](std::size_t I, auto& r1, auto& r2){
-            this_type::update_diffs<Temp>(r1, r2, diffs_p, n_samples);
+        detail::for_each_rpair_i(tuples, rbm_contexts, [&diffs_p, n_samples, &probs_refs](std::size_t I, auto& r1, auto& r2, auto& c1, auto& c2){
+            this_type::update_diffs<Temp>(r1, r2, c1, c2, diffs_p, n_samples);
 
             if(I > 0){
-                this_type::update_incs<Temp>(r1, diffs_p, n_samples, *probs_refs[I-1]);
+                this_type::update_incs<Temp>(c1, diffs_p, n_samples, *probs_refs[I-1]);
             }
         });
 
-        update_incs<Temp>(dbn.template layer<0>(), diffs, n_samples, context.inputs);
+        update_incs<Temp>(std::get<0>(rbm_contexts), diffs, n_samples, context.inputs);
 
         if(Debug){
             std::cout << "evaluating(" << Temp << "): cost:" << cost << " error: " << (error / n_samples) << std::endl;
@@ -186,7 +225,7 @@ struct cg_trainer {
     bool is_finite(){
         bool finite = true;
 
-        detail::for_each(tuples, [&finite](auto& a){
+        detail::for_each(rbm_contexts, [&finite](auto& a){
             if(!finite){
                 return;
             }
@@ -211,40 +250,40 @@ struct cg_trainer {
 
     weight s_dot_s(){
         weight acc = 0.0;
-        detail::for_each(tuples, [&acc](auto& rbm){
-            acc += dot(rbm.gr_w_s, rbm.gr_w_s) + dot(rbm.gr_b_s, rbm.gr_b_s);
+        detail::for_each(rbm_contexts, [&acc](auto& ctx){
+            acc += dot(ctx.gr_w_s, ctx.gr_w_s) + dot(ctx.gr_b_s, ctx.gr_b_s);
         });
         return acc;
     }
 
     weight df3_dot_s(){
         weight acc = 0.0;
-        detail::for_each(tuples, [&acc](auto& rbm){
-            acc += dot(rbm.gr_w_df3, rbm.gr_w_s) + dot(rbm.gr_b_df3, rbm.gr_b_s);
+        detail::for_each(rbm_contexts, [&acc](auto& ctx){
+            acc += dot(ctx.gr_w_df3, ctx.gr_w_s) + dot(ctx.gr_b_df3, ctx.gr_b_s);
         });
         return acc;
     }
 
     weight df3_dot_df3(){
         weight acc = 0.0;
-        detail::for_each(tuples, [&acc](auto& rbm){
-            acc += dot(rbm.gr_w_df3, rbm.gr_w_df3) + dot(rbm.gr_b_df3, rbm.gr_b_df3);
+        detail::for_each(rbm_contexts, [&acc](auto& ctx){
+            acc += dot(ctx.gr_w_df3, ctx.gr_w_df3) + dot(ctx.gr_b_df3, ctx.gr_b_df3);
         });
         return acc;
     }
 
     weight df0_dot_df0(){
         weight acc = 0.0;
-        detail::for_each(tuples, [&acc](auto& rbm){
-            acc += dot(rbm.gr_w_df0, rbm.gr_w_df0) + dot(rbm.gr_b_df0, rbm.gr_b_df0);
+        detail::for_each(rbm_contexts, [&acc](auto& ctx){
+            acc += dot(ctx.gr_w_df0, ctx.gr_w_df0) + dot(ctx.gr_b_df0, ctx.gr_b_df0);
         });
         return acc;
     }
 
     weight df0_dot_df3(){
         weight acc = 0.0;
-        detail::for_each(tuples, [&acc](auto& rbm){
-            acc += dot(rbm.gr_w_df0, rbm.gr_w_df3) + dot(rbm.gr_b_df0, rbm.gr_b_df3);
+        detail::for_each(rbm_contexts, [&acc](auto& ctx){
+            acc += dot(ctx.gr_w_df0, ctx.gr_w_df3) + dot(ctx.gr_b_df0, ctx.gr_b_df3);
         });
         return acc;
     }
@@ -270,12 +309,12 @@ struct cg_trainer {
         weight cost = 0.0;
         gradient<false>(context, cost);
 
-        detail::for_each(tuples, [](auto& rbm){
-            rbm.gr_w_df0 = rbm.gr_w_incs;
-            rbm.gr_b_df0 = rbm.gr_b_incs;
+        detail::for_each(rbm_contexts, [](auto& ctx){
+            ctx.gr_w_df0 = ctx.gr_w_incs;
+            ctx.gr_b_df0 = ctx.gr_b_incs;
 
-            rbm.gr_w_s = rbm.gr_w_df0 * -1.0;
-            rbm.gr_b_s = rbm.gr_b_df0 * -1.0;
+            ctx.gr_w_s = ctx.gr_w_df0 * -1.0;
+            ctx.gr_b_s = ctx.gr_b_df0 * -1.0;
         });
 
         int_t i0 = {cost, s_dot_s(), 0.0};
@@ -286,15 +325,15 @@ struct cg_trainer {
             auto best_cost = i0.f;
             i3.f = 0.0;
 
-            detail::for_each(tuples, [](auto& rbm){
-                rbm.gr_w_best = rbm.w;
-                rbm.gr_b_best = rbm.b;
+            detail::for_each(tuples, rbm_contexts, [](auto& rbm, auto& ctx){
+                ctx.gr_w_best = rbm.w;
+                ctx.gr_b_best = rbm.b;
 
-                rbm.gr_w_best_incs = rbm.gr_w_incs;
-                rbm.gr_b_best_incs = rbm.gr_b_incs;
+                ctx.gr_w_best_incs = ctx.gr_w_incs;
+                ctx.gr_b_best_incs = ctx.gr_b_incs;
 
-                rbm.gr_w_df3 = 0.0;
-                rbm.gr_b_df3 = 0.0;
+                ctx.gr_w_df3 = 0.0;
+                ctx.gr_b_df3 = 0.0;
             });
 
             int64_t M = MAX;
@@ -308,9 +347,9 @@ struct cg_trainer {
                 i2.d = i0.d;
                 i3.f = i0.f;
 
-                detail::for_each(tuples, [](auto& rbm){
-                    rbm.gr_w_df3 = rbm.gr_w_df0;
-                    rbm.gr_b_df3 = rbm.gr_b_df0;
+                detail::for_each(rbm_contexts, [](auto& ctx){
+                    ctx.gr_w_df3 = ctx.gr_w_df0;
+                    ctx.gr_b_df3 = ctx.gr_b_df0;
                 });
 
                 while(true){
@@ -318,28 +357,28 @@ struct cg_trainer {
                         break;
                     }
 
-                    detail::for_each(tuples, [&i3](auto& rbm){
-                        rbm.gr_w_tmp = rbm.w + rbm.gr_w_s * i3.x;
-                        rbm.gr_b_tmp = rbm.b + rbm.gr_b_s * i3.x;
+                    detail::for_each(tuples, rbm_contexts, [&i3](auto& rbm, auto& ctx){
+                        ctx.gr_w_tmp = rbm.w + ctx.gr_w_s * i3.x;
+                        ctx.gr_b_tmp = rbm.b + ctx.gr_b_s * i3.x;
                     });
 
                     gradient<true>(context, cost);
 
                     i3.f = cost;
-                    detail::for_each(tuples, [](auto& rbm){
-                        rbm.gr_w_df3 = rbm.gr_w_incs;
-                        rbm.gr_b_df3 = rbm.gr_b_incs;
+                    detail::for_each(rbm_contexts, [](auto& ctx){
+                        ctx.gr_w_df3 = ctx.gr_w_incs;
+                        ctx.gr_b_df3 = ctx.gr_b_incs;
                     });
 
                     if(std::isfinite(cost) && is_finite()){
                         if(i3.f < best_cost){
                             best_cost = i3.f;
-                            detail::for_each(tuples, [](auto& rbm){
-                                rbm.gr_w_best = rbm.gr_w_tmp;
-                                rbm.gr_b_best = rbm.gr_b_tmp;
+                            detail::for_each(rbm_contexts, [](auto& ctx){
+                                ctx.gr_w_best = ctx.gr_w_tmp;
+                                ctx.gr_b_best = ctx.gr_b_tmp;
 
-                                rbm.gr_w_best_incs = rbm.gr_w_incs;
-                                rbm.gr_b_best_incs = rbm.gr_b_incs;
+                                ctx.gr_w_best_incs = ctx.gr_w_incs;
+                                ctx.gr_b_best_incs = ctx.gr_b_incs;
                             });
                         }
                         break;
@@ -396,27 +435,27 @@ struct cg_trainer {
 
                 i3.x = std::max(std::min(i3.x, i4.x - INT * (i4.x - i2.x)), i2.x + INT * (i4.x -i2.x));
 
-                detail::for_each(tuples, [&i3](auto& rbm){
-                    rbm.gr_w_tmp = rbm.w + rbm.gr_w_s * i3.x;
-                    rbm.gr_b_tmp = rbm.b + rbm.gr_b_s * i3.x;
+                detail::for_each(tuples, rbm_contexts, [&i3](auto& rbm, auto& ctx){
+                    ctx.gr_w_tmp = rbm.w + ctx.gr_w_s * i3.x;
+                    ctx.gr_b_tmp = rbm.b + ctx.gr_b_s * i3.x;
                 });
 
                 gradient<true>(context, cost);
 
                 i3.f = cost;
-                detail::for_each(tuples, [](auto& rbm){
-                    rbm.gr_w_df3 = rbm.gr_w_incs;
-                    rbm.gr_b_df3 = rbm.gr_b_incs;
+                detail::for_each(rbm_contexts, [](auto& ctx){
+                    ctx.gr_w_df3 = ctx.gr_w_incs;
+                    ctx.gr_b_df3 = ctx.gr_b_incs;
                 });
 
                 if(i3.f < best_cost){
                     best_cost = i3.f;
-                    detail::for_each(tuples, [](auto& rbm){
-                        rbm.gr_w_best = rbm.gr_w_tmp;
-                        rbm.gr_b_best = rbm.gr_b_tmp;
+                    detail::for_each(rbm_contexts, [](auto& ctx){
+                        ctx.gr_w_best = ctx.gr_w_tmp;
+                        ctx.gr_b_best = ctx.gr_b_tmp;
 
-                        rbm.gr_w_best_incs = rbm.gr_w_incs;
-                        rbm.gr_b_best_incs = rbm.gr_b_incs;
+                        ctx.gr_w_best_incs = ctx.gr_w_incs;
+                        ctx.gr_b_best_incs = ctx.gr_b_incs;
                     });
                 }
 
@@ -426,32 +465,32 @@ struct cg_trainer {
             }
 
             if(std::abs(i3.d) < -SIG * i0.d && i3.f < i0.f + i3.x * RHO * i0.d){
-                detail::for_each(tuples, [&i3](auto& rbm){
-                    rbm.w += rbm.gr_w_s * i3.x;
-                    rbm.b += rbm.gr_b_s * i3.x;
+                detail::for_each(tuples, rbm_contexts, [&i3](auto& rbm, auto& ctx){
+                    rbm.w += ctx.gr_w_s * i3.x;
+                    rbm.b += ctx.gr_b_s * i3.x;
                 });
 
                 i0.f = i3.f;
 
                 auto g = (df3_dot_df3() - df0_dot_df3()) / df0_dot_df0();
 
-                detail::for_each(tuples, [g](auto& rbm){
-                    rbm.gr_w_s = (rbm.gr_w_s * g) + (rbm.gr_w_df3 * -1.0);
-                    rbm.gr_b_s = (rbm.gr_b_s * g) + (rbm.gr_b_df3 * -1.0);
+                detail::for_each(rbm_contexts, [g](auto& ctx){
+                    ctx.gr_w_s = (ctx.gr_w_s * g) + (ctx.gr_w_df3 * -1.0);
+                    ctx.gr_b_s = (ctx.gr_b_s * g) + (ctx.gr_b_df3 * -1.0);
                 });
 
                 i3.d = i0.d;
                 i0.d = df3_dot_s();
 
-                detail::for_each(tuples, [](auto& rbm){
-                    rbm.gr_w_df0 = rbm.gr_w_df3;
-                    rbm.gr_b_df0 = rbm.gr_b_df3;
+                detail::for_each(rbm_contexts, [](auto& ctx){
+                    ctx.gr_w_df0 = ctx.gr_w_df3;
+                    ctx.gr_b_df0 = ctx.gr_b_df3;
                 });
 
                 if(i0.d > 0){
-                    detail::for_each(tuples, [] (auto& rbm) {
-                        rbm.gr_w_s = rbm.gr_w_df0 * -1.0;
-                        rbm.gr_b_s = rbm.gr_b_df0 * -1.0;
+                    detail::for_each(rbm_contexts, [] (auto& ctx) {
+                        ctx.gr_w_s = ctx.gr_w_df0 * -1.0;
+                        ctx.gr_b_s = ctx.gr_b_df0 * -1.0;
                     });
                     i0.d = -df0_dot_df0();
                 }
@@ -463,9 +502,9 @@ struct cg_trainer {
                     break;
                 }
 
-                detail::for_each(tuples, [] (auto& rbm) {
-                    rbm.gr_w_s = rbm.gr_w_df0 * -1.0;
-                    rbm.gr_b_s = rbm.gr_b_df0 * -1.0;
+                detail::for_each(rbm_contexts, [] (auto& ctx) {
+                    ctx.gr_w_s = ctx.gr_w_df0 * -1.0;
+                    ctx.gr_b_s = ctx.gr_b_df0 * -1.0;
                 });
                 i0.d = -s_dot_s();
 
