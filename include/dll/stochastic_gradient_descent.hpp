@@ -10,6 +10,8 @@
 #ifndef DLL_STOCHASTIC_GRADIENT_DESCENT
 #define DLL_STOCHASTIC_GRADIENT_DESCENT
 
+#include "context.hpp"
+
 namespace dll {
 
 template<typename RBM>
@@ -33,20 +35,12 @@ struct sgd_context {
     etl::fast_vector<weight, num_hidden> errors;
 };
 
-template <typename T>
-struct context_builder;
-
-template <typename... Args>
-struct context_builder<std::tuple<Args...>> {
-    using type = std::tuple<sgd_context<Args>...>;
-};
-
 template<typename DBN>
 struct sgd_trainer {
     using dbn_t = DBN;
     using weight = typename dbn_t::weight;
 
-    using rbm_context_tuple_t = typename context_builder<typename DBN::tuple_type>::type;
+    using rbm_context_tuple_t = typename context_builder<sgd_context, typename DBN::tuple_type>::type;
 
     static constexpr const std::size_t layers = dbn_t::layers;
 
