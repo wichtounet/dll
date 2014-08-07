@@ -81,7 +81,6 @@ struct watcher : conf_elt  {
 struct momentum {};
 struct sparsity {};
 struct init_weights {};
-struct in_dbn {};
 
 } //end of dbn namespace
 

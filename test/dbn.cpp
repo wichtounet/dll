@@ -21,9 +21,9 @@
 TEST_CASE( "dbn/mnist_1", "dbn::simple" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 100, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<100, 200, dll::in_dbn, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<200, 10, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>>::dbn_t dbn_t;
+        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
+        dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
@@ -44,9 +44,9 @@ TEST_CASE( "dbn/mnist_1", "dbn::simple" ) {
 TEST_CASE( "dbn/mnist_2", "dbn::containers" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 100, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<100, 200, dll::in_dbn, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<200, 10, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>>::dbn_t dbn_t;
+        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
+        dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::deque, double>();
 
@@ -75,9 +75,9 @@ TEST_CASE( "dbn/mnist_3", "dbn::labels" ) {
 
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 200, dll::in_dbn, dll::batch_size<50>, dll::init_weights, dll::momentum>::rbm_t,
-        dll::rbm_desc<200, 300, dll::in_dbn, dll::batch_size<50>, dll::momentum>::rbm_t,
-        dll::rbm_desc<310, 500, dll::in_dbn, dll::batch_size<50>, dll::momentum>::rbm_t>>::dbn_t dbn_simple_t;
+        dll::rbm_desc<28 * 28, 200, dll::batch_size<50>, dll::init_weights, dll::momentum>::rbm_t,
+        dll::rbm_desc<200, 300, dll::batch_size<50>, dll::momentum>::rbm_t,
+        dll::rbm_desc<310, 500, dll::batch_size<50>, dll::momentum>::rbm_t>>::dbn_t dbn_simple_t;
 
     auto dbn = make_unique<dbn_simple_t>();
 
@@ -90,9 +90,9 @@ TEST_CASE( "dbn/mnist_3", "dbn::labels" ) {
 TEST_CASE( "dbn/mnist_4", "dbn::sgd" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 100, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<100, 200, dll::in_dbn, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<200, 10, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>, dll::trainer<dll::sgd_trainer>>::dbn_t dbn_t;
+        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
+        dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>, dll::trainer<dll::sgd_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
@@ -113,9 +113,9 @@ TEST_CASE( "dbn/mnist_4", "dbn::sgd" ) {
 TEST_CASE( "dbn/mnist_5", "dbn::sgd_momentum" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 100, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<100, 200, dll::in_dbn, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<200, 10, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>, 
+        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
+        dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>, 
         dll::trainer<dll::sgd_trainer>, dll::momentum>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
@@ -137,9 +137,9 @@ TEST_CASE( "dbn/mnist_5", "dbn::sgd_momentum" ) {
 TEST_CASE( "dbn/mnist_6", "dbn::cg_gaussian" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 100, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::visible<dll::unit_type::GAUSSIAN>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<100, 200, dll::in_dbn, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<200, 10, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>>::dbn_t dbn_t;
+        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::visible<dll::unit_type::GAUSSIAN>, dll::init_weights>::rbm_t,
+        dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::deque, double>();
 
@@ -161,9 +161,9 @@ TEST_CASE( "dbn/mnist_6", "dbn::cg_gaussian" ) {
 TEST_CASE( "dbn/mnist_7", "dbn::sgd_gaussian" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 100, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::visible<dll::unit_type::GAUSSIAN>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<100, 200, dll::in_dbn, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<200, 10, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
+        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::visible<dll::unit_type::GAUSSIAN>, dll::init_weights>::rbm_t,
+        dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
         dll::trainer<dll::sgd_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::deque, double>();
@@ -188,9 +188,9 @@ TEST_CASE( "dbn/mnist_7", "dbn::sgd_gaussian" ) {
 TEST_CASE( "dbn/mnist_8", "dbn::cg_relu" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 100, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::RELU>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<100, 200, dll::in_dbn, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<200, 10, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>>::dbn_t dbn_t;
+        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::RELU>, dll::init_weights>::rbm_t,
+        dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::deque, double>();
 
@@ -212,9 +212,9 @@ TEST_CASE( "dbn/mnist_8", "dbn::cg_relu" ) {
 TEST_CASE( "dbn/mnist_9", "dbn::sgd_relu" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 100, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::RELU>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<100, 200, dll::in_dbn, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<200, 10, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
+        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::RELU>, dll::init_weights>::rbm_t,
+        dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
         dll::trainer<dll::sgd_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::deque, double>();
@@ -238,9 +238,9 @@ TEST_CASE( "dbn/mnist_9", "dbn::sgd_relu" ) {
 TEST_CASE( "dbn/mnist_10", "dbn::sgd_wd" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 100, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<100, 200, dll::in_dbn, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<200, 10, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>, 
+        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
+        dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>, 
         dll::trainer<dll::sgd_trainer>, dll::weight_decay<dll::decay_type::L2>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
@@ -262,9 +262,9 @@ TEST_CASE( "dbn/mnist_10", "dbn::sgd_wd" ) {
 TEST_CASE( "dbn/mnist_11", "dbn::sgd_wd_momentum"){
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 100, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<100, 200, dll::in_dbn, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<200, 10, dll::in_dbn, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>, 
+        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
+        dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>, 
         dll::trainer<dll::sgd_trainer>, dll::momentum, dll::weight_decay<dll::decay_type::L2>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();

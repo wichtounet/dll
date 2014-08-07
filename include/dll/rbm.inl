@@ -50,15 +50,10 @@ public:
     static constexpr const unit_type visible_unit = desc::visible_unit;
     static constexpr const unit_type hidden_unit = desc::hidden_unit;
 
-    static constexpr const bool DBN = desc::DBN;
-
     static_assert(visible_unit != unit_type::SOFTMAX && visible_unit != unit_type::EXP,
         "Exponential and softmax Visible units are not support");
     static_assert(hidden_unit != unit_type::GAUSSIAN,
         "Gaussian hidden units are not supported");
-
-    static constexpr const std::size_t num_visible_gra = DBN ? num_visible : 0;
-    static constexpr const std::size_t num_hidden_gra = DBN ? num_hidden : 0;
 
     //Weights and biases
     etl::fast_matrix<weight, num_visible, num_hidden> w;    //!< Weights

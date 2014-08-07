@@ -32,7 +32,6 @@ struct rbm_desc {
     static constexpr const unit_type hidden_unit = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
     static constexpr const decay_type Decay = detail::get_value<weight_decay<decay_type::NONE>, Parameters...>::value;
     static constexpr const bool Init = detail::is_present<init_weights, Parameters...>::value;
-    static constexpr const bool DBN = detail::is_present<in_dbn, Parameters...>::value;
     static constexpr const bool Sparsity = detail::is_present<sparsity, Parameters...>::value;
 
     /*! The type of the trainer to use to train the RBM */
@@ -52,7 +51,7 @@ struct rbm_desc {
     //Make sure only valid types are passed to the configuration list
     static_assert(
         detail::is_valid<detail::tmp_list<momentum, batch_size_id, visible_id, hidden_id, weight_decay_id,
-              init_weights, in_dbn, sparsity, trainer_id>, Parameters...>::value,
+              init_weights, sparsity, trainer_id>, Parameters...>::value,
         "Invalid parameters type");
 
     static_assert(BatchSize > 0, "Batch size must be at least 1");
