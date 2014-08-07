@@ -21,6 +21,7 @@ struct dbn_traits {
     using dbn_t = DBN;
 
     HAS_STATIC_FIELD(Momentum, has_momentum_field)
+    HAS_STATIC_FIELD(Decay, has_decay_field)
 
     template<typename D = DBN, enable_if_u<has_momentum_field<typename D::desc>::value> = ::detail::dummy>
     static constexpr bool has_momentum(){
@@ -30,6 +31,16 @@ struct dbn_traits {
     template<typename D = DBN, disable_if_u<has_momentum_field<typename D::desc>::value> = ::detail::dummy>
     static constexpr bool has_momentum(){
         return false;
+    }
+
+    template<typename D = DBN, enable_if_u<has_decay_field<typename D::desc>::value> = ::detail::dummy>
+    static constexpr decay_type decay(){
+        return dbn_t::desc::Decay;
+    }
+
+    template<typename D = DBN, disable_if_u<has_decay_field<typename D::desc>::value> = ::detail::dummy>
+    static constexpr decay_type decay(){
+        return decay_type::NONE;
     }
 };
 

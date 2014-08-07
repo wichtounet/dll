@@ -27,30 +27,6 @@ inline double sign(double v){
 }
 
 /*!
- * \brief Indicates the type of decay that is to be applied to weights
- * \param t The RBM weight decay type.
- * \return one of L1,L2,NONE
- */
-constexpr decay_type w_decay(decay_type t){
-    return 
-        (t == decay_type::L1 || t == decay_type::L1_FULL) ? decay_type::L1 : 
-        (t == decay_type::L2 || t == decay_type::L2_FULL) ? decay_type::L2 : 
-                                                            decay_type::NONE;
-}
-
-/*!
- * \brief Indicates the type of decay that is to be applied to biases
- * \param t The RBM weight decay type.
- * \return one of L1,L2,NONE
- */
-constexpr decay_type b_decay(decay_type t){
-    return 
-        t == decay_type::L1_FULL ? decay_type::L1 :
-        t == decay_type::L2_FULL ? decay_type::L2 :
-                                   decay_type::NONE;
-}
-
-/*!
  * \brief Base class for all standard trainer
  */
 template<typename RBM>

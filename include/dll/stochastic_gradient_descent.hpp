@@ -138,12 +138,24 @@ struct sgd_trainer {
             const auto& b_fgrad = get_fgrad(rbm.b_grad, rbm.b_inc);
             const auto& c_fgrad = get_fgrad(rbm.c_grad, rbm.c_inc);
 
-            auto learning_rate = dbn.learning_rate;
-
-            rbm.w += learning_rate * w_fgrad;
-            rbm.b += learning_rate * b_fgrad;
-            rbm.c += learning_rate * c_fgrad;
+            update(rbm.w, w_fgrad, w_decay(dbn_traits<dbn_t>::decay()), 0.0);
+            update(rbm.b, b_fgrad, b_decay(dbn_traits<dbn_t>::decay()), 0.0);
+            update(rbm.c, c_fgrad, b_decay(dbn_traits<dbn_t>::decay()), 0.0);
         });
+    }
+
+    template<typename V, typename G>
+    void update(V& value, const G& grad, decay_type decay, double penalty){
+        auto learning_rate = dbn.learning_rate;
+        auto weight_cost = dbn.weight_cost;
+
+        if(decay == decay_type::L1){
+            value += learning_rate * grad - learning_rate * weight_cost * abs(value) - penalty;
+        } else if(decay == decay_type::L2){
+            value += learning_rate * grad - learning_rate * weight_cost * value - penalty;
+        } else {
+            value += learning_rate * grad - penalty;
+        }
     }
 
     static std::string name(){
