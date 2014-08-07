@@ -12,12 +12,45 @@
 
 namespace dll {
 
+template<typename RBM>
+struct sgd_context {
+    using rbm_t = RBM;
+    using weight = typename rbm_t::weight;
+
+    static constexpr const std::size_t num_visible = rbm_t::num_visible;
+    static constexpr const std::size_t num_hidden = rbm_t::num_hidden;
+
+    etl::fast_matrix<weight, num_visible, num_hidden> w_grad;
+    etl::fast_vector<weight, num_hidden> b_grad;
+    etl::fast_vector<weight, num_visible> c_grad;
+
+    etl::fast_matrix<weight, num_visible, num_hidden> w_inc;
+    etl::fast_vector<weight, num_hidden> b_inc;
+    etl::fast_vector<weight, num_visible> c_inc;
+
+    etl::fast_vector<weight, num_hidden> o_a;
+    etl::fast_vector<weight, num_hidden> o_s;
+    etl::fast_vector<weight, num_hidden> errors;
+};
+
+template <typename T>
+struct context_builder;
+
+template <typename... Args>
+struct context_builder<std::tuple<Args...>> {
+    using type = std::tuple<sgd_context<Args>...>;
+};
+
 template<typename DBN>
 struct sgd_trainer {
     using dbn_t = DBN;
     using weight = typename dbn_t::weight;
 
+    using rbm_context_tuple_t = typename context_builder<typename DBN::tuple_type>::type;
+
     static constexpr const std::size_t layers = dbn_t::layers;
+
+    rbm_context_tuple_t rbm_contexts;
 
     dbn_t& dbn;
     typename dbn_t::tuple_type& tuples;
@@ -31,25 +64,26 @@ struct sgd_trainer {
         etl::dyn_vector<typename Sample::value_type> item(item_data);
 
         auto& first_rbm = dbn.template layer<0>();
+        auto& first_rbm_context = std::get<0>(rbm_contexts);
 
-        first_rbm.activate_hidden(first_rbm.o_a, first_rbm.o_s, item, item);
+        first_rbm.activate_hidden(first_rbm_context.o_a, first_rbm_context.o_s, item, item);
 
-        detail::for_each_pair(tuples, [](auto& r1, auto& r2){
-            r2.activate_hidden(r2.o_a, r2.o_s, r1.o_a, r1.o_s);
+        detail::for_each_pair(tuples, rbm_contexts, [](auto&, auto& r2, auto& ctx1, auto& ctx2){
+            r2.activate_hidden(ctx2.o_a, ctx2.o_s, ctx1.o_a, ctx1.o_s);
         });
     }
 
-    template<typename RBM, typename Inputs>
-    static void compute_gradients(RBM& rbm, const Inputs& inputs){
+    template<typename RBM, typename Context, typename Inputs>
+    static void compute_gradients(RBM& , Context& ctx, const Inputs& inputs){
         using namespace etl;
 
         using rbm_t = RBM;
 
         static fast_matrix<weight, rbm_t::num_visible, rbm_t::num_hidden> t;
 
-        rbm.w_grad += etl::mmul(reshape<rbm_t::num_visible, 1>(inputs), reshape<1, rbm_t::num_hidden>(rbm.errors), t);
+        ctx.w_grad += etl::mmul(reshape<rbm_t::num_visible, 1>(inputs), reshape<1, rbm_t::num_hidden>(ctx.errors), t);
 
-        rbm.b_grad += rbm.errors;
+        ctx.b_grad += ctx.errors;
     }
 
     template<typename T1, typename T2, bool M = dbn_traits<dbn_t>::has_momentum(), enable_if_u<M> = ::detail::dummy>
@@ -70,15 +104,15 @@ struct sgd_trainer {
 
         constexpr const auto n_outputs = dbn_t::template num_hidden<layers - 1>();
 
-        detail::for_each(tuples, [](auto& rbm){
-            rbm.w_grad = 0.0;
-            rbm.b_grad = 0.0;
-            rbm.c_grad = 0.0;
+        detail::for_each(rbm_contexts, [](auto& context){
+            context.w_grad = 0.0;
+            context.b_grad = 0.0;
+            context.c_grad = 0.0;
 
             if(dbn_traits<dbn_t>::has_momentum()){
-                rbm.w_inc = 0.0;
-                rbm.b_inc = 0.0;
-                rbm.c_inc = 0.0;
+                context.w_inc = 0.0;
+                context.b_inc = 0.0;
+                context.c_inc = 0.0;
             }
         });
 
@@ -90,18 +124,18 @@ struct sgd_trainer {
 
             //Compute the errors of the last layer
 
-            auto& last_rbm = dbn.template layer<layers - 1>();
+            auto& last_ctx = std::get<layers - 1>(rbm_contexts);
 
             for(std::size_t j = 0; j < n_outputs; ++j){
-                auto observed = last_rbm.o_a[j];
+                auto observed = last_ctx.o_a[j];
                 auto desired = label_batch[i][j];
-                last_rbm.errors[j] = observed * (1 - observed) * (desired - observed);
+                last_ctx.errors[j] = observed * (1 - observed) * (desired - observed);
             }
 
             //Compute the gradients of each layer
 
-            detail::for_each_rpair_i(tuples, [](std::size_t, auto& r1, auto& r2){
-                compute_gradients(r2, r1.o_a);
+            detail::for_each_rpair_i(tuples, rbm_contexts, [](std::size_t, auto&, auto& r2, auto& ctx1, auto& ctx2){
+                compute_gradients(r2, ctx2, ctx1.o_a);
 
                 typedef typename std::remove_reference<decltype(r2)>::type r2_t;
 
@@ -109,34 +143,34 @@ struct sgd_trainer {
 
                 static fast_matrix<weight, r2_t::num_visible, 1> t;
 
-                r1.errors = r1.o_a * (1 - r1.o_a) * mmul(r2.w, reshape<n_outputs, 1>(r2.errors), t);
+                ctx1.errors = ctx1.o_a * (1 - ctx1.o_a) * mmul(r2.w, reshape<n_outputs, 1>(ctx2.errors), t);
             });
         }
 
         //Finalize gradients
 
-        detail::for_each(tuples, [n_samples](auto& rbm){
-            rbm.w_grad /= n_samples;
-            rbm.b_grad /= n_samples;
-            rbm.c_grad /= n_samples;
+        detail::for_each(rbm_contexts, [n_samples](auto& context){
+            context.w_grad /= n_samples;
+            context.b_grad /= n_samples;
+            context.c_grad /= n_samples;
         });
 
         //Apply gradients
 
-        detail::for_each(tuples, [this](auto& rbm){
+        detail::for_each(tuples, rbm_contexts, [this](auto& rbm, auto& context){
             //Update momentum gradients
             if(dbn_traits<dbn_t>::has_momentum()){
                 auto momentum = dbn.momentum;
 
-                rbm.w_inc = momentum * rbm.w_inc + (1 - momentum) * rbm.w_grad;
-                rbm.b_inc = momentum * rbm.b_inc + (1 - momentum) * rbm.b_grad;
-                rbm.c_inc = momentum * rbm.c_inc + (1 - momentum) * rbm.c_grad;
+                context.w_inc = momentum * context.w_inc + (1 - momentum) * context.w_grad;
+                context.b_inc = momentum * context.b_inc + (1 - momentum) * context.b_grad;
+                context.c_inc = momentum * context.c_inc + (1 - momentum) * context.c_grad;
             }
 
             //The final gradients;
-            const auto& w_fgrad = get_fgrad(rbm.w_grad, rbm.w_inc);
-            const auto& b_fgrad = get_fgrad(rbm.b_grad, rbm.b_inc);
-            const auto& c_fgrad = get_fgrad(rbm.c_grad, rbm.c_inc);
+            const auto& w_fgrad = get_fgrad(context.w_grad, context.w_inc);
+            const auto& b_fgrad = get_fgrad(context.b_grad, context.b_inc);
+            const auto& c_fgrad = get_fgrad(context.c_grad, context.c_inc);
 
             update(rbm.w, w_fgrad, w_decay(dbn_traits<dbn_t>::decay()), 0.0);
             update(rbm.b, b_fgrad, b_decay(dbn_traits<dbn_t>::decay()), 0.0);

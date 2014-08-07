@@ -105,20 +105,6 @@ public:
     std::vector<etl::dyn_vector<weight>> gr_probs_a;
     std::vector<etl::dyn_vector<weight>> gr_probs_s;
 
-    //SGD
-
-    etl::fast_matrix<weight, num_visible, num_hidden> w_grad;
-    etl::fast_vector<weight, num_hidden> b_grad;
-    etl::fast_vector<weight, num_visible> c_grad;
-    
-    etl::fast_matrix<weight, num_visible, num_hidden> w_inc;
-    etl::fast_vector<weight, num_hidden> b_inc;
-    etl::fast_vector<weight, num_visible> c_inc;
-
-    etl::fast_vector<weight, num_hidden> o_a;
-    etl::fast_vector<weight, num_hidden> o_s;
-    etl::fast_vector<weight, num_hidden> errors;
-
 public:
     //No copying
     rbm(const rbm& rbm) = delete;
