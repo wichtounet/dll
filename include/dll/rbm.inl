@@ -26,10 +26,9 @@
 #include "math.hpp"
 #include "io.hpp"
 
-namespace dll {
+#include "rbm_common.hpp"
 
-template<typename RBM>
-struct rbm_trainer;
+namespace dll {
 
 /*!
  * \brief Standard version of Restricted Boltzmann Machine
@@ -105,15 +104,11 @@ public:
     }
 
     void store(std::ostream& os) const {
-        binary_write_all(os, w);
-        binary_write_all(os, b);
-        binary_write_all(os, c);
+        rbm_detail::store(os, *this);
     }
 
     void load(std::istream& is){
-        binary_load_all(is, w);
-        binary_load_all(is, b);
-        binary_load_all(is, c);
+        rbm_detail::load(is, *this);
     }
 
     template<typename Samples>
@@ -126,17 +121,7 @@ public:
 
     template<typename Samples>
     void init_weights(const Samples& training_data){
-        //Initialize the visible biases to log(pi/(1-pi))
-        for(size_t i = 0; i < num_visible; ++i){
-            auto count = std::count_if(training_data.begin(), training_data.end(),
-                [i](auto& a){return a[i] == 1; });
-
-            auto pi = static_cast<weight>(count) / training_data.size();
-            pi += 0.0001;
-            c(i) = log(pi / (1.0 - pi));
-
-            dll_assert(std::isfinite(c(i)), "NaN verify");
-        }
+        rbm_detail::init_weights(training_data, *this);
     }
 
     template<typename H1, typename H2, typename V>
@@ -210,81 +195,25 @@ public:
     }
 
     weight free_energy() const {
-        weight energy = 0.0;
-
-        for(size_t i = 0; i < num_visible; ++i){
-            for(size_t j = 0; j < num_hidden; ++j){
-                energy += w(i, j) * b(j) * c(i);
-            }
-        }
-
-        return -energy;
+        return rbm_detail::free_energy(*this);
     }
 
     template<typename Sample>
     void reconstruct(const Sample& items){
-        dll_assert(items.size() == num_visible, "The size of the training sample must match visible units");
-
-        stop_watch<> watch;
-
-        //Set the state of the visible units
-        v1 = items;
-
-        activate_hidden(h1_a, h1_s, v1, v1);
-        activate_visible(h1_a, h1_s, v2_a, v2_s);
-        activate_hidden(h2_a, h2_s, v2_a, v2_s);
-
-        std::cout << "Reconstruction took " << watch.elapsed() << "ms" << std::endl;
+        rbm_detail::reconstruct(items, *this);
     }
 
     void display() const {
-        display_visible_units();
-        display_hidden_units();
-    }
-
-    void display_visible_units() const {
-        std::cout << "Visible  Value" << std::endl;
-
-        for(size_t i = 0; i < num_visible; ++i){
-            printf("%-8lu %d\n", i, v2_s(i));
-        }
-    }
-
-    void display_visible_units(size_t matrix) const {
-        for(size_t i = 0; i < matrix; ++i){
-            for(size_t j = 0; j < matrix; ++j){
-                std::cout << v2_s(i * matrix + j) << " ";
-            }
-            std::cout << std::endl;
-        }
-    }
-
-    void display_hidden_units() const {
-        std::cout << "Hidden Value" << std::endl;
-
-        for(size_t j = 0; j < num_hidden; ++j){
-            printf("%-8lu %d\n", j, h2_s(j));
-        }
+        rbm_detail::display_visible_units(*this);
+        rbm_detail::display_hidden_units(*this);
     }
 
     void display_weights(){
-        for(size_t j = 0; j < num_hidden; ++j){
-            for(size_t i = 0; i < num_visible; ++i){
-                std::cout << w(i, j) << " ";
-            }
-            std::cout << std::endl;
-        }
+        rbm_detail::display_weights(*this);
     }
 
     void display_weights(size_t matrix){
-        for(size_t j = 0; j < num_hidden; ++j){
-            for(size_t i = 0; i < num_visible;){
-                for(size_t m = 0; m < matrix; ++m){
-                    std::cout << w(i++, j) << " ";
-                }
-                std::cout << std::endl;
-            }
-        }
+        rbm_detail::display_weights(matrix, *this);
     }
 };
 
