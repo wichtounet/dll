@@ -119,6 +119,26 @@ constexpr std::size_t get_batch_size(const RBM&){
     return rbm_traits<RBM>::batch_size();
 }
 
+template<typename RBM, enable_if_u<rbm_traits<RBM>::is_dynamic()> = ::detail::dummy>
+std::size_t num_visible(const RBM& rbm){
+    return rbm.num_visible;
+}
+
+template<typename RBM, disable_if_u<rbm_traits<RBM>::is_dynamic()> = ::detail::dummy>
+constexpr std::size_t num_visible(const RBM&){
+    return RBM::desc::num_visible;
+}
+
+template<typename RBM, enable_if_u<rbm_traits<RBM>::is_dynamic()> = ::detail::dummy>
+std::size_t num_hidden(const RBM& rbm){
+    return rbm.num_hidden;
+}
+
+template<typename RBM, disable_if_u<rbm_traits<RBM>::is_dynamic()> = ::detail::dummy>
+constexpr std::size_t num_hidden(const RBM&){
+    return RBM::desc::num_hidden;
+}
+
 } //end of dbn namespace
 
 #endif
