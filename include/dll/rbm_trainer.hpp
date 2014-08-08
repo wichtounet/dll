@@ -55,7 +55,8 @@ struct rbm_trainer {
         auto trainer = make_unique<trainer_t<rbm_t>>(rbm);
 
         //Compute the number of batches
-        auto batch_size = rbm_traits<rbm_t>::batch_size();
+        auto batch_size = get_batch_size(rbm);
+
         auto batches = training_data.size() / batch_size + (training_data.size() % batch_size == 0 ? 0 : 1);
 
         typename rbm_t::weight last_error = 0.0;

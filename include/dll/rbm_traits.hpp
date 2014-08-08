@@ -14,6 +14,9 @@
 namespace dll {
 
 template<typename Desc>
+class dyn_rbm;
+
+template<typename Desc>
 class conv_rbm;
 
 template<typename Desc>
@@ -38,6 +41,13 @@ struct rbm_traits {
     static constexpr bool is_convolutional(){
         return detail::is_instantiation_of<conv_rbm, rbm_t>::value
             || detail::is_instantiation_of<conv_rbm_mp, rbm_t>::value;
+    }
+
+    /*!
+     * \brief Indicates if the RBM is dynamic
+     */
+    static constexpr bool is_dynamic(){
+        return detail::is_instantiation_of<dyn_rbm, rbm_t>::value;
     }
 
     /*!
@@ -98,6 +108,16 @@ struct rbm_traits {
         return false;
     }
 };
+
+template<typename RBM, enable_if_u<rbm_traits<RBM>::is_dynamic()> = ::detail::dummy>
+std::size_t get_batch_size(const RBM& rbm){
+    return rbm.batch_size;
+}
+
+template<typename RBM, disable_if_u<rbm_traits<RBM>::is_dynamic()> = ::detail::dummy>
+constexpr std::size_t get_batch_size(const RBM&){
+    return rbm_traits<RBM>::batch_size();
+}
 
 } //end of dbn namespace
 
