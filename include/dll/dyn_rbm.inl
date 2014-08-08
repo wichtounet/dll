@@ -25,7 +25,7 @@
 #include "math.hpp"
 #include "io.hpp"
 
-#include "rbm_common.hpp"
+#include "normal_rbm.hpp"
 
 namespace dll {
 
@@ -35,7 +35,7 @@ namespace dll {
  * This follows the definition of a RBM by Geoffrey Hinton.
  */
 template<typename Desc>
-class dyn_rbm : public rbm_base<Desc> {
+class dyn_rbm : public normal_rbm<dyn_rbm<Desc>, Desc> {
 public:
     typedef double weight;
     typedef double value_t;
@@ -44,11 +44,6 @@ public:
 
     static constexpr const unit_type visible_unit = desc::visible_unit;
     static constexpr const unit_type hidden_unit = desc::hidden_unit;
-
-    static_assert(visible_unit != unit_type::SOFTMAX && visible_unit != unit_type::EXP,
-        "Exponential and softmax Visible units are not support");
-    static_assert(hidden_unit != unit_type::GAUSSIAN,
-        "Gaussian hidden units are not supported");
 
     //Weights and biases
     etl::dyn_matrix<weight> w;              //!< Weights
@@ -87,7 +82,7 @@ public:
      * The weights are initialized from a normal distribution of
      * zero-mean and 0.1 variance.
      */
-    dyn_rbm(size_t num_visible, size_t num_hidden) : 
+    dyn_rbm(size_t num_visible, size_t num_hidden) : normal_rbm<dyn_rbm<Desc>, Desc>(),
             w(num_visible, num_hidden), b(num_hidden, 0.0), c(num_visible, 0.0), 
             v1(num_visible), h1_a(num_hidden), h1_s(num_hidden), 
             v2_a(num_visible), v2_s(num_visible), h2_a(num_hidden), h2_s(num_hidden), 
@@ -100,33 +95,6 @@ public:
         for(auto& weight : w){
             weight = generator() * 0.1;
         }
-
-        //Better initialization of learning rate
-        rbm_base<desc>::learning_rate =
-                visible_unit == unit_type::GAUSSIAN && is_relu(hidden_unit) ? 1e-5
-            :   visible_unit == unit_type::GAUSSIAN || is_relu(hidden_unit) ? 1e-3
-            :   /* Only ReLU and Gaussian Units needs lower rate */           1e-1;
-    }
-
-    void store(std::ostream& os) const {
-        rbm_detail::store(os, *this);
-    }
-
-    void load(std::istream& is){
-        rbm_detail::load(is, *this);
-    }
-
-    template<typename Samples>
-    double train(const Samples& training_data, std::size_t max_epochs){
-        typedef typename std::remove_reference<decltype(*this)>::type this_type;
-
-        dll::rbm_trainer<this_type> trainer;
-        return trainer.train(*this, training_data, max_epochs);
-    }
-
-    template<typename Samples>
-    void init_weights(const Samples& training_data){
-        rbm_detail::init_weights(training_data, *this);
     }
 
     template<typename H1, typename H2, typename V>
@@ -136,8 +104,6 @@ public:
 
     template<typename H1, typename H2, typename V, typename B, typename W>
     void activate_hidden(H1& h_a, H2& h_s, const V& v_a, const V&, const B& b, const W& w) const {
-        static std::default_random_engine rand_engine(std::time(nullptr));
-
         using namespace etl;
 
         static dyn_matrix<weight> t(1, num_hidden);
@@ -176,8 +142,6 @@ public:
 
     template<typename H, typename V>
     void activate_visible(const H&, const H& h_s, V& v_a, V& v_s) const {
-        static std::default_random_engine rand_engine(std::time(nullptr));
-
         using namespace etl;
 
         static dyn_matrix<weight> t(num_visible, 1);
@@ -197,28 +161,6 @@ public:
 
         nan_check_deep(v_a);
         nan_check_deep(v_s);
-    }
-
-    weight free_energy() const {
-        return rbm_detail::free_energy(*this);
-    }
-
-    template<typename Sample>
-    void reconstruct(const Sample& items){
-        rbm_detail::reconstruct(items, *this);
-    }
-
-    void display() const {
-        rbm_detail::display_visible_units(*this);
-        rbm_detail::display_hidden_units(*this);
-    }
-
-    void display_weights(){
-        rbm_detail::display_weights(*this);
-    }
-
-    void display_weights(size_t matrix){
-        rbm_detail::display_weights(matrix, *this);
     }
 };
 
