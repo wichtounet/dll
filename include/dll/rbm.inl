@@ -8,23 +8,9 @@
 #ifndef DLL_RBM_INL
 #define DLL_RBM_INL
 
-#include <cmath>
-#include <vector>
-#include <random>
-#include <functional>
-#include <ctime>
-
 #include "etl/fast_matrix.hpp"
 #include "etl/fast_vector.hpp"
 #include "etl/dyn_vector.hpp"
-#include "etl/multiplication.hpp"
-
-#include "rbm_base.hpp"      //The base class
-#include "stop_watch.hpp"    //Performance counter
-#include "assert.hpp"
-#include "base_conf.hpp"
-#include "math.hpp"
-#include "io.hpp"
 
 #include "normal_rbm.hpp"
 
