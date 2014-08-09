@@ -321,98 +321,94 @@ auto reshape_1nh(RBM&, C& container){
     return etl::reshape<1, RBM::num_hidden>(container);
 }
 
+template<std::size_t N, typename T, typename RBM, typename Trainer, typename M>
+typename RBM::weight train_normal(const dll::batch<T>& batch, RBM& rbm, Trainer& t, M& t1, M& t2){
+    dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<rbm_t>::batch_size()), "Invalid size");
+    dll_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
+
+    using namespace etl;
+    using rbm_t = RBM;
+    using weight = typename rbm_t::weight;
+
+    //Size of a minibatch
+    auto n_samples = static_cast<weight>(batch.size());
+
+    //Clear the gradients
+    t.w_grad = 0.0;
+    t.b_grad = 0.0;
+    t.c_grad = 0.0;
+
+    //Reset mean activation probability if necessary
+    if(rbm_traits<rbm_t>::has_sparsity()){
+        t.q_batch = 0.0;
+    }
+
+    for(auto& items : batch){
+        rbm.v1 = items;
+
+        //First step
+        rbm.activate_hidden(rbm.h1_a, rbm.h1_s, rbm.v1, rbm.v1);
+
+        //CD-1
+        rbm.activate_visible(rbm.h1_a, rbm.h1_s, rbm.v2_a, rbm.v2_s);
+        rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
+
+        //CD-k
+        for(std::size_t n = 1; n < N; ++n){
+            rbm.activate_visible(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
+            rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
+        }
+
+        t.w_grad += mmul(reshape_nv1(rbm, rbm.v1), reshape_1nh(rbm, rbm.h1_a), t1) - mmul(reshape_nv1(rbm, rbm.v2_a), reshape_1nh(rbm, rbm.h2_a), t2);
+        t.b_grad += rbm.h1_a - rbm.h2_a;
+        t.c_grad += rbm.v1 - rbm.v2_a;
+
+        if(rbm_traits<rbm_t>::has_sparsity()){
+            t.q_batch += sum(rbm.h2_a);
+        }
+    }
+
+    //Keep only the mean of the gradients
+    t.w_grad /= n_samples;
+    t.b_grad /= n_samples;
+    t.c_grad /= n_samples;
+
+    //Compute the mean activation probabilities
+    if(rbm_traits<rbm_t>::has_sparsity()){
+        t.q_batch /= n_samples * num_hidden(rbm);
+    }
+
+    nan_check_deep_3(t.w_grad, t.b_grad, t.c_grad);
+
+    //Update the weights and biases based on the gradients
+    t.update_weights(rbm);
+
+    //Return the reconstruction error
+    return mean(t.c_grad * t.c_grad);
+}
+
 /*!
  * \brief Contrastive divergence trainer for RBM.
  */
 template<std::size_t N, typename RBM, typename Enable = void>
 struct cd_trainer : base_cd_trainer<RBM> {
-private:
     static_assert(N > 0, "CD-0 is not a valid training method");
 
     using rbm_t = RBM;
     using weight = typename rbm_t::weight;
 
-    using base_cd_trainer<RBM>::num_visible;
-    using base_cd_trainer<RBM>::num_hidden;
-
-    using base_cd_trainer<RBM>::w_grad;
-    using base_cd_trainer<RBM>::b_grad;
-    using base_cd_trainer<RBM>::c_grad;
-
-    using base_cd_trainer<RBM>::q_batch;
-
     rbm_t& rbm;
 
-public:
-    cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm) {
+    cd_trainer(rbm_t& rbm) : base_cd_trainer<rbm_t>(rbm), rbm(rbm) {
         //Nothing else to init here
     }
 
     template<typename T>
     weight train_batch(const dll::batch<T>& batch){
-        dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<rbm_t>::batch_size()), "Invalid size");
-        dll_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
+        static etl::fast_matrix<weight, rbm_t::num_visible, rbm_t::num_hidden> t1;
+        static etl::fast_matrix<weight, rbm_t::num_visible, rbm_t::num_hidden> t2;
 
-        using namespace etl;
-
-        static fast_matrix<weight, num_visible, num_hidden> t1;
-        static fast_matrix<weight, num_visible, num_hidden> t2;
-
-        //Size of a minibatch
-        auto n_samples = static_cast<weight>(batch.size());
-
-        //Clear the gradients
-        w_grad = 0.0;
-        b_grad = 0.0;
-        c_grad = 0.0;
-
-        //Reset mean activation probability if necessary
-        if(rbm_traits<rbm_t>::has_sparsity()){
-            q_batch = 0.0;
-        }
-
-        for(auto& items : batch){
-            rbm.v1 = items;
-
-            //First step
-            rbm.activate_hidden(rbm.h1_a, rbm.h1_s, rbm.v1, rbm.v1);
-
-            //CD-1
-            rbm.activate_visible(rbm.h1_a, rbm.h1_s, rbm.v2_a, rbm.v2_s);
-            rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
-
-            //CD-k
-            for(std::size_t n = 1; n < N; ++n){
-                rbm.activate_visible(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
-                rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
-            }
-
-            w_grad += mmul(reshape_nv1(rbm, rbm.v1), reshape_1nh(rbm, rbm.h1_a), t1) - mmul(reshape_nv1(rbm, rbm.v2_a), reshape_1nh(rbm, rbm.h2_a), t2);
-            b_grad += rbm.h1_a - rbm.h2_a;
-            c_grad += rbm.v1 - rbm.v2_a;
-
-            if(rbm_traits<rbm_t>::has_sparsity()){
-                q_batch += sum(rbm.h2_a);
-            }
-        }
-
-        //Keep only the mean of the gradients
-        w_grad /= n_samples;
-        b_grad /= n_samples;
-        c_grad /= n_samples;
-
-        //Compute the mean activation probabilities
-        if(rbm_traits<rbm_t>::has_sparsity()){
-            q_batch /= n_samples * num_hidden;
-        }
-
-        nan_check_deep_3(w_grad, b_grad, c_grad);
-
-        //Update the weights and biases based on the gradients
-        this->update_weights(rbm);
-
-        //Return the reconstruction error
-        return mean(c_grad * c_grad);
+        return train_normal<N>(batch, rbm, *this, t1, t2);
     }
 
     static std::string name(){
@@ -425,90 +421,23 @@ public:
  */
 template<std::size_t N, typename RBM>
 struct cd_trainer<N, RBM, enable_if_t<rbm_traits<RBM>::is_dynamic()>> : base_cd_trainer<RBM> {
-private:
     static_assert(N > 0, "CD-0 is not a valid training method");
 
     using rbm_t = RBM;
     using weight = typename rbm_t::weight;
 
-    using base_cd_trainer<RBM>::w_grad;
-    using base_cd_trainer<RBM>::b_grad;
-    using base_cd_trainer<RBM>::c_grad;
-
-    using base_cd_trainer<RBM>::q_batch;
-
     rbm_t& rbm;
 
-public:
     cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm) {
         //Nothing else to init here
     }
 
     template<typename T>
     weight train_batch(const dll::batch<T>& batch){
-        dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<rbm_t>::batch_size()), "Invalid size");
-        dll_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
+        static etl::dyn_matrix<weight> t1(rbm.num_visible, rbm.num_hidden);
+        static etl::dyn_matrix<weight> t2(rbm.num_visible, rbm.num_hidden);
 
-        using namespace etl;
-
-        static dyn_matrix<weight> t1(rbm.num_visible, rbm.num_hidden);
-        static dyn_matrix<weight> t2(rbm.num_visible, rbm.num_hidden);
-
-        //Size of a minibatch
-        auto n_samples = static_cast<weight>(batch.size());
-
-        //Clear the gradients
-        w_grad = 0.0;
-        b_grad = 0.0;
-        c_grad = 0.0;
-
-        //Reset mean activation probability if necessary
-        if(rbm_traits<rbm_t>::has_sparsity()){
-            q_batch = 0.0;
-        }
-
-        for(auto& items : batch){
-            rbm.v1 = items;
-
-            //First step
-            rbm.activate_hidden(rbm.h1_a, rbm.h1_s, rbm.v1, rbm.v1);
-
-            //CD-1
-            rbm.activate_visible(rbm.h1_a, rbm.h1_s, rbm.v2_a, rbm.v2_s);
-            rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
-
-            //CD-k
-            for(std::size_t n = 1; n < N; ++n){
-                rbm.activate_visible(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
-                rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
-            }
-
-            w_grad += mmul(reshape_nv1(rbm, rbm.v1), reshape_1nh(rbm, rbm.h1_a), t1) - mmul(reshape_nv1(rbm, rbm.v2_a), reshape_1nh(rbm, rbm.h2_a), t2);
-            b_grad += rbm.h1_a - rbm.h2_a;
-            c_grad += rbm.v1 - rbm.v2_a;
-
-            if(rbm_traits<rbm_t>::has_sparsity()){
-                q_batch += sum(rbm.h2_a);
-            }
-        }
-
-        //Keep only the mean of the gradients
-        w_grad /= n_samples;
-        b_grad /= n_samples;
-        c_grad /= n_samples;
-
-        //Compute the mean activation probabilities
-        if(rbm_traits<rbm_t>::has_sparsity()){
-            q_batch /= n_samples * rbm.num_hidden;
-        }
-
-        nan_check_deep_3(w_grad, b_grad, c_grad);
-
-        //Update the weights and biases based on the gradients
-        this->update_weights(rbm);
-
-        //Return the reconstruction error
-        return mean(c_grad * c_grad);
+        return train_normal<N>(batch, rbm, *this, t1, t2);
     }
 
     static std::string name(){
