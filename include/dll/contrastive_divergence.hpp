@@ -301,6 +301,26 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> : 
     }
 };
 
+template<typename RBM, typename C, enable_if_u<rbm_traits<RBM>::is_dynamic()> = ::detail::dummy>
+auto reshape_nv1(RBM& rbm, C& container){
+    return etl::reshape(container, rbm.num_visible, 1);
+}
+
+template<typename RBM, typename C, disable_if_u<rbm_traits<RBM>::is_dynamic()> = ::detail::dummy>
+auto reshape_nv1(RBM&, C& container){
+    return etl::reshape<RBM::num_visible, 1>(container);
+}
+
+template<typename RBM, typename C, enable_if_u<rbm_traits<RBM>::is_dynamic()> = ::detail::dummy>
+auto reshape_1nh(RBM& rbm, C& container){
+    return etl::reshape(container, 1, rbm.num_hidden);
+}
+
+template<typename RBM, typename C, disable_if_u<rbm_traits<RBM>::is_dynamic()> = ::detail::dummy>
+auto reshape_1nh(RBM&, C& container){
+    return etl::reshape<1, RBM::num_hidden>(container);
+}
+
 /*!
  * \brief Contrastive divergence trainer for RBM.
  */
@@ -367,7 +387,7 @@ public:
                 rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
             }
 
-            w_grad += mmul(reshape<num_visible, 1>(rbm.v1), reshape<1, num_hidden>(rbm.h1_a), t1) - mmul(reshape<num_visible, 1>(rbm.v2_a), reshape<1, num_hidden>(rbm.h2_a), t2);
+            w_grad += mmul(reshape_nv1(rbm, rbm.v1), reshape_1nh(rbm, rbm.h1_a), t1) - mmul(reshape_nv1(rbm, rbm.v2_a), reshape_1nh(rbm, rbm.h2_a), t2);
             b_grad += rbm.h1_a - rbm.h2_a;
             c_grad += rbm.v1 - rbm.v2_a;
 
@@ -463,10 +483,7 @@ public:
                 rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
             }
 
-            w_grad += 
-                        mmul(reshape(rbm.v1, rbm.num_visible, 1), reshape(rbm.h1_a, 1, rbm.num_hidden), t1) 
-                      - mmul(reshape(rbm.v2_a, rbm.num_visible, 1), reshape(rbm.h2_a, 1, rbm.num_hidden), t2);
-
+            w_grad += mmul(reshape_nv1(rbm, rbm.v1), reshape_1nh(rbm, rbm.h1_a), t1) - mmul(reshape_nv1(rbm, rbm.v2_a), reshape_1nh(rbm, rbm.h2_a), t2);
             b_grad += rbm.h1_a - rbm.h2_a;
             c_grad += rbm.v1 - rbm.v2_a;
 
