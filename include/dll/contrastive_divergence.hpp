@@ -55,6 +55,53 @@ struct base_trainer {
     }
 };
 
+template<typename RBM, typename Trainer>
+void update_weights_normal(RBM& rbm, Trainer& t){
+    using rbm_t = RBM;
+
+    //Update momentum gradients
+    if(rbm_traits<rbm_t>::has_momentum()){
+        auto momentum = rbm.momentum;
+
+        t.w_inc = momentum * t.w_inc + (1 - momentum) * t.w_grad;
+        t.b_inc = momentum * t.b_inc + (1 - momentum) * t.b_grad;
+        t.c_inc = momentum * t.c_inc + (1 - momentum) * t.c_grad;
+    }
+
+    //Penalty to be applied to weights and hidden biases
+    typename rbm_t::weight h_penalty = 0.0;
+
+    //Update sparsity
+    if(rbm_traits<rbm_t>::has_sparsity()){
+        auto decay_rate = rbm.decay_rate;
+        auto p = rbm.sparsity_target;
+        auto cost = rbm.sparsity_cost;
+
+        t.q_t = decay_rate * t.q_t + (1.0 - decay_rate) * t.q_batch;
+
+        h_penalty = cost * (t.q_t - p);
+    }
+
+    //The final gradients;
+    const auto& w_fgrad = t.get_fgrad(t.w_grad, t.w_inc);
+    const auto& b_fgrad = t.get_fgrad(t.b_grad, t.b_inc);
+    const auto& c_fgrad = t.get_fgrad(t.c_grad, t.c_inc);
+
+    //Weight decay is applied on biases only on demand
+    //Note: According to G. Hinton, Weight Decay should not be applied to
+    //biases by default due to their limited number and therefore their weak
+    //contribution to overfitting
+
+    //Update weights and biases
+
+    t.update(rbm.w, w_fgrad, rbm, w_decay(rbm_traits<rbm_t>::decay()), h_penalty);
+    t.update(rbm.b, b_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), h_penalty);
+    t.update(rbm.c, c_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), 0.0);
+
+    //Check for NaN
+    nan_check_deep_3(rbm.w, rbm.b, rbm.c);
+}
+
 /*!
  * \brief Base class for all Contrastive Divergence Trainer.
  *
@@ -100,47 +147,7 @@ struct base_cd_trainer : base_trainer<RBM> {
     }
 
     void update_weights(RBM& rbm){
-        //Update momentum gradients
-        if(rbm_traits<rbm_t>::has_momentum()){
-            auto momentum = rbm.momentum;
-
-            w_inc = momentum * w_inc + (1 - momentum) * w_grad;
-            b_inc = momentum * b_inc + (1 - momentum) * b_grad;
-            c_inc = momentum * c_inc + (1 - momentum) * c_grad;
-        }
-
-        //Penalty to be applied to weights and hidden biases
-        weight h_penalty = 0.0;
-
-        //Update sparsity
-        if(rbm_traits<rbm_t>::has_sparsity()){
-            auto decay_rate = rbm.decay_rate;
-            auto p = rbm.sparsity_target;
-            auto cost = rbm.sparsity_cost;
-
-            q_t = decay_rate * q_t + (1.0 - decay_rate) * q_batch;
-
-            h_penalty = cost * (q_t - p);
-        }
-
-        //The final gradients;
-        const auto& w_fgrad = base_trainer<RBM>::get_fgrad(w_grad, w_inc);
-        const auto& b_fgrad = base_trainer<RBM>::get_fgrad(b_grad, b_inc);
-        const auto& c_fgrad = base_trainer<RBM>::get_fgrad(c_grad, c_inc);
-
-        //Weight decay is applied on biases only on demand
-        //Note: According to G. Hinton, Weight Decay should not be applied to
-        //biases by default due to their limited number and therefore their weak
-        //contribution to overfitting
-
-        //Update weights and biases
-
-        base_trainer<RBM>::update(rbm.w, w_fgrad, rbm, w_decay(rbm_traits<rbm_t>::decay()), h_penalty);
-        base_trainer<RBM>::update(rbm.b, b_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), h_penalty);
-        base_trainer<RBM>::update(rbm.c, c_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), 0.0);
-
-        //Check for NaN
-        nan_check_deep_3(rbm.w, rbm.b, rbm.c);
+        update_weights_normal(rbm, *this);
     }
 };
 
@@ -192,47 +199,7 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_dynamic()>> : base_t
     }
 
     void update_weights(RBM& rbm){
-        //Update momentum gradients
-        if(rbm_traits<rbm_t>::has_momentum()){
-            auto momentum = rbm.momentum;
-
-            w_inc = momentum * w_inc + (1 - momentum) * w_grad;
-            b_inc = momentum * b_inc + (1 - momentum) * b_grad;
-            c_inc = momentum * c_inc + (1 - momentum) * c_grad;
-        }
-
-        //Penalty to be applied to weights and hidden biases
-        weight h_penalty = 0.0;
-
-        //Update sparsity
-        if(rbm_traits<rbm_t>::has_sparsity()){
-            auto decay_rate = rbm.decay_rate;
-            auto p = rbm.sparsity_target;
-            auto cost = rbm.sparsity_cost;
-
-            q_t = decay_rate * q_t + (1.0 - decay_rate) * q_batch;
-
-            h_penalty = cost * (q_t - p);
-        }
-
-        //The final gradients;
-        const auto& w_fgrad = base_trainer<RBM>::get_fgrad(w_grad, w_inc);
-        const auto& b_fgrad = base_trainer<RBM>::get_fgrad(b_grad, b_inc);
-        const auto& c_fgrad = base_trainer<RBM>::get_fgrad(c_grad, c_inc);
-
-        //Weight decay is applied on biases only on demand
-        //Note: According to G. Hinton, Weight Decay should not be applied to
-        //biases by default due to their limited number and therefore their weak
-        //contribution to overfitting
-
-        //Update weights and biases
-
-        base_trainer<RBM>::update(rbm.w, w_fgrad, rbm, w_decay(rbm_traits<rbm_t>::decay()), h_penalty);
-        base_trainer<RBM>::update(rbm.b, b_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), h_penalty);
-        base_trainer<RBM>::update(rbm.c, c_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), 0.0);
-
-        //Check for NaN
-        nan_check_deep_3(rbm.w, rbm.b, rbm.c);
+        update_weights_normal(rbm, *this);
     }
 };
 
