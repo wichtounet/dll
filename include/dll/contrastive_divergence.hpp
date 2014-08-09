@@ -5,7 +5,13 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-/*! \file Contrastive Divergence Implementations */
+/*!
+ * \file Contrastive Divergence Implementations 
+ *   Weight decay is applied on biases only on demand (with _FULL variants)
+ *   Note: According to G. Hinton, Weight Decay should not be applied to biases
+ *   by default due to their limited number and therefore their weak
+ *   contribution to overfitting
+ */
 
 #ifndef DLL_CONTRASTIVE_DIVERGENCE_HPP
 #define DLL_CONTRASTIVE_DIVERGENCE_HPP
@@ -86,11 +92,6 @@ void update_weights_normal(RBM& rbm, Trainer& t){
     const auto& w_fgrad = t.get_fgrad(t.w_grad, t.w_inc);
     const auto& b_fgrad = t.get_fgrad(t.b_grad, t.b_inc);
     const auto& c_fgrad = t.get_fgrad(t.c_grad, t.c_inc);
-
-    //Weight decay is applied on biases only on demand
-    //Note: According to G. Hinton, Weight Decay should not be applied to
-    //biases by default due to their limited number and therefore their weak
-    //contribution to overfitting
 
     //Update weights and biases
 
@@ -281,11 +282,6 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> : 
         const auto& w_fgrad = base_trainer<RBM>::get_fgrad(w_grad, w_inc);
         const auto& b_fgrad = base_trainer<RBM>::get_fgrad(b_grad, b_inc);
         const auto& c_fgrad = base_trainer<RBM>::get_fgrad(c_grad, c_inc);
-
-        //Weight decay is applied on biases only on demand
-        //Note: According to G. Hinton, Weight Decay should not be applied to
-        //biases by default due to their limited number and therefore their weak
-        //contribution to overfitting
 
         //Update weights and biases
 
