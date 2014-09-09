@@ -147,13 +147,10 @@ TEST_CASE( "dyn_rbm/mnist_8", "rbm::softmax" ) {
 
     auto error = rbm.train(dataset.training_images, 100);
 
-    //This test is kind of fake since softmax unit are not really made for
-    //reconstruction. It is here to ensure that softmax units are working.
-
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE( "dyn_rbm/mnist_9", "rbm::nrlu" ) {
+TEST_CASE( "dyn_rbm/mnist_9", "rbm::relu" ) {
     dll::dyn_rbm_desc<
        dll::hidden<dll::unit_type::RELU>
     >::rbm_t rbm(28 * 28, 100);
@@ -170,7 +167,7 @@ TEST_CASE( "dyn_rbm/mnist_9", "rbm::nrlu" ) {
     REQUIRE(error < 1e-1);
 }
 
-TEST_CASE( "dyn_rbm/mnist_10", "rbm::nrlu1" ) {
+TEST_CASE( "dyn_rbm/mnist_10", "rbm::relu1" ) {
     dll::dyn_rbm_desc<
        dll::hidden<dll::unit_type::RELU1>
     >::rbm_t rbm(28 * 28, 100);
@@ -189,7 +186,7 @@ TEST_CASE( "dyn_rbm/mnist_10", "rbm::nrlu1" ) {
     REQUIRE(error < 1e-1);
 }
 
-TEST_CASE( "dyn_rbm/mnist_11", "rbm::nrlu6" ) {
+TEST_CASE( "dyn_rbm/mnist_11", "rbm::relu6" ) {
     dll::dyn_rbm_desc<
        dll::hidden<dll::unit_type::RELU6>
     >::rbm_t rbm(28 * 28, 100);
