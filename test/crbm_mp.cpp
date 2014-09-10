@@ -159,17 +159,17 @@ TEST_CASE( "crbm_mp/mnist_10", "crbm::pcd_trainer" ) {
 
     dll::conv_rbm_mp_desc<
         28, 12, 40, 2,
-        dll::batch_size<25>,
+        dll::batch_size<10>,
         dll::momentum,
         dll::trainer<dll::pcd1_trainer_t>
     >::rbm_t rbm;
 
-    rbm.learning_rate *= 0.01;
+    rbm.learning_rate /= 100.0;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
     REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(100);
+    dataset.training_images.resize(200);
 
     mnist::normalize_dataset(dataset);
 

@@ -193,9 +193,9 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_dynamic()>> : base_t
     }
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = ::detail::dummy>
-    base_cd_trainer(rbm_t& rbm) : 
-            w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible), 
-            w_inc(rbm.num_visible, rbm.num_hidden, 0.0), b_inc(rbm.num_hidden, 0.0), c_inc(rbm.num_visible, 0.0), 
+    base_cd_trainer(rbm_t& rbm) :
+            w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
+            w_inc(rbm.num_visible, rbm.num_hidden, 0.0), b_inc(rbm.num_hidden, 0.0), c_inc(rbm.num_visible, 0.0),
             q_t(0.0) {
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
