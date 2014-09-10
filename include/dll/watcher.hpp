@@ -44,9 +44,8 @@ struct default_rbm_watcher {
         }
     }
 
-    void epoch_end(std::size_t epoch, double error, const RBM& rbm){
-        printf("epoch %ld - Reconstruction error average: %.5f - Free energy: %.3f\n",
-            epoch, error, rbm.free_energy());
+    void epoch_end(std::size_t epoch, double error, double free_energy, const RBM& /*rbm*/){
+        printf("epoch %ld - Reconstruction error average: %.5f - Free energy average: %.3f\n", epoch, error, free_energy);
     }
 
     void training_end(const RBM&){
@@ -85,7 +84,7 @@ struct histogram_watcher {
         parent.training_begin(rbm);
     }
 
-    void epoch_end(std::size_t epoch, double error, const RBM& rbm){
+    void epoch_end(std::size_t epoch, double error, double /*free_energy*/, const RBM& rbm){
         parent.epoch_end(epoch, error, rbm);
     }
 

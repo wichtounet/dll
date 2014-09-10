@@ -8,6 +8,8 @@
 #ifndef DLL_RBM_COMMON_HPP
 #define DLL_RBM_COMMON_HPP
 
+#include "rbm_traits.hpp"
+
 namespace dll {
 
 template<typename RBM>
@@ -44,17 +46,92 @@ void init_weights(const Samples& training_data, RBM& rbm){
     }
 }
 
-template<typename RBM>
-typename RBM::weight free_energy(RBM& rbm){
-    typename RBM::weight energy = 0.0;
+template<typename RBM, typename V, typename H, enable_if_u<etl::is_etl_expr<V>::value> = ::detail::dummy>
+typename RBM::weight energy(const RBM& rbm, const V& v, const H& h){
+	//Definition according to G. Hinton
+	//E(v,h) = -sum(ai*vi) - sum(bj*hj) -sum(vi*hj*wij)
 
-    for(size_t i = 0; i < num_visible(rbm); ++i){
+	auto mid_term = 0.0;
+
+	//TODO Simplify that
+	for(size_t i = 0; i < num_visible(rbm); ++i){
         for(size_t j = 0; j < num_hidden(rbm); ++j){
-            energy += rbm.w(i, j) * rbm.b(j) * rbm.c(i);
+            mid_term += rbm.w(i, j) * v(i) * h(j);
         }
     }
 
-    return -energy;
+    return -etl::dot(rbm.c, v) - etl::dot(rbm.b, h) - mid_term;
+}
+
+template<typename RBM, typename V, typename H, disable_if_u<etl::is_etl_expr<V>::value> = ::detail::dummy>
+typename RBM::weight energy(const RBM& rbm, const V& v, const H& h){
+	//Definition according to G. Hinton
+	//E(v,h) = -sum(ai*vi) - sum(bj*hj) -sum(vi*hj*wij)
+
+	auto visible_term = 0.0;
+	auto hidden_term = 0.0;
+
+	for(size_t i = 0; i < num_visible(rbm); ++i){
+        visible_term = rbm.c(i) * v[i];
+    }
+
+	for(size_t j = 0; j < num_hidden(rbm); ++j){
+        hidden_term = rbm.b(j) * h[j];
+	}
+
+	auto mid_term = 0.0;
+
+	//TODO Simplify that
+	for(size_t i = 0; i < num_visible(rbm); ++i){
+        for(size_t j = 0; j < num_hidden(rbm); ++j){
+            mid_term += rbm.w(i, j) * v(i) * h(j);
+        }
+    }
+
+    return -visible_term - hidden_term - mid_term;
+}
+
+template<typename RBM, typename V, enable_if_u<etl::is_etl_expr<V>::value> = ::detail::dummy>
+typename RBM::weight free_energy(const RBM& rbm, const V& v){
+	//Definition according to G. Hinton
+	//F(v) = -sum(ai*vi) - sum(log(1 + e^(xj)))
+	//xj = input to hidden neuron j
+
+	using namespace etl;
+
+	std::cout << rbm_traits<RBM>::is_dynamic() << std::endl;
+
+	static fast_matrix<typename RBM::weight, 1, RBM::num_hidden> t;
+
+    auto x = rbm.b + mmul(reshape<1, RBM::desc::num_visible>(v), rbm.w, t);
+
+	return -dot(rbm.c, v) - sum(log(1.0 + exp(x)));
+}
+
+template<typename RBM, typename V, disable_if_u<etl::is_etl_expr<V>::value> = ::detail::dummy>
+typename RBM::weight free_energy(const RBM& rbm, const V& v){
+	//Definition according to G. Hinton
+	//F(v) = -sum(ai*vi) - sum(log(1 + e^(xj)))
+	//xj = input to hidden neuron j
+
+	auto visible_term = 0.0;
+
+	for(size_t i = 0; i < num_visible(rbm); ++i){
+        visible_term = rbm.c(i) * v[i];
+    }
+
+	auto mid_term = 0.0;
+
+	for(size_t j = 0; j < num_hidden(rbm); ++j){
+		auto x = rbm.b(j);
+		for(size_t i = 0; i < num_visible(rbm); ++i){
+			x += v[i] * rbm.w(i,j);
+		}
+
+		mid_term += std::log(1.0 + std::exp(x));
+	}
+
+	return -visible_term - mid_term;
 }
 
 template<typename Sample, typename RBM>

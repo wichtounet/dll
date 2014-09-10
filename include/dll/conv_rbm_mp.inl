@@ -250,12 +250,17 @@ public:
         return trainer.train(*this, training_data, max_epochs);
     }
 
-    weight free_energy() const {
+    template<typename V>
+    weight free_energy(const V&) const {
         weight energy = 0.0;
 
         //TODO Compute the exact free energy
 
         return energy;
+    }
+
+    weight free_energy() const {
+        return free_energy(v1);
     }
 
     //Utility functions

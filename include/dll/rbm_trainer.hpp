@@ -64,6 +64,7 @@ struct rbm_trainer {
         //Train for max_epochs epoch
         for(size_t epoch= 0; epoch < max_epochs; ++epoch){
             typename rbm_t::weight error = 0.0;
+            typename rbm_t::weight free_energy = 0.0;
 
             //Train one mini-batch at a time
             for(size_t i = 0; i < batches; ++i){
@@ -72,16 +73,21 @@ struct rbm_trainer {
 
                 dll::batch<Samples> batch(training_data.begin() + start, training_data.begin() + end);
                 error += trainer->train_batch(batch);
+
+                for(auto& v : batch){
+                    free_energy += rbm.free_energy(v);
+                }
             }
 
             last_error = error / batches;
+            free_energy /= training_data.size();
 
             //After some time increase the momentum
             if(rbm_traits<rbm_t>::has_momentum() && epoch == rbm.final_momentum_epoch){
                 rbm.momentum = rbm.final_momentum;
             }
 
-            watcher.epoch_end(epoch, last_error, rbm);
+            watcher.epoch_end(epoch, last_error, free_energy, rbm);
         }
 
         watcher.training_end(rbm);

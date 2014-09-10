@@ -82,8 +82,19 @@ public:
         rbm_detail::init_weights(training_data, *static_cast<parent_t*>(this));
     }
 
+    template<typename V, typename H>
+    weight energy(const V& v, const H& h) const {
+        return rbm_detail::free_energy(*static_cast<const parent_t*>(this), v, h);
+    }
+
+    template<typename V>
+    weight free_energy(const V& v) const {
+        return rbm_detail::free_energy(*static_cast<const parent_t*>(this), v);
+    }
+
     weight free_energy() const {
-        return rbm_detail::free_energy(*static_cast<const parent_t*>(this));
+        auto& p = *static_cast<const parent_t*>(this);
+        return rbm_detail::free_energy(p, p.v1);
     }
 
     template<typename Sample>
