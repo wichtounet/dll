@@ -94,6 +94,10 @@ TEST_CASE( "crbm_mp/mnist_5", "crbm::sparsity" ) {
         dll::sparsity
     >::rbm_t rbm;
 
+    //0.01 (default) is way too low for few hidden units
+    rbm.sparsity_target = 0.1;
+    rbm.sparsity_cost = 0.9;
+
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
     REQUIRE(!dataset.training_images.empty());
