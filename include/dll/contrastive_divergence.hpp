@@ -324,8 +324,8 @@ auto reshape_1nh(RBM&, C& container){
 
 template<bool Persistent, std::size_t K, typename T, typename RBM, typename Trainer, typename M>
 typename RBM::weight train_normal(const dll::batch<T>& batch, RBM& rbm, Trainer& t, M& t1, M& t2){
-    dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<rbm_t>::batch_size()), "Invalid size");
-    dll_assert(batch[0].size() == num_visible, "The size of the training sample must match visible units");
+    dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<RBM>::batch_size()), "Invalid size");
+    dll_assert(batch[0].size() == num_visible(rbm), "The size of the training sample must match visible units");
 
     using namespace etl;
     using rbm_t = RBM;
