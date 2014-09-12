@@ -269,3 +269,51 @@ TEST_CASE( "rbm/mnist_13", "rbm::exp" ) {
 
     REQUIRE(std::isnan(error));
 }
+
+TEST_CASE( "rbm/mnist_14", "rbm::sparsity_gaussian" ) {
+    //TODO This does not work
+
+    dll::rbm_desc<
+        28 * 28, 200,
+       dll::batch_size<25>,
+       dll::momentum,
+       dll::sparsity,
+       dll::visible<dll::unit_type::GAUSSIAN>
+    >::rbm_t rbm;
+
+    rbm.learning_rate /= 5.0;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(500);
+
+    mnist::normalize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 200);
+
+    REQUIRE(error < 5e-2);
+}
+
+TEST_CASE( "rbm/mnist_15", "rbm::pcd_gaussian" ) {
+    dll::rbm_desc<
+        28 * 28, 144,
+       dll::batch_size<25>,
+       dll::momentum,
+       dll::trainer<dll::pcd1_trainer_t>,
+       dll::visible<dll::unit_type::GAUSSIAN>
+    >::rbm_t rbm;
+
+    rbm.learning_rate /= 20.0;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(500);
+
+    mnist::normalize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 100);
+
+    REQUIRE(error < 5e-2);
+}
