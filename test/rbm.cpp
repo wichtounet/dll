@@ -185,7 +185,7 @@ TEST_CASE( "rbm/mnist_9", "rbm::relu" ) {
 
     auto error = rbm.train(dataset.training_images, 200);
 
-    REQUIRE(error < 1e-1);
+    REQUIRE(error < 1e-2);
 }
 
 TEST_CASE( "rbm/mnist_10", "rbm::relu1" ) {
