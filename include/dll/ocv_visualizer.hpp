@@ -23,13 +23,13 @@ struct opencv_rbm_visualizer {
     cv::Mat buffer_image;
 
     bool scale = true;
-    auto padding = 20;
+    std::size_t padding = 20;
 
-    auto shape = 28;
-    auto num_hidden = 10;
+    std::size_t shape = 28;
+    std::size_t num_hidden = 10;
 
-    auto width = shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding;
-    auto height = shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding;
+    std::size_t width = shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding;
+    std::size_t height = shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding;
 
     opencv_rbm_visualizer() : buffer_image(cv::Size(width, height), CV_8UC1) {}
 
