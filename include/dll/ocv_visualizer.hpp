@@ -20,23 +20,25 @@ template<typename RBM>
 struct opencv_rbm_visualizer {
     stop_watch<std::chrono::seconds> watch;
 
+    const std::size_t shape = 28;
+    const std::size_t num_hidden = 10;
+
+    const bool scale = true;
+    const std::size_t padding = 20;
+
+    const std::size_t width;
+    const std::size_t height;
+
     cv::Mat buffer_image;
 
-    bool scale = true;
-    std::size_t padding = 20;
-
-    std::size_t shape = 28;
-    std::size_t num_hidden = 10;
-
-    std::size_t width = shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding;
-    std::size_t height = shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding;
-
-    opencv_rbm_visualizer() : buffer_image(cv::Size(width, height), CV_8UC1) {}
-
-    void update_sizes(){
-        width = shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding;
-        height = shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding;
-    }
+    opencv_rbm_visualizer(std::size_t shape = 28, std::size_t num_hidden = 10, bool scale = true, std::size_t padding = 10) :
+        shape(shape),
+        num_hidden(num_hidden),
+        scale(scale),
+        padding(padding),
+        width(shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding),
+        height(shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding),
+        buffer_image(cv::Size(width, height), CV_8UC1) {}
 
     void training_begin(const RBM& rbm){
         std::cout << "Train RBM with \"" << RBM::desc::template trainer_t<RBM>::name() << "\"" << std::endl;
