@@ -59,7 +59,7 @@ struct conv_rbm_mp_desc {
     static_assert(
         detail::is_valid<detail::tmp_list<
                 momentum, batch_size_id, visible_id, hidden_id, pooling_unit_id,
-                weight_decay_id, sparsity, trainer_id>
+                weight_decay_id, sparsity, trainer_id, watcher_id>
             , Parameters...>::value,
         "Invalid parameters type");
 
