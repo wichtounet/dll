@@ -71,9 +71,9 @@ struct base_ocv_rbm_visualizer {
 
 template<typename RBM, typename Enable = void>
 struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
-    const std::size_t shape = 28;
-    const std::size_t num_hidden = 10;
+    static constexpr const auto filter_shape = RBM::num_visible;
 
+    const std::size_t num_hidden = 10;
     const bool scale = true;
     const std::size_t padding = 20;
 
@@ -81,11 +81,10 @@ struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
     using base_type::buffer_image;
     using base_type::refresh;
 
-    opencv_rbm_visualizer(std::size_t shape = 28, std::size_t num_hidden = 10, bool scale = true, std::size_t padding = 20) :
+    opencv_rbm_visualizer(std::size_t num_hidden = 10, bool scale = true, std::size_t padding = 20) :
         base_type(
-            shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding,
-            shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding),
-        shape(shape),
+            filter_shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding,
+            filter_shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding),
         num_hidden(num_hidden),
         scale(scale),
         padding(padding)
@@ -106,15 +105,15 @@ struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
                 typename RBM::weight max = 0.0;
 
                 if(scale){
-                    for(std::size_t real_v = 0; real_v < shape * shape; ++real_v){
+                    for(std::size_t real_v = 0; real_v < filter_shape * filter_shape; ++real_v){
                         min = std::min(rbm.w(real_v, real_h), min);
                         max = std::max(rbm.w(real_v, real_h), max);
                     }
                 }
 
-                for(std::size_t i = 0; i < shape; ++i){
-                    for(std::size_t j = 0; j < shape; ++j){
-                        auto real_v = i * shape + j;
+                for(std::size_t i = 0; i < filter_shape; ++i){
+                    for(std::size_t j = 0; j < filter_shape; ++j){
+                        auto real_v = i * filter_shape + j;
 
                         auto value = rbm.w(real_v, real_h);
 
@@ -123,7 +122,9 @@ struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
                             value *= 1.0 / (max + 1e-8);
                         }
 
-                        buffer_image.template at<uint8_t>(padding+1+hi*(shape+1)+i, padding+1+hj*(shape+1)+j) = value * 255;
+                        buffer_image.template at<uint8_t>(
+                            padding+1+hi*(filter_shape+1)+i,
+                            padding+1+hj*(filter_shape+1)+j) = value * 255;
                     }
                 }
             }
@@ -135,9 +136,9 @@ struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
 
 template<typename RBM>
 struct opencv_rbm_visualizer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> : base_ocv_rbm_visualizer<RBM> {
-    const std::size_t shape;
+    static constexpr const auto filter_shape = RBM::NW;
+
     const std::size_t num_hidden;
-    const std::size_t k;
 
     const bool scale;
     const std::size_t padding;
@@ -146,13 +147,11 @@ struct opencv_rbm_visualizer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional(
     using base_type::buffer_image;
     using base_type::refresh;
 
-    opencv_rbm_visualizer(std::size_t shape = 28, std::size_t num_hidden = 10, std::size_t k = 3, bool scale = true, std::size_t padding = 20) :
+    opencv_rbm_visualizer(std::size_t num_hidden = 6, bool scale = true, std::size_t padding = 20) :
         base_type(
-            shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding,
-            shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding),
-        shape(shape),
+            filter_shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding,
+            filter_shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding),
         num_hidden(num_hidden),
-        k(k),
         scale(scale),
         padding(padding)
     {}
@@ -166,30 +165,34 @@ struct opencv_rbm_visualizer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional(
 
         for(std::size_t hi = 0; hi < num_hidden; ++hi){
             for(std::size_t hj = 0; hj < num_hidden; ++hj){
-                auto real_h = hi * num_hidden + hj;
+                auto real_k = hi * num_hidden + hj;
+
+                dll_assert(real_k < RBM::K, "Invalid filter index (>= K)");
 
                 typename RBM::weight min = 100.0;
                 typename RBM::weight max = 0.0;
 
                 if(scale){
-                    for(std::size_t real_v = 0; real_v < shape * shape; ++real_v){
-                        min = std::min(rbm.w(k)(real_v, real_h), min);
-                        max = std::max(rbm.w(k)(real_v, real_h), max);
+                    for(std::size_t fi = 0; fi < filter_shape; ++fi){
+                        for(std::size_t fj = 0; fj < filter_shape; ++fj){
+                            min = std::min(rbm.w(real_k)(fi, fj), min);
+                            max = std::max(rbm.w(real_k)(fi, fj), max);
+                        }
                     }
                 }
 
-                for(std::size_t i = 0; i < shape; ++i){
-                    for(std::size_t j = 0; j < shape; ++j){
-                        auto real_v = i * shape + j;
-
-                        auto value = rbm.w(k)(real_v, real_h);
+                for(std::size_t fi = 0; fi < filter_shape; ++fi){
+                    for(std::size_t fj = 0; fj < filter_shape; ++fj){
+                        auto value = rbm.w(real_k)(fi, fj);
 
                         if(scale){
                             value -= min;
                             value *= 1.0 / (max + 1e-8);
                         }
 
-                        buffer_image.template at<uint8_t>(padding+1+hi*(shape+1)+i, padding+1+hj*(shape+1)+j) = value * 255;
+                        buffer_image.template at<uint8_t>(
+                            padding+1+hi*(filter_shape+1)+fi,
+                            padding+1+hj*(filter_shape+1)+fj) = value * 255;
                     }
                 }
             }

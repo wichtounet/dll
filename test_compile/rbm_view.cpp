@@ -26,7 +26,7 @@ int main(int /*argc*/, char* /*argv*/[]){
 
     mnist::normalize_dataset(dataset);
 
-    rbm.train(dataset.training_images, 500, dll::init_watcher, 28);
+    rbm.train(dataset.training_images, 500, dll::init_watcher, 10);
 
     return 0;
 }
