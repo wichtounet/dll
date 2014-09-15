@@ -18,7 +18,11 @@ void test_dbn(){
     std::vector<etl::dyn_vector<double>> images;
     std::vector<uint8_t> labels;
 
+    etl::dyn_vector<double> result(100);
+
     dbn.pretrain(images, 10);
+    dbn.predict(images[1]);
+    dbn.predict_weights(images[1], result);
 }
 
 template <typename RBM>

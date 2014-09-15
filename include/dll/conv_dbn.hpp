@@ -84,13 +84,18 @@ struct conv_dbn {
     }
 
     template<std::size_t N>
-    static constexpr std::size_t nv(){
+    static constexpr std::size_t rbm_nv(){
         return rbm_type<N>::NV;
     }
 
     template<std::size_t N>
-    static constexpr std::size_t nh(){
+    static constexpr std::size_t rbm_nh(){
         return rbm_type<N>::NH;
+    }
+
+    template<std::size_t N>
+    static constexpr std::size_t rbm_k(){
+        return rbm_type<N>::K;
     }
 
     /*{{{ Pretrain */
@@ -179,78 +184,126 @@ struct conv_dbn {
 
     /*{{{ Predict */
 
-    //template<typename Sample, typename Output>
-    //void predict_weights(const Sample& item_data, Output& result){
-        //etl::dyn_vector<typename Sample::value_type> item(item_data);
+    template<typename Sample, typename Output>
+    void predict_weights(const Sample& item_data, Output& result){
+        using visible_t = etl::dyn_vector<typename Sample::value_type>;
+        using hidden_t = etl::dyn_vector<etl::dyn_matrix<weight>>;
 
-        //auto input = std::cref(item);
+        visible_t item(item_data);
 
-        //detail::for_each_i(tuples, [&item, &input, &result](std::size_t I, auto& rbm){
-            //if(I != layers - 1){
-                //typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
-                //constexpr const auto num_hidden = rbm_t::num_hidden;
+        auto input = std::cref(item);
 
-                //static etl::dyn_vector<weight> next(num_hidden);
-                //static etl::dyn_vector<weight> next_s(num_hidden);
+        detail::for_each_i(tuples, [&item, &input, &result](std::size_t I, auto& rbm){
+            if(I != layers - 1){
+                typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
+                constexpr const auto NH = rbm_t::NH;
+                constexpr const auto K = rbm_t::K;
 
-                //rbm.activate_hidden(next, next_s, static_cast<const Sample&>(input), static_cast<const Sample&>(input));
+                static visible_t next(K * NH * NH);
+                static hidden_t next_a(K, etl::dyn_matrix<weight>(NH, NH));
+                static hidden_t next_s(K, etl::dyn_matrix<weight>(NH, NH));
 
-                //input = std::cref(next);
-            //}
-        //});
+                rbm.v1 = static_cast<const Sample&>(input);
+                rbm.activate_hidden(next_a, next_s, rbm.v1, rbm.v1);
 
-        //constexpr const auto num_hidden = rbm_type<layers - 1>::num_hidden;
+                //TODO Check the order of the output
 
-        //static etl::dyn_vector<weight> next_s(num_hidden);
+                for(std::size_t j = 0; j < NH; ++j){
+                    for(std::size_t k = 0; k < NH; ++k){
+                        for(std::size_t l = 0; l < K; ++l){
+                            next[j * NH * NH + k * NH + l] = next_a(k)(j,k);
+                        }
+                    }
+                }
 
-        //layer<layers - 1>().activate_hidden(result, next_s, static_cast<const Sample&>(input), static_cast<const Sample&>(input));
-    //}
+                input = std::cref(next);
+            }
+        });
 
-    //template<typename Sample>
-    //etl::dyn_vector<weight> predict_weights(const Sample& item_data){
-        //etl::dyn_vector<weight> result(num_hidden<layers - 1>());
+        constexpr const auto K = rbm_k<layers - 1>();
+        constexpr const auto NH = rbm_nh<layers - 1>();
 
-        //etl::dyn_vector<typename Sample::value_type> item(item_data);
+        static hidden_t next_a(K, etl::dyn_matrix<weight>(NH, NH));
+        static hidden_t next_s(K, etl::dyn_matrix<weight>(NH, NH));
 
-        //auto input = std::cref(item);
+        auto& last_rbm = layer<layers - 1>();
 
-        //detail::for_each_i(tuples, [&item, &input, &result](std::size_t I, auto& rbm){
-            //typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
-            //constexpr const auto num_hidden = rbm_t::num_hidden;
+        last_rbm.v1 = static_cast<const Sample&>(input);
+        last_rbm.activate_hidden(next_a, next_s, last_rbm.v1, last_rbm.v1);
 
-            //static etl::dyn_vector<weight> next(num_hidden);
-            //static etl::dyn_vector<weight> next_s(num_hidden);
-            //auto& output = (I == layers - 1) ? result : next;
+        //TODO Check the order of the output
 
-            //rbm.activate_hidden(output, next_s, static_cast<const Sample&>(input), static_cast<const Sample&>(input));
+        for(std::size_t j = 0; j < NH; ++j){
+            for(std::size_t k = 0; k < NH; ++k){
+                for(std::size_t l = 0; l < K; ++l){
+                    result[j * NH * NH + k * NH + l] = next_a(k)(j,k);
+                }
+            }
+        }
+    }
 
-            //input = std::cref(next);
-        //});
+    template<typename Sample>
+    etl::dyn_vector<weight> predict_weights(const Sample& item_data){
+        using visible_t = etl::dyn_vector<typename Sample::value_type>;
+        using hidden_t = etl::dyn_vector<etl::dyn_matrix<weight>>;
 
-        //return result;
-    //}
+        etl::dyn_vector<weight> result(rbm_nh<layers - 1>() * rbm_nh<layers - 1>() * rbm_k<layers - 1>());
 
-    //template<typename Weights>
-    //size_t predict_final(const Weights& result){
-        //size_t label = 0;
-        //weight max = 0;
-        //for(size_t l = 0; l < result.size(); ++l){
-            //auto value = result[l];
+        etl::dyn_vector<typename Sample::value_type> item(item_data);
 
-            //if(value > max){
-                //max = value;
-                //label = l;
-            //}
-        //}
+        auto input = std::cref(item);
 
-        //return label;
-    //}
+        detail::for_each_i(tuples, [&item, &input, &result](std::size_t I, auto& rbm){
+            typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
+            constexpr const auto NH = rbm_t::NH;
+            constexpr const auto K = rbm_t::K;
 
-    //template<typename Sample>
-    //size_t predict(const Sample& item){
-        //auto result = predict_weights(item);
-        //return predict_final(result);;
-    //}
+            static visible_t next(K * NH * NH);
+            static hidden_t next_a(K, etl::dyn_matrix<weight>(NH, NH));
+            static hidden_t next_s(K, etl::dyn_matrix<weight>(NH, NH));
+
+            rbm.v1 = static_cast<const Sample&>(input);
+            rbm.activate_hidden(next_a, next_s, rbm.v1, rbm.v1);
+
+            auto& output = (I == layers - 1) ? result : next;
+
+            //TODO Check the order of the output
+
+            for(std::size_t j = 0; j < NH; ++j){
+                for(std::size_t k = 0; k < NH; ++k){
+                    for(std::size_t l = 0; l < K; ++l){
+                        output[j * NH * NH + k * NH + l] = next_a(k)(j,k);
+                    }
+                }
+            }
+
+            input = std::cref(next);
+        });
+
+        return result;
+    }
+
+    template<typename Weights>
+    size_t predict_final(const Weights& result){
+        size_t label = 0;
+        weight max = 0;
+        for(size_t l = 0; l < result.size(); ++l){
+            auto value = result[l];
+
+            if(value > max){
+                max = value;
+                label = l;
+            }
+        }
+
+        return label;
+    }
+
+    template<typename Sample>
+    size_t predict(const Sample& item){
+        auto result = predict_weights(item);
+        return predict_final(result);;
+    }
 
     /*}}}*/
 };
