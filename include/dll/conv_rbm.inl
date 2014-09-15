@@ -180,11 +180,11 @@ public:
         nan_check_deep(v_s);
     }
 
-    template<typename Samples>
-    weight train(const Samples& training_data, std::size_t max_epochs){
+    template<typename Samples, typename... Args>
+    weight train(const Samples& training_data, std::size_t max_epochs, Args... args){
         typedef typename std::remove_reference<decltype(*this)>::type this_type;
 
-        dll::rbm_trainer<this_type> trainer;
+        dll::rbm_trainer<this_type> trainer(args...);
         return trainer.train(*this, training_data, max_epochs);
     }
 
