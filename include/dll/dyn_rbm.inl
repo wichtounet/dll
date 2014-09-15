@@ -69,9 +69,9 @@ public:
      * zero-mean and 0.1 variance.
      */
     dyn_rbm(size_t num_visible, size_t num_hidden) : normal_rbm<dyn_rbm<Desc>, Desc>(),
-            w(num_visible, num_hidden), b(num_hidden, 0.0), c(num_visible, 0.0), 
-            v1(num_visible), h1_a(num_hidden), h1_s(num_hidden), 
-            v2_a(num_visible), v2_s(num_visible), h2_a(num_hidden), h2_s(num_hidden), 
+            w(num_visible, num_hidden), b(num_hidden, 0.0), c(num_visible, 0.0),
+            v1(num_visible), h1_a(num_hidden), h1_s(num_hidden),
+            v2_a(num_visible), v2_s(num_visible), h2_a(num_hidden), h2_s(num_hidden),
             num_visible(num_visible), num_hidden(num_hidden) {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
         static std::default_random_engine rand_engine(std::time(nullptr));
@@ -137,10 +137,10 @@ public:
             v_s = bernoulli(v_a);
         } else if(visible_unit == unit_type::GAUSSIAN){
             v_a = c + mmul(w, reshape(h_s, num_hidden, 1), t);
-            v_s = noise(v_a);
+            v_s = normal_noise(v_a);
         } else if(visible_unit == unit_type::RELU){
             v_a = max(c + mmul(w, reshape(h_s, num_hidden, 1), t), 0.0);
-            v_s = noise(v_a);
+            v_s = logistic_noise(v_a);
         } else {
             dll_unreachable("Invalid path");
         }
