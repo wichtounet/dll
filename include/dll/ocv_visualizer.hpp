@@ -31,7 +31,7 @@ struct opencv_rbm_visualizer {
 
     cv::Mat buffer_image;
 
-    opencv_rbm_visualizer(std::size_t shape = 28, std::size_t num_hidden = 10, bool scale = true, std::size_t padding = 10) :
+    opencv_rbm_visualizer(std::size_t shape = 28, std::size_t num_hidden = 10, bool scale = true, std::size_t padding = 20) :
         shape(shape),
         num_hidden(num_hidden),
         scale(scale),
