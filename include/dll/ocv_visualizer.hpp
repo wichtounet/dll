@@ -16,7 +16,7 @@
 
 namespace dll {
 
-template<typename RBM>
+template<typename RBM, std::size_t V = 28, std::size_t H = 10>
 struct opencv_rbm_visualizer {
     stop_watch<std::chrono::seconds> watch;
 
@@ -25,8 +25,8 @@ struct opencv_rbm_visualizer {
     static constexpr const bool scale = true;
 
     static constexpr const auto padding = 20;
-    static constexpr const auto shape = 28;
-    static constexpr const auto num_hidden = 10;
+    static constexpr const auto shape = V;
+    static constexpr const auto num_hidden = H;
 
     static constexpr auto width = shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding;
     static constexpr auto height = shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding;
