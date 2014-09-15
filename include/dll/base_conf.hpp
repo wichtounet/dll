@@ -70,7 +70,7 @@ struct trainer : conf_elt  {
     using value = T<RBM>;
 };
 
-template<template<typename> class T>
+template<template<typename...> class T>
 struct watcher : conf_elt  {
     using type = watcher_id;
 

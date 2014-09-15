@@ -17,28 +17,19 @@
 namespace dll {
 
 template<typename RBM>
-struct opencv_rbm_visualizer {
+struct base_ocv_rbm_visualizer {
     stop_watch<std::chrono::seconds> watch;
-
-    const std::size_t shape = 28;
-    const std::size_t num_hidden = 10;
-
-    const bool scale = true;
-    const std::size_t padding = 20;
 
     const std::size_t width;
     const std::size_t height;
 
     cv::Mat buffer_image;
 
-    opencv_rbm_visualizer(std::size_t shape = 28, std::size_t num_hidden = 10, bool scale = true, std::size_t padding = 20) :
-        shape(shape),
-        num_hidden(num_hidden),
-        scale(scale),
-        padding(padding),
-        width(shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding),
-        height(shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding),
-        buffer_image(cv::Size(width, height), CV_8UC1) {}
+    base_ocv_rbm_visualizer(std::size_t width, std::size_t height) :
+            width(width), height(height),
+            buffer_image(cv::Size(width, height), CV_8UC1) {
+        //Nothing to init
+    }
 
     void training_begin(const RBM& rbm){
         std::cout << "Train RBM with \"" << RBM::desc::template trainer_t<RBM>::name() << "\"" << std::endl;
@@ -65,6 +56,40 @@ struct opencv_rbm_visualizer {
 
         refresh();
     }
+
+    void training_end(const RBM&){
+        std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
+
+        cv::waitKey(0);
+    }
+
+    void refresh(){
+        cv::imshow("RBM Training", buffer_image);
+        cv::waitKey(30);
+    }
+};
+
+template<typename RBM, typename Enable = void>
+struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
+    const std::size_t shape = 28;
+    const std::size_t num_hidden = 10;
+
+    const bool scale = true;
+    const std::size_t padding = 20;
+
+    using base_type = base_ocv_rbm_visualizer<RBM>;
+    using base_type::buffer_image;
+    using base_type::refresh;
+
+    opencv_rbm_visualizer(std::size_t shape = 28, std::size_t num_hidden = 10, bool scale = true, std::size_t padding = 20) :
+        base_type(
+            shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding,
+            shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding),
+        shape(shape),
+        num_hidden(num_hidden),
+        scale(scale),
+        padding(padding)
+    {}
 
     void epoch_end(std::size_t epoch, double error, double free_energy, const RBM& rbm){
         printf("epoch %ld - Reconstruction error average: %.5f - Free energy average: %.3f\n", epoch, error, free_energy);
@@ -98,7 +123,7 @@ struct opencv_rbm_visualizer {
                             value *= 1.0 / (max + 1e-8);
                         }
 
-                        buffer_image.at<uint8_t>(padding+1+hi*(shape+1)+i, padding+1+hj*(shape+1)+j) = value * 255;
+                        buffer_image.template at<uint8_t>(padding+1+hi*(shape+1)+i, padding+1+hj*(shape+1)+j) = value * 255;
                     }
                 }
             }
@@ -106,16 +131,71 @@ struct opencv_rbm_visualizer {
 
         refresh();
     }
+};
 
-    void training_end(const RBM&){
-        std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
+template<typename RBM>
+struct opencv_rbm_visualizer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> : base_ocv_rbm_visualizer<RBM> {
+    const std::size_t shape;
+    const std::size_t num_hidden;
+    const std::size_t k;
 
-        cv::waitKey(0);
-    }
+    const bool scale;
+    const std::size_t padding;
 
-    void refresh(){
-        cv::imshow("RBM Training", buffer_image);
-        cv::waitKey(30);
+    using base_type = base_ocv_rbm_visualizer<RBM>;
+    using base_type::buffer_image;
+    using base_type::refresh;
+
+    opencv_rbm_visualizer(std::size_t shape = 28, std::size_t num_hidden = 10, std::size_t k = 3, bool scale = true, std::size_t padding = 20) :
+        base_type(
+            shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding,
+            shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding),
+        shape(shape),
+        num_hidden(num_hidden),
+        k(k),
+        scale(scale),
+        padding(padding)
+    {}
+
+    void epoch_end(std::size_t epoch, double error, double free_energy, const RBM& rbm){
+        printf("epoch %ld - Reconstruction error average: %.5f - Free energy average: %.3f\n", epoch, error, free_energy);
+
+        buffer_image = cv::Scalar(255);
+
+        cv::putText(buffer_image, "epoch " + std::to_string(epoch), cv::Point(10,12), CV_FONT_NORMAL, 0.3, cv::Scalar(0), 1, 2);
+
+        for(std::size_t hi = 0; hi < num_hidden; ++hi){
+            for(std::size_t hj = 0; hj < num_hidden; ++hj){
+                auto real_h = hi * num_hidden + hj;
+
+                typename RBM::weight min = 100.0;
+                typename RBM::weight max = 0.0;
+
+                if(scale){
+                    for(std::size_t real_v = 0; real_v < shape * shape; ++real_v){
+                        min = std::min(rbm.w(k)(real_v, real_h), min);
+                        max = std::max(rbm.w(k)(real_v, real_h), max);
+                    }
+                }
+
+                for(std::size_t i = 0; i < shape; ++i){
+                    for(std::size_t j = 0; j < shape; ++j){
+                        auto real_v = i * shape + j;
+
+                        auto value = rbm.w(k)(real_v, real_h);
+
+                        if(scale){
+                            value -= min;
+                            value *= 1.0 / (max + 1e-8);
+                        }
+
+                        buffer_image.template at<uint8_t>(padding+1+hi*(shape+1)+i, padding+1+hj*(shape+1)+j) = value * 255;
+                    }
+                }
+            }
+        }
+
+        refresh();
     }
 };
 
