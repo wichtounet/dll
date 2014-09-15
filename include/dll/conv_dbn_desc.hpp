@@ -36,7 +36,7 @@ struct conv_dbn_desc {
     using watcher_t = typename detail::get_template_type<watcher<default_dbn_watcher>, Parameters...>::template type<DBN>;
 
     /*! The DBN type */
-    using dbn_t = dbn<conv_dbn_desc<Layers, Parameters...>>;
+    using dbn_t = conv_dbn<conv_dbn_desc<Layers, Parameters...>>;
 
     //Make sure only valid types are passed to the configuration list
     static_assert(

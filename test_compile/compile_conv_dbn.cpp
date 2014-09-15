@@ -5,7 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "dll/dbn.hpp"
+#include "dll/conv_dbn.hpp"
 #include "dll/conv_dbn_desc.hpp"
 #include "dll/dbn_layers.hpp"
 
@@ -19,7 +19,6 @@ void test_dbn(){
     std::vector<uint8_t> labels;
 
     dbn.pretrain(images, 10);
-    dbn.fine_tune(images, labels, 10, 10);
 }
 
 template <typename RBM>
@@ -30,7 +29,7 @@ int main(){
 
     typedef dll::conv_dbn_desc<
         dll::dbn_layers<
-        dll::conv_rbm_desc<28, 12, 40, dll::momentum, dll::batch_size<50>, dll::init_weights>::rbm_t,
+        dll::conv_rbm_desc<28, 12, 40, dll::momentum, dll::batch_size<50>>::rbm_t,
         dll::conv_rbm_desc<12*12*40, 6, 40, dll::momentum, dll::batch_size<50>>::rbm_t>>::dbn_t dbn_1;
 
     //Test them all
