@@ -23,6 +23,7 @@ $(eval $(call add_executable,compile_rbm,test_compile/compile_rbm.cpp))
 $(eval $(call add_executable,compile_conv_rbm,test_compile/compile_conv_rbm.cpp))
 $(eval $(call add_executable,compile_conv_rbm_mp,test_compile/compile_conv_rbm_mp.cpp))
 $(eval $(call add_executable,compile_dbn,test_compile/compile_dbn.cpp))
+$(eval $(call add_executable,compile_conv_dbn,test_compile/compile_conv_dbn.cpp))
 $(eval $(call add_executable,compile_ocv_1,test_compile/rbm_view.cpp,$(OPENCV_LD_FLAGS)))
 $(eval $(call add_executable,compile_ocv_2,test_compile/crbm_view.cpp,$(OPENCV_LD_FLAGS)))
 $(eval $(call add_executable,compile_ocv_3,test_compile/crbm_mp_view.cpp,$(OPENCV_LD_FLAGS)))
@@ -33,10 +34,11 @@ $(eval $(call add_executable_set,compile_rbm,compile_rbm))
 $(eval $(call add_executable_set,compile_conv_rbm,compile_conv_rbm))
 $(eval $(call add_executable_set,compile_conv_rbm_mp,compile_conv_rbm_mp))
 $(eval $(call add_executable_set,compile_dbn,compile_dbn))
+$(eval $(call add_executable_set,compile_conv_dbn,compile_conv_dbn))
 $(eval $(call add_executable_set,dll_test,dll_test))
 
-release: release_compile_rbm release_compile_conv_rbm release_compile_dbn release_compile_conv_rbm_mp release_dll_test
-debug: debug_compile_rbm debug_compile_conv_rbm debug_compile_dbn debug_compile_conv_rbm_mp debug_dll_test
+release: release_compile_rbm release_compile_conv_rbm release_compile_dbn release_compile_conv_dbn release_compile_conv_rbm_mp release_dll_test
+debug: debug_compile_rbm debug_compile_conv_rbm debug_compile_dbn debug_compile_conv_dbn debug_compile_conv_rbm_mp debug_dll_test
 
 all: release debug
 
