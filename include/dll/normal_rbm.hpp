@@ -63,9 +63,9 @@ public:
         rbm_detail::display_hidden_units(*static_cast<parent_t*>(this));
     }
 
-    template<typename Samples>
-    double train(const Samples& training_data, std::size_t max_epochs){
-        dll::rbm_trainer<parent_t> trainer;
+    template<typename Samples, typename... Args>
+    double train(const Samples& training_data, std::size_t max_epochs, Args... args){
+        dll::rbm_trainer<parent_t> trainer(args...);
         return trainer.train(*static_cast<parent_t*>(this), training_data, max_epochs);
     }
 

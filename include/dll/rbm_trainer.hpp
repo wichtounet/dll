@@ -15,6 +15,9 @@
 
 namespace dll {
 
+enum class init_watcher_t { INIT };
+constexpr const init_watcher_t init_watcher = init_watcher_t::INIT;
+
 /*!
  * \brief A generic trainer for Restricted Boltzmann Machine
  *
@@ -31,6 +34,13 @@ struct rbm_trainer {
     template<typename R>
     using watcher_t = typename rbm_t::desc::template watcher_t<R>;
 
+    mutable watcher_t<rbm_t> watcher;
+
+    rbm_trainer() : watcher() {}
+
+    template<typename... Arg>
+    rbm_trainer(init_watcher_t /*init*/, Arg... args) : watcher(args...) {}
+
     template<typename Samples, typename R = RBM, enable_if_u<rbm_traits<R>::init_weights()> = ::detail::dummy>
     static void init_weights(RBM& rbm, const Samples& training_data){
         rbm.init_weights(training_data);
@@ -43,8 +53,6 @@ struct rbm_trainer {
 
     template<typename Samples>
     typename rbm_t::weight train(RBM& rbm, const Samples& training_data, std::size_t max_epochs) const {
-        watcher_t<rbm_t> watcher;
-
         rbm.momentum = rbm.initial_momentum;
 
         watcher.training_begin(rbm);
