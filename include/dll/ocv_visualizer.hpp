@@ -16,22 +16,27 @@
 
 namespace dll {
 
-template<typename RBM, std::size_t V = 28, std::size_t H = 10>
+template<typename RBM>
 struct opencv_rbm_visualizer {
     stop_watch<std::chrono::seconds> watch;
 
     cv::Mat buffer_image;
 
-    static constexpr const bool scale = true;
+    bool scale = true;
+    auto padding = 20;
 
-    static constexpr const auto padding = 20;
-    static constexpr const auto shape = V;
-    static constexpr const auto num_hidden = H;
+    auto shape = 28;
+    auto num_hidden = 10;
 
-    static constexpr auto width = shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding;
-    static constexpr auto height = shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding;
+    auto width = shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding;
+    auto height = shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding;
 
     opencv_rbm_visualizer() : buffer_image(cv::Size(width, height), CV_8UC1) {}
+
+    void update_sizes(){
+        width = shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding;
+        height = shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding;
+    }
 
     void training_begin(const RBM& rbm){
         std::cout << "Train RBM with \"" << RBM::desc::template trainer_t<RBM>::name() << "\"" << std::endl;
