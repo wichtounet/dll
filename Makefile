@@ -25,6 +25,7 @@ $(eval $(call add_executable,compile_conv_rbm_mp,test_compile/compile_conv_rbm_m
 $(eval $(call add_executable,compile_dbn,test_compile/compile_dbn.cpp))
 $(eval $(call add_executable,compile_ocv_1,test_compile/rbm_view.cpp,$(OPENCV_LD_FLAGS)))
 $(eval $(call add_executable,compile_ocv_2,test_compile/crbm_view.cpp,$(OPENCV_LD_FLAGS)))
+$(eval $(call add_executable,compile_ocv_3,test_compile/crbm_mp_view.cpp,$(OPENCV_LD_FLAGS)))
 
 $(eval $(call add_test_executable,dll_test,$(TEST_FILES)))
 
