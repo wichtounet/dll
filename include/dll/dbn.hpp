@@ -149,7 +149,7 @@ struct dbn {
             if(I <= layers - 2){
                 watcher.template pretrain_layer<rbm_t>(*this, I, input_size);
 
-                rbm.train(static_cast<const training_t&>(input), max_epochs);
+                rbm.template train<training_t, !watcher_t::ignore_sub>(static_cast<const training_t&>(input), max_epochs);
 
                 //Get the activation probabilities for the next level
                 if(I < layers - 2){

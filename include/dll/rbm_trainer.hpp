@@ -24,7 +24,7 @@ constexpr const init_watcher_t init_watcher = init_watcher_t::INIT;
  * This trainer use the specified trainer of the RBM to perform unsupervised
  * training.
  */
-template<typename RBM>
+template<typename RBM, bool EnableWatcher>
 struct rbm_trainer {
     using rbm_t = RBM;
 
@@ -55,7 +55,9 @@ struct rbm_trainer {
     typename rbm_t::weight train(RBM& rbm, const Samples& training_data, std::size_t max_epochs) const {
         rbm.momentum = rbm.initial_momentum;
 
-        watcher.training_begin(rbm);
+        if(EnableWatcher){
+            watcher.training_begin(rbm);
+        }
 
         //Some RBM may init weights based on the training data
         init_weights(rbm, training_data);
@@ -95,10 +97,14 @@ struct rbm_trainer {
                 rbm.momentum = rbm.final_momentum;
             }
 
-            watcher.epoch_end(epoch, last_error, free_energy, rbm);
+            if(EnableWatcher){
+                watcher.epoch_end(epoch, last_error, free_energy, rbm);
+            }
         }
 
-        watcher.training_end(rbm);
+        if(EnableWatcher){
+            watcher.training_end(rbm);
+        }
 
         return last_error;
     }

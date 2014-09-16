@@ -12,7 +12,7 @@
 
 namespace dll {
 
-template<typename RBM>
+template<typename RBM, bool EnableWatcher = true>
 struct rbm_trainer;
 
 namespace rbm_detail {
