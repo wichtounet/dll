@@ -108,8 +108,6 @@ typename RBM::weight free_energy(const RBM& rbm, const V& v){
 
         using namespace etl;
 
-        std::cout << rbm_traits<RBM>::is_dynamic() << std::endl;
-
         static fast_matrix<typename RBM::weight, 1, RBM::num_hidden> t;
 
         auto x = rbm.b + mmul(reshape<1, RBM::desc::num_visible>(v), rbm.w, t);
