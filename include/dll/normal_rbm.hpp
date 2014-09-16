@@ -58,11 +58,6 @@ public:
             :   /* Only ReLU and Gaussian Units needs lower rate */           1e-1;
     }
 
-    void display() const {
-        rbm_detail::display_visible_units(*static_cast<parent_t*>(this));
-        rbm_detail::display_hidden_units(*static_cast<parent_t*>(this));
-    }
-
     template<typename Samples, typename... Args>
     double train(const Samples& training_data, std::size_t max_epochs, Args... args){
         dll::rbm_trainer<parent_t> trainer(args...);
@@ -100,6 +95,23 @@ public:
     template<typename Sample>
     void reconstruct(const Sample& items){
         rbm_detail::reconstruct(items, *static_cast<parent_t*>(this));
+    }
+
+    void display_units() const {
+        rbm_detail::display_visible_units(*static_cast<parent_t*>(this));
+        rbm_detail::display_hidden_units(*static_cast<parent_t*>(this));
+    }
+
+    void display_visible_units() const {
+        rbm_detail::display_visible_units(*static_cast<parent_t*>(this));
+    }
+
+    void display_visible_units(std::size_t matrix) const {
+        rbm_detail::display_visible_units(*static_cast<parent_t*>(this), matrix);
+    }
+
+    void display_hidden_units() const {
+        rbm_detail::display_hidden_units(*static_cast<parent_t*>(this));
     }
 
     void display_weights() const {
