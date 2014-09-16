@@ -112,7 +112,15 @@ struct dbn {
      */
     template<typename Samples>
     void pretrain(const Samples& training_data, std::size_t max_epochs){
+        typedef typename std::remove_reference<decltype(*this)>::type this_type;
+
         using training_t = std::vector<etl::dyn_vector<typename Samples::value_type::value_type>>;
+
+        using watcher_t = typename desc::template watcher_t<this_type>;
+
+        watcher_t watcher;
+
+        watcher.pretraining_begin(*this);
 
         //Convert data to an useful form
         training_t data;
@@ -127,9 +135,8 @@ struct dbn {
 
         auto input = std::ref(data);
 
-        detail::for_each_i(tuples, [&input, &next_a, &next_s, max_epochs](std::size_t I, auto& rbm){
+        detail::for_each_i(tuples, [&watcher, this, &input, &next_a, &next_s, max_epochs](std::size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
-            constexpr const auto num_visible = rbm_t::num_visible;
             constexpr const auto num_hidden = rbm_t::num_hidden;
 
             auto input_size = static_cast<const training_t&>(input).size();
@@ -138,7 +145,7 @@ struct dbn {
 
             //Train each layer but the last one
             if(I <= layers - 2){
-                std::cout << "DBN: Train layer " << I << " (" << num_visible << "->" << num_hidden << ") with " << input_size << " entries" << std::endl;
+                watcher.template pretrain_layer<rbm_t>(*this, I, input_size);
 
                 rbm.train(static_cast<const training_t&>(input), max_epochs);
 
@@ -162,6 +169,8 @@ struct dbn {
                 }
             }
         });
+
+        watcher.pretraining_end(*this);
     }
 
     /*}}}*/
@@ -286,7 +295,7 @@ struct dbn {
     /*}}}*/
 
     /*{{{ Predict */
-    
+
     template<typename Sample, typename Output>
     void predict_weights(const Sample& item_data, Output& result){
         etl::dyn_vector<typename Sample::value_type> item(item_data);

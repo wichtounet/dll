@@ -57,6 +57,23 @@ template<typename DBN>
 struct default_dbn_watcher {
     stop_watch<std::chrono::seconds> watch;
 
+    void pretraining_begin(const DBN& /*dbn*/){
+        std::cout << "DBN: Pretraining begin" << std::endl;
+    }
+
+    template<typename RBM>
+    void pretrain_layer(const DBN& /*dbn*/, std::size_t I, std::size_t input_size){
+        using rbm_t = RBM;
+        constexpr const auto num_visible = rbm_t::num_visible;
+        constexpr const auto num_hidden = rbm_t::num_hidden;
+
+        std::cout << "DBN: Train layer " << I << " (" << num_visible << "->" << num_hidden << ") with " << input_size << " entries" << std::endl;
+    }
+
+    void pretraining_end(const DBN& /*dbn*/){
+        std::cout << "DBN: Pretraining end" << std::endl;
+    }
+
     void fine_tuning_begin(const DBN& dbn){
         std::cout << "Train DBN with \"" << DBN::desc::template trainer_t<DBN>::name() << "\"" << std::endl;
         std::cout << "With parameters:" << std::endl;
