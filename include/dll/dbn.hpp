@@ -58,6 +58,8 @@ struct dbn {
     void display() const {
         std::size_t parameters = 0;
 
+        std::cout << "DBN with " << layers << " layers" << std::endl;
+
         detail::for_each(tuples, [&parameters](auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
             constexpr const auto num_visible = rbm_t::num_visible;
@@ -65,7 +67,7 @@ struct dbn {
 
             parameters += num_visible * num_hidden;
 
-            std::cout << "RBM: " << num_visible << "->" << num_hidden
+            std::cout << "\tRBM: " << num_visible << "->" << num_hidden
                 << ": " << (num_visible * num_hidden) << " parameters" << std::endl;
         });
 
