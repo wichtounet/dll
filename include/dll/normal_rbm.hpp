@@ -98,20 +98,20 @@ public:
     }
 
     void display_units() const {
-        rbm_detail::display_visible_units(*static_cast<parent_t*>(this));
-        rbm_detail::display_hidden_units(*static_cast<parent_t*>(this));
+        rbm_detail::display_visible_units(*static_cast<const parent_t*>(this));
+        rbm_detail::display_hidden_units(*static_cast<const parent_t*>(this));
     }
 
     void display_visible_units() const {
-        rbm_detail::display_visible_units(*static_cast<parent_t*>(this));
+        rbm_detail::display_visible_units(*static_cast<const parent_t*>(this));
     }
 
     void display_visible_units(std::size_t matrix) const {
-        rbm_detail::display_visible_units(*static_cast<parent_t*>(this), matrix);
+        rbm_detail::display_visible_units(*static_cast<const parent_t*>(this), matrix);
     }
 
     void display_hidden_units() const {
-        rbm_detail::display_hidden_units(*static_cast<parent_t*>(this));
+        rbm_detail::display_hidden_units(*static_cast<const parent_t*>(this));
     }
 
     void display_weights() const {
