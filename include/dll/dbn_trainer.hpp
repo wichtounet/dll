@@ -36,7 +36,7 @@ struct dbn_trainer {
 
         dbn.momentum = dbn.initial_momentum;
 
-        watcher.training_begin(dbn);
+        watcher.fine_tuning_begin(dbn);
 
         auto trainer = make_unique<trainer_t<dbn_t>>(dbn);
 
@@ -83,10 +83,10 @@ struct dbn_trainer {
                 dbn.momentum = dbn.final_momentum;
             }
 
-            watcher.epoch_end(epoch, error, dbn);
+            watcher.ft_epoch_end(epoch, error, dbn);
         }
 
-        watcher.training_end(dbn);
+        watcher.fine_tuning_end(dbn);
 
         return error;
     }

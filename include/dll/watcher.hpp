@@ -57,7 +57,7 @@ template<typename DBN>
 struct default_dbn_watcher {
     stop_watch<std::chrono::seconds> watch;
 
-    void training_begin(const DBN& dbn){
+    void fine_tuning_begin(const DBN& dbn){
         std::cout << "Train DBN with \"" << DBN::desc::template trainer_t<DBN>::name() << "\"" << std::endl;
         std::cout << "With parameters:" << std::endl;
         std::cout << "   learning_rate=" << dbn.learning_rate << std::endl;
@@ -67,11 +67,11 @@ struct default_dbn_watcher {
         }
     }
 
-    void epoch_end(std::size_t epoch, double error, const DBN&){
+    void ft_epoch_end(std::size_t epoch, double error, const DBN&){
         printf("epoch %ld - Classification error: %.5f \n", epoch, error);
     }
 
-    void training_end(const DBN&){
+    void fine_tuning_end(const DBN&){
         std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
     }
 };
