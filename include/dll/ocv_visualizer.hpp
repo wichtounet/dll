@@ -69,9 +69,38 @@ struct base_ocv_rbm_visualizer {
     }
 };
 
+namespace detail {
+
+static constexpr inline std::size_t ct_mid(std::size_t a, std::size_t b){
+    return (a+b) / 2;
+}
+
+static constexpr inline std::size_t ct_pow(std::size_t a){
+    return a*a;
+}
+
+static constexpr inline std::size_t ct_sqrt(std::size_t res, std::size_t l, std::size_t r){
+    return
+        l == r ? r
+        : ct_sqrt(res, ct_pow(
+            ct_mid(r, l)) >= res ? l : ct_mid(r, l) + 1,
+            ct_pow(ct_mid(r, l)) >= res ? ct_mid(r, l) : r);
+}
+
+static constexpr inline std::size_t ct_sqrt(std::size_t res){
+    return ct_sqrt(res, 1, res);
+}
+
+} //end of namespace detail
+
 template<typename RBM, typename Enable = void>
 struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
-    static constexpr const auto filter_shape = RBM::num_visible;
+    using rbm_t = RBM;
+
+    static constexpr const auto filter_shape = detail::ct_sqrt(rbm_t::num_visible);
+
+    static_assert(filter_shape * filter_shape == rbm_t::num_visible,
+        "Shape cannot be computed for non-square images");
 
     const std::size_t num_hidden = 10;
     const bool scale = true;
