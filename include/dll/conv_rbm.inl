@@ -25,11 +25,9 @@
 #include "math.hpp"               //Logistic sigmoid
 #include "io.hpp"                 //Binary load/store functions
 #include "tmp.hpp"
+#include "rbm_trainer_fwd.hpp"
 
 namespace dll {
-
-template<typename RBM, bool EnableWatcher = true>
-struct rbm_trainer;
 
 /*!
  * \brief Convolutional Restricted Boltzmann Machine

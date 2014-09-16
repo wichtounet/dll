@@ -9,11 +9,9 @@
 #define DLL_RBM_COMMON_HPP
 
 #include "rbm_traits.hpp"
+#include "rbm_trainer_fwd.hpp"
 
 namespace dll {
-
-template<typename RBM, bool EnableWatcher = true>
-struct rbm_trainer;
 
 namespace rbm_detail {
 
