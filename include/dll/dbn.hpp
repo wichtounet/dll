@@ -164,8 +164,8 @@ struct dbn {
 
                 rbm.template train<
                         training_t,
-                        !watcher_t::ignore_sub,
-                        typename dbn_detail::rbm_watcher_t<watcher_t>::type>
+                        !watcher_t::ignore_sub,                                 //Enable the RBM Watcher or not
+                        typename dbn_detail::rbm_watcher_t<watcher_t>::type>    //Replace the RBM watcher if not void
                     (static_cast<const training_t&>(input), max_epochs);
 
                 //Get the activation probabilities for the next level
