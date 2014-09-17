@@ -37,6 +37,7 @@ struct rbm_watcher_t<W, enable_if_t<W::replace_sub> > {
 template<typename Desc>
 struct dbn {
     using desc = Desc;
+    using this_type = dbn<desc>;
 
     using tuple_type = typename desc::layers::tuple_type;
     tuple_type tuples;
@@ -128,8 +129,6 @@ struct dbn {
      */
     template<typename Samples>
     void pretrain(const Samples& training_data, std::size_t max_epochs){
-        typedef typename std::remove_reference<decltype(*this)>::type this_type;
-
         using training_t = std::vector<etl::dyn_vector<typename Samples::value_type::value_type>>;
 
         using watcher_t = typename desc::template watcher_t<this_type>;
@@ -393,8 +392,6 @@ struct dbn {
 
     template<typename Samples, typename Labels>
     weight fine_tune(const Samples& training_data, Labels& labels, size_t max_epochs, size_t batch_size){
-        typedef typename std::remove_reference<decltype(*this)>::type this_type;
-
         dll::dbn_trainer<this_type> trainer;
         return trainer.train(*this, training_data, labels, max_epochs, batch_size);
     }

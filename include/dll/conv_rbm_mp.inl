@@ -42,6 +42,7 @@ public:
     typedef double value_t;
 
     using desc = Desc;
+    using this_type = conv_rbm_mp<desc>;
 
     static constexpr const unit_type visible_unit = desc::visible_unit;
     static constexpr const unit_type hidden_unit = desc::hidden_unit;
@@ -242,8 +243,6 @@ public:
 
     template<typename Samples, typename... Args>
     weight train(const Samples& training_data, std::size_t max_epochs, Args... args){
-        typedef typename std::remove_reference<decltype(*this)>::type this_type;
-
         dll::rbm_trainer<this_type> trainer(args...);
         return trainer.train(*this, training_data, max_epochs);
     }
