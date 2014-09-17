@@ -157,7 +157,7 @@ struct dbn {
             auto input_size = static_cast<const training_t&>(input).size();
 
             //Train each layer but the last one
-            if(I <= layers - 1 && rbm_t::hidden_unit != unit_type::EXP){
+            if(rbm_t::hidden_unit != unit_type::EXP){
                 watcher.template pretrain_layer<rbm_t>(*this, I, input_size);
 
                 rbm.template train<

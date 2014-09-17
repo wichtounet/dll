@@ -131,49 +131,46 @@ struct conv_dbn {
 
             auto input_size = static_cast<const visible_t&>(input).size();
 
-            //Train each layer but the last one
-            if(I <= layers - 1){
-                std::cout << "DBN: Train layer " << I << " (" << NV << "x" << NV << "->" << NH << "x" << NH << ") with " << input_size << " entries" << std::endl;
+            std::cout << "DBN: Train layer " << I << " (" << NV << "x" << NV << "->" << NH << "x" << NH << ") with " << input_size << " entries" << std::endl;
 
-                rbm.train(static_cast<const visible_t&>(input), max_epochs);
+            rbm.train(static_cast<const visible_t&>(input), max_epochs);
 
-                //Get the activation probabilities for the next level
-                if(I < layers - 1){
-                    next_a.clear();
-                    next_a.reserve(input_size);
-                    next_s.clear();
-                    next_s.reserve(input_size);
+            //Get the activation probabilities for the next level
+            if(I < layers - 1){
+                next_a.clear();
+                next_a.reserve(input_size);
+                next_s.clear();
+                next_s.reserve(input_size);
 
-                    //TODO Review that
-                    for(std::size_t i = 0; i < input_size; ++i){
-                        next_a.emplace_back(K, etl::dyn_matrix<weight>(NH, NH));
-                        next_s.emplace_back(K, etl::dyn_matrix<weight>(NH, NH));
-                    }
+                //TODO Review that
+                for(std::size_t i = 0; i < input_size; ++i){
+                    next_a.emplace_back(K, etl::dyn_matrix<weight>(NH, NH));
+                    next_s.emplace_back(K, etl::dyn_matrix<weight>(NH, NH));
+                }
 
-                    for(std::size_t i = 0; i < input_size; ++i){
-                        rbm.v1 = static_cast<const visible_t&>(input)[i];
-                        rbm.activate_hidden(next_a[i], next_s[i], rbm.v1, rbm.v1);
-                    }
+                for(std::size_t i = 0; i < input_size; ++i){
+                    rbm.v1 = static_cast<const visible_t&>(input)[i];
+                    rbm.activate_hidden(next_a[i], next_s[i], rbm.v1, rbm.v1);
+                }
 
-                    next.clear();
-                    next.reserve(input_size);
+                next.clear();
+                next.reserve(input_size);
 
-                    //TODO Check the order of the output
+                //TODO Check the order of the output
 
-                    for(std::size_t i = 0; i < input_size; ++i){
-                        next.emplace_back(NH * NH * K);
+                for(std::size_t i = 0; i < input_size; ++i){
+                    next.emplace_back(NH * NH * K);
 
-                        for(std::size_t j = 0; j < NH; ++j){
-                            for(std::size_t k = 0; k < NH; ++k){
-                                for(std::size_t l = 0; l < K; ++l){
-                                    next[i][j * NH * NH + k * NH + l] = next_a[i](k)(j,k);
-                                }
+                    for(std::size_t j = 0; j < NH; ++j){
+                        for(std::size_t k = 0; k < NH; ++k){
+                            for(std::size_t l = 0; l < K; ++l){
+                                next[i][j * NH * NH + k * NH + l] = next_a[i](k)(j,k);
                             }
                         }
                     }
-
-                    input = std::ref(next);
                 }
+
+                input = std::ref(next);
             }
         });
     }
