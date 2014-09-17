@@ -332,7 +332,6 @@ struct opencv_dbn_visualizer {
         static constexpr const detail::shape tile_shape{
             detail::best_width(rbm_t::num_hidden), detail::best_height(rbm_t::num_hidden)};
 
-        static constexpr const auto scale = C::scale;
         static constexpr const auto padding = C::padding;
 
         static constexpr const auto width = filter_shape.width * tile_shape.width + (tile_shape.width + 1) * 1 + 2 * padding;
