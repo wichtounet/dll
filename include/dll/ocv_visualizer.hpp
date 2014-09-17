@@ -87,7 +87,7 @@ constexpr inline std::size_t ct_pow(std::size_t a){
 
 #ifdef __clang__
 
-static constexpr std::size_t ct_sqrt(std::size_t res, std::size_t l, std::size_t r){
+constexpr std::size_t ct_sqrt(std::size_t res, std::size_t l, std::size_t r){
     if(l == r){
         return r;
     } else {
