@@ -135,7 +135,7 @@ struct conv_dbn {
 
             //Train each layer but the last one
             if(I <= layers - 2){
-                std::cout << "DBN: Train layer " << I << " (" << NV << "x" << NV << "->" << NH << "x" << "NH" << ") with " << input_size << " entries" << std::endl;
+                std::cout << "DBN: Train layer " << I << " (" << NV << "x" << NV << "->" << NH << "x" << NH << ") with " << input_size << " entries" << std::endl;
 
                 rbm.train(static_cast<const visible_t&>(input), max_epochs);
 
