@@ -6,8 +6,6 @@
 //=======================================================================
 
 #include "dll/conv_dbn.hpp"
-#include "dll/conv_dbn_desc.hpp"
-#include "dll/dbn_layers.hpp"
 
 template<typename DBN>
 void test_dbn(){
