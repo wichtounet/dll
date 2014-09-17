@@ -241,9 +241,9 @@ public:
         nan_check_deep(v_s);
     }
 
-    template<typename Samples, typename... Args>
+    template<typename Samples, bool EnableWatcher = true, typename RW = void, typename... Args>
     weight train(const Samples& training_data, std::size_t max_epochs, Args... args){
-        dll::rbm_trainer<this_type> trainer(args...);
+        dll::rbm_trainer<this_type, EnableWatcher, RW> trainer(args...);
         return trainer.train(*this, training_data, max_epochs);
     }
 
