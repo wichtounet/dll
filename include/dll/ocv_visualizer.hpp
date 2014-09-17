@@ -229,7 +229,7 @@ template<typename RBM, typename C>
 struct opencv_rbm_visualizer<RBM, C, enable_if_t<rbm_traits<RBM>::is_convolutional()>> : base_ocv_rbm_visualizer<RBM> {
     using rbm_t = RBM;
 
-    static constexpr const detail::shape filter_shape{rbm_t::NV, rbm_t::NV};
+    static constexpr const detail::shape filter_shape{rbm_t::NW, rbm_t::NW};
     static constexpr const detail::shape tile_shape{detail::best_width(rbm_t::K), detail::best_height(rbm_t::K)};
 
     static constexpr const auto scale = C::scale;
