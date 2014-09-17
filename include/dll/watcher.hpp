@@ -56,7 +56,7 @@ struct default_rbm_watcher {
     }
 };
 
-template<typename DBN>
+template<typename DBN, typename Enable = void>
 struct default_dbn_watcher {
     static constexpr const bool ignore_sub = false;
     static constexpr const bool replace_sub = false;
@@ -96,6 +96,33 @@ struct default_dbn_watcher {
 
     void fine_tuning_end(const DBN&){
         std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
+    }
+};
+
+template<typename DBN>
+struct default_dbn_watcher<DBN, enable_if_t<dbn_traits<DBN>::is_convolutional()>> {
+    static constexpr const bool ignore_sub = false;
+    static constexpr const bool replace_sub = false;
+
+    stop_watch<std::chrono::seconds> watch;
+
+    void pretraining_begin(const DBN& /*dbn*/){
+        std::cout << "CDBN: Pretraining begin" << std::endl;
+    }
+
+    template<typename RBM>
+    void pretrain_layer(const DBN& /*dbn*/, std::size_t I, std::size_t input_size){
+        using rbm_t = RBM;
+
+        static constexpr const auto NV = rbm_t::NV;
+        static constexpr const auto NH = rbm_t::NH;
+        static constexpr const auto K = rbm_t::K;
+
+        printf("CDBN: Train layer %lu (%lux%lu -> %lux%lu (%lu)) with %lu entries \n", I, NV, NV, NH, NH, K, input_size);
+    }
+
+    void pretraining_end(const DBN& /*dbn*/){
+        std::cout << "CDBN: Pretraining end" << std::endl;
     }
 };
 
