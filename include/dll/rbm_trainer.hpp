@@ -18,23 +18,32 @@ namespace dll {
 enum class init_watcher_t { INIT };
 constexpr const init_watcher_t init_watcher = init_watcher_t::INIT;
 
+template<typename RBM, typename RW, typename Enable = void>
+struct watcher_type {
+    using watcher_t = typename RBM::desc::template watcher_t<RBM>;
+};
+
+template<typename RBM, typename RW>
+struct watcher_type<RBM, RW, enable_if_t<not_u<std::is_void<RW>::value>::value>> {
+    using watcher_t = RW;
+};
+
 /*!
  * \brief A generic trainer for Restricted Boltzmann Machine
  *
  * This trainer use the specified trainer of the RBM to perform unsupervised
  * training.
  */
-template<typename RBM, bool EnableWatcher>
+template<typename RBM, bool EnableWatcher, typename RW>
 struct rbm_trainer {
     using rbm_t = RBM;
 
     template<typename R>
     using trainer_t = typename rbm_t::desc::template trainer_t<R>;
 
-    template<typename R>
-    using watcher_t = typename rbm_t::desc::template watcher_t<R>;
+    using watcher_t = typename watcher_type<rbm_t, RW>::watcher_t;
 
-    mutable watcher_t<rbm_t> watcher;
+    mutable watcher_t watcher;
 
     rbm_trainer() : watcher() {}
 

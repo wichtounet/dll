@@ -17,6 +17,20 @@
 
 namespace dll {
 
+namespace dbn_detail {
+
+template<typename W, typename Enable = void>
+struct rbm_watcher_t {
+    using type = void;
+};
+
+template<typename W>
+struct rbm_watcher_t<W, enable_if_t<W::replace_sub> > {
+    using type = W;
+};
+
+} //end of namespace dbn_detail
+
 /*!
  * \brief A Deep Belief Network implementation
  */
@@ -149,7 +163,11 @@ struct dbn {
             if(I <= layers - 2){
                 watcher.template pretrain_layer<rbm_t>(*this, I, input_size);
 
-                rbm.template train<training_t, !watcher_t::ignore_sub>(static_cast<const training_t&>(input), max_epochs);
+                rbm.template train<
+                        training_t,
+                        !watcher_t::ignore_sub,
+                        typename dbn_detail::rbm_watcher_t<watcher_t>::type>
+                    (static_cast<const training_t&>(input), max_epochs);
 
                 //Get the activation probabilities for the next level
                 if(I < layers - 2){
