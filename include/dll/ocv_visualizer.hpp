@@ -71,15 +71,57 @@ struct base_ocv_rbm_visualizer {
 
 namespace detail {
 
-static constexpr inline std::size_t ct_mid(std::size_t a, std::size_t b){
+struct shape {
+    const std::size_t width;
+    const std::size_t height;
+    constexpr shape(std::size_t width, std::size_t height) : width(width), height(height) {}
+};
+
+constexpr inline std::size_t ct_mid(std::size_t a, std::size_t b){
     return (a+b) / 2;
 }
 
-static constexpr inline std::size_t ct_pow(std::size_t a){
+constexpr inline std::size_t ct_pow(std::size_t a){
     return a*a;
 }
 
-static constexpr inline std::size_t ct_sqrt(std::size_t res, std::size_t l, std::size_t r){
+#ifdef __clang__
+
+static constexpr std::size_t ct_sqrt(std::size_t res, std::size_t l, std::size_t r){
+    if(l == r){
+        return r;
+    } else {
+        const auto mid = (r + l) / 2;
+
+        if(mid * mid >= res){
+            return ct_sqrt(res, l, mid);
+        } else {
+            return ct_sqrt(res, mid + 1, r);
+        }
+    }
+}
+
+constexpr inline std::size_t ct_sqrt(const std::size_t res){
+    return ct_sqrt(res, 1, res);
+}
+
+constexpr inline std::size_t best_width(const std::size_t total){
+    const auto square = ct_sqrt(total);
+
+    if(square * square == total){
+        return square;
+    } else {
+        auto width = square;
+        while(width * square < total){
+            ++width;
+        }
+        return width;
+    }
+}
+
+#else
+
+constexpr inline std::size_t ct_sqrt(std::size_t res, std::size_t l, std::size_t r){
     return
         l == r ? r
         : ct_sqrt(res, ct_pow(
@@ -87,36 +129,50 @@ static constexpr inline std::size_t ct_sqrt(std::size_t res, std::size_t l, std:
             ct_pow(ct_mid(r, l)) >= res ? ct_mid(r, l) : r);
 }
 
-static constexpr inline std::size_t ct_sqrt(std::size_t res){
+//TODO Ugly best_width G++ version
+
+constexpr inline std::size_t ct_sqrt(const std::size_t res){
     return ct_sqrt(res, 1, res);
+}
+
+#endif
+
+constexpr inline std::size_t best_height(const std::size_t total){
+    return ct_sqrt(total);
 }
 
 } //end of namespace detail
 
-template<typename RBM, typename Enable = void>
+//rbm_ocv_config is used instead of directly passing the parameters because
+//adding non-type template parameters would break dll::watcher
+
+template<std::size_t P = 20, bool S = true>
+struct rbm_ocv_config {
+    static constexpr const auto padding = P;
+    static constexpr const auto scale = S;
+};
+
+template<typename RBM, typename C = rbm_ocv_config<>, typename Enable = void>
 struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
     using rbm_t = RBM;
 
-    static constexpr const auto filter_shape = detail::ct_sqrt(rbm_t::num_visible);
+    static constexpr const detail::shape filter_shape{
+        detail::best_width(rbm_t::num_visible), detail::best_height(rbm_t::num_visible)};
 
-    static_assert(filter_shape * filter_shape == rbm_t::num_visible,
-        "Shape cannot be computed for non-square images");
+    static constexpr const detail::shape tile_shape{
+        detail::best_width(rbm_t::num_hidden), detail::best_height(rbm_t::num_hidden)};
 
-    const std::size_t num_hidden = 10;
-    const bool scale = true;
-    const std::size_t padding = 20;
+    static constexpr const auto scale = C::scale;
+    static constexpr const auto padding = C::padding;
 
     using base_type = base_ocv_rbm_visualizer<RBM>;
     using base_type::buffer_image;
     using base_type::refresh;
 
-    opencv_rbm_visualizer(std::size_t num_hidden = 10, bool scale = true, std::size_t padding = 20) :
+    opencv_rbm_visualizer() :
         base_type(
-            filter_shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding,
-            filter_shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding),
-        num_hidden(num_hidden),
-        scale(scale),
-        padding(padding)
+            filter_shape.width * tile_shape.width + (tile_shape.height + 1) * 1 + 2 * padding,
+            filter_shape.height * tile_shape.height + (tile_shape.height + 1) * 1 + 2 * padding)
     {}
 
     void epoch_end(std::size_t epoch, double error, double free_energy, const RBM& rbm){
@@ -126,23 +182,23 @@ struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
 
         cv::putText(buffer_image, "epoch " + std::to_string(epoch), cv::Point(10,12), CV_FONT_NORMAL, 0.3, cv::Scalar(0), 1, 2);
 
-        for(std::size_t hi = 0; hi < num_hidden; ++hi){
-            for(std::size_t hj = 0; hj < num_hidden; ++hj){
-                auto real_h = hi * num_hidden + hj;
+        for(std::size_t hi = 0; hi < tile_shape.width; ++hi){
+            for(std::size_t hj = 0; hj < tile_shape.height; ++hj){
+                auto real_h = hi * tile_shape.height + hj;
 
                 typename RBM::weight min = 100.0;
                 typename RBM::weight max = 0.0;
 
                 if(scale){
-                    for(std::size_t real_v = 0; real_v < filter_shape * filter_shape; ++real_v){
+                    for(std::size_t real_v = 0; real_v < filter_shape.width * filter_shape.height; ++real_v){
                         min = std::min(rbm.w(real_v, real_h), min);
                         max = std::max(rbm.w(real_v, real_h), max);
                     }
                 }
 
-                for(std::size_t i = 0; i < filter_shape; ++i){
-                    for(std::size_t j = 0; j < filter_shape; ++j){
-                        auto real_v = i * filter_shape + j;
+                for(std::size_t i = 0; i < filter_shape.width; ++i){
+                    for(std::size_t j = 0; j < filter_shape.height; ++j){
+                        auto real_v = i * filter_shape.height + j;
 
                         auto value = rbm.w(real_v, real_h);
 
@@ -152,8 +208,8 @@ struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
                         }
 
                         buffer_image.template at<uint8_t>(
-                            padding+1+hi*(filter_shape+1)+i,
-                            padding+1+hj*(filter_shape+1)+j) = value * 255;
+                            padding+1+hi*(filter_shape.height+1)+i,
+                            padding+1+hj*(filter_shape.width+1)+j) = value * 255;
                     }
                 }
             }
@@ -163,26 +219,24 @@ struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
     }
 };
 
-template<typename RBM>
-struct opencv_rbm_visualizer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> : base_ocv_rbm_visualizer<RBM> {
-    static constexpr const auto filter_shape = RBM::NW;
+template<typename RBM, typename C>
+struct opencv_rbm_visualizer<RBM, C, enable_if_t<rbm_traits<RBM>::is_convolutional()>> : base_ocv_rbm_visualizer<RBM> {
+    using rbm_t = RBM;
 
-    const std::size_t num_hidden;
+    static constexpr const detail::shape filter_shape{rbm_t::NV, rbm_t::NV};
+    static constexpr const detail::shape tile_shape{detail::best_width(rbm_t::K), detail::best_height(rbm_t::K)};
 
-    const bool scale;
-    const std::size_t padding;
+    static constexpr const auto scale = C::scale;
+    static constexpr const auto padding = C::padding;
 
     using base_type = base_ocv_rbm_visualizer<RBM>;
     using base_type::buffer_image;
     using base_type::refresh;
 
-    opencv_rbm_visualizer(std::size_t num_hidden = 6, bool scale = true, std::size_t padding = 20) :
+    opencv_rbm_visualizer() :
         base_type(
-            filter_shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding,
-            filter_shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding),
-        num_hidden(num_hidden),
-        scale(scale),
-        padding(padding)
+            filter_shape.width * tile_shape.width + (tile_shape.height + 1) * 1 + 2 * padding,
+            filter_shape.height * tile_shape.height + (tile_shape.height + 1) * 1 + 2 * padding)
     {}
 
     void epoch_end(std::size_t epoch, double error, double free_energy, const RBM& rbm){
@@ -192,9 +246,9 @@ struct opencv_rbm_visualizer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional(
 
         cv::putText(buffer_image, "epoch " + std::to_string(epoch), cv::Point(10,12), CV_FONT_NORMAL, 0.3, cv::Scalar(0), 1, 2);
 
-        for(std::size_t hi = 0; hi < num_hidden; ++hi){
-            for(std::size_t hj = 0; hj < num_hidden; ++hj){
-                auto real_k = hi * num_hidden + hj;
+        for(std::size_t hi = 0; hi < tile_shape.width; ++hi){
+            for(std::size_t hj = 0; hj < tile_shape.height; ++hj){
+                auto real_k = hi * tile_shape.height + hj;
 
                 dll_assert(real_k < RBM::K, "Invalid filter index (>= K)");
 
@@ -202,16 +256,16 @@ struct opencv_rbm_visualizer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional(
                 typename RBM::weight max = 0.0;
 
                 if(scale){
-                    for(std::size_t fi = 0; fi < filter_shape; ++fi){
-                        for(std::size_t fj = 0; fj < filter_shape; ++fj){
+                    for(std::size_t fi = 0; fi < filter_shape.width; ++fi){
+                        for(std::size_t fj = 0; fj < filter_shape.height; ++fj){
                             min = std::min(rbm.w(real_k)(fi, fj), min);
                             max = std::max(rbm.w(real_k)(fi, fj), max);
                         }
                     }
                 }
 
-                for(std::size_t fi = 0; fi < filter_shape; ++fi){
-                    for(std::size_t fj = 0; fj < filter_shape; ++fj){
+                for(std::size_t fi = 0; fi < filter_shape.width; ++fi){
+                    for(std::size_t fj = 0; fj < filter_shape.height; ++fj){
                         auto value = rbm.w(real_k)(fi, fj);
 
                         if(scale){
@@ -220,8 +274,8 @@ struct opencv_rbm_visualizer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional(
                         }
 
                         buffer_image.template at<uint8_t>(
-                            padding+1+hi*(filter_shape+1)+fi,
-                            padding+1+hj*(filter_shape+1)+fj) = value * 255;
+                            padding+1+hi*(filter_shape.width+1)+fi,
+                            padding+1+hj*(filter_shape.height+1)+fj) = value * 255;
                     }
                 }
             }
