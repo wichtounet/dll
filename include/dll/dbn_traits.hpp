@@ -13,6 +13,9 @@
 
 namespace dll {
 
+template<typename Desc>
+struct conv_dbn;
+
 /*!
  * \brief Type Traits to get information on DBN type
  */
@@ -22,6 +25,13 @@ struct dbn_traits {
 
     HAS_STATIC_FIELD(Momentum, has_momentum_field)
     HAS_STATIC_FIELD(Decay, has_decay_field)
+
+    /*!
+     * \brief Indicates if the DBN is convolutional
+     */
+    static constexpr bool is_convolutional(){
+        return detail::is_instantiation_of<conv_dbn, dbn_t>::value;
+    }
 
     template<typename D = DBN, enable_if_u<has_momentum_field<typename D::desc>::value> = ::detail::dummy>
     static constexpr bool has_momentum(){
