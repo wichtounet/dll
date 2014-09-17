@@ -194,10 +194,8 @@ struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
                 typename RBM::weight max = 0.0;
 
                 if(scale){
-                    for(std::size_t real_v = 0; real_v < rbm_t::num_visible; ++real_v){
-                        min = std::min(rbm.w(real_v, real_h), min);
-                        max = std::max(rbm.w(real_v, real_h), max);
-                    }
+                    min = etl::min(rbm.w);
+                    max = etl::max(rbm.w);
                 }
 
                 for(std::size_t i = 0; i < filter_shape.width; ++i){
@@ -266,12 +264,8 @@ struct opencv_rbm_visualizer<RBM, C, enable_if_t<rbm_traits<RBM>::is_convolution
                 typename RBM::weight max = 0.0;
 
                 if(scale){
-                    for(std::size_t fi = 0; fi < filter_shape.width; ++fi){
-                        for(std::size_t fj = 0; fj < filter_shape.height; ++fj){
-                            min = std::min(rbm.w(real_k)(fi, fj), min);
-                            max = std::max(rbm.w(real_k)(fi, fj), max);
-                        }
-                    }
+                    min = etl::min(rbm.w(real_k));
+                    max = etl::max(rbm.w(real_k));
                 }
 
                 for(std::size_t fi = 0; fi < filter_shape.width; ++fi){
@@ -397,10 +391,8 @@ struct opencv_dbn_visualizer {
                 typename RBM::weight max = 0.0;
 
                 if(scale){
-                    for(std::size_t real_v = 0; real_v < filter_shape * filter_shape; ++real_v){
-                        min = std::min(rbm.w(real_v, real_h), min);
-                        max = std::max(rbm.w(real_v, real_h), max);
-                    }
+                    min = etl::min(rbm.w);
+                    max = etl::max(rbm.w);
                 }
 
                 for(std::size_t i = 0; i < filter_shape; ++i){
