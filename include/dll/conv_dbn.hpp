@@ -131,16 +131,14 @@ struct conv_dbn {
 
             auto input_size = static_cast<const visible_t&>(input).size();
 
-            //TODO Train every layers but the one with EXP hidden unit
-
             //Train each layer but the last one
-            if(I <= layers - 2){
+            if(I <= layers - 1){
                 std::cout << "DBN: Train layer " << I << " (" << NV << "x" << NV << "->" << NH << "x" << NH << ") with " << input_size << " entries" << std::endl;
 
                 rbm.train(static_cast<const visible_t&>(input), max_epochs);
 
                 //Get the activation probabilities for the next level
-                if(I < layers - 2){
+                if(I < layers - 1){
                     next_a.clear();
                     next_a.reserve(input_size);
                     next_s.clear();
