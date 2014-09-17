@@ -56,8 +56,9 @@ struct conv_dbn {
 
             constexpr const auto NV = rbm_t::NV;
             constexpr const auto NH = rbm_t::NH;
+            constexpr const auto K = rbm_t::K;
 
-            std::cout << "RBM: " << NV << "x" << NV << "->" << NH << "x" << NH << std::endl;
+            printf("RBM: %lux%lu -> %lux%lu (%lu)\n", NV, NV, NH, NH, K);
         });
     }
 
@@ -131,7 +132,7 @@ struct conv_dbn {
 
             auto input_size = static_cast<const visible_t&>(input).size();
 
-            std::cout << "DBN: Train layer " << I << " (" << NV << "x" << NV << "->" << NH << "x" << NH << ") with " << input_size << " entries" << std::endl;
+            printf("DBN: Train layer %lu (%lux%lu -> %lux%lu (%lu)) with %lu entries\n", I, NV, NV, NH, NH, K, input_size);
 
             rbm.train(static_cast<const visible_t&>(input), max_epochs);
 
