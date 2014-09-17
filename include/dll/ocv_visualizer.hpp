@@ -231,6 +231,185 @@ struct opencv_rbm_visualizer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional(
     }
 };
 
+template<typename DBN>
+struct opencv_dbn_visualizer {
+    static constexpr const bool ignore_sub = false;
+    static constexpr const bool replace_sub = true;
+
+    stop_watch<std::chrono::seconds> watch;
+
+    using dbn_t = DBN;
+
+    static std::vector<cv::Mat> buffer_images;
+    static std::size_t current_image;
+
+    opencv_dbn_visualizer() = default;
+
+    //Pretraining phase
+
+    void pretraining_begin(const DBN& /*dbn*/){
+        std::cout << "DBN: Pretraining begin" << std::endl;
+
+        cv::namedWindow("DBN Training", cv::WINDOW_NORMAL);
+    }
+
+    template<typename RBM>
+    void pretrain_layer(const DBN& /*dbn*/, std::size_t I, std::size_t input_size){
+        using rbm_t = RBM;
+        static constexpr const auto num_visible = rbm_t::num_visible;
+        static constexpr const auto num_hidden = rbm_t::num_hidden;
+
+        std::cout << "DBN: Train layer " << I << " (" << num_visible << "->" << num_hidden << ") with " << input_size << " entries" << std::endl;
+
+        current_image = I;
+    }
+
+    template<typename RBM>
+    void training_begin(const RBM& rbm){
+        using rbm_t = RBM;
+
+        static constexpr const auto filter_shape = detail::ct_sqrt(rbm_t::num_visible);
+
+        static_assert(filter_shape * filter_shape == rbm_t::num_visible, "Shape cannot be computed for non-square images");
+
+        static constexpr const std::size_t padding = 20;
+        static constexpr const std::size_t num_hidden = 10;
+
+        static constexpr const auto width = filter_shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding;
+        static constexpr const auto height = filter_shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding;
+
+        buffer_images.emplace_back(cv::Size(width, height), CV_8UC1);
+
+        std::cout << "Train RBM with \"" << rbm_t::desc::template trainer_t<rbm_t>::name() << "\"" << std::endl;
+        std::cout << "With parameters:" << std::endl;
+        std::cout << "   learning_rate=" << rbm.learning_rate << std::endl;
+
+        if(rbm_traits<rbm_t>::has_momentum()){
+            std::cout << "   momentum=" << rbm.momentum << std::endl;
+        }
+
+        if(rbm_traits<rbm_t>::decay() == decay_type::L1 || rbm_traits<rbm_t>::decay() == decay_type::L1_FULL){
+            std::cout << "   weight_cost(L1)=" << rbm.weight_cost << std::endl;
+        }
+
+        if(rbm_traits<rbm_t>::decay() == decay_type::L2 || rbm_traits<rbm_t>::decay() == decay_type::L2_FULL){
+            std::cout << "   weight_cost(L2)=" << rbm.weight_cost << std::endl;
+        }
+
+        if(rbm_traits<rbm_t>::has_sparsity()){
+            std::cout << "   sparsity_target=" << rbm.sparsity_target << std::endl;
+        }
+
+        refresh();
+    }
+
+    template<typename RBM>
+    void epoch_end(std::size_t epoch, double error, double free_energy, const RBM& rbm){
+        using rbm_t = RBM;
+
+        static constexpr const auto filter_shape = detail::ct_sqrt(rbm_t::num_visible);
+
+        static_assert(filter_shape * filter_shape == rbm_t::num_visible, "Shape cannot be computed for non-square images");
+
+        static constexpr const std::size_t padding = 20;
+        static constexpr const bool scale = true;
+        static constexpr const std::size_t num_hidden = 10;
+
+        printf("epoch %ld - Reconstruction error average: %.5f - Free energy average: %.3f\n", epoch, error, free_energy);
+
+        auto& buffer_image = buffer_images[current_image];
+
+        buffer_image = cv::Scalar(255);
+
+        cv::putText(buffer_image,
+            "layer: " + std::to_string(current_image) + " epoch " + std::to_string(epoch),
+            cv::Point(10,12), CV_FONT_NORMAL, 0.3, cv::Scalar(0), 1, 2);
+
+        for(std::size_t hi = 0; hi < num_hidden; ++hi){
+            for(std::size_t hj = 0; hj < num_hidden; ++hj){
+                auto real_h = hi * num_hidden + hj;
+
+                typename RBM::weight min = 100.0;
+                typename RBM::weight max = 0.0;
+
+                if(scale){
+                    for(std::size_t real_v = 0; real_v < filter_shape * filter_shape; ++real_v){
+                        min = std::min(rbm.w(real_v, real_h), min);
+                        max = std::max(rbm.w(real_v, real_h), max);
+                    }
+                }
+
+                for(std::size_t i = 0; i < filter_shape; ++i){
+                    for(std::size_t j = 0; j < filter_shape; ++j){
+                        auto real_v = i * filter_shape + j;
+
+                        auto value = rbm.w(real_v, real_h);
+
+                        if(scale){
+                            value -= min;
+                            value *= 1.0 / (max + 1e-8);
+                        }
+
+                        buffer_image.template at<uint8_t>(
+                            padding+1+hi*(filter_shape+1)+i,
+                            padding+1+hj*(filter_shape+1)+j) = value * 255;
+                    }
+                }
+            }
+        }
+
+        refresh();
+    }
+
+    template<typename RBM>
+    void training_end(const RBM&){
+        std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
+
+        cv::waitKey(0);
+    }
+
+    void pretraining_end(const DBN& /*dbn*/){
+        std::cout << "DBN: Pretraining end" << std::endl;
+    }
+
+    //Fine-tuning phase
+
+    void fine_tuning_begin(const DBN& dbn){
+        std::cout << "Train DBN with \"" << DBN::desc::template trainer_t<DBN>::name() << "\"" << std::endl;
+        std::cout << "With parameters:" << std::endl;
+        std::cout << "   learning_rate=" << dbn.learning_rate << std::endl;
+
+        if(dbn_traits<DBN>::has_momentum()){
+            std::cout << "   momentum=" << dbn.momentum << std::endl;
+        }
+    }
+
+    void ft_epoch_end(std::size_t epoch, double error, const DBN&){
+        printf("epoch %ld - Classification error: %.5f \n", epoch, error);
+
+        //TODO Would be interesting to update RBM images here
+    }
+
+    void fine_tuning_end(const DBN&){
+        std::cout << "Total training took " << watch.elapsed() << "s" << std::endl;
+
+        cv::waitKey(0);
+    }
+
+    //Utility functions
+
+    void refresh(){
+        cv::imshow("DBN Training", buffer_images[current_image]);
+        cv::waitKey(30);
+    }
+};
+
+template <typename DBN>
+std::vector<cv::Mat> opencv_dbn_visualizer<DBN>::buffer_images;
+
+template <typename DBN>
+std::size_t opencv_dbn_visualizer<DBN>::current_image;
+
 } //end of dll namespace
 
 #endif
