@@ -69,8 +69,7 @@ struct dbn {
 
             parameters += num_visible * num_hidden;
 
-            std::cout << "\tRBM: " << num_visible << "->" << num_hidden
-                << ": " << (num_visible * num_hidden) << " parameters" << std::endl;
+            printf("\tRBM: %lu->%lu : %lu parameters\n", num_visible, num_hidden, num_visible * num_hidden);
         });
 
         std::cout << "Total parameters: " << parameters << std::endl;
