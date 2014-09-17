@@ -190,8 +190,8 @@ struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
                     break;
                 }
 
-                typename RBM::weight min = 100.0;
-                typename RBM::weight max = 0.0;
+                typename RBM::weight min;
+                typename RBM::weight max;
 
                 if(scale){
                     min = etl::min(rbm.w);
@@ -260,8 +260,8 @@ struct opencv_rbm_visualizer<RBM, C, enable_if_t<rbm_traits<RBM>::is_convolution
                     break;
                 }
 
-                typename RBM::weight min = 100.0;
-                typename RBM::weight max = 0.0;
+                typename RBM::weight min;
+                typename RBM::weight max;
 
                 if(scale){
                     min = etl::min(rbm.w(real_k));
@@ -390,8 +390,8 @@ struct opencv_dbn_visualizer {
             for(std::size_t hj = 0; hj < tile_shape.height; ++hj){
                 auto real_h = hi * tile_shape.height + hj;
 
-                typename RBM::weight min = 100.0;
-                typename RBM::weight max = 0.0;
+                typename RBM::weight min;
+                typename RBM::weight max;
 
                 if(scale){
                     min = etl::min(rbm.w);
