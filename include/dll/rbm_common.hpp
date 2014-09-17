@@ -9,7 +9,6 @@
 #define DLL_RBM_COMMON_HPP
 
 #include "rbm_traits.hpp"
-#include "rbm_trainer_fwd.hpp"
 
 namespace dll {
 

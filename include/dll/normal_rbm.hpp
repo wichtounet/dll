@@ -22,7 +22,7 @@
 #include "base_conf.hpp"
 #include "math.hpp"
 #include "io.hpp"
-
+#include "rbm_trainer_fwd.hpp"
 #include "rbm_common.hpp"
 
 namespace dll {
