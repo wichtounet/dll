@@ -17,6 +17,7 @@
 #include "tuple_utils.hpp"
 #include "dbn_trainer.hpp"
 #include "conjugate_gradient.hpp"
+#include "dbn_common.hpp"
 
 namespace dll {
 

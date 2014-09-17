@@ -14,22 +14,9 @@
 #include "tuple_utils.hpp"
 #include "dbn_trainer.hpp"
 #include "conjugate_gradient.hpp"
+#include "dbn_common.hpp"
 
 namespace dll {
-
-namespace dbn_detail {
-
-template<typename W, typename Enable = void>
-struct rbm_watcher_t {
-    using type = void;
-};
-
-template<typename W>
-struct rbm_watcher_t<W, enable_if_t<W::replace_sub> > {
-    using type = W;
-};
-
-} //end of namespace dbn_detail
 
 /*!
  * \brief A Deep Belief Network implementation
