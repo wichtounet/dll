@@ -289,7 +289,7 @@ struct opencv_rbm_visualizer<RBM, C, enable_if_t<rbm_traits<RBM>::is_convolution
     }
 };
 
-template<typename DBN>
+template<typename DBN, typename C = rbm_ocv_config<>>
 struct opencv_dbn_visualizer {
     static constexpr const bool ignore_sub = false;
     static constexpr const bool replace_sub = true;
@@ -326,15 +326,17 @@ struct opencv_dbn_visualizer {
     void training_begin(const RBM& rbm){
         using rbm_t = RBM;
 
-        static constexpr const auto filter_shape = detail::ct_sqrt(rbm_t::num_visible);
+        static constexpr const detail::shape filter_shape{
+            detail::best_width(rbm_t::num_visible), detail::best_height(rbm_t::num_visible)};
 
-        static_assert(filter_shape * filter_shape == rbm_t::num_visible, "Shape cannot be computed for non-square images");
+        static constexpr const detail::shape tile_shape{
+            detail::best_width(rbm_t::num_hidden), detail::best_height(rbm_t::num_hidden)};
 
-        static constexpr const std::size_t padding = 20;
-        static constexpr const std::size_t num_hidden = 10;
+        static constexpr const auto scale = C::scale;
+        static constexpr const auto padding = C::padding;
 
-        static constexpr const auto width = filter_shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding;
-        static constexpr const auto height = filter_shape * num_hidden + (num_hidden + 1) * 1 + 2 * padding;
+        static constexpr const auto width = filter_shape.width * tile_shape.width + (tile_shape.width + 1) * 1 + 2 * padding;
+        static constexpr const auto height = filter_shape.height * tile_shape.height + (tile_shape.height + 1) * 1 + 2 * padding;
 
         buffer_images.emplace_back(cv::Size(width, height), CV_8UC1);
 
@@ -365,13 +367,14 @@ struct opencv_dbn_visualizer {
     void epoch_end(std::size_t epoch, double error, double free_energy, const RBM& rbm){
         using rbm_t = RBM;
 
-        static constexpr const auto filter_shape = detail::ct_sqrt(rbm_t::num_visible);
+        static constexpr const detail::shape filter_shape{
+            detail::best_width(rbm_t::num_visible), detail::best_height(rbm_t::num_visible)};
 
-        static_assert(filter_shape * filter_shape == rbm_t::num_visible, "Shape cannot be computed for non-square images");
+        static constexpr const detail::shape tile_shape{
+            detail::best_width(rbm_t::num_hidden), detail::best_height(rbm_t::num_hidden)};
 
-        static constexpr const std::size_t padding = 20;
-        static constexpr const bool scale = true;
-        static constexpr const std::size_t num_hidden = 10;
+        static constexpr const auto scale = C::scale;
+        static constexpr const auto padding = C::padding;
 
         printf("epoch %ld - Reconstruction error average: %.5f - Free energy average: %.3f\n", epoch, error, free_energy);
 
@@ -383,9 +386,9 @@ struct opencv_dbn_visualizer {
             "layer: " + std::to_string(current_image) + " epoch " + std::to_string(epoch),
             cv::Point(10,12), CV_FONT_NORMAL, 0.3, cv::Scalar(0), 1, 2);
 
-        for(std::size_t hi = 0; hi < num_hidden; ++hi){
-            for(std::size_t hj = 0; hj < num_hidden; ++hj){
-                auto real_h = hi * num_hidden + hj;
+        for(std::size_t hi = 0; hi < tile_shape.width; ++hi){
+            for(std::size_t hj = 0; hj < tile_shape.height; ++hj){
+                auto real_h = hi * tile_shape.height + hj;
 
                 typename RBM::weight min = 100.0;
                 typename RBM::weight max = 0.0;
@@ -395,9 +398,9 @@ struct opencv_dbn_visualizer {
                     max = etl::max(rbm.w);
                 }
 
-                for(std::size_t i = 0; i < filter_shape; ++i){
-                    for(std::size_t j = 0; j < filter_shape; ++j){
-                        auto real_v = i * filter_shape + j;
+                for(std::size_t i = 0; i < filter_shape.width; ++i){
+                    for(std::size_t j = 0; j < filter_shape.height; ++j){
+                        auto real_v = i * filter_shape.height + j;
 
                         auto value = rbm.w(real_v, real_h);
 
@@ -407,8 +410,8 @@ struct opencv_dbn_visualizer {
                         }
 
                         buffer_image.template at<uint8_t>(
-                            padding+1+hi*(filter_shape+1)+i,
-                            padding+1+hj*(filter_shape+1)+j) = value * 255;
+                            padding+1+hi*(filter_shape.width+1)+i,
+                            padding+1+hj*(filter_shape.height+1)+j) = value * 255;
                     }
                 }
             }
@@ -460,11 +463,11 @@ struct opencv_dbn_visualizer {
     }
 };
 
-template <typename DBN>
-std::vector<cv::Mat> opencv_dbn_visualizer<DBN>::buffer_images;
+template <typename DBN, typename C>
+std::vector<cv::Mat> opencv_dbn_visualizer<DBN, C>::buffer_images;
 
-template <typename DBN>
-std::size_t opencv_dbn_visualizer<DBN>::current_image;
+template <typename DBN, typename C>
+std::size_t opencv_dbn_visualizer<DBN, C>::current_image;
 
 } //end of dll namespace
 
