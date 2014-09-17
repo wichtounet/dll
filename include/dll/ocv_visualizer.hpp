@@ -186,11 +186,15 @@ struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
             for(std::size_t hj = 0; hj < tile_shape.height; ++hj){
                 auto real_h = hi * tile_shape.height + hj;
 
+                if(real_h >= rbm_t::num_hidden){
+                    break;
+                }
+
                 typename RBM::weight min = 100.0;
                 typename RBM::weight max = 0.0;
 
                 if(scale){
-                    for(std::size_t real_v = 0; real_v < filter_shape.width * filter_shape.height; ++real_v){
+                    for(std::size_t real_v = 0; real_v < rbm_t::num_visible; ++real_v){
                         min = std::min(rbm.w(real_v, real_h), min);
                         max = std::max(rbm.w(real_v, real_h), max);
                     }
@@ -199,6 +203,10 @@ struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
                 for(std::size_t i = 0; i < filter_shape.width; ++i){
                     for(std::size_t j = 0; j < filter_shape.height; ++j){
                         auto real_v = i * filter_shape.height + j;
+
+                        if(real_v >= rbm_t::num_visible){
+                            break;
+                        }
 
                         auto value = rbm.w(real_v, real_h);
 
