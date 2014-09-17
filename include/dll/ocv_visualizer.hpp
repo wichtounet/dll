@@ -258,7 +258,9 @@ struct opencv_rbm_visualizer<RBM, C, enable_if_t<rbm_traits<RBM>::is_convolution
             for(std::size_t hj = 0; hj < tile_shape.height; ++hj){
                 auto real_k = hi * tile_shape.height + hj;
 
-                dll_assert(real_k < RBM::K, "Invalid filter index (>= K)");
+                if(real_k >= rbm_t::K){
+                    break;
+                }
 
                 typename RBM::weight min = 100.0;
                 typename RBM::weight max = 0.0;
