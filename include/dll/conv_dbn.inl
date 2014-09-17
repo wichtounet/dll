@@ -27,6 +27,7 @@ namespace dll {
 template<typename Desc>
 struct conv_dbn {
     using desc = Desc;
+    using this_type = conv_dbn<desc>;
 
     using tuple_type = typename desc::layers::tuple_type;
     tuple_type tuples;
@@ -111,6 +112,12 @@ struct conv_dbn {
         using visible_t = std::vector<etl::dyn_vector<typename Samples::value_type::value_type>>;
         using hidden_t = std::vector<etl::dyn_vector<etl::dyn_matrix<weight>>>;
 
+        using watcher_t = typename desc::template watcher_t<this_type>;
+
+        watcher_t watcher;
+
+        watcher.pretraining_begin(*this);
+
         //Convert data to an useful form
         visible_t data;
         data.reserve(training_data.size());
@@ -125,17 +132,20 @@ struct conv_dbn {
 
         auto input = std::ref(data);
 
-        detail::for_each_i(tuples, [&input, &next, &next_a, &next_s, max_epochs](std::size_t I, auto& rbm){
+        detail::for_each_i(tuples, [&watcher, this, &input, &next, &next_a, &next_s, max_epochs](std::size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
-            constexpr const auto NV = rbm_t::NV;
             constexpr const auto NH = rbm_t::NH;
             constexpr const auto K = rbm_t::K;
 
             auto input_size = static_cast<const visible_t&>(input).size();
 
-            printf("DBN: Train layer %lu (%lux%lu -> %lux%lu (%lu)) with %lu entries\n", I, NV, NV, NH, NH, K, input_size);
+            watcher.template pretrain_layer<rbm_t>(*this, I, input_size);
 
-            rbm.train(static_cast<const visible_t&>(input), max_epochs);
+            rbm.template train<
+                    visible_t,
+                    !watcher_t::ignore_sub,                                 //Enable the RBM Watcher or not
+                    typename dbn_detail::rbm_watcher_t<watcher_t>::type>    //Replace the RBM watcher if not void
+                (static_cast<const visible_t&>(input), max_epochs);
 
             //Get the activation probabilities for the next level
             if(I < layers - 1){
@@ -175,6 +185,8 @@ struct conv_dbn {
                 input = std::ref(next);
             }
         });
+
+        watcher.pretraining_end(*this);
     }
 
     /*}}}*/
