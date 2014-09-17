@@ -105,12 +105,6 @@ struct silent_dbn_watcher : default_dbn_watcher<DBN> {
     static constexpr const bool replace_sub = false;
 };
 
-template<typename DBN>
-struct complete_dbn_watcher : default_dbn_watcher<DBN> {
-    static constexpr const bool ignore_sub = false;
-    static constexpr const bool replace_sub = true;
-};
-
 //TODO This is currently useless
 
 template<typename R>
