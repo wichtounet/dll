@@ -5,7 +5,11 @@ default: release
 include make-utils/flags.mk
 include make-utils/cpp-utils.mk
 
-CXX_FLAGS += -stdlib=libc++ -Ietl/include/ -Imnist/include/ -ICatch/include -Werror
+ifeq ($(CXX),clang++)
+	CXX_FLAGS += -stdlib=libc++
+endif
+
+CXX_FLAGS += -Ietl/include/ -Imnist/include/ -ICatch/include -Werror
 OPENCV_LD_FLAGS=-lopencv_core -lopencv_imgproc -lopencv_highgui
 
 CPP_FILES=$(wildcard test_compile/*.cpp)
