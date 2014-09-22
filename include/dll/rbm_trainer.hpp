@@ -24,7 +24,7 @@ struct watcher_type {
 };
 
 template<typename RBM, typename RW>
-struct watcher_type<RBM, RW, enable_if_t<not_u<std::is_void<RW>::value>::value>> {
+struct watcher_type<RBM, RW, std::enable_if_t<not_u<std::is_void<RW>::value>::value>> {
     using watcher_t = RW;
 };
 

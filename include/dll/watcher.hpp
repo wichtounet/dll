@@ -100,7 +100,7 @@ struct default_dbn_watcher {
 };
 
 template<typename DBN>
-struct default_dbn_watcher<DBN, enable_if_t<dbn_traits<DBN>::is_convolutional()>> {
+struct default_dbn_watcher<DBN, std::enable_if_t<dbn_traits<DBN>::is_convolutional()>> {
     static constexpr const bool ignore_sub = false;
     static constexpr const bool replace_sub = false;
 

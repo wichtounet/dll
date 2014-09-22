@@ -18,7 +18,7 @@ struct rbm_watcher_t {
 };
 
 template<typename W>
-struct rbm_watcher_t<W, enable_if_t<W::replace_sub> > {
+struct rbm_watcher_t<W, std::enable_if_t<W::replace_sub> > {
     using type = W;
 };
 

@@ -92,7 +92,7 @@ public:
     void activate_hidden(H1& h_a, H2& h_s, const V& v_a, const V&, const B& b, const W& w) const {
         using namespace etl;
 
-        static dyn_matrix<weight> t(1, num_hidden);
+        static dyn_matrix<weight> t(1UL, num_hidden);
 
         if(hidden_unit == unit_type::BINARY){
             h_a = sigmoid(b + mmul(reshape(v_a, 1, num_visible), w, t));
@@ -130,7 +130,7 @@ public:
     void activate_visible(const H&, const H& h_s, V& v_a, V& v_s) const {
         using namespace etl;
 
-        static dyn_matrix<weight> t(num_visible, 1);
+        static dyn_matrix<weight> t(num_visible, 1UL);
 
         if(visible_unit == unit_type::BINARY){
             v_a = sigmoid(c + mmul(w, reshape(h_s, num_hidden, 1), t));

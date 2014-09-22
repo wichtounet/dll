@@ -159,7 +159,7 @@ struct base_cd_trainer : base_trainer<RBM> {
  * This class provides update_weights which applies the gradients to the RBM.
  */
 template<typename RBM>
-struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_dynamic()>> : base_trainer<RBM> {
+struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : base_trainer<RBM> {
     typedef RBM rbm_t;
 
     typedef typename rbm_t::weight weight;
@@ -211,7 +211,7 @@ struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_dynamic()>> : base_t
  * This class provides update_weights which applies the gradients to the RBM.
  */
 template<typename RBM>
-struct base_cd_trainer<RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> : base_trainer<RBM> {
+struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()>> : base_trainer<RBM> {
     typedef RBM rbm_t;
 
     static constexpr const auto K = rbm_t::K;
@@ -441,7 +441,7 @@ struct cd_trainer : base_cd_trainer<RBM> {
  * \brief Contrastive divergence trainer for RBM.
  */
 template<std::size_t N, typename RBM>
-struct cd_trainer<N, RBM, enable_if_t<rbm_traits<RBM>::is_dynamic()>> : base_cd_trainer<RBM> {
+struct cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : base_cd_trainer<RBM> {
     static_assert(N > 0, "CD-0 is not a valid training method");
 
     using rbm_t = RBM;
@@ -475,7 +475,7 @@ struct cd_trainer<N, RBM, enable_if_t<rbm_traits<RBM>::is_dynamic()>> : base_cd_
  * \brief Specialization of cd_trainer for Convolutional RBM.
  */
 template<std::size_t N, typename RBM>
-struct cd_trainer<N, RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> : base_cd_trainer<RBM> {
+struct cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()>> : base_cd_trainer<RBM> {
 private:
     static_assert(N > 0, "CD-0 is not a valid training method");
 
@@ -627,7 +627,7 @@ struct persistent_cd_trainer : base_cd_trainer<RBM> {
  * \brief Persistent Contrastive Divergence Trainer for RBM.
  */
 template<std::size_t K, typename RBM>
-struct persistent_cd_trainer<K, RBM, enable_if_t<rbm_traits<RBM>::is_dynamic()>> : base_cd_trainer<RBM> {
+struct persistent_cd_trainer<K, RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : base_cd_trainer<RBM> {
     static_assert(K > 0, "PCD-0 is not a valid training method");
 
     typedef RBM rbm_t;
@@ -665,7 +665,7 @@ struct persistent_cd_trainer<K, RBM, enable_if_t<rbm_traits<RBM>::is_dynamic()>>
  * \brief Specialization of persistent_cd_trainer for Convolutional RBM.
  */
 template<std::size_t N, typename RBM>
-struct persistent_cd_trainer<N, RBM, enable_if_t<rbm_traits<RBM>::is_convolutional()>> : base_cd_trainer<RBM> {
+struct persistent_cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()>> : base_cd_trainer<RBM> {
 private:
     static_assert(N > 0, "PCD-0 is not a valid training method");
 

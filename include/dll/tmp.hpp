@@ -48,7 +48,7 @@ struct tmp_list {
     struct check : std::integral_constant<bool, is_present<T, Valid...>::value> {};
 
     template<typename T>
-    struct check<T, enable_if_t<T::marker>> : std::integral_constant<bool, is_present<typename T::type, Valid...>::value> {};
+    struct check<T, std::enable_if_t<T::marker>> : std::integral_constant<bool, is_present<typename T::type, Valid...>::value> {};
 };
 
 template<typename V, typename... Args>
@@ -75,7 +75,7 @@ struct get_value<D, T2, Args...> {
     };
 
     template<typename D2, typename T22>
-    struct get_value_2 <D2, T22, enable_if_t<std::is_same<typename D2::type, typename T22::type>::value>> {
+    struct get_value_2 <D2, T22, std::enable_if_t<std::is_same<typename D2::type, typename T22::type>::value>> {
         static constexpr const auto value = T22::value;
     };
 
@@ -98,7 +98,7 @@ struct get_type<D, T2, Args...> {
     };
 
     template<typename D2, typename T22>
-    struct get_type_2 <D2, T22, enable_if_t<std::is_same<typename D2::type, typename T22::type>::value>> {
+    struct get_type_2 <D2, T22, std::enable_if_t<std::is_same<typename D2::type, typename T22::type>::value>> {
         using type = typename T22::value;
     };
 
@@ -122,7 +122,7 @@ struct get_template_type<D, T2, Args...> {
     };
 
     template<typename D2, typename T22>
-    struct get_template_type_2 <D2, T22, enable_if_t<std::is_same<typename D2::type, typename T22::type>::value>> {
+    struct get_template_type_2 <D2, T22, std::enable_if_t<std::is_same<typename D2::type, typename T22::type>::value>> {
         template<typename RBM>
         using type = typename T22::template value<RBM>;
     };
