@@ -46,9 +46,10 @@ This library is completely header-only, there is no need to build it.
 The folder **include** must be included with the **-I** option, as well as the
 **etl/include** folder
 
-However, this library makes extensive use of C++11 and C++14, therefore, a
-recent compiler is necessary to use it. This library is tested on CLang 3.4.1
-and g++ 4.9.1.
+However, this library makes extensive use of C++11 and C++14,
+therefore, a recent compiler is necessary to use it. This library is
+tested on CLang 3.4.1. It should compile on g++ 4.9.1, but it does
+not because G++ refuses to call static functions inside lambdas.
 
 This has never been tested on Windows. While it should compile on Mingw, I don't
 expect Visual Studio to be able to compile it for now. If you have problems
