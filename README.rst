@@ -47,11 +47,13 @@ The folder **include** must be included with the **-I** option, as well as the
 **etl/include** folder
 
 However, this library makes extensive use of C++11 and C++14, therefore, a
-recent compiler is necessary to use it.
-This library has only been tested on CLang 3.4, but should work on latest
-version of GCC too. Moreover, this has never been tested on Windows.
-If you have problems compiling this library, I'd be glad to help, but I do not
-guarantee that this will work on other compilers.
+recent compiler is necessary to use it. This library is tested on CLang 3.4.1
+and g++ 4.9.1.
+
+This has never been tested on Windows. While it should compile on Mingw, I don't
+expect Visual Studio to be able to compile it for now. If you have problems
+compiling this library, I'd be glad to help, but I do not guarantee that this
+will work on other compilers.
 
 License
 -------
