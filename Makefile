@@ -41,8 +41,11 @@ $(eval $(call add_executable_set,compile_dbn,compile_dbn))
 $(eval $(call add_executable_set,compile_conv_dbn,compile_conv_dbn))
 $(eval $(call add_executable_set,dll_test,dll_test))
 
-release: release_compile_rbm release_compile_conv_rbm release_compile_dbn release_compile_conv_dbn release_compile_conv_rbm_mp release_dll_test
-debug: debug_compile_rbm debug_compile_conv_rbm debug_compile_dbn debug_compile_conv_dbn debug_compile_conv_rbm_mp debug_dll_test
+$(eval $(call add_executable_set,compile,compile_rbm compile_conv_rbm compile_conv_rbm_mp compile_dbn compile_conv_dbn))
+$(eval $(call add_executable_set,compile_ocv,compile_ocv_1 compile_ocv_2 compile_ocv_3))
+
+release: release_compile release_dll_test release_compile_ocv
+debug: debug_compile debug_dll_test debug_compile_ocv
 
 all: release debug
 
