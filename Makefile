@@ -9,8 +9,9 @@ ifeq ($(CXX),clang++)
 	CXX_FLAGS += -stdlib=libc++
 endif
 
-CXX_FLAGS += -Ietl/include/ -Imnist/include/ -ICatch/include -Werror
+CXX_FLAGS += -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -Werror
 OPENCV_LD_FLAGS=-lopencv_core -lopencv_imgproc -lopencv_highgui
+LIBSVM_LD_FLAGS=-lsvm
 
 CPP_FILES=$(wildcard test_compile/*.cpp)
 
@@ -27,7 +28,7 @@ $(eval $(call add_executable,compile_rbm,test_compile/compile_rbm.cpp))
 $(eval $(call add_executable,compile_conv_rbm,test_compile/compile_conv_rbm.cpp))
 $(eval $(call add_executable,compile_conv_rbm_mp,test_compile/compile_conv_rbm_mp.cpp))
 $(eval $(call add_executable,compile_dbn,test_compile/compile_dbn.cpp))
-$(eval $(call add_executable,compile_dbn_svm,test_compile/compile_dbn_svm.cpp))
+$(eval $(call add_executable,compile_dbn_svm,test_compile/compile_dbn_svm.cpp,$(LIBSVM_LD_FLAGS)))
 $(eval $(call add_executable,compile_conv_dbn,test_compile/compile_conv_dbn.cpp))
 $(eval $(call add_executable,compile_ocv_1,test_compile/rbm_view.cpp,$(OPENCV_LD_FLAGS)))
 $(eval $(call add_executable,compile_ocv_2,test_compile/crbm_view.cpp,$(OPENCV_LD_FLAGS)))

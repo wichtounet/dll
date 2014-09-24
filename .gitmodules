@@ -14,3 +14,6 @@
 	path = mnist
 	url = https://github.com/wichtounet/mnist.git
 	branch = master
+[submodule "nice_svm"]
+	path = nice_svm
+	url = https://github.com/wichtounet/nice_svm.git
