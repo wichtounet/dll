@@ -492,6 +492,8 @@ struct dbn {
         //Train the SVM
         svm_model = svm::train(problem, parameters);
 
+        svm_loaded = true;
+
         return true;
     }
 
