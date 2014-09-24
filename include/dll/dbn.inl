@@ -407,7 +407,7 @@ struct dbn {
 
         //Get all the activation probabilities
         for(std::size_t i = 0; i < n_samples; ++i){
-            svm_samples.emplace_back(training_data[i].size());
+            svm_samples.emplace_back(num_hidden<layers - 2>());
             predict_weights(training_data[i], svm_samples[i]);
         }
 
