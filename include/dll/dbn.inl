@@ -130,7 +130,7 @@ struct dbn {
             binary_load(is, svm);
 
             if(svm){
-                std::ofstream svm_os("..tmp.svn", std::ios::binary);
+                std::ofstream svm_os("..tmp.svm", std::ios::binary);
 
                 char buffer[1024];
 
@@ -146,7 +146,7 @@ struct dbn {
 
                 svm_os.close();
 
-                svm::load(svm_model, "..tmp.svn");
+                svm::load(svm_model, "..tmp.svm");
 
                 svm_loaded = true;
             }
