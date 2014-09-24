@@ -440,7 +440,7 @@ struct dbn {
 
     template<typename Sample>
     double svm_predict(const Sample& sample){
-        std::vector<double> svm_sample;
+        etl::dyn_vector<double> svm_sample(num_hidden<layers - 1>());
 
         predict_weights(sample, svm_sample);
 
