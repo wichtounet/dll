@@ -146,7 +146,7 @@ struct dbn {
 
                 svm_os.close();
 
-                svm::load(svm_model, "..tmp.svm");
+                svm_model = svm::load("..tmp.svm");
 
                 svm_loaded = true;
             }
