@@ -53,7 +53,8 @@ struct dbn {
     weight momentum = 0;                ///< The current momentum
 
 #ifdef DLL_SVM_SUPPORT
-    svm::model svm_model;
+    svm::model svm_model;               ///< The learned model
+    svm::problem problem;               ///< libsvm is stupid, therefore, you cannot destroy the problem if you want to use the model...
 #endif //DLL_SVM_SUPPORT
 
     //No arguments by default
@@ -412,7 +413,7 @@ struct dbn {
         }
 
         //static_cast ensure using the correct overload
-        auto problem = svm::make_problem(labels, static_cast<const std::vector<etl::dyn_vector<double>>&>(svm_samples));
+        problem = svm::make_problem(labels, static_cast<const std::vector<etl::dyn_vector<double>>&>(svm_samples));
 
         //TODO Give a way to set the paramters by the user
 
