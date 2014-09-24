@@ -17,6 +17,17 @@ struct predictor {
     }
 };
 
+#ifdef DLL_SVM_SUPPORT
+
+struct svm_predictor {
+    template<typename T, typename V>
+    size_t operator()(T& dbn, V& image){
+        return dbn->svm_predict(image);
+    }
+};
+
+#endif //DLL_SVM_SUPPORT
+
 struct deep_predictor {
     template<typename T, typename V>
     size_t operator()(T& dbn, V& image){
