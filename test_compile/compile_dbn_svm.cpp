@@ -19,6 +19,8 @@ void test_dbn(){
     std::vector<uint8_t> labels;
 
     dbn.pretrain(images, 10);
+    dbn.svm_train(images, labels);
+    dbn.predict(images[1]);
 }
 
 template <typename RBM>

@@ -52,6 +52,10 @@ struct dbn {
 
     weight momentum = 0;                ///< The current momentum
 
+#ifdef DLL_SVM_SUPPORT
+    svm::model svm_model;
+#endif //DLL_SVM_SUPPORT
+
     //No arguments by default
     dbn(){};
 
@@ -305,6 +309,7 @@ struct dbn {
 
     /*{{{ Predict */
 
+    //TODO Rename this
     template<typename Sample, typename Output>
     void predict_weights(const Sample& item_data, Output& result){
         etl::dyn_vector<typename Sample::value_type> item(item_data);
@@ -394,7 +399,53 @@ struct dbn {
 
     /*{{{ SVM Training and prediction */
 
+    template<typename Samples, typename Labels>
+    bool svm_train(const Samples& training_data, const Labels& labels){
+        auto n_samples = training_data.size();
 
+        std::vector<etl::dyn_vector<double>> svm_samples;
+
+        //Get all the activation probabilities
+        for(std::size_t i = 0; i < n_samples; ++i){
+            svm_samples.emplace_back(training_data[i].size());
+            predict_weights(training_data[i], svm_samples[i]);
+        }
+
+        //static_cast ensure using the correct overload
+        auto problem = svm::make_problem(labels, static_cast<const std::vector<etl::dyn_vector<double>>&>(svm_samples));
+
+        //TODO Give a way to set the paramters by the user
+
+        auto parameters = svm::default_parameters();
+
+        parameters.svm_type = C_SVC;
+        parameters.kernel_type = RBF;
+        parameters.probability = 1;
+        parameters.C = 2.8;
+        parameters.gamma = 0.0073;
+
+        //Make libsvm quiet
+        svm::make_quiet();
+
+        //Make sure parameters are not messed up
+        if(!svm::check(problem, parameters)){
+            return false;
+        }
+
+        //Train the SVM
+        svm_model = svm::train(problem, parameters);
+
+        return true;
+    }
+
+    template<typename Sample>
+    double svm_predict(const Sample& sample){
+        std::vector<double> svm_sample;
+
+        predict_weights(sample, svm_sample);
+
+        return svm::predict(svm_model, svm_sample);
+    }
 
     /*}}}*/
 
