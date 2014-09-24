@@ -55,6 +55,7 @@ struct dbn {
 #ifdef DLL_SVM_SUPPORT
     svm::model svm_model;               ///< The learned model
     svm::problem problem;               ///< libsvm is stupid, therefore, you cannot destroy the problem if you want to use the model...
+    bool svm_loaded = false;            ///< Indicates if a SVM model has been loaded (and therefore must be saved)
 #endif //DLL_SVM_SUPPORT
 
     //No arguments by default
@@ -90,12 +91,67 @@ struct dbn {
         detail::for_each(tuples, [&os](auto& rbm){
             rbm.store(os);
         });
+
+#ifdef DLL_SVM_SUPPORT
+        if(svm_loaded){
+            binary_write(os, true);
+
+            svm::save(svm_model, "..tmp.svm");
+
+            std::ifstream svm_is("..tmp.svm", std::ios::binary);
+
+            char buffer[1024];
+
+            while(true){
+                svm_is.read(buffer, 1024);
+
+                if(svm_is.gcount() == 0){
+                    break;
+                }
+
+                os.write(buffer, svm_is.gcount());
+            }
+        } else {
+            binary_write(os, false);
+        }
+#endif //DLL_SVM_SUPPORT
     }
 
     void load(std::istream& is){
         detail::for_each(tuples, [&is](auto& rbm){
             rbm.load(is);
         });
+
+#ifdef DLL_SVM_SUPPORT
+        svm_loaded = false;
+
+        if(is.good()){
+            bool svm;
+            binary_load(is, svm);
+
+            if(svm){
+                std::ofstream svm_os("..tmp.svn", std::ios::binary);
+
+                char buffer[1024];
+
+                while(true){
+                    is.read(buffer, 1024);
+
+                    if(is.gcount() ==0){
+                        break;
+                    }
+
+                    svm_os.write(buffer, is.gcount());
+                }
+
+                svm_os.close();
+
+                svm::load(svm_model, "..tmp.svn");
+
+                svm_loaded = true;
+            }
+        }
+#endif //DLL_SVM_SUPPORT
     }
 
     template<std::size_t N>
