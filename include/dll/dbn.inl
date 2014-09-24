@@ -16,6 +16,12 @@
 #include "conjugate_gradient.hpp"
 #include "dbn_common.hpp"
 
+//SVM Support is optional cause it requires libsvm
+
+#ifdef DLL_SVM_SUPPORT
+#include "nice_svm.hpp"
+#endif
+
 namespace dll {
 
 /*!
@@ -374,11 +380,26 @@ struct dbn {
 
     /*}}}*/
 
+    /*{{{ Fine-tuning */
+
     template<typename Samples, typename Labels>
     weight fine_tune(const Samples& training_data, Labels& labels, size_t max_epochs, size_t batch_size){
         dll::dbn_trainer<this_type> trainer;
         return trainer.train(*this, training_data, labels, max_epochs, batch_size);
     }
+
+    /*}}}*/
+
+#ifdef DLL_SVM_SUPPORT
+
+    /*{{{ SVM Training and prediction */
+
+
+
+    /*}}}*/
+
+#endif //DLL_SVM_SUPPORT
+
 };
 
 } //end of namespace dll

@@ -19,6 +19,12 @@
 #include "conjugate_gradient.hpp"
 #include "dbn_common.hpp"
 
+//SVM Support is optional cause it requires libsvm
+
+#ifdef DLL_SVM_SUPPORT
+#include "nice_svm.hpp"
+#endif
+
 namespace dll {
 
 /*!
@@ -315,6 +321,17 @@ struct conv_dbn {
     }
 
     /*}}}*/
+
+#ifdef DLL_SVM_SUPPORT
+
+    /*{{{ SVM Training and prediction */
+
+
+
+    /*}}}*/
+
+#endif //DLL_SVM_SUPPORT
+
 };
 
 } //end of namespace dll
