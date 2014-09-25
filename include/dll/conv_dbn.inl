@@ -232,7 +232,7 @@ struct conv_dbn {
                 static hidden_t next_a(K, etl::dyn_matrix<weight>(NH, NH));
                 static hidden_t next_s(K, etl::dyn_matrix<weight>(NH, NH));
 
-                rbm.v1 = static_cast<const Sample&>(input);
+                rbm.v1 = static_cast<const visible_t&>(input);
                 rbm.activate_hidden(next_a, next_s, rbm.v1, rbm.v1);
 
                 //TODO Check the order of the output
@@ -257,7 +257,7 @@ struct conv_dbn {
 
         auto& last_rbm = layer<layers - 1>();
 
-        last_rbm.v1 = static_cast<const Sample&>(input);
+        last_rbm.v1 = static_cast<const visible_t&>(input);
         last_rbm.activate_hidden(next_a, next_s, last_rbm.v1, last_rbm.v1);
 
         //TODO Check the order of the output
