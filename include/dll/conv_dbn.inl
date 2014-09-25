@@ -18,12 +18,7 @@
 #include "dbn_trainer.hpp"
 #include "conjugate_gradient.hpp"
 #include "dbn_common.hpp"
-
-//SVM Support is optional cause it requires libsvm
-
-#ifdef DLL_SVM_SUPPORT
-#include "nice_svm.hpp"
-#endif
+#include "svm_common.hpp"
 
 namespace dll {
 
@@ -80,12 +75,20 @@ struct conv_dbn {
         detail::for_each(tuples, [&os](auto& rbm){
             rbm.store(os);
         });
+
+#ifdef DLL_SVM_SUPPORT
+        svm_store(*this, os);
+#endif //DLL_SVM_SUPPORT
     }
 
     void load(std::istream& is){
         detail::for_each(tuples, [&is](auto& rbm){
             rbm.load(is);
         });
+
+#ifdef DLL_SVM_SUPPORT
+        svm_load(*this, is);
+#endif //DLL_SVM_SUPPORT
     }
 
     template<std::size_t N>
