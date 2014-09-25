@@ -390,7 +390,7 @@ struct dbn {
     /*{{{ SVM Training and prediction */
 
     template<typename Samples, typename Labels>
-    bool svm_train(const Samples& training_data, const Labels& labels){
+    bool svm_train(const Samples& training_data, const Labels& labels, svm_parameter& parameters){
         auto n_samples = training_data.size();
 
         std::vector<etl::dyn_vector<double>> svm_samples;
@@ -403,16 +403,6 @@ struct dbn {
 
         //static_cast ensure using the correct overload
         problem = svm::make_problem(labels, static_cast<const std::vector<etl::dyn_vector<double>>&>(svm_samples));
-
-        //TODO Give a way to set the paramters by the user
-
-        auto parameters = svm::default_parameters();
-
-        parameters.svm_type = C_SVC;
-        parameters.kernel_type = RBF;
-        parameters.probability = 1;
-        parameters.C = 2.8;
-        parameters.gamma = 0.0073;
 
         //Make libsvm quiet
         svm::make_quiet();
@@ -428,6 +418,19 @@ struct dbn {
         svm_loaded = true;
 
         return true;
+    }
+
+    template<typename Samples, typename Labels>
+    bool svm_train(const Samples& training_data, const Labels& labels){
+        auto parameters = svm::default_parameters();
+
+        parameters.svm_type = C_SVC;
+        parameters.kernel_type = RBF;
+        parameters.probability = 1;
+        parameters.C = 2.8;
+        parameters.gamma = 0.0073;
+
+        return svm_train(training_data, labels, parameters);
     }
 
     template<typename Sample>
