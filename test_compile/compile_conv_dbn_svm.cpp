@@ -7,7 +7,7 @@
 
 #define DLL_SVM_SUPPORT
 
-#include "dll/dbn.hpp"
+#include "dll/conv_dbn.hpp"
 
 template<typename DBN>
 void test_dbn(){
@@ -17,6 +17,8 @@ void test_dbn(){
 
     std::vector<etl::dyn_vector<double>> images;
     std::vector<uint8_t> labels;
+
+    etl::dyn_vector<double> result(100);
 
     dbn.pretrain(images, 10);
     dbn.svm_train(images, labels);
@@ -29,12 +31,10 @@ using pcd2_trainer_t = dll::persistent_cd_trainer<2, RBM>;
 int main(){
     //Basic example
 
-    typedef dll::dbn_desc<
+    typedef dll::conv_dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<50>, dll::init_weights, dll::weight_decay<dll::decay_type::L2>, dll::sparsity>::rbm_t,
-        dll::rbm_desc<100, 100, dll::momentum, dll::batch_size<50>>::rbm_t,
-        dll::rbm_desc<110, 200, dll::batch_size<50>, dll::momentum, dll::weight_decay<dll::decay_type::L2_FULL>>::rbm_t
-    >, dll::watcher<dll::silent_dbn_watcher>>::dbn_t dbn_1;
+        dll::conv_rbm_desc<28, 12, 40, dll::momentum, dll::batch_size<50>>::rbm_t,
+        dll::conv_rbm_desc<12*12*40, 6, 40, dll::momentum, dll::batch_size<50>>::rbm_t>>::dbn_t dbn_1;
 
     //Test them all
 
