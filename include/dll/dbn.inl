@@ -390,7 +390,7 @@ struct dbn {
     /*{{{ SVM Training and prediction */
 
     template<typename Samples, typename Labels>
-    bool svm_train(const Samples& training_data, const Labels& labels, svm_parameter& parameters){
+    void make_problem(const Samples& training_data, const Labels& labels){
         auto n_samples = training_data.size();
 
         std::vector<etl::dyn_vector<double>> svm_samples;
@@ -403,6 +403,11 @@ struct dbn {
 
         //static_cast ensure using the correct overload
         problem = svm::make_problem(labels, static_cast<const std::vector<etl::dyn_vector<double>>&>(svm_samples));
+    }
+
+    template<typename Samples, typename Labels>
+    bool svm_train(const Samples& training_data, const Labels& labels, svm_parameter& parameters){
+        make_problem(training_data, labels);
 
         //Make libsvm quiet
         svm::make_quiet();
@@ -429,18 +434,7 @@ struct dbn {
 
     template<typename Samples, typename Labels>
     bool svm_grid_search(const Samples& training_data, const Labels& labels){
-        auto n_samples = training_data.size();
-
-        std::vector<etl::dyn_vector<double>> svm_samples;
-
-        //Get all the activation probabilities
-        for(std::size_t i = 0; i < n_samples; ++i){
-            svm_samples.emplace_back(num_hidden<layers - 1>());
-            activation_probabilities(training_data[i], svm_samples[i]);
-        }
-
-        //static_cast ensure using the correct overload
-        problem = svm::make_problem(labels, static_cast<const std::vector<etl::dyn_vector<double>>&>(svm_samples));
+        make_problem();
 
         //Make libsvm quiet
         svm::make_quiet();
