@@ -45,6 +45,12 @@ struct conv_dbn {
 
     using weight = typename rbm_type<0>::weight;
 
+#ifdef DLL_SVM_SUPPORT
+    svm::model svm_model;               ///< The learned model
+    svm::problem problem;               ///< libsvm is stupid, therefore, you cannot destroy the problem if you want to use the model...
+    bool svm_loaded = false;            ///< Indicates if a SVM model has been loaded (and therefore must be saved)
+#endif //DLL_SVM_SUPPORT
+
     //No arguments by default
     conv_dbn(){};
 
