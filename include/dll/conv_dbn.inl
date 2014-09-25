@@ -309,7 +309,7 @@ struct conv_dbn {
     /*{{{ SVM Training and prediction */
 
     template<typename Samples, typename Labels>
-    bool svm_train(const Samples& training_data, const Labels& labels, svm_parameter& parameters){
+    void make_problem(const Samples& training_data, const Labels& labels){
         auto n_samples = training_data.size();
 
         std::vector<etl::dyn_vector<double>> svm_samples;
@@ -322,6 +322,11 @@ struct conv_dbn {
 
         //static_cast ensure using the correct overload
         problem = svm::make_problem(labels, static_cast<const std::vector<etl::dyn_vector<double>>&>(svm_samples));
+    }
+
+    template<typename Samples, typename Labels>
+    bool svm_train(const Samples& training_data, const Labels& labels, svm_parameter& parameters){
+        make_problem(training_data, labels);
 
         //Make libsvm quiet
         svm::make_quiet();
@@ -344,6 +349,26 @@ struct conv_dbn {
         auto parameters = default_svm_parameters();
 
         return svm_train(training_data, labels, parameters);
+    }
+
+    template<typename Samples, typename Labels>
+    bool svm_grid_search(const Samples& training_data, const Labels& labels){
+        make_problem(training_data, labels);
+
+        //Make libsvm quiet
+        svm::make_quiet();
+
+        auto parameters = default_svm_parameters();
+
+        //Make sure parameters are not messed up
+        if(!svm::check(problem, parameters)){
+            return false;
+        }
+
+        //Perform a grid-search
+        svm::rbf_grid_search(problem, parameters);
+
+        return true;
     }
 
     template<typename Sample>

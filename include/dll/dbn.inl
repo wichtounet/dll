@@ -434,7 +434,7 @@ struct dbn {
 
     template<typename Samples, typename Labels>
     bool svm_grid_search(const Samples& training_data, const Labels& labels){
-        make_problem();
+        make_problem(training_data, labels);
 
         //Make libsvm quiet
         svm::make_quiet();
