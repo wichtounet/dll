@@ -346,22 +346,7 @@ struct dbn {
     etl::dyn_vector<weight> predict_weights(const Sample& item_data){
         etl::dyn_vector<weight> result(num_hidden<layers - 1>());
 
-        etl::dyn_vector<typename Sample::value_type> item(item_data);
-
-        auto input = std::cref(item);
-
-        detail::for_each_i(tuples, [&item, &input, &result](std::size_t I, auto& rbm){
-            typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
-            constexpr const auto num_hidden = rbm_t::num_hidden;
-
-            static etl::dyn_vector<weight> next(num_hidden);
-            static etl::dyn_vector<weight> next_s(num_hidden);
-            auto& output = (I == layers - 1) ? result : next;
-
-            rbm.activate_hidden(output, next_s, static_cast<const Sample&>(input), static_cast<const Sample&>(input));
-
-            input = std::cref(next);
-        });
+        predict_weights(item_data, result);
 
         return result;
     }
