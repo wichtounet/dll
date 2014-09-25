@@ -15,12 +15,7 @@
 #include "dbn_trainer.hpp"
 #include "conjugate_gradient.hpp"
 #include "dbn_common.hpp"
-
-//SVM Support is optional cause it requires libsvm
-
-#ifdef DLL_SVM_SUPPORT
-#include "nice_svm.hpp"
-#endif
+#include "svm_common.hpp"
 
 namespace dll {
 
@@ -93,27 +88,7 @@ struct dbn {
         });
 
 #ifdef DLL_SVM_SUPPORT
-        if(svm_loaded){
-            binary_write(os, true);
-
-            svm::save(svm_model, "..tmp.svm");
-
-            std::ifstream svm_is("..tmp.svm", std::ios::binary);
-
-            char buffer[1024];
-
-            while(true){
-                svm_is.read(buffer, 1024);
-
-                if(svm_is.gcount() == 0){
-                    break;
-                }
-
-                os.write(buffer, svm_is.gcount());
-            }
-        } else {
-            binary_write(os, false);
-        }
+        svm_store(*this, os);
 #endif //DLL_SVM_SUPPORT
     }
 
@@ -123,34 +98,7 @@ struct dbn {
         });
 
 #ifdef DLL_SVM_SUPPORT
-        svm_loaded = false;
-
-        if(is.good()){
-            bool svm;
-            binary_load(is, svm);
-
-            if(svm){
-                std::ofstream svm_os("..tmp.svm", std::ios::binary);
-
-                char buffer[1024];
-
-                while(true){
-                    is.read(buffer, 1024);
-
-                    if(is.gcount() ==0){
-                        break;
-                    }
-
-                    svm_os.write(buffer, is.gcount());
-                }
-
-                svm_os.close();
-
-                svm_model = svm::load("..tmp.svm");
-
-                svm_loaded = true;
-            }
-        }
+        svm_load(*this, is);
 #endif //DLL_SVM_SUPPORT
     }
 
