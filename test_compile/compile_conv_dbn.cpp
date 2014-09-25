@@ -20,7 +20,7 @@ void test_dbn(){
 
     dbn.pretrain(images, 10);
     dbn.predict(images[1]);
-    dbn.predict_weights(images[1], result);
+    dbn.activation_probabilities(images[1], result);
 }
 
 template <typename RBM>
