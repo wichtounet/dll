@@ -116,6 +116,11 @@ struct conv_dbn {
         return rbm_type<N>::K;
     }
 
+    template<std::size_t N>
+    static constexpr std::size_t rbm_output(){
+        return rbm_k<N>() * rbm_nh<N>() * rbm_nh<N>();
+    }
+
     /*{{{ Pretrain */
 
     /*!
@@ -268,7 +273,7 @@ struct conv_dbn {
 
     template<typename Sample>
     etl::dyn_vector<weight> activation_probabilities(const Sample& item_data){
-        etl::dyn_vector<weight> result(rbm_nh<layers - 1>() * rbm_nh<layers - 1>() * rbm_k<layers - 1>());
+        etl::dyn_vector<weight> result(rbm_output<layers - 1>());
 
         activation_probabilities(item_data, result);
 
@@ -311,7 +316,7 @@ struct conv_dbn {
 
         //Get all the activation probabilities
         for(std::size_t i = 0; i < n_samples; ++i){
-            svm_samples.emplace_back(rbm_nh<layers - 1>() * rbm_nh<layers - 1>() * rbm_k<layers - 1>());
+            svm_samples.emplace_back(rbm_output<layers - 1>());
             activation_probabilities(training_data[i], svm_samples[i]);
         }
 
@@ -349,7 +354,7 @@ struct conv_dbn {
 
     template<typename Sample>
     double svm_predict(const Sample& sample){
-        etl::dyn_vector<double> svm_sample(rbm_nh<layers - 1>() * rbm_nh<layers - 1>() * rbm_k<layers - 1>());
+        etl::dyn_vector<double> svm_sample(rbm_output<layers - 1>());
 
         activation_probabilities(sample, svm_sample);
 
