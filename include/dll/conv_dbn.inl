@@ -259,41 +259,9 @@ struct conv_dbn {
 
     template<typename Sample>
     etl::dyn_vector<weight> activation_probabilities(const Sample& item_data){
-        using visible_t = etl::dyn_vector<typename Sample::value_type>;
-        using hidden_t = etl::dyn_vector<etl::dyn_matrix<weight>>;
-
         etl::dyn_vector<weight> result(rbm_nh<layers - 1>() * rbm_nh<layers - 1>() * rbm_k<layers - 1>());
 
-        etl::dyn_vector<typename Sample::value_type> item(item_data);
-
-        auto input = std::cref(item);
-
-        detail::for_each_i(tuples, [&item, &input, &result](std::size_t I, auto& rbm){
-            typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
-            constexpr const auto NH = rbm_t::NH;
-            constexpr const auto K = rbm_t::K;
-
-            static visible_t next(K * NH * NH);
-            static hidden_t next_a(K, etl::dyn_matrix<weight>(NH, NH));
-            static hidden_t next_s(K, etl::dyn_matrix<weight>(NH, NH));
-
-            rbm.v1 = static_cast<const Sample&>(input);
-            rbm.activate_hidden(next_a, next_s, rbm.v1, rbm.v1);
-
-            auto& output = (I == layers - 1) ? result : next;
-
-            //TODO Check the order of the output
-
-            for(std::size_t j = 0; j < NH; ++j){
-                for(std::size_t k = 0; k < NH; ++k){
-                    for(std::size_t l = 0; l < K; ++l){
-                        output[j * NH * NH + k * NH + l] = next_a(k)(j,k);
-                    }
-                }
-            }
-
-            input = std::cref(next);
-        });
+        activation_probabilities(item_data, result);
 
         return result;
     }
