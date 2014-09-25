@@ -316,7 +316,7 @@ struct dbn {
 
     //TODO Rename this
     template<typename Sample, typename Output>
-    void predict_weights(const Sample& item_data, Output& result){
+    void activation_probabilities(const Sample& item_data, Output& result){
         etl::dyn_vector<typename Sample::value_type> item(item_data);
 
         auto input = std::cref(item);
@@ -343,16 +343,16 @@ struct dbn {
     }
 
     template<typename Sample>
-    etl::dyn_vector<weight> predict_weights(const Sample& item_data){
+    etl::dyn_vector<weight> activation_probabilities(const Sample& item_data){
         etl::dyn_vector<weight> result(num_hidden<layers - 1>());
 
-        predict_weights(item_data, result);
+        activation_probabilities(item_data, result);
 
         return result;
     }
 
     template<typename Weights>
-    size_t predict_final(const Weights& result){
+    size_t predict_label(const Weights& result){
         size_t label = 0;
         weight max = 0;
         for(size_t l = 0; l < result.size(); ++l){
@@ -369,8 +369,8 @@ struct dbn {
 
     template<typename Sample>
     size_t predict(const Sample& item){
-        auto result = predict_weights(item);
-        return predict_final(result);;
+        auto result = activation_probabilities(item);
+        return predict_label(result);;
     }
 
     /*}}}*/
@@ -398,7 +398,7 @@ struct dbn {
         //Get all the activation probabilities
         for(std::size_t i = 0; i < n_samples; ++i){
             svm_samples.emplace_back(num_hidden<layers - 1>());
-            predict_weights(training_data[i], svm_samples[i]);
+            activation_probabilities(training_data[i], svm_samples[i]);
         }
 
         //static_cast ensure using the correct overload
@@ -434,7 +434,7 @@ struct dbn {
     double svm_predict(const Sample& sample){
         etl::dyn_vector<double> svm_sample(num_hidden<layers - 1>());
 
-        predict_weights(sample, svm_sample);
+        activation_probabilities(sample, svm_sample);
 
         return svm::predict(svm_model, svm_sample);
     }
