@@ -16,6 +16,18 @@
 
 namespace dll {
 
+inline svm_parameter default_svm_parameters(){
+    auto parameters = svm::default_parameters();
+
+    parameters.svm_type = C_SVC;
+    parameters.kernel_type = RBF;
+    parameters.probability = 1;
+    parameters.C = 2.8;
+    parameters.gamma = 0.0073;
+
+    return parameters;
+}
+
 template<typename DBN>
 void svm_store(const DBN& dbn, std::ostream& os){
     if(dbn.svm_loaded){
@@ -40,6 +52,7 @@ void svm_store(const DBN& dbn, std::ostream& os){
         binary_write(os, false);
     }
 }
+
 template<typename DBN>
 void svm_load(DBN& dbn, std::istream& is){
     dbn.svm_loaded = false;

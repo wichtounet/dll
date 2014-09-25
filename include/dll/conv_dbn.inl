@@ -341,13 +341,7 @@ struct conv_dbn {
 
     template<typename Samples, typename Labels>
     bool svm_train(const Samples& training_data, const Labels& labels){
-        auto parameters = svm::default_parameters();
-
-        parameters.svm_type = C_SVC;
-        parameters.kernel_type = RBF;
-        parameters.probability = 1;
-        parameters.C = 2.8;
-        parameters.gamma = 0.0073;
+        auto parameters = default_svm_parameters();
 
         return svm_train(training_data, labels, parameters);
     }
