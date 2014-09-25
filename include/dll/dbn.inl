@@ -447,7 +447,7 @@ struct dbn {
         }
 
         //Perform a grid-search
-        svm::rbf_grid_search(problem, parameters, 5);
+        svm::rbf_grid_search_exp(problem, parameters, 5);
 
         return true;
     }
