@@ -200,7 +200,7 @@ struct conv_dbn {
     /*{{{ Predict */
 
     template<typename Sample, typename Output>
-    void predict_weights(const Sample& item_data, Output& result){
+    void activation_probabilities(const Sample& item_data, Output& result){
         using visible_t = etl::dyn_vector<typename Sample::value_type>;
         using hidden_t = etl::dyn_vector<etl::dyn_matrix<weight>>;
 
@@ -258,7 +258,7 @@ struct conv_dbn {
     }
 
     template<typename Sample>
-    etl::dyn_vector<weight> predict_weights(const Sample& item_data){
+    etl::dyn_vector<weight> activation_probabilities(const Sample& item_data){
         using visible_t = etl::dyn_vector<typename Sample::value_type>;
         using hidden_t = etl::dyn_vector<etl::dyn_matrix<weight>>;
 
@@ -299,7 +299,7 @@ struct conv_dbn {
     }
 
     template<typename Weights>
-    size_t predict_final(const Weights& result){
+    size_t predict_label(const Weights& result){
         size_t label = 0;
         weight max = 0;
         for(size_t l = 0; l < result.size(); ++l){
@@ -316,8 +316,8 @@ struct conv_dbn {
 
     template<typename Sample>
     size_t predict(const Sample& item){
-        auto result = predict_weights(item);
-        return predict_final(result);;
+        auto result = activation_probabilities(item);
+        return predict_label(result);;
     }
 
     /*}}}*/
