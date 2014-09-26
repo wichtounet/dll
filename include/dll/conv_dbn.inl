@@ -352,7 +352,7 @@ struct conv_dbn {
     }
 
     template<typename Samples, typename Labels>
-    bool svm_grid_search(const Samples& training_data, const Labels& labels){
+    bool svm_grid_search(const Samples& training_data, const Labels& labels, std::size_t n_fold = 5){
         make_problem(training_data, labels);
 
         //Make libsvm quiet
@@ -366,7 +366,7 @@ struct conv_dbn {
         }
 
         //Perform a grid-search
-        svm::rbf_grid_search_exp(problem, parameters, 5);
+        svm::rbf_grid_search_exp(problem, parameters, n_fold);
 
         return true;
     }
