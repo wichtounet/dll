@@ -399,8 +399,8 @@ struct dbn {
     }
 
     template<typename Samples, typename Labels>
-    bool svm_grid_search(const Samples& training_data, const Labels& labels, std::size_t n_fold = 5){
-        return dll::svm_grid_search(*this, training_data, labels, n_fold);
+    bool svm_grid_search(const Samples& training_data, const Labels& labels, std::size_t n_fold = 5, const svm::rbf_grid& g = svm::rbf_grid()){
+        return dll::svm_grid_search(*this, training_data, labels, n_fold, g);
     }
 
     template<typename Sample>

@@ -122,7 +122,7 @@ bool svm_train(DBN& dbn, const Samples& training_data, const Labels& labels, con
 }
 
 template<typename DBN, typename Samples, typename Labels>
-bool svm_grid_search(DBN& dbn, const Samples& training_data, const Labels& labels, std::size_t n_fold = 5){
+bool svm_grid_search(DBN& dbn, const Samples& training_data, const Labels& labels, std::size_t n_fold = 5, const svm::rbf_grid& g = svm::rbf_grid()){
     make_problem(dbn, training_data, labels);
 
     //Make libsvm quiet
@@ -136,7 +136,7 @@ bool svm_grid_search(DBN& dbn, const Samples& training_data, const Labels& label
     }
 
     //Perform a grid-search
-    svm::rbf_grid_search_exp(dbn.problem, parameters, n_fold);
+    svm::rbf_grid_search(dbn.problem, parameters, n_fold, g);
 
     return true;
 }
