@@ -122,6 +122,10 @@ struct dbn {
         return rbm_type<N>::num_hidden;
     }
 
+    static constexpr std::size_t output_size(){
+        return num_hidden<layers - 1>();
+    }
+
     /*{{{ Pretrain */
 
     /*!

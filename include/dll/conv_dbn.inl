@@ -121,6 +121,10 @@ struct conv_dbn {
         return rbm_k<N>() * rbm_nh<N>() * rbm_nh<N>();
     }
 
+    static constexpr std::size_t output_size(){
+        return rbm_output<layers - 1>();
+    }
+
     /*{{{ Pretrain */
 
     /*!
