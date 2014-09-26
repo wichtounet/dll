@@ -320,7 +320,7 @@ struct conv_dbn {
 
         //Get all the activation probabilities
         for(std::size_t i = 0; i < n_samples; ++i){
-            svm_samples.emplace_back(rbm_output<layers - 1>());
+            svm_samples.emplace_back(output_size());
             activation_probabilities(training_data[i], svm_samples[i]);
         }
 
