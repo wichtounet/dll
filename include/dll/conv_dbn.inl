@@ -313,46 +313,8 @@ struct conv_dbn {
     /*{{{ SVM Training and prediction */
 
     template<typename Samples, typename Labels>
-    void make_problem(const Samples& training_data, const Labels& labels){
-        auto n_samples = training_data.size();
-
-        std::vector<etl::dyn_vector<double>> svm_samples;
-
-        //Get all the activation probabilities
-        for(std::size_t i = 0; i < n_samples; ++i){
-            svm_samples.emplace_back(output_size());
-            activation_probabilities(training_data[i], svm_samples[i]);
-        }
-
-        //static_cast ensure using the correct overload
-        problem = svm::make_problem(labels, static_cast<const std::vector<etl::dyn_vector<double>>&>(svm_samples));
-    }
-
-    template<typename Samples, typename Labels>
-    bool svm_train(const Samples& training_data, const Labels& labels, svm_parameter& parameters){
-        make_problem(training_data, labels);
-
-        //Make libsvm quiet
-        svm::make_quiet();
-
-        //Make sure parameters are not messed up
-        if(!svm::check(problem, parameters)){
-            return false;
-        }
-
-        //Train the SVM
-        svm_model = svm::train(problem, parameters);
-
-        svm_loaded = true;
-
-        return true;
-    }
-
-    template<typename Samples, typename Labels>
-    bool svm_train(const Samples& training_data, const Labels& labels){
-        auto parameters = default_svm_parameters();
-
-        return svm_train(training_data, labels, parameters);
+    bool svm_train(const Samples& training_data, const Labels& labels, const svm_parameter& parameters = default_svm_parameters()){
+        return dll::svm_train(*this, training_data, labels, parameters);
     }
 
     template<typename Samples, typename Labels>
