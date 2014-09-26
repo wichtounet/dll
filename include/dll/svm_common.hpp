@@ -85,6 +85,26 @@ void svm_load(DBN& dbn, std::istream& is){
     }
 }
 
+template<typename DBN, typename Samples, typename Labels>
+bool svm_grid_search(DBN& dbn, const Samples& training_data, const Labels& labels, std::size_t n_fold = 5){
+    dbn.make_problem(training_data, labels);
+
+    //Make libsvm quiet
+    svm::make_quiet();
+
+    auto parameters = default_svm_parameters();
+
+    //Make sure parameters are not messed up
+    if(!svm::check(dbn.problem, parameters)){
+        return false;
+    }
+
+    //Perform a grid-search
+    svm::rbf_grid_search_exp(dbn.problem, parameters, n_fold);
+
+    return true;
+}
+
 } // end of namespace dll
 
 #endif //DLL_SVM_SUPPORT

@@ -353,22 +353,7 @@ struct conv_dbn {
 
     template<typename Samples, typename Labels>
     bool svm_grid_search(const Samples& training_data, const Labels& labels, std::size_t n_fold = 5){
-        make_problem(training_data, labels);
-
-        //Make libsvm quiet
-        svm::make_quiet();
-
-        auto parameters = default_svm_parameters();
-
-        //Make sure parameters are not messed up
-        if(!svm::check(problem, parameters)){
-            return false;
-        }
-
-        //Perform a grid-search
-        svm::rbf_grid_search_exp(problem, parameters, n_fold);
-
-        return true;
+        return dll::svm_grid_search(*this, training_data, labels, n_fold);
     }
 
     template<typename Sample>
