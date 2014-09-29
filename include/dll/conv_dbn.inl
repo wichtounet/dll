@@ -317,9 +317,25 @@ struct conv_dbn {
         return dll::svm_train(*this, training_data, labels, parameters);
     }
 
+    template<typename Iterator, typename LIterator>
+    bool svm_train(Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, const svm_parameter& parameters = default_svm_parameters()){
+        return dll::svm_train(*this,
+            std::forward<Iterator>(first), std::forward<Iterator>(last),
+            std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
+            parameters);
+    }
+
     template<typename Samples, typename Labels>
     bool svm_grid_search(const Samples& training_data, const Labels& labels, std::size_t n_fold = 5, const svm::rbf_grid& g = svm::rbf_grid()){
         return dll::svm_grid_search(*this, training_data, labels, n_fold, g);
+    }
+
+    template<typename Iterator, typename LIterator>
+    bool svm_grid_search(Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, std::size_t n_fold = 5, const svm::rbf_grid& g = svm::rbf_grid()){
+        return dll::svm_grid_search(*this,
+            std::forward<Iterator>(first), std::forward<Iterator>(last),
+            std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
+            n_fold, g);
     }
 
     template<typename Sample>

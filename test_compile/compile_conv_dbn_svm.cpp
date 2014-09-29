@@ -22,8 +22,10 @@ void test_dbn(){
 
     dbn.pretrain(images, 10);
     dbn.svm_train(images, labels);
-    dbn.svm_predict(images[1]);
+    dbn.svm_train(images.begin(), images.end(), labels.begin(), labels.end());
     dbn.svm_grid_search(images, labels);
+    dbn.svm_grid_search(images.begin(), images.end(), labels.begin(), labels.end());
+    dbn.svm_predict(images[1]);
 }
 
 template <typename RBM>

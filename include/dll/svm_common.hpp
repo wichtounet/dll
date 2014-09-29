@@ -101,6 +101,26 @@ void make_problem(DBN& dbn, const Samples& training_data, const Labels& labels){
     dbn.problem = svm::make_problem(labels, static_cast<const std::vector<etl::dyn_vector<double>>&>(svm_samples));
 }
 
+template<typename DBN, typename Iterator, typename LIterator>
+void make_problem(DBN& dbn, Iterator first, Iterator last, LIterator&& lfirst, LIterator&& llast){
+    std::vector<etl::dyn_vector<double>> svm_samples;
+
+    //Get all the activation probabilities
+    auto it = first;
+    std::size_t i = 0;
+    while(it != last){
+        svm_samples.emplace_back(DBN::output_size());
+        dbn.activation_probabilities(*it, svm_samples[i]);
+
+        ++it;
+    }
+
+    //static_cast ensure using the correct overload
+    dbn.problem = svm::make_problem(
+        std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
+        svm_samples.begin(), svm_samples.end());
+}
+
 template<typename DBN, typename Samples, typename Labels>
 bool svm_train(DBN& dbn, const Samples& training_data, const Labels& labels, const svm_parameter& parameters){
     make_problem(dbn, training_data, labels);
@@ -121,9 +141,49 @@ bool svm_train(DBN& dbn, const Samples& training_data, const Labels& labels, con
     return true;
 }
 
+template<typename DBN, typename Iterator, typename LIterator>
+bool svm_train(DBN& dbn, Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, const svm_parameter& parameters){
+    make_problem(dbn, std::forward<Iterator>(first), std::forward<Iterator>(last), std::forward<LIterator>(lfirst), std::forward<LIterator>(llast));
+
+    //Make libsvm quiet
+    svm::make_quiet();
+
+    //Make sure parameters are not messed up
+    if(!svm::check(dbn.problem, parameters)){
+        return false;
+    }
+
+    //Train the SVM
+    dbn.svm_model = svm::train(dbn.problem, parameters);
+
+    dbn.svm_loaded = true;
+
+    return true;
+}
+
 template<typename DBN, typename Samples, typename Labels>
 bool svm_grid_search(DBN& dbn, const Samples& training_data, const Labels& labels, std::size_t n_fold = 5, const svm::rbf_grid& g = svm::rbf_grid()){
     make_problem(dbn, training_data, labels);
+
+    //Make libsvm quiet
+    svm::make_quiet();
+
+    auto parameters = default_svm_parameters();
+
+    //Make sure parameters are not messed up
+    if(!svm::check(dbn.problem, parameters)){
+        return false;
+    }
+
+    //Perform a grid-search
+    svm::rbf_grid_search(dbn.problem, parameters, n_fold, g);
+
+    return true;
+}
+
+template<typename DBN, typename Iterator, typename LIterator>
+bool svm_grid_search(DBN& dbn, Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, std::size_t n_fold = 5, const svm::rbf_grid& g = svm::rbf_grid()){
+    make_problem(dbn, std::forward<Iterator>(first), std::forward<Iterator>(last), std::forward<LIterator>(lfirst), std::forward<LIterator>(llast));
 
     //Make libsvm quiet
     svm::make_quiet();
