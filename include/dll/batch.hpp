@@ -39,8 +39,9 @@ struct batch {
         return std::distance(begin(), end());
     }
 
+    //TODO Avoid using random access to batch
     const value_type& operator[](size_t i) const {
-        return *(begin() + i);
+        return *(std::advance(begin(), i));
     }
 };
 
