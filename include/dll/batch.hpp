@@ -8,31 +8,32 @@
 #ifndef DLL_BATCH_HPP
 #define DLL_BATCH_HPP
 
-#include <utility>
-#include <vector>
+#include <iterator>
 
 #include "assert.hpp"
 
 namespace dll {
 
-template<typename Container>
+template<typename Iterator>
 struct batch {
-    typedef typename Container::const_iterator const_iterator_t;
-    typedef typename Container::value_type value_type;
-    typedef typename std::size_t size_type;
+    Iterator first;
+    Iterator last;
 
-    std::pair<const_iterator_t, const_iterator_t> values;
+    using value_type = decltype(*first);
+    using size_type = std::size_t;
 
-    batch(const_iterator_t&& it, const_iterator_t&& end): values(std::forward<const_iterator_t>(it), std::forward<const_iterator_t>(end)){
-        dll_assert(std::distance(it, end) > 0, "Batch cannot be empty or reversed");
+    batch(Iterator&& first, Iterator&& last):
+            first(std::forward<Iterator>(first)),
+            last(std::forward<Iterator>(last)){
+        dll_assert(std::distance(first, last) > 0, "Batch cannot be empty or reversed");
     }
 
-    const_iterator_t begin() const {
-        return values.first;
+    Iterator begin() const {
+        return first;
     }
 
-    const_iterator_t end() const {
-        return values.second;
+    Iterator end() const {
+        return last;
     }
 
     size_type size() const {
@@ -41,9 +42,16 @@ struct batch {
 
     //TODO Avoid using random access to batch
     const value_type& operator[](size_t i) const {
-        return *(std::advance(begin(), i));
+        auto it = begin();
+        std::advance(it, i);
+        return *it;
     }
 };
+
+template<typename Iterator>
+batch<Iterator> make_batch(Iterator&& first, Iterator&& last){
+    return {std::forward<Iterator>(first), std::forward<Iterator>(last)};
+}
 
 } //end of dbn namespace
 
