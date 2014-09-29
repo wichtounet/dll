@@ -1,8 +1,8 @@
 Deep Learning Library (DLL)
 ===========================
 
-DLL is a small library aims to provide a C++ implementation of Restricted
-Boltzmann Machine (RBM) and Deep Belief Network (DBN).
+DLL is a small library that aims to provide a C++ implementation of
+Restricted Boltzmann Machine (RBM) and Deep Belief Network (DBN).
 
 Features
 --------
@@ -31,12 +31,18 @@ Features
    * Pretraining with RBMs
    * Fine tuning with Conjugate Gradient
    * Fine tuning with Stochastic Gradient Descent
+   * Classification with SVM (libsvm)
 
-In development
---------------
+* **Convolutional Deep Belief Network**
 
-conv_rbm is still in heavy development and should not be used unless you intend
-to improve it ;)
+   * Pretraining with CRBMs
+   * Classification with SVM (libsvm)
+
+* Input data
+
+   * Input data can be either in containers or in iterators
+      * Even if iterators are supported for SVM classifier, libsvm will move all
+        the data in memory structure.
 
 Building
 --------
@@ -46,10 +52,10 @@ This library is completely header-only, there is no need to build it.
 The folder **include** must be included with the **-I** option, as well as the
 **etl/include** folder
 
-However, this library makes extensive use of C++11 and C++14,
-therefore, a recent compiler is necessary to use it. This library is
-tested on CLang 3.4.1. It should compile on g++ 4.9.1, but it does
-not because G++ refuses to call static functions inside lambdas.
+However, this library makes extensive use of C++11 and C++14, therefore, a
+recent compiler is necessary to use it. This library is tested on CLang 3.4.1.
+It should compile on g++ 4.9.1, but it does not because G++ refuses to call
+static functions inside lambdas.  This will eventually be fixed out.
 
 This has never been tested on Windows. While it should compile on Mingw, I don't
 expect Visual Studio to be able to compile it for now. If you have problems
