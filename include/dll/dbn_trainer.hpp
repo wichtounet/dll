@@ -38,7 +38,7 @@ struct dbn_trainer {
 
         watcher.fine_tuning_begin(dbn);
 
-        auto trainer = make_unique<trainer_t<dbn_t>>(dbn);
+        auto trainer = std::make_unique<trainer_t<dbn_t>>(dbn);
 
         //Initialize the trainer if necessary
         trainer->init_training(batch_size);

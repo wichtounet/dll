@@ -33,7 +33,7 @@ TEST_CASE( "dbn/mnist_1", "dbn::simple" ) {
 
     mnist::binarize_dataset(dataset);
 
-    auto dbn = make_unique<dbn_t>();
+    auto dbn = std::make_unique<dbn_t>();
 
     dbn->pretrain(dataset.training_images, 5);
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 5, 50);
@@ -56,7 +56,7 @@ TEST_CASE( "dbn/mnist_2", "dbn::containers" ) {
 
     mnist::binarize_dataset(dataset);
 
-    auto dbn = make_unique<dbn_t>();
+    auto dbn = std::make_unique<dbn_t>();
 
     dbn->pretrain(dataset.training_images, 5);
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 5, 50);
@@ -79,7 +79,7 @@ TEST_CASE( "dbn/mnist_3", "dbn::labels" ) {
         dll::rbm_desc<200, 300, dll::batch_size<50>, dll::momentum>::rbm_t,
         dll::rbm_desc<310, 500, dll::batch_size<50>, dll::momentum>::rbm_t>>::dbn_t dbn_simple_t;
 
-    auto dbn = make_unique<dbn_simple_t>();
+    auto dbn = std::make_unique<dbn_simple_t>();
 
     dbn->train_with_labels(dataset.training_images, dataset.training_labels, 10, 10);
 
@@ -102,7 +102,7 @@ TEST_CASE( "dbn/mnist_4", "dbn::sgd" ) {
 
     mnist::binarize_dataset(dataset);
 
-    auto dbn = make_unique<dbn_t>();
+    auto dbn = std::make_unique<dbn_t>();
 
     dbn->pretrain(dataset.training_images, 5);
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 200, 10);
@@ -115,7 +115,7 @@ TEST_CASE( "dbn/mnist_5", "dbn::sgd_momentum" ) {
         dll::dbn_layers<
         dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
         dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>, 
+        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
         dll::trainer<dll::sgd_trainer>, dll::momentum>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
@@ -126,7 +126,7 @@ TEST_CASE( "dbn/mnist_5", "dbn::sgd_momentum" ) {
 
     mnist::binarize_dataset(dataset);
 
-    auto dbn = make_unique<dbn_t>();
+    auto dbn = std::make_unique<dbn_t>();
 
     dbn->pretrain(dataset.training_images, 10);
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 200, 10);
@@ -149,7 +149,7 @@ TEST_CASE( "dbn/mnist_6", "dbn::cg_gaussian" ) {
 
     mnist::normalize_dataset(dataset);
 
-    auto dbn = make_unique<dbn_t>();
+    auto dbn = std::make_unique<dbn_t>();
 
     dbn->pretrain(dataset.training_images, 5);
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 10, 50);
@@ -174,7 +174,7 @@ TEST_CASE( "dbn/mnist_7", "dbn::sgd_gaussian" ) {
 
     mnist::normalize_dataset(dataset);
 
-    auto dbn = make_unique<dbn_t>();
+    auto dbn = std::make_unique<dbn_t>();
 
     dbn->learning_rate = 0.01;
 
@@ -200,7 +200,7 @@ TEST_CASE( "dbn/mnist_8", "dbn::cg_relu" ) {
 
     mnist::binarize_dataset(dataset);
 
-    auto dbn = make_unique<dbn_t>();
+    auto dbn = std::make_unique<dbn_t>();
 
     dbn->pretrain(dataset.training_images, 5);
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 10, 50);
@@ -225,7 +225,7 @@ TEST_CASE( "dbn/mnist_9", "dbn::sgd_relu" ) {
 
     mnist::binarize_dataset(dataset);
 
-    auto dbn = make_unique<dbn_t>();
+    auto dbn = std::make_unique<dbn_t>();
 
     dbn->learning_rate = 0.05;
 
@@ -240,7 +240,7 @@ TEST_CASE( "dbn/mnist_10", "dbn::sgd_wd" ) {
         dll::dbn_layers<
         dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
         dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>, 
+        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
         dll::trainer<dll::sgd_trainer>, dll::weight_decay<dll::decay_type::L2>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
@@ -251,7 +251,7 @@ TEST_CASE( "dbn/mnist_10", "dbn::sgd_wd" ) {
 
     mnist::binarize_dataset(dataset);
 
-    auto dbn = make_unique<dbn_t>();
+    auto dbn = std::make_unique<dbn_t>();
 
     dbn->pretrain(dataset.training_images, 5);
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 200, 10);
@@ -264,7 +264,7 @@ TEST_CASE( "dbn/mnist_11", "dbn::sgd_wd_momentum"){
         dll::dbn_layers<
         dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
         dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>, 
+        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
         dll::trainer<dll::sgd_trainer>, dll::momentum, dll::weight_decay<dll::decay_type::L2>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
@@ -275,7 +275,7 @@ TEST_CASE( "dbn/mnist_11", "dbn::sgd_wd_momentum"){
 
     mnist::binarize_dataset(dataset);
 
-    auto dbn = make_unique<dbn_t>();
+    auto dbn = std::make_unique<dbn_t>();
 
     dbn->pretrain(dataset.training_images, 10);
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 200, 10);

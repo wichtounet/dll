@@ -9,7 +9,6 @@
 #define DLL_RBM_TRAINER_HPP
 
 #include "decay_type.hpp"
-#include "utils.hpp"
 #include "batch.hpp"
 #include "rbm_traits.hpp"
 
@@ -77,7 +76,7 @@ struct rbm_trainer {
         //Some RBM may init weights based on the training data
         init_weights(rbm, first, last);
 
-        auto trainer = make_unique<trainer_t<rbm_t>>(rbm);
+        auto trainer = std::make_unique<trainer_t<rbm_t>>(rbm);
 
         //Compute the number of batches
         auto batch_size = get_batch_size(rbm);
