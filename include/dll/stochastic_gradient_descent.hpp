@@ -112,9 +112,13 @@ struct sgd_trainer {
 
         //Compute the total gradients for the mini batch
 
-        for(std::size_t i = 0; i < n_samples; ++i){
+        auto it = data_batch.begin();
+        auto end = data_batch.end();
+        auto lit = label_batch.begin();
+
+        while(it != end){
             //Compute the outputs of each layer one after another
-            compute_outputs(data_batch[i]);
+            compute_outputs(*it);
 
             //Compute the errors of the last layer
 
@@ -122,7 +126,7 @@ struct sgd_trainer {
 
             for(std::size_t j = 0; j < n_outputs; ++j){
                 auto observed = last_ctx.o_a[j];
-                auto desired = label_batch[i][j];
+                auto desired = (*lit)[j];
                 last_ctx.errors[j] = observed * (1 - observed) * (desired - observed);
             }
 
@@ -139,6 +143,9 @@ struct sgd_trainer {
 
                 ctx1.errors = ctx1.o_a * (1 - ctx1.o_a) * mmul(r2.w, reshape<n_outputs, 1>(ctx2.errors), t);
             });
+
+            ++it;
+            ++lit;
         }
 
         //Finalize gradients

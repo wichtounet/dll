@@ -16,11 +16,10 @@ namespace dll {
 
 template<typename Iterator>
 struct batch {
+    using size_type = std::size_t;
+
     Iterator first;
     Iterator last;
-
-    using value_type = decltype(*first);
-    using size_type = std::size_t;
 
     batch(Iterator&& first, Iterator&& last):
             first(std::forward<Iterator>(first)),
@@ -38,13 +37,6 @@ struct batch {
 
     size_type size() const {
         return std::distance(begin(), end());
-    }
-
-    //TODO Avoid using random access to batch
-    const value_type& operator[](size_t i) const {
-        auto it = begin();
-        std::advance(it, i);
-        return *it;
     }
 };
 

@@ -126,12 +126,16 @@ struct cg_trainer {
     }
 
     template<bool Temp, typename C, typename D, typename V>
-    static void update_incs(C& ctx, std::vector<D>& diffs, size_t n_samples, const V& visibles){
+    static void update_incs(C& ctx, std::vector<D>& diffs, const V& visibles){
         constexpr auto n_visible = C::num_visible;
         constexpr auto n_hidden = C::num_hidden;
 
-        for(size_t sample = 0;  sample < n_samples; ++sample){
-            auto& v = visibles[sample];
+        auto it = visibles.begin();
+        auto end = visibles.end();
+        std::size_t sample = 0;
+
+        while(it != end){
+            auto& v = *it;
             auto& d = diffs[sample];
 
             for(size_t i = 0; i < n_visible; ++i){
@@ -143,6 +147,9 @@ struct cg_trainer {
             for(size_t j = 0; j < n_hidden; ++j){
                 ctx.gr_b_incs(j) += d[j];
             }
+
+            ++it;
+            ++sample;
         }
     }
 
@@ -162,10 +169,16 @@ struct cg_trainer {
         cost = 0.0;
         weight error = 0.0;
 
-        for(size_t sample = 0; sample < n_samples; ++sample){
-            auto& input = context.inputs[sample];
+        auto it = context.inputs.begin();
+        auto end = context.inputs.end();
+        auto tit = context.targets.begin();
+
+        std::size_t sample = 0;
+
+        while(it != end){
+            auto& input = *it;
             auto output = std::ref(std::get<0>(rbm_contexts).gr_probs_a[sample]);
-            auto& target = context.targets[sample];
+            auto& target = *tit;
 
             detail::for_each_i(tuples, rbm_contexts, [&input,&output,sample](std::size_t I, auto& rbm, auto& ctx){
                 auto& output_ref = static_cast<etl::dyn_vector<weight>&>(output);
@@ -193,6 +206,10 @@ struct cg_trainer {
                 cost += target[i] * log(result[i]);
                 error += diff[i] * diff[i];
             }
+
+            ++it;
+            ++tit;
+            ++sample;
         }
 
         cost = -cost;
@@ -203,7 +220,7 @@ struct cg_trainer {
             probs_refs[I] = &ctx.gr_probs_a;
         });
 
-        update_incs<Temp>(std::get<layers-1>(rbm_contexts), diffs, n_samples, std::get<layers-2>(rbm_contexts).gr_probs_a);
+        update_incs<Temp>(std::get<layers-1>(rbm_contexts), diffs, std::get<layers-2>(rbm_contexts).gr_probs_a);
 
         std::vector<std::vector<weight>>& diffs_p = diffs;
 
@@ -211,11 +228,11 @@ struct cg_trainer {
             this_type::update_diffs<Temp>(r1, r2, c1, c2, diffs_p, n_samples);
 
             if(I > 0){
-                this_type::update_incs<Temp>(c1, diffs_p, n_samples, *probs_refs[I-1]);
+                this_type::update_incs<Temp>(c1, diffs_p, *probs_refs[I-1]);
             }
         });
 
-        update_incs<Temp>(std::get<0>(rbm_contexts), diffs, n_samples, context.inputs);
+        update_incs<Temp>(std::get<0>(rbm_contexts), diffs, context.inputs);
 
         if(Debug){
             std::cout << "evaluating(" << Temp << "): cost:" << cost << " error: " << (error / n_samples) << std::endl;
