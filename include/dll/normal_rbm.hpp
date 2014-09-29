@@ -58,10 +58,17 @@ public:
             :   /* Only ReLU and Gaussian Units needs lower rate */           1e-1;
     }
 
+    //TODO This could probably be removed later
     template<typename Samples, bool EnableWatcher = true, typename RW = void, typename... Args>
     double train(const Samples& training_data, std::size_t max_epochs, Args... args){
         dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
-        return trainer.train(*static_cast<parent_t*>(this), training_data, max_epochs);
+        return trainer.train(*static_cast<parent_t*>(this), training_data.begin(), training_data.end(), max_epochs);
+    }
+
+    template<typename Iterator, bool EnableWatcher = true, typename RW = void, typename... Args>
+    double train(Iterator&& first, Iterator&& last, std::size_t max_epochs, Args... args){
+        dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
+        return trainer.train(*static_cast<parent_t*>(this), std::forward<Iterator>(first), std::forward<Iterator>(last), max_epochs);
     }
 
     void store(std::ostream& os) const {
@@ -72,9 +79,9 @@ public:
         rbm_detail::load(is, *static_cast<parent_t*>(this));
     }
 
-    template<typename Samples>
-    void init_weights(const Samples& training_data){
-        rbm_detail::init_weights(training_data, *static_cast<parent_t*>(this));
+    template<typename Iterator>
+    void init_weights(Iterator&& first, Iterator&& last){
+        rbm_detail::init_weights(std::forward<Iterator>(first), std::forward<Iterator>(last), *static_cast<parent_t*>(this));
     }
 
     template<typename V, typename H>

@@ -28,14 +28,16 @@ static void load(std::istream& is, RBM& rbm){
     binary_load_all(is, rbm.c);
 }
 
-template<typename Samples, typename RBM>
-void init_weights(const Samples& training_data, RBM& rbm){
+template<typename Iterator, typename RBM>
+void init_weights(Iterator first, Iterator last, RBM& rbm){
+    auto size = std::distance(first, last);
+
     //Initialize the visible biases to log(pi/(1-pi))
     for(size_t i = 0; i < num_visible(rbm); ++i){
-        auto count = std::count_if(training_data.begin(), training_data.end(),
+        auto count = std::count_if(first, last,
             [i](auto& a){return a[i] == 1; });
 
-        auto pi = static_cast<double>(count) / training_data.size();
+        auto pi = static_cast<double>(count) / size;
         pi += 0.0001;
         rbm.c(i) = log(pi / (1.0 - pi));
 

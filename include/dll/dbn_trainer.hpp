@@ -70,8 +70,8 @@ struct dbn_trainer {
                 auto start = i * batch_size;
                 auto end = std::min(start + batch_size, data.size());
 
-                dll::batch<samples_t> data_batch(data.begin() + start, data.begin() + end);
-                dll::batch<fake_label_t> label_batch(fake_labels.begin() + start, fake_labels.begin() + end);
+                auto data_batch = make_batch(data.begin() + start, data.begin() + end);
+                auto label_batch = make_batch(fake_labels.begin() + start, fake_labels.begin() + end);
 
                 trainer->train_batch(epoch, data_batch, label_batch);
             }

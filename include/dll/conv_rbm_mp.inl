@@ -244,7 +244,13 @@ public:
     template<typename Samples, bool EnableWatcher = true, typename RW = void, typename... Args>
     weight train(const Samples& training_data, std::size_t max_epochs, Args... args){
         dll::rbm_trainer<this_type, EnableWatcher, RW> trainer(args...);
-        return trainer.train(*this, training_data, max_epochs);
+        return trainer.train(*this, training_data.begin(), training_data.end(), max_epochs);
+    }
+
+    template<typename Iterator, bool EnableWatcher = true, typename RW = void, typename... Args>
+    weight train(Iterator&& first, Iterator&& last, std::size_t max_epochs, Args... args){
+        dll::rbm_trainer<this_type, EnableWatcher, RW> trainer(args...);
+        return trainer.train(*this, std::forward<Iterator>(first), std::forward<Iterator>(last), max_epochs);
     }
 
     template<typename V>

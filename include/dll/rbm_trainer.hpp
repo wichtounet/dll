@@ -50,18 +50,24 @@ struct rbm_trainer {
     template<typename... Arg>
     rbm_trainer(init_watcher_t /*init*/, Arg... args) : watcher(args...) {}
 
-    template<typename Samples, typename R = RBM, enable_if_u<rbm_traits<R>::init_weights()> = ::detail::dummy>
-    static void init_weights(RBM& rbm, const Samples& training_data){
-        rbm.init_weights(training_data);
+    template<typename Iterator, typename R = RBM, enable_if_u<rbm_traits<R>::init_weights()> = ::detail::dummy>
+    static void init_weights(RBM& rbm, Iterator first, Iterator last){
+        rbm.init_weights(first, last);
     }
 
-    template<typename Samples, typename R = RBM, disable_if_u<rbm_traits<R>::init_weights()> = ::detail::dummy>
-    static void init_weights(RBM&, const Samples&){
+    template<typename Iterator, typename R = RBM, disable_if_u<rbm_traits<R>::init_weights()> = ::detail::dummy>
+    static void init_weights(RBM&, Iterator, Iterator){
         //NOP
     }
 
+    //TODO This should be removed later
     template<typename Samples>
     typename rbm_t::weight train(RBM& rbm, const Samples& training_data, std::size_t max_epochs) const {
+        return train(rbm, training_data.begin(), training_data.end(), max_epochs);
+    }
+
+    template<typename Iterator>
+    typename rbm_t::weight train(RBM& rbm, Iterator first, Iterator last, std::size_t max_epochs) const {
         rbm.momentum = rbm.initial_momentum;
 
         if(EnableWatcher){
@@ -69,14 +75,12 @@ struct rbm_trainer {
         }
 
         //Some RBM may init weights based on the training data
-        init_weights(rbm, training_data);
+        init_weights(rbm, first, last);
 
         auto trainer = make_unique<trainer_t<rbm_t>>(rbm);
 
         //Compute the number of batches
         auto batch_size = get_batch_size(rbm);
-
-        auto batches = training_data.size() / batch_size + (training_data.size() % batch_size == 0 ? 0 : 1);
 
         typename rbm_t::weight last_error = 0.0;
 
@@ -85,12 +89,25 @@ struct rbm_trainer {
             typename rbm_t::weight error = 0.0;
             typename rbm_t::weight free_energy = 0.0;
 
-            //Train one mini-batch at a time
-            for(size_t i = 0; i < batches; ++i){
-                auto start = i * batch_size;
-                auto end = std::min(start + batch_size, training_data.size());
+            auto it = first;
+            auto end = last;
 
-                dll::batch<Samples> batch(training_data.begin() + start, training_data.begin() + end);
+            std::size_t batches = 0;
+            std::size_t samples = 0;
+
+            while(it != end){
+                auto start = it;
+
+                std::size_t i = 0;
+                while(it != end && i < batch_size){
+                    ++it;
+                    ++samples;
+                    ++i;
+                }
+
+                ++batches;
+
+                auto batch = make_batch(start, it);
                 error += trainer->train_batch(batch);
 
                 for(auto& v : batch){
@@ -99,7 +116,7 @@ struct rbm_trainer {
             }
 
             last_error = error / batches;
-            free_energy /= training_data.size();
+            free_energy /= samples;
 
             //After some time increase the momentum
             if(rbm_traits<rbm_t>::has_momentum() && epoch == rbm.final_momentum_epoch){
