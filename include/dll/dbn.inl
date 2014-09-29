@@ -342,7 +342,6 @@ struct dbn {
 
     /*{{{ Predict */
 
-    //TODO Rename this
     template<typename Sample, typename Output>
     void activation_probabilities(const Sample& item_data, Output& result){
         using training_t = etl::dyn_vector<typename Sample::value_type>;
