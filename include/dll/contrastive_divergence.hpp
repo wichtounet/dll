@@ -343,8 +343,12 @@ typename RBM::weight train_normal(const dll::batch<T>& batch, RBM& rbm, Trainer&
         t.q_batch = 0.0;
     }
 
-    for(std::size_t i = 0; i < batch.size(); ++i){
-        auto& items = batch[i];
+    auto it = batch.begin();
+    auto end = batch.end();
+
+    std::size_t i = 0;
+    while(it != end){
+        auto& items = *it;
 
         rbm.v1 = items;
 
@@ -378,6 +382,9 @@ typename RBM::weight train_normal(const dll::batch<T>& batch, RBM& rbm, Trainer&
         if(rbm_traits<rbm_t>::has_sparsity()){
             t.q_batch += sum(rbm.h2_a);
         }
+
+        ++it;
+        ++i;
     }
 
     if(Persistent){
@@ -720,8 +727,12 @@ public:
             q_batch = 0.0;
         }
 
-        for(std::size_t i = 0; i < batch.size(); ++i){
-            auto& items = batch[i];
+        auto it = batch.begin();
+        auto end = batch.end();
+
+        std::size_t i = 0;
+        while(it != end){
+            auto& items = *it;
 
             rbm.v1 = items;
 
@@ -762,6 +773,9 @@ public:
             if(rbm_traits<rbm_t>::has_sparsity()){
                 q_batch += sum(sum(rbm.h2_a));
             }
+
+            ++it;
+            ++i;
         }
 
         init = false;
