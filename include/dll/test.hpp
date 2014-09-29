@@ -51,25 +51,36 @@ struct deep_label_predictor {
 
 template<typename DBN, typename Functor, typename Samples, typename Labels>
 double test_set(DBN& dbn, const Samples& images, const Labels& labels, Functor&& f){
+    return test_set(dbn, images.begin(), images.end(), labels.begin(), labels.end(), std::forward<Functor>(f));
+}
+
+template<typename DBN, typename Functor, typename Iterator, typename LIterator>
+double test_set(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator /*llast*/, Functor&& f){
     stop_watch<std::chrono::milliseconds> watch;
 
     size_t success = 0;
-    for(size_t i = 0; i < images.size(); ++i){
-        auto& image = images[i];
-        auto& label = labels[i];
+    size_t images = 0;
+
+    while(first != last){
+        const auto& image = *first;
+        const auto& label = *lfirst;
 
         auto predicted = f(dbn, image);
 
         if(predicted == label){
             ++success;
         }
+
+        ++images;
+        ++first;
+        ++lfirst;
     }
 
     auto elapsed = watch.elapsed();
 
-    std::cout << "Testing took " << watch.elapsed() << "ms, average: " << (elapsed / images.size()) << "ms" << std::endl;
+    std::cout << "Testing took " << watch.elapsed() << "ms, average: " << (elapsed / images) << "ms" << std::endl;
 
-    return (images.size() - success) / static_cast<double>(images.size());
+    return (images - success) / static_cast<double>(images);
 }
 
 } //end of dbn namespace
