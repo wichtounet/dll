@@ -134,7 +134,16 @@ struct dbn {
      */
     template<typename Samples>
     void pretrain(const Samples& training_data, std::size_t max_epochs){
-        using training_t = std::vector<etl::dyn_vector<typename Samples::value_type::value_type>>;
+        pretrain(training_data.begin(), training_data.end(), max_epochs);
+    }
+
+    /*!
+     * \brief Pretrain the network by training all layers in an unsupervised
+     * manner.
+     */
+    template<typename Iterator>
+    void pretrain(Iterator first, Iterator last, std::size_t max_epochs){
+        using training_t = std::vector<etl::dyn_vector<typename std::iterator_traits<Iterator>::value_type::value_type>>;
 
         using watcher_t = typename desc::template watcher_t<this_type>;
 
@@ -144,11 +153,11 @@ struct dbn {
 
         //Convert data to an useful form
         training_t data;
-        data.reserve(training_data.size());
+        data.reserve(std::distance(first, last));
 
-        for(auto& sample : training_data){
+        std::for_each(first, last, [&data](auto& sample){
             data.emplace_back(sample);
-        }
+        });
 
         training_t next_a;
         training_t next_s;
@@ -204,19 +213,27 @@ struct dbn {
         dll_assert(training_data.size() == training_labels.size(), "There must be the same number of values than labels");
         dll_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
-        using training_t = std::vector<etl::dyn_vector<typename Samples::value_type::value_type>>;
+        train_with_labels(training_data.begin(), training_data.end(), training_labels.begin(), training_labels.end(), labels, max_epochs);
+    }
+
+    template<typename Iterator, typename LabelIterator>
+    void train_with_labels(Iterator first, Iterator last, LabelIterator lfirst, LabelIterator llast, std::size_t labels, std::size_t max_epochs){
+        dll_assert(std::distance(first, last) == std::distance(lfirst, llast), "There must be the same number of values than labels");
+        dll_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
+
+        using training_t = std::vector<etl::dyn_vector<typename std::iterator_traits<Iterator>::value_type::value_type>>;
 
         //Convert data to an useful form
         training_t data;
-        data.reserve(training_data.size());
+        data.reserve(std::distance(first, last));
 
-        for(auto& sample : training_data){
+        std::for_each(first, last, [&data](auto& sample){
             data.emplace_back(sample);
-        }
+        });
 
         auto input = std::cref(data);
 
-        detail::for_each_i(tuples, [&input, &training_labels, labels, max_epochs](size_t I, auto& rbm){
+        detail::for_each_i(tuples, [&input, llast, lfirst, labels, max_epochs](size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
             constexpr const auto num_hidden = rbm_t::num_hidden;
 
@@ -238,12 +255,19 @@ struct dbn {
 
                 //If the next layers is the last layer
                 if(append_labels){
-                    for(size_t i = 0; i < training_labels.size(); ++i){
-                        auto label = training_labels[i];
+                    auto it = lfirst;
+                    auto end = llast;
+
+                    std::size_t i = 0;
+                    while(it != end){
+                        auto label = *it;
 
                         for(size_t l = 0; l < labels; ++l){
                             next[i][num_hidden + l] = label == l ? 1.0 : 0.0;
                         }
+
+                        ++i;
+                        ++it;
                     }
                 }
             }
@@ -321,7 +345,8 @@ struct dbn {
     //TODO Rename this
     template<typename Sample, typename Output>
     void activation_probabilities(const Sample& item_data, Output& result){
-        etl::dyn_vector<typename Sample::value_type> item(item_data);
+        using training_t = etl::dyn_vector<typename Sample::value_type>;
+        training_t item(item_data);
 
         auto input = std::cref(item);
 
@@ -333,7 +358,7 @@ struct dbn {
                 static etl::dyn_vector<weight> next(num_hidden);
                 static etl::dyn_vector<weight> next_s(num_hidden);
 
-                rbm.activate_hidden(next, next_s, static_cast<const Sample&>(input), static_cast<const Sample&>(input));
+                rbm.activate_hidden(next, next_s, static_cast<const training_t&>(input), static_cast<const training_t&>(input));
 
                 input = std::cref(next);
             }
@@ -343,7 +368,7 @@ struct dbn {
 
         static etl::dyn_vector<weight> next_s(num_hidden);
 
-        layer<layers - 1>().activate_hidden(result, next_s, static_cast<const Sample&>(input), static_cast<const Sample&>(input));
+        layer<layers - 1>().activate_hidden(result, next_s, static_cast<const training_t&>(input), static_cast<const training_t&>(input));
     }
 
     template<typename Sample>
@@ -383,8 +408,16 @@ struct dbn {
 
     template<typename Samples, typename Labels>
     weight fine_tune(const Samples& training_data, Labels& labels, size_t max_epochs, size_t batch_size){
+        return fine_tune(training_data.begin(), training_data.end(), labels.begin(), labels.end(), max_epochs, batch_size);
+    }
+
+    template<typename Iterator, typename LIterator>
+    weight fine_tune(Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, size_t max_epochs, size_t batch_size){
         dll::dbn_trainer<this_type> trainer;
-        return trainer.train(*this, training_data, labels, max_epochs, batch_size);
+        return trainer.train(*this,
+            std::forward<Iterator>(first), std::forward<Iterator>(last),
+            std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
+            max_epochs, batch_size);
     }
 
     /*}}}*/

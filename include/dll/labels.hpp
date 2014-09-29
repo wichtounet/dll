@@ -8,6 +8,7 @@
 #ifndef DLL_LABELS_HPP
 #define DLL_LABELS_HPP
 
+#include <iterator>
 #include <vector>
 
 namespace dll {
@@ -30,14 +31,14 @@ struct fake_label_array {
     }
 };
 
-template<typename Labels>
-std::vector<fake_label_array<typename Labels::value_type>> make_fake(const Labels& values){
-    std::vector<fake_label_array<typename Labels::value_type>> fake;
-    fake.reserve(values.size());
+template<typename Iterator>
+std::vector<fake_label_array<typename std::iterator_traits<Iterator>::value_type>> make_fake(Iterator first, Iterator last){
+    std::vector<fake_label_array<typename std::iterator_traits<Iterator>::value_type>> fake;
+    fake.reserve(std::distance(first, last));
 
-    for(auto v: values){
+    std::for_each(first, last, [&fake](auto v){
         fake.emplace_back(v);
-    }
+    });
 
     return std::move(fake);
 }

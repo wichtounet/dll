@@ -30,8 +30,8 @@ struct dbn_trainer {
     template<typename R>
     using watcher_t = typename dbn_t::desc::template watcher_t<R>;
 
-    template<typename Samples, typename Labels>
-    typename dbn_t::weight train(DBN& dbn, const Samples& training_data, Labels& labels, size_t max_epochs, size_t batch_size) const {
+    template<typename Iterator, typename LIterator>
+    typename dbn_t::weight train(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t max_epochs, size_t batch_size) const {
         watcher_t<dbn_t> watcher;
 
         dbn.momentum = dbn.initial_momentum;
@@ -44,19 +44,22 @@ struct dbn_trainer {
         trainer->init_training(batch_size);
 
         //Convert labels to an useful form
-        auto fake_labels = dll::make_fake(labels);
+        auto fake_labels = dll::make_fake(lfirst, llast);
 
         //Get types for the batch
         using fake_label_t = typename std::remove_reference<decltype(fake_labels)>::type;
-        using samples_t = std::vector<etl::dyn_vector<typename Samples::value_type::value_type>>;
+        using samples_t = std::vector<etl::dyn_vector<typename std::iterator_traits<Iterator>::value_type::value_type>>;
 
         //Convert data to an useful form
         samples_t data;
-        data.reserve(training_data.size());
+        data.reserve(std::distance(first, last));
 
-        for(auto& sample : training_data){
+        std::for_each(first, last, [&data](auto& sample){
             data.emplace_back(sample);
-        }
+        });
+
+        //TODO Review this in order to convert data only one batch
+        //at a time to allow for datasets not in-memory
 
         //Compute the number of batches
         auto batches = data.size() / batch_size + (data.size() % batch_size == 0 ? 0 : 1);
@@ -76,7 +79,8 @@ struct dbn_trainer {
                 trainer->train_batch(epoch, data_batch, label_batch);
             }
 
-            error = test_set(dbn, data, labels, [](dbn_t& dbn, auto& image){return dbn.predict(image);});
+            error = test_set(dbn, first, last, lfirst, llast,
+                [](dbn_t& dbn, auto& image){ return dbn.predict(image); });
 
             //After some time increase the momentum
             if(dbn_traits<dbn_t>::has_momentum() && epoch == dbn.final_momentum_epoch){
