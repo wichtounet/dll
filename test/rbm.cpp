@@ -317,3 +317,24 @@ TEST_CASE( "rbm/mnist_15", "rbm::pcd_gaussian" ) {
 
     REQUIRE(error < 5e-2);
 }
+
+TEST_CASE( "rbm/mnist_16", "rbm::iterators" ) {
+    dll::rbm_desc<
+        28 * 28, 100,
+        dll::batch_size<23>
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(100);
+
+    mnist::binarize_dataset(dataset);
+
+    auto it = dataset.training_images.begin();
+    auto end = dataset.training_images.end();
+
+    auto error = rbm.train(it, end, 100);
+
+    REQUIRE(error < 1e-2);
+}
