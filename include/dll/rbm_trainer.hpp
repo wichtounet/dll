@@ -109,8 +109,10 @@ struct rbm_trainer {
                 auto batch = make_batch(start, it);
                 error += trainer->train_batch(batch);
 
-                for(auto& v : batch){
-                    free_energy += rbm.free_energy(v);
+                if(EnableWatcher){
+                    for(auto& v : batch){
+                        free_energy += rbm.free_energy(v);
+                    }
                 }
             }
 
