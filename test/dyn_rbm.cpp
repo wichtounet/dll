@@ -96,7 +96,7 @@ TEST_CASE( "dyn_rbm/mnist_5", "rbm::decay_l2" ) {
 
 TEST_CASE( "dyn_rbm/mnist_6", "rbm::sparsity" ) {
     dll::dyn_rbm_desc<
-       dll::sparsity
+       dll::sparsity<>
     >::rbm_t rbm(28 * 28, 100);
 
     //0.01 (default) is way too low for 100 hidden units

@@ -14,6 +14,7 @@ namespace dll {
  * \brief Define how sparsity is applied
  */
 enum class sparsity_method {
+    NONE,          ///< Don't train a sparse representation
     TARGET         ///< Sparsity according to (Nair and Hinton, 2009)
 };
 

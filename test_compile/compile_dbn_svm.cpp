@@ -34,7 +34,7 @@ int main(){
 
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<50>, dll::init_weights, dll::weight_decay<dll::decay_type::L2>, dll::sparsity>::rbm_t,
+        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<50>, dll::init_weights, dll::weight_decay<dll::decay_type::L2>, dll::sparsity<>>::rbm_t,
         dll::rbm_desc<100, 100, dll::momentum, dll::batch_size<50>>::rbm_t,
         dll::rbm_desc<110, 200, dll::batch_size<50>, dll::momentum, dll::weight_decay<dll::decay_type::L2_FULL>>::rbm_t
     >, dll::watcher<dll::silent_dbn_watcher>>::dbn_t dbn_1;

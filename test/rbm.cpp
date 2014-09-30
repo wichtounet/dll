@@ -111,7 +111,7 @@ TEST_CASE( "rbm/mnist_6", "rbm::sparsity" ) {
     dll::rbm_desc<
         28 * 28, 100,
        dll::batch_size<25>,
-       dll::sparsity
+       dll::sparsity<>
     >::rbm_t rbm;
 
     //0.01 (default) is way too low for 100 hidden units
@@ -277,7 +277,7 @@ TEST_CASE( "rbm/mnist_14", "rbm::sparsity_gaussian" ) {
         28 * 28, 200,
        dll::batch_size<25>,
        dll::momentum,
-       dll::sparsity,
+       dll::sparsity<>,
        dll::visible<dll::unit_type::GAUSSIAN>
     >::rbm_t rbm;
 

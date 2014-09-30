@@ -91,7 +91,7 @@ TEST_CASE( "crbm/mnist_5", "crbm::sparsity" ) {
     dll::conv_rbm_desc<
         28, 12, 40,
         dll::batch_size<25>,
-        dll::sparsity
+        dll::sparsity<>
     >::rbm_t rbm;
 
     //0.01 (default) is way too low for few hidden units

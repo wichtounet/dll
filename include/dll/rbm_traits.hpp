@@ -80,12 +80,22 @@ struct rbm_traits {
 
     template<typename R = RBM, enable_if_u<has_sparsity_field<typename R::desc>::value> = ::detail::dummy>
     static constexpr bool has_sparsity(){
-        return rbm_t::desc::Sparsity;
+        return rbm_t::desc::Sparsity != sparsity_method::NONE;
     }
 
     template<typename R = RBM, disable_if_u<has_sparsity_field<typename R::desc>::value> = ::detail::dummy>
     static constexpr bool has_sparsity(){
         return false;
+    }
+
+    template<typename R = RBM, enable_if_u<has_sparsity_field<typename R::desc>::value> = ::detail::dummy>
+    static constexpr enum sparsity_method sparsity_method(){
+        return rbm_t::desc::Sparsity;
+    }
+
+    template<typename R = RBM, disable_if_u<has_sparsity_field<typename R::desc>::value> = ::detail::dummy>
+    static constexpr enum sparsity_method sparsity_method(){
+        return sparsity_method::NONE;
     }
 
     template<typename R = RBM, enable_if_u<has_decay_field<typename R::desc>::value> = ::detail::dummy>

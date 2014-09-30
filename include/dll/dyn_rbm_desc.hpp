@@ -28,7 +28,7 @@ struct dyn_rbm_desc {
     static constexpr const unit_type hidden_unit = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
     static constexpr const decay_type Decay = detail::get_value<weight_decay<decay_type::NONE>, Parameters...>::value;
     static constexpr const bool Init = detail::is_present<init_weights, Parameters...>::value;
-    static constexpr const bool Sparsity = detail::is_present<sparsity, Parameters...>::value;
+    static constexpr const sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;
 
     /*! The type of the trainer to use to train the RBM */
     template <typename RBM>
@@ -44,10 +44,10 @@ struct dyn_rbm_desc {
     //Make sure only valid types are passed to the configuration list
     static_assert(
         detail::is_valid<detail::tmp_list<momentum, visible_id, hidden_id, weight_decay_id,
-              init_weights, sparsity, trainer_id>, Parameters...>::value,
+              init_weights, sparsity_id, trainer_id>, Parameters...>::value,
         "Invalid parameters type");
 
-    static_assert(!Sparsity || (Sparsity && hidden_unit == unit_type::BINARY),
+    static_assert(Sparsity == sparsity_method::NONE || hidden_unit == unit_type::BINARY,
         "Sparsity only works with binary hidden units");
 };
 

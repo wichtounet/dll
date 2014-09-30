@@ -26,7 +26,7 @@ int main(){
     typedef dll::rbm_desc<100, 100, dll::momentum, dll::batch_size<50>, dll::visible<dll::unit_type::GAUSSIAN>, dll::hidden<dll::unit_type::RELU>>::rbm_t rbm_2;
 
     //Sparsity
-    typedef dll::rbm_desc<100, 100, dll::momentum, dll::sparsity>::rbm_t rbm_3;
+    typedef dll::rbm_desc<100, 100, dll::momentum, dll::sparsity<>>::rbm_t rbm_3;
 
     //PCD-2
 
@@ -34,7 +34,7 @@ int main(){
 
     //PCD-2 and sparsity
 
-    typedef dll::rbm_desc<100, 100, dll::trainer<pcd2_trainer_t>, dll::sparsity>::rbm_t rbm_5;
+    typedef dll::rbm_desc<100, 100, dll::trainer<pcd2_trainer_t>, dll::sparsity<>>::rbm_t rbm_5;
 
     //Test them all
 

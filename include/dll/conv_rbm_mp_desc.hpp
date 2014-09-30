@@ -35,7 +35,7 @@ struct conv_rbm_mp_desc {
     static constexpr const unit_type hidden_unit = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
     static constexpr const unit_type PoolingUnit = detail::get_value<pooling_unit<unit_type::BINARY>, Parameters...>::value;
     static constexpr const decay_type Decay = detail::get_value<weight_decay<decay_type::NONE>, Parameters...>::value;
-    static constexpr const bool Sparsity = detail::is_present<sparsity, Parameters...>::value;
+    static constexpr const sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;
 
     /*! The type of the trainer to use to train the RBM */
     template <typename RBM>
@@ -59,13 +59,13 @@ struct conv_rbm_mp_desc {
     static_assert(
         detail::is_valid<detail::tmp_list<
                 momentum, batch_size_id, visible_id, hidden_id, pooling_unit_id,
-                weight_decay_id, sparsity, trainer_id, watcher_id>
+                weight_decay_id, sparsity_id, trainer_id, watcher_id>
             , Parameters...>::value,
         "Invalid parameters type");
 
     static_assert(BatchSize > 0, "Batch size must be at least 1");
 
-    static_assert(!Sparsity || (Sparsity && hidden_unit == unit_type::BINARY),
+    static_assert(Sparsity == sparsity_method::NONE || hidden_unit == unit_type::BINARY,
         "Sparsity only works with binary hidden units");
 };
 
