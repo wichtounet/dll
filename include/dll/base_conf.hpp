@@ -12,6 +12,7 @@
 
 #include "unit_type.hpp"
 #include "decay_type.hpp"
+#include "sparsity_method.hpp"
 
 namespace dll {
 
@@ -26,6 +27,7 @@ struct pooling_unit_id;
 struct weight_decay_id;
 struct trainer_id;
 struct watcher_id;
+struct sparsity_id;
 
 template<std::size_t B>
 struct batch_size : conf_elt {
@@ -62,6 +64,16 @@ struct weight_decay : conf_elt  {
     static constexpr const decay_type value = T;
 };
 
+/*!
+ * \brief Activate sparsity and select the method to use
+ */
+template<sparsity_method M = sparsity_method::TARGET>
+struct sparsity : conf_elt {
+    using type = sparsity_id;
+
+    static constexpr const sparsity_method value = M;
+};
+
 template<template<typename> class T>
 struct trainer : conf_elt  {
     using type = trainer_id;
@@ -79,7 +91,6 @@ struct watcher : conf_elt  {
 };
 
 struct momentum {};
-struct sparsity {};
 struct init_weights {};
 
 } //end of dbn namespace
