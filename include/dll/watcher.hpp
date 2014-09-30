@@ -46,8 +46,12 @@ struct default_rbm_watcher {
     }
 
     template<typename RBM = R>
-    void epoch_end(std::size_t epoch, double error, double free_energy, const RBM& /*rbm*/){
-        printf("epoch %ld - Reconstruction error average: %.5f - Free energy average: %.3f\n", epoch, error, free_energy);
+    void epoch_end(std::size_t epoch, double error, double free_energy, double sparsity, const RBM& /*rbm*/){
+        if(rbm_traits<RBM>::has_sparsity()){
+            printf("epoch %ld - Reconstruction error: %.5f - Free energy: %.3f - Sparsity: %.5f\n", epoch, error, free_energy, sparsity);
+        } else {
+            printf("epoch %ld - Reconstruction error: %.5f - Free energy: %.3f\n", epoch, error, free_energy);
+        }
     }
 
     template<typename RBM = R>

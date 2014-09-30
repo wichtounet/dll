@@ -26,6 +26,11 @@
 #include "decay_type.hpp"
 #include "rbm_traits.hpp"
 
+//TODO The training should be improved
+//q_batch should be moved again into the trainer
+//A training_context should be passed around to store information
+//Sparsity should always be computed during training and displayed
+
 namespace dll {
 
 //Sign for scalars
@@ -84,7 +89,7 @@ void update_weights_normal(RBM& rbm, Trainer& t){
         auto p = rbm.sparsity_target;
         auto cost = rbm.sparsity_cost;
 
-        t.q_t = decay_rate * t.q_t + (1.0 - decay_rate) * t.q_batch;
+        t.q_t = decay_rate * t.q_t + (1.0 - decay_rate) * rbm.q_batch;
 
         h_penalty = cost * (t.q_t - p);
     }
@@ -133,7 +138,7 @@ struct base_cd_trainer : base_trainer<RBM> {
 
     //{{{ Sparsity
 
-    weight q_batch;
+    //weight q_batch;
     weight q_t;
 
     //}}} Sparsity end
@@ -179,7 +184,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
 
     //{{{ Sparsity
 
-    weight q_batch;
+    //weight q_batch;
     weight q_t;
 
     //}}} Sparsity end
@@ -237,7 +242,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
 
     //{{{ Sparsity
 
-    weight q_batch;
+    //weight q_batch;
     weight q_t;
 
     //}}} Sparsity end
@@ -274,7 +279,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
             auto p = rbm.sparsity_target;
             auto cost = rbm.sparsity_cost;
 
-            q_t = decay_rate * q_t + (1.0 - decay_rate) * q_batch;
+            q_t = decay_rate * q_t + (1.0 - decay_rate) * rbm.q_batch;
 
             h_penalty = cost * (q_t - p);
         }
@@ -340,7 +345,7 @@ typename RBM::weight train_normal(const dll::batch<T>& batch, RBM& rbm, Trainer&
 
     //Reset mean activation probability if necessary
     if(rbm_traits<rbm_t>::has_sparsity()){
-        t.q_batch = 0.0;
+        rbm.q_batch = 0.0;
     }
 
     auto it = batch.begin();
@@ -380,7 +385,7 @@ typename RBM::weight train_normal(const dll::batch<T>& batch, RBM& rbm, Trainer&
         t.c_grad += rbm.v1 - rbm.v2_a;
 
         if(rbm_traits<rbm_t>::has_sparsity()){
-            t.q_batch += sum(rbm.h2_a);
+            rbm.q_batch += sum(rbm.h2_a);
         }
 
         ++it;
@@ -400,7 +405,7 @@ typename RBM::weight train_normal(const dll::batch<T>& batch, RBM& rbm, Trainer&
 
     //Compute the mean activation probabilities
     if(rbm_traits<rbm_t>::has_sparsity()){
-        t.q_batch /= n_samples * num_hidden(rbm);
+        rbm.q_batch /= n_samples * num_hidden(rbm);
     }
 
     //Update the weights and biases based on the gradients
@@ -500,7 +505,7 @@ private:
 
     etl::fast_matrix<weight, NV, NV> c_grad_org;
 
-    using base_cd_trainer<RBM>::q_batch;
+    //using base_cd_trainer<RBM>::q_batch;
 
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_pos;
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_neg;
@@ -527,7 +532,7 @@ public:
 
         //Reset mean activation probability if necessary
         if(rbm_traits<rbm_t>::has_sparsity()){
-            q_batch = 0.0;
+            rbm.q_batch = 0.0;
         }
 
         for(auto& items : batch){
@@ -562,7 +567,7 @@ public:
             c_grad_org += rbm.v1 - rbm.v2_a;
 
             if(rbm_traits<rbm_t>::has_sparsity()){
-                q_batch += sum(sum(rbm.h2_a));
+                rbm.q_batch += sum(sum(rbm.h2_a));
             }
         }
 
@@ -579,7 +584,7 @@ public:
 
         //Compute the mean activation probabilities
         if(rbm_traits<rbm_t>::has_sparsity()){
-            q_batch /= n_samples * K * NH * NH;
+            rbm.q_batch /= n_samples * K * NH * NH;
         }
 
         //Update the weights and biases based on the gradients
@@ -690,7 +695,7 @@ private:
 
     etl::fast_matrix<weight, NV, NV> c_grad_org;
 
-    using base_cd_trainer<RBM>::q_batch;
+    //using base_cd_trainer<RBM>::q_batch;
 
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_pos;
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_neg;
@@ -724,7 +729,7 @@ public:
 
         //Reset mean activation probability if necessary
         if(rbm_traits<rbm_t>::has_sparsity()){
-            q_batch = 0.0;
+            rbm.q_batch = 0.0;
         }
 
         auto it = batch.begin();
@@ -771,7 +776,7 @@ public:
             c_grad_org += rbm.v1 - rbm.v2_a;
 
             if(rbm_traits<rbm_t>::has_sparsity()){
-                q_batch += sum(sum(rbm.h2_a));
+                rbm.q_batch += sum(sum(rbm.h2_a));
             }
 
             ++it;
@@ -793,7 +798,7 @@ public:
 
         //Compute the mean activation probabilities
         if(rbm_traits<rbm_t>::has_sparsity()){
-            q_batch /= n_samples * K * NH * NH;
+            rbm.q_batch /= n_samples * K * NH * NH;
         }
 
         //Update the weights and biases based on the gradients

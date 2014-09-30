@@ -87,6 +87,7 @@ struct rbm_trainer {
         for(size_t epoch= 0; epoch < max_epochs; ++epoch){
             typename rbm_t::weight error = 0.0;
             typename rbm_t::weight free_energy = 0.0;
+            typename rbm_t::weight sparsity = 0.0;
 
             auto it = first;
             auto end = last;
@@ -114,10 +115,13 @@ struct rbm_trainer {
                         free_energy += rbm.free_energy(v);
                     }
                 }
+
+                sparsity += rbm.q_batch;
             }
 
             last_error = error / batches;
             free_energy /= samples;
+            sparsity /= batches;
 
             //After some time increase the momentum
             if(rbm_traits<rbm_t>::has_momentum() && epoch == rbm.final_momentum_epoch){
@@ -125,7 +129,7 @@ struct rbm_trainer {
             }
 
             if(EnableWatcher){
-                watcher.epoch_end(epoch, last_error, free_energy, rbm);
+                watcher.epoch_end(epoch, last_error, free_energy, sparsity, rbm);
             }
         }
 

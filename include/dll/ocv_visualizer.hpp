@@ -175,7 +175,7 @@ struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
             filter_shape.height * tile_shape.height + (tile_shape.height + 1) * 1 + 2 * padding)
     {}
 
-    void epoch_end(std::size_t epoch, double error, double free_energy, const RBM& rbm){
+    void epoch_end(std::size_t epoch, double error, double free_energy, double /*sparsity*/, const RBM& rbm){
         printf("epoch %ld - Reconstruction error average: %.5f - Free energy average: %.3f\n", epoch, error, free_energy);
 
         buffer_image = cv::Scalar(255);
@@ -245,7 +245,7 @@ struct opencv_rbm_visualizer<RBM, C, std::enable_if_t<rbm_traits<RBM>::is_convol
             filter_shape.height * tile_shape.height + (tile_shape.height + 1) * 1 + 2 * padding)
     {}
 
-    void epoch_end(std::size_t epoch, double error, double free_energy, const RBM& rbm){
+    void epoch_end(std::size_t epoch, double error, double free_energy, double /*sparsity*/, const RBM& rbm){
         printf("epoch %ld - Reconstruction error average: %.5f - Free energy average: %.3f\n", epoch, error, free_energy);
 
         buffer_image = cv::Scalar(255);
@@ -363,7 +363,7 @@ struct opencv_dbn_visualizer {
     }
 
     template<typename RBM>
-    void epoch_end(std::size_t epoch, double error, double free_energy, const RBM& rbm){
+    void epoch_end(std::size_t epoch, double error, double free_energy, double /*sparsity*/, const RBM& rbm){
         using rbm_t = RBM;
 
         static constexpr const detail::shape filter_shape{
@@ -551,7 +551,7 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
     }
 
     template<typename RBM>
-    void epoch_end(std::size_t epoch, double error, double free_energy, const RBM& rbm){
+    void epoch_end(std::size_t epoch, double error, double free_energy, double /*sparsity*/, const RBM& rbm){
         using rbm_t = RBM;
 
         static constexpr const detail::shape filter_shape{rbm_t::NW, rbm_t::NW};
