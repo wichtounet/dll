@@ -108,11 +108,15 @@ TEST_CASE( "rbm/mnist_5", "rbm::decay_l2" ) {
 }
 
 TEST_CASE( "rbm/mnist_60", "rbm::global_sparsity" ) {
-    dll::rbm_desc<
+    using rbm_type = dll::rbm_desc<
         28 * 28, 100,
        dll::batch_size<25>,
-       dll::sparsity<dll::sparsity_method::GLOBAL_TARGET>
-    >::rbm_t rbm;
+       dll::sparsity<>
+    >::rbm_t;
+
+    rbm_type rbm;
+
+    REQUIRE(dll::rbm_traits<rbm_type>::sparsity_method() == dll::sparsity_method::GLOBAL_TARGET);
 
     //0.01 (default) is way too low for 100 hidden units
     rbm.sparsity_target = 0.1;
