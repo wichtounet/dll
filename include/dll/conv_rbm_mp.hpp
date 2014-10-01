@@ -9,6 +9,7 @@
 #define DLL_CONV_RBM_MP_HPP
 
 #include "dll/conv_rbm_mp.inl"
+#include "dll/rbm_training_context.hpp"
 #include "dll/conv_rbm_mp_desc.hpp"
 #include "dll/rbm_trainer.hpp"
 

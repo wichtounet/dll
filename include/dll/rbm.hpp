@@ -9,6 +9,7 @@
 #define DLL_RBM_HPP
 
 #include "dll/rbm.inl"
+#include "dll/rbm_training_context.hpp"
 #include "dll/rbm_desc.hpp"
 #include "dll/rbm_trainer.hpp"
 
