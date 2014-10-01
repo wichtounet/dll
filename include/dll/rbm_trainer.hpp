@@ -107,7 +107,7 @@ struct rbm_trainer {
                 ++batches;
 
                 auto batch = make_batch(start, it);
-                context.reconstruction_error += trainer->train_batch(batch, context);
+                trainer->train_batch(batch, context);
 
                 if(EnableWatcher){
                     for(auto& v : batch){

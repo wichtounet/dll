@@ -323,7 +323,7 @@ auto reshape_1nh(RBM&, C& container){
 }
 
 template<bool Persistent, std::size_t K, typename T, typename RBM, typename Trainer, typename M>
-typename RBM::weight train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM& rbm, Trainer& t, M& t1, M& t2){
+void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM& rbm, Trainer& t, M& t1, M& t2){
     dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<RBM>::batch_size()), "Invalid size");
     dll_assert(batch[0].size() == num_visible(rbm), "The size of the training sample must match visible units");
 
@@ -404,8 +404,8 @@ typename RBM::weight train_normal(const dll::batch<T>& batch, rbm_training_conte
     //Update the weights and biases based on the gradients
     t.update_weights(rbm);
 
-    //Return the reconstruction error
-    return mean(t.c_grad * t.c_grad);
+    //Compute the reconstruction error
+    context.reconstruction_error = mean(t.c_grad * t.c_grad);
 }
 
 /*!
@@ -430,11 +430,11 @@ struct cd_trainer : base_cd_trainer<RBM> {
     }
 
     template<typename T>
-    weight train_batch(const dll::batch<T>& batch, rbm_training_context& context){
+    void train_batch(const dll::batch<T>& batch, rbm_training_context& context){
         static etl::fast_matrix<weight, rbm_t::num_visible, rbm_t::num_hidden> t1;
         static etl::fast_matrix<weight, rbm_t::num_visible, rbm_t::num_hidden> t2;
 
-        return train_normal<false, N>(batch, context, rbm, *this, t1, t2);
+        train_normal<false, N>(batch, context, rbm, *this, t1, t2);
     }
 
     static std::string name(){
@@ -464,11 +464,11 @@ struct cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : bas
     }
 
     template<typename T>
-    weight train_batch(const dll::batch<T>& batch, rbm_training_context& context){
+    void train_batch(const dll::batch<T>& batch, rbm_training_context& context){
         static etl::dyn_matrix<weight> t1(rbm.num_visible, rbm.num_hidden);
         static etl::dyn_matrix<weight> t2(rbm.num_visible, rbm.num_hidden);
 
-        return train_normal<false, N>(batch, context, rbm, *this, t1, t2);
+        train_normal<false, N>(batch, context, rbm, *this, t1, t2);
     }
 
     static std::string name(){
@@ -511,7 +511,7 @@ public:
     }
 
     template<typename T>
-    weight train_batch(const dll::batch<T>& batch, rbm_training_context& context){
+    void train_batch(const dll::batch<T>& batch, rbm_training_context& context){
         dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<rbm_t>::batch_size()), "Invalid size");
         dll_assert(batch[0].size() == rbm_t::NV * rbm_t::NV, "The size of the training sample must match visible units");
 
@@ -580,8 +580,8 @@ public:
         //Update the weights and biases based on the gradients
         this->update_weights(rbm);
 
-        //Return the reconstruction error
-        return mean(c_grad_org * c_grad_org);
+        //Compute the reconstruction error
+        context.reconstruction_error = mean(c_grad_org * c_grad_org);
     }
 
     static std::string name(){
@@ -613,11 +613,11 @@ struct persistent_cd_trainer : base_cd_trainer<RBM> {
     }
 
     template<typename T>
-    weight train_batch(const dll::batch<T>& batch, rbm_training_context& context){
+    void train_batch(const dll::batch<T>& batch, rbm_training_context& context){
         static etl::fast_matrix<weight, rbm_t::num_visible, rbm_t::num_hidden> t1;
         static etl::fast_matrix<weight, rbm_t::num_visible, rbm_t::num_hidden> t2;
 
-        return train_normal<true, K>(batch, context, rbm, *this, t1, t2);
+        train_normal<true, K>(batch, context, rbm, *this, t1, t2);
     }
 
     static std::string name(){
@@ -650,11 +650,11 @@ struct persistent_cd_trainer<K, RBM, std::enable_if_t<rbm_traits<RBM>::is_dynami
     }
 
     template<typename T>
-    weight train_batch(const dll::batch<T>& batch, rbm_training_context& context){
+    void train_batch(const dll::batch<T>& batch, rbm_training_context& context){
         static etl::dyn_matrix<weight> t1(rbm.num_visible, rbm.num_hidden);
         static etl::dyn_matrix<weight> t2(rbm.num_visible, rbm.num_hidden);
 
-        return train_normal<true, K>(batch, context, rbm, *this, t1, t2);
+        train_normal<true, K>(batch, context, rbm, *this, t1, t2);
     }
 
     static std::string name(){
@@ -705,7 +705,7 @@ public:
     }
 
     template<typename T>
-    weight train_batch(const dll::batch<T>& batch, rbm_training_context& context){
+    void train_batch(const dll::batch<T>& batch, rbm_training_context& context){
         dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<rbm_t>::batch_size()), "Invalid size");
         dll_assert(batch[0].size() == NV * NV, "The size of the training sample must match visible units");
 
@@ -791,8 +791,8 @@ public:
         //Update the weights and biases based on the gradients
         this->update_weights(rbm);
 
-        //Return the reconstruction error
-        return mean(c_grad_org * c_grad_org);
+        //Compute the reconstruction error
+        context.reconstruction_error = mean(c_grad_org * c_grad_org);
     }
 
     static std::string name(){
