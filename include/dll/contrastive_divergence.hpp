@@ -26,11 +26,6 @@
 #include "decay_type.hpp"
 #include "rbm_traits.hpp"
 
-//TODO The training should be improved
-//q_batch should be moved again into the trainer
-//A training_context should be passed around to store information
-//Sparsity should always be computed during training and displayed
-
 namespace dll {
 
 //Sign for scalars
@@ -89,7 +84,7 @@ void update_weights_normal(RBM& rbm, Trainer& t){
         auto p = rbm.sparsity_target;
         auto cost = rbm.sparsity_cost;
 
-        t.q_t = decay_rate * t.q_t + (1.0 - decay_rate) * rbm.q_batch;
+        t.q_t = decay_rate * t.q_t + (1.0 - decay_rate) * t.q_batch;
 
         h_penalty = cost * (t.q_t - p);
     }
@@ -138,7 +133,7 @@ struct base_cd_trainer : base_trainer<RBM> {
 
     //{{{ Sparsity
 
-    //weight q_batch;
+    weight q_batch;
     weight q_t;
 
     //}}} Sparsity end
@@ -184,7 +179,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
 
     //{{{ Sparsity
 
-    //weight q_batch;
+    weight q_batch;
     weight q_t;
 
     //}}} Sparsity end
@@ -242,7 +237,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
 
     //{{{ Sparsity
 
-    //weight q_batch;
+    weight q_batch;
     weight q_t;
 
     //}}} Sparsity end
@@ -279,7 +274,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
             auto p = rbm.sparsity_target;
             auto cost = rbm.sparsity_cost;
 
-            q_t = decay_rate * q_t + (1.0 - decay_rate) * rbm.q_batch;
+            q_t = decay_rate * q_t + (1.0 - decay_rate) * q_batch;
 
             h_penalty = cost * (q_t - p);
         }
@@ -328,7 +323,7 @@ auto reshape_1nh(RBM&, C& container){
 }
 
 template<bool Persistent, std::size_t K, typename T, typename RBM, typename Trainer, typename M>
-typename RBM::weight train_normal(const dll::batch<T>& batch, RBM& rbm, Trainer& t, M& t1, M& t2){
+typename RBM::weight train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM& rbm, Trainer& t, M& t1, M& t2){
     dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<RBM>::batch_size()), "Invalid size");
     dll_assert(batch[0].size() == num_visible(rbm), "The size of the training sample must match visible units");
 
@@ -343,10 +338,8 @@ typename RBM::weight train_normal(const dll::batch<T>& batch, RBM& rbm, Trainer&
     t.b_grad = 0.0;
     t.c_grad = 0.0;
 
-    //Reset mean activation probability if necessary
-    if(rbm_traits<rbm_t>::has_sparsity()){
-        rbm.q_batch = 0.0;
-    }
+    //Reset mean activation probability
+    t.q_batch = 0.0;
 
     auto it = batch.begin();
     auto end = batch.end();
@@ -384,9 +377,8 @@ typename RBM::weight train_normal(const dll::batch<T>& batch, RBM& rbm, Trainer&
         t.b_grad += rbm.h1_a - rbm.h2_a;
         t.c_grad += rbm.v1 - rbm.v2_a;
 
-        if(rbm_traits<rbm_t>::has_sparsity()){
-            rbm.q_batch += sum(rbm.h2_a);
-        }
+        //Get the mean activation probabilities
+        t.q_batch += sum(rbm.h2_a);
 
         ++it;
         ++i;
@@ -404,9 +396,10 @@ typename RBM::weight train_normal(const dll::batch<T>& batch, RBM& rbm, Trainer&
     nan_check_deep_3(t.w_grad, t.b_grad, t.c_grad);
 
     //Compute the mean activation probabilities
-    if(rbm_traits<rbm_t>::has_sparsity()){
-        rbm.q_batch /= n_samples * num_hidden(rbm);
-    }
+    t.q_batch /= n_samples * num_hidden(rbm);
+
+    //Accumulate the sparsity
+    context.sparsity += t.q_batch;
 
     //Update the weights and biases based on the gradients
     t.update_weights(rbm);
@@ -437,11 +430,11 @@ struct cd_trainer : base_cd_trainer<RBM> {
     }
 
     template<typename T>
-    weight train_batch(const dll::batch<T>& batch){
+    weight train_batch(const dll::batch<T>& batch, rbm_training_context& context){
         static etl::fast_matrix<weight, rbm_t::num_visible, rbm_t::num_hidden> t1;
         static etl::fast_matrix<weight, rbm_t::num_visible, rbm_t::num_hidden> t2;
 
-        return train_normal<false, N>(batch, rbm, *this, t1, t2);
+        return train_normal<false, N>(batch, context, rbm, *this, t1, t2);
     }
 
     static std::string name(){
@@ -471,11 +464,11 @@ struct cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : bas
     }
 
     template<typename T>
-    weight train_batch(const dll::batch<T>& batch){
+    weight train_batch(const dll::batch<T>& batch, rbm_training_context& context){
         static etl::dyn_matrix<weight> t1(rbm.num_visible, rbm.num_hidden);
         static etl::dyn_matrix<weight> t2(rbm.num_visible, rbm.num_hidden);
 
-        return train_normal<false, N>(batch, rbm, *this, t1, t2);
+        return train_normal<false, N>(batch, context, rbm, *this, t1, t2);
     }
 
     static std::string name(){
@@ -505,7 +498,7 @@ private:
 
     etl::fast_matrix<weight, NV, NV> c_grad_org;
 
-    //using base_cd_trainer<RBM>::q_batch;
+    using base_cd_trainer<RBM>::q_batch;
 
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_pos;
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_neg;
@@ -518,7 +511,7 @@ public:
     }
 
     template<typename T>
-    weight train_batch(const dll::batch<T>& batch){
+    weight train_batch(const dll::batch<T>& batch, rbm_training_context& context){
         dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<rbm_t>::batch_size()), "Invalid size");
         dll_assert(batch[0].size() == rbm_t::NV * rbm_t::NV, "The size of the training sample must match visible units");
 
@@ -530,10 +523,8 @@ public:
         b_grad = 0.0;
         c_grad_org = 0.0;
 
-        //Reset mean activation probability if necessary
-        if(rbm_traits<rbm_t>::has_sparsity()){
-            rbm.q_batch = 0.0;
-        }
+        //Reset mean activation probability
+        q_batch = 0.0;
 
         for(auto& items : batch){
             rbm.v1 = items;
@@ -566,9 +557,7 @@ public:
 
             c_grad_org += rbm.v1 - rbm.v2_a;
 
-            if(rbm_traits<rbm_t>::has_sparsity()){
-                rbm.q_batch += sum(sum(rbm.h2_a));
-            }
+            q_batch += sum(sum(rbm.h2_a));
         }
 
         //Keep only the mean of the gradients
@@ -583,9 +572,10 @@ public:
         c_grad = mean(c_grad_org);
 
         //Compute the mean activation probabilities
-        if(rbm_traits<rbm_t>::has_sparsity()){
-            rbm.q_batch /= n_samples * K * NH * NH;
-        }
+        q_batch /= n_samples * K * NH * NH;
+
+        //Accumulate the sparsity
+        context.sparsity += q_batch;
 
         //Update the weights and biases based on the gradients
         this->update_weights(rbm);
@@ -623,11 +613,11 @@ struct persistent_cd_trainer : base_cd_trainer<RBM> {
     }
 
     template<typename T>
-    weight train_batch(const dll::batch<T>& batch){
+    weight train_batch(const dll::batch<T>& batch, rbm_training_context& context){
         static etl::fast_matrix<weight, rbm_t::num_visible, rbm_t::num_hidden> t1;
         static etl::fast_matrix<weight, rbm_t::num_visible, rbm_t::num_hidden> t2;
 
-        return train_normal<true, K>(batch, rbm, *this, t1, t2);
+        return train_normal<true, K>(batch, context, rbm, *this, t1, t2);
     }
 
     static std::string name(){
@@ -660,11 +650,11 @@ struct persistent_cd_trainer<K, RBM, std::enable_if_t<rbm_traits<RBM>::is_dynami
     }
 
     template<typename T>
-    weight train_batch(const dll::batch<T>& batch){
+    weight train_batch(const dll::batch<T>& batch, rbm_training_context& context){
         static etl::dyn_matrix<weight> t1(rbm.num_visible, rbm.num_hidden);
         static etl::dyn_matrix<weight> t2(rbm.num_visible, rbm.num_hidden);
 
-        return train_normal<true, K>(batch, rbm, *this, t1, t2);
+        return train_normal<true, K>(batch, context, rbm, *this, t1, t2);
     }
 
     static std::string name(){
@@ -695,7 +685,7 @@ private:
 
     etl::fast_matrix<weight, NV, NV> c_grad_org;
 
-    //using base_cd_trainer<RBM>::q_batch;
+    using base_cd_trainer<RBM>::q_batch;
 
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_pos;
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_neg;
@@ -715,7 +705,7 @@ public:
     }
 
     template<typename T>
-    weight train_batch(const dll::batch<T>& batch){
+    weight train_batch(const dll::batch<T>& batch, rbm_training_context& context){
         dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<rbm_t>::batch_size()), "Invalid size");
         dll_assert(batch[0].size() == NV * NV, "The size of the training sample must match visible units");
 
@@ -728,9 +718,7 @@ public:
         c_grad_org = 0.0;
 
         //Reset mean activation probability if necessary
-        if(rbm_traits<rbm_t>::has_sparsity()){
-            rbm.q_batch = 0.0;
-        }
+        q_batch = 0.0;
 
         auto it = batch.begin();
         auto end = batch.end();
@@ -775,9 +763,7 @@ public:
 
             c_grad_org += rbm.v1 - rbm.v2_a;
 
-            if(rbm_traits<rbm_t>::has_sparsity()){
-                rbm.q_batch += sum(sum(rbm.h2_a));
-            }
+            q_batch += sum(sum(rbm.h2_a));
 
             ++it;
             ++i;
@@ -797,9 +783,10 @@ public:
         c_grad = mean(c_grad_org);
 
         //Compute the mean activation probabilities
-        if(rbm_traits<rbm_t>::has_sparsity()){
-            rbm.q_batch /= n_samples * K * NH * NH;
-        }
+        q_batch /= n_samples * K * NH * NH;
+
+        //Accumulate the sparsity
+        context.sparsity += q_batch;
 
         //Update the weights and biases based on the gradients
         this->update_weights(rbm);

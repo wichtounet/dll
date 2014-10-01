@@ -107,15 +107,13 @@ struct rbm_trainer {
                 ++batches;
 
                 auto batch = make_batch(start, it);
-                context.reconstruction_error += trainer->train_batch(batch);
+                context.reconstruction_error += trainer->train_batch(batch, context);
 
                 if(EnableWatcher){
                     for(auto& v : batch){
                         context.free_energy += rbm.free_energy(v);
                     }
                 }
-
-                context.sparsity += rbm.q_batch;
             }
 
             //Average all the gathered information
