@@ -39,9 +39,6 @@ public:
     weight decay_rate = 0.99;           ///< The sparsity decay rate
     weight sparsity_cost = 1.0;         ///< The sparsity cost (or sparsity multiplier)
 
-    //TODO This is temporary
-    weight q_batch = 0.0;
-
     //No copying
     rbm_base(const rbm_base& rbm) = delete;
     rbm_base& operator=(const rbm_base& rbm) = delete;
