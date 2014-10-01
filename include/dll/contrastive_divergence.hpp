@@ -326,6 +326,27 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
         base_trainer<RBM>::update(rbm.b, b_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), h_penalty);
         base_trainer<RBM>::update(rbm.c, c_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), 0.0);
 
+        //Local sparsity method
+        if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
+            auto decay_rate = rbm.decay_rate;
+            auto p = rbm.sparsity_target;
+            auto cost = rbm.sparsity_cost;
+
+            for(std::size_t k = 0; k < K; ++k){
+                //TODO Ideally, the loop should be removed and the
+                //update be done diretly on the base matrix
+
+                q_local_t(k) = decay_rate * q_local_t(k) + (1.0 - decay_rate) * q_local_batch(k);
+
+                q_local_penalty(k) = cost * (q_local_t(k) - p);
+
+                //????
+                auto h_k_penalty = sum(q_local_penalty(k));
+                rbm.w(k) -= h_k_penalty;
+                rbm.b(k) -= h_k_penalty;
+            }
+        }
+
         //Check for NaN
         nan_check_deep_deep(rbm.w);
         nan_check_deep(rbm.b);
