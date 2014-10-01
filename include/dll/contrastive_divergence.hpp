@@ -78,15 +78,15 @@ void update_weights_normal(RBM& rbm, Trainer& t){
     //Penalty to be applied to weights and hidden biases
     typename rbm_t::weight h_penalty = 0.0;
 
-    //Update sparsity
-    if(rbm_traits<rbm_t>::has_sparsity()){
+    //Global sparsity method
+    if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET){
         auto decay_rate = rbm.decay_rate;
         auto p = rbm.sparsity_target;
         auto cost = rbm.sparsity_cost;
 
-        t.q_t = decay_rate * t.q_t + (1.0 - decay_rate) * t.q_batch;
+        t.q_global_t = decay_rate * t.q_global_t + (1.0 - decay_rate) * t.q_global_batch;
 
-        h_penalty = cost * (t.q_t - p);
+        h_penalty = cost * (t.q_global_t - p);
     }
 
     //The final gradients;
@@ -133,18 +133,18 @@ struct base_cd_trainer : base_trainer<RBM> {
 
     //{{{ Sparsity
 
-    weight q_batch;
-    weight q_t;
+    weight q_global_batch;
+    weight q_global_t;
 
     //}}} Sparsity end
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = ::detail::dummy>
-    base_cd_trainer(rbm_t&) : q_t(0.0) {
+    base_cd_trainer(rbm_t&) : q_global_t(0.0) {
         static_assert(!rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = ::detail::dummy>
-    base_cd_trainer(rbm_t&) : w_inc(0.0), b_inc(0.0), c_inc(0.0), q_t(0.0) {
+    base_cd_trainer(rbm_t&) : w_inc(0.0), b_inc(0.0), c_inc(0.0), q_global_t(0.0) {
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
@@ -179,8 +179,8 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
 
     //{{{ Sparsity
 
-    weight q_batch;
-    weight q_t;
+    weight q_global_batch;
+    weight q_global_t;
 
     //}}} Sparsity end
 
@@ -188,7 +188,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
     base_cd_trainer(rbm_t& rbm) :
             w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
             w_inc(0,0), b_inc(0), c_inc(0),
-            q_t(0.0) {
+            q_global_t(0.0) {
         static_assert(!rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
@@ -196,7 +196,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
     base_cd_trainer(rbm_t& rbm) :
             w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
             w_inc(rbm.num_visible, rbm.num_hidden, 0.0), b_inc(rbm.num_hidden, 0.0), c_inc(rbm.num_visible, 0.0),
-            q_t(0.0) {
+            q_global_t(0.0) {
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
@@ -237,18 +237,18 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
 
     //{{{ Sparsity
 
-    weight q_batch;
-    weight q_t;
+    weight q_global_batch;
+    weight q_global_t;
 
     //}}} Sparsity end
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = ::detail::dummy>
-    base_cd_trainer(rbm_t&) : q_t(0.0) {
+    base_cd_trainer(rbm_t&) : q_global_t(0.0) {
         static_assert(!rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = ::detail::dummy>
-    base_cd_trainer(rbm_t&) : w_inc(0.0), b_inc(0.0), c_inc(0.0), q_t(0.0) {
+    base_cd_trainer(rbm_t&) : w_inc(0.0), b_inc(0.0), c_inc(0.0), q_global_t(0.0) {
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
@@ -269,14 +269,14 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
         weight h_penalty = 0.0;
 
         //Update sparsity
-        if(rbm_traits<rbm_t>::has_sparsity()){
+        if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET){
             auto decay_rate = rbm.decay_rate;
             auto p = rbm.sparsity_target;
             auto cost = rbm.sparsity_cost;
 
-            q_t = decay_rate * q_t + (1.0 - decay_rate) * q_batch;
+            q_global_t = decay_rate * q_global_t + (1.0 - decay_rate) * q_global_batch;
 
-            h_penalty = cost * (q_t - p);
+            h_penalty = cost * (q_global_t - p);
         }
 
         //The final gradients;
@@ -339,7 +339,7 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
     t.c_grad = 0.0;
 
     //Reset mean activation probability
-    t.q_batch = 0.0;
+    t.q_global_batch = 0.0;
 
     auto it = batch.begin();
     auto end = batch.end();
@@ -378,7 +378,7 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
         t.c_grad += rbm.v1 - rbm.v2_a;
 
         //Get the mean activation probabilities
-        t.q_batch += sum(rbm.h2_a);
+        t.q_global_batch += sum(rbm.h2_a);
 
         ++it;
         ++i;
@@ -396,10 +396,10 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
     nan_check_deep_3(t.w_grad, t.b_grad, t.c_grad);
 
     //Compute the mean activation probabilities
-    t.q_batch /= n_samples * num_hidden(rbm);
+    t.q_global_batch /= n_samples * num_hidden(rbm);
 
     //Accumulate the sparsity
-    context.sparsity += t.q_batch;
+    context.sparsity += t.q_global_batch;
 
     //Update the weights and biases based on the gradients
     t.update_weights(rbm);
@@ -498,7 +498,7 @@ private:
 
     etl::fast_matrix<weight, NV, NV> c_grad_org;
 
-    using base_cd_trainer<RBM>::q_batch;
+    using base_cd_trainer<RBM>::q_global_batch;
 
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_pos;
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_neg;
@@ -524,7 +524,7 @@ public:
         c_grad_org = 0.0;
 
         //Reset mean activation probability
-        q_batch = 0.0;
+        q_global_batch = 0.0;
 
         for(auto& items : batch){
             rbm.v1 = items;
@@ -557,7 +557,7 @@ public:
 
             c_grad_org += rbm.v1 - rbm.v2_a;
 
-            q_batch += sum(sum(rbm.h2_a));
+            q_global_batch += sum(sum(rbm.h2_a));
         }
 
         //Keep only the mean of the gradients
@@ -572,10 +572,10 @@ public:
         c_grad = mean(c_grad_org);
 
         //Compute the mean activation probabilities
-        q_batch /= n_samples * K * NH * NH;
+        q_global_batch /= n_samples * K * NH * NH;
 
         //Accumulate the sparsity
-        context.sparsity += q_batch;
+        context.sparsity += q_global_batch;
 
         //Update the weights and biases based on the gradients
         this->update_weights(rbm);
@@ -685,7 +685,7 @@ private:
 
     etl::fast_matrix<weight, NV, NV> c_grad_org;
 
-    using base_cd_trainer<RBM>::q_batch;
+    using base_cd_trainer<RBM>::q_global_batch;
 
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_pos;
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_neg;
@@ -718,7 +718,7 @@ public:
         c_grad_org = 0.0;
 
         //Reset mean activation probability if necessary
-        q_batch = 0.0;
+        q_global_batch = 0.0;
 
         auto it = batch.begin();
         auto end = batch.end();
@@ -763,7 +763,7 @@ public:
 
             c_grad_org += rbm.v1 - rbm.v2_a;
 
-            q_batch += sum(sum(rbm.h2_a));
+            q_global_batch += sum(sum(rbm.h2_a));
 
             ++it;
             ++i;
@@ -783,10 +783,10 @@ public:
         c_grad = mean(c_grad_org);
 
         //Compute the mean activation probabilities
-        q_batch /= n_samples * K * NH * NH;
+        q_global_batch /= n_samples * K * NH * NH;
 
         //Accumulate the sparsity
-        context.sparsity += q_batch;
+        context.sparsity += q_global_batch;
 
         //Update the weights and biases based on the gradients
         this->update_weights(rbm);
