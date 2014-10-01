@@ -111,12 +111,11 @@ void update_weights_normal(RBM& rbm, Trainer& t){
  */
 template<typename RBM, typename Enable = void>
 struct base_cd_trainer : base_trainer<RBM> {
-    typedef RBM rbm_t;
+    using rbm_t = RBM;
+    using weight = typename rbm_t::weight;
 
     static constexpr const auto num_hidden = rbm_t::num_hidden;
     static constexpr const auto num_visible = rbm_t::num_visible;
-
-    typedef typename rbm_t::weight weight;
 
     //Gradients
     etl::fast_matrix<weight, num_visible, num_hidden> w_grad;
@@ -135,6 +134,9 @@ struct base_cd_trainer : base_trainer<RBM> {
 
     weight q_global_batch;
     weight q_global_t;
+
+    etl::fast_vector<weight, num_hidden> q_local_batch;
+    etl::fast_vector<weight, num_hidden> q_local_t;
 
     //}}} Sparsity end
 
@@ -182,13 +184,16 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
     weight q_global_batch;
     weight q_global_t;
 
+    etl::dyn_vector<weight> q_local_batch;
+    etl::dyn_vector<weight> q_local_t;
+
     //}}} Sparsity end
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = ::detail::dummy>
     base_cd_trainer(rbm_t& rbm) :
             w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
             w_inc(0,0), b_inc(0), c_inc(0),
-            q_global_t(0.0) {
+            q_global_t(0.0), q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden) {
         static_assert(!rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
@@ -196,7 +201,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
     base_cd_trainer(rbm_t& rbm) :
             w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
             w_inc(rbm.num_visible, rbm.num_hidden, 0.0), b_inc(rbm.num_hidden, 0.0), c_inc(rbm.num_visible, 0.0),
-            q_global_t(0.0) {
+            q_global_t(0.0), q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden) {
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
@@ -239,6 +244,9 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
 
     weight q_global_batch;
     weight q_global_t;
+
+    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> q_local_batch;
+    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> q_local_t;
 
     //}}} Sparsity end
 
@@ -341,6 +349,10 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
     //Reset mean activation probability
     t.q_global_batch = 0.0;
 
+    if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
+        t.q_local_batch = 0.0;
+    }
+
     auto it = batch.begin();
     auto end = batch.end();
 
@@ -380,6 +392,10 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
         //Get the mean activation probabilities
         t.q_global_batch += sum(rbm.h2_a);
 
+        if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
+            t.q_local_batch += rbm.h2_a;
+        }
+
         ++it;
         ++i;
     }
@@ -397,6 +413,10 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
 
     //Compute the mean activation probabilities
     t.q_global_batch /= n_samples * num_hidden(rbm);
+
+    if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
+        t.q_local_batch /= n_samples;
+    }
 
     //Accumulate the sparsity
     context.sparsity += t.q_global_batch;
@@ -499,6 +519,7 @@ private:
     etl::fast_matrix<weight, NV, NV> c_grad_org;
 
     using base_cd_trainer<RBM>::q_global_batch;
+    using base_cd_trainer<RBM>::q_local_batch;
 
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_pos;
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_neg;
@@ -525,6 +546,10 @@ public:
 
         //Reset mean activation probability
         q_global_batch = 0.0;
+
+        if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
+            q_local_batch = 0.0;
+        }
 
         for(auto& items : batch){
             rbm.v1 = items;
@@ -558,6 +583,10 @@ public:
             c_grad_org += rbm.v1 - rbm.v2_a;
 
             q_global_batch += sum(sum(rbm.h2_a));
+
+            if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
+                q_local_batch += rbm.h2_a;
+            }
         }
 
         //Keep only the mean of the gradients
@@ -573,6 +602,10 @@ public:
 
         //Compute the mean activation probabilities
         q_global_batch /= n_samples * K * NH * NH;
+
+        if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
+            q_local_batch /= n_samples;
+        }
 
         //Accumulate the sparsity
         context.sparsity += q_global_batch;
@@ -686,6 +719,7 @@ private:
     etl::fast_matrix<weight, NV, NV> c_grad_org;
 
     using base_cd_trainer<RBM>::q_global_batch;
+    using base_cd_trainer<RBM>::q_local_batch;
 
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_pos;
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_neg;
@@ -719,6 +753,10 @@ public:
 
         //Reset mean activation probability if necessary
         q_global_batch = 0.0;
+
+        if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
+            q_local_batch = 0.0;
+        }
 
         auto it = batch.begin();
         auto end = batch.end();
@@ -765,6 +803,10 @@ public:
 
             q_global_batch += sum(sum(rbm.h2_a));
 
+            if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
+                q_local_batch += rbm.h2_a;
+            }
+
             ++it;
             ++i;
         }
@@ -784,6 +826,10 @@ public:
 
         //Compute the mean activation probabilities
         q_global_batch /= n_samples * K * NH * NH;
+
+        if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
+            q_local_batch /= n_samples;
+        }
 
         //Accumulate the sparsity
         context.sparsity += q_global_batch;
