@@ -100,6 +100,25 @@ void update_weights_normal(RBM& rbm, Trainer& t){
     t.update(rbm.b, b_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), h_penalty);
     t.update(rbm.c, c_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), 0.0);
 
+    //Local sparsity method
+    if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
+        auto decay_rate = rbm.decay_rate;
+        auto p = rbm.sparsity_target;
+        auto cost = rbm.sparsity_cost;
+
+        t.q_local_t = decay_rate * t.q_local_t + (1.0 - decay_rate) * t.q_local_batch;
+
+        t.q_local_penalty = cost * (t.q_local_t - p);
+
+        rbm.b -= t.q_local_penalty;
+
+        for(std::size_t i = 0; i < num_hidden(rbm); ++i){
+            for(std::size_t j = 0; j < num_visible(rbm); ++j){
+                rbm.w(j, i) -= t.q_local_penalty(i);
+            }
+        }
+    }
+
     //Check for NaN
     nan_check_deep_3(rbm.w, rbm.b, rbm.c);
 }
@@ -137,16 +156,17 @@ struct base_cd_trainer : base_trainer<RBM> {
 
     etl::fast_vector<weight, num_hidden> q_local_batch;
     etl::fast_vector<weight, num_hidden> q_local_t;
+    etl::fast_vector<weight, num_hidden> q_local_penalty;
 
     //}}} Sparsity end
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = ::detail::dummy>
-    base_cd_trainer(rbm_t&) : q_global_t(0.0) {
+    base_cd_trainer(rbm_t&) : q_global_t(0.0), q_local_t(0.0) {
         static_assert(!rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = ::detail::dummy>
-    base_cd_trainer(rbm_t&) : w_inc(0.0), b_inc(0.0), c_inc(0.0), q_global_t(0.0) {
+    base_cd_trainer(rbm_t&) : w_inc(0.0), b_inc(0.0), c_inc(0.0), q_global_t(0.0), q_local_t(0.0) {
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
@@ -186,6 +206,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
 
     etl::dyn_vector<weight> q_local_batch;
     etl::dyn_vector<weight> q_local_t;
+    etl::dyn_vector<weight> q_local_penalty;
 
     //}}} Sparsity end
 
@@ -193,7 +214,8 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
     base_cd_trainer(rbm_t& rbm) :
             w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
             w_inc(0,0), b_inc(0), c_inc(0),
-            q_global_t(0.0), q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden) {
+            q_global_t(0.0),
+            q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden, 0.0), q_local_penalty(rbm.num_hidden) {
         static_assert(!rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
@@ -201,7 +223,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
     base_cd_trainer(rbm_t& rbm) :
             w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
             w_inc(rbm.num_visible, rbm.num_hidden, 0.0), b_inc(rbm.num_hidden, 0.0), c_inc(rbm.num_visible, 0.0),
-            q_global_t(0.0), q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden) {
+            q_global_t(0.0), q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden, 0.0), q_local_penalty(rbm.num_hidden) {
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
@@ -247,16 +269,17 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
 
     etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> q_local_batch;
     etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> q_local_t;
+    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> q_local_penalty;
 
     //}}} Sparsity end
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = ::detail::dummy>
-    base_cd_trainer(rbm_t&) : q_global_t(0.0) {
+    base_cd_trainer(rbm_t&) : q_global_t(0.0), q_local_t(0.0) {
         static_assert(!rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = ::detail::dummy>
-    base_cd_trainer(rbm_t&) : w_inc(0.0), b_inc(0.0), c_inc(0.0), q_global_t(0.0) {
+    base_cd_trainer(rbm_t&) : w_inc(0.0), b_inc(0.0), c_inc(0.0), q_global_t(0.0), q_local_t(0.0) {
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
