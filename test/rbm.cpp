@@ -107,11 +107,33 @@ TEST_CASE( "rbm/mnist_5", "rbm::decay_l2" ) {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE( "rbm/mnist_6", "rbm::sparsity" ) {
+TEST_CASE( "rbm/mnist_60", "rbm::global_sparsity" ) {
     dll::rbm_desc<
         28 * 28, 100,
        dll::batch_size<25>,
-       dll::sparsity<>
+       dll::sparsity<dll::sparsity_method::GLOBAL_TARGET>
+    >::rbm_t rbm;
+
+    //0.01 (default) is way too low for 100 hidden units
+    rbm.sparsity_target = 0.1;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(100);
+
+    mnist::binarize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 100);
+
+    REQUIRE(error < 1e-2);
+}
+
+TEST_CASE( "rbm/mnist_61", "rbm::local_sparsity" ) {
+    dll::rbm_desc<
+        28 * 28, 100,
+       dll::batch_size<25>,
+       dll::sparsity<dll::sparsity_method::LOCAL_TARGET>
     >::rbm_t rbm;
 
     //0.01 (default) is way too low for 100 hidden units
