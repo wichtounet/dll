@@ -85,15 +85,14 @@ struct rbm_trainer {
 
         //Train for max_epochs epoch
         for(size_t epoch= 0; epoch < max_epochs; ++epoch){
-            typename rbm_t::weight error = 0.0;
-            typename rbm_t::weight free_energy = 0.0;
-            typename rbm_t::weight sparsity = 0.0;
-
             auto it = first;
             auto end = last;
 
             std::size_t batches = 0;
             std::size_t samples = 0;
+
+            //Create a new context for this epoch
+            rbm_training_context context;
 
             while(it != end){
                 auto start = it;
@@ -108,29 +107,34 @@ struct rbm_trainer {
                 ++batches;
 
                 auto batch = make_batch(start, it);
-                error += trainer->train_batch(batch);
+                context.reconstruction_error += trainer->train_batch(batch);
 
                 if(EnableWatcher){
                     for(auto& v : batch){
-                        free_energy += rbm.free_energy(v);
+                        context.free_energy += rbm.free_energy(v);
                     }
                 }
 
-                sparsity += rbm.q_batch;
+                context.sparsity += rbm.q_batch;
             }
 
-            last_error = error / batches;
-            free_energy /= samples;
-            sparsity /= batches;
+            //Average all the gathered information
+            context.reconstruction_error /= batches;
+            context.free_energy /= samples;
+            context.sparsity /= batches;
 
             //After some time increase the momentum
             if(rbm_traits<rbm_t>::has_momentum() && epoch == rbm.final_momentum_epoch){
                 rbm.momentum = rbm.final_momentum;
             }
 
+            //Notify the watcher
             if(EnableWatcher){
-                watcher.epoch_end(epoch, last_error, free_energy, sparsity, rbm);
+                watcher.epoch_end(epoch, context, rbm);
             }
+
+            //Save the error for the return value
+            last_error = context.reconstruction_error;
         }
 
         if(EnableWatcher){
