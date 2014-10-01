@@ -268,7 +268,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
         //Penalty to be applied to weights and hidden biases
         weight h_penalty = 0.0;
 
-        //Update sparsity
+        //Global sparsity method
         if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET){
             auto decay_rate = rbm.decay_rate;
             auto p = rbm.sparsity_target;
