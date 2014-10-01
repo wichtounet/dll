@@ -67,7 +67,7 @@ struct weight_decay : conf_elt  {
 /*!
  * \brief Activate sparsity and select the method to use
  */
-template<sparsity_method M = sparsity_method::TARGET>
+template<sparsity_method M = sparsity_method::GLOBAL_TARGET>
 struct sparsity : conf_elt {
     using type = sparsity_id;
 
