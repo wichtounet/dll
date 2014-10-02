@@ -76,7 +76,9 @@ void update_weights_normal(RBM& rbm, Trainer& t){
     }
 
     //Penalty to be applied to weights and hidden biases
+    typename rbm_t::weight w_penalty = 0.0;
     typename rbm_t::weight h_penalty = 0.0;
+    typename rbm_t::weight v_penalty = 0.0;
 
     //Global sparsity method
     if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET){
@@ -86,7 +88,7 @@ void update_weights_normal(RBM& rbm, Trainer& t){
 
         t.q_global_t = decay_rate * t.q_global_t + (1.0 - decay_rate) * t.q_global_batch;
 
-        h_penalty = cost * (t.q_global_t - p);
+        w_penalty = h_penalty = cost * (t.q_global_t - p);
     }
 
     //The final gradients;
@@ -96,9 +98,9 @@ void update_weights_normal(RBM& rbm, Trainer& t){
 
     //Update weights and biases
 
-    t.update(rbm.w, w_fgrad, rbm, w_decay(rbm_traits<rbm_t>::decay()), h_penalty);
+    t.update(rbm.w, w_fgrad, rbm, w_decay(rbm_traits<rbm_t>::decay()), w_penalty);
     t.update(rbm.b, b_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), h_penalty);
-    t.update(rbm.c, c_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), 0.0);
+    t.update(rbm.c, c_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), v_penalty);
 
     //Local sparsity method
     if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
@@ -297,7 +299,9 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
         }
 
         //Penalty to be applied to weights and hidden biases
+        weight w_penalty = 0.0;
         weight h_penalty = 0.0;
+        weight v_penalty = 0.0;
 
         //Global sparsity method
         if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET){
@@ -307,7 +311,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
 
             q_global_t = decay_rate * q_global_t + (1.0 - decay_rate) * q_global_batch;
 
-            h_penalty = cost * (q_global_t - p);
+            w_penalty = h_penalty = cost * (q_global_t - p);
         }
 
         //The final gradients;
@@ -320,11 +324,11 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
         for(std::size_t k = 0; k < K; ++k){
             //TODO Ideally, the loop should be removed and the
             //update be done diretly on rbm.w
-            base_trainer<RBM>::update(rbm.w(k), w_fgrad(k), rbm, w_decay(rbm_traits<rbm_t>::decay()), h_penalty);
+            base_trainer<RBM>::update(rbm.w(k), w_fgrad(k), rbm, w_decay(rbm_traits<rbm_t>::decay()), w_penalty);
         }
 
         base_trainer<RBM>::update(rbm.b, b_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), h_penalty);
-        base_trainer<RBM>::update(rbm.c, c_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), 0.0);
+        base_trainer<RBM>::update(rbm.c, c_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), v_penalty);
 
         //Local sparsity method
         if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
