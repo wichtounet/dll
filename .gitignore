@@ -7,3 +7,4 @@ perf.data.old
 test_reports
 html
 latex
+*.svg
