@@ -287,7 +287,7 @@ TEST_CASE( "rbm/mnist_13", "rbm::exp" ) {
 
     mnist::binarize_dataset(dataset);
 
-    auto error = rbm.train(dataset.training_images, 100);
+    auto error = rbm.train(dataset.training_images, 10);
 
     //This test is kind of fake since exp unit are not really made for
     //reconstruction. It is here to ensure that exp units are working.
