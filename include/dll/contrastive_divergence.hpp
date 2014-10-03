@@ -60,20 +60,22 @@ struct base_trainer {
             value += rbm.learning_rate * grad - penalty;
         }
     }
+
+    template<typename V, typename G>
+    void update_grad(G& grad, const V& value, const RBM& rbm, decay_type decay, double penalty){
+        if(decay == decay_type::L1){
+            grad = grad - rbm.weight_cost * abs(value) - penalty;
+        } else if(decay == decay_type::L2){
+            grad = grad - rbm.weight_cost * value - penalty;
+        } else {
+            grad = grad - penalty;
+        }
+    }
 };
 
 template<typename RBM, typename Trainer>
 void update_weights_normal(RBM& rbm, Trainer& t){
     using rbm_t = RBM;
-
-    //Update momentum gradients
-    if(rbm_traits<rbm_t>::has_momentum()){
-        auto momentum = rbm.momentum;
-
-        t.w_inc = momentum * t.w_inc + (1 - momentum) * t.w_grad;
-        t.b_inc = momentum * t.b_inc + (1 - momentum) * t.b_grad;
-        t.c_inc = momentum * t.c_inc + (1 - momentum) * t.c_grad;
-    }
 
     //Penalty to be applied to weights and hidden biases
     typename rbm_t::weight w_penalty = 0.0;
@@ -91,16 +93,11 @@ void update_weights_normal(RBM& rbm, Trainer& t){
         w_penalty = h_penalty = cost * (t.q_global_t - p);
     }
 
-    //The final gradients;
-    const auto& w_fgrad = t.get_fgrad(t.w_grad, t.w_inc);
-    const auto& b_fgrad = t.get_fgrad(t.b_grad, t.b_inc);
-    const auto& c_fgrad = t.get_fgrad(t.c_grad, t.c_inc);
+    //Apply L1/L2 regularization and penalties to the biases
 
-    //Update weights and biases
-
-    t.update(rbm.w, w_fgrad, rbm, w_decay(rbm_traits<rbm_t>::decay()), w_penalty);
-    t.update(rbm.b, b_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), h_penalty);
-    t.update(rbm.c, c_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), v_penalty);
+    t.update_grad(t.w_grad, rbm.w, rbm, w_decay(rbm_traits<rbm_t>::decay()), w_penalty);
+    t.update_grad(t.b_grad, rbm.b, rbm, b_decay(rbm_traits<rbm_t>::decay()), h_penalty);
+    t.update_grad(t.c_grad, rbm.c, rbm, b_decay(rbm_traits<rbm_t>::decay()), v_penalty);
 
     //Local sparsity method
     if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
@@ -112,14 +109,42 @@ void update_weights_normal(RBM& rbm, Trainer& t){
 
         t.q_local_penalty = cost * (t.q_local_t - p);
 
-        rbm.b -= t.q_local_penalty;
+        t.b_grad -= t.q_local_penalty;
 
         for(std::size_t i = 0; i < num_hidden(rbm); ++i){
             for(std::size_t j = 0; j < num_visible(rbm); ++j){
-                rbm.w(j, i) -= t.q_local_penalty(i);
+                t.w_grad(j, i) -= t.q_local_penalty(i);
             }
         }
     }
+
+    //Apply momentum and learning rate
+    if(rbm_traits<rbm_t>::has_momentum()){
+        auto momentum = rbm.momentum;
+        auto eps = rbm.learning_rate;
+
+        t.w_inc = momentum * t.w_inc + eps * t.w_grad;
+        t.b_inc = momentum * t.b_inc + eps * t.b_grad;
+        t.c_inc = momentum * t.c_inc + eps * t.c_grad;
+    }
+    //Apply the learning rate
+    else {
+        auto eps = rbm.learning_rate;
+
+        t.w_grad *= eps;
+        t.b_grad *= eps;
+        t.c_grad *= eps;
+    }
+
+    //The final gradients (if not momentum, these are the real gradients)
+    const auto& w_fgrad = t.get_fgrad(t.w_grad, t.w_inc);
+    const auto& b_fgrad = t.get_fgrad(t.b_grad, t.b_inc);
+    const auto& c_fgrad = t.get_fgrad(t.c_grad, t.c_inc);
+
+    //Update the weights and biases
+    rbm.w += w_fgrad;
+    rbm.b += b_fgrad;
+    rbm.c += c_fgrad;
 
     //Check for NaN
     nan_check_deep_3(rbm.w, rbm.b, rbm.c);
