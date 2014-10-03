@@ -297,8 +297,6 @@ TEST_CASE( "rbm/mnist_13", "rbm::exp" ) {
 }
 
 TEST_CASE( "rbm/mnist_14", "rbm::sparsity_gaussian" ) {
-    //TODO This does not work
-
     dll::rbm_desc<
         28 * 28, 200,
        dll::batch_size<25>,
@@ -318,7 +316,7 @@ TEST_CASE( "rbm/mnist_14", "rbm::sparsity_gaussian" ) {
 
     auto error = rbm.train(dataset.training_images, 200);
 
-    REQUIRE(error < 5e-2);
+    REQUIRE(error < 1e-2);
 }
 
 TEST_CASE( "rbm/mnist_15", "rbm::pcd_gaussian" ) {
