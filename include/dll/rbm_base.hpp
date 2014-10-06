@@ -33,7 +33,8 @@ public:
 
     weight momentum = 0;                ///< The current momentum
 
-    weight weight_cost = 0.0002;        ///< The weight cost for weight decay
+    weight l1_weight_cost = 0.0002;     ///< The weight cost for L1 weight decay
+    weight l2_weight_cost = 0.0002;     ///< The weight cost for L2 weight decay
 
     weight sparsity_target = 0.01;      ///< The sparsity target
     weight decay_rate = 0.99;           ///< The sparsity decay rate

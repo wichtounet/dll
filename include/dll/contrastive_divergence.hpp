@@ -53,9 +53,9 @@ struct base_trainer {
     template<typename V, typename G>
     void update(V& value, const G& grad, const RBM& rbm, decay_type decay, double penalty){
         if(decay == decay_type::L1){
-            value += rbm.learning_rate * grad - rbm.weight_cost * abs(value) - penalty;
+            value += rbm.learning_rate * grad - rbm.l1_weight_cost * abs(value) - penalty;
         } else if(decay == decay_type::L2){
-            value += rbm.learning_rate * grad - rbm.weight_cost * value - penalty;
+            value += rbm.learning_rate * grad - rbm.l2_weight_cost * value - penalty;
         } else {
             value += rbm.learning_rate * grad - penalty;
         }
@@ -64,9 +64,9 @@ struct base_trainer {
     template<typename V, typename G>
     void update_grad(G& grad, const V& value, const RBM& rbm, decay_type decay, double penalty){
         if(decay == decay_type::L1){
-            grad = grad - rbm.weight_cost * abs(value) - penalty;
+            grad = grad - rbm.l1_weight_cost * abs(value) - penalty;
         } else if(decay == decay_type::L2){
-            grad = grad - rbm.weight_cost * value - penalty;
+            grad = grad - rbm.l2_weight_cost * value - penalty;
         } else {
             grad = grad - penalty;
         }
