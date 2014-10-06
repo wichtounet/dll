@@ -34,6 +34,7 @@ struct rbm_traits {
     HAS_STATIC_FIELD(Decay, has_decay_field)
     HAS_STATIC_FIELD(Init, has_init_field)
     HAS_STATIC_FIELD(Momentum, has_momentum_field)
+    HAS_STATIC_FIELD(Bias, has_bias_field)
 
     /*!
      * \brief Indicates if the RBM is convolutional
@@ -96,6 +97,16 @@ struct rbm_traits {
     template<typename R = RBM, disable_if_u<has_sparsity_field<typename R::desc>::value> = ::detail::dummy>
     static constexpr enum sparsity_method sparsity_method(){
         return sparsity_method::NONE;
+    }
+
+    template<typename R = RBM, enable_if_u<has_bias_field<typename R::desc>::value> = ::detail::dummy>
+    static constexpr enum bias_mode bias_mode(){
+        return rbm_t::desc::Bias;
+    }
+
+    template<typename R = RBM, disable_if_u<has_bias_field<typename R::desc>::value> = ::detail::dummy>
+    static constexpr enum bias_mode bias_mode(){
+        return bias_mode::SIMPLE;
     }
 
     template<typename R = RBM, enable_if_u<has_decay_field<typename R::desc>::value> = ::detail::dummy>
