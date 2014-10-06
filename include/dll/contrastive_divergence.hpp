@@ -136,15 +136,11 @@ void update_weights_normal(RBM& rbm, Trainer& t){
         t.c_grad *= eps;
     }
 
-    //The final gradients (if not momentum, these are the real gradients)
-    const auto& w_fgrad = t.get_fgrad(t.w_grad, t.w_inc);
-    const auto& b_fgrad = t.get_fgrad(t.b_grad, t.b_inc);
-    const auto& c_fgrad = t.get_fgrad(t.c_grad, t.c_inc);
-
     //Update the weights and biases
-    rbm.w += w_fgrad;
-    rbm.b += b_fgrad;
-    rbm.c += c_fgrad;
+    //with the final gradients (if not momentum, these are the real gradients)
+    rbm.w += t.get_fgrad(t.w_grad, t.w_inc);
+    rbm.b += t.get_fgrad(t.b_grad, t.b_inc);
+    rbm.c += t.get_fgrad(t.c_grad, t.c_inc);
 
     //Check for NaN
     nan_check_deep_3(rbm.w, rbm.b, rbm.c);
