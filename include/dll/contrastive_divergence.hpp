@@ -307,18 +307,6 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
     }
 
     void update_weights(RBM& rbm){
-        //Update momentum gradients
-        if(rbm_traits<rbm_t>::has_momentum()){
-            auto momentum = rbm.momentum;
-
-            for(std::size_t k = 0; k < K; ++k){
-                w_inc(k) = momentum * w_inc(k) + (1 - momentum) * w_grad(k);
-            }
-
-            b_inc = momentum * b_inc + (1 - momentum) * b_grad;
-            c_inc = momentum * c_inc + (1 - momentum) * c_grad;
-        }
-
         //Penalty to be applied to weights and hidden biases
         weight w_penalty = 0.0;
         weight h_penalty = 0.0;
@@ -335,21 +323,16 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
             w_penalty = h_penalty = cost * (q_global_t - p);
         }
 
-        //The final gradients;
-        const auto& w_fgrad = base_trainer<RBM>::get_fgrad(w_grad, w_inc);
-        const auto& b_fgrad = base_trainer<RBM>::get_fgrad(b_grad, b_inc);
-        const auto& c_fgrad = base_trainer<RBM>::get_fgrad(c_grad, c_inc);
-
-        //Update weights and biases
+        //Apply L1/L2 regularization and penalties to the biases
 
         for(std::size_t k = 0; k < K; ++k){
             //TODO Ideally, the loop should be removed and the
-            //update be done diretly on rbm.w
-            base_trainer<RBM>::update(rbm.w(k), w_fgrad(k), rbm, w_decay(rbm_traits<rbm_t>::decay()), w_penalty);
+            //update be done directly on rbm.w
+            base_trainer<RBM>::update_grad(w_grad(k), rbm.w(k), rbm, w_decay(rbm_traits<rbm_t>::decay()), w_penalty);
         }
 
-        base_trainer<RBM>::update(rbm.b, b_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), h_penalty);
-        base_trainer<RBM>::update(rbm.c, c_fgrad, rbm, b_decay(rbm_traits<rbm_t>::decay()), v_penalty);
+        base_trainer<RBM>::update_grad(b_grad, rbm.b, rbm, b_decay(rbm_traits<rbm_t>::decay()), h_penalty);
+        base_trainer<RBM>::update_grad(c_grad, rbm.c, rbm, b_decay(rbm_traits<rbm_t>::decay()), v_penalty);
 
         //Local sparsity method
         if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
@@ -367,10 +350,37 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
 
                 //????
                 auto h_k_penalty = sum(q_local_penalty(k));
-                rbm.w(k) -= h_k_penalty;
-                rbm.b(k) -= h_k_penalty;
+                w_grad(k) -= h_k_penalty;
+                b_grad(k) -= h_k_penalty;
             }
         }
+
+        //Apply momentum and learning rate
+        if(rbm_traits<rbm_t>::has_momentum()){
+            auto momentum = rbm.momentum;
+            auto eps = rbm.learning_rate;
+
+            for(std::size_t k = 0; k < K; ++k){
+                w_inc(k) = momentum * w_inc(k) + eps * w_grad(k);
+            }
+
+            b_inc = momentum * b_inc + eps * b_grad;
+            c_inc = momentum * c_inc + eps * c_grad;
+        }
+        //Apply learning rate
+        else {
+            auto eps = rbm.learning_rate;
+
+            w_grad *= eps;
+            b_grad *= eps;
+            c_grad *= eps;
+        }
+
+        //Update the weights and biases
+        //with the final gradients (if not momentum, these are the real gradients)
+        rbm.w += base_trainer<rbm_t>::get_fgrad(w_grad, w_inc); //TODO CHECK THIS
+        rbm.b += base_trainer<rbm_t>::get_fgrad(b_grad, b_inc);
+        rbm.c += base_trainer<rbm_t>::get_fgrad(c_grad, c_inc);
 
         //Check for NaN
         nan_check_deep_deep(rbm.w);
