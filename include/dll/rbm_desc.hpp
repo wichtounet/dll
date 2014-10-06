@@ -50,8 +50,8 @@ struct rbm_desc {
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid<detail::tmp_list<momentum, batch_size_id, visible_id, hidden_id, weight_decay_id,
-              init_weights, sparsity_id, trainer_id, watcher_id>, Parameters...>::value,
+        detail::is_valid<detail::tmp_list<momentum_id, batch_size_id, visible_id, hidden_id, weight_decay_id,
+              init_weights_id, sparsity_id, trainer_id, watcher_id>, Parameters...>::value,
         "Invalid parameters type");
 
     static_assert(BatchSize > 0, "Batch size must be at least 1");

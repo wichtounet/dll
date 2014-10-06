@@ -44,7 +44,7 @@ struct dbn_desc {
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid<detail::tmp_list<trainer_id, watcher_id, momentum, weight_decay_id>, Parameters...>::value,
+        detail::is_valid<detail::tmp_list<trainer_id, watcher_id, momentum_id, weight_decay_id>, Parameters...>::value,
         "Invalid parameters type");
 };
 

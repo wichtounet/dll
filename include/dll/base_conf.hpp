@@ -17,8 +17,22 @@
 
 namespace dll {
 
-struct conf_elt {
-    static constexpr const bool marker = true;
+template<typename ID>
+struct basic_conf_elt {
+    using type_id = ID;
+};
+
+template<typename ID, template<typename...> class T>
+struct type_conf_elt {
+    using type_id = ID;
+
+    template <typename RBM>
+    using value = T<RBM>;
+};
+
+template<typename ID, typename T, T value>
+struct value_conf_elt : std::integral_constant<T, value> {
+    using type_id = ID;
 };
 
 struct batch_size_id;
@@ -30,78 +44,44 @@ struct trainer_id;
 struct watcher_id;
 struct sparsity_id;
 struct bias_id;
+struct momentum_id;
+struct init_weights_id;
 
 template<std::size_t B>
-struct batch_size : conf_elt {
-    using type = batch_size_id;
-
-    static constexpr const std::size_t value = B;
-};
+struct batch_size : value_conf_elt<batch_size_id, std::size_t, B> {};
 
 template<unit_type VT>
-struct visible : conf_elt {
-    using type = visible_id;
-
-    static constexpr const unit_type value = VT;
-};
+struct visible : value_conf_elt<visible_id, unit_type, VT> {};
 
 template<unit_type HT>
-struct hidden : conf_elt  {
-    using type = hidden_id;
-
-    static constexpr const unit_type value = HT;
-};
+struct hidden : value_conf_elt<hidden_id, unit_type, HT> {};
 
 template<unit_type PT>
-struct pooling_unit : conf_elt  {
-    using type = pooling_unit_id;
-
-    static constexpr const unit_type value = PT;
-};
+struct pooling_unit : value_conf_elt<pooling_unit_id, unit_type, PT> {};
 
 template<decay_type T>
-struct weight_decay : conf_elt  {
-    using type = weight_decay_id;
-
-    static constexpr const decay_type value = T;
-};
+struct weight_decay : value_conf_elt<weight_decay_id, decay_type, T> {};
 
 /*!
  * \brief Activate sparsity and select the method to use
  */
 template<sparsity_method M = sparsity_method::GLOBAL_TARGET>
-struct sparsity : conf_elt {
-    using type = sparsity_id;
-
-    static constexpr const sparsity_method value = M;
-};
+struct sparsity : value_conf_elt<sparsity_id, sparsity_method, M> {};
 
 /*!
  * \brief Select the bias method
  */
 template<bias_mode M = bias_mode::SIMPLE>
-struct bias : conf_elt, std::integral_constant<bias_mode, M> {
-    using type = bias_id;
-};
-
-template<template<typename> class T>
-struct trainer : conf_elt  {
-    using type = trainer_id;
-
-    template <typename RBM>
-    using value = T<RBM>;
-};
+struct bias : value_conf_elt<bias_id, bias_mode, M>{};
 
 template<template<typename...> class T>
-struct watcher : conf_elt  {
-    using type = watcher_id;
+struct trainer : type_conf_elt<trainer_id, T> {};
 
-    template <typename RBM>
-    using value = T<RBM>;
-};
+template<template<typename...> class T>
+struct watcher : type_conf_elt<watcher_id, T> {};
 
-struct momentum {};
-struct init_weights {};
+struct momentum : basic_conf_elt<momentum_id> {};
+struct init_weights : basic_conf_elt<init_weights_id> {};
 
 } //end of dbn namespace
 
