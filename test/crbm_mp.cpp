@@ -177,3 +177,47 @@ TEST_CASE( "crbm_mp/mnist_10", "crbm::pcd_trainer" ) {
 
     REQUIRE(error < 1e-1);
 }
+
+TEST_CASE( "crbm_mp/mnist_11", "crbm::bias_mode_none" ) {
+    //TODO This does not work
+
+    dll::conv_rbm_mp_desc<
+        28, 12, 40, 2,
+        dll::batch_size<10>,
+        dll::momentum,
+        dll::bias<dll::bias_mode::NONE>
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(200);
+
+    mnist::normalize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 100);
+
+    REQUIRE(error < 1e-1);
+}
+
+TEST_CASE( "crbm_mp/mnist_12", "crbm::bias_mode_simple" ) {
+    //TODO This does not work
+
+    dll::conv_rbm_mp_desc<
+        28, 12, 40, 2,
+        dll::batch_size<10>,
+        dll::momentum,
+        dll::bias<dll::bias_mode::SIMPLE>
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(200);
+
+    mnist::normalize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 100);
+
+    REQUIRE(error < 1e-1);
+}

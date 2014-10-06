@@ -298,14 +298,6 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
     }
 
     void update_weights(RBM& rbm){
-        //Only keep some gradients depending on the bias mode
-        if(rbm_traits<rbm_t>::bias_mode() == bias_mode::NONE){
-            b_grad = 0.0;
-            c_grad = 0.0;
-        } else if(rbm_traits<rbm_t>::bias_mode() == bias_mode::SIMPLE){
-            c_grad = 0.0;
-        }
-
         //Penalty to be applied to weights and hidden biases
         weight w_penalty = 0.0;
         weight h_penalty = 0.0;
@@ -352,6 +344,14 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
                 w_grad(k) -= h_k_penalty;
                 b_grad(k) -= h_k_penalty;
             }
+        }
+
+        //Only keep some gradients depending on the bias mode
+        if(rbm_traits<rbm_t>::bias_mode() == bias_mode::NONE){
+            b_grad = 0.0;
+            c_grad = 0.0;
+        } else if(rbm_traits<rbm_t>::bias_mode() == bias_mode::SIMPLE){
+            c_grad = 0.0;
         }
 
         //Apply momentum and learning rate
@@ -655,7 +655,8 @@ public:
             }
 
             for(std::size_t k = 0; k < K; ++k){
-                b_grad(k) += mean(rbm.h1_a(k) - rbm.h2_a(k));
+                //TODO Find if mean or sum
+                b_grad(k) += sum(rbm.h1_a(k) - rbm.h2_a(k));
             }
 
             c_grad_org += rbm.v1 - rbm.v2_a;
