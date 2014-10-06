@@ -33,7 +33,7 @@ struct conv_rbm_desc {
     static constexpr const unit_type hidden_unit = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
     static constexpr const decay_type Decay = detail::get_value<weight_decay<decay_type::NONE>, Parameters...>::value;
     static constexpr const sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;
-    static constexpr const bias_mode Bias = detail::get_value<bias<>, Parameters...>::value;
+    static constexpr const bias_mode Bias = detail::get_value<bias<bias_mode::FULL>, Parameters...>::value;
 
     /*! The type of the trainer to use to train the RBM */
     template <typename RBM>

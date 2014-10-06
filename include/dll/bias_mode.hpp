@@ -15,7 +15,8 @@ namespace dll {
  */
 enum class bias_mode {
     NONE,
-    SIMPLE
+    SIMPLE,
+    FULL
 };
 
 } //end of dll namespace
