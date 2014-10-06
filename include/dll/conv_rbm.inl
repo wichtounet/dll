@@ -18,8 +18,7 @@
 #include "etl/convolution.hpp"
 
 #include "rbm_base.hpp"           //The base class
-#include "unit_type.hpp"          //unit_ype enum
-#include "decay_type.hpp"         //decay_ype enum
+#include "base_conf.hpp"          //The configuration helpers
 #include "assert.hpp"             //Assertions
 #include "stop_watch.hpp"         //Performance counter
 #include "math.hpp"               //Logistic sigmoid
