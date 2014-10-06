@@ -13,6 +13,7 @@
 #include "unit_type.hpp"
 #include "decay_type.hpp"
 #include "sparsity_method.hpp"
+#include "bias_mode.hpp"
 
 namespace dll {
 
@@ -28,6 +29,7 @@ struct weight_decay_id;
 struct trainer_id;
 struct watcher_id;
 struct sparsity_id;
+struct bias_id;
 
 template<std::size_t B>
 struct batch_size : conf_elt {
@@ -72,6 +74,14 @@ struct sparsity : conf_elt {
     using type = sparsity_id;
 
     static constexpr const sparsity_method value = M;
+};
+
+/*!
+ * \brief Select the bias method
+ */
+template<bias_mode M = bias_mode::SIMPLE>
+struct bias : conf_elt, std::integral_constant<bias_mode, M> {
+    using type = bias_id;
 };
 
 template<template<typename> class T>
