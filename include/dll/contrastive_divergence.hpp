@@ -56,6 +56,8 @@ struct base_trainer {
             grad = grad - rbm.l1_weight_cost * abs(value) - penalty;
         } else if(decay == decay_type::L2){
             grad = grad - rbm.l2_weight_cost * value - penalty;
+        } else if(decay == decay_type::L1L2){
+            grad = grad - rbm.l1_weight_cost * abs(value) - rbm.l2_weight_cost * value - penalty;
         } else {
             grad = grad - penalty;
         }

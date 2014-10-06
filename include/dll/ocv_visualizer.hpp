@@ -40,11 +40,11 @@ struct base_ocv_rbm_visualizer {
             std::cout << "   momentum=" << rbm.momentum << std::endl;
         }
 
-        if(rbm_traits<RBM>::decay() == decay_type::L1 || rbm_traits<RBM>::decay() == decay_type::L1_FULL){
+        if(w_decay(rbm_traits<RBM>::decay()) == decay_type::L1 || w_decay(rbm_traits<RBM>::decay()) == decay_type::L1L2){
             std::cout << "   weight_cost(L1)=" << rbm.l1_weight_cost << std::endl;
         }
 
-        if(rbm_traits<RBM>::decay() == decay_type::L2 || rbm_traits<RBM>::decay() == decay_type::L2_FULL){
+        if(w_decay(rbm_traits<RBM>::decay()) == decay_type::L2 || w_decay(rbm_traits<RBM>::decay()) == decay_type::L1L2){
             std::cout << "   weight_cost(L2)=" << rbm.l2_weight_cost << std::endl;
         }
 
@@ -349,11 +349,11 @@ struct opencv_dbn_visualizer {
             std::cout << "   momentum=" << rbm.momentum << std::endl;
         }
 
-        if(rbm_traits<rbm_t>::decay() == decay_type::L1 || rbm_traits<rbm_t>::decay() == decay_type::L1_FULL){
+        if(w_decay(rbm_traits<RBM>::decay()) == decay_type::L1 || w_decay(rbm_traits<RBM>::decay()) == decay_type::L1L2){
             std::cout << "   weight_cost(L1)=" << rbm.l1_weight_cost << std::endl;
         }
 
-        if(rbm_traits<rbm_t>::decay() == decay_type::L2 || rbm_traits<rbm_t>::decay() == decay_type::L2_FULL){
+        if(w_decay(rbm_traits<RBM>::decay()) == decay_type::L2 || w_decay(rbm_traits<RBM>::decay()) == decay_type::L1L2){
             std::cout << "   weight_cost(L2)=" << rbm.l2_weight_cost << std::endl;
         }
 
@@ -538,11 +538,11 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
             std::cout << "   momentum=" << rbm.momentum << std::endl;
         }
 
-        if(rbm_traits<rbm_t>::decay() == decay_type::L1 || rbm_traits<rbm_t>::decay() == decay_type::L1_FULL){
+        if(w_decay(rbm_traits<RBM>::decay()) == decay_type::L1 || w_decay(rbm_traits<RBM>::decay()) == decay_type::L1L2){
             std::cout << "   weight_cost(L1)=" << rbm.l1_weight_cost << std::endl;
         }
 
-        if(rbm_traits<rbm_t>::decay() == decay_type::L2 || rbm_traits<rbm_t>::decay() == decay_type::L2_FULL){
+        if(w_decay(rbm_traits<RBM>::decay()) == decay_type::L2 || w_decay(rbm_traits<RBM>::decay()) == decay_type::L1L2){
             std::cout << "   weight_cost(L2)=" << rbm.l2_weight_cost << std::endl;
         }
 

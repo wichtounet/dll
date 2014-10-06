@@ -16,9 +16,11 @@ namespace dll {
 enum class decay_type {
     NONE,           ///< No weight decay is applied during training
     L1,             ///< Apply L1 weight decay on weights
-    L2,             ///< Apply L2 weight decay on weights
     L1_FULL,        ///< Apply L1 weight decay on weights and biases
-    L2_FULL         ///< Apply L2 weight decay on weights and biases
+    L2,             ///< Apply L2 weight decay on weights
+    L2_FULL,        ///< Apply L2 weight decay on weights and biases
+    L1L2,           ///< Apply L1/L2 weight decay on weights
+    L1L2_FULL       ///< Apply L1/L2 weight decay on weights and biases
 };
 
 /*!
@@ -27,9 +29,10 @@ enum class decay_type {
  * \return one of L1,L2,NONE
  */
 constexpr decay_type w_decay(decay_type t){
-    return 
-        (t == decay_type::L1 || t == decay_type::L1_FULL) ? decay_type::L1 : 
-        (t == decay_type::L2 || t == decay_type::L2_FULL) ? decay_type::L2 : 
+    return
+        (t == decay_type::L1 || t == decay_type::L1_FULL) ? decay_type::L1 :
+        (t == decay_type::L2 || t == decay_type::L2_FULL) ? decay_type::L2 :
+        (t == decay_type::L1L2 || t == decay_type::L1L2_FULL) ? decay_type::L1L2 :
                                                             decay_type::NONE;
 }
 
@@ -39,9 +42,10 @@ constexpr decay_type w_decay(decay_type t){
  * \return one of L1,L2,NONE
  */
 constexpr decay_type b_decay(decay_type t){
-    return 
+    return
         t == decay_type::L1_FULL ? decay_type::L1 :
         t == decay_type::L2_FULL ? decay_type::L2 :
+        t == decay_type::L1L2_FULL ? decay_type::L1L2 :
                                    decay_type::NONE;
 }
 

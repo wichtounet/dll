@@ -69,7 +69,7 @@ TEST_CASE( "rbm/mnist_3", "rbm::pcd_trainer" ) {
     REQUIRE(error < 1e-1);
 }
 
-TEST_CASE( "rbm/mnist_4", "rbm::decay_l1" ) {
+TEST_CASE( "rbm/mnist_40", "rbm::decay_l1" ) {
     dll::rbm_desc<
         28 * 28, 100,
        dll::batch_size<25>,
@@ -88,11 +88,49 @@ TEST_CASE( "rbm/mnist_4", "rbm::decay_l1" ) {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE( "rbm/mnist_5", "rbm::decay_l2" ) {
+TEST_CASE( "rbm/mnist_41", "rbm::decay_l2" ) {
     dll::rbm_desc<
         28 * 28, 100,
        dll::batch_size<25>,
        dll::weight_decay<dll::decay_type::L2>
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(100);
+
+    mnist::binarize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 100);
+
+    REQUIRE(error < 1e-2);
+}
+
+TEST_CASE( "rbm/mnist_42", "rbm::decay_l1l2" ) {
+    dll::rbm_desc<
+        28 * 28, 100,
+       dll::batch_size<25>,
+       dll::weight_decay<dll::decay_type::L1L2>
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(100);
+
+    mnist::binarize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 100);
+
+    REQUIRE(error < 1e-2);
+}
+
+TEST_CASE( "rbm/mnist_43", "rbm::decay_l1l2_full" ) {
+    dll::rbm_desc<
+        28 * 28, 100,
+       dll::batch_size<25>,
+       dll::weight_decay<dll::decay_type::L1L2_FULL>
     >::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
