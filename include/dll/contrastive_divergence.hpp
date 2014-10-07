@@ -287,13 +287,26 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
 
     //}}} Sparsity end
 
+    //{{{ Sparsity biases
+
+    etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_bias;
+    etl::fast_vector<weight, K> b_bias;
+    weight c_bias;
+
+    //}}} Sparsity biases end
+
     template<bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = ::detail::dummy>
-    base_cd_trainer(rbm_t&) : q_global_t(0.0), q_local_t(0.0) {
+    base_cd_trainer(rbm_t&) :
+            q_global_t(0.0), q_local_t(0.0),
+            w_bias(0.0), b_bias(0.0), c_bias(0.0) {
         static_assert(!rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = ::detail::dummy>
-    base_cd_trainer(rbm_t&) : w_inc(0.0), b_inc(0.0), c_inc(0.0), q_global_t(0.0), q_local_t(0.0) {
+    base_cd_trainer(rbm_t&) :
+            w_inc(0.0), b_inc(0.0), c_inc(0.0),
+            q_global_t(0.0), q_local_t(0.0),
+            w_bias(0.0), b_bias(0.0), c_bias(0.0) {
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
