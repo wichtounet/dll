@@ -175,7 +175,7 @@ TEST_CASE( "crbm_mp/mnist_10", "crbm::pcd_trainer" ) {
 
     auto error = rbm.train(dataset.training_images, 100);
 
-    REQUIRE(error < 1e-1);
+    REQUIRE(error < 1e-2);
 }
 
 TEST_CASE( "crbm_mp/mnist_11", "crbm::bias_mode_none" ) {
@@ -196,7 +196,7 @@ TEST_CASE( "crbm_mp/mnist_11", "crbm::bias_mode_none" ) {
 
     auto error = rbm.train(dataset.training_images, 100);
 
-    REQUIRE(error < 1e-1);
+    REQUIRE(error < 1e-2);
 }
 
 TEST_CASE( "crbm_mp/mnist_12", "crbm::bias_mode_simple" ) {
@@ -221,5 +221,5 @@ TEST_CASE( "crbm_mp/mnist_12", "crbm::bias_mode_simple" ) {
 
     auto error = rbm.train(dataset.training_images, 100);
 
-    REQUIRE(error < 1e-1);
+    REQUIRE(error < 1e-2);
 }
