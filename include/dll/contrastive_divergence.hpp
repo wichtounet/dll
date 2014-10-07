@@ -359,6 +359,15 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
             }
         }
 
+        if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LEE){
+            for(std::size_t k = 0; k < K; ++k){
+                w_grad(k) -= rbm.pbias_lambda * w_bias(k);
+            }
+
+            b_grad -= rbm.pbias_lambda * b_bias;
+            c_grad -= rbm.pbias_lambda * c_bias;
+        }
+
         //Apply momentum and learning rate
         if(rbm_traits<rbm_t>::has_momentum()){
             auto momentum = rbm.momentum;

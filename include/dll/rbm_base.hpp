@@ -41,7 +41,7 @@ public:
     weight sparsity_cost = 1.0;         ///< The sparsity cost (or sparsity multiplier)
 
     weight pbias = 0.002;
-    weight pbbias_lambda = 5;
+    weight pbias_lambda = 5;
 
     //No copying
     rbm_base(const rbm_base& rbm) = delete;

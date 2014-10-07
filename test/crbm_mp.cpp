@@ -145,7 +145,7 @@ TEST_CASE( "crbm_mp/mnist_7", "crbm::relu" ) {
     REQUIRE(!dataset.training_images.empty());
     dataset.training_images.resize(100);
 
-    mnist::normalize_dataset(dataset);
+    mnist::binarize_dataset(dataset);
 
     auto error = rbm.train(dataset.training_images, 100);
 
@@ -171,7 +171,7 @@ TEST_CASE( "crbm_mp/mnist_10", "crbm::pcd_trainer" ) {
     REQUIRE(!dataset.training_images.empty());
     dataset.training_images.resize(200);
 
-    mnist::normalize_dataset(dataset);
+    mnist::binarize_dataset(dataset);
 
     auto error = rbm.train(dataset.training_images, 100);
 
@@ -179,12 +179,11 @@ TEST_CASE( "crbm_mp/mnist_10", "crbm::pcd_trainer" ) {
 }
 
 TEST_CASE( "crbm_mp/mnist_11", "crbm::bias_mode_none" ) {
-    //TODO This does not work
-
     dll::conv_rbm_mp_desc<
         28, 12, 40, 2,
         dll::batch_size<10>,
         dll::momentum,
+        dll::sparsity<dll::sparsity_method::LEE>,
         dll::bias<dll::bias_mode::NONE>
     >::rbm_t rbm;
 
@@ -193,7 +192,7 @@ TEST_CASE( "crbm_mp/mnist_11", "crbm::bias_mode_none" ) {
     REQUIRE(!dataset.training_images.empty());
     dataset.training_images.resize(200);
 
-    mnist::normalize_dataset(dataset);
+    mnist::binarize_dataset(dataset);
 
     auto error = rbm.train(dataset.training_images, 100);
 
@@ -201,21 +200,24 @@ TEST_CASE( "crbm_mp/mnist_11", "crbm::bias_mode_none" ) {
 }
 
 TEST_CASE( "crbm_mp/mnist_12", "crbm::bias_mode_simple" ) {
-    //TODO This does not work
-
     dll::conv_rbm_mp_desc<
         28, 12, 40, 2,
         dll::batch_size<10>,
         dll::momentum,
+        dll::weight_decay<dll::decay_type::L2>,
+        dll::sparsity<dll::sparsity_method::LEE>,
         dll::bias<dll::bias_mode::SIMPLE>
     >::rbm_t rbm;
+
+    rbm.l2_weight_cost = 0.01;
+    rbm.learning_rate = 0.01;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
     REQUIRE(!dataset.training_images.empty());
     dataset.training_images.resize(200);
 
-    mnist::normalize_dataset(dataset);
+    mnist::binarize_dataset(dataset);
 
     auto error = rbm.train(dataset.training_images, 100);
 
