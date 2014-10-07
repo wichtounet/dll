@@ -359,14 +359,6 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
             }
         }
 
-        //Only keep some gradients depending on the bias mode
-        if(rbm_traits<rbm_t>::bias_mode() == bias_mode::NONE){
-            b_grad = 0.0;
-            c_grad = 0.0;
-        } else if(rbm_traits<rbm_t>::bias_mode() == bias_mode::SIMPLE){
-            c_grad = 0.0;
-        }
-
         //Apply momentum and learning rate
         if(rbm_traits<rbm_t>::has_momentum()){
             auto momentum = rbm.momentum;
@@ -554,7 +546,7 @@ struct cd_trainer : base_cd_trainer<RBM> {
 };
 
 /*!
- * \brief Contrastive divergence trainer for RBM.
+ * \brief Contrastive divergence trainer for dynamic RBM.
  */
 template<std::size_t N, typename RBM>
 struct cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : base_cd_trainer<RBM> {
@@ -588,7 +580,7 @@ struct cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : bas
 };
 
 /*!
- * \brief Specialization of cd_trainer for Convolutional RBM.
+ * \brief Contrastive Divergence trainer for convolutional RBM
  */
 template<std::size_t N, typename RBM>
 struct cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()>> : base_cd_trainer<RBM> {
@@ -607,10 +599,14 @@ private:
     using base_cd_trainer<RBM>::b_grad;
     using base_cd_trainer<RBM>::c_grad;
 
-    etl::fast_matrix<weight, NV, NV> c_grad_org;
-
     using base_cd_trainer<RBM>::q_global_batch;
     using base_cd_trainer<RBM>::q_local_batch;
+
+    using base_cd_trainer<RBM>::w_bias;
+    using base_cd_trainer<RBM>::b_bias;
+    using base_cd_trainer<RBM>::c_bias;
+
+    etl::fast_matrix<weight, NV, NV> c_grad_org;
 
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_pos;
     etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_neg;
@@ -640,6 +636,10 @@ public:
 
         if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
             q_local_batch = 0.0;
+        }
+
+        if(rbm_traits<rbm_t>::bias_mode() == bias_mode::SIMPLE){
+            b_bias = 0.0;
         }
 
         for(auto& items : batch){
@@ -679,6 +679,13 @@ public:
             if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
                 q_local_batch += rbm.h2_a;
             }
+
+            //Compute the biases for sparsity
+            if(rbm_traits<rbm_t>::bias_mode() == bias_mode::SIMPLE){
+                for(std::size_t k = 0; k < K; ++k){
+                    b_bias(k) += mean(rbm.h2_a(k));
+                }
+            }
         }
 
         //Keep only the mean of the gradients
@@ -697,6 +704,10 @@ public:
 
         if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
             q_local_batch /= n_samples;
+        }
+
+        if(rbm_traits<rbm_t>::bias_mode() == bias_mode::SIMPLE){
+            b_bias = b_bias / n_samples - rbm.pbias;
         }
 
         //Accumulate the sparsity
