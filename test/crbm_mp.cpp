@@ -132,8 +132,6 @@ TEST_CASE( "crbm_mp/mnist_6", "crbm::gaussian" ) {
 }
 
 TEST_CASE( "crbm_mp/mnist_7", "crbm::relu" ) {
-    //TODO This does not work right now
-
     dll::conv_rbm_mp_desc<
         28, 12, 40, 2,
         dll::batch_size<25>,
@@ -149,14 +147,12 @@ TEST_CASE( "crbm_mp/mnist_7", "crbm::relu" ) {
 
     auto error = rbm.train(dataset.training_images, 100);
 
-    REQUIRE(error < 1e-1);
+    REQUIRE(error < 1e-3);
 }
 
 //TODO Test other ReLU versions
 
 TEST_CASE( "crbm_mp/mnist_10", "crbm::pcd_trainer" ) {
-    //TODO This test does not work right now
-
     dll::conv_rbm_mp_desc<
         28, 12, 40, 2,
         dll::batch_size<10>,
