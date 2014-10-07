@@ -128,7 +128,7 @@ TEST_CASE( "crbm_mp/mnist_6", "crbm::gaussian" ) {
 
     auto error = rbm.train(dataset.training_images, 100);
 
-    REQUIRE(error < 1e-1);
+    REQUIRE(error < 5e-2);
 }
 
 TEST_CASE( "crbm_mp/mnist_7", "crbm::relu" ) {
@@ -214,6 +214,32 @@ TEST_CASE( "crbm_mp/mnist_12", "crbm::bias_mode_simple" ) {
     dataset.training_images.resize(200);
 
     mnist::binarize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 100);
+
+    REQUIRE(error < 1e-2);
+}
+
+TEST_CASE( "crbm_mp/mnist_13", "crbm::lee" ) {
+    dll::conv_rbm_mp_desc<
+        28, 12, 40, 2,
+        dll::batch_size<10>,
+        dll::momentum,
+        dll::visible<dll::unit_type::GAUSSIAN>,
+        dll::weight_decay<dll::decay_type::L2>,
+        dll::sparsity<dll::sparsity_method::LEE>,
+        dll::bias<dll::bias_mode::SIMPLE>
+    >::rbm_t rbm;
+
+    rbm.l2_weight_cost = 0.01;
+    //rbm.learning_rate = 0.01;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(200);
+
+    mnist::normalize_dataset(dataset);
 
     auto error = rbm.train(dataset.training_images, 100);
 
