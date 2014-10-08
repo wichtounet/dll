@@ -18,10 +18,9 @@ TEST_CASE( "crbm/mnist_1", "crbm::simple" ) {
         dll::batch_size<25>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(250);
 
     REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(100);
 
     mnist::binarize_dataset(dataset);
 
@@ -143,6 +142,8 @@ TEST_CASE( "crbm/mnist_6", "crbm::gaussian" ) {
     dll::conv_rbm_desc<
         28, 12, 40,
         dll::batch_size<25>,
+        dll::momentum,
+        dll::weight_decay<dll::decay_type::L2>,
         dll::visible<dll::unit_type::GAUSSIAN>
     >::rbm_t rbm;
 

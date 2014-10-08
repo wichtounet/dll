@@ -197,21 +197,23 @@ TEST_CASE( "rbm/mnist_7", "rbm::gaussian" ) {
     dll::rbm_desc<
         28 * 28, 100,
        dll::batch_size<25>,
+       dll::momentum,
        dll::visible<dll::unit_type::GAUSSIAN>
     >::rbm_t rbm;
 
-    rbm.learning_rate *= 10;
+    //rbm.learning_rate *= 50;
+    rbm.learning_rate *= 2;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
 
     REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(100);
+    //dataset.training_images.resize(100);
 
     mnist::normalize_dataset(dataset);
 
     auto error = rbm.train(dataset.training_images, 200);
 
-    REQUIRE(error < 1e-2);
+    REQUIRE(error < 1e-1);
 }
 
 TEST_CASE( "rbm/mnist_8", "rbm::softmax" ) {

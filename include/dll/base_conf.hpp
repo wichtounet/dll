@@ -59,7 +59,7 @@ struct hidden : value_conf_elt<hidden_id, unit_type, HT> {};
 template<unit_type PT>
 struct pooling_unit : value_conf_elt<pooling_unit_id, unit_type, PT> {};
 
-template<decay_type T>
+template<decay_type T = decay_type::L2>
 struct weight_decay : value_conf_elt<weight_decay_id, decay_type, T> {};
 
 /*!

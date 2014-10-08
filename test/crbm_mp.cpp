@@ -18,6 +18,8 @@ TEST_CASE( "crbm_mp/mnist_1", "crbm::simple" ) {
         dll::batch_size<25>
     >::rbm_t rbm;
 
+    rbm.learning_rate = 0.01;
+
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
     REQUIRE(!dataset.training_images.empty());
@@ -27,7 +29,7 @@ TEST_CASE( "crbm_mp/mnist_1", "crbm::simple" ) {
 
     auto error = rbm.train(dataset.training_images, 100);
 
-    REQUIRE(error < 1e-2);
+    REQUIRE(error < 1e-1);
 }
 
 TEST_CASE( "crbm_mp/mnist_2", "crbm::momentum" ) {
@@ -114,12 +116,14 @@ TEST_CASE( "crbm_mp/mnist_6", "crbm::gaussian" ) {
     dll::conv_rbm_mp_desc<
         28, 12, 40, 2,
         dll::batch_size<25>,
+        dll::momentum,
+        dll::weight_decay<>,
         dll::visible<dll::unit_type::GAUSSIAN>
     >::rbm_t rbm;
 
-    rbm.learning_rate *= 1.5;
+    //rbm.learning_rate *= 10;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
 
     REQUIRE(!dataset.training_images.empty());
     dataset.training_images.resize(100);

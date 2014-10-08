@@ -117,7 +117,7 @@ struct rbm_trainer {
             }
 
             //Average all the gathered information
-            context.reconstruction_error /= batches;
+            context.reconstruction_error /= samples;
             context.free_energy /= samples;
             context.sparsity /= batches;
 
