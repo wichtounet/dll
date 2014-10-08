@@ -481,7 +481,7 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
         t.b_grad += rbm.h1_a - rbm.h2_a;
         t.c_grad += rbm.v1 - rbm.v2_a;
 
-		context.reconstruction_error += mean((rbm.v1 - rbm.v2_a) * (rbm.v1 - rbm.v2_a));
+        context.reconstruction_error += mean((rbm.v1 - rbm.v2_a) * (rbm.v1 - rbm.v2_a));
 
         //Get the mean activation probabilities
         t.q_global_batch += sum(rbm.h2_a);
@@ -498,8 +498,8 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
         t.init = false;
     }
 
-	//Compute the reconstruction error of this batch
-	//context.reconstruction_error += mean(t.c_grad * t.c_grad) / n_samples;
+    //Compute the reconstruction error of this batch
+    //context.reconstruction_error += mean(t.c_grad * t.c_grad) / n_samples;
 
     //Keep only the mean of the gradients
     t.w_grad /= n_samples;
@@ -685,7 +685,7 @@ public:
 
             c_grad_org += rbm.v1 - rbm.v2_a;
 
-			context.reconstruction_error += mean((rbm.v1 - rbm.v2_a) * (rbm.v1 - rbm.v2_a));
+            context.reconstruction_error += mean((rbm.v1 - rbm.v2_a) * (rbm.v1 - rbm.v2_a));
 
             q_global_batch += sum(sum(rbm.h2_a));
 
@@ -701,8 +701,8 @@ public:
             }
         }
 
-		//Compute the reconstruction error of this batch
-		//context.reconstruction_error += mean(c_grad_org * c_grad_org) / n_samples;
+        //Compute the reconstruction error of this batch
+        //context.reconstruction_error += mean(c_grad_org * c_grad_org) / n_samples;
 
         //Keep only the mean of the gradients
         w_grad /= n_samples;
@@ -917,7 +917,7 @@ public:
 
             c_grad_org += rbm.v1 - rbm.v2_a;
 
-			context.reconstruction_error += mean((rbm.v1 - rbm.v2_a) * (rbm.v1 - rbm.v2_a));
+            context.reconstruction_error += mean((rbm.v1 - rbm.v2_a) * (rbm.v1 - rbm.v2_a));
 
             q_global_batch += sum(sum(rbm.h2_a));
 
@@ -931,8 +931,8 @@ public:
 
         init = false;
 
-		//Compute the reconstruction error of this batch
-		//context.reconstruction_error += mean(c_grad_org * c_grad_org) / n_samples;
+        //Compute the reconstruction error of this batch
+        //context.reconstruction_error += mean(c_grad_org * c_grad_org) / n_samples;
 
         //Keep only the mean of the gradients
         w_grad /= n_samples;

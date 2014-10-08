@@ -232,7 +232,7 @@ TEST_CASE( "crbm_mp/mnist_13", "crbm::lee" ) {
         28, 12, 40, 2,
         dll::batch_size<5>,
         dll::momentum,
-        //dll::visible<dll::unit_type::GAUSSIAN>,
+        dll::visible<dll::unit_type::GAUSSIAN>,
         dll::weight_decay<dll::decay_type::L2>,
         dll::sparsity<dll::sparsity_method::LEE>,
         dll::bias<dll::bias_mode::SIMPLE>
@@ -248,8 +248,8 @@ TEST_CASE( "crbm_mp/mnist_13", "crbm::lee" ) {
     REQUIRE(!dataset.training_images.empty());
     dataset.training_images.resize(200);
 
-    //mnist::normalize_dataset(dataset);
-    mnist::binarize_dataset(dataset);
+    mnist::normalize_dataset(dataset);
+    //mnist::binarize_dataset(dataset);
 
     auto error = rbm.train(dataset.training_images, 100);
 
