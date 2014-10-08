@@ -117,8 +117,17 @@ struct conv_dbn {
     }
 
     template<std::size_t N>
+    static constexpr std::size_t rbm_input(){
+        return rbm_nv<N>() * rbm_nv<N>();
+    }
+
+    template<std::size_t N>
     static constexpr std::size_t rbm_output(){
         return rbm_k<N>() * rbm_nh<N>() * rbm_nh<N>();
+    }
+
+    static constexpr std::size_t input_size(){
+        return rbm_output<0>();
     }
 
     static constexpr std::size_t output_size(){
