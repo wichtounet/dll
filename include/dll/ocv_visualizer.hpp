@@ -48,8 +48,13 @@ struct base_ocv_rbm_visualizer {
             std::cout << "   weight_cost(L2)=" << rbm.l2_weight_cost << std::endl;
         }
 
-        if(rbm_traits<RBM>::has_sparsity()){
-            std::cout << "   sparsity_target=" << rbm.sparsity_target << std::endl;
+        if(rbm_traits<RBM>::sparsity_method() == sparsity_method::LEE){
+            std::cout << "   Sparsity (Lee): pbias=" << rbm.pbias << std::endl;
+            std::cout << "   Sparsity (Lee): pbias_lambda=" << rbm.pbias_lambda << std::endl;
+        } else if(rbm_traits<RBM>::sparsity_method() == sparsity_method::GLOBAL_TARGET){
+            std::cout << "   sparsity_target(Global)=" << rbm.sparsity_target << std::endl;
+        } else if(rbm_traits<RBM>::sparsity_method() == sparsity_method::LOCAL_TARGET){
+            std::cout << "   sparsity_target(Local)=" << rbm.sparsity_target << std::endl;
         }
 
         cv::namedWindow("RBM Training", cv::WINDOW_NORMAL);
