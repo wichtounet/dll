@@ -238,15 +238,14 @@ TEST_CASE( "crbm_mp/mnist_13", "crbm::lee" ) {
         dll::bias<dll::bias_mode::SIMPLE>
     >::rbm_t rbm;
 
-    rbm.l2_weight_cost = 0.01;
+    //rbm.l2_weight_cost = 0.01;
     rbm.pbias = 0.01;
     rbm.pbias_lambda = 100;
     //rbm.learning_rate = 0.01;
+    rbm.learning_rate *= 10;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
-
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
     REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(200);
 
     mnist::normalize_dataset(dataset);
     //mnist::binarize_dataset(dataset);
