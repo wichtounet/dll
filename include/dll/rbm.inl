@@ -132,7 +132,7 @@ public:
             v_s = bernoulli(v_a);
         } else if(visible_unit == unit_type::GAUSSIAN){
             v_a = c + mmul(w, reshape<num_hidden, 1>(h_s), t);
-            v_s = normal_noise(v_a);
+            v_s = v_a;
         } else if(visible_unit == unit_type::RELU){
             v_a = max(c + mmul(w, reshape<num_hidden, 1>(h_s), t), 0.0);
             v_s = logistic_noise(v_a);
