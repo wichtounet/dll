@@ -137,21 +137,20 @@ TEST_CASE( "dbn/mnist_5", "dbn::sgd_momentum" ) {
 TEST_CASE( "dbn/mnist_6", "dbn::cg_gaussian" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::visible<dll::unit_type::GAUSSIAN>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>>::dbn_t dbn_t;
+        dll::rbm_desc<28 * 28, 200, dll::momentum, dll::batch_size<25>, dll::visible<dll::unit_type::GAUSSIAN>>::rbm_t,
+        dll::rbm_desc<200, 500, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::rbm_desc<500, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
+    >::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::deque, double>();
+    auto dataset = mnist::read_dataset<std::vector, std::deque, double>(1000);
 
     REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(200);
-    dataset.training_labels.resize(200);
 
     mnist::normalize_dataset(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->pretrain(dataset.training_images, 5);
+    dbn->pretrain(dataset.training_images, 20);
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 10, 50);
 
     REQUIRE(error < 5e-2);
@@ -161,16 +160,14 @@ TEST_CASE( "dbn/mnist_6", "dbn::cg_gaussian" ) {
 TEST_CASE( "dbn/mnist_7", "dbn::sgd_gaussian" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::visible<dll::unit_type::GAUSSIAN>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
+        dll::rbm_desc<28 * 28, 200, dll::momentum, dll::batch_size<25>, dll::visible<dll::unit_type::GAUSSIAN>>::rbm_t,
+        dll::rbm_desc<200, 500, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::rbm_desc<500, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
         dll::trainer<dll::sgd_trainer>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::deque, double>();
+    auto dataset = mnist::read_dataset<std::vector, std::deque, double>(1000);
 
     REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(200);
-    dataset.training_labels.resize(200);
 
     mnist::normalize_dataset(dataset);
 
@@ -178,8 +175,8 @@ TEST_CASE( "dbn/mnist_7", "dbn::sgd_gaussian" ) {
 
     dbn->learning_rate = 0.01;
 
-    dbn->pretrain(dataset.training_images, 100);
-    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 200, 20);
+    dbn->pretrain(dataset.training_images, 20);
+    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100, 20);
 
     REQUIRE(error < 5e-2);
 }
