@@ -56,7 +56,7 @@ double test_set(DBN& dbn, const Samples& images, const Labels& labels, Functor&&
 
 template<typename DBN, typename Functor, typename Iterator, typename LIterator>
 double test_set(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator /*llast*/, Functor&& f){
-    stop_watch<std::chrono::milliseconds> watch;
+    cpp::stop_watch<std::chrono::milliseconds> watch;
 
     size_t success = 0;
     size_t images = 0;

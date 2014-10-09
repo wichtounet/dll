@@ -14,11 +14,12 @@
 #include <functional>
 #include <ctime>
 
+#include "cpp_utils/stop_watch.hpp"    //Performance counter
+#include "cpp_utils/assert.hpp"
+
 #include "etl/multiplication.hpp"
 
 #include "rbm_base.hpp"      //The base class
-#include "stop_watch.hpp"    //Performance counter
-#include "assert.hpp"
 #include "base_conf.hpp"
 #include "math.hpp"
 #include "io.hpp"

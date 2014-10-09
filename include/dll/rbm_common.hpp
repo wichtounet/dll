@@ -41,7 +41,7 @@ void init_weights(Iterator first, Iterator last, RBM& rbm){
         pi += 0.0001;
         rbm.c(i) = log(pi / (1.0 - pi));
 
-        dll_assert(std::isfinite(rbm.c(i)), "NaN verify");
+        cpp_assert(std::isfinite(rbm.c(i)), "NaN verify");
     }
 }
 
@@ -149,9 +149,9 @@ typename RBM::weight free_energy(const RBM& rbm, const V& v){
 
 template<typename Sample, typename RBM>
 void reconstruct(const Sample& items, RBM& rbm){
-    dll_assert(items.size() == num_visible, "The size of the training sample must match visible units");
+    cpp_assert(items.size() == num_visible, "The size of the training sample must match visible units");
 
-    stop_watch<> watch;
+    cpp::stop_watch<> watch;
 
     //Set the state of the visible units
     rbm.v1 = items;

@@ -10,7 +10,7 @@
 
 #include <iterator>
 
-#include "assert.hpp"
+#include "cpp_utils/assert.hpp"
 
 namespace dll {
 
@@ -24,7 +24,7 @@ struct batch {
     batch(Iterator&& first, Iterator&& last):
             first(std::forward<Iterator>(first)),
             last(std::forward<Iterator>(last)){
-        dll_assert(std::distance(first, last) > 0, "Batch cannot be empty or reversed");
+        cpp_assert(std::distance(first, last) > 0, "Batch cannot be empty or reversed");
     }
 
     Iterator begin() const {

@@ -8,11 +8,15 @@
 #ifndef DLL_RBM_INL
 #define DLL_RBM_INL
 
+#include "cpp_utils/assert.hpp"             //Assertions
+#include "cpp_utils/stop_watch.hpp"         //Performance counter
+
 #include "etl/fast_matrix.hpp"
 #include "etl/fast_vector.hpp"
 #include "etl/dyn_vector.hpp"
 
 #include "normal_rbm.hpp"
+#include "checks.hpp"
 
 namespace dll {
 
@@ -114,7 +118,7 @@ public:
             h_s = 0.0;
             h_s(std::distance(h_a.begin(), max)) = 1.0;
         } else {
-            dll_unreachable("Invalid path");
+            cpp_unreachable("Invalid path");
         }
 
         nan_check_deep(h_a);
@@ -137,7 +141,7 @@ public:
             v_a = max(c + mmul(w, reshape<num_hidden, 1>(h_s), t), 0.0);
             v_s = logistic_noise(v_a);
         } else {
-            dll_unreachable("Invalid path");
+            cpp_unreachable("Invalid path");
         }
 
         nan_check_deep(v_a);

@@ -12,6 +12,9 @@
 #include <ctime>
 #include <random>
 
+#include "cpp_utils/assert.hpp"             //Assertions
+#include "cpp_utils/stop_watch.hpp"         //Performance counter
+
 #include "etl/fast_vector.hpp"
 #include "etl/dyn_vector.hpp"
 #include "etl/fast_matrix.hpp"
@@ -19,12 +22,11 @@
 
 #include "rbm_base.hpp"           //The base class
 #include "base_conf.hpp"          //The configuration helpers
-#include "assert.hpp"             //Assertions
-#include "stop_watch.hpp"         //Performance counter
 #include "math.hpp"               //Logistic sigmoid
 #include "io.hpp"                 //Binary load/store functions
 #include "tmp.hpp"
 #include "rbm_trainer_fwd.hpp"
+#include "checks.hpp"
 
 namespace dll {
 
@@ -203,13 +205,13 @@ public:
                             h_s(k)(i,j) = std::min(std::max(0.0, x + noise()), 1.0);
                         }
                     } else {
-                        dll_unreachable("Invalid path");
+                        cpp_unreachable("Invalid path");
                     }
 
-                    dll_assert(std::isfinite(x), "NaN verify");
-                    dll_assert(std::isfinite(pool(k,i,j)), "NaN verify");
-                    dll_assert(std::isfinite(h_a(k)(i,j)), "NaN verify");
-                    dll_assert(std::isfinite(h_s(k)(i,j)), "NaN verify");
+                    cpp_assert(std::isfinite(x), "NaN verify");
+                    cpp_assert(std::isfinite(pool(k,i,j)), "NaN verify");
+                    cpp_assert(std::isfinite(h_a(k)(i,j)), "NaN verify");
+                    cpp_assert(std::isfinite(h_s(k)(i,j)), "NaN verify");
                 }
             }
         }
@@ -233,7 +235,7 @@ public:
             v_a = c + h_cv(K);
             v_s = normal_noise(v_a);
         } else {
-            dll_unreachable("Invalid path");
+            cpp_unreachable("Invalid path");
         }
 
         nan_check_deep(v_a);
@@ -269,9 +271,9 @@ public:
 
     template<typename Sample>
     void reconstruct(const Sample& items){
-        dll_assert(items.size() == NV * NV, "The size of the training sample must match visible units");
+        cpp_assert(items.size() == NV * NV, "The size of the training sample must match visible units");
 
-        stop_watch<> watch;
+        cpp::stop_watch<> watch;
 
         //Set the state of the visible units
         v1 = items;

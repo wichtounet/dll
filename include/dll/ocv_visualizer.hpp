@@ -8,9 +8,10 @@
 #ifndef DLL_OPENCV_RBM_VISUALIZER_HPP
 #define DLL_OPENCV_RBM_VISUALIZER_HPP
 
-#include "dll/stop_watch.hpp"
-#include "dll/rbm_traits.hpp"
-#include "dll/dbn_traits.hpp"
+#include "cpp_utils/stop_watch.hpp"
+
+#include "rbm_traits.hpp"
+#include "dbn_traits.hpp"
 
 #include <opencv2/opencv.hpp>
 
@@ -18,7 +19,7 @@ namespace dll {
 
 template<typename RBM>
 struct base_ocv_rbm_visualizer {
-    stop_watch<std::chrono::seconds> watch;
+    cpp::stop_watch<std::chrono::seconds> watch;
 
     const std::size_t width;
     const std::size_t height;
@@ -301,7 +302,7 @@ struct opencv_dbn_visualizer {
     static constexpr const bool ignore_sub = false;
     static constexpr const bool replace_sub = true;
 
-    stop_watch<std::chrono::seconds> watch;
+    cpp::stop_watch<std::chrono::seconds> watch;
 
     using dbn_t = DBN;
 
@@ -489,7 +490,7 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
     static constexpr const bool ignore_sub = false;
     static constexpr const bool replace_sub = true;
 
-    stop_watch<std::chrono::seconds> watch;
+    cpp::stop_watch<std::chrono::seconds> watch;
 
     using dbn_t = DBN;
 

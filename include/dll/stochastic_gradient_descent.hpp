@@ -92,7 +92,7 @@ struct sgd_trainer {
 
     template<typename T, typename L>
     void train_batch(std::size_t /*epoch*/, const dll::batch<T>& data_batch, const dll::batch<L>& label_batch){
-        dll_assert(data_batch.size() == label_batch.size(), "Invalid sizes");
+        cpp_assert(data_batch.size() == label_batch.size(), "Invalid sizes");
 
         auto n_samples = label_batch.size();
 

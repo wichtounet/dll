@@ -210,16 +210,16 @@ struct dbn {
 
     template<typename Samples, typename Labels>
     void train_with_labels(const Samples& training_data, const Labels& training_labels, std::size_t labels, std::size_t max_epochs){
-        dll_assert(training_data.size() == training_labels.size(), "There must be the same number of values than labels");
-        dll_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
+        cpp_assert(training_data.size() == training_labels.size(), "There must be the same number of values than labels");
+        cpp_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
         train_with_labels(training_data.begin(), training_data.end(), training_labels.begin(), training_labels.end(), labels, max_epochs);
     }
 
     template<typename Iterator, typename LabelIterator>
     void train_with_labels(Iterator first, Iterator last, LabelIterator lfirst, LabelIterator llast, std::size_t labels, std::size_t max_epochs){
-        dll_assert(std::distance(first, last) == std::distance(lfirst, llast), "There must be the same number of values than labels");
-        dll_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
+        cpp_assert(std::distance(first, last) == std::distance(lfirst, llast), "There must be the same number of values than labels");
+        cpp_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
         using training_t = std::vector<etl::dyn_vector<typename std::iterator_traits<Iterator>::value_type::value_type>>;
 
@@ -278,7 +278,7 @@ struct dbn {
 
     template<typename TrainingItem>
     size_t predict_labels(const TrainingItem& item_data, std::size_t labels){
-        dll_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
+        cpp_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
         etl::dyn_vector<typename TrainingItem::value_type> item(item_data);
 

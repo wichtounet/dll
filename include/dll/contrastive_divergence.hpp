@@ -17,11 +17,12 @@
 #ifndef DLL_CONTRASTIVE_DIVERGENCE_HPP
 #define DLL_CONTRASTIVE_DIVERGENCE_HPP
 
+#include "cpp_utils/assert.hpp"             //Assertions
+
 #include "etl/fast_matrix.hpp"
 #include "etl/fast_vector.hpp"
 #include "etl/convolution.hpp"
 
-#include "assert.hpp"
 #include "batch.hpp"
 #include "decay_type.hpp"
 #include "rbm_traits.hpp"
@@ -424,8 +425,8 @@ auto reshape_1nh(RBM&, C& container){
 
 template<bool Persistent, std::size_t K, typename T, typename RBM, typename Trainer, typename M>
 void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM& rbm, Trainer& t, M& t1, M& t2){
-    dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<RBM>::batch_size()), "Invalid size");
-    dll_assert(batch[0].size() == num_visible(rbm), "The size of the training sample must match visible units");
+    cpp_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<RBM>::batch_size()), "Invalid size");
+    cpp_assert(batch[0].size() == num_visible(rbm), "The size of the training sample must match visible units");
 
     using namespace etl;
     using rbm_t = RBM;
@@ -631,8 +632,8 @@ public:
 
     template<typename T>
     void train_batch(const dll::batch<T>& batch, rbm_training_context& context){
-        dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<rbm_t>::batch_size()), "Invalid size");
-        dll_assert(batch[0].size() == rbm_t::NV * rbm_t::NV, "The size of the training sample must match visible units");
+        cpp_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<rbm_t>::batch_size()), "Invalid size");
+        cpp_assert(batch[0].size() == rbm_t::NV * rbm_t::NV, "The size of the training sample must match visible units");
 
         //Size of a minibatch
         auto n_samples = static_cast<weight>(batch.size());
@@ -856,8 +857,8 @@ public:
 
     template<typename T>
     void train_batch(const dll::batch<T>& batch, rbm_training_context& context){
-        dll_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<rbm_t>::batch_size()), "Invalid size");
-        dll_assert(batch[0].size() == NV * NV, "The size of the training sample must match visible units");
+        cpp_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<rbm_t>::batch_size()), "Invalid size");
+        cpp_assert(batch[0].size() == NV * NV, "The size of the training sample must match visible units");
 
         //Size of a minibatch
         auto n_samples = static_cast<weight>(batch.size());

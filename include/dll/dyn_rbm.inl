@@ -12,6 +12,7 @@
 #include "etl/dyn_vector.hpp"
 
 #include "normal_rbm.hpp"
+#include "checks.hpp"
 
 namespace dll {
 
@@ -119,7 +120,7 @@ public:
             h_s = 0.0;
             h_s(std::distance(h_a.begin(), max)) = 1.0;
         } else {
-            dll_unreachable("Invalid path");
+            cpp_unreachable("Invalid path");
         }
 
         nan_check_deep(h_a);
@@ -142,7 +143,7 @@ public:
             v_a = max(c + mmul(w, reshape(h_s, num_hidden, 1), t), 0.0);
             v_s = logistic_noise(v_a);
         } else {
-            dll_unreachable("Invalid path");
+            cpp_unreachable("Invalid path");
         }
 
         nan_check_deep(v_a);

@@ -12,7 +12,8 @@
 
 #include <sys/stat.h>
 
-#include "stop_watch.hpp"
+#include "cpp_utils/stop_watch.hpp"
+
 #include "rbm_traits.hpp"
 #include "dbn_traits.hpp"
 
@@ -20,7 +21,7 @@ namespace dll {
 
 template<typename R>
 struct default_rbm_watcher {
-    stop_watch<std::chrono::seconds> watch;
+    cpp::stop_watch<std::chrono::seconds> watch;
 
     template<typename RBM = R>
     void training_begin(const RBM& rbm){
@@ -67,7 +68,7 @@ struct default_dbn_watcher {
     static constexpr const bool ignore_sub = false;
     static constexpr const bool replace_sub = false;
 
-    stop_watch<std::chrono::seconds> watch;
+    cpp::stop_watch<std::chrono::seconds> watch;
 
     void pretraining_begin(const DBN& /*dbn*/){
         std::cout << "DBN: Pretraining begin" << std::endl;
@@ -110,7 +111,7 @@ struct default_dbn_watcher<DBN, std::enable_if_t<dbn_traits<DBN>::is_convolution
     static constexpr const bool ignore_sub = false;
     static constexpr const bool replace_sub = false;
 
-    stop_watch<std::chrono::seconds> watch;
+    cpp::stop_watch<std::chrono::seconds> watch;
 
     void pretraining_begin(const DBN& /*dbn*/){
         std::cout << "CDBN: Pretraining begin" << std::endl;
