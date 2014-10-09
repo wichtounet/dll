@@ -73,13 +73,7 @@ public:
      */
     rbm() : normal_rbm<rbm<Desc>, Desc>(), b(0.0), c(0.0) {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
-        static std::default_random_engine rand_engine(std::time(nullptr));
-        static std::normal_distribution<weight> distribution(0.0, 1.0);
-        static auto generator = std::bind(distribution, rand_engine);
-
-        for(auto& weight : w){
-            weight = generator() * 0.1;
-        }
+        w = etl::normal_generator() * 0.1;
     }
 
     template<typename H1, typename H2, typename V>

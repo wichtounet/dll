@@ -75,13 +75,7 @@ public:
             v2_a(num_visible), v2_s(num_visible), h2_a(num_hidden), h2_s(num_hidden),
             num_visible(num_visible), num_hidden(num_hidden) {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
-        static std::default_random_engine rand_engine(std::time(nullptr));
-        static std::normal_distribution<weight> distribution(0.0, 1.0);
-        static auto generator = std::bind(distribution, rand_engine);
-
-        for(auto& weight : w){
-            weight = generator() * 0.1;
-        }
+        w = etl::normal_generator() * 0.1;
     }
 
     template<typename H1, typename H2, typename V>
