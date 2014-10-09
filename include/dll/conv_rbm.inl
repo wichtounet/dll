@@ -105,6 +105,10 @@ public:
             :   /* Only Gaussian Units needs lower rate */         1e-3;
     }
 
+    void display() const {
+        std::cout << "CRBM_MP: " << NV << "x" << NV << " -> (" << NW << "x" << NW << ") -> " << NH << "x" << NH << " (" << K << ")" << std::endl;
+    }
+
     void store(std::ostream& os) const {
         for(std::size_t k = 0; k < K; ++k){
             binary_write_all(os, w(k));

@@ -26,6 +26,9 @@ struct default_rbm_watcher {
     template<typename RBM = R>
     void training_begin(const RBM& rbm){
         std::cout << "Train RBM with \"" << RBM::desc::template trainer_t<RBM>::name() << "\"" << std::endl;
+
+        rbm.display();
+
         std::cout << "With parameters:" << std::endl;
         std::cout << "   learning_rate=" << rbm.learning_rate << std::endl;
 
