@@ -62,7 +62,7 @@ struct sgd_trainer {
 
         first_rbm.activate_hidden(first_rbm_context.o_a, first_rbm_context.o_s, item, item);
 
-        detail::for_each_pair(tuples, rbm_contexts, [](auto&, auto& r2, auto& ctx1, auto& ctx2){
+        cpp::for_each_pair(tuples, rbm_contexts, [](auto&, auto& r2, auto& ctx1, auto& ctx2){
             r2.activate_hidden(ctx2.o_a, ctx2.o_s, ctx1.o_a, ctx1.o_s);
         });
     }
@@ -98,7 +98,7 @@ struct sgd_trainer {
 
         constexpr const auto n_outputs = dbn_t::template num_hidden<layers - 1>();
 
-        detail::for_each(rbm_contexts, [](auto& context){
+        cpp::for_each(rbm_contexts, [](auto& context){
             context.w_grad = 0.0;
             context.b_grad = 0.0;
             context.c_grad = 0.0;
@@ -132,7 +132,7 @@ struct sgd_trainer {
 
             //Compute the gradients of each layer
 
-            detail::for_each_rpair_i(tuples, rbm_contexts, [](std::size_t, auto&, auto& r2, auto& ctx1, auto& ctx2){
+            cpp::for_each_rpair_i(tuples, rbm_contexts, [](std::size_t, auto&, auto& r2, auto& ctx1, auto& ctx2){
                 compute_gradients(r2, ctx2, ctx1.o_a);
 
                 typedef typename std::remove_reference<decltype(r2)>::type r2_t;
@@ -150,7 +150,7 @@ struct sgd_trainer {
 
         //Finalize gradients
 
-        detail::for_each(rbm_contexts, [n_samples](auto& context){
+        cpp::for_each(rbm_contexts, [n_samples](auto& context){
             context.w_grad /= n_samples;
             context.b_grad /= n_samples;
             context.c_grad /= n_samples;
@@ -158,7 +158,7 @@ struct sgd_trainer {
 
         //Apply gradients
 
-        detail::for_each(tuples, rbm_contexts, [this](auto& rbm, auto& context){
+        cpp::for_each(tuples, rbm_contexts, [this](auto& rbm, auto& context){
             //Update momentum gradients
             if(dbn_traits<dbn_t>::has_momentum()){
                 auto momentum = dbn.momentum;

@@ -10,11 +10,12 @@
 
 #include <tuple>
 
-#include "etl/dyn_vector.hpp"
+#include "cpp_utils/tuple_utils.hpp"
+
 #include "etl/dyn_matrix.hpp"
+#include "etl/dyn_vector.hpp"
 
 #include "conv_rbm.hpp"
-#include "tuple_utils.hpp"
 #include "dbn_trainer.hpp"
 #include "conjugate_gradient.hpp"
 #include "dbn_common.hpp"
@@ -60,7 +61,7 @@ struct conv_dbn {
     void display() const {
         std::size_t parameters = 0;
 
-        detail::for_each(tuples, [&parameters](auto& rbm){
+        cpp::for_each(tuples, [&parameters](auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
 
             constexpr const auto NV = rbm_t::NV;
@@ -72,7 +73,7 @@ struct conv_dbn {
     }
 
     void store(std::ostream& os) const {
-        detail::for_each(tuples, [&os](auto& rbm){
+        cpp::for_each(tuples, [&os](auto& rbm){
             rbm.store(os);
         });
 
@@ -82,7 +83,7 @@ struct conv_dbn {
     }
 
     void load(std::istream& is){
-        detail::for_each(tuples, [&is](auto& rbm){
+        cpp::for_each(tuples, [&is](auto& rbm){
             rbm.load(is);
         });
 
@@ -165,7 +166,7 @@ struct conv_dbn {
 
         auto input = std::ref(data);
 
-        detail::for_each_i(tuples, [&watcher, this, &input, &next, &next_a, &next_s, max_epochs](std::size_t I, auto& rbm){
+        cpp::for_each_i(tuples, [&watcher, this, &input, &next, &next_a, &next_s, max_epochs](std::size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
             constexpr const auto NH = rbm_t::NH;
             constexpr const auto K = rbm_t::K;
@@ -235,7 +236,7 @@ struct conv_dbn {
 
         auto input = std::cref(item);
 
-        detail::for_each_i(tuples, [&item, &input, &result](std::size_t I, auto& rbm){
+        cpp::for_each_i(tuples, [&item, &input, &result](std::size_t I, auto& rbm){
             if(I != layers - 1){
                 typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
                 constexpr const auto NH = rbm_t::NH;

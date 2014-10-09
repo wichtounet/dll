@@ -10,8 +10,9 @@
 
 #include <tuple>
 
+#include "cpp_utils/tuple_utils.hpp"
+
 #include "rbm.hpp"
-#include "tuple_utils.hpp"
 #include "dbn_trainer.hpp"
 #include "conjugate_gradient.hpp"
 #include "dbn_common.hpp"
@@ -69,7 +70,7 @@ struct dbn {
 
         std::cout << "DBN with " << layers << " layers" << std::endl;
 
-        detail::for_each(tuples, [&parameters](auto& rbm){
+        cpp::for_each(tuples, [&parameters](auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
             constexpr const auto num_visible = rbm_t::num_visible;
             constexpr const auto num_hidden = rbm_t::num_hidden;
@@ -83,7 +84,7 @@ struct dbn {
     }
 
     void store(std::ostream& os) const {
-        detail::for_each(tuples, [&os](auto& rbm){
+        cpp::for_each(tuples, [&os](auto& rbm){
             rbm.store(os);
         });
 
@@ -93,7 +94,7 @@ struct dbn {
     }
 
     void load(std::istream& is){
-        detail::for_each(tuples, [&is](auto& rbm){
+        cpp::for_each(tuples, [&is](auto& rbm){
             rbm.load(is);
         });
 
@@ -164,7 +165,7 @@ struct dbn {
 
         auto input = std::ref(data);
 
-        detail::for_each_i(tuples, [&watcher, this, &input, &next_a, &next_s, max_epochs](std::size_t I, auto& rbm){
+        cpp::for_each_i(tuples, [&watcher, this, &input, &next_a, &next_s, max_epochs](std::size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
             constexpr const auto num_hidden = rbm_t::num_hidden;
 
@@ -233,7 +234,7 @@ struct dbn {
 
         auto input = std::cref(data);
 
-        detail::for_each_i(tuples, [&input, llast, lfirst, labels, max_epochs](size_t I, auto& rbm){
+        cpp::for_each_i(tuples, [&input, llast, lfirst, labels, max_epochs](size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
             constexpr const auto num_hidden = rbm_t::num_hidden;
 
@@ -287,7 +288,7 @@ struct dbn {
 
         auto input_ref = std::cref(item);
 
-        detail::for_each_i(tuples, [labels,&input_ref,&output_a,&output_s](size_t I, auto& rbm){
+        cpp::for_each_i(tuples, [labels,&input_ref,&output_a,&output_s](size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
             constexpr const auto num_hidden = rbm_t::num_hidden;
 
@@ -349,7 +350,7 @@ struct dbn {
 
         auto input = std::cref(item);
 
-        detail::for_each_i(tuples, [&item, &input, &result](std::size_t I, auto& rbm){
+        cpp::for_each_i(tuples, [&item, &input, &result](std::size_t I, auto& rbm){
             if(I != layers - 1){
                 typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
                 constexpr const auto num_hidden = rbm_t::num_hidden;
