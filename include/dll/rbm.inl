@@ -103,9 +103,10 @@ public:
             h_a = min(max(b + mmul(reshape<1, num_visible>(v_a), w, t), 0.0), 1.0);
             h_s = ranged_noise(h_a, 1.0);
         } else if(hidden_unit == unit_type::SOFTMAX){
-            weight exp_sum = sum(exp(b + mmul(reshape<1, num_visible>(v_a), w, t)));
+            //Note: this is only an expression, the addition will be executed twice
+            auto x = b + mmul(reshape<1, num_visible>(v_a), w, t);
 
-            h_a = exp(b + mmul(reshape<1, num_visible>(v_a), w, t)) / exp_sum;
+            h_a = exp(x) / sum(exp(x));
 
             auto max = std::max_element(h_a.begin(), h_a.end());
 

@@ -89,14 +89,8 @@ public:
 
     conv_rbm(){
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
-        static std::default_random_engine rand_engine(std::time(nullptr));
-        static std::normal_distribution<weight> distribution(0.0, 1.0);
-        static auto generator = std::bind(distribution, rand_engine);
-
         for(std::size_t k = 0; k < K; ++k){
-            for(auto& weight : w(k)){
-                weight = 0.01 * generator();
-            }
+            w(k) = 0.01 * etl::normal_generator();
         }
 
         b = -0.1;

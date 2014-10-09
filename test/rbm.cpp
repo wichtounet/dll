@@ -230,7 +230,7 @@ TEST_CASE( "rbm/mnist_8", "rbm::softmax" ) {
 
     mnist::binarize_dataset(dataset);
 
-    auto error = rbm.train(dataset.training_images, 100);
+    auto error = rbm.train(dataset.training_images, 200);
 
     REQUIRE(error < 1e-2);
 }
