@@ -40,12 +40,12 @@ template<typename RBM>
 struct base_trainer {
     typedef RBM rbm_t;
 
-    template<typename T1, typename T2, bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = ::detail::dummy>
+    template<typename T1, typename T2, bool M = rbm_traits<rbm_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
     T2& get_fgrad(T1& , T2& inc){
         return inc;
     }
 
-    template<typename T1, typename T2, bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = ::detail::dummy>
+    template<typename T1, typename T2, bool M = rbm_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
     T1& get_fgrad(T1& grad, T2& ){
         return grad;
     }
@@ -174,12 +174,12 @@ struct base_cd_trainer : base_trainer<RBM> {
 
     //}}} Sparsity end
 
-    template<bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = ::detail::dummy>
+    template<bool M = rbm_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
     base_cd_trainer(rbm_t&) : q_global_t(0.0), q_local_t(0.0) {
         static_assert(!rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
-    template<bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = ::detail::dummy>
+    template<bool M = rbm_traits<rbm_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
     base_cd_trainer(rbm_t&) : w_inc(0.0), b_inc(0.0), c_inc(0.0), q_global_t(0.0), q_local_t(0.0) {
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
@@ -224,7 +224,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
 
     //}}} Sparsity end
 
-    template<bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = ::detail::dummy>
+    template<bool M = rbm_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
     base_cd_trainer(rbm_t& rbm) :
             w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
             w_inc(0,0), b_inc(0), c_inc(0),
@@ -233,7 +233,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
         static_assert(!rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
-    template<bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = ::detail::dummy>
+    template<bool M = rbm_traits<rbm_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
     base_cd_trainer(rbm_t& rbm) :
             w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
             w_inc(rbm.num_visible, rbm.num_hidden, 0.0), b_inc(rbm.num_hidden, 0.0), c_inc(rbm.num_visible, 0.0),
@@ -295,14 +295,14 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
 
     //}}} Sparsity biases end
 
-    template<bool M = rbm_traits<rbm_t>::has_momentum(), disable_if_u<M> = ::detail::dummy>
+    template<bool M = rbm_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
     base_cd_trainer(rbm_t&) :
             q_global_t(0.0), q_local_t(0.0),
             w_bias(0.0), b_bias(0.0), c_bias(0.0) {
         static_assert(!rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
-    template<bool M = rbm_traits<rbm_t>::has_momentum(), enable_if_u<M> = ::detail::dummy>
+    template<bool M = rbm_traits<rbm_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
     base_cd_trainer(rbm_t&) :
             w_inc(0.0), b_inc(0.0), c_inc(0.0),
             q_global_t(0.0), q_local_t(0.0),
@@ -402,22 +402,22 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
     }
 };
 
-template<typename RBM, typename C, enable_if_u<rbm_traits<RBM>::is_dynamic()> = ::detail::dummy>
+template<typename RBM, typename C, cpp::enable_if_u<rbm_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
 auto reshape_nv1(RBM& rbm, C& container){
     return etl::reshape(container, rbm.num_visible, 1);
 }
 
-template<typename RBM, typename C, disable_if_u<rbm_traits<RBM>::is_dynamic()> = ::detail::dummy>
+template<typename RBM, typename C, cpp::disable_if_u<rbm_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
 auto reshape_nv1(RBM&, C& container){
     return etl::reshape<RBM::num_visible, 1>(container);
 }
 
-template<typename RBM, typename C, enable_if_u<rbm_traits<RBM>::is_dynamic()> = ::detail::dummy>
+template<typename RBM, typename C, cpp::enable_if_u<rbm_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
 auto reshape_1nh(RBM& rbm, C& container){
     return etl::reshape(container, 1, rbm.num_hidden);
 }
 
-template<typename RBM, typename C, disable_if_u<rbm_traits<RBM>::is_dynamic()> = ::detail::dummy>
+template<typename RBM, typename C, cpp::disable_if_u<rbm_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
 auto reshape_1nh(RBM&, C& container){
     return etl::reshape<1, RBM::num_hidden>(container);
 }

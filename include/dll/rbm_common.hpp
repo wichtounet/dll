@@ -45,7 +45,7 @@ void init_weights(Iterator first, Iterator last, RBM& rbm){
     }
 }
 
-template<typename RBM, typename V, typename H, enable_if_u<etl::is_etl_expr<V>::value> = ::detail::dummy>
+template<typename RBM, typename V, typename H, cpp::enable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
 typename RBM::weight energy(const RBM& rbm, const V& v, const H& h){
     if(RBM::desc::visible_unit == unit_type::BINARY && RBM::desc::hidden_unit == unit_type::BINARY){
         //Definition according to G. Hinton
@@ -66,7 +66,7 @@ typename RBM::weight energy(const RBM& rbm, const V& v, const H& h){
     }
 }
 
-template<typename RBM, typename V, typename H, disable_if_u<etl::is_etl_expr<V>::value> = ::detail::dummy>
+template<typename RBM, typename V, typename H, cpp::disable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
 typename RBM::weight energy(const RBM& rbm, const V& v, const H& h){
     if(RBM::desc::visible_unit == unit_type::BINARY && RBM::desc::hidden_unit == unit_type::BINARY){
         //Definition according to G. Hinton
@@ -98,7 +98,7 @@ typename RBM::weight energy(const RBM& rbm, const V& v, const H& h){
     }
 }
 
-template<typename RBM, typename V, enable_if_u<etl::is_etl_expr<V>::value> = ::detail::dummy>
+template<typename RBM, typename V, cpp::enable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
 typename RBM::weight free_energy(const RBM& rbm, const V& v){
     if(RBM::desc::visible_unit == unit_type::BINARY && RBM::desc::hidden_unit == unit_type::BINARY){
         //Definition according to G. Hinton
@@ -117,7 +117,7 @@ typename RBM::weight free_energy(const RBM& rbm, const V& v){
     }
 }
 
-template<typename RBM, typename V, disable_if_u<etl::is_etl_expr<V>::value> = ::detail::dummy>
+template<typename RBM, typename V, cpp::disable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
 typename RBM::weight free_energy(const RBM& rbm, const V& v){
     if(RBM::desc::visible_unit == unit_type::BINARY && RBM::desc::hidden_unit == unit_type::BINARY){
         //Definition according to G. Hinton

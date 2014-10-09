@@ -30,25 +30,25 @@ struct dbn_traits {
      * \brief Indicates if the DBN is convolutional
      */
     static constexpr bool is_convolutional(){
-        return detail::is_instantiation_of<conv_dbn, dbn_t>::value;
+        return cpp::is_specialization_of<conv_dbn, dbn_t>::value;
     }
 
-    template<typename D = DBN, enable_if_u<has_momentum_field<typename D::desc>::value> = ::detail::dummy>
+    template<typename D = DBN, cpp::enable_if_u<has_momentum_field<typename D::desc>::value> = cpp::detail::dummy>
     static constexpr bool has_momentum(){
         return dbn_t::desc::Momentum;
     }
 
-    template<typename D = DBN, disable_if_u<has_momentum_field<typename D::desc>::value> = ::detail::dummy>
+    template<typename D = DBN, cpp::disable_if_u<has_momentum_field<typename D::desc>::value> = cpp::detail::dummy>
     static constexpr bool has_momentum(){
         return false;
     }
 
-    template<typename D = DBN, enable_if_u<has_decay_field<typename D::desc>::value> = ::detail::dummy>
+    template<typename D = DBN, cpp::enable_if_u<has_decay_field<typename D::desc>::value> = cpp::detail::dummy>
     static constexpr decay_type decay(){
         return dbn_t::desc::Decay;
     }
 
-    template<typename D = DBN, disable_if_u<has_decay_field<typename D::desc>::value> = ::detail::dummy>
+    template<typename D = DBN, cpp::disable_if_u<has_decay_field<typename D::desc>::value> = cpp::detail::dummy>
     static constexpr decay_type decay(){
         return decay_type::NONE;
     }

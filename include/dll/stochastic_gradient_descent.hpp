@@ -80,12 +80,12 @@ struct sgd_trainer {
         ctx.b_grad += ctx.errors;
     }
 
-    template<typename T1, typename T2, bool M = dbn_traits<dbn_t>::has_momentum(), enable_if_u<M> = ::detail::dummy>
+    template<typename T1, typename T2, bool M = dbn_traits<dbn_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
     T2& get_fgrad(T1& , T2& inc){
         return inc;
     }
 
-    template<typename T1, typename T2, bool M = dbn_traits<dbn_t>::has_momentum(), disable_if_u<M> = ::detail::dummy>
+    template<typename T1, typename T2, bool M = dbn_traits<dbn_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
     T1& get_fgrad(T1& grad, T2& ){
         return grad;
     }

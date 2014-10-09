@@ -8,36 +8,18 @@
 #ifndef DLL_TMP_HPP
 #define DLL_TMP_HPP
 
-#include "etl/tmp.hpp" //for enable_if/disable_if stuff
-
-#define HAS_STATIC_FIELD(field, name) \
-template <typename T> \
-class name { \
-    template<typename U, typename = \
-    typename std::enable_if<!std::is_member_pointer<decltype(&U::field)>::value>::type> \
-    static std::true_type check(int); \
-    template <typename> \
-    static std::false_type check(...); \
-    public: \
-    static constexpr const bool value = decltype(check<T>(0))::value; \
-};
+#include "cpp_utils/tmp.hpp" //for enable_if/disable_if stuff
 
 namespace dll {
 
 namespace detail {
-
-template<template<typename...> class Template, typename T>
-struct is_instantiation_of : std::false_type {};
-
-template<template<typename...> class Template, typename... Args >
-struct is_instantiation_of< Template, Template<Args...>> : std::true_type {};
 
 template<typename T1, typename... Args>
 struct is_present;
 
 template<typename T1, typename T2, typename... Args>
 struct is_present<T1, T2, Args...> :
-    std::integral_constant<bool, or_u<std::is_same<T1, T2>::value, is_present<T1, Args...>::value>::value> {};
+    std::integral_constant<bool, cpp::or_u<std::is_same<T1, T2>::value, is_present<T1, Args...>::value>::value> {};
 
 template<typename T1>
 struct is_present<T1> : std::false_type{};
@@ -53,7 +35,7 @@ struct is_valid;
 
 template<typename V, typename T1, typename... Args>
 struct is_valid <V, T1, Args...> :
-    std::integral_constant<bool, and_u<V::template check<T1>::value, is_valid<V, Args...>::value>::value> {};
+    std::integral_constant<bool, cpp::and_u<V::template check<T1>::value, is_valid<V, Args...>::value>::value> {};
 
 template<typename V>
 struct is_valid <V> : std::true_type {};

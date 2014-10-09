@@ -49,12 +49,12 @@ struct rbm_trainer {
     template<typename... Arg>
     rbm_trainer(init_watcher_t /*init*/, Arg... args) : watcher(args...) {}
 
-    template<typename Iterator, typename R = RBM, enable_if_u<rbm_traits<R>::init_weights()> = ::detail::dummy>
+    template<typename Iterator, typename R = RBM, cpp::enable_if_u<rbm_traits<R>::init_weights()> = cpp::detail::dummy>
     static void init_weights(RBM& rbm, Iterator first, Iterator last){
         rbm.init_weights(first, last);
     }
 
-    template<typename Iterator, typename R = RBM, disable_if_u<rbm_traits<R>::init_weights()> = ::detail::dummy>
+    template<typename Iterator, typename R = RBM, cpp::disable_if_u<rbm_traits<R>::init_weights()> = cpp::detail::dummy>
     static void init_weights(RBM&, Iterator, Iterator){
         //NOP
     }
