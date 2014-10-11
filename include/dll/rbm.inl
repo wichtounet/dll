@@ -92,7 +92,7 @@ public:
         static fast_matrix<weight, 1, num_hidden> t;
 
         if(hidden_unit == unit_type::BINARY){
-            h_a = sigmoid(b + mmul(reshape<1, num_visible>(v_a), w, t));
+            h_a = sigmoid(b + auto_vmmul(v_a, w, t));
             h_s = bernoulli(h_a);
         } else if(hidden_unit == unit_type::EXP){
             h_a = exp(b + mmul(reshape<1, num_visible>(v_a), w, t));
