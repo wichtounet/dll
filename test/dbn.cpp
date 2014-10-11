@@ -128,6 +128,8 @@ TEST_CASE( "dbn/mnist_5", "dbn::sgd_momentum" ) {
 
     auto dbn = std::make_unique<dbn_t>();
 
+    dbn->learning_rate *= 2.0;
+
     dbn->pretrain(dataset.training_images, 10);
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 200, 10);
 
