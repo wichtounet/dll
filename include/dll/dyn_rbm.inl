@@ -94,22 +94,22 @@ public:
         static dyn_matrix<weight> t(1UL, num_hidden);
 
         if(hidden_unit == unit_type::BINARY){
-            h_a = sigmoid(b + mmul(reshape(v_a, 1, num_visible), w, t));
+            h_a = sigmoid(b + auto_vmmul(v_a, w, t));
             h_s = bernoulli(h_a);
         } else if(hidden_unit == unit_type::EXP){
-            h_a = exp(b + mmul(reshape(v_a, 1, num_visible), w, t));
+            h_a = exp(b + auto_vmmul(v_a, w, t));
             h_s = bernoulli(h_a);
         } else if(hidden_unit == unit_type::RELU){
-            h_a = max(b + mmul(reshape(v_a, 1, num_visible), w, t), 0.0);
+            h_a = max(b + auto_vmmul(v_a, w, t), 0.0);
             h_s = logistic_noise(h_a);
         } else if(hidden_unit == unit_type::RELU6){
-            h_a = min(max(b + mmul(reshape(v_a, 1, num_visible), w, t), 0.0), 6.0);
+            h_a = min(max(b + auto_vmmul(v_a, w, t), 0.0), 6.0);
             h_s = ranged_noise(h_a, 6.0);
         } else if(hidden_unit == unit_type::RELU1){
-            h_a = min(max(b + mmul(reshape(v_a, 1, num_visible), w, t), 0.0), 1.0);
+            h_a = min(max(b + auto_vmmul(v_a, w, t), 0.0), 1.0);
             h_s = ranged_noise(h_a, 1.0);
         } else if(hidden_unit == unit_type::SOFTMAX){
-            h_a = softmax(b + mmul(reshape(v_a, 1, num_visible), w, t));
+            h_a = softmax(b + auto_vmmul(v_a, w, t));
             h_s = one_if_max(h_a);
         } else {
             cpp_unreachable("Invalid path");
@@ -126,13 +126,13 @@ public:
         static dyn_matrix<weight> t(num_visible, 1UL);
 
         if(visible_unit == unit_type::BINARY){
-            v_a = sigmoid(c + mmul(w, reshape(h_s, num_hidden, 1), t));
+            v_a = sigmoid(c + auto_vmmul(w, h_s, t));
             v_s = bernoulli(v_a);
         } else if(visible_unit == unit_type::GAUSSIAN){
-            v_a = c + mmul(w, reshape(h_s, num_hidden, 1), t);
+            v_a = c + auto_vmmul(w, h_s, t);
             v_s = normal_noise(v_a);
         } else if(visible_unit == unit_type::RELU){
-            v_a = max(c + mmul(w, reshape(h_s, num_hidden, 1), t), 0.0);
+            v_a = max(c + auto_vmmul(w, h_s, t), 0.0);
             v_s = logistic_noise(v_a);
         } else {
             cpp_unreachable("Invalid path");
