@@ -264,14 +264,14 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
     typedef typename rbm_t::weight weight;
 
     //Gradients
-    etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_grad;      //Gradients of shared weights
+    etl::fast_matrix<weight, K, NW, NW> w_grad;      //Gradients of shared weights
     etl::fast_vector<weight, K> b_grad;                                 //Gradients of hidden biases bk
 
     weight c_grad;                                      //Visible gradient
 
     //{{{ Momentum
 
-    etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_inc;
+    etl::fast_matrix<weight, K, NW, NW> w_inc;
     etl::fast_vector<weight, K> b_inc;
     weight c_inc;
 
@@ -290,7 +290,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
 
     //{{{ Sparsity biases
 
-    etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_bias;
+    etl::fast_matrix<weight, K, NW, NW> w_bias;
     etl::fast_vector<weight, K> b_bias;
     weight c_bias;
 
@@ -330,11 +330,11 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
 
         //Apply L1/L2 regularization and penalties to the biases
 
-        for(std::size_t k = 0; k < K; ++k){
+        //for(std::size_t k = 0; k < K; ++k){
             //TODO Ideally, the loop should be removed and the
             //update be done directly on rbm.w
-            base_trainer<RBM>::update_grad(w_grad(k), rbm.w(k), rbm, w_decay(rbm_traits<rbm_t>::decay()), w_penalty);
-        }
+            base_trainer<RBM>::update_grad(w_grad, rbm.w, rbm, w_decay(rbm_traits<rbm_t>::decay()), w_penalty);
+        //}
 
         base_trainer<RBM>::update_grad(b_grad, rbm.b, rbm, b_decay(rbm_traits<rbm_t>::decay()), h_penalty);
         base_trainer<RBM>::update_grad(c_grad, rbm.c, rbm, b_decay(rbm_traits<rbm_t>::decay()), v_penalty);
@@ -355,15 +355,15 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
 
                 //????
                 auto h_k_penalty = sum(q_local_penalty(k));
-                w_grad(k) -= h_k_penalty;
+                etl::sub(w_grad, k) = etl::sub(w_grad, k) - h_k_penalty;
                 b_grad(k) -= h_k_penalty;
             }
         }
 
         if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LEE){
-            for(std::size_t k = 0; k < K; ++k){
-                w_grad(k) -= rbm.pbias_lambda * w_bias(k);
-            }
+            //for(std::size_t k = 0; k < K; ++k){
+                w_grad -= rbm.pbias_lambda * w_bias;
+            //}
 
             b_grad -= rbm.pbias_lambda * b_bias;
             c_grad -= rbm.pbias_lambda * c_bias;
@@ -374,9 +374,9 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
             auto momentum = rbm.momentum;
             auto eps = rbm.learning_rate;
 
-            for(std::size_t k = 0; k < K; ++k){
-                w_inc(k) = momentum * w_inc(k) + eps * w_grad(k);
-            }
+            //for(std::size_t k = 0; k < K; ++k){
+                w_inc = momentum * w_inc + eps * w_grad;
+            //}
 
             b_inc = momentum * b_inc + eps * b_grad;
             c_inc = momentum * c_inc + eps * c_grad;
@@ -392,12 +392,12 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
 
         //Update the weights and biases
         //with the final gradients (if not momentum, these are the real gradients)
-        rbm.w += base_trainer<rbm_t>::get_fgrad(w_grad, w_inc); //TODO CHECK THIS
+        rbm.w += base_trainer<rbm_t>::get_fgrad(w_grad, w_inc);
         rbm.b += base_trainer<rbm_t>::get_fgrad(b_grad, b_inc);
         rbm.c += base_trainer<rbm_t>::get_fgrad(c_grad, c_inc);
 
         //Check for NaN
-        nan_check_deep_deep(rbm.w);
+        nan_check_deep(rbm.w);
         nan_check_deep(rbm.b);
         nan_check(rbm.c);
     }
@@ -678,8 +678,11 @@ public:
                 etl::convolve_2d_valid(rbm.v1, fflip(rbm.h1_a(k)), w_pos(k));
                 etl::convolve_2d_valid(rbm.v2_a, fflip(rbm.h2_a(k)), w_neg(k));
 
-                w_grad(k) += w_pos(k) - w_neg(k);
+                //TODO Use += once implemented in ETL
+                etl::sub(w_grad, k) = etl::sub(w_grad, k) + w_pos(k) - w_neg(k);
             }
+
+            //w_grad += w_pos - w_neg;
 
             for(std::size_t k = 0; k < K; ++k){
                 //TODO Find if mean or sum
@@ -712,7 +715,7 @@ public:
         b_grad /= n_samples;
         c_grad_org /= n_samples;
 
-        nan_check_deep_deep(w_grad);
+        nan_check_deep(w_grad);
         nan_check_deep(b_grad);
         nan_check_deep(c_grad_org);
 
@@ -912,7 +915,7 @@ public:
                 etl::convolve_2d_valid(rbm.v1, fflip(rbm.h1_a(k)), w_pos(k));
                 etl::convolve_2d_valid(rbm.v2_a, fflip(rbm.h2_a(k)), w_neg(k));
 
-                w_grad(k) += w_pos(k) - w_neg(k);
+                etl::sub(w_grad, k) = etl::sub(w_grad, k) + w_pos(k) - w_neg(k);
             }
 
             for(std::size_t k = 0; k < K; ++k){
@@ -943,7 +946,7 @@ public:
         b_grad /= n_samples;
         c_grad_org /= n_samples;
 
-        nan_check_deep_deep(w_grad);
+        nan_check_deep(w_grad);
         nan_check_deep(b_grad);
         nan_check_deep(c_grad_org);
 

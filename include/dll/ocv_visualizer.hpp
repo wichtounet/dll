@@ -272,13 +272,13 @@ struct opencv_rbm_visualizer<RBM, C, std::enable_if_t<rbm_traits<RBM>::is_convol
                 typename RBM::weight max;
 
                 if(scale){
-                    min = etl::min(rbm.w(real_k));
-                    max = etl::max(rbm.w(real_k));
+                    min = etl::min(etl::sub(rbm.w, real_k));
+                    max = etl::max(etl::sub(rbm.w, real_k));
                 }
 
                 for(std::size_t fi = 0; fi < filter_shape.width; ++fi){
                     for(std::size_t fj = 0; fj < filter_shape.height; ++fj){
-                        auto value = rbm.w(real_k)(fi, fj);
+                        auto value = rbm.w(real_k, fi, fj);
 
                         if(scale){
                             value -= min;

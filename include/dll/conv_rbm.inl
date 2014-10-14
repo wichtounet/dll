@@ -58,9 +58,9 @@ struct conv_rbm : public rbm_base<Desc> {
     static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit),
         "Only binary hidden units are supported");
 
-    etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K> w;      //shared weights
-    etl::fast_vector<weight, K> b;                                //hidden biases bk
-    weight c;                                                     //visible single bias c
+    etl::fast_matrix<weight, K, NW, NW> w;                       //shared weights
+    etl::fast_vector<weight, K> b;                               //hidden biases bk
+    weight c;                                                    //visible single bias c
 
     etl::fast_matrix<weight, NV, NV> v1;                         //visible units
 
@@ -88,10 +88,7 @@ struct conv_rbm : public rbm_base<Desc> {
 
     conv_rbm(){
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
-        for(std::size_t k = 0; k < K; ++k){
-            w(k) = 0.01 * etl::normal_generator();
-        }
-
+        w = 0.01 * etl::normal_generator();
         b = -0.1;
         c = 0.0;
 
@@ -117,17 +114,13 @@ struct conv_rbm : public rbm_base<Desc> {
     }
 
     void store(std::ostream& os) const {
-        for(std::size_t k = 0; k < K; ++k){
-            binary_write_all(os, w(k));
-        }
+        binary_write_all(os, w);
         binary_write_all(os, b);
         binary_write(os, c);
     }
 
     void load(std::istream& is){
-        for(std::size_t k = 0; k < K; ++k){
-            binary_load_all(is, w(k));
-        }
+        binary_load_all(is, w);
         binary_load_all(is, b);
         binary_load(is, c);
     }
@@ -137,7 +130,7 @@ struct conv_rbm : public rbm_base<Desc> {
         using namespace etl;
 
         for(size_t k = 0; k < K; ++k){
-            etl::convolve_2d_valid(v_a, fflip(w(k)), v_cv(k));
+            etl::convolve_2d_valid(v_a, fflip(etl::sub(w, k)), v_cv(k));
 
             if(hidden_unit == unit_type::BINARY){
                 h_a(k) = sigmoid(b(k) + v_cv(k));
@@ -167,7 +160,7 @@ struct conv_rbm : public rbm_base<Desc> {
         h_cv(K) = 0.0;
 
         for(std::size_t k = 0; k < K; ++k){
-            etl::convolve_2d_full(h_s(k), w(k), h_cv(k));
+            etl::convolve_2d_full(h_s(k), etl::sub(w, k), h_cv(k));
             h_cv(K) += h_cv(k);
         }
 
