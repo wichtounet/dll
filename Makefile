@@ -71,9 +71,7 @@ update_tests: release_dll_test
 doc:
 	doxygen Doxyfile
 
-clean:
-	rm -rf release/
-	rm -rf debug/
+clean: base_clean
 	rm -rf latex/ html/
 
 -include tests.mk
