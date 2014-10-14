@@ -22,8 +22,7 @@ namespace dll {
  * This follows the definition of a RBM by Geoffrey Hinton.
  */
 template<typename Desc>
-class dyn_rbm : public normal_rbm<dyn_rbm<Desc>, Desc> {
-public:
+struct dyn_rbm : public normal_rbm<dyn_rbm<Desc>, Desc> {
     typedef double weight;
     typedef double value_t;
 
@@ -54,7 +53,6 @@ public:
 
     size_t batch_size = 25;
 
-public:
     //No copying
     dyn_rbm(const dyn_rbm& rbm) = delete;
     dyn_rbm& operator=(const dyn_rbm& rbm) = delete;

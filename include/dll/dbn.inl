@@ -123,8 +123,12 @@ struct dbn {
         return rbm_type<N>::num_hidden;
     }
 
+    static constexpr std::size_t input_size(){
+        return rbm_type<0>::input_size();
+    }
+
     static constexpr std::size_t output_size(){
-        return num_hidden<layers - 1>();
+        return rbm_type<layers - 1>::output_size();
     }
 
     /*{{{ Pretrain */

@@ -26,8 +26,7 @@ namespace dll {
  * This follows the definition of a RBM by Geoffrey Hinton.
  */
 template<typename Desc>
-class rbm : public normal_rbm<rbm<Desc>, Desc> {
-public:
+struct rbm : public normal_rbm<rbm<Desc>, Desc> {
     typedef double weight;
     typedef double value_t;
 
@@ -56,7 +55,6 @@ public:
     etl::fast_vector<weight, num_hidden> h2_a; //!< Activation probabilities of hidden units after last CD-step
     etl::fast_vector<weight, num_hidden> h2_s; //!< Sampled value of hidden units after last CD-step
 
-public:
     //No copying
     rbm(const rbm& rbm) = delete;
     rbm& operator=(const rbm& rbm) = delete;
@@ -74,6 +72,14 @@ public:
     rbm() : normal_rbm<rbm<Desc>, Desc>(), b(0.0), c(0.0) {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
         w = etl::normal_generator() * 0.1;
+    }
+
+    static constexpr std::size_t input_size(){
+        return num_visible;
+    }
+
+    static constexpr std::size_t output_size(){
+        return num_hidden;
     }
 
     void display() const {

@@ -36,8 +36,7 @@ namespace dll {
  * This follows the definition of a CRBM by Honglak Lee.
  */
 template<typename Desc>
-class conv_rbm : public rbm_base<Desc> {
-public:
+struct conv_rbm : public rbm_base<Desc> {
     typedef double weight;
     typedef double value_t;
 
@@ -78,7 +77,6 @@ public:
     etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> v_cv;   //Temporary convolution
     etl::fast_vector<etl::fast_matrix<weight, NV, NV>, K+1> h_cv;   //Temporary convolution
 
-public:
     //No copying
     conv_rbm(const conv_rbm& rbm) = delete;
     conv_rbm& operator=(const conv_rbm& rbm) = delete;
@@ -103,6 +101,14 @@ public:
                 visible_unit == unit_type::GAUSSIAN  ?             1e-5
             :   is_relu(hidden_unit)                 ?             1e-4
             :   /* Only Gaussian Units needs lower rate */         1e-3;
+    }
+
+    static constexpr std::size_t input_size(){
+        return NV * NV;
+    }
+
+    static constexpr std::size_t output_size(){
+        return NH * NH * K;
     }
 
     void display() const {

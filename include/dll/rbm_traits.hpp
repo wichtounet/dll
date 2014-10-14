@@ -14,13 +14,13 @@
 namespace dll {
 
 template<typename Desc>
-class dyn_rbm;
+struct dyn_rbm;
 
 template<typename Desc>
-class conv_rbm;
+struct conv_rbm;
 
 template<typename Desc>
-class conv_rbm_mp;
+struct conv_rbm_mp;
 
 /*!
  * \brief Type Traits to get information on RBM type
@@ -57,6 +57,14 @@ struct rbm_traits {
      */
     static constexpr bool has_probabilistic_max_pooling(){
         return cpp::is_specialization_of<conv_rbm_mp, rbm_t>::value;
+    }
+
+    static constexpr std::size_t input_size(){
+        return rbm_t::input_size();
+    }
+
+    static constexpr std::size_t output_size(){
+        return rbm_t::output_size();
     }
 
     template<typename R = RBM, cpp::enable_if_u<has_batch_size_field<typename R::desc>::value> = cpp::detail::dummy>
