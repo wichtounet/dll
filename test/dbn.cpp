@@ -74,7 +74,7 @@ TEST_CASE( "dbn/mnist_3", "dbn::labels" ) {
     mnist::binarize_dataset(dataset);
 
     typedef dll::dbn_desc<
-        dll::dbn_layers<
+        dll::dbn_label_layers<
         dll::rbm_desc<28 * 28, 200, dll::batch_size<50>, dll::init_weights, dll::momentum>::rbm_t,
         dll::rbm_desc<200, 300, dll::batch_size<50>, dll::momentum>::rbm_t,
         dll::rbm_desc<310, 500, dll::batch_size<50>, dll::momentum>::rbm_t>>::dbn_t dbn_simple_t;

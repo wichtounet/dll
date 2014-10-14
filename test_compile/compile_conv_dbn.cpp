@@ -29,14 +29,15 @@ using pcd2_trainer_t = dll::persistent_cd_trainer<2, RBM>;
 int main(){
     //Basic example
 
-    typedef dll::conv_dbn_desc<
-        dll::dbn_layers<
-        dll::conv_rbm_desc<28, 12, 40, dll::momentum, dll::batch_size<50>>::rbm_t,
-        dll::conv_rbm_desc<12*40, 6, 40, dll::momentum, dll::batch_size<50>>::rbm_t>>::dbn_t dbn_1;
+    //TODO Enable again once multi channel RBM are supported
+    //typedef dll::conv_dbn_desc<
+        //dll::dbn_layers<
+        //dll::conv_rbm_desc<28, 12, 40, dll::momentum, dll::batch_size<50>>::rbm_t,
+        //dll::conv_rbm_desc<12*40, 6, 40, dll::momentum, dll::batch_size<50>>::rbm_t>>::dbn_t dbn_1;
 
-    //Test them all
+    ////Test them all
 
-    test_dbn<dbn_1>();
+    //test_dbn<dbn_1>();
 
     return 0;
 }
