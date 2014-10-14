@@ -49,6 +49,7 @@ struct conv_rbm_mp : public rbm_base<Desc> {
 
     static constexpr const std::size_t NV = desc::NV;
     static constexpr const std::size_t NH = desc::NH;
+    static constexpr const std::size_t NC = desc::NC;
     static constexpr const std::size_t K = desc::K;
     static constexpr const std::size_t C = desc::C;
 

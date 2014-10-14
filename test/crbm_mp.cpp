@@ -14,7 +14,7 @@
 
 TEST_CASE( "crbm_mp/mnist_1", "crbm::simple" ) {
     dll::conv_rbm_mp_desc<
-        28, 12, 40, 2,
+        28, 1, 12, 40, 2,
         dll::batch_size<25>
     >::rbm_t rbm;
 
@@ -34,7 +34,7 @@ TEST_CASE( "crbm_mp/mnist_1", "crbm::simple" ) {
 
 TEST_CASE( "crbm_mp/mnist_2", "crbm::momentum" ) {
     dll::conv_rbm_mp_desc<
-        28, 12, 40, 2,
+        28, 1, 12, 40, 2,
         dll::batch_size<25>,
         dll::momentum
     >::rbm_t rbm;
@@ -53,7 +53,7 @@ TEST_CASE( "crbm_mp/mnist_2", "crbm::momentum" ) {
 
 TEST_CASE( "crbm_mp/mnist_3", "crbm::decay_l1" ) {
     dll::conv_rbm_mp_desc<
-        28, 12, 40, 2,
+        28, 1, 12, 40, 2,
         dll::batch_size<25>,
         dll::weight_decay<dll::decay_type::L1_FULL>
     >::rbm_t rbm;
@@ -72,7 +72,7 @@ TEST_CASE( "crbm_mp/mnist_3", "crbm::decay_l1" ) {
 
 TEST_CASE( "crbm_mp/mnist_4", "crbm::decay_l2" ) {
     dll::conv_rbm_mp_desc<
-        28, 12, 40, 2,
+        28, 1, 12, 40, 2,
         dll::batch_size<25>,
         dll::weight_decay<dll::decay_type::L2_FULL>
     >::rbm_t rbm;
@@ -91,7 +91,7 @@ TEST_CASE( "crbm_mp/mnist_4", "crbm::decay_l2" ) {
 
 TEST_CASE( "crbm_mp/mnist_5", "crbm::sparsity" ) {
     dll::conv_rbm_mp_desc<
-        28, 12, 40, 2,
+        28, 1, 12, 40, 2,
         dll::batch_size<25>,
         dll::sparsity<>
     >::rbm_t rbm;
@@ -114,7 +114,7 @@ TEST_CASE( "crbm_mp/mnist_5", "crbm::sparsity" ) {
 
 TEST_CASE( "crbm_mp/mnist_6", "crbm::gaussian" ) {
     dll::conv_rbm_mp_desc<
-        28, 12, 40, 2,
+        28, 1, 12, 40, 2,
         dll::batch_size<25>,
         dll::momentum,
         dll::weight_decay<>,
@@ -137,7 +137,7 @@ TEST_CASE( "crbm_mp/mnist_6", "crbm::gaussian" ) {
 
 TEST_CASE( "crbm_mp/mnist_7", "crbm::relu" ) {
     dll::conv_rbm_mp_desc<
-        28, 12, 40, 2,
+        28, 1, 12, 40, 2,
         dll::batch_size<25>,
         dll::hidden<dll::unit_type::RELU>
     >::rbm_t rbm;
@@ -158,7 +158,7 @@ TEST_CASE( "crbm_mp/mnist_7", "crbm::relu" ) {
 
 TEST_CASE( "crbm_mp/mnist_10", "crbm::pcd_trainer" ) {
     dll::conv_rbm_mp_desc<
-        28, 12, 40, 2,
+        28, 1, 12, 40, 2,
         dll::batch_size<10>,
         dll::momentum,
         dll::trainer<dll::pcd1_trainer_t>
@@ -180,7 +180,7 @@ TEST_CASE( "crbm_mp/mnist_10", "crbm::pcd_trainer" ) {
 
 TEST_CASE( "crbm_mp/mnist_11", "crbm::bias_mode_none" ) {
     dll::conv_rbm_mp_desc<
-        28, 12, 40, 2,
+        28, 1, 12, 40, 2,
         dll::batch_size<10>,
         dll::momentum,
         dll::sparsity<dll::sparsity_method::LEE>,
@@ -201,7 +201,7 @@ TEST_CASE( "crbm_mp/mnist_11", "crbm::bias_mode_none" ) {
 
 TEST_CASE( "crbm_mp/mnist_12", "crbm::bias_mode_simple" ) {
     dll::conv_rbm_mp_desc<
-        28, 12, 40, 2,
+        28, 1, 12, 40, 2,
         dll::batch_size<10>,
         dll::momentum,
         dll::weight_decay<dll::decay_type::L2>,
@@ -229,7 +229,7 @@ TEST_CASE( "crbm_mp/mnist_13", "crbm::lee" ) {
     //sparsity / gaussian
 
     dll::conv_rbm_mp_desc<
-        28, 12, 40, 2,
+        28, 1, 12, 40, 2,
         dll::batch_size<5>,
         dll::momentum,
         dll::visible<dll::unit_type::GAUSSIAN>,

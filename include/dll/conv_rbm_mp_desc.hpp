@@ -22,10 +22,11 @@ namespace dll {
  * This struct should be used to define a RBM either as standalone or for a DBN.
  * Once configured, the ::rbm_t member returns the type of the configured RBM.
  */
-template<std::size_t NV_T, std::size_t NH_T, std::size_t K_T, std::size_t C_T, typename... Parameters>
+template<std::size_t NV_T, std::size_t NC_T, std::size_t NH_T, std::size_t K_T, std::size_t C_T, typename... Parameters>
 struct conv_rbm_mp_desc {
     static constexpr const std::size_t NV = NV_T;
     static constexpr const std::size_t NH = NH_T;
+    static constexpr const std::size_t NC = NC_T;
     static constexpr const std::size_t K = K_T;
     static constexpr const std::size_t C = C_T;
 
@@ -47,12 +48,13 @@ struct conv_rbm_mp_desc {
     using watcher_t = typename detail::get_template_type<watcher<default_rbm_watcher>, Parameters...>::template type<RBM>;
 
     /*! The RBM type */
-    using rbm_t = conv_rbm_mp<conv_rbm_mp_desc<NV_T, NH_T, K_T, C_T, Parameters...>>;
+    using rbm_t = conv_rbm_mp<conv_rbm_mp_desc<NV_T, NC_T, NH_T, K_T, C_T, Parameters...>>;
 
     //Validate all parameters
 
     static_assert(NV > 0, "A matrix of at least 1x1 is necessary for the visible units");
     static_assert(NH > 0, "A matrix of at least 1x1 is necessary for the hidden units");
+    static_assert(NC > 0, "At least one channel is necessary");
     static_assert(K > 0, "At least one base is necessary");
     static_assert(C > 0, "At least one pooling group is necessary");
 

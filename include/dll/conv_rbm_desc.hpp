@@ -25,6 +25,7 @@ template<std::size_t NV_T, std::size_t NC_T, std::size_t NH_T, std::size_t K_T, 
 struct conv_rbm_desc {
     static constexpr const std::size_t NV = NV_T;
     static constexpr const std::size_t NH = NH_T;
+    static constexpr const std::size_t NC = NC_T;
     static constexpr const std::size_t K = K_T;
 
     static constexpr const bool Momentum = detail::is_present<momentum, Parameters...>::value;
@@ -50,7 +51,9 @@ struct conv_rbm_desc {
 
     static_assert(NV > 0, "A matrix of at least 1x1 is necessary for the visible units");
     static_assert(NH > 0, "A matrix of at least 1x1 is necessary for the hidden units");
+    static_assert(NC > 0, "At least one channel is necessary");
     static_assert(K > 0, "At least one group is necessary");
+    static_assert(BatchSize > 0, "Batch size must be at least 1");
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
@@ -60,8 +63,6 @@ struct conv_rbm_desc {
                 bias_id>
             , Parameters...>::value,
         "Invalid parameters type");
-
-    static_assert(BatchSize > 0, "Batch size must be at least 1");
 
     static_assert(Sparsity == sparsity_method::NONE || hidden_unit == unit_type::BINARY,
         "Sparsity only works with binary hidden units");
