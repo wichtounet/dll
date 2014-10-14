@@ -21,7 +21,7 @@ namespace dll {
  * This struct should be used to define a RBM either as standalone or for a DBN.
  * Once configured, the ::rbm_t member returns the type of the configured RBM.
  */
-template<std::size_t NV_T, std::size_t NH_T, std::size_t K_T, typename... Parameters>
+template<std::size_t NV_T, std::size_t NC_T, std::size_t NH_T, std::size_t K_T, typename... Parameters>
 struct conv_rbm_desc {
     static constexpr const std::size_t NV = NV_T;
     static constexpr const std::size_t NH = NH_T;
@@ -44,7 +44,7 @@ struct conv_rbm_desc {
     using watcher_t = typename detail::get_template_type<watcher<default_rbm_watcher>, Parameters...>::template type<RBM>;
 
     /*! The RBM type */
-    using rbm_t = conv_rbm<conv_rbm_desc<NV_T, NH_T, K_T, Parameters...>>;
+    using rbm_t = conv_rbm<conv_rbm_desc<NV_T, NC_T, NH_T, K_T, Parameters...>>;
 
     //Validate all parameters
 
