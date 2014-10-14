@@ -5,11 +5,12 @@ default: release
 include make-utils/flags.mk
 include make-utils/cpp-utils.mk
 
-ifeq ($(CXX),clang++)
+ifneq (,$(findstring clang,$(CXX)))
 	CXX_FLAGS += -stdlib=libc++
 endif
 
-CXX_FLAGS += -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -Werror
+CXX_FLAGS += -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include
+#-Werror
 OPENCV_LD_FLAGS=-lopencv_core -lopencv_imgproc -lopencv_highgui
 LIBSVM_LD_FLAGS=-lsvm
 
