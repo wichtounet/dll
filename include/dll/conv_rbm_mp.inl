@@ -114,7 +114,7 @@ struct conv_rbm_mp : public rbm_base<Desc> {
     }
 
     static constexpr std::size_t input_size(){
-        return NV * NV;
+        return NV * NV * NC;
     }
 
     static constexpr std::size_t output_size(){
