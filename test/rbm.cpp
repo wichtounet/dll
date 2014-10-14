@@ -223,14 +223,13 @@ TEST_CASE( "rbm/mnist_8", "rbm::softmax" ) {
        dll::hidden<dll::unit_type::SOFTMAX>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
 
     REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(100);
 
     mnist::binarize_dataset(dataset);
 
-    auto error = rbm.train(dataset.training_images, 200);
+    auto error = rbm.train(dataset.training_images, 100);
 
     REQUIRE(error < 1e-2);
 }

@@ -141,7 +141,7 @@ struct sgd_trainer {
 
                 static fast_matrix<weight, r2_t::num_visible, 1> t;
 
-                ctx1.errors = ctx1.o_a * (1 - ctx1.o_a) * mmul(r2.w, reshape<n_outputs, 1>(ctx2.errors), t);
+                ctx1.errors = ctx1.o_a * (1 - ctx1.o_a) * mmul(r2.w, reshape<r2_t::num_hidden, 1>(ctx2.errors), t);
             });
 
             ++it;
