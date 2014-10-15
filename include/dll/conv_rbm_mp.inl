@@ -162,7 +162,7 @@ struct conv_rbm_mp : public rbm_base<Desc> {
         //TODO Ideally, pooling should be done with an ETL expression
 
         for(size_t k = 0; k < K; ++k){
-            etl::convolve_2d_valid(v_a, fflip(etl::sub(w, k)), v_cv(k));
+            etl::convolve_2d_valid(v_a, fflip(w(k)), v_cv(k));
 
             for(size_t i = 0; i < NH; ++i){
                 for(size_t j = 0; j < NH; ++j){
@@ -222,7 +222,7 @@ struct conv_rbm_mp : public rbm_base<Desc> {
         h_cv(K) = 0.0;
 
         for(std::size_t k = 0; k < K; ++k){
-            etl::convolve_2d_full(h_s(k), etl::sub(w, k), h_cv(k));
+            etl::convolve_2d_full(h_s(k), w(k), h_cv(k));
             h_cv(K) += h_cv(k);
         }
 

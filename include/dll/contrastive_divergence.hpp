@@ -355,7 +355,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
 
                 //????
                 auto h_k_penalty = sum(q_local_penalty(k));
-                etl::sub(w_grad, k) = etl::sub(w_grad, k) - h_k_penalty;
+                w_grad(k) -= h_k_penalty;
                 b_grad(k) -= h_k_penalty;
             }
         }
@@ -678,8 +678,7 @@ public:
                 etl::convolve_2d_valid(rbm.v1, fflip(rbm.h1_a(k)), w_pos(k));
                 etl::convolve_2d_valid(rbm.v2_a, fflip(rbm.h2_a(k)), w_neg(k));
 
-                //TODO Use += once implemented in ETL
-                etl::sub(w_grad, k) = etl::sub(w_grad, k) + w_pos(k) - w_neg(k);
+                w_grad(k) += w_pos(k) - w_neg(k);
             }
 
             //w_grad += w_pos - w_neg;
@@ -915,7 +914,7 @@ public:
                 etl::convolve_2d_valid(rbm.v1, fflip(rbm.h1_a(k)), w_pos(k));
                 etl::convolve_2d_valid(rbm.v2_a, fflip(rbm.h2_a(k)), w_neg(k));
 
-                etl::sub(w_grad, k) = etl::sub(w_grad, k) + w_pos(k) - w_neg(k);
+                w_grad(k) += w_pos(k) - w_neg(k);
             }
 
             for(std::size_t k = 0; k < K; ++k){

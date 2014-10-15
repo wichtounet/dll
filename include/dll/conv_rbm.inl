@@ -130,7 +130,7 @@ struct conv_rbm : public rbm_base<Desc> {
         using namespace etl;
 
         for(size_t k = 0; k < K; ++k){
-            etl::convolve_2d_valid(v_a, fflip(etl::sub(w, k)), v_cv(k));
+            etl::convolve_2d_valid(v_a, fflip(w(k)), v_cv(k));
 
             if(hidden_unit == unit_type::BINARY){
                 h_a(k) = sigmoid(b(k) + v_cv(k));
@@ -160,7 +160,7 @@ struct conv_rbm : public rbm_base<Desc> {
         h_cv(K) = 0.0;
 
         for(std::size_t k = 0; k < K; ++k){
-            etl::convolve_2d_full(h_s(k), etl::sub(w, k), h_cv(k));
+            etl::convolve_2d_full(h_s(k), w(k), h_cv(k));
             h_cv(K) += h_cv(k);
         }
 
