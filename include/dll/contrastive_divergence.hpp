@@ -339,13 +339,12 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
             auto p = rbm.sparsity_target;
             auto cost = rbm.sparsity_cost;
 
+            q_local_t = decay_rate * q_local_t + (1.0 - decay_rate) * q_local_batch;
+            q_local_penalty = cost * (q_local_t - p);
+
             for(std::size_t k = 0; k < K; ++k){
                 //TODO Ideally, the loop should be removed and the
                 //update be done diretly on the base matrix
-
-                q_local_t(k) = decay_rate * q_local_t(k) + (1.0 - decay_rate) * q_local_batch(k);
-
-                q_local_penalty(k) = cost * (q_local_t(k) - p);
 
                 //????
                 auto h_k_penalty = sum(q_local_penalty(k));
