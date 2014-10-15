@@ -265,9 +265,8 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
 
     //Gradients
     etl::fast_matrix<weight, K, NW, NW> w_grad;      //Gradients of shared weights
-    etl::fast_vector<weight, K> b_grad;                                 //Gradients of hidden biases bk
-
-    weight c_grad;                                      //Visible gradient
+    etl::fast_vector<weight, K> b_grad;              //Gradients of hidden biases bk
+    weight c_grad;                                   //Visible gradient
 
     //{{{ Momentum
 
@@ -330,12 +329,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
 
         //Apply L1/L2 regularization and penalties to the biases
 
-        //for(std::size_t k = 0; k < K; ++k){
-            //TODO Ideally, the loop should be removed and the
-            //update be done directly on rbm.w
-            base_trainer<RBM>::update_grad(w_grad, rbm.w, rbm, w_decay(rbm_traits<rbm_t>::decay()), w_penalty);
-        //}
-
+        base_trainer<RBM>::update_grad(w_grad, rbm.w, rbm, w_decay(rbm_traits<rbm_t>::decay()), w_penalty);
         base_trainer<RBM>::update_grad(b_grad, rbm.b, rbm, b_decay(rbm_traits<rbm_t>::decay()), h_penalty);
         base_trainer<RBM>::update_grad(c_grad, rbm.c, rbm, b_decay(rbm_traits<rbm_t>::decay()), v_penalty);
 
@@ -361,10 +355,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
         }
 
         if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LEE){
-            //for(std::size_t k = 0; k < K; ++k){
-                w_grad -= rbm.pbias_lambda * w_bias;
-            //}
-
+            w_grad -= rbm.pbias_lambda * w_bias;
             b_grad -= rbm.pbias_lambda * b_bias;
             c_grad -= rbm.pbias_lambda * c_bias;
         }
@@ -374,10 +365,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
             auto momentum = rbm.momentum;
             auto eps = rbm.learning_rate;
 
-            //for(std::size_t k = 0; k < K; ++k){
-                w_inc = momentum * w_inc + eps * w_grad;
-            //}
-
+            w_inc = momentum * w_inc + eps * w_grad;
             b_inc = momentum * b_inc + eps * b_grad;
             c_inc = momentum * c_inc + eps * c_grad;
         }
@@ -499,9 +487,6 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
     if(Persistent){
         t.init = false;
     }
-
-    //Compute the reconstruction error of this batch
-    //context.reconstruction_error += mean(t.c_grad * t.c_grad) / n_samples;
 
     //Keep only the mean of the gradients
     t.w_grad /= n_samples;
@@ -703,9 +688,6 @@ public:
                 }
             }
         }
-
-        //Compute the reconstruction error of this batch
-        //context.reconstruction_error += mean(c_grad_org * c_grad_org) / n_samples;
 
         //Keep only the mean of the gradients
         w_grad /= n_samples;
@@ -934,9 +916,6 @@ public:
         }
 
         init = false;
-
-        //Compute the reconstruction error of this batch
-        //context.reconstruction_error += mean(c_grad_org * c_grad_org) / n_samples;
 
         //Keep only the mean of the gradients
         w_grad /= n_samples;
