@@ -24,7 +24,7 @@ int main(){
     typedef dll::conv_rbm_mp<dll::conv_rbm_mp_desc<28, 1, 12, 40, 2>> crbm_1;
 
     std::cout << "NV*NV=" << std::remove_reference<decltype(crbm_1::v1)>::type::etl_size << std::endl;
-    std::cout << "NH*NH=" << std::remove_reference<decltype(crbm_1::h1_a(0))>::type::etl_size << std::endl;
+    std::cout << "NH*NH=" << std::remove_reference<decltype(crbm_1::h1_a)>::type::etl_size << std::endl;
     std::cout << "NW*NW=" << std::remove_reference<decltype(crbm_1::w)>::type::etl_size << std::endl;
 
     typedef dll::conv_rbm_mp<dll::conv_rbm_mp_desc<28, 1, 12, 40, 2, dll::momentum, dll::batch_size<50>>> crbm_2;

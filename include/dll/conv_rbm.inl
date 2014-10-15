@@ -58,25 +58,25 @@ struct conv_rbm : public rbm_base<Desc> {
     static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit),
         "Only binary hidden units are supported");
 
-    etl::fast_matrix<weight, K, NW, NW> w;                       //shared weights
-    etl::fast_vector<weight, K> b;                               //hidden biases bk
-    weight c;                                                    //visible single bias c
+    etl::fast_matrix<weight, K, NW, NW> w;          //shared weights
+    etl::fast_vector<weight, K> b;                  //hidden biases bk
+    weight c;                                       //visible single bias c
 
-    etl::fast_matrix<weight, NV, NV> v1;                         //visible units
+    etl::fast_matrix<weight, NV, NV> v1;            //visible units
 
-    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> h1_a;  //Activation probabilities of reconstructed hidden units
-    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> h1_s;  //Sampled values of reconstructed hidden units
+    etl::fast_matrix<weight, K, NH, NH> h1_a;       //Activation probabilities of reconstructed hidden units
+    etl::fast_matrix<weight, K, NH, NH> h1_s;       //Sampled values of reconstructed hidden units
 
-    etl::fast_matrix<weight, NV, NV> v2_a;                       //Activation probabilities of reconstructed visible units
-    etl::fast_matrix<weight, NV, NV> v2_s;                       //Sampled values of reconstructed visible units
+    etl::fast_matrix<weight, NV, NV> v2_a;          //Activation probabilities of reconstructed visible units
+    etl::fast_matrix<weight, NV, NV> v2_s;          //Sampled values of reconstructed visible units
 
-    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> h2_a;  //Activation probabilities of reconstructed hidden units
-    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> h2_s;  //Sampled values of reconstructed hidden units
+    etl::fast_matrix<weight, K, NH, NH> h2_a;       //Activation probabilities of reconstructed hidden units
+    etl::fast_matrix<weight, K, NH, NH> h2_s;       //Sampled values of reconstructed hidden units
 
     //Convolution data
 
-    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> v_cv;   //Temporary convolution
-    etl::fast_vector<etl::fast_matrix<weight, NV, NV>, K+1> h_cv;   //Temporary convolution
+    etl::fast_matrix<weight, K, NH, NH> v_cv;       //Temporary convolution
+    etl::fast_matrix<weight, K+1, NV, NV> h_cv;     //Temporary convolution
 
     //No copying
     conv_rbm(const conv_rbm& rbm) = delete;
@@ -147,10 +147,10 @@ struct conv_rbm : public rbm_base<Desc> {
             } else {
                 cpp_unreachable("Invalid path");
             }
-
-            nan_check_deep(h_a(k));
-            nan_check_deep(h_s(k));
         }
+
+        nan_check_deep(h_a);
+        nan_check_deep(h_s);
     }
 
     template<typename H, typename V>

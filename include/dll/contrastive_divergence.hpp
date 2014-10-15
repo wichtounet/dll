@@ -282,9 +282,9 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
     weight q_global_batch;
     weight q_global_t;
 
-    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> q_local_batch;
-    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> q_local_t;
-    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> q_local_penalty;
+    etl::fast_matrix<weight, K, NH, NH> q_local_batch;
+    etl::fast_matrix<weight, K, NH, NH> q_local_t;
+    etl::fast_matrix<weight, K, NH, NH> q_local_penalty;
 
     //}}} Sparsity end
 
@@ -621,8 +621,8 @@ private:
 
     etl::fast_matrix<weight, NV, NV> c_grad_org;
 
-    etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_pos;
-    etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_neg;
+    etl::fast_matrix<weight, K, NW, NW>  w_pos;
+    etl::fast_matrix<weight, K, NW, NW>  w_neg;
 
     rbm_t& rbm;
 
@@ -677,11 +677,9 @@ public:
             for(std::size_t k = 0; k < K; ++k){
                 etl::convolve_2d_valid(rbm.v1, fflip(rbm.h1_a(k)), w_pos(k));
                 etl::convolve_2d_valid(rbm.v2_a, fflip(rbm.h2_a(k)), w_neg(k));
-
-                w_grad(k) += w_pos(k) - w_neg(k);
             }
 
-            //w_grad += w_pos - w_neg;
+            w_grad += w_pos - w_neg;
 
             for(std::size_t k = 0; k < K; ++k){
                 //TODO Find if mean or sum
@@ -692,7 +690,7 @@ public:
 
             context.reconstruction_error += mean((rbm.v1 - rbm.v2_a) * (rbm.v1 - rbm.v2_a));
 
-            q_global_batch += sum(sum(rbm.h2_a));
+            q_global_batch += sum(rbm.h2_a);
 
             if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
                 q_local_batch += rbm.h2_a;
@@ -842,11 +840,11 @@ private:
     using base_cd_trainer<RBM>::q_global_batch;
     using base_cd_trainer<RBM>::q_local_batch;
 
-    etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_pos;
-    etl::fast_vector<etl::fast_matrix<weight, NW, NW>, K>  w_neg;
+    etl::fast_matrix<weight, K, NW, NW> w_pos;
+    etl::fast_matrix<weight, K, NW, NW> w_neg;
 
-    std::vector<etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K>> p_h_a;
-    std::vector<etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K>> p_h_s;
+    std::vector<etl::fast_matrix<weight, K, NH, NH>> p_h_a;
+    std::vector<etl::fast_matrix<weight, K, NH, NH>> p_h_s;
 
     bool init = true;
 
@@ -913,9 +911,9 @@ public:
             for(std::size_t k = 0; k < K; ++k){
                 etl::convolve_2d_valid(rbm.v1, fflip(rbm.h1_a(k)), w_pos(k));
                 etl::convolve_2d_valid(rbm.v2_a, fflip(rbm.h2_a(k)), w_neg(k));
-
-                w_grad(k) += w_pos(k) - w_neg(k);
             }
+
+            w_grad += w_pos - w_neg;
 
             for(std::size_t k = 0; k < K; ++k){
                 b_grad(k) += mean(rbm.h1_a(k) - rbm.h2_a(k));
@@ -925,7 +923,7 @@ public:
 
             context.reconstruction_error += mean((rbm.v1 - rbm.v2_a) * (rbm.v1 - rbm.v2_a));
 
-            q_global_batch += sum(sum(rbm.h2_a));
+            q_global_batch += sum(rbm.h2_a);
 
             if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
                 q_local_batch += rbm.h2_a;

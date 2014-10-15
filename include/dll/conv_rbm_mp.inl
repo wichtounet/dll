@@ -62,30 +62,30 @@ struct conv_rbm_mp : public rbm_base<Desc> {
         "Only binary hidden units are supported");
 
     etl::fast_matrix<weight, K, NW, NW> w;      //shared weights
-    etl::fast_vector<weight, K> b;                                //hidden biases bk
-    weight c;                                                     //visible single bias c
+    etl::fast_vector<weight, K> b;              //hidden biases bk
+    weight c;                                   //visible single bias c
 
-    etl::fast_matrix<weight, NV, NV> v1;                         //visible units
+    etl::fast_matrix<weight, NV, NV> v1;        //visible units
 
-    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> h1_a;  //Activation probabilities of reconstructed hidden units
-    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> h1_s;  //Sampled values of reconstructed hidden units
+    etl::fast_matrix<weight, K, NH, NH> h1_a;   //Activation probabilities of reconstructed hidden units
+    etl::fast_matrix<weight, K, NH, NH> h1_s;   //Sampled values of reconstructed hidden units
 
-    etl::fast_vector<etl::fast_matrix<weight, NP, NP>, K> p1_a;  //Activation probabilities of reconstructed hidden units
-    etl::fast_vector<etl::fast_matrix<weight, NP, NP>, K> p1_s;  //Sampled values of reconstructed hidden units
+    etl::fast_matrix<weight, K, NP, NP> p1_a;   //Activation probabilities of reconstructed hidden units
+    etl::fast_matrix<weight, K, NP, NP> p1_s;   //Sampled values of reconstructed hidden units
 
-    etl::fast_matrix<weight, NV, NV> v2_a;                       //Activation probabilities of reconstructed visible units
-    etl::fast_matrix<weight, NV, NV> v2_s;                       //Sampled values of reconstructed visible units
+    etl::fast_matrix<weight, NV, NV> v2_a;      //Activation probabilities of reconstructed visible units
+    etl::fast_matrix<weight, NV, NV> v2_s;      //Sampled values of reconstructed visible units
 
-    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> h2_a;  //Activation probabilities of reconstructed hidden units
-    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> h2_s;  //Sampled values of reconstructed hidden units
+    etl::fast_matrix<weight, K, NH, NH> h2_a;   //Activation probabilities of reconstructed hidden units
+    etl::fast_matrix<weight, K, NH, NH> h2_s;   //Sampled values of reconstructed hidden units
 
-    etl::fast_vector<etl::fast_matrix<weight, NP, NP>, K> p2_a;  //Activation probabilities of reconstructed hidden units
-    etl::fast_vector<etl::fast_matrix<weight, NP, NP>, K> p2_s;  //Sampled values of reconstructed hidden units
+    etl::fast_matrix<weight, K, NP, NP> p2_a;   //Activation probabilities of reconstructed hidden units
+    etl::fast_matrix<weight, K, NP, NP> p2_s;   //Sampled values of reconstructed hidden units
 
     //Convolution data
 
-    etl::fast_vector<etl::fast_matrix<weight, NH, NH>, K> v_cv;   //Temporary convolution
-    etl::fast_vector<etl::fast_matrix<weight, NV, NV>, K+1> h_cv;   //Temporary convolution
+    etl::fast_matrix<weight, K, NH, NH> v_cv;   //Temporary convolution
+    etl::fast_matrix<weight, K+1, NV, NV> h_cv; //Temporary convolution
 
     //No copying
     conv_rbm_mp(const conv_rbm_mp& rbm) = delete;
@@ -142,7 +142,7 @@ struct conv_rbm_mp : public rbm_base<Desc> {
 
         for(std::size_t ii = start_ii; ii < start_ii + C; ++ii){
             for(std::size_t jj  = start_jj; jj < start_jj + C; ++jj){
-                auto x = v_cv(k)(ii, jj) + b(k);
+                auto x = v_cv(k, ii, jj) + b(k);
                 p += std::exp(x);
             }
         }
@@ -167,40 +167,40 @@ struct conv_rbm_mp : public rbm_base<Desc> {
             for(size_t i = 0; i < NH; ++i){
                 for(size_t j = 0; j < NH; ++j){
                     //Total input
-                    auto x = v_cv(k)(i,j) + b(k);
+                    auto x = v_cv(k, i, j) + b(k);
 
                     //TODO RELU does not work
 
                     if(hidden_unit == unit_type::BINARY){
-                        h_a(k)(i, j) = std::exp(x) / (1.0 + pool(k, i, j));
-                        h_s(k)(i,j) = h_a(k)(i,j) > normal_generator() ? 1.0 : 0.0;
+                        h_a(k, i, j) = std::exp(x) / (1.0 + pool(k, i, j));
+                        h_s(k, i,j) = h_a(k, i,j) > normal_generator() ? 1.0 : 0.0;
                     } else if(hidden_unit == unit_type::RELU){
                         std::normal_distribution<weight> noise_distribution(0.0, logistic_sigmoid(x));
                         auto noise = std::bind(noise_distribution, rand_engine);
 
-                        h_a(k)(i,j) = std::max(0.0, x);
-                        h_s(k)(i,j) = std::max(0.0, x + noise());
+                        h_a(k,i,j) = std::max(0.0, x);
+                        h_s(k,i,j) = std::max(0.0, x + noise());
                     } else if(hidden_unit == unit_type::RELU6){
-                        h_a(k)(i,j) = std::min(std::max(0.0, x), 6.0);
+                        h_a(k,i,j) = std::min(std::max(0.0, x), 6.0);
 
-                        if(h_a(k)(i,j) == 0.0 || h_a(k)(i,j) == 6.0){
-                            h_s(k)(i,j) = h_a(k)(i,j);
+                        if(h_a(k,i,j) == 0.0 || h_a(k, i,j) == 6.0){
+                            h_s(k, i, j) = h_a(k, i,j);
                         } else {
                             std::normal_distribution<weight> noise_distribution(0.0, 1.0);
                             auto noise = std::bind(noise_distribution, rand_engine);
 
-                            h_s(k)(i,j) = std::min(std::max(0.0, x + noise()), 6.0);
+                            h_s(k, i,j) = std::min(std::max(0.0, x + noise()), 6.0);
                         }
                     } else if(hidden_unit == unit_type::RELU1){
-                        h_a(k)(i,j) = std::min(std::max(0.0, x), 1.0);
+                        h_a(k, i,j) = std::min(std::max(0.0, x), 1.0);
 
-                        if(h_a(k)(i,j) == 0.0 || h_a(k)(i,j) == 1.0){
-                            h_s(k)(i,j) = h_a(k)(i,j);
+                        if(h_a(k, i,j) == 0.0 || h_a(k, i,j) == 1.0){
+                            h_s(k, i,j) = h_a(k, i,j);
                         } else {
                             std::normal_distribution<weight> noise_distribution(0.0, 1.0);
                             auto noise = std::bind(noise_distribution, rand_engine);
 
-                            h_s(k)(i,j) = std::min(std::max(0.0, x + noise()), 1.0);
+                            h_s(k,i,j) = std::min(std::max(0.0, x + noise()), 1.0);
                         }
                     } else {
                         cpp_unreachable("Invalid path");
@@ -208,11 +208,12 @@ struct conv_rbm_mp : public rbm_base<Desc> {
 
                     cpp_assert(std::isfinite(x), "NaN verify");
                     cpp_assert(std::isfinite(pool(k,i,j)), "NaN verify");
-                    cpp_assert(std::isfinite(h_a(k)(i,j)), "NaN verify");
-                    cpp_assert(std::isfinite(h_s(k)(i,j)), "NaN verify");
                 }
             }
         }
+
+        nan_check_deep(h_a);
+        nan_check_deep(h_s);
     }
 
     template<typename H, typename V>
@@ -306,7 +307,7 @@ struct conv_rbm_mp : public rbm_base<Desc> {
         for(size_t k = 0; k < K; ++k){
             for(size_t i = 0; i < NV; ++i){
                 for(size_t j = 0; j < NV; ++j){
-                    std::cout << h2_a(k)(i, j) << " ";
+                    std::cout << h2_a(k,i, j) << " ";
                 }
                 std::cout << std::endl;
             }
@@ -318,7 +319,7 @@ struct conv_rbm_mp : public rbm_base<Desc> {
         for(size_t k = 0; k < K; ++k){
             for(size_t i = 0; i < NV; ++i){
                 for(size_t j = 0; j < NV; ++j){
-                    std::cout << h2_s(k)(i, j) << " ";
+                    std::cout << h2_s(k, i, j) << " ";
                 }
                 std::cout << std::endl;
             }
