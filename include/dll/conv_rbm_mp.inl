@@ -150,10 +150,6 @@ struct conv_rbm_mp : public rbm_base<Desc> {
 
     template<typename H, typename V>
     void activate_hidden(H& h_a, H& h_s, const V& v_a, const V&){
-        static std::default_random_engine rand_engine(std::time(nullptr));
-        static std::uniform_real_distribution<weight> normal_distribution(0.0, 1.0);
-        static auto normal_generator = std::bind(normal_distribution, rand_engine);
-
         h_a = 0.0;
         h_s = 0.0;
 
@@ -168,16 +164,17 @@ struct conv_rbm_mp : public rbm_base<Desc> {
                 for(size_t i = 0; i < NH; ++i){
                     for(size_t j = 0; j < NH; ++j){
                         //Total input
-                        auto x = v_cv(k, i, j) + b(k);
+                        auto x = b(k) + v_cv(k, i, j);
 
                         h_a(k, i, j) = std::exp(x) / (1.0 + pool(k, i, j));
-                        h_s(k, i,j) = h_a(k, i, j) > normal_generator() ? 1.0 : 0.0;
 
                         cpp_assert(std::isfinite(x), "NaN verify");
                         cpp_assert(std::isfinite(pool(k,i,j)), "NaN verify");
                     }
                 }
             }
+
+            h_s = bernoulli(h_a);
         } else if(hidden_unit == unit_type::RELU){
             h_a = max(etl::rep<NH, NH>(b) + v_cv, 0.0);
             h_s = logistic_noise(h_a);
