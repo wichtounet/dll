@@ -161,53 +161,34 @@ struct conv_rbm_mp : public rbm_base<Desc> {
 
         for(size_t k = 0; k < K; ++k){
             etl::convolve_2d_valid(v_a, fflip(w(k)), v_cv(k));
+        }
 
-            for(size_t i = 0; i < NH; ++i){
-                for(size_t j = 0; j < NH; ++j){
-                    //Total input
-                    auto x = v_cv(k, i, j) + b(k);
+        if(hidden_unit == unit_type::BINARY){
+            for(size_t k = 0; k < K; ++k){
+                for(size_t i = 0; i < NH; ++i){
+                    for(size_t j = 0; j < NH; ++j){
+                        //Total input
+                        auto x = v_cv(k, i, j) + b(k);
 
-                    //TODO RELU does not work
-
-                    if(hidden_unit == unit_type::BINARY){
                         h_a(k, i, j) = std::exp(x) / (1.0 + pool(k, i, j));
-                        h_s(k, i,j) = h_a(k, i,j) > normal_generator() ? 1.0 : 0.0;
-                    } else if(hidden_unit == unit_type::RELU){
-                        std::normal_distribution<weight> noise_distribution(0.0, logistic_sigmoid(x));
-                        auto noise = std::bind(noise_distribution, rand_engine);
+                        h_s(k, i,j) = h_a(k, i, j) > normal_generator() ? 1.0 : 0.0;
 
-                        h_a(k,i,j) = std::max(0.0, x);
-                        h_s(k,i,j) = std::max(0.0, x + noise());
-                    } else if(hidden_unit == unit_type::RELU6){
-                        h_a(k,i,j) = std::min(std::max(0.0, x), 6.0);
-
-                        if(h_a(k,i,j) == 0.0 || h_a(k, i,j) == 6.0){
-                            h_s(k, i, j) = h_a(k, i,j);
-                        } else {
-                            std::normal_distribution<weight> noise_distribution(0.0, 1.0);
-                            auto noise = std::bind(noise_distribution, rand_engine);
-
-                            h_s(k, i,j) = std::min(std::max(0.0, x + noise()), 6.0);
-                        }
-                    } else if(hidden_unit == unit_type::RELU1){
-                        h_a(k, i,j) = std::min(std::max(0.0, x), 1.0);
-
-                        if(h_a(k, i,j) == 0.0 || h_a(k, i,j) == 1.0){
-                            h_s(k, i,j) = h_a(k, i,j);
-                        } else {
-                            std::normal_distribution<weight> noise_distribution(0.0, 1.0);
-                            auto noise = std::bind(noise_distribution, rand_engine);
-
-                            h_s(k,i,j) = std::min(std::max(0.0, x + noise()), 1.0);
-                        }
-                    } else {
-                        cpp_unreachable("Invalid path");
+                        cpp_assert(std::isfinite(x), "NaN verify");
+                        cpp_assert(std::isfinite(pool(k,i,j)), "NaN verify");
                     }
-
-                    cpp_assert(std::isfinite(x), "NaN verify");
-                    cpp_assert(std::isfinite(pool(k,i,j)), "NaN verify");
                 }
             }
+        } else if(hidden_unit == unit_type::RELU){
+            h_a = max(etl::rep<NH, NH>(b) + v_cv, 0.0);
+            h_s = logistic_noise(h_a);
+        } else if(hidden_unit == unit_type::RELU6){
+            h_a = min(max(etl::rep<NH, NH>(b) + v_cv, 0.0), 6.0);
+            h_s = ranged_noise(h_a, 6.0);
+        } else if(hidden_unit == unit_type::RELU1){
+            h_a = min(max(etl::rep<NH, NH>(b) + v_cv, 0.0), 1.0);
+            h_s = ranged_noise(h_a, 1.0);
+        } else {
+            cpp_unreachable("Invalid path");
         }
 
         nan_check_deep(h_a);
