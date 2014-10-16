@@ -19,8 +19,7 @@
 
 #include "cpp_utils/assert.hpp"             //Assertions
 
-#include "etl/fast_matrix.hpp"
-#include "etl/fast_vector.hpp"
+#include "etl/etl.hpp"
 #include "etl/convolution.hpp"
 
 #include "batch.hpp"

@@ -5,8 +5,6 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "etl/dyn_vector.hpp"
-
 #include "dll/conv_rbm.hpp"
 
 template<typename RBM>

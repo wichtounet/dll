@@ -15,9 +15,7 @@
 #include "cpp_utils/assert.hpp"             //Assertions
 #include "cpp_utils/stop_watch.hpp"         //Performance counter
 
-#include "etl/fast_vector.hpp"
-#include "etl/dyn_vector.hpp"
-#include "etl/fast_matrix.hpp"
+#include "etl/etl.hpp"
 #include "etl/convolution.hpp"
 
 #include "rbm_base.hpp"           //The base class

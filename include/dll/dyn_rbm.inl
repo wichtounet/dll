@@ -8,8 +8,7 @@
 #ifndef DLL_DYN_RBM_INL
 #define DLL_DYN_RBM_INL
 
-#include "etl/dyn_matrix.hpp"
-#include "etl/dyn_vector.hpp"
+#include "etl/etl.hpp"
 
 #include "normal_rbm.hpp"
 #include "checks.hpp"

@@ -12,8 +12,7 @@
 
 #include "cpp_utils/tuple_utils.hpp"
 
-#include "etl/dyn_matrix.hpp"
-#include "etl/dyn_vector.hpp"
+#include "etl/etl.hpp"
 
 #include "conv_rbm.hpp"
 #include "dbn_trainer.hpp"
