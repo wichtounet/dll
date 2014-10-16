@@ -129,22 +129,22 @@ struct conv_rbm : public rbm_base<Desc> {
 
         for(size_t k = 0; k < K; ++k){
             etl::convolve_2d_valid(v_a, fflip(w(k)), v_cv(k));
+        }
 
-            if(hidden_unit == unit_type::BINARY){
-                h_a(k) = sigmoid(b(k) + v_cv(k));
-                h_s(k) = bernoulli(h_a(k));
-            } else if(hidden_unit == unit_type::RELU){
-                h_a(k) = max(b(k) + v_cv(k), 0.0);
-                h_s(k) = logistic_noise(h_a(k));
-            } else if(hidden_unit == unit_type::RELU6){
-                h_a(k) = min(max(b(k) + v_cv(k), 0.0), 6.0);
-                h_s(k) = ranged_noise(h_a(k), 6.0);
-            } else if(hidden_unit == unit_type::RELU1){
-                h_a(k) = min(max(b(k) + v_cv(k), 0.0), 1.0);
-                h_s(k) = ranged_noise(h_a(k), 1.0);
-            } else {
-                cpp_unreachable("Invalid path");
-            }
+        if(hidden_unit == unit_type::BINARY){
+            h_a = sigmoid(etl::rep<NH, NH>(b) + v_cv);
+            h_s = bernoulli(h_a);
+        } else if(hidden_unit == unit_type::RELU){
+            h_a = max(etl::rep<NH, NH>(b) + v_cv, 0.0);
+            h_s = logistic_noise(h_a);
+        } else if(hidden_unit == unit_type::RELU6){
+            h_a = min(max(etl::rep<NH, NH>(b) + v_cv, 0.0), 6.0);
+            h_s = ranged_noise(h_a, 6.0);
+        } else if(hidden_unit == unit_type::RELU1){
+            h_a = min(max(etl::rep<NH, NH>(b) + v_cv, 0.0), 1.0);
+            h_s = ranged_noise(h_a, 1.0);
+        } else {
+            cpp_unreachable("Invalid path");
         }
 
         nan_check_deep(h_a);
