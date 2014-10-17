@@ -229,20 +229,28 @@ struct conv_rbm : public rbm_base<Desc> {
     }
 
     void display_visible_unit_activations() const {
-        for(size_t i = 0; i < NV; ++i){
-            for(size_t j = 0; j < NV; ++j){
-                std::cout << v2_a(i, j) << " ";
+        for(std::size_t channel = 0; channel < NC; ++channel){
+            std::cout << "Channel " << channel << std::endl;
+
+            for(size_t i = 0; i < NV; ++i){
+                for(size_t j = 0; j < NV; ++j){
+                    std::cout << v2_a(channel, i, j) << " ";
+                }
+                std::cout << std::endl;
             }
-            std::cout << std::endl;
         }
     }
 
     void display_visible_unit_samples() const {
-        for(size_t i = 0; i < NV; ++i){
-            for(size_t j = 0; j < NV; ++j){
-                std::cout << v2_s(i, j) << " ";
+        for(std::size_t channel = 0; channel < NC; ++channel){
+            std::cout << "Channel " << channel << std::endl;
+
+            for(size_t i = 0; i < NV; ++i){
+                for(size_t j = 0; j < NV; ++j){
+                    std::cout << v2_s(channel, i, j) << " ";
+                }
+                std::cout << std::endl;
             }
-            std::cout << std::endl;
         }
     }
 
