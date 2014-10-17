@@ -256,6 +256,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
     typedef RBM rbm_t;
 
     static constexpr const auto K = rbm_t::K;
+    static constexpr const auto NC = rbm_t::NC;
     static constexpr const auto NV = rbm_t::NV;
     static constexpr const auto NH = rbm_t::NH;
     static constexpr const auto NW = rbm_t::NW;
@@ -263,15 +264,15 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
     typedef typename rbm_t::weight weight;
 
     //Gradients
-    etl::fast_matrix<weight, K, NW, NW> w_grad;      //Gradients of shared weights
+    etl::fast_matrix<weight, NC, K, NW, NW> w_grad;  //Gradients of shared weights
     etl::fast_vector<weight, K> b_grad;              //Gradients of hidden biases bk
-    weight c_grad;                                   //Visible gradient
+    etl::fast_vector<weight, NC> c_grad;             //Visible gradient
 
     //{{{ Momentum
 
-    etl::fast_matrix<weight, K, NW, NW> w_inc;
+    etl::fast_matrix<weight, NC, K, NW, NW> w_inc;
     etl::fast_vector<weight, K> b_inc;
-    weight c_inc;
+    etl::fast_vector<weight, NC> c_inc;
 
     //}}} Momentum end
 
@@ -288,9 +289,9 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
 
     //{{{ Sparsity biases
 
-    etl::fast_matrix<weight, K, NW, NW> w_bias;
+    etl::fast_matrix<weight, NC, K, NW, NW> w_bias;
     etl::fast_vector<weight, K> b_bias;
-    weight c_bias;
+    etl::fast_vector<weight, NC> c_bias;
 
     //}}} Sparsity biases end
 
@@ -590,6 +591,7 @@ private:
     using base_cd_trainer<RBM>::NW;
     using base_cd_trainer<RBM>::NH;
     using base_cd_trainer<RBM>::NV;
+    using base_cd_trainer<RBM>::NC;
 
     using base_cd_trainer<RBM>::w_grad;
     using base_cd_trainer<RBM>::b_grad;
@@ -602,10 +604,10 @@ private:
     using base_cd_trainer<RBM>::b_bias;
     using base_cd_trainer<RBM>::c_bias;
 
-    etl::fast_matrix<weight, NV, NV> c_grad_org;
+    etl::fast_matrix<weight, NC, NV, NV> c_grad_org;
 
-    etl::fast_matrix<weight, K, NW, NW>  w_pos;
-    etl::fast_matrix<weight, K, NW, NW>  w_neg;
+    etl::fast_matrix<weight, NC, K, NW, NW>  w_pos;
+    etl::fast_matrix<weight, NC, K, NW, NW>  w_neg;
 
     rbm_t& rbm;
 
@@ -657,9 +659,11 @@ public:
 
             //Compute gradients
 
-            for(std::size_t k = 0; k < K; ++k){
-                etl::convolve_2d_valid(rbm.v1, fflip(rbm.h1_a(k)), w_pos(k));
-                etl::convolve_2d_valid(rbm.v2_a, fflip(rbm.h2_a(k)), w_neg(k));
+            for(std::size_t channel = 0; channel < NC; ++channel){
+                for(std::size_t k = 0; k < K; ++k){
+                    etl::convolve_2d_valid(rbm.v1(channel), fflip(rbm.h1_a(k)), w_pos(channel)(k));
+                    etl::convolve_2d_valid(rbm.v2_a(channel), fflip(rbm.h2_a(k)), w_neg(channel)(k));
+                }
             }
 
             w_grad += w_pos - w_neg;
@@ -806,6 +810,7 @@ private:
     typedef RBM rbm_t;
     typedef typename rbm_t::weight weight;
 
+    using base_cd_trainer<RBM>::NC;
     using base_cd_trainer<RBM>::NW;
     using base_cd_trainer<RBM>::NH;
     using base_cd_trainer<RBM>::NV;
@@ -815,13 +820,13 @@ private:
     using base_cd_trainer<RBM>::b_grad;
     using base_cd_trainer<RBM>::c_grad;
 
-    etl::fast_matrix<weight, NV, NV> c_grad_org;
+    etl::fast_matrix<weight, NC, NV, NV> c_grad_org;
 
     using base_cd_trainer<RBM>::q_global_batch;
     using base_cd_trainer<RBM>::q_local_batch;
 
-    etl::fast_matrix<weight, K, NW, NW> w_pos;
-    etl::fast_matrix<weight, K, NW, NW> w_neg;
+    etl::fast_matrix<weight, NC, K, NW, NW> w_pos;
+    etl::fast_matrix<weight, NC, K, NW, NW> w_neg;
 
     std::vector<etl::fast_matrix<weight, K, NH, NH>> p_h_a;
     std::vector<etl::fast_matrix<weight, K, NH, NH>> p_h_s;
@@ -888,9 +893,11 @@ public:
             p_h_a[i] = rbm.h2_a;
             p_h_s[i] = rbm.h2_s;
 
-            for(std::size_t k = 0; k < K; ++k){
-                etl::convolve_2d_valid(rbm.v1, fflip(rbm.h1_a(k)), w_pos(k));
-                etl::convolve_2d_valid(rbm.v2_a, fflip(rbm.h2_a(k)), w_neg(k));
+            for(std::size_t channel = 0; channel < NC; ++channel){
+                for(std::size_t k = 0; k < K; ++k){
+                    etl::convolve_2d_valid(rbm.v1(channel), fflip(rbm.h1_a(k)), w_pos(channel)(k));
+                    etl::convolve_2d_valid(rbm.v2_a(channel), fflip(rbm.h2_a(k)), w_neg(channel)(k));
+                }
             }
 
             w_grad += w_pos - w_neg;

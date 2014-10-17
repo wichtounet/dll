@@ -59,11 +59,11 @@ struct conv_rbm_mp : public rbm_base<Desc> {
     static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit),
         "Only binary hidden units are supported");
 
-    etl::fast_matrix<weight, K, NW, NW> w;      //shared weights
+    etl::fast_matrix<weight, NC, K, NW, NW> w;  //shared weights
     etl::fast_vector<weight, K> b;              //hidden biases bk
-    weight c;                                   //visible single bias c
+    etl::fast_vector<weight, NC> c;             //visible single bias c
 
-    etl::fast_matrix<weight, NV, NV> v1;        //visible units
+    etl::fast_matrix<weight, NC, NV, NV> v1;        //visible units
 
     etl::fast_matrix<weight, K, NH, NH> h1_a;   //Activation probabilities of reconstructed hidden units
     etl::fast_matrix<weight, K, NH, NH> h1_s;   //Sampled values of reconstructed hidden units
@@ -71,8 +71,8 @@ struct conv_rbm_mp : public rbm_base<Desc> {
     etl::fast_matrix<weight, K, NP, NP> p1_a;   //Activation probabilities of reconstructed hidden units
     etl::fast_matrix<weight, K, NP, NP> p1_s;   //Sampled values of reconstructed hidden units
 
-    etl::fast_matrix<weight, NV, NV> v2_a;      //Activation probabilities of reconstructed visible units
-    etl::fast_matrix<weight, NV, NV> v2_s;      //Sampled values of reconstructed visible units
+    etl::fast_matrix<weight, NC, NV, NV> v2_a;      //Activation probabilities of reconstructed visible units
+    etl::fast_matrix<weight, NC, NV, NV> v2_s;      //Sampled values of reconstructed visible units
 
     etl::fast_matrix<weight, K, NH, NH> h2_a;   //Activation probabilities of reconstructed hidden units
     etl::fast_matrix<weight, K, NH, NH> h2_s;   //Sampled values of reconstructed hidden units
@@ -82,7 +82,7 @@ struct conv_rbm_mp : public rbm_base<Desc> {
 
     //Convolution data
 
-    etl::fast_matrix<weight, K, NH, NH> v_cv;   //Temporary convolution
+    etl::fast_matrix<weight, NC+1, K, NH, NH> v_cv;   //Temporary convolution
     etl::fast_matrix<weight, K+1, NV, NV> h_cv; //Temporary convolution
 
     //No copying
@@ -134,24 +134,27 @@ struct conv_rbm_mp : public rbm_base<Desc> {
 
     template<typename H, typename V>
     void activate_hidden(H& h_a, H& h_s, const V& v_a, const V&){
-        h_a = 0.0;
-        h_s = 0.0;
+        v_cv(NC) = 0;
 
-        for(size_t k = 0; k < K; ++k){
-            etl::convolve_2d_valid(v_a, fflip(w(k)), v_cv(k));
+        for(std::size_t channel = 0; channel < NC; ++channel){
+            for(size_t k = 0; k < K; ++k){
+                etl::convolve_2d_valid(v_a(channel), fflip(w(channel)(k)), v_cv(channel)(k));
+            }
+
+            v_cv(NC) += v_cv(channel);
         }
 
         if(hidden_unit == unit_type::BINARY){
-            h_a = etl::p_max_pool<C, C>(etl::rep<NH, NH>(b) + v_cv);
+            h_a = etl::p_max_pool<C, C>(etl::rep<NH, NH>(b) + v_cv(NC));
             h_s = bernoulli(h_a);
         } else if(hidden_unit == unit_type::RELU){
-            h_a = max(etl::rep<NH, NH>(b) + v_cv, 0.0);
+            h_a = max(etl::rep<NH, NH>(b) + v_cv(NC), 0.0);
             h_s = logistic_noise(h_a);
         } else if(hidden_unit == unit_type::RELU6){
-            h_a = min(max(etl::rep<NH, NH>(b) + v_cv, 0.0), 6.0);
+            h_a = min(max(etl::rep<NH, NH>(b) + v_cv(NC), 0.0), 6.0);
             h_s = ranged_noise(h_a, 6.0);
         } else if(hidden_unit == unit_type::RELU1){
-            h_a = min(max(etl::rep<NH, NH>(b) + v_cv, 0.0), 1.0);
+            h_a = min(max(etl::rep<NH, NH>(b) + v_cv(NC), 0.0), 1.0);
             h_s = ranged_noise(h_a, 1.0);
         } else {
             cpp_unreachable("Invalid path");
@@ -165,21 +168,23 @@ struct conv_rbm_mp : public rbm_base<Desc> {
     void activate_visible(const H&, const H& h_s, V& v_a, V& v_s){
         using namespace etl;
 
-        h_cv(K) = 0.0;
+        for(std::size_t channel = 0; channel < NC; ++channel){
+            h_cv(K) = 0.0;
 
-        for(std::size_t k = 0; k < K; ++k){
-            etl::convolve_2d_full(h_s(k), w(k), h_cv(k));
-            h_cv(K) += h_cv(k);
-        }
+            for(std::size_t k = 0; k < K; ++k){
+                etl::convolve_2d_full(h_s(k), w(channel)(k), h_cv(k));
+                h_cv(K) += h_cv(k);
+            }
 
-        if(visible_unit == unit_type::BINARY){
-            v_a = sigmoid(c + h_cv(K));
-            v_s = bernoulli(v_a);
-        } else if(visible_unit == unit_type::GAUSSIAN){
-            v_a = c + h_cv(K);
-            v_s = normal_noise(v_a);
-        } else {
-            cpp_unreachable("Invalid path");
+            if(visible_unit == unit_type::BINARY){
+                v_a(channel) = sigmoid(c(channel) + h_cv(K));
+                v_s(channel) = bernoulli(v_a(channel));
+            } else if(visible_unit == unit_type::GAUSSIAN){
+                v_a(channel) = c(channel) + h_cv(K);
+                v_s(channel) = normal_noise(v_a(channel));
+            } else {
+                cpp_unreachable("Invalid path");
+            }
         }
 
         nan_check_deep(v_a);

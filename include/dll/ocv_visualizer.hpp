@@ -278,7 +278,7 @@ struct opencv_rbm_visualizer<RBM, C, std::enable_if_t<rbm_traits<RBM>::is_convol
 
                 for(std::size_t fi = 0; fi < filter_shape.width; ++fi){
                     for(std::size_t fj = 0; fj < filter_shape.height; ++fj){
-                        auto value = rbm.w(real_k, fi, fj);
+                        auto value = rbm.w(0, real_k, fi, fj);
 
                         if(scale){
                             value -= min;

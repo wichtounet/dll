@@ -283,3 +283,30 @@ TEST_CASE( "crbm/mnist_12", "crbm::bias_mode_none" ) {
 
     REQUIRE(error < 5e-2);
 }
+
+TEST_CASE( "crbm/mnist_13", "crbm::multi_channel" ) {
+    dll::conv_rbm_desc<
+        28, 2, 12, 40,
+        dll::batch_size<25>,
+        dll::momentum
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(200);
+
+    mnist::binarize_dataset(dataset);
+
+    for(auto& image : dataset.training_images){
+        image.reserve(image.size() * 2);
+        auto end = image.size();
+        for(std::size_t i = 0; i < end; ++i){
+            image.push_back(image[i]);
+        }
+    }
+
+    auto error = rbm.train(dataset.training_images, 100);
+
+    REQUIRE(error < 1e-2);
+}
