@@ -132,48 +132,17 @@ struct conv_rbm_mp : public rbm_base<Desc> {
         binary_load(is, c);
     }
 
-    weight pool(std::size_t k, std::size_t i, std::size_t j) const {
-        weight p = 0;
-
-        auto start_ii = (i / C) * C;
-        auto start_jj = (j / C) * C;
-
-        for(std::size_t ii = start_ii; ii < start_ii + C; ++ii){
-            for(std::size_t jj  = start_jj; jj < start_jj + C; ++jj){
-                auto x = v_cv(k, ii, jj) + b(k);
-                p += std::exp(x);
-            }
-        }
-
-        return p;
-    }
-
     template<typename H, typename V>
     void activate_hidden(H& h_a, H& h_s, const V& v_a, const V&){
         h_a = 0.0;
         h_s = 0.0;
-
-        //TODO Ideally, pooling should be done with an ETL expression
 
         for(size_t k = 0; k < K; ++k){
             etl::convolve_2d_valid(v_a, fflip(w(k)), v_cv(k));
         }
 
         if(hidden_unit == unit_type::BINARY){
-            for(size_t k = 0; k < K; ++k){
-                for(size_t i = 0; i < NH; ++i){
-                    for(size_t j = 0; j < NH; ++j){
-                        //Total input
-                        auto x = b(k) + v_cv(k, i, j);
-
-                        h_a(k, i, j) = std::exp(x) / (1.0 + pool(k, i, j));
-
-                        cpp_assert(std::isfinite(x), "NaN verify");
-                        cpp_assert(std::isfinite(pool(k,i,j)), "NaN verify");
-                    }
-                }
-            }
-
+            h_a = etl::p_max_pool<C, C>(etl::rep<NH, NH>(b) + v_cv);
             h_s = bernoulli(h_a);
         } else if(hidden_unit == unit_type::RELU){
             h_a = max(etl::rep<NH, NH>(b) + v_cv, 0.0);
