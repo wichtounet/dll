@@ -142,8 +142,8 @@ struct conv_dbn {
      */
     template<typename Samples>
     void pretrain(const Samples& training_data, std::size_t max_epochs){
-        using visible_t = std::vector<etl::dyn_vector<typename Samples::value_type::value_type>>;
-        using hidden_t = std::vector<etl::dyn_vector<etl::dyn_matrix<weight>>>;
+        using visible_t = std::vector<etl::dyn_matrix<weight, 3>>;
+        using hidden_t = std::vector<etl::dyn_matrix<weight, 3>>;
 
         using watcher_t = typename desc::template watcher_t<this_type>;
 
@@ -151,21 +151,25 @@ struct conv_dbn {
 
         watcher.pretraining_begin(*this);
 
+        //I don't know why it is necesary to copy them here
+        constexpr const auto NC = rbm_type<0>::NC;
+        constexpr const auto NV = rbm_type<0>::NV;
+
         //Convert data to an useful form
         visible_t data;
         data.reserve(training_data.size());
 
         for(auto& sample : training_data){
-            data.emplace_back(sample);
+            data.emplace_back(NC, NV, NV);
+            data.back() = sample;
         }
 
         hidden_t next_a;
         hidden_t next_s;
-        visible_t next;
 
         auto input = std::ref(data);
 
-        cpp::for_each_i(tuples, [&watcher, this, &input, &next, &next_a, &next_s, max_epochs](std::size_t I, auto& rbm){
+        cpp::for_each_i(tuples, [&watcher, this, &input, &next_a, &next_s, max_epochs](std::size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
             constexpr const auto NH = rbm_t::NH;
             constexpr const auto K = rbm_t::K;
@@ -187,10 +191,9 @@ struct conv_dbn {
                 next_s.clear();
                 next_s.reserve(input_size);
 
-                //TODO Review that
                 for(std::size_t i = 0; i < input_size; ++i){
-                    next_a.emplace_back(K, etl::dyn_matrix<weight>(NH, NH));
-                    next_s.emplace_back(K, etl::dyn_matrix<weight>(NH, NH));
+                    next_a.emplace_back(K, NH, NH);
+                    next_s.emplace_back(K, NH, NH);
                 }
 
                 for(std::size_t i = 0; i < input_size; ++i){
@@ -198,24 +201,7 @@ struct conv_dbn {
                     rbm.activate_hidden(next_a[i], next_s[i], rbm.v1, rbm.v1);
                 }
 
-                next.clear();
-                next.reserve(input_size);
-
-                //TODO Check the order of the output
-
-                for(std::size_t i = 0; i < input_size; ++i){
-                    next.emplace_back(NH * NH * K);
-
-                    for(std::size_t j = 0; j < NH; ++j){
-                        for(std::size_t k = 0; k < NH; ++k){
-                            for(std::size_t l = 0; l < K; ++l){
-                                next[i][j * NH * NH + k * NH + l] = next_a[i](k)(j,k);
-                            }
-                        }
-                    }
-                }
-
-                input = std::ref(next);
+                input = std::ref(next_a);
             }
         });
 
@@ -228,10 +214,12 @@ struct conv_dbn {
 
     template<typename Sample, typename Output>
     void activation_probabilities(const Sample& item_data, Output& result){
-        using visible_t = etl::dyn_vector<typename Sample::value_type>;
-        using hidden_t = etl::dyn_vector<etl::dyn_matrix<weight>>;
+        using visible_t = etl::dyn_matrix<weight, 3>;
+        using hidden_t = etl::dyn_matrix<weight, 3>;
 
-        visible_t item(item_data);
+        visible_t item(rbm_type<0>::NC, rbm_type<0>::NV, rbm_type<0>::NV);
+
+        item = item_data;
 
         auto input = std::cref(item);
 
@@ -241,47 +229,28 @@ struct conv_dbn {
                 constexpr const auto NH = rbm_t::NH;
                 constexpr const auto K = rbm_t::K;
 
-                static visible_t next(K * NH * NH);
-                static hidden_t next_a(K, etl::dyn_matrix<weight>(NH, NH));
-                static hidden_t next_s(K, etl::dyn_matrix<weight>(NH, NH));
+                static hidden_t next_a(K, NH, NH);
+                static hidden_t next_s(K, NH, NH);
 
                 rbm.v1 = static_cast<const visible_t&>(input);
                 rbm.activate_hidden(next_a, next_s, rbm.v1, rbm.v1);
 
-                //TODO Check the order of the output
-
-                for(std::size_t j = 0; j < NH; ++j){
-                    for(std::size_t k = 0; k < NH; ++k){
-                        for(std::size_t l = 0; l < K; ++l){
-                            next[j * NH * NH + k * NH + l] = next_a(k)(j,k);
-                        }
-                    }
-                }
-
-                input = std::cref(next);
+                input = std::cref(next_a);
             }
         });
 
         constexpr const auto K = rbm_k<layers - 1>();
         constexpr const auto NH = rbm_nh<layers - 1>();
 
-        static hidden_t next_a(K, etl::dyn_matrix<weight>(NH, NH));
-        static hidden_t next_s(K, etl::dyn_matrix<weight>(NH, NH));
+        static hidden_t next_a(K, NH, NH);
+        static hidden_t next_s(K, NH, NH);
 
         auto& last_rbm = layer<layers - 1>();
 
         last_rbm.v1 = static_cast<const visible_t&>(input);
         last_rbm.activate_hidden(next_a, next_s, last_rbm.v1, last_rbm.v1);
 
-        //TODO Check the order of the output
-
-        for(std::size_t j = 0; j < NH; ++j){
-            for(std::size_t k = 0; k < NH; ++k){
-                for(std::size_t l = 0; l < K; ++l){
-                    result[j * NH * NH + k * NH + l] = next_a(k)(j,k);
-                }
-            }
-        }
+        result = next_a;
     }
 
     template<typename Sample>
