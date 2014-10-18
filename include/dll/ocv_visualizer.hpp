@@ -260,6 +260,8 @@ struct opencv_rbm_visualizer<RBM, C, std::enable_if_t<rbm_traits<RBM>::is_convol
 
         cv::putText(buffer_image, "epoch " + std::to_string(epoch), cv::Point(10,12), CV_FONT_NORMAL, 0.3, cv::Scalar(0), 1, 2);
 
+        std::size_t channel = 0;
+
         for(std::size_t hi = 0; hi < tile_shape.width; ++hi){
             for(std::size_t hj = 0; hj < tile_shape.height; ++hj){
                 auto real_k = hi * tile_shape.height + hj;
@@ -272,13 +274,13 @@ struct opencv_rbm_visualizer<RBM, C, std::enable_if_t<rbm_traits<RBM>::is_convol
                 typename RBM::weight max;
 
                 if(scale){
-                    min = etl::min(etl::sub(rbm.w, real_k));
-                    max = etl::max(etl::sub(rbm.w, real_k));
+                    min = etl::min(rbm.w(channel)(real_k));
+                    max = etl::max(rbm.w(channel)(real_k));
                 }
 
                 for(std::size_t fi = 0; fi < filter_shape.width; ++fi){
                     for(std::size_t fj = 0; fj < filter_shape.height; ++fj){
-                        auto value = rbm.w(0, real_k, fi, fj);
+                        auto value = rbm.w(channel, real_k, fi, fj);
 
                         if(scale){
                             value -= min;
@@ -580,6 +582,8 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
             "layer: " + std::to_string(current_image) + " epoch " + std::to_string(epoch),
             cv::Point(10,12), CV_FONT_NORMAL, 0.3, cv::Scalar(0), 1, 2);
 
+        std::size_t channel = 0;
+
         for(std::size_t hi = 0; hi < tile_shape.width; ++hi){
             for(std::size_t hj = 0; hj < tile_shape.height; ++hj){
                 auto real_k = hi * tile_shape.height + hj;
@@ -592,13 +596,13 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
                 typename RBM::weight max;
 
                 if(scale){
-                    min = etl::min(rbm.w(real_k));
-                    max = etl::max(rbm.w(real_k));
+                    min = etl::min(rbm.w(channel)(real_k));
+                    max = etl::max(rbm.w(channel)(real_k));
                 }
 
                 for(std::size_t fi = 0; fi < filter_shape.width; ++fi){
                     for(std::size_t fj = 0; fj < filter_shape.height; ++fj){
-                        auto value = rbm.w(real_k)(fi, fj);
+                        auto value = rbm.w(channel, real_k, fi, fj);
 
                         if(scale){
                             value -= min;
