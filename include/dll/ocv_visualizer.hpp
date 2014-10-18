@@ -513,11 +513,13 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
     void pretrain_layer(const DBN& /*dbn*/, std::size_t I, std::size_t input_size){
         using rbm_t = RBM;
 
+        static constexpr const auto NC = rbm_t::NC;
         static constexpr const auto NV = rbm_t::NV;
         static constexpr const auto NH = rbm_t::NH;
+        static constexpr const auto NW = rbm_t::NW;
         static constexpr const auto K = rbm_t::K;
 
-        printf("CDBN: Train layer %lu (%lux%lu -> %lux%lu (%lu)) with %lu entries \n", I, NV, NV, NH, NH, K, input_size);
+        printf("CDBN: Train layer %lu (%lux%lux%lu -> %lux%lu -> %lux%lux%lu) with %lu entries \n", I, NV, NV, NC, NW, NW, NH, NH, K, input_size);
 
         current_image = I;
     }
