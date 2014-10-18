@@ -33,7 +33,7 @@ void init_weights(Iterator first, Iterator last, RBM& rbm){
     auto size = std::distance(first, last);
 
     //Initialize the visible biases to log(pi/(1-pi))
-    for(size_t i = 0; i < num_visible(rbm); ++i){
+    for(std::size_t i = 0; i < num_visible(rbm); ++i){
         auto count = std::count_if(first, last,
             [i](auto& a){return a[i] == 1; });
 
@@ -54,8 +54,8 @@ typename RBM::weight energy(const RBM& rbm, const V& v, const H& h){
         auto mid_term = 0.0;
 
         //TODO Simplify that
-        for(size_t i = 0; i < num_visible(rbm); ++i){
-            for(size_t j = 0; j < num_hidden(rbm); ++j){
+        for(std::size_t i = 0; i < num_visible(rbm); ++i){
+            for(std::size_t j = 0; j < num_hidden(rbm); ++j){
                 mid_term += rbm.w(i, j) * v(i) * h(j);
             }
         }
@@ -75,19 +75,19 @@ typename RBM::weight energy(const RBM& rbm, const V& v, const H& h){
         auto visible_term = 0.0;
         auto hidden_term = 0.0;
 
-        for(size_t i = 0; i < num_visible(rbm); ++i){
+        for(std::size_t i = 0; i < num_visible(rbm); ++i){
             visible_term = rbm.c(i) * v[i];
         }
 
-        for(size_t j = 0; j < num_hidden(rbm); ++j){
+        for(std::size_t j = 0; j < num_hidden(rbm); ++j){
             hidden_term = rbm.b(j) * h[j];
         }
 
         auto mid_term = 0.0;
 
         //TODO Simplify that
-        for(size_t i = 0; i < num_visible(rbm); ++i){
-            for(size_t j = 0; j < num_hidden(rbm); ++j){
+        for(std::size_t i = 0; i < num_visible(rbm); ++i){
+            for(std::size_t j = 0; j < num_hidden(rbm); ++j){
                 mid_term += rbm.w(i, j) * v(i) * h(j);
             }
         }
@@ -126,15 +126,15 @@ typename RBM::weight free_energy(const RBM& rbm, const V& v){
 
         auto visible_term = 0.0;
 
-        for(size_t i = 0; i < num_visible(rbm); ++i){
+        for(std::size_t i = 0; i < num_visible(rbm); ++i){
             visible_term = rbm.c(i) * v[i];
         }
 
         auto mid_term = 0.0;
 
-        for(size_t j = 0; j < num_hidden(rbm); ++j){
+        for(std::size_t j = 0; j < num_hidden(rbm); ++j){
             auto x = rbm.b(j);
-            for(size_t i = 0; i < num_visible(rbm); ++i){
+            for(std::size_t i = 0; i < num_visible(rbm); ++i){
                 x += v[i] * rbm.w(i,j);
             }
 
@@ -165,8 +165,8 @@ void reconstruct(const Sample& items, RBM& rbm){
 
 template<typename RBM>
 void display_weights(RBM& rbm){
-    for(size_t j = 0; j < num_hidden(rbm); ++j){
-        for(size_t i = 0; i < num_visible(rbm); ++i){
+    for(std::size_t j = 0; j < num_hidden(rbm); ++j){
+        for(std::size_t i = 0; i < num_visible(rbm); ++i){
             std::cout << rbm.w(i, j) << " ";
         }
         std::cout << std::endl;
@@ -174,10 +174,10 @@ void display_weights(RBM& rbm){
 }
 
 template<typename RBM>
-void display_weights(RBM& rbm, size_t matrix){
-    for(size_t j = 0; j < num_hidden(rbm); ++j){
-        for(size_t i = 0; i < num_visible(rbm);){
-            for(size_t m = 0; m < matrix; ++m){
+void display_weights(RBM& rbm, std::size_t matrix){
+    for(std::size_t j = 0; j < num_hidden(rbm); ++j){
+        for(std::size_t i = 0; i < num_visible(rbm);){
+            for(std::size_t m = 0; m < matrix; ++m){
                 std::cout << rbm.w(i++, j) << " ";
             }
             std::cout << std::endl;
@@ -189,15 +189,15 @@ template<typename RBM>
 void display_visible_units(RBM& rbm){
     std::cout << "Visible  Value" << std::endl;
 
-    for(size_t i = 0; i < num_visible(rbm); ++i){
+    for(std::size_t i = 0; i < num_visible(rbm); ++i){
         printf("%-8lu %d\n", i, rbm.v2_s(i));
     }
 }
 
 template<typename RBM>
-void display_visible_units(RBM& rbm, size_t matrix){
-    for(size_t i = 0; i < matrix; ++i){
-        for(size_t j = 0; j < matrix; ++j){
+void display_visible_units(RBM& rbm, std::size_t matrix){
+    for(std::size_t i = 0; i < matrix; ++i){
+        for(std::size_t j = 0; j < matrix; ++j){
             std::cout << rbm.v2_s(i * matrix + j) << " ";
         }
         std::cout << std::endl;
@@ -208,7 +208,7 @@ template<typename RBM>
 void display_hidden_units(RBM& rbm){
     std::cout << "Hidden Value" << std::endl;
 
-    for(size_t j = 0; j < num_hidden(rbm); ++j){
+    for(std::size_t j = 0; j < num_hidden(rbm); ++j){
         printf("%-8lu %d\n", j, rbm.h2_s(j));
     }
 }

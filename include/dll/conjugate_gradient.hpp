@@ -16,13 +16,13 @@ namespace dll {
 
 template<typename Sample, typename Label>
 struct gradient_context {
-    size_t max_iterations;
-    size_t epoch;
+    std::size_t max_iterations;
+    std::size_t epoch;
     batch<Sample> inputs;
     batch<Label> targets;
-    size_t start_layer;
+    std::size_t start_layer;
 
-    gradient_context(batch<Sample> i, batch<Label> t, size_t e)
+    gradient_context(batch<Sample> i, batch<Label> t, std::size_t e)
         : max_iterations(5), epoch(e), inputs(i), targets(t), start_layer(0){
         //Nothing else to init
     }
@@ -84,7 +84,7 @@ struct cg_trainer {
             typedef typename std::remove_reference<decltype(ctx)>::type ctx_t;
             constexpr const auto num_hidden = ctx_t::num_hidden;
 
-            for(size_t i = 0; i < batch_size; ++i){
+            for(std::size_t i = 0; i < batch_size; ++i){
                 ctx.gr_probs_a.emplace_back(num_hidden);
                 ctx.gr_probs_s.emplace_back(num_hidden);
             }
@@ -101,16 +101,16 @@ struct cg_trainer {
     /* Gradient */
 
     template<bool Temp, typename R1, typename R2, typename C1, typename C2, typename D>
-    static void update_diffs(R1&, R2& r2, C1& c1, C2& c2, std::vector<D>& diffs, size_t n_samples){
+    static void update_diffs(R1&, R2& r2, C1& c1, C2& c2, std::vector<D>& diffs, std::size_t n_samples){
         constexpr auto n_visible = C2::num_visible;
         constexpr auto n_hidden = C2::num_hidden;
 
-        for(size_t sample = 0;  sample < n_samples; ++sample){
+        for(std::size_t sample = 0;  sample < n_samples; ++sample){
             D diff(n_visible);
 
-            for(size_t i = 0; i < n_visible; ++i){
+            for(std::size_t i = 0; i < n_visible; ++i){
                 double s = 0.0;
-                for(size_t j = 0; j < n_hidden; ++j){
+                for(std::size_t j = 0; j < n_hidden; ++j){
                     s += diffs[sample][j] * (Temp ? c2.gr_w_tmp(i, j) : r2.w(i, j));
                 }
 
@@ -138,13 +138,13 @@ struct cg_trainer {
             auto& v = *it;
             auto& d = diffs[sample];
 
-            for(size_t i = 0; i < n_visible; ++i){
-                for(size_t j = 0; j < n_hidden; ++j){
+            for(std::size_t i = 0; i < n_visible; ++i){
+                for(std::size_t j = 0; j < n_hidden; ++j){
                     ctx.gr_w_incs(i, j) += v[i] * d[j];
                 }
             }
 
-            for(size_t j = 0; j < n_hidden; ++j){
+            for(std::size_t j = 0; j < n_hidden; ++j){
                 ctx.gr_b_incs(j) += d[j];
             }
 
@@ -201,7 +201,7 @@ struct cg_trainer {
                 r *= (1.0 / scale);
             }
 
-            for(size_t i = 0; i < n_hidden; ++i){
+            for(std::size_t i = 0; i < n_hidden; ++i){
                 diff[i] = result[i] - target[i];
                 cost += target[i] * log(result[i]);
                 error += diff[i] * diff[i];
@@ -318,7 +318,7 @@ struct cg_trainer {
         constexpr const weight SIG = 0.1;       //Maximum allowed maximum ration between previous and new slopes
         constexpr const weight RHO = SIG / 2.0; //mimimum allowd fraction of the expected
         constexpr const weight RATIO = 10.0;    //Maximum allowed slope ratio
-        constexpr const size_t MAX = 20;        //Maximum number of function evaluations per line search
+        constexpr const std::size_t MAX = 20;        //Maximum number of function evaluations per line search
 
         //Maximum number of try
         auto max_iteration = context.max_iterations;
@@ -338,7 +338,7 @@ struct cg_trainer {
         int_t i3 = {0.0, 0.0, 1.0 / (1 - i0.d)};
 
         bool failed = false;
-        for(size_t i = 0; i < max_iteration; ++i){
+        for(std::size_t i = 0; i < max_iteration; ++i){
             auto best_cost = i0.f;
             i3.f = 0.0;
 

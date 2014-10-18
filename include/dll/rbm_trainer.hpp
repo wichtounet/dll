@@ -84,7 +84,7 @@ struct rbm_trainer {
         typename rbm_t::weight last_error = 0.0;
 
         //Train for max_epochs epoch
-        for(size_t epoch= 0; epoch < max_epochs; ++epoch){
+        for(std::size_t epoch= 0; epoch < max_epochs; ++epoch){
             auto it = first;
             auto end = last;
 

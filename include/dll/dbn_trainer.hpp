@@ -31,7 +31,7 @@ struct dbn_trainer {
     using watcher_t = typename dbn_t::desc::template watcher_t<R>;
 
     template<typename Iterator, typename LIterator>
-    typename dbn_t::weight train(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t max_epochs, size_t batch_size) const {
+    typename dbn_t::weight train(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator llast, std::size_t max_epochs, std::size_t batch_size) const {
         watcher_t<dbn_t> watcher;
 
         dbn.momentum = dbn.initial_momentum;
@@ -67,9 +67,9 @@ struct dbn_trainer {
         typename dbn_t::weight error = 0.0;
 
         //Train for max_epochs epoch
-        for(size_t epoch= 0; epoch < max_epochs; ++epoch){
+        for(std::size_t epoch= 0; epoch < max_epochs; ++epoch){
             //Train one mini-batch at a time
-            for(size_t i = 0; i < batches; ++i){
+            for(std::size_t i = 0; i < batches; ++i){
                 auto start = i * batch_size;
                 auto end = std::min(start + batch_size, data.size());
 

@@ -163,25 +163,25 @@ struct histogram_watcher {
         parent.training_end(rbm);
     }
 
-    void generate_hidden_images(size_t epoch, const R& rbm){
+    void generate_hidden_images(std::size_t epoch, const R& rbm){
         mkdir("reports", 0777);
 
         auto folder = "reports/epoch_" + std::to_string(epoch);
         mkdir(folder.c_str(), 0777);
 
-        for(size_t j = 0; j < R::num_hidden; ++j){
+        for(std::size_t j = 0; j < R::num_hidden; ++j){
             auto path = folder + "/h_" + std::to_string(j) + ".dat";
             std::ofstream file(path, std::ios::out);
 
             if(!file){
                 std::cout << "Could not open file " << path << std::endl;
             } else {
-                size_t i = R::num_visible;
+                std::size_t i = R::num_visible;
                 while(i > 0){
                     --i;
 
                     auto value = rbm.w(i,j);
-                    file << static_cast<size_t>(value > 0 ? static_cast<size_t>(value * 255.0) << 8 : static_cast<size_t>(-value * 255.0) << 16) << " ";
+                    file << static_cast<std::size_t>(value > 0 ? static_cast<std::size_t>(value * 255.0) << 8 : static_cast<std::size_t>(-value * 255.0) << 16) << " ";
                 }
 
                 file << std::endl;
@@ -190,7 +190,7 @@ struct histogram_watcher {
         }
     }
 
-    void generate_histograms(size_t epoch, const R& rbm){
+    void generate_histograms(std::size_t epoch, const R& rbm){
         mkdir("reports", 0777);
 
         auto folder = "reports/epoch_" + std::to_string(epoch);

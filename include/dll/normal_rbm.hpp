@@ -126,7 +126,7 @@ public:
         rbm_detail::display_weights(*static_cast<const parent_t*>(this));
     }
 
-    void display_weights(size_t matrix) const {
+    void display_weights(std::size_t matrix) const {
         rbm_detail::display_weights(matrix, *static_cast<const parent_t*>(this));
     }
 };

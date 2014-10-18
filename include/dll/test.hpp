@@ -12,7 +12,7 @@ namespace dll {
 
 struct predictor {
     template<typename T, typename V>
-    size_t operator()(T& dbn, V& image){
+    std::size_t operator()(T& dbn, V& image){
         return dbn->predict(image);
     }
 };
@@ -21,7 +21,7 @@ struct predictor {
 
 struct svm_predictor {
     template<typename T, typename V>
-    size_t operator()(T& dbn, V& image){
+    std::size_t operator()(T& dbn, V& image){
         return dbn->svm_predict(image);
     }
 };
@@ -30,21 +30,21 @@ struct svm_predictor {
 
 struct deep_predictor {
     template<typename T, typename V>
-    size_t operator()(T& dbn, V& image){
+    std::size_t operator()(T& dbn, V& image){
         return dbn->deep_predict(image, 5);
     }
 };
 
 struct label_predictor {
     template<typename T, typename V>
-    size_t operator()(T& dbn, V& image){
+    std::size_t operator()(T& dbn, V& image){
         return dbn->predict_labels(image, 10);
     }
 };
 
 struct deep_label_predictor {
     template<typename T, typename V>
-    size_t operator()(T& dbn, V& image){
+    std::size_t operator()(T& dbn, V& image){
         return dbn->deep_predict_labels(image, 10, 5);
     }
 };
@@ -58,8 +58,8 @@ template<typename DBN, typename Functor, typename Iterator, typename LIterator>
 double test_set(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator /*llast*/, Functor&& f){
     cpp::stop_watch<std::chrono::milliseconds> watch;
 
-    size_t success = 0;
-    size_t images = 0;
+    std::size_t success = 0;
+    std::size_t images = 0;
 
     while(first != last){
         const auto& image = *first;
