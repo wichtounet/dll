@@ -135,10 +135,16 @@ constexpr inline std::size_t ct_sqrt(std::size_t res, std::size_t l, std::size_t
             ct_pow(ct_mid(r, l)) >= res ? ct_mid(r, l) : r);
 }
 
-//TODO Ugly best_width G++ version
-
 constexpr inline std::size_t ct_sqrt(const std::size_t res){
     return ct_sqrt(res, 1, res);
+}
+
+constexpr inline std::size_t best_width_sub(const std::size_t total, const std::size_t width){
+    return width * ct_sqrt(total) >= total ? width : best_width_sub(total, width + 1);
+}
+
+constexpr inline std::size_t best_width(const std::size_t total){
+    return ct_sqrt(total) * ct_sqrt(total) == total ? ct_sqrt(total) : best_width_sub(ct_sqrt(total), total);
 }
 
 #endif
