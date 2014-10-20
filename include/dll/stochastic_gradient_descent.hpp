@@ -39,6 +39,7 @@ template<typename DBN>
 struct sgd_trainer {
     using dbn_t = DBN;
     using weight = typename dbn_t::weight;
+    using this_type = sgd_trainer<dbn_t>;
 
     using rbm_context_tuple_t = typename context_builder<sgd_context, typename DBN::tuple_type>::type;
 
@@ -133,7 +134,7 @@ struct sgd_trainer {
             //Compute the gradients of each layer
 
             cpp::for_each_rpair_i(tuples, rbm_contexts, [](std::size_t, auto&, auto& r2, auto& ctx1, auto& ctx2){
-                compute_gradients(r2, ctx2, ctx1.o_a);
+                this_type::compute_gradients(r2, ctx2, ctx1.o_a);
 
                 typedef typename std::remove_reference<decltype(r2)>::type r2_t;
 
@@ -169,13 +170,13 @@ struct sgd_trainer {
             }
 
             //The final gradients;
-            const auto& w_fgrad = get_fgrad(context.w_grad, context.w_inc);
-            const auto& b_fgrad = get_fgrad(context.b_grad, context.b_inc);
-            const auto& c_fgrad = get_fgrad(context.c_grad, context.c_inc);
+            const auto& w_fgrad = this->get_fgrad(context.w_grad, context.w_inc);
+            const auto& b_fgrad = this->get_fgrad(context.b_grad, context.b_inc);
+            const auto& c_fgrad = this->get_fgrad(context.c_grad, context.c_inc);
 
-            update(rbm.w, w_fgrad, w_decay(dbn_traits<dbn_t>::decay()), 0.0);
-            update(rbm.b, b_fgrad, b_decay(dbn_traits<dbn_t>::decay()), 0.0);
-            update(rbm.c, c_fgrad, b_decay(dbn_traits<dbn_t>::decay()), 0.0);
+            this->update(rbm.w, w_fgrad, w_decay(dbn_traits<dbn_t>::decay()), 0.0);
+            this->update(rbm.b, b_fgrad, b_decay(dbn_traits<dbn_t>::decay()), 0.0);
+            this->update(rbm.c, c_fgrad, b_decay(dbn_traits<dbn_t>::decay()), 0.0);
         });
     }
 
