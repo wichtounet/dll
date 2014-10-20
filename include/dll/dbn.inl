@@ -12,7 +12,6 @@
 
 #include "cpp_utils/tuple_utils.hpp"
 
-#include "rbm.hpp"
 #include "dbn_trainer.hpp"
 #include "conjugate_gradient.hpp"
 #include "dbn_common.hpp"

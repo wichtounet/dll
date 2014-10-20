@@ -5,6 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+#include "dll/conv_rbm.hpp"
 #include "dll/conv_dbn.hpp"
 
 template<typename DBN>

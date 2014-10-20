@@ -14,7 +14,6 @@
 
 #include "etl/etl.hpp"
 
-#include "conv_rbm.hpp"
 #include "dbn_trainer.hpp"
 #include "conjugate_gradient.hpp"
 #include "dbn_common.hpp"

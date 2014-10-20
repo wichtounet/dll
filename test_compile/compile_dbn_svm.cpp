@@ -7,6 +7,7 @@
 
 #define DLL_SVM_SUPPORT
 
+#include "dll/rbm.hpp"
 #include "dll/dbn.hpp"
 
 template<typename DBN>
