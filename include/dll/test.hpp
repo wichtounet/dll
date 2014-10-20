@@ -8,6 +8,8 @@
 #ifndef DLL_TEST_HPP
 #define DLL_TEST_HPP
 
+#include "cpp_utils/stop_watch.hpp"
+
 namespace dll {
 
 struct predictor {
