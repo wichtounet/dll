@@ -386,7 +386,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
         //Check for NaN
         nan_check_deep(rbm.w);
         nan_check_deep(rbm.b);
-        nan_check(rbm.c);
+        nan_check_deep(rbm.c);
     }
 };
 
