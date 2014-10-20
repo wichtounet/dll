@@ -11,6 +11,7 @@
 #define DLL_CONJUGATE_GRADIENT_HPP
 
 #include "context.hpp"
+#include "batch.hpp"
 
 namespace dll {
 

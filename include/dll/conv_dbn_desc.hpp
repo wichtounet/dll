@@ -14,9 +14,6 @@
 
 namespace dll {
 
-template <typename DBN>
-using default_dbn_trainer_t = cg_trainer<DBN, false>;
-
 /*!
  * \brief Describe a Convolutional DBN *
  *
@@ -27,10 +24,6 @@ template<typename Layers, typename... Parameters>
 struct conv_dbn_desc {
     using layers = Layers;
 
-    /*! The type of the trainer to use to train the DBN */
-    template <typename DBN>
-    using trainer_t = typename detail::get_template_type<trainer<default_dbn_trainer_t>, Parameters...>::template type<DBN>;
-
     /*! The type of the watched to use during training */
     template <typename DBN>
     using watcher_t = typename detail::get_template_type<watcher<default_dbn_watcher>, Parameters...>::template type<DBN>;
@@ -40,7 +33,7 @@ struct conv_dbn_desc {
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid<detail::tmp_list<trainer_id, watcher_id>, Parameters...>::value,
+        detail::is_valid<detail::tmp_list<watcher_id>, Parameters...>::value,
         "Invalid parameters type");
 };
 

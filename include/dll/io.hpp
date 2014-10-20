@@ -8,6 +8,8 @@
 #ifndef DLL_IO_HPP
 #define DLL_IO_HPP
 
+#include <fstream>
+
 namespace dll {
 
 //Binary I/O utility functions

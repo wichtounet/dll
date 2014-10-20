@@ -12,6 +12,7 @@
 
 #include "cpp_utils/tuple_utils.hpp"
 
+#include "unit_type.hpp"
 #include "dbn_trainer.hpp"
 #include "conjugate_gradient.hpp"
 #include "dbn_common.hpp"
