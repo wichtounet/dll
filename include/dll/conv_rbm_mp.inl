@@ -145,7 +145,7 @@ struct conv_rbm_mp : public rbm_base<Desc> {
         }
 
         if(hidden_unit == unit_type::BINARY){
-            h_a = etl::p_max_pool<C, C>(etl::rep<NH, NH>(b) + v_cv(NC));
+            h_a = etl::p_max_pool_h<C, C>(etl::rep<NH, NH>(b) + v_cv(NC));
             h_s = bernoulli(h_a);
         } else if(hidden_unit == unit_type::RELU){
             h_a = max(etl::rep<NH, NH>(b) + v_cv(NC), 0.0);
