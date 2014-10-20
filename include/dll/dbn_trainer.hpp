@@ -47,7 +47,6 @@ struct dbn_trainer {
         auto fake_labels = dll::make_fake(lfirst, llast);
 
         //Get types for the batch
-        using fake_label_t = typename std::remove_reference<decltype(fake_labels)>::type;
         using samples_t = std::vector<etl::dyn_vector<typename std::iterator_traits<Iterator>::value_type::value_type>>;
 
         //Convert data to an useful form
