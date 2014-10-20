@@ -8,6 +8,8 @@
 #ifndef DLL_RBM_TRAINER_HPP
 #define DLL_RBM_TRAINER_HPP
 
+#include <memory>
+
 #include "decay_type.hpp"
 #include "batch.hpp"
 #include "rbm_traits.hpp"
