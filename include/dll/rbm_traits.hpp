@@ -10,6 +10,7 @@
 
 #include "tmp.hpp"
 #include "decay_type.hpp"
+#include "sparsity_method.hpp"
 
 namespace dll {
 
@@ -89,7 +90,7 @@ struct rbm_traits {
 
     template<typename R = RBM, cpp::enable_if_u<has_sparsity_field<typename R::desc>::value> = cpp::detail::dummy>
     static constexpr bool has_sparsity(){
-        return rbm_t::desc::Sparsity != sparsity_method::NONE;
+        return rbm_t::desc::Sparsity != dll::sparsity_method::NONE;
     }
 
     template<typename R = RBM, cpp::disable_if_u<has_sparsity_field<typename R::desc>::value> = cpp::detail::dummy>
@@ -104,7 +105,7 @@ struct rbm_traits {
 
     template<typename R = RBM, cpp::disable_if_u<has_sparsity_field<typename R::desc>::value> = cpp::detail::dummy>
     static constexpr enum sparsity_method sparsity_method(){
-        return sparsity_method::NONE;
+        return dll::sparsity_method::NONE;
     }
 
     template<typename R = RBM, cpp::enable_if_u<has_bias_field<typename R::desc>::value> = cpp::detail::dummy>
@@ -114,7 +115,7 @@ struct rbm_traits {
 
     template<typename R = RBM, cpp::disable_if_u<has_bias_field<typename R::desc>::value> = cpp::detail::dummy>
     static constexpr enum bias_mode bias_mode(){
-        return bias_mode::SIMPLE;
+        return dll::bias_mode::SIMPLE;
     }
 
     template<typename R = RBM, cpp::enable_if_u<has_decay_field<typename R::desc>::value> = cpp::detail::dummy>
@@ -124,7 +125,7 @@ struct rbm_traits {
 
     template<typename R = RBM, cpp::disable_if_u<has_decay_field<typename R::desc>::value> = cpp::detail::dummy>
     static constexpr decay_type decay(){
-        return decay_type::NONE;
+        return dll::decay_type::NONE;
     }
 
     template<typename R = RBM, cpp::enable_if_u<has_init_field<typename R::desc>::value> = cpp::detail::dummy>
