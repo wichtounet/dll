@@ -44,6 +44,7 @@ struct conv_rbm_mp : public rbm_base<Desc> {
 
     static constexpr const unit_type visible_unit = desc::visible_unit;
     static constexpr const unit_type hidden_unit = desc::hidden_unit;
+    static constexpr const unit_type pooling_unit = desc::pooling_unit;
 
     static constexpr const std::size_t NV = desc::NV;
     static constexpr const std::size_t NH = desc::NH;
@@ -189,6 +190,29 @@ struct conv_rbm_mp : public rbm_base<Desc> {
 
         nan_check_deep(v_a);
         nan_check_deep(v_s);
+    }
+
+    template<typename P, typename V>
+    void activate_pooling(P& p_a, P& p_s, const V& v_a, const V&){
+        v_cv(NC) = 0;
+
+        for(std::size_t channel = 0; channel < NC; ++channel){
+            for(size_t k = 0; k < K; ++k){
+                etl::convolve_2d_valid(v_a(channel), fflip(w(channel)(k)), v_cv(channel)(k));
+            }
+
+            v_cv(NC) += v_cv(channel);
+        }
+
+        if(pooling_unit == unit_type::BINARY){
+            p_a = etl::p_max_pool_p<C, C>(etl::rep<NH, NH>(b) + v_cv(NC));
+            p_s = r_bernoulli(p_a);
+        } else {
+            cpp_unreachable("Invalid path");
+        }
+
+        nan_check_deep(p_a);
+        nan_check_deep(p_s);
     }
 
     template<typename Samples, bool EnableWatcher = true, typename RW = void, typename... Args>
