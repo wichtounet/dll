@@ -118,7 +118,7 @@ struct conv_rbm_mp : public rbm_base<Desc> {
     }
 
     void display() const {
-        std::cout << "CRBM_MP: " << NV << "x" << NV << " -> (" << NW << "x" << NW << ") -> " << NH << "x" << NH << " (" << K << ")" << std::endl;
+        printf("CRBM_MP: %lux%lux%lu -> (%lux%lu) -> %lux%lux%lu -> %lux%lux%lu\n", NV, NV, NC, NW, NW, NH, NH, K, NP, NP, K);
     }
 
     void store(std::ostream& os) const {
