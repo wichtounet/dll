@@ -132,9 +132,9 @@ struct dbn {
     }
 
     static std::size_t full_output_size(){
-        std::size_t output;
+        std::size_t output = 0;
         for_each_type<tuple_type>([&output](auto* rbm){
-            output += std::decay_t<decltype(rbm)>::output_size();
+            output += std::decay_t<std::remove_pointer_t<decltype(rbm)>>::output_size();
         });
         return output;
     }
@@ -388,6 +388,54 @@ struct dbn {
         etl::dyn_vector<weight> result(num_hidden<layers - 1>());
 
         activation_probabilities(item_data, result);
+
+        return result;
+    }
+
+    template<typename Sample, typename Output>
+    void full_activation_probabilities(const Sample& item_data, Output& result){
+        using training_t = etl::dyn_vector<typename Sample::value_type>;
+        training_t item(item_data);
+
+        std::size_t i = 0;
+
+        auto input = std::cref(item);
+
+        cpp::for_each_i(tuples, [&i,&item, &input, &result](std::size_t I, auto& rbm){
+            if(I != layers - 1){
+                typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
+                constexpr const auto num_hidden = rbm_t::num_hidden;
+
+                static etl::dyn_vector<weight> next_a(num_hidden);
+                static etl::dyn_vector<weight> next_s(num_hidden);
+
+                rbm.activate_hidden(next_a, next_s, static_cast<const training_t&>(input), static_cast<const training_t&>(input));
+
+                for(auto& value : next_a){
+                    result[i++] = value;
+                }
+
+                input = std::cref(next_a);
+            }
+        });
+
+        constexpr const auto num_hidden = rbm_type<layers - 1>::num_hidden;
+
+        static etl::dyn_vector<weight> next_a(num_hidden);
+        static etl::dyn_vector<weight> next_s(num_hidden);
+
+        layer<layers - 1>().activate_hidden(next_a, next_s, static_cast<const training_t&>(input), static_cast<const training_t&>(input));
+
+        for(auto& value : next_a){
+            result[i++] = value;
+        }
+    }
+
+    template<typename Sample>
+    etl::dyn_vector<weight> full_activation_probabilities(const Sample& item_data){
+        etl::dyn_vector<weight> result(full_output_size());
+
+        full_activation_probabilities(item_data, result);
 
         return result;
     }

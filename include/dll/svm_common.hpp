@@ -85,17 +85,26 @@ void svm_load(DBN& dbn, std::istream& is){
     }
 }
 
-template<typename DBN, typename Result, typename Sample>
+template<typename DBN, typename Result, typename Sample, cpp::enable_if_u<dbn_traits<std::decay_t<DBN>>::concatenate()> = cpp::detail::dummy>
+void add_activation_probabilities(DBN& dbn, Result& result, Sample& sample){
+    result.emplace_back(DBN::full_output_size());
+    dbn.full_activation_probabilities(sample, result.back());
+}
+
+template<typename DBN, typename Result, typename Sample, cpp::disable_if_u<dbn_traits<std::decay_t<DBN>>::concatenate()> = cpp::detail::dummy>
 void add_activation_probabilities(DBN& dbn, Result& result, Sample& sample){
     result.emplace_back(DBN::output_size());
     dbn.activation_probabilities(sample, result.back());
 }
 
-template<typename DBN, typename Sample>
+template<typename DBN, typename Sample, cpp::enable_if_u<dbn_traits<std::decay_t<DBN>>::concatenate()> = cpp::detail::dummy>
 etl::dyn_vector<double> get_activation_probabilities(DBN& dbn, Sample& sample){
-    etl::dyn_vector<double> svm_sample(DBN::output_size());
-    dbn.activation_probabilities(sample, svm_sample);
-    return svm_sample;
+    return dbn.full_activation_probabilities(sample);
+}
+
+template<typename DBN, typename Sample, cpp::disable_if_u<dbn_traits<std::decay_t<DBN>>::concatenate()> = cpp::detail::dummy>
+etl::dyn_vector<double> get_activation_probabilities(DBN& dbn, Sample& sample){
+    return dbn.activation_probabilities(sample);
 }
 
 template<typename DBN, typename Samples, typename Labels>

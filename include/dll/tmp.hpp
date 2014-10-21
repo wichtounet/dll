@@ -126,12 +126,12 @@ void for_each_type_sub(Functor&& functor, const std::index_sequence<I1>& /* i */
 template<typename Tuple, typename Functor, std::size_t I1, std::size_t... I, cpp::enable_if_u<(sizeof...(I) > 0)> = cpp::detail::dummy>
 void for_each_type_sub(Functor&& functor, const std::index_sequence<I1, I...>& /* i */){
     functor(static_cast<std::tuple_element_t<I1, Tuple>*>(nullptr));
-    for_each_type_sub(functor, std::index_sequence<I...>());
+    for_each_type_sub<Tuple>(functor, std::index_sequence<I...>());
 }
 
 template<typename Tuple, typename Functor>
 void for_each_type(Functor&& functor){
-    for_each_type_sub(functor, std::make_index_sequence<std::tuple_size<Tuple>::value>());
+    for_each_type_sub<Tuple>(functor, std::make_index_sequence<std::tuple_size<Tuple>::value>());
 }
 
 } //end of dbn namespace
