@@ -50,7 +50,15 @@ struct sgd_trainer {
     dbn_t& dbn;
     typename dbn_t::tuple_type& tuples;
 
-    sgd_trainer(dbn_t& dbn) : dbn(dbn), tuples(dbn.tuples) {}
+    sgd_trainer(dbn_t& dbn) : dbn(dbn), tuples(dbn.tuples) {
+        cpp::for_each(tuples, [](auto& r1){
+            using rbm_t = std::decay_t<decltype(r1)>;
+
+            if(is_relu(rbm_t::hidden_unit)){
+                std::cerr << "Warning: SGD is not tuned for RELU units" << std::endl;
+            }
+        });
+    }
 
     void init_training(std::size_t){}
 

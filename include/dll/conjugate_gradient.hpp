@@ -78,7 +78,15 @@ struct cg_trainer {
 
     rbm_context_tuple_t rbm_contexts;
 
-    cg_trainer(dbn_t& dbn) : dbn(dbn), tuples(dbn.tuples) {}
+    cg_trainer(dbn_t& dbn) : dbn(dbn), tuples(dbn.tuples) {
+        cpp::for_each(tuples, [](auto& r1){
+            using rbm_t = std::decay_t<decltype(r1)>;
+
+            if(is_relu(rbm_t::hidden_unit)){
+                std::cerr << "Warning: CG is not tuned for RELU units" << std::endl;
+            }
+        });
+    }
 
     void init_training(std::size_t batch_size){
         cpp::for_each(rbm_contexts, [batch_size](auto& ctx){
