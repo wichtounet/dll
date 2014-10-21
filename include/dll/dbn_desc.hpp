@@ -30,6 +30,7 @@ struct dbn_desc {
 
     static constexpr const bool Momentum = detail::is_present<momentum, Parameters...>::value;
     static constexpr const decay_type Decay = detail::get_value<weight_decay<decay_type::NONE>, Parameters...>::value;
+    static constexpr const bool Concatenate = detail::is_present<concatenate, Parameters...>::value;
 
     /*! The type of the trainer to use to train the DBN */
     template <typename DBN>
@@ -44,7 +45,7 @@ struct dbn_desc {
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid<detail::tmp_list<trainer_id, watcher_id, momentum_id, weight_decay_id>, Parameters...>::value,
+        detail::is_valid<detail::tmp_list<trainer_id, watcher_id, momentum_id, weight_decay_id, concatenate_id>, Parameters...>::value,
         "Invalid parameters type");
 };
 

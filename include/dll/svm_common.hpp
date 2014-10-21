@@ -201,6 +201,15 @@ bool svm_grid_search(DBN& dbn, Iterator&& first, Iterator&& last, LIterator&& lf
     return true;
 }
 
+template<typename DBN, typename Sample>
+double svm_predict(DBN& dbn, const Sample& sample){
+    etl::dyn_vector<double> svm_sample(DBN::output_size());
+
+    dbn.activation_probabilities(sample, svm_sample);
+
+    return svm::predict(dbn.svm_model, svm_sample);
+}
+
 } // end of namespace dll
 
 #endif //DLL_SVM_SUPPORT

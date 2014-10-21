@@ -45,6 +45,7 @@ struct watcher_id;
 struct sparsity_id;
 struct bias_id;
 struct momentum_id;
+struct concatenate_id;
 struct init_weights_id;
 
 template<std::size_t B>
@@ -81,6 +82,7 @@ template<template<typename...> class T>
 struct watcher : type_conf_elt<watcher_id, T> {};
 
 struct momentum : basic_conf_elt<momentum_id> {};
+struct concatenate : basic_conf_elt<concatenate> {};
 struct init_weights : basic_conf_elt<init_weights_id> {};
 
 } //end of dbn namespace

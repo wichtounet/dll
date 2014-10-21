@@ -341,11 +341,7 @@ struct conv_dbn {
 
     template<typename Sample>
     double svm_predict(const Sample& sample){
-        etl::dyn_vector<double> svm_sample(rbm_output<layers - 1>());
-
-        activation_probabilities(sample, svm_sample);
-
-        return svm::predict(svm_model, svm_sample);
+        return dll::svm_predict(*this, sample);
     }
 
     /*}}}*/

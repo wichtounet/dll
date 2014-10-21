@@ -24,6 +24,7 @@ struct dbn_traits {
     using dbn_t = DBN;
 
     HAS_STATIC_FIELD(Momentum, has_momentum_field)
+    HAS_STATIC_FIELD(Concatenate, has_concatenate_field)
     HAS_STATIC_FIELD(Decay, has_decay_field)
 
     /*!
@@ -40,6 +41,16 @@ struct dbn_traits {
 
     template<typename D = DBN, cpp::disable_if_u<has_momentum_field<typename D::desc>::value> = cpp::detail::dummy>
     static constexpr bool has_momentum(){
+        return false;
+    }
+
+    template<typename D = DBN, cpp::enable_if_u<has_concatenate_field<typename D::desc>::value> = cpp::detail::dummy>
+    static constexpr bool concatenate(){
+        return dbn_t::desc::Concatenate;
+    }
+
+    template<typename D = DBN, cpp::disable_if_u<has_concatenate_field<typename D::desc>::value> = cpp::detail::dummy>
+    static constexpr bool concatenate(){
         return false;
     }
 
