@@ -82,7 +82,7 @@ template<template<typename...> class T>
 struct watcher : type_conf_elt<watcher_id, T> {};
 
 struct momentum : basic_conf_elt<momentum_id> {};
-struct concatenate : basic_conf_elt<concatenate> {};
+struct concatenate : basic_conf_elt<concatenate_id> {};
 struct init_weights : basic_conf_elt<init_weights_id> {};
 
 } //end of dbn namespace
