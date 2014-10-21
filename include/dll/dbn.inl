@@ -131,6 +131,14 @@ struct dbn {
         return rbm_type<layers - 1>::output_size();
     }
 
+    static std::size_t full_output_size(){
+        std::size_t output;
+        for_each_type<tuple_type>([&output](auto* rbm){
+            output += std::decay_t<decltype(rbm)>::output_size();
+        });
+        return output;
+    }
+
     /*{{{ Pretrain */
 
     /*!

@@ -148,6 +148,14 @@ struct conv_dbn {
         return rbm_output<layers - 1>();
     }
 
+    static std::size_t full_output_size(){
+        std::size_t output;
+        for_each_type<tuple_type>([&output](auto* rbm){
+            output += std::decay_t<decltype(rbm)>::output_size();
+        });
+        return output;
+    }
+
     /*{{{ Pretrain */
 
     template<typename RBM, typename Input, typename Next, cpp::enable_if_u<rbm_traits<RBM>::has_probabilistic_max_pooling()> = cpp::detail::dummy>

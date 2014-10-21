@@ -85,6 +85,19 @@ void svm_load(DBN& dbn, std::istream& is){
     }
 }
 
+template<typename DBN, typename Result, typename Sample>
+void add_activation_probabilities(DBN& dbn, Result& result, Sample& sample){
+    result.emplace_back(DBN::output_size());
+    dbn.activation_probabilities(sample, result.back());
+}
+
+template<typename DBN, typename Sample>
+etl::dyn_vector<double> get_activation_probabilities(DBN& dbn, Sample& sample){
+    etl::dyn_vector<double> svm_sample(DBN::output_size());
+    dbn.activation_probabilities(sample, svm_sample);
+    return svm_sample;
+}
+
 template<typename DBN, typename Samples, typename Labels>
 void make_problem(DBN& dbn, const Samples& training_data, const Labels& labels){
     auto n_samples = training_data.size();
@@ -93,8 +106,7 @@ void make_problem(DBN& dbn, const Samples& training_data, const Labels& labels){
 
     //Get all the activation probabilities
     for(std::size_t i = 0; i < n_samples; ++i){
-        svm_samples.emplace_back(DBN::output_size());
-        dbn.activation_probabilities(training_data[i], svm_samples[i]);
+        add_activation_probabilities(dbn, svm_samples, training_data[i]);
     }
 
     //static_cast ensure using the correct overload
@@ -107,10 +119,8 @@ void make_problem(DBN& dbn, Iterator first, Iterator last, LIterator&& lfirst, L
 
     //Get all the activation probabilities
     auto it = first;
-    std::size_t i = 0;
     while(it != last){
-        svm_samples.emplace_back(DBN::output_size());
-        dbn.activation_probabilities(*it, svm_samples[i]);
+        add_activation_probabilities(dbn, svm_samples, *it);
 
         ++it;
     }
@@ -203,11 +213,7 @@ bool svm_grid_search(DBN& dbn, Iterator&& first, Iterator&& last, LIterator&& lf
 
 template<typename DBN, typename Sample>
 double svm_predict(DBN& dbn, const Sample& sample){
-    etl::dyn_vector<double> svm_sample(DBN::output_size());
-
-    dbn.activation_probabilities(sample, svm_sample);
-
-    return svm::predict(dbn.svm_model, svm_sample);
+    return svm::predict(dbn.svm_model, get_activation_probabilities(dbn, sample));
 }
 
 } // end of namespace dll
