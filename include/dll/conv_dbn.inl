@@ -149,7 +149,7 @@ struct conv_dbn {
     }
 
     static std::size_t full_output_size(){
-        std::size_t output;
+        std::size_t output = 0;
         for_each_type<tuple_type>([&output](auto* rbm){
             output += std::decay_t<std::remove_pointer_t<decltype(rbm)>>::output_size();
         });
