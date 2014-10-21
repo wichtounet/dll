@@ -286,9 +286,65 @@ struct conv_dbn {
 
     template<typename Sample>
     etl::dyn_vector<weight> activation_probabilities(const Sample& item_data){
-        etl::dyn_vector<weight> result(rbm_output<layers - 1>());
+        etl::dyn_vector<weight> result(output_size());
 
         activation_probabilities(item_data, result);
+
+        return result;
+    }
+
+    template<typename Sample, typename Output>
+    void full_activation_probabilities(const Sample& item_data, Output& result){
+        using visible_t = etl::dyn_matrix<weight, 3>;
+        using hidden_t = etl::dyn_matrix<weight, 3>;
+
+        visible_t item(rbm_type<0>::NC, rbm_type<0>::NV, rbm_type<0>::NV);
+
+        std::size_t i = 0;
+
+        item = item_data;
+
+        auto input = std::cref(item);
+
+        cpp::for_each_i(tuples, [&i, &item, &input, &result](std::size_t I, auto& rbm){
+            if(I != layers - 1){
+                typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
+                constexpr const auto K = rbm_t::K;
+                constexpr const auto NO = rbm_t_no<rbm_t>();
+
+                static hidden_t next_a(K, NO, NO);
+                static hidden_t next_s(K, NO, NO);
+
+                propagate(rbm, static_cast<const visible_t&>(input), next_a, next_s);
+
+                for(auto& value : next_a){
+                    result[i++] = value;
+                }
+
+                input = std::cref(next_a);
+            }
+        });
+
+        constexpr const auto K = rbm_k<layers - 1>();
+        constexpr const auto NO = rbm_no<layers - 1>();
+
+        static hidden_t next_a(K, NO, NO);
+        static hidden_t next_s(K, NO, NO);
+
+        auto& last_rbm = layer<layers - 1>();
+
+        propagate(last_rbm, static_cast<const visible_t&>(input), next_a, next_s);
+
+        for(auto& value : next_a){
+            result[i++] = value;
+        }
+    }
+
+    template<typename Sample>
+    etl::dyn_vector<weight> full_activation_probabilities(const Sample& item_data){
+        etl::dyn_vector<weight> result(full_output_size());
+
+        full_activation_probabilities(item_data, result);
 
         return result;
     }

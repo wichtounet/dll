@@ -385,7 +385,7 @@ struct dbn {
 
     template<typename Sample>
     etl::dyn_vector<weight> activation_probabilities(const Sample& item_data){
-        etl::dyn_vector<weight> result(num_hidden<layers - 1>());
+        etl::dyn_vector<weight> result(output_size());
 
         activation_probabilities(item_data, result);
 
