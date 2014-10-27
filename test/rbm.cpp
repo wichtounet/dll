@@ -404,8 +404,8 @@ TEST_CASE( "rbm/mnist_16", "rbm::iterators" ) {
 
 TEST_CASE( "rbm/mnist_17", "rbm::slow" ) {
     dll::rbm_desc<
-        28 * 28, 200,
-        dll::batch_size<25>
+        28 * 28, 400,
+        dll::batch_size<50>
     >::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
