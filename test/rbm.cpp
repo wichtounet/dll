@@ -8,6 +8,7 @@
 #include "catch.hpp"
 
 #include "dll/rbm.hpp"
+#include "dll/dyn_rbm.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -414,7 +415,7 @@ TEST_CASE( "rbm/mnist_17", "rbm::slow" ) {
 
     mnist::binarize_dataset(dataset);
 
-    auto error = rbm.train(dataset.training_images, 50);
+    auto error = rbm.train(dataset.training_images, 10);
 
     REQUIRE(error < 1e-2);
 }
