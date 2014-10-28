@@ -150,6 +150,10 @@ struct base_cd_trainer : base_trainer<RBM> {
     static constexpr const auto num_hidden = rbm_t::num_hidden;
     static constexpr const auto num_visible = rbm_t::num_visible;
 
+    static constexpr const auto batch_size = rbm_traits<rbm_t>::batch_size();
+
+    etl::fast_matrix<weight, batch_size, num_visible> v1;
+
     //Gradients
     etl::fast_matrix<weight, num_visible, num_hidden> w_grad;
     etl::fast_vector<weight, num_hidden> b_grad;
@@ -200,6 +204,8 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
 
     typedef typename rbm_t::weight weight;
 
+    etl::dyn_matrix<weight> v1;
+
     //Gradients
     etl::dyn_matrix<weight> w_grad;
     etl::dyn_vector<weight> b_grad;
@@ -226,18 +232,22 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
     base_cd_trainer(rbm_t& rbm) :
+            v1(rbm_traits<rbm_t>::batch_size(), rbm.num_visible),
             w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
             w_inc(0,0), b_inc(0), c_inc(0),
             q_global_t(0.0),
-            q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden, 0.0), q_local_penalty(rbm.num_hidden) {
+            q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden, 0.0), q_local_penalty(rbm.num_hidden)
+    {
         static_assert(!rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
     base_cd_trainer(rbm_t& rbm) :
+            v1(rbm_traits<rbm_t>::batch_size(), rbm.num_visible),
             w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
             w_inc(rbm.num_visible, rbm.num_hidden, 0.0), b_inc(rbm.num_hidden, 0.0), c_inc(rbm.num_visible, 0.0),
-            q_global_t(0.0), q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden, 0.0), q_local_penalty(rbm.num_hidden) {
+            q_global_t(0.0), q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden, 0.0), q_local_penalty(rbm.num_hidden) 
+    {
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
@@ -391,22 +401,22 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
 };
 
 template<typename RBM, typename C, cpp::enable_if_u<rbm_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
-auto reshape_nv1(RBM& rbm, C& container){
+auto reshape_nv1(RBM& rbm, C&& container){
     return etl::reshape(container, rbm.num_visible, 1);
 }
 
 template<typename RBM, typename C, cpp::disable_if_u<rbm_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
-auto reshape_nv1(RBM&, C& container){
+auto reshape_nv1(RBM&, C&& container){
     return etl::reshape<RBM::num_visible, 1>(container);
 }
 
 template<typename RBM, typename C, cpp::enable_if_u<rbm_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
-auto reshape_1nh(RBM& rbm, C& container){
+auto reshape_1nh(RBM& rbm, C&& container){
     return etl::reshape(container, 1, rbm.num_hidden);
 }
 
 template<typename RBM, typename C, cpp::disable_if_u<rbm_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
-auto reshape_1nh(RBM&, C& container){
+auto reshape_1nh(RBM&, C&& container){
     return etl::reshape<1, RBM::num_hidden>(container);
 }
 
@@ -441,10 +451,10 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
     while(it != end){
         auto& items = *it;
 
-        rbm.v1 = items;
+        t.v1(i) = items;
 
         //First step
-        rbm.activate_hidden(rbm.h1_a, rbm.h1_s, rbm.v1, rbm.v1);
+        rbm.activate_hidden(rbm.h1_a, rbm.h1_s, t.v1(i), t.v1(i));
 
         if(Persistent && t.init){
             t.p_h_a[i] = rbm.h1_a;
@@ -466,11 +476,11 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
             t.p_h_s[i] = rbm.h2_s;
         }
 
-        t.w_grad += mmul(reshape_nv1(rbm, rbm.v1), reshape_1nh(rbm, rbm.h1_a), t1) - mmul(reshape_nv1(rbm, rbm.v2_a), reshape_1nh(rbm, rbm.h2_a), t2);
+        t.w_grad += mmul(reshape_nv1(rbm, t.v1(i)), reshape_1nh(rbm, rbm.h1_a), t1) - mmul(reshape_nv1(rbm, rbm.v2_a), reshape_1nh(rbm, rbm.h2_a), t2);
         t.b_grad += rbm.h1_a - rbm.h2_a;
-        t.c_grad += rbm.v1 - rbm.v2_a;
+        t.c_grad += t.v1(i) - rbm.v2_a;
 
-        context.reconstruction_error += mean((rbm.v1 - rbm.v2_a) * (rbm.v1 - rbm.v2_a));
+        context.reconstruction_error += mean((t.v1(i) - rbm.v2_a) * (t.v1(i) - rbm.v2_a));
 
         //Get the mean activation probabilities
         t.q_global_batch += sum(rbm.h2_a);
