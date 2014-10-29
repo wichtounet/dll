@@ -81,14 +81,24 @@ struct dyn_rbm : public normal_rbm<dyn_rbm<Desc>, Desc> {
 
     template<typename H1, typename H2, typename V>
     void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s) const {
-        return activate_hidden(h_a, h_s, v_a, v_s, b, w);
+        return activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w);
     }
 
     template<typename H1, typename H2, typename V, typename B, typename W>
-    void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V&, const B& b, const W& w) const {
-        using namespace etl;
+    void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, const B& b, const W& w) const {
+        static etl::dyn_matrix<weight> t(1UL, num_hidden);
 
-        static dyn_matrix<weight> t(1UL, num_hidden);
+        return activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, t);
+    }
+    
+    template<typename H1, typename H2, typename V, typename T>
+    void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, T&& t) const {
+        return activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, std::forward<T>(t));
+    }
+
+    template<typename H1, typename H2, typename V, typename B, typename W, typename T>
+    void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V&, const B& b, const W& w, T&& t) const {
+        using namespace etl;
 
         if(hidden_unit == unit_type::BINARY){
             h_a = sigmoid(b + auto_vmmul(v_a, w, t));
@@ -117,10 +127,15 @@ struct dyn_rbm : public normal_rbm<dyn_rbm<Desc>, Desc> {
     }
 
     template<typename H, typename V>
-    void activate_visible(const H&, const H& h_s, V&& v_a, V&& v_s) const {
-        using namespace etl;
+    void activate_visible(const H& h_a, const H& h_s, V&& v_a, V&& v_s) const {
+        static etl::dyn_matrix<weight> t(num_visible, 1UL);
 
-        static dyn_matrix<weight> t(num_visible, 1UL);
+        activate_visible(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), t);
+    }
+
+    template<typename H, typename V, typename T>
+    void activate_visible(const H&, const H& h_s, V&& v_a, V&& v_s, T&& t) const {
+        using namespace etl;
 
         if(visible_unit == unit_type::BINARY){
             v_a = sigmoid(c + auto_vmmul(w, h_s, t));

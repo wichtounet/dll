@@ -7,7 +7,7 @@
 
 #include "catch.hpp"
 
-#define DLL_PARALLEL
+//#define DLL_PARALLEL
 
 #include "dll/rbm.hpp"
 #include "dll/dyn_rbm.hpp"
