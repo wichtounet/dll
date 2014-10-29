@@ -163,7 +163,12 @@ struct base_cd_trainer : base_trainer<RBM> {
     etl::fast_matrix<weight, batch_size, num_hidden> h2_a;
     etl::fast_matrix<weight, batch_size, num_hidden> h2_s;
 
-    //Gradients
+    //Batch Gradients
+    etl::fast_matrix<weight, batch_size, num_visible, num_hidden> w_grad_b;
+    etl::fast_matrix<weight, batch_size, num_hidden> b_grad_b;
+    etl::fast_matrix<weight, batch_size, num_visible> c_grad_b;
+
+    //Reduced Gradients
     etl::fast_matrix<weight, num_visible, num_hidden> w_grad;
     etl::fast_vector<weight, num_hidden> b_grad;
     etl::fast_vector<weight, num_visible> c_grad;
@@ -224,7 +229,12 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
     etl::dyn_matrix<weight> h2_a;
     etl::dyn_matrix<weight> h2_s;
 
-    //Gradients
+    //Batch Gradients
+    etl::dyn_matrix<weight, 3> w_grad_b;
+    etl::dyn_matrix<weight> b_grad_b;
+    etl::dyn_matrix<weight> c_grad_b;
+
+    //Reduced Gradients
     etl::dyn_matrix<weight> w_grad;
     etl::dyn_vector<weight> b_grad;
     etl::dyn_vector<weight> c_grad;
@@ -254,6 +264,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
             h1_a(get_batch_size(rbm), rbm.num_hidden), h1_s(get_batch_size(rbm), rbm.num_hidden),
             v2_a(get_batch_size(rbm), rbm.num_visible), v2_s(get_batch_size(rbm), rbm.num_visible),
             h2_a(get_batch_size(rbm), rbm.num_hidden), h2_s(get_batch_size(rbm), rbm.num_hidden),
+            w_grad_b(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden), b_grad_b(get_batch_size(rbm), rbm.num_hidden), c_grad_b(get_batch_size(rbm), rbm.num_visible),
             w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
             w_inc(0,0), b_inc(0), c_inc(0),
             q_global_t(0.0),
@@ -268,6 +279,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
             h1_a(get_batch_size(rbm), rbm.num_hidden), h1_s(get_batch_size(rbm), rbm.num_hidden),
             v2_a(get_batch_size(rbm), rbm.num_visible), v2_s(get_batch_size(rbm), rbm.num_visible),
             h2_a(get_batch_size(rbm), rbm.num_hidden), h2_s(get_batch_size(rbm), rbm.num_hidden),
+            w_grad_b(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden), b_grad_b(get_batch_size(rbm), rbm.num_hidden), c_grad_b(get_batch_size(rbm), rbm.num_visible),
             w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
             w_inc(rbm.num_visible, rbm.num_hidden, 0.0), b_inc(rbm.num_hidden, 0.0), c_inc(rbm.num_visible, 0.0),
             q_global_t(0.0), q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden, 0.0), q_local_penalty(rbm.num_hidden)
@@ -505,11 +517,10 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
             t.p_h_s(i) = t.h2_s(i);
         }
 
-        t.w_grad +=
-                mmul(reshape_nv1(rbm, t.v1(i)), reshape_1nh(rbm, t.h1_a(i)), t1)
-            -   mmul(reshape_nv1(rbm, t.v2_a(i)), reshape_1nh(rbm, t.h2_a(i)), t2);
-        t.b_grad += t.h1_a(i) - t.h2_a(i);
-        t.c_grad += t.v1(i) - t.v2_a(i);
+        t.w_grad_b(i) = mmul(reshape_nv1(rbm, t.v1(i)), reshape_1nh(rbm, t.h1_a(i)), t1)
+                      - mmul(reshape_nv1(rbm, t.v2_a(i)), reshape_1nh(rbm, t.h2_a(i)), t2);
+        t.b_grad_b(i) = t.h1_a(i) - t.h2_a(i);
+        t.c_grad_b(i) = t.v1(i) - t.v2_a(i);
 
         context.reconstruction_error += mean((t.v1(i) - t.v2_a(i)) * (t.v1(i) - t.v2_a(i)));
 
