@@ -8,9 +8,23 @@
 #ifndef DLL_PARALLEL_HPP
 #define DLL_PARALLEL_HPP
 
+#include "cpp_utils/parallel.hpp"             //Parallel
+
 namespace dll {
 
 #ifdef DLL_PARALLEL
+
+using thread_pool = cpp::default_thread_pool<>;
+
+template<typename TP, typename Container, typename Functor>
+void maybe_parallel_foreach_i(TP& thread_pool, const Container& container, Functor&& fun){
+    parallel_foreach_i(thread_pool, container, std::forward<Functor>(fun));
+}
+
+template<typename TP, typename Iterator, typename Functor>
+void maybe_parallel_foreach_i(TP& thread_pool, Iterator it, Iterator end, Functor&& fun){
+    parallel_foreach_i(thread_pool, it, end, std::forward<Functor>(fun));
+}
 
 #else //!DLL_PARALLEL
 

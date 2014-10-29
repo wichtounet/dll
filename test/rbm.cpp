@@ -7,6 +7,8 @@
 
 #include "catch.hpp"
 
+#define DLL_PARALLEL
+
 #include "dll/rbm.hpp"
 #include "dll/dyn_rbm.hpp"
 
@@ -407,7 +409,7 @@ TEST_CASE( "rbm/mnist_16", "rbm::iterators" ) {
 TEST_CASE( "rbm/mnist_17", "rbm::slow" ) {
     dll::rbm_desc<
         28 * 28, 400,
-        dll::batch_size<50>
+        dll::batch_size<48>
     >::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);

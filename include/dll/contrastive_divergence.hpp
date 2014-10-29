@@ -502,8 +502,8 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
             t.p_h_s(i) = t.h2_s(i);
         }
 
-        t.w_grad_b(i) = mmul(reshape_nv1(rbm, t.v1(i)), reshape_1nh(rbm, t.h1_a(i)), t1)
-                      - mmul(reshape_nv1(rbm, t.v2_a(i)), reshape_1nh(rbm, t.h2_a(i)), t2);
+        t.w_grad_b(i) = mmul(reshape_nv1(rbm, t.v1(i)), reshape_1nh(rbm, t.h1_a(i)), t1(i))
+                      - mmul(reshape_nv1(rbm, t.v2_a(i)), reshape_1nh(rbm, t.h2_a(i)), t2(i));
         t.b_grad_b(i) = t.h1_a(i) - t.h2_a(i);
         t.c_grad_b(i) = t.v1(i) - t.v2_a(i);
     });
@@ -561,8 +561,8 @@ struct cd_trainer : base_cd_trainer<RBM> {
 
     template<typename T>
     void train_batch(const dll::batch<T>& batch, rbm_training_context& context){
-        static etl::fast_matrix<weight, rbm_t::num_visible, rbm_t::num_hidden> t1;
-        static etl::fast_matrix<weight, rbm_t::num_visible, rbm_t::num_hidden> t2;
+        static etl::fast_matrix<weight, batch_size, rbm_t::num_visible, rbm_t::num_hidden> t1;
+        static etl::fast_matrix<weight, batch_size, rbm_t::num_visible, rbm_t::num_hidden> t2;
 
         train_normal<false, N>(batch, context, rbm, *this, t1, t2);
     }
@@ -596,8 +596,8 @@ struct cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : bas
 
     template<typename T>
     void train_batch(const dll::batch<T>& batch, rbm_training_context& context){
-        static etl::dyn_matrix<weight> t1(rbm.num_visible, rbm.num_hidden);
-        static etl::dyn_matrix<weight> t2(rbm.num_visible, rbm.num_hidden);
+        static etl::dyn_matrix<weight, 3> t1(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden);
+        static etl::dyn_matrix<weight, 3> t2(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden);
 
         train_normal<false, N>(batch, context, rbm, *this, t1, t2);
     }
@@ -781,8 +781,8 @@ struct persistent_cd_trainer : base_cd_trainer<RBM> {
 
     template<typename T>
     void train_batch(const dll::batch<T>& batch, rbm_training_context& context){
-        static etl::fast_matrix<weight, rbm_t::num_visible, rbm_t::num_hidden> t1;
-        static etl::fast_matrix<weight, rbm_t::num_visible, rbm_t::num_hidden> t2;
+        static etl::fast_matrix<weight, batch_size, rbm_t::num_visible, rbm_t::num_hidden> t1;
+        static etl::fast_matrix<weight, batch_size, rbm_t::num_visible, rbm_t::num_hidden> t2;
 
         train_normal<true, K>(batch, context, rbm, *this, t1, t2);
     }
@@ -816,8 +816,8 @@ struct persistent_cd_trainer<K, RBM, std::enable_if_t<rbm_traits<RBM>::is_dynami
 
     template<typename T>
     void train_batch(const dll::batch<T>& batch, rbm_training_context& context){
-        static etl::dyn_matrix<weight> t1(rbm.num_visible, rbm.num_hidden);
-        static etl::dyn_matrix<weight> t2(rbm.num_visible, rbm.num_hidden);
+        static etl::dyn_matrix<weight, 3> t1(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden);
+        static etl::dyn_matrix<weight, 3> t2(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden);
 
         train_normal<true, K>(batch, context, rbm, *this, t1, t2);
     }
