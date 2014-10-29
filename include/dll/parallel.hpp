@@ -27,10 +27,8 @@ void maybe_parallel_foreach_i(TP& /*thread_pool*/, const Container& container, F
 
 template<typename TP, typename Iterator, typename Functor>
 void maybe_parallel_foreach_i(TP& /*thread_pool*/, Iterator it, Iterator end, Functor&& fun){
-    std::size_t i = 0;
-    while(it != end){
-        fun(*it, i++);
-        ++it;
+    for(std::size_t i = 0; it != end; ++it, ++i){
+        fun(*it, i);
     }
 }
 
