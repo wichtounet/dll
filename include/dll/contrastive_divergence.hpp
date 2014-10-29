@@ -232,7 +232,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
     base_cd_trainer(rbm_t& rbm) :
-            v1(rbm_traits<rbm_t>::batch_size(), rbm.num_visible),
+            v1(get_batch_size(rbm), rbm.num_visible),
             w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
             w_inc(0,0), b_inc(0), c_inc(0),
             q_global_t(0.0),
@@ -243,10 +243,10 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
     base_cd_trainer(rbm_t& rbm) :
-            v1(rbm_traits<rbm_t>::batch_size(), rbm.num_visible),
+            v1(get_batch_size(rbm), rbm.num_visible),
             w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
             w_inc(rbm.num_visible, rbm.num_hidden, 0.0), b_inc(rbm.num_hidden, 0.0), c_inc(rbm.num_visible, 0.0),
-            q_global_t(0.0), q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden, 0.0), q_local_penalty(rbm.num_hidden) 
+            q_global_t(0.0), q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden, 0.0), q_local_penalty(rbm.num_hidden)
     {
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
@@ -423,7 +423,7 @@ auto reshape_1nh(RBM&, C&& container){
 template<bool Persistent, std::size_t K, typename T, typename RBM, typename Trainer, typename M>
 void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM& rbm, Trainer& t, M& t1, M& t2){
     cpp_assert(batch.size() > 0, "Invalid batch size");
-    cpp_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<RBM>::batch_size()), "Invalid batch size");
+    cpp_assert(batch.size() <= get_batch_size(rbm), "Invalid batch size");
     cpp_assert(batch.begin()->size() == input_size(rbm), "The size of the training sample must match visible units");
 
     using namespace etl;
@@ -629,7 +629,7 @@ public:
     template<typename T>
     void train_batch(const dll::batch<T>& batch, rbm_training_context& context){
         cpp_assert(batch.size() > 0, "Invalid batch size");
-        cpp_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<rbm_t>::batch_size()), "Invalid batch size");
+        cpp_assert(batch.size() <= get_batch_size(rbm), "Invalid batch size");
         cpp_assert(batch.begin()->size() == input_size(rbm), "The size of the training sample must match visible units");
 
         //Size of a minibatch
@@ -753,8 +753,8 @@ struct persistent_cd_trainer : base_cd_trainer<RBM> {
     rbm_t& rbm;
 
     persistent_cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm),
-            p_h_a(rbm_traits<rbm_t>::batch_size()),
-            p_h_s(rbm_traits<rbm_t>::batch_size()), rbm(rbm) {
+            p_h_a(get_batch_size(rbm)),
+            p_h_s(get_batch_size(rbm)), rbm(rbm) {
         //Nothing else to init here
     }
 
@@ -847,15 +847,15 @@ private:
 
 public:
     persistent_cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm),
-            p_h_a(rbm_traits<rbm_t>::batch_size()),
-            p_h_s(rbm_traits<rbm_t>::batch_size()), rbm(rbm) {
+            p_h_a(get_batch_size(rbm)),
+            p_h_s(get_batch_size(rbm)), rbm(rbm) {
         //Nothing else to init here
     }
 
     template<typename T>
     void train_batch(const dll::batch<T>& batch, rbm_training_context& context){
         cpp_assert(batch.size() > 0, "Invalid batch size");
-        cpp_assert(batch.size() <= static_cast<typename dll::batch<T>::size_type>(rbm_traits<RBM>::batch_size()), "Invalid batch size");
+        cpp_assert(batch.size() <= get_batch_size(rbm), "Invalid batch size");
         cpp_assert(batch.begin()->size() == input_size(rbm), "The size of the training sample must match visible units");
 
         //Size of a minibatch
