@@ -403,6 +403,7 @@ TEST_CASE( "rbm/mnist_16", "rbm::iterators" ) {
     REQUIRE(error < 1e-2);
 }
 
+//Only here for benchmarking purpose
 TEST_CASE( "rbm/mnist_17", "rbm::slow" ) {
     dll::rbm_desc<
         28 * 28, 400,
@@ -417,5 +418,23 @@ TEST_CASE( "rbm/mnist_17", "rbm::slow" ) {
 
     auto error = rbm.train(dataset.training_images, 10);
 
-    REQUIRE(error < 1e-2);
+    REQUIRE(error < 5e-2);
+}
+
+//Only here for debugging purposes
+TEST_CASE( "rbm/mnist_18", "rbm::fast" ) {
+    dll::rbm_desc<
+        28 * 28, 100,
+        dll::batch_size<50>
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(25);
+
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 5);
+
+    REQUIRE(error < 5e-1);
 }

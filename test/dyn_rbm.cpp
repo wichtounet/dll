@@ -264,6 +264,7 @@ TEST_CASE( "dyn_rbm/mnist_13", "rbm::exp" ) {
     REQUIRE(std::isnan(error));
 }
 
+//Only here for benchmarking purposes
 TEST_CASE( "dyn_rbm/mnist_14", "rbm::slow" ) {
     dll::dyn_rbm_desc<>::rbm_t rbm(28 * 28, 400);
 
@@ -275,5 +276,20 @@ TEST_CASE( "dyn_rbm/mnist_14", "rbm::slow" ) {
 
     auto error = rbm.train(dataset.training_images, 10);
 
-    REQUIRE(error < 1e-2);
+    REQUIRE(error < 5e-2);
+}
+
+//Only here for debugging purposes
+TEST_CASE( "dyn_rbm/mnist_15", "rbm::fast" ) {
+    dll::dyn_rbm_desc<>::rbm_t rbm(28 * 28, 100);
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(25);
+
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 5);
+
+    REQUIRE(error < 5e-1);
 }
