@@ -19,9 +19,18 @@ struct fake_thread_pool {};
 using thread_pool = fake_thread_pool;
 
 template<typename TP, typename Container, typename Functor>
-void maybe_parallel_foreach_i(TP& thread_pool, const Container& container, Functor&& fun){
+void maybe_parallel_foreach_i(TP& /*thread_pool*/, const Container& container, Functor&& fun){
     for(std::size_t i = 0; i < container.size(); ++i){
-        fun(i);
+        fun(container[i], i);
+    }
+}
+
+template<typename TP, typename Iterator, typename Functor>
+void maybe_parallel_foreach_i(TP& /*thread_pool*/, Iterator it, Iterator end, Functor&& fun){
+    std::size_t i = 0;
+    while(it != end){
+        fun(*it, i++);
+        ++it;
     }
 }
 
