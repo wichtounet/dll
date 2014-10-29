@@ -10,6 +10,7 @@ ifneq (,$(findstring clang,$(CXX)))
 endif
 
 CXX_FLAGS += -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include
+LD_FLAGS += -lpthread
 #-Werror
 OPENCV_LD_FLAGS=-lopencv_core -lopencv_imgproc -lopencv_highgui
 LIBSVM_LD_FLAGS=-lsvm
