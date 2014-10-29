@@ -186,7 +186,7 @@ struct base_cd_trainer : base_trainer<RBM> {
     weight q_global_batch;
     weight q_global_t;
 
-    etl::fast_vector<weight, num_hidden> q_local_batch;
+    etl::fast_matrix<weight, num_hidden> q_local_batch;
     etl::fast_vector<weight, num_hidden> q_local_t;
     etl::fast_vector<weight, num_hidden> q_local_penalty;
 
@@ -465,21 +465,6 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
     using namespace etl;
     using rbm_t = RBM;
 
-    //Size of a minibatch
-    auto n_samples = static_cast<typename rbm_t::weight>(batch.size());
-
-    //Clear the gradients
-    t.w_grad = 0.0;
-    t.b_grad = 0.0;
-    t.c_grad = 0.0;
-
-    //Reset mean activation probability
-    t.q_global_batch = 0.0;
-
-    if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
-        t.q_local_batch = 0.0;
-    }
-
     auto it = batch.begin();
     auto end = batch.end();
 
@@ -522,15 +507,6 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
         t.b_grad_b(i) = t.h1_a(i) - t.h2_a(i);
         t.c_grad_b(i) = t.v1(i) - t.v2_a(i);
 
-        context.reconstruction_error += mean((t.v1(i) - t.v2_a(i)) * (t.v1(i) - t.v2_a(i)));
-
-        //Get the mean activation probabilities
-        t.q_global_batch += sum(t.h2_a(i));
-
-        if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
-            t.q_local_batch += t.h2_a(i);
-        }
-
         ++it;
         ++i;
     }
@@ -539,18 +515,20 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
         t.init = false;
     }
 
+    context.reconstruction_error += mean((t.v1 - t.v2_a) * (t.v1 - t.v2_a));
+
     //Keep only the mean of the gradients
-    t.w_grad /= n_samples;
-    t.b_grad /= n_samples;
-    t.c_grad /= n_samples;
+    t.w_grad = mean_l(t.w_grad_b);
+    t.b_grad = mean_l(t.b_grad_b);
+    t.c_grad = mean_l(t.c_grad_b);
 
     nan_check_deep_3(t.w_grad, t.b_grad, t.c_grad);
 
     //Compute the mean activation probabilities
-    t.q_global_batch /= n_samples * num_hidden(rbm);
+    t.q_global_batch = mean(t.h2_a);//n_samples * num_hidden(rbm);
 
     if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
-        t.q_local_batch /= n_samples;
+        t.q_local_batch = mean_l(t.h2_a);
     }
 
     //Accumulate the sparsity
