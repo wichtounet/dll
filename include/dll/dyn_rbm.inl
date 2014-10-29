@@ -80,12 +80,12 @@ struct dyn_rbm : public normal_rbm<dyn_rbm<Desc>, Desc> {
     }
 
     template<typename H1, typename H2, typename V>
-    void activate_hidden(H1& h_a, H2& h_s, const V& v_a, const V& v_s) const {
+    void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s) const {
         return activate_hidden(h_a, h_s, v_a, v_s, b, w);
     }
 
     template<typename H1, typename H2, typename V, typename B, typename W>
-    void activate_hidden(H1& h_a, H2& h_s, const V& v_a, const V&, const B& b, const W& w) const {
+    void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V&, const B& b, const W& w) const {
         using namespace etl;
 
         static dyn_matrix<weight> t(1UL, num_hidden);
@@ -117,7 +117,7 @@ struct dyn_rbm : public normal_rbm<dyn_rbm<Desc>, Desc> {
     }
 
     template<typename H, typename V>
-    void activate_visible(const H&, const H& h_s, V& v_a, V& v_s) const {
+    void activate_visible(const H&, const H& h_s, V&& v_a, V&& v_s) const {
         using namespace etl;
 
         static dyn_matrix<weight> t(num_visible, 1UL);

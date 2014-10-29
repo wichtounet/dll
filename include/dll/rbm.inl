@@ -85,12 +85,12 @@ struct rbm : public normal_rbm<rbm<Desc>, Desc> {
     }
 
     template<typename H1, typename H2, typename V>
-    void activate_hidden(H1& h_a, H2& h_s, const V& v_a, const V& v_s) const {
+    void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s) const {
         return activate_hidden(h_a, h_s, v_a, v_s, b, w);
     }
 
     template<typename H1, typename H2, typename V, typename B, typename W>
-    static void activate_hidden(H1& h_a, H2& h_s, const V& v_a, const V&, const B& b, const W& w){
+    static void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V&, const B& b, const W& w){
         using namespace etl;
 
         static fast_matrix<weight, 1, num_hidden> t;
@@ -122,7 +122,7 @@ struct rbm : public normal_rbm<rbm<Desc>, Desc> {
     }
 
     template<typename H, typename V>
-    void activate_visible(const H&, const H& h_s, V& v_a, V& v_s) const {
+    void activate_visible(const H&, const H& h_s, V&& v_a, V&& v_s) const {
         using namespace etl;
 
         static fast_matrix<weight, num_visible, 1> t;
