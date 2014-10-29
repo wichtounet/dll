@@ -481,13 +481,13 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
         rbm.activate_hidden(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i));
 
         if(Persistent && t.init){
-            t.p_h_a[i] = t.h1_a(i);
-            t.p_h_s[i] = t.h1_s(i);
+            t.p_h_a(i) = t.h1_a(i);
+            t.p_h_s(i) = t.h1_s(i);
         }
 
         //CD-1
         if(Persistent){
-            rbm.activate_visible(t.p_h_a[i], t.p_h_s[i], t.v2_a(i), t.v2_s(i));
+            rbm.activate_visible(t.p_h_a(i), t.p_h_s(i), t.v2_a(i), t.v2_s(i));
             rbm.activate_hidden(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
         } else {
             rbm.activate_visible(t.h1_a(i), t.h1_s(i), t.v2_a(i), t.v2_s(i));
@@ -501,8 +501,8 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
         }
 
         if(Persistent){
-            t.p_h_a[i] = t.h2_a(i);
-            t.p_h_s[i] = t.h2_s(i);
+            t.p_h_a(i) = t.h2_a(i);
+            t.p_h_s(i) = t.h2_s(i);
         }
 
         t.w_grad +=
@@ -559,10 +559,13 @@ struct cd_trainer : base_cd_trainer<RBM> {
     using rbm_t = RBM;
     using weight = typename rbm_t::weight;
 
+    static constexpr const auto batch_size = rbm_traits<rbm_t>::batch_size();
+
     rbm_t& rbm;
 
-    std::vector<etl::fast_vector<weight, rbm_t::num_hidden>> p_h_a;
-    std::vector<etl::fast_vector<weight, rbm_t::num_hidden>> p_h_s;
+    //These fields are fake, just to avoid duplicating code and using TMP
+    etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_a;
+    etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_s;
 
     bool init = true;
 
@@ -595,12 +598,13 @@ struct cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : bas
 
     rbm_t& rbm;
 
-    std::vector<etl::dyn_vector<weight>> p_h_a;
-    std::vector<etl::dyn_vector<weight>> p_h_s;
+    //These fields are fake, just to avoid duplicating code and using TMP
+    etl::dyn_matrix<weight> p_h_a;
+    etl::dyn_matrix<weight> p_h_s;
 
     bool init = true;
 
-    cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm) {
+    cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm), p_h_a(1,1), p_h_s(1,1) {
         //Nothing else to init here
     }
 
@@ -776,16 +780,16 @@ struct persistent_cd_trainer : base_cd_trainer<RBM> {
     typedef RBM rbm_t;
     typedef typename rbm_t::weight weight;
 
-    std::vector<etl::fast_vector<weight, rbm_t::num_hidden>> p_h_a;
-    std::vector<etl::fast_vector<weight, rbm_t::num_hidden>> p_h_s;
+    static constexpr const auto batch_size = rbm_traits<rbm_t>::batch_size();
+
+    etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_a;
+    etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_s;
 
     bool init = true;
 
     rbm_t& rbm;
 
-    persistent_cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm),
-            p_h_a(get_batch_size(rbm)),
-            p_h_s(get_batch_size(rbm)), rbm(rbm) {
+    persistent_cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm) {
         //Nothing else to init here
     }
 
@@ -812,18 +816,16 @@ struct persistent_cd_trainer<K, RBM, std::enable_if_t<rbm_traits<RBM>::is_dynami
     typedef RBM rbm_t;
     typedef typename rbm_t::weight weight;
 
-    std::vector<etl::dyn_vector<weight>> p_h_a;
-    std::vector<etl::dyn_vector<weight>> p_h_s;
+    etl::dyn_matrix<weight> p_h_a;
+    etl::dyn_matrix<weight> p_h_s;
 
     bool init = true;
 
     rbm_t& rbm;
 
-    persistent_cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm) {
-        for(std::size_t i = 0; i < get_batch_size(rbm); ++i){
-            p_h_a.emplace_back(rbm.num_hidden);
-            p_h_s.emplace_back(rbm.num_hidden);
-        }
+    persistent_cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm),
+            p_h_a(get_batch_size(rbm), rbm.num_hidden), p_h_s(get_batch_size(rbm), rbm.num_hidden)  {
+        //Nothing else to init
     }
 
     template<typename T>
