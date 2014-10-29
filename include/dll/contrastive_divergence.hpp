@@ -25,6 +25,7 @@
 #include "batch.hpp"
 #include "decay_type.hpp"
 #include "rbm_traits.hpp"
+#include "parallel.hpp"
 
 namespace dll {
 
@@ -192,6 +193,8 @@ struct base_cd_trainer : base_trainer<RBM> {
 
     //}}} Sparsity end
 
+    thread_pool pool;
+
     template<bool M = rbm_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
     base_cd_trainer(rbm_t&) : q_global_t(0.0), q_local_t(0.0) {
         static_assert(!rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
@@ -257,6 +260,8 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
     etl::dyn_vector<weight> q_local_penalty;
 
     //}}} Sparsity end
+
+    thread_pool pool;
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
     base_cd_trainer(rbm_t& rbm) :
@@ -465,13 +470,8 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
     using namespace etl;
     using rbm_t = RBM;
 
-    auto it = batch.begin();
-    auto end = batch.end();
-
-    std::size_t i = 0;
-    while(it != end){
-        auto& items = *it;
-
+    maybe_parallel_foreach_i(t.pool, batch.begin(), batch.end(), [&](auto& items, std::size_t i){
+        //Give input to RBM
         t.v1(i) = items;
 
         //First step
@@ -506,10 +506,7 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
                       - mmul(reshape_nv1(rbm, t.v2_a(i)), reshape_1nh(rbm, t.h2_a(i)), t2);
         t.b_grad_b(i) = t.h1_a(i) - t.h2_a(i);
         t.c_grad_b(i) = t.v1(i) - t.v2_a(i);
-
-        ++it;
-        ++i;
-    }
+    });
 
     if(Persistent){
         t.init = false;
