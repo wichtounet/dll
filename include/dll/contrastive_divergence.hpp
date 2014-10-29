@@ -816,12 +816,12 @@ struct persistent_cd_trainer<K, RBM, std::enable_if_t<rbm_traits<RBM>::is_dynami
     typedef RBM rbm_t;
     typedef typename rbm_t::weight weight;
 
+    rbm_t& rbm;
+
     etl::dyn_matrix<weight> p_h_a;
     etl::dyn_matrix<weight> p_h_s;
 
     bool init = true;
-
-    rbm_t& rbm;
 
     persistent_cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm),
             p_h_a(get_batch_size(rbm), rbm.num_hidden), p_h_s(get_batch_size(rbm), rbm.num_hidden)  {
