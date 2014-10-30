@@ -25,8 +25,7 @@ namespace dll {
  */
 template<typename Desc>
 struct rbm : public normal_rbm<rbm<Desc>, Desc> {
-    typedef double weight;
-    typedef double value_t;
+    typedef float weight;
 
     using desc = Desc;
 
@@ -69,7 +68,7 @@ struct rbm : public normal_rbm<rbm<Desc>, Desc> {
      */
     rbm() : normal_rbm<rbm<Desc>, Desc>(), b(0.0), c(0.0) {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
-        w = etl::normal_generator() * 0.1;
+        w = etl::normal_generator<weight>() * 0.1;
     }
 
     static constexpr std::size_t input_size(){

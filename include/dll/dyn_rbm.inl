@@ -22,8 +22,7 @@ namespace dll {
  */
 template<typename Desc>
 struct dyn_rbm : public normal_rbm<dyn_rbm<Desc>, Desc> {
-    typedef double weight;
-    typedef double value_t;
+    typedef float weight;
 
     using desc = Desc;
 
@@ -67,12 +66,12 @@ struct dyn_rbm : public normal_rbm<dyn_rbm<Desc>, Desc> {
      * zero-mean and 0.1 variance.
      */
     dyn_rbm(size_t num_visible, size_t num_hidden) : normal_rbm<dyn_rbm<Desc>, Desc>(),
-            w(num_visible, num_hidden), b(num_hidden, 0.0), c(num_visible, 0.0),
+            w(num_visible, num_hidden), b(num_hidden, static_cast<weight>(0.0)), c(num_visible, static_cast<weight>(0.0)),
             v1(num_visible), h1_a(num_hidden), h1_s(num_hidden),
             v2_a(num_visible), v2_s(num_visible), h2_a(num_hidden), h2_s(num_hidden),
             num_visible(num_visible), num_hidden(num_hidden) {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
-        w = etl::normal_generator() * 0.1;
+        w = etl::normal_generator<weight>() * 0.1;
     }
 
     void display() const {
@@ -90,7 +89,7 @@ struct dyn_rbm : public normal_rbm<dyn_rbm<Desc>, Desc> {
 
         return activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, t);
     }
-    
+
     template<typename H1, typename H2, typename V, typename T>
     void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, T&& t) const {
         return activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, std::forward<T>(t));

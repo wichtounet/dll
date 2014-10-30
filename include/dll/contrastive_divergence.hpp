@@ -29,11 +29,6 @@
 
 namespace dll {
 
-//Sign for scalars
-inline double sign(double v){
-    return v == 0.0 ? 0.0 : (v > 0.0 ? 1.0 : -1.0);
-}
-
 /*!
  * \brief Base class for all standard trainer
  */
@@ -280,7 +275,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
             w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
             w_inc(0,0), b_inc(0), c_inc(0),
             q_global_t(0.0),
-            q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden, 0.0), q_local_penalty(rbm.num_hidden)
+            q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden, static_cast<weight>(0.0)), q_local_penalty(rbm.num_hidden)
     {
         static_assert(!rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
@@ -294,8 +289,8 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
             ht(get_batch_size(rbm), 1UL, rbm.num_hidden), vt(get_batch_size(rbm), rbm.num_visible, 1UL),
             w_grad_b(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden), b_grad_b(get_batch_size(rbm), rbm.num_hidden), c_grad_b(get_batch_size(rbm), rbm.num_visible),
             w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
-            w_inc(rbm.num_visible, rbm.num_hidden, 0.0), b_inc(rbm.num_hidden, 0.0), c_inc(rbm.num_visible, 0.0),
-            q_global_t(0.0), q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden, 0.0), q_local_penalty(rbm.num_hidden)
+            w_inc(rbm.num_visible, rbm.num_hidden, static_cast<weight>(0.0)), b_inc(rbm.num_hidden, static_cast<weight>(0.0)), c_inc(rbm.num_visible, static_cast<weight>(0.0)),
+            q_global_t(0.0), q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden, static_cast<weight>(0.0)), q_local_penalty(rbm.num_hidden)
     {
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
