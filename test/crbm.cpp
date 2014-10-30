@@ -310,3 +310,29 @@ TEST_CASE( "crbm/mnist_13", "crbm::multi_channel" ) {
 
     REQUIRE(error < 1e-2);
 }
+
+TEST_CASE( "crbm/mnist_14", "crbm::fast" ) {
+    dll::conv_rbm_desc<
+        28, 2, 12, 40,
+        dll::batch_size<25>,
+        dll::momentum
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
+
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    for(auto& image : dataset.training_images){
+        image.reserve(image.size() * 2);
+        auto end = image.size();
+        for(std::size_t i = 0; i < end; ++i){
+            image.push_back(image[i]);
+        }
+    }
+
+    auto error = rbm.train(dataset.training_images, 25);
+
+    REQUIRE(error < 1e-2);
+}
