@@ -36,6 +36,8 @@ template<typename RBM>
 struct base_trainer {
     typedef RBM rbm_t;
 
+    bool init = false;
+
     template<typename T1, typename T2, bool M = rbm_traits<rbm_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
     T2& get_fgrad(T1& , T2& inc){
         return inc;
@@ -695,8 +697,6 @@ struct cd_trainer : base_cd_trainer<RBM> {
     etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_a;
     etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_s;
 
-    bool init = true;
-
     cd_trainer(rbm_t& rbm) : base_cd_trainer<rbm_t>(rbm), rbm(rbm) {
         //Nothing else to init here
     }
@@ -729,8 +729,6 @@ struct cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : bas
     //These fields are fake, just to avoid duplicating code and using TMP
     etl::dyn_matrix<weight> p_h_a;
     etl::dyn_matrix<weight> p_h_s;
-
-    bool init = true;
 
     cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm), p_h_a(1,1), p_h_s(1,1) {
         //Nothing else to init here
@@ -775,8 +773,6 @@ struct cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()>>
     std::vector<etl::fast_matrix<weight, K, NH, NH>> p_h_a;
     std::vector<etl::fast_matrix<weight, K, NH, NH>> p_h_s;
 
-    bool init = true;
-
     cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm) {
         //Nothing else to init here
     }
@@ -805,8 +801,6 @@ struct persistent_cd_trainer : base_cd_trainer<RBM> {
 
     etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_a;
     etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_s;
-
-    bool init = true;
 
     rbm_t& rbm;
 
@@ -841,8 +835,6 @@ struct persistent_cd_trainer<K, RBM, std::enable_if_t<rbm_traits<RBM>::is_dynami
 
     etl::dyn_matrix<weight> p_h_a;
     etl::dyn_matrix<weight> p_h_s;
-
-    bool init = true;
 
     persistent_cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm),
             p_h_a(get_batch_size(rbm), rbm.num_hidden), p_h_s(get_batch_size(rbm), rbm.num_hidden)  {
@@ -886,8 +878,6 @@ struct persistent_cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_convol
 
     std::vector<etl::fast_matrix<weight, K, NH, NH>> p_h_a;
     std::vector<etl::fast_matrix<weight, K, NH, NH>> p_h_s;
-
-    bool init = true;
 
     rbm_t& rbm;
 
