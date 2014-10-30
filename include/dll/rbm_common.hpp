@@ -15,29 +15,29 @@ namespace dll {
 namespace rbm_detail {
 
 template<typename RBM>
-static void store(const std::string& file, const RBM& rbm){
-    std::ofstream os(file, std::ofstream::binary);
-    store(os, rbm);
-}
-
-template<typename RBM>
-static void load(const std::string& file, RBM& rbm){
-    std::ifstream is(file, std::ifstream::binary);
-    load(is, rbm);
-}
-
-template<typename RBM>
-static void store(std::ostream& os, const RBM& rbm){
+void store(std::ostream& os, const RBM& rbm){
     binary_write_all(os, rbm.w);
     binary_write_all(os, rbm.b);
     binary_write_all(os, rbm.c);
 }
 
 template<typename RBM>
-static void load(std::istream& is, RBM& rbm){
+void load(std::istream& is, RBM& rbm){
     binary_load_all(is, rbm.w);
     binary_load_all(is, rbm.b);
     binary_load_all(is, rbm.c);
+}
+
+template<typename RBM>
+void store(const std::string& file, const RBM& rbm){
+    std::ofstream os(file, std::ofstream::binary);
+    store(os, rbm);
+}
+
+template<typename RBM>
+void load(const std::string& file, RBM& rbm){
+    std::ifstream is(file, std::ifstream::binary);
+    load(is, rbm);
 }
 
 template<typename Iterator, typename RBM>
