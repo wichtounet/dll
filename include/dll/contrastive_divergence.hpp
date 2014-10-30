@@ -585,13 +585,13 @@ void train_convolutional(const dll::batch<T>& batch, rbm_training_context& conte
         rbm.activate_hidden(rbm.h1_a, rbm.h1_s, rbm.v1, rbm.v1);
 
         if(Persistent && t.init){
-            t.p_h_a[i] = rbm.h1_a;
-            t.p_h_s[i] = rbm.h1_s;
+            t.p_h_a(i) = rbm.h1_a;
+            t.p_h_s(i)= rbm.h1_s;
         }
 
         //CD-1
         if(Persistent){
-            rbm.activate_visible(t.p_h_a[i], t.p_h_s[i], rbm.v2_a, rbm.v2_s);
+            rbm.activate_visible(t.p_h_a(i), t.p_h_s(i), rbm.v2_a, rbm.v2_s);
             rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
         } else {
             rbm.activate_visible(rbm.h1_a, rbm.h1_s, rbm.v2_a, rbm.v2_s);
@@ -605,8 +605,8 @@ void train_convolutional(const dll::batch<T>& batch, rbm_training_context& conte
         }
 
         if(Persistent){
-            t.p_h_a[i] = rbm.h2_a;
-            t.p_h_s[i] = rbm.h2_s;
+            t.p_h_a(i) = rbm.h2_a;
+            t.p_h_s(i) = rbm.h2_s;
         }
 
         //Compute gradients
@@ -757,6 +757,8 @@ struct cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()>>
     using rbm_t = RBM;
     using weight = typename rbm_t::weight;
 
+    static constexpr const auto batch_size = rbm_traits<rbm_t>::batch_size();
+
     using base_cd_trainer<rbm_t>::K;
     using base_cd_trainer<rbm_t>::NW;
     using base_cd_trainer<rbm_t>::NH;
@@ -770,8 +772,8 @@ struct cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()>>
 
     rbm_t& rbm;
 
-    std::vector<etl::fast_matrix<weight, K, NH, NH>> p_h_a;
-    std::vector<etl::fast_matrix<weight, K, NH, NH>> p_h_s;
+    etl::fast_matrix<weight, batch_size, K, NH, NH> p_h_a;
+    etl::fast_matrix<weight, batch_size, K, NH, NH> p_h_s;
 
     cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm) {
         //Nothing else to init here
@@ -854,7 +856,6 @@ struct persistent_cd_trainer<K, RBM, std::enable_if_t<rbm_traits<RBM>::is_dynami
     }
 };
 
-
 /*!
  * \brief Specialization of persistent_cd_trainer for Convolutional RBM.
  */
@@ -864,6 +865,8 @@ struct persistent_cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_convol
 
     typedef RBM rbm_t;
     typedef typename rbm_t::weight weight;
+
+    static constexpr const auto batch_size = rbm_traits<rbm_t>::batch_size();
 
     using base_cd_trainer<rbm_t>::NC;
     using base_cd_trainer<rbm_t>::NW;
@@ -876,14 +879,12 @@ struct persistent_cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_convol
     etl::fast_matrix<weight, NC, K, NW, NW> w_pos;
     etl::fast_matrix<weight, NC, K, NW, NW> w_neg;
 
-    std::vector<etl::fast_matrix<weight, K, NH, NH>> p_h_a;
-    std::vector<etl::fast_matrix<weight, K, NH, NH>> p_h_s;
+    etl::fast_matrix<weight, batch_size, K, NH, NH> p_h_a;
+    etl::fast_matrix<weight, batch_size, K, NH, NH> p_h_s;
 
     rbm_t& rbm;
 
-    persistent_cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm),
-            p_h_a(get_batch_size(rbm)),
-            p_h_s(get_batch_size(rbm)), rbm(rbm) {
+    persistent_cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm) {
         //Nothing else to init here
     }
 
