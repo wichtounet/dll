@@ -610,6 +610,127 @@ struct cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : bas
     }
 };
 
+template<bool Persistent, std::size_t N, typename Trainer, typename T, typename RBM>
+void train_convolutional(const dll::batch<T>& batch, rbm_training_context& context, RBM& rbm, Trainer& t){
+    cpp_assert(batch.size() > 0, "Invalid batch size");
+    cpp_assert(batch.size() <= get_batch_size(rbm), "Invalid batch size");
+    cpp_assert(batch.begin()->size() == input_size(rbm), "The size of the training sample must match visible units");
+
+    using rbm_t = RBM;
+    using weight = typename rbm_t::weight;
+
+    constexpr const auto K = rbm_t::K;
+    constexpr const auto NH = rbm_t::NH;
+    constexpr const auto NC = rbm_t::NC;
+
+    //Size of a minibatch
+    auto n_samples = static_cast<weight>(batch.size());
+
+    //Clear the gradients
+    t.w_grad = 0.0;
+    t.b_grad = 0.0;
+    t.c_grad_org = 0.0;
+
+    //Reset mean activation probability if necessary
+    t.q_global_batch = 0.0;
+
+    if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
+        t.q_local_batch = 0.0;
+    }
+
+    auto it = batch.begin();
+    auto end = batch.end();
+
+    std::size_t i = 0;
+    while(it != end){
+        auto& items = *it;
+
+        rbm.v1 = items;
+
+        //First step
+        rbm.activate_hidden(rbm.h1_a, rbm.h1_s, rbm.v1, rbm.v1);
+
+        if(Persistent && t.init){
+            t.p_h_a[i] = rbm.h1_a;
+            t.p_h_s[i] = rbm.h1_s;
+        }
+
+        //CD-1
+        if(Persistent){
+            rbm.activate_visible(t.p_h_a[i], t.p_h_s[i], rbm.v2_a, rbm.v2_s);
+            rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
+        } else {
+            rbm.activate_visible(rbm.h1_a, rbm.h1_s, rbm.v2_a, rbm.v2_s);
+            rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
+        }
+
+        //CD-k
+        for(std::size_t k = 1; k < N; ++k){
+            rbm.activate_visible(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
+            rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
+        }
+
+        if(Persistent){
+            t.p_h_a[i] = rbm.h2_a;
+            t.p_h_s[i] = rbm.h2_s;
+        }
+
+        for(std::size_t channel = 0; channel < NC; ++channel){
+            for(std::size_t k = 0; k < K; ++k){
+                etl::convolve_2d_valid(rbm.v1(channel), fflip(rbm.h1_a(k)), t.w_pos(channel)(k));
+                etl::convolve_2d_valid(rbm.v2_a(channel), fflip(rbm.h2_a(k)), t.w_neg(channel)(k));
+            }
+        }
+
+        t.w_grad += t.w_pos - t.w_neg;
+
+        for(std::size_t k = 0; k < K; ++k){
+            t.b_grad(k) += mean(rbm.h1_a(k) - rbm.h2_a(k));
+        }
+
+        t.c_grad_org += rbm.v1 - rbm.v2_a;
+
+        context.reconstruction_error += mean((rbm.v1 - rbm.v2_a) * (rbm.v1 - rbm.v2_a));
+
+        t.q_global_batch += sum(rbm.h2_a);
+
+        if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
+            t.q_local_batch += rbm.h2_a;
+        }
+
+        ++it;
+        ++i;
+    }
+
+    if(Persistent){
+        t.init = false;
+    }
+
+    //Keep only the mean of the gradients
+    t.w_grad /= n_samples;
+    t.b_grad /= n_samples;
+    t.c_grad_org /= n_samples;
+
+    nan_check_deep(t.w_grad);
+    nan_check_deep(t.b_grad);
+    nan_check_deep(t.c_grad_org);
+
+    t.c_grad = mean(t.c_grad_org);
+
+    //Compute the mean activation probabilities
+    t.q_global_batch /= n_samples * K * NH * NH;
+
+    if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
+        t.q_local_batch /= n_samples;
+    }
+
+    //Accumulate the sparsity
+    context.sparsity += t.q_global_batch;
+
+    //Update the weights and biases based on the gradients
+    t.update_weights(rbm);
+}
+
 /*!
  * \brief Contrastive Divergence trainer for convolutional RBM
  */
@@ -836,26 +957,18 @@ struct persistent_cd_trainer<K, RBM, std::enable_if_t<rbm_traits<RBM>::is_dynami
  */
 template<std::size_t N, typename RBM>
 struct persistent_cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()>> : base_cd_trainer<RBM> {
-private:
     static_assert(N > 0, "PCD-0 is not a valid training method");
 
     typedef RBM rbm_t;
     typedef typename rbm_t::weight weight;
 
-    using base_cd_trainer<RBM>::NC;
-    using base_cd_trainer<RBM>::NW;
-    using base_cd_trainer<RBM>::NH;
-    using base_cd_trainer<RBM>::NV;
-    using base_cd_trainer<RBM>::K;
-
-    using base_cd_trainer<RBM>::w_grad;
-    using base_cd_trainer<RBM>::b_grad;
-    using base_cd_trainer<RBM>::c_grad;
+    using base_cd_trainer<rbm_t>::NC;
+    using base_cd_trainer<rbm_t>::NW;
+    using base_cd_trainer<rbm_t>::NH;
+    using base_cd_trainer<rbm_t>::NV;
+    using base_cd_trainer<rbm_t>::K;
 
     etl::fast_matrix<weight, NC, NV, NV> c_grad_org;
-
-    using base_cd_trainer<RBM>::q_global_batch;
-    using base_cd_trainer<RBM>::q_local_batch;
 
     etl::fast_matrix<weight, NC, K, NW, NW> w_pos;
     etl::fast_matrix<weight, NC, K, NW, NW> w_neg;
@@ -867,7 +980,6 @@ private:
 
     rbm_t& rbm;
 
-public:
     persistent_cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm),
             p_h_a(get_batch_size(rbm)),
             p_h_s(get_batch_size(rbm)), rbm(rbm) {
@@ -876,107 +988,7 @@ public:
 
     template<typename T>
     void train_batch(const dll::batch<T>& batch, rbm_training_context& context){
-        cpp_assert(batch.size() > 0, "Invalid batch size");
-        cpp_assert(batch.size() <= get_batch_size(rbm), "Invalid batch size");
-        cpp_assert(batch.begin()->size() == input_size(rbm), "The size of the training sample must match visible units");
-
-        //Size of a minibatch
-        auto n_samples = static_cast<weight>(batch.size());
-
-        //Clear the gradients
-        w_grad = 0.0;
-        b_grad = 0.0;
-        c_grad_org = 0.0;
-
-        //Reset mean activation probability if necessary
-        q_global_batch = 0.0;
-
-        if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
-            q_local_batch = 0.0;
-        }
-
-        auto it = batch.begin();
-        auto end = batch.end();
-
-        std::size_t i = 0;
-        while(it != end){
-            auto& items = *it;
-
-            rbm.v1 = items;
-
-            //First step
-            rbm.activate_hidden(rbm.h1_a, rbm.h1_s, rbm.v1, rbm.v1);
-
-            if(init){
-                p_h_a[i] = rbm.h1_a;
-                p_h_s[i] = rbm.h1_s;
-            }
-
-            //CD-1
-            rbm.activate_visible(p_h_a[i], p_h_a[i], rbm.v2_a, rbm.v2_s);
-            rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
-
-            //CD-k
-            for(std::size_t k = 1; k < N; ++k){
-                rbm.activate_visible(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
-                rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
-            }
-
-            p_h_a[i] = rbm.h2_a;
-            p_h_s[i] = rbm.h2_s;
-
-            for(std::size_t channel = 0; channel < NC; ++channel){
-                for(std::size_t k = 0; k < K; ++k){
-                    etl::convolve_2d_valid(rbm.v1(channel), fflip(rbm.h1_a(k)), w_pos(channel)(k));
-                    etl::convolve_2d_valid(rbm.v2_a(channel), fflip(rbm.h2_a(k)), w_neg(channel)(k));
-                }
-            }
-
-            w_grad += w_pos - w_neg;
-
-            for(std::size_t k = 0; k < K; ++k){
-                b_grad(k) += mean(rbm.h1_a(k) - rbm.h2_a(k));
-            }
-
-            c_grad_org += rbm.v1 - rbm.v2_a;
-
-            context.reconstruction_error += mean((rbm.v1 - rbm.v2_a) * (rbm.v1 - rbm.v2_a));
-
-            q_global_batch += sum(rbm.h2_a);
-
-            if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
-                q_local_batch += rbm.h2_a;
-            }
-
-            ++it;
-            ++i;
-        }
-
-        init = false;
-
-        //Keep only the mean of the gradients
-        w_grad /= n_samples;
-        b_grad /= n_samples;
-        c_grad_org /= n_samples;
-
-        nan_check_deep(w_grad);
-        nan_check_deep(b_grad);
-        nan_check_deep(c_grad_org);
-
-        c_grad = mean(c_grad_org);
-
-        //Compute the mean activation probabilities
-        q_global_batch /= n_samples * K * NH * NH;
-
-        if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
-            q_local_batch /= n_samples;
-        }
-
-        //Accumulate the sparsity
-        context.sparsity += q_global_batch;
-
-        //Update the weights and biases based on the gradients
-        this->update_weights(rbm);
+        train_convolutional<true, N>(batch, context, rbm, *this);
     }
 
     static std::string name(){
