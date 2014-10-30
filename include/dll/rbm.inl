@@ -145,22 +145,22 @@ struct rbm : public normal_rbm<rbm<Desc>, Desc> {
     }
 
     template<typename Sample, typename Output>
-        void activation_probabilities(const Sample& item_data, Output& result){
-            etl::dyn_vector<weight> item(item_data);
+    void activation_probabilities(const Sample& item_data, Output& result){
+        etl::dyn_vector<weight> item(item_data);
 
-            static etl::dyn_vector<weight> next_s(num_hidden);
+        static etl::dyn_vector<weight> next_s(num_hidden);
 
-            activate_hidden(result, next_s, item, item);
-        }
+        activate_hidden(result, next_s, item, item);
+    }
 
     template<typename Sample>
-        etl::dyn_vector<weight> activation_probabilities(const Sample& item_data){
-            etl::dyn_vector<weight> result(output_size());
+    etl::dyn_vector<weight> activation_probabilities(const Sample& item_data){
+        etl::dyn_vector<weight> result(output_size());
 
-            activation_probabilities(item_data, result);
+        activation_probabilities(item_data, result);
 
-            return result;
-        }
+        return result;
+    }
 };
 
 } //end of dbn namespace
