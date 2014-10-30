@@ -72,8 +72,16 @@ public:
         return trainer.train(*static_cast<parent_t*>(this), std::forward<Iterator>(first), std::forward<Iterator>(last), max_epochs);
     }
 
+    void store(const std::string& file) const {
+        rbm_detail::store(file, *static_cast<const parent_t*>(this));
+    }
+
     void store(std::ostream& os) const {
         rbm_detail::store(os, *static_cast<const parent_t*>(this));
+    }
+
+    void load(const std::string& file){
+        rbm_detail::load(file, *static_cast<parent_t*>(this));
     }
 
     void load(std::istream& is){
