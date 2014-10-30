@@ -333,8 +333,6 @@ TEST_CASE( "rbm/mnist_14", "rbm::sparsity_gaussian" ) {
        dll::visible<dll::unit_type::GAUSSIAN>
     >::rbm_t rbm;
 
-    //rbm.learning_rate /= 5.0;
-
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(500);
 
     REQUIRE(!dataset.training_images.empty());
@@ -359,10 +357,9 @@ TEST_CASE( "rbm/mnist_15", "rbm::pcd_gaussian" ) {
 
     rbm.learning_rate /= 20.0;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(500);
 
     REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(500);
 
     mnist::normalize_dataset(dataset);
 
@@ -377,10 +374,9 @@ TEST_CASE( "rbm/mnist_16", "rbm::iterators" ) {
         dll::batch_size<23>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
 
     REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(100);
 
     mnist::binarize_dataset(dataset);
 
