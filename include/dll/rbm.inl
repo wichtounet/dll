@@ -103,13 +103,13 @@ struct rbm : public normal_rbm<rbm<Desc>, Desc> {
             h_s = bernoulli(h_a);
         } else if(hidden_unit == unit_type::RELU){
             h_a = max(b + auto_vmmul(v_a, w, t), 0.0);
-            h_s = logistic_noise(h_a);
+            h_s = logistic_noise(h_a); //TODO This is probably wrong
         } else if(hidden_unit == unit_type::RELU6){
             h_a = min(max(b + auto_vmmul(v_a, w, t), 0.0), 6.0);
-            h_s = ranged_noise(h_a, 6.0);
+            h_s = ranged_noise(h_a, 6.0); //TODO This is probably wrong
         } else if(hidden_unit == unit_type::RELU1){
             h_a = min(max(b + auto_vmmul(v_a, w, t), 0.0), 1.0);
-            h_s = ranged_noise(h_a, 1.0);
+            h_s = ranged_noise(h_a, 1.0); //TODO This is probably wrong
         } else if(hidden_unit == unit_type::SOFTMAX){
             h_a = softmax(b + auto_vmmul(v_a, w, t));
             h_s = one_if_max(h_a);
