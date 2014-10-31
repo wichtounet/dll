@@ -98,12 +98,12 @@ void add_activation_probabilities(DBN& dbn, Result& result, Sample& sample){
 }
 
 template<typename DBN, typename Sample, cpp::enable_if_u<dbn_traits<std::decay_t<DBN>>::concatenate()> = cpp::detail::dummy>
-etl::dyn_vector<double> get_activation_probabilities(DBN& dbn, Sample& sample){
+etl::dyn_vector<typename DBN::weight> get_activation_probabilities(DBN& dbn, Sample& sample){
     return dbn.full_activation_probabilities(sample);
 }
 
 template<typename DBN, typename Sample, cpp::disable_if_u<dbn_traits<std::decay_t<DBN>>::concatenate()> = cpp::detail::dummy>
-etl::dyn_vector<double> get_activation_probabilities(DBN& dbn, Sample& sample){
+etl::dyn_vector<typename DBN::weight> get_activation_probabilities(DBN& dbn, Sample& sample){
     return dbn.activation_probabilities(sample);
 }
 
@@ -111,7 +111,8 @@ template<typename DBN, typename Samples, typename Labels>
 void make_problem(DBN& dbn, const Samples& training_data, const Labels& labels){
     auto n_samples = training_data.size();
 
-    std::vector<etl::dyn_vector<double>> svm_samples;
+    using svm_samples_t = std::vector<etl::dyn_vector<typename DBN::weight>>;
+    svm_samples_t svm_samples;
 
     //Get all the activation probabilities
     for(std::size_t i = 0; i < n_samples; ++i){
@@ -119,12 +120,12 @@ void make_problem(DBN& dbn, const Samples& training_data, const Labels& labels){
     }
 
     //static_cast ensure using the correct overload
-    dbn.problem = svm::make_problem(labels, static_cast<const std::vector<etl::dyn_vector<double>>&>(svm_samples));
+    dbn.problem = svm::make_problem(labels, static_cast<const svm_samples_t&>(svm_samples));
 }
 
 template<typename DBN, typename Iterator, typename LIterator>
 void make_problem(DBN& dbn, Iterator first, Iterator last, LIterator&& lfirst, LIterator&& llast){
-    std::vector<etl::dyn_vector<double>> svm_samples;
+    std::vector<etl::dyn_vector<typename DBN::weight>> svm_samples;
 
     //Get all the activation probabilities
     auto it = first;

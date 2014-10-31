@@ -126,8 +126,8 @@ struct rbm : public normal_rbm<rbm<Desc>, Desc> {
             cpp_unreachable("Invalid path");
         }
 
-        //TODO nan_check_deep(h_a);
-        //TODO nan_check_deep(h_s);
+        nan_check_deep(h_a);
+        nan_check_deep(h_s);
     }
 
     template<typename H, typename V>
@@ -156,8 +156,8 @@ struct rbm : public normal_rbm<rbm<Desc>, Desc> {
             cpp_unreachable("Invalid path");
         }
 
-        //TODO nan_check_deep(v_a);
-        //TODO nan_check_deep(v_s);
+        nan_check_deep(v_a);
+        nan_check_deep(v_s);
     }
 };
 

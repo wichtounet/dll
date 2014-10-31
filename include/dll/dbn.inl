@@ -157,7 +157,7 @@ struct dbn {
      */
     template<typename Iterator>
     void pretrain(Iterator first, Iterator last, std::size_t max_epochs){
-        using training_t = std::vector<etl::dyn_vector<typename std::iterator_traits<Iterator>::value_type::value_type>>;
+        using training_t = std::vector<etl::dyn_vector<weight>>;
 
         using watcher_t = typename desc::template watcher_t<this_type>;
 
@@ -235,7 +235,7 @@ struct dbn {
         cpp_assert(std::distance(first, last) == std::distance(lfirst, llast), "There must be the same number of values than labels");
         cpp_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
-        using training_t = std::vector<etl::dyn_vector<typename std::iterator_traits<Iterator>::value_type::value_type>>;
+        using training_t = std::vector<etl::dyn_vector<weight>>;
 
         //Convert data to an useful form
         training_t data;
