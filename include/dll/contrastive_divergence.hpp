@@ -282,11 +282,6 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
             rbm.activate_hidden(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.ht(i));
         }
 
-        if(Persistent){
-            t.p_h_a(i) = t.h2_a(i);
-            t.p_h_s(i) = t.h2_s(i);
-        }
-
         t.w_grad_b(i) = mmul(reshape_nv1(rbm, t.v1(i)), reshape_1nh(rbm, t.h1_a(i)), t1(i))
                       - mmul(reshape_nv1(rbm, t.v2_a(i)), reshape_1nh(rbm, t.h2_a(i)), t2(i));
         t.b_grad_b(i) = t.h1_a(i) - t.h2_a(i);
@@ -294,6 +289,9 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
     });
 
     if(Persistent){
+        t.p_h_a = t.h2_a;
+        t.p_h_s = t.h2_s;
+
         t.init = false;
     }
 
@@ -357,11 +355,6 @@ void train_convolutional(const dll::batch<T>& batch, rbm_training_context& conte
             rbm.activate_hidden(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
         }
 
-        if(Persistent){
-            t.p_h_a(i) = t.h2_a(i);
-            t.p_h_s(i) = t.h2_s(i);
-        }
-
         //Compute gradients
 
         for(std::size_t channel = 0; channel < NC; ++channel){
@@ -382,6 +375,9 @@ void train_convolutional(const dll::batch<T>& batch, rbm_training_context& conte
     });
 
     if(Persistent){
+        t.p_h_a = t.h2_a;
+        t.p_h_s = t.h2_s;
+
         t.init = false;
     }
 
