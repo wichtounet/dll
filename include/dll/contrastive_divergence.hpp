@@ -135,6 +135,91 @@ void update_weights_normal(RBM& rbm, Trainer& t){
     nan_check_deep_3(rbm.w, rbm.b, rbm.c);
 }
 
+template<typename RBM, typename Trainer>
+void update_weights_convolutional(RBM& rbm, Trainer& t){
+    using rbm_t = RBM;
+    using weight = typename rbm_t::weight;
+
+    constexpr const auto K = rbm_t::K;
+
+    //Penalty to be applied to weights and hidden biases
+    weight w_penalty = 0.0;
+    weight h_penalty = 0.0;
+    weight v_penalty = 0.0;
+
+    //Global sparsity method
+    if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET){
+        auto decay_rate = rbm.decay_rate;
+        auto p = rbm.sparsity_target;
+        auto cost = rbm.sparsity_cost;
+
+        t.q_global_t = decay_rate * t.q_global_t + (1.0 - decay_rate) * t.q_global_batch;
+
+        w_penalty = h_penalty = cost * (t.q_global_t - p);
+    }
+
+    //Apply L1/L2 regularization and penalties to the biases
+
+    t.update_grad(t.w_grad, rbm.w, rbm, w_decay(rbm_traits<rbm_t>::decay()), w_penalty);
+    t.update_grad(t.b_grad, rbm.b, rbm, b_decay(rbm_traits<rbm_t>::decay()), h_penalty);
+    t.update_grad(t.c_grad, rbm.c, rbm, b_decay(rbm_traits<rbm_t>::decay()), v_penalty);
+
+    //Local sparsity method
+    if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
+        auto decay_rate = rbm.decay_rate;
+        auto p = rbm.sparsity_target;
+        auto cost = rbm.sparsity_cost;
+
+        t.q_local_t = decay_rate * t.q_local_t + (1.0 - decay_rate) * t.q_local_batch;
+        t.q_local_penalty = cost * (t.q_local_t - p);
+
+        for(std::size_t k = 0; k < K; ++k){
+            //TODO Ideally, the loop should be removed and the
+            //update be done diretly on the base matrix
+
+            //????
+            auto h_k_penalty = sum(t.q_local_penalty(k));
+            t.w_grad(k) -= h_k_penalty;
+            t.b_grad(k) -= h_k_penalty;
+        }
+    }
+
+    if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LEE){
+        t.w_grad -= rbm.pbias_lambda * t.w_bias;
+        t.b_grad -= rbm.pbias_lambda * t.b_bias;
+        t.c_grad -= rbm.pbias_lambda * t.c_bias;
+    }
+
+    //Apply momentum and learning rate
+    if(rbm_traits<rbm_t>::has_momentum()){
+        auto momentum = rbm.momentum;
+        auto eps = rbm.learning_rate;
+
+        t.w_inc = momentum * t.w_inc + eps * t.w_grad;
+        t.b_inc = momentum * t.b_inc + eps * t.b_grad;
+        t.c_inc = momentum * t.c_inc + eps * t.c_grad;
+    }
+    //Apply learning rate
+    else {
+        auto eps = rbm.learning_rate;
+
+        t.w_grad *= eps;
+        t.b_grad *= eps;
+        t.c_grad *= eps;
+    }
+
+    //Update the weights and biases
+    //with the final gradients (if not momentum, these are the real gradients)
+    rbm.w += t.get_fgrad(t.w_grad, t.w_inc);
+    rbm.b += t.get_fgrad(t.b_grad, t.b_inc);
+    rbm.c += t.get_fgrad(t.c_grad, t.c_inc);
+
+    //Check for NaN
+    nan_check_deep(rbm.w);
+    nan_check_deep(rbm.b);
+    nan_check_deep(rbm.c);
+}
+
 /*!
  * \brief Base class for all Contrastive Divergence Trainer.
  *
@@ -367,82 +452,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
     }
 
     void update_weights(RBM& rbm){
-        //Penalty to be applied to weights and hidden biases
-        weight w_penalty = 0.0;
-        weight h_penalty = 0.0;
-        weight v_penalty = 0.0;
-
-        //Global sparsity method
-        if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET){
-            auto decay_rate = rbm.decay_rate;
-            auto p = rbm.sparsity_target;
-            auto cost = rbm.sparsity_cost;
-
-            q_global_t = decay_rate * q_global_t + (1.0 - decay_rate) * q_global_batch;
-
-            w_penalty = h_penalty = cost * (q_global_t - p);
-        }
-
-        //Apply L1/L2 regularization and penalties to the biases
-
-        base_trainer<RBM>::update_grad(w_grad, rbm.w, rbm, w_decay(rbm_traits<rbm_t>::decay()), w_penalty);
-        base_trainer<RBM>::update_grad(b_grad, rbm.b, rbm, b_decay(rbm_traits<rbm_t>::decay()), h_penalty);
-        base_trainer<RBM>::update_grad(c_grad, rbm.c, rbm, b_decay(rbm_traits<rbm_t>::decay()), v_penalty);
-
-        //Local sparsity method
-        if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
-            auto decay_rate = rbm.decay_rate;
-            auto p = rbm.sparsity_target;
-            auto cost = rbm.sparsity_cost;
-
-            q_local_t = decay_rate * q_local_t + (1.0 - decay_rate) * q_local_batch;
-            q_local_penalty = cost * (q_local_t - p);
-
-            for(std::size_t k = 0; k < K; ++k){
-                //TODO Ideally, the loop should be removed and the
-                //update be done diretly on the base matrix
-
-                //????
-                auto h_k_penalty = sum(q_local_penalty(k));
-                w_grad(k) -= h_k_penalty;
-                b_grad(k) -= h_k_penalty;
-            }
-        }
-
-        if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LEE){
-            w_grad -= rbm.pbias_lambda * w_bias;
-            b_grad -= rbm.pbias_lambda * b_bias;
-            c_grad -= rbm.pbias_lambda * c_bias;
-        }
-
-        //Apply momentum and learning rate
-        if(rbm_traits<rbm_t>::has_momentum()){
-            auto momentum = rbm.momentum;
-            auto eps = rbm.learning_rate;
-
-            w_inc = momentum * w_inc + eps * w_grad;
-            b_inc = momentum * b_inc + eps * b_grad;
-            c_inc = momentum * c_inc + eps * c_grad;
-        }
-        //Apply learning rate
-        else {
-            auto eps = rbm.learning_rate;
-
-            w_grad *= eps;
-            b_grad *= eps;
-            c_grad *= eps;
-        }
-
-        //Update the weights and biases
-        //with the final gradients (if not momentum, these are the real gradients)
-        rbm.w += base_trainer<rbm_t>::get_fgrad(w_grad, w_inc);
-        rbm.b += base_trainer<rbm_t>::get_fgrad(b_grad, b_inc);
-        rbm.c += base_trainer<rbm_t>::get_fgrad(c_grad, c_inc);
-
-        //Check for NaN
-        nan_check_deep(rbm.w);
-        nan_check_deep(rbm.b);
-        nan_check_deep(rbm.c);
+        update_weights_convolutional(rbm, *this);
     }
 };
 
