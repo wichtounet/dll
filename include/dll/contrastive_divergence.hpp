@@ -327,17 +327,9 @@ void train_convolutional(const dll::batch<T>& batch, rbm_training_context& conte
     cpp_assert(batch.begin()->size() == input_size(rbm), "The size of the training sample must match visible units");
 
     using rbm_t = RBM;
-    using weight = typename rbm_t::weight;
 
     constexpr const auto K = rbm_t::K;
     constexpr const auto NC = rbm_t::NC;
-
-    //Size of a minibatch
-    auto n_samples = static_cast<weight>(batch.size());
-
-    if(rbm_traits<rbm_t>::bias_mode() == bias_mode::SIMPLE){
-        t.b_bias = 0.0;
-    }
 
     maybe_parallel_foreach_i(t.pool, batch.begin(), batch.end(), [&](const auto& items, std::size_t i){
         t.v1(i) = items;
@@ -387,16 +379,7 @@ void train_convolutional(const dll::batch<T>& batch, rbm_training_context& conte
         }
 
         t.c_grad_b(i) = t.v1(i) - t.v2_a(i);
-
-        //Compute the biases for sparsity
-        if(rbm_traits<rbm_t>::bias_mode() == bias_mode::SIMPLE){
-            for(std::size_t k = 0; k < K; ++k){
-                t.b_bias(k) += mean(t.h2_a(i)(k));
-            }
-        }
     });
-
-    context.reconstruction_error += mean((t.v1 - t.v2_a) * (t.v1 - t.v2_a));
 
     if(Persistent){
         t.init = false;
@@ -418,12 +401,17 @@ void train_convolutional(const dll::batch<T>& batch, rbm_training_context& conte
         t.q_local_batch = mean_l(t.h2_a);
     }
 
+    //Compute the biases for sparsity
+
     if(rbm_traits<rbm_t>::bias_mode() == bias_mode::SIMPLE){
-        t.b_bias = t.b_bias / n_samples - rbm.pbias;
+        t.b_bias = mean_r(mean_l(t.h2_a)) - rbm.pbias;
     }
 
     //Accumulate the sparsity
     context.sparsity += t.q_global_batch;
+
+    //Accumulate the error
+    context.reconstruction_error += mean((t.v1 - t.v2_a) * (t.v1 - t.v2_a));
 
     //Update the weights and biases based on the gradients
     t.update(rbm);
