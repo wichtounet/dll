@@ -63,7 +63,7 @@ struct base_trainer {
 };
 
 template<typename RBM, typename Trainer>
-void update_weights_normal(RBM& rbm, Trainer& t){
+void update_normal(RBM& rbm, Trainer& t){
     using rbm_t = RBM;
 
     //Penalty to be applied to weights and hidden biases
@@ -136,7 +136,7 @@ void update_weights_normal(RBM& rbm, Trainer& t){
 }
 
 template<typename RBM, typename Trainer>
-void update_weights_convolutional(RBM& rbm, Trainer& t){
+void update_convolutional(RBM& rbm, Trainer& t){
     using rbm_t = RBM;
     using weight = typename rbm_t::weight;
 
@@ -223,7 +223,7 @@ void update_weights_convolutional(RBM& rbm, Trainer& t){
 /*!
  * \brief Base class for all Contrastive Divergence Trainer.
  *
- * This class provides update_weights which applies the gradients to the RBM.
+ * This class provides update which applies the gradients to the RBM.
  */
 template<typename RBM, typename Enable = void>
 struct base_cd_trainer : base_trainer<RBM> {
@@ -290,15 +290,15 @@ struct base_cd_trainer : base_trainer<RBM> {
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
-    void update_weights(RBM& rbm){
-        update_weights_normal(rbm, *this);
+    void update(RBM& rbm){
+        update_normal(rbm, *this);
     }
 };
 
 /*!
  * \brief Base class for all Contrastive Divergence Trainer.
  *
- * This class provides update_weights which applies the gradients to the RBM.
+ * This class provides update which applies the gradients to the RBM.
  */
 template<typename RBM>
 struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : base_trainer<RBM> {
@@ -382,15 +382,15 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
-    void update_weights(RBM& rbm){
-        update_weights_normal(rbm, *this);
+    void update(RBM& rbm){
+        update_normal(rbm, *this);
     }
 };
 
 /*!
  * \brief Specialization of base_cd_trainer for Convolutional RBM.
  *
- * This class provides update_weights which applies the gradients to the RBM.
+ * This class provides update which applies the gradients to the RBM.
  */
 template<typename RBM>
 struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()>> : base_trainer<RBM> {
@@ -451,8 +451,8 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
-    void update_weights(RBM& rbm){
-        update_weights_convolutional(rbm, *this);
+    void update(RBM& rbm){
+        update_convolutional(rbm, *this);
     }
 };
 
@@ -547,7 +547,7 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
     context.sparsity += t.q_global_batch;
 
     //Update the weights and biases based on the gradients
-    t.update_weights(rbm);
+    t.update(rbm);
 }
 
 template<bool Persistent, std::size_t N, typename Trainer, typename T, typename RBM>
@@ -686,7 +686,7 @@ void train_convolutional(const dll::batch<T>& batch, rbm_training_context& conte
     context.sparsity += t.q_global_batch;
 
     //Update the weights and biases based on the gradients
-    t.update_weights(rbm);
+    t.update(rbm);
 }
 
 /*!
