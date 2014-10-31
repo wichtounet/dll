@@ -365,12 +365,7 @@ void train_convolutional(const dll::batch<T>& batch, rbm_training_context& conte
         }
 
         t.w_grad_b(i) = t.w_pos(i) - t.w_neg(i);
-
-        for(std::size_t k = 0; k < K; ++k){
-            //TODO Find if mean or sum
-            t.b_grad_b(i)(k) = sum(t.h1_a(i)(k) - t.h2_a(i)(k));
-        }
-
+        t.b_grad_b(i) = sum_r(t.h1_a(i) - t.h2_a(i)); //TODO Find if mean or sum
         t.c_grad_b(i) = t.v1(i) - t.v2_a(i);
     });
 
