@@ -352,13 +352,7 @@ void train_convolutional(const dll::batch<T>& batch, rbm_training_context& conte
         t.b_bias = 0.0;
     }
 
-    auto it = batch.begin();
-    auto end = batch.end();
-
-    std::size_t i = 0;
-    while(it != end){
-        auto& items = *it;
-
+    maybe_parallel_foreach_i(t.pool, batch.begin(), batch.end(), [&](const auto& items, std::size_t i){
         rbm.v1 = items;
 
         //First step
@@ -421,10 +415,7 @@ void train_convolutional(const dll::batch<T>& batch, rbm_training_context& conte
                 t.b_bias(k) += mean(rbm.h2_a(k));
             }
         }
-
-        ++it;
-        ++i;
-    }
+    });
 
     if(Persistent){
         t.init = false;
@@ -678,6 +669,8 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
 
     //}}} Sparsity biases end
 
+    thread_pool pool;
+
     template<bool M = rbm_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
     base_cd_trainer(rbm_t&) :
             q_global_t(0.0), q_local_t(0.0),
@@ -793,6 +786,8 @@ struct cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()>>
 
     etl::fast_matrix<weight, batch_size, K, NH, NH> p_h_a;
     etl::fast_matrix<weight, batch_size, K, NH, NH> p_h_s;
+
+    thread_pool pool;
 
     cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm) {
         //Nothing else to init here
