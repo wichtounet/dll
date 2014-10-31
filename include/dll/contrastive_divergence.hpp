@@ -339,7 +339,7 @@ void train_convolutional(const dll::batch<T>& batch, rbm_training_context& conte
     //Clear the gradients
     t.w_grad = 0.0;
     t.b_grad = 0.0;
-    t.c_grad_org = 0.0;
+    t.c_grad = 0.0;
 
     //Reset mean activation probability if necessary
     t.q_global_batch = 0.0;
@@ -392,14 +392,14 @@ void train_convolutional(const dll::batch<T>& batch, rbm_training_context& conte
             }
         }
 
-        t.w_grad += t.w_pos - t.w_neg;
+        t.w_grad_b(i) = t.w_pos - t.w_neg;
 
         for(std::size_t k = 0; k < K; ++k){
             //TODO Find if mean or sum
-            t.b_grad(k) += sum(rbm.h1_a(k) - rbm.h2_a(k));
+            t.b_grad_b(i)(k) = sum(rbm.h1_a(k) - rbm.h2_a(k));
         }
 
-        t.c_grad_org += rbm.v1 - rbm.v2_a;
+        t.c_grad_b(i) = rbm.v1 - rbm.v2_a;
 
         context.reconstruction_error += mean((rbm.v1 - rbm.v2_a) * (rbm.v1 - rbm.v2_a));
 
@@ -422,15 +422,13 @@ void train_convolutional(const dll::batch<T>& batch, rbm_training_context& conte
     }
 
     //Keep only the mean of the gradients
-    t.w_grad /= n_samples;
-    t.b_grad /= n_samples;
-    t.c_grad_org /= n_samples;
+    t.w_grad = mean_l(t.w_grad_b);
+    t.b_grad = mean_l(t.b_grad_b);
+    t.c_grad = mean_r(mean_l(t.c_grad_b));
 
     nan_check_deep(t.w_grad);
     nan_check_deep(t.b_grad);
-    nan_check_deep(t.c_grad_org);
-
-    t.c_grad = mean(t.c_grad_org);
+    nan_check_deep(t.c_grad);
 
     //Compute the mean activation probabilities
     t.q_global_batch /= n_samples * K * NH * NH;
@@ -650,7 +648,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
     //Batch Gradients
     etl::fast_matrix<weight, batch_size, NC, K, NW, NW> w_grad_b;  //Gradients of shared weights
     etl::fast_matrix<weight, batch_size, K> b_grad_b;              //Gradients of hidden biases bk
-    etl::fast_matrix<weight, batch_size, NC> c_grad_b;             //Visible gradient
+    etl::fast_matrix<weight, batch_size, NC, NV, NV> c_grad_b;     //Visible gradient
 
     //Reduced Gradients
     etl::fast_matrix<weight, NC, K, NW, NW> w_grad;  //Gradients of shared weights
@@ -686,8 +684,6 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
 
     etl::fast_matrix<weight, batch_size, K, NH, NH> p_h_a;
     etl::fast_matrix<weight, batch_size, K, NH, NH> p_h_s;
-
-    etl::fast_matrix<weight, NC, NV, NV> c_grad_org;
 
     etl::fast_matrix<weight, NC, K, NW, NW> w_pos;
     etl::fast_matrix<weight, NC, K, NW, NW> w_neg;
