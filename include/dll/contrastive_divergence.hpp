@@ -511,6 +511,9 @@ struct base_cd_trainer : base_trainer<RBM> {
 
     //}}} Sparsity end
 
+    etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_a;
+    etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_s;
+
     thread_pool pool;
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
@@ -582,6 +585,9 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
 
     //}}} Sparsity end
 
+    etl::dyn_matrix<weight> p_h_a;
+    etl::dyn_matrix<weight> p_h_s;
+
     thread_pool pool;
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
@@ -595,7 +601,8 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
             w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
             w_inc(0,0), b_inc(0), c_inc(0),
             q_global_t(0.0),
-            q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden, static_cast<weight>(0.0)), q_local_penalty(rbm.num_hidden)
+            q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden, static_cast<weight>(0.0)), q_local_penalty(rbm.num_hidden),
+            p_h_a(get_batch_size(rbm), rbm.num_hidden), p_h_s(get_batch_size(rbm), rbm.num_hidden)
     {
         static_assert(!rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
@@ -610,7 +617,8 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
             w_grad_b(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden), b_grad_b(get_batch_size(rbm), rbm.num_hidden), c_grad_b(get_batch_size(rbm), rbm.num_visible),
             w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
             w_inc(rbm.num_visible, rbm.num_hidden, static_cast<weight>(0.0)), b_inc(rbm.num_hidden, static_cast<weight>(0.0)), c_inc(rbm.num_visible, static_cast<weight>(0.0)),
-            q_global_t(0.0), q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden, static_cast<weight>(0.0)), q_local_penalty(rbm.num_hidden)
+            q_global_t(0.0), q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden, static_cast<weight>(0.0)), q_local_penalty(rbm.num_hidden),
+            p_h_a(get_batch_size(rbm), rbm.num_hidden), p_h_s(get_batch_size(rbm), rbm.num_hidden)
     {
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
@@ -627,7 +635,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
  */
 template<typename RBM>
 struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()>> : base_trainer<RBM> {
-    typedef RBM rbm_t;
+    using rbm_t = RBM;
 
     static constexpr const auto K = rbm_t::K;
     static constexpr const auto NC = rbm_t::NC;
@@ -635,9 +643,16 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
     static constexpr const auto NH = rbm_t::NH;
     static constexpr const auto NW = rbm_t::NW;
 
+    static constexpr const auto batch_size = rbm_traits<rbm_t>::batch_size();
+
     typedef typename rbm_t::weight weight;
 
-    //Gradients
+    //Batch Gradients
+    etl::fast_matrix<weight, batch_size, NC, K, NW, NW> w_grad_b;  //Gradients of shared weights
+    etl::fast_matrix<weight, batch_size, K> b_grad_b;              //Gradients of hidden biases bk
+    etl::fast_matrix<weight, batch_size, NC> c_grad_b;             //Visible gradient
+
+    //Reduced Gradients
     etl::fast_matrix<weight, NC, K, NW, NW> w_grad;  //Gradients of shared weights
     etl::fast_vector<weight, K> b_grad;              //Gradients of hidden biases bk
     etl::fast_vector<weight, NC> c_grad;             //Visible gradient
@@ -668,6 +683,14 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
     etl::fast_vector<weight, NC> c_bias;
 
     //}}} Sparsity biases end
+
+    etl::fast_matrix<weight, batch_size, K, NH, NH> p_h_a;
+    etl::fast_matrix<weight, batch_size, K, NH, NH> p_h_s;
+
+    etl::fast_matrix<weight, NC, NV, NV> c_grad_org;
+
+    etl::fast_matrix<weight, NC, K, NW, NW> w_pos;
+    etl::fast_matrix<weight, NC, K, NW, NW> w_neg;
 
     thread_pool pool;
 
@@ -701,13 +724,7 @@ struct cd_trainer : base_cd_trainer<RBM> {
     using rbm_t = RBM;
     using weight = typename rbm_t::weight;
 
-    static constexpr const auto batch_size = rbm_traits<rbm_t>::batch_size();
-
     rbm_t& rbm;
-
-    //These fields are fake, just to avoid duplicating code and using TMP
-    etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_a;
-    etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_s;
 
     cd_trainer(rbm_t& rbm) : base_cd_trainer<rbm_t>(rbm), rbm(rbm) {
         //Nothing else to init here
@@ -715,8 +732,8 @@ struct cd_trainer : base_cd_trainer<RBM> {
 
     template<typename T>
     void train_batch(const dll::batch<T>& batch, rbm_training_context& context){
-        static etl::fast_matrix<weight, batch_size, rbm_t::num_visible, rbm_t::num_hidden> t1;
-        static etl::fast_matrix<weight, batch_size, rbm_t::num_visible, rbm_t::num_hidden> t2;
+        static etl::fast_matrix<weight, rbm_traits<rbm_t>::batch_size(), rbm_t::num_visible, rbm_t::num_hidden> t1;
+        static etl::fast_matrix<weight, rbm_traits<rbm_t>::batch_size(), rbm_t::num_visible, rbm_t::num_hidden> t2;
 
         train_normal<false, N>(batch, context, rbm, *this, t1, t2);
     }
@@ -738,11 +755,7 @@ struct cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : bas
 
     rbm_t& rbm;
 
-    //These fields are fake, just to avoid duplicating code and using TMP
-    etl::dyn_matrix<weight> p_h_a;
-    etl::dyn_matrix<weight> p_h_s;
-
-    cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm), p_h_a(1,1), p_h_s(1,1) {
+    cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm) {
         //Nothing else to init here
     }
 
@@ -767,27 +780,8 @@ struct cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()>>
     static_assert(N > 0, "CD-0 is not a valid training method");
 
     using rbm_t = RBM;
-    using weight = typename rbm_t::weight;
-
-    static constexpr const auto batch_size = rbm_traits<rbm_t>::batch_size();
-
-    using base_cd_trainer<rbm_t>::K;
-    using base_cd_trainer<rbm_t>::NW;
-    using base_cd_trainer<rbm_t>::NH;
-    using base_cd_trainer<rbm_t>::NV;
-    using base_cd_trainer<rbm_t>::NC;
-
-    etl::fast_matrix<weight, NC, NV, NV> c_grad_org;
-
-    etl::fast_matrix<weight, NC, K, NW, NW>  w_pos;
-    etl::fast_matrix<weight, NC, K, NW, NW>  w_neg;
 
     rbm_t& rbm;
-
-    etl::fast_matrix<weight, batch_size, K, NH, NH> p_h_a;
-    etl::fast_matrix<weight, batch_size, K, NH, NH> p_h_s;
-
-    thread_pool pool;
 
     cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm) {
         //Nothing else to init here
@@ -813,11 +807,6 @@ struct persistent_cd_trainer : base_cd_trainer<RBM> {
     typedef RBM rbm_t;
     typedef typename rbm_t::weight weight;
 
-    static constexpr const auto batch_size = rbm_traits<rbm_t>::batch_size();
-
-    etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_a;
-    etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_s;
-
     rbm_t& rbm;
 
     persistent_cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm) {
@@ -826,8 +815,8 @@ struct persistent_cd_trainer : base_cd_trainer<RBM> {
 
     template<typename T>
     void train_batch(const dll::batch<T>& batch, rbm_training_context& context){
-        static etl::fast_matrix<weight, batch_size, rbm_t::num_visible, rbm_t::num_hidden> t1;
-        static etl::fast_matrix<weight, batch_size, rbm_t::num_visible, rbm_t::num_hidden> t2;
+        static etl::fast_matrix<weight, rbm_traits<rbm_t>::batch_size(), rbm_t::num_visible, rbm_t::num_hidden> t1;
+        static etl::fast_matrix<weight, rbm_traits<rbm_t>::batch_size(), rbm_t::num_visible, rbm_t::num_hidden> t2;
 
         train_normal<true, K>(batch, context, rbm, *this, t1, t2);
     }
@@ -849,11 +838,7 @@ struct persistent_cd_trainer<K, RBM, std::enable_if_t<rbm_traits<RBM>::is_dynami
 
     rbm_t& rbm;
 
-    etl::dyn_matrix<weight> p_h_a;
-    etl::dyn_matrix<weight> p_h_s;
-
-    persistent_cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm),
-            p_h_a(get_batch_size(rbm), rbm.num_hidden), p_h_s(get_batch_size(rbm), rbm.num_hidden)  {
+    persistent_cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm){
         //Nothing else to init
     }
 
@@ -878,23 +863,6 @@ struct persistent_cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_convol
     static_assert(N > 0, "PCD-0 is not a valid training method");
 
     typedef RBM rbm_t;
-    typedef typename rbm_t::weight weight;
-
-    static constexpr const auto batch_size = rbm_traits<rbm_t>::batch_size();
-
-    using base_cd_trainer<rbm_t>::NC;
-    using base_cd_trainer<rbm_t>::NW;
-    using base_cd_trainer<rbm_t>::NH;
-    using base_cd_trainer<rbm_t>::NV;
-    using base_cd_trainer<rbm_t>::K;
-
-    etl::fast_matrix<weight, NC, NV, NV> c_grad_org;
-
-    etl::fast_matrix<weight, NC, K, NW, NW> w_pos;
-    etl::fast_matrix<weight, NC, K, NW, NW> w_neg;
-
-    etl::fast_matrix<weight, batch_size, K, NH, NH> p_h_a;
-    etl::fast_matrix<weight, batch_size, K, NH, NH> p_h_s;
 
     rbm_t& rbm;
 
