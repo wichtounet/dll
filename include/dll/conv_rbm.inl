@@ -123,8 +123,8 @@ struct conv_rbm : public rbm_base<Desc> {
         binary_load(is, c);
     }
 
-    template<typename H, typename V>
-    void activate_hidden(H& h_a, H& h_s, const V& v_a, const V&){
+    template<typename H1, typename H2, typename V1, typename V2>
+    void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2&){
         using namespace etl;
 
         v_cv(NC) = 0;
@@ -157,8 +157,8 @@ struct conv_rbm : public rbm_base<Desc> {
         nan_check_deep(h_s);
     }
 
-    template<typename H, typename V>
-    void activate_visible(const H&, const H& h_s, V& v_a, V& v_s){
+    template<typename H1, typename H2, typename V1, typename V2>
+    void activate_visible(const H1&, const H2& h_s, V1&& v_a, V2&& v_s){
         using namespace etl;
 
         for(std::size_t channel = 0; channel < NC; ++channel){
