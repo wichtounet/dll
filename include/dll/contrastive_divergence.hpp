@@ -124,6 +124,7 @@ void update_normal(RBM& rbm, Trainer& t){
 
         t.b_grad -= t.q_local_penalty;
 
+        //TODO This loop should be removed (needs etl::rep_l)
         for(std::size_t i = 0; i < num_hidden(rbm); ++i){
             for(std::size_t j = 0; j < num_visible(rbm); ++j){
                 t.w_grad(j, i) -= t.q_local_penalty(i);
@@ -164,7 +165,8 @@ void update_convolutional(RBM& rbm, Trainer& t){
     using rbm_t = RBM;
     using weight = typename rbm_t::weight;
 
-    constexpr const auto K = rbm_t::K;
+    constexpr const auto NC = rbm_t::NC;
+    constexpr const auto NW = rbm_t::NW;
 
     //Penalty to be applied to weights and hidden biases
     weight w_penalty = 0.0;
@@ -197,14 +199,14 @@ void update_convolutional(RBM& rbm, Trainer& t){
         t.q_local_t = decay_rate * t.q_local_t + (1.0 - decay_rate) * t.q_local_batch;
         t.q_local_penalty = cost * (t.q_local_t - p);
 
-        for(std::size_t k = 0; k < K; ++k){
-            //TODO Ideally, the loop should be removed and the
-            //update be done diretly on the base matrix
+        t.b_grad -= sum_r(t.q_local_penalty);
 
-            //????
-            auto h_k_penalty = sum(t.q_local_penalty(k));
-            t.w_grad(k) -= h_k_penalty;
-            t.b_grad(k) -= h_k_penalty;
+        //TODO Ideally, the loop should be removed and the
+        //update be done diretly on the base matrix (need rep_l)
+
+        auto k_penalty = etl::rep<NW, NW>(sum_r(t.q_local_penalty));
+        for(std::size_t channel = 0; channel < NC; ++channel){
+            t.w_grad(channel) = t.w_grad(channel) -= k_penalty;
         }
     }
 
