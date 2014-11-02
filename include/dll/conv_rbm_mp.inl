@@ -36,9 +36,7 @@ namespace dll {
  */
 template<typename Desc>
 struct conv_rbm_mp : public rbm_base<Desc> {
-    typedef double weight;
-    typedef double value_t;
-
+    using weight = double;
     using desc = Desc;
     using this_type = conv_rbm_mp<desc>;
 
