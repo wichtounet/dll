@@ -330,7 +330,7 @@ void train_convolutional(const dll::batch<T>& batch, rbm_training_context& conte
         t.v1(i) = items;
 
         //First step
-        rbm.activate_hidden(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i));
+        rbm.activate_hidden(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i), t.v_cv(i));
 
         if(Persistent && t.init){
             t.p_h_a(i) = t.h1_a(i);
@@ -339,17 +339,17 @@ void train_convolutional(const dll::batch<T>& batch, rbm_training_context& conte
 
         //CD-1
         if(Persistent){
-            rbm.activate_visible(t.p_h_a(i), t.p_h_s(i), t.v2_a(i), t.v2_s(i));
-            rbm.activate_hidden(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
+            rbm.activate_visible(t.p_h_a(i), t.p_h_s(i), t.v2_a(i), t.v2_s(i), t.h_cv(i));
+            rbm.activate_hidden(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.v_cv(i));
         } else {
-            rbm.activate_visible(t.h1_a(i), t.h1_s(i), t.v2_a(i), t.v2_s(i));
-            rbm.activate_hidden(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
+            rbm.activate_visible(t.h1_a(i), t.h1_s(i), t.v2_a(i), t.v2_s(i), t.h_cv(i));
+            rbm.activate_hidden(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.v_cv(i));
         }
 
         //CD-k
         for(std::size_t k = 1; k < N; ++k){
-            rbm.activate_visible(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
-            rbm.activate_hidden(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
+            rbm.activate_visible(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.h_cv(i));
+            rbm.activate_hidden(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.v_cv(i));
         }
 
         //Compute gradients
@@ -614,6 +614,9 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
     etl::fast_vector<weight, NC> c_bias;
 
     //}}} Sparsity biases end
+
+    etl::fast_matrix<weight, batch_size, NC+1, K, NH, NH> v_cv;
+    etl::fast_matrix<weight, batch_size, K+1, NV, NV> h_cv;
 
     etl::fast_matrix<weight, batch_size, K, NH, NH> p_h_a;
     etl::fast_matrix<weight, batch_size, K, NH, NH> p_h_s;

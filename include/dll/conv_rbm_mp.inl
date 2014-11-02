@@ -134,7 +134,17 @@ struct conv_rbm_mp : public rbm_base<Desc> {
     }
 
     template<typename H1, typename H2, typename V1, typename V2>
-    void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2&){
+    void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& v_s){
+        activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, v_cv);
+    }
+
+    template<typename H1, typename H2, typename V1, typename V2>
+    void activate_visible(const H1& h_a, const H2& h_s, V1&& v_a, V2&& v_s){
+        activate_visible(h_a, h_s, std::forward<V1>(v_a), std::forward<V2>(v_s), h_cv);
+    }
+
+    template<typename H1, typename H2, typename V1, typename V2, typename VCV>
+    void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2&, VCV&& v_cv){
         v_cv(NC) = 0;
 
         for(std::size_t channel = 0; channel < NC; ++channel){
@@ -165,8 +175,8 @@ struct conv_rbm_mp : public rbm_base<Desc> {
         nan_check_deep(h_s);
     }
 
-    template<typename H1, typename H2, typename V1, typename V2>
-    void activate_visible(const H1&, const H2& h_s, V1&& v_a, V2&& v_s){
+    template<typename H1, typename H2, typename V1, typename V2, typename HCV>
+    void activate_visible(const H1&, const H2& h_s, V1&& v_a, V2&& v_s, HCV&& h_cv){
         using namespace etl;
 
         for(std::size_t channel = 0; channel < NC; ++channel){
