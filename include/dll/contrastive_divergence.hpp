@@ -124,7 +124,6 @@ void update_normal(RBM& rbm, Trainer& t){
 
         t.b_grad -= q_local_penalty;
 
-        //TODO This loop should be removed (needs etl::rep_l)
         for(std::size_t i = 0; i < num_hidden(rbm); ++i){
             for(std::size_t j = 0; j < num_visible(rbm); ++j){
                 t.w_grad(j, i) -= q_local_penalty(i);
@@ -202,12 +201,9 @@ void update_convolutional(RBM& rbm, Trainer& t){
 
         t.b_grad -= sum_r(q_local_penalty);
 
-        //TODO Ideally, the loop should be removed and the
-        //update be done diretly on the base matrix (need rep_l)
-
         auto k_penalty = etl::rep<NW, NW>(sum_r(q_local_penalty));
         for(std::size_t channel = 0; channel < NC; ++channel){
-            t.w_grad(channel) = t.w_grad(channel) -= k_penalty;
+            t.w_grad(channel) = t.w_grad(channel) - k_penalty;
         }
     }
 
