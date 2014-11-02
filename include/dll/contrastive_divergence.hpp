@@ -120,14 +120,14 @@ void update_normal(RBM& rbm, Trainer& t){
 
         t.q_local_t = decay_rate * t.q_local_t + (1.0 - decay_rate) * t.q_local_batch;
 
-        t.q_local_penalty = cost * (t.q_local_t - p);
+        auto q_local_penalty = cost * (t.q_local_t - p);
 
-        t.b_grad -= t.q_local_penalty;
+        t.b_grad -= q_local_penalty;
 
         //TODO This loop should be removed (needs etl::rep_l)
         for(std::size_t i = 0; i < num_hidden(rbm); ++i){
             for(std::size_t j = 0; j < num_visible(rbm); ++j){
-                t.w_grad(j, i) -= t.q_local_penalty(i);
+                t.w_grad(j, i) -= q_local_penalty(i);
             }
         }
     }
@@ -197,14 +197,15 @@ void update_convolutional(RBM& rbm, Trainer& t){
         auto cost = rbm.sparsity_cost;
 
         t.q_local_t = decay_rate * t.q_local_t + (1.0 - decay_rate) * t.q_local_batch;
-        t.q_local_penalty = cost * (t.q_local_t - p);
 
-        t.b_grad -= sum_r(t.q_local_penalty);
+        auto q_local_penalty = cost * (t.q_local_t - p);
+
+        t.b_grad -= sum_r(q_local_penalty);
 
         //TODO Ideally, the loop should be removed and the
         //update be done diretly on the base matrix (need rep_l)
 
-        auto k_penalty = etl::rep<NW, NW>(sum_r(t.q_local_penalty));
+        auto k_penalty = etl::rep<NW, NW>(sum_r(q_local_penalty));
         for(std::size_t channel = 0; channel < NC; ++channel){
             t.w_grad(channel) = t.w_grad(channel) -= k_penalty;
         }
@@ -467,7 +468,6 @@ struct base_cd_trainer : base_trainer<RBM> {
 
     etl::fast_matrix<weight, num_hidden> q_local_batch;
     etl::fast_vector<weight, num_hidden> q_local_t;
-    etl::fast_vector<weight, num_hidden> q_local_penalty;
 
     //}}} Sparsity end
 
@@ -541,7 +541,6 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
 
     etl::dyn_vector<weight> q_local_batch;
     etl::dyn_vector<weight> q_local_t;
-    etl::dyn_vector<weight> q_local_penalty;
 
     //}}} Sparsity end
 
@@ -561,7 +560,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
             w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
             w_inc(0,0), b_inc(0), c_inc(0),
             q_global_t(0.0),
-            q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden, static_cast<weight>(0.0)), q_local_penalty(rbm.num_hidden),
+            q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden, static_cast<weight>(0.0)), 
             p_h_a(get_batch_size(rbm), rbm.num_hidden), p_h_s(get_batch_size(rbm), rbm.num_hidden)
     {
         static_assert(!rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
@@ -577,7 +576,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
             w_grad_b(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden), b_grad_b(get_batch_size(rbm), rbm.num_hidden), c_grad_b(get_batch_size(rbm), rbm.num_visible),
             w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
             w_inc(rbm.num_visible, rbm.num_hidden, static_cast<weight>(0.0)), b_inc(rbm.num_hidden, static_cast<weight>(0.0)), c_inc(rbm.num_visible, static_cast<weight>(0.0)),
-            q_global_t(0.0), q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden, static_cast<weight>(0.0)), q_local_penalty(rbm.num_hidden),
+            q_global_t(0.0), q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden, static_cast<weight>(0.0)), 
             p_h_a(get_batch_size(rbm), rbm.num_hidden), p_h_s(get_batch_size(rbm), rbm.num_hidden)
     {
         static_assert(rbm_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
@@ -632,7 +631,6 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
 
     etl::fast_matrix<weight, K, NH, NH> q_local_batch;
     etl::fast_matrix<weight, K, NH, NH> q_local_t;
-    etl::fast_matrix<weight, K, NH, NH> q_local_penalty;
 
     //}}} Sparsity end
 
