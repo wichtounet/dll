@@ -281,10 +281,8 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
             rbm.activate_hidden(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.ht(i));
         }
 
-        t.w_grad_b(i) = mmul(reshape_nv1(rbm, t.v1(i)), reshape_1nh(rbm, t.h1_a(i)), t1(i))
-                      - mmul(reshape_nv1(rbm, t.v2_a(i)), reshape_1nh(rbm, t.h2_a(i)), t2(i));
-        t.b_grad_b(i) = t.h1_a(i) - t.h2_a(i);
-        t.c_grad_b(i) = t.v1(i) - t.v2_a(i);
+        mmul(reshape_nv1(rbm, t.v1(i)), reshape_1nh(rbm, t.h1_a(i)), t1(i));
+        mmul(reshape_nv1(rbm, t.v2_a(i)), reshape_1nh(rbm, t.h2_a(i)), t2(i));
     });
 
     if(Persistent){
@@ -296,10 +294,10 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
 
     context.reconstruction_error += mean((t.v1 - t.v2_a) * (t.v1 - t.v2_a));
 
-    //Keep only the mean of the gradients
-    t.w_grad = mean_l(t.w_grad_b);
-    t.b_grad = mean_l(t.b_grad_b);
-    t.c_grad = mean_l(t.c_grad_b);
+    //Compute the gradients
+    t.w_grad = mean_l(t1 - t2);
+    t.b_grad = mean_l(t.h1_a - t.h2_a);
+    t.c_grad = mean_l(t.v1 - t.v2_a);
 
     nan_check_deep_3(t.w_grad, t.b_grad, t.c_grad);
 
@@ -362,10 +360,6 @@ void train_convolutional(const dll::batch<T>& batch, rbm_training_context& conte
                 etl::convolve_2d_valid(t.v2_a(i)(channel), fflip(t.h2_a(i)(k)), t.w_neg(i)(channel)(k));
             }
         }
-
-        t.w_grad_b(i) = t.w_pos(i) - t.w_neg(i);
-        t.b_grad_b(i) = sum_r(t.h1_a(i) - t.h2_a(i)); //TODO Find if mean or sum
-        t.c_grad_b(i) = t.v1(i) - t.v2_a(i);
     });
 
     if(Persistent){
@@ -375,10 +369,10 @@ void train_convolutional(const dll::batch<T>& batch, rbm_training_context& conte
         t.init = false;
     }
 
-    //Keep only the mean of the gradients
-    t.w_grad = mean_l(t.w_grad_b);
-    t.b_grad = mean_l(t.b_grad_b);
-    t.c_grad = mean_r(mean_l(t.c_grad_b));
+    //Compute the gradients
+    t.w_grad = mean_l(t.w_pos - t.w_neg);
+    t.b_grad = mean_r(mean_l(t.h1_a - t.h2_a));
+    t.c_grad = mean_r(mean_l(t.v1 - t.v2_a));
 
     nan_check_deep(t.w_grad);
     nan_check_deep(t.b_grad);
@@ -439,12 +433,7 @@ struct base_cd_trainer : base_trainer<RBM> {
     etl::fast_matrix<weight, batch_size, 1, num_hidden> ht;
     etl::fast_matrix<weight, batch_size, num_visible, 1> vt;
 
-    //Batch Gradients
-    etl::fast_matrix<weight, batch_size, num_visible, num_hidden> w_grad_b;
-    etl::fast_matrix<weight, batch_size, num_hidden> b_grad_b;
-    etl::fast_matrix<weight, batch_size, num_visible> c_grad_b;
-
-    //Reduced Gradients
+    //Gradients
     etl::fast_matrix<weight, num_visible, num_hidden> w_grad;
     etl::fast_vector<weight, num_hidden> b_grad;
     etl::fast_vector<weight, num_visible> c_grad;
@@ -512,12 +501,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
     etl::dyn_matrix<weight, 3> ht;
     etl::dyn_matrix<weight, 3> vt;
 
-    //Batch Gradients
-    etl::dyn_matrix<weight, 3> w_grad_b;
-    etl::dyn_matrix<weight> b_grad_b;
-    etl::dyn_matrix<weight> c_grad_b;
-
-    //Reduced Gradients
+    //Gradients
     etl::dyn_matrix<weight> w_grad;
     etl::dyn_vector<weight> b_grad;
     etl::dyn_vector<weight> c_grad;
@@ -552,7 +536,6 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
             v2_a(get_batch_size(rbm), rbm.num_visible), v2_s(get_batch_size(rbm), rbm.num_visible),
             h2_a(get_batch_size(rbm), rbm.num_hidden), h2_s(get_batch_size(rbm), rbm.num_hidden),
             ht(get_batch_size(rbm), 1UL, rbm.num_hidden), vt(get_batch_size(rbm), rbm.num_visible, 1UL),
-            w_grad_b(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden), b_grad_b(get_batch_size(rbm), rbm.num_hidden), c_grad_b(get_batch_size(rbm), rbm.num_visible),
             w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
             w_inc(0,0), b_inc(0), c_inc(0),
             q_global_t(0.0),
@@ -569,7 +552,6 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
             v2_a(get_batch_size(rbm), rbm.num_visible), v2_s(get_batch_size(rbm), rbm.num_visible),
             h2_a(get_batch_size(rbm), rbm.num_hidden), h2_s(get_batch_size(rbm), rbm.num_hidden),
             ht(get_batch_size(rbm), 1UL, rbm.num_hidden), vt(get_batch_size(rbm), rbm.num_visible, 1UL),
-            w_grad_b(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden), b_grad_b(get_batch_size(rbm), rbm.num_hidden), c_grad_b(get_batch_size(rbm), rbm.num_visible),
             w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
             w_inc(rbm.num_visible, rbm.num_hidden, static_cast<weight>(0.0)), b_inc(rbm.num_hidden, static_cast<weight>(0.0)), c_inc(rbm.num_visible, static_cast<weight>(0.0)),
             q_global_t(0.0), q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden, static_cast<weight>(0.0)), 
@@ -602,12 +584,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
 
     typedef typename rbm_t::weight weight;
 
-    //Batch Gradients
-    etl::fast_matrix<weight, batch_size, NC, K, NW, NW> w_grad_b;  //Gradients of shared weights
-    etl::fast_matrix<weight, batch_size, K> b_grad_b;              //Gradients of hidden biases bk
-    etl::fast_matrix<weight, batch_size, NC, NV, NV> c_grad_b;     //Visible gradient
-
-    //Reduced Gradients
+    //Gradients
     etl::fast_matrix<weight, NC, K, NW, NW> w_grad;  //Gradients of shared weights
     etl::fast_vector<weight, K> b_grad;              //Gradients of hidden biases bk
     etl::fast_vector<weight, NC> c_grad;             //Visible gradient
