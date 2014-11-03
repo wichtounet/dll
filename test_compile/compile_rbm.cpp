@@ -13,6 +13,9 @@ void test_rbm(){
 
     std::vector<std::vector<double>> training;
     rbm.train(training, 10);
+
+    std::vector<double> sample;
+    rbm.reconstruct(sample);
 }
 
 template <typename RBM>
