@@ -40,11 +40,11 @@ struct is_valid <V, T1, Args...> :
 template<typename V>
 struct is_valid <V> : std::true_type {};
 
+//Since default template argument are not supported in partial class specialization, the following
+//three extractors are more complicated and need a second class to perform SFINAE
+
 template<typename D, typename... Args>
 struct get_value;
-
-//TODO Find an easier way to achieve that
-//Default template argument are not supported in partial class specialization :(
 
 template<typename D, typename T2, typename... Args>
 struct get_value<D, T2, Args...> {
