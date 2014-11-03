@@ -90,6 +90,13 @@ struct rbm_trainer {
             auto it = first;
             auto end = last;
 
+            if(rbm_traits<rbm_t>::has_shuffle()){
+                std::random_device rd;
+                std::mt19937_64 g(rd());
+
+                std::shuffle(it, end, g);
+            }
+
             std::size_t batches = 0;
             std::size_t samples = 0;
 
