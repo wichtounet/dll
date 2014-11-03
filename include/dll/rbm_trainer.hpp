@@ -61,12 +61,6 @@ struct rbm_trainer {
         //NOP
     }
 
-    //TODO This should be removed later
-    template<typename Samples>
-    typename rbm_t::weight train(RBM& rbm, const Samples& training_data, std::size_t max_epochs) const {
-        return train(rbm, training_data.begin(), training_data.end(), max_epochs);
-    }
-
     template<typename Iterator>
     typename rbm_t::weight train(RBM& rbm, Iterator first, Iterator last, std::size_t max_epochs) const {
         rbm.momentum = rbm.initial_momentum;
