@@ -459,3 +459,21 @@ TEST_CASE( "rbm/mnist_20", "rbm::simple_float" ) {
 
     REQUIRE(error < 3e-2);
 }
+
+TEST_CASE( "rbm/mnist_21", "rbm::shuffle" ) {
+    dll::rbm_desc<
+        28 * 28, 400,
+        dll::batch_size<48>,
+        dll::shuffle
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
+
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 10);
+
+    REQUIRE(error < 5e-2);
+}
