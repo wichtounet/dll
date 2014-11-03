@@ -29,6 +29,7 @@ struct dyn_rbm_desc {
     static constexpr const decay_type Decay = detail::get_value<weight_decay<decay_type::NONE>, Parameters...>::value;
     static constexpr const bool Init = detail::is_present<init_weights, Parameters...>::value;
     static constexpr const sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;
+    static constexpr const bool Shuffle = detail::is_present<shuffle, Parameters...>::value;
 
     /*! The type used to store the weights */
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::type;
@@ -47,7 +48,7 @@ struct dyn_rbm_desc {
     //Make sure only valid types are passed to the configuration list
     static_assert(
         detail::is_valid<detail::tmp_list<momentum_id, visible_id, hidden_id, weight_decay_id,
-              init_weights_id, sparsity_id, trainer_id, weight_type_id>, Parameters...>::value,
+              init_weights_id, sparsity_id, trainer_id, weight_type_id, shuffle_id>, Parameters...>::value,
         "Invalid parameters type");
 
     static_assert(Sparsity == sparsity_method::NONE || hidden_unit == unit_type::BINARY,

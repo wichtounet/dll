@@ -38,6 +38,7 @@ struct conv_rbm_mp_desc {
     static constexpr const decay_type Decay = detail::get_value<weight_decay<decay_type::NONE>, Parameters...>::value;
     static constexpr const sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;
     static constexpr const bias_mode Bias = detail::get_value<bias<bias_mode::SIMPLE>, Parameters...>::value;
+    static constexpr const bool Shuffle = detail::is_present<shuffle, Parameters...>::value;
 
     /*! The type used to store the weights */
     using weight = typename detail::get_type<weight_type<double>, Parameters...>::type;
@@ -65,7 +66,8 @@ struct conv_rbm_mp_desc {
     static_assert(
         detail::is_valid<detail::tmp_list<
                 momentum_id, batch_size_id, visible_id, hidden_id, pooling_id,
-                weight_decay_id, sparsity_id, trainer_id, watcher_id, bias_id, weight_type_id>
+                weight_decay_id, sparsity_id, trainer_id, watcher_id, bias_id,
+                weight_type_id, shuffle_id>
             , Parameters...>::value,
         "Invalid parameters type");
 
