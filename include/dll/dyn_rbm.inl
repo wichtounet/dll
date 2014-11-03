@@ -22,9 +22,8 @@ namespace dll {
  */
 template<typename Desc>
 struct dyn_rbm : public normal_rbm<dyn_rbm<Desc>, Desc> {
-    typedef float weight;
-
     using desc = Desc;
+    using weight = typename desc::weight;
 
     static constexpr const unit_type visible_unit = desc::visible_unit;
     static constexpr const unit_type hidden_unit = desc::hidden_unit;

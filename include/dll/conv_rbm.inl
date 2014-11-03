@@ -35,8 +35,8 @@ namespace dll {
  */
 template<typename Desc>
 struct conv_rbm : public rbm_base<Desc> {
-    using weight = double;
     using desc = Desc;
+    using weight = typename desc::weight;
     using this_type = conv_rbm<desc>;
 
     static constexpr const unit_type visible_unit = desc::visible_unit;

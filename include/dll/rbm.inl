@@ -25,9 +25,8 @@ namespace dll {
  */
 template<typename Desc>
 struct rbm : public normal_rbm<rbm<Desc>, Desc> {
-    typedef float weight;
-
     using desc = Desc;
+    using weight = typename desc::weight;
 
     static constexpr const std::size_t num_visible = desc::num_visible;
     static constexpr const std::size_t num_hidden = desc::num_hidden;

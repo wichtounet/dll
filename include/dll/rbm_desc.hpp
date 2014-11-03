@@ -34,6 +34,9 @@ struct rbm_desc {
     static constexpr const bool Init = detail::is_present<init_weights, Parameters...>::value;
     static constexpr const sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;
 
+    /*! The type used to store the weights */
+    using weight = typename detail::get_type<weight_type<float>, Parameters...>::type;
+
     /*! The type of the trainer to use to train the RBM */
     template <typename RBM>
     using trainer_t = typename detail::get_template_type<trainer<cd1_trainer_t>, Parameters...>::template type<RBM>;
@@ -51,7 +54,7 @@ struct rbm_desc {
     //Make sure only valid types are passed to the configuration list
     static_assert(
         detail::is_valid<detail::tmp_list<momentum_id, batch_size_id, visible_id, hidden_id, weight_decay_id,
-              init_weights_id, sparsity_id, trainer_id, watcher_id>, Parameters...>::value,
+              init_weights_id, sparsity_id, trainer_id, watcher_id, weight_type_id>, Parameters...>::value,
         "Invalid parameters type");
 
     static_assert(BatchSize > 0, "Batch size must be at least 1");

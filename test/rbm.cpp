@@ -423,3 +423,39 @@ TEST_CASE( "rbm/mnist_18", "rbm::fast" ) {
 
     REQUIRE(error < 5e-1);
 }
+
+TEST_CASE( "rbm/mnist_19", "rbm::simple_double" ) {
+    dll::rbm_desc<
+        28 * 28, 100,
+        dll::batch_size<25>,
+        dll::weight_type<double>
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
+
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 100);
+
+    REQUIRE(error < 3e-2);
+}
+
+TEST_CASE( "rbm/mnist_20", "rbm::simple_float" ) {
+    dll::rbm_desc<
+        28 * 28, 100,
+        dll::batch_size<25>,
+        dll::weight_type<float>
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
+
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 100);
+
+    REQUIRE(error < 3e-2);
+}
