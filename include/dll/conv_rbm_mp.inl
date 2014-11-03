@@ -224,7 +224,7 @@ struct conv_rbm_mp : public rbm_base<Desc> {
     }
 
     template<typename Samples, bool EnableWatcher = true, typename RW = void, typename... Args>
-    weight train(const Samples& training_data, std::size_t max_epochs, Args... args){
+    weight train(Samples& training_data, std::size_t max_epochs, Args... args){
         dll::rbm_trainer<this_type, EnableWatcher, RW> trainer(args...);
         return trainer.train(*this, training_data.begin(), training_data.end(), max_epochs);
     }

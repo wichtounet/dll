@@ -157,7 +157,7 @@ struct dbn {
      * manner.
      */
     template<typename Samples>
-    void pretrain(const Samples& training_data, std::size_t max_epochs){
+    void pretrain(Samples& training_data, std::size_t max_epochs){
         pretrain(training_data.begin(), training_data.end(), max_epochs);
     }
 
@@ -192,7 +192,7 @@ struct dbn {
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
             constexpr const auto num_hidden = rbm_t::num_hidden;
 
-            auto input_size = static_cast<const training_t&>(input).size();
+            auto input_size = static_cast<training_t&>(input).size();
 
             //Train each layer but the last one
             if(rbm_t::hidden_unit != unit_type::EXP){
@@ -202,7 +202,7 @@ struct dbn {
                         training_t,
                         !watcher_t::ignore_sub,                                 //Enable the RBM Watcher or not
                         typename dbn_detail::rbm_watcher_t<watcher_t>::type>    //Replace the RBM watcher if not void
-                    (static_cast<const training_t&>(input), max_epochs);
+                    (static_cast<training_t&>(input), max_epochs);
 
                 //Get the activation probabilities for the next level
                 if(I < layers - 1){
@@ -217,7 +217,7 @@ struct dbn {
                     }
 
                     for(size_t i = 0; i < input_size; ++i){
-                        rbm.activate_hidden(next_a[i], next_s[i], static_cast<const training_t&>(input)[i], static_cast<const training_t&>(input)[i]);
+                        rbm.activate_hidden(next_a[i], next_s[i], static_cast<training_t&>(input)[i], static_cast<training_t&>(input)[i]);
                     }
 
                     input = std::ref(next_a);
@@ -233,7 +233,7 @@ struct dbn {
     /*{{{ With labels */
 
     template<typename Samples, typename Labels>
-    void train_with_labels(const Samples& training_data, const Labels& training_labels, std::size_t labels, std::size_t max_epochs){
+    void train_with_labels(Samples& training_data, const Labels& training_labels, std::size_t labels, std::size_t max_epochs){
         cpp_assert(training_data.size() == training_labels.size(), "There must be the same number of values than labels");
         cpp_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
@@ -255,7 +255,7 @@ struct dbn {
             data.emplace_back(sample);
         });
 
-        auto input = std::cref(data);
+        auto input = std::ref(data);
 
         cpp::for_each_i(tuples, [&input, llast, lfirst, labels, max_epochs](size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
@@ -263,14 +263,14 @@ struct dbn {
 
             static training_t next;
 
-            next.reserve(static_cast<const training_t&>(input).size());
+            next.reserve(static_cast<training_t&>(input).size());
 
-            rbm.train(static_cast<const training_t&>(input), max_epochs);
+            rbm.train(static_cast<training_t&>(input), max_epochs);
 
             if(I < layers - 1){
                 auto append_labels = (I + 1 == layers - 1);
 
-                for(auto& training_item : static_cast<const training_t&>(input)){
+                for(auto& training_item : static_cast<training_t&>(input)){
                     etl::dyn_vector<weight> next_item_a(num_hidden + (append_labels ? labels : 0));
                     etl::dyn_vector<weight> next_item_s(num_hidden + (append_labels ? labels : 0));
                     rbm.activate_hidden(next_item_a, next_item_s, training_item, training_item);
@@ -296,7 +296,7 @@ struct dbn {
                 }
             }
 
-            input = std::cref(next);
+            input = std::ref(next);
         });
     }
 

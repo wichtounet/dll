@@ -175,7 +175,7 @@ struct conv_dbn {
      * manner.
      */
     template<typename Samples>
-    void pretrain(const Samples& training_data, std::size_t max_epochs){
+    void pretrain(Samples& training_data, std::size_t max_epochs){
         using visible_t = std::vector<etl::dyn_matrix<weight, 3>>;
         using hidden_t = std::vector<etl::dyn_matrix<weight, 3>>;
 
@@ -208,7 +208,7 @@ struct conv_dbn {
             constexpr const auto K = rbm_t::K;
             constexpr const auto NO = rbm_t_no<rbm_t>();
 
-            auto input_size = static_cast<const visible_t&>(input).size();
+            auto input_size = static_cast<visible_t&>(input).size();
 
             watcher.template pretrain_layer<rbm_t>(*this, I, input_size);
 
@@ -216,7 +216,7 @@ struct conv_dbn {
                     visible_t,
                     !watcher_t::ignore_sub,                                 //Enable the RBM Watcher or not
                     typename dbn_detail::rbm_watcher_t<watcher_t>::type>    //Replace the RBM watcher if not void
-                (static_cast<const visible_t&>(input), max_epochs);
+                (static_cast<visible_t&>(input), max_epochs);
 
             //Get the activation probabilities for the next level
             if(I < layers - 1){
@@ -231,7 +231,7 @@ struct conv_dbn {
                 }
 
                 for(std::size_t i = 0; i < input_size; ++i){
-                    propagate(rbm, static_cast<const visible_t&>(input)[i], next_a[i], next_s[i]);
+                    propagate(rbm, static_cast<visible_t&>(input)[i], next_a[i], next_s[i]);
                 }
 
                 input = std::ref(next_a);
