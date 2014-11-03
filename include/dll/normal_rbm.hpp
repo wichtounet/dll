@@ -58,7 +58,6 @@ public:
             :   /* Only ReLU and Gaussian Units needs lower rate */           1e-1;
     }
 
-    //TODO This could probably be removed later
     template<typename Samples, bool EnableWatcher = true, typename RW = void, typename... Args>
     double train(Samples& training_data, std::size_t max_epochs, Args... args){
         dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
