@@ -7,6 +7,8 @@
 
 #include "catch.hpp"
 
+#define DLL_PARALLEL
+
 #include "dll/conv_rbm_mp.hpp"
 
 #include "mnist/mnist_reader.hpp"
