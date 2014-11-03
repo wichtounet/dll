@@ -36,8 +36,7 @@ namespace dll {
 template<typename Parent, typename Desc>
 class normal_rbm : public rbm_base<Desc> {
 public:
-    typedef double weight;
-    typedef double value_t;
+    typedef float weight;
 
     using desc = Desc;
     using parent_t = Parent;

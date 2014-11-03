@@ -36,6 +36,7 @@ struct dbn {
     template <std::size_t N>
     using rbm_type = typename std::tuple_element<N, tuple_type>::type;
 
+    //TODO Could be good to ensure that either a) all rbm have the same weight b) use the correct type for each rbm
     using weight = typename rbm_type<0>::weight;
 
     weight learning_rate = 0.77;
@@ -166,7 +167,7 @@ struct dbn {
      */
     template<typename Iterator>
     void pretrain(Iterator first, Iterator last, std::size_t max_epochs){
-        using training_t = std::vector<etl::dyn_vector<typename std::iterator_traits<Iterator>::value_type::value_type>>;
+        using training_t = std::vector<etl::dyn_vector<weight>>;
 
         using watcher_t = typename desc::template watcher_t<this_type>;
 
@@ -244,7 +245,7 @@ struct dbn {
         cpp_assert(std::distance(first, last) == std::distance(lfirst, llast), "There must be the same number of values than labels");
         cpp_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
-        using training_t = std::vector<etl::dyn_vector<typename std::iterator_traits<Iterator>::value_type::value_type>>;
+        using training_t = std::vector<etl::dyn_vector<weight>>;
 
         //Convert data to an useful form
         training_t data;
@@ -303,7 +304,7 @@ struct dbn {
     size_t predict_labels(const TrainingItem& item_data, std::size_t labels){
         cpp_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
-        etl::dyn_vector<typename TrainingItem::value_type> item(item_data);
+        etl::dyn_vector<weight> item(item_data);
 
         etl::dyn_vector<weight> output_a(num_visible<layers - 1>());
         etl::dyn_vector<weight> output_s(num_visible<layers - 1>());
@@ -367,7 +368,7 @@ struct dbn {
 
     template<typename Sample, typename Output>
     void activation_probabilities(const Sample& item_data, Output& result){
-        using training_t = etl::dyn_vector<typename Sample::value_type>;
+        using training_t = etl::dyn_vector<weight>;
         training_t item(item_data);
 
         auto input = std::cref(item);
@@ -404,7 +405,7 @@ struct dbn {
 
     template<typename Sample, typename Output>
     void full_activation_probabilities(const Sample& item_data, Output& result){
-        using training_t = etl::dyn_vector<typename Sample::value_type>;
+        using training_t = etl::dyn_vector<weight>;
         training_t item(item_data);
 
         std::size_t i = 0;

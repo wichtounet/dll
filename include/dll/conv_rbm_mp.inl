@@ -36,10 +36,8 @@ namespace dll {
  */
 template<typename Desc>
 struct conv_rbm_mp : public rbm_base<Desc> {
-    typedef double weight;
-    typedef double value_t;
-
     using desc = Desc;
+    using weight = typename desc::weight;
     using this_type = conv_rbm_mp<desc>;
 
     static constexpr const unit_type visible_unit = desc::visible_unit;
@@ -133,8 +131,18 @@ struct conv_rbm_mp : public rbm_base<Desc> {
         binary_load(is, c);
     }
 
-    template<typename H, typename V>
-    void activate_hidden(H& h_a, H& h_s, const V& v_a, const V&){
+    template<typename H1, typename H2, typename V1, typename V2>
+    void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& v_s){
+        activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, v_cv);
+    }
+
+    template<typename H1, typename H2, typename V1, typename V2>
+    void activate_visible(const H1& h_a, const H2& h_s, V1&& v_a, V2&& v_s){
+        activate_visible(h_a, h_s, std::forward<V1>(v_a), std::forward<V2>(v_s), h_cv);
+    }
+
+    template<typename H1, typename H2, typename V1, typename V2, typename VCV>
+    void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2&, VCV&& v_cv){
         v_cv(NC) = 0;
 
         for(std::size_t channel = 0; channel < NC; ++channel){
@@ -165,8 +173,8 @@ struct conv_rbm_mp : public rbm_base<Desc> {
         nan_check_deep(h_s);
     }
 
-    template<typename H, typename V>
-    void activate_visible(const H&, const H& h_s, V& v_a, V& v_s){
+    template<typename H1, typename H2, typename V1, typename V2, typename HCV>
+    void activate_visible(const H1&, const H2& h_s, V1&& v_a, V2&& v_s, HCV&& h_cv){
         using namespace etl;
 
         for(std::size_t channel = 0; channel < NC; ++channel){

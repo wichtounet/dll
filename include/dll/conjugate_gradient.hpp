@@ -344,7 +344,7 @@ struct cg_trainer {
         });
 
         int_t i0 = {cost, s_dot_s(), 0.0};
-        int_t i3 = {0.0, 0.0, 1.0 / (1 - i0.d)};
+        int_t i3 = {0.0, 0.0, static_cast<weight>(1.0) / (1 - i0.d)};
 
         bool failed = false;
         for(std::size_t i = 0; i < max_iteration; ++i){

@@ -22,8 +22,15 @@ struct basic_conf_elt {
     using type_id = ID;
 };
 
-template<typename ID, template<typename...> class T>
+template<typename ID, typename T>
 struct type_conf_elt {
+    using type_id = ID;
+
+    using value = T;
+};
+
+template<typename ID, template<typename...> class T>
+struct template_type_conf_elt {
     using type_id = ID;
 
     template <typename RBM>
@@ -47,6 +54,7 @@ struct bias_id;
 struct momentum_id;
 struct concatenate_id;
 struct init_weights_id;
+struct weight_type_id;
 
 template<std::size_t B>
 struct batch_size : value_conf_elt<batch_size_id, std::size_t, B> {};
@@ -75,11 +83,14 @@ struct sparsity : value_conf_elt<sparsity_id, sparsity_method, M> {};
 template<bias_mode M = bias_mode::SIMPLE>
 struct bias : value_conf_elt<bias_id, bias_mode, M>{};
 
-template<template<typename...> class T>
-struct trainer : type_conf_elt<trainer_id, T> {};
+template<typename T>
+struct weight_type : type_conf_elt<weight_type_id, T> {};
 
 template<template<typename...> class T>
-struct watcher : type_conf_elt<watcher_id, T> {};
+struct trainer : template_type_conf_elt<trainer_id, T> {};
+
+template<template<typename...> class T>
+struct watcher : template_type_conf_elt<watcher_id, T> {};
 
 struct momentum : basic_conf_elt<momentum_id> {};
 struct concatenate : basic_conf_elt<concatenate_id> {};

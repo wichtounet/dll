@@ -25,10 +25,8 @@ namespace dll {
  */
 template<typename Desc>
 struct rbm : public normal_rbm<rbm<Desc>, Desc> {
-    typedef double weight;
-    typedef double value_t;
-
     using desc = Desc;
+    using weight = typename desc::weight;
 
     static constexpr const std::size_t num_visible = desc::num_visible;
     static constexpr const std::size_t num_hidden = desc::num_hidden;
@@ -69,7 +67,7 @@ struct rbm : public normal_rbm<rbm<Desc>, Desc> {
      */
     rbm() : normal_rbm<rbm<Desc>, Desc>(), b(0.0), c(0.0) {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
-        w = etl::normal_generator() * 0.1;
+        w = etl::normal_generator<weight>() * 0.1;
     }
 
     static constexpr std::size_t input_size(){
@@ -85,15 +83,25 @@ struct rbm : public normal_rbm<rbm<Desc>, Desc> {
     }
 
     template<typename H1, typename H2, typename V>
-    void activate_hidden(H1& h_a, H2& h_s, const V& v_a, const V& v_s) const {
-        return activate_hidden(h_a, h_s, v_a, v_s, b, w);
+    void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s) const {
+        return activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w);
+    }
+
+    template<typename H1, typename H2, typename V, typename T>
+    void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, T&& t) const {
+        return activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, std::forward<T>(t));
     }
 
     template<typename H1, typename H2, typename V, typename B, typename W>
-    static void activate_hidden(H1& h_a, H2& h_s, const V& v_a, const V&, const B& b, const W& w){
-        using namespace etl;
+    static void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, const B& b, const W& w){
+        static etl::fast_matrix<weight, 1, num_hidden> t;
 
-        static fast_matrix<weight, 1, num_hidden> t;
+        activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, t);
+    }
+
+    template<typename H1, typename H2, typename V, typename B, typename W, typename T>
+    static void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V&, const B& b, const W& w, T&& t){
+        using namespace etl;
 
         if(hidden_unit == unit_type::BINARY){
             h_a = sigmoid(b + auto_vmmul(v_a, w, t));
@@ -122,10 +130,17 @@ struct rbm : public normal_rbm<rbm<Desc>, Desc> {
     }
 
     template<typename H, typename V>
-    void activate_visible(const H&, const H& h_s, V& v_a, V& v_s) const {
+    void activate_visible(const H& h_a, const H& h_s, V&& v_a, V&& v_s) const {
         using namespace etl;
 
         static fast_matrix<weight, num_visible, 1> t;
+
+        activate_visible(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), t);
+    }
+
+    template<typename H, typename V, typename T>
+    void activate_visible(const H&, const H& h_s, V&& v_a, V&& v_s, T&& t) const {
+        using namespace etl;
 
         if(visible_unit == unit_type::BINARY){
             v_a = sigmoid(c + auto_vmmul(w, h_s, t));

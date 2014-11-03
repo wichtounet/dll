@@ -19,8 +19,7 @@ namespace dll {
 template<typename Layer>
 class rbm_base {
 public:
-    typedef double weight;
-    typedef double value_t;
+    typedef float weight;
 
     using conf = Layer;
 

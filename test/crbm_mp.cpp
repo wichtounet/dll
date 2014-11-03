@@ -7,6 +7,8 @@
 
 #include "catch.hpp"
 
+#define DLL_PARALLEL
+
 #include "dll/conv_rbm_mp.hpp"
 
 #include "mnist/mnist_reader.hpp"
@@ -220,7 +222,7 @@ TEST_CASE( "crbm_mp/mnist_10", "crbm::pcd_trainer" ) {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE( "crbm_mp/mnist_11", "crbm::bias_mode_none" ) {
+TEST_CASE( "crbm_mp/mnist_110", "crbm::bias_mode_none" ) {
     dll::conv_rbm_mp_desc<
         28, 1, 12, 40, 2,
         dll::batch_size<10>,
@@ -241,7 +243,7 @@ TEST_CASE( "crbm_mp/mnist_11", "crbm::bias_mode_none" ) {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE( "crbm_mp/mnist_12", "crbm::bias_mode_simple" ) {
+TEST_CASE( "crbm_mp/mnist_111", "crbm::bias_mode_simple" ) {
     dll::conv_rbm_mp_desc<
         28, 1, 12, 40, 2,
         dll::batch_size<10>,
@@ -266,7 +268,7 @@ TEST_CASE( "crbm_mp/mnist_12", "crbm::bias_mode_simple" ) {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE( "crbm_mp/mnist_14", "crbm::lee" ) {
+TEST_CASE( "crbm_mp/mnist_12", "crbm::lee" ) {
     //This test is not meant to be stable, just use it to experiment with
     //sparsity / gaussian
 
@@ -320,6 +322,32 @@ TEST_CASE( "crbm_mp/mnist_13", "crbm::multi_channel" ) {
     }
 
     auto error = rbm.train(dataset.training_images, 100);
+
+    REQUIRE(error < 1e-2);
+}
+
+TEST_CASE( "crbm_mp/mnist_14", "crbm::slow" ) {
+    dll::conv_rbm_mp_desc<
+        28, 2, 12, 40, 2,
+        dll::batch_size<25>,
+        dll::momentum
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
+
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    for(auto& image : dataset.training_images){
+        image.reserve(image.size() * 2);
+        auto end = image.size();
+        for(std::size_t i = 0; i < end; ++i){
+            image.push_back(image[i]);
+        }
+    }
+
+    auto error = rbm.train(dataset.training_images, 25);
 
     REQUIRE(error < 1e-2);
 }
