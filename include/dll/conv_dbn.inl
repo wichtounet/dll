@@ -256,7 +256,7 @@ struct conv_dbn {
 
         auto input = std::cref(item);
 
-        cpp::for_each_i(tuples, [&item, &input, &result](std::size_t I, auto& rbm){
+        cpp::for_each_i(tuples, [&input](std::size_t I, auto& rbm){
             if(I != layers - 1){
                 typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
                 constexpr const auto K = rbm_t::K;
@@ -306,7 +306,7 @@ struct conv_dbn {
 
         auto input = std::cref(item);
 
-        cpp::for_each_i(tuples, [&i, &item, &input, &result](std::size_t I, auto& rbm){
+        cpp::for_each_i(tuples, [&i, &input, &result](std::size_t I, auto& rbm){
             if(I != layers - 1){
                 typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
                 constexpr const auto K = rbm_t::K;
