@@ -141,7 +141,7 @@ struct conv_dbn {
     }
 
     static constexpr std::size_t input_size(){
-        return rbm_output<0>();
+        return rbm_input<0>();
     }
 
     static constexpr std::size_t output_size(){
