@@ -161,7 +161,7 @@ typename RBM::weight free_energy(const RBM& rbm, const V& v){
 
 template<typename Sample, typename RBM>
 void reconstruct(const Sample& items, RBM& rbm){
-    cpp_assert(items.size() == num_visible, "The size of the training sample must match visible units");
+    cpp_assert(items.size() == num_visible(rbm), "The size of the training sample must match visible units");
 
     cpp::stop_watch<> watch;
 
