@@ -281,7 +281,9 @@ struct conv_dbn {
 
         propagate(last_rbm, static_cast<const visible_t&>(input), next_a, next_s);
 
-        result = next_a;
+        for(std::size_t i = 0; i < output_size(); ++i){
+            result[i] = next_a[i];
+        }
     }
 
     template<typename Sample>
