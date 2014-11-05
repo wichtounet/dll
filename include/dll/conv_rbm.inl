@@ -287,6 +287,6 @@ struct conv_rbm : public rbm_base<Desc> {
     }
 };
 
-} //end of dbn namespace
+} //end of dll namespace
 
 #endif

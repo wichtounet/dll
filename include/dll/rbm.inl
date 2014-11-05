@@ -178,6 +178,6 @@ struct rbm : public normal_rbm<rbm<Desc>, Desc> {
     }
 };
 
-} //end of dbn namespace
+} //end of dll namespace
 
 #endif

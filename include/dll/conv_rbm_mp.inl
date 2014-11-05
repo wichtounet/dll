@@ -318,6 +318,6 @@ struct conv_rbm_mp : public rbm_base<Desc> {
     }
 };
 
-} //end of dbn namespace
+} //end of dll namespace
 
 #endif
