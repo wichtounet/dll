@@ -138,6 +138,8 @@ void make_problem(DBN& dbn, Iterator first, Iterator last, LIterator&& lfirst, L
 
 template<typename DBN, typename Samples, typename Labels>
 bool svm_train(DBN& dbn, const Samples& training_data, const Labels& labels, const svm_parameter& parameters){
+    cpp::stop_watch<std::chrono::seconds> watch;
+
     make_problem(dbn, training_data, labels);
 
     //Make libsvm quiet
@@ -153,11 +155,15 @@ bool svm_train(DBN& dbn, const Samples& training_data, const Labels& labels, con
 
     dbn.svm_loaded = true;
 
+    std::cout << "SVM training took " << watch.elapsed() << "s" << std::endl;
+
     return true;
 }
 
 template<typename DBN, typename Iterator, typename LIterator>
 bool svm_train(DBN& dbn, Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, const svm_parameter& parameters){
+    cpp::stop_watch<std::chrono::seconds> watch;
+
     make_problem(dbn, std::forward<Iterator>(first), std::forward<Iterator>(last), std::forward<LIterator>(lfirst), std::forward<LIterator>(llast));
 
     //Make libsvm quiet
@@ -172,6 +178,8 @@ bool svm_train(DBN& dbn, Iterator&& first, Iterator&& last, LIterator&& lfirst, 
     dbn.svm_model = svm::train(dbn.problem, parameters);
 
     dbn.svm_loaded = true;
+
+    std::cout << "SVM training took " << watch.elapsed() << "s" << std::endl;
 
     return true;
 }
