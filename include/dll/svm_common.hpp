@@ -109,14 +109,12 @@ etl::dyn_vector<typename DBN::weight> get_activation_probabilities(DBN& dbn, Sam
 
 template<typename DBN, typename Samples, typename Labels>
 void make_problem(DBN& dbn, const Samples& training_data, const Labels& labels){
-    auto n_samples = training_data.size();
-
     using svm_samples_t = std::vector<etl::dyn_vector<typename DBN::weight>>;
     svm_samples_t svm_samples;
 
     //Get all the activation probabilities
-    for(std::size_t i = 0; i < n_samples; ++i){
-        add_activation_probabilities(dbn, svm_samples, training_data[i]);
+    for(auto& sample : training_data){
+        add_activation_probabilities(dbn, svm_samples, sample);
     }
 
     //static_cast ensure using the correct overload
@@ -128,12 +126,9 @@ void make_problem(DBN& dbn, Iterator first, Iterator last, LIterator&& lfirst, L
     std::vector<etl::dyn_vector<typename DBN::weight>> svm_samples;
 
     //Get all the activation probabilities
-    auto it = first;
-    while(it != last){
-        add_activation_probabilities(dbn, svm_samples, *it);
-
-        ++it;
-    }
+    std::for_each(first, last, [&dbn, &svm_samples](auto& sample){
+        add_activation_probabilities(dbn, svm_samples, sample);
+    });
 
     //static_cast ensure using the correct overload
     dbn.problem = svm::make_problem(
@@ -223,7 +218,8 @@ bool svm_grid_search(DBN& dbn, Iterator&& first, Iterator&& last, LIterator&& lf
 
 template<typename DBN, typename Sample>
 double svm_predict(DBN& dbn, const Sample& sample){
-    return svm::predict(dbn.svm_model, get_activation_probabilities(dbn, sample));
+    auto features = get_activation_probabilities(dbn, sample);
+    return svm::predict(dbn.svm_model, features);
 }
 
 } // end of namespace dll
