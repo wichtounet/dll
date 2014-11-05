@@ -98,6 +98,6 @@ struct concatenate : basic_conf_elt<concatenate_id> {};
 struct init_weights : basic_conf_elt<init_weights_id> {};
 struct shuffle : basic_conf_elt<shuffle_id> {};
 
-} //end of dbn namespace
+} //end of dll namespace
 
 #endif

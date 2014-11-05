@@ -85,6 +85,6 @@ double test_set(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIter
     return (images - success) / static_cast<double>(images);
 }
 
-} //end of dbn namespace
+} //end of dll namespace
 
 #endif

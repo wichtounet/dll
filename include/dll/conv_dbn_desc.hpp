@@ -39,6 +39,6 @@ struct conv_dbn_desc {
         "Invalid parameters type");
 };
 
-} //end of dbn namespace
+} //end of dll namespace
 
 #endif

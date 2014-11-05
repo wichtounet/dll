@@ -22,6 +22,6 @@ constexpr W softplus(W x){
     return std::log(1.0 + std::exp(x));
 }
 
-} //end of dbn namespace
+} //end of dll namespace
 
 #endif

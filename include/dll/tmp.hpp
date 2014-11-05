@@ -134,6 +134,6 @@ void for_each_type(Functor&& functor){
     for_each_type_sub<Tuple>(functor, std::make_index_sequence<std::tuple_size<Tuple>::value>());
 }
 
-} //end of dbn namespace
+} //end of dll namespace
 
 #endif

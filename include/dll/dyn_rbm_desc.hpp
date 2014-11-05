@@ -55,6 +55,6 @@ struct dyn_rbm_desc {
         "Sparsity only works with binary hidden units");
 };
 
-} //end of dbn namespace
+} //end of dll namespace
 
 #endif

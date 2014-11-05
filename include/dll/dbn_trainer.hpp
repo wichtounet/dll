@@ -95,6 +95,6 @@ struct dbn_trainer {
     }
 };
 
-} //end of dbn namespace
+} //end of dll namespace
 
 #endif

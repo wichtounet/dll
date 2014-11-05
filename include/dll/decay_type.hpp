@@ -49,6 +49,6 @@ constexpr decay_type b_decay(decay_type t){
                                    decay_type::NONE;
 }
 
-} //end of dbn namespace
+} //end of dll namespace
 
 #endif

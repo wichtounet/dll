@@ -200,6 +200,6 @@ constexpr std::size_t input_size(const RBM&){
     return rbm_traits<RBM>::input_size();
 }
 
-} //end of dbn namespace
+} //end of dll namespace
 
 #endif

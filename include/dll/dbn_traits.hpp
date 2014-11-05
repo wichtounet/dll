@@ -65,6 +65,6 @@ struct dbn_traits {
     }
 };
 
-} //end of dbn namespace
+} //end of dll namespace
 
 #endif

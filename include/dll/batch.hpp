@@ -45,6 +45,6 @@ batch<Iterator> make_batch(Iterator&& first, Iterator&& last){
     return {std::forward<Iterator>(first), std::forward<Iterator>(last)};
 }
 
-} //end of dbn namespace
+} //end of dll namespace
 
 #endif

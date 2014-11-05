@@ -137,6 +137,6 @@ public:
     }
 };
 
-} //end of dbn namespace
+} //end of dll namespace
 
 #endif

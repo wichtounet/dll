@@ -38,6 +38,6 @@ void binary_load_all(std::istream& is, Container& c){
     }
 }
 
-} //end of dbn namespace
+} //end of dll namespace
 
 #endif

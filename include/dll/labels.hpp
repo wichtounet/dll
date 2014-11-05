@@ -43,6 +43,6 @@ std::vector<fake_label_array<typename std::iterator_traits<Iterator>::value_type
     return std::move(fake);
 }
 
-} //end of dbn namespace
+} //end of dll namespace
 
 #endif

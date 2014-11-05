@@ -835,6 +835,6 @@ using cd1_trainer_t = cd_trainer<1, RBM>;
 template <typename RBM>
 using pcd1_trainer_t = persistent_cd_trainer<1, RBM>;
 
-} //end of dbn namespace
+} //end of dll namespace
 
 #endif

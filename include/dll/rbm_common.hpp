@@ -227,6 +227,6 @@ void display_hidden_units(RBM& rbm){
 
 } //end of rbm_detail
 
-} //end of dbn namespace
+} //end of dll namespace
 
 #endif

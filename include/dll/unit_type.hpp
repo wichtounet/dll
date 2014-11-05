@@ -27,6 +27,6 @@ constexpr bool is_relu(unit_type t){
     return t == unit_type::RELU || t == unit_type::RELU1 || t == unit_type::RELU6;
 }
 
-} //end of dbn namespace
+} //end of dll namespace
 
 #endif
