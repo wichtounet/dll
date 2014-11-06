@@ -323,10 +323,10 @@ void train_convolutional(const dll::batch<T>& batch, rbm_training_context& conte
 
     using rbm_t = RBM;
 
-    constexpr const auto K = rbm_t::K;
-    constexpr const auto NC = rbm_t::NC;
-
     maybe_parallel_foreach_i(t.pool, batch.begin(), batch.end(), [&](const auto& items, std::size_t i){
+        constexpr const auto K = rbm_t::K;
+        constexpr const auto NC = rbm_t::NC;
+
         t.v1(i) = items;
 
         //First step
