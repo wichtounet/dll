@@ -90,12 +90,12 @@ struct sgd_trainer {
     }
 
     template<typename T1, typename T2, bool M = dbn_traits<dbn_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
-    T2& get_fgrad(T1& , T2& inc){
+    static T2& get_fgrad(T1& , T2& inc){
         return inc;
     }
 
     template<typename T1, typename T2, bool M = dbn_traits<dbn_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
-    T1& get_fgrad(T1& grad, T2& ){
+    static T1& get_fgrad(T1& grad, T2& ){
         return grad;
     }
 
@@ -178,9 +178,9 @@ struct sgd_trainer {
             }
 
             //The final gradients;
-            const auto& w_fgrad = this->get_fgrad(context.w_grad, context.w_inc);
-            const auto& b_fgrad = this->get_fgrad(context.b_grad, context.b_inc);
-            const auto& c_fgrad = this->get_fgrad(context.c_grad, context.c_inc);
+            const auto& w_fgrad = this_type::get_fgrad(context.w_grad, context.w_inc);
+            const auto& b_fgrad = this_type::get_fgrad(context.b_grad, context.b_inc);
+            const auto& c_fgrad = this_type::get_fgrad(context.c_grad, context.c_inc);
 
             this->update(rbm.w, w_fgrad, w_decay(dbn_traits<dbn_t>::decay()), 0.0);
             this->update(rbm.b, b_fgrad, b_decay(dbn_traits<dbn_t>::decay()), 0.0);
