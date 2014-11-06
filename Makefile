@@ -9,6 +9,10 @@ ifneq (,$(findstring clang,$(CXX)))
 	CXX_FLAGS += -stdlib=libc++
 endif
 
+ifneq (,$(findstring c++-analyzer,$(CXX)))
+	CXX_FLAGS += -stdlib=libc++
+endif
+
 CXX_FLAGS += -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include
 LD_FLAGS += -lpthread
 #-Werror
