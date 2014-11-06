@@ -258,9 +258,10 @@ struct conv_dbn {
 
         cpp::for_each_i(tuples, [&input](std::size_t I, auto& rbm){
             if(I != layers - 1){
-                typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
+                using rbm_t = typename std::remove_reference<decltype(rbm)>::type;
+
                 constexpr const auto K = rbm_t::K;
-                constexpr const auto NO = rbm_t_no<rbm_t>();
+                constexpr const auto NO = this_type::rbm_t_no<rbm_t>();
 
                 static hidden_t next_a(K, NO, NO);
                 static hidden_t next_s(K, NO, NO);
