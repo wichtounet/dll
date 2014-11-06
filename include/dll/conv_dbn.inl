@@ -266,7 +266,7 @@ struct conv_dbn {
                 static hidden_t next_a(K, NO, NO);
                 static hidden_t next_s(K, NO, NO);
 
-                propagate(rbm, static_cast<const visible_t&>(input), next_a, next_s);
+                this_type::propagate(rbm, static_cast<const visible_t&>(input), next_a, next_s);
 
                 input = std::cref(next_a);
             }
