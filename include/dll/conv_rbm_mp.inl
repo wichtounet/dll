@@ -253,7 +253,20 @@ struct conv_rbm_mp : public rbm_base<Desc> {
 
             return - etl::sum(c * etl::sum_r(v)) - etl::sum(h * v_cv(NC) + etl::rep<NH, NH>(b) * h);
         } else if(desc::visible_unit == unit_type::GAUSSIAN && desc::hidden_unit == unit_type::BINARY){
-            return 0.0;
+            //Definition according to Honglak Lee / Mixed with Gaussian
+            //E(v,h) = - sum_k (hk (Wk*v) + bk hk) - sum_v ((v - c) ^ 2 / 2)
+
+            v_cv(NC) = 0;
+
+            for(std::size_t channel = 0; channel < NC; ++channel){
+                for(size_t k = 0; k < K; ++k){
+                    etl::convolve_2d_valid(v(channel), fflip(w(channel)(k)), v_cv(channel)(k));
+                }
+
+                v_cv(NC) += v_cv(channel);
+            }
+
+            return -sum((v - etl::rep<NV, NV>(c)) * (v - etl::rep<NV, NV>(c)) / 2.0) - etl::sum(h * v_cv(NC) + etl::rep<NH, NH>(b) * h);
         } else {
             return 0.0;
         }
@@ -289,7 +302,21 @@ struct conv_rbm_mp : public rbm_base<Desc> {
 
             return - etl::sum(c * etl::sum_r(v)) - etl::sum(etl::log(1.0 + etl::exp(x)));
         } else if(desc::visible_unit == unit_type::GAUSSIAN && desc::hidden_unit == unit_type::BINARY){
-            return 0.0;
+            //Definition computed from E(v,h)
+
+            v_cv(NC) = 0;
+
+            for(std::size_t channel = 0; channel < NC; ++channel){
+                for(size_t k = 0; k < K; ++k){
+                    etl::convolve_2d_valid(v(channel), fflip(w(channel)(k)), v_cv(channel)(k));
+                }
+
+                v_cv(NC) += v_cv(channel);
+            }
+
+            auto x = etl::rep<NH, NH>(b) + v_cv(NC);
+
+            return -sum((v - etl::rep<NV, NV>(c)) * (v - etl::rep<NV, NV>(c)) / 2.0) - etl::sum(etl::log(1.0 + etl::exp(x)));
         } else {
             return 0.0;
         }
