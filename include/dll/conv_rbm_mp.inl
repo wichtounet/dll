@@ -271,16 +271,39 @@ struct conv_rbm_mp : public rbm_base<Desc> {
     }
 
     template<typename V>
-    weight free_energy(const V&) const {
-        weight energy = 0.0;
+    weight free_energy_impl(const V& v){
+        if(desc::visible_unit == unit_type::BINARY && desc::hidden_unit == unit_type::BINARY){
+            //Definition computed from E(v,h)
 
-        //TODO Compute the exact free energy
+            v_cv(NC) = 0;
 
-        return energy;
+            for(std::size_t channel = 0; channel < NC; ++channel){
+                for(size_t k = 0; k < K; ++k){
+                    etl::convolve_2d_valid(v(channel), fflip(w(channel)(k)), v_cv(channel)(k));
+                }
+
+                v_cv(NC) += v_cv(channel);
+            }
+
+            auto x = etl::rep<NH, NH>(b) + v_cv(NC);
+
+            return - etl::sum(c * etl::sum_r(v)) - etl::sum(etl::log(1.0 + etl::exp(x)));
+        } else if(desc::visible_unit == unit_type::GAUSSIAN && desc::hidden_unit == unit_type::BINARY){
+            return 0.0;
+        } else {
+            return 0.0;
+        }
+    }
+
+    template<typename V>
+    weight free_energy(const V& v){
+        static etl::fast_matrix<weight, NC, NV, NV> ev;
+        ev = v;
+        return free_energy_impl(ev);
     }
 
     weight free_energy() const {
-        return free_energy(v1);
+        return free_energy_impl(v1);
     }
 
     //Utility functions
