@@ -16,6 +16,10 @@ void test_rbm(){
 
     std::vector<etl::dyn_vector<double>> test_full;
     rbm.train(test_full, 40);
+
+    std::vector<double> v(28 * 28 * 1);
+    std::vector<double> h(12 * 12 * 40);
+    rbm.energy(v, h);
 }
 
 int main(){
