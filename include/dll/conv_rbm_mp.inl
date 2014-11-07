@@ -235,6 +235,41 @@ struct conv_rbm_mp : public rbm_base<Desc> {
         return trainer.train(*this, std::forward<Iterator>(first), std::forward<Iterator>(last), max_epochs);
     }
 
+    template<typename V, typename H, cpp::enable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
+    weight energy(const V& v, const H& h){
+        if(desc::visible_unit == unit_type::BINARY && desc::hidden_unit == unit_type::BINARY){
+            //Definition according to Honglak Lee
+            //E(v,h) = - sum_k (hk (Wk*v) + bk hk) - c sum_v v
+
+            v_cv(NC) = 0;
+
+            for(std::size_t channel = 0; channel < NC; ++channel){
+                for(size_t k = 0; k < K; ++k){
+                    etl::convolve_2d_valid(v(channel), fflip(w(channel)(k)), v_cv(channel)(k));
+                }
+
+                v_cv(NC) += v_cv(channel);
+            }
+
+            return - etl::sum(c * etl::sum_r(v)) - etl::sum(h * v_cv(NC) + etl::rep<NH, NH>(b) * h);
+        } else if(desc::visible_unit == unit_type::GAUSSIAN && desc::hidden_unit == unit_type::BINARY){
+            return 0.0;
+        } else {
+            return 0.0;
+        }
+    }
+
+    template<typename V, typename H, cpp::disable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
+    weight energy(const V& v, const H& h){
+        static etl::fast_matrix<weight, NC, NV, NV> ev;
+        static etl::fast_matrix<weight, K, NH, NH> eh;
+
+        ev = v;
+        eh = h;
+
+        return energy(ev, eh);
+    }
+
     template<typename V>
     weight free_energy(const V&) const {
         weight energy = 0.0;
