@@ -206,7 +206,7 @@ struct conv_dbn {
         cpp::for_each_i(tuples, [&watcher, this, &input, &next_a, &next_s, max_epochs](std::size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
             constexpr const auto K = rbm_t::K;
-            constexpr const auto NO = rbm_t_no<rbm_t>();
+            constexpr const auto NO = this_type::rbm_t_no<rbm_t>();
 
             auto input_size = static_cast<visible_t&>(input).size();
 
@@ -231,7 +231,7 @@ struct conv_dbn {
                 }
 
                 for(std::size_t i = 0; i < input_size; ++i){
-                    propagate(rbm, static_cast<visible_t&>(input)[i], next_a[i], next_s[i]);
+                    this_type::propagate(rbm, static_cast<visible_t&>(input)[i], next_a[i], next_s[i]);
                 }
 
                 input = std::ref(next_a);
@@ -313,12 +313,12 @@ struct conv_dbn {
             if(I != layers - 1){
                 typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
                 constexpr const auto K = rbm_t::K;
-                constexpr const auto NO = rbm_t_no<rbm_t>();
+                constexpr const auto NO = this_type::rbm_t_no<rbm_t>();
 
                 static hidden_t next_a(K, NO, NO);
                 static hidden_t next_s(K, NO, NO);
 
-                propagate(rbm, static_cast<const visible_t&>(input), next_a, next_s);
+                this_type::propagate(rbm, static_cast<const visible_t&>(input), next_a, next_s);
 
                 for(auto& value : next_a){
                     result[i++] = value;
