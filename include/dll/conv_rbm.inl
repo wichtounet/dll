@@ -208,7 +208,7 @@ struct conv_rbm : public rbm_base<Desc> {
     weight energy(const V& v, const H& h){
         if(desc::visible_unit == unit_type::BINARY && desc::hidden_unit == unit_type::BINARY){
             //Definition according to Honglak Lee
-            //E(v,h) = sum_k hk . (Wk*v) - sum_k bk sum_h hk - c sum_v v
+            //E(v,h) = - sum_k hk . (Wk*v) - sum_k bk sum_h hk - c sum_v v
 
             v_cv(NC) = 0;
 
