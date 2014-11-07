@@ -222,7 +222,20 @@ struct conv_rbm : public rbm_base<Desc> {
 
             return - etl::sum(c * etl::sum_r(v)) - etl::sum(b * etl::sum_r(h)) - etl::sum(h * v_cv(NC));
         } else if(desc::visible_unit == unit_type::GAUSSIAN && desc::hidden_unit == unit_type::BINARY){
-            return 0.0;
+            //Definition according to Honglak Lee / Mixed with Gaussian
+            //E(v,h) = - sum_k hk . (Wk*v) - sum_k bk sum_h hk - sum_v ((v - c) ^ 2 / 2)
+
+            v_cv(NC) = 0;
+
+            for(std::size_t channel = 0; channel < NC; ++channel){
+                for(size_t k = 0; k < K; ++k){
+                    etl::convolve_2d_valid(v(channel), fflip(w(channel)(k)), v_cv(channel)(k));
+                }
+
+                v_cv(NC) += v_cv(channel);
+            }
+
+            return - sum((v - etl::rep<NV, NV>(c)) * (v - etl::rep<NV, NV>(c)) / 2.0) - etl::sum(b * etl::sum_r(h)) - etl::sum(h * v_cv(NC));
         } else {
             return 0.0;
         }
