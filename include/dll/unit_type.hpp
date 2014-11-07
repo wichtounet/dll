@@ -15,7 +15,6 @@ namespace dll {
  */
 enum class unit_type {
     BINARY,     ///< Stochastic binary unity
-    EXP,        ///< Exponential unit (for last layer)
     SOFTMAX,    ///< Softmax unit (for last layer)
     GAUSSIAN,   ///< Gaussian unit
     RELU,       ///< Rectified Linear Unit (ReLU) (Nair and Hinton, 2010)

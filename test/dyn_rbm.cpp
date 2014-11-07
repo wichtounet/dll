@@ -245,27 +245,6 @@ TEST_CASE( "dyn_rbm/mnist_12", "rbm::init_weights" ) {
     REQUIRE(error < 1e-3);
 }
 
-TEST_CASE( "dyn_rbm/mnist_13", "rbm::exp" ) {
-    dll::dyn_rbm_desc<
-       dll::hidden<dll::unit_type::EXP>
-    >::rbm_t rbm(28 * 28, 100);
-
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
-
-    REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(100);
-
-    mnist::binarize_dataset(dataset);
-
-    auto error = rbm.train(dataset.training_images, 100);
-
-    //This test is kind of fake since exp unit are not really made for
-    //reconstruction. It is here to ensure that exp units are working.
-    //exponential units are not even made for training
-
-    REQUIRE(std::isnan(error));
-}
-
 //Only here for benchmarking purposes
 TEST_CASE( "dyn_rbm/mnist_14", "rbm::slow" ) {
     dll::dyn_rbm_desc<>::rbm_t rbm(28 * 28, 400);

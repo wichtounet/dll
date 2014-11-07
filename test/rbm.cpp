@@ -301,28 +301,6 @@ TEST_CASE( "rbm/mnist_12", "rbm::init_weights" ) {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE( "rbm/mnist_13", "rbm::exp" ) {
-    dll::rbm_desc<
-        28 * 28, 100,
-       dll::batch_size<25>,
-       dll::hidden<dll::unit_type::EXP>
-    >::rbm_t rbm;
-
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
-    REQUIRE(!dataset.training_images.empty());
-
-    mnist::binarize_dataset(dataset);
-
-    auto error = rbm.train(dataset.training_images, 10);
-
-    //This test is kind of fake since exp unit are not really made for
-    //reconstruction. It is here to ensure that exp units are working.
-    //exponential units are not even made for training
-
-    REQUIRE(std::isnan(error));
-}
-
 //TODO Still not very convincing
 TEST_CASE( "rbm/mnist_14", "rbm::sparsity_gaussian" ) {
     dll::rbm_desc<

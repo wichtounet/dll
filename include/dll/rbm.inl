@@ -106,9 +106,6 @@ struct rbm : public normal_rbm<rbm<Desc>, Desc> {
         if(hidden_unit == unit_type::BINARY){
             h_a = sigmoid(b + auto_vmmul(v_a, w, t));
             h_s = bernoulli(h_a);
-        } else if(hidden_unit == unit_type::EXP){
-            h_a = exp(b + auto_vmmul(v_a, w, t));
-            h_s = bernoulli(h_a);
         } else if(hidden_unit == unit_type::RELU){
             h_a = max(b + auto_vmmul(v_a, w, t), 0.0);
             h_s = logistic_noise(h_a); //TODO This is probably wrong

@@ -194,34 +194,32 @@ struct dbn {
 
             auto input_size = static_cast<training_t&>(input).size();
 
-            //Train each layer but the last one
-            if(rbm_t::hidden_unit != unit_type::EXP){
-                watcher.template pretrain_layer<rbm_t>(*this, I, input_size);
+            watcher.template pretrain_layer<rbm_t>(*this, I, input_size);
 
-                rbm.template train<
-                        training_t,
-                        !watcher_t::ignore_sub,                                 //Enable the RBM Watcher or not
-                        typename dbn_detail::rbm_watcher_t<watcher_t>::type>    //Replace the RBM watcher if not void
-                    (static_cast<training_t&>(input), max_epochs);
+            rbm.template train<
+                    training_t,
+                    !watcher_t::ignore_sub,                                 //Enable the RBM Watcher or not
+                    typename dbn_detail::rbm_watcher_t<watcher_t>::type>    //Replace the RBM watcher if not void
+                (static_cast<training_t&>(input), max_epochs);
 
-                //Get the activation probabilities for the next level
-                if(I < layers - 1){
-                    next_a.clear();
-                    next_a.reserve(input_size);
-                    next_s.clear();
-                    next_s.reserve(input_size);
+            //Get the activation probabilities for the next level
+            if(I < layers - 1){
+                next_a.clear();
+                next_a.reserve(input_size);
+                next_s.clear();
+                next_s.reserve(input_size);
 
-                    for(std::size_t i = 0; i < input_size; ++i){
-                        next_a.emplace_back(num_hidden);
-                        next_s.emplace_back(num_hidden);
-                    }
-
-                    for(size_t i = 0; i < input_size; ++i){
-                        rbm.activate_hidden(next_a[i], next_s[i], static_cast<training_t&>(input)[i], static_cast<training_t&>(input)[i]);
-                    }
-
-                    input = std::ref(next_a);
+                for(std::size_t i = 0; i < input_size; ++i){
+                    next_a.emplace_back(num_hidden);
+                    next_s.emplace_back(num_hidden);
                 }
+
+                for(size_t i = 0; i < input_size; ++i){
+                    auto& input_i = static_cast<training_t&>(input)[i];
+                    rbm.activate_hidden(next_a[i], next_s[i], input_i, input_i);
+                }
+
+                input = std::ref(next_a);
             }
         });
 

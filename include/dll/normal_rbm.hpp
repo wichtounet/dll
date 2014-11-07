@@ -44,10 +44,8 @@ public:
     static constexpr const unit_type visible_unit = desc::visible_unit;
     static constexpr const unit_type hidden_unit = desc::hidden_unit;
 
-    static_assert(visible_unit != unit_type::SOFTMAX && visible_unit != unit_type::EXP,
-        "Exponential and softmax Visible units are not support");
-    static_assert(hidden_unit != unit_type::GAUSSIAN,
-        "Gaussian hidden units are not supported");
+    static_assert(visible_unit != unit_type::SOFTMAX, "Softmax Visible units are not support");
+    static_assert(hidden_unit != unit_type::GAUSSIAN, "Gaussian hidden units are not supported");
 
 public:
     normal_rbm(){
