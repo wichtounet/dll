@@ -66,16 +66,18 @@ typename RBM::weight energy(const RBM& rbm, const V& v, const H& h){
         //Definition according to G. Hinton
         //E(v,h) = -sum(ai*vi) - sum(bj*hj) -sum(vi*hj*wij)
 
-        auto mid_term = 0.0;
+        etl::dyn_matrix<typename RBM::weight> t(1UL, num_hidden(rbm));
+        auto x = rbm.b + auto_vmmul(v, rbm.w, t);
 
-        //TODO Simplify that
-        for(std::size_t i = 0; i < num_visible(rbm); ++i){
-            for(std::size_t j = 0; j < num_hidden(rbm); ++j){
-                mid_term += rbm.w(i, j) * v(i) * h(j);
-            }
-        }
+        return -etl::dot(rbm.c, v) - etl::dot(rbm.b, h) - etl::sum(x);
+    } else if(RBM::desc::visible_unit == unit_type::GAUSSIAN && RBM::desc::hidden_unit == unit_type::BINARY){
+        //Definition according to G. Hinton
+        //E(v,h) = -sum((vi - ai)^2/(2*var*var)) - sum(bj*hj) -sum((vi/var)*hj*wij)
 
-        return -etl::dot(rbm.c, v) - etl::dot(rbm.b, h) - mid_term;
+        etl::dyn_matrix<typename RBM::weight> t(1UL, num_hidden(rbm));
+        auto x = rbm.b + auto_vmmul(v, rbm.w, t);
+
+        return etl::sum(((v - rbm.c) * (v - rbm.c)) / 2.0) -etl::dot(rbm.b, h) - etl::sum(x);
     } else {
         return 0.0;
     }
@@ -83,13 +85,9 @@ typename RBM::weight energy(const RBM& rbm, const V& v, const H& h){
 
 template<typename RBM, typename V, typename H, cpp::disable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
 typename RBM::weight energy(const RBM& rbm, const V& v, const H& h){
-    if(RBM::desc::visible_unit == unit_type::BINARY && RBM::desc::hidden_unit == unit_type::BINARY){
-        etl::dyn_vector<typename V::value_type> ev(v);
-        etl::dyn_vector<typename H::value_type> eh(h);
-        return energy(rbm, ev, eh);
-    } else {
-        return 0.0;
-    }
+    etl::dyn_vector<typename V::value_type> ev(v);
+    etl::dyn_vector<typename H::value_type> eh(h);
+    return energy(rbm, ev, eh);
 }
 
 //Free energy are computed from the E(v,h) formulas
