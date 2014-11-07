@@ -57,6 +57,9 @@ void init_weights(Iterator first, Iterator last, RBM& rbm){
     }
 }
 
+//Note: Considering that energy and free energy are not critical, their implementations
+//are not highly optimized.
+
 template<typename RBM, typename V, typename H, cpp::enable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
 typename RBM::weight energy(const RBM& rbm, const V& v, const H& h){
     if(RBM::desc::visible_unit == unit_type::BINARY && RBM::desc::hidden_unit == unit_type::BINARY){
@@ -81,47 +84,31 @@ typename RBM::weight energy(const RBM& rbm, const V& v, const H& h){
 template<typename RBM, typename V, typename H, cpp::disable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
 typename RBM::weight energy(const RBM& rbm, const V& v, const H& h){
     if(RBM::desc::visible_unit == unit_type::BINARY && RBM::desc::hidden_unit == unit_type::BINARY){
-        //Definition according to G. Hinton
-        //E(v,h) = -sum(ai*vi) - sum(bj*hj) -sum(vi*hj*wij)
-
-        auto visible_term = 0.0;
-        auto hidden_term = 0.0;
-
-        for(std::size_t i = 0; i < num_visible(rbm); ++i){
-            visible_term = rbm.c(i) * v[i];
-        }
-
-        for(std::size_t j = 0; j < num_hidden(rbm); ++j){
-            hidden_term = rbm.b(j) * h[j];
-        }
-
-        auto mid_term = 0.0;
-
-        //TODO Simplify that
-        for(std::size_t i = 0; i < num_visible(rbm); ++i){
-            for(std::size_t j = 0; j < num_hidden(rbm); ++j){
-                mid_term += rbm.w(i, j) * v(i) * h(j);
-            }
-        }
-
-        return -visible_term - hidden_term - mid_term;
+        etl::dyn_vector<typename V::value_type> ev(v);
+        etl::dyn_vector<typename H::value_type> eh(h);
+        return energy(rbm, ev, eh);
     } else {
         return 0.0;
     }
 }
+
+//Free energy are computed from the E(v,h) formulas
+//1. by isolating hi in the E(v,h) formulas
+//2. by using the sum_hi which sums over all the possible values of hi
+//3. by considering only binary hidden units, the values are only 0 and 1
+//and therefore the values can be "integrated out" easily.
 
 template<typename RBM, typename V, cpp::enable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
 typename RBM::weight free_energy(const RBM& rbm, const V& v){
     if(RBM::desc::visible_unit == unit_type::BINARY && RBM::desc::hidden_unit == unit_type::BINARY){
         //Definition according to G. Hinton
         //F(v) = -sum(ai*vi) - sum(log(1 + e^(xj)))
-        //xj = input to hidden neuron j
 
         using namespace etl;
 
-        static fast_matrix<typename RBM::weight, 1, RBM::num_hidden> t;
+        dyn_matrix<typename RBM::weight> t(1UL, num_hidden(rbm));
 
-        auto x = rbm.b + mmul(reshape<1, RBM::desc::num_visible>(v), rbm.w, t);
+        auto x = rbm.b + auto_vmmul(v, rbm.w, t);
 
         return -dot(rbm.c, v) - sum(log(1.0 + exp(x)));
     } else {
@@ -131,32 +118,8 @@ typename RBM::weight free_energy(const RBM& rbm, const V& v){
 
 template<typename RBM, typename V, cpp::disable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
 typename RBM::weight free_energy(const RBM& rbm, const V& v){
-    if(RBM::desc::visible_unit == unit_type::BINARY && RBM::desc::hidden_unit == unit_type::BINARY){
-        //Definition according to G. Hinton
-        //F(v) = -sum(ai*vi) - sum(log(1 + e^(xj)))
-        //xj = input to hidden neuron j
-
-        auto visible_term = 0.0;
-
-        for(std::size_t i = 0; i < num_visible(rbm); ++i){
-            visible_term = rbm.c(i) * v[i];
-        }
-
-        auto mid_term = 0.0;
-
-        for(std::size_t j = 0; j < num_hidden(rbm); ++j){
-            auto x = rbm.b(j);
-            for(std::size_t i = 0; i < num_visible(rbm); ++i){
-                x += v[i] * rbm.w(i,j);
-            }
-
-            mid_term += std::log(1.0 + std::exp(x));
-        }
-
-        return -visible_term - mid_term;
-    } else {
-        return 0.0;
-    }
+    etl::dyn_vector<typename V::value_type> ev(v);
+    return free_energy(rbm, ev);
 }
 
 template<typename Sample, typename RBM>
