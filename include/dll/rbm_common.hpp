@@ -79,7 +79,7 @@ typename RBM::weight energy(const RBM& rbm, const V& v, const H& h){
 
         auto x = rbm.b + auto_vmmul(v, rbm.w, t);
 
-        return etl::sum(((v - rbm.c) * (v - rbm.c)) / 2.0) - etl::dot(rbm.b, h) - etl::sum(x);
+        return etl::sum(etl::pow(v - rbm.c, 2) / 2.0) - etl::dot(rbm.b, h) - etl::sum(x);
     } else {
         return 0.0;
     }
@@ -117,7 +117,7 @@ typename RBM::weight free_energy(const RBM& rbm, const V& v){
 
         auto x = rbm.b + etl::auto_vmmul(v, rbm.w, t);
 
-        return etl::sum(((v - rbm.c) * (v - rbm.c)) / 2.0) - etl::sum(etl::log(1.0 + etl::exp(x)));
+        return etl::sum(etl::pow(v - rbm.c, 2) / 2.0) - etl::sum(etl::log(1.0 + etl::exp(x)));
     } else {
         return 0.0;
     }

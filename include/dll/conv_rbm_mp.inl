@@ -266,7 +266,7 @@ struct conv_rbm_mp : public rbm_base<Desc> {
                 v_cv(NC) += v_cv(channel);
             }
 
-            return -sum((v - etl::rep<NV, NV>(c)) * (v - etl::rep<NV, NV>(c)) / 2.0) - etl::sum(h * v_cv(NC) + etl::rep<NH, NH>(b) * h);
+            return -sum(etl::pow(v - etl::rep<NV, NV>(c), 2) / 2.0) - etl::sum(h * v_cv(NC) + etl::rep<NH, NH>(b) * h);
         } else {
             return 0.0;
         }
@@ -316,7 +316,7 @@ struct conv_rbm_mp : public rbm_base<Desc> {
 
             auto x = etl::rep<NH, NH>(b) + v_cv(NC);
 
-            return -sum((v - etl::rep<NV, NV>(c)) * (v - etl::rep<NV, NV>(c)) / 2.0) - etl::sum(etl::log(1.0 + etl::exp(x)));
+            return -sum(etl::pow(v - etl::rep<NV, NV>(c), 2) / 2.0) - etl::sum(etl::log(1.0 + etl::exp(x)));
         } else {
             return 0.0;
         }
