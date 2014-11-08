@@ -125,7 +125,7 @@ struct rbm_trainer {
 
                 auto input_batch = make_batch(istart, iit);
                 auto expected_batch = make_batch(estart, eit);
-                trainer->train_batch(input_batch, context);
+                trainer->train_batch(input_batch, expected_batch, context);
 
                 if(EnableWatcher){
                     for(auto& v : input_batch){

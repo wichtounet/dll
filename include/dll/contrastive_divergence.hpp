@@ -248,15 +248,17 @@ void update_convolutional(RBM& rbm, Trainer& t){
 /* The training procedures */
 
 template<bool Persistent, std::size_t K, typename T, typename RBM, typename Trainer, typename M>
-void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM& rbm, Trainer& t, M& t1, M& t2){
-    cpp_assert(batch.size() > 0, "Invalid batch size");
-    cpp_assert(batch.size() <= get_batch_size(rbm), "Invalid batch size");
-    cpp_assert(batch.begin()->size() == input_size(rbm), "The size of the training sample must match visible units");
+void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context, RBM& rbm, Trainer& t, M& t1, M& t2){
+    cpp_assert(input_batch.size() > 0, "Invalid batch size");
+    cpp_assert(input_batch.size() <= get_batch_size(rbm), "Invalid batch size");
+    cpp_assert(input_batch.begin()->size() == input_size(rbm), "The size of the training sample must match visible units");
 
     using namespace etl;
     using rbm_t = RBM;
 
-    maybe_parallel_foreach_i(t.pool, batch.begin(), batch.end(), [&](const auto& input, std::size_t i){
+    maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(), 
+            [&](const auto& input, const auto& expected, std::size_t i)
+    {
         //Give input to RBM
         t.v1(i) = input;
 
@@ -318,18 +320,20 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
 }
 
 template<bool Persistent, std::size_t N, typename Trainer, typename T, typename RBM>
-void train_convolutional(const dll::batch<T>& batch, rbm_training_context& context, RBM& rbm, Trainer& t){
+void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context, RBM& rbm, Trainer& t){
     cpp_assert(batch.size() > 0, "Invalid batch size");
     cpp_assert(batch.size() <= get_batch_size(rbm), "Invalid batch size");
     cpp_assert(batch.begin()->size() == input_size(rbm), "The size of the training sample must match visible units");
 
     using rbm_t = RBM;
 
-    maybe_parallel_foreach_i(t.pool, batch.begin(), batch.end(), [&](const auto& items, std::size_t i){
+    maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(), 
+            [&](const auto& input, const auto& expected, std::size_t i)
+    {
         constexpr const auto K = rbm_t::K;
         constexpr const auto NC = rbm_t::NC;
 
-        t.v1(i) = items;
+        t.v1(i) = input;
 
         //First step
         rbm.activate_hidden(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i), t.v_cv(i));
@@ -676,11 +680,11 @@ struct cd_trainer : base_cd_trainer<RBM> {
     }
 
     template<typename T>
-    void train_batch(const dll::batch<T>& batch, rbm_training_context& context){
+    void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
         static etl::fast_matrix<weight, rbm_traits<rbm_t>::batch_size(), rbm_t::num_visible, rbm_t::num_hidden> t1;
         static etl::fast_matrix<weight, rbm_traits<rbm_t>::batch_size(), rbm_t::num_visible, rbm_t::num_hidden> t2;
 
-        train_normal<false, N>(batch, context, rbm, *this, t1, t2);
+        train_normal<false, N>(input_batch, expected_batch, context, rbm, *this, t1, t2);
     }
 
     static std::string name(){
@@ -705,11 +709,11 @@ struct cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : bas
     }
 
     template<typename T>
-    void train_batch(const dll::batch<T>& batch, rbm_training_context& context){
+    void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
         static etl::dyn_matrix<weight, 3> t1(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden);
         static etl::dyn_matrix<weight, 3> t2(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden);
 
-        train_normal<false, N>(batch, context, rbm, *this, t1, t2);
+        train_normal<false, N>(input_batch, expected_batch, context, rbm, *this, t1, t2);
     }
 
     static std::string name(){
@@ -733,8 +737,8 @@ struct cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()>>
     }
 
     template<typename T>
-    void train_batch(const dll::batch<T>& batch, rbm_training_context& context){
-        train_convolutional<false, N>(batch, context, rbm, *this);
+    void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
+        train_convolutional<false, N>(input_batch, expected_batch, context, rbm, *this);
     }
 
     static std::string name(){
@@ -759,11 +763,11 @@ struct persistent_cd_trainer : base_cd_trainer<RBM> {
     }
 
     template<typename T>
-    void train_batch(const dll::batch<T>& batch, rbm_training_context& context){
+    void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
         static etl::fast_matrix<weight, rbm_traits<rbm_t>::batch_size(), rbm_t::num_visible, rbm_t::num_hidden> t1;
         static etl::fast_matrix<weight, rbm_traits<rbm_t>::batch_size(), rbm_t::num_visible, rbm_t::num_hidden> t2;
 
-        train_normal<true, K>(batch, context, rbm, *this, t1, t2);
+        train_normal<true, K>(input_batch, expected_batch, context, rbm, *this, t1, t2);
     }
 
     static std::string name(){
@@ -788,11 +792,11 @@ struct persistent_cd_trainer<K, RBM, std::enable_if_t<rbm_traits<RBM>::is_dynami
     }
 
     template<typename T>
-    void train_batch(const dll::batch<T>& batch, rbm_training_context& context){
+    void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
         static etl::dyn_matrix<weight, 3> t1(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden);
         static etl::dyn_matrix<weight, 3> t2(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden);
 
-        train_normal<true, K>(batch, context, rbm, *this, t1, t2);
+        train_normal<true, K>(input_batch, expected_batch, context, rbm, *this, t1, t2);
     }
 
     static std::string name(){
@@ -816,8 +820,8 @@ struct persistent_cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_convol
     }
 
     template<typename T>
-    void train_batch(const dll::batch<T>& batch, rbm_training_context& context){
-        train_convolutional<true, N>(batch, context, rbm, *this);
+    void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
+        train_convolutional<true, N>(input_batch, context, expected_batch, rbm, *this);
     }
 
     static std::string name(){
