@@ -256,9 +256,9 @@ void train_normal(const dll::batch<T>& batch, rbm_training_context& context, RBM
     using namespace etl;
     using rbm_t = RBM;
 
-    maybe_parallel_foreach_i(t.pool, batch.begin(), batch.end(), [&](const auto& items, std::size_t i){
+    maybe_parallel_foreach_i(t.pool, batch.begin(), batch.end(), [&](const auto& input, std::size_t i){
         //Give input to RBM
-        t.v1(i) = items;
+        t.v1(i) = input;
 
         //First step
         rbm.activate_hidden(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i), t.ht(i));
