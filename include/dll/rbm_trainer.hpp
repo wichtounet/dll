@@ -102,29 +102,33 @@ struct rbm_trainer {
             std::size_t batches = 0;
             std::size_t samples = 0;
 
-            auto it = input_first;
+            auto iit = input_first;
+            auto eit = expected_first;
             auto end = input_last;
 
             //Create a new context for this epoch
             rbm_training_context context;
 
-            while(it != end){
-                auto start = it;
+            while(iit != end){
+                auto istart = iit;
+                auto estart = eit;
 
                 std::size_t i = 0;
-                while(it != end && i < batch_size){
-                    ++it;
+                while(iit != end && i < batch_size){
+                    ++iit;
+                    ++eit;
                     ++samples;
                     ++i;
                 }
 
                 ++batches;
 
-                auto batch = make_batch(start, it);
-                trainer->train_batch(batch, context);
+                auto input_batch = make_batch(istart, iit);
+                auto expected_batch = make_batch(estart, eit);
+                trainer->train_batch(input_batch, context);
 
                 if(EnableWatcher){
-                    for(auto& v : batch){
+                    for(auto& v : input_batch){
                         context.free_energy += rbm.free_energy(v);
                     }
                 }
