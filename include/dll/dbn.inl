@@ -230,6 +230,8 @@ struct dbn {
 
     /*{{{ With labels */
 
+    //Note: dyn_vector cannot be replaced with fast_vector, because labels is runtime
+
     template<typename Samples, typename Labels>
     void train_with_labels(Samples& training_data, const Labels& training_labels, std::size_t labels, std::size_t max_epochs){
         cpp_assert(training_data.size() == training_labels.size(), "There must be the same number of values than labels");
@@ -302,7 +304,9 @@ struct dbn {
     size_t predict_labels(const TrainingItem& item_data, std::size_t labels){
         cpp_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
 
-        etl::dyn_vector<weight> item(item_data);
+        using training_t = etl::dyn_vector<weight>;
+
+        training_t item(item_data);
 
         etl::dyn_vector<weight> output_a(num_visible<layers - 1>());
         etl::dyn_vector<weight> output_s(num_visible<layers - 1>());
@@ -313,7 +317,7 @@ struct dbn {
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
             constexpr const auto num_hidden = rbm_t::num_hidden;
 
-            auto& input = static_cast<const etl::dyn_vector<weight>&>(input_ref);
+            auto& input = static_cast<const training_t&>(input_ref);
 
             if(I == layers - 1){
                 static etl::dyn_vector<weight> h1_a(num_hidden);
@@ -324,19 +328,15 @@ struct dbn {
             } else {
                 static etl::dyn_vector<weight> next_a(num_hidden);
                 static etl::dyn_vector<weight> next_s(num_hidden);
-                static etl::dyn_vector<weight> big_next_a(num_hidden + labels);
 
                 rbm.activate_hidden(next_a, next_s, input, input);
 
                 //If the next layers is the last layer
                 if(I + 1 == layers - 1){
-                    for(std::size_t i = 0; i < next_a.size(); ++i){
-                        big_next_a[i] = next_a[i];
-                    }
+                    static etl::dyn_vector<weight> big_next_a(num_hidden + labels);
 
-                    for(size_t l = 0; l < labels; ++l){
-                        big_next_a[num_hidden + l] = 0.1;
-                    }
+                    std::copy(next_a.begin(), next_a.end(), big_next_a.begin());
+                    std::fill(big_next_a.begin() + num_hidden, big_next_a.end(), 0.1);
 
                     input_ref = std::cref(big_next_a);
                 } else {
