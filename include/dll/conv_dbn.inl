@@ -70,6 +70,16 @@ struct conv_dbn {
         });
     }
 
+    void store(const std::string& file) const {
+        std::ofstream os(file, std::ofstream::binary);
+        store(os);
+    }
+
+    void load(const std::string& file){
+        std::ifstream is(file, std::ifstream::binary);
+        load(is);
+    }
+
     void store(std::ostream& os) const {
         cpp::for_each(tuples, [&os](auto& rbm){
             rbm.store(os);
