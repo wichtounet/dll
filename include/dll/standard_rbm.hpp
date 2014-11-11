@@ -23,7 +23,6 @@
 #include "base_conf.hpp"
 #include "math.hpp"
 #include "io.hpp"
-#include "rbm_trainer_fwd.hpp"
 
 namespace dll {
 
@@ -55,37 +54,6 @@ public:
                 visible_unit == unit_type::GAUSSIAN && is_relu(hidden_unit) ? 1e-5
             :   visible_unit == unit_type::GAUSSIAN || is_relu(hidden_unit) ? 1e-3
             :   /* Only ReLU and Gaussian Units needs lower rate */           1e-1;
-    }
-
-    //Normal Train functions
-
-    template<typename Samples, bool EnableWatcher = true, typename RW = void, typename... Args>
-    double train(Samples& training_data, std::size_t max_epochs, Args... args){
-        dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
-        return trainer.train(*static_cast<parent_t*>(this), training_data.begin(), training_data.end(), max_epochs);
-    }
-
-    template<typename Iterator, bool EnableWatcher = true, typename RW = void, typename... Args>
-    double train(Iterator&& first, Iterator&& last, std::size_t max_epochs, Args... args){
-        dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
-        return trainer.train(*static_cast<parent_t*>(this), std::forward<Iterator>(first), std::forward<Iterator>(last), max_epochs);
-    }
-
-    //Train denoising autoencoder
-
-    template<typename Samples, bool EnableWatcher = true, typename RW = void, typename... Args>
-    double train_denoising(Samples& noisy, Samples& clean, std::size_t max_epochs, Args... args){
-        dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
-        return trainer.train(*static_cast<parent_t*>(this), noisy.begin(), noisy.end(), clean.begin(), clean.end(), max_epochs);
-    }
-
-    template<typename NIterator, typename CIterator, bool EnableWatcher = true, typename RW = void, typename... Args>
-    double train_denoising(NIterator&& noisy_it, NIterator&& noisy_end, CIterator clean_it, CIterator clean_end, std::size_t max_epochs, Args... args){
-        dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
-        return trainer.train(*static_cast<parent_t*>(this),
-            std::forward<NIterator>(noisy_it), std::forward<NIterator>(noisy_end),
-            std::forward<CIterator>(clean_it), std::forward<CIterator>(clean_end),
-            max_epochs);
     }
 
     //I/O functions
