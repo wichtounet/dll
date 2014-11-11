@@ -137,8 +137,8 @@ public:
     //Display functions
 
     void display_units() const {
-        rbm_detail::display_visible_units(*static_cast<const parent_t*>(this));
-        rbm_detail::display_hidden_units(*static_cast<const parent_t*>(this));
+        display_visible_units();
+        display_hidden_units();
     }
 
     void display_visible_units() const {
