@@ -56,6 +56,8 @@ public:
             :   /* Only ReLU and Gaussian Units needs lower rate */           1e-1;
     }
 
+    //Normal Train functions
+
     template<typename Samples, bool EnableWatcher = true, typename RW = void, typename... Args>
     double train(Samples& training_data, std::size_t max_epochs, Args... args){
         dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
@@ -67,6 +69,25 @@ public:
         dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
         return trainer.train(*static_cast<parent_t*>(this), std::forward<Iterator>(first), std::forward<Iterator>(last), max_epochs);
     }
+
+    //Train denoising autoencoder
+
+    template<typename Samples, bool EnableWatcher = true, typename RW = void, typename... Args>
+    double train_denoising(Samples& noisy, Samples& clean, std::size_t max_epochs, Args... args){
+        dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
+        return trainer.train(*static_cast<parent_t*>(this), noisy.begin(), noisy.end(), clean.begin(), clean.end(), max_epochs);
+    }
+
+    template<typename NIterator, typename CIterator, bool EnableWatcher = true, typename RW = void, typename... Args>
+    double train_denoising(NIterator&& noisy_it, NIterator&& noisy_end, CIterator clean_it, CIterator clean_end, std::size_t max_epochs, Args... args){
+        dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
+        return trainer.train(*static_cast<parent_t*>(this),
+            std::forward<NIterator>(noisy_it), std::forward<NIterator>(noisy_end),
+            std::forward<CIterator>(clean_it), std::forward<CIterator>(clean_end),
+            max_epochs);
+    }
+
+    //I/O functions
 
     void store(const std::string& file) const {
         rbm_detail::store(file, *static_cast<const parent_t*>(this));
@@ -84,10 +105,7 @@ public:
         rbm_detail::load(is, *static_cast<parent_t*>(this));
     }
 
-    template<typename Iterator>
-    void init_weights(Iterator&& first, Iterator&& last){
-        rbm_detail::init_weights(std::forward<Iterator>(first), std::forward<Iterator>(last), *static_cast<parent_t*>(this));
-    }
+    //Energy functions
 
     template<typename V, typename H>
     weight energy(const V& v, const H& h) const {
@@ -100,8 +118,15 @@ public:
     }
 
     weight free_energy() const {
-        auto& p = *static_cast<const parent_t*>(this);
-        return rbm_detail::free_energy(p, p.v1);
+        auto& rbm = *static_cast<const parent_t*>(this);
+        return rbm_detail::free_energy(rbm, rbm.v1);
+    }
+
+    //Various functions
+
+    template<typename Iterator>
+    void init_weights(Iterator&& first, Iterator&& last){
+        rbm_detail::init_weights(std::forward<Iterator>(first), std::forward<Iterator>(last), *static_cast<parent_t*>(this));
     }
 
     template<typename Sample>
@@ -109,9 +134,11 @@ public:
         rbm_detail::reconstruct(items, *static_cast<parent_t*>(this));
     }
 
+    //Display functions
+
     void display_units() const {
-        rbm_detail::display_visible_units(*static_cast<const parent_t*>(this));
-        rbm_detail::display_hidden_units(*static_cast<const parent_t*>(this));
+        display_visible_units();
+        display_hidden_units();
     }
 
     void display_visible_units() const {

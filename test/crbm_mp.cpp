@@ -5,9 +5,13 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+#include <numeric>
+
 #include "catch.hpp"
 
 #define DLL_PARALLEL
+
+#include "dll/cpp_utils/data.hpp"
 
 #include "dll/conv_rbm_mp.hpp"
 
@@ -102,10 +106,9 @@ TEST_CASE( "crbm_mp/mnist_5", "crbm::sparsity" ) {
     rbm.sparsity_target = 0.1;
     rbm.sparsity_cost = 0.9;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
 
     REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(100);
 
     mnist::binarize_dataset(dataset);
 
@@ -128,7 +131,6 @@ TEST_CASE( "crbm_mp/mnist_6", "crbm::gaussian" ) {
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
 
     REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(100);
 
     mnist::normalize_dataset(dataset);
 
@@ -349,4 +351,41 @@ TEST_CASE( "crbm_mp/mnist_14", "crbm::slow" ) {
     auto error = rbm.train(dataset.training_images, 25);
 
     REQUIRE(error < 1e-2);
+}
+
+TEST_CASE( "crbm_mp/mnist_15", "crbm::denoising" ) {
+    dll::conv_rbm_mp_desc<
+        28, 1, 12, 40, 2,
+        dll::batch_size<25>,
+        dll::momentum,
+        dll::weight_decay<dll::decay_type::L2>,
+        dll::visible<dll::unit_type::GAUSSIAN>,
+        dll::shuffle
+    >::rbm_t rbm;
+
+    rbm.learning_rate *= 2;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
+
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::normalize_dataset(dataset);
+
+    auto noisy = dataset.training_images;
+
+    std::default_random_engine rand_engine(56);
+    std::normal_distribution<double> normal_distribution(0.0, 0.1);
+    auto noise = std::bind(normal_distribution, rand_engine);
+
+    for(auto& image : noisy){
+        for(auto& noisy_x : image){
+            noisy_x += noise();
+        }
+    }
+
+    cpp::normalize_each(noisy);
+
+    auto error = rbm.train_denoising(noisy, dataset.training_images, 100);
+
+    REQUIRE(error < 2e-2);
 }

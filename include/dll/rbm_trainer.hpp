@@ -10,6 +10,8 @@
 
 #include <memory>
 
+#include "cpp_utils/algorithm.hpp"
+
 #include "decay_type.hpp"
 #include "batch.hpp"
 #include "rbm_traits.hpp"
@@ -63,6 +65,11 @@ struct rbm_trainer {
 
     template<typename Iterator>
     typename rbm_t::weight train(RBM& rbm, Iterator first, Iterator last, std::size_t max_epochs) const {
+        return train<false>(rbm, first, last, first, last, max_epochs);
+    }
+
+    template<bool Denoising = true, typename InputIterator, typename ExpectedIterator>
+    typename rbm_t::weight train(RBM& rbm, InputIterator input_first, InputIterator input_last, ExpectedIterator expected_first, ExpectedIterator expected_last, std::size_t max_epochs) const {
         rbm.momentum = rbm.initial_momentum;
 
         if(EnableWatcher){
@@ -70,7 +77,7 @@ struct rbm_trainer {
         }
 
         //Some RBM may init weights based on the training data
-        init_weights(rbm, first, last);
+        init_weights(rbm, input_first, input_last);
 
         auto trainer = std::make_unique<trainer_t<rbm_t>>(rbm);
 
@@ -81,39 +88,47 @@ struct rbm_trainer {
 
         //Train for max_epochs epoch
         for(std::size_t epoch= 0; epoch < max_epochs; ++epoch){
-            auto it = first;
-            auto end = last;
-
             if(rbm_traits<rbm_t>::has_shuffle()){
                 std::random_device rd;
                 std::mt19937_64 g(rd());
 
-                std::shuffle(it, end, g);
+                if(Denoising){
+                    cpp::parallel_shuffle(input_first, input_last, expected_first, expected_last, g);
+                } else {
+                    std::shuffle(input_first, input_last, g);
+                }
             }
 
             std::size_t batches = 0;
             std::size_t samples = 0;
 
+            auto iit = input_first;
+            auto eit = expected_first;
+            auto end = input_last;
+
             //Create a new context for this epoch
             rbm_training_context context;
 
-            while(it != end){
-                auto start = it;
+            while(iit != end){
+                auto istart = iit;
+                auto estart = eit;
 
                 std::size_t i = 0;
-                while(it != end && i < batch_size){
-                    ++it;
+                while(iit != end && i < batch_size){
+                    ++iit;
+                    ++eit;
                     ++samples;
                     ++i;
                 }
 
                 ++batches;
 
-                auto batch = make_batch(start, it);
-                trainer->train_batch(batch, context);
+                auto input_batch = make_batch(istart, iit);
+                auto expected_batch = make_batch(estart, eit);
+                trainer->train_batch(input_batch, expected_batch, context);
 
                 if(EnableWatcher){
-                    for(auto& v : batch){
+                    for(auto& v : input_batch){
                         context.free_energy += rbm.free_energy(v);
                     }
                 }
