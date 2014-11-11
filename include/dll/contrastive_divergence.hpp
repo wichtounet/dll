@@ -256,11 +256,12 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
     using namespace etl;
     using rbm_t = RBM;
 
-    maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(), 
+    maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(),
             [&](const auto& input, const auto& expected, std::size_t i)
     {
-        //Give input to RBM
+        //Copy input/expected for computations
         t.v1(i) = input;
+        t.vf(i) = expected;
 
         //First step
         rbm.activate_hidden(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i), t.ht(i));
@@ -285,7 +286,7 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
             rbm.activate_hidden(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.ht(i));
         }
 
-        mmul(reshape_nv1(rbm, t.v1(i)), reshape_1nh(rbm, t.h1_a(i)), t1(i));
+        mmul(reshape_nv1(rbm, t.vf(i)), reshape_1nh(rbm, t.h1_a(i)), t1(i));
         mmul(reshape_nv1(rbm, t.v2_a(i)), reshape_1nh(rbm, t.h2_a(i)), t2(i));
     });
 
@@ -296,12 +297,12 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
         t.init = false;
     }
 
-    context.reconstruction_error += mean((t.v1 - t.v2_a) * (t.v1 - t.v2_a));
+    context.reconstruction_error += mean((t.vf - t.v2_a) * (t.vf - t.v2_a));
 
     //Compute the gradients
     t.w_grad = mean_l(t1 - t2);
     t.b_grad = mean_l(t.h1_a - t.h2_a);
-    t.c_grad = mean_l(t.v1 - t.v2_a);
+    t.c_grad = mean_l(t.vf - t.v2_a);
 
     nan_check_deep_3(t.w_grad, t.b_grad, t.c_grad);
 
@@ -327,13 +328,15 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
 
     using rbm_t = RBM;
 
-    maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(), 
+    maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(),
             [&](const auto& input, const auto& expected, std::size_t i)
     {
         constexpr const auto K = rbm_t::K;
         constexpr const auto NC = rbm_t::NC;
 
+        //Copy input/expected for computations
         t.v1(i) = input;
+        t.vf(i) = expected;
 
         //First step
         rbm.activate_hidden(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i), t.v_cv(i));
@@ -362,7 +365,7 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
 
         for(std::size_t channel = 0; channel < NC; ++channel){
             for(std::size_t k = 0; k < K; ++k){
-                etl::convolve_2d_valid(t.v1(i)(channel), fflip(t.h1_a(i)(k)), t.w_pos(i)(channel)(k));
+                etl::convolve_2d_valid(t.vf(i)(channel), fflip(t.h1_a(i)(k)), t.w_pos(i)(channel)(k));
                 etl::convolve_2d_valid(t.v2_a(i)(channel), fflip(t.h2_a(i)(k)), t.w_neg(i)(channel)(k));
             }
         }
@@ -378,7 +381,7 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
     //Compute the gradients
     t.w_grad = mean_l(t.w_pos - t.w_neg);
     t.b_grad = mean_r(mean_l(t.h1_a - t.h2_a));
-    t.c_grad = mean_r(mean_l(t.v1 - t.v2_a));
+    t.c_grad = mean_r(mean_l(t.vf - t.v2_a));
 
     nan_check_deep(t.w_grad);
     nan_check_deep(t.b_grad);
@@ -401,7 +404,7 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
     context.sparsity += t.q_global_batch;
 
     //Accumulate the error
-    context.reconstruction_error += mean((t.v1 - t.v2_a) * (t.v1 - t.v2_a));
+    context.reconstruction_error += mean((t.vf - t.v2_a) * (t.vf - t.v2_a));
 
     //Update the weights and biases based on the gradients
     t.update(rbm);
@@ -425,7 +428,8 @@ struct base_cd_trainer : base_trainer<RBM> {
 
     static constexpr const auto batch_size = rbm_traits<rbm_t>::batch_size();
 
-    etl::fast_matrix<weight, batch_size, num_visible> v1;
+    etl::fast_matrix<weight, batch_size, num_visible> v1; //Input
+    etl::fast_matrix<weight, batch_size, num_visible> vf; //Expected
 
     etl::fast_matrix<weight, batch_size, num_hidden> h1_a;
     etl::fast_matrix<weight, batch_size, num_hidden> h1_s;
@@ -493,7 +497,8 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
 
     typedef typename rbm_t::weight weight;
 
-    etl::dyn_matrix<weight> v1;
+    etl::dyn_matrix<weight> v1; //Input
+    etl::dyn_matrix<weight> vf; //Expected
 
     etl::dyn_matrix<weight> h1_a;
     etl::dyn_matrix<weight> h1_s;
@@ -538,6 +543,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
     template<bool M = rbm_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
     base_cd_trainer(rbm_t& rbm) :
             v1(get_batch_size(rbm), rbm.num_visible),
+            vf(get_batch_size(rbm), rbm.num_visible),
             h1_a(get_batch_size(rbm), rbm.num_hidden), h1_s(get_batch_size(rbm), rbm.num_hidden),
             v2_a(get_batch_size(rbm), rbm.num_visible), v2_s(get_batch_size(rbm), rbm.num_visible),
             h2_a(get_batch_size(rbm), rbm.num_hidden), h2_s(get_batch_size(rbm), rbm.num_hidden),
@@ -554,6 +560,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
     template<bool M = rbm_traits<rbm_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
     base_cd_trainer(rbm_t& rbm) :
             v1(get_batch_size(rbm), rbm.num_visible),
+            vf(get_batch_size(rbm), rbm.num_visible),
             h1_a(get_batch_size(rbm), rbm.num_hidden), h1_s(get_batch_size(rbm), rbm.num_hidden),
             v2_a(get_batch_size(rbm), rbm.num_visible), v2_s(get_batch_size(rbm), rbm.num_visible),
             h2_a(get_batch_size(rbm), rbm.num_hidden), h2_s(get_batch_size(rbm), rbm.num_hidden),
@@ -630,7 +637,8 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
     etl::fast_matrix<weight, batch_size, NC, K, NW, NW> w_pos;
     etl::fast_matrix<weight, batch_size, NC, K, NW, NW> w_neg;
 
-    etl::fast_matrix<weight, batch_size, NC, NV, NV> v1;
+    etl::fast_matrix<weight, batch_size, NC, NV, NV> v1; //Input
+    etl::fast_matrix<weight, batch_size, NC, NV, NV> vf; //Expected
 
     etl::fast_matrix<weight, batch_size, K, NH, NH> h1_a;
     etl::fast_matrix<weight, batch_size, K, NH, NH> h1_s;
@@ -821,7 +829,7 @@ struct persistent_cd_trainer<N, RBM, std::enable_if_t<rbm_traits<RBM>::is_convol
 
     template<typename T>
     void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
-        train_convolutional<true, N>(input_batch, context, expected_batch, rbm, *this);
+        train_convolutional<true, N>(input_batch, expected_batch, context, rbm, *this);
     }
 
     static std::string name(){
