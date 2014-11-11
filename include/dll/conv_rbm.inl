@@ -22,7 +22,6 @@
 #include "math.hpp"               //Logistic sigmoid
 #include "io.hpp"                 //Binary load/store functions
 #include "tmp.hpp"
-#include "rbm_trainer_fwd.hpp"
 #include "checks.hpp"
 
 namespace dll {
@@ -157,33 +156,6 @@ struct conv_rbm : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
         nan_check_deep(v_a);
         nan_check_deep(v_s);
-    }
-
-    template<typename Samples, bool EnableWatcher = true, typename RW = void, typename... Args>
-    weight train(Samples& training_data, std::size_t max_epochs, Args... args){
-        dll::rbm_trainer<this_type, EnableWatcher, RW> trainer(args...);
-        return trainer.train(*this, training_data.begin(), training_data.end(), max_epochs);
-    }
-
-    template<typename Iterator, bool EnableWatcher = true, typename RW = void, typename... Args>
-    weight train(Iterator&& first, Iterator&& last, std::size_t max_epochs, Args... args){
-        dll::rbm_trainer<this_type, EnableWatcher, RW> trainer(args...);
-        return trainer.train(*this, std::forward<Iterator>(first), std::forward<Iterator>(last), max_epochs);
-    }
-
-    template<typename Samples, bool EnableWatcher = true, typename RW = void, typename... Args>
-    double train_denoising(Samples& noisy, Samples& clean, std::size_t max_epochs, Args... args){
-        dll::rbm_trainer<this_type, EnableWatcher, RW> trainer(args...);
-        return trainer.train(*this, noisy.begin(), noisy.end(), clean.begin(), clean.end(), max_epochs);
-    }
-
-    template<typename NIterator, typename CIterator, bool EnableWatcher = true, typename RW = void, typename... Args>
-    double train_denoising(NIterator&& noisy_it, NIterator&& noisy_end, CIterator clean_it, CIterator clean_end, std::size_t max_epochs, Args... args){
-        dll::rbm_trainer<this_type, EnableWatcher, RW> trainer(args...);
-        return trainer.train(*this,
-            std::forward<NIterator>(noisy_it), std::forward<NIterator>(noisy_end),
-            std::forward<CIterator>(clean_it), std::forward<CIterator>(clean_end),
-            max_epochs);
     }
 
     template<typename V, typename H, cpp::enable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>

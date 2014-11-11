@@ -10,6 +10,7 @@
 
 #include "base_conf.hpp"          //The configuration helpers
 #include "rbm_base.hpp"           //The base class
+#include "rbm_trainer_fwd.hpp"
 
 namespace dll {
 
@@ -52,6 +53,33 @@ public:
 
     void load(std::istream& is){
         load(is, *static_cast<parent_t*>(this));
+    }
+
+    template<typename Samples, bool EnableWatcher = true, typename RW = void, typename... Args>
+    weight train(Samples& training_data, std::size_t max_epochs, Args... args){
+        dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
+        return trainer.train(*static_cast<parent_t*>(this), training_data.begin(), training_data.end(), max_epochs);
+    }
+
+    template<typename Iterator, bool EnableWatcher = true, typename RW = void, typename... Args>
+    weight train(Iterator&& first, Iterator&& last, std::size_t max_epochs, Args... args){
+        dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
+        return trainer.train(*static_cast<parent_t*>(this), std::forward<Iterator>(first), std::forward<Iterator>(last), max_epochs);
+    }
+
+    template<typename Samples, bool EnableWatcher = true, typename RW = void, typename... Args>
+    double train_denoising(Samples& noisy, Samples& clean, std::size_t max_epochs, Args... args){
+        dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
+        return trainer.train(*static_cast<parent_t*>(this), noisy.begin(), noisy.end(), clean.begin(), clean.end(), max_epochs);
+    }
+
+    template<typename NIterator, typename CIterator, bool EnableWatcher = true, typename RW = void, typename... Args>
+    double train_denoising(NIterator&& noisy_it, NIterator&& noisy_end, CIterator clean_it, CIterator clean_end, std::size_t max_epochs, Args... args){
+        dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
+        return trainer.train(*static_cast<parent_t*>(this),
+            std::forward<NIterator>(noisy_it), std::forward<NIterator>(noisy_end),
+            std::forward<CIterator>(clean_it), std::forward<CIterator>(clean_end),
+            max_epochs);
     }
 
 private:
