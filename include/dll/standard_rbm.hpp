@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_STANDARD_RBM_INL
-#define DLL_STANDARD_RBM_INL
+#ifndef DLL_STANDARD_RBM_HPP
+#define DLL_STANDARD_RBM_HPP
 
 #include <cmath>
 #include <vector>
