@@ -15,6 +15,7 @@ Features
    * Momentum
    * Weight decay
    * Sparsity target
+   * Train as Denoising autoencoder
 
 * **Convolutional Restricted Boltzmann Machine**
 
@@ -25,6 +26,7 @@ Features
   * Binary hidden units for the Probabilistic Max Pooling version
   * Training with CD-k or PCD-k (only for standard version)
   * Momentum, Weight Decay, Sparsity Target
+   * Train as Denoising autoencoder
 
 * **Deep Belief Network**
 
