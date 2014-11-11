@@ -8,6 +8,9 @@
 #ifndef DLL_RBM_BASE_HPP
 #define DLL_RBM_BASE_HPP
 
+#include <iostream>
+#include <fstream>
+
 #include "rbm_trainer_fwd.hpp"
 
 namespace dll {
@@ -86,6 +89,56 @@ public:
             std::forward<NIterator>(noisy_it), std::forward<NIterator>(noisy_end),
             std::forward<CIterator>(clean_it), std::forward<CIterator>(clean_end),
             max_epochs);
+    }
+
+    //I/O functions
+
+    void store(const std::string& file) const {
+        store(file, *static_cast<const parent_t*>(this));
+    }
+
+    void store(std::ostream& os) const {
+        store(os, *static_cast<const parent_t*>(this));
+    }
+
+    void load(const std::string& file){
+        load(file, *static_cast<parent_t*>(this));
+    }
+
+    void load(std::istream& is){
+        load(is, *static_cast<parent_t*>(this));
+    }
+
+private:
+
+    //Since the sub classes does not have the same fields, it is not possible
+    //to put the fields in standard_rbm, therefore, it is necessary to use template
+    //functions to implement the details
+
+    template<typename RBM>
+    static void store(std::ostream& os, const RBM& rbm){
+        binary_write_all(os, rbm.w);
+        binary_write_all(os, rbm.b);
+        binary_write_all(os, rbm.c);
+    }
+
+    template<typename RBM>
+    static void load(std::istream& is, RBM& rbm){
+        binary_load_all(is, rbm.w);
+        binary_load_all(is, rbm.b);
+        binary_load_all(is, rbm.c);
+    }
+
+    template<typename RBM>
+    static void store(const std::string& file, const RBM& rbm){
+        std::ofstream os(file, std::ofstream::binary);
+        store(os, rbm);
+    }
+
+    template<typename RBM>
+    static void load(const std::string& file, RBM& rbm){
+        std::ifstream is(file, std::ifstream::binary);
+        load(is, rbm);
     }
 };
 

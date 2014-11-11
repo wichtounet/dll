@@ -50,16 +50,6 @@ public:
             :   /* Only Gaussian Units needs lower rate */         1e-3;
     }
 
-    //I/O functions
-
-    void store(std::ostream& os) const {
-        store(os, *static_cast<parent_t*>(this));
-    }
-
-    void load(std::istream& is){
-        load(is, *static_cast<parent_t*>(this));
-    }
-
     //Utility functions
 
     template<typename Sample>
@@ -88,20 +78,6 @@ private:
     //Since the sub classes do not have the same fields, it is not possible
     //to put the fields in standard_rbm, therefore, it is necessary to use template
     //functions to implement the details
-
-    template<typename RBM>
-    static void store(std::ostream& os, const RBM& rbm){
-        binary_write_all(os, rbm.w);
-        binary_write_all(os, rbm.b);
-        binary_write(os, rbm.c);
-    }
-
-    template<typename RBM>
-    static void load(std::istream& is, RBM& rbm){
-        binary_load_all(is, rbm.w);
-        binary_load_all(is, rbm.b);
-        binary_load(is, rbm.c);
-    }
 
     template<typename Sample, typename RBM>
     static void reconstruct(const Sample& items, RBM& rbm){

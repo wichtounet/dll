@@ -56,24 +56,6 @@ public:
             :   /* Only ReLU and Gaussian Units needs lower rate */           1e-1;
     }
 
-    //I/O functions
-
-    void store(const std::string& file) const {
-        store(file, *static_cast<const parent_t*>(this));
-    }
-
-    void store(std::ostream& os) const {
-        store(os, *static_cast<const parent_t*>(this));
-    }
-
-    void load(const std::string& file){
-        load(file, *static_cast<parent_t*>(this));
-    }
-
-    void load(std::istream& is){
-        load(is, *static_cast<parent_t*>(this));
-    }
-
     //Energy functions
 
     template<typename V, typename H>
@@ -136,31 +118,6 @@ private:
     //to put the fields in standard_rbm, therefore, it is necessary to use template
     //functions to implement the details
 
-    template<typename RBM>
-    static void store(std::ostream& os, const RBM& rbm){
-        binary_write_all(os, rbm.w);
-        binary_write_all(os, rbm.b);
-        binary_write_all(os, rbm.c);
-    }
-
-    template<typename RBM>
-    static void load(std::istream& is, RBM& rbm){
-        binary_load_all(is, rbm.w);
-        binary_load_all(is, rbm.b);
-        binary_load_all(is, rbm.c);
-    }
-
-    template<typename RBM>
-    static void store(const std::string& file, const RBM& rbm){
-        std::ofstream os(file, std::ofstream::binary);
-        store(os, rbm);
-    }
-
-    template<typename RBM>
-    static void load(const std::string& file, RBM& rbm){
-        std::ifstream is(file, std::ifstream::binary);
-        load(is, rbm);
-    }
 
     template<typename Iterator, typename RBM>
     static void init_weights(Iterator first, Iterator last, RBM& rbm){
