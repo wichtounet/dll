@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_NORMAL_RBM_INL
-#define DLL_NORMAL_RBM_INL
+#ifndef DLL_STANDARD_RBM_INL
+#define DLL_STANDARD_RBM_INL
 
 #include <cmath>
 #include <vector>
@@ -34,7 +34,7 @@ namespace dll {
  * This follows the definition of a RBM by Geoffrey Hinton.
  */
 template<typename Parent, typename Desc>
-class normal_rbm : public rbm_base<Desc> {
+class standard_rbm : public rbm_base<Desc> {
 public:
     typedef float weight;
 
@@ -48,7 +48,7 @@ public:
     static_assert(hidden_unit != unit_type::GAUSSIAN, "Gaussian hidden units are not supported");
 
 public:
-    normal_rbm(){
+    standard_rbm(){
         //Better initialization of learning rate
         rbm_base<desc>::learning_rate =
                 visible_unit == unit_type::GAUSSIAN && is_relu(hidden_unit) ? 1e-5

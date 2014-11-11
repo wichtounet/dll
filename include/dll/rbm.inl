@@ -13,7 +13,7 @@
 
 #include "etl/etl.hpp"
 
-#include "normal_rbm.hpp"
+#include "standard_rbm.hpp"
 #include "checks.hpp"
 
 namespace dll {
@@ -24,7 +24,7 @@ namespace dll {
  * This follows the definition of a RBM by Geoffrey Hinton.
  */
 template<typename Desc>
-struct rbm : public normal_rbm<rbm<Desc>, Desc> {
+struct rbm : public standard_rbm<rbm<Desc>, Desc> {
     using desc = Desc;
     using weight = typename desc::weight;
 
@@ -65,7 +65,7 @@ struct rbm : public normal_rbm<rbm<Desc>, Desc> {
      * The weights are initialized from a normal distribution of
      * zero-mean and 0.1 variance.
      */
-    rbm() : normal_rbm<rbm<Desc>, Desc>(), b(0.0), c(0.0) {
+    rbm() : standard_rbm<rbm<Desc>, Desc>(), b(0.0), c(0.0) {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
         w = etl::normal_generator<weight>() * 0.1;
     }

@@ -10,7 +10,7 @@
 
 #include "etl/etl.hpp"
 
-#include "normal_rbm.hpp"
+#include "standard_rbm.hpp"
 #include "checks.hpp"
 
 namespace dll {
@@ -21,7 +21,7 @@ namespace dll {
  * This follows the definition of a RBM by Geoffrey Hinton.
  */
 template<typename Desc>
-struct dyn_rbm : public normal_rbm<dyn_rbm<Desc>, Desc> {
+struct dyn_rbm : public standard_rbm<dyn_rbm<Desc>, Desc> {
     using desc = Desc;
     using weight = typename desc::weight;
 
@@ -64,7 +64,7 @@ struct dyn_rbm : public normal_rbm<dyn_rbm<Desc>, Desc> {
      * The weights are initialized from a normal distribution of
      * zero-mean and 0.1 variance.
      */
-    dyn_rbm(size_t num_visible, size_t num_hidden) : normal_rbm<dyn_rbm<Desc>, Desc>(),
+    dyn_rbm(size_t num_visible, size_t num_hidden) : standard_rbm<dyn_rbm<Desc>, Desc>(),
             w(num_visible, num_hidden), b(num_hidden, static_cast<weight>(0.0)), c(num_visible, static_cast<weight>(0.0)),
             v1(num_visible), h1_a(num_hidden), h1_s(num_hidden),
             v2_a(num_visible), v2_s(num_visible), h2_a(num_hidden), h2_s(num_hidden),
