@@ -118,8 +118,8 @@ public:
     }
 
     weight free_energy() const {
-        auto& p = *static_cast<const parent_t*>(this);
-        return rbm_detail::free_energy(p, p.v1);
+        auto& rbm = *static_cast<const parent_t*>(this);
+        return rbm_detail::free_energy(rbm, rbm.v1);
     }
 
     //Various functions
