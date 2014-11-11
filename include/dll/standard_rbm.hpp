@@ -33,12 +33,14 @@ namespace dll {
  * This follows the definition of a RBM by Geoffrey Hinton.
  */
 template<typename Parent, typename Desc>
-class standard_rbm : public rbm_base<Desc> {
+class standard_rbm : public rbm_base<Parent, Desc> {
 public:
     typedef float weight;
 
     using desc = Desc;
     using parent_t = Parent;
+    using this_type = standard_rbm<parent_t, desc>;
+    using base_type = rbm_base<parent_t, desc>;
 
     static constexpr const unit_type visible_unit = desc::visible_unit;
     static constexpr const unit_type hidden_unit = desc::hidden_unit;
@@ -49,7 +51,7 @@ public:
 public:
     standard_rbm(){
         //Better initialization of learning rate
-        rbm_base<desc>::learning_rate =
+        base_type::learning_rate =
                 visible_unit == unit_type::GAUSSIAN && is_relu(hidden_unit) ? 1e-5
             :   visible_unit == unit_type::GAUSSIAN || is_relu(hidden_unit) ? 1e-3
             :   /* Only ReLU and Gaussian Units needs lower rate */           1e-1;

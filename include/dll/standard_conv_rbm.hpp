@@ -20,12 +20,14 @@ namespace dll {
  * This follows the definition of a CRBM by Honglak Lee.
  */
 template<typename Parent, typename Desc>
-class standard_conv_rbm : public rbm_base<Desc> {
+class standard_conv_rbm : public rbm_base<Parent, Desc> {
 public:
     typedef float weight;
 
     using desc = Desc;
     using parent_t = Parent;
+    using this_type = standard_conv_rbm<parent_t, desc>;
+    using base_type = rbm_base<parent_t, Desc>;
 
     static constexpr const unit_type visible_unit = desc::visible_unit;
     static constexpr const unit_type hidden_unit = desc::hidden_unit;
@@ -43,7 +45,7 @@ public:
         //Note: Convolutional RBM needs lower learning rate than standard RBM
 
         //Better initialization of learning rate
-        rbm_base<desc>::learning_rate =
+        base_type::learning_rate =
                 visible_unit == unit_type::GAUSSIAN  ?             1e-5
             :   is_relu(hidden_unit)                 ?             1e-4
             :   /* Only Gaussian Units needs lower rate */         1e-3;
