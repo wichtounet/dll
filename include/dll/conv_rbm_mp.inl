@@ -18,7 +18,7 @@
 #include "etl/etl.hpp"
 #include "etl/convolution.hpp"
 
-#include "rbm_base.hpp"           //The base class
+#include "standard_conv_rbm.hpp"  //The base class
 #include "base_conf.hpp"          //The configuration helpers
 #include "math.hpp"               //Logistic sigmoid
 #include "io.hpp"                 //Binary load/store functions
@@ -35,7 +35,7 @@ namespace dll {
  * This follows the definition of a CRBM by Honglak Lee.
  */
 template<typename Desc>
-struct conv_rbm_mp : public rbm_base<Desc> {
+struct conv_rbm_mp : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
     using desc = Desc;
     using weight = typename desc::weight;
     using this_type = conv_rbm_mp<desc>;
@@ -52,11 +52,6 @@ struct conv_rbm_mp : public rbm_base<Desc> {
 
     static constexpr const std::size_t NW = NV - NH + 1; //By definition
     static constexpr const std::size_t NP = NH / C;      //By definition
-
-    static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN,
-        "Only binary and linear visible units are supported");
-    static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit),
-        "Only binary hidden units are supported");
 
     etl::fast_matrix<weight, NC, K, NW, NW> w;  //shared weights
     etl::fast_vector<weight, K> b;              //hidden biases bk
