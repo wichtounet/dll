@@ -36,7 +36,39 @@ public:
 
 public:
 
+    standard_conv_rbm(){
+        //Note: Convolutional RBM needs lower learning rate than standard RBM
+
+        //Better initialization of learning rate
+        rbm_base<desc>::learning_rate =
+                visible_unit == unit_type::GAUSSIAN  ?             1e-5
+            :   is_relu(hidden_unit)                 ?             1e-4
+            :   /* Only Gaussian Units needs lower rate */         1e-3;
+    }
+
+    void store(std::ostream& os) const {
+        store(os, *static_cast<parent_t*>(this));
+    }
+
+    void load(std::istream& is){
+        load(is, *static_cast<parent_t*>(this));
+    }
+
 private:
+
+    template<typename RBM>
+    static void store(std::ostream& os, const RBM& rbm){
+        binary_write_all(os, rbm.w);
+        binary_write_all(os, rbm.b);
+        binary_write(os, rbm.c);
+    }
+
+    template<typename RBM>
+    void load(std::istream& is, RBM& rbm){
+        binary_load_all(is, rbm.w);
+        binary_load_all(is, rbm.b);
+        binary_load(is, rbm.c);
+    }
 
 };
 

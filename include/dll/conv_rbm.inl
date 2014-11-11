@@ -37,6 +37,7 @@ struct conv_rbm : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     using desc = Desc;
     using weight = typename desc::weight;
     using this_type = conv_rbm<desc>;
+    using base_type = standard_conv_rbm<this_type, desc>;
 
     static constexpr const unit_type visible_unit = desc::visible_unit;
     static constexpr const unit_type hidden_unit = desc::hidden_unit;
@@ -68,27 +69,11 @@ struct conv_rbm : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     etl::fast_matrix<weight, NC+1, K, NH, NH> v_cv; //Temporary convolution
     etl::fast_matrix<weight, K+1, NV, NV> h_cv;     //Temporary convolution
 
-    //No copying
-    conv_rbm(const conv_rbm& rbm) = delete;
-    conv_rbm& operator=(const conv_rbm& rbm) = delete;
-
-    //No moving
-    conv_rbm(conv_rbm&& rbm) = delete;
-    conv_rbm& operator=(conv_rbm&& rbm) = delete;
-
-    conv_rbm(){
+    conv_rbm() : base_type() {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
         w = 0.01 * etl::normal_generator();
         b = -0.1;
         c = 0.0;
-
-        //Note: Convolutional RBM needs lower learning rate than standard RBM
-
-        //Better initialization of learning rate
-        rbm_base<desc>::learning_rate =
-                visible_unit == unit_type::GAUSSIAN  ?             1e-5
-            :   is_relu(hidden_unit)                 ?             1e-4
-            :   /* Only Gaussian Units needs lower rate */         1e-3;
     }
 
     static constexpr std::size_t input_size(){
@@ -101,18 +86,6 @@ struct conv_rbm : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
     void display() const {
         printf("CRBM: %lux%lux%lu -> (%lux%lu) -> %lux%lux%lu\n", NV, NV, NC, NW, NW, NH, NH, K);
-    }
-
-    void store(std::ostream& os) const {
-        binary_write_all(os, w);
-        binary_write_all(os, b);
-        binary_write(os, c);
-    }
-
-    void load(std::istream& is){
-        binary_load_all(is, w);
-        binary_load_all(is, b);
-        binary_load(is, c);
     }
 
     template<typename H1, typename H2, typename V1, typename V2>
