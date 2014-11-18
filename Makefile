@@ -18,6 +18,7 @@ LD_FLAGS += -lpthread
 #-Werror
 OPENCV_LD_FLAGS=-lopencv_core -lopencv_imgproc -lopencv_highgui
 LIBSVM_LD_FLAGS=-lsvm
+TEST_LD_FLAGS=$(LIBSVM_LD_FLAGS)
 
 CPP_FILES=$(wildcard test_compile/*.cpp)
 
@@ -42,7 +43,7 @@ $(eval $(call add_executable,compile_ocv_1,test_compile/rbm_view.cpp,$(OPENCV_LD
 $(eval $(call add_executable,compile_ocv_2,test_compile/crbm_view.cpp,$(OPENCV_LD_FLAGS)))
 $(eval $(call add_executable,compile_ocv_3,test_compile/crbm_mp_view.cpp,$(OPENCV_LD_FLAGS)))
 
-$(eval $(call add_test_executable,dll_test,$(TEST_FILES),$(LIBSVM_LD_FLAGS)))
+$(eval $(call add_test_executable,dll_test,$(TEST_FILES),$(TEST_LD_FLAGS)))
 
 $(eval $(call add_executable_set,compile_rbm,compile_rbm))
 $(eval $(call add_executable_set,compile_conv_rbm,compile_conv_rbm))
