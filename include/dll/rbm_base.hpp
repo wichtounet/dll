@@ -11,6 +11,7 @@
 #include <iostream>
 #include <fstream>
 
+#include "io.hpp"
 #include "rbm_trainer_fwd.hpp"
 
 namespace dll {
