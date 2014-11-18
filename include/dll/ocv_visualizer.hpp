@@ -13,9 +13,86 @@
 #include "rbm_traits.hpp"
 #include "dbn_traits.hpp"
 
+#ifndef DLL_DETAIL_ONLY
 #include <opencv2/opencv.hpp>
+#endif
 
 namespace dll {
+
+namespace detail {
+
+struct shape {
+    const std::size_t width;
+    const std::size_t height;
+    constexpr shape(std::size_t width, std::size_t height) : width(width), height(height) {}
+};
+
+constexpr inline std::size_t ct_mid(std::size_t a, std::size_t b){
+    return (a+b) / 2;
+}
+
+constexpr inline std::size_t ct_pow(std::size_t a){
+    return a*a;
+}
+
+#ifdef __clang__
+
+constexpr std::size_t ct_sqrt(std::size_t res, std::size_t l, std::size_t r){
+    if(l == r){
+        return r;
+    } else {
+        const auto mid = (r + l) / 2;
+
+        if(mid * mid >= res){
+            return ct_sqrt(res, l, mid);
+        } else {
+            return ct_sqrt(res, mid + 1, r);
+        }
+    }
+}
+
+constexpr inline std::size_t ct_sqrt(const std::size_t res){
+    return ct_sqrt(res, 1, res);
+}
+
+constexpr inline std::size_t best_height(const std::size_t total){
+    const auto width = ct_sqrt(total);
+    const auto square = total / width;
+
+    if(width * square >= total){
+        return square;
+    } else {
+        return square + 1;
+    }
+}
+
+#else
+
+constexpr inline std::size_t ct_sqrt(std::size_t res, std::size_t l, std::size_t r){
+    return
+        l == r ? r
+        : ct_sqrt(res, ct_pow(
+            ct_mid(r, l)) >= res ? l : ct_mid(r, l) + 1,
+            ct_pow(ct_mid(r, l)) >= res ? ct_mid(r, l) : r);
+}
+
+constexpr inline std::size_t ct_sqrt(const std::size_t res){
+    return ct_sqrt(res, 1, res);
+}
+
+constexpr inline std::size_t best_height(const std::size_t total){
+    return (ct_sqrt(total) * (total / ct_sqrt(total))) >= total ? total / ct_sqrt(total) : ((total / ct_sqrt(total)) + 1);
+}
+
+#endif
+
+constexpr inline std::size_t best_width(const std::size_t total){
+    return ct_sqrt(total);
+}
+
+} //end of namespace detail
+
+#ifndef DLL_DETAIL_ONLY
 
 template<typename RBM>
 struct base_ocv_rbm_visualizer {
@@ -75,85 +152,6 @@ struct base_ocv_rbm_visualizer {
     }
 };
 
-namespace detail {
-
-struct shape {
-    const std::size_t width;
-    const std::size_t height;
-    constexpr shape(std::size_t width, std::size_t height) : width(width), height(height) {}
-};
-
-constexpr inline std::size_t ct_mid(std::size_t a, std::size_t b){
-    return (a+b) / 2;
-}
-
-constexpr inline std::size_t ct_pow(std::size_t a){
-    return a*a;
-}
-
-#ifdef __clang__
-
-constexpr std::size_t ct_sqrt(std::size_t res, std::size_t l, std::size_t r){
-    if(l == r){
-        return r;
-    } else {
-        const auto mid = (r + l) / 2;
-
-        if(mid * mid >= res){
-            return ct_sqrt(res, l, mid);
-        } else {
-            return ct_sqrt(res, mid + 1, r);
-        }
-    }
-}
-
-constexpr inline std::size_t ct_sqrt(const std::size_t res){
-    return ct_sqrt(res, 1, res);
-}
-
-constexpr inline std::size_t best_width(const std::size_t total){
-    const auto square = ct_sqrt(total);
-
-    if(square * square == total){
-        return square;
-    } else {
-        auto width = square;
-        while(width * square < total){
-            ++width;
-        }
-        return width;
-    }
-}
-
-#else
-
-constexpr inline std::size_t ct_sqrt(std::size_t res, std::size_t l, std::size_t r){
-    return
-        l == r ? r
-        : ct_sqrt(res, ct_pow(
-            ct_mid(r, l)) >= res ? l : ct_mid(r, l) + 1,
-            ct_pow(ct_mid(r, l)) >= res ? ct_mid(r, l) : r);
-}
-
-constexpr inline std::size_t ct_sqrt(const std::size_t res){
-    return ct_sqrt(res, 1, res);
-}
-
-constexpr inline std::size_t best_width_sub(const std::size_t total, const std::size_t width){
-    return width * ct_sqrt(total) >= total ? width : best_width_sub(total, width + 1);
-}
-
-constexpr inline std::size_t best_width(const std::size_t total){
-    return ct_sqrt(total) * ct_sqrt(total) == total ? ct_sqrt(total) : best_width_sub(ct_sqrt(total), total);
-}
-
-#endif
-
-constexpr inline std::size_t best_height(const std::size_t total){
-    return ct_sqrt(total);
-}
-
-} //end of namespace detail
 
 //rbm_ocv_config is used instead of directly passing the parameters because
 //adding non-type template parameters would break dll::watcher
@@ -653,6 +651,8 @@ std::vector<cv::Mat> opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<D
 
 template <typename DBN, typename C>
 std::size_t opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convolutional()>>::current_image;
+
+#endif
 
 } //end of dll namespace
 
