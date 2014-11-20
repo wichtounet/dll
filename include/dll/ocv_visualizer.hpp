@@ -143,6 +143,7 @@ struct base_ocv_rbm_visualizer {
     void training_end(const RBM&){
         std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
 
+        std::cout << "Press on any key to close the window..." << std::endl;
         cv::waitKey(0);
     }
 
@@ -446,6 +447,7 @@ struct opencv_dbn_visualizer {
     void training_end(const RBM&){
         std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
 
+        std::cout << "Press on any key to close the window and continue training..." << std::endl;
         cv::waitKey(0);
     }
 
@@ -474,6 +476,7 @@ struct opencv_dbn_visualizer {
     void fine_tuning_end(const DBN&){
         std::cout << "Total training took " << watch.elapsed() << "s" << std::endl;
 
+        std::cout << "Press on any key to close the window" << std::endl;
         cv::waitKey(0);
     }
 
@@ -630,7 +633,7 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
     void training_end(const RBM&){
         std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
 
-        std::cout << "Waiting for key..." << std::endl;
+        std::cout << "Press on any key to close the window and continue training..." << std::endl;
         cv::waitKey(0);
     }
 
