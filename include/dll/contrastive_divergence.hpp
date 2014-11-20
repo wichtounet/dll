@@ -322,9 +322,10 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
 
 template<bool Persistent, std::size_t N, typename Trainer, typename T, typename RBM>
 void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context, RBM& rbm, Trainer& t){
-    cpp_assert(batch.size() > 0, "Invalid batch size");
-    cpp_assert(batch.size() <= get_batch_size(rbm), "Invalid batch size");
-    cpp_assert(batch.begin()->size() == input_size(rbm), "The size of the training sample must match visible units");
+    cpp_assert(input_batch.size() > 0, "Invalid batch size");
+    cpp_assert(input_batch.size() <= get_batch_size(rbm), "Invalid batch size");
+    cpp_assert(input_batch.size() == expected_batch.size(), "Batches do not match");
+    cpp_assert(input_batch.begin()->size() == input_size(rbm), "The size of the training sample must match visible units");
 
     using rbm_t = RBM;
 
