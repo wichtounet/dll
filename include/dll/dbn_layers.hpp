@@ -69,6 +69,21 @@ struct dbn_label_layers {
     using tuple_type = std::tuple<Layers...>;
 };
 
+/**
+ * \brief Simple placeholder for a collection of layers
+ *
+ * This version has to be used instead of dbn_layers when layers are
+ * dynamic.
+ */
+template<typename... Layers>
+struct dbn_dyn_layers {
+    static constexpr const std::size_t layers = sizeof...(Layers);
+
+    static_assert(layers > 0, "A DBN must have at least 1 layer");
+
+    using tuple_type = std::tuple<Layers...>;
+};
+
 } //end of namespace dll
 
 #endif
