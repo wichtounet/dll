@@ -25,7 +25,7 @@
 #include "mnist/mnist_utils.hpp"
 
 TEST_CASE( "dyn_dbn/mnist_1", "dbn::simple" ) {
-    typedef dll::dbn_desc<
+    typedef dll::dyn_dbn_desc<
         dll::dbn_layers<
         dll::dyn_rbm_desc<dll::momentum, dll::init_weights>::rbm_t,
         dll::dyn_rbm_desc<dll::momentum>::rbm_t,
