@@ -8,12 +8,12 @@
 #ifndef DLL_DYN_DBN_DESC_HPP
 #define DLL_DYN_DBN_DESC_HPP
 
-#include "dbn_desc.hpp"
+#include "base_dbn_desc.hpp"
 
 namespace dll {
 
 template<typename Layers, typename... Parameters>
-using dyn_dbn_desc = dbn_desc<Layers, Parameters...>;
+using dyn_dbn_desc = base_dbn_desc<Layers, dyn_dbn, Parameters...>;
 
 } //end of dll namespace
 
