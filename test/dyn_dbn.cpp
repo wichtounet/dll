@@ -12,24 +12,21 @@
 #define DLL_SVM_SUPPORT
 
 #include "dll/dyn_rbm.hpp"
+#include "dll/dyn_dbn.hpp"
 
-#include "dll/dbn.hpp"
-#include "dll/dbn_desc.hpp"
-
-#include "dll/dyn_dbn_desc.hpp"
-
-#include "dll/dbn_layers.hpp"
 #include "dll/stochastic_gradient_descent.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
 TEST_CASE( "dyn_dbn/mnist_1", "dbn::simple" ) {
-    typedef dll::dyn_dbn_desc<
-        dll::dbn_layers<
-        dll::dyn_rbm_desc<dll::momentum, dll::init_weights>::rbm_t,
-        dll::dyn_rbm_desc<dll::momentum>::rbm_t,
-        dll::dyn_rbm_desc<dll::momentum, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>>::dbn_t dbn_t;
+    using dbn_t =
+        dll::dyn_dbn_desc<
+            dll::dbn_dyn_layers<
+                dll::dyn_rbm_desc<dll::momentum, dll::init_weights>::rbm_t,
+                dll::dyn_rbm_desc<dll::momentum>::rbm_t,
+                dll::dyn_rbm_desc<dll::momentum, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t
+        >>::dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(500);
 
