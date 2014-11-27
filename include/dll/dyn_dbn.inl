@@ -55,8 +55,10 @@ struct dyn_dbn {
     bool svm_loaded = false;            ///< Indicates if a SVM model has been loaded (and therefore must be saved)
 #endif //DLL_SVM_SUPPORT
 
-    //No arguments by default
-    dyn_dbn(){};
+    template<typename... T>
+    dyn_dbn(T... rbms) : tuples(rbms...) {
+        //Nothing else to init
+    };
 
     //No copying
     dyn_dbn(const dyn_dbn& dbn) = delete;

@@ -34,7 +34,10 @@ TEST_CASE( "dyn_dbn/mnist_1", "dbn::simple" ) {
 
     mnist::binarize_dataset(dataset);
 
-    auto dbn = std::make_unique<dbn_t>();
+    auto dbn = std::make_unique<dbn_t>(
+        std::make_tuple(28*28,100),
+        std::make_tuple(100,200),
+        std::make_tuple(200,10));
 
     dbn->pretrain(dataset.training_images, 20);
 

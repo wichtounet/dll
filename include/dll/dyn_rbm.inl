@@ -73,6 +73,10 @@ struct dyn_rbm : public standard_rbm<dyn_rbm<Desc>, Desc> {
         w = etl::normal_generator<weight>() * 0.1;
     }
 
+    dyn_rbm(const std::tuple<std::size_t, std::size_t>& dims) : dyn_rbm(std::get<0>(dims), std::get<1>(dims)) {
+        //work is delegatd to the other constructor
+    }
+
     void display() const {
         std::cout << "RBM(dyn): " << num_visible << " -> " << num_hidden << std::endl;
     }
