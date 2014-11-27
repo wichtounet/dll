@@ -126,27 +126,27 @@ struct dyn_dbn {
     }
 
     template<std::size_t N>
-    static constexpr std::size_t num_visible(){
-        return rbm_type<N>::num_visible;
+    std::size_t num_visible(){
+        return layer<N>().num_visible;
     }
 
     template<std::size_t N>
-    static constexpr std::size_t num_hidden(){
-        return rbm_type<N>::num_hidden;
+    std::size_t num_hidden(){
+        return layer<N>().num_hidden;
     }
 
-    static constexpr std::size_t input_size(){
-        return rbm_type<0>::input_size();
+    std::size_t input_size(){
+        return layer<0>().input_size();
     }
 
-    static constexpr std::size_t output_size(){
-        return rbm_type<layers - 1>::output_size();
+    std::size_t output_size(){
+        return layer<layers - 1>().output_size();
     }
 
-    static std::size_t full_output_size(){
+    std::size_t full_output_size(){
         std::size_t output = 0;
-        for_each_type<tuple_type>([&output](auto* rbm){
-            output += std::decay_t<std::remove_pointer_t<decltype(rbm)>>::output_size();
+        cpp::for_each(tuples, [&output](auto& rbm){
+            output += rbm.output_size();
         });
         return output;
     }
@@ -191,7 +191,7 @@ struct dyn_dbn {
 
         cpp::for_each_i(tuples, [&watcher, this, &input, &next_a, &next_s, max_epochs](std::size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
-            constexpr const auto num_hidden = rbm_t::num_hidden;
+            auto num_hidden = rbm.num_hidden;
 
             auto input_size = static_cast<training_t&>(input).size();
 
