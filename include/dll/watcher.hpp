@@ -111,6 +111,45 @@ struct default_dbn_watcher {
 };
 
 template<typename DBN>
+struct default_dbn_watcher<DBN, std::enable_if_t<dbn_traits<DBN>::is_dynamic()>> {
+    static constexpr const bool ignore_sub = false;
+    static constexpr const bool replace_sub = false;
+
+    cpp::stop_watch<std::chrono::seconds> watch;
+
+    void pretraining_begin(const DBN& /*dbn*/){
+        std::cout << "DBN: Pretraining begin" << std::endl;
+    }
+
+    template<typename RBM>
+    void pretrain_layer(const DBN& /*dbn*/, std::size_t I, std::size_t input_size){
+        std::cout << "DBN: Train layer " << I << " with " << input_size << " entries" << std::endl;
+    }
+
+    void pretraining_end(const DBN& /*dbn*/){
+        std::cout << "DBN: Pretraining end" << std::endl;
+    }
+
+    void fine_tuning_begin(const DBN& dbn){
+        std::cout << "Train DBN with \"" << DBN::desc::template trainer_t<DBN>::name() << "\"" << std::endl;
+        std::cout << "With parameters:" << std::endl;
+        std::cout << "   learning_rate=" << dbn.learning_rate << std::endl;
+
+        if(dbn_traits<DBN>::has_momentum()){
+            std::cout << "   momentum=" << dbn.momentum << std::endl;
+        }
+    }
+
+    void ft_epoch_end(std::size_t epoch, double error, const DBN&){
+        printf("epoch %ld - Classification error: %.5f \n", epoch, error);
+    }
+
+    void fine_tuning_end(const DBN&){
+        std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
+    }
+};
+
+template<typename DBN>
 struct default_dbn_watcher<DBN, std::enable_if_t<dbn_traits<DBN>::is_convolutional()>> {
     static constexpr const bool ignore_sub = false;
     static constexpr const bool replace_sub = false;
