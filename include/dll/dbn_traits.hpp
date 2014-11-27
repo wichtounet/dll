@@ -16,6 +16,9 @@ namespace dll {
 template<typename Desc>
 struct conv_dbn;
 
+template<typename Desc>
+struct dyn_dbn;
+
 /*!
  * \brief Type Traits to get information on DBN type
  */
@@ -32,6 +35,13 @@ struct dbn_traits {
      */
     static constexpr bool is_convolutional(){
         return cpp::is_specialization_of<conv_dbn, dbn_t>::value;
+    }
+
+    /*!
+     * \brief Indicates if the DBN is dynamic
+     */
+    static constexpr bool is_dynamic(){
+        return cpp::is_specialization_of<dyn_dbn, dbn_t>::value;
     }
 
     template<typename D = DBN, cpp::enable_if_u<has_momentum_field<typename D::desc>::value> = cpp::detail::dummy>
