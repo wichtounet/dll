@@ -77,6 +77,14 @@ struct dyn_rbm : public standard_rbm<dyn_rbm<Desc>, Desc> {
         //work is delegatd to the other constructor
     }
 
+    std::size_t input_size(){
+        return num_visible;
+    }
+
+    std::size_t output_size(){
+        return num_hidden;
+    }
+
     void display() const {
         std::cout << "RBM(dyn): " << num_visible << " -> " << num_hidden << std::endl;
     }

@@ -41,9 +41,9 @@ TEST_CASE( "dyn_dbn/mnist_1", "dbn::simple" ) {
 
     dbn->pretrain(dataset.training_images, 20);
 
-    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 10, 50);
+    //auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 10, 50);
 
-    REQUIRE(error < 5e-2);
+    //REQUIRE(error < 5e-2);
 
     auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
 

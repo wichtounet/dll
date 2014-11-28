@@ -374,8 +374,7 @@ struct dyn_dbn {
 
         cpp::for_each_i(tuples, [&item, &input, &result](std::size_t I, auto& rbm){
             if(I != layers - 1){
-                typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
-                constexpr const auto num_hidden = rbm_t::num_hidden;
+                auto num_hidden = rbm.num_hidden;
 
                 static etl::dyn_vector<weight> next(num_hidden);
                 static etl::dyn_vector<weight> next_s(num_hidden);
@@ -386,7 +385,7 @@ struct dyn_dbn {
             }
         });
 
-        constexpr const auto num_hidden = rbm_type<layers - 1>::num_hidden;
+        auto num_hidden = layer<layers - 1>().num_hidden;
 
         static etl::dyn_vector<weight> next_s(num_hidden);
 
