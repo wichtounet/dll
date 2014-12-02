@@ -114,9 +114,8 @@ TEST_CASE( "dyn_dbn/mnist_4", "dbn::svm_simple" ) {
         >>::dbn_t;
 
     auto dbn = std::make_unique<dbn_t>(
-        std::make_tuple(28*28,200),
-        std::make_tuple(200,300),
-        std::make_tuple(310,500));
+        std::make_tuple(28*28,150),
+        std::make_tuple(150,250));
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(500);
 
