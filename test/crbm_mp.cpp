@@ -9,8 +9,6 @@
 
 #include "catch.hpp"
 
-#define DLL_PARALLEL
-
 #include "dll/cpp_utils/data.hpp"
 
 #include "dll/conv_rbm_mp.hpp"
