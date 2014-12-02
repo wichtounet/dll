@@ -126,24 +126,24 @@ struct dyn_dbn {
     }
 
     template<std::size_t N>
-    std::size_t num_visible(){
+    std::size_t num_visible() const {
         return layer<N>().num_visible;
     }
 
     template<std::size_t N>
-    std::size_t num_hidden(){
+    std::size_t num_hidden() const {
         return layer<N>().num_hidden;
     }
 
-    std::size_t input_size(){
+    std::size_t input_size() const {
         return layer<0>().input_size();
     }
 
-    std::size_t output_size(){
+    std::size_t output_size() const {
         return layer<layers - 1>().output_size();
     }
 
-    std::size_t full_output_size(){
+    std::size_t full_output_size() const {
         std::size_t output = 0;
         cpp::for_each(tuples, [&output](auto& rbm){
             output += rbm.output_size();
