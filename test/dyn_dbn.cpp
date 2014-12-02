@@ -47,3 +47,32 @@ TEST_CASE( "dyn_dbn/mnist_1", "dbn::simple" ) {
 
     REQUIRE(test_error < 1.0);
 }
+
+TEST_CASE( "dyn_dbn/mnist_2", "dbn::parallel" ) {
+    using dbn_t =
+        dll::dyn_dbn_desc<
+            dll::dbn_dyn_layers<
+                dll::dyn_rbm_desc<dll::momentum, dll::parallel, dll::init_weights>::rbm_t,
+                dll::dyn_rbm_desc<dll::momentum, dll::parallel>::rbm_t,
+                dll::dyn_rbm_desc<dll::momentum, dll::parallel, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t
+        >>::dbn_t;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(500);
+
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto dbn = std::make_unique<dbn_t>(
+        std::make_tuple(28*28,100),
+        std::make_tuple(100,200),
+        std::make_tuple(200,10));
+
+    dbn->pretrain(dataset.training_images, 20);
+
+    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
+
+    std::cout << "test_error:" << test_error << std::endl;
+
+    REQUIRE(test_error < 1.0);
+}
