@@ -52,6 +52,7 @@ struct watcher_id;
 struct sparsity_id;
 struct bias_id;
 struct momentum_id;
+struct parallel_id;
 struct shuffle_id;
 struct concatenate_id;
 struct init_weights_id;
@@ -94,6 +95,7 @@ template<template<typename...> class T>
 struct watcher : template_type_conf_elt<watcher_id, T> {};
 
 struct momentum : basic_conf_elt<momentum_id> {};
+struct parallel : basic_conf_elt<parallel_id> {};
 struct concatenate : basic_conf_elt<concatenate_id> {};
 struct init_weights : basic_conf_elt<init_weights_id> {};
 struct shuffle : basic_conf_elt<shuffle_id> {};

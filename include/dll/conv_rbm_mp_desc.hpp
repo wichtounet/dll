@@ -31,6 +31,7 @@ struct conv_rbm_mp_desc {
     static constexpr const std::size_t C = C_T;
 
     static constexpr const bool Momentum = detail::is_present<momentum, Parameters...>::value;
+    static constexpr const bool Parallel = detail::is_present<parallel, Parameters...>::value;
     static constexpr const std::size_t BatchSize = detail::get_value<batch_size<1>, Parameters...>::value;
     static constexpr const unit_type visible_unit = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;
     static constexpr const unit_type hidden_unit = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
@@ -67,7 +68,7 @@ struct conv_rbm_mp_desc {
         detail::is_valid<detail::tmp_list<
                 momentum_id, batch_size_id, visible_id, hidden_id, pooling_id,
                 weight_decay_id, sparsity_id, trainer_id, watcher_id, bias_id,
-                weight_type_id, shuffle_id>
+                weight_type_id, shuffle_id, parallel_id>
             , Parameters...>::value,
         "Invalid parameters type");
 
