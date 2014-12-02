@@ -104,3 +104,32 @@ TEST_CASE( "dyn_dbn/mnist_3", "dbn::labels" ) {
     auto error = dll::test_set(dbn, dataset.training_images, dataset.training_labels, dll::label_predictor());
     REQUIRE(error < 0.3);
 }
+
+TEST_CASE( "dyn_dbn/mnist_4", "dbn::svm_simple" ) {
+    using dbn_t =
+        dll::dyn_dbn_desc<
+            dll::dbn_dyn_layers<
+                dll::dyn_rbm_desc<dll::momentum, dll::init_weights>::rbm_t,
+                dll::dyn_rbm_desc<dll::momentum>::rbm_t
+        >>::dbn_t;
+
+    auto dbn = std::make_unique<dbn_t>(
+        std::make_tuple(28*28,200),
+        std::make_tuple(200,300),
+        std::make_tuple(310,500));
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(500);
+
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    dbn->pretrain(dataset.training_images, 20);
+    auto result = dbn->svm_train(dataset.training_images, dataset.training_labels);
+
+    REQUIRE(result);
+
+    auto test_error = dll::test_set(dbn, dataset.training_images, dataset.training_labels, dll::svm_predictor());
+    std::cout << "test_error:" << test_error << std::endl;
+    REQUIRE(test_error < 0.2);
+}
