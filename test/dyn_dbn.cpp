@@ -76,3 +76,31 @@ TEST_CASE( "dyn_dbn/mnist_2", "dbn::parallel" ) {
 
     REQUIRE(test_error < 1.0);
 }
+
+TEST_CASE( "dyn_dbn/mnist_3", "dbn::labels" ) {
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(1000);
+    dataset.training_labels.resize(1000);
+
+    mnist::binarize_dataset(dataset);
+
+    using dbn_t =
+        dll::dyn_dbn_desc<
+            dll::dbn_dyn_layers<
+                dll::dyn_rbm_desc<dll::init_weights, dll::momentum>::rbm_t,
+                dll::dyn_rbm_desc<dll::momentum>::rbm_t,
+                dll::dyn_rbm_desc<dll::momentum>::rbm_t
+        >>::dbn_t;
+
+    auto dbn = std::make_unique<dbn_t>(
+        std::make_tuple(28*28,200),
+        std::make_tuple(200,300),
+        std::make_tuple(310,500));
+
+    dbn->train_with_labels(dataset.training_images, dataset.training_labels, 10, 10);
+
+    auto error = dll::test_set(dbn, dataset.training_images, dataset.training_labels, dll::label_predictor());
+    REQUIRE(error < 0.3);
+}
