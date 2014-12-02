@@ -377,3 +377,23 @@ TEST_CASE( "crbm/mnist_15", "crbm::denoising" ) {
 
     REQUIRE(error < 2e-2);
 }
+
+TEST_CASE( "crbm/mnist_16", "crbm::momentum" ) {
+    dll::conv_rbm_desc<
+        28, 1, 12, 40,
+        dll::batch_size<25>,
+        dll::momentum,
+        dll::parallel
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
+
+    REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(100);
+
+    mnist::binarize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 100);
+
+    REQUIRE(error < 2e-2);
+}
