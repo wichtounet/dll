@@ -244,7 +244,7 @@ struct dyn_dbn {
     template<typename Iterator, typename LabelIterator>
     void train_with_labels(Iterator first, Iterator last, LabelIterator lfirst, LabelIterator llast, std::size_t labels, std::size_t max_epochs){
         cpp_assert(std::distance(first, last) == std::distance(lfirst, llast), "There must be the same number of values than labels");
-        cpp_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
+        cpp_assert(num_visible<layers - 1>() == layer<layers - 2>().num_hidden + labels, "There is no room for the labels units");
 
         using training_t = std::vector<etl::dyn_vector<weight>>;
 
@@ -259,8 +259,7 @@ struct dyn_dbn {
         auto input = std::ref(data);
 
         cpp::for_each_i(tuples, [&input, llast, lfirst, labels, max_epochs](size_t I, auto& rbm){
-            typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
-            constexpr const auto num_hidden = rbm_t::num_hidden;
+            auto num_hidden = rbm.num_hidden;
 
             static training_t next;
 
@@ -303,7 +302,7 @@ struct dyn_dbn {
 
     template<typename TrainingItem>
     size_t predict_labels(const TrainingItem& item_data, std::size_t labels){
-        cpp_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
+        cpp_assert(num_visible<layers - 1>() == layer<layers - 2>().num_hidden + labels, "There is no room for the labels units");
 
         using training_t = etl::dyn_vector<weight>;
 
@@ -315,8 +314,7 @@ struct dyn_dbn {
         auto input_ref = std::cref(item);
 
         cpp::for_each_i(tuples, [labels,&input_ref,&output_a,&output_s](size_t I, auto& rbm){
-            typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
-            constexpr const auto num_hidden = rbm_t::num_hidden;
+            auto num_hidden = rbm.num_hidden;
 
             auto& input = static_cast<const training_t&>(input_ref);
 
@@ -412,8 +410,7 @@ struct dyn_dbn {
 
         cpp::for_each_i(tuples, [&i,&item, &input, &result](std::size_t I, auto& rbm){
             if(I != layers - 1){
-                typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
-                constexpr const auto num_hidden = rbm_t::num_hidden;
+                constexpr const auto num_hidden = rbm.num_hidden;
 
                 static etl::dyn_vector<weight> next_a(num_hidden);
                 static etl::dyn_vector<weight> next_s(num_hidden);
