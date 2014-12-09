@@ -8,6 +8,7 @@
 #ifndef DLL_DYN_DBN_HPP
 #define DLL_DYN_DBN_HPP
 
+#include "dyn_rbm.hpp"
 #include "dyn_dbn.inl"
 #include "dyn_dbn_desc.hpp"
 #include "dbn_layers.hpp"

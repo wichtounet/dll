@@ -8,6 +8,8 @@
 #ifndef DLL_DBN_TRAINER_HPP
 #define DLL_DBN_TRAINER_HPP
 
+#include "etl/etl.hpp"
+
 #include "dll/labels.hpp"
 #include "dll/test.hpp"
 #include "dll/dbn_traits.hpp"

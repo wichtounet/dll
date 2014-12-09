@@ -9,12 +9,13 @@
 #define DLL_DYN_DBN_INL
 
 #include <tuple>
+#include <iostream>
+#include <fstream>
 
 #include "cpp_utils/tuple_utils.hpp"
 
 #include "unit_type.hpp"
 #include "dbn_trainer.hpp"
-#include "conjugate_gradient.hpp"
 #include "dbn_common.hpp"
 #include "svm_common.hpp"
 

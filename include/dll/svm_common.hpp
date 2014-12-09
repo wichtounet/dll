@@ -12,6 +12,7 @@
 
 #ifdef DLL_SVM_SUPPORT
 
+#include "io.hpp"
 #include "nice_svm.hpp"
 
 namespace dll {
