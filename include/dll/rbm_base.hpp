@@ -50,7 +50,12 @@ public:
     weight pbias_lambda = 5;
 
     //No copying
+
+#ifdef __clang__
     rbm_base(const rbm_base& rbm) = delete;
+#else
+    rbm_base(const rbm_base& rbm) = default;
+#endif
     rbm_base& operator=(const rbm_base& rbm) = delete;
 
     //No moving

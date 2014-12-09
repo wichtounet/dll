@@ -51,7 +51,11 @@ struct dyn_rbm : public standard_rbm<dyn_rbm<Desc>, Desc> {
     size_t batch_size = 25;
 
     //No copying
+#ifdef __clang__
     dyn_rbm(const dyn_rbm& rbm) = delete;
+#else
+    dyn_rbm(const dyn_rbm& rbm) = default;
+#endif
     dyn_rbm& operator=(const dyn_rbm& rbm) = delete;
 
     //No moving
