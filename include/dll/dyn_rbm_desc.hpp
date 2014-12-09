@@ -24,6 +24,7 @@ namespace dll {
 template<typename... Parameters>
 struct dyn_rbm_desc {
     static constexpr const bool Momentum = detail::is_present<momentum, Parameters...>::value;
+    static constexpr const bool Parallel = detail::is_present<parallel, Parameters...>::value;
     static constexpr const unit_type visible_unit = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;
     static constexpr const unit_type hidden_unit = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
     static constexpr const decay_type Decay = detail::get_value<weight_decay<decay_type::NONE>, Parameters...>::value;
@@ -47,7 +48,7 @@ struct dyn_rbm_desc {
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid<detail::tmp_list<momentum_id, visible_id, hidden_id, weight_decay_id,
+        detail::is_valid<detail::tmp_list<momentum_id, visible_id, hidden_id, weight_decay_id, parallel_id,
               init_weights_id, sparsity_id, trainer_id, weight_type_id, shuffle_id>, Parameters...>::value,
         "Invalid parameters type");
 

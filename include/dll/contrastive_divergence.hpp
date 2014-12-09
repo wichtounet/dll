@@ -489,7 +489,7 @@ struct base_cd_trainer : base_trainer<RBM> {
     etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_a;
     etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_s;
 
-    thread_pool pool;
+    thread_pool<rbm_traits<rbm_t>::is_parallel()> pool;
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
     base_cd_trainer(rbm_t&) : q_global_t(0.0), q_local_t(0.0) {
@@ -560,7 +560,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_dynamic()>> : b
     etl::dyn_matrix<weight> p_h_a;
     etl::dyn_matrix<weight> p_h_s;
 
-    thread_pool pool;
+    thread_pool<rbm_traits<rbm_t>::is_parallel()> pool;
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
     base_cd_trainer(rbm_t& rbm) :
@@ -673,7 +673,7 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
     etl::fast_matrix<weight, batch_size, K, NH, NH> h2_a;
     etl::fast_matrix<weight, batch_size, K, NH, NH> h2_s;
 
-    thread_pool pool;
+    thread_pool<rbm_traits<rbm_t>::is_parallel()> pool;
 
     template<bool M = rbm_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
     base_cd_trainer(rbm_t&) :

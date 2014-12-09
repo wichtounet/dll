@@ -12,55 +12,53 @@
 
 namespace dll {
 
-#ifdef DLL_PARALLEL
+template<bool Parallel>
+struct thread_pool {
+    //Does not do anythin by default
+};
 
-using thread_pool = cpp::default_thread_pool<>;
+template<>
+struct thread_pool<true> : cpp::default_thread_pool<> {
+    //Simply inherits from default thread pool
+};
 
-template<typename TP, typename Container, typename Functor>
-void maybe_parallel_foreach_i(TP& thread_pool, const Container& container, Functor&& fun){
+template<typename Container, typename Functor>
+void maybe_parallel_foreach_i(thread_pool<true>& thread_pool, const Container& container, Functor&& fun){
     parallel_foreach_i(thread_pool, container, std::forward<Functor>(fun));
 }
 
-template<typename TP, typename Iterator, typename Functor>
-void maybe_parallel_foreach_i(TP& thread_pool, Iterator it, Iterator end, Functor&& fun){
+template<typename Iterator, typename Functor>
+void maybe_parallel_foreach_i(thread_pool<true>& thread_pool, Iterator it, Iterator end, Functor&& fun){
     parallel_foreach_i(thread_pool, it, end, std::forward<Functor>(fun));
 }
 
-template<typename TP, typename Iterator, typename Iterator2, typename Functor>
-void maybe_parallel_foreach_pair_i(TP& thread_pool, Iterator it, Iterator end, Iterator2 iit, Iterator2 ilast, Functor&& fun){
+template<typename Iterator, typename Iterator2, typename Functor>
+void maybe_parallel_foreach_pair_i(thread_pool<true>& thread_pool, Iterator it, Iterator end, Iterator2 iit, Iterator2 ilast, Functor&& fun){
     parallel_foreach_pair_i(thread_pool, it, end, iit, ilast, std::forward<Functor>(fun));
 }
 
-#else //!DLL_PARALLEL
-
-struct fake_thread_pool {};
-
-using thread_pool = fake_thread_pool;
-
-template<typename TP, typename Container, typename Functor>
-void maybe_parallel_foreach_i(TP& /*thread_pool*/, const Container& container, Functor&& fun){
+template<typename Container, typename Functor>
+void maybe_parallel_foreach_i(thread_pool<false>& /*thread_pool*/, const Container& container, Functor&& fun){
     for(std::size_t i = 0; i < container.size(); ++i){
         fun(container[i], i);
     }
 }
 
-template<typename TP, typename Iterator, typename Functor>
-void maybe_parallel_foreach_i(TP& /*thread_pool*/, Iterator it, Iterator end, Functor&& fun){
+template<typename Iterator, typename Functor>
+void maybe_parallel_foreach_i(thread_pool<false>& /*thread_pool*/, Iterator it, Iterator end, Functor&& fun){
     for(std::size_t i = 0; it != end; ++it, ++i){
         fun(*it, i);
     }
 }
 
-template<typename TP, typename Iterator, typename Iterator2, typename Functor>
-void maybe_parallel_foreach_pair_i(TP& /*thread_pool*/, Iterator it, Iterator end, Iterator2 iit, Iterator2 ilast, Functor&& fun){
+template<typename Iterator, typename Iterator2, typename Functor>
+void maybe_parallel_foreach_pair_i(thread_pool<false>& /*thread_pool*/, Iterator it, Iterator end, Iterator2 iit, Iterator2 ilast, Functor&& fun){
     cpp_unused(ilast);
 
     for(std::size_t i = 0; it != end; ++it, ++iit, ++i){
         fun(*it, *iit, i);
     }
 }
-
-#endif //DLL_PARALLEL
 
 } //end of dll namespace
 

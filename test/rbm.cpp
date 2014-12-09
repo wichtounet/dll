@@ -9,8 +9,6 @@
 
 #include "catch.hpp"
 
-#define DLL_PARALLEL
-
 #include "dll/cpp_utils/data.hpp"
 
 #include "dll/rbm.hpp"
@@ -496,4 +494,23 @@ TEST_CASE( "rbm/mnist_22", "rbm::denoising" ) {
     auto error = rbm.train_denoising(noisy, dataset.training_images, 200);
 
     REQUIRE(error < 1e-1);
+}
+
+TEST_CASE( "rbm/mnist_23", "rbm::parallel" ) {
+    dll::rbm_desc<
+        28 * 28, 100,
+       dll::batch_size<25>,
+       dll::momentum,
+       dll::parallel
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
+
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 100);
+
+    REQUIRE(error < 1e-3);
 }

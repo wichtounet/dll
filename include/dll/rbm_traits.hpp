@@ -35,6 +35,7 @@ struct rbm_traits {
     HAS_STATIC_FIELD(Decay, has_decay_field)
     HAS_STATIC_FIELD(Init, has_init_field)
     HAS_STATIC_FIELD(Momentum, has_momentum_field)
+    HAS_STATIC_FIELD(Parallel, has_parallel_field)
     HAS_STATIC_FIELD(Bias, has_bias_field)
     HAS_STATIC_FIELD(Shuffle, has_shuffle_field)
 
@@ -86,6 +87,16 @@ struct rbm_traits {
 
     template<typename R = RBM, cpp::disable_if_u<has_momentum_field<typename R::desc>::value> = cpp::detail::dummy>
     static constexpr bool has_momentum(){
+        return false;
+    }
+
+    template<typename R = RBM, cpp::enable_if_u<has_parallel_field<typename R::desc>::value> = cpp::detail::dummy>
+    static constexpr bool is_parallel(){
+        return rbm_t::desc::Parallel;
+    }
+
+    template<typename R = RBM, cpp::disable_if_u<has_parallel_field<typename R::desc>::value> = cpp::detail::dummy>
+    static constexpr bool is_parallel(){
         return false;
     }
 

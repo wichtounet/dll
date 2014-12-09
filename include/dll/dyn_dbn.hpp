@@ -5,16 +5,11 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_DBN_DESC_HPP
-#define DLL_DBN_DESC_HPP
+#ifndef DLL_DYN_DBN_HPP
+#define DLL_DYN_DBN_HPP
 
-#include "base_dbn_desc.hpp"
-
-namespace dll {
-
-template<typename Layers, typename... Parameters>
-using dbn_desc = base_dbn_desc<Layers, dbn, Parameters...>;
-
-} //end of dll namespace
+#include "dyn_dbn.inl"
+#include "dyn_dbn_desc.hpp"
+#include "dbn_layers.hpp"
 
 #endif
