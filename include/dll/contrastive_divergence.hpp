@@ -256,9 +256,6 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
     using namespace etl;
     using rbm_t = RBM;
 
-    //Reset the batch gradients
-    t.w_grad_b = 0;
-
     maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(),
             [&](const auto& input, const auto& expected, std::size_t i)
     {
@@ -292,6 +289,9 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
         //The following lines are equivalent to mmul(vf, h1_a) - mmul(v2_a, h2_a)
         //Doing them this way is significantly faster than computing the two matrix mutplications
         //and doing the subtraction later
+
+        //Reset the batch gradients
+        t.w_grad_b(i) = 0;
 
         auto a1 = reshape_nv1(rbm, t.vf(i));
         auto b1 = reshape_1nh(rbm, t.h1_a(i));
