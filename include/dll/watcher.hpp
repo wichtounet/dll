@@ -88,7 +88,7 @@ struct default_dbn_watcher {
     }
 
     void pretraining_end(const DBN& /*dbn*/){
-        std::cout << "DBN: Pretraining end" << std::endl;
+        std::cout << "DBN: Pretraining finshed after " << watch.elapsed() << "s" << std::endl;
     }
 
     void fine_tuning_begin(const DBN& dbn){
