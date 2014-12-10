@@ -14,7 +14,6 @@
 #include "etl/etl.hpp"
 
 #include "standard_rbm.hpp"
-#include "checks.hpp"
 
 namespace dll {
 
@@ -27,6 +26,7 @@ template<typename Desc>
 struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
     using desc = Desc;
     using weight = typename desc::weight;
+    using base_type = standard_rbm<rbm<Desc>, Desc>;
 
     static constexpr const std::size_t num_visible = desc::num_visible;
     static constexpr const std::size_t num_hidden = desc::num_hidden;
@@ -84,113 +84,30 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
 
     template<bool P = true, bool S = true, typename H1, typename H2, typename V>
     void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s) const {
-        activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w);
+        static etl::fast_matrix<weight, 1, num_hidden> t;
+        base_type::template std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, t);
     }
 
     template<bool P = true, bool S = true, typename H1, typename H2, typename V, typename T>
     void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, T&& t) const {
-        activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, std::forward<T>(t));
+        base_type::template std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, std::forward<T>(t));
     }
 
     template<bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W>
     static void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, const B& b, const W& w){
         static etl::fast_matrix<weight, 1, num_hidden> t;
-
-        activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, t);
-    }
-
-    template<bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W, typename T>
-    static void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V&, const B& b, const W& w, T&& t){
-        using namespace etl;
-
-        //Compute activation probabilities
-        if(P){
-            if(hidden_unit == unit_type::BINARY){
-                h_a = sigmoid(b + auto_vmmul(v_a, w, t));
-            } else if(hidden_unit == unit_type::RELU){
-                h_a = max(b + auto_vmmul(v_a, w, t), 0.0);
-            } else if(hidden_unit == unit_type::RELU6){
-                h_a = min(max(b + auto_vmmul(v_a, w, t), 0.0), 6.0);
-            } else if(hidden_unit == unit_type::RELU1){
-                h_a = min(max(b + auto_vmmul(v_a, w, t), 0.0), 1.0);
-            } else if(hidden_unit == unit_type::SOFTMAX){
-                h_a = softmax(b + auto_vmmul(v_a, w, t));
-            }
-
-            //Compute sampled values directly
-            if(S){
-                if(hidden_unit == unit_type::BINARY){
-                    h_s = bernoulli(h_a);
-                } else if(hidden_unit == unit_type::RELU){
-                    h_s = logistic_noise(h_a); //TODO This is probably wrong
-                } else if(hidden_unit == unit_type::RELU6){
-                    h_s = ranged_noise(h_a, 6.0); //TODO This is probably wrong
-                } else if(hidden_unit == unit_type::RELU1){
-                    h_s = ranged_noise(h_a, 1.0); //TODO This is probably wrong
-                } else if(hidden_unit == unit_type::SOFTMAX){
-                    h_s = one_if_max(h_a);
-                }
-            }
-        }
-        //Compute sampled values
-        else if(S){
-            if(hidden_unit == unit_type::BINARY){
-                h_s = bernoulli(sigmoid(b + auto_vmmul(v_a, w, t)));
-            } else if(hidden_unit == unit_type::RELU){
-                h_s = logistic_noise(max(b + auto_vmmul(v_a, w, t), 0.0)); //TODO This is probably wrong
-            } else if(hidden_unit == unit_type::RELU6){
-                h_s = ranged_noise(min(max(b + auto_vmmul(v_a, w, t), 0.0), 6.0), 6.0); //TODO This is probably wrong
-            } else if(hidden_unit == unit_type::RELU1){
-                h_s = ranged_noise(min(max(b + auto_vmmul(v_a, w, t), 0.0), 1.0), 1.0); //TODO This is probably wrong
-            } else if(hidden_unit == unit_type::SOFTMAX){
-                h_s = one_if_max(softmax(b + auto_vmmul(v_a, w, t)));
-            }
-        }
-
-        nan_check_deep(h_a);
-        nan_check_deep(h_s);
+        base_type::template std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, t);
     }
 
     template<bool P = true, bool S = true, typename H, typename V>
     void activate_visible(const H& h_a, const H& h_s, V&& v_a, V&& v_s) const {
-        using namespace etl;
-
-        static fast_matrix<weight, num_visible, 1> t;
-
-        activate_visible<P, S>(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), c, w, t);
+        static etl::fast_matrix<weight, num_visible, 1> t;
+        base_type::template std_activate_visible<P, S>(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), c, w, t);
     }
 
     template<bool P = true, bool S = true, typename H, typename V, typename T>
     void activate_visible(const H& h_a, const H& h_s, V&& v_a, V&& v_s, T&& t) const {
-        activate_visible<P, S>(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), c, w, std::forward<T>(t));
-    }
-
-    template<bool P = true, bool S = true, typename H, typename V, typename C, typename W, typename T>
-    static void activate_visible(const H&, const H& h_s, V&& v_a, V&& v_s, const C& c, const W& w, T&& t){
-        using namespace etl;
-
-        if(P){
-            if(visible_unit == unit_type::BINARY){
-                v_a = sigmoid(c + auto_vmmul(w, h_s, t));
-            } else if(visible_unit == unit_type::GAUSSIAN){
-                v_a = c + auto_vmmul(w, h_s, t);
-            } else if(visible_unit == unit_type::RELU){
-                v_a = max(c + auto_vmmul(w, h_s, t), 0.0);
-            }
-        }
-
-        if(S){
-            if(visible_unit == unit_type::BINARY){
-                v_s = bernoulli(sigmoid(c + auto_vmmul(w, h_s, t)));
-            } else if(visible_unit == unit_type::GAUSSIAN){
-                v_s = c + auto_vmmul(w, h_s, t);
-            } else if(visible_unit == unit_type::RELU){
-                v_s = logistic_noise(max(c + auto_vmmul(w, h_s, t), 0.0));
-            }
-        }
-
-        nan_check_deep(v_a);
-        nan_check_deep(v_s);
+        base_type::template std_activate_visible<P, S>(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), c, w, std::forward<T>(t));
     }
 
     template<typename Sample, typename Output>
