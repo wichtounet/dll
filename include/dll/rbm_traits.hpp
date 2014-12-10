@@ -38,6 +38,7 @@ struct rbm_traits {
     HAS_STATIC_FIELD(Parallel, has_parallel_field)
     HAS_STATIC_FIELD(Bias, has_bias_field)
     HAS_STATIC_FIELD(Shuffle, has_shuffle_field)
+    HAS_STATIC_FIELD(Free_Energy, has_free_energy_field)
 
     /*!
      * \brief Indicates if the RBM is convolutional
@@ -157,6 +158,16 @@ struct rbm_traits {
 
     template<typename R = RBM, cpp::disable_if_u<has_init_field<typename R::desc>::value> = cpp::detail::dummy>
     static constexpr bool init_weights(){
+        return false;
+    }
+
+    template<typename R = RBM, cpp::enable_if_u<has_free_energy_field<typename R::desc>::value> = cpp::detail::dummy>
+    static constexpr bool free_energy(){
+        return rbm_t::desc::Free_Energy;
+    }
+
+    template<typename R = RBM, cpp::disable_if_u<has_free_energy_field<typename R::desc>::value> = cpp::detail::dummy>
+    static constexpr bool free_energy(){
         return false;
     }
 };

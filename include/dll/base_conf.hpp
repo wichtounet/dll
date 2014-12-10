@@ -57,6 +57,7 @@ struct shuffle_id;
 struct concatenate_id;
 struct init_weights_id;
 struct weight_type_id;
+struct free_energy_id;
 
 template<std::size_t B>
 struct batch_size : value_conf_elt<batch_size_id, std::size_t, B> {};
@@ -99,6 +100,7 @@ struct parallel : basic_conf_elt<parallel_id> {};
 struct concatenate : basic_conf_elt<concatenate_id> {};
 struct init_weights : basic_conf_elt<init_weights_id> {};
 struct shuffle : basic_conf_elt<shuffle_id> {};
+struct free_energy : basic_conf_elt<free_energy_id> {};
 
 } //end of dll namespace
 
