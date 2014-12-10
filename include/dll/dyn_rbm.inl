@@ -81,11 +81,11 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         //work is delegatd to the other constructor
     }
 
-    std::size_t input_size() const {
+    std::size_t input_size() const noexcept {
         return num_visible;
     }
 
-    std::size_t output_size() const {
+    std::size_t output_size() const noexcept {
         return num_hidden;
     }
 
@@ -93,24 +93,24 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         std::cout << "RBM(dyn): " << num_visible << " -> " << num_hidden << std::endl;
     }
 
-    template<typename H1, typename H2, typename V>
+    template<bool P = true, bool S = true, typename H1, typename H2, typename V>
     void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s) const {
         return activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w);
     }
 
-    template<typename H1, typename H2, typename V, typename B, typename W>
+    template<bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W>
     void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, const B& b, const W& w) const {
         static etl::dyn_matrix<weight> t(1UL, num_hidden);
 
         return activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, t);
     }
 
-    template<typename H1, typename H2, typename V, typename T>
+    template<bool P = true, bool S = true, typename H1, typename H2, typename V, typename T>
     void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, T&& t) const {
         return activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, std::forward<T>(t));
     }
 
-    template<typename H1, typename H2, typename V, typename B, typename W, typename T>
+    template<bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W, typename T>
     void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V&, const B& b, const W& w, T&& t) const {
         using namespace etl;
 
@@ -129,23 +129,26 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         } else if(hidden_unit == unit_type::SOFTMAX){
             h_a = softmax(b + auto_vmmul(v_a, w, t));
             h_s = one_if_max(h_a);
-        } else {
-            cpp_unreachable("Invalid path");
         }
 
         nan_check_deep(h_a);
         nan_check_deep(h_s);
     }
 
-    template<typename H, typename V>
+    template<bool P = true, bool S = true, typename H, typename V>
     void activate_visible(const H& h_a, const H& h_s, V&& v_a, V&& v_s) const {
         static etl::dyn_matrix<weight> t(num_visible, 1UL);
 
         activate_visible(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), t);
     }
 
-    template<typename H, typename V, typename T>
-    void activate_visible(const H&, const H& h_s, V&& v_a, V&& v_s, T&& t) const {
+    template<bool P = true, bool S = true, typename H, typename V, typename T>
+    void activate_visible(const H& h_a, const H& h_s, V&& v_a, V&& v_s, T&& t) const {
+        activate_visible(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), c, w, std::forward<T>(t));
+    }
+
+    template<bool P = true, bool S = true, typename H, typename V, typename C, typename W, typename T>
+    static void activate_visible(const H&, const H& h_s, V&& v_a, V&& v_s, const C& c, const W& w, T&& t){
         using namespace etl;
 
         if(visible_unit == unit_type::BINARY){
@@ -157,8 +160,6 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         } else if(visible_unit == unit_type::RELU){
             v_a = max(c + auto_vmmul(w, h_s, t), 0.0);
             v_s = logistic_noise(v_a);
-        } else {
-            cpp_unreachable("Invalid path");
         }
 
         nan_check_deep(v_a);
