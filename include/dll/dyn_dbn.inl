@@ -60,17 +60,17 @@ struct dyn_dbn final {
     template<typename... T>
     dyn_dbn(T... rbms) : tuples(rbms...) {
         //Nothing else to init
-    };
+    }
 #else
     template<typename... T, cpp::enable_if_u<(sizeof...(T) > 1)> = cpp::detail::dummy>
     dyn_dbn(T... rbms) : tuples({rbms}...) {
         //Nothing else to init
-    };
+    }
 
     template<typename T>
     dyn_dbn(T rbm) : tuples(rbm_type<0>{rbm}) {
         //Nothing else to init
-    };
+    }
 #endif
 
     //No copying
