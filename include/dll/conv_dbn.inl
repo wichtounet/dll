@@ -25,7 +25,7 @@ namespace dll {
  * \brief A Deep Belief Network implementation
  */
 template<typename Desc>
-struct conv_dbn {
+struct conv_dbn final {
     using desc = Desc;
     using this_type = conv_dbn<desc>;
 

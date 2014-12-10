@@ -24,7 +24,7 @@ namespace dll {
  * This follows the definition of a RBM by Geoffrey Hinton.
  */
 template<typename Desc>
-struct rbm : public standard_rbm<rbm<Desc>, Desc> {
+struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
     using desc = Desc;
     using weight = typename desc::weight;
 
