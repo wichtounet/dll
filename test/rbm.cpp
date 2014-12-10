@@ -368,24 +368,6 @@ TEST_CASE( "rbm/mnist_16", "rbm::iterators" ) {
     REQUIRE(error < 1e-2);
 }
 
-//Only here for benchmarking purpose
-TEST_CASE( "rbm/mnist_17", "rbm::slow" ) {
-    dll::rbm_desc<
-        28 * 28, 459,
-        dll::batch_size<48>
-    >::rbm_t rbm;
-
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1099);
-
-    REQUIRE(!dataset.training_images.empty());
-
-    mnist::binarize_dataset(dataset);
-
-    auto error = rbm.train(dataset.training_images, 15);
-
-    REQUIRE(error < 5e-2);
-}
-
 //Only here for debugging purposes
 TEST_CASE( "rbm/mnist_18", "rbm::fast" ) {
     dll::rbm_desc<
@@ -514,3 +496,42 @@ TEST_CASE( "rbm/mnist_23", "rbm::parallel" ) {
 
     REQUIRE(error < 1e-3);
 }
+
+//{{{ Performance debugging tests
+
+TEST_CASE( "rbm/mnist_101", "rbm::slow" ) {
+    dll::rbm_desc<
+        28 * 28, 459,
+        dll::batch_size<48>
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1099);
+
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 15);
+
+    REQUIRE(error < 5e-2);
+}
+
+TEST_CASE( "rbm/mnist_102", "rbm::slow_parallel" ) {
+    dll::rbm_desc<
+        28 * 28, 459,
+        dll::batch_size<48>,
+        dll::parallel
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1099);
+
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 15);
+
+    REQUIRE(error < 5e-2);
+}
+
+//}}}
