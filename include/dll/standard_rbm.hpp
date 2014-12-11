@@ -33,14 +33,12 @@ namespace dll {
  * This follows the definition of a RBM by Geoffrey Hinton.
  */
 template<typename Parent, typename Desc>
-class standard_rbm : public rbm_base<Parent, Desc> {
-public:
-    typedef float weight;
-
+struct standard_rbm : public rbm_base<Parent, Desc> {
     using desc = Desc;
     using parent_t = Parent;
     using this_type = standard_rbm<parent_t, desc>;
     using base_type = rbm_base<parent_t, desc>;
+    using weight = typename desc::weight;
 
     static constexpr const unit_type visible_unit = desc::visible_unit;
     static constexpr const unit_type hidden_unit = desc::hidden_unit;
@@ -48,7 +46,6 @@ public:
     static_assert(visible_unit != unit_type::SOFTMAX, "Softmax Visible units are not support");
     static_assert(hidden_unit != unit_type::GAUSSIAN, "Gaussian hidden units are not supported");
 
-public:
     standard_rbm(){
         //Better initialization of learning rate
         base_type::learning_rate =
