@@ -505,7 +505,7 @@ TEST_CASE( "rbm/mnist_101", "rbm::slow" ) {
         dll::batch_size<48>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1099);
+    auto dataset = mnist::read_dataset<std::vector, std::vector, float>(1099);
 
     REQUIRE(!dataset.training_images.empty());
 
