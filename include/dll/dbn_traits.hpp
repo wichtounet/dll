@@ -44,32 +44,32 @@ struct dbn_traits {
         return cpp::is_specialization_of<dyn_dbn, dbn_t>::value;
     }
 
-    template<typename D = DBN, cpp::enable_if_u<has_momentum_field<typename D::desc>::value> = cpp::detail::dummy>
+    template<typename D = DBN, cpp::enable_if_c<has_momentum_field<typename D::desc>> = cpp::detail::dummy>
     static constexpr bool has_momentum(){
         return dbn_t::desc::Momentum;
     }
 
-    template<typename D = DBN, cpp::disable_if_u<has_momentum_field<typename D::desc>::value> = cpp::detail::dummy>
+    template<typename D = DBN, cpp::disable_if_c<has_momentum_field<typename D::desc>> = cpp::detail::dummy>
     static constexpr bool has_momentum(){
         return false;
     }
 
-    template<typename D = DBN, cpp::enable_if_u<has_concatenate_field<typename D::desc>::value> = cpp::detail::dummy>
+    template<typename D = DBN, cpp::enable_if_c<has_concatenate_field<typename D::desc>> = cpp::detail::dummy>
     static constexpr bool concatenate(){
         return dbn_t::desc::Concatenate;
     }
 
-    template<typename D = DBN, cpp::disable_if_u<has_concatenate_field<typename D::desc>::value> = cpp::detail::dummy>
+    template<typename D = DBN, cpp::disable_if_c<has_concatenate_field<typename D::desc>> = cpp::detail::dummy>
     static constexpr bool concatenate(){
         return false;
     }
 
-    template<typename D = DBN, cpp::enable_if_u<has_decay_field<typename D::desc>::value> = cpp::detail::dummy>
+    template<typename D = DBN, cpp::enable_if_c<has_decay_field<typename D::desc>> = cpp::detail::dummy>
     static constexpr decay_type decay(){
         return dbn_t::desc::Decay;
     }
 
-    template<typename D = DBN, cpp::disable_if_u<has_decay_field<typename D::desc>::value> = cpp::detail::dummy>
+    template<typename D = DBN, cpp::disable_if_c<has_decay_field<typename D::desc>> = cpp::detail::dummy>
     static constexpr decay_type decay(){
         return decay_type::NONE;
     }
