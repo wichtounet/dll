@@ -127,7 +127,7 @@ struct rbm_trainer {
                 auto expected_batch = make_batch(estart, eit);
                 trainer->train_batch(input_batch, expected_batch, context);
 
-                if(EnableWatcher){
+                if(EnableWatcher && rbm_traits<rbm_t>::free_energy()){
                     for(auto& v : input_batch){
                         context.free_energy += rbm.free_energy(v);
                     }
@@ -136,8 +136,8 @@ struct rbm_trainer {
 
             //Average all the gathered information
             context.reconstruction_error /= batches;
-            context.free_energy /= samples;
             context.sparsity /= batches;
+            context.free_energy /= samples;
 
             //After some time increase the momentum
             if(rbm_traits<rbm_t>::has_momentum() && epoch == rbm.final_momentum_epoch){

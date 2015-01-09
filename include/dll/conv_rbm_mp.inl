@@ -34,7 +34,7 @@ namespace dll {
  * This follows the definition of a CRBM by Honglak Lee.
  */
 template<typename Desc>
-struct conv_rbm_mp : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
+struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
     using desc = Desc;
     using weight = typename desc::weight;
     using this_type = conv_rbm_mp<desc>;

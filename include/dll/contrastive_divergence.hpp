@@ -256,9 +256,6 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
     using namespace etl;
     using rbm_t = RBM;
 
-    //Reset the batch gradients
-    t.w_grad_b = 0;
-
     maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(),
             [&](const auto& input, const auto& expected, std::size_t i)
     {
@@ -267,7 +264,7 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
         t.vf(i) = expected;
 
         //First step
-        rbm.activate_hidden(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i), t.ht(i));
+        rbm.template activate_hidden<true, true>(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i), t.ht(i));
 
         if(Persistent && t.init){
             t.p_h_a(i) = t.h1_a(i);
@@ -276,22 +273,27 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
 
         //CD-1
         if(Persistent){
-            rbm.activate_visible(t.p_h_a(i), t.p_h_s(i), t.v2_a(i), t.v2_s(i), t.vt(i));
-            rbm.activate_hidden(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.ht(i));
+            rbm.template activate_visible<true, false>(t.p_h_a(i), t.p_h_s(i), t.v2_a(i), t.v2_s(i), t.vt(i));
+            rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.ht(i));
         } else {
-            rbm.activate_visible(t.h1_a(i), t.h1_s(i), t.v2_a(i), t.v2_s(i), t.vt(i));
-            rbm.activate_hidden(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.ht(i));
+            rbm.template activate_visible<true, false>(t.h1_a(i), t.h1_s(i), t.v2_a(i), t.v2_s(i), t.vt(i));
+            rbm.template activate_hidden<true, (K > 1)>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.ht(i));
         }
 
         //CD-k
         for(std::size_t k = 1; k < K; ++k){
-            rbm.activate_visible(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.vt(i));
-            rbm.activate_hidden(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.ht(i));
+            rbm.template activate_visible<true, false>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.vt(i));
+            rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.ht(i));
         }
 
         //The following lines are equivalent to mmul(vf, h1_a) - mmul(v2_a, h2_a)
         //Doing them this way is significantly faster than computing the two matrix mutplications
         //and doing the subtraction later
+
+        auto g = t.w_grad_b(i);
+
+        //Reset the batch gradients
+        g = 0;
 
         auto a1 = reshape_nv1(rbm, t.vf(i));
         auto b1 = reshape_1nh(rbm, t.h1_a(i));
@@ -299,9 +301,9 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
         auto b2 = reshape_1nh(rbm, t.h2_a(i));
 
         for(std::size_t i2 = 0; i2 < rows(a1); i2++){
-            for(std::size_t j = 0; j < columns(b1); j++){
-                for(std::size_t k = 0; k < columns(a1); k++){
-                    t.w_grad_b(i,i2,j) += a1(i2,k) * b1(k,j) - a2(i2,k) * b2(k,j);
+            for(std::size_t k = 0; k < columns(a1); k++){
+                for(std::size_t j = 0; j < columns(b1); j++){
+                    g(i2,j) += a1(i2,k) * b1(k,j) - a2(i2,k) * b2(k,j);
                 }
             }
         }

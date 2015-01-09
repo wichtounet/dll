@@ -19,14 +19,12 @@ namespace dll {
  * This follows the definition of a CRBM by Honglak Lee.
  */
 template<typename Parent, typename Desc>
-class standard_conv_rbm : public rbm_base<Parent, Desc> {
-public:
-    typedef float weight;
-
+struct standard_conv_rbm : public rbm_base<Parent, Desc> {
     using desc = Desc;
     using parent_t = Parent;
     using this_type = standard_conv_rbm<parent_t, desc>;
     using base_type = rbm_base<parent_t, Desc>;
+    using weight = typename desc::weight;
 
     static constexpr const unit_type visible_unit = desc::visible_unit;
     static constexpr const unit_type hidden_unit = desc::hidden_unit;
@@ -35,8 +33,6 @@ public:
         "Only binary and linear visible units are supported");
     static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit),
         "Only binary hidden units are supported");
-
-public:
 
     //Constructors
 

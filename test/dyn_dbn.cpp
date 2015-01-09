@@ -132,3 +132,23 @@ TEST_CASE( "dyn_dbn/mnist_4", "dbn::svm_simple" ) {
     std::cout << "test_error:" << test_error << std::endl;
     REQUIRE(test_error < 0.2);
 }
+
+//This test is mostly here to ensure compilation
+
+TEST_CASE( "dyn_dbn/mnist_5", "dbn::simple_single" ) {
+    using dbn_t =
+        dll::dyn_dbn_desc<
+            dll::dbn_dyn_layers<
+                dll::dyn_rbm_desc<dll::momentum, dll::init_weights>::rbm_t
+        >>::dbn_t;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(500);
+
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto dbn = std::make_unique<dbn_t>(std::make_tuple(28*28,100));
+
+    dbn->pretrain(dataset.training_images, 20);
+}

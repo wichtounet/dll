@@ -11,7 +11,6 @@
 #include "etl/etl.hpp"
 
 #include "standard_rbm.hpp"
-#include "checks.hpp"
 
 namespace dll {
 
@@ -21,9 +20,10 @@ namespace dll {
  * This follows the definition of a RBM by Geoffrey Hinton.
  */
 template<typename Desc>
-struct dyn_rbm : public standard_rbm<dyn_rbm<Desc>, Desc> {
+struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
     using desc = Desc;
     using weight = typename desc::weight;
+    using base_type = standard_rbm<dyn_rbm<Desc>, Desc>;
 
     static constexpr const unit_type visible_unit = desc::visible_unit;
     static constexpr const unit_type hidden_unit = desc::hidden_unit;
@@ -81,11 +81,11 @@ struct dyn_rbm : public standard_rbm<dyn_rbm<Desc>, Desc> {
         //work is delegatd to the other constructor
     }
 
-    std::size_t input_size() const {
+    std::size_t input_size() const noexcept {
         return num_visible;
     }
 
-    std::size_t output_size() const {
+    std::size_t output_size() const noexcept {
         return num_hidden;
     }
 
@@ -93,76 +93,33 @@ struct dyn_rbm : public standard_rbm<dyn_rbm<Desc>, Desc> {
         std::cout << "RBM(dyn): " << num_visible << " -> " << num_hidden << std::endl;
     }
 
-    template<typename H1, typename H2, typename V>
+    template<bool P = true, bool S = true, typename H1, typename H2, typename V>
     void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s) const {
-        return activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w);
+        static etl::dyn_matrix<weight> t(1UL, num_hidden);
+        base_type::template std_activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, t);
     }
 
-    template<typename H1, typename H2, typename V, typename B, typename W>
+    template<bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W>
     void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, const B& b, const W& w) const {
         static etl::dyn_matrix<weight> t(1UL, num_hidden);
-
-        return activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, t);
+        base_type::template std_activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, t);
     }
 
-    template<typename H1, typename H2, typename V, typename T>
+    template<bool P = true, bool S = true, typename H1, typename H2, typename V, typename T>
     void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, T&& t) const {
-        return activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, std::forward<T>(t));
+        base_type::template std_activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, std::forward<T>(t));
     }
 
-    template<typename H1, typename H2, typename V, typename B, typename W, typename T>
-    void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V&, const B& b, const W& w, T&& t) const {
-        using namespace etl;
-
-        if(hidden_unit == unit_type::BINARY){
-            h_a = sigmoid(b + auto_vmmul(v_a, w, t));
-            h_s = bernoulli(h_a);
-        } else if(hidden_unit == unit_type::RELU){
-            h_a = max(b + auto_vmmul(v_a, w, t), 0.0);
-            h_s = logistic_noise(h_a);
-        } else if(hidden_unit == unit_type::RELU6){
-            h_a = min(max(b + auto_vmmul(v_a, w, t), 0.0), 6.0);
-            h_s = ranged_noise(h_a, 6.0);
-        } else if(hidden_unit == unit_type::RELU1){
-            h_a = min(max(b + auto_vmmul(v_a, w, t), 0.0), 1.0);
-            h_s = ranged_noise(h_a, 1.0);
-        } else if(hidden_unit == unit_type::SOFTMAX){
-            h_a = softmax(b + auto_vmmul(v_a, w, t));
-            h_s = one_if_max(h_a);
-        } else {
-            cpp_unreachable("Invalid path");
-        }
-
-        nan_check_deep(h_a);
-        nan_check_deep(h_s);
-    }
-
-    template<typename H, typename V>
+    template<bool P = true, bool S = true, typename H, typename V>
     void activate_visible(const H& h_a, const H& h_s, V&& v_a, V&& v_s) const {
         static etl::dyn_matrix<weight> t(num_visible, 1UL);
 
-        activate_visible(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), t);
+        base_type::template std_activate_visible(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), c, w, t);
     }
 
-    template<typename H, typename V, typename T>
-    void activate_visible(const H&, const H& h_s, V&& v_a, V&& v_s, T&& t) const {
-        using namespace etl;
-
-        if(visible_unit == unit_type::BINARY){
-            v_a = sigmoid(c + auto_vmmul(w, h_s, t));
-            v_s = bernoulli(v_a);
-        } else if(visible_unit == unit_type::GAUSSIAN){
-            v_a = c + auto_vmmul(w, h_s, t);
-            v_s = normal_noise(v_a);
-        } else if(visible_unit == unit_type::RELU){
-            v_a = max(c + auto_vmmul(w, h_s, t), 0.0);
-            v_s = logistic_noise(v_a);
-        } else {
-            cpp_unreachable("Invalid path");
-        }
-
-        nan_check_deep(v_a);
-        nan_check_deep(v_s);
+    template<bool P = true, bool S = true, typename H, typename V, typename T>
+    void activate_visible(const H& h_a, const H& h_s, V&& v_a, V&& v_s, T&& t) const {
+        base_type::template std_activate_visible(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), c, w, std::forward<T>(t));
     }
 };
 

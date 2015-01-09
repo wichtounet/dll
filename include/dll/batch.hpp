@@ -17,6 +17,7 @@ namespace dll {
 template<typename Iterator>
 struct batch {
     using size_type = std::size_t;
+    using value_type = typename std::decay_t<Iterator>::value_type;
 
     Iterator first;
     Iterator last;

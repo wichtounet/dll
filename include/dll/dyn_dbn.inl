@@ -25,7 +25,7 @@ namespace dll {
  * \brief A Deep Belief Network implementation
  */
 template<typename Desc>
-struct dyn_dbn {
+struct dyn_dbn final {
     using desc = Desc;
     using this_type = dyn_dbn<desc>;
 
@@ -60,12 +60,17 @@ struct dyn_dbn {
     template<typename... T>
     dyn_dbn(T... rbms) : tuples(rbms...) {
         //Nothing else to init
-    };
+    }
 #else
-    template<typename... T>
+    template<typename... T, cpp::enable_if_u<(sizeof...(T) > 1)> = cpp::detail::dummy>
     dyn_dbn(T... rbms) : tuples({rbms}...) {
         //Nothing else to init
-    };
+    }
+
+    template<typename T>
+    dyn_dbn(T rbm) : tuples(rbm_type<0>{rbm}) {
+        //Nothing else to init
+    }
 #endif
 
     //No copying

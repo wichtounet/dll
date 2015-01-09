@@ -5,6 +5,8 @@ default: release
 include make-utils/flags.mk
 include make-utils/cpp-utils.mk
 
+CXX_FLAGS += -pedantic
+
 ifneq (,$(findstring clang,$(CXX)))
 	CXX_FLAGS += -stdlib=libc++
 endif

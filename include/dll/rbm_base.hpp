@@ -22,13 +22,11 @@ namespace dll {
  * It only contains configurable properties that are used by each
  * version of RBM.
  */
-template<typename Parent, typename Layer>
-class rbm_base {
-public:
-    typedef float weight;
-
-    using conf = Layer;
+template<typename Parent, typename Desc>
+struct rbm_base {
+    using conf = Desc;
     using parent_t = Parent;
+    using weight = typename conf::weight;
 
     //Configurable properties
     weight learning_rate = 1e-1;        ///< The learning rate
