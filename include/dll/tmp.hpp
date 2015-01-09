@@ -18,24 +18,22 @@ template<typename T1, typename... Args>
 struct is_present;
 
 template<typename T1, typename T2, typename... Args>
-struct is_present<T1, T2, Args...> :
-    std::integral_constant<bool, cpp::or_u<std::is_same<T1, T2>::value, is_present<T1, Args...>::value>::value> {};
+struct is_present<T1, T2, Args...> : cpp::bool_constant_c<cpp::or_c<std::is_same<T1, T2>, is_present<T1, Args...>>> {};
 
 template<typename T1>
-struct is_present<T1> : std::false_type{};
+struct is_present<T1> : std::false_type {};
 
 template<typename... Valid>
 struct tmp_list {
     template<typename T>
-    struct check : std::integral_constant<bool, is_present<typename T::type_id, Valid...>::value> {};
+    struct check : cpp::bool_constant_c<is_present<typename T::type_id, Valid...>> {};
 };
 
 template<typename V, typename... Args>
 struct is_valid;
 
 template<typename V, typename T1, typename... Args>
-struct is_valid <V, T1, Args...> :
-    std::integral_constant<bool, cpp::and_u<V::template check<T1>::value, is_valid<V, Args...>::value>::value> {};
+struct is_valid <V, T1, Args...> : cpp::bool_constant_c<cpp::and_c<typename V::template check<T1>, is_valid<V, Args...>>> {};
 
 template<typename V>
 struct is_valid <V> : std::true_type {};

@@ -207,6 +207,7 @@ void update_convolutional(RBM& rbm, Trainer& t){
         }
     }
 
+    //Honglak Lee's sparsity method
     if(rbm_traits<rbm_t>::sparsity_method() == sparsity_method::LEE){
         auto eps = rbm.learning_rate;
 
@@ -224,7 +225,7 @@ void update_convolutional(RBM& rbm, Trainer& t){
         t.b_inc = momentum * t.b_inc + eps * t.b_grad;
         t.c_inc = momentum * t.c_inc + eps * t.c_grad;
     }
-    //Apply learning rate
+    //Apply learning rate only
     else {
         auto eps = rbm.learning_rate;
 
@@ -233,8 +234,8 @@ void update_convolutional(RBM& rbm, Trainer& t){
         t.c_grad *= eps;
     }
 
-    //Update the weights and biases
-    //with the final gradients (if not momentum, these are the real gradients)
+    //Update the weights and biases with the final gradients (if not momentum,
+    //these are the real gradients)
     rbm.w += t.get_fgrad(t.w_grad, t.w_inc);
     rbm.b += t.get_fgrad(t.b_grad, t.b_inc);
     rbm.c += t.get_fgrad(t.c_grad, t.c_inc);
