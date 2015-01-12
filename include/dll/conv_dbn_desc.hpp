@@ -28,7 +28,7 @@ struct conv_dbn_desc {
 
     /*! The type of the watched to use during training */
     template <typename DBN>
-    using watcher_t = typename detail::get_template_type<watcher<default_dbn_watcher>, Parameters...>::template type<DBN>;
+    using watcher_t = typename detail::get_template_type<watcher<default_dbn_watcher>, Parameters...>::template value<DBN>;
 
     /*! The DBN type */
     using dbn_t = conv_dbn<conv_dbn_desc<Layers, Parameters...>>;

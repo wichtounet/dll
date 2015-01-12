@@ -34,15 +34,15 @@ struct dyn_rbm_desc {
     static constexpr const bool Free_Energy = detail::is_present<free_energy, Parameters...>::value;
 
     /*! The type used to store the weights */
-    using weight = typename detail::get_type<weight_type<float>, Parameters...>::type;
+    using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
 
     /*! The type of the trainer to use to train the RBM */
     template <typename RBM>
-    using trainer_t = typename detail::get_template_type<trainer<cd1_trainer_t>, Parameters...>::template type<RBM>;
+    using trainer_t = typename detail::get_template_type<trainer<cd1_trainer_t>, Parameters...>::template value<RBM>;
 
     /*! The type of the watched to use during training */
     template <typename RBM>
-    using watcher_t = typename detail::get_template_type<watcher<default_rbm_watcher>, Parameters...>::template type<RBM>;
+    using watcher_t = typename detail::get_template_type<watcher<default_rbm_watcher>, Parameters...>::template value<RBM>;
 
     /*! The RBM type */
     using rbm_t = dyn_rbm<dyn_rbm_desc<Parameters...>>;

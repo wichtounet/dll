@@ -34,11 +34,11 @@ struct base_dbn_desc {
 
     /*! The type of the trainer to use to train the DBN */
     template <typename DBN>
-    using trainer_t = typename detail::get_template_type<trainer<default_dbn_trainer_t>, Parameters...>::template type<DBN>;
+    using trainer_t = typename detail::get_template_type<trainer<default_dbn_trainer_t>, Parameters...>::template value<DBN>;
 
     /*! The type of the watched to use during training */
     template <typename DBN>
-    using watcher_t = typename detail::get_template_type<watcher<default_dbn_watcher>, Parameters...>::template type<DBN>;
+    using watcher_t = typename detail::get_template_type<watcher<default_dbn_watcher>, Parameters...>::template value<DBN>;
 
     /*! The DBN type */
     using dbn_t = D<base_dbn_desc<Layers, D, Parameters...>>;

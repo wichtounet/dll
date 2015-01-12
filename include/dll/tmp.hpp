@@ -8,7 +8,7 @@
 #ifndef DLL_TMP_HPP
 #define DLL_TMP_HPP
 
-#include "cpp_utils/tmp.hpp" //for enable_if/disable_if stuff
+#include "cpp_utils/tmp.hpp"
 
 namespace dll {
 
@@ -38,53 +38,27 @@ struct is_valid <V, T1, Args...> : cpp::bool_constant_c<cpp::and_c<typename V::t
 template<typename V>
 struct is_valid <V> : std::true_type {};
 
-//Since default template argument are not supported in partial class specialization, the following
-//three extractors are more complicated and need a second class to perform SFINAE
-
 template<typename D, typename... Args>
 struct get_value;
 
 template<typename D, typename T2, typename... Args>
-struct get_value<D, T2, Args...> {
-    template<typename D2, typename T22, typename Enable = void>
-    struct get_value_2 {
-        static constexpr const auto value = get_value<D, Args...>::value;
-    };
-
-    template<typename D2, typename T22>
-    struct get_value_2 <D2, T22, std::enable_if_t<std::is_same<typename D2::type_id, typename T22::type_id>::value>> {
-        static constexpr const auto value = T22::value;
-    };
-
-    static constexpr const auto value = get_value_2<D, T2>::value;
-};
+struct get_value<D, T2, Args...> : cpp::conditional_constant<std::is_same<typename D::type_id, typename T2::type_id>::value, T2, get_value<D, Args...>> {};
 
 template<typename D>
-struct get_value<D> {
-    static constexpr const auto value = D::value;
-};
+struct get_value<D> : cpp::auto_constant<D> {};
 
 template<typename D, typename... Args>
 struct get_type;
 
+//Simply using conditional_t is not enough since T2::value can be a real value and not a type and therefore should not always be evaluated
 template<typename D, typename T2, typename... Args>
 struct get_type<D, T2, Args...> {
-    template<typename D2, typename T22, typename Enable = void>
-    struct get_type_2 {
-        using type = typename get_type<D, Args...>::type;
-    };
-
-    template<typename D2, typename T22>
-    struct get_type_2 <D2, T22, std::enable_if_t<std::is_same<typename D2::type_id, typename T22::type_id>::value>> {
-        using type = typename T22::value;
-    };
-
-    using type = typename get_type_2<D, T2>::type;
+    using value = typename cpp::conditional_type_constant_c<std::is_same<typename D::type_id, typename T2::type_id>::value, T2, get_type<D, Args...>>::type;
 };
 
 template<typename D>
 struct get_type<D> {
-    using type = typename D::value;
+    using value = typename D::value;
 };
 
 template<typename D, typename... Args>
@@ -92,26 +66,14 @@ struct get_template_type;
 
 template<typename D, typename T2, typename... Args>
 struct get_template_type<D, T2, Args...> {
-    template<typename D2, typename T22, typename Enable = void>
-    struct get_template_type_2 {
-        template<typename RBM>
-        using type = typename get_template_type<D, Args...>::template type<RBM>;
-    };
-
-    template<typename D2, typename T22>
-    struct get_template_type_2 <D2, T22, std::enable_if_t<std::is_same<typename D2::type_id, typename T22::type_id>::value>> {
-        template<typename RBM>
-        using type = typename T22::template value<RBM>;
-    };
-
     template<typename RBM>
-    using type = typename get_template_type_2<D, T2>::template type<RBM>;
+    using value = typename cpp::conditional_template_type_constant_c<std::is_same<typename D::type_id, typename T2::type_id>::value, T2, get_template_type<D, Args...>>::template type<RBM>;
 };
 
 template<typename D>
 struct get_template_type<D> {
     template<typename RBM>
-    using type = typename D::template value<RBM>;
+    using value = typename D::template value<RBM>;
 };
 
 } //end of namespace detail
