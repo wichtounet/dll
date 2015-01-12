@@ -20,11 +20,11 @@ struct validate_layers <Layer> : std::true_type {};
 
 template<typename L1, typename L2, typename... Layers>
 struct validate_layers <L1, L2, Layers...> :
-    std::integral_constant<bool,
+    cpp::bool_constant_c<
         cpp::and_u<
             rbm_traits<L1>::output_size() == rbm_traits<L2>::input_size(),
             validate_layers<L2, Layers...>::value
-        >::value> {};
+        >> {};
 
 template<typename... Layers>
 struct validate_label_layers;
@@ -34,11 +34,11 @@ struct validate_label_layers <Layer> : std::true_type {};
 
 template<typename L1, typename L2, typename... Layers>
 struct validate_label_layers <L1, L2, Layers...> :
-    std::integral_constant<bool,
+    cpp::bool_constant_c<
         cpp::and_u<
             rbm_traits<L1>::output_size() <= rbm_traits<L2>::input_size(),
             validate_label_layers<L2, Layers...>::value
-        >::value> {};
+        >> {};
 
 /**
  * \brief Simple placeholder for a collection of layers

@@ -71,102 +71,102 @@ struct rbm_traits {
         return rbm_t::output_size();
     }
 
-    template<typename R = RBM, cpp::enable_if_u<has_batch_size_field<typename R::desc>::value> = cpp::detail::dummy>
+    template<typename R = RBM, cpp::enable_if_c<has_batch_size_field<typename R::desc>> = cpp::detail::dummy>
     static constexpr std::size_t batch_size(){
         return rbm_t::desc::BatchSize;
     }
 
-    template<typename R = RBM, cpp::disable_if_u<has_batch_size_field<typename R::desc>::value> = cpp::detail::dummy>
+    template<typename R = RBM, cpp::disable_if_c<has_batch_size_field<typename R::desc>> = cpp::detail::dummy>
     static constexpr std::size_t batch_size(){
         return 1;
     }
 
-    template<typename R = RBM, cpp::enable_if_u<has_momentum_field<typename R::desc>::value> = cpp::detail::dummy>
+    template<typename R = RBM, cpp::enable_if_c<has_momentum_field<typename R::desc>> = cpp::detail::dummy>
     static constexpr bool has_momentum(){
         return rbm_t::desc::Momentum;
     }
 
-    template<typename R = RBM, cpp::disable_if_u<has_momentum_field<typename R::desc>::value> = cpp::detail::dummy>
+    template<typename R = RBM, cpp::disable_if_c<has_momentum_field<typename R::desc>> = cpp::detail::dummy>
     static constexpr bool has_momentum(){
         return false;
     }
 
-    template<typename R = RBM, cpp::enable_if_u<has_parallel_field<typename R::desc>::value> = cpp::detail::dummy>
+    template<typename R = RBM, cpp::enable_if_c<has_parallel_field<typename R::desc>> = cpp::detail::dummy>
     static constexpr bool is_parallel(){
         return rbm_t::desc::Parallel;
     }
 
-    template<typename R = RBM, cpp::disable_if_u<has_parallel_field<typename R::desc>::value> = cpp::detail::dummy>
+    template<typename R = RBM, cpp::disable_if_c<has_parallel_field<typename R::desc>> = cpp::detail::dummy>
     static constexpr bool is_parallel(){
         return false;
     }
 
-    template<typename R = RBM, cpp::enable_if_u<has_shuffle_field<typename R::desc>::value> = cpp::detail::dummy>
+    template<typename R = RBM, cpp::enable_if_c<has_shuffle_field<typename R::desc>> = cpp::detail::dummy>
     static constexpr bool has_shuffle(){
         return rbm_t::desc::Shuffle;
     }
 
-    template<typename R = RBM, cpp::disable_if_u<has_shuffle_field<typename R::desc>::value> = cpp::detail::dummy>
+    template<typename R = RBM, cpp::disable_if_c<has_shuffle_field<typename R::desc>> = cpp::detail::dummy>
     static constexpr bool has_shuffle(){
         return false;
     }
 
-    template<typename R = RBM, cpp::enable_if_u<has_sparsity_field<typename R::desc>::value> = cpp::detail::dummy>
+    template<typename R = RBM, cpp::enable_if_c<has_sparsity_field<typename R::desc>> = cpp::detail::dummy>
     static constexpr bool has_sparsity(){
         return rbm_t::desc::Sparsity != dll::sparsity_method::NONE;
     }
 
-    template<typename R = RBM, cpp::disable_if_u<has_sparsity_field<typename R::desc>::value> = cpp::detail::dummy>
+    template<typename R = RBM, cpp::disable_if_c<has_sparsity_field<typename R::desc>> = cpp::detail::dummy>
     static constexpr bool has_sparsity(){
         return false;
     }
 
-    template<typename R = RBM, cpp::enable_if_u<has_sparsity_field<typename R::desc>::value> = cpp::detail::dummy>
+    template<typename R = RBM, cpp::enable_if_c<has_sparsity_field<typename R::desc>> = cpp::detail::dummy>
     static constexpr enum sparsity_method sparsity_method(){
         return rbm_t::desc::Sparsity;
     }
 
-    template<typename R = RBM, cpp::disable_if_u<has_sparsity_field<typename R::desc>::value> = cpp::detail::dummy>
+    template<typename R = RBM, cpp::disable_if_c<has_sparsity_field<typename R::desc>> = cpp::detail::dummy>
     static constexpr enum sparsity_method sparsity_method(){
         return dll::sparsity_method::NONE;
     }
 
-    template<typename R = RBM, cpp::enable_if_u<has_bias_field<typename R::desc>::value> = cpp::detail::dummy>
+    template<typename R = RBM, cpp::enable_if_c<has_bias_field<typename R::desc>> = cpp::detail::dummy>
     static constexpr enum bias_mode bias_mode(){
         return rbm_t::desc::Bias;
     }
 
-    template<typename R = RBM, cpp::disable_if_u<has_bias_field<typename R::desc>::value> = cpp::detail::dummy>
+    template<typename R = RBM, cpp::disable_if_c<has_bias_field<typename R::desc>> = cpp::detail::dummy>
     static constexpr enum bias_mode bias_mode(){
         return dll::bias_mode::SIMPLE;
     }
 
-    template<typename R = RBM, cpp::enable_if_u<has_decay_field<typename R::desc>::value> = cpp::detail::dummy>
+    template<typename R = RBM, cpp::enable_if_c<has_decay_field<typename R::desc>> = cpp::detail::dummy>
     static constexpr decay_type decay(){
         return rbm_t::desc::Decay;
     }
 
-    template<typename R = RBM, cpp::disable_if_u<has_decay_field<typename R::desc>::value> = cpp::detail::dummy>
+    template<typename R = RBM, cpp::disable_if_c<has_decay_field<typename R::desc>> = cpp::detail::dummy>
     static constexpr decay_type decay(){
         return dll::decay_type::NONE;
     }
 
-    template<typename R = RBM, cpp::enable_if_u<has_init_field<typename R::desc>::value> = cpp::detail::dummy>
+    template<typename R = RBM, cpp::enable_if_c<has_init_field<typename R::desc>> = cpp::detail::dummy>
     static constexpr bool init_weights(){
         return rbm_t::desc::Init;
     }
 
-    template<typename R = RBM, cpp::disable_if_u<has_init_field<typename R::desc>::value> = cpp::detail::dummy>
+    template<typename R = RBM, cpp::disable_if_c<has_init_field<typename R::desc>> = cpp::detail::dummy>
     static constexpr bool init_weights(){
         return false;
     }
 
-    template<typename R = RBM, cpp::enable_if_u<has_free_energy_field<typename R::desc>::value> = cpp::detail::dummy>
+    template<typename R = RBM, cpp::enable_if_c<has_free_energy_field<typename R::desc>> = cpp::detail::dummy>
     static constexpr bool free_energy(){
         return rbm_t::desc::Free_Energy;
     }
 
-    template<typename R = RBM, cpp::disable_if_u<has_free_energy_field<typename R::desc>::value> = cpp::detail::dummy>
+    template<typename R = RBM, cpp::disable_if_c<has_free_energy_field<typename R::desc>> = cpp::detail::dummy>
     static constexpr bool free_energy(){
         return false;
     }
