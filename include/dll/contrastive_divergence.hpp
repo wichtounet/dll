@@ -212,8 +212,8 @@ void update_convolutional(RBM& rbm, Trainer& t){
         auto eps = rbm.learning_rate;
 
         t.w_grad -= rbm.pbias_lambda * (1.0 / eps) * t.w_bias;
-        t.b_grad -= rbm.pbias_lambda * (1.0 / eps)* t.b_bias;
-        t.c_grad -= rbm.pbias_lambda * (1.0 / eps)* t.c_bias;
+        t.b_grad -= rbm.pbias_lambda * (1.0 / eps) * t.b_bias;
+        t.c_grad -= rbm.pbias_lambda * (1.0 / eps) * t.c_bias;
     }
 
     //Apply momentum and learning rate
