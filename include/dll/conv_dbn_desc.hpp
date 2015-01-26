@@ -24,7 +24,8 @@ template<typename Layers, typename... Parameters>
 struct conv_dbn_desc {
     using layers = Layers;
 
-    static constexpr const bool Concatenate = detail::is_present<concatenate, Parameters...>::value;
+    static constexpr const bool Concatenate = detail::is_present<svm_concatenate, Parameters...>::value;
+    static constexpr const bool Scale = detail::is_present<svm_scale, Parameters...>::value;
 
     /*! The type of the watched to use during training */
     template <typename DBN>
@@ -35,7 +36,7 @@ struct conv_dbn_desc {
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid<detail::tmp_list<watcher_id, concatenate_id>, Parameters...>::value,
+        detail::is_valid<detail::tmp_list<watcher_id, svm_concatenate_id, svm_scale_id>, Parameters...>::value,
         "Invalid parameters type");
 };
 

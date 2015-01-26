@@ -66,7 +66,7 @@ TEST_CASE( "conv_dbn_mp/mnist_3", "conv_dbn::svm_concatenate" ) {
         dll::dbn_layers<
         dll::conv_rbm_mp_desc<28, 1, 18, 40, 2, dll::momentum, dll::batch_size<25>>::rbm_t,
         dll::conv_rbm_mp_desc<9, 40, 6, 40, 2, dll::momentum, dll::batch_size<25>>::rbm_t
-    >, dll::concatenate>::dbn_t dbn_t;
+    >, dll::svm_concatenate>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
 

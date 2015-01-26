@@ -28,6 +28,7 @@ struct dbn_traits {
 
     HAS_STATIC_FIELD(Momentum, has_momentum_field)
     HAS_STATIC_FIELD(Concatenate, has_concatenate_field)
+    HAS_STATIC_FIELD(Scale, has_scale_field)
     HAS_STATIC_FIELD(Decay, has_decay_field)
 
     /*!
@@ -61,6 +62,16 @@ struct dbn_traits {
 
     template<typename D = DBN, cpp::disable_if_c<has_concatenate_field<typename D::desc>> = cpp::detail::dummy>
     static constexpr bool concatenate(){
+        return false;
+    }
+
+    template<typename D = DBN, cpp::enable_if_c<has_scale_field<typename D::desc>> = cpp::detail::dummy>
+    static constexpr bool scale(){
+        return dbn_t::desc::Scale;
+    }
+
+    template<typename D = DBN, cpp::disable_if_c<has_scale_field<typename D::desc>> = cpp::detail::dummy>
+    static constexpr bool scale(){
         return false;
     }
 

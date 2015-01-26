@@ -109,7 +109,7 @@ etl::dyn_vector<typename DBN::weight> get_activation_probabilities(DBN& dbn, Sam
 }
 
 template<typename DBN, typename Samples, typename Labels>
-void make_problem(DBN& dbn, const Samples& training_data, const Labels& labels){
+void make_problem(DBN& dbn, const Samples& training_data, const Labels& labels, bool scale = false){
     using svm_samples_t = std::vector<etl::dyn_vector<typename DBN::weight>>;
     svm_samples_t svm_samples;
 
@@ -119,11 +119,11 @@ void make_problem(DBN& dbn, const Samples& training_data, const Labels& labels){
     }
 
     //static_cast ensure using the correct overload
-    dbn.problem = svm::make_problem(labels, static_cast<const svm_samples_t&>(svm_samples));
+    dbn.problem = svm::make_problem(labels, static_cast<const svm_samples_t&>(svm_samples), scale);
 }
 
 template<typename DBN, typename Iterator, typename LIterator>
-void make_problem(DBN& dbn, Iterator first, Iterator last, LIterator&& lfirst, LIterator&& llast){
+void make_problem(DBN& dbn, Iterator first, Iterator last, LIterator&& lfirst, LIterator&& llast, bool scale = false){
     std::vector<etl::dyn_vector<typename DBN::weight>> svm_samples;
 
     //Get all the activation probabilities
@@ -134,14 +134,15 @@ void make_problem(DBN& dbn, Iterator first, Iterator last, LIterator&& lfirst, L
     //static_cast ensure using the correct overload
     dbn.problem = svm::make_problem(
         std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
-        svm_samples.begin(), svm_samples.end());
+        svm_samples.begin(), svm_samples.end(),
+        scale);
 }
 
 template<typename DBN, typename Samples, typename Labels>
 bool svm_train(DBN& dbn, const Samples& training_data, const Labels& labels, const svm_parameter& parameters){
     cpp::stop_watch<std::chrono::seconds> watch;
 
-    make_problem(dbn, training_data, labels);
+    make_problem(dbn, training_data, labels, dbn_traits<DBN>::scale());
 
     //Make libsvm quiet
     svm::make_quiet();
@@ -165,7 +166,10 @@ template<typename DBN, typename Iterator, typename LIterator>
 bool svm_train(DBN& dbn, Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, const svm_parameter& parameters){
     cpp::stop_watch<std::chrono::seconds> watch;
 
-    make_problem(dbn, std::forward<Iterator>(first), std::forward<Iterator>(last), std::forward<LIterator>(lfirst), std::forward<LIterator>(llast));
+    make_problem(dbn,
+        std::forward<Iterator>(first), std::forward<Iterator>(last),
+        std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
+        dbn_traits<DBN>::scale());
 
     //Make libsvm quiet
     svm::make_quiet();
@@ -187,7 +191,7 @@ bool svm_train(DBN& dbn, Iterator&& first, Iterator&& last, LIterator&& lfirst, 
 
 template<typename DBN, typename Samples, typename Labels>
 bool svm_grid_search(DBN& dbn, const Samples& training_data, const Labels& labels, std::size_t n_fold = 5, const svm::rbf_grid& g = svm::rbf_grid()){
-    make_problem(dbn, training_data, labels);
+    make_problem(dbn, training_data, labels, dbn_traits<DBN>::scale());
 
     //Make libsvm quiet
     svm::make_quiet();
@@ -207,7 +211,10 @@ bool svm_grid_search(DBN& dbn, const Samples& training_data, const Labels& label
 
 template<typename DBN, typename Iterator, typename LIterator>
 bool svm_grid_search(DBN& dbn, Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, std::size_t n_fold = 5, const svm::rbf_grid& g = svm::rbf_grid()){
-    make_problem(dbn, std::forward<Iterator>(first), std::forward<Iterator>(last), std::forward<LIterator>(lfirst), std::forward<LIterator>(llast));
+    make_problem(dbn,
+        std::forward<Iterator>(first), std::forward<Iterator>(last),
+        std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
+        dbn_traits<DBN>::scale());
 
     //Make libsvm quiet
     svm::make_quiet();

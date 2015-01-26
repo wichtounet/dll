@@ -332,7 +332,7 @@ TEST_CASE( "dbn/mnist_13", "dbn::svm_concatenate" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
         dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t>, dll::concatenate>::dbn_t dbn_t;
+        dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t>, dll::svm_concatenate>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(500);
 
