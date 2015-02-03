@@ -164,7 +164,7 @@ struct cg_trainer {
 
     template<bool Temp, typename Sample, typename Target>
     void gradient(const gradient_context<Sample, Target>& context, weight& cost){
-        constexpr const auto n_hidden = dbn_t::template num_hidden<layers - 1>();
+        constexpr const auto n_hidden = dbn_t::template layer_output_size<layers - 1>();
         auto n_samples = context.inputs.size();
 
         static std::vector<std::vector<weight>> diffs;

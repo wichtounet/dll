@@ -105,7 +105,7 @@ struct sgd_trainer {
 
         auto n_samples = label_batch.size();
 
-        constexpr const auto n_outputs = dbn_t::template num_hidden<layers - 1>();
+        constexpr const auto n_outputs = dbn_t::template layer_output_size<layers - 1>();
 
         cpp::for_each(rbm_contexts, [](auto& context){
             context.w_grad = 0.0;

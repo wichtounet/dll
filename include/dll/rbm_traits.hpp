@@ -202,14 +202,14 @@ constexpr std::size_t num_hidden(const RBM&){
     return RBM::desc::num_hidden;
 }
 
-template<typename RBM, cpp::enable_if_u<rbm_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
-std::size_t output_size(const RBM& rbm){
-    return rbm.num_hidden;
-}
-
 template<typename RBM, cpp::disable_if_u<rbm_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
 constexpr std::size_t output_size(const RBM&){
     return rbm_traits<RBM>::output_size();
+}
+
+template<typename RBM, cpp::enable_if_u<rbm_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
+std::size_t output_size(const RBM& rbm){
+    return rbm.num_hidden;
 }
 
 template<typename RBM, cpp::enable_if_u<rbm_traits<RBM>::is_dynamic()> = cpp::detail::dummy>

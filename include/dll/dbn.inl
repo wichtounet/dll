@@ -120,21 +120,21 @@ struct dbn final {
     }
 
     template<std::size_t N>
-    static constexpr std::size_t num_visible(){
-        return rbm_type<N>::num_visible;
+    static constexpr std::size_t layer_input_size(){
+        return rbm_traits<rbm_type<N>>::input_size();
     }
 
     template<std::size_t N>
-    static constexpr std::size_t num_hidden(){
-        return rbm_type<N>::num_hidden;
+    static constexpr std::size_t layer_output_size(){
+        return rbm_traits<rbm_type<N>>::output_size();
     }
 
     static constexpr std::size_t input_size(){
-        return rbm_type<0>::input_size();
+        return layer_input_size<0>();
     }
 
     static constexpr std::size_t output_size(){
-        return rbm_type<layers - 1>::output_size();
+        return layer_output_size<layers - 1>();
     }
 
     static std::size_t full_output_size(){
@@ -184,8 +184,9 @@ struct dbn final {
         auto input = std::ref(data);
 
         cpp::for_each_i(tuples, [&watcher, this, &input, &next_a, &next_s, max_epochs](std::size_t I, auto& rbm){
-            typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
-            constexpr const auto num_hidden = rbm_t::num_hidden;
+            using rbm_t = typename std::remove_reference<decltype(rbm)>::type;
+
+            constexpr const auto output_size = rbm_traits<rbm_t>::output_size();
 
             auto input_size = static_cast<training_t&>(input).size();
 
@@ -205,8 +206,8 @@ struct dbn final {
                 next_s.reserve(input_size);
 
                 for(std::size_t i = 0; i < input_size; ++i){
-                    next_a.emplace_back(num_hidden);
-                    next_s.emplace_back(num_hidden);
+                    next_a.emplace_back(output_size);
+                    next_s.emplace_back(output_size);
                 }
 
                 for(size_t i = 0; i < input_size; ++i){
@@ -230,7 +231,7 @@ struct dbn final {
     template<typename Samples, typename Labels>
     void train_with_labels(Samples& training_data, const Labels& training_labels, std::size_t labels, std::size_t max_epochs){
         cpp_assert(training_data.size() == training_labels.size(), "There must be the same number of values than labels");
-        cpp_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
+        cpp_assert(layer_input_size<layers - 1>() == layer_output_size<layers - 2>() + labels, "There is no room for the labels units");
 
         train_with_labels(training_data.begin(), training_data.end(), training_labels.begin(), training_labels.end(), labels, max_epochs);
     }
@@ -238,7 +239,7 @@ struct dbn final {
     template<typename Iterator, typename LabelIterator>
     void train_with_labels(Iterator first, Iterator last, LabelIterator lfirst, LabelIterator llast, std::size_t labels, std::size_t max_epochs){
         cpp_assert(std::distance(first, last) == std::distance(lfirst, llast), "There must be the same number of values than labels");
-        cpp_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
+        cpp_assert(layer_input_size<layers - 1>() == layer_output_size<layers - 2>() + labels, "There is no room for the labels units");
 
         using training_t = std::vector<etl::dyn_vector<weight>>;
 
@@ -253,8 +254,9 @@ struct dbn final {
         auto input = std::ref(data);
 
         cpp::for_each_i(tuples, [&input, llast, lfirst, labels, max_epochs](size_t I, auto& rbm){
-            typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
-            constexpr const auto num_hidden = rbm_t::num_hidden;
+            using rbm_t = typename std::remove_reference<decltype(rbm)>::type;
+
+            constexpr const auto output_size = rbm_traits<rbm_t>::output_size();
 
             static training_t next;
 
@@ -266,8 +268,8 @@ struct dbn final {
                 auto append_labels = (I + 1 == layers - 1);
 
                 for(auto& training_item : static_cast<training_t&>(input)){
-                    etl::dyn_vector<weight> next_item_a(num_hidden + (append_labels ? labels : 0));
-                    etl::dyn_vector<weight> next_item_s(num_hidden + (append_labels ? labels : 0));
+                    etl::dyn_vector<weight> next_item_a(output_size + (append_labels ? labels : 0));
+                    etl::dyn_vector<weight> next_item_s(output_size + (append_labels ? labels : 0));
                     rbm.activate_hidden(next_item_a, next_item_s, training_item, training_item);
                     next.emplace_back(std::move(next_item_a));
                 }
@@ -282,7 +284,7 @@ struct dbn final {
                         auto label = *it;
 
                         for(size_t l = 0; l < labels; ++l){
-                            next[i][num_hidden + l] = label == l ? 1.0 : 0.0;
+                            next[i][output_size + l] = label == l ? 1.0 : 0.0;
                         }
 
                         ++i;
@@ -297,41 +299,42 @@ struct dbn final {
 
     template<typename TrainingItem>
     size_t predict_labels(const TrainingItem& item_data, std::size_t labels){
-        cpp_assert(num_visible<layers - 1>() == num_hidden<layers - 2>() + labels, "There is no room for the labels units");
+        cpp_assert(layer_input_size<layers - 1>() == layer_output_size<layers - 2>() + labels, "There is no room for the labels units");
 
         using training_t = etl::dyn_vector<weight>;
 
         training_t item(item_data);
 
-        etl::dyn_vector<weight> output_a(num_visible<layers - 1>());
-        etl::dyn_vector<weight> output_s(num_visible<layers - 1>());
+        etl::dyn_vector<weight> output_a(layer_input_size<layers - 1>());
+        etl::dyn_vector<weight> output_s(layer_input_size<layers - 1>());
 
         auto input_ref = std::cref(item);
 
         cpp::for_each_i(tuples, [labels,&input_ref,&output_a,&output_s](size_t I, auto& rbm){
-            typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
-            constexpr const auto num_hidden = rbm_t::num_hidden;
+            using rbm_t = typename std::remove_reference<decltype(rbm)>::type;
+
+            constexpr const auto output_size = rbm_traits<rbm_t>::output_size();
 
             auto& input = static_cast<const training_t&>(input_ref);
 
             if(I == layers - 1){
-                static etl::dyn_vector<weight> h1_a(num_hidden);
-                static etl::dyn_vector<weight> h1_s(num_hidden);
+                static etl::dyn_vector<weight> h1_a(output_size);
+                static etl::dyn_vector<weight> h1_s(output_size);
 
                 rbm.activate_hidden(h1_a, h1_s, input, input);
                 rbm.activate_visible(h1_a, h1_s, output_a, output_s);
             } else {
-                static etl::dyn_vector<weight> next_a(num_hidden);
-                static etl::dyn_vector<weight> next_s(num_hidden);
+                static etl::dyn_vector<weight> next_a(output_size);
+                static etl::dyn_vector<weight> next_s(output_size);
 
                 rbm.activate_hidden(next_a, next_s, input, input);
 
                 //If the next layers is the last layer
                 if(I + 1 == layers - 1){
-                    static etl::dyn_vector<weight> big_next_a(num_hidden + labels);
+                    static etl::dyn_vector<weight> big_next_a(output_size + labels);
 
                     std::copy(next_a.begin(), next_a.end(), big_next_a.begin());
-                    std::fill(big_next_a.begin() + num_hidden, big_next_a.end(), 0.1);
+                    std::fill(big_next_a.begin() + output_size, big_next_a.end(), 0.1);
 
                     input_ref = std::cref(big_next_a);
                 } else {
@@ -344,7 +347,7 @@ struct dbn final {
         size_t label = 0;
         weight max = 0;
         for(size_t l = 0; l < labels; ++l){
-            auto value = output_a[num_visible<layers - 1>() - labels + l];
+            auto value = output_a[layer_input_size<layers - 1>() - labels + l];
 
             if(value > max){
                 max = value;
@@ -368,21 +371,20 @@ struct dbn final {
 
         cpp::for_each_i(tuples, [&item, &input, &result](std::size_t I, auto& rbm){
             if(I != layers - 1){
-                typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
-                constexpr const auto num_hidden = rbm_t::num_hidden;
+                using rbm_t = typename std::remove_reference<decltype(rbm)>::type;
 
-                static etl::dyn_vector<weight> next(num_hidden);
-                static etl::dyn_vector<weight> next_s(num_hidden);
+                constexpr const auto output_size = rbm_traits<rbm_t>::output_size();
 
-                rbm.activate_hidden(next, next_s, static_cast<const training_t&>(input), static_cast<const training_t&>(input));
+                static etl::dyn_vector<weight> next_a(output_size);
+                static etl::dyn_vector<weight> next_s(output_size);
 
-                input = std::cref(next);
+                rbm.activate_hidden(next_a, next_s, static_cast<const training_t&>(input), static_cast<const training_t&>(input));
+
+                input = std::cref(next_a);
             }
         });
 
-        constexpr const auto num_hidden = rbm_type<layers - 1>::num_hidden;
-
-        static etl::dyn_vector<weight> next_s(num_hidden);
+        static etl::dyn_vector<weight> next_s(layer_output_size<layers - 1>());
 
         layer<layers - 1>().activate_hidden(result, next_s, static_cast<const training_t&>(input), static_cast<const training_t&>(input));
     }
@@ -407,11 +409,12 @@ struct dbn final {
 
         cpp::for_each_i(tuples, [&i,&item, &input, &result](std::size_t I, auto& rbm){
             if(I != layers - 1){
-                typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
-                constexpr const auto num_hidden = rbm_t::num_hidden;
+                using rbm_t = typename std::remove_reference<decltype(rbm)>::type;
 
-                static etl::dyn_vector<weight> next_a(num_hidden);
-                static etl::dyn_vector<weight> next_s(num_hidden);
+                constexpr const auto output_size = rbm_traits<rbm_t>::output_size();
+
+                static etl::dyn_vector<weight> next_a(output_size);
+                static etl::dyn_vector<weight> next_s(output_size);
 
                 rbm.activate_hidden(next_a, next_s, static_cast<const training_t&>(input), static_cast<const training_t&>(input));
 
@@ -423,10 +426,8 @@ struct dbn final {
             }
         });
 
-        constexpr const auto num_hidden = rbm_type<layers - 1>::num_hidden;
-
-        static etl::dyn_vector<weight> next_a(num_hidden);
-        static etl::dyn_vector<weight> next_s(num_hidden);
+        static etl::dyn_vector<weight> next_a(layer_output_size<layers - 1>());
+        static etl::dyn_vector<weight> next_s(layer_output_size<layers - 1>());
 
         layer<layers - 1>().activate_hidden(next_a, next_s, static_cast<const training_t&>(input), static_cast<const training_t&>(input));
 
