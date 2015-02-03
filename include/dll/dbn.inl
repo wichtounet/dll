@@ -72,13 +72,8 @@ struct dbn final {
         std::cout << "DBN with " << layers << " layers" << std::endl;
 
         cpp::for_each(tuples, [&parameters](auto& rbm){
-            typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
-            constexpr const auto num_visible = rbm_t::num_visible;
-            constexpr const auto num_hidden = rbm_t::num_hidden;
-
-            parameters += num_visible * num_hidden;
-
-            printf("\tRBM: %lu->%lu : %lu parameters\n", num_visible, num_hidden, num_visible * num_hidden);
+            parameters += rbm.parameters();
+            rbm.display();
         });
 
         std::cout << "Total parameters: " << parameters << std::endl;

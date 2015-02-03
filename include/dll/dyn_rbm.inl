@@ -89,6 +89,10 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         return num_hidden;
     }
 
+    std::size_t parameters() noexcept {
+        return num_visible * num_hidden;
+    }
+
     void display() const {
         std::cout << "RBM(dyn): " << num_visible << " -> " << num_hidden << std::endl;
     }

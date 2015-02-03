@@ -78,6 +78,10 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
         return num_hidden;
     }
 
+    static constexpr std::size_t parameters() noexcept {
+        return num_visible * num_hidden;
+    }
+
     void display() const {
         std::cout << "RBM: " << num_visible << " -> " << num_hidden << std::endl;
     }
