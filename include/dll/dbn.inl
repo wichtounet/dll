@@ -421,6 +421,16 @@ struct dbn final {
         return result;
     }
 
+    template<typename Sample, typename DBN = this_type, cpp::enable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
+    auto get_final_activation_probabilities(Sample& sample){
+        return full_activation_probabilities(sample);
+    }
+
+    template<typename Sample, typename DBN = this_type, cpp::disable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
+    auto get_final_activation_probabilities(Sample& sample){
+        return activation_probabilities(sample);
+    }
+
     template<typename Weights>
     size_t predict_label(const Weights& result){
         size_t label = 0;
