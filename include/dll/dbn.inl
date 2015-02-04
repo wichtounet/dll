@@ -382,42 +382,34 @@ struct dbn final {
         return result;
     }
 
-    template<typename Sample, typename Output>
-    void full_activation_probabilities(const Sample& item_data, Output& result){
-        using training_t = etl::dyn_vector<weight>;
-        training_t item(item_data);
+    template<std::size_t I, typename Input, typename Result>
+    std::enable_if_t<(I<layers)> full_activation_probabilities(Input& input, std::size_t& i, Result& result){
+        using rbm_t = rbm_type<I>;
+        auto& rbm = layer<I>();
 
-        std::size_t i = 0;
+        auto next_s = rbm.prepare_one_output();
+        auto next_a = rbm.prepare_one_output();
 
-        auto input = std::cref(item);
-
-        cpp::for_each_i(tuples, [&i,&item, &input, &result](std::size_t I, auto& rbm){
-            if(I != layers - 1){
-                using rbm_t = typename std::remove_reference<decltype(rbm)>::type;
-
-                constexpr const auto output_size = rbm_traits<rbm_t>::output_size();
-
-                static etl::dyn_vector<weight> next_a(output_size);
-                static etl::dyn_vector<weight> next_s(output_size);
-
-                rbm.activate_hidden(next_a, next_s, static_cast<const training_t&>(input), static_cast<const training_t&>(input));
-
-                for(auto& value : next_a){
-                    result[i++] = value;
-                }
-
-                input = std::cref(next_a);
-            }
-        });
-
-        static etl::dyn_vector<weight> next_a(layer_output_size<layers - 1>());
-        static etl::dyn_vector<weight> next_s(layer_output_size<layers - 1>());
-
-        layer<layers - 1>().activate_hidden(next_a, next_s, static_cast<const training_t&>(input), static_cast<const training_t&>(input));
+        rbm.activate_one(input, next_a, next_s);
 
         for(auto& value : next_a){
             result[i++] = value;
         }
+
+        full_activation_probabilities<I+1>(next_a, i, result);
+    }
+
+    //Stop template recursion
+    template<std::size_t I, typename Input, typename Result>
+    std::enable_if_t<(I==layers)> full_activation_probabilities(Input&, std::size_t&, Result&){}
+
+    template<typename Sample, typename Output>
+    void full_activation_probabilities(const Sample& item_data, Output& result){
+        auto data = rbm_type<0>::convert_sample(item_data);
+
+        std::size_t i = 0;
+
+        full_activation_probabilities<0>(data, i, result);
     }
 
     template<typename Sample>
