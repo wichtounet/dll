@@ -176,6 +176,14 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
     }
 };
 
+//Allow odr-use of the constexpr static members
+
+template<typename Desc>
+const std::size_t rbm<Desc>::num_visible;
+
+template<typename Desc>
+const std::size_t rbm<Desc>::num_hidden;
+
 } //end of dll namespace
 
 #endif

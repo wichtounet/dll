@@ -195,16 +195,12 @@ struct conv_dbn final {
 
         watcher.pretraining_begin(*this);
 
-        //I don't know why it is necesary to copy them here
-        constexpr const auto NC = rbm_type<0>::NC;
-        constexpr const auto NV = rbm_type<0>::NV;
-
         //Convert data to an useful form
         visible_t data;
         data.reserve(training_data.size());
 
         for(auto& sample : training_data){
-            data.emplace_back(NC, NV, NV);
+            data.emplace_back(rbm_type<0>::NC, rbm_type<0>::NV, rbm_type<0>::NV);
             data.back() = sample;
         }
 
@@ -215,8 +211,6 @@ struct conv_dbn final {
 
         cpp::for_each_i(tuples, [&watcher, this, &input, &next_a, &next_s, max_epochs](std::size_t I, auto& rbm){
             typedef typename std::remove_reference<decltype(rbm)>::type rbm_t;
-            constexpr const auto K = rbm_t::K;
-            constexpr const auto NO = this_type::rbm_t_no<rbm_t>();
 
             auto input_size = static_cast<visible_t&>(input).size();
 
@@ -235,9 +229,11 @@ struct conv_dbn final {
                 next_s.clear();
                 next_s.reserve(input_size);
 
+                constexpr const auto NO = this_type::rbm_t_no<rbm_t>();
+
                 for(std::size_t i = 0; i < input_size; ++i){
-                    next_a.emplace_back(K, NO, NO);
-                    next_s.emplace_back(K, NO, NO);
+                    next_a.emplace_back(rbm_t::K, NO, NO);
+                    next_s.emplace_back(rbm_t::K, NO, NO);
                 }
 
                 for(std::size_t i = 0; i < input_size; ++i){

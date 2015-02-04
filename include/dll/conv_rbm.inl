@@ -303,6 +303,23 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     }
 };
 
+//Allow odr-use of the constexpr static members
+
+template<typename Desc>
+const std::size_t conv_rbm<Desc>::NV;
+
+template<typename Desc>
+const std::size_t conv_rbm<Desc>::NH;
+
+template<typename Desc>
+const std::size_t conv_rbm<Desc>::NC;
+
+template<typename Desc>
+const std::size_t conv_rbm<Desc>::NW;
+
+template<typename Desc>
+const std::size_t conv_rbm<Desc>::K;
+
 } //end of dll namespace
 
 #endif
