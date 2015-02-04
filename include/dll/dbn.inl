@@ -346,36 +346,36 @@ struct dbn final {
 
     /*{{{ Predict */
 
+    template<std::size_t I, typename Input, typename Result>
+    std::enable_if_t<(I<layers)> activation_probabilities(Input& input, Result& result){
+        using rbm_t = rbm_type<I>;
+        auto& rbm = layer<I>();
+
+        auto next_s = rbm.prepare_one_output();
+
+        if(I < layers - 1){
+            auto next_a = rbm.prepare_one_output();
+            rbm.activate_one(input, next_a, next_s);
+            activation_probabilities<I+1>(next_a, result);
+        } else {
+            rbm.activate_one(input, result, next_s);
+        }
+    }
+
+    //Stop template recursion
+    template<std::size_t I, typename Input, typename Result>
+    std::enable_if_t<(I==layers)> activation_probabilities(Input&, Result&){}
+
     template<typename Sample, typename Output>
     void activation_probabilities(const Sample& item_data, Output& result){
-        using training_t = etl::dyn_vector<weight>;
-        training_t item(item_data);
+        auto data = rbm_type<0>::convert_sample(item_data);
 
-        auto input = std::cref(item);
-
-        cpp::for_each_i(tuples, [&item, &input, &result](std::size_t I, auto& rbm){
-            if(I != layers - 1){
-                using rbm_t = typename std::remove_reference<decltype(rbm)>::type;
-
-                constexpr const auto output_size = rbm_traits<rbm_t>::output_size();
-
-                static etl::dyn_vector<weight> next_a(output_size);
-                static etl::dyn_vector<weight> next_s(output_size);
-
-                rbm.activate_hidden(next_a, next_s, static_cast<const training_t&>(input), static_cast<const training_t&>(input));
-
-                input = std::cref(next_a);
-            }
-        });
-
-        static etl::dyn_vector<weight> next_s(layer_output_size<layers - 1>());
-
-        layer<layers - 1>().activate_hidden(result, next_s, static_cast<const training_t&>(input), static_cast<const training_t&>(input));
+        activation_probabilities<0>(data, result);
     }
 
     template<typename Sample>
-    etl::dyn_vector<weight> activation_probabilities(const Sample& item_data){
-        etl::dyn_vector<weight> result(output_size());
+    auto activation_probabilities(const Sample& item_data){
+        auto result = layer<layers - 1>().prepare_one_output();
 
         activation_probabilities(item_data, result);
 

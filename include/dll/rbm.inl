@@ -155,6 +155,11 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
         return input;
     }
 
+    template<typename Sample>
+    static input_one_t convert_sample(const Sample& sample){
+        return {sample};
+    }
+
     template<typename Container>
     void prepare_output(Container& output, std::size_t samples){
         output.clear();
@@ -163,6 +168,10 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
         for(std::size_t i = 0; i < samples; ++i){
             output.emplace_back(output_size());
         }
+    }
+
+    static output_one_t prepare_one_output(){
+        return output_one_t(output_size());
     }
 
     void activate_one(const input_one_t& input, output_one_t& h_a, output_one_t& h_s) const {
