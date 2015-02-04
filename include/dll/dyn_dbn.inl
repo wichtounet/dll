@@ -190,12 +190,7 @@ struct dyn_dbn final {
         watcher.pretraining_begin(*this);
 
         //Convert data to an useful form
-        training_t data;
-        data.reserve(std::distance(first, last));
-
-        std::for_each(first, last, [&data](auto& sample){
-            data.emplace_back(sample);
-        });
+        auto data = rbm_type<0>::convert_input(std::forward<Iterator>(first), std::forward<Iterator>(last));
 
         training_t next_a;
         training_t next_s;
@@ -212,8 +207,8 @@ struct dyn_dbn final {
 
             rbm.template train<
                     training_t,
-                    !watcher_t::ignore_sub,                                 //Enable the RBM Watcher or not
-                    typename dbn_detail::rbm_watcher_t<watcher_t>::type>    //Replace the RBM watcher if not void
+                    !watcher_t::ignore_sub,                  //Enable the RBM Watcher or not
+                    dbn_detail::rbm_watcher_t<watcher_t>>    //Replace the RBM watcher if not void
                 (static_cast<training_t&>(input), max_epochs);
 
             //Get the activation probabilities for the next level

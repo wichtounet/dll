@@ -224,8 +224,8 @@ struct conv_dbn final {
 
             rbm.template train<
                     visible_t,
-                    !watcher_t::ignore_sub,                                 //Enable the RBM Watcher or not
-                    typename dbn_detail::rbm_watcher_t<watcher_t>::type>    //Replace the RBM watcher if not void
+                    !watcher_t::ignore_sub,                  //Enable the RBM Watcher or not
+                    dbn_detail::rbm_watcher_t<watcher_t>>    //Replace the RBM watcher if not void
                 (static_cast<visible_t&>(input), max_epochs);
 
             //Get the activation probabilities for the next level

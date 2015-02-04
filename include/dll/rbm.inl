@@ -135,6 +135,33 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
 
         return result;
     }
+
+    //Utilities to be used by DBNs
+
+    using input_t = std::vector<etl::dyn_vector<weight>>;
+    using output_t = std::vector<etl::dyn_vector<weight>>;
+
+    template<typename Iterator>
+    static auto convert_input(Iterator&& first, Iterator&& last){
+        input_t input;
+        input.reserve(std::distance(std::forward<Iterator>(first), std::forward<Iterator>(last)));
+
+        std::for_each(std::forward<Iterator>(first), std::forward<Iterator>(last), [&input](auto& sample){
+            input.emplace_back(sample);
+        });
+
+        return input;
+    }
+
+    template<typename Container>
+    void prepare_output(Container& output, std::size_t samples){
+        output.clear();
+        output.reserve(samples);
+
+        for(std::size_t i = 0; i < samples; ++i){
+            output.emplace_back(output_size());
+        }
+    }
 };
 
 } //end of dll namespace

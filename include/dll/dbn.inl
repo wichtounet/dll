@@ -39,6 +39,8 @@ struct dbn final {
     //TODO Could be good to ensure that either a) all rbm have the same weight b) use the correct type for each rbm
     using weight = typename rbm_type<0>::weight;
 
+    using watcher_t = typename desc::template watcher_t<this_type>;
+
     weight learning_rate = 0.77;
 
     weight initial_momentum = 0.5;      ///< The initial momentum
@@ -161,61 +163,45 @@ struct dbn final {
      * manner.
      */
     template<typename Iterator>
-    void pretrain(Iterator first, Iterator last, std::size_t max_epochs){
-        using training_t = std::vector<etl::dyn_vector<weight>>;
-
-        using watcher_t = typename desc::template watcher_t<this_type>;
+    void pretrain(Iterator&& first, Iterator&& last, std::size_t max_epochs){
+        using input_t = typename rbm_type<0>::input_t;
+        using output_t = typename rbm_type<0>::output_t;
 
         watcher_t watcher;
 
         watcher.pretraining_begin(*this);
 
         //Convert data to an useful form
-        training_t data;
-        data.reserve(std::distance(first, last));
+        auto data = rbm_type<0>::convert_input(std::forward<Iterator>(first), std::forward<Iterator>(last));
 
-        std::for_each(first, last, [&data](auto& sample){
-            data.emplace_back(sample);
-        });
+        output_t next_a;
+        output_t next_s;
 
-        training_t next_a;
-        training_t next_s;
+        auto input_ref = std::ref(data);
 
-        auto input = std::ref(data);
-
-        cpp::for_each_i(tuples, [&watcher, this, &input, &next_a, &next_s, max_epochs](std::size_t I, auto& rbm){
+        cpp::for_each_i(tuples, [&watcher, this, &input_ref, &next_a, &next_s, max_epochs](std::size_t I, auto& rbm){
             using rbm_t = typename std::remove_reference<decltype(rbm)>::type;
 
-            constexpr const auto output_size = rbm_traits<rbm_t>::output_size();
+            decltype(auto) input = static_cast<input_t&>(input_ref);
 
-            auto input_size = static_cast<training_t&>(input).size();
-
-            watcher.template pretrain_layer<rbm_t>(*this, I, input_size);
+            watcher.template pretrain_layer<rbm_t>(*this, I, input.size());
 
             rbm.template train<
-                    training_t,
-                    !watcher_t::ignore_sub,                                 //Enable the RBM Watcher or not
-                    typename dbn_detail::rbm_watcher_t<watcher_t>::type>    //Replace the RBM watcher if not void
-                (static_cast<training_t&>(input), max_epochs);
+                    input_t,
+                    !watcher_t::ignore_sub,                  //Enable the RBM Watcher or not
+                    dbn_detail::rbm_watcher_t<watcher_t>>    //Replace the RBM watcher if not void
+                (input, max_epochs);
 
             //Get the activation probabilities for the next level
             if(I < layers - 1){
-                next_a.clear();
-                next_a.reserve(input_size);
-                next_s.clear();
-                next_s.reserve(input_size);
+                rbm.prepare_output(next_a, input.size());
+                rbm.prepare_output(next_s, input.size());
 
-                for(std::size_t i = 0; i < input_size; ++i){
-                    next_a.emplace_back(output_size);
-                    next_s.emplace_back(output_size);
+                for(size_t i = 0; i < input.size(); ++i){
+                    rbm.activate_hidden(next_a[i], next_s[i], input[i], input[i]);
                 }
 
-                for(size_t i = 0; i < input_size; ++i){
-                    auto& input_i = static_cast<training_t&>(input)[i];
-                    rbm.activate_hidden(next_a[i], next_s[i], input_i, input_i);
-                }
-
-                input = std::ref(next_a);
+                input_ref = std::ref(next_a);
             }
         });
 

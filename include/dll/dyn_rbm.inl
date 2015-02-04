@@ -129,6 +129,22 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
     void activate_visible(const H& h_a, const H& h_s, V&& v_a, V&& v_s, T&& t) const {
         base_type::template std_activate_visible(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), c, w, std::forward<T>(t));
     }
+
+    //Utilities to be used by DBNs
+
+    using input_t = std::vector<etl::dyn_vector<weight>>;
+
+    template<typename Iterator>
+    static auto convert_input(Iterator&& first, Iterator&& last){
+        input_t input;
+        input.reserve(std::distance(std::forward<Iterator>(first), std::forward<Iterator>(last)));
+
+        std::for_each(std::forward<Iterator>(first), std::forward<Iterator>(last), [&input](auto& sample){
+            input.emplace_back(sample);
+        });
+
+        return input;
+    }
 };
 
 } //end of dll namespace
