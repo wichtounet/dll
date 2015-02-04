@@ -261,6 +261,46 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     weight free_energy() const {
         return free_energy_impl(v1);
     }
+
+    //Utilities for DBNs
+
+    using input_one_t = etl::dyn_matrix<weight, 3>;
+    using output_one_t = etl::dyn_matrix<weight, 3>;
+    using input_t = std::vector<input_one_t>;
+    using output_t = std::vector<output_one_t>;
+
+    template<typename Iterator>
+    static auto convert_input(Iterator&& first, Iterator&& last){
+        input_t input;
+        input.reserve(std::distance(std::forward<Iterator>(first), std::forward<Iterator>(last)));
+
+        std::for_each(std::forward<Iterator>(first), std::forward<Iterator>(last), [&input](auto& sample){
+            input.emplace_back(NC, NV, NV);
+            input.back() = sample;
+        });
+
+        return input;
+    }
+
+    void prepare_output(output_t& output, std::size_t samples){
+        output.clear();
+        output.reserve(samples);
+
+        for(std::size_t i = 0; i < samples; ++i){
+            output.emplace_back(K, NH, NH);
+        }
+    }
+
+    void activate_one(const input_one_t& input, output_one_t& h_a, output_one_t& h_s){
+        v1 = input;
+        activate_hidden(h_a, h_s, v1, v1);
+    }
+
+    void activate_many(const input_t& input, output_t& h_a, output_t& h_s){
+        for(std::size_t i = 0; i < input.size(); ++i){
+            activate_one(input[i], h_a[i], h_s[i]);
+        }
+    }
 };
 
 } //end of dll namespace
