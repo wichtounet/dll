@@ -86,12 +86,16 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         c = 0.0;
     }
 
-    static constexpr std::size_t input_size(){
+    static constexpr std::size_t input_size() noexcept {
         return NV * NV * NC;
     }
 
-    static constexpr std::size_t output_size(){
+    static constexpr std::size_t output_size() noexcept {
         return NP * NP * K;
+    }
+
+    static constexpr std::size_t parameters() noexcept {
+        return NC * K * NW * NW;
     }
 
     static std::string to_short_string(){

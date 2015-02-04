@@ -477,6 +477,11 @@ struct dbn final {
 
     /*{{{ SVM Training and prediction */
 
+    using svm_samples_t = std::conditional_t<
+        dbn_traits<this_type>::concatenate(),
+        std::vector<etl::dyn_vector<weight>>,     //In full mode, use a simple 1D vector
+        typename rbm_type<layers - 1>::output_t>; //In normal mode, use the output of the last layer
+
     template<typename DBN = this_type, typename Result, typename Sample, cpp::enable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
     void add_activation_probabilities(Result& result, Sample& sample){
         result.emplace_back(full_output_size());
@@ -491,11 +496,6 @@ struct dbn final {
 
     template<typename Samples, typename Labels>
     void make_problem(const Samples& training_data, const Labels& labels, bool scale = false){
-        using svm_samples_t = std::conditional_t<
-            dbn_traits<this_type>::concatenate(),
-            std::vector<etl::dyn_vector<weight>>,     //In full mode, use a simple 1D vector
-            typename rbm_type<layers - 1>::output_t>; //In normal mode, use the output of the last layer
-
         svm_samples_t svm_samples;
 
         //Get all the activation probabilities
@@ -509,7 +509,7 @@ struct dbn final {
 
     template<typename Iterator, typename LIterator>
     void make_problem(Iterator first, Iterator last, LIterator&& lfirst, LIterator&& llast, bool scale = false){
-        std::vector<etl::dyn_vector<weight>> svm_samples;
+        svm_samples_t svm_samples;
 
         //Get all the activation probabilities
         std::for_each(first, last, [this, &svm_samples](auto& sample){
