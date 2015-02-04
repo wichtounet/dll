@@ -485,13 +485,17 @@ struct dbn final {
 
     template<typename DBN = this_type, typename Result, typename Sample, cpp::disable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
     void add_activation_probabilities(Result& result, Sample& sample){
-        result.emplace_back(output_size());
+        result.push_back(layer<layers - 1>().prepare_one_output());
         activation_probabilities(sample, result.back());
     }
 
     template<typename Samples, typename Labels>
     void make_problem(const Samples& training_data, const Labels& labels, bool scale = false){
-        using svm_samples_t = std::vector<etl::dyn_vector<weight>>;
+        using svm_samples_t = std::conditional_t<
+            dbn_traits<this_type>::concatenate(),
+            std::vector<etl::dyn_vector<weight>>,     //In full mode, use a simple 1D vector
+            typename rbm_type<layers - 1>::output_t>; //In normal mode, use the output of the last layer
+
         svm_samples_t svm_samples;
 
         //Get all the activation probabilities
