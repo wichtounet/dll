@@ -6,7 +6,7 @@
 //=======================================================================
 
 #include "dll/conv_rbm.hpp"
-#include "dll/conv_dbn.hpp"
+#include "dll/dbn.hpp"
 
 template<typename DBN>
 void test_dbn(){
@@ -17,11 +17,10 @@ void test_dbn(){
     std::vector<etl::dyn_vector<double>> images;
     std::vector<uint8_t> labels;
 
-    etl::dyn_vector<double> result(100);
-
     dbn.pretrain(images, 10);
     dbn.predict(images[1]);
-    dbn.activation_probabilities(images[1], result);
+
+    auto probs = dbn.activation_probabilities(images[1]);
 }
 
 template <typename RBM>
@@ -30,7 +29,7 @@ using pcd2_trainer_t = dll::persistent_cd_trainer<2, RBM>;
 int main(){
     //Basic example
 
-    typedef dll::conv_dbn_desc<
+    typedef dll::dbn_desc<
         dll::dbn_layers<
         dll::conv_rbm_desc<28, 1, 12, 40, dll::momentum, dll::batch_size<50>>::rbm_t,
         dll::conv_rbm_desc<12, 40, 6, 40, dll::momentum, dll::batch_size<50>>::rbm_t>>::dbn_t dbn_1;
