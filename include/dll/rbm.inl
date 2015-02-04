@@ -138,8 +138,10 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
 
     //Utilities to be used by DBNs
 
-    using input_t = std::vector<etl::dyn_vector<weight>>;
-    using output_t = std::vector<etl::dyn_vector<weight>>;
+    using input_one_t = etl::dyn_vector<weight>;
+    using output_one_t = etl::dyn_vector<weight>;
+    using input_t = std::vector<input_one_t>;
+    using output_t = std::vector<output_one_t>;
 
     template<typename Iterator>
     static auto convert_input(Iterator&& first, Iterator&& last){
@@ -160,6 +162,16 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
 
         for(std::size_t i = 0; i < samples; ++i){
             output.emplace_back(output_size());
+        }
+    }
+
+    void activate_one(const input_one_t& input, output_one_t& h_a, output_one_t& h_s) const {
+        activate_hidden(h_a, h_s, input, input);
+    }
+
+    void activate_many(const input_t& input, output_t& h_a, output_t& h_s) const {
+        for(std::size_t i = 0; i < input.size(); ++i){
+            activate_one(input[i], h_a[i], h_s[i]);
         }
     }
 };

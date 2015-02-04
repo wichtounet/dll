@@ -197,9 +197,7 @@ struct dbn final {
                 rbm.prepare_output(next_a, input.size());
                 rbm.prepare_output(next_s, input.size());
 
-                for(size_t i = 0; i < input.size(); ++i){
-                    rbm.activate_hidden(next_a[i], next_s[i], input[i], input[i]);
-                }
+                rbm.activate_many(input, next_a, next_s);
 
                 input_ref = std::ref(next_a);
             }
