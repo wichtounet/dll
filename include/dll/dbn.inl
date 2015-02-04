@@ -511,7 +511,7 @@ struct dbn final {
 
         //Get all the activation probabilities
         std::for_each(first, last, [this, &svm_samples](auto& sample){
-            add_activation_probabilities(svm_samples, sample);
+            this->add_activation_probabilities(svm_samples, sample);
         });
 
         //static_cast ensure using the correct overload
