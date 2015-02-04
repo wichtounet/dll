@@ -348,7 +348,6 @@ struct dbn final {
 
     template<std::size_t I, typename Input, typename Result>
     std::enable_if_t<(I<layers)> activation_probabilities(Input& input, Result& result){
-        using rbm_t = rbm_type<I>;
         auto& rbm = layer<I>();
 
         auto next_s = rbm.prepare_one_output();
