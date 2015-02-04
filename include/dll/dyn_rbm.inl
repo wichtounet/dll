@@ -93,6 +93,10 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         return num_visible * num_hidden;
     }
 
+    static std::string to_short_string(){
+        return "RBM(dyn)";
+    }
+
     void display() const {
         std::cout << "RBM(dyn): " << num_visible << " -> " << num_hidden << std::endl;
     }

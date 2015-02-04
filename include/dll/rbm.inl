@@ -82,8 +82,12 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
         return num_visible * num_hidden;
     }
 
+    static std::string to_short_string(){
+        return "RBM: " + std::to_string(num_visible) + " -> " + std::to_string(num_hidden);
+    }
+
     void display() const {
-        std::cout << "RBM: " << num_visible << " -> " << num_hidden << std::endl;
+        std::cout << to_short_string() << std::endl;
     }
 
     template<bool P = true, bool S = true, typename H1, typename H2, typename V>

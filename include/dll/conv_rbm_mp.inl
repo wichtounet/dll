@@ -94,8 +94,14 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         return NP * NP * K;
     }
 
+    static std::string to_short_string(){
+        char buffer[1024];
+        snprintf(buffer, 1024, "CRBM_MP: %lux%lux%lu -> (%lux%lu) -> %lux%lux%lu -> %lux%lux%lu", NV, NV, NC, NW, NW, NH, NH, K, NP, NP, K);
+        return {buffer};
+    }
+
     void display() const {
-        printf("CRBM_MP: %lux%lux%lu -> (%lux%lu) -> %lux%lux%lu -> %lux%lux%lu\n", NV, NV, NC, NW, NW, NH, NH, K, NP, NP, K);
+        std::cout << to_short_string() << std::endl;
     }
 
     template<typename H1, typename H2, typename V1, typename V2>
