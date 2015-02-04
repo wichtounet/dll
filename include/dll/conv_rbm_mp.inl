@@ -330,6 +330,10 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         }
     }
 
+    static output_one_t prepare_one_output(){
+        return output_one_t(K, NP, NP);
+    }
+
     void activate_one(const input_one_t& input, output_one_t& h_a, output_one_t& h_s){
         v1 = input;
         activate_pooling(h_a, h_s, v1, v1);
