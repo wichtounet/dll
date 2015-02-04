@@ -314,6 +314,13 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         return input;
     }
 
+    template<typename Sample>
+    static input_one_t convert_sample(const Sample& sample){
+        input_one_t result(NC, NV, NV);
+        result = sample;
+        return result;
+    }
+
     void prepare_output(output_t& output, std::size_t samples){
         output.clear();
         output.reserve(samples);
