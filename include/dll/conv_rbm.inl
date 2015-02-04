@@ -282,6 +282,13 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         return input;
     }
 
+    template<typename Sample>
+    static input_one_t convert_sample(const Sample& sample){
+        input_one_t result(NC, NV, NV);
+        result = sample;
+        return result;
+    }
+
     void prepare_output(output_t& output, std::size_t samples){
         output.clear();
         output.reserve(samples);
@@ -289,6 +296,10 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         for(std::size_t i = 0; i < samples; ++i){
             output.emplace_back(K, NH, NH);
         }
+    }
+
+    static output_one_t prepare_one_output(){
+        return output_one_t(K, NH, NH);
     }
 
     void activate_one(const input_one_t& input, output_one_t& h_a, output_one_t& h_s){
