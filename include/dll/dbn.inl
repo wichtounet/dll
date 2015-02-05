@@ -149,6 +149,49 @@ struct dbn final {
 
     /*{{{ Pretrain */
 
+    template<std::size_t I, typename Input, typename Watcher>
+    std::enable_if_t<(I<layers)> pretrain_layer(Input& input, Watcher& watcher, std::size_t max_epochs){
+        using rbm_t = rbm_type<I>;
+        using input_t = typename rbm_t::input_t;
+        using output_t = typename rbm_t::output_t;
+
+        auto& rbm = layer<I>();
+
+        watcher.template pretrain_layer<rbm_t>(*this, I, input.size());
+
+        rbm.template train<
+                input_t,
+                !watcher_t::ignore_sub,                  //Enable the RBM Watcher or not
+                dbn_detail::rbm_watcher_t<watcher_t>>    //Replace the RBM watcher if not void
+            (input, max_epochs);
+
+        if(I < layers - 1){
+            output_t next_a;
+            output_t next_s;
+
+            rbm.prepare_output(next_a, input.size());
+            rbm.prepare_output(next_s, input.size());
+
+            std::cout << "next_a.size():" << next_a.size() << std::endl;
+            std::cout << "next_s.size():" << next_s.size() << std::endl;
+            std::cout << "next_a[0].size():" << next_a[0].size() << std::endl;
+            std::cout << "next_s[0].size():" << next_s[0].size() << std::endl;
+
+            rbm.activate_many(input, next_a, next_s);
+
+            std::cout << "next_a.size():" << next_a.size() << std::endl;
+            std::cout << "next_s.size():" << next_s.size() << std::endl;
+            std::cout << "next_a[0].size():" << next_a[0].size() << std::endl;
+            std::cout << "next_s[0].size():" << next_s[0].size() << std::endl;
+
+            pretrain_layer<I+1>(next_a, watcher, max_epochs);
+        }
+    }
+
+    //Stop template recursion
+    template<std::size_t I, typename Input, typename Watcher>
+    std::enable_if_t<(I==layers)> pretrain_layer(Input&, Watcher&, std::size_t){}
+
     /*!
      * \brief Pretrain the network by training all layers in an unsupervised
      * manner.
@@ -164,9 +207,6 @@ struct dbn final {
      */
     template<typename Iterator>
     void pretrain(Iterator&& first, Iterator&& last, std::size_t max_epochs){
-        using input_t = typename rbm_type<0>::input_t;
-        using output_t = typename rbm_type<0>::output_t;
-
         watcher_t watcher;
 
         watcher.pretraining_begin(*this);
@@ -174,34 +214,7 @@ struct dbn final {
         //Convert data to an useful form
         auto data = rbm_type<0>::convert_input(std::forward<Iterator>(first), std::forward<Iterator>(last));
 
-        output_t next_a;
-        output_t next_s;
-
-        auto input_ref = std::ref(data);
-
-        cpp::for_each_i(tuples, [&watcher, this, &input_ref, &next_a, &next_s, max_epochs](std::size_t I, auto& rbm){
-            using rbm_t = typename std::remove_reference<decltype(rbm)>::type;
-
-            decltype(auto) input = static_cast<input_t&>(input_ref);
-
-            watcher.template pretrain_layer<rbm_t>(*this, I, input.size());
-
-            rbm.template train<
-                    input_t,
-                    !watcher_t::ignore_sub,                  //Enable the RBM Watcher or not
-                    dbn_detail::rbm_watcher_t<watcher_t>>    //Replace the RBM watcher if not void
-                (input, max_epochs);
-
-            //Get the activation probabilities for the next level
-            if(I < layers - 1){
-                rbm.prepare_output(next_a, input.size());
-                rbm.prepare_output(next_s, input.size());
-
-                rbm.activate_many(input, next_a, next_s);
-
-                input_ref = std::ref(next_a);
-            }
-        });
+        pretrain_layer<0>(data, watcher, max_epochs);
 
         watcher.pretraining_end(*this);
     }

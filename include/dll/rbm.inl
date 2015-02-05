@@ -174,11 +174,12 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
         return output_one_t(output_size());
     }
 
-    void activate_one(const input_one_t& input, output_one_t& h_a, output_one_t& h_s) const {
+    void activate_one(const input_one_t& input, output_one_t& h_a, output_one_t& h_s) {
+        v1 = input;
         activate_hidden(h_a, h_s, input, input);
     }
 
-    void activate_many(const input_t& input, output_t& h_a, output_t& h_s) const {
+    void activate_many(const input_t& input, output_t& h_a, output_t& h_s) {
         for(std::size_t i = 0; i < input.size(); ++i){
             activate_one(input[i], h_a[i], h_s[i]);
         }
