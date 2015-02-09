@@ -84,6 +84,13 @@ struct rbm_trainer {
         //Compute the number of batches
         auto batch_size = get_batch_size(rbm);
 
+        //TODO Better handling of incomplete batch size would solve this problem (this could be done by
+        //cleaning the data before the last batch)
+        if(distance(input_first, input_last) % batch_size != 0){
+            std::cout << "WARNING: The number of samples should be divisible by the batch size" << std::endl;
+            std::cout << "         This may cause discrepancies in the results." << std::endl;
+        }
+
         typename rbm_t::weight last_error = 0.0;
 
         //Train for max_epochs epoch
