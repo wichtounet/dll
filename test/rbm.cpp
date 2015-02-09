@@ -351,7 +351,7 @@ TEST_CASE( "rbm/mnist_15", "rbm::pcd_gaussian" ) {
 TEST_CASE( "rbm/mnist_16", "rbm::iterators" ) {
     dll::rbm_desc<
         28 * 28, 100,
-        dll::batch_size<23>
+        dll::batch_size<25>
     >::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
@@ -372,7 +372,7 @@ TEST_CASE( "rbm/mnist_16", "rbm::iterators" ) {
 TEST_CASE( "rbm/mnist_18", "rbm::fast" ) {
     dll::rbm_desc<
         28 * 28, 100,
-        dll::batch_size<50>
+        dll::batch_size<5>
     >::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(25);
