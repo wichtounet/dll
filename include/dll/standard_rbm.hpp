@@ -289,6 +289,8 @@ protected:
                 h_a = softmax(b + auto_vmmul(v_a, w, t));
             }
 
+            nan_check_deep(h_a);
+
             //Compute sampled values directly
             if(S){
                 if(hidden_unit == unit_type::BINARY){
@@ -302,6 +304,8 @@ protected:
                 } else if(hidden_unit == unit_type::SOFTMAX){
                     h_s = one_if_max(h_a);
                 }
+
+                nan_check_deep(h_s);
             }
         }
         //Compute sampled values
@@ -317,10 +321,9 @@ protected:
             } else if(hidden_unit == unit_type::SOFTMAX){
                 h_s = one_if_max(softmax(b + auto_vmmul(v_a, w, t)));
             }
-        }
 
-        nan_check_deep(h_a);
-        nan_check_deep(h_s);
+            nan_check_deep(h_s);
+        }
     }
 
     template<bool P = true, bool S = true, typename H, typename V, typename C, typename W, typename T>
@@ -335,6 +338,8 @@ protected:
             } else if(visible_unit == unit_type::RELU){
                 v_a = max(c + auto_vmmul(w, h_s, t), 0.0);
             }
+
+            nan_check_deep(v_a);
         }
 
         if(S){
@@ -345,10 +350,9 @@ protected:
             } else if(visible_unit == unit_type::RELU){
                 v_s = logistic_noise(max(c + auto_vmmul(w, h_s, t), 0.0));
             }
-        }
 
-        nan_check_deep(v_a);
-        nan_check_deep(v_s);
+            nan_check_deep(v_s);
+        }
     }
 };
 
