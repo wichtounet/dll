@@ -26,6 +26,23 @@ constexpr bool is_relu(unit_type t){
     return t == unit_type::RELU || t == unit_type::RELU1 || t == unit_type::RELU6;
 }
 
+inline std::string to_string(unit_type type){
+    switch(type){
+        case unit_type::BINARY:
+            return "BINARY";
+        case unit_type::SOFTMAX:
+            return "SOFTMAX";
+        case unit_type::GAUSSIAN:
+            return "GAUSSIAN";
+        case unit_type::RELU:
+            return "RELU";
+        case unit_type::RELU1:
+            return "RELU1";
+        case unit_type::RELU6:
+            return "RELU6";
+    }
+}
+
 } //end of dll namespace
 
 #endif

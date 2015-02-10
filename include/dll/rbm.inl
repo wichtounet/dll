@@ -83,7 +83,7 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
     }
 
     static std::string to_short_string(){
-        return "RBM: " + std::to_string(num_visible) + " -> " + std::to_string(num_hidden);
+        return "RBM: " + std::to_string(num_visible) + "(" + to_string(visible_unit) + ") -> " + std::to_string(num_hidden) + "(" + to_string(hidden_unit) + ")";
     }
 
     void display() const {
