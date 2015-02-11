@@ -87,6 +87,7 @@ TEST_CASE( "dbn/mnist_3", "dbn::labels" ) {
     dbn->train_with_labels(dataset.training_images, dataset.training_labels, 10, 10);
 
     auto error = dll::test_set(dbn, dataset.training_images, dataset.training_labels, dll::label_predictor());
+    std::cout << "test_error:" << error << std::endl;
     REQUIRE(error < 0.3);
 }
 
