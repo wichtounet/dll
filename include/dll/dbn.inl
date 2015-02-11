@@ -228,60 +228,58 @@ struct dbn final {
         train_with_labels(training_data.begin(), training_data.end(), training_labels.begin(), training_labels.end(), labels, max_epochs);
     }
 
+    template<std::size_t I, typename Input, typename LabelIterator>
+    std::enable_if_t<(I<layers)> train_with_labels(Input& input, LabelIterator lit, LabelIterator lend, std::size_t labels, std::size_t max_epochs){
+        using rbm_t = rbm_type<I>;
+        using output_t = typename rbm_t::output_t;
+
+        decltype(auto) rbm = layer<I>();
+
+        rbm.train(input, max_epochs);
+
+        if(I < layers - 1){
+            bool is_last = I == layers - 2;
+
+            output_t next_a;
+            output_t next_s;
+
+            rbm.prepare_output(next_a, input.size(), is_last, labels);
+            rbm.prepare_output(next_s, input.size(), is_last, labels);
+
+            rbm.activate_many(input, next_a, next_s);
+
+            if(is_last){
+                constexpr const auto output_size = rbm_traits<rbm_t>::output_size();
+
+                std::size_t i = 0;
+                while(lit != lend){
+                    decltype(auto) label = *lit;
+
+                    for(size_t l = 0; l < labels; ++l){
+                        next_a[i][output_size + l] = label == l ? 1.0 : 0.0;
+                    }
+
+                    ++i;
+                    ++lit;
+                }
+            }
+
+            train_with_labels<I+1>(next_a, lit, lend, labels, max_epochs);
+        }
+    }
+
+    template<std::size_t I, typename Input, typename LabelIterator>
+    std::enable_if_t<(I==layers)> train_with_labels(Input&, LabelIterator, LabelIterator, std::size_t, std::size_t){}
+
     template<typename Iterator, typename LabelIterator>
-    void train_with_labels(Iterator&& first, Iterator&& last, LabelIterator lfirst, LabelIterator llast, std::size_t labels, std::size_t max_epochs){
+    void train_with_labels(Iterator&& first, Iterator&& last, LabelIterator&& lfirst, LabelIterator&& llast, std::size_t labels, std::size_t max_epochs){
         cpp_assert(std::distance(first, last) == std::distance(lfirst, llast), "There must be the same number of values than labels");
         cpp_assert(layer_input_size<layers - 1>() == layer_output_size<layers - 2>() + labels, "There is no room for the labels units");
-
-        using training_t = std::vector<etl::dyn_vector<weight>>;
 
         //Convert data to an useful form
         auto data = rbm_type<0>::convert_input(std::forward<Iterator>(first), std::forward<Iterator>(last));
 
-        auto input = std::ref(data);
-
-        cpp::for_each_i(tuples, [&input, llast, lfirst, labels, max_epochs](size_t I, auto& rbm){
-            using rbm_t = typename std::remove_reference<decltype(rbm)>::type;
-
-            constexpr const auto output_size = rbm_traits<rbm_t>::output_size();
-
-            static training_t next;
-
-            next.reserve(static_cast<training_t&>(input).size());
-
-            rbm.train(static_cast<training_t&>(input), max_epochs);
-
-            if(I < layers - 1){
-                auto append_labels = (I + 1 == layers - 1);
-
-                for(auto& training_item : static_cast<training_t&>(input)){
-                    etl::dyn_vector<weight> next_item_a(output_size + (append_labels ? labels : 0));
-                    etl::dyn_vector<weight> next_item_s(output_size + (append_labels ? labels : 0));
-                    rbm.activate_hidden(next_item_a, next_item_s, training_item, training_item);
-                    next.emplace_back(std::move(next_item_a));
-                }
-
-                //If the next layers is the last layer
-                if(append_labels){
-                    auto it = lfirst;
-                    auto end = llast;
-
-                    std::size_t i = 0;
-                    while(it != end){
-                        auto label = *it;
-
-                        for(size_t l = 0; l < labels; ++l){
-                            next[i][output_size + l] = label == l ? 1.0 : 0.0;
-                        }
-
-                        ++i;
-                        ++it;
-                    }
-                }
-            }
-
-            input = std::ref(next);
-        });
+        train_with_labels<0>(data, std::forward<LabelIterator>(lfirst), std::forward<LabelIterator>(llast), labels, max_epochs);
     }
 
     template<typename TrainingItem>
