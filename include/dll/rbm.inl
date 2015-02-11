@@ -160,14 +160,15 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
         return {sample};
     }
 
-    template<typename Container>
-    void prepare_output(Container& output, std::size_t samples, bool is_last = false, std::size_t labels = 0){
-        output.clear();
+    output_t prepare_output(std::size_t samples, bool is_last = false, std::size_t labels = 0){
+        output_t output;
         output.reserve(samples);
 
         for(std::size_t i = 0; i < samples; ++i){
             output.emplace_back(output_size() + (is_last ? labels : 0));
         }
+
+        return output;
     }
 
     static output_one_t prepare_one_output(){

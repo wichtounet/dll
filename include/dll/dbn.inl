@@ -159,7 +159,6 @@ struct dbn final {
     std::enable_if_t<(I<layers)> pretrain_layer(Input& input, Watcher& watcher, std::size_t max_epochs){
         using rbm_t = rbm_type<I>;
         using input_t = typename rbm_t::input_t;
-        using output_t = typename rbm_t::output_t;
 
         decltype(auto) rbm = layer<I>();
 
@@ -172,10 +171,8 @@ struct dbn final {
                 (input, max_epochs);
 
         if(train_next<I+1>()){
-            output_t next_a;
-            output_t next_s;
-            rbm.prepare_output(next_a, input.size());
-            rbm.prepare_output(next_s, input.size());
+            auto next_a = rbm.prepare_output(input.size());
+            auto next_s = rbm.prepare_output(input.size());
 
             rbm.activate_many(input, next_a, next_s);
 
@@ -230,9 +227,6 @@ struct dbn final {
 
     template<std::size_t I, typename Input, typename LabelIterator>
     std::enable_if_t<(I<layers)> train_with_labels(Input& input, LabelIterator lit, LabelIterator lend, std::size_t labels, std::size_t max_epochs){
-        using rbm_t = rbm_type<I>;
-        using output_t = typename rbm_t::output_t;
-
         decltype(auto) rbm = layer<I>();
 
         rbm.train(input, max_epochs);
@@ -240,16 +234,13 @@ struct dbn final {
         if(I < layers - 1){
             bool is_last = I == layers - 2;
 
-            output_t next_a;
-            output_t next_s;
-
-            rbm.prepare_output(next_a, input.size(), is_last, labels);
-            rbm.prepare_output(next_s, input.size(), is_last, labels);
+            auto next_a = rbm.prepare_output(input.size(), is_last, labels);
+            auto next_s = rbm.prepare_output(input.size(), is_last, labels);
 
             rbm.activate_many(input, next_a, next_s);
 
             if(is_last){
-                constexpr const auto output_size = rbm_traits<rbm_t>::output_size();
+                constexpr const auto output_size = rbm_traits<rbm_type<I>>::output_size();
 
                 std::size_t i = 0;
                 while(lit != lend){

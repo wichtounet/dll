@@ -154,14 +154,15 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         return {sample};
     }
 
-    template<typename Container>
-    void prepare_output(Container& output, std::size_t samples){
-        output.clear();
+    output_t prepare_output(std::size_t samples){
+        output_t output;
         output.reserve(samples);
 
         for(std::size_t i = 0; i < samples; ++i){
             output.emplace_back(output_size());
         }
+
+        return output;
     }
 
     output_one_t prepare_one_output(){

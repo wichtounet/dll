@@ -293,13 +293,15 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         return result;
     }
 
-    void prepare_output(output_t& output, std::size_t samples){
-        output.clear();
+    output_t prepare_output(std::size_t samples){
+        output_t output;
         output.reserve(samples);
 
         for(std::size_t i = 0; i < samples; ++i){
             output.emplace_back(K, NH, NH);
         }
+
+        return output;
     }
 
     static output_one_t prepare_one_output(){
