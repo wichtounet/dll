@@ -202,9 +202,6 @@ struct dbn final {
      */
     template<typename Iterator>
     void pretrain(Iterator&& first, Iterator&& last, std::size_t max_epochs){
-        using input_t = typename rbm_type<0>::input_t;
-        using output_t = typename rbm_type<0>::output_t;
-
         watcher_t watcher;
 
         watcher.pretraining_begin(*this);
@@ -232,19 +229,14 @@ struct dbn final {
     }
 
     template<typename Iterator, typename LabelIterator>
-    void train_with_labels(Iterator first, Iterator last, LabelIterator lfirst, LabelIterator llast, std::size_t labels, std::size_t max_epochs){
+    void train_with_labels(Iterator&& first, Iterator&& last, LabelIterator lfirst, LabelIterator llast, std::size_t labels, std::size_t max_epochs){
         cpp_assert(std::distance(first, last) == std::distance(lfirst, llast), "There must be the same number of values than labels");
         cpp_assert(layer_input_size<layers - 1>() == layer_output_size<layers - 2>() + labels, "There is no room for the labels units");
 
         using training_t = std::vector<etl::dyn_vector<weight>>;
 
         //Convert data to an useful form
-        training_t data;
-        data.reserve(std::distance(first, last));
-
-        std::for_each(first, last, [&data](auto& sample){
-            data.emplace_back(sample);
-        });
+        auto data = rbm_type<0>::convert_input(std::forward<Iterator>(first), std::forward<Iterator>(last));
 
         auto input = std::ref(data);
 
