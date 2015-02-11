@@ -41,6 +41,10 @@ inline std::string to_string(unit_type type){
         case unit_type::RELU6:
             return "RELU6";
     }
+
+    cpp_unreachable("Unreachable code");
+
+    return "UNDEFINED";
 }
 
 } //end of dll namespace
