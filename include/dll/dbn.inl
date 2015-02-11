@@ -225,11 +225,20 @@ struct dbn final {
         train_with_labels(training_data.begin(), training_data.end(), training_labels.begin(), training_labels.end(), labels, max_epochs);
     }
 
-    template<std::size_t I, typename Input, typename LabelIterator>
-    std::enable_if_t<(I<layers)> train_with_labels(Input& input, LabelIterator lit, LabelIterator lend, std::size_t labels, std::size_t max_epochs){
+    template<std::size_t I, typename Input, typename Watcher, typename LabelIterator>
+    std::enable_if_t<(I<layers)> train_with_labels(Input& input, Watcher& watcher, LabelIterator lit, LabelIterator lend, std::size_t labels, std::size_t max_epochs){
+        using rbm_t = rbm_type<I>;
+        using input_t = typename rbm_t::input_t;
+
         decltype(auto) rbm = layer<I>();
 
-        rbm.train(input, max_epochs);
+        watcher.template pretrain_layer<rbm_t>(*this, I, input.size());
+
+        rbm.template train<
+            input_t,
+            !watcher_t::ignore_sub, //Enable the RBM Watcher or not
+            dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
+                (input, max_epochs);
 
         if(I < layers - 1){
             bool is_last = I == layers - 2;
@@ -240,7 +249,7 @@ struct dbn final {
             rbm.activate_many(input, next_a, next_s);
 
             if(is_last){
-                constexpr const auto output_size = rbm_traits<rbm_type<I>>::output_size();
+                constexpr const auto output_size = rbm_traits<rbm_t>::output_size();
 
                 std::size_t i = 0;
                 while(lit != lend){
@@ -255,22 +264,28 @@ struct dbn final {
                 }
             }
 
-            train_with_labels<I+1>(next_a, lit, lend, labels, max_epochs);
+            train_with_labels<I+1>(next_a, watcher, lit, lend, labels, max_epochs);
         }
     }
 
-    template<std::size_t I, typename Input, typename LabelIterator>
-    std::enable_if_t<(I==layers)> train_with_labels(Input&, LabelIterator, LabelIterator, std::size_t, std::size_t){}
+    template<std::size_t I, typename Input, typename Watcher, typename LabelIterator>
+    std::enable_if_t<(I==layers)> train_with_labels(Input&, Watcher&, LabelIterator, LabelIterator, std::size_t, std::size_t){}
 
     template<typename Iterator, typename LabelIterator>
     void train_with_labels(Iterator&& first, Iterator&& last, LabelIterator&& lfirst, LabelIterator&& llast, std::size_t labels, std::size_t max_epochs){
         cpp_assert(std::distance(first, last) == std::distance(lfirst, llast), "There must be the same number of values than labels");
         cpp_assert(layer_input_size<layers - 1>() == layer_output_size<layers - 2>() + labels, "There is no room for the labels units");
 
+        watcher_t watcher;
+
+        watcher.pretraining_begin(*this);
+
         //Convert data to an useful form
         auto data = rbm_type<0>::convert_input(std::forward<Iterator>(first), std::forward<Iterator>(last));
 
-        train_with_labels<0>(data, std::forward<LabelIterator>(lfirst), std::forward<LabelIterator>(llast), labels, max_epochs);
+        train_with_labels<0>(data, watcher, std::forward<LabelIterator>(lfirst), std::forward<LabelIterator>(llast), labels, max_epochs);
+
+        watcher.pretraining_end(*this);
     }
 
     template<typename TrainingItem>
