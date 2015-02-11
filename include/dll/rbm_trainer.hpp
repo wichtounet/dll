@@ -53,12 +53,12 @@ struct rbm_trainer {
     template<typename... Arg>
     rbm_trainer(init_watcher_t /*init*/, Arg... args) : watcher(args...) {}
 
-    template<typename Iterator, typename R = RBM, cpp::enable_if_u<rbm_traits<R>::init_weights()> = cpp::detail::dummy>
+    template<typename Iterator, cpp_enable_if_cst(rbm_traits<rbm_t>::init_weights())>
     static void init_weights(RBM& rbm, Iterator first, Iterator last){
         rbm.init_weights(first, last);
     }
 
-    template<typename Iterator, typename R = RBM, cpp::disable_if_u<rbm_traits<R>::init_weights()> = cpp::detail::dummy>
+    template<typename Iterator, cpp_disable_if_cst(rbm_traits<rbm_t>::init_weights())>
     static void init_weights(RBM&, Iterator, Iterator){
         //NOP
     }
@@ -68,8 +68,8 @@ struct rbm_trainer {
         return train<false>(rbm, first, last, first, last, max_epochs);
     }
 
-    template<bool Denoising, typename R = RBM, typename IIterator, typename EIterator>
-    static std::enable_if_t<rbm_traits<R>::has_shuffle()> shuffle(IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast){
+    template<bool Denoising, typename IIterator, typename EIterator, cpp_enable_if_cst(rbm_traits<rbm_t>::has_shuffle())>
+    static void shuffle(IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast){
         static std::random_device rd;
         static std::mt19937_64 g(rd());
 
@@ -80,10 +80,10 @@ struct rbm_trainer {
         }
     }
 
-    template<bool Denoising, typename R = RBM, typename IIterator, typename EIterator>
-    static cpp::disable_if_t<rbm_traits<R>::has_shuffle()> shuffle(IIterator, IIterator, EIterator, EIterator){}
+    template<bool Denoising, typename IIterator, typename EIterator, cpp_disable_if_cst(rbm_traits<rbm_t>::has_shuffle())>
+    static void shuffle(IIterator, IIterator, EIterator, EIterator){}
 
-    template<bool Denoising, typename R = RBM, typename IIterator, typename EIterator, typename IVector, typename EVector, cpp::enable_if_u<rbm_traits<R>::has_shuffle()> = cpp::detail::dummy>
+    template<bool Denoising, typename IIterator, typename EIterator, typename IVector, typename EVector, cpp_enable_if_cst(rbm_traits<rbm_t>::has_shuffle())>
     static auto prepare_it(IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast, IVector& ivec, EVector& evec){
         std::copy(ifirst, ilast, std::back_inserter(ivec));
 
@@ -101,7 +101,7 @@ struct rbm_trainer {
         }
     }
 
-    template<bool Denoising, typename R = RBM, typename IIterator, typename EIterator, typename IVector, typename EVector, cpp::disable_if_u<rbm_traits<R>::has_shuffle()> = cpp::detail::dummy>
+    template<bool Denoising, typename IIterator, typename EIterator, typename IVector, typename EVector, cpp_disable_if_cst(rbm_traits<rbm_t>::has_shuffle())>
     static auto prepare_it(IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast, IVector&, EVector&){
         return std::make_tuple(ifirst, ilast, efirst, elast);
     }
