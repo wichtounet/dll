@@ -427,7 +427,7 @@ struct dbn final {
 
     template<typename Weights>
     size_t predict_label(const Weights& result){
-        return std::distance(result.begin(), std::max_element(result.begin(), result.end());
+        return std::distance(result.begin(), std::max_element(result.begin(), result.end()));
     }
 
     template<typename Sample>
