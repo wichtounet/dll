@@ -156,7 +156,7 @@ struct dbn final {
     struct train_next<I, std::enable_if_t<(I < layers)>> : cpp::bool_constant<rbm_type<I>::hidden_unit != unit_type::SOFTMAX> {};
 
     template<std::size_t I, typename Input, typename Watcher>
-    std::enable_if_t<(I<layers)> pretrain_layer(Input& input, Watcher& watcher, std::size_t max_epochs){
+    std::enable_if_t<(I<layers)> pretrain_layer(const Input& input, Watcher& watcher, std::size_t max_epochs){
         using rbm_t = rbm_type<I>;
         using input_t = typename rbm_t::input_t;
 
@@ -182,14 +182,14 @@ struct dbn final {
 
     //Stop template recursion
     template<std::size_t I, typename Input, typename Watcher>
-    std::enable_if_t<(I==layers)> pretrain_layer(Input&, Watcher&, std::size_t){}
+    std::enable_if_t<(I==layers)> pretrain_layer(const Input&, Watcher&, std::size_t){}
 
     /*!
      * \brief Pretrain the network by training all layers in an unsupervised
      * manner.
      */
     template<typename Samples>
-    void pretrain(Samples& training_data, std::size_t max_epochs){
+    void pretrain(const Samples& training_data, std::size_t max_epochs){
         pretrain(training_data.begin(), training_data.end(), max_epochs);
     }
 
@@ -218,7 +218,7 @@ struct dbn final {
     //Note: dyn_vector cannot be replaced with fast_vector, because labels is runtime
 
     template<typename Samples, typename Labels>
-    void train_with_labels(Samples& training_data, const Labels& training_labels, std::size_t labels, std::size_t max_epochs){
+    void train_with_labels(const Samples& training_data, const Labels& training_labels, std::size_t labels, std::size_t max_epochs){
         cpp_assert(training_data.size() == training_labels.size(), "There must be the same number of values than labels");
         cpp_assert(layer_input_size<layers - 1>() == layer_output_size<layers - 2>() + labels, "There is no room for the labels units");
 
@@ -226,7 +226,7 @@ struct dbn final {
     }
 
     template<std::size_t I, typename Input, typename Watcher, typename LabelIterator>
-    std::enable_if_t<(I<layers)> train_with_labels(Input& input, Watcher& watcher, LabelIterator lit, LabelIterator lend, std::size_t labels, std::size_t max_epochs){
+    std::enable_if_t<(I<layers)> train_with_labels(const Input& input, Watcher& watcher, LabelIterator lit, LabelIterator lend, std::size_t labels, std::size_t max_epochs){
         using rbm_t = rbm_type<I>;
         using input_t = typename rbm_t::input_t;
 
@@ -289,7 +289,7 @@ struct dbn final {
     }
 
     template<std::size_t I, typename Input, typename Output>
-    std::enable_if_t<(I<layers)> predict_labels(Input& input, Output& output, std::size_t labels){
+    std::enable_if_t<(I<layers)> predict_labels(const Input& input, Output& output, std::size_t labels){
         using rbm_t = rbm_type<I>;
 
         constexpr const auto output_size = rbm_traits<rbm_t>::output_size();
@@ -321,7 +321,7 @@ struct dbn final {
     }
 
     template<std::size_t I, typename Input, typename Output>
-    std::enable_if_t<(I==layers)> predict_labels(Input&, Output&, std::size_t){}
+    std::enable_if_t<(I==layers)> predict_labels(const Input&, Output&, std::size_t){}
 
     template<typename TrainingItem>
     size_t predict_labels(const TrainingItem& item_data, std::size_t labels){
@@ -343,7 +343,7 @@ struct dbn final {
     /*{{{ Predict */
 
     template<std::size_t I, typename Input, typename Result>
-    std::enable_if_t<(I<layers)> activation_probabilities(Input& input, Result& result){
+    std::enable_if_t<(I<layers)> activation_probabilities(const Input& input, Result& result){
         auto& rbm = layer<I>();
 
         auto next_s = rbm.prepare_one_output();
@@ -359,7 +359,7 @@ struct dbn final {
 
     //Stop template recursion
     template<std::size_t I, typename Input, typename Result>
-    std::enable_if_t<(I==layers)> activation_probabilities(Input&, Result&){}
+    std::enable_if_t<(I==layers)> activation_probabilities(const Input&, Result&){}
 
     template<typename Sample, typename Output>
     void activation_probabilities(const Sample& item_data, Output& result){
@@ -378,7 +378,7 @@ struct dbn final {
     }
 
     template<std::size_t I, typename Input, typename Result>
-    std::enable_if_t<(I<layers)> full_activation_probabilities(Input& input, std::size_t& i, Result& result){
+    std::enable_if_t<(I<layers)> full_activation_probabilities(const Input& input, std::size_t& i, Result& result){
         auto& rbm = layer<I>();
 
         auto next_s = rbm.prepare_one_output();
@@ -395,7 +395,7 @@ struct dbn final {
 
     //Stop template recursion
     template<std::size_t I, typename Input, typename Result>
-    std::enable_if_t<(I==layers)> full_activation_probabilities(Input&, std::size_t&, Result&){}
+    std::enable_if_t<(I==layers)> full_activation_probabilities(const Input&, std::size_t&, Result&){}
 
     template<typename Sample, typename Output>
     void full_activation_probabilities(const Sample& item_data, Output& result){
@@ -416,12 +416,12 @@ struct dbn final {
     }
 
     template<typename Sample, typename DBN = this_type, cpp::enable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
-    auto get_final_activation_probabilities(Sample& sample){
+    auto get_final_activation_probabilities(const Sample& sample){
         return full_activation_probabilities(sample);
     }
 
     template<typename Sample, typename DBN = this_type, cpp::disable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
-    auto get_final_activation_probabilities(Sample& sample){
+    auto get_final_activation_probabilities(const Sample& sample){
         return activation_probabilities(sample);
     }
 
@@ -466,13 +466,13 @@ struct dbn final {
         typename rbm_type<layers - 1>::output_t>; //In normal mode, use the output of the last layer
 
     template<typename DBN = this_type, typename Result, typename Sample, cpp::enable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
-    void add_activation_probabilities(Result& result, Sample& sample){
+    void add_activation_probabilities(Result& result, const Sample& sample){
         result.emplace_back(full_output_size());
         full_activation_probabilities(sample, result.back());
     }
 
     template<typename DBN = this_type, typename Result, typename Sample, cpp::disable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
-    void add_activation_probabilities(Result& result, Sample& sample){
+    void add_activation_probabilities(Result& result, const Sample& sample){
         result.push_back(layer<layers - 1>().prepare_one_output());
         activation_probabilities(sample, result.back());
     }

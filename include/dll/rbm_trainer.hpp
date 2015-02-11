@@ -68,13 +68,73 @@ struct rbm_trainer {
         return train<false>(rbm, first, last, first, last, max_epochs);
     }
 
-    template<bool Denoising = true, typename InputIterator, typename ExpectedIterator>
-    typename rbm_t::weight train(RBM& rbm, InputIterator input_first, InputIterator input_last, ExpectedIterator expected_first, ExpectedIterator expected_last, std::size_t max_epochs) const {
+    template<bool Denoising, typename R = RBM, typename IIterator, typename EIterator>
+    static std::enable_if_t<rbm_traits<R>::has_shuffle()> shuffle(IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast){
+        static std::random_device rd;
+        static std::mt19937_64 g(rd());
+
+        if(Denoising){
+            cpp::parallel_shuffle(ifirst, ilast, efirst, elast, g);
+        } else {
+            std::shuffle(ifirst, ilast, g);
+        }
+    }
+
+    template<bool Denoising, typename R = RBM, typename IIterator, typename EIterator>
+    static cpp::disable_if_t<rbm_traits<R>::has_shuffle()> shuffle(IIterator, IIterator, EIterator, EIterator){}
+
+    template<bool Denoising, typename R = RBM, typename IIterator, typename EIterator, typename IVector, typename EVector, cpp::enable_if_u<rbm_traits<R>::has_shuffle()> = cpp::detail::dummy>
+    static auto prepare_it(IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast, IVector& ivec, EVector& evec){
+        std::copy(ifirst, ilast, std::back_inserter(ivec));
+
+        auto input_first = ivec.begin();
+        auto input_last = ivec.end();
+
+        if(Denoising){
+            std::copy(efirst, elast, std::back_inserter(evec));
+
+            auto expected_first = evec.begin();
+            auto expected_last = evec.end();
+            return std::make_tuple(input_first, input_last, expected_first, expected_last);
+        } else {
+            return std::make_tuple(input_first, input_last, input_first, input_last);
+        }
+    }
+
+    template<bool Denoising, typename R = RBM, typename IIterator, typename EIterator, typename IVector, typename EVector, cpp::disable_if_u<rbm_traits<R>::has_shuffle()> = cpp::detail::dummy>
+    static auto prepare_it(IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast, IVector&, EVector&){
+        return std::make_tuple(ifirst, ilast, efirst, elast);
+    }
+
+    template<typename rbm_t, typename Iterator>
+    using fix_iterator_t = std::conditional_t<
+        rbm_traits<rbm_t>::has_shuffle(),
+        typename std::vector<typename std::iterator_traits<Iterator>::value_type>::iterator,
+        Iterator>;
+
+    template<bool Denoising = true, typename IIterator, typename EIterator>
+    typename rbm_t::weight train(RBM& rbm, IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast, std::size_t max_epochs) const {
         rbm.momentum = rbm.initial_momentum;
 
         if(EnableWatcher){
             watcher.training_begin(rbm);
         }
+
+        using input_iterator_t = fix_iterator_t<rbm_t, IIterator>;
+        using expected_iterator_t = fix_iterator_t<rbm_t, EIterator>;
+
+        input_iterator_t input_first;
+        input_iterator_t input_last;
+
+        expected_iterator_t expected_first;
+        expected_iterator_t expected_last;
+
+        //In case of shuffle, we don't want to shuffle the input, therefore create a copy and shuffle it
+
+        std::vector<typename std::iterator_traits<IIterator>::value_type> input_copy;
+        std::vector<typename std::iterator_traits<EIterator>::value_type> expected_copy;
+
+        std::tie(input_first, input_last, expected_first, expected_last) = prepare_it<Denoising>(ifirst, ilast, efirst, elast, input_copy, expected_copy);
 
         //Some RBM may init weights based on the training data
         init_weights(rbm, input_first, input_last);
@@ -95,16 +155,8 @@ struct rbm_trainer {
 
         //Train for max_epochs epoch
         for(std::size_t epoch= 0; epoch < max_epochs; ++epoch){
-            if(rbm_traits<rbm_t>::has_shuffle()){
-                std::random_device rd;
-                std::mt19937_64 g(rd());
-
-                if(Denoising){
-                    cpp::parallel_shuffle(input_first, input_last, expected_first, expected_last, g);
-                } else {
-                    std::shuffle(input_first, input_last, g);
-                }
-            }
+            //Shuffle if necessary
+            shuffle<Denoising>(input_first, input_last, expected_first, expected_last);
 
             std::size_t batches = 0;
             std::size_t samples = 0;
