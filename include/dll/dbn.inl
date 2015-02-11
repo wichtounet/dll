@@ -288,65 +288,56 @@ struct dbn final {
         watcher.pretraining_end(*this);
     }
 
+    template<std::size_t I, typename Input, typename Output>
+    std::enable_if_t<(I<layers)> predict_labels(Input& input, Output& output, std::size_t labels){
+        using rbm_t = rbm_type<I>;
+
+        constexpr const auto output_size = rbm_traits<rbm_t>::output_size();
+
+        decltype(auto) rbm = layer<I>();
+
+        bool is_last = I == layers - 2;
+
+        auto next_a = rbm.prepare_one_output(is_last, labels);
+        auto next_s = rbm.prepare_one_output(is_last, labels);
+
+        rbm.activate_hidden(next_a, next_s, input, input);
+
+        if(I == layers - 1){
+            auto output_a = rbm.prepare_one_input();
+            auto output_s = rbm.prepare_one_input();
+
+            rbm.activate_visible(next_a, next_s, output_a, output_s);
+
+            output = std::move(output_a);
+        } else {
+            //If the next layers is the last layer
+            if(is_last){
+                std::fill(next_a.begin() + output_size, next_a.end(), 0.1);
+            }
+
+            predict_labels<I+1>(next_a, output, labels);
+        }
+    }
+
+    template<std::size_t I, typename Input, typename Output>
+    std::enable_if_t<(I==layers)> predict_labels(Input&, Output&, std::size_t){}
+
     template<typename TrainingItem>
     size_t predict_labels(const TrainingItem& item_data, std::size_t labels){
         cpp_assert(layer_input_size<layers - 1>() == layer_output_size<layers - 2>() + labels, "There is no room for the labels units");
 
-        using training_t = etl::dyn_vector<weight>;
+        typename rbm_type<0>::input_one_t item(item_data);
 
-        training_t item(item_data);
+        auto output_a = layer<layers - 1>().prepare_one_input();
 
-        etl::dyn_vector<weight> output_a(layer_input_size<layers - 1>());
-        etl::dyn_vector<weight> output_s(layer_input_size<layers - 1>());
+        predict_labels<0>(item, output_a, labels);
 
-        auto input_ref = std::cref(item);
+        constexpr const auto last_input_size = layer_input_size<layers - 1>();
 
-        cpp::for_each_i(tuples, [labels,&input_ref,&output_a,&output_s](size_t I, auto& rbm){
-            using rbm_t = typename std::remove_reference<decltype(rbm)>::type;
+        auto max_it = std::max_element(std::prev(output_a.end(), labels), output_a.end());
 
-            constexpr const auto output_size = rbm_traits<rbm_t>::output_size();
-
-            auto& input = static_cast<const training_t&>(input_ref);
-
-            if(I == layers - 1){
-                static etl::dyn_vector<weight> h1_a(output_size);
-                static etl::dyn_vector<weight> h1_s(output_size);
-
-                rbm.activate_hidden(h1_a, h1_s, input, input);
-                rbm.activate_visible(h1_a, h1_s, output_a, output_s);
-            } else {
-                static etl::dyn_vector<weight> next_a(output_size);
-                static etl::dyn_vector<weight> next_s(output_size);
-
-                rbm.activate_hidden(next_a, next_s, input, input);
-
-                //If the next layers is the last layer
-                if(I + 1 == layers - 1){
-                    static etl::dyn_vector<weight> big_next_a(output_size + labels);
-
-                    std::copy(next_a.begin(), next_a.end(), big_next_a.begin());
-                    std::fill(big_next_a.begin() + output_size, big_next_a.end(), 0.1);
-
-                    input_ref = std::cref(big_next_a);
-                } else {
-                    input_ref = std::cref(next_a);
-                }
-
-            }
-        });
-
-        size_t label = 0;
-        weight max = 0;
-        for(size_t l = 0; l < labels; ++l){
-            auto value = output_a[layer_input_size<layers - 1>() - labels + l];
-
-            if(value > max){
-                max = value;
-                label = l;
-            }
-        }
-
-        return label;
+        return std::distance(std::prev(output_a.end(), labels), max_it);
     }
 
     /*}}}*/

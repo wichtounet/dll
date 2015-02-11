@@ -171,8 +171,12 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
         return output;
     }
 
-    static output_one_t prepare_one_output(){
-        return output_one_t(output_size());
+    static output_one_t prepare_one_output(bool is_last = false, std::size_t labels = 0){
+        return output_one_t(output_size() + (is_last ? labels : 0));
+    }
+
+    static input_one_t prepare_one_input(){
+        return input_one_t(input_size());
     }
 
     void activate_one(const input_one_t& input, output_one_t& h_a, output_one_t& h_s) const {
