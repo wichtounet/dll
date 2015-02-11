@@ -333,11 +333,9 @@ struct dbn final {
 
         predict_labels<0>(item, output_a, labels);
 
-        constexpr const auto last_input_size = layer_input_size<layers - 1>();
-
-        auto max_it = std::max_element(std::prev(output_a.end(), labels), output_a.end());
-
-        return std::distance(std::prev(output_a.end(), labels), max_it);
+        return std::distance(
+            std::prev(output_a.end(), labels),
+            std::max_element(std::prev(output_a.end(), labels), output_a.end()));
     }
 
     /*}}}*/
@@ -429,18 +427,7 @@ struct dbn final {
 
     template<typename Weights>
     size_t predict_label(const Weights& result){
-        size_t label = 0;
-        weight max = 0;
-        for(size_t l = 0; l < result.size(); ++l){
-            auto value = result[l];
-
-            if(value > max){
-                max = value;
-                label = l;
-            }
-        }
-
-        return label;
+        return std::distance(result.begin(), std::max_element(result.begin(), result.end());
     }
 
     template<typename Sample>
