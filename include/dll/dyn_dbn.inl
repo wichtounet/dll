@@ -56,19 +56,18 @@ struct dyn_dbn final {
     bool svm_loaded = false;            ///< Indicates if a SVM model has been loaded (and therefore must be saved)
 #endif //DLL_SVM_SUPPORT
 
+//Note: The tuple implementation of Clang and G++ seems highly
+//different. Indeed, g++ only allows to forward arguments to the
+//constructors if they are directly convertible.
+
 #ifdef __clang__
     template<typename... T>
-    dyn_dbn(T... rbms) : tuples(rbms...) {
+    explicit dyn_dbn(T&&... rbms) : tuples(std::forward<T>(rbms)...) {
         //Nothing else to init
     }
 #else
-    template<typename... T, cpp::enable_if_u<(sizeof...(T) > 1)> = cpp::detail::dummy>
-    dyn_dbn(T... rbms) : tuples({rbms}...) {
-        //Nothing else to init
-    }
-
-    template<typename T>
-    dyn_dbn(T rbm) : tuples(rbm_type<0>{rbm}) {
+    template<typename... T>
+    explicit dyn_dbn(T&&... rbms) : tuples({std::forward<T>(rbms)}...) {
         //Nothing else to init
     }
 #endif
