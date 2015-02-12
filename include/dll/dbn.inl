@@ -58,7 +58,24 @@ struct dbn final {
 #endif //DLL_SVM_SUPPORT
 
     //No arguments by default
-    dbn(){};
+    template<cpp_disable_if_cst(dbn_traits<this_type>::is_dynamic())>
+    dbn(){}
+
+//Note: The tuple implementation of Clang and G++ seems highly
+//different. Indeed, g++ only allows to forward arguments to the
+//constructors if they are directly convertible.
+
+#ifdef __clang__
+    template<typename... T, cpp_enable_if_cst(dbn_traits<this_type>::is_dynamic())>
+    explicit dbn(T&&... rbms) : tuples(std::forward<T>(rbms)...) {
+        //Nothing else to init
+    }
+#else
+    template<typename... T, cpp_enable_if_cst(dbn_traits<this_type>::is_dynamic())>
+    explicit dbn(T&&... rbms) : tuples({std::forward<T>(rbms)}...) {
+        //Nothing else to init
+    }
+#endif
 
     //No copying
     dbn(const dbn& dbn) = delete;
