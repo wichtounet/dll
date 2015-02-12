@@ -154,19 +154,23 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         return {sample};
     }
 
-    output_t prepare_output(std::size_t samples){
+    output_t prepare_output(std::size_t samples, bool is_last = false, std::size_t labels = 0) const {
         output_t output;
         output.reserve(samples);
 
         for(std::size_t i = 0; i < samples; ++i){
-            output.emplace_back(output_size());
+            output.emplace_back(output_size() + (is_last ? labels : 0));
         }
 
         return output;
     }
 
-    output_one_t prepare_one_output(){
-        return output_one_t(output_size());
+    output_one_t prepare_one_output(bool is_last = false, std::size_t labels = 0) const {
+        return output_one_t(output_size() + (is_last ? labels : 0));
+    }
+
+    input_one_t prepare_one_input() const {
+        return input_one_t(input_size());
     }
 
     void activate_one(const input_one_t& input, output_one_t& h_a, output_one_t& h_s) const {
