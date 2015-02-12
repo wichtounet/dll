@@ -22,7 +22,7 @@
 TEST_CASE( "dyn_dbn/mnist_1", "dbn::simple" ) {
     using dbn_t =
         dll::dyn_dbn_desc<
-            dll::dbn_dyn_layers<
+            dll::dbn_layers<
                 dll::dyn_rbm_desc<dll::momentum, dll::init_weights>::rbm_t,
                 dll::dyn_rbm_desc<dll::momentum>::rbm_t,
                 dll::dyn_rbm_desc<dll::momentum, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t
@@ -51,7 +51,7 @@ TEST_CASE( "dyn_dbn/mnist_1", "dbn::simple" ) {
 TEST_CASE( "dyn_dbn/mnist_2", "dbn::parallel" ) {
     using dbn_t =
         dll::dyn_dbn_desc<
-            dll::dbn_dyn_layers<
+            dll::dbn_layers<
                 dll::dyn_rbm_desc<dll::momentum, dll::parallel, dll::init_weights>::rbm_t,
                 dll::dyn_rbm_desc<dll::momentum, dll::parallel>::rbm_t,
                 dll::dyn_rbm_desc<dll::momentum, dll::parallel, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t
@@ -88,7 +88,7 @@ TEST_CASE( "dyn_dbn/mnist_3", "dbn::labels" ) {
 
     using dbn_t =
         dll::dyn_dbn_desc<
-            dll::dbn_dyn_layers<
+            dll::dbn_layers<
                 dll::dyn_rbm_desc<dll::init_weights, dll::momentum>::rbm_t,
                 dll::dyn_rbm_desc<dll::momentum>::rbm_t,
                 dll::dyn_rbm_desc<dll::momentum>::rbm_t
@@ -108,7 +108,7 @@ TEST_CASE( "dyn_dbn/mnist_3", "dbn::labels" ) {
 TEST_CASE( "dyn_dbn/mnist_4", "dbn::svm_simple" ) {
     using dbn_t =
         dll::dyn_dbn_desc<
-            dll::dbn_dyn_layers<
+            dll::dbn_layers<
                 dll::dyn_rbm_desc<dll::momentum, dll::init_weights>::rbm_t,
                 dll::dyn_rbm_desc<dll::momentum>::rbm_t
         >>::dbn_t;
@@ -138,7 +138,7 @@ TEST_CASE( "dyn_dbn/mnist_4", "dbn::svm_simple" ) {
 TEST_CASE( "dyn_dbn/mnist_5", "dbn::simple_single" ) {
     using dbn_t =
         dll::dyn_dbn_desc<
-            dll::dbn_dyn_layers<
+            dll::dbn_layers<
                 dll::dyn_rbm_desc<dll::momentum, dll::init_weights>::rbm_t
         >>::dbn_t;
 

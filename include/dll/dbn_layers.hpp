@@ -12,19 +12,37 @@
 
 namespace dll {
 
+namespace detail {
+
 template<typename... Layers>
-struct validate_layers;
+struct is_dynamic : cpp::bool_constant_c<cpp::or_u<rbm_traits<Layers>::is_dynamic()...>> {};
+
+template<typename... Layers>
+struct validate_layers_impl;
 
 template<typename Layer>
-struct validate_layers <Layer> : std::true_type {};
+struct validate_layers_impl <Layer> : std::true_type {};
 
 template<typename L1, typename L2, typename... Layers>
-struct validate_layers <L1, L2, Layers...> :
+struct validate_layers_impl <L1, L2, Layers...> :
     cpp::bool_constant_c<
         cpp::and_u<
             rbm_traits<L1>::output_size() == rbm_traits<L2>::input_size(),
-            validate_layers<L2, Layers...>::value
+            validate_layers_impl<L2, Layers...>::value
         >> {};
+
+//Note: It is not possible to add a template parameter with default value (SFINAE) on a variadic struct
+//therefore, implementing the traits as function is nicer than nested structures
+
+template<typename... Layers, cpp_enable_if(is_dynamic<Layers...>::value)>
+constexpr bool are_layers_valid(){
+    return true;
+}
+
+template<typename... Layers, cpp_disable_if(is_dynamic<Layers...>::value)>
+constexpr bool are_layers_valid(){
+    return validate_layers_impl<Layers...>();
+}
 
 template<typename... Layers>
 struct validate_label_layers;
@@ -40,15 +58,18 @@ struct validate_label_layers <L1, L2, Layers...> :
             validate_label_layers<L2, Layers...>::value
         >> {};
 
+} // end of namespace detail
+
 /**
  * \brief Simple placeholder for a collection of layers
  */
 template<typename... Layers>
 struct dbn_layers {
     static constexpr const std::size_t layers = sizeof...(Layers);
+    static constexpr const bool dynamic = detail::is_dynamic<Layers...>();
 
     static_assert(layers > 0, "A DBN must have at least 1 layer");
-    static_assert(validate_layers<Layers...>::value, "The inner sizes of RBM must correspond");
+    static_assert(detail::are_layers_valid<Layers...>(), "The inner sizes of RBM must correspond");
 
     using tuple_type = std::tuple<Layers...>;
 };
@@ -64,22 +85,7 @@ struct dbn_label_layers {
     static constexpr const std::size_t layers = sizeof...(Layers);
 
     static_assert(layers > 0, "A DBN must have at least 1 layer");
-    static_assert(validate_label_layers<Layers...>::value, "The inner sizes of RBM must correspond");
-
-    using tuple_type = std::tuple<Layers...>;
-};
-
-/**
- * \brief Simple placeholder for a collection of layers
- *
- * This version has to be used instead of dbn_layers when layers are
- * dynamic.
- */
-template<typename... Layers>
-struct dbn_dyn_layers {
-    static constexpr const std::size_t layers = sizeof...(Layers);
-
-    static_assert(layers > 0, "A DBN must have at least 1 layer");
+    static_assert(detail::validate_label_layers<Layers...>::value, "The inner sizes of RBM must correspond");
 
     using tuple_type = std::tuple<Layers...>;
 };
