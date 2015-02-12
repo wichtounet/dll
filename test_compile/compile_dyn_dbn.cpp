@@ -20,7 +20,7 @@ void test_dbn(DBN& dbn){
 int main(){
     using dbn_t =
         dll::dyn_dbn_desc<
-            dll::dbn_dyn_layers<
+            dll::dbn_layers<
                 dll::dyn_rbm_desc<dll::momentum, dll::init_weights>::rbm_t,
                 dll::dyn_rbm_desc<dll::momentum>::rbm_t,
                 dll::dyn_rbm_desc<dll::momentum, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t
