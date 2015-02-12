@@ -87,9 +87,12 @@ struct dbn_layers {
 template<typename... Layers>
 struct dbn_label_layers {
     static constexpr const std::size_t layers = sizeof...(Layers);
+    static constexpr const bool is_dynamic = false;
+    static constexpr const bool is_convolutional = false; //There is no support for convolutional RBM and labels
 
     static_assert(layers > 0, "A DBN must have at least 1 layer");
     static_assert(detail::validate_label_layers<Layers...>::value, "The inner sizes of RBM must correspond");
+    static_assert(!detail::is_dynamic<Layers...>(), "dbn_label_layers should not be used with dynamic RBMs");
 
     using tuple_type = std::tuple<Layers...>;
 };
