@@ -149,11 +149,11 @@ struct dbn final {
     }
 
     static constexpr std::size_t input_size(){
-        return layer_input_size<0>();
+        return rbm_traits<rbm_type<0>>::input_size();
     }
 
     static constexpr std::size_t output_size(){
-        return layer_output_size<layers - 1>();
+        return rbm_traits<rbm_type<layers - 1>>::input_size();
     }
 
     static std::size_t full_output_size(){
@@ -237,7 +237,7 @@ struct dbn final {
     template<typename Samples, typename Labels>
     void train_with_labels(const Samples& training_data, const Labels& training_labels, std::size_t labels, std::size_t max_epochs){
         cpp_assert(training_data.size() == training_labels.size(), "There must be the same number of values than labels");
-        cpp_assert(layer_input_size<layers - 1>() == layer_output_size<layers - 2>() + labels, "There is no room for the labels units");
+        cpp_assert(dll::input_size(layer<layers - 1>()) == dll::output_size(layer<layers - 2>()) + labels, "There is no room for the labels units");
 
         train_with_labels(training_data.begin(), training_data.end(), training_labels.begin(), training_labels.end(), labels, max_epochs);
     }
@@ -266,14 +266,12 @@ struct dbn final {
             rbm.activate_many(input, next_a, next_s);
 
             if(is_last){
-                constexpr const auto output_size = rbm_traits<rbm_t>::output_size();
-
                 std::size_t i = 0;
                 while(lit != lend){
                     decltype(auto) label = *lit;
 
                     for(size_t l = 0; l < labels; ++l){
-                        next_a[i][output_size + l] = label == l ? 1.0 : 0.0;
+                        next_a[i][dll::output_size(rbm) + l] = label == l ? 1.0 : 0.0;
                     }
 
                     ++i;
@@ -291,7 +289,7 @@ struct dbn final {
     template<typename Iterator, typename LabelIterator>
     void train_with_labels(Iterator&& first, Iterator&& last, LabelIterator&& lfirst, LabelIterator&& llast, std::size_t labels, std::size_t max_epochs){
         cpp_assert(std::distance(first, last) == std::distance(lfirst, llast), "There must be the same number of values than labels");
-        cpp_assert(layer_input_size<layers - 1>() == layer_output_size<layers - 2>() + labels, "There is no room for the labels units");
+        cpp_assert(dll::input_size(layer<layers - 1>()) == dll::output_size(layer<layers - 2>()) + labels, "There is no room for the labels units");
 
         watcher_t watcher;
 
@@ -308,8 +306,6 @@ struct dbn final {
     template<std::size_t I, typename Input, typename Output>
     std::enable_if_t<(I<layers)> predict_labels(const Input& input, Output& output, std::size_t labels){
         using rbm_t = rbm_type<I>;
-
-        constexpr const auto output_size = rbm_traits<rbm_t>::output_size();
 
         decltype(auto) rbm = layer<I>();
 
@@ -330,7 +326,7 @@ struct dbn final {
         } else {
             //If the next layers is the last layer
             if(is_last){
-                std::fill(next_a.begin() + output_size, next_a.end(), 0.1);
+                std::fill(next_a.begin() + dll::output_size(rbm), next_a.end(), 0.1);
             }
 
             predict_labels<I+1>(next_a, output, labels);
@@ -342,7 +338,7 @@ struct dbn final {
 
     template<typename TrainingItem>
     size_t predict_labels(const TrainingItem& item_data, std::size_t labels){
-        cpp_assert(layer_input_size<layers - 1>() == layer_output_size<layers - 2>() + labels, "There is no room for the labels units");
+        cpp_assert(dll::input_size(layer<layers - 1>()) == dll::output_size(layer<layers - 2>()) + labels, "There is no room for the labels units");
 
         typename rbm_type<0>::input_one_t item(item_data);
 
