@@ -18,6 +18,9 @@ template<typename... Layers>
 struct is_dynamic : cpp::bool_constant_c<cpp::or_u<rbm_traits<Layers>::is_dynamic()...>> {};
 
 template<typename... Layers>
+struct is_convolutional : cpp::bool_constant_c<cpp::or_u<rbm_traits<Layers>::is_convolutional()...>> {};
+
+template<typename... Layers>
 struct validate_layers_impl;
 
 template<typename Layer>
@@ -66,7 +69,8 @@ struct validate_label_layers <L1, L2, Layers...> :
 template<typename... Layers>
 struct dbn_layers {
     static constexpr const std::size_t layers = sizeof...(Layers);
-    static constexpr const bool dynamic = detail::is_dynamic<Layers...>();
+    static constexpr const bool is_dynamic = detail::is_dynamic<Layers...>();
+    static constexpr const bool is_convolutional = detail::is_convolutional<Layers...>();
 
     static_assert(layers > 0, "A DBN must have at least 1 layer");
     static_assert(detail::are_layers_valid<Layers...>(), "The inner sizes of RBM must correspond");
