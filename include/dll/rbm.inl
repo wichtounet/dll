@@ -160,7 +160,7 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
         return {sample};
     }
 
-    output_t prepare_output(std::size_t samples, bool is_last = false, std::size_t labels = 0){
+    static output_t prepare_output(std::size_t samples, bool is_last = false, std::size_t labels = 0){
         output_t output;
         output.reserve(samples);
 
