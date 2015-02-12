@@ -61,12 +61,12 @@ struct dyn_dbn final {
 //constructors if they are directly convertible.
 
 #ifdef __clang__
-    template<typename... T>
+    template<typename... T, cpp_enable_if_cst(dbn_traits<this_type>::is_dynamic())>
     explicit dyn_dbn(T&&... rbms) : tuples(std::forward<T>(rbms)...) {
         //Nothing else to init
     }
 #else
-    template<typename... T>
+    template<typename... T, cpp_enable_if_cst(dbn_traits<this_type>::is_dynamic())>
     explicit dyn_dbn(T&&... rbms) : tuples({std::forward<T>(rbms)}...) {
         //Nothing else to init
     }
