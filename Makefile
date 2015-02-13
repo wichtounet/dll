@@ -15,7 +15,7 @@ ifneq (,$(findstring c++-analyzer,$(CXX)))
 	CXX_FLAGS += -stdlib=libc++
 endif
 
-RELEASE_FLAGS += -fno-rtti -fno-exceptions
+RELEASE_FLAGS += -fno-rtti
 
 CXX_FLAGS += -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include
 LD_FLAGS += -lpthread
