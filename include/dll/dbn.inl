@@ -260,26 +260,37 @@ struct dbn final {
         if(I < layers - 1){
             bool is_last = I == layers - 2;
 
-            auto next_a = rbm.prepare_output(input.size(), is_last, labels);
-            auto next_s = rbm.prepare_output(input.size(), is_last, labels);
+            auto next_a = rbm.prepare_output(input.size());
+            auto next_s = rbm.prepare_output(input.size());
 
             rbm.activate_many(input, next_a, next_s);
 
             if(is_last){
+                auto big_next_a = rbm.prepare_output(input.size(), is_last, labels);
+
+                //Cannot use std copy since the sub elements have different size
+                for(std::size_t i = 0; i < next_a.size(); ++i){
+                    for(std::size_t j = 0; j < next_a[i].size(); ++j){
+                        big_next_a[i][j] = next_a[i][j];
+                    }
+                }
+
                 std::size_t i = 0;
                 while(lit != lend){
                     decltype(auto) label = *lit;
 
                     for(size_t l = 0; l < labels; ++l){
-                        next_a[i][dll::output_size(rbm) + l] = label == l ? 1.0 : 0.0;
+                        big_next_a[i][dll::output_size(rbm) + l] = label == l ? 1.0 : 0.0;
                     }
 
                     ++i;
                     ++lit;
                 }
-            }
 
-            train_with_labels<I+1>(next_a, watcher, lit, lend, labels, max_epochs);
+                train_with_labels<I+1>(big_next_a, watcher, lit, lend, labels, max_epochs);
+            } else {
+                train_with_labels<I+1>(next_a, watcher, lit, lend, labels, max_epochs);
+            }
         }
     }
 
@@ -309,10 +320,8 @@ struct dbn final {
 
         decltype(auto) rbm = layer<I>();
 
-        bool is_last = I == layers - 2;
-
-        auto next_a = rbm.prepare_one_output(is_last, labels);
-        auto next_s = rbm.prepare_one_output(is_last, labels);
+        auto next_a = rbm.prepare_one_output();
+        auto next_s = rbm.prepare_one_output();
 
         rbm.activate_hidden(next_a, next_s, input, input);
 
@@ -324,12 +333,23 @@ struct dbn final {
 
             output = std::move(output_a);
         } else {
+            bool is_last = I == layers - 2;
+
             //If the next layers is the last layer
             if(is_last){
-                std::fill(next_a.begin() + dll::output_size(rbm), next_a.end(), 0.1);
-            }
+                auto big_next_a = rbm.prepare_one_output(is_last, labels);
 
-            predict_labels<I+1>(next_a, output, labels);
+                for(std::size_t i = 0; i < next_a.size(); ++i){
+                    big_next_a[i] = next_a[i];
+                }
+
+                //std::copy(next_a.begin(), next_a.end(), big_next_a.begin() + dll::output_size(rbm));
+                std::fill(big_next_a.begin() + dll::output_size(rbm), big_next_a.end(), 0.1);
+
+                predict_labels<I+1>(big_next_a, output, labels);
+            } else {
+                predict_labels<I+1>(next_a, output, labels);
+            }
         }
     }
 

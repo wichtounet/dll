@@ -89,11 +89,11 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         return num_hidden;
     }
 
-    std::size_t parameters() noexcept {
+    std::size_t parameters() const noexcept {
         return num_visible * num_hidden;
     }
 
-    static std::string to_short_string(){
+    static std::string to_short_string() noexcept {
         return "RBM(dyn)";
     }
 
@@ -103,18 +103,29 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
 
     template<bool P = true, bool S = true, typename H1, typename H2, typename V>
     void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s) const {
-        static etl::dyn_matrix<weight> t(1UL, num_hidden);
-        base_type::template std_activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, t);
-    }
-
-    template<bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W>
-    void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, const B& b, const W& w) const {
-        static etl::dyn_matrix<weight> t(1UL, num_hidden);
-        base_type::template std_activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, t);
+        etl::dyn_matrix<weight> t(1UL, num_hidden);
+        activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, t);
     }
 
     template<bool P = true, bool S = true, typename H1, typename H2, typename V, typename T>
     void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, T&& t) const {
+        activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, std::forward<T>(t));
+    }
+
+    template<bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W>
+    void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, const B& b, const W& w) const {
+        etl::dyn_matrix<weight> t(1UL, num_hidden);
+        activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, t);
+    }
+
+    template<bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W, typename T>
+    void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, const B& b, const W& w, T&& t) const {
+        cpp_assert(etl::size(h_a) == num_hidden, "Invalid h_a size");
+        cpp_assert(etl::size(h_s) == num_hidden, "Invalid h_s size");
+        cpp_assert(etl::size(v_a) == num_visible, "Invalid v_a size");
+        cpp_assert(etl::size(v_s) == num_visible, "Invalid v_s size");
+        cpp_assert(etl::size(t) == num_hidden, "Invalid t size");
+
         base_type::template std_activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, std::forward<T>(t));
     }
 
