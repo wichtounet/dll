@@ -5,7 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "dll/dyn_dbn.hpp"
+#include "dll/dyn_rbm.hpp"
+#include "dll/dbn.hpp"
 #include "dll/ocv_visualizer.hpp"
 
 template<typename DBN>
@@ -19,7 +20,7 @@ void test_dbn(DBN& dbn){
 
 int main(){
     using dbn_t =
-        dll::dyn_dbn_desc<
+        dll::dbn_desc<
             dll::dbn_layers<
                 dll::dyn_rbm_desc<dll::momentum, dll::init_weights>::rbm_t,
                 dll::dyn_rbm_desc<dll::momentum>::rbm_t,
