@@ -316,8 +316,6 @@ struct dbn final {
 
     template<std::size_t I, typename Input, typename Output>
     std::enable_if_t<(I<layers)> predict_labels(const Input& input, Output& output, std::size_t labels){
-        using rbm_t = rbm_type<I>;
-
         decltype(auto) rbm = layer<I>();
 
         auto next_a = rbm.prepare_one_output();
