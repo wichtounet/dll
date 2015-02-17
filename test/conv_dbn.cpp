@@ -20,9 +20,9 @@
 TEST_CASE( "conv_dbn/mnist_1", "conv_dbn::simple" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::conv_rbm_desc<28, 1, 12, 40, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::conv_rbm_desc<12, 40, 10, 20, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::conv_rbm_desc<10, 20, 6, 50, dll::momentum, dll::batch_size<25>>::rbm_t>>::dbn_t dbn_t;
+        dll::conv_rbm_desc_square<28, 1, 12, 40, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::conv_rbm_desc_square<12, 40, 10, 20, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::conv_rbm_desc_square<10, 20, 6, 50, dll::momentum, dll::batch_size<25>>::rbm_t>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
@@ -40,8 +40,8 @@ TEST_CASE( "conv_dbn/mnist_1", "conv_dbn::simple" ) {
 TEST_CASE( "conv_dbn/mnist_2", "conv_dbn::svm_simple" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::conv_rbm_desc<28, 1, 12, 40, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::conv_rbm_desc<12, 40, 10, 40, dll::momentum, dll::batch_size<25>>::rbm_t>>::dbn_t dbn_t;
+        dll::conv_rbm_desc_square<28, 1, 12, 40, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::conv_rbm_desc_square<12, 40, 10, 40, dll::momentum, dll::batch_size<25>>::rbm_t>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
 
@@ -65,8 +65,8 @@ TEST_CASE( "conv_dbn/mnist_2", "conv_dbn::svm_simple" ) {
 TEST_CASE( "conv_dbn/mnist_3", "conv_dbn::svm_concatenate" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::conv_rbm_desc<28, 1, 12, 40, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::conv_rbm_desc<12, 40, 10, 40, dll::momentum, dll::batch_size<25>>::rbm_t>, dll::svm_concatenate>::dbn_t dbn_t;
+        dll::conv_rbm_desc_square<28, 1, 12, 40, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::conv_rbm_desc_square<12, 40, 10, 40, dll::momentum, dll::batch_size<25>>::rbm_t>, dll::svm_concatenate>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
 
@@ -90,7 +90,7 @@ TEST_CASE( "conv_dbn/mnist_3", "conv_dbn::svm_concatenate" ) {
 TEST_CASE( "conv_dbn/mnist_4", "conv_dbn::svm_simple" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::conv_rbm_desc<28, 1, 12, 40, dll::momentum, dll::batch_size<25>>::rbm_t>>::dbn_t dbn_t;
+        dll::conv_rbm_desc_square<28, 1, 12, 40, dll::momentum, dll::batch_size<25>>::rbm_t>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
 
@@ -114,7 +114,7 @@ TEST_CASE( "conv_dbn/mnist_4", "conv_dbn::svm_simple" ) {
 TEST_CASE( "conv_dbn/mnist_5", "conv_dbn::svm_simple" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::conv_rbm_desc<28, 1, 12, 40, dll::momentum, dll::batch_size<25>>::rbm_t>, dll::svm_concatenate>::dbn_t dbn_t;
+        dll::conv_rbm_desc_square<28, 1, 12, 40, dll::momentum, dll::batch_size<25>>::rbm_t>, dll::svm_concatenate>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
 
@@ -138,8 +138,8 @@ TEST_CASE( "conv_dbn/mnist_5", "conv_dbn::svm_simple" ) {
 TEST_CASE( "conv_dbn/mnist_6", "conv_dbn::svm_gaussian" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::conv_rbm_desc<28, 1, 12, 40, dll::visible<dll::unit_type::GAUSSIAN>, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::conv_rbm_desc<12, 40, 10, 40, dll::momentum, dll::batch_size<25>>::rbm_t>, dll::svm_concatenate>::dbn_t dbn_t;
+        dll::conv_rbm_desc_square<28, 1, 12, 40, dll::visible<dll::unit_type::GAUSSIAN>, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::conv_rbm_desc_square<12, 40, 10, 40, dll::momentum, dll::batch_size<25>>::rbm_t>, dll::svm_concatenate>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
 
@@ -163,8 +163,8 @@ TEST_CASE( "conv_dbn/mnist_6", "conv_dbn::svm_gaussian" ) {
 TEST_CASE( "conv_dbn/mnist_7", "conv_dbn::svm_scale" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::conv_rbm_desc<28, 1, 12, 40, dll::visible<dll::unit_type::GAUSSIAN>, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::conv_rbm_desc<12, 40, 10, 40, dll::momentum, dll::batch_size<25>>::rbm_t>,
+        dll::conv_rbm_desc_square<28, 1, 12, 40, dll::visible<dll::unit_type::GAUSSIAN>, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::conv_rbm_desc_square<12, 40, 10, 40, dll::momentum, dll::batch_size<25>>::rbm_t>,
         dll::svm_concatenate, dll::svm_scale>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(333);

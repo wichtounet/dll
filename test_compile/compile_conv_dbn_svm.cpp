@@ -32,8 +32,8 @@ int main(){
 
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::conv_rbm_desc<28, 1, 12, 40, dll::momentum, dll::batch_size<50>>::rbm_t,
-        dll::conv_rbm_desc<12, 40, 6, 40, dll::momentum, dll::batch_size<50>>::rbm_t>>::dbn_t dbn_1;
+        dll::conv_rbm_desc_square<28, 1, 12, 40, dll::momentum, dll::batch_size<50>>::rbm_t,
+        dll::conv_rbm_desc_square<12, 40, 6, 40, dll::momentum, dll::batch_size<50>>::rbm_t>>::dbn_t dbn_1;
 
     //Test them all
 
