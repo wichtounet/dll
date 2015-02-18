@@ -20,7 +20,8 @@
 TEST_CASE( "rbm/mnist_1", "rbm::simple" ) {
     dll::rbm_desc<
         28 * 28, 100,
-        dll::batch_size<25>
+        dll::batch_size<25>,
+        dll::verbose
     >::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);

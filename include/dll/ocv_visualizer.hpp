@@ -150,6 +150,10 @@ struct base_ocv_rbm_visualizer {
         cv::waitKey(0);
     }
 
+    void batch_end(const RBM& /* rbm */, std::size_t batch, std::size_t batches){
+        std::cout << "Batch " << batch << "/" << batches << " is over" << std::endl;
+    }
+
     void refresh(){
         cv::imshow("RBM Training", buffer_image);
         cv::waitKey(30);
@@ -447,6 +451,11 @@ struct opencv_dbn_visualizer {
     }
 
     template<typename RBM>
+    void batch_end(const RBM& /* rbm */, std::size_t batch, std::size_t batches){
+        std::cout << "Batch " << batch << "/" << batches << " is over" << std::endl;
+    }
+
+    template<typename RBM>
     void training_end(const RBM&){
         std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
 
@@ -630,6 +639,11 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynami
     }
 
     template<typename RBM>
+    void batch_end(const RBM& /* rbm */, std::size_t batch, std::size_t batches){
+        std::cout << "Batch " << batch << "/" << batches << " is over" << std::endl;
+    }
+
+    template<typename RBM>
     void training_end(const RBM&){
         std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
 
@@ -791,6 +805,11 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
         }
 
         refresh();
+    }
+
+    template<typename RBM>
+    void batch_end(const RBM& /* rbm */, std::size_t batch, std::size_t batches){
+        std::cout << "Batch " << batch << "/" << batches << " is over" << std::endl;
     }
 
     template<typename RBM>

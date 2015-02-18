@@ -66,6 +66,11 @@ struct default_rbm_watcher {
     }
 
     template<typename RBM = R>
+    void batch_end(const RBM& /* rbm */, std::size_t batch, std::size_t batches){
+        std::cout << "Batch " << batch << "/" << batches << " is over" << std::endl;
+    }
+
+    template<typename RBM = R>
     void training_end(const RBM&){
         std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
     }
@@ -132,6 +137,11 @@ struct histogram_watcher {
     template<typename RBM = R>
     void epoch_end(std::size_t epoch, double error, double /*free_energy*/, const RBM& rbm){
         parent.epoch_end(epoch, error, rbm);
+    }
+
+    template<typename RBM = R>
+    void batch_end(const RBM& rbm, std::size_t batch, std::size_t batches){
+        parent.batch_end(rbm, batch, batches);
     }
 
     template<typename RBM = R>

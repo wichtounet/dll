@@ -53,6 +53,7 @@ struct sparsity_id;
 struct bias_id;
 struct momentum_id;
 struct parallel_id;
+struct verbose_id;
 struct shuffle_id;
 struct svm_concatenate_id;
 struct svm_scale_id;
@@ -98,6 +99,7 @@ struct watcher : template_type_conf_elt<watcher_id, T> {};
 
 struct momentum : basic_conf_elt<momentum_id> {};
 struct parallel : basic_conf_elt<parallel_id> {};
+struct verbose : basic_conf_elt<verbose_id> {};
 struct svm_concatenate : basic_conf_elt<svm_concatenate_id> {};
 struct svm_scale : basic_conf_elt<svm_scale_id> {};
 struct init_weights : basic_conf_elt<init_weights_id> {};

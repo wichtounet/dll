@@ -151,6 +151,8 @@ struct rbm_trainer {
             std::cout << "         This may cause discrepancies in the results." << std::endl;
         }
 
+        auto total_batches = std::distance(input_first, input_last) / batch_size;
+
         typename rbm_t::weight last_error = 0.0;
 
         //Train for max_epochs epoch
@@ -190,6 +192,10 @@ struct rbm_trainer {
                     for(auto& v : input_batch){
                         context.free_energy += rbm.free_energy(v);
                     }
+                }
+
+                if(EnableWatcher && rbm_traits<rbm_t>::is_verbose()){
+                    watcher.batch_end(rbm, batches, total_batches);
                 }
             }
 

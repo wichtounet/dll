@@ -37,6 +37,7 @@ struct rbm_traits {
     HAS_STATIC_FIELD(Init, has_init_field)
     HAS_STATIC_FIELD(Momentum, has_momentum_field)
     HAS_STATIC_FIELD(Parallel, has_parallel_field)
+    HAS_STATIC_FIELD(Verbose, has_verbose_field)
     HAS_STATIC_FIELD(Bias, has_bias_field)
     HAS_STATIC_FIELD(Shuffle, has_shuffle_field)
     HAS_STATIC_FIELD(Free_Energy, has_free_energy_field)
@@ -99,6 +100,16 @@ struct rbm_traits {
 
     template<cpp_disable_if_cst(has_parallel_field<desc>::value)>
     static constexpr bool is_parallel(){
+        return false;
+    }
+
+    template<cpp_enable_if_cst(has_verbose_field<desc>::value)>
+    static constexpr bool is_verbose(){
+        return rbm_t::desc::Verbose;
+    }
+
+    template<cpp_disable_if_cst(has_verbose_field<desc>::value)>
+    static constexpr bool is_verbose(){
         return false;
     }
 
