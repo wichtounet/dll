@@ -17,6 +17,3 @@
 [submodule "nice_svm"]
 	path = nice_svm
 	url = https://github.com/wichtounet/nice_svm.git
-[submodule "include/dll/cpp_utils"]
-	path = include/dll/cpp_utils
-	url = https://github.com/wichtounet/cpp_utils.git

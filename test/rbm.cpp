@@ -9,7 +9,7 @@
 
 #include "catch.hpp"
 
-#include "dll/cpp_utils/data.hpp"
+#include "cpp_utils/data.hpp"
 
 #include "dll/rbm.hpp"
 #include "dll/dyn_rbm.hpp"

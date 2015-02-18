@@ -17,7 +17,7 @@ endif
 
 RELEASE_FLAGS += -fno-rtti
 
-CXX_FLAGS += -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include
+CXX_FLAGS += -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include
 LD_FLAGS += -lpthread
 #-Werror
 OPENCV_LD_FLAGS=-lopencv_core -lopencv_imgproc -lopencv_highgui
