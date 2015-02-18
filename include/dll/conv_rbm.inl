@@ -41,32 +41,35 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     static constexpr const unit_type visible_unit = desc::visible_unit;
     static constexpr const unit_type hidden_unit = desc::hidden_unit;
 
-    static constexpr const std::size_t NV = desc::NV;
-    static constexpr const std::size_t NH = desc::NH;
+    static constexpr const std::size_t NV1 = desc::NV1;
+    static constexpr const std::size_t NV2 = desc::NV2;
+    static constexpr const std::size_t NH1 = desc::NH1;
+    static constexpr const std::size_t NH2 = desc::NH2;
     static constexpr const std::size_t NC = desc::NC;
     static constexpr const std::size_t K = desc::K;
 
-    static constexpr const std::size_t NW = NV - NH + 1; //By definition
+    static constexpr const std::size_t NW1 = NV1 - NH1 + 1; //By definition
+    static constexpr const std::size_t NW2 = NV2 - NH2 + 1; //By definition
 
-    etl::fast_matrix<weight, NC, K, NW, NW> w;      //shared weights
+    etl::fast_matrix<weight, NC, K, NW1, NW2> w;      //shared weights
     etl::fast_vector<weight, K> b;                  //hidden biases bk
     etl::fast_vector<weight, NC> c;                 //visible single bias c
 
-    etl::fast_matrix<weight, NC, NV, NV> v1;        //visible units
+    etl::fast_matrix<weight, NC, NV1, NV2> v1;        //visible units
 
-    etl::fast_matrix<weight, K, NH, NH> h1_a;       //Activation probabilities of reconstructed hidden units
-    etl::fast_matrix<weight, K, NH, NH> h1_s;       //Sampled values of reconstructed hidden units
+    etl::fast_matrix<weight, K, NH1, NH2> h1_a;       //Activation probabilities of reconstructed hidden units
+    etl::fast_matrix<weight, K, NH1, NH2> h1_s;       //Sampled values of reconstructed hidden units
 
-    etl::fast_matrix<weight, NC, NV, NV> v2_a;      //Activation probabilities of reconstructed visible units
-    etl::fast_matrix<weight, NC, NV, NV> v2_s;      //Sampled values of reconstructed visible units
+    etl::fast_matrix<weight, NC, NV1, NV2> v2_a;      //Activation probabilities of reconstructed visible units
+    etl::fast_matrix<weight, NC, NV1, NV2> v2_s;      //Sampled values of reconstructed visible units
 
-    etl::fast_matrix<weight, K, NH, NH> h2_a;       //Activation probabilities of reconstructed hidden units
-    etl::fast_matrix<weight, K, NH, NH> h2_s;       //Sampled values of reconstructed hidden units
+    etl::fast_matrix<weight, K, NH1, NH2> h2_a;       //Activation probabilities of reconstructed hidden units
+    etl::fast_matrix<weight, K, NH1, NH2> h2_s;       //Sampled values of reconstructed hidden units
 
     //Convolution data
 
-    etl::fast_matrix<weight, NC+1, K, NH, NH> v_cv; //Temporary convolution
-    etl::fast_matrix<weight, K+1, NV, NV> h_cv;     //Temporary convolution
+    etl::fast_matrix<weight, NC+1, K, NH1, NH2> v_cv; //Temporary convolution
+    etl::fast_matrix<weight, K+1, NV2, NV2> h_cv;     //Temporary convolution
 
     conv_rbm() : base_type() {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
@@ -76,20 +79,20 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     }
 
     static constexpr std::size_t input_size() noexcept {
-        return NV * NV * NC;
+        return NV1 * NV2 * NC;
     }
 
     static constexpr std::size_t output_size() noexcept {
-        return NH * NH * K;
+        return NH1 * NH2 * K;
     }
 
     static constexpr std::size_t parameters() noexcept {
-        return NC * K * NW * NW;
+        return NC * K * NW1 * NW2;
     }
 
     static std::string to_short_string(){
         char buffer[1024];
-        snprintf(buffer, 1024, "CRBM: %lux%lux%lu -> (%lux%lu) -> %lux%lux%lu", NV, NV, NC, NW, NW, NH, NH, K);
+        snprintf(buffer, 1024, "CRBM: %lux%lux%lu -> (%lux%lu) -> %lux%lux%lu", NV1, NV2, NC, NW1, NW2, NH1, NH2, K);
         return {buffer};
     }
 
@@ -122,16 +125,16 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         }
 
         if(hidden_unit == unit_type::BINARY){
-            h_a = sigmoid(etl::rep<NH, NH>(b) + v_cv(NC));
+            h_a = sigmoid(etl::rep<NH1, NH2>(b) + v_cv(NC));
             h_s = bernoulli(h_a);
         } else if(hidden_unit == unit_type::RELU){
-            h_a = max(etl::rep<NH, NH>(b) + v_cv(NC), 0.0);
+            h_a = max(etl::rep<NH1, NH2>(b) + v_cv(NC), 0.0);
             h_s = logistic_noise(h_a);
         } else if(hidden_unit == unit_type::RELU6){
-            h_a = min(max(etl::rep<NH, NH>(b) + v_cv(NC), 0.0), 6.0);
+            h_a = min(max(etl::rep<NH1, NH2>(b) + v_cv(NC), 0.0), 6.0);
             h_s = ranged_noise(h_a, 6.0);
         } else if(hidden_unit == unit_type::RELU1){
-            h_a = min(max(etl::rep<NH, NH>(b) + v_cv(NC), 0.0), 1.0);
+            h_a = min(max(etl::rep<NH1, NH2>(b) + v_cv(NC), 0.0), 1.0);
             h_s = ranged_noise(h_a, 1.0);
         } else {
             cpp_unreachable("Invalid path");
@@ -199,7 +202,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
                 v_cv(NC) += v_cv(channel);
             }
 
-            return -sum(etl::pow(v - etl::rep<NV, NV>(c), 2) / 2.0) - etl::sum(b * etl::sum_r(h)) - etl::sum(h * v_cv(NC));
+            return -sum(etl::pow(v - etl::rep<NV1, NV2>(c), 2) / 2.0) - etl::sum(b * etl::sum_r(h)) - etl::sum(h * v_cv(NC));
         } else {
             return 0.0;
         }
@@ -207,8 +210,8 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
     template<typename V, typename H, cpp::disable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
     weight energy(const V& v, const H& h){
-        static etl::fast_matrix<weight, NC, NV, NV> ev;
-        static etl::fast_matrix<weight, K, NH, NH> eh;
+        static etl::fast_matrix<weight, NC, NV1, NV2> ev;
+        static etl::fast_matrix<weight, K, NH1, NH2> eh;
 
         ev = v;
         eh = h;
@@ -231,7 +234,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
                 v_cv(NC) += v_cv(channel);
             }
 
-            auto x = etl::rep<NH, NH>(b) + v_cv(NC);
+            auto x = etl::rep<NH1, NH2>(b) + v_cv(NC);
 
             return - etl::sum(c * etl::sum_r(v)) - etl::sum(etl::log(1.0 + etl::exp(x)));
         } else if(desc::visible_unit == unit_type::GAUSSIAN && desc::hidden_unit == unit_type::BINARY){
@@ -247,9 +250,9 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
                 v_cv(NC) += v_cv(channel);
             }
 
-            auto x = etl::rep<NH, NH>(b) + v_cv(NC);
+            auto x = etl::rep<NH1, NH2>(b) + v_cv(NC);
 
-            return -sum(etl::pow(v - etl::rep<NV, NV>(c), 2) / 2.0) - etl::sum(etl::log(1.0 + etl::exp(x)));
+            return -sum(etl::pow(v - etl::rep<NV1, NV2>(c), 2) / 2.0) - etl::sum(etl::log(1.0 + etl::exp(x)));
         } else {
             return 0.0;
         }
@@ -257,7 +260,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
     template<typename V>
     weight free_energy(const V& v){
-        static etl::fast_matrix<weight, NC, NV, NV> ev;
+        static etl::fast_matrix<weight, NC, NV1, NV2> ev;
         ev = v;
         return free_energy_impl(ev);
     }
@@ -279,7 +282,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         input.reserve(std::distance(std::forward<Iterator>(first), std::forward<Iterator>(last)));
 
         std::for_each(std::forward<Iterator>(first), std::forward<Iterator>(last), [&input](auto& sample){
-            input.emplace_back(NC, NV, NV);
+            input.emplace_back(NC, NV1, NV2);
             input.back() = sample;
         });
 
@@ -288,7 +291,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
     template<typename Sample>
     static input_one_t convert_sample(const Sample& sample){
-        input_one_t result(NC, NV, NV);
+        input_one_t result(NC, NV1, NV2);
         result = sample;
         return result;
     }
@@ -298,14 +301,14 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         output.reserve(samples);
 
         for(std::size_t i = 0; i < samples; ++i){
-            output.emplace_back(K, NH, NH);
+            output.emplace_back(K, NH1, NH2);
         }
 
         return output;
     }
 
     static output_one_t prepare_one_output(){
-        return output_one_t(K, NH, NH);
+        return output_one_t(K, NH1, NH2);
     }
 
     void activate_one(const input_one_t& input, output_one_t& h_a, output_one_t& h_s){
@@ -323,16 +326,25 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 //Allow odr-use of the constexpr static members
 
 template<typename Desc>
-const std::size_t conv_rbm<Desc>::NV;
+const std::size_t conv_rbm<Desc>::NV1;
 
 template<typename Desc>
-const std::size_t conv_rbm<Desc>::NH;
+const std::size_t conv_rbm<Desc>::NV2;
+
+template<typename Desc>
+const std::size_t conv_rbm<Desc>::NH1;
+
+template<typename Desc>
+const std::size_t conv_rbm<Desc>::NH2;
 
 template<typename Desc>
 const std::size_t conv_rbm<Desc>::NC;
 
 template<typename Desc>
-const std::size_t conv_rbm<Desc>::NW;
+const std::size_t conv_rbm<Desc>::NW1;
+
+template<typename Desc>
+const std::size_t conv_rbm<Desc>::NW2;
 
 template<typename Desc>
 const std::size_t conv_rbm<Desc>::K;

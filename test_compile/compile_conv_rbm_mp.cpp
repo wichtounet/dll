@@ -25,13 +25,13 @@ void test_rbm(){
 int main(){
     //Very basic RBM that must compile
     //typedef dll::conv_rbm<dll::conv_layer<dll::conv_conf<true, 50, dll::unit_type::BINARY, dll::unit_type::SIGMOID>, 32, 12, 40>> crbm_1;
-    typedef dll::conv_rbm_mp<dll::conv_rbm_mp_desc<28, 1, 12, 40, 2>> crbm_1;
+    typedef dll::conv_rbm_mp<dll::conv_rbm_mp_desc_square<28, 1, 12, 40, 2>> crbm_1;
 
     std::cout << "NV*NV=" << std::remove_reference<decltype(crbm_1::v1)>::type::etl_size << std::endl;
     std::cout << "NH*NH=" << std::remove_reference<decltype(crbm_1::h1_a)>::type::etl_size << std::endl;
     std::cout << "NW*NW=" << std::remove_reference<decltype(crbm_1::w)>::type::etl_size << std::endl;
 
-    typedef dll::conv_rbm_mp<dll::conv_rbm_mp_desc<28, 1, 12, 40, 2, dll::momentum, dll::batch_size<50>>> crbm_2;
+    typedef dll::conv_rbm_mp<dll::conv_rbm_mp_desc_square<28, 1, 12, 40, 2, dll::momentum, dll::batch_size<50>>> crbm_2;
 
     //Test them all
 

@@ -15,16 +15,16 @@
 
 namespace dll {
 
-/*!
- * \brief Describe a Convolutional Restricted Boltzmann Machine.
- *
+/*!  * \brief Describe a Convolutional Restricted Boltzmann Machine.  *
  * This struct should be used to define a RBM either as standalone or for a DBN.
  * Once configured, the ::rbm_t member returns the type of the configured RBM.
  */
-template<std::size_t NV_T, std::size_t NC_T, std::size_t NH_T, std::size_t K_T, typename... Parameters>
-struct conv_rbm_desc_square {
-    static constexpr const std::size_t NV = NV_T;
-    static constexpr const std::size_t NH = NH_T;
+template<std::size_t NV_1, std::size_t NV_2, std::size_t NC_T, std::size_t NH_1, std::size_t NH_2, std::size_t K_T, typename... Parameters>
+struct conv_rbm_desc {
+    static constexpr const std::size_t NV1 = NV_1;
+    static constexpr const std::size_t NV2 = NV_2;
+    static constexpr const std::size_t NH1 = NH_1;
+    static constexpr const std::size_t NH2 = NH_2;
     static constexpr const std::size_t NC = NC_T;
     static constexpr const std::size_t K = K_T;
 
@@ -50,12 +50,14 @@ struct conv_rbm_desc_square {
     using watcher_t = typename detail::get_template_type<watcher<default_rbm_watcher>, Parameters...>::template value<RBM>;
 
     /*! The RBM type */
-    using rbm_t = conv_rbm<conv_rbm_desc_square<NV_T, NC_T, NH_T, K_T, Parameters...>>;
+    using rbm_t = conv_rbm<conv_rbm_desc<NV1, NV2, NC_T, NH1, NH2, K_T, Parameters...>>;
 
     //Validate all parameters
 
-    static_assert(NV > 0, "A matrix of at least 1x1 is necessary for the visible units");
-    static_assert(NH > 0, "A matrix of at least 1x1 is necessary for the hidden units");
+    static_assert(NV1 > 0, "A matrix of at least 1x1 is necessary for the visible units");
+    static_assert(NV2 > 0, "A matrix of at least 1x1 is necessary for the visible units");
+    static_assert(NH1 > 0, "A matrix of at least 1x1 is necessary for the hidden units");
+    static_assert(NH2 > 0, "A matrix of at least 1x1 is necessary for the hidden units");
     static_assert(NC > 0, "At least one channel is necessary");
     static_assert(K > 0, "At least one group is necessary");
     static_assert(BatchSize > 0, "Batch size must be at least 1");
@@ -72,6 +74,15 @@ struct conv_rbm_desc_square {
     static_assert(Sparsity == sparsity_method::NONE || hidden_unit == unit_type::BINARY,
         "Sparsity only works with binary hidden units");
 };
+
+/*!
+ * \brief Describe a Convolutional Restricted Boltzmann Machine with square inputs and filters.
+ *
+ * This struct should be used to define a RBM either as standalone or for a DBN.
+ * Once configured, the ::rbm_t member returns the type of the configured RBM.
+ */
+template<std::size_t NV_T, std::size_t NC_T, std::size_t NH_T, std::size_t K_T, typename... Parameters>
+using conv_rbm_desc_square = conv_rbm_desc<NV_T, NV_T, NC_T, NH_T, NH_T, K_T, Parameters...>;
 
 } //end of dll namespace
 

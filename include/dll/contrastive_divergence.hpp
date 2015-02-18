@@ -165,7 +165,8 @@ void update_convolutional(RBM& rbm, Trainer& t){
     using weight = typename rbm_t::weight;
 
     constexpr const auto NC = rbm_t::NC;
-    constexpr const auto NW = rbm_t::NW;
+    constexpr const auto NW1 = rbm_t::NW1;
+    constexpr const auto NW2 = rbm_t::NW2;
 
     //Penalty to be applied to weights and hidden biases
     weight w_penalty = 0.0;
@@ -201,7 +202,7 @@ void update_convolutional(RBM& rbm, Trainer& t){
 
         t.b_grad -= sum_r(q_local_penalty);
 
-        auto k_penalty = etl::rep<NW, NW>(sum_r(q_local_penalty));
+        auto k_penalty = etl::rep<NW1, NW2>(sum_r(q_local_penalty));
         for(std::size_t channel = 0; channel < NC; ++channel){
             t.w_grad(channel) = t.w_grad(channel) - k_penalty;
         }
@@ -616,22 +617,25 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
 
     static constexpr const auto K = rbm_t::K;
     static constexpr const auto NC = rbm_t::NC;
-    static constexpr const auto NV = rbm_t::NV;
-    static constexpr const auto NH = rbm_t::NH;
-    static constexpr const auto NW = rbm_t::NW;
+    static constexpr const auto NV1 = rbm_t::NV1;
+    static constexpr const auto NV2 = rbm_t::NV2;
+    static constexpr const auto NH1 = rbm_t::NH1;
+    static constexpr const auto NH2 = rbm_t::NH2;
+    static constexpr const auto NW1 = rbm_t::NW1;
+    static constexpr const auto NW2 = rbm_t::NW2;
 
     static constexpr const auto batch_size = rbm_traits<rbm_t>::batch_size();
 
     typedef typename rbm_t::weight weight;
 
     //Gradients
-    etl::fast_matrix<weight, NC, K, NW, NW> w_grad;  //Gradients of shared weights
+    etl::fast_matrix<weight, NC, K, NW1, NW2> w_grad;  //Gradients of shared weights
     etl::fast_vector<weight, K> b_grad;              //Gradients of hidden biases bk
     etl::fast_vector<weight, NC> c_grad;             //Visible gradient
 
     //{{{ Momentum
 
-    etl::fast_matrix<weight, NC, K, NW, NW> w_inc;
+    etl::fast_matrix<weight, NC, K, NW1, NW2> w_inc;
     etl::fast_vector<weight, K> b_inc;
     etl::fast_vector<weight, NC> c_inc;
 
@@ -642,39 +646,39 @@ struct base_cd_trainer<RBM, std::enable_if_t<rbm_traits<RBM>::is_convolutional()
     weight q_global_batch;
     weight q_global_t;
 
-    etl::fast_matrix<weight, K, NH, NH> q_local_batch;
-    etl::fast_matrix<weight, K, NH, NH> q_local_t;
+    etl::fast_matrix<weight, K, NH1, NH2> q_local_batch;
+    etl::fast_matrix<weight, K, NH1, NH2> q_local_t;
 
     //}}} Sparsity end
 
     //{{{ Sparsity biases
 
-    etl::fast_matrix<weight, NC, K, NW, NW> w_bias;
+    etl::fast_matrix<weight, NC, K, NW1, NW2> w_bias;
     etl::fast_vector<weight, K> b_bias;
     etl::fast_vector<weight, NC> c_bias;
 
     //}}} Sparsity biases end
 
-    etl::fast_matrix<weight, batch_size, NC+1, K, NH, NH> v_cv;
-    etl::fast_matrix<weight, batch_size, K+1, NV, NV> h_cv;
+    etl::fast_matrix<weight, batch_size, NC+1, K, NH1, NH2> v_cv;
+    etl::fast_matrix<weight, batch_size, K+1, NV1, NV2> h_cv;
 
-    etl::fast_matrix<weight, batch_size, K, NH, NH> p_h_a;
-    etl::fast_matrix<weight, batch_size, K, NH, NH> p_h_s;
+    etl::fast_matrix<weight, batch_size, K, NH1, NH2> p_h_a;
+    etl::fast_matrix<weight, batch_size, K, NH1, NH2> p_h_s;
 
-    etl::fast_matrix<weight, batch_size, NC, K, NW, NW> w_pos;
-    etl::fast_matrix<weight, batch_size, NC, K, NW, NW> w_neg;
+    etl::fast_matrix<weight, batch_size, NC, K, NW1, NW2> w_pos;
+    etl::fast_matrix<weight, batch_size, NC, K, NW1, NW2> w_neg;
 
-    etl::fast_matrix<weight, batch_size, NC, NV, NV> v1; //Input
-    etl::fast_matrix<weight, batch_size, NC, NV, NV> vf; //Expected
+    etl::fast_matrix<weight, batch_size, NC, NV1, NV2> v1; //Input
+    etl::fast_matrix<weight, batch_size, NC, NV1, NV2> vf; //Expected
 
-    etl::fast_matrix<weight, batch_size, K, NH, NH> h1_a;
-    etl::fast_matrix<weight, batch_size, K, NH, NH> h1_s;
+    etl::fast_matrix<weight, batch_size, K, NH1, NH2> h1_a;
+    etl::fast_matrix<weight, batch_size, K, NH1, NH2> h1_s;
 
-    etl::fast_matrix<weight, batch_size, NC, NV, NV> v2_a;
-    etl::fast_matrix<weight, batch_size, NC, NV, NV> v2_s;
+    etl::fast_matrix<weight, batch_size, NC, NV1, NV2> v2_a;
+    etl::fast_matrix<weight, batch_size, NC, NV1, NV2> v2_s;
 
-    etl::fast_matrix<weight, batch_size, K, NH, NH> h2_a;
-    etl::fast_matrix<weight, batch_size, K, NH, NH> h2_s;
+    etl::fast_matrix<weight, batch_size, K, NH1, NH2> h2_a;
+    etl::fast_matrix<weight, batch_size, K, NH1, NH2> h2_s;
 
     thread_pool<rbm_traits<rbm_t>::is_parallel()> pool;
 
