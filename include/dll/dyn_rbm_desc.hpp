@@ -32,7 +32,8 @@ struct dyn_rbm_desc {
     static constexpr const sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;
     static constexpr const bool Shuffle = detail::is_present<shuffle, Parameters...>::value;
     static constexpr const bool Free_Energy = detail::is_present<free_energy, Parameters...>::value;
-    static constexpr const bool Verbose = detail::is_present<verbose, Parameters...>::value;
+
+    using parameters = cpp::type_list<Parameters...>;
 
     /*! The type used to store the weights */
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;

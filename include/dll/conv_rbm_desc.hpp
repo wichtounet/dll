@@ -28,6 +28,8 @@ struct conv_rbm_desc {
     static constexpr const std::size_t NC = NC_T;
     static constexpr const std::size_t K = K_T;
 
+    using parameters = cpp::type_list<Parameters...>;
+
     static constexpr const bool Momentum = detail::is_present<momentum, Parameters...>::value;
     static constexpr const bool Parallel = detail::is_present<parallel, Parameters...>::value;
     static constexpr const std::size_t BatchSize = detail::get_value<batch_size<1>, Parameters...>::value;
@@ -37,7 +39,6 @@ struct conv_rbm_desc {
     static constexpr const sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;
     static constexpr const bias_mode Bias = detail::get_value<bias<bias_mode::SIMPLE>, Parameters...>::value;
     static constexpr const bool Shuffle = detail::is_present<shuffle, Parameters...>::value;
-    static constexpr const bool Verbose = detail::is_present<verbose, Parameters...>::value;
 
     /*! The type used to store the weights */
     using weight = typename detail::get_type<weight_type<double>, Parameters...>::value;
