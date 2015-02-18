@@ -23,16 +23,10 @@ struct is_present<T1, T2, Args...> : cpp::bool_constant_c<cpp::or_c<std::is_same
 template<typename T1>
 struct is_present<T1> : std::false_type {};
 
-template<typename T1, typename T2>
-struct is_in_list ;
-
-template<typename T1, typename... T>
-struct is_in_list<T1, cpp::type_list<T...>> : cpp::bool_constant_c<is_present<T1, T...>> {} ;
-
 template<typename... Valid>
 struct tmp_list {
     template<typename T>
-    struct check : cpp::bool_constant_c<is_present<typename T::type_id, Valid...>> {};
+    struct check : cpp::bool_constant_c<cpp::variadic_contains<typename T::type_id, Valid...>> {};
 };
 
 template<typename V, typename... Args>

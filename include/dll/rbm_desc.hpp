@@ -28,16 +28,11 @@ struct rbm_desc {
 
     using parameters = cpp::type_list<Parameters...>;
 
-    static constexpr const bool Momentum = detail::is_present<momentum, Parameters...>::value;
-    static constexpr const bool Parallel = detail::is_present<parallel, Parameters...>::value;
     static constexpr const std::size_t BatchSize = detail::get_value<batch_size<1>, Parameters...>::value;
     static constexpr const unit_type visible_unit = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;
     static constexpr const unit_type hidden_unit = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
     static constexpr const decay_type Decay = detail::get_value<weight_decay<decay_type::NONE>, Parameters...>::value;
-    static constexpr const bool Init = detail::is_present<init_weights, Parameters...>::value;
     static constexpr const sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;
-    static constexpr const bool Shuffle = detail::is_present<shuffle, Parameters...>::value;
-    static constexpr const bool Free_Energy = detail::is_present<free_energy, Parameters...>::value;
 
     /*! The type used to store the weights */
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;

@@ -34,12 +34,7 @@ struct rbm_traits {
     HAS_STATIC_FIELD(BatchSize, has_batch_size_field)
     HAS_STATIC_FIELD(Sparsity, has_sparsity_field)
     HAS_STATIC_FIELD(Decay, has_decay_field)
-    HAS_STATIC_FIELD(Init, has_init_field)
-    HAS_STATIC_FIELD(Momentum, has_momentum_field)
-    HAS_STATIC_FIELD(Parallel, has_parallel_field)
     HAS_STATIC_FIELD(Bias, has_bias_field)
-    HAS_STATIC_FIELD(Shuffle, has_shuffle_field)
-    HAS_STATIC_FIELD(Free_Energy, has_free_energy_field)
 
     /*!
      * \brief Indicates if the RBM is convolutional
@@ -82,38 +77,20 @@ struct rbm_traits {
         return 1;
     }
 
-    template<cpp_enable_if_cst(has_momentum_field<desc>::value)>
     static constexpr bool has_momentum(){
-        return rbm_t::desc::Momentum;
+        return desc::parameters::template contains<momentum>();
     }
 
-    template<cpp_disable_if_cst(has_momentum_field<desc>::value)>
-    static constexpr bool has_momentum(){
-        return false;
-    }
-
-    template<cpp_enable_if_cst(has_parallel_field<desc>::value)>
     static constexpr bool is_parallel(){
-        return rbm_t::desc::Parallel;
-    }
-
-    template<cpp_disable_if_cst(has_parallel_field<desc>::value)>
-    static constexpr bool is_parallel(){
-        return false;
+        return desc::parameters::template contains<parallel>();
     }
 
     static constexpr bool is_verbose(){
         return desc::parameters::template contains<verbose>();
     }
 
-    template<cpp_enable_if_cst(has_shuffle_field<desc>::value)>
     static constexpr bool has_shuffle(){
-        return rbm_t::desc::Shuffle;
-    }
-
-    template<cpp_disable_if_cst(has_shuffle_field<desc>::value)>
-    static constexpr bool has_shuffle(){
-        return false;
+        return desc::parameters::template contains<shuffle>();
     }
 
     template<cpp_enable_if_cst(has_sparsity_field<desc>::value)>
@@ -156,24 +133,12 @@ struct rbm_traits {
         return dll::decay_type::NONE;
     }
 
-    template<cpp_enable_if_cst(has_init_field<desc>::value)>
     static constexpr bool init_weights(){
-        return rbm_t::desc::Init;
+        return desc::parameters::template contains<dll::init_weights>();
     }
 
-    template<cpp_disable_if_cst(has_init_field<desc>::value)>
-    static constexpr bool init_weights(){
-        return false;
-    }
-
-    template<cpp_enable_if_cst(has_free_energy_field<desc>::value)>
     static constexpr bool free_energy(){
-        return rbm_t::desc::Free_Energy;
-    }
-
-    template<cpp_disable_if_cst(has_free_energy_field<desc>::value)>
-    static constexpr bool free_energy(){
-        return false;
+        return desc::parameters::template contains<dll::free_energy>();
     }
 };
 
