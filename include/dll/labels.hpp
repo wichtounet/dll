@@ -40,7 +40,7 @@ std::vector<fake_label_array<typename std::iterator_traits<Iterator>::value_type
         fake.emplace_back(v);
     });
 
-    return std::move(fake);
+    return fake;
 }
 
 } //end of dll namespace
