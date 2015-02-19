@@ -14,26 +14,11 @@ namespace dll {
 
 namespace detail {
 
-template<typename T1, typename... Args>
-struct is_present;
-
-template<typename T1, typename T2, typename... Args>
-struct is_present<T1, T2, Args...> : cpp::bool_constant_c<cpp::or_c<std::is_same<T1, T2>, is_present<T1, Args...>>> {};
-
-template<typename T1>
-struct is_present<T1> : std::false_type {};
-
-template<typename... Valid>
-struct tmp_list {
-    template<typename T>
-    struct check : cpp::bool_constant_c<cpp::variadic_contains<typename T::type_id, Valid...>> {};
-};
-
 template<typename V, typename... Args>
 struct is_valid;
 
 template<typename V, typename T1, typename... Args>
-struct is_valid <V, T1, Args...> : cpp::bool_constant_c<cpp::and_c<typename V::template check<T1>, is_valid<V, Args...>>> {};
+struct is_valid <V, T1, Args...> : cpp::bool_constant_c<cpp::and_u<V::template contains<typename T1::type_id>(), is_valid<V, Args...>::value>> {};
 
 template<typename V>
 struct is_valid <V> : std::true_type {};
@@ -46,6 +31,12 @@ struct get_value<D, T2, Args...> : cpp::conditional_constant<std::is_same<typena
 
 template<typename D>
 struct get_value<D> : cpp::auto_constant<D> {};
+
+template<typename D, typename L>
+struct get_value_l;
+
+template<typename D, typename... T>
+struct get_value_l<D, cpp::type_list<T...>> : cpp::auto_constant<get_value<D, T...>> {};
 
 template<typename D, typename... Args>
 struct get_type;

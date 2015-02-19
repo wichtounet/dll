@@ -27,11 +27,7 @@ using default_dbn_trainer_t = cg_trainer<DBN, false>;
 template<typename Layers, template<typename> class D, typename... Parameters>
 struct base_dbn_desc {
     using layers = Layers;
-
-    static constexpr const bool Momentum = detail::is_present<momentum, Parameters...>::value;
-    static constexpr const decay_type Decay = detail::get_value<weight_decay<decay_type::NONE>, Parameters...>::value;
-    static constexpr const bool Concatenate = detail::is_present<svm_concatenate, Parameters...>::value;
-    static constexpr const bool Scale = detail::is_present<svm_scale, Parameters...>::value;
+    using parameters = cpp::type_list<Parameters...>;
 
     /*! The type of the trainer to use to train the DBN */
     template <typename DBN>
@@ -47,7 +43,7 @@ struct base_dbn_desc {
     //Make sure only valid types are passed to the configuration list
     static_assert(
         detail::is_valid<
-            detail::tmp_list<trainer_id, watcher_id, momentum_id, weight_decay_id, svm_concatenate_id, svm_scale_id>,
+            cpp::type_list<trainer_id, watcher_id, momentum_id, weight_decay_id, svm_concatenate_id, svm_scale_id>,
             Parameters...>::value,
         "Invalid parameters type");
 };

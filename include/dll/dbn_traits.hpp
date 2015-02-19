@@ -19,64 +19,36 @@ namespace dll {
 template<typename DBN>
 struct dbn_traits {
     using dbn_t = DBN;
-
-    HAS_STATIC_FIELD(Momentum, has_momentum_field)
-    HAS_STATIC_FIELD(Concatenate, has_concatenate_field)
-    HAS_STATIC_FIELD(Scale, has_scale_field)
-    HAS_STATIC_FIELD(Decay, has_decay_field)
+    using desc = typename dbn_t::desc;
 
     /*!
      * \brief Indicates if the DBN is convolutional
      */
-    static constexpr bool is_convolutional(){
-        return dbn_t::desc::layers::is_convolutional;
+    static constexpr bool is_convolutional() noexcept {
+        return desc::layers::is_convolutional;
     }
 
     /*!
      * \brief Indicates if the DBN is dynamic
      */
-    static constexpr bool is_dynamic(){
-        return dbn_t::desc::layers::is_dynamic;
+    static constexpr bool is_dynamic() noexcept {
+        return desc::layers::is_dynamic;
     }
 
-    template<typename D = DBN, cpp::enable_if_c<has_momentum_field<typename D::desc>> = cpp::detail::dummy>
-    static constexpr bool has_momentum(){
-        return dbn_t::desc::Momentum;
+    static constexpr bool has_momentum() noexcept {
+        return desc::parameters::template contains<momentum>();
     }
 
-    template<typename D = DBN, cpp::disable_if_c<has_momentum_field<typename D::desc>> = cpp::detail::dummy>
-    static constexpr bool has_momentum(){
-        return false;
+    static constexpr bool concatenate() noexcept {
+        return desc::parameters::template contains<svm_concatenate>();
     }
 
-    template<typename D = DBN, cpp::enable_if_c<has_concatenate_field<typename D::desc>> = cpp::detail::dummy>
-    static constexpr bool concatenate(){
-        return dbn_t::desc::Concatenate;
+    static constexpr bool scale() noexcept {
+        return desc::parameters::template contains<svm_scale>();
     }
 
-    template<typename D = DBN, cpp::disable_if_c<has_concatenate_field<typename D::desc>> = cpp::detail::dummy>
-    static constexpr bool concatenate(){
-        return false;
-    }
-
-    template<typename D = DBN, cpp::enable_if_c<has_scale_field<typename D::desc>> = cpp::detail::dummy>
-    static constexpr bool scale(){
-        return dbn_t::desc::Scale;
-    }
-
-    template<typename D = DBN, cpp::disable_if_c<has_scale_field<typename D::desc>> = cpp::detail::dummy>
-    static constexpr bool scale(){
-        return false;
-    }
-
-    template<typename D = DBN, cpp::enable_if_c<has_decay_field<typename D::desc>> = cpp::detail::dummy>
-    static constexpr decay_type decay(){
-        return dbn_t::desc::Decay;
-    }
-
-    template<typename D = DBN, cpp::disable_if_c<has_decay_field<typename D::desc>> = cpp::detail::dummy>
-    static constexpr decay_type decay(){
-        return decay_type::NONE;
+    static constexpr decay_type decay() noexcept {
+        return detail::get_value_l<weight_decay<decay_type::NONE>, typename desc::parameters>::value;
     }
 };
 

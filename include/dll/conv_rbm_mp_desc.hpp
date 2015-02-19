@@ -38,7 +38,6 @@ struct conv_rbm_mp_desc {
     static constexpr const unit_type visible_unit = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;
     static constexpr const unit_type hidden_unit = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
     static constexpr const unit_type pooling_unit = detail::get_value<pooling<unit_type::BINARY>, Parameters...>::value;
-    static constexpr const decay_type Decay = detail::get_value<weight_decay<decay_type::NONE>, Parameters...>::value;
     static constexpr const sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;
     static constexpr const bias_mode Bias = detail::get_value<bias<bias_mode::SIMPLE>, Parameters...>::value;
 
@@ -68,7 +67,7 @@ struct conv_rbm_mp_desc {
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid<detail::tmp_list<
+        detail::is_valid<cpp::type_list<
                 momentum_id, batch_size_id, visible_id, hidden_id, pooling_id,
                 weight_decay_id, sparsity_id, trainer_id, watcher_id, bias_id,
                 weight_type_id, shuffle_id, parallel_id, verbose_id>

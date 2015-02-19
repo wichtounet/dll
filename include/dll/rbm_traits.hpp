@@ -32,8 +32,6 @@ struct rbm_traits {
     using desc = typename rbm_t::desc;
 
     HAS_STATIC_FIELD(BatchSize, has_batch_size_field)
-    HAS_STATIC_FIELD(Sparsity, has_sparsity_field)
-    HAS_STATIC_FIELD(Decay, has_decay_field)
     HAS_STATIC_FIELD(Bias, has_bias_field)
 
     /*!
@@ -93,24 +91,12 @@ struct rbm_traits {
         return desc::parameters::template contains<shuffle>();
     }
 
-    template<cpp_enable_if_cst(has_sparsity_field<desc>::value)>
     static constexpr bool has_sparsity(){
-        return rbm_t::desc::Sparsity != dll::sparsity_method::NONE;
+        return sparsity_method() != dll::sparsity_method::NONE;
     }
 
-    template<cpp_disable_if_cst(has_sparsity_field<desc>::value)>
-    static constexpr bool has_sparsity(){
-        return false;
-    }
-
-    template<cpp_enable_if_cst(has_sparsity_field<desc>::value)>
-    static constexpr enum sparsity_method sparsity_method(){
-        return rbm_t::desc::Sparsity;
-    }
-
-    template<cpp_disable_if_cst(has_sparsity_field<desc>::value)>
-    static constexpr enum sparsity_method sparsity_method(){
-        return dll::sparsity_method::NONE;
+    static constexpr dll::sparsity_method sparsity_method(){
+        return detail::get_value_l<sparsity<dll::sparsity_method::NONE>, typename desc::parameters>::value;
     }
 
     template<cpp_enable_if_cst(has_bias_field<desc>::value)>
@@ -123,14 +109,8 @@ struct rbm_traits {
         return dll::bias_mode::SIMPLE;
     }
 
-    template<cpp_enable_if_cst(has_decay_field<desc>::value)>
     static constexpr decay_type decay(){
-        return rbm_t::desc::Decay;
-    }
-
-    template<cpp_disable_if_cst(has_decay_field<desc>::value)>
-    static constexpr decay_type decay(){
-        return dll::decay_type::NONE;
+        return detail::get_value_l<weight_decay<decay_type::NONE>, typename desc::parameters>::value;
     }
 
     static constexpr bool init_weights(){

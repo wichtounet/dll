@@ -27,7 +27,6 @@ struct dyn_rbm_desc {
 
     static constexpr const unit_type visible_unit = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;
     static constexpr const unit_type hidden_unit = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
-    static constexpr const decay_type Decay = detail::get_value<weight_decay<decay_type::NONE>, Parameters...>::value;
     static constexpr const sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;
 
     /*! The type used to store the weights */
@@ -46,7 +45,7 @@ struct dyn_rbm_desc {
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid<detail::tmp_list<momentum_id, visible_id, hidden_id, weight_decay_id, parallel_id, verbose_id,
+        detail::is_valid<cpp::type_list<momentum_id, visible_id, hidden_id, weight_decay_id, parallel_id, verbose_id,
               init_weights_id, sparsity_id, trainer_id, weight_type_id, shuffle_id, free_energy_id>, Parameters...>::value,
         "Invalid parameters type");
 
