@@ -134,6 +134,8 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
             v_cv(NC) += v_cv(channel);
         }
 
+        nan_check_deep(v_cv);
+
         if(hidden_unit == unit_type::BINARY){
             h_a = etl::p_max_pool_h<C, C>(etl::rep<NH1, NH2>(b) + v_cv(NC));
             h_s = bernoulli(h_a);
