@@ -167,10 +167,16 @@ struct dbn final {
     /*{{{ Pretrain */
 
     template<std::size_t I, class Enable = void>
-    struct train_next : std::false_type {};
+    struct train_next;
 
     template<std::size_t I>
-    struct train_next<I, std::enable_if_t<(I < layers)>> : cpp::bool_constant<rbm_traits<rbm_type<I>>::pretrain_last()> {};
+    struct train_next<I, std::enable_if_t<(I < layers - 1)>> : std::true_type {};
+
+    template<std::size_t I>
+    struct train_next<I, std::enable_if_t<(I == layers - 1)>> : cpp::bool_constant<rbm_traits<rbm_type<I>>::pretrain_last()> {};
+
+    template<std::size_t I>
+    struct train_next<I, std::enable_if_t<(I > layers - 1)>> : std::false_type {};
 
     template<std::size_t I, typename Input, typename Watcher>
     std::enable_if_t<(I<layers)> pretrain_layer(const Input& input, Watcher& watcher, std::size_t max_epochs){
@@ -187,7 +193,7 @@ struct dbn final {
             dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
                 (input, max_epochs);
 
-        if(train_next<I+1>()){
+        if(train_next<I+1>::value){
             auto next_a = rbm.prepare_output(input.size());
             auto next_s = rbm.prepare_output(input.size());
 
