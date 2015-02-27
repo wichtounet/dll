@@ -23,6 +23,9 @@ struct conv_rbm;
 template<typename Desc>
 struct conv_rbm_mp;
 
+template<typename Desc>
+struct mp_layer_3d;
+
 /*!
  * \brief Type Traits to get information on RBM type
  */
@@ -40,6 +43,30 @@ struct rbm_traits {
     static constexpr bool is_convolutional(){
         return cpp::is_specialization_of<conv_rbm, rbm_t>::value
             || cpp::is_specialization_of<conv_rbm_mp, rbm_t>::value;
+    }
+
+    /*!
+     * \brief Indicates if this layer is a RBM layer.
+     */
+    static constexpr bool is_rbm_layer(){
+        return !is_pooling_layer();
+    }
+
+    /*!
+     * \brief Indicates if this layer is a pooling layer.
+     */
+    static constexpr bool is_pooling_layer(){
+        return cpp::is_specialization_of<mp_layer_3d, rbm_t>::value;
+    }
+
+    template<cpp_enable_if_cst(rbm_traits<rbm_t>::is_rbm_layer())>
+    static constexpr bool pretrain_last(){
+        return rbm_t::hidden_unit != unit_type::SOFTMAX;
+    }
+
+    template<cpp_disable_if_cst(rbm_traits<rbm_t>::is_rbm_layer())>
+    static constexpr bool pretrain_last(){
+        return false;
     }
 
     /*!
