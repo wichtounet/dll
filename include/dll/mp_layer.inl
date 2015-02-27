@@ -66,7 +66,7 @@ struct mp_layer_3d final {
 
                     for(std::size_t ii = 0; ii < C1; ++ii){
                         for(std::size_t jj = 0; jj < C2; ++jj){
-                            for(std::size_t kk = 0; kk < C2; ++kk){
+                            for(std::size_t kk = 0; kk < C3; ++kk){
                                 max = std::max(max, v(i * C1 + ii, j * C2 + jj, k * C3 + kk));
                             }
                         }
