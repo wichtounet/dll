@@ -65,8 +65,8 @@ struct conv_rbm_mp_desc {
     static_assert(K > 0, "At least one base is necessary");
     static_assert(C > 0, "At least one pooling group is necessary");
 
-    static_assert(NV1 > NH1, "The convolutional filter must be of at least size 1");
-    static_assert(NV2 > NH2, "The convolutional filter must be of at least size 1");
+    static_assert(NV1 >= NH1, "The convolutional filter must be of at least size 1");
+    static_assert(NV2 >= NH2, "The convolutional filter must be of at least size 1");
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
