@@ -26,6 +26,9 @@ struct conv_rbm_mp;
 template<typename Desc>
 struct mp_layer_3d;
 
+template<typename Desc>
+struct avgp_layer_3d;
+
 /*!
  * \brief Type Traits to get information on RBM type
  */
@@ -56,16 +59,20 @@ struct rbm_traits {
      * \brief Indicates if this layer is a pooling layer.
      */
     static constexpr bool is_pooling_layer(){
-        return cpp::is_specialization_of<mp_layer_3d, rbm_t>::value;
+        return cpp::is_specialization_of<mp_layer_3d, rbm_t>::value
+            || cpp::is_specialization_of<avgp_layer_3d, rbm_t>::value;
     }
 
     template<cpp_enable_if_cst(rbm_traits<rbm_t>::is_rbm_layer())>
     static constexpr bool pretrain_last(){
+        //Softmax unit should not be pretrained
         return rbm_t::hidden_unit != unit_type::SOFTMAX;
     }
 
     template<cpp_disable_if_cst(rbm_traits<rbm_t>::is_rbm_layer())>
     static constexpr bool pretrain_last(){
+        //if the pooling layer is the last, we spare the time to activate the previous layer by not training it
+        //since training pooling layer is a nop, that doesn't change anything
         return false;
     }
 
