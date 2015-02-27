@@ -153,7 +153,7 @@ struct dbn final {
     }
 
     static constexpr std::size_t output_size(){
-        return rbm_traits<rbm_type<layers - 1>>::input_size();
+        return rbm_traits<rbm_type<layers - 1>>::output_size();
     }
 
     static std::size_t full_output_size(){
@@ -170,7 +170,7 @@ struct dbn final {
     struct train_next : std::false_type {};
 
     template<std::size_t I>
-    struct train_next<I, std::enable_if_t<(I < layers)>> : cpp::bool_constant<rbm_type<I>::hidden_unit != unit_type::SOFTMAX> {};
+    struct train_next<I, std::enable_if_t<(I < layers)>> : cpp::bool_constant<rbm_traits<rbm_type<I>>::pretrain_last()> {};
 
     template<std::size_t I, typename Input, typename Watcher>
     std::enable_if_t<(I<layers)> pretrain_layer(const Input& input, Watcher& watcher, std::size_t max_epochs){
