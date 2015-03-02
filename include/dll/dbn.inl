@@ -107,6 +107,7 @@ struct dbn final {
         std::cout << "DBN with " << layers << " layers" << std::endl;
 
         cpp::for_each(tuples, [&parameters](auto& rbm){
+            std::cout << "\t";
             parameters += rbm.parameters();
             rbm.display();
         });
