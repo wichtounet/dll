@@ -20,6 +20,22 @@
 
 namespace dll {
 
+template<typename Layer, cpp_enable_if(layer_traits<Layer>::is_pooling_layer())>
+void store_layer(const Layer&, std::ostream&){}
+
+template<typename Layer, cpp_disable_if(layer_traits<Layer>::is_pooling_layer())>
+void store_layer(const Layer& layer, std::ostream& os){
+    layer.store(os);
+}
+
+template<typename Layer, cpp_enable_if(layer_traits<Layer>::is_pooling_layer())>
+void load_layer(const Layer&, std::istream&) {}
+
+template<typename Layer, cpp_disable_if(layer_traits<Layer>::is_pooling_layer())>
+void load_layer(const Layer& layer, std::istream& is){
+    layer.load(is);
+}
+
 /*!
  * \brief A Deep Belief Network implementation
  */
@@ -109,8 +125,8 @@ struct dbn final {
     }
 
     void store(std::ostream& os) const {
-        cpp::for_each(tuples, [&os](auto& rbm){
-            rbm.store(os);
+        cpp::for_each(tuples, [&os](auto& layer){
+            store_layer(layer, os);
         });
 
 #ifdef DLL_SVM_SUPPORT
@@ -119,8 +135,8 @@ struct dbn final {
     }
 
     void load(std::istream& is){
-        cpp::for_each(tuples, [&is](auto& rbm){
-            rbm.load(is);
+        cpp::for_each(tuples, [&is](auto& layer){
+            load_layer(layer, is);
         });
 
 #ifdef DLL_SVM_SUPPORT
