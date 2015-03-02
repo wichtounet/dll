@@ -493,6 +493,13 @@ struct dbn final {
 
     /*}}}*/
 
+    using output_one_t = typename rbm_type<layers - 1>::output_one_t;
+    using output_t = typename rbm_type<layers - 1>::output_one_t;
+
+    output_one_t prepare_one_output() const {
+        return layer<layers - 1>().prepare_one_output();
+    }
+
 #ifdef DLL_SVM_SUPPORT
 
     /*{{{ SVM Training and prediction */
