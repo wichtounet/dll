@@ -111,7 +111,10 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     }
 
     template<typename H1, typename H2, typename V1, typename V2, typename VCV>
-    void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2&, VCV&& v_cv){
+    void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& v_s, VCV&& v_cv){
+        validate_inputs(v_a, v_s);
+        validate_outputs(h_a, h_s);
+
         using namespace etl;
 
         v_cv(NC) = 0;
@@ -145,7 +148,10 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     }
 
     template<typename H1, typename H2, typename V1, typename V2, typename HCV>
-    void activate_visible(const H1&, const H2& h_s, V1&& v_a, V2&& v_s, HCV&& h_cv){
+    void activate_visible(const H1& h_a, const H2& h_s, V1&& v_a, V2&& v_s, HCV&& h_cv){
+        validate_inputs(v_a, v_s);
+        validate_outputs(h_a, h_s);
+
         using namespace etl;
 
         for(std::size_t channel = 0; channel < NC; ++channel){
@@ -320,6 +326,33 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         for(std::size_t i = 0; i < input.size(); ++i){
             activate_one(input[i], h_a[i], h_s[i]);
         }
+    }
+
+private:
+    template<typename V1, typename V2>
+    void validate_inputs(const V1& v_a, const V2& v_s){
+        static_assert(etl::etl_traits<V1>::dimensions() == 3, "Inputs must be 3D");
+        static_assert(etl::etl_traits<V2>::dimensions() == 3, "Inputs must be 3D");
+
+        cpp_assert(etl::dim<0>(v_a) == NC, "Invalid number of input channels");
+        cpp_assert(etl::dim<1>(v_a) == NV1, "Invalid input dimensions");
+        cpp_assert(etl::dim<2>(v_a) == NV2, "Invalid input dimensions");
+        cpp_assert(etl::dim<0>(v_s) == NC, "Invalid number of input channels");
+        cpp_assert(etl::dim<1>(v_s) == NV1, "Invalid input dimensions");
+        cpp_assert(etl::dim<2>(v_s) == NV2, "Invalid input dimensions");
+    }
+
+    template<typename H1, typename H2>
+    void validate_outputs(const H1& h_a, const H2& h_s){
+        static_assert(etl::etl_traits<H1>::dimensions() == 3, "Outputs must be 3D");
+        static_assert(etl::etl_traits<H2>::dimensions() == 3, "Outputs must be 3D");
+
+        cpp_assert(etl::dim<0>(h_a) == K, "Invalid number of output channels");
+        cpp_assert(etl::dim<1>(h_a) == NH1, "Invalid output dimensions");
+        cpp_assert(etl::dim<2>(h_a) == NH2, "Invalid output dimensions");
+        cpp_assert(etl::dim<0>(h_s) == K, "Invalid number of output channels");
+        cpp_assert(etl::dim<1>(h_s) == NH1, "Invalid output dimensions");
+        cpp_assert(etl::dim<2>(h_s) == NH2, "Invalid output dimensions");
     }
 };
 
