@@ -121,23 +121,23 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
         for(std::size_t channel = 0; channel < NC; ++channel){
             for(size_t k = 0; k < K; ++k){
-                etl::convolve_2d_valid(v_a(channel), fflip(w(channel)(k)), v_cv(channel)(k));
+                convolve_2d_valid(v_a(channel), fflip(w(channel)(k)), v_cv(channel)(k));
             }
 
             v_cv(NC) += v_cv(channel);
         }
 
         if(hidden_unit == unit_type::BINARY){
-            h_a = sigmoid(etl::rep<NH1, NH2>(b) + v_cv(NC));
+            h_a = sigmoid(rep<NH1, NH2>(b) + v_cv(NC));
             h_s = bernoulli(h_a);
         } else if(hidden_unit == unit_type::RELU){
-            h_a = max(etl::rep<NH1, NH2>(b) + v_cv(NC), 0.0);
+            h_a = max(rep<NH1, NH2>(b) + v_cv(NC), 0.0);
             h_s = logistic_noise(h_a);
         } else if(hidden_unit == unit_type::RELU6){
-            h_a = min(max(etl::rep<NH1, NH2>(b) + v_cv(NC), 0.0), 6.0);
+            h_a = min(max(rep<NH1, NH2>(b) + v_cv(NC), 0.0), 6.0);
             h_s = ranged_noise(h_a, 6.0);
         } else if(hidden_unit == unit_type::RELU1){
-            h_a = min(max(etl::rep<NH1, NH2>(b) + v_cv(NC), 0.0), 1.0);
+            h_a = min(max(rep<NH1, NH2>(b) + v_cv(NC), 0.0), 1.0);
             h_s = ranged_noise(h_a, 1.0);
         } else {
             cpp_unreachable("Invalid path");
@@ -158,7 +158,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
             h_cv(K) = 0.0;
 
             for(std::size_t k = 0; k < K; ++k){
-                etl::convolve_2d_full(h_s(k), w(channel)(k), h_cv(k));
+                convolve_2d_full(h_s(k), w(channel)(k), h_cv(k));
                 h_cv(K) += h_cv(k);
             }
 
