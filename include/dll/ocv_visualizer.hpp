@@ -10,7 +10,7 @@
 
 #include "cpp_utils/stop_watch.hpp"
 
-#include "rbm_traits.hpp"
+#include "layer_traits.hpp"
 #include "dbn_traits.hpp"
 
 #ifndef DLL_DETAIL_ONLY
@@ -117,24 +117,24 @@ struct base_ocv_rbm_visualizer {
         std::cout << "With parameters:" << std::endl;
         std::cout << "   learning_rate=" << rbm.learning_rate << std::endl;
 
-        if(rbm_traits<RBM>::has_momentum()){
+        if(layer_traits<RBM>::has_momentum()){
             std::cout << "   momentum=" << rbm.momentum << std::endl;
         }
 
-        if(w_decay(rbm_traits<RBM>::decay()) == decay_type::L1 || w_decay(rbm_traits<RBM>::decay()) == decay_type::L1L2){
+        if(w_decay(layer_traits<RBM>::decay()) == decay_type::L1 || w_decay(layer_traits<RBM>::decay()) == decay_type::L1L2){
             std::cout << "   weight_cost(L1)=" << rbm.l1_weight_cost << std::endl;
         }
 
-        if(w_decay(rbm_traits<RBM>::decay()) == decay_type::L2 || w_decay(rbm_traits<RBM>::decay()) == decay_type::L1L2){
+        if(w_decay(layer_traits<RBM>::decay()) == decay_type::L2 || w_decay(layer_traits<RBM>::decay()) == decay_type::L1L2){
             std::cout << "   weight_cost(L2)=" << rbm.l2_weight_cost << std::endl;
         }
 
-        if(rbm_traits<RBM>::sparsity_method() == sparsity_method::LEE){
+        if(layer_traits<RBM>::sparsity_method() == sparsity_method::LEE){
             std::cout << "   Sparsity (Lee): pbias=" << rbm.pbias << std::endl;
             std::cout << "   Sparsity (Lee): pbias_lambda=" << rbm.pbias_lambda << std::endl;
-        } else if(rbm_traits<RBM>::sparsity_method() == sparsity_method::GLOBAL_TARGET){
+        } else if(layer_traits<RBM>::sparsity_method() == sparsity_method::GLOBAL_TARGET){
             std::cout << "   sparsity_target(Global)=" << rbm.sparsity_target << std::endl;
-        } else if(rbm_traits<RBM>::sparsity_method() == sparsity_method::LOCAL_TARGET){
+        } else if(layer_traits<RBM>::sparsity_method() == sparsity_method::LOCAL_TARGET){
             std::cout << "   sparsity_target(Local)=" << rbm.sparsity_target << std::endl;
         }
 
@@ -245,7 +245,7 @@ struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
 };
 
 template<typename RBM, typename C>
-struct opencv_rbm_visualizer<RBM, C, std::enable_if_t<rbm_traits<RBM>::is_convolutional()>> : base_ocv_rbm_visualizer<RBM> {
+struct opencv_rbm_visualizer<RBM, C, std::enable_if_t<layer_traits<RBM>::is_convolutional()>> : base_ocv_rbm_visualizer<RBM> {
     using rbm_t = RBM;
 
     static constexpr const detail::shape filter_shape{rbm_t::NW1, rbm_t::NW2};
@@ -365,19 +365,19 @@ struct opencv_dbn_visualizer {
         std::cout << "With parameters:" << std::endl;
         std::cout << "   learning_rate=" << rbm.learning_rate << std::endl;
 
-        if(rbm_traits<rbm_t>::has_momentum()){
+        if(layer_traits<rbm_t>::has_momentum()){
             std::cout << "   momentum=" << rbm.momentum << std::endl;
         }
 
-        if(w_decay(rbm_traits<RBM>::decay()) == decay_type::L1 || w_decay(rbm_traits<RBM>::decay()) == decay_type::L1L2){
+        if(w_decay(layer_traits<RBM>::decay()) == decay_type::L1 || w_decay(layer_traits<RBM>::decay()) == decay_type::L1L2){
             std::cout << "   weight_cost(L1)=" << rbm.l1_weight_cost << std::endl;
         }
 
-        if(w_decay(rbm_traits<RBM>::decay()) == decay_type::L2 || w_decay(rbm_traits<RBM>::decay()) == decay_type::L1L2){
+        if(w_decay(layer_traits<RBM>::decay()) == decay_type::L2 || w_decay(layer_traits<RBM>::decay()) == decay_type::L1L2){
             std::cout << "   weight_cost(L2)=" << rbm.l2_weight_cost << std::endl;
         }
 
-        if(rbm_traits<rbm_t>::has_sparsity()){
+        if(layer_traits<rbm_t>::has_sparsity()){
             std::cout << "   sparsity_target=" << rbm.sparsity_target << std::endl;
         }
 
@@ -555,19 +555,19 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynami
         std::cout << "With parameters:" << std::endl;
         std::cout << "   learning_rate=" << rbm.learning_rate << std::endl;
 
-        if(rbm_traits<rbm_t>::has_momentum()){
+        if(layer_traits<rbm_t>::has_momentum()){
             std::cout << "   momentum=" << rbm.momentum << std::endl;
         }
 
-        if(w_decay(rbm_traits<RBM>::decay()) == decay_type::L1 || w_decay(rbm_traits<RBM>::decay()) == decay_type::L1L2){
+        if(w_decay(layer_traits<RBM>::decay()) == decay_type::L1 || w_decay(layer_traits<RBM>::decay()) == decay_type::L1L2){
             std::cout << "   weight_cost(L1)=" << rbm.l1_weight_cost << std::endl;
         }
 
-        if(w_decay(rbm_traits<RBM>::decay()) == decay_type::L2 || w_decay(rbm_traits<RBM>::decay()) == decay_type::L1L2){
+        if(w_decay(layer_traits<RBM>::decay()) == decay_type::L2 || w_decay(layer_traits<RBM>::decay()) == decay_type::L1L2){
             std::cout << "   weight_cost(L2)=" << rbm.l2_weight_cost << std::endl;
         }
 
-        if(rbm_traits<rbm_t>::has_sparsity()){
+        if(layer_traits<rbm_t>::has_sparsity()){
             std::cout << "   sparsity_target=" << rbm.sparsity_target << std::endl;
         }
 
@@ -729,19 +729,19 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
         std::cout << "With parameters:" << std::endl;
         std::cout << "   learning_rate=" << rbm.learning_rate << std::endl;
 
-        if(rbm_traits<rbm_t>::has_momentum()){
+        if(layer_traits<rbm_t>::has_momentum()){
             std::cout << "   momentum=" << rbm.momentum << std::endl;
         }
 
-        if(w_decay(rbm_traits<RBM>::decay()) == decay_type::L1 || w_decay(rbm_traits<RBM>::decay()) == decay_type::L1L2){
+        if(w_decay(layer_traits<RBM>::decay()) == decay_type::L1 || w_decay(layer_traits<RBM>::decay()) == decay_type::L1L2){
             std::cout << "   weight_cost(L1)=" << rbm.l1_weight_cost << std::endl;
         }
 
-        if(w_decay(rbm_traits<RBM>::decay()) == decay_type::L2 || w_decay(rbm_traits<RBM>::decay()) == decay_type::L1L2){
+        if(w_decay(layer_traits<RBM>::decay()) == decay_type::L2 || w_decay(layer_traits<RBM>::decay()) == decay_type::L1L2){
             std::cout << "   weight_cost(L2)=" << rbm.l2_weight_cost << std::endl;
         }
 
-        if(rbm_traits<rbm_t>::has_sparsity()){
+        if(layer_traits<rbm_t>::has_sparsity()){
             std::cout << "   sparsity_target=" << rbm.sparsity_target << std::endl;
         }
 

@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_RBM_TRAITS_HPP
-#define DLL_RBM_TRAITS_HPP
+#ifndef DLL_LAYER_TRAITS_HPP
+#define DLL_LAYER_TRAITS_HPP
 
 #include "tmp.hpp"
 #include "decay_type.hpp"
@@ -33,7 +33,7 @@ struct avgp_layer_3d;
  * \brief Type Traits to get information on RBM type
  */
 template<typename RBM>
-struct rbm_traits {
+struct layer_traits {
     using rbm_t = RBM;
     using desc = typename rbm_t::desc;
 
@@ -63,13 +63,13 @@ struct rbm_traits {
             || cpp::is_specialization_of<avgp_layer_3d, rbm_t>::value;
     }
 
-    template<cpp_enable_if_cst(rbm_traits<rbm_t>::is_rbm_layer())>
+    template<cpp_enable_if_cst(layer_traits<rbm_t>::is_rbm_layer())>
     static constexpr bool pretrain_last(){
         //Softmax unit should not be pretrained
         return rbm_t::hidden_unit != unit_type::SOFTMAX;
     }
 
-    template<cpp_disable_if_cst(rbm_traits<rbm_t>::is_rbm_layer())>
+    template<cpp_disable_if_cst(layer_traits<rbm_t>::is_rbm_layer())>
     static constexpr bool pretrain_last(){
         //if the pooling layer is the last, we spare the time to activate the previous layer by not training it
         //since training pooling layer is a nop, that doesn't change anything
@@ -156,54 +156,54 @@ struct rbm_traits {
     }
 };
 
-template<typename RBM, cpp::enable_if_u<rbm_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
+template<typename RBM, cpp::enable_if_u<layer_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
 std::size_t get_batch_size(const RBM& rbm){
     return rbm.batch_size;
 }
 
-template<typename RBM, cpp::disable_if_u<rbm_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
+template<typename RBM, cpp::disable_if_u<layer_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
 constexpr std::size_t get_batch_size(const RBM&){
-    return rbm_traits<RBM>::batch_size();
+    return layer_traits<RBM>::batch_size();
 }
 
-template<typename RBM, cpp::enable_if_u<rbm_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
+template<typename RBM, cpp::enable_if_u<layer_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
 std::size_t num_visible(const RBM& rbm){
     return rbm.num_visible;
 }
 
-template<typename RBM, cpp::disable_if_u<rbm_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
+template<typename RBM, cpp::disable_if_u<layer_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
 constexpr std::size_t num_visible(const RBM&){
     return RBM::desc::num_visible;
 }
 
-template<typename RBM, cpp::enable_if_u<rbm_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
+template<typename RBM, cpp::enable_if_u<layer_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
 std::size_t num_hidden(const RBM& rbm){
     return rbm.num_hidden;
 }
 
-template<typename RBM, cpp::disable_if_u<rbm_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
+template<typename RBM, cpp::disable_if_u<layer_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
 constexpr std::size_t num_hidden(const RBM&){
     return RBM::desc::num_hidden;
 }
 
-template<typename RBM, cpp::disable_if_u<rbm_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
+template<typename RBM, cpp::disable_if_u<layer_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
 constexpr std::size_t output_size(const RBM&){
-    return rbm_traits<RBM>::output_size();
+    return layer_traits<RBM>::output_size();
 }
 
-template<typename RBM, cpp::enable_if_u<rbm_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
+template<typename RBM, cpp::enable_if_u<layer_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
 std::size_t output_size(const RBM& rbm){
     return rbm.num_hidden;
 }
 
-template<typename RBM, cpp::enable_if_u<rbm_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
+template<typename RBM, cpp::enable_if_u<layer_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
 std::size_t input_size(const RBM& rbm){
     return rbm.num_visible;
 }
 
-template<typename RBM, cpp::disable_if_u<rbm_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
+template<typename RBM, cpp::disable_if_u<layer_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
 constexpr std::size_t input_size(const RBM&){
-    return rbm_traits<RBM>::input_size();
+    return layer_traits<RBM>::input_size();
 }
 
 } //end of dll namespace

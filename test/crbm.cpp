@@ -97,7 +97,7 @@ TEST_CASE( "crbm/mnist_60", "crbm::global_sparsity" ) {
         dll::sparsity<>
     >::rbm_t;
 
-    REQUIRE(dll::rbm_traits<rbm_type>::sparsity_method() == dll::sparsity_method::GLOBAL_TARGET);
+    REQUIRE(dll::layer_traits<rbm_type>::sparsity_method() == dll::sparsity_method::GLOBAL_TARGET);
 
     rbm_type rbm;
 

@@ -14,7 +14,7 @@
 
 #include "decay_type.hpp"
 #include "batch.hpp"
-#include "rbm_traits.hpp"
+#include "layer_traits.hpp"
 
 namespace dll {
 
@@ -53,12 +53,12 @@ struct rbm_trainer {
     template<typename... Arg>
     rbm_trainer(init_watcher_t /*init*/, Arg... args) : watcher(args...) {}
 
-    template<typename Iterator, cpp_enable_if_cst(rbm_traits<rbm_t>::init_weights())>
+    template<typename Iterator, cpp_enable_if_cst(layer_traits<rbm_t>::init_weights())>
     static void init_weights(RBM& rbm, Iterator first, Iterator last){
         rbm.init_weights(first, last);
     }
 
-    template<typename Iterator, cpp_disable_if_cst(rbm_traits<rbm_t>::init_weights())>
+    template<typename Iterator, cpp_disable_if_cst(layer_traits<rbm_t>::init_weights())>
     static void init_weights(RBM&, Iterator, Iterator){
         //NOP
     }
@@ -68,7 +68,7 @@ struct rbm_trainer {
         return train<false>(rbm, first, last, first, last, max_epochs);
     }
 
-    template<bool Denoising, typename IIterator, typename EIterator, cpp_enable_if_cst(rbm_traits<rbm_t>::has_shuffle())>
+    template<bool Denoising, typename IIterator, typename EIterator, cpp_enable_if_cst(layer_traits<rbm_t>::has_shuffle())>
     static void shuffle(IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast){
         static std::random_device rd;
         static std::mt19937_64 g(rd());
@@ -80,10 +80,10 @@ struct rbm_trainer {
         }
     }
 
-    template<bool Denoising, typename IIterator, typename EIterator, cpp_disable_if_cst(rbm_traits<rbm_t>::has_shuffle())>
+    template<bool Denoising, typename IIterator, typename EIterator, cpp_disable_if_cst(layer_traits<rbm_t>::has_shuffle())>
     static void shuffle(IIterator, IIterator, EIterator, EIterator){}
 
-    template<bool Denoising, typename IIterator, typename EIterator, typename IVector, typename EVector, cpp_enable_if_cst(rbm_traits<rbm_t>::has_shuffle())>
+    template<bool Denoising, typename IIterator, typename EIterator, typename IVector, typename EVector, cpp_enable_if_cst(layer_traits<rbm_t>::has_shuffle())>
     static auto prepare_it(IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast, IVector& ivec, EVector& evec){
         std::copy(ifirst, ilast, std::back_inserter(ivec));
 
@@ -101,14 +101,14 @@ struct rbm_trainer {
         }
     }
 
-    template<bool Denoising, typename IIterator, typename EIterator, typename IVector, typename EVector, cpp_disable_if_cst(rbm_traits<rbm_t>::has_shuffle())>
+    template<bool Denoising, typename IIterator, typename EIterator, typename IVector, typename EVector, cpp_disable_if_cst(layer_traits<rbm_t>::has_shuffle())>
     static auto prepare_it(IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast, IVector&, EVector&){
         return std::make_tuple(ifirst, ilast, efirst, elast);
     }
 
     template<typename rbm_t, typename Iterator>
     using fix_iterator_t = std::conditional_t<
-        rbm_traits<rbm_t>::has_shuffle(),
+        layer_traits<rbm_t>::has_shuffle(),
         typename std::vector<typename std::iterator_traits<Iterator>::value_type>::iterator,
         Iterator>;
 
@@ -188,13 +188,13 @@ struct rbm_trainer {
                 auto expected_batch = make_batch(estart, eit);
                 trainer->train_batch(input_batch, expected_batch, context);
 
-                if(EnableWatcher && rbm_traits<rbm_t>::free_energy()){
+                if(EnableWatcher && layer_traits<rbm_t>::free_energy()){
                     for(auto& v : input_batch){
                         context.free_energy += rbm.free_energy(v);
                     }
                 }
 
-                if(EnableWatcher && rbm_traits<rbm_t>::is_verbose()){
+                if(EnableWatcher && layer_traits<rbm_t>::is_verbose()){
                     watcher.batch_end(rbm, batches, total_batches);
                 }
             }
@@ -205,7 +205,7 @@ struct rbm_trainer {
             context.free_energy /= samples;
 
             //After some time increase the momentum
-            if(rbm_traits<rbm_t>::has_momentum() && epoch == rbm.final_momentum_epoch){
+            if(layer_traits<rbm_t>::has_momentum() && epoch == rbm.final_momentum_epoch){
                 rbm.momentum = rbm.final_momentum;
             }
 

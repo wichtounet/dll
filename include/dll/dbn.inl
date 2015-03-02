@@ -140,20 +140,20 @@ struct dbn final {
 
     template<std::size_t N>
     static constexpr std::size_t layer_input_size(){
-        return rbm_traits<rbm_type<N>>::input_size();
+        return layer_traits<rbm_type<N>>::input_size();
     }
 
     template<std::size_t N>
     static constexpr std::size_t layer_output_size(){
-        return rbm_traits<rbm_type<N>>::output_size();
+        return layer_traits<rbm_type<N>>::output_size();
     }
 
     static constexpr std::size_t input_size(){
-        return rbm_traits<rbm_type<0>>::input_size();
+        return layer_traits<rbm_type<0>>::input_size();
     }
 
     static constexpr std::size_t output_size(){
-        return rbm_traits<rbm_type<layers - 1>>::output_size();
+        return layer_traits<rbm_type<layers - 1>>::output_size();
     }
 
     static std::size_t full_output_size(){
@@ -173,7 +173,7 @@ struct dbn final {
     struct train_next<I, std::enable_if_t<(I < layers - 1)>> : std::true_type {};
 
     template<std::size_t I>
-    struct train_next<I, std::enable_if_t<(I == layers - 1)>> : cpp::bool_constant<rbm_traits<rbm_type<I>>::pretrain_last()> {};
+    struct train_next<I, std::enable_if_t<(I == layers - 1)>> : cpp::bool_constant<layer_traits<rbm_type<I>>::pretrain_last()> {};
 
     template<std::size_t I>
     struct train_next<I, std::enable_if_t<(I > layers - 1)>> : std::false_type {};

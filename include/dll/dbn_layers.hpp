@@ -15,10 +15,10 @@ namespace dll {
 namespace detail {
 
 template<typename... Layers>
-struct is_dynamic : cpp::bool_constant_c<cpp::or_u<rbm_traits<Layers>::is_dynamic()...>> {};
+struct is_dynamic : cpp::bool_constant_c<cpp::or_u<layer_traits<Layers>::is_dynamic()...>> {};
 
 template<typename... Layers>
-struct is_convolutional : cpp::bool_constant_c<cpp::or_u<rbm_traits<Layers>::is_convolutional()...>> {};
+struct is_convolutional : cpp::bool_constant_c<cpp::or_u<layer_traits<Layers>::is_convolutional()...>> {};
 
 template<typename... Layers>
 struct validate_layers_impl;
@@ -30,7 +30,7 @@ template<typename L1, typename L2, typename... Layers>
 struct validate_layers_impl <L1, L2, Layers...> :
     cpp::bool_constant_c<
         cpp::and_u<
-            rbm_traits<L1>::output_size() == rbm_traits<L2>::input_size(),
+            layer_traits<L1>::output_size() == layer_traits<L2>::input_size(),
             validate_layers_impl<L2, Layers...>::value
         >> {};
 
@@ -57,7 +57,7 @@ template<typename L1, typename L2, typename... Layers>
 struct validate_label_layers <L1, L2, Layers...> :
     cpp::bool_constant_c<
         cpp::and_u<
-            rbm_traits<L1>::output_size() <= rbm_traits<L2>::input_size(),
+            layer_traits<L1>::output_size() <= layer_traits<L2>::input_size(),
             validate_label_layers<L2, Layers...>::value
         >> {};
 
