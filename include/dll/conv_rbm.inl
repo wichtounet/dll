@@ -340,6 +340,9 @@ private:
         cpp_assert(etl::dim<0>(v_s) == NC, "Invalid number of input channels");
         cpp_assert(etl::dim<1>(v_s) == NV1, "Invalid input dimensions");
         cpp_assert(etl::dim<2>(v_s) == NV2, "Invalid input dimensions");
+
+        cpp_unused(v_a);
+        cpp_unused(v_s);
     }
 
     template<typename H1, typename H2>
@@ -353,6 +356,9 @@ private:
         cpp_assert(etl::dim<0>(h_s) == K, "Invalid number of output channels");
         cpp_assert(etl::dim<1>(h_s) == NH1, "Invalid output dimensions");
         cpp_assert(etl::dim<2>(h_s) == NH2, "Invalid output dimensions");
+
+        cpp_unused(h_a);
+        cpp_unused(h_s);
     }
 };
 
