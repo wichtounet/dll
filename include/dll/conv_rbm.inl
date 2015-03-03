@@ -120,8 +120,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         v_cv(1) = 0;
 
         for(std::size_t channel = 0; channel < NC; ++channel){
-            v_cv(0) = 0;
-
             for(size_t k = 0; k < K; ++k){
                 convolve_2d_valid(v_a(channel), fflip(w(channel)(k)), v_cv(0)(k));
             }
@@ -188,8 +186,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
             v_cv(1) = 0;
 
             for(std::size_t channel = 0; channel < NC; ++channel){
-                v_cv(0) = 0;
-
                 for(size_t k = 0; k < K; ++k){
                     etl::convolve_2d_valid(v(channel), fflip(w(channel)(k)), v_cv(0)(k));
                 }
@@ -205,8 +201,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
             v_cv(1) = 0;
 
             for(std::size_t channel = 0; channel < NC; ++channel){
-                v_cv(0) = 0;
-
                 for(size_t k = 0; k < K; ++k){
                     etl::convolve_2d_valid(v(channel), fflip(w(channel)(k)), v_cv(0)(k));
                 }
@@ -239,8 +233,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
             v_cv(1) = 0;
 
             for(std::size_t channel = 0; channel < NC; ++channel){
-                v_cv(0) = 0;
-
                 for(size_t k = 0; k < K; ++k){
                     etl::convolve_2d_valid(v(channel), fflip(w(channel)(k)), v_cv(0)(k));
                 }
@@ -257,8 +249,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
             v_cv(1) = 0;
 
             for(std::size_t channel = 0; channel < NC; ++channel){
-                v_cv(0) = 0;
-
                 for(size_t k = 0; k < K; ++k){
                     etl::convolve_2d_valid(v(channel), fflip(w(channel)(k)), v_cv(0)(k));
                 }
