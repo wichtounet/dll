@@ -64,9 +64,10 @@ $(eval $(call add_executable_set,compile,compile_rbm compile_conv_rbm compile_co
 $(eval $(call add_executable_set,compile_ocv,compile_ocv_1 compile_ocv_2 compile_ocv_3))
 
 release: release_compile release_dll_test release_compile_ocv
+release_debug: release_debug_compile release_debug_dll_test release_debug_compile_ocv
 debug: debug_compile debug_dll_test debug_compile_ocv
 
-all: release debug
+all: release debug release_debug
 
 debug_test: debug
 	./debug/bin/dll_test
@@ -74,9 +75,13 @@ debug_test: debug
 release_test: release
 	./release/bin/dll_test
 
+release_debug_test: release_debug
+	./release_debug/bin/dll_test
+
 test: all
 	./debug/bin/dll_test
 	./release/bin/dll_test
+	./release_debug/bin/dll_test
 
 update_tests: release_dll_test
 	bash tools/generate_tests.sh
