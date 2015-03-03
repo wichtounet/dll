@@ -69,7 +69,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     //Convolution data
 
     etl::fast_matrix<weight, 2, K, NH1, NH2> v_cv;    //Temporary convolution
-    etl::fast_matrix<weight, K+1, NV2, NV2> h_cv;     //Temporary convolution
+    etl::fast_matrix<weight, 2, NV2, NV2> h_cv;     //Temporary convolution
 
     conv_rbm() : base_type() {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
@@ -157,18 +157,18 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         using namespace etl;
 
         for(std::size_t channel = 0; channel < NC; ++channel){
-            h_cv(K) = 0.0;
+            h_cv(1) = 0.0;
 
             for(std::size_t k = 0; k < K; ++k){
-                convolve_2d_full(h_s(k), w(channel)(k), h_cv(k));
-                h_cv(K) += h_cv(k);
+                convolve_2d_full(h_s(k), w(channel)(k), h_cv(0));
+                h_cv(1) += h_cv(0);
             }
 
             if(visible_unit == unit_type::BINARY){
-                v_a(channel) = sigmoid(c(channel) + h_cv(K));
+                v_a(channel) = sigmoid(c(channel) + h_cv(1));
                 v_s(channel) = bernoulli(v_a(channel));
             } else if(visible_unit == unit_type::GAUSSIAN){
-                v_a(channel) = c(channel) + h_cv(K);
+                v_a(channel) = c(channel) + h_cv(1);
                 v_s(channel) = normal_noise(v_a(channel));
             } else {
                 cpp_unreachable("Invalid path");

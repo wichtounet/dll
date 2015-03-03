@@ -692,7 +692,7 @@ struct base_cd_trainer<RBM, Persistent, Denoising, std::enable_if_t<layer_traits
     //}}} Sparsity biases end
 
     etl::fast_matrix<weight, batch_size, 2, K, NH1, NH2> v_cv;
-    etl::fast_matrix<weight, batch_size, K+1, NV1, NV2> h_cv;
+    etl::fast_matrix<weight, batch_size, 2, NV1, NV2> h_cv;
 
     conditional_fast_matrix_t<Persistent, weight, batch_size, K, NH1, NH2> p_h_a;
     conditional_fast_matrix_t<Persistent, weight, batch_size, K, NH1, NH2> p_h_s;
