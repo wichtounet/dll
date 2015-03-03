@@ -45,7 +45,7 @@ TEST_CASE( "dyn_rbm/mnist_2", "rbm::momentum" ) {
 TEST_CASE( "dyn_rbm/mnist_3", "rbm::pcd_trainer" ) {
     dll::dyn_rbm_desc<
         dll::momentum,
-        dll::trainer<dll::pcd1_trainer_t>
+        dll::trainer_rbm<dll::pcd1_trainer_t>
     >::rbm_t rbm(28 * 28, 100);
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();

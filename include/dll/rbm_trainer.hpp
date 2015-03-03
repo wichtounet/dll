@@ -41,8 +41,8 @@ template<typename RBM, bool EnableWatcher, typename RW>
 struct rbm_trainer {
     using rbm_t = RBM;
 
-    template<typename R>
-    using trainer_t = typename rbm_t::desc::template trainer_t<R>;
+    template<typename R,bool Denoising>
+    using trainer_t = typename rbm_t::desc::template trainer_t<R,Denoising>;
 
     using watcher_t = typename watcher_type<rbm_t, RW>::watcher_t;
 
@@ -139,7 +139,7 @@ struct rbm_trainer {
         //Some RBM may init weights based on the training data
         init_weights(rbm, input_first, input_last);
 
-        auto trainer = std::make_unique<trainer_t<rbm_t>>(rbm);
+        auto trainer = std::make_unique<trainer_t<rbm_t, Denoising>>(rbm);
 
         //Compute the number of batches
         auto batch_size = get_batch_size(rbm);

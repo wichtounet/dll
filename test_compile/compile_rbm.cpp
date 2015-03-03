@@ -18,8 +18,8 @@ void test_rbm(){
     rbm.reconstruct(sample);
 }
 
-template <typename RBM>
-using pcd2_trainer_t = dll::persistent_cd_trainer<2, RBM>;
+template <typename RBM, bool Denoising>
+using pcd2_trainer_t = dll::persistent_cd_trainer<2, RBM, Denoising>;
 
 int main(){
     //Very basic RBM that must compile
@@ -33,11 +33,11 @@ int main(){
 
     //PCD-2
 
-    typedef dll::rbm_desc<100, 100, dll::trainer<pcd2_trainer_t>>::rbm_t rbm_4;
+    typedef dll::rbm_desc<100, 100, dll::trainer_rbm<pcd2_trainer_t>>::rbm_t rbm_4;
 
     //PCD-2 and sparsity
 
-    typedef dll::rbm_desc<100, 100, dll::trainer<pcd2_trainer_t>, dll::sparsity<>>::rbm_t rbm_5;
+    typedef dll::rbm_desc<100, 100, dll::trainer_rbm<pcd2_trainer_t>, dll::sparsity<>>::rbm_t rbm_5;
 
     //Test them all
 

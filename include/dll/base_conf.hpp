@@ -37,6 +37,14 @@ struct template_type_conf_elt {
     using value = T<RBM>;
 };
 
+template<typename ID, template<typename,bool> class T>
+struct template_type_tb_conf_elt {
+    using type_id = ID;
+
+    template <typename RBM, bool Denoising>
+    using value = T<RBM, Denoising>;
+};
+
 template<typename ID, typename T, T value>
 struct value_conf_elt : std::integral_constant<T, value> {
     using type_id = ID;
@@ -48,6 +56,7 @@ struct hidden_id;
 struct pooling_id;
 struct weight_decay_id;
 struct trainer_id;
+struct trainer_rbm_id;
 struct watcher_id;
 struct sparsity_id;
 struct bias_id;
@@ -94,6 +103,9 @@ struct weight_type : type_conf_elt<weight_type_id, T> {};
 
 template<template<typename...> class T>
 struct trainer : template_type_conf_elt<trainer_id, T> {};
+
+template<template<typename,bool> class T>
+struct trainer_rbm : template_type_tb_conf_elt<trainer_rbm_id, T> {};
 
 template<template<typename...> class T>
 struct watcher : template_type_conf_elt<watcher_id, T> {};

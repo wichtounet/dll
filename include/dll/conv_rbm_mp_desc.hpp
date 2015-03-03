@@ -45,8 +45,8 @@ struct conv_rbm_mp_desc {
     using weight = typename detail::get_type<weight_type<double>, Parameters...>::value;
 
     /*! The type of the trainer to use to train the RBM */
-    template <typename RBM>
-    using trainer_t = typename detail::get_template_type<trainer<cd1_trainer_t>, Parameters...>::template value<RBM>;
+    template <typename RBM, bool Denoising>
+    using trainer_t = typename detail::get_template_type_tb<trainer_rbm<cd1_trainer_t>, Parameters...>::template value<RBM, Denoising>;
 
     /*! The type of the watched to use during training */
     template <typename RBM>
@@ -72,7 +72,7 @@ struct conv_rbm_mp_desc {
     static_assert(
         detail::is_valid<cpp::type_list<
                 momentum_id, batch_size_id, visible_id, hidden_id, pooling_id,
-                weight_decay_id, sparsity_id, trainer_id, watcher_id, bias_id,
+                weight_decay_id, sparsity_id, trainer_rbm_id, watcher_id, bias_id,
                 weight_type_id, shuffle_id, parallel_id, verbose_id>
             , Parameters...>::value,
         "Invalid parameters type");

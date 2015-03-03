@@ -67,6 +67,36 @@ struct get_template_type<D> {
     using value = typename D::template value<RBM>;
 };
 
+template<bool C, typename V1, typename V2>
+struct conditional_template_type_tb_constant_c;
+
+template<typename V1, typename V2>
+struct conditional_template_type_tb_constant_c<true, V1, V2> {
+    template<typename T, bool C>
+    using type = typename V1::template value<T,C>;
+};
+
+template<typename V1, typename V2>
+struct conditional_template_type_tb_constant_c<false, V1, V2> {
+    template<typename T,bool C>
+    using type = typename V2::template value<T,C>;
+};
+
+template<typename D, typename... Args>
+struct get_template_type_tb;
+
+template<typename D, typename T2, typename... Args>
+struct get_template_type_tb<D, T2, Args...> {
+    template<typename RBM, bool Denoising>
+    using value = typename conditional_template_type_tb_constant_c<std::is_same<typename D::type_id, typename T2::type_id>::value, T2, get_template_type_tb<D, Args...>>::template type<RBM, Denoising>;
+};
+
+template<typename D>
+struct get_template_type_tb<D> {
+    template<typename RBM, bool Denoising>
+    using value = typename D::template value<RBM, Denoising>;
+};
+
 } //end of namespace detail
 
 template<typename Tuple, typename Functor, std::size_t I1>

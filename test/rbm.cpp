@@ -58,7 +58,7 @@ TEST_CASE( "rbm/mnist_3", "rbm::pcd_trainer" ) {
         28 * 28, 100,
         dll::batch_size<25>,
         dll::momentum,
-        dll::trainer<dll::pcd1_trainer_t>
+        dll::trainer_rbm<dll::pcd1_trainer_t>
     >::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
@@ -332,7 +332,7 @@ TEST_CASE( "rbm/mnist_15", "rbm::pcd_gaussian" ) {
         28 * 28, 144,
        dll::batch_size<25>,
        dll::momentum,
-       dll::trainer<dll::pcd1_trainer_t>,
+       dll::trainer_rbm<dll::pcd1_trainer_t>,
        dll::visible<dll::unit_type::GAUSSIAN>
     >::rbm_t rbm;
 

@@ -27,9 +27,6 @@ void test_dbn(){
     dbn.svm_predict(images[1]);
 }
 
-template <typename RBM>
-using pcd2_trainer_t = dll::persistent_cd_trainer<2, RBM>;
-
 int main(){
     //Basic example
 

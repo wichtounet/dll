@@ -21,9 +21,6 @@ void test_dbn(){
     dbn.fine_tune(images, labels, 10, 10);
 }
 
-template <typename RBM>
-using pcd2_trainer_t = dll::persistent_cd_trainer<2, RBM>;
-
 int main(){
     //Basic example
 

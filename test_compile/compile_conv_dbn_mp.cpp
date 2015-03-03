@@ -23,9 +23,6 @@ void test_dbn(){
     auto probs = dbn.activation_probabilities(images[1]);
 }
 
-template <typename RBM>
-using pcd2_trainer_t = dll::persistent_cd_trainer<2, RBM>;
-
 int main(){
     //Basic example
 

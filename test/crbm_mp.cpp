@@ -205,7 +205,7 @@ TEST_CASE( "crbm_mp/mnist_10", "crbm::pcd_trainer" ) {
         28, 1, 12, 40, 2,
         dll::batch_size<10>,
         dll::momentum,
-        dll::trainer<dll::pcd1_trainer_t>
+        dll::trainer_rbm<dll::pcd1_trainer_t>
     >::rbm_t rbm;
 
     rbm.learning_rate /= 100.0;

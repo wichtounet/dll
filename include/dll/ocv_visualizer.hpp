@@ -113,7 +113,7 @@ struct base_ocv_rbm_visualizer {
     }
 
     void training_begin(const RBM& rbm){
-        std::cout << "Train RBM with \"" << RBM::desc::template trainer_t<RBM>::name() << "\"" << std::endl;
+        std::cout << "Train RBM with \"" << RBM::desc::template trainer_t<RBM,false>::name() << "\"" << std::endl;
         std::cout << "With parameters:" << std::endl;
         std::cout << "   learning_rate=" << rbm.learning_rate << std::endl;
 
@@ -361,7 +361,7 @@ struct opencv_dbn_visualizer {
 
         buffer_images.emplace_back(cv::Size(width, height), CV_8UC1);
 
-        std::cout << "Train RBM with \"" << rbm_t::desc::template trainer_t<rbm_t>::name() << "\"" << std::endl;
+        std::cout << "Train RBM with \"" << rbm_t::desc::template trainer_t<rbm_t,false>::name() << "\"" << std::endl;
         std::cout << "With parameters:" << std::endl;
         std::cout << "   learning_rate=" << rbm.learning_rate << std::endl;
 
@@ -551,7 +551,7 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynami
 
         buffer_images.emplace_back(cv::Size(width, height), CV_8UC1);
 
-        std::cout << "Train RBM with \"" << rbm_t::desc::template trainer_t<rbm_t>::name() << "\"" << std::endl;
+        std::cout << "Train RBM with \"" << rbm_t::desc::template trainer_t<rbm_t,false>::name() << "\"" << std::endl;
         std::cout << "With parameters:" << std::endl;
         std::cout << "   learning_rate=" << rbm.learning_rate << std::endl;
 
@@ -725,7 +725,7 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
 
         buffer_images.emplace_back(cv::Size(width, height), CV_8UC1);
 
-        std::cout << "Train RBM with \"" << rbm_t::desc::template trainer_t<rbm_t>::name() << "\"" << std::endl;
+        std::cout << "Train RBM with \"" << rbm_t::desc::template trainer_t<rbm_t,false>::name() << "\"" << std::endl;
         std::cout << "With parameters:" << std::endl;
         std::cout << "   learning_rate=" << rbm.learning_rate << std::endl;
 
