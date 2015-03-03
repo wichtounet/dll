@@ -678,16 +678,16 @@ struct base_cd_trainer<RBM, Persistent, Denoising, std::enable_if_t<layer_traits
     weight q_global_batch;
     weight q_global_t;
 
-    etl::fast_matrix<weight, K, NH1, NH2> q_local_batch;
-    etl::fast_matrix<weight, K, NH1, NH2> q_local_t;
+    conditional_fast_matrix_t<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET, weight, K, NH1, NH2> q_local_batch;
+    conditional_fast_matrix_t<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET, weight, K, NH1, NH2> q_local_t;
 
     //}}} Sparsity end
 
     //{{{ Sparsity biases
 
-    etl::fast_matrix<weight, NC, K, NW1, NW2> w_bias;
-    etl::fast_vector<weight, K> b_bias;
-    etl::fast_vector<weight, NC> c_bias;
+    conditional_fast_matrix_t<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE, weight, NC, K, NW1, NW2> w_bias;
+    conditional_fast_matrix_t<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE, weight, K> b_bias;
+    conditional_fast_matrix_t<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE, weight, NC> c_bias;
 
     //}}} Sparsity biases end
 
