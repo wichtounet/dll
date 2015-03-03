@@ -83,8 +83,8 @@ struct default_dbn_watcher {
 
     cpp::stop_watch<std::chrono::seconds> watch;
 
-    void pretraining_begin(const DBN& /*dbn*/){
-        std::cout << "DBN: Pretraining begin" << std::endl;
+    void pretraining_begin(const DBN& /*dbn*/, std::size_t max_epochs){
+        std::cout << "DBN: Pretraining begin for " << max_epochs << " epochs" << std::endl;
     }
 
     template<typename RBM>

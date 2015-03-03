@@ -327,8 +327,8 @@ struct opencv_dbn_visualizer {
 
     //Pretraining phase
 
-    void pretraining_begin(const DBN& /*dbn*/){
-        std::cout << "DBN: Pretraining begin" << std::endl;
+    void pretraining_begin(const DBN& /*dbn*/, std::size_t max_epochs){
+        std::cout << "DBN: Pretraining begin for " << max_epochs << " epochs" << std::endl;
 
         cv::namedWindow("DBN Training", cv::WINDOW_NORMAL);
     }
@@ -522,8 +522,8 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynami
 
     //Pretraining phase
 
-    void pretraining_begin(const DBN& /*dbn*/){
-        std::cout << "DBN: Pretraining begin" << std::endl;
+    void pretraining_begin(const DBN& /*dbn*/, std::size_t max_epochs){
+        std::cout << "DBN: Pretraining begin for " << max_epochs << " epochs" << std::endl;
 
         cv::namedWindow("DBN Training", cv::WINDOW_NORMAL);
     }
@@ -685,8 +685,8 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
 
     //Pretraining phase
 
-    void pretraining_begin(const DBN& /*dbn*/){
-        std::cout << "CDBN: Pretraining begin" << std::endl;
+    void pretraining_begin(const DBN& /*dbn*/, std::size_t max_epochs){
+        std::cout << "CDBN: Pretraining begin for " << max_epochs << " epochs" << std::endl;
 
         cv::namedWindow("CDBN Training", cv::WINDOW_NORMAL);
     }

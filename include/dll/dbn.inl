@@ -241,7 +241,7 @@ struct dbn final {
     void pretrain(Iterator&& first, Iterator&& last, std::size_t max_epochs){
         watcher_t watcher;
 
-        watcher.pretraining_begin(*this);
+        watcher.pretraining_begin(*this, max_epochs);
 
         //Convert data to an useful form
         auto data = rbm_type<0>::convert_input(std::forward<Iterator>(first), std::forward<Iterator>(last));
@@ -327,7 +327,7 @@ struct dbn final {
 
         watcher_t watcher;
 
-        watcher.pretraining_begin(*this);
+        watcher.pretraining_begin(*this, max_epochs);
 
         //Convert data to an useful form
         auto data = rbm_type<0>::convert_input(std::forward<Iterator>(first), std::forward<Iterator>(last));
