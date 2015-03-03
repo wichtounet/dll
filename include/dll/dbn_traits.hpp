@@ -39,6 +39,10 @@ struct dbn_traits {
         return desc::parameters::template contains<momentum>();
     }
 
+    static constexpr bool save_memory() noexcept {
+        return desc::parameters::template contains<memory>();
+    }
+
     static constexpr bool concatenate() noexcept {
         return desc::parameters::template contains<svm_concatenate>();
     }

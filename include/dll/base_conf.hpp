@@ -60,6 +60,7 @@ struct svm_scale_id;
 struct init_weights_id;
 struct weight_type_id;
 struct free_energy_id;
+struct memory_id;
 
 template<std::size_t B>
 struct batch_size : value_conf_elt<batch_size_id, std::size_t, B> {};
@@ -105,6 +106,7 @@ struct svm_scale : basic_conf_elt<svm_scale_id> {};
 struct init_weights : basic_conf_elt<init_weights_id> {};
 struct shuffle : basic_conf_elt<shuffle_id> {};
 struct free_energy : basic_conf_elt<free_energy_id> {};
+struct memory : basic_conf_elt<memory_id> {};
 
 } //end of dll namespace
 
