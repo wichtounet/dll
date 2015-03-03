@@ -606,6 +606,21 @@ struct base_cd_trainer<RBM, Persistent, std::enable_if_t<layer_traits<RBM>::is_d
     }
 };
 
+//This allows to create a fast matrix type with an effective size of zero
+//when it is not used, although this fast matrix is viewed as having
+//the correct size
+
+template<bool C, typename W, std::size_t... Dims>
+struct conditional_fast_matrix {
+    using type = std::conditional_t<
+        C,
+        etl::fast_matrix<W, Dims...>,
+        etl::fast_matrix_impl<W, std::array<W, 0>, Dims...>>;
+};
+
+template<bool C, typename W, std::size_t... Dims>
+using conditional_fast_matrix_t = typename conditional_fast_matrix<C, W, Dims...>::type;
+
 /*!
  * \brief Specialization of base_cd_trainer for Convolutional RBM.
  *
@@ -662,8 +677,8 @@ struct base_cd_trainer<RBM, Persistent, std::enable_if_t<layer_traits<RBM>::is_c
     etl::fast_matrix<weight, batch_size, NC+1, K, NH1, NH2> v_cv;
     etl::fast_matrix<weight, batch_size, K+1, NV1, NV2> h_cv;
 
-    etl::fast_matrix<weight, batch_size, K, NH1, NH2> p_h_a;
-    etl::fast_matrix<weight, batch_size, K, NH1, NH2> p_h_s;
+    conditional_fast_matrix_t<Persistent, weight, batch_size, K, NH1, NH2> p_h_a;
+    conditional_fast_matrix_t<Persistent, weight, batch_size, K, NH1, NH2> p_h_s;
 
     etl::fast_matrix<weight, batch_size, NC, K, NW1, NW2> w_pos;
     etl::fast_matrix<weight, batch_size, NC, K, NW1, NW2> w_neg;
