@@ -350,6 +350,8 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
 
     using rbm_t = RBM;
 
+    auto& vf = Denoising ? t.vf : t.v1;
+
     maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(),
             [&](const auto& input, const auto& expected, std::size_t i)
     {
@@ -358,7 +360,10 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
 
         //Copy input/expected for computations
         t.v1(i) = input;
-        t.vf(i) = expected;
+
+        if(Denoising){
+            vf(i) = expected;
+        }
 
         //First step
         rbm.activate_hidden(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i), t.v_cv(i));
@@ -387,7 +392,7 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
 
         for(std::size_t channel = 0; channel < NC; ++channel){
             for(std::size_t k = 0; k < K; ++k){
-                etl::convolve_2d_valid(t.vf(i)(channel), fflip(t.h1_a(i)(k)), t.w_pos(i)(channel)(k));
+                etl::convolve_2d_valid(vf(i)(channel), fflip(t.h1_a(i)(k)), t.w_pos(i)(channel)(k));
                 etl::convolve_2d_valid(t.v2_a(i)(channel), fflip(t.h2_a(i)(k)), t.w_neg(i)(channel)(k));
             }
         }
@@ -403,7 +408,7 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
     //Compute the gradients
     t.w_grad = mean_l(t.w_pos - t.w_neg);
     t.b_grad = mean_r(mean_l(t.h1_a - t.h2_a));
-    t.c_grad = mean_r(mean_l(t.vf - t.v2_a));
+    t.c_grad = mean_r(mean_l(vf - t.v2_a));
 
     nan_check_deep(t.w_grad);
     nan_check_deep(t.b_grad);
@@ -426,7 +431,7 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
     context.sparsity += t.q_global_batch;
 
     //Accumulate the error
-    context.reconstruction_error += mean((t.vf - t.v2_a) * (t.vf - t.v2_a));
+    context.reconstruction_error += mean((vf - t.v2_a) * (vf - t.v2_a));
 
     //Update the weights and biases based on the gradients
     t.update(rbm);
