@@ -440,7 +440,7 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
  *
  * This class provides update which applies the gradients to the RBM.
  */
-template<typename RBM, typename Enable = void>
+template<typename RBM, bool Persistent, typename Enable = void>
 struct base_cd_trainer : base_trainer<RBM> {
     using rbm_t = RBM;
     using weight = typename rbm_t::weight;
@@ -515,8 +515,8 @@ struct base_cd_trainer : base_trainer<RBM> {
  *
  * This class provides update which applies the gradients to the RBM.
  */
-template<typename RBM>
-struct base_cd_trainer<RBM, std::enable_if_t<layer_traits<RBM>::is_dynamic()>> : base_trainer<RBM> {
+template<typename RBM, bool Persistent>
+struct base_cd_trainer<RBM, Persistent, std::enable_if_t<layer_traits<RBM>::is_dynamic()>> : base_trainer<RBM> {
     typedef RBM rbm_t;
 
     typedef typename rbm_t::weight weight;
@@ -611,8 +611,8 @@ struct base_cd_trainer<RBM, std::enable_if_t<layer_traits<RBM>::is_dynamic()>> :
  *
  * This class provides update which applies the gradients to the RBM.
  */
-template<typename RBM>
-struct base_cd_trainer<RBM, std::enable_if_t<layer_traits<RBM>::is_convolutional()>> : base_trainer<RBM> {
+template<typename RBM, bool Persistent>
+struct base_cd_trainer<RBM, Persistent, std::enable_if_t<layer_traits<RBM>::is_convolutional()>> : base_trainer<RBM> {
     using rbm_t = RBM;
 
     static constexpr const auto K = rbm_t::K;
@@ -706,15 +706,15 @@ struct base_cd_trainer<RBM, std::enable_if_t<layer_traits<RBM>::is_convolutional
  * \brief Contrastive divergence trainer for RBM.
  */
 template<std::size_t N, typename RBM, typename Enable = void>
-struct cd_trainer : base_cd_trainer<RBM> {
+struct cd_trainer : base_cd_trainer<RBM, false> {
     static_assert(N > 0, "CD-0 is not a valid training method");
 
     using rbm_t = RBM;
-    using weight = typename rbm_t::weight;
+    using base_type = base_cd_trainer<rbm_t, false>;
 
     rbm_t& rbm;
 
-    cd_trainer(rbm_t& rbm) : base_cd_trainer<rbm_t>(rbm), rbm(rbm) {
+    cd_trainer(rbm_t& rbm) : base_type(rbm), rbm(rbm) {
         //Nothing else to init here
     }
 
@@ -732,15 +732,15 @@ struct cd_trainer : base_cd_trainer<RBM> {
  * \brief Contrastive divergence trainer for dynamic RBM.
  */
 template<std::size_t N, typename RBM>
-struct cd_trainer<N, RBM, std::enable_if_t<layer_traits<RBM>::is_dynamic()>> : base_cd_trainer<RBM> {
+struct cd_trainer<N, RBM, std::enable_if_t<layer_traits<RBM>::is_dynamic()>> : base_cd_trainer<RBM, false> {
     static_assert(N > 0, "CD-0 is not a valid training method");
 
     using rbm_t = RBM;
-    using weight = typename rbm_t::weight;
+    using base_type = base_cd_trainer<rbm_t, false>;
 
     rbm_t& rbm;
 
-    cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm) {
+    cd_trainer(rbm_t& rbm) : base_type(rbm), rbm(rbm) {
         //Nothing else to init here
     }
 
@@ -758,14 +758,15 @@ struct cd_trainer<N, RBM, std::enable_if_t<layer_traits<RBM>::is_dynamic()>> : b
  * \brief Contrastive Divergence trainer for convolutional RBM
  */
 template<std::size_t N, typename RBM>
-struct cd_trainer<N, RBM, std::enable_if_t<layer_traits<RBM>::is_convolutional()>> : base_cd_trainer<RBM> {
+struct cd_trainer<N, RBM, std::enable_if_t<layer_traits<RBM>::is_convolutional()>> : base_cd_trainer<RBM, false> {
     static_assert(N > 0, "CD-0 is not a valid training method");
 
     using rbm_t = RBM;
+    using base_type = base_cd_trainer<rbm_t, false>;
 
     rbm_t& rbm;
 
-    cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm) {
+    cd_trainer(rbm_t& rbm) : base_type(rbm), rbm(rbm) {
         //Nothing else to init here
     }
 
@@ -783,15 +784,15 @@ struct cd_trainer<N, RBM, std::enable_if_t<layer_traits<RBM>::is_convolutional()
  * \brief Persistent Contrastive Divergence Trainer for RBM.
  */
 template<std::size_t K, typename RBM, typename Enable = void>
-struct persistent_cd_trainer : base_cd_trainer<RBM> {
+struct persistent_cd_trainer : base_cd_trainer<RBM, true> {
     static_assert(K > 0, "PCD-0 is not a valid training method");
 
-    typedef RBM rbm_t;
-    typedef typename rbm_t::weight weight;
+    using rbm_t = RBM;
+    using base_type = base_cd_trainer<rbm_t, true>;
 
     rbm_t& rbm;
 
-    persistent_cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm) {
+    persistent_cd_trainer(rbm_t& rbm) : base_type(rbm), rbm(rbm) {
         //Nothing else to init here
     }
 
@@ -809,15 +810,15 @@ struct persistent_cd_trainer : base_cd_trainer<RBM> {
  * \brief Persistent Contrastive Divergence Trainer for RBM.
  */
 template<std::size_t K, typename RBM>
-struct persistent_cd_trainer<K, RBM, std::enable_if_t<layer_traits<RBM>::is_dynamic()>> : base_cd_trainer<RBM> {
+struct persistent_cd_trainer<K, RBM, std::enable_if_t<layer_traits<RBM>::is_dynamic()>> : base_cd_trainer<RBM, true> {
     static_assert(K > 0, "PCD-0 is not a valid training method");
 
-    typedef RBM rbm_t;
-    typedef typename rbm_t::weight weight;
+    using rbm_t = RBM;
+    using base_type = base_cd_trainer<rbm_t, true>;
 
     rbm_t& rbm;
 
-    persistent_cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm){
+    persistent_cd_trainer(rbm_t& rbm) : base_type(rbm), rbm(rbm){
         //Nothing else to init
     }
 
@@ -835,14 +836,15 @@ struct persistent_cd_trainer<K, RBM, std::enable_if_t<layer_traits<RBM>::is_dyna
  * \brief Specialization of persistent_cd_trainer for Convolutional RBM.
  */
 template<std::size_t N, typename RBM>
-struct persistent_cd_trainer<N, RBM, std::enable_if_t<layer_traits<RBM>::is_convolutional()>> : base_cd_trainer<RBM> {
+struct persistent_cd_trainer<N, RBM, std::enable_if_t<layer_traits<RBM>::is_convolutional()>> : base_cd_trainer<RBM, true> {
     static_assert(N > 0, "PCD-0 is not a valid training method");
 
-    typedef RBM rbm_t;
+    using rbm_t = RBM;
+    using base_type = base_cd_trainer<rbm_t, true>;
 
     rbm_t& rbm;
 
-    persistent_cd_trainer(rbm_t& rbm) : base_cd_trainer<RBM>(rbm), rbm(rbm) {
+    persistent_cd_trainer(rbm_t& rbm) : base_type(rbm), rbm(rbm) {
         //Nothing else to init here
     }
 
