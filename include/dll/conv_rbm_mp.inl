@@ -84,7 +84,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
     //Convolution data
 
-    etl::fast_matrix<weight, NC+1, K, NH1, NH2> v_cv;   //Temporary convolution
+    etl::fast_matrix<weight, 2, K, NH1, NH2> v_cv;   //Temporary convolution
     etl::fast_matrix<weight, K+1, NV1, NV2> h_cv; //Temporary convolution
 
     conv_rbm_mp() : base_type() {
@@ -128,29 +128,31 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
     template<typename H1, typename H2, typename V1, typename V2, typename VCV>
     void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2&, VCV&& v_cv){
-        v_cv(NC) = 0;
+        v_cv(1) = 0;
 
         for(std::size_t channel = 0; channel < NC; ++channel){
+            v_cv(0) = 0;
+
             for(size_t k = 0; k < K; ++k){
-                etl::convolve_2d_valid(v_a(channel), fflip(w(channel)(k)), v_cv(channel)(k));
+                etl::convolve_2d_valid(v_a(channel), fflip(w(channel)(k)), v_cv(0)(k));
             }
 
-            v_cv(NC) += v_cv(channel);
+            v_cv(1) += v_cv(0);
         }
 
         nan_check_deep(v_cv);
 
         if(hidden_unit == unit_type::BINARY){
-            h_a = etl::p_max_pool_h<C, C>(etl::rep<NH1, NH2>(b) + v_cv(NC));
+            h_a = etl::p_max_pool_h<C, C>(etl::rep<NH1, NH2>(b) + v_cv(1));
             h_s = bernoulli(h_a);
         } else if(hidden_unit == unit_type::RELU){
-            h_a = max(etl::rep<NH1, NH2>(b) + v_cv(NC), 0.0);
+            h_a = max(etl::rep<NH1, NH2>(b) + v_cv(1), 0.0);
             h_s = logistic_noise(h_a);
         } else if(hidden_unit == unit_type::RELU6){
-            h_a = min(max(etl::rep<NH1, NH2>(b) + v_cv(NC), 0.0), 6.0);
+            h_a = min(max(etl::rep<NH1, NH2>(b) + v_cv(1), 0.0), 6.0);
             h_s = ranged_noise(h_a, 6.0);
         } else if(hidden_unit == unit_type::RELU1){
-            h_a = min(max(etl::rep<NH1, NH2>(b) + v_cv(NC), 0.0), 1.0);
+            h_a = min(max(etl::rep<NH1, NH2>(b) + v_cv(1), 0.0), 1.0);
             h_s = ranged_noise(h_a, 1.0);
         } else {
             cpp_unreachable("Invalid path");
@@ -159,9 +161,9 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 #ifndef NDEBUG
         if(!is_finite(h_a)){
             std::cout << "h_a contains non finite numbers" << std::endl;
-            std::cout << "Source expression: " << "etl::p_max_pool_h<C, C>(etl::rep<NH1, NH2>(b) + v_cv(NC))" << std::endl;
+            std::cout << "Source expression: " << "p_max_pool_h<C, C>(rep<NH1, NH2>(b) + v_cv(1))" << std::endl;
             std::cout << "b=" << b << std::endl;
-            std::cout << "v_cv(NC)=" << v_cv(NC) << std::endl;
+            std::cout << "v_cv(1)=" << v_cv(1) << std::endl;
         }
 
         nan_check_deep(h_a);
@@ -199,18 +201,20 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
     template<typename P, typename V>
     void activate_pooling(P& p_a, P& p_s, const V& v_a, const V&){
-        v_cv(NC) = 0;
+        v_cv(1) = 0;
 
         for(std::size_t channel = 0; channel < NC; ++channel){
+            v_cv(0) = 0;
+
             for(size_t k = 0; k < K; ++k){
-                etl::convolve_2d_valid(v_a(channel), fflip(w(channel)(k)), v_cv(channel)(k));
+                etl::convolve_2d_valid(v_a(channel), fflip(w(channel)(k)), v_cv(0)(k));
             }
 
-            v_cv(NC) += v_cv(channel);
+            v_cv(1) += v_cv(0);
         }
 
         if(pooling_unit == unit_type::BINARY){
-            p_a = etl::p_max_pool_p<C, C>(etl::rep<NH1, NH2>(b) + v_cv(NC));
+            p_a = etl::p_max_pool_p<C, C>(etl::rep<NH1, NH2>(b) + v_cv(1));
             p_s = r_bernoulli(p_a);
         } else {
             cpp_unreachable("Invalid path");
@@ -226,32 +230,36 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
             //Definition according to Honglak Lee
             //E(v,h) = - sum_k (hk (Wk*v) + bk hk) - c sum_v v
 
-            v_cv(NC) = 0;
+            v_cv(1) = 0;
 
             for(std::size_t channel = 0; channel < NC; ++channel){
+                v_cv(0) = 0;
+
                 for(size_t k = 0; k < K; ++k){
-                    etl::convolve_2d_valid(v(channel), fflip(w(channel)(k)), v_cv(channel)(k));
+                    etl::convolve_2d_valid(v(channel), fflip(w(channel)(k)), v_cv(0)(k));
                 }
 
-                v_cv(NC) += v_cv(channel);
+                v_cv(1) += v_cv(0);
             }
 
-            return - etl::sum(c * etl::sum_r(v)) - etl::sum(h * v_cv(NC) + etl::rep<NH1, NH2>(b) * h);
+            return - etl::sum(c * etl::sum_r(v)) - etl::sum(h * v_cv(1) + etl::rep<NH1, NH2>(b) * h);
         } else if(desc::visible_unit == unit_type::GAUSSIAN && desc::hidden_unit == unit_type::BINARY){
             //Definition according to Honglak Lee / Mixed with Gaussian
             //E(v,h) = - sum_k (hk (Wk*v) + bk hk) - sum_v ((v - c) ^ 2 / 2)
 
-            v_cv(NC) = 0;
+            v_cv(1) = 0;
 
             for(std::size_t channel = 0; channel < NC; ++channel){
+                v_cv(0) = 0;
+
                 for(size_t k = 0; k < K; ++k){
-                    etl::convolve_2d_valid(v(channel), fflip(w(channel)(k)), v_cv(channel)(k));
+                    etl::convolve_2d_valid(v(channel), fflip(w(channel)(k)), v_cv(0)(k));
                 }
 
-                v_cv(NC) += v_cv(channel);
+                v_cv(1) += v_cv(0);
             }
 
-            return -sum(etl::pow(v - etl::rep<NV1, NV2>(c), 2) / 2.0) - etl::sum(h * v_cv(NC) + etl::rep<NH1, NH2>(b) * h);
+            return -sum(etl::pow(v - etl::rep<NV1, NV2>(c), 2) / 2.0) - etl::sum(h * v_cv(1) + etl::rep<NH1, NH2>(b) * h);
         } else {
             return 0.0;
         }
@@ -273,33 +281,37 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         if(desc::visible_unit == unit_type::BINARY && desc::hidden_unit == unit_type::BINARY){
             //Definition computed from E(v,h)
 
-            v_cv(NC) = 0;
+            v_cv(1) = 0;
 
             for(std::size_t channel = 0; channel < NC; ++channel){
+                v_cv(0) = 0;
+
                 for(size_t k = 0; k < K; ++k){
-                    etl::convolve_2d_valid(v(channel), fflip(w(channel)(k)), v_cv(channel)(k));
+                    etl::convolve_2d_valid(v(channel), fflip(w(channel)(k)), v_cv(0)(k));
                 }
 
-                v_cv(NC) += v_cv(channel);
+                v_cv(1) += v_cv(0);
             }
 
-            auto x = etl::rep<NH1, NH2>(b) + v_cv(NC);
+            auto x = etl::rep<NH1, NH2>(b) + v_cv(1);
 
             return - etl::sum(c * etl::sum_r(v)) - etl::sum(etl::log(1.0 + etl::exp(x)));
         } else if(desc::visible_unit == unit_type::GAUSSIAN && desc::hidden_unit == unit_type::BINARY){
             //Definition computed from E(v,h)
 
-            v_cv(NC) = 0;
+            v_cv(1) = 0;
 
             for(std::size_t channel = 0; channel < NC; ++channel){
+                v_cv(0) = 0;
+
                 for(size_t k = 0; k < K; ++k){
-                    etl::convolve_2d_valid(v(channel), fflip(w(channel)(k)), v_cv(channel)(k));
+                    etl::convolve_2d_valid(v(channel), fflip(w(channel)(k)), v_cv(0)(k));
                 }
 
-                v_cv(NC) += v_cv(channel);
+                v_cv(1) += v_cv(0);
             }
 
-            auto x = etl::rep<NH1, NH2>(b) + v_cv(NC);
+            auto x = etl::rep<NH1, NH2>(b) + v_cv(1);
 
             return -sum(etl::pow(v - etl::rep<NV1, NV2>(c), 2) / 2.0) - etl::sum(etl::log(1.0 + etl::exp(x)));
         } else {
