@@ -525,6 +525,14 @@ struct base_cd_trainer : base_trainer<RBM> {
     void update(RBM& rbm){
         update_normal(rbm, *this);
     }
+
+    static std::string name(){
+        return
+                std::string("")
+            +   (Persistent ? "Persistent " : "")
+            +   (Denoising ? "Denoising " : "")
+            +   "Contrastive Divergence";
+    }
 };
 
 /*!
@@ -620,6 +628,14 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
 
     void update(RBM& rbm){
         update_normal(rbm, *this);
+    }
+
+    static std::string name(){
+        return
+                std::string("")
+            +   (Persistent ? "Persistent " : "")
+            +   (Denoising ? "Denoising " : "")
+            +   "Contrastive Divergence (dynamic)";
     }
 };
 
@@ -732,6 +748,14 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
     void update(RBM& rbm){
         update_convolutional(rbm, *this);
     }
+
+    static std::string name(){
+        return
+                std::string("")
+            +   (Persistent ? "Persistent " : "")
+            +   (Denoising ? "Denoising " : "")
+            +   "Contrastive Divergence (convolutional)";
+    }
 };
 
 /*!
@@ -753,10 +777,6 @@ struct cd_trainer : base_cd_trainer<N, RBM, false, Denoising> {
     template<typename T>
     void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
         train_normal<false, N>(input_batch, expected_batch, context, rbm, *this);
-    }
-
-    static std::string name(){
-        return "Contrastive Divergence";
     }
 };
 
@@ -780,10 +800,6 @@ struct cd_trainer<N, RBM, Denoising, std::enable_if_t<layer_traits<RBM>::is_dyna
     void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
         train_normal<false, N>(input_batch, expected_batch, context, rbm, *this);
     }
-
-    static std::string name(){
-        return "Contrastive Divergence";
-    }
 };
 
 /*!
@@ -805,10 +821,6 @@ struct cd_trainer<N, RBM, Denoising, std::enable_if_t<layer_traits<RBM>::is_conv
     template<typename T>
     void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
         train_convolutional<false, Denoising, N>(input_batch, expected_batch, context, rbm, *this);
-    }
-
-    static std::string name(){
-        return "Contrastive Divergence (convolutional)";
     }
 };
 
@@ -832,10 +844,6 @@ struct persistent_cd_trainer : base_cd_trainer<N, RBM, true, Denoising> {
     void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
         train_normal<true, N>(input_batch, expected_batch, context, rbm, *this);
     }
-
-    static std::string name(){
-        return "Persistent Contrastive Divergence";
-    }
 };
 
 /*!
@@ -858,10 +866,6 @@ struct persistent_cd_trainer<N, RBM, Denoising, std::enable_if_t<layer_traits<RB
     void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
         train_normal<true, N>(input_batch, expected_batch, context, rbm, *this);
     }
-
-    static std::string name(){
-        return "Persistent Contrastive Divergence";
-    }
 };
 
 /*!
@@ -883,10 +887,6 @@ struct persistent_cd_trainer<N, RBM, Denoising, std::enable_if_t<layer_traits<RB
     template<typename T>
     void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
         train_convolutional<true, Denoising, N>(input_batch, expected_batch, context, rbm, *this);
-    }
-
-    static std::string name(){
-        return "Persistent Contrastive Divergence (convolutional)";
     }
 };
 
