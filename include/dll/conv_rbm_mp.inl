@@ -391,9 +391,20 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         activate_pooling(h_a, h_s, v1, v1);
     }
 
+    void activate_one(const input_one_t& input, output_one_t& h_a){
+        v1 = input;
+        activate_pooling<true, false>(h_a, h_a, v1, v1);
+    }
+
     void activate_many(const input_t& input, output_t& h_a, output_t& h_s){
         for(std::size_t i = 0; i < input.size(); ++i){
             activate_one(input[i], h_a[i], h_s[i]);
+        }
+    }
+
+    void activate_many(const input_t& input, output_t& h_a){
+        for(std::size_t i = 0; i < input.size(); ++i){
+            activate_one(input[i], h_a[i]);
         }
     }
 };

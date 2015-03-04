@@ -16,8 +16,6 @@ namespace dll {
 
 /*!
  * \brief Standard max pooling layer
- *
- * This follows the definition of a RBM by Geoffrey Hinton.
  */
 template<typename Desc>
 struct mp_layer_3d final : pooling_layer_3d<Desc> {
@@ -29,7 +27,7 @@ struct mp_layer_3d final : pooling_layer_3d<Desc> {
 
     static std::string to_short_string(){
         char buffer[1024];
-        snprintf(buffer, 1024, "MP(3D): %lux%lux%lu -> (%lux%lux%lu) -> %lux%lux%lu", 
+        snprintf(buffer, 1024, "MP(3D): %lux%lux%lu -> (%lux%lux%lu) -> %lux%lux%lu",
             base::I1, base::I2, base::I3, base::C1, base::C2, base::C3, base::O1, base::O2, base::O3);
         return {buffer};
     }
@@ -43,7 +41,12 @@ struct mp_layer_3d final : pooling_layer_3d<Desc> {
     using input_t = std::vector<input_one_t>;
     using output_t = std::vector<output_one_t>;
 
-    //TODO Ideally, the dbn should guess if h_a/h_a are used or only h_a
+    //TODO Ideally, the dbn should guess if h_a/h_s are used or only h_a
+
+    static void activate_one(const input_one_t& v, output_one_t& h){
+        activate_one(v, h, h);
+    }
+
     static void activate_one(const input_one_t& v, output_one_t& h, output_one_t& /*h_s*/){
         for(std::size_t i = 0; i < base::O1; ++i){
             for(std::size_t j = 0; j < base::O2; ++j){
@@ -67,6 +70,12 @@ struct mp_layer_3d final : pooling_layer_3d<Desc> {
     static void activate_many(const input_t& input, output_t& h_a, output_t& h_s){
         for(std::size_t i = 0; i < input.size(); ++i){
             activate_one(input[i], h_a[i], h_s[i]);
+        }
+    }
+
+    static void activate_many(const input_t& input, output_t& h_a){
+        for(std::size_t i = 0; i < input.size(); ++i){
+            activate_one(input[i], h_a[i]);
         }
     }
 };

@@ -221,9 +221,8 @@ struct dbn final {
         if(train_next<I+1>::value){
 #endif
             auto next_a = rbm.prepare_output(input.size());
-            auto next_s = rbm.prepare_output(input.size());
 
-            rbm.activate_many(input, next_a, next_s);
+            rbm.activate_many(input, next_a);
 
             pretrain_layer<I+1>(next_a, watcher, max_epochs);
         }
