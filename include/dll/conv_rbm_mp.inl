@@ -116,18 +116,21 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         std::cout << to_short_string() << std::endl;
     }
 
-    template<typename H1, typename H2, typename V1, typename V2>
+    template<bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2>
     void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& v_s){
-        activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, v_cv);
+        activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, v_cv);
     }
 
-    template<typename H1, typename H2, typename V1, typename V2>
+    template<bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2>
     void activate_visible(const H1& h_a, const H2& h_s, V1&& v_a, V2&& v_s){
-        activate_visible(h_a, h_s, std::forward<V1>(v_a), std::forward<V2>(v_s), h_cv);
+        activate_visible<P, S>(h_a, h_s, std::forward<V1>(v_a), std::forward<V2>(v_s), h_cv);
     }
 
-    template<typename H1, typename H2, typename V1, typename V2, typename VCV>
+    template<bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename VCV>
     void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2&, VCV&& v_cv){
+        static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit), "Invalid hidden unit type");
+        static_assert(P, "Computing S without P is not implemented");
+
         v_cv(1) = 0;
 
         for(std::size_t channel = 0; channel < NC; ++channel){
@@ -140,20 +143,28 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
         nan_check_deep(v_cv);
 
-        if(hidden_unit == unit_type::BINARY){
-            h_a = etl::p_max_pool_h<C, C>(etl::rep<NH1, NH2>(b) + v_cv(1));
-            h_s = bernoulli(h_a);
-        } else if(hidden_unit == unit_type::RELU){
-            h_a = max(etl::rep<NH1, NH2>(b) + v_cv(1), 0.0);
-            h_s = logistic_noise(h_a);
-        } else if(hidden_unit == unit_type::RELU6){
-            h_a = min(max(etl::rep<NH1, NH2>(b) + v_cv(1), 0.0), 6.0);
-            h_s = ranged_noise(h_a, 6.0);
-        } else if(hidden_unit == unit_type::RELU1){
-            h_a = min(max(etl::rep<NH1, NH2>(b) + v_cv(1), 0.0), 1.0);
-            h_s = ranged_noise(h_a, 1.0);
-        } else {
-            cpp_unreachable("Invalid path");
+        if(P){
+            if(hidden_unit == unit_type::BINARY){
+                h_a = etl::p_max_pool_h<C, C>(etl::rep<NH1, NH2>(b) + v_cv(1));
+            } else if(hidden_unit == unit_type::RELU){
+                h_a = max(etl::rep<NH1, NH2>(b) + v_cv(1), 0.0);
+            } else if(hidden_unit == unit_type::RELU6){
+                h_a = min(max(etl::rep<NH1, NH2>(b) + v_cv(1), 0.0), 6.0);
+            } else if(hidden_unit == unit_type::RELU1){
+                h_a = min(max(etl::rep<NH1, NH2>(b) + v_cv(1), 0.0), 1.0);
+            }
+        }
+
+        if(S){
+            if(hidden_unit == unit_type::BINARY){
+                h_s = bernoulli(h_a);
+            } else if(hidden_unit == unit_type::RELU){
+                h_s = logistic_noise(h_a);
+            } else if(hidden_unit == unit_type::RELU6){
+                h_s = ranged_noise(h_a, 6.0);
+            } else if(hidden_unit == unit_type::RELU1){
+                h_s = ranged_noise(h_a, 1.0);
+            }
         }
 
 #ifndef NDEBUG
@@ -168,8 +179,11 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 #endif
     }
 
-    template<typename H1, typename H2, typename V1, typename V2, typename HCV>
+    template<bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename HCV>
     void activate_visible(const H1&, const H2& h_s, V1&& v_a, V2&& v_s, HCV&& h_cv){
+        static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN, "Invalid visible unit type");
+        static_assert(P, "Computing S without P is not implemented");
+
         using namespace etl;
 
         for(std::size_t channel = 0; channel < NC; ++channel){
@@ -180,14 +194,20 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
                 h_cv(1) += h_cv(0);
             }
 
-            if(visible_unit == unit_type::BINARY){
-                v_a(channel) = sigmoid(c(channel) + h_cv(1));
-                v_s(channel) = bernoulli(v_a(channel));
-            } else if(visible_unit == unit_type::GAUSSIAN){
-                v_a(channel) = c(channel) + h_cv(1);
-                v_s(channel) = normal_noise(v_a(channel));
-            } else {
-                cpp_unreachable("Invalid path");
+            if(P){
+                if(visible_unit == unit_type::BINARY){
+                    v_a(channel) = sigmoid(c(channel) + h_cv(1));
+                } else if(visible_unit == unit_type::GAUSSIAN){
+                    v_a(channel) = c(channel) + h_cv(1);
+                }
+            }
+
+            if(S){
+                if(visible_unit == unit_type::BINARY){
+                    v_s(channel) = bernoulli(v_a(channel));
+                } else if(visible_unit == unit_type::GAUSSIAN){
+                    v_s(channel) = normal_noise(v_a(channel));
+                }
             }
         }
 
@@ -197,6 +217,9 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
     template<typename P, typename V>
     void activate_pooling(P& p_a, P& p_s, const V& v_a, const V&){
+        static_assert(pooling_unit == unit_type::BINARY, "Invalid pooling unit type");
+        static_assert(P, "Computing S without P is not implemented");
+
         v_cv(1) = 0;
 
         for(std::size_t channel = 0; channel < NC; ++channel){
@@ -207,15 +230,21 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
             v_cv(1) += v_cv(0);
         }
 
-        if(pooling_unit == unit_type::BINARY){
-            p_a = etl::p_max_pool_p<C, C>(etl::rep<NH1, NH2>(b) + v_cv(1));
-            p_s = r_bernoulli(p_a);
-        } else {
-            cpp_unreachable("Invalid path");
+        if(P){
+            if(pooling_unit == unit_type::BINARY){
+                p_a = etl::p_max_pool_p<C, C>(etl::rep<NH1, NH2>(b) + v_cv(1));
+            }
+
+            nan_check_deep(p_a);
         }
 
-        nan_check_deep(p_a);
-        nan_check_deep(p_s);
+        if(S){
+            if(pooling_unit == unit_type::BINARY){
+                p_s = r_bernoulli(p_a);
+            }
+
+            nan_check_deep(p_s);
+        }
     }
 
     template<typename V, typename H, cpp::enable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
