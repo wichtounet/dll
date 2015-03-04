@@ -215,8 +215,8 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         nan_check_deep(v_s);
     }
 
-    template<typename P, typename V>
-    void activate_pooling(P& p_a, P& p_s, const V& v_a, const V&){
+    template<bool P = true, bool S = true, typename Po, typename V>
+    void activate_pooling(Po& p_a, Po& p_s, const V& v_a, const V&){
         static_assert(pooling_unit == unit_type::BINARY, "Invalid pooling unit type");
         static_assert(P, "Computing S without P is not implemented");
 
