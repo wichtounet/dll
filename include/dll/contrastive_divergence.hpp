@@ -748,7 +748,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
     conditional_fast_matrix_t<false, weight, batch_size, NC, NV1, NV2> v2_s;
 
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> h2_a;
-    etl::fast_matrix<weight, batch_size, K, NH1, NH2> h2_s;
+    conditional_fast_matrix_t<(K > 1), weight, batch_size, K, NH1, NH2> h2_s;
 
     thread_pool<layer_traits<rbm_t>::is_parallel()> pool;
 
