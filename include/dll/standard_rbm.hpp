@@ -354,6 +354,61 @@ protected:
             nan_check_deep(v_s);
         }
     }
+
+public:
+
+    //Utilities to be used by DBNs
+
+    using input_one_t = etl::dyn_vector<weight>;
+    using output_one_t = etl::dyn_vector<weight>;
+    using input_t = std::vector<input_one_t>;
+    using output_t = std::vector<output_one_t>;
+
+    template<typename Iterator>
+    static auto convert_input(Iterator&& first, Iterator&& last){
+        input_t input;
+        input.reserve(std::distance(std::forward<Iterator>(first), std::forward<Iterator>(last)));
+
+        std::for_each(std::forward<Iterator>(first), std::forward<Iterator>(last), [&input](auto& sample){
+            input.emplace_back(sample);
+        });
+
+        return input;
+    }
+
+    template<typename Sample>
+    static input_one_t convert_sample(const Sample& sample){
+        return {sample};
+    }
+
+    output_t prepare_output(std::size_t samples, bool is_last = false, std::size_t labels = 0) const {
+        output_t output;
+        output.reserve(samples);
+
+        for(std::size_t i = 0; i < samples; ++i){
+            output.emplace_back(static_cast<const parent_t*>(this)->output_size() + (is_last ? labels : 0));
+        }
+
+        return output;
+    }
+
+    output_one_t prepare_one_output(bool is_last = false, std::size_t labels = 0) const {
+        return output_one_t(static_cast<const parent_t*>(this)->output_size() + (is_last ? labels : 0));
+    }
+
+    input_one_t prepare_one_input() const {
+        return input_one_t(static_cast<const parent_t*>(this)->input_size());
+    }
+
+    void activate_one(const input_one_t& input, output_one_t& h_a, output_one_t& h_s) const {
+        static_cast<const parent_t*>(this)->activate_hidden(h_a, h_s, input, input);
+    }
+
+    void activate_many(const input_t& input, output_t& h_a, output_t& h_s) const {
+        for(std::size_t i = 0; i < input.size(); ++i){
+            activate_one(input[i], h_a[i], h_s[i]);
+        }
+    }
 };
 
 } //end of dll namespace
