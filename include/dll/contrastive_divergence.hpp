@@ -459,6 +459,8 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
  */
 template<std::size_t N, typename RBM, bool Persistent, bool Denoising, typename Enable = void>
 struct base_cd_trainer : base_trainer<RBM> {
+    static_assert(N > 0, "(P)CD-0 is not a valid training method");
+
     using rbm_t = RBM;
     using weight = typename rbm_t::weight;
 
@@ -549,6 +551,8 @@ struct base_cd_trainer : base_trainer<RBM> {
  */
 template<std::size_t N, typename RBM, bool Persistent, bool Denoising>
 struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_traits<RBM>::is_dynamic()>> : base_trainer<RBM> {
+    static_assert(N > 0, "(P)CD-0 is not a valid training method");
+
     typedef RBM rbm_t;
 
     typedef typename rbm_t::weight weight;
@@ -675,6 +679,8 @@ using conditional_fast_matrix_t = typename conditional_fast_matrix<C, W, Dims...
  */
 template<std::size_t N, typename RBM, bool Persistent, bool Denoising>
 struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_traits<RBM>::is_convolutional()>> : base_trainer<RBM> {
+    static_assert(N > 0, "(P)CD-0 is not a valid training method");
+
     using rbm_t = RBM;
 
     static constexpr const auto K = rbm_t::K;
@@ -780,106 +786,16 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
 };
 
 /*!
- * \brief Contrastive divergence trainer for RBM.
+ * \brief Contrastive Divergence Trainer for RBM.
  */
 template<std::size_t N, typename RBM, bool Denoising, typename Enable = void>
-struct cd_trainer : base_cd_trainer<N, RBM, false, Denoising> {
-    static_assert(N > 0, "CD-0 is not a valid training method");
-
-    using rbm_t = RBM;
-    using base_type = base_cd_trainer<N, rbm_t, false, Denoising>;
-
-    rbm_t& rbm;
-
-    cd_trainer(rbm_t& rbm) : base_type(rbm), rbm(rbm) {
-        //Nothing else to init here
-    }
-};
-
-/*!
- * \brief Contrastive divergence trainer for dynamic RBM.
- */
-template<std::size_t N, typename RBM, bool Denoising>
-struct cd_trainer<N, RBM, Denoising, std::enable_if_t<layer_traits<RBM>::is_dynamic()>> : base_cd_trainer<N, RBM, false, Denoising> {
-    static_assert(N > 0, "CD-0 is not a valid training method");
-
-    using rbm_t = RBM;
-    using base_type = base_cd_trainer<N, rbm_t, false, Denoising>;
-
-    rbm_t& rbm;
-
-    cd_trainer(rbm_t& rbm) : base_type(rbm), rbm(rbm) {
-        //Nothing else to init here
-    }
-};
-
-/*!
- * \brief Contrastive Divergence trainer for convolutional RBM
- */
-template<std::size_t N, typename RBM, bool Denoising>
-struct cd_trainer<N, RBM, Denoising, std::enable_if_t<layer_traits<RBM>::is_convolutional()>> : base_cd_trainer<N, RBM, false, Denoising> {
-    static_assert(N > 0, "CD-0 is not a valid training method");
-
-    using rbm_t = RBM;
-    using base_type = base_cd_trainer<N, rbm_t, false, Denoising>;
-
-    rbm_t& rbm;
-
-    cd_trainer(rbm_t& rbm) : base_type(rbm), rbm(rbm) {
-        //Nothing else to init here
-    }
-};
+using cd_trainer = base_cd_trainer<N, RBM, false, Denoising>;
 
 /*!
  * \brief Persistent Contrastive Divergence Trainer for RBM.
  */
 template<std::size_t N, typename RBM, bool Denoising, typename Enable = void>
-struct persistent_cd_trainer : base_cd_trainer<N, RBM, true, Denoising> {
-    static_assert(N > 0, "PCD-0 is not a valid training method");
-
-    using rbm_t = RBM;
-    using base_type = base_cd_trainer<N, rbm_t, true, Denoising>;
-
-    rbm_t& rbm;
-
-    persistent_cd_trainer(rbm_t& rbm) : base_type(rbm), rbm(rbm) {
-        //Nothing else to init here
-    }
-};
-
-/*!
- * \brief Persistent Contrastive Divergence Trainer for RBM.
- */
-template<std::size_t N, typename RBM, bool Denoising>
-struct persistent_cd_trainer<N, RBM, Denoising, std::enable_if_t<layer_traits<RBM>::is_dynamic()>> : base_cd_trainer<N, RBM, true, Denoising> {
-    static_assert(N > 0, "PCD-0 is not a valid training method");
-
-    using rbm_t = RBM;
-    using base_type = base_cd_trainer<N, rbm_t, true, Denoising>;
-
-    rbm_t& rbm;
-
-    persistent_cd_trainer(rbm_t& rbm) : base_type(rbm), rbm(rbm){
-        //Nothing else to init
-    }
-};
-
-/*!
- * \brief Specialization of persistent_cd_trainer for Convolutional RBM.
- */
-template<std::size_t N, typename RBM, bool Denoising>
-struct persistent_cd_trainer<N, RBM, Denoising, std::enable_if_t<layer_traits<RBM>::is_convolutional()>> : base_cd_trainer<N, RBM, true, Denoising> {
-    static_assert(N > 0, "PCD-0 is not a valid training method");
-
-    using rbm_t = RBM;
-    using base_type = base_cd_trainer<N, rbm_t, true, Denoising>;
-
-    rbm_t& rbm;
-
-    persistent_cd_trainer(rbm_t& rbm) : base_type(rbm), rbm(rbm) {
-        //Nothing else to init here
-    }
-};
+using persistent_cd_trainer = base_cd_trainer<N, RBM, true, Denoising>;
 
 /*!
  * \brief CD-1 trainer for RBM
