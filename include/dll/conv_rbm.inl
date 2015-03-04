@@ -351,7 +351,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
 private:
     template<typename V1, typename V2>
-    void validate_inputs(const V1& v_a, const V2& v_s){
+    static void validate_inputs(const V1& v_a, const V2& v_s){
         static_assert(etl::etl_traits<V1>::dimensions() == 3, "Inputs must be 3D");
         static_assert(etl::etl_traits<V2>::dimensions() == 3, "Inputs must be 3D");
 
@@ -367,7 +367,7 @@ private:
     }
 
     template<typename H1, typename H2>
-    void validate_outputs(const H1& h_a, const H2& h_s){
+    static void validate_outputs(const H1& h_a, const H2& h_s){
         static_assert(etl::etl_traits<H1>::dimensions() == 3, "Outputs must be 3D");
         static_assert(etl::etl_traits<H2>::dimensions() == 3, "Outputs must be 3D");
 
