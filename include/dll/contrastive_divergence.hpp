@@ -467,6 +467,8 @@ struct base_cd_trainer : base_trainer<RBM> {
 
     static constexpr const auto batch_size = layer_traits<rbm_t>::batch_size();
 
+    rbm_t& rbm;
+
     etl::fast_matrix<weight, batch_size, num_visible> v1; //Input
     etl::fast_matrix<weight, batch_size, num_visible> vf; //Expected
 
@@ -513,17 +515,22 @@ struct base_cd_trainer : base_trainer<RBM> {
     thread_pool<layer_traits<rbm_t>::is_parallel()> pool;
 
     template<bool M = layer_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
-    base_cd_trainer(rbm_t&) : q_global_t(0.0), q_local_t(0.0) {
+    base_cd_trainer(rbm_t& rbm) : rbm(rbm), q_global_t(0.0), q_local_t(0.0) {
         static_assert(!layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
     template<bool M = layer_traits<rbm_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
-    base_cd_trainer(rbm_t&) : w_inc(0.0), b_inc(0.0), c_inc(0.0), q_global_t(0.0), q_local_t(0.0) {
+    base_cd_trainer(rbm_t& rbm) : rbm(rbm), w_inc(0.0), b_inc(0.0), c_inc(0.0), q_global_t(0.0), q_local_t(0.0) {
         static_assert(layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
     void update(RBM& rbm){
         update_normal(rbm, *this);
+    }
+
+    template<typename T>
+    void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
+        train_normal<Persistent, N>(input_batch, expected_batch, context, rbm, *this);
     }
 
     static std::string name(){
@@ -545,6 +552,8 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
     typedef RBM rbm_t;
 
     typedef typename rbm_t::weight weight;
+
+    rbm_t& rbm;
 
     etl::dyn_matrix<weight> v1; //Input
     etl::dyn_matrix<weight> vf; //Expected
@@ -592,7 +601,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
     thread_pool<layer_traits<rbm_t>::is_parallel()> pool;
 
     template<bool M = layer_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
-    base_cd_trainer(rbm_t& rbm) :
+    base_cd_trainer(rbm_t& rbm) : rbm(rbm),
             v1(get_batch_size(rbm), rbm.num_visible),
             vf(get_batch_size(rbm), rbm.num_visible),
             h1_a(get_batch_size(rbm), rbm.num_hidden), h1_s(get_batch_size(rbm), rbm.num_hidden),
@@ -610,7 +619,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
     }
 
     template<bool M = layer_traits<rbm_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
-    base_cd_trainer(rbm_t& rbm) :
+    base_cd_trainer(rbm_t& rbm) : rbm(rbm),
             v1(get_batch_size(rbm), rbm.num_visible),
             vf(get_batch_size(rbm), rbm.num_visible),
             h1_a(get_batch_size(rbm), rbm.num_hidden), h1_s(get_batch_size(rbm), rbm.num_hidden),
@@ -628,6 +637,11 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
 
     void update(RBM& rbm){
         update_normal(rbm, *this);
+    }
+
+    template<typename T>
+    void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
+        train_normal<Persistent, N>(input_batch, expected_batch, context, rbm, *this);
     }
 
     static std::string name(){
@@ -675,6 +689,8 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
     static constexpr const auto batch_size = layer_traits<rbm_t>::batch_size();
 
     typedef typename rbm_t::weight weight;
+
+    rbm_t& rbm;
 
     //Gradients
     etl::fast_matrix<weight, NC, K, NW1, NW2> w_grad;  //Gradients of shared weights
@@ -731,14 +747,14 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
     thread_pool<layer_traits<rbm_t>::is_parallel()> pool;
 
     template<bool M = layer_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
-    base_cd_trainer(rbm_t&) :
+    base_cd_trainer(rbm_t& rbm) : rbm(rbm),
             q_global_t(0.0), q_local_t(0.0),
             w_bias(0.0), b_bias(0.0), c_bias(0.0) {
         static_assert(!layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
     template<bool M = layer_traits<rbm_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
-    base_cd_trainer(rbm_t&) :
+    base_cd_trainer(rbm_t& rbm) : rbm(rbm),
             w_inc(0.0), b_inc(0.0), c_inc(0.0),
             q_global_t(0.0), q_local_t(0.0),
             w_bias(0.0), b_bias(0.0), c_bias(0.0) {
@@ -747,6 +763,11 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
 
     void update(RBM& rbm){
         update_convolutional(rbm, *this);
+    }
+
+    template<typename T>
+    void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
+        train_convolutional<Persistent, Denoising, N>(input_batch, expected_batch, context, rbm, *this);
     }
 
     static std::string name(){
@@ -773,11 +794,6 @@ struct cd_trainer : base_cd_trainer<N, RBM, false, Denoising> {
     cd_trainer(rbm_t& rbm) : base_type(rbm), rbm(rbm) {
         //Nothing else to init here
     }
-
-    template<typename T>
-    void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
-        train_normal<false, N>(input_batch, expected_batch, context, rbm, *this);
-    }
 };
 
 /*!
@@ -794,11 +810,6 @@ struct cd_trainer<N, RBM, Denoising, std::enable_if_t<layer_traits<RBM>::is_dyna
 
     cd_trainer(rbm_t& rbm) : base_type(rbm), rbm(rbm) {
         //Nothing else to init here
-    }
-
-    template<typename T>
-    void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
-        train_normal<false, N>(input_batch, expected_batch, context, rbm, *this);
     }
 };
 
@@ -817,11 +828,6 @@ struct cd_trainer<N, RBM, Denoising, std::enable_if_t<layer_traits<RBM>::is_conv
     cd_trainer(rbm_t& rbm) : base_type(rbm), rbm(rbm) {
         //Nothing else to init here
     }
-
-    template<typename T>
-    void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
-        train_convolutional<false, Denoising, N>(input_batch, expected_batch, context, rbm, *this);
-    }
 };
 
 /*!
@@ -838,11 +844,6 @@ struct persistent_cd_trainer : base_cd_trainer<N, RBM, true, Denoising> {
 
     persistent_cd_trainer(rbm_t& rbm) : base_type(rbm), rbm(rbm) {
         //Nothing else to init here
-    }
-
-    template<typename T>
-    void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
-        train_normal<true, N>(input_batch, expected_batch, context, rbm, *this);
     }
 };
 
@@ -861,11 +862,6 @@ struct persistent_cd_trainer<N, RBM, Denoising, std::enable_if_t<layer_traits<RB
     persistent_cd_trainer(rbm_t& rbm) : base_type(rbm), rbm(rbm){
         //Nothing else to init
     }
-
-    template<typename T>
-    void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
-        train_normal<true, N>(input_batch, expected_batch, context, rbm, *this);
-    }
 };
 
 /*!
@@ -882,11 +878,6 @@ struct persistent_cd_trainer<N, RBM, Denoising, std::enable_if_t<layer_traits<RB
 
     persistent_cd_trainer(rbm_t& rbm) : base_type(rbm), rbm(rbm) {
         //Nothing else to init here
-    }
-
-    template<typename T>
-    void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
-        train_convolutional<true, Denoising, N>(input_batch, expected_batch, context, rbm, *this);
     }
 };
 
