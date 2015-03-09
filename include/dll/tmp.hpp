@@ -115,6 +115,21 @@ void for_each_type(Functor&& functor){
     for_each_type_sub<Tuple>(functor, std::make_index_sequence<std::tuple_size<Tuple>::value>());
 }
 
+//This allows to create a fast matrix type with an effective size of zero
+//when it is not used, although this fast matrix is viewed as having
+//the correct size
+
+template<bool C, typename W, std::size_t... Dims>
+struct conditional_fast_matrix {
+    using type = std::conditional_t<
+        C,
+        etl::fast_matrix<W, Dims...>,
+        etl::fast_matrix_impl<W, std::array<W, 0>, Dims...>>;
+};
+
+template<bool C, typename W, std::size_t... Dims>
+using conditional_fast_matrix_t = typename conditional_fast_matrix<C, W, Dims...>::type;
+
 } //end of dll namespace
 
 #endif
