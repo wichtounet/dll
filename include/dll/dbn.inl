@@ -67,6 +67,8 @@ struct dbn final {
 
     weight momentum = 0;                ///< The current momentum
 
+    thread_pool<dbn_traits<this_type>::is_parallel()> pool;
+
 #ifdef DLL_SVM_SUPPORT
     svm::model svm_model;               ///< The learned model
     svm::problem problem;               ///< libsvm is stupid, therefore, you cannot destroy the problem if you want to use the model...
@@ -222,7 +224,9 @@ struct dbn final {
 #endif
             auto next_a = rbm.prepare_output(input.size());
 
-            rbm.activate_many(input, next_a);
+            maybe_parallel_foreach_i(pool, input.begin(), input.end(), [&rbm, &next_a](auto& v, std::size_t i){
+                rbm.activate_one(v, next_a[i]);
+            });
 
             pretrain_layer<I+1>(next_a, watcher, max_epochs);
         }
