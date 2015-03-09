@@ -43,7 +43,7 @@ struct base_dbn_desc {
     //Make sure only valid types are passed to the configuration list
     static_assert(
         detail::is_valid<
-            cpp::type_list<trainer_id, watcher_id, momentum_id, weight_decay_id, memory_id, svm_concatenate_id, svm_scale_id>,
+            cpp::type_list<trainer_id, watcher_id, momentum_id, weight_decay_id, memory_id, svm_concatenate_id, svm_scale_id, parallel_id>,
             Parameters...>::value,
         "Invalid parameters type");
 };
