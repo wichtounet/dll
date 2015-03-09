@@ -116,7 +116,7 @@ struct layer_traits {
     }
 
     static constexpr bool is_dbn_only(){
-        return rbm_t::desc::parameters::template contains<dll::dbn_only>();
+        return rbm_t::desc::parameters::template contains<dbn_only>();
     }
 
     static constexpr bool has_sparsity(){
