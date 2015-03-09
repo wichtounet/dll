@@ -14,6 +14,8 @@
 #include "etl/etl.hpp"
 
 #include "standard_rbm.hpp"
+#include "tmp.hpp"
+#include "layer_traits.hpp"
 
 namespace dll {
 
@@ -26,7 +28,8 @@ template<typename Desc>
 struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
     using desc = Desc;
     using weight = typename desc::weight;
-    using base_type = standard_rbm<rbm<Desc>, Desc>;
+    using this_type = rbm<desc>;
+    using base_type = standard_rbm<this_type, desc>;
 
     static constexpr const std::size_t num_visible = desc::num_visible;
     static constexpr const std::size_t num_hidden = desc::num_hidden;
@@ -34,22 +37,24 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
     static constexpr const unit_type visible_unit = desc::visible_unit;
     static constexpr const unit_type hidden_unit = desc::hidden_unit;
 
+    static constexpr bool dbn_only = layer_traits<this_type>::is_dbn_only();
+
     //Weights and biases
     etl::fast_matrix<weight, num_visible, num_hidden> w;    //!< Weights
     etl::fast_vector<weight, num_hidden> b;                 //!< Hidden biases
     etl::fast_vector<weight, num_visible> c;                //!< Visible biases
 
     //Reconstruction data
-    etl::fast_vector<weight, num_visible> v1; //!< State of the visible units
+    conditional_fast_matrix_t<!dbn_only, weight, num_visible> v1; //!< State of the visible units
 
-    etl::fast_vector<weight, num_hidden> h1_a; //!< Activation probabilities of hidden units after first CD-step
-    etl::fast_vector<weight, num_hidden> h1_s; //!< Sampled value of hidden units after first CD-step
+    conditional_fast_matrix_t<!dbn_only, weight, num_hidden> h1_a; //!< Activation probabilities of hidden units after first CD-step
+    conditional_fast_matrix_t<!dbn_only, weight, num_hidden> h1_s; //!< Sampled value of hidden units after first CD-step
 
-    etl::fast_vector<weight, num_visible> v2_a; //!< Activation probabilities of visible units after first CD-step
-    etl::fast_vector<weight, num_visible> v2_s; //!< Sampled value of visible units after first CD-step
+    conditional_fast_matrix_t<!dbn_only, weight, num_visible> v2_a; //!< Activation probabilities of visible units after first CD-step
+    conditional_fast_matrix_t<!dbn_only, weight, num_visible> v2_s; //!< Sampled value of visible units after first CD-step
 
-    etl::fast_vector<weight, num_hidden> h2_a; //!< Activation probabilities of hidden units after last CD-step
-    etl::fast_vector<weight, num_hidden> h2_s; //!< Sampled value of hidden units after last CD-step
+    conditional_fast_matrix_t<!dbn_only, weight, num_hidden> h2_a; //!< Activation probabilities of hidden units after last CD-step
+    conditional_fast_matrix_t<!dbn_only, weight, num_hidden> h2_s; //!< Sampled value of hidden units after last CD-step
 
     //No copying
     rbm(const rbm& rbm) = delete;
