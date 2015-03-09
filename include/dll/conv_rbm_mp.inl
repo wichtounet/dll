@@ -22,12 +22,9 @@
 #include "base_conf.hpp"          //The configuration helpers
 #include "math.hpp"               //Logistic sigmoid
 #include "io.hpp"                 //Binary load/store functions
+#include "layer_traits.hpp"
 #include "tmp.hpp"
 #include "checks.hpp"
-
-#ifndef NDEBUG
-#include "etl/print.hpp"
-#endif
 
 namespace dll {
 
@@ -61,31 +58,33 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
     static constexpr const std::size_t NP1 = NH1 / C;      //By definition
     static constexpr const std::size_t NP2 = NH2 / C;      //By definition
 
+    static constexpr bool dbn_only = layer_traits<this_type>::is_dbn_only();
+
     etl::fast_matrix<weight, NC, K, NW1, NW2> w;  //shared weights
     etl::fast_vector<weight, K> b;              //hidden biases bk
     etl::fast_vector<weight, NC> c;             //visible single bias c
 
     etl::fast_matrix<weight, NC, NV1, NV2> v1;        //visible units
 
-    etl::fast_matrix<weight, K, NH1, NH2> h1_a;   //Activation probabilities of reconstructed hidden units
-    etl::fast_matrix<weight, K, NH1, NH2> h1_s;   //Sampled values of reconstructed hidden units
+    conditional_fast_matrix_t<!dbn_only, weight, K, NH1, NH2> h1_a;   //Activation probabilities of reconstructed hidden units
+    conditional_fast_matrix_t<!dbn_only, weight, K, NH1, NH2> h1_s;   //Sampled values of reconstructed hidden units
 
-    etl::fast_matrix<weight, K, NP1, NP2> p1_a;   //Activation probabilities of reconstructed hidden units
-    etl::fast_matrix<weight, K, NP1, NP2> p1_s;   //Sampled values of reconstructed hidden units
+    conditional_fast_matrix_t<!dbn_only, weight, K, NP1, NP2> p1_a;   //Activation probabilities of reconstructed hidden units
+    conditional_fast_matrix_t<!dbn_only, weight, K, NP1, NP2> p1_s;   //Sampled values of reconstructed hidden units
 
-    etl::fast_matrix<weight, NC, NV1, NV2> v2_a;      //Activation probabilities of reconstructed visible units
-    etl::fast_matrix<weight, NC, NV1, NV2> v2_s;      //Sampled values of reconstructed visible units
+    conditional_fast_matrix_t<!dbn_only, weight, NC, NV1, NV2> v2_a;      //Activation probabilities of reconstructed visible units
+    conditional_fast_matrix_t<!dbn_only, weight, NC, NV1, NV2> v2_s;      //Sampled values of reconstructed visible units
 
-    etl::fast_matrix<weight, K, NH1, NH2> h2_a;   //Activation probabilities of reconstructed hidden units
-    etl::fast_matrix<weight, K, NH1, NH2> h2_s;   //Sampled values of reconstructed hidden units
+    conditional_fast_matrix_t<!dbn_only, weight, K, NH1, NH2> h2_a;   //Activation probabilities of reconstructed hidden units
+    conditional_fast_matrix_t<!dbn_only, weight, K, NH1, NH2> h2_s;   //Sampled values of reconstructed hidden units
 
-    etl::fast_matrix<weight, K, NP1, NP2> p2_a;   //Activation probabilities of reconstructed hidden units
-    etl::fast_matrix<weight, K, NP1, NP2> p2_s;   //Sampled values of reconstructed hidden units
+    conditional_fast_matrix_t<!dbn_only, weight, K, NP1, NP2> p2_a;   //Activation probabilities of reconstructed hidden units
+    conditional_fast_matrix_t<!dbn_only, weight, K, NP1, NP2> p2_s;   //Sampled values of reconstructed hidden units
 
     //Convolution data
 
-    etl::fast_matrix<weight, 2, K, NH1, NH2> v_cv;   //Temporary convolution
-    etl::fast_matrix<weight, 2, NV1, NV2> h_cv; //Temporary convolution
+    conditional_fast_matrix_t<!dbn_only, weight, 2, K, NH1, NH2> v_cv;   //Temporary convolution
+    conditional_fast_matrix_t<!dbn_only, weight, 2, NV1, NV2> h_cv; //Temporary convolution
 
     conv_rbm_mp() : base_type() {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
