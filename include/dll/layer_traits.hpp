@@ -35,10 +35,6 @@ struct avgp_layer_3d;
 template<typename RBM>
 struct layer_traits {
     using rbm_t = RBM;
-    using desc = typename rbm_t::desc;
-
-    HAS_STATIC_FIELD(BatchSize, has_batch_size_field)
-    HAS_STATIC_FIELD(Bias, has_bias_field)
 
     /*!
      * \brief Indicates if the RBM is convolutional
@@ -99,34 +95,28 @@ struct layer_traits {
         return rbm_t::output_size();
     }
 
-    template<cpp_enable_if_cst(has_batch_size_field<desc>::value)>
     static constexpr std::size_t batch_size(){
-        return rbm_t::desc::BatchSize;
-    }
-
-    template<cpp_disable_if_cst(has_batch_size_field<desc>::value)>
-    static constexpr std::size_t batch_size(){
-        return 1;
+        return detail::get_value_l<dll::batch_size<1>, typename rbm_t::desc::parameters>::value;
     }
 
     static constexpr bool has_momentum(){
-        return desc::parameters::template contains<momentum>();
+        return rbm_t::desc::parameters::template contains<momentum>();
     }
 
     static constexpr bool is_parallel(){
-        return desc::parameters::template contains<parallel>();
+        return rbm_t::desc::parameters::template contains<parallel>();
     }
 
     static constexpr bool is_verbose(){
-        return desc::parameters::template contains<verbose>();
+        return rbm_t::desc::parameters::template contains<verbose>();
     }
 
     static constexpr bool has_shuffle(){
-        return desc::parameters::template contains<shuffle>();
+        return rbm_t::desc::parameters::template contains<shuffle>();
     }
 
     static constexpr bool is_dbn_only(){
-        return desc::parameters::template contains<dbn_only>();
+        return rbm_t::desc::parameters::template contains<dll::dbn_only>();
     }
 
     static constexpr bool has_sparsity(){
@@ -134,29 +124,23 @@ struct layer_traits {
     }
 
     static constexpr dll::sparsity_method sparsity_method(){
-        return detail::get_value_l<sparsity<dll::sparsity_method::NONE>, typename desc::parameters>::value;
+        return detail::get_value_l<sparsity<dll::sparsity_method::NONE>, typename rbm_t::desc::parameters>::value;
     }
 
-    template<cpp_enable_if_cst(has_bias_field<desc>::value)>
-    static constexpr enum bias_mode bias_mode(){
-        return rbm_t::desc::Bias;
-    }
-
-    template<cpp_disable_if_cst(has_bias_field<desc>::value)>
-    static constexpr enum bias_mode bias_mode(){
-        return dll::bias_mode::SIMPLE;
+    static constexpr enum dll::bias_mode bias_mode(){
+        return detail::get_value_l<bias<dll::bias_mode::SIMPLE>, typename rbm_t::desc::parameters>::value;
     }
 
     static constexpr decay_type decay(){
-        return detail::get_value_l<weight_decay<decay_type::NONE>, typename desc::parameters>::value;
+        return detail::get_value_l<weight_decay<decay_type::NONE>, typename rbm_t::desc::parameters>::value;
     }
 
     static constexpr bool init_weights(){
-        return desc::parameters::template contains<dll::init_weights>();
+        return rbm_t::desc::parameters::template contains<dll::init_weights>();
     }
 
     static constexpr bool free_energy(){
-        return desc::parameters::template contains<dll::free_energy>();
+        return rbm_t::desc::parameters::template contains<dll::free_energy>();
     }
 };
 
