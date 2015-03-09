@@ -125,6 +125,10 @@ struct layer_traits {
         return desc::parameters::template contains<shuffle>();
     }
 
+    static constexpr bool is_dbn_only(){
+        return desc::parameters::template contains<dbn_only>();
+    }
+
     static constexpr bool has_sparsity(){
         return sparsity_method() != dll::sparsity_method::NONE;
     }
