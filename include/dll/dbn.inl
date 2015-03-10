@@ -373,6 +373,7 @@ struct dbn final {
 
         //Pretrain each layer one-by-one
         if(dbn_traits<this_type>::save_memory()){
+            std::cout << "DBN: Pretraining done in batch mode to save memory" << std::endl;
             pretrain_layer_batch<0>(data, watcher, max_epochs);
         } else {
             pretrain_layer<0>(data, watcher, max_epochs);
