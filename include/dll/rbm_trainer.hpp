@@ -63,11 +63,6 @@ struct rbm_trainer {
         //NOP
     }
 
-    template<typename Iterator>
-    typename rbm_t::weight train(RBM& rbm, Iterator first, Iterator last, std::size_t max_epochs) const {
-        return train<false>(rbm, first, last, first, last, max_epochs);
-    }
-
     template<bool Denoising, typename IIterator, typename EIterator, cpp_enable_if_cst(layer_traits<rbm_t>::has_shuffle())>
     static void shuffle(IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast){
         static std::random_device rd;
@@ -112,14 +107,60 @@ struct rbm_trainer {
         typename std::vector<typename std::iterator_traits<Iterator>::value_type>::iterator,
         Iterator>;
 
-    template<bool Denoising = true, typename IIterator, typename EIterator>
-    typename rbm_t::weight train(RBM& rbm, IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast, std::size_t max_epochs) const {
+    std::size_t batch_size = 0;
+    std::size_t total_batches = 0;
+    typename rbm_t::weight last_error = 0.0;
+
+    //Note: input_first/input_last only relevant for its size, not
+    //values since they can point to the input of the first level
+    //and not the current level
+    template<bool Denoising = true, typename Iterator>
+    void init_training(RBM& rbm, Iterator input_first, Iterator input_last){
         rbm.momentum = rbm.initial_momentum;
 
         if(EnableWatcher){
             watcher.training_begin(rbm);
         }
 
+        //Compute the number of batches
+        batch_size = get_batch_size(rbm);
+
+        auto size = distance(input_first, input_last);
+
+        //TODO Better handling of incomplete batch size would solve this problem (this could be done by
+        //cleaning the data before the last batch)
+        if(size % batch_size != 0){
+            std::cout << "WARNING: The number of samples should be divisible by the batch size" << std::endl;
+            std::cout << "         This may cause discrepancies in the results." << std::endl;
+        }
+
+        //Only used for debugging purposes, no need to be precise
+        total_batches = size / batch_size;
+
+        last_error = 0.0;
+    }
+
+    template<typename Iterator>
+    typename rbm_t::weight train(RBM& rbm, Iterator first, Iterator last, std::size_t max_epochs){
+        return train<false>(rbm, first, last, first, last, max_epochs);
+    }
+
+    template<bool Denoising = false>
+    static auto get_trainer(RBM& rbm){
+        //Allocate the trainer on the heap (may be large)
+        return std::make_unique<trainer_t<rbm_t, Denoising>>(rbm);
+    }
+
+    typename rbm_t::weight finalize_training(RBM& rbm){
+        if(EnableWatcher){
+            watcher.training_end(rbm);
+        }
+
+        return last_error;
+    }
+
+    template<bool Denoising = true, typename IIterator, typename EIterator>
+    typename rbm_t::weight train(RBM& rbm, IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast, std::size_t max_epochs){
         using input_iterator_t = fix_iterator_t<rbm_t, IIterator>;
         using expected_iterator_t = fix_iterator_t<rbm_t, EIterator>;
 
@@ -136,93 +177,101 @@ struct rbm_trainer {
 
         std::tie(input_first, input_last, expected_first, expected_last) = prepare_it<Denoising>(ifirst, ilast, efirst, elast, input_copy, expected_copy);
 
+        //Initialize RBM and trainign parameters
+        init_training<Denoising>(rbm, input_first, input_last);
+
         //Some RBM may init weights based on the training data
+        //Note: This can't be done in init_training, since it will
+        //sometimes be called with the wrong input values
         init_weights(rbm, input_first, input_last);
 
-        auto trainer = std::make_unique<trainer_t<rbm_t, Denoising>>(rbm);
-
-        //Compute the number of batches
-        auto batch_size = get_batch_size(rbm);
-
-        //TODO Better handling of incomplete batch size would solve this problem (this could be done by
-        //cleaning the data before the last batch)
-        if(distance(input_first, input_last) % batch_size != 0){
-            std::cout << "WARNING: The number of samples should be divisible by the batch size" << std::endl;
-            std::cout << "         This may cause discrepancies in the results." << std::endl;
-        }
-
-        auto total_batches = std::distance(input_first, input_last) / batch_size;
-
-        typename rbm_t::weight last_error = 0.0;
+        //Allocate the trainer
+        auto trainer = get_trainer<Denoising>(rbm);
 
         //Train for max_epochs epoch
-        for(std::size_t epoch= 0; epoch < max_epochs; ++epoch){
+        for(std::size_t epoch = 0; epoch < max_epochs; ++epoch){
             //Shuffle if necessary
             shuffle<Denoising>(input_first, input_last, expected_first, expected_last);
-
-            std::size_t batches = 0;
-            std::size_t samples = 0;
-
-            auto iit = input_first;
-            auto eit = expected_first;
-            auto end = input_last;
 
             //Create a new context for this epoch
             rbm_training_context context;
 
-            while(iit != end){
-                auto istart = iit;
-                auto estart = eit;
+            //Start a new epoch
+            init_epoch();
 
-                std::size_t i = 0;
-                while(iit != end && i < batch_size){
-                    ++iit;
-                    ++eit;
-                    ++samples;
-                    ++i;
-                }
+            //Train on all the data
+            train_sub(input_first, input_last, expected_first, trainer, context, rbm);
 
-                ++batches;
+            //Finalize the current epoch
+            finalize_epoch(epoch, context, rbm);
 
-                auto input_batch = make_batch(istart, iit);
-                auto expected_batch = make_batch(estart, eit);
-                trainer->train_batch(input_batch, expected_batch, context);
-
-                if(EnableWatcher && layer_traits<rbm_t>::free_energy()){
-                    for(auto& v : input_batch){
-                        context.free_energy += rbm.free_energy(v);
-                    }
-                }
-
-                if(EnableWatcher && layer_traits<rbm_t>::is_verbose()){
-                    watcher.batch_end(rbm, batches, total_batches);
-                }
-            }
-
-            //Average all the gathered information
-            context.reconstruction_error /= batches;
-            context.sparsity /= batches;
-            context.free_energy /= samples;
-
-            //After some time increase the momentum
-            if(layer_traits<rbm_t>::has_momentum() && epoch == rbm.final_momentum_epoch){
-                rbm.momentum = rbm.final_momentum;
-            }
-
-            //Notify the watcher
-            if(EnableWatcher){
-                watcher.epoch_end(epoch, context, rbm);
-            }
-
-            //Save the error for the return value
-            last_error = context.reconstruction_error;
         }
 
+        return finalize_training(rbm);
+    }
+
+    std::size_t batches = 0;
+    std::size_t samples = 0;
+
+    void init_epoch(){
+        batches = 0;
+        samples = 0;
+    }
+
+    template<typename IIT, typename EIT, typename Trainer>
+    void train_sub(IIT input_first, IIT input_last, EIT expected_first, Trainer& trainer, rbm_training_context& context, rbm_t& rbm){
+        auto iit = input_first;
+        auto eit = expected_first;
+        auto end = input_last;
+
+        while(iit != end){
+            auto istart = iit;
+            auto estart = eit;
+
+            std::size_t i = 0;
+            while(iit != end && i < batch_size){
+                ++iit;
+                ++eit;
+                ++samples;
+                ++i;
+            }
+
+            ++batches;
+
+            auto input_batch = make_batch(istart, iit);
+            auto expected_batch = make_batch(estart, eit);
+            trainer->train_batch(input_batch, expected_batch, context);
+
+            if(EnableWatcher && layer_traits<rbm_t>::free_energy()){
+                for(auto& v : input_batch){
+                    context.free_energy += rbm.free_energy(v);
+                }
+            }
+
+            if(EnableWatcher && layer_traits<rbm_t>::is_verbose()){
+                watcher.batch_end(rbm, batches, total_batches);
+            }
+        }
+    }
+
+    void finalize_epoch(std::size_t epoch, rbm_training_context& context, rbm_t& rbm){
+        //Average all the gathered information
+        context.reconstruction_error /= batches;
+        context.sparsity /= batches;
+        context.free_energy /= samples;
+
+        //After some time increase the momentum
+        if(layer_traits<rbm_t>::has_momentum() && epoch == rbm.final_momentum_epoch){
+            rbm.momentum = rbm.final_momentum;
+        }
+
+        //Notify the watcher
         if(EnableWatcher){
-            watcher.training_end(rbm);
+            watcher.epoch_end(epoch, context, rbm);
         }
 
-        return last_error;
+        //Save the error for the return value
+        last_error = context.reconstruction_error;
     }
 };
 
