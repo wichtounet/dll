@@ -324,7 +324,7 @@ struct dbn final {
 
                 //Collect a big batch
                 maybe_parallel_foreach_i(pool, batch_start, it, [this,&activated_input](auto& v, std::size_t i){
-                    activation_probabilities<0, I>(v, activated_input[i]);
+                    this->activation_probabilities<0, I>(v, activated_input[i]);
                 });
 
                 //Train the RBM on this big batch
