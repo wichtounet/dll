@@ -431,8 +431,11 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
 
     //Compute the biases for sparsity
 
-    if(layer_traits<rbm_t>::bias_mode() == bias_mode::SIMPLE){
-        t.b_bias = mean_r(mean_l(t.h2_a)) - rbm.pbias;
+    if(layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE){
+        //Only b_bias are supported for now
+        if(layer_traits<rbm_t>::bias_mode() == bias_mode::SIMPLE){
+            t.b_bias = mean_r(mean_l(t.h2_a)) - rbm.pbias;
+        }
     }
 
     //Accumulate the sparsity
