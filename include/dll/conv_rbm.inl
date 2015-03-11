@@ -197,8 +197,13 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
             }
         }
 
-        nan_check_deep(v_a);
-        nan_check_deep(v_s);
+        if(P){
+            nan_check_deep(v_a);
+        }
+
+        if(S){
+            nan_check_deep(v_s);
+        }
     }
 
     template<typename V, typename H, cpp::enable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
