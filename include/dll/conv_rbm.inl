@@ -71,8 +71,10 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
     //Convolution data
 
-    conditional_fast_matrix_t<!dbn_only, weight, 2, K, NH1, NH2> v_cv;    //Temporary convolution
-    conditional_fast_matrix_t<!dbn_only, weight, 2, NV2, NV2> h_cv;     //Temporary convolution
+    //Note: These are used by activation functions and therefore are
+    //needed in dbn_only mode as well
+    etl::fast_matrix<weight, 2, K, NH1, NH2> v_cv;      //Temporary convolution
+    etl::fast_matrix<weight, 2, NV2, NV2> h_cv;         //Temporary convolution
 
     conv_rbm() : base_type() {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
