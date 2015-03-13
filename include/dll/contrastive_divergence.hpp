@@ -38,13 +38,13 @@ struct base_trainer {
 
     bool init = false;
 
-    template<typename T1, typename T2, bool M = layer_traits<rbm_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
-    T2& get_fgrad(T1& , T2& inc){
+    template<typename T1, typename T2, cpp_enable_if_cst(layer_traits<rbm_t>::has_momentum())>
+    decltype(auto) get_fgrad(T1& , T2& inc){
         return inc;
     }
 
-    template<typename T1, typename T2, bool M = layer_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
-    T1& get_fgrad(T1& grad, T2& ){
+    template<typename T1, typename T2, cpp_disable_if_cst(layer_traits<rbm_t>::has_momentum())>
+    decltype(auto) get_fgrad(T1& grad, T2& ){
         return grad;
     }
 
