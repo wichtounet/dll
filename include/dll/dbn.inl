@@ -29,10 +29,10 @@ void store_layer(const Layer& layer, std::ostream& os){
 }
 
 template<typename Layer, cpp_enable_if(layer_traits<Layer>::is_pooling_layer())>
-void load_layer(const Layer&, std::istream&) {}
+void load_layer(Layer&, std::istream&) {}
 
 template<typename Layer, cpp_disable_if(layer_traits<Layer>::is_pooling_layer())>
-void load_layer(const Layer& layer, std::istream& is){
+void load_layer(Layer& layer, std::istream& is){
     layer.load(is);
 }
 
