@@ -49,15 +49,15 @@ Features
 Building
 --------
 
-This library is completely header-only, there is no need to build it.
-
 The folder **include** must be included with the **-I** option, as well as the
 **etl/include** folder
 
+This library is completely header-only, there is no need to build it.
+
 However, this library makes extensive use of C++11 and C++14, therefore, a
-recent compiler is necessary to use it. This library is tested on CLang 3.4.1.
-It should compile on g++ 4.9.1, but it does not because G++ refuses to call
-static functions inside lambdas.  This will eventually be fixed out.
+recent compiler is necessary to use it. This library has been tested on clang 3.4.1,
+clang 3.5, clang 3.6 and g++ 4.9.1. If for some reasons, it should not work on one
+of the supported compilers, contact me and I'll fix it.
 
 This has never been tested on Windows. While it should compile on Mingw, I don't
 expect Visual Studio to be able to compile it for now. If you have problems
