@@ -160,7 +160,6 @@ struct base_ocv_rbm_visualizer {
     }
 };
 
-
 //rbm_ocv_config is used instead of directly passing the parameters because
 //adding non-type template parameters would break dll::watcher
 
@@ -193,14 +192,7 @@ struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
             filter_shape.height * tile_shape.height + (tile_shape.height + 1) * 1 + 2 * padding)
     {}
 
-    void epoch_end(std::size_t epoch, const rbm_training_context& context, const RBM& rbm){
-        printf("epoch %ld - Reconstruction error: %.5f - Free energy: %.3f - Sparsity: %.5f\n", epoch,
-            context.reconstruction_error, context.free_energy, context.sparsity);
-
-        buffer_image = cv::Scalar(255);
-
-        cv::putText(buffer_image, "epoch " + std::to_string(epoch), cv::Point(10,12), CV_FONT_NORMAL, 0.3, cv::Scalar(0), 1, 2);
-
+    void draw_weights(const RBM& rbm){
         for(std::size_t hi = 0; hi < tile_shape.width; ++hi){
             for(std::size_t hj = 0; hj < tile_shape.height; ++hj){
                 auto real_h = hi * tile_shape.height + hj;
@@ -239,6 +231,17 @@ struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
                 }
             }
         }
+    }
+
+    void epoch_end(std::size_t epoch, const rbm_training_context& context, const RBM& rbm){
+        printf("epoch %ld - Reconstruction error: %.5f - Free energy: %.3f - Sparsity: %.5f\n", epoch,
+            context.reconstruction_error, context.free_energy, context.sparsity);
+
+        buffer_image = cv::Scalar(255);
+
+        cv::putText(buffer_image, "epoch " + std::to_string(epoch), cv::Point(10,12), CV_FONT_NORMAL, 0.3, cv::Scalar(0), 1, 2);
+
+        draw_weights(rbm);
 
         refresh();
     }
@@ -264,14 +267,7 @@ struct opencv_rbm_visualizer<RBM, C, std::enable_if_t<layer_traits<RBM>::is_conv
             filter_shape.height * tile_shape.height + (tile_shape.height + 1) * 1 + 2 * padding)
     {}
 
-    void epoch_end(std::size_t epoch, const rbm_training_context& context, const RBM& rbm){
-        printf("epoch %ld - Reconstruction error: %.5f - Free energy: %.3f - Sparsity: %.5f\n", epoch,
-            context.reconstruction_error, context.free_energy, context.sparsity);
-
-        buffer_image = cv::Scalar(255);
-
-        cv::putText(buffer_image, "epoch " + std::to_string(epoch), cv::Point(10,12), CV_FONT_NORMAL, 0.3, cv::Scalar(0), 1, 2);
-
+    void draw_weights(const RBM& rbm){
         std::size_t channel = 0;
 
         for(std::size_t hi = 0; hi < tile_shape.width; ++hi){
@@ -306,6 +302,17 @@ struct opencv_rbm_visualizer<RBM, C, std::enable_if_t<layer_traits<RBM>::is_conv
                 }
             }
         }
+    }
+
+    void epoch_end(std::size_t epoch, const rbm_training_context& context, const RBM& rbm){
+        printf("epoch %ld - Reconstruction error: %.5f - Free energy: %.3f - Sparsity: %.5f\n", epoch,
+            context.reconstruction_error, context.free_energy, context.sparsity);
+
+        buffer_image = cv::Scalar(255);
+
+        cv::putText(buffer_image, "epoch " + std::to_string(epoch), cv::Point(10,12), CV_FONT_NORMAL, 0.3, cv::Scalar(0), 1, 2);
+
+        draw_weights(rbm);
 
         refresh();
     }
@@ -832,11 +839,21 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
     }
 };
 
-template <typename DBN, typename C>
+template<typename DBN, typename C>
 std::vector<cv::Mat> opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convolutional()>>::buffer_images;
 
-template <typename DBN, typename C>
+template<typename DBN, typename C>
 std::size_t opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convolutional()>>::current_image;
+
+template<typename RBM>
+void visualize_rbm(const RBM& rbm){
+    cv::namedWindow("RBM Training", cv::WINDOW_NORMAL);
+
+    opencv_rbm_visualizer<RBM> visualizer;
+    visualizer.draw_weights(rbm);
+    visualizer.refresh();
+    cv::waitKey(0);
+}
 
 #endif
 
