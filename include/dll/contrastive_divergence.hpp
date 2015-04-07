@@ -316,7 +316,7 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
         t.init = false;
     }
 
-    context.reconstruction_error += mean((t.vf - t.v2_a) * (t.vf - t.v2_a));
+    context.batch_error = mean((t.vf - t.v2_a) * (t.vf - t.v2_a));
 
     //Compute the gradients
     t.w_grad = mean_l(t.w_grad_b);
@@ -332,8 +332,7 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
         t.q_local_batch = mean_l(t.h2_a);
     }
 
-    //Accumulate the sparsity
-    context.sparsity += t.q_global_batch;
+    context.batch_sparsity = t.q_global_batch;
 
     //Update the weights and biases based on the gradients
     t.update(rbm);
@@ -437,13 +436,13 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
     }
 
     //Accumulate the sparsity
-    context.sparsity += t.q_global_batch;
+    context.batch_sparsity = t.q_global_batch;
 
     //Accumulate the error
     if(Denoising){
-        context.reconstruction_error += mean((t.vf - t.v2_a) * (t.vf - t.v2_a));
+        context.batch_error = mean((t.vf - t.v2_a) * (t.vf - t.v2_a));
     } else {
-        context.reconstruction_error += mean((t.v1 - t.v2_a) * (t.v1 - t.v2_a));
+        context.batch_error = mean((t.v1 - t.v2_a) * (t.v1 - t.v2_a));
     }
 
     //Update the weights and biases based on the gradients

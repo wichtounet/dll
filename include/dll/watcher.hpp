@@ -66,8 +66,9 @@ struct default_rbm_watcher {
     }
 
     template<typename RBM = R>
-    void batch_end(const RBM& /* rbm */, std::size_t batch, std::size_t batches){
-        std::cout << "Batch " << batch << "/" << batches << " is over" << std::endl;
+    void batch_end(const RBM& /* rbm */, const rbm_training_context& context, std::size_t batch, std::size_t batches){
+        printf("Batch %ld/%ld - Reconstruction error: %.5f - Sparsity: %.5f\n", batch, batches,
+            context.batch_error, context.batch_sparsity);
     }
 
     template<typename RBM = R>
@@ -140,8 +141,8 @@ struct histogram_watcher {
     }
 
     template<typename RBM = R>
-    void batch_end(const RBM& rbm, std::size_t batch, std::size_t batches){
-        parent.batch_end(rbm, batch, batches);
+    void batch_end(const RBM& rbm, const rbm_training_context& context, std::size_t batch, std::size_t batches){
+        parent.batch_end(rbm, context, batch, batches);
     }
 
     template<typename RBM = R>

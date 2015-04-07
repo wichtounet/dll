@@ -242,6 +242,9 @@ struct rbm_trainer {
             auto expected_batch = make_batch(estart, eit);
             trainer->train_batch(input_batch, expected_batch, context);
 
+            context.reconstruction_error += context.batch_error;
+            context.sparsity += context.batch_sparsity;
+
             if(EnableWatcher && layer_traits<rbm_t>::free_energy()){
                 for(auto& v : input_batch){
                     context.free_energy += rbm.free_energy(v);
@@ -249,7 +252,7 @@ struct rbm_trainer {
             }
 
             if(EnableWatcher && layer_traits<rbm_t>::is_verbose()){
-                watcher.batch_end(rbm, batches, total_batches);
+                watcher.batch_end(rbm, context, batches, total_batches);
             }
         }
     }
