@@ -24,6 +24,12 @@ OPENCV_LD_FLAGS=-lopencv_core -lopencv_imgproc -lopencv_highgui
 LIBSVM_LD_FLAGS=-lsvm
 TEST_LD_FLAGS=$(LIBSVM_LD_FLAGS)
 
+# Activate BLAS mode on demand
+ifneq (,$(DLL_BLAS))
+CXX_FLAGS += -DETL_BLAS_MODE $(shell pkg-config --cflags cblas)
+LD_FLAGS += $(shell pkg-config --libs cblas)
+endif
+
 CPP_FILES=$(wildcard test_compile/*.cpp)
 
 TEST_CPP_FILES=$(wildcard test/*.cpp)
