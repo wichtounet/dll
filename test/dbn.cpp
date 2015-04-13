@@ -450,4 +450,22 @@ TEST_CASE( "dbn/mnist_101", "dbn::slow_parallel" ) {
     dbn->pretrain(dataset.training_images, 20);
 }
 
+TEST_CASE( "dbn/mnist_102", "[dbn][bench][slow]" ) {
+    typedef dll::dbn_desc<
+        dll::dbn_layers<
+        dll::rbm_desc<28 * 28, 300, dll::momentum, dll::batch_size<24>, dll::init_weights>::rbm_t,
+        dll::rbm_desc<300, 1000, dll::momentum, dll::batch_size<24>>::rbm_t,
+        dll::rbm_desc<1000, 10, dll::momentum, dll::batch_size<24>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(2000);
+
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->pretrain(dataset.training_images, 20);
+}
+
 //}}}
