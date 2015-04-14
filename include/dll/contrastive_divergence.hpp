@@ -387,11 +387,11 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
         for(std::size_t channel = 0; channel < NC; ++channel){
             for(std::size_t k = 0; k < K; ++k){
                 if(Denoising){
-                    *etl::conv_2d_valid(t.vf(i)(channel), fflip(t.h1_a(i)(k)), t.w_pos(i)(channel)(k));
-                    *etl::conv_2d_valid(t.v2_a(i)(channel), fflip(t.h2_a(i)(k)), t.w_neg(i)(channel)(k));
+                    t.w_pos(i)(channel)(k) = etl::conv_2d_valid(t.vf(i)(channel), fflip(t.h1_a(i)(k)));
+                    t.w_neg(i)(channel)(k) = etl::conv_2d_valid(t.v2_a(i)(channel), fflip(t.h2_a(i)(k)));
                 } else {
-                    *etl::conv_2d_valid(t.v1(i)(channel), fflip(t.h1_a(i)(k)), t.w_pos(i)(channel)(k));
-                    *etl::conv_2d_valid(t.v2_a(i)(channel), fflip(t.h2_a(i)(k)), t.w_neg(i)(channel)(k));
+                    t.w_pos(i)(channel)(k) = etl::conv_2d_valid(t.v1(i)(channel), fflip(t.h1_a(i)(k)));
+                    t.w_neg(i)(channel)(k) = etl::conv_2d_valid(t.v2_a(i)(channel), fflip(t.h2_a(i)(k)));
                 }
             }
         }
