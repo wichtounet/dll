@@ -208,18 +208,14 @@ protected:
             //Definition according to G. Hinton
             //E(v,h) = -sum(ai*vi) - sum(bj*hj) -sum(vi*hj*wij)
 
-            etl::dyn_matrix<typename RBM::weight> t(1UL, num_hidden(rbm));
-
-            auto x = rbm.b + mul(v, rbm.w, t);
+            auto x = rbm.b + v * rbm.w;
 
             return -etl::dot(rbm.c, v) - etl::dot(rbm.b, h) - etl::sum(x);
         } else if(RBM::desc::visible_unit == unit_type::GAUSSIAN && RBM::desc::hidden_unit == unit_type::BINARY){
             //Definition according to G. Hinton
             //E(v,h) = -sum((vi - ai)^2/(2*var*var)) - sum(bj*hj) -sum((vi/var)*hj*wij)
 
-            etl::dyn_matrix<typename RBM::weight> t(1UL, num_hidden(rbm));
-
-            auto x = rbm.b + mul(v, rbm.w, t);
+            auto x = rbm.b + v * rbm.w;
 
             return etl::sum(etl::pow(v - rbm.c, 2) / 2.0) - etl::dot(rbm.b, h) - etl::sum(x);
         } else {
@@ -246,18 +242,14 @@ protected:
             //Definition according to G. Hinton
             //F(v) = -sum(ai*vi) - sum(log(1 + e^(xj)))
 
-            etl::dyn_matrix<typename RBM::weight> t(1UL, num_hidden(rbm));
-
-            auto x = rbm.b + etl::mul(v, rbm.w, t);
+            auto x = rbm.b + v * rbm.w;
 
             return -etl::dot(rbm.c, v) - etl::sum(etl::log(1.0 + etl::exp(x)));
         } else if(RBM::desc::visible_unit == unit_type::GAUSSIAN && RBM::desc::hidden_unit == unit_type::BINARY){
             //Definition computed from E(v,h)
             //F(v) = sum((vi-ai)^2/2) - sum(log(1 + e^(xj)))
 
-            etl::dyn_matrix<typename RBM::weight> t(1UL, num_hidden(rbm));
-
-            auto x = rbm.b + etl::mul(v, rbm.w, t);
+            auto x = rbm.b + v * rbm.w;
 
             return etl::sum(etl::pow(v - rbm.c, 2) / 2.0) - etl::sum(etl::log(1.0 + etl::exp(x)));
         } else {
