@@ -24,6 +24,8 @@ OPENCV_LD_FLAGS=-lopencv_core -lopencv_imgproc -lopencv_highgui
 LIBSVM_LD_FLAGS=-lsvm
 TEST_LD_FLAGS=$(LIBSVM_LD_FLAGS)
 
+RELEASE_FLAGS += -DETL_VECTORIZE
+
 # Activate BLAS mode on demand
 ifneq (,$(DLL_BLAS))
 CXX_FLAGS += -DETL_BLAS_MODE $(shell pkg-config --cflags cblas)
