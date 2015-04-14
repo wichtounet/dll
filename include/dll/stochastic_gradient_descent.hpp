@@ -84,7 +84,8 @@ struct sgd_trainer {
 
         static fast_matrix<weight, rbm_t::num_visible, rbm_t::num_hidden> t;
 
-        ctx.w_grad += etl::mmul(reshape<rbm_t::num_visible, 1>(inputs), reshape<1, rbm_t::num_hidden>(ctx.errors), t);
+        //TODO Recheck this multiplication
+        ctx.w_grad += etl::mul(reshape<rbm_t::num_visible, 1>(inputs), reshape<1, rbm_t::num_hidden>(ctx.errors), t);
 
         ctx.b_grad += ctx.errors;
     }
@@ -148,9 +149,9 @@ struct sgd_trainer {
 
                 using namespace etl;
 
-                static fast_matrix<weight, r2_t::num_visible, 1> t;
+                static fast_matrix<weight, r2_t::num_visible> t;
 
-                ctx1.errors = ctx1.o_a * (1 - ctx1.o_a) * mmul(r2.w, reshape<r2_t::num_hidden, 1>(ctx2.errors), t);
+                ctx1.errors = ctx1.o_a >> (1 - ctx1.o_a) >> mul(r2.w, ctx2.errors, t);
             });
 
             ++it;

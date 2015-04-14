@@ -16,7 +16,6 @@
 #include "cpp_utils/stop_watch.hpp"         //Performance counter
 
 #include "etl/etl.hpp"
-#include "etl/convolution.hpp"
 
 #include "standard_conv_rbm.hpp"  //The base class
 #include "base_conf.hpp"          //The configuration helpers
@@ -136,7 +135,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
         for(std::size_t channel = 0; channel < NC; ++channel){
             for(size_t k = 0; k < K; ++k){
-                etl::convolve_2d_valid(v_a(channel), fflip(w(channel)(k)), v_cv(0)(k));
+                v_cv(0)(k) = etl::conv_2d_valid(v_a(channel), fflip(w(channel)(k)));
             }
 
             v_cv(1) += v_cv(0);
@@ -195,7 +194,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
             h_cv(1) = 0.0;
 
             for(std::size_t k = 0; k < K; ++k){
-                etl::convolve_2d_full(h_s(k), w(channel)(k), h_cv(0));
+                h_cv(0) = etl::conv_2d_full(h_s(k), w(channel)(k));
                 h_cv(1) += h_cv(0);
             }
 
@@ -229,7 +228,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
         for(std::size_t channel = 0; channel < NC; ++channel){
             for(size_t k = 0; k < K; ++k){
-                etl::convolve_2d_valid(v_a(channel), fflip(w(channel)(k)), v_cv(0)(k));
+                v_cv(0)(k) = etl::conv_2d_valid(v_a(channel), fflip(w(channel)(k)));
             }
 
             v_cv(1) += v_cv(0);
@@ -262,13 +261,13 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
             for(std::size_t channel = 0; channel < NC; ++channel){
                 for(size_t k = 0; k < K; ++k){
-                    etl::convolve_2d_valid(v(channel), fflip(w(channel)(k)), v_cv(0)(k));
+                    v_cv(0)(k) = etl::conv_2d_valid(v(channel), fflip(w(channel)(k)));
                 }
 
                 v_cv(1) += v_cv(0);
             }
 
-            return - etl::sum(c * etl::sum_r(v)) - etl::sum(h * v_cv(1) + etl::rep<NH1, NH2>(b) * h);
+            return - etl::sum(c >> etl::sum_r(v)) - etl::sum((h >> v_cv(1)) + (etl::rep<NH1, NH2>(b) >> h));
         } else if(desc::visible_unit == unit_type::GAUSSIAN && desc::hidden_unit == unit_type::BINARY){
             //Definition according to Honglak Lee / Mixed with Gaussian
             //E(v,h) = - sum_k (hk (Wk*v) + bk hk) - sum_v ((v - c) ^ 2 / 2)
@@ -277,13 +276,13 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
             for(std::size_t channel = 0; channel < NC; ++channel){
                 for(size_t k = 0; k < K; ++k){
-                    etl::convolve_2d_valid(v(channel), fflip(w(channel)(k)), v_cv(0)(k));
+                    v_cv(0)(k) = etl::conv_2d_valid(v(channel), fflip(w(channel)(k)));
                 }
 
                 v_cv(1) += v_cv(0);
             }
 
-            return -sum(etl::pow(v - etl::rep<NV1, NV2>(c), 2) / 2.0) - etl::sum(h * v_cv(1) + etl::rep<NH1, NH2>(b) * h);
+            return -sum(etl::pow(v - etl::rep<NV1, NV2>(c), 2) / 2.0) - etl::sum((h >> v_cv(1)) + (etl::rep<NH1, NH2>(b) >> h));
         } else {
             return 0.0;
         }
@@ -309,7 +308,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
             for(std::size_t channel = 0; channel < NC; ++channel){
                 for(size_t k = 0; k < K; ++k){
-                    etl::convolve_2d_valid(v(channel), fflip(w(channel)(k)), v_cv(0)(k));
+                    v_cv(0)(k) = etl::conv_2d_valid(v(channel), fflip(w(channel)(k)));
                 }
 
                 v_cv(1) += v_cv(0);
@@ -317,7 +316,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
             auto x = etl::rep<NH1, NH2>(b) + v_cv(1);
 
-            return - etl::sum(c * etl::sum_r(v)) - etl::sum(etl::log(1.0 + etl::exp(x)));
+            return - etl::sum(c >> etl::sum_r(v)) - etl::sum(etl::log(1.0 + etl::exp(x)));
         } else if(desc::visible_unit == unit_type::GAUSSIAN && desc::hidden_unit == unit_type::BINARY){
             //Definition computed from E(v,h)
 
@@ -325,7 +324,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
             for(std::size_t channel = 0; channel < NC; ++channel){
                 for(size_t k = 0; k < K; ++k){
-                    etl::convolve_2d_valid(v(channel), fflip(w(channel)(k)), v_cv(0)(k));
+                    v_cv(0)(k) = etl::conv_2d_valid(v(channel), fflip(w(channel)(k)));
                 }
 
                 v_cv(1) += v_cv(0);

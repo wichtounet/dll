@@ -20,7 +20,6 @@
 #include "cpp_utils/assert.hpp"             //Assertions
 
 #include "etl/etl.hpp"
-#include "etl/convolution.hpp"
 
 #include "batch.hpp"
 #include "decay_type.hpp"
@@ -316,7 +315,7 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
         t.init = false;
     }
 
-    context.batch_error = mean((t.vf - t.v2_a) * (t.vf - t.v2_a));
+    context.batch_error = mean((t.vf - t.v2_a) >> (t.vf - t.v2_a));
 
     //Compute the gradients
     t.w_grad = mean_l(t.w_grad_b);
@@ -388,11 +387,11 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
         for(std::size_t channel = 0; channel < NC; ++channel){
             for(std::size_t k = 0; k < K; ++k){
                 if(Denoising){
-                    etl::convolve_2d_valid(t.vf(i)(channel), fflip(t.h1_a(i)(k)), t.w_pos(i)(channel)(k));
-                    etl::convolve_2d_valid(t.v2_a(i)(channel), fflip(t.h2_a(i)(k)), t.w_neg(i)(channel)(k));
+                    *etl::conv_2d_valid(t.vf(i)(channel), fflip(t.h1_a(i)(k)), t.w_pos(i)(channel)(k));
+                    *etl::conv_2d_valid(t.v2_a(i)(channel), fflip(t.h2_a(i)(k)), t.w_neg(i)(channel)(k));
                 } else {
-                    etl::convolve_2d_valid(t.v1(i)(channel), fflip(t.h1_a(i)(k)), t.w_pos(i)(channel)(k));
-                    etl::convolve_2d_valid(t.v2_a(i)(channel), fflip(t.h2_a(i)(k)), t.w_neg(i)(channel)(k));
+                    *etl::conv_2d_valid(t.v1(i)(channel), fflip(t.h1_a(i)(k)), t.w_pos(i)(channel)(k));
+                    *etl::conv_2d_valid(t.v2_a(i)(channel), fflip(t.h2_a(i)(k)), t.w_neg(i)(channel)(k));
                 }
             }
         }
@@ -440,9 +439,9 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
 
     //Accumulate the error
     if(Denoising){
-        context.batch_error = mean((t.vf - t.v2_a) * (t.vf - t.v2_a));
+        context.batch_error = mean(etl::scale((t.vf - t.v2_a), (t.vf - t.v2_a)));
     } else {
-        context.batch_error = mean((t.v1 - t.v2_a) * (t.v1 - t.v2_a));
+        context.batch_error = mean(etl::scale((t.v1 - t.v2_a), (t.v1 - t.v2_a)));
     }
 
     //Update the weights and biases based on the gradients
@@ -483,8 +482,8 @@ struct base_cd_trainer : base_trainer<RBM> {
     etl::fast_matrix<weight, batch_size, num_hidden> h2_a;
     etl::fast_matrix<weight, batch_size, num_hidden> h2_s;
 
-    etl::fast_matrix<weight, batch_size, 1, num_hidden> ht;
-    etl::fast_matrix<weight, batch_size, num_visible, 1> vt;
+    etl::fast_matrix<weight, batch_size, num_hidden> ht;
+    etl::fast_matrix<weight, batch_size, num_visible> vt;
 
     etl::fast_matrix<weight, batch_size, num_visible, num_hidden> w_grad_b;
 
@@ -571,8 +570,8 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
     etl::dyn_matrix<weight> h2_a;
     etl::dyn_matrix<weight> h2_s;
 
-    etl::dyn_matrix<weight, 3> ht;
-    etl::dyn_matrix<weight, 3> vt;
+    etl::dyn_matrix<weight, 2> ht;
+    etl::dyn_matrix<weight, 2> vt;
 
     etl::dyn_matrix<weight, 3> w_grad_b;
 
@@ -611,7 +610,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
             h1_a(get_batch_size(rbm), rbm.num_hidden), h1_s(get_batch_size(rbm), rbm.num_hidden),
             v2_a(get_batch_size(rbm), rbm.num_visible), v2_s(get_batch_size(rbm), rbm.num_visible),
             h2_a(get_batch_size(rbm), rbm.num_hidden), h2_s(get_batch_size(rbm), rbm.num_hidden),
-            ht(get_batch_size(rbm), 1UL, rbm.num_hidden), vt(get_batch_size(rbm), rbm.num_visible, 1UL),
+            ht(get_batch_size(rbm), rbm.num_hidden), vt(get_batch_size(rbm), rbm.num_visible),
             w_grad_b(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden),
             w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
             w_inc(0,0), b_inc(0), c_inc(0),
@@ -629,7 +628,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
             h1_a(get_batch_size(rbm), rbm.num_hidden), h1_s(get_batch_size(rbm), rbm.num_hidden),
             v2_a(get_batch_size(rbm), rbm.num_visible), v2_s(get_batch_size(rbm), rbm.num_visible),
             h2_a(get_batch_size(rbm), rbm.num_hidden), h2_s(get_batch_size(rbm), rbm.num_hidden),
-            ht(get_batch_size(rbm), 1UL, rbm.num_hidden), vt(get_batch_size(rbm), rbm.num_visible, 1UL),
+            ht(get_batch_size(rbm), rbm.num_hidden), vt(get_batch_size(rbm), rbm.num_visible),
             w_grad_b(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden),
             w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
             w_inc(rbm.num_visible, rbm.num_hidden, static_cast<weight>(0.0)), b_inc(rbm.num_hidden, static_cast<weight>(0.0)), c_inc(rbm.num_visible, static_cast<weight>(0.0)),

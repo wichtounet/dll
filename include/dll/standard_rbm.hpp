@@ -17,7 +17,7 @@
 #include "cpp_utils/stop_watch.hpp"    //Performance counter
 #include "cpp_utils/assert.hpp"
 
-#include "etl/multiplication.hpp"
+#include "etl/etl.hpp"
 
 #include "rbm_base.hpp"         //The base class
 #include "base_conf.hpp"
@@ -210,7 +210,7 @@ protected:
 
             etl::dyn_matrix<typename RBM::weight> t(1UL, num_hidden(rbm));
 
-            auto x = rbm.b + auto_vmmul(v, rbm.w, t);
+            auto x = rbm.b + mul(v, rbm.w, t);
 
             return -etl::dot(rbm.c, v) - etl::dot(rbm.b, h) - etl::sum(x);
         } else if(RBM::desc::visible_unit == unit_type::GAUSSIAN && RBM::desc::hidden_unit == unit_type::BINARY){
@@ -219,7 +219,7 @@ protected:
 
             etl::dyn_matrix<typename RBM::weight> t(1UL, num_hidden(rbm));
 
-            auto x = rbm.b + auto_vmmul(v, rbm.w, t);
+            auto x = rbm.b + mul(v, rbm.w, t);
 
             return etl::sum(etl::pow(v - rbm.c, 2) / 2.0) - etl::dot(rbm.b, h) - etl::sum(x);
         } else {
@@ -248,7 +248,7 @@ protected:
 
             etl::dyn_matrix<typename RBM::weight> t(1UL, num_hidden(rbm));
 
-            auto x = rbm.b + etl::auto_vmmul(v, rbm.w, t);
+            auto x = rbm.b + etl::mul(v, rbm.w, t);
 
             return -etl::dot(rbm.c, v) - etl::sum(etl::log(1.0 + etl::exp(x)));
         } else if(RBM::desc::visible_unit == unit_type::GAUSSIAN && RBM::desc::hidden_unit == unit_type::BINARY){
@@ -257,7 +257,7 @@ protected:
 
             etl::dyn_matrix<typename RBM::weight> t(1UL, num_hidden(rbm));
 
-            auto x = rbm.b + etl::auto_vmmul(v, rbm.w, t);
+            auto x = rbm.b + etl::mul(v, rbm.w, t);
 
             return etl::sum(etl::pow(v - rbm.c, 2) / 2.0) - etl::sum(etl::log(1.0 + etl::exp(x)));
         } else {
@@ -278,15 +278,15 @@ protected:
         //Compute activation probabilities
         if(P){
             if(hidden_unit == unit_type::BINARY){
-                h_a = sigmoid(b + auto_vmmul(v_a, w, t));
+                h_a = sigmoid(b + mul(v_a, w, t));
             } else if(hidden_unit == unit_type::RELU){
-                h_a = max(b + auto_vmmul(v_a, w, t), 0.0);
+                h_a = max(b + mul(v_a, w, t), 0.0);
             } else if(hidden_unit == unit_type::RELU6){
-                h_a = min(max(b + auto_vmmul(v_a, w, t), 0.0), 6.0);
+                h_a = min(max(b + mul(v_a, w, t), 0.0), 6.0);
             } else if(hidden_unit == unit_type::RELU1){
-                h_a = min(max(b + auto_vmmul(v_a, w, t), 0.0), 1.0);
+                h_a = min(max(b + mul(v_a, w, t), 0.0), 1.0);
             } else if(hidden_unit == unit_type::SOFTMAX){
-                h_a = softmax(b + auto_vmmul(v_a, w, t));
+                h_a = softmax(b + mul(v_a, w, t));
             }
 
             nan_check_deep(h_a);
@@ -311,15 +311,15 @@ protected:
         //Compute sampled values
         else if(S){
             if(hidden_unit == unit_type::BINARY){
-                h_s = bernoulli(sigmoid(b + auto_vmmul(v_a, w, t)));
+                h_s = bernoulli(sigmoid(b + mul(v_a, w, t)));
             } else if(hidden_unit == unit_type::RELU){
-                h_s = logistic_noise(max(b + auto_vmmul(v_a, w, t), 0.0)); //TODO This is probably wrong
+                h_s = logistic_noise(max(b + mul(v_a, w, t), 0.0)); //TODO This is probably wrong
             } else if(hidden_unit == unit_type::RELU6){
-                h_s = ranged_noise(min(max(b + auto_vmmul(v_a, w, t), 0.0), 6.0), 6.0); //TODO This is probably wrong
+                h_s = ranged_noise(min(max(b + mul(v_a, w, t), 0.0), 6.0), 6.0); //TODO This is probably wrong
             } else if(hidden_unit == unit_type::RELU1){
-                h_s = ranged_noise(min(max(b + auto_vmmul(v_a, w, t), 0.0), 1.0), 1.0); //TODO This is probably wrong
+                h_s = ranged_noise(min(max(b + mul(v_a, w, t), 0.0), 1.0), 1.0); //TODO This is probably wrong
             } else if(hidden_unit == unit_type::SOFTMAX){
-                h_s = one_if_max(softmax(b + auto_vmmul(v_a, w, t)));
+                h_s = one_if_max(softmax(b + mul(v_a, w, t)));
             }
 
             nan_check_deep(h_s);
@@ -332,11 +332,11 @@ protected:
 
         if(P){
             if(visible_unit == unit_type::BINARY){
-                v_a = sigmoid(c + auto_vmmul(w, h_s, t));
+                v_a = sigmoid(c + mul(w, h_s, t));
             } else if(visible_unit == unit_type::GAUSSIAN){
-                v_a = c + auto_vmmul(w, h_s, t);
+                v_a = c + mul(w, h_s, t);
             } else if(visible_unit == unit_type::RELU){
-                v_a = max(c + auto_vmmul(w, h_s, t), 0.0);
+                v_a = max(c + mul(w, h_s, t), 0.0);
             }
 
             nan_check_deep(v_a);
@@ -344,11 +344,11 @@ protected:
 
         if(S){
             if(visible_unit == unit_type::BINARY){
-                v_s = bernoulli(sigmoid(c + auto_vmmul(w, h_s, t)));
+                v_s = bernoulli(sigmoid(c + mul(w, h_s, t)));
             } else if(visible_unit == unit_type::GAUSSIAN){
-                v_s = c + auto_vmmul(w, h_s, t);
+                v_s = c + mul(w, h_s, t);
             } else if(visible_unit == unit_type::RELU){
-                v_s = logistic_noise(max(c + auto_vmmul(w, h_s, t), 0.0));
+                v_s = logistic_noise(max(c + mul(w, h_s, t), 0.0));
             }
 
             nan_check_deep(v_s);
