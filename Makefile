@@ -5,7 +5,7 @@ default: release
 include make-utils/flags.mk
 include make-utils/cpp-utils.mk
 
-CXX_FLAGS += -pedantic
+CXX_FLAGS += -pedantic -Werror -ftemplate-backtrace-limit=0
 
 ifneq (,$(findstring clang,$(CXX)))
 	CXX_FLAGS += -stdlib=libc++
@@ -19,7 +19,7 @@ RELEASE_FLAGS += -fno-rtti
 
 CXX_FLAGS += -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include
 LD_FLAGS += -lpthread
-#-Werror
+
 OPENCV_LD_FLAGS=-lopencv_core -lopencv_imgproc -lopencv_highgui
 LIBSVM_LD_FLAGS=-lsvm
 TEST_LD_FLAGS=$(LIBSVM_LD_FLAGS)
