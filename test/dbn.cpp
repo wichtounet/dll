@@ -91,6 +91,8 @@ TEST_CASE( "dbn/mnist_3", "dbn::labels" ) {
     REQUIRE(error < 0.3);
 }
 
+//TODO SGD is broken
+
 TEST_CASE( "dbn/mnist_4", "dbn::sgd" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
