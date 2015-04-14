@@ -92,6 +92,7 @@ TEST_CASE( "dbn/mnist_3", "dbn::labels" ) {
 }
 
 //TODO SGD is broken
+//Working in c56f36388b6b8ff5b69e93e44122315a216024d4
 
 TEST_CASE( "dbn/mnist_4", "dbn::sgd" ) {
     typedef dll::dbn_desc<
