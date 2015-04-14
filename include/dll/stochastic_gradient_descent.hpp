@@ -78,14 +78,11 @@ struct sgd_trainer {
 
     template<typename RBM, typename Context, typename Inputs>
     static void compute_gradients(RBM& , Context& ctx, const Inputs& inputs){
-        using namespace etl;
-
-        using rbm_t = RBM;
-
-        static fast_matrix<weight, rbm_t::num_visible, rbm_t::num_hidden> t;
-
-        //TODO Recheck this multiplication
-        ctx.w_grad += etl::mul(reshape<rbm_t::num_visible, 1>(inputs), reshape<1, rbm_t::num_hidden>(ctx.errors), t);
+        for(std::size_t i = 0; i < etl::rows(inputs); i++){
+            for(std::size_t j = 0; j < etl::rows(ctx.errors); j++){
+                ctx.w_grad(i,j) += inputs(i) * ctx.errors(j);
+            }
+        }
 
         ctx.b_grad += ctx.errors;
     }
@@ -145,13 +142,7 @@ struct sgd_trainer {
             cpp::for_each_rpair_i(tuples, rbm_contexts, [](std::size_t, auto&, auto& r2, auto& ctx1, auto& ctx2){
                 this_type::compute_gradients(r2, ctx2, ctx1.o_a);
 
-                typedef typename std::remove_reference<decltype(r2)>::type r2_t;
-
-                using namespace etl;
-
-                static fast_matrix<weight, r2_t::num_visible> t;
-
-                ctx1.errors = ctx1.o_a >> (1 - ctx1.o_a) >> mul(r2.w, ctx2.errors, t);
+                ctx1.errors = ctx1.o_a >> (1 - ctx1.o_a) >> (r2.w * ctx2.errors);
             });
 
             ++it;
@@ -169,37 +160,44 @@ struct sgd_trainer {
         //Apply gradients
 
         cpp::for_each(tuples, rbm_contexts, [this](auto& rbm, auto& context){
-            //Update momentum gradients
+            //Update the gradients
+            this->update_grad(rbm.w, context.w_grad, w_decay(dbn_traits<dbn_t>::decay()), 0.0);
+            this->update_grad(rbm.b, context.b_grad, b_decay(dbn_traits<dbn_t>::decay()), 0.0);
+            this->update_grad(rbm.c, context.c_grad, b_decay(dbn_traits<dbn_t>::decay()), 0.0);
+
+            //Update momentum and learning rate
             if(dbn_traits<dbn_t>::has_momentum()){
                 auto momentum = dbn.momentum;
+                auto eps = dbn.learning_rate;
 
-                context.w_inc = momentum * context.w_inc + (1 - momentum) * context.w_grad;
-                context.b_inc = momentum * context.b_inc + (1 - momentum) * context.b_grad;
-                context.c_inc = momentum * context.c_inc + (1 - momentum) * context.c_grad;
+                context.w_inc = momentum * context.w_inc + eps * context.w_grad;
+                context.b_inc = momentum * context.b_inc + eps * context.b_grad;
+                context.c_inc = momentum * context.c_inc + eps * context.c_grad;
+            } else {
+                auto eps = dbn.learning_rate;
+
+                context.w_grad *= eps;
+                context.b_grad *= eps;
+                context.c_grad *= eps;
             }
 
-            //The final gradients;
-            const auto& w_fgrad = this_type::get_fgrad(context.w_grad, context.w_inc);
-            const auto& b_fgrad = this_type::get_fgrad(context.b_grad, context.b_inc);
-            const auto& c_fgrad = this_type::get_fgrad(context.c_grad, context.c_inc);
-
-            this->update(rbm.w, w_fgrad, w_decay(dbn_traits<dbn_t>::decay()), 0.0);
-            this->update(rbm.b, b_fgrad, b_decay(dbn_traits<dbn_t>::decay()), 0.0);
-            this->update(rbm.c, c_fgrad, b_decay(dbn_traits<dbn_t>::decay()), 0.0);
+            //Apply the final gradients
+            rbm.w += this_type::get_fgrad(context.w_grad, context.w_inc);
+            rbm.b += this_type::get_fgrad(context.b_grad, context.b_inc);
+            rbm.c += this_type::get_fgrad(context.c_grad, context.c_inc);
         });
     }
 
     template<typename V, typename G>
-    void update(V& value, const G& grad, decay_type decay, double penalty){
-        auto learning_rate = dbn.learning_rate;
+    void update_grad(const V& value, G& grad, decay_type decay, double penalty){
         auto weight_cost = dbn.weight_cost;
 
         if(decay == decay_type::L1){
-            value += learning_rate * grad - learning_rate * weight_cost * abs(value) - penalty;
+            grad = grad - weight_cost * abs(value) - penalty;
         } else if(decay == decay_type::L2){
-            value += learning_rate * grad - learning_rate * weight_cost * value - penalty;
+            grad = grad - weight_cost * value - penalty;
         } else {
-            value += learning_rate * grad - penalty;
+            grad = grad - penalty;
         }
     }
 
