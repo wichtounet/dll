@@ -51,7 +51,8 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     static constexpr const std::size_t NW1 = NV1 - NH1 + 1; //By definition
     static constexpr const std::size_t NW2 = NV2 - NH2 + 1; //By definition
 
-    static constexpr bool dbn_only = layer_traits<this_type>::is_dbn_only();
+    static constexpr const bool dbn_only = layer_traits<this_type>::is_dbn_only();
+    static constexpr const bool memory = layer_traits<this_type>::is_memory();
 
     etl::fast_matrix<weight, NC, K, NW1, NW2> w;      //shared weights
     etl::fast_vector<weight, K> b;                  //hidden biases bk
@@ -70,10 +71,13 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
     //Convolution data
 
+    static constexpr const std::size_t V_CV_CHANNELS = 2;
+    static constexpr const std::size_t H_CV_CHANNELS = 2;
+
     //Note: These are used by activation functions and therefore are
     //needed in dbn_only mode as well
-    etl::fast_matrix<weight, 2, K, NH1, NH2> v_cv;      //Temporary convolution
-    etl::fast_matrix<weight, 2, NV2, NV2> h_cv;         //Temporary convolution
+    etl::fast_matrix<weight, V_CV_CHANNELS, K, NH1, NH2> v_cv;      //Temporary convolution
+    etl::fast_matrix<weight, H_CV_CHANNELS, NV2, NV2> h_cv;         //Temporary convolution
 
     conv_rbm() : base_type() {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution

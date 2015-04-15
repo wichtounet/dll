@@ -683,6 +683,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
     static constexpr const auto NW2 = rbm_t::NW2;
 
     static constexpr const auto batch_size = layer_traits<rbm_t>::batch_size();
+    static constexpr const bool memory = layer_traits<rbm_t>::is_memory();
 
     typedef typename rbm_t::weight weight;
 
@@ -719,8 +720,11 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
 
     //}}} Sparsity biases end
 
-    etl::fast_matrix<weight, batch_size, 2, K, NH1, NH2> v_cv;
-    etl::fast_matrix<weight, batch_size, 2, NV1, NV2> h_cv;
+    static constexpr const std::size_t V_CV_CHANNELS = 2;
+    static constexpr const std::size_t H_CV_CHANNELS = 2;
+
+    etl::fast_matrix<weight, batch_size, V_CV_CHANNELS, K, NH1, NH2> v_cv;
+    etl::fast_matrix<weight, batch_size, H_CV_CHANNELS, NV1, NV2> h_cv;
 
     conditional_fast_matrix_t<Persistent, weight, batch_size, K, NH1, NH2> p_h_a;
     conditional_fast_matrix_t<Persistent, weight, batch_size, K, NH1, NH2> p_h_s;

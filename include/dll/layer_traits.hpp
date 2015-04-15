@@ -119,6 +119,10 @@ struct layer_traits {
         return rbm_t::desc::parameters::template contains<dbn_only>();
     }
 
+    static constexpr bool is_memory(){
+        return rbm_t::desc::parameters::template contains<memory>();
+    }
+
     static constexpr bool has_sparsity(){
         return sparsity_method() != dll::sparsity_method::NONE;
     }
