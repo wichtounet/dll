@@ -124,12 +124,20 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
         using namespace etl;
 
-        v_cv(1) = 0;
+        auto w_f = force_temporary(w);
+
+        //flip all the kernels horizontally and vertically
 
         for(std::size_t channel = 0; channel < NC; ++channel){
             for(size_t k = 0; k < K; ++k){
-                v_cv(0)(k) = conv_2d_valid(v_a(channel), fflip(w(channel)(k)));
+                fflip_inplace(w_f(channel)(k));
             }
+        }
+
+        v_cv(1) = 0;
+
+        for(std::size_t channel = 0; channel < NC; ++channel){
+            conv_2d_valid_multi(v_a(channel), w_f(channel), v_cv(0));
 
             v_cv(1) += v_cv(0);
         }

@@ -349,9 +349,6 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
     maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(),
             [&](const auto& input, const auto& expected, std::size_t i)
     {
-        constexpr const auto K = rbm_t::K;
-        constexpr const auto NC = rbm_t::NC;
-
         //Copy input/expected for computations
         t.v1(i) = input;
 
@@ -384,15 +381,24 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
 
         //Compute gradients
 
+        constexpr const auto K = rbm_t::K;
+        constexpr const auto NC = rbm_t::NC;
+
+        auto w_f_1 = force_temporary(t.h1_a(i));
+        auto w_f_2 = force_temporary(t.h2_a(i));
+
+        for(std::size_t k = 0; k < K; ++k){
+            fflip_inplace(w_f_1(k));
+            fflip_inplace(w_f_2(k));
+        }
+
         for(std::size_t channel = 0; channel < NC; ++channel){
-            for(std::size_t k = 0; k < K; ++k){
-                if(Denoising){
-                    t.w_pos(i)(channel)(k) = etl::conv_2d_valid(t.vf(i)(channel), fflip(t.h1_a(i)(k)));
-                    t.w_neg(i)(channel)(k) = etl::conv_2d_valid(t.v2_a(i)(channel), fflip(t.h2_a(i)(k)));
-                } else {
-                    t.w_pos(i)(channel)(k) = etl::conv_2d_valid(t.v1(i)(channel), fflip(t.h1_a(i)(k)));
-                    t.w_neg(i)(channel)(k) = etl::conv_2d_valid(t.v2_a(i)(channel), fflip(t.h2_a(i)(k)));
-                }
+            if(Denoising){
+                conv_2d_valid_multi(t.vf(i)(channel), w_f_1, t.w_pos(i)(channel));
+                conv_2d_valid_multi(t.v2_a(i)(channel), w_f_2, t.w_neg(i)(channel));
+            } else {
+                conv_2d_valid_multi(t.v1(i)(channel), w_f_1, t.w_pos(i)(channel));
+                conv_2d_valid_multi(t.v2_a(i)(channel), w_f_2, t.w_neg(i)(channel));
             }
         }
     });
