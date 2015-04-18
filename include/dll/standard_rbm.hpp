@@ -347,6 +347,98 @@ protected:
         }
     }
 
+    template<bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W>
+    static void batch_std_activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V&, const B& b, const W& w){
+        using namespace etl;
+
+        const auto Batch = etl::dim<0>(h_a);
+
+        cpp_assert(etl::dim<0>(h_s) == Batch && etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
+
+        //Compute activation probabilities
+        if(P){
+            if(hidden_unit == unit_type::BINARY){
+                h_a = sigmoid(rep_l(b, Batch) + mul(v_a, w));
+            } else if(hidden_unit == unit_type::RELU){
+                h_a = max(rep_l(b, Batch) + mul(v_a, w), 0.0);
+            } else if(hidden_unit == unit_type::RELU6){
+                h_a = min(max(rep_l(b, Batch) + mul(v_a,w), 0.0), 6.0);
+            } else if(hidden_unit == unit_type::RELU1){
+                h_a = min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 1.0);
+            } else if(hidden_unit == unit_type::SOFTMAX){
+                h_a = softmax(rep_l(b, Batch) + mul(v_a, w));
+            }
+
+            nan_check_deep(h_a);
+
+            //Compute sampled values directly
+            if(S){
+                if(hidden_unit == unit_type::BINARY){
+                    h_s = bernoulli(h_a);
+                } else if(hidden_unit == unit_type::RELU){
+                    h_s = logistic_noise(h_a); //TODO This is probably wrong
+                } else if(hidden_unit == unit_type::RELU6){
+                    h_s = ranged_noise(h_a, 6.0); //TODO This is probably wrong
+                } else if(hidden_unit == unit_type::RELU1){
+                    h_s = ranged_noise(h_a, 1.0); //TODO This is probably wrong
+                } else if(hidden_unit == unit_type::SOFTMAX){
+                    h_s = one_if_max(h_a);
+                }
+
+                nan_check_deep(h_s);
+            }
+        }
+        //Compute sampled values
+        else if(S){
+            if(hidden_unit == unit_type::BINARY){
+                h_s = bernoulli(sigmoid(rep_l(b, Batch) + mul(v_a, w)));
+            } else if(hidden_unit == unit_type::RELU){
+                h_s = logistic_noise(max(rep_l(b, Batch) + mul(v_a, w), 0.0)); //TODO This is probably wrong
+            } else if(hidden_unit == unit_type::RELU6){
+                h_s = ranged_noise(min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 6.0), 6.0); //TODO This is probably wrong
+            } else if(hidden_unit == unit_type::RELU1){
+                h_s = ranged_noise(min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 1.0), 1.0); //TODO This is probably wrong
+            } else if(hidden_unit == unit_type::SOFTMAX){
+                h_s = one_if_max(softmax(rep_l(b, Batch) + mul(v_a, w)));
+            }
+
+            nan_check_deep(h_s);
+        }
+    }
+
+    template<bool P = true, bool S = true, typename H, typename V, typename C, typename W>
+    static void batch_std_activate_visible(const H&, const H& h_s, V&& v_a, V&& v_s, const C& c, const W& w){
+        using namespace etl;
+
+        const auto Batch = etl::dim<0>(v_s);
+
+        cpp_assert(etl::dim<0>(h_s) == Batch && etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
+
+        if(P){
+            if(visible_unit == unit_type::BINARY){
+                v_a = sigmoid(rep_l(c,Batch) + transpose(mul(w, transpose(h_s))));
+            } else if(visible_unit == unit_type::GAUSSIAN){
+                v_a = rep_l(c,Batch) + mul(w, transpose(h_s));
+            } else if(visible_unit == unit_type::RELU){
+                v_a = max(rep_l(c,Batch) + mul(w, transpose(h_s)), 0.0);
+            }
+
+            nan_check_deep(v_a);
+        }
+
+        if(S){
+            if(visible_unit == unit_type::BINARY){
+                v_s = bernoulli(sigmoid(rep_l(c,Batch) + transpose(mul(w, transpose(h_s)))));
+            } else if(visible_unit == unit_type::GAUSSIAN){
+                v_s = rep_l(c,Batch) + mul(w, transpose(h_s));
+            } else if(visible_unit == unit_type::RELU){
+                v_s = logistic_noise(max(rep_l(c,Batch) + mul(w, transpose(h_s)), 0.0));
+            }
+
+            nan_check_deep(v_s);
+        }
+    }
+
 public:
 
     //Utilities to be used by DBNs

@@ -145,6 +145,16 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
 
         base_type::template std_activate_visible(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), c, w, std::forward<T>(t));
     }
+
+    template<bool P = true, bool S = true, typename H1, typename H2, typename V>
+    void batch_activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s) const {
+        base_type::template batch_std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w);
+    }
+
+    template<bool P = true, bool S = true, typename H, typename V>
+    void batch_activate_visible(const H& h_a, const H& h_s, V&& v_a, V&& v_s) const {
+        base_type::template batch_std_activate_visible<P, S>(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), c, w);
+    }
 };
 
 } //end of dll namespace
