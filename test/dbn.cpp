@@ -438,11 +438,11 @@ TEST_CASE( "dbn/mnist_16", "dbn::fast" ) {
 TEST_CASE( "dbn/mnist_101", "dbn::slow_parallel" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 300, dll::momentum, dll::batch_size<48>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<300, 500, dll::momentum, dll::batch_size<48>>::rbm_t,
-        dll::rbm_desc<500, 10, dll::momentum, dll::batch_size<48>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>>::dbn_t dbn_t;
+        dll::rbm_desc<28 * 28, 300, dll::momentum, dll::parallel, dll::batch_size<24>, dll::init_weights>::rbm_t,
+        dll::rbm_desc<300, 1000, dll::momentum, dll::parallel, dll::batch_size<24>>::rbm_t,
+        dll::rbm_desc<1000, 10, dll::momentum, dll::parallel, dll::batch_size<24>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1099);
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(2000);
 
     REQUIRE(!dataset.training_images.empty());
 
