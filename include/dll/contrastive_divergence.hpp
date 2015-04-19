@@ -244,6 +244,115 @@ void update_convolutional(RBM& rbm, Trainer& t){
     nan_check_deep(rbm.c);
 }
 
+#ifndef ETL_BLAS_MODE
+
+template<typename Weight, typename Trainer>
+void batch_compute_gradients(Trainer& t){
+    const auto B = etl::dim<0>(t.w_grad_b);
+
+    for(std::size_t b = 0; b < B; b++){
+        for(std::size_t i = 0; i < etl::dim<1>(t.w_grad_b); i++){
+            for(std::size_t j = 0; j < etl::dim<2>(t.w_grad_b); j++){
+                t.w_grad(i,j) += t.vf(b,i) * t.h1_a(b,j) - t.v2_a(b,i) * t.h2_a(b,j);
+            }
+        }
+    }
+
+    for(std::size_t b = 0; b < B; b++){
+        for(std::size_t i = 0; i < etl::dim<1>(t.h1_a); i++){
+            t.b_grad(i) += t.h1_a(b,i) - t.h2_a(b,i);
+        }
+    }
+
+    for(std::size_t b = 0; b < B; b++){
+        for(std::size_t i = 0; i < etl::dim<1>(t.vf); i++){
+            t.c_grad(i) += t.vf(b,i) - t.v2_a(b,i);
+        }
+    }
+
+    t.w_grad /= B;
+    t.b_grad /= B;
+    t.c_grad /= B;
+}
+
+#else
+
+template<typename Weight, typename Trainer, cpp_enable_if(std::is_same<Weight, float>::value)>
+void batch_compute_gradients(Trainer& t){
+    const auto B = etl::dim<0>(t.w_grad_b);
+
+    auto Ba = static_cast<float>(B);
+
+    for(std::size_t b = 0; b < B; b++){
+        cblas_sger(
+            CblasRowMajor, 
+            etl::dim<1>(t.vf), etl::dim<1>(t.h1_a),
+            1.0 / Ba,
+            t.vf(b).memory_start(), 1,
+            t.h1_a(b).memory_start(), 1,
+            t.w_grad.memory_start(), etl::dim<1>(t.h1_a)
+        );
+
+        cblas_sger(
+            CblasRowMajor, 
+            etl::dim<1>(t.v2_a), etl::dim<1>(t.h2_a),
+            -1.0 / Ba,
+            t.v2_a(b).memory_start(), 1,
+            t.h2_a(b).memory_start(), 1,
+            t.w_grad.memory_start(), etl::dim<1>(t.h2_a)
+        );
+    }
+
+    for(std::size_t b = 0; b < B; b++){
+        cblas_saxpy(etl::dim<1>(t.h1_a), 1.0 / Ba, t.h1_a(b).memory_start(), 1, t.b_grad.memory_start(), 1);
+        cblas_saxpy(etl::dim<1>(t.h2_a), -1.0 / Ba, t.h2_a(b).memory_start(), 1, t.b_grad.memory_start(), 1);
+    }
+
+    for(std::size_t b = 0; b < B; b++){
+        cblas_saxpy(etl::dim<1>(t.vf), 1.0 / Ba, t.vf(b).memory_start(), 1, t.c_grad.memory_start(), 1);
+        cblas_saxpy(etl::dim<1>(t.v2_a), -1.0 / Ba, t.v2_a(b).memory_start(), 1, t.c_grad.memory_start(), 1);
+    }
+}
+
+template<typename Weight, typename Trainer, cpp_enable_if(std::is_same<Weight, double>::value)>
+void batch_compute_gradients(Trainer& t){
+    const auto B = etl::dim<0>(t.w_grad_b);
+
+    auto Ba = static_cast<float>(B);
+
+    for(std::size_t b = 0; b < B; b++){
+        cblas_dger(
+            CblasRowMajor, 
+            etl::dim<1>(t.vf), etl::dim<1>(t.h1_a),
+            1.0 / Ba,
+            t.vf(b).memory_start(), 1,
+            t.h1_a(b).memory_start(), 1,
+            t.w_grad.memory_start(), etl::dim<1>(t.h1_a)
+        );
+
+        cblas_dger(
+            CblasRowMajor, 
+            etl::dim<1>(t.v2_a), etl::dim<1>(t.h2_a),
+            -1.0 / Ba,
+            t.v2_a(b).memory_start(), 1,
+            t.h2_a(b).memory_start(), 1,
+            t.w_grad.memory_start(), etl::dim<1>(t.h2_a)
+        );
+    }
+
+    for(std::size_t b = 0; b < B; b++){
+        cblas_daxpy(etl::dim<1>(t.h1_a), 1.0 / Ba, t.h1_a(b).memory_start(), 1, t.b_grad.memory_start(), 1);
+        cblas_daxpy(etl::dim<1>(t.h2_a), -1.0 / Ba, t.h2_a(b).memory_start(), 1, t.b_grad.memory_start(), 1);
+    }
+
+    for(std::size_t b = 0; b < B; b++){
+        cblas_daxpy(etl::dim<1>(t.vf), 1.0 / Ba, t.vf(b).memory_start(), 1, t.c_grad.memory_start(), 1);
+        cblas_daxpy(etl::dim<1>(t.v2_a), -1.0 / Ba, t.v2_a(b).memory_start(), 1, t.c_grad.memory_start(), 1);
+    }
+}
+
+#endif
+
 /* The training procedures */
 
 template<bool Persistent, std::size_t K, typename T, typename RBM, typename Trainer>
@@ -353,31 +462,7 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
         t.b_grad = 0;
         t.c_grad = 0;
 
-        const auto B = etl::dim<0>(t.w_grad_b);
-
-        for(std::size_t b = 0; b < B; b++){
-            for(std::size_t i = 0; i < etl::dim<1>(t.w_grad_b); i++){
-                for(std::size_t j = 0; j < etl::dim<2>(t.w_grad_b); j++){
-                    t.w_grad(i,j) += t.vf(b,i) * t.h1_a(b,j) - t.v2_a(b,i) * t.h2_a(b,j);
-                }
-            }
-        }
-
-        for(std::size_t b = 0; b < B; b++){
-            for(std::size_t i = 0; i < etl::dim<1>(t.h1_a); i++){
-                t.b_grad(i) += t.h1_a(b,i) - t.h2_a(b,i);
-            }
-        }
-
-        for(std::size_t b = 0; b < B; b++){
-            for(std::size_t i = 0; i < etl::dim<1>(t.vf); i++){
-                t.c_grad(i) += t.vf(b,i) - t.v2_a(b,i);
-            }
-        }
-
-        t.w_grad /= B;
-        t.b_grad /= B;
-        t.c_grad /= B;
+        batch_compute_gradients<etl::value_t<decltype(t.w_grad)>>(t);
     }
 
     if(Persistent){
