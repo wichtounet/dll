@@ -308,6 +308,11 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
                 }
             }
         });
+
+        //Compute the gradients
+        t.w_grad = mean_l(t.w_grad_b);
+        t.b_grad = mean_l(t.h1_a - t.h2_a);
+        t.c_grad = mean_l(t.vf - t.v2_a);
     } else {
         //Copy input/expected for computations
         auto iit = input_batch.begin();
@@ -342,13 +347,37 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
             rbm.template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
         }
 
-        for(std::size_t b = 0; b < etl::dim<0>(t.w_grad_b); b++){
+        //Compute the gradients
+
+        t.w_grad = 0;
+        t.b_grad = 0;
+        t.c_grad = 0;
+
+        const auto B = etl::dim<0>(t.w_grad_b);
+
+        for(std::size_t b = 0; b < B; b++){
             for(std::size_t i = 0; i < etl::dim<1>(t.w_grad_b); i++){
                 for(std::size_t j = 0; j < etl::dim<2>(t.w_grad_b); j++){
-                    t.w_grad_b(b,i,j) = t.vf(b,i) * t.h1_a(b,j) - t.v2_a(b,i) * t.h2_a(b,j);
+                    t.w_grad(i,j) += t.vf(b,i) * t.h1_a(b,j) - t.v2_a(b,i) * t.h2_a(b,j);
                 }
             }
         }
+
+        for(std::size_t b = 0; b < B; b++){
+            for(std::size_t i = 0; i < etl::dim<1>(t.h1_a); i++){
+                t.b_grad(i) += t.h1_a(b,i) - t.h2_a(b,i);
+            }
+        }
+
+        for(std::size_t b = 0; b < B; b++){
+            for(std::size_t i = 0; i < etl::dim<1>(t.vf); i++){
+                t.c_grad(i) += t.vf(b,i) - t.v2_a(b,i);
+            }
+        }
+
+        t.w_grad /= B;
+        t.b_grad /= B;
+        t.c_grad /= B;
     }
 
     if(Persistent){
@@ -359,11 +388,6 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
     }
 
     context.batch_error = mean((t.vf - t.v2_a) >> (t.vf - t.v2_a));
-
-    //Compute the gradients
-    t.w_grad = mean_l(t.w_grad_b);
-    t.b_grad = mean_l(t.h1_a - t.h2_a);
-    t.c_grad = mean_l(t.vf - t.v2_a);
 
     nan_check_deep_3(t.w_grad, t.b_grad, t.c_grad);
 
