@@ -117,17 +117,19 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
     }
 
     template<bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2>
-    void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& v_s){
+    void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& v_s) const {
+        etl::fast_dyn_matrix<weight, 2, K, NH1, NH2> v_cv;      //Temporary convolution
         activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, v_cv);
     }
 
     template<bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2>
-    void activate_visible(const H1& h_a, const H2& h_s, V1&& v_a, V2&& v_s){
+    void activate_visible(const H1& h_a, const H2& h_s, V1&& v_a, V2&& v_s) const {
+        etl::fast_dyn_matrix<weight, 2, NV1, NV2> h_cv;         //Temporary convolution
         activate_visible<P, S>(h_a, h_s, std::forward<V1>(v_a), std::forward<V2>(v_s), h_cv);
     }
 
     template<bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename VCV>
-    void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2&, VCV&& v_cv){
+    void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2&, VCV&& v_cv) const {
         static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit), "Invalid hidden unit type");
         static_assert(P, "Computing S without P is not implemented");
 
@@ -184,7 +186,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
     }
 
     template<bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename HCV>
-    void activate_visible(const H1&, const H2& h_s, V1&& v_a, V2&& v_s, HCV&& h_cv){
+    void activate_visible(const H1&, const H2& h_s, V1&& v_a, V2&& v_s, HCV&& h_cv) const {
         static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN, "Invalid visible unit type");
         static_assert(P, "Computing S without P is not implemented");
 
@@ -220,9 +222,11 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
     }
 
     template<bool P = true, bool S = true, typename Po, typename V>
-    void activate_pooling(Po& p_a, Po& p_s, const V& v_a, const V&){
+    void activate_pooling(Po& p_a, Po& p_s, const V& v_a, const V&) const {
         static_assert(pooling_unit == unit_type::BINARY, "Invalid pooling unit type");
         static_assert(P, "Computing S without P is not implemented");
+
+        etl::fast_dyn_matrix<weight, 2, K, NH1, NH2> v_cv;      //Temporary convolution
 
         v_cv(1) = 0;
 
@@ -252,7 +256,9 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
     }
 
     template<typename V, typename H, cpp::enable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
-    weight energy(const V& v, const H& h){
+    weight energy(const V& v, const H& h) const {
+        etl::fast_dyn_matrix<weight, 2, K, NH1, NH2> v_cv;      //Temporary convolution
+
         if(desc::visible_unit == unit_type::BINARY && desc::hidden_unit == unit_type::BINARY){
             //Definition according to Honglak Lee
             //E(v,h) = - sum_k (hk (Wk*v) + bk hk) - c sum_v v
@@ -289,9 +295,9 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
     }
 
     template<typename V, typename H, cpp::disable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
-    weight energy(const V& v, const H& h){
-        static etl::fast_matrix<weight, NC, NV1, NV2> ev;
-        static etl::fast_matrix<weight, K, NH1, NH2> eh;
+    weight energy(const V& v, const H& h) const {
+        etl::fast_dyn_matrix<weight, NC, NV1, NV2> ev;
+        etl::fast_dyn_matrix<weight, K, NH1, NH2> eh;
 
         ev = v;
         eh = h;
@@ -300,7 +306,9 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
     }
 
     template<typename V>
-    weight free_energy_impl(const V& v){
+    weight free_energy_impl(const V& v) const {
+        etl::fast_dyn_matrix<weight, 2, K, NH1, NH2> v_cv;      //Temporary convolution
+
         if(desc::visible_unit == unit_type::BINARY && desc::hidden_unit == unit_type::BINARY){
             //Definition computed from E(v,h)
 
@@ -339,8 +347,8 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
     }
 
     template<typename V>
-    weight free_energy(const V& v){
-        static etl::fast_matrix<weight, NC, NV1, NV2> ev;
+    weight free_energy(const V& v) const {
+        etl::fast_dyn_matrix<weight, NC, NV1, NV2> ev;
         ev = v;
         return free_energy_impl(ev);
     }
@@ -376,7 +384,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         return result;
     }
 
-    output_t prepare_output(std::size_t samples){
+    static output_t prepare_output(std::size_t samples){
         output_t output;
         output.reserve(samples);
 
@@ -391,23 +399,25 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         return output_one_t(K, NP1, NP2);
     }
 
-    void activate_one(const input_one_t& input, output_one_t& h_a, output_one_t& h_s){
+    void activate_one(const input_one_t& input, output_one_t& h_a, output_one_t& h_s) const {
+        etl::fast_dyn_matrix<weight, NC, NV1, NV2> v1;        //visible units
         v1 = input;
         activate_pooling(h_a, h_s, v1, v1);
     }
 
-    void activate_one(const input_one_t& input, output_one_t& h_a){
+    void activate_one(const input_one_t& input, output_one_t& h_a) const {
+        etl::fast_dyn_matrix<weight, NC, NV1, NV2> v1;        //visible units
         v1 = input;
         activate_pooling<true, false>(h_a, h_a, v1, v1);
     }
 
-    void activate_many(const input_t& input, output_t& h_a, output_t& h_s){
+    void activate_many(const input_t& input, output_t& h_a, output_t& h_s) const {
         for(std::size_t i = 0; i < input.size(); ++i){
             activate_one(input[i], h_a[i], h_s[i]);
         }
     }
 
-    void activate_many(const input_t& input, output_t& h_a){
+    void activate_many(const input_t& input, output_t& h_a) const {
         for(std::size_t i = 0; i < input.size(); ++i){
             activate_one(input[i], h_a[i]);
         }

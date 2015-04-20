@@ -158,24 +158,24 @@ struct dbn final {
     }
 
     template<std::size_t N>
-    static constexpr std::size_t layer_input_size(){
+    static constexpr std::size_t layer_input_size() noexcept {
         return layer_traits<rbm_type<N>>::input_size();
     }
 
     template<std::size_t N>
-    static constexpr std::size_t layer_output_size(){
+    static constexpr std::size_t layer_output_size() noexcept {
         return layer_traits<rbm_type<N>>::output_size();
     }
 
-    static constexpr std::size_t input_size(){
+    static constexpr std::size_t input_size() noexcept {
         return layer_traits<rbm_type<0>>::input_size();
     }
 
-    static constexpr std::size_t output_size(){
+    static constexpr std::size_t output_size() noexcept {
         return layer_traits<rbm_type<layers - 1>>::output_size();
     }
 
-    static std::size_t full_output_size(){
+    static std::size_t full_output_size() noexcept {
         std::size_t output = 0;
         for_each_type<tuple_type>([&output](auto* rbm){
             output += std::decay_t<std::remove_pointer_t<decltype(rbm)>>::output_size();
@@ -384,7 +384,7 @@ struct dbn final {
 
     /*}}}*/
 
-    /*{{{ With labels */
+    /*{{{ Train with labels */
 
     //Note: dyn_vector cannot be replaced with fast_vector, because labels is runtime
 
@@ -468,8 +468,12 @@ struct dbn final {
         watcher.pretraining_end(*this);
     }
 
+    /*}}}*/
+
+    /*{{{ Predict with labels */
+
     template<std::size_t I, typename Input, typename Output>
-    std::enable_if_t<(I<layers)> predict_labels(const Input& input, Output& output, std::size_t labels){
+    std::enable_if_t<(I<layers)> predict_labels(const Input& input, Output& output, std::size_t labels) const {
         decltype(auto) rbm = layer<I>();
 
         auto next_a = rbm.prepare_one_output();
@@ -506,10 +510,10 @@ struct dbn final {
     }
 
     template<std::size_t I, typename Input, typename Output>
-    std::enable_if_t<(I==layers)> predict_labels(const Input&, Output&, std::size_t){}
+    std::enable_if_t<(I==layers)> predict_labels(const Input&, Output&, std::size_t) const {}
 
     template<typename TrainingItem>
-    size_t predict_labels(const TrainingItem& item_data, std::size_t labels){
+    size_t predict_labels(const TrainingItem& item_data, std::size_t labels) const {
         cpp_assert(dll::input_size(layer<layers - 1>()) == dll::output_size(layer<layers - 2>()) + labels, "There is no room for the labels units");
 
         typename rbm_type<0>::input_one_t item(item_data);
@@ -528,7 +532,7 @@ struct dbn final {
     /*{{{ Predict */
 
     template<std::size_t I, std::size_t S = layers, typename Input, typename Result>
-    std::enable_if_t<(I<S)> activation_probabilities(const Input& input, Result& result){
+    std::enable_if_t<(I<S)> activation_probabilities(const Input& input, Result& result) const {
         auto& rbm = layer<I>();
 
         if(I < S - 1){
@@ -542,17 +546,17 @@ struct dbn final {
 
     //Stop template recursion
     template<std::size_t I, std::size_t S = layers, typename Input, typename Result>
-    std::enable_if_t<(I==S)> activation_probabilities(const Input&, Result&){}
+    std::enable_if_t<(I==S)> activation_probabilities(const Input&, Result&) const {}
 
     template<typename Sample, typename Output>
-    void activation_probabilities(const Sample& item_data, Output& result){
+    void activation_probabilities(const Sample& item_data, Output& result) const {
         auto data = rbm_type<0>::convert_sample(item_data);
 
         activation_probabilities<0>(data, result);
     }
 
     template<typename Sample>
-    auto activation_probabilities(const Sample& item_data){
+    auto activation_probabilities(const Sample& item_data) const {
         auto result = layer<layers - 1>().prepare_one_output();
 
         activation_probabilities(item_data, result);
@@ -561,7 +565,7 @@ struct dbn final {
     }
 
     template<std::size_t I, typename Input, typename Result>
-    std::enable_if_t<(I<layers)> full_activation_probabilities(const Input& input, std::size_t& i, Result& result){
+    std::enable_if_t<(I<layers)> full_activation_probabilities(const Input& input, std::size_t& i, Result& result) const {
         auto& rbm = layer<I>();
 
         auto next_s = rbm.prepare_one_output();
@@ -578,10 +582,10 @@ struct dbn final {
 
     //Stop template recursion
     template<std::size_t I, typename Input, typename Result>
-    std::enable_if_t<(I==layers)> full_activation_probabilities(const Input&, std::size_t&, Result&){}
+    std::enable_if_t<(I==layers)> full_activation_probabilities(const Input&, std::size_t&, Result&) const {}
 
     template<typename Sample, typename Output>
-    void full_activation_probabilities(const Sample& item_data, Output& result){
+    void full_activation_probabilities(const Sample& item_data, Output& result) const {
         auto data = rbm_type<0>::convert_sample(item_data);
 
         std::size_t i = 0;
@@ -590,7 +594,7 @@ struct dbn final {
     }
 
     template<typename Sample>
-    etl::dyn_vector<weight> full_activation_probabilities(const Sample& item_data){
+    etl::dyn_vector<weight> full_activation_probabilities(const Sample& item_data) const {
         etl::dyn_vector<weight> result(full_output_size());
 
         full_activation_probabilities(item_data, result);
@@ -599,22 +603,22 @@ struct dbn final {
     }
 
     template<typename Sample, typename DBN = this_type, cpp::enable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
-    auto get_final_activation_probabilities(const Sample& sample){
+    auto get_final_activation_probabilities(const Sample& sample) const {
         return full_activation_probabilities(sample);
     }
 
     template<typename Sample, typename DBN = this_type, cpp::disable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
-    auto get_final_activation_probabilities(const Sample& sample){
+    auto get_final_activation_probabilities(const Sample& sample) const {
         return activation_probabilities(sample);
     }
 
     template<typename Weights>
-    size_t predict_label(const Weights& result){
+    size_t predict_label(const Weights& result) const {
         return std::distance(result.begin(), std::max_element(result.begin(), result.end()));
     }
 
     template<typename Sample>
-    size_t predict(const Sample& item){
+    size_t predict(const Sample& item) const {
         auto result = activation_probabilities(item);
         return predict_label(result);;
     }
