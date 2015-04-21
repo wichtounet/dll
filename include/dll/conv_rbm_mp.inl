@@ -206,6 +206,8 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
                 } else if(visible_unit == unit_type::GAUSSIAN){
                     v_a(channel) = c(channel) + h_cv(1);
                 }
+
+                nan_check_deep(v_a);
             }
 
             if(S){
@@ -214,11 +216,11 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
                 } else if(visible_unit == unit_type::GAUSSIAN){
                     v_s(channel) = normal_noise(v_a(channel));
                 }
+
+                nan_check_deep(v_s);
             }
         }
 
-        nan_check_deep(v_a);
-        nan_check_deep(v_s);
     }
 
     template<bool P = true, bool S = true, typename Po, typename V>
