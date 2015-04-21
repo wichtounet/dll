@@ -171,7 +171,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
 #ifndef NDEBUG
         if(P){
-            if(!is_finite(h_a)){
+            if(!h_a.is_finite()){
                 std::cout << "h_a contains non finite numbers" << std::endl;
                 std::cout << "Source expression: " << etl::p_max_pool_h<C, C>(etl::rep<NH1, NH2>(b) + v_cv(1)) << std::endl;
             }

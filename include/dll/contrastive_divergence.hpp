@@ -285,7 +285,7 @@ void batch_compute_gradients(Trainer& t){
 
     for(std::size_t b = 0; b < B; b++){
         cblas_sger(
-            CblasRowMajor, 
+            CblasRowMajor,
             etl::dim<1>(t.vf), etl::dim<1>(t.h1_a),
             1.0 / Ba,
             t.vf(b).memory_start(), 1,
@@ -294,7 +294,7 @@ void batch_compute_gradients(Trainer& t){
         );
 
         cblas_sger(
-            CblasRowMajor, 
+            CblasRowMajor,
             etl::dim<1>(t.v2_a), etl::dim<1>(t.h2_a),
             -1.0 / Ba,
             t.v2_a(b).memory_start(), 1,
@@ -322,7 +322,7 @@ void batch_compute_gradients(Trainer& t){
 
     for(std::size_t b = 0; b < B; b++){
         cblas_dger(
-            CblasRowMajor, 
+            CblasRowMajor,
             etl::dim<1>(t.vf), etl::dim<1>(t.h1_a),
             1.0 / Ba,
             t.vf(b).memory_start(), 1,
@@ -331,7 +331,7 @@ void batch_compute_gradients(Trainer& t){
         );
 
         cblas_dger(
-            CblasRowMajor, 
+            CblasRowMajor,
             etl::dim<1>(t.v2_a), etl::dim<1>(t.h2_a),
             -1.0 / Ba,
             t.v2_a(b).memory_start(), 1,
@@ -540,8 +540,8 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
         auto w_f_2 = force_temporary(t.h2_a(i));
 
         for(std::size_t k = 0; k < K; ++k){
-            fflip_inplace(w_f_1(k));
-            fflip_inplace(w_f_2(k));
+            w_f_1(k).fflip_inplace();
+            w_f_2(k).fflip_inplace();
         }
 
         for(std::size_t channel = 0; channel < NC; ++channel){

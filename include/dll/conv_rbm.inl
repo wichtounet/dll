@@ -136,7 +136,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
         for(std::size_t channel = 0; channel < NC; ++channel){
             for(size_t k = 0; k < K; ++k){
-                fflip_inplace(w_f(channel)(k));
+                w_f(channel)(k).fflip_inplace();
             }
         }
 
