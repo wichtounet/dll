@@ -418,9 +418,9 @@ protected:
             if(visible_unit == unit_type::BINARY){
                 v_a = sigmoid(rep_l(c,Batch) + transpose(mul(w, transpose(h_s))));
             } else if(visible_unit == unit_type::GAUSSIAN){
-                v_a = rep_l(c,Batch) + mul(w, transpose(h_s));
+                v_a = rep_l(c,Batch) + transpose(mul(w, transpose(h_s)));
             } else if(visible_unit == unit_type::RELU){
-                v_a = max(rep_l(c,Batch) + mul(w, transpose(h_s)), 0.0);
+                v_a = max(rep_l(c,Batch) + transpose(mul(w, transpose(h_s))), 0.0);
             }
 
             nan_check_deep(v_a);
@@ -430,9 +430,9 @@ protected:
             if(visible_unit == unit_type::BINARY){
                 v_s = bernoulli(sigmoid(rep_l(c,Batch) + transpose(mul(w, transpose(h_s)))));
             } else if(visible_unit == unit_type::GAUSSIAN){
-                v_s = rep_l(c,Batch) + mul(w, transpose(h_s));
+                v_s = rep_l(c,Batch) + transpose(mul(w, transpose(h_s)));
             } else if(visible_unit == unit_type::RELU){
-                v_s = logistic_noise(max(rep_l(c,Batch) + mul(w, transpose(h_s)), 0.0));
+                v_s = logistic_noise(max(rep_l(c,Batch) + transpose(mul(w, transpose(h_s))), 0.0));
             }
 
             nan_check_deep(v_s);
