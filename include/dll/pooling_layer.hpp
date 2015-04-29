@@ -31,6 +31,8 @@ struct pooling_layer_3d {
     static constexpr const std::size_t O2 = I2 / C2;
     static constexpr const std::size_t O3 = I3 / C3;
 
+    static constexpr const bool is_nop = C1 + C2 + C3 == 1;
+
     pooling_layer_3d() = default;
 
     static constexpr std::size_t input_size() noexcept {

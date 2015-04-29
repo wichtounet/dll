@@ -22,7 +22,6 @@ struct pooling_layer_3d_desc {
     static_assert(C1 > 0, "Cannot shrink a layer by less than 1");
     static_assert(C2 > 0, "Cannot shrink a layer by less than 1");
     static_assert(C3 > 0, "Cannot shrink a layer by less than 1");
-    static_assert(C1 + C2 + C3 > 3, "If neither C is > 1, the layer has no effect");
     static_assert(I1 % C1 == 0, "Input dimension is not divisible by C");
     static_assert(I2 % C2 == 0, "Input dimension is not divisible by C");
     static_assert(I3 % C3 == 0, "Input dimension is not divisible by C");

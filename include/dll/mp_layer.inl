@@ -48,20 +48,24 @@ struct mp_layer_3d final : pooling_layer_3d<Desc> {
     }
 
     static void activate_one(const input_one_t& v, output_one_t& h, output_one_t& /*h_s*/){
-        for(std::size_t i = 0; i < base::O1; ++i){
-            for(std::size_t j = 0; j < base::O2; ++j){
-                for(std::size_t k = 0; k < base::O3; ++k){
-                    auto max = v(i * base::C1, j * base::C2, k * base::C3);
+        if(base::is_nop){
+            h = v;
+        } else {
+            for(std::size_t i = 0; i < base::O1; ++i){
+                for(std::size_t j = 0; j < base::O2; ++j){
+                    for(std::size_t k = 0; k < base::O3; ++k){
+                        auto max = v(i * base::C1, j * base::C2, k * base::C3);
 
-                    for(std::size_t ii = 0; ii < base::C1; ++ii){
-                        for(std::size_t jj = 0; jj < base::C2; ++jj){
-                            for(std::size_t kk = 0; kk < base::C3; ++kk){
-                                max = std::max(max, v(i * base::C1 + ii, j * base::C2 + jj, k * base::C3 + kk));
+                        for(std::size_t ii = 0; ii < base::C1; ++ii){
+                            for(std::size_t jj = 0; jj < base::C2; ++jj){
+                                for(std::size_t kk = 0; kk < base::C3; ++kk){
+                                    max = std::max(max, v(i * base::C1 + ii, j * base::C2 + jj, k * base::C3 + kk));
+                                }
                             }
                         }
-                    }
 
-                    h(i,j,k) = max;
+                        h(i,j,k) = max;
+                    }
                 }
             }
         }

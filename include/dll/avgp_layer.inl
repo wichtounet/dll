@@ -47,20 +47,24 @@ struct avgp_layer_3d final: pooling_layer_3d<Desc>  {
     }
 
     static void activate_one(const input_one_t& v, output_one_t& h, output_one_t& /*h_s*/){
-        for(std::size_t i = 0; i < base::O1; ++i){
-            for(std::size_t j = 0; j < base::O2; ++j){
-                for(std::size_t k = 0; k < base::O3; ++k){
-                    weight avg = 0;
+        if(base::is_nop){
+            h = v;
+        } else {
+            for(std::size_t i = 0; i < base::O1; ++i){
+                for(std::size_t j = 0; j < base::O2; ++j){
+                    for(std::size_t k = 0; k < base::O3; ++k){
+                        weight avg = 0;
 
-                    for(std::size_t ii = 0; ii < base::C1; ++ii){
-                        for(std::size_t jj = 0; jj < base::C2; ++jj){
-                            for(std::size_t kk = 0; kk < base::C3; ++kk){
-                                avg += v(i * base::C1 + ii, j * base::C2 + jj, k * base::C3 + kk);
+                        for(std::size_t ii = 0; ii < base::C1; ++ii){
+                            for(std::size_t jj = 0; jj < base::C2; ++jj){
+                                for(std::size_t kk = 0; kk < base::C3; ++kk){
+                                    avg += v(i * base::C1 + ii, j * base::C2 + jj, k * base::C3 + kk);
+                                }
                             }
                         }
-                    }
 
-                    h(i,j,k) = avg / static_cast<weight>(base::C1 * base::C2 * base::C3);
+                        h(i,j,k) = avg / static_cast<weight>(base::C1 * base::C2 * base::C3);
+                    }
                 }
             }
         }

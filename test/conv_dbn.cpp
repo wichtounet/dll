@@ -347,6 +347,40 @@ TEST_CASE( "conv_dbn/mnist_12", "avgp_pooling" ) {
     REQUIRE(test_error < 1.0);
 }
 
+TEST_CASE( "conv_dbn/mnist_13", "nop_layers" ) {
+    typedef dll::dbn_desc<
+            dll::dbn_layers<
+            dll::conv_rbm_desc<28, 28, 1, 14, 12, 40, dll::momentum, dll::batch_size<25>>::rbm_t,
+            dll::conv_rbm_desc<14, 12, 40, 8, 10, 40, dll::momentum, dll::batch_size<25>>::rbm_t
+            , dll::mp_layer_3d_desc<40, 8, 10, 1, 1, 1>::layer_t
+            , dll::avgp_layer_3d_desc<40, 8, 10, 1, 1, 1>::layer_t
+        >>::dbn_t dbn_t;
+
+    REQUIRE(dbn_t::output_size() == 3200);
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
+
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->pretrain(dataset.training_images, 2);
+
+    auto output = dbn->activation_probabilities(dataset.training_images.front());
+
+    REQUIRE(output.size() == 3200);
+
+    auto result = dbn->svm_train(dataset.training_images, dataset.training_labels);
+
+    REQUIRE(result);
+
+    auto test_error = dll::test_set(dbn, dataset.training_images, dataset.training_labels, dll::svm_predictor());
+    std::cout << "test_error:" << test_error << std::endl;
+    REQUIRE(test_error < 0.9);
+}
+
 TEST_CASE( "conv_dbn/mnist_slow", "[cdbn][slow][benchmark]" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
