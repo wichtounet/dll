@@ -7,13 +7,7 @@ include make-utils/cpp-utils.mk
 
 CXX_FLAGS += -pedantic -Werror -ftemplate-backtrace-limit=0
 
-ifneq (,$(findstring clang,$(CXX)))
-	CXX_FLAGS += -stdlib=libc++
-endif
-
-ifneq (,$(findstring c++-analyzer,$(CXX)))
-	CXX_FLAGS += -stdlib=libc++
-endif
+$(eval $(call use_libcxx))
 
 RELEASE_FLAGS += -fno-rtti
 
@@ -24,12 +18,18 @@ OPENCV_LD_FLAGS=-lopencv_core -lopencv_imgproc -lopencv_highgui
 LIBSVM_LD_FLAGS=-lsvm
 TEST_LD_FLAGS=$(LIBSVM_LD_FLAGS)
 
-RELEASE_FLAGS += -DETL_VECTORIZE
+CXX_FLAGS += -DETL_VECTORIZE_FULL
 
 # Activate BLAS mode on demand
-ifneq (,$(DLL_BLAS))
+ifneq (,$(ETL_MKL))
+CXX_FLAGS += -DETL_MKL_MODE $(shell pkg-config --cflags cblas)
+LD_FLAGS += $(shell pkg-config --libs cblas)
+CXX_FLAGS += -Wno-tautological-compare
+else
+ifneq (,$(ETL_BLAS))
 CXX_FLAGS += -DETL_BLAS_MODE $(shell pkg-config --cflags cblas)
 LD_FLAGS += $(shell pkg-config --libs cblas)
+endif
 endif
 
 CPP_FILES=$(wildcard test_compile/*.cpp)

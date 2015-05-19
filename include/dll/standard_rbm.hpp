@@ -462,7 +462,7 @@ public:
 
     template<typename Sample>
     static input_one_t convert_sample(const Sample& sample){
-        return {sample};
+        return input_one_t{sample};
     }
 
     output_t prepare_output(std::size_t samples, bool is_last = false, std::size_t labels = 0) const {

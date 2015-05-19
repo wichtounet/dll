@@ -124,7 +124,7 @@ struct conditional_fast_matrix {
     using type = std::conditional_t<
         C,
         etl::fast_matrix<W, Dims...>,
-        etl::fast_matrix_impl<W, std::array<W, 0>, Dims...>>;
+        etl::fast_matrix_impl<W, std::array<W, 0>, etl::order::RowMajor, Dims...>>;
 };
 
 template<bool C, typename W, std::size_t... Dims>
