@@ -36,6 +36,43 @@ void load_layer(Layer& layer, std::istream& is){
     layer.load(is);
 }
 
+template<typename Layer, typename Iterator, typename Enable = void>
+struct input_converter {
+    using container = decltype(Layer::convert_input(std::declval<Iterator>(), std::declval<Iterator>()));
+
+    container c;
+
+    input_converter(Iterator first, Iterator last){
+        c = Layer::convert_input(first, last);
+    }
+
+    auto begin(){
+        return c.begin();
+    }
+
+    auto end(){
+        return c.end();
+    }
+};
+
+template<typename Layer, typename Iterator>
+struct input_converter <Layer, Iterator, std::enable_if_t<std::is_same<typename Layer::input_one_t, typename Iterator::value_type>::value>> {
+    Iterator first;
+    Iterator last;
+
+    input_converter(Iterator first, Iterator last) : first(first), last(last) {
+        //Nothing else to init
+    }
+
+    Iterator begin(){
+        return first;
+    }
+
+    Iterator end(){
+        return last;
+    }
+};
+
 /*!
  * \brief A Deep Belief Network implementation
  */
@@ -417,12 +454,10 @@ struct dbn final {
             std::cout << "DBN: Pretraining done in batch mode to save memory" << std::endl;
             pretrain_layer_batch<0>(std::forward<Iterator>(first), std::forward<Iterator>(last), watcher, max_epochs);
         } else {
-            //TODO If the data is already in correct form, this double the necessary memory
-
             //Convert data to an useful form
-            auto data = rbm_type<0>::convert_input(std::forward<Iterator>(first), std::forward<Iterator>(last));
+            input_converter<rbm_type<0>, Iterator> converter(std::forward<Iterator>(first), std::forward<Iterator>(last));
 
-            pretrain_layer<0>(data.begin(), data.end(), watcher, max_epochs);
+            pretrain_layer<0>(converter.begin(), converter.end(), watcher, max_epochs);
         }
 
         watcher.pretraining_end(*this);
