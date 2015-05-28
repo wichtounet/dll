@@ -92,7 +92,11 @@ struct default_dbn_watcher {
     void pretrain_layer(const DBN& /*dbn*/, std::size_t I, std::size_t input_size){
         using rbm_t = RBM;
 
-        std::cout << "DBN: Pretrain layer " << I << " (" << rbm_t::to_short_string() << ") with " << input_size << " entries" << std::endl;
+        if(input_size > 0){
+            std::cout << "DBN: Pretrain layer " << I << " (" << rbm_t::to_short_string() << ") with " << input_size << " entries" << std::endl;
+        } else {
+            std::cout << "DBN: Pretrain layer " << I << " (" << rbm_t::to_short_string() << ")" << std::endl;
+        }
     }
 
     void pretraining_end(const DBN& /*dbn*/){

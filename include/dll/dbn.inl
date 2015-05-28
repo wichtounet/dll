@@ -241,7 +241,7 @@ struct dbn final {
 
         decltype(auto) rbm = layer<I>();
 
-        watcher.template pretrain_layer<rbm_t>(*this, I, 1); //TODO size ?
+        watcher.template pretrain_layer<rbm_t>(*this, I, 0);
 
         using rbm_trainer_t = dll::rbm_trainer<rbm_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>>;
 
@@ -249,16 +249,12 @@ struct dbn final {
         rbm_trainer_t r_trainer;
 
         //Init the RBM and training parameters
-        r_trainer.init_training(rbm, first, last); //TODO This may be highly slow...
+        r_trainer.init_training(rbm, first, last);
 
         //Get the specific trainer (CD)
         auto trainer = rbm_trainer_t::template get_trainer<false>(rbm);
 
-        //TODO This should be configurable at the DBN level to use
-        //bigger batches (this is a multiple of rbm batch)
-        constexpr const std::size_t big_batches = 2;
-
-        auto big_batch_size = big_batches * get_batch_size(rbm);
+        auto big_batch_size = desc::BatchSize * get_batch_size(rbm);
 
         //Train for max_epochs epoch
         for(std::size_t epoch = 0; epoch < max_epochs; ++epoch){
@@ -313,7 +309,7 @@ struct dbn final {
 
         decltype(auto) rbm = layer<I>();
 
-        watcher.template pretrain_layer<rbm_t>(*this, I, 1); //TODO size ?
+        watcher.template pretrain_layer<rbm_t>(*this, I, 0);
 
         using rbm_trainer_t = dll::rbm_trainer<rbm_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>>;
 
@@ -326,11 +322,7 @@ struct dbn final {
         //Get the specific trainer (CD)
         auto trainer = rbm_trainer_t::template get_trainer<false>(rbm);
 
-        //TODO This should be configurable at the DBN level to use
-        //bigger batches (this is a multiple of rbm batch)
-        constexpr const std::size_t big_batches = 2;
-
-        auto big_batch_size = big_batches * get_batch_size(rbm);
+        auto big_batch_size = desc::BatchSize * get_batch_size(rbm);
 
         auto activated_input = layer<I - 1>().prepare_output(big_batch_size);
 

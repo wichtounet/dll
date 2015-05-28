@@ -29,6 +29,8 @@ struct base_dbn_desc {
     using layers = Layers;
     using parameters = cpp::type_list<Parameters...>;
 
+    static constexpr const std::size_t BatchSize = detail::get_value<batch_size<2>, Parameters...>::value;
+
     /*! The type of the trainer to use to train the DBN */
     template <typename DBN>
     using trainer_t = typename detail::get_template_type<trainer<default_dbn_trainer_t>, Parameters...>::template value<DBN>;
@@ -43,7 +45,9 @@ struct base_dbn_desc {
     //Make sure only valid types are passed to the configuration list
     static_assert(
         detail::is_valid<
-            cpp::type_list<trainer_id, watcher_id, momentum_id, weight_decay_id, memory_id, svm_concatenate_id, svm_scale_id, parallel_id>,
+            cpp::type_list<
+                trainer_id, watcher_id, momentum_id, weight_decay_id, batch_size_id,
+                memory_id, svm_concatenate_id, svm_scale_id, parallel_id>,
             Parameters...>::value,
         "Invalid parameters type");
 };

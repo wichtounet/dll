@@ -344,10 +344,14 @@ struct opencv_dbn_visualizer {
     template<typename RBM>
     void pretrain_layer(const DBN& /*dbn*/, std::size_t I, std::size_t input_size){
         using rbm_t = RBM;
-        static constexpr const auto num_visible = rbm_t::num_visible;
-        static constexpr const auto num_hidden = rbm_t::num_hidden;
+        static constexpr const auto NV = rbm_t::num_visible;
+        static constexpr const auto NH = rbm_t::num_hidden;
 
-        std::cout << "DBN: Train layer " << I << " (" << num_visible << "->" << num_hidden << ") with " << input_size << " entries" << std::endl;
+        if(input_size > 0){
+            std::cout << "DBN: Train layer " << I << " (" << NV << "->" << NH << ") with " << input_size << " entries" << std::endl;
+        } else {
+            std::cout << "DBN: Train layer " << I << " (" << NV << "->" << NH << ")" << std::endl;
+        }
 
         current_image = I;
     }
