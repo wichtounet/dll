@@ -367,11 +367,14 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
     using output_t = std::vector<output_one_t>;
 
     template<typename Iterator>
-    static auto convert_input(Iterator&& first, Iterator&& last){
+    static auto convert_input(Iterator first, Iterator last){
         input_t input;
-        input.reserve(std::distance(std::forward<Iterator>(first), std::forward<Iterator>(last)));
 
-        std::for_each(std::forward<Iterator>(first), std::forward<Iterator>(last), [&input](auto& sample){
+        if(std::is_same<typename std::iterator_traits<Iterator>::iterator_category, std::random_access_iterator_tag>::value){
+            input.reserve(std::distance(std::forward<Iterator>(first), std::forward<Iterator>(last)));
+        }
+
+        std::for_each(first, last, [&input](auto& sample){
             input.emplace_back(NC, NV1, NV2);
             input.back() = sample;
         });
