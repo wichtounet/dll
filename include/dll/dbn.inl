@@ -197,35 +197,44 @@ struct dbn final {
     template<std::size_t I>
     struct train_next<I, std::enable_if_t<(I > layers - 1)>> : std::false_type {};
 
-    template<std::size_t I, typename Input, typename Watcher>
-    std::enable_if_t<(I<layers)> pretrain_layer(const Input& input, Watcher& watcher, std::size_t max_epochs){
+
+    template<typename Iterator>
+    std::size_t fast_distance(Iterator& first, Iterator& last){
+        if(std::is_same<typename std::iterator_traits<Iterator>::iterator_category, std::random_access_iterator_tag>::value){
+            return std::distance(first, last);
+        } else {
+            return 0;
+        }
+    }
+
+    template<std::size_t I, typename Iterator, typename Watcher>
+    std::enable_if_t<(I<layers)> pretrain_layer(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
         using rbm_t = rbm_type<I>;
         using input_t = typename rbm_t::input_t;
 
         decltype(auto) rbm = layer<I>();
 
-        watcher.template pretrain_layer<rbm_t>(*this, I, input.size());
+        watcher.template pretrain_layer<rbm_t>(*this, I, fast_distance(first, last));
 
         rbm.template train<
-            input_t,
             !watcher_t::ignore_sub, //Enable the RBM Watcher or not
             dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
-                (input, max_epochs);
+                (first, last, max_epochs);
 
         if(train_next<I+1>::value){
-            auto next_a = rbm.prepare_output(input.size());
+            auto next_a = rbm.prepare_output(std::distance(first, last));
 
-            maybe_parallel_foreach_i(pool, input.begin(), input.end(), [&rbm, &next_a](auto& v, std::size_t i){
+            maybe_parallel_foreach_i(pool, first, last, [&rbm, &next_a](auto& v, std::size_t i){
                 rbm.activate_one(v, next_a[i]);
             });
 
-            pretrain_layer<I+1>(next_a, watcher, max_epochs);
+            pretrain_layer<I+1>(next_a.begin(), next_a.end(), watcher, max_epochs);
         }
     }
 
     //Stop template recursion
-    template<std::size_t I, typename Input, typename Watcher>
-    std::enable_if_t<(I==layers)> pretrain_layer(const Input&, Watcher&, std::size_t){}
+    template<std::size_t I, typename Iterator, typename Watcher>
+    std::enable_if_t<(I==layers)> pretrain_layer(Iterator, Iterator, Watcher&, std::size_t){}
 
     template<std::size_t I, class Enable = void>
     struct batch_layer_ignore : std::false_type {};
@@ -241,7 +250,7 @@ struct dbn final {
 
         decltype(auto) rbm = layer<I>();
 
-        watcher.template pretrain_layer<rbm_t>(*this, I, 0);
+        watcher.template pretrain_layer<rbm_t>(*this, I, 1); //TODO size ?
 
         using rbm_trainer_t = dll::rbm_trainer<rbm_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>>;
 
@@ -249,12 +258,16 @@ struct dbn final {
         rbm_trainer_t r_trainer;
 
         //Init the RBM and training parameters
-        r_trainer.init_training(rbm, first, last);
+        r_trainer.init_training(rbm, first, last); //TODO This may be highly slow...
 
         //Get the specific trainer (CD)
         auto trainer = rbm_trainer_t::template get_trainer<false>(rbm);
 
-        auto big_batch_size = desc::BatchSize * get_batch_size(rbm);
+        //TODO This should be configurable at the DBN level to use
+        //bigger batches (this is a multiple of rbm batch)
+        constexpr const std::size_t big_batches = 2;
+
+        auto big_batch_size = big_batches * get_batch_size(rbm);
 
         //Train for max_epochs epoch
         for(std::size_t epoch = 0; epoch < max_epochs; ++epoch){
@@ -309,7 +322,7 @@ struct dbn final {
 
         decltype(auto) rbm = layer<I>();
 
-        watcher.template pretrain_layer<rbm_t>(*this, I, 0);
+        watcher.template pretrain_layer<rbm_t>(*this, I, 1); //TODO size ?
 
         using rbm_trainer_t = dll::rbm_trainer<rbm_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>>;
 
@@ -322,7 +335,11 @@ struct dbn final {
         //Get the specific trainer (CD)
         auto trainer = rbm_trainer_t::template get_trainer<false>(rbm);
 
-        auto big_batch_size = desc::BatchSize * get_batch_size(rbm);
+        //TODO This should be configurable at the DBN level to use
+        //bigger batches (this is a multiple of rbm batch)
+        constexpr const std::size_t big_batches = 2;
+
+        auto big_batch_size = big_batches * get_batch_size(rbm);
 
         auto activated_input = layer<I - 1>().prepare_output(big_batch_size);
 
@@ -405,7 +422,7 @@ struct dbn final {
             //Convert data to an useful form
             auto data = rbm_type<0>::convert_input(std::forward<Iterator>(first), std::forward<Iterator>(last));
 
-            pretrain_layer<0>(data, watcher, max_epochs);
+            pretrain_layer<0>(data.begin(), data.end(), watcher, max_epochs);
         }
 
         watcher.pretraining_end(*this);
@@ -435,7 +452,6 @@ struct dbn final {
         watcher.template pretrain_layer<rbm_t>(*this, I, input.size());
 
         rbm.template train<
-            input_t,
             !watcher_t::ignore_sub, //Enable the RBM Watcher or not
             dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
                 (input, max_epochs);

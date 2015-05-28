@@ -49,12 +49,12 @@ struct pooling_layer_3d {
 
     //TODO Ideally, the dbn should guess by TMP that Max Pooling don't need any training
 
-    template<typename Samples, bool EnableWatcher = true, typename RW = void, typename... Args>
+    template<bool EnableWatcher = true, typename RW = void, typename Samples, typename... Args>
     double train(const Samples& /*training_data*/, std::size_t /*max_epochs*/, Args... /*args*/){
         return 1.0;
     }
 
-    template<typename Iterator, bool EnableWatcher = true, typename RW = void, typename... Args>
+    template<bool EnableWatcher = true, typename RW = void, typename Iterator, typename... Args>
     double train(Iterator&& /*first*/, Iterator&& /*last*/, std::size_t /*max_epochs*/, Args... /*args*/){
         return 1.0;
     }
