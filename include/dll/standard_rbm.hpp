@@ -449,20 +449,25 @@ public:
     using output_t = std::vector<output_one_t>;
 
     template<typename Iterator>
-    static auto convert_input(Iterator&& first, Iterator&& last){
+    auto convert_input(Iterator&& first, Iterator&& last) const {
         input_t input;
         input.reserve(std::distance(std::forward<Iterator>(first), std::forward<Iterator>(last)));
 
-        std::for_each(std::forward<Iterator>(first), std::forward<Iterator>(last), [&input](auto& sample){
-            input.emplace_back(sample);
+        auto& derived = *static_cast<const parent_t*>(this);
+
+        std::for_each(std::forward<Iterator>(first), std::forward<Iterator>(last), [&input, &derived](auto& sample){
+            input.emplace_back(derived.input_size());
+            input.back() = sample;
         });
 
         return input;
     }
 
     template<typename Sample>
-    static input_one_t convert_sample(const Sample& sample){
-        return input_one_t{sample};
+    input_one_t convert_sample(const Sample& sample) const {
+        input_one_t input(static_cast<const parent_t*>(this)->input_size());
+        input = sample;
+        return input;
     }
 
     output_t prepare_output(std::size_t samples, bool is_last = false, std::size_t labels = 0) const {

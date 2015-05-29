@@ -38,12 +38,12 @@ void load_layer(Layer& layer, std::istream& is){
 
 template<typename Layer, typename Iterator, typename Enable = void>
 struct input_converter {
-    using container = decltype(Layer::convert_input(std::declval<Iterator>(), std::declval<Iterator>()));
+    using container = decltype(std::declval<Layer>().convert_input(std::declval<Iterator>(), std::declval<Iterator>()));
 
     container c;
 
-    input_converter(Iterator first, Iterator last){
-        c = Layer::convert_input(first, last);
+    input_converter(Layer& layer, Iterator first, Iterator last){
+        c = layer.convert_input(first, last);
     }
 
     auto begin(){
@@ -60,7 +60,7 @@ struct input_converter <Layer, Iterator, std::enable_if_t<std::is_same<typename 
     Iterator first;
     Iterator last;
 
-    input_converter(Iterator first, Iterator last) : first(first), last(last) {
+    input_converter(Layer& /*layer*/, Iterator first, Iterator last) : first(first), last(last) {
         //Nothing else to init
     }
 
@@ -455,7 +455,7 @@ struct dbn final {
             pretrain_layer_batch<0>(std::forward<Iterator>(first), std::forward<Iterator>(last), watcher, max_epochs);
         } else {
             //Convert data to an useful form
-            input_converter<rbm_type<0>, Iterator> converter(std::forward<Iterator>(first), std::forward<Iterator>(last));
+            input_converter<rbm_type<0>, Iterator> converter(layer<0>(), std::forward<Iterator>(first), std::forward<Iterator>(last));
 
             pretrain_layer<0>(converter.begin(), converter.end(), watcher, max_epochs);
         }
@@ -541,7 +541,7 @@ struct dbn final {
         watcher.pretraining_begin(*this, max_epochs);
 
         //Convert data to an useful form
-        auto data = rbm_type<0>::convert_input(std::forward<Iterator>(first), std::forward<Iterator>(last));
+        auto data = layer<0>().convert_input(std::forward<Iterator>(first), std::forward<Iterator>(last));
 
         train_with_labels<0>(data, watcher, std::forward<LabelIterator>(lfirst), std::forward<LabelIterator>(llast), labels, max_epochs);
 
@@ -630,7 +630,7 @@ struct dbn final {
 
     template<typename Sample, typename Output>
     void activation_probabilities(const Sample& item_data, Output& result) const {
-        auto data = rbm_type<0>::convert_sample(item_data);
+        auto data = layer<0>().convert_sample(item_data);
 
         activation_probabilities<0>(data, result);
     }
@@ -666,7 +666,7 @@ struct dbn final {
 
     template<typename Sample, typename Output>
     void full_activation_probabilities(const Sample& item_data, Output& result) const {
-        auto data = rbm_type<0>::convert_sample(item_data);
+        auto data = layer<0>().convert_sample(item_data);
 
         std::size_t i = 0;
 
