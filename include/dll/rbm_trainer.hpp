@@ -237,24 +237,30 @@ struct rbm_trainer {
                 ++i;
             }
 
-            ++batches;
+            //Train the batch
+            train_batch(istart, iit, estart, eit, trainer, context, rbm);
+        }
+    }
 
-            auto input_batch = make_batch(istart, iit);
-            auto expected_batch = make_batch(estart, eit);
-            trainer->train_batch(input_batch, expected_batch, context);
+    template<typename IIT, typename EIT, typename Trainer>
+    void train_batch(IIT input_first, IIT input_last, EIT expected_first, EIT expected_last, Trainer& trainer, rbm_training_context& context, rbm_t& rbm){
+        ++batches;
 
-            context.reconstruction_error += context.batch_error;
-            context.sparsity += context.batch_sparsity;
+        auto input_batch = make_batch(input_first, input_last);
+        auto expected_batch = make_batch(expected_first, expected_last);
+        trainer->train_batch(input_batch, expected_batch, context);
 
-            if(EnableWatcher && layer_traits<rbm_t>::free_energy()){
-                for(auto& v : input_batch){
-                    context.free_energy += rbm.free_energy(v);
-                }
+        context.reconstruction_error += context.batch_error;
+        context.sparsity += context.batch_sparsity;
+
+        if(EnableWatcher && layer_traits<rbm_t>::free_energy()){
+            for(auto& v : input_batch){
+                context.free_energy += rbm.free_energy(v);
             }
+        }
 
-            if(EnableWatcher && layer_traits<rbm_t>::is_verbose()){
-                watcher.batch_end(rbm, context, batches, total_batches);
-            }
+        if(EnableWatcher && layer_traits<rbm_t>::is_verbose()){
+            watcher.batch_end(rbm, context, batches, total_batches);
         }
     }
 
