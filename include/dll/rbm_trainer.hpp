@@ -161,21 +161,18 @@ struct rbm_trainer {
 
     template<bool Denoising = true, typename IIterator, typename EIterator>
     typename rbm_t::weight train(RBM& rbm, IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast, std::size_t max_epochs){
-        using input_iterator_t = fix_iterator_t<rbm_t, IIterator>;
-        using expected_iterator_t = fix_iterator_t<rbm_t, EIterator>;
-
-        input_iterator_t input_first;
-        input_iterator_t input_last;
-
-        expected_iterator_t expected_first;
-        expected_iterator_t expected_last;
-
         //In case of shuffle, we don't want to shuffle the input, therefore create a copy and shuffle it
 
         std::vector<typename std::iterator_traits<IIterator>::value_type> input_copy;
         std::vector<typename std::iterator_traits<EIterator>::value_type> expected_copy;
 
-        std::tie(input_first, input_last, expected_first, expected_last) = prepare_it<Denoising>(ifirst, ilast, efirst, elast, input_copy, expected_copy);
+        auto iterators = prepare_it<Denoising>(ifirst, ilast, efirst, elast, input_copy, expected_copy);
+
+        decltype(auto) input_first = std::get<0>(iterators);
+        decltype(auto) input_last = std::get<1>(iterators);
+
+        decltype(auto) expected_first = std::get<2>(iterators);
+        decltype(auto) expected_last = std::get<3>(iterators);
 
         //Initialize RBM and trainign parameters
         init_training<Denoising>(rbm, input_first, input_last);
