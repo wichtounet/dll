@@ -287,7 +287,7 @@ struct dbn final {
 
         decltype(auto) rbm = layer<I>();
 
-        watcher.template pretrain_layer<rbm_t>(*this, I, 1); //TODO size ?
+        watcher.template pretrain_layer<rbm_t>(*this, I, 0);
 
         using rbm_trainer_t = dll::rbm_trainer<rbm_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>>;
 
@@ -359,7 +359,7 @@ struct dbn final {
 
         decltype(auto) rbm = layer<I>();
 
-        watcher.template pretrain_layer<rbm_t>(*this, I, 1); //TODO size ?
+        watcher.template pretrain_layer<rbm_t>(*this, I, 0);
 
         using rbm_trainer_t = dll::rbm_trainer<rbm_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>>;
 
