@@ -300,11 +300,7 @@ struct dbn final {
         //Get the specific trainer (CD)
         auto trainer = rbm_trainer_t::template get_trainer<false>(rbm);
 
-        //TODO This should be configurable at the DBN level to use
-        //bigger batches (this is a multiple of rbm batch)
-        constexpr const std::size_t big_batches = 2;
-
-        auto big_batch_size = big_batches * get_batch_size(rbm);
+        auto big_batch_size = desc::BatchSize * get_batch_size(rbm);
 
         //Train for max_epochs epoch
         for(std::size_t epoch = 0; epoch < max_epochs; ++epoch){
@@ -372,11 +368,7 @@ struct dbn final {
         //Get the specific trainer (CD)
         auto trainer = rbm_trainer_t::template get_trainer<false>(rbm);
 
-        //TODO This should be configurable at the DBN level to use
-        //bigger batches (this is a multiple of rbm batch)
-        constexpr const std::size_t big_batches = 2;
-
-        auto big_batch_size = big_batches * get_batch_size(rbm);
+        auto big_batch_size = desc::BatchSize * get_batch_size(rbm);
 
         auto activated_input = layer<I - 1>().prepare_output(big_batch_size);
 
