@@ -247,7 +247,6 @@ struct dbn final {
     template<std::size_t I, typename Iterator, typename Watcher>
     std::enable_if_t<(I<layers)> pretrain_layer(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
         using rbm_t = rbm_type<I>;
-        using input_t = typename rbm_t::input_t;
 
         decltype(auto) rbm = layer<I>();
 
