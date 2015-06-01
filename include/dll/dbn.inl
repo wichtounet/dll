@@ -480,7 +480,6 @@ struct dbn final {
     template<std::size_t I, typename Input, typename Watcher, typename LabelIterator>
     std::enable_if_t<(I<layers)> train_with_labels(const Input& input, Watcher& watcher, LabelIterator lit, LabelIterator lend, std::size_t labels, std::size_t max_epochs){
         using rbm_t = rbm_type<I>;
-        using input_t = typename rbm_t::input_t;
 
         decltype(auto) rbm = layer<I>();
 
