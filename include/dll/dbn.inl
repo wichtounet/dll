@@ -439,7 +439,7 @@ struct dbn final {
      * manner.
      */
     template<typename Iterator>
-    void pretrain(Iterator&& first, Iterator&& last, std::size_t max_epochs){
+    void pretrain(Iterator first, Iterator last, std::size_t max_epochs){
         watcher_t watcher;
 
         watcher.pretraining_begin(*this, max_epochs);
@@ -447,10 +447,10 @@ struct dbn final {
         //Pretrain each layer one-by-one
         if(dbn_traits<this_type>::save_memory()){
             std::cout << "DBN: Pretraining done in batch mode to save memory" << std::endl;
-            pretrain_layer_batch<0>(std::forward<Iterator>(first), std::forward<Iterator>(last), watcher, max_epochs);
+            pretrain_layer_batch<0>(first, last, watcher, max_epochs);
         } else {
             //Convert data to an useful form
-            input_converter<rbm_type<0>, Iterator> converter(layer<0>(), std::forward<Iterator>(first), std::forward<Iterator>(last));
+            input_converter<rbm_type<0>, Iterator> converter(layer<0>(), first, last);
 
             pretrain_layer<0>(converter.begin(), converter.end(), watcher, max_epochs);
         }
