@@ -449,13 +449,16 @@ public:
     using output_t = std::vector<output_one_t>;
 
     template<typename Iterator>
-    auto convert_input(Iterator&& first, Iterator&& last) const {
+    auto convert_input(const Iterator& first, const Iterator& last) const {
         input_t input;
-        input.reserve(std::distance(std::forward<Iterator>(first), std::forward<Iterator>(last)));
+
+        if(std::is_same<typename std::iterator_traits<Iterator>::iterator_category, std::random_access_iterator_tag>::value){
+            input.reserve(std::distance(first, last));
+        }
 
         auto& derived = *static_cast<const parent_t*>(this);
 
-        std::for_each(std::forward<Iterator>(first), std::forward<Iterator>(last), [&input, &derived](auto& sample){
+        std::for_each(first, last, [&input, &derived](auto& sample){
             input.emplace_back(derived.input_size());
             input.back() = sample;
         });
