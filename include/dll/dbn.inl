@@ -328,8 +328,7 @@ struct dbn final {
                 //Train the RBM on this big batch
                 r_trainer.train_sub(input.begin(), input.end(), input.begin(), trainer, context, rbm);
 
-                //TODO Move that to the watcher
-                std::cout << "DBN: Pretraining batch " << big_batch << std::endl;
+                watcher.pretraining_batch(*this, big_batch);
 
                 ++big_batch;
             }
@@ -403,8 +402,7 @@ struct dbn final {
                 //Train the RBM on this big batch
                 r_trainer.train_sub(activated_input.begin(), activated_input.end(), activated_input.begin(), trainer, context, rbm);
 
-                //TODO Move that to the watcher
-                std::cout << "DBN: Pretraining batch " << big_batch << std::endl;
+                watcher.pretraining_batch(*this, big_batch);
 
                 ++big_batch;
             }

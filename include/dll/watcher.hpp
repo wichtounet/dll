@@ -103,6 +103,10 @@ struct default_dbn_watcher {
         std::cout << "DBN: Pretraining finished after " << watch.elapsed() << "s" << std::endl;
     }
 
+    void pretraining_batch(const DBN& /*dbn*/, std::size_t batch){
+        std::cout << "DBN: Pretraining batch " << batch << std::endl;
+    }
+
     void fine_tuning_begin(const DBN& dbn){
         std::cout << "Train DBN with \"" << DBN::desc::template trainer_t<DBN>::name() << "\"" << std::endl;
         std::cout << "With parameters:" << std::endl;
