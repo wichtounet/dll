@@ -480,6 +480,10 @@ struct opencv_dbn_visualizer {
         std::cout << "DBN: Pretraining end" << std::endl;
     }
 
+    void pretraining_batch(const DBN& /*dbn*/, std::size_t batch){
+        std::cout << "DBN: Pretraining batch " << batch << std::endl;
+    }
+
     //Fine-tuning phase
 
     void fine_tuning_begin(const DBN& dbn){
@@ -667,6 +671,10 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynami
 
     void pretraining_end(const DBN& /*dbn*/){
         std::cout << "DBN: Pretraining end" << std::endl;
+    }
+
+    void pretraining_batch(const DBN& /*dbn*/, std::size_t batch){
+        std::cout << "DBN: Pretraining batch " << batch << std::endl;
     }
 
     //Utility functions
