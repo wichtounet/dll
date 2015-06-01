@@ -122,20 +122,24 @@ struct rbm_trainer {
             watcher.training_begin(rbm);
         }
 
-        //Compute the number of batches
+        //Get the size of each batches
         batch_size = get_batch_size(rbm);
 
-        auto size = distance(input_first, input_last);
+        if(std::is_same<typename std::iterator_traits<Iterator>::iterator_category, std::random_access_iterator_tag>::value){
+            auto size = distance(input_first, input_last);
 
-        //TODO Better handling of incomplete batch size would solve this problem (this could be done by
-        //cleaning the data before the last batch)
-        if(size % batch_size != 0){
-            std::cout << "WARNING: The number of samples should be divisible by the batch size" << std::endl;
-            std::cout << "         This may cause discrepancies in the results." << std::endl;
+            //TODO Better handling of incomplete batch size would solve this problem (this could be done by
+            //cleaning the data before the last batch)
+            if(size % batch_size != 0){
+                std::cout << "WARNING: The number of samples should be divisible by the batch size" << std::endl;
+                std::cout << "         This may cause discrepancies in the results." << std::endl;
+            }
+
+            //Only used for debugging purposes, no need to be precise
+            total_batches = size / batch_size;
+        } else {
+            total_batches = 0;
         }
-
-        //Only used for debugging purposes, no need to be precise
-        total_batches = size / batch_size;
 
         last_error = 0.0;
     }
