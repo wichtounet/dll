@@ -325,8 +325,13 @@ struct dbn final {
                 //Convert data to an useful form
                 input_converter<rbm_type<0>, Iterator> converter(layer<0>(), batch_start, it);
 
-                //Train the RBM on this big batch
-                r_trainer.train_sub(converter.begin(), converter.end(), converter.begin(), trainer, context, rbm);
+                if(desc::BatchSize == 1){
+                    //Train the RBM on this batch
+                    r_trainer.train_batch(converter.begin(), converter.end(), converter.begin(), converter.end(), trainer, context, rbm);
+                } else {
+                    //Train the RBM on this big batch
+                    r_trainer.train_sub(converter.begin(), converter.end(), converter.begin(), trainer, context, rbm);
+                }
 
                 if(dbn_traits<this_type>::is_verbose()){
                     watcher.pretraining_batch(*this, big_batch);
@@ -371,7 +376,7 @@ struct dbn final {
 
         auto big_batch_size = desc::BatchSize * get_batch_size(rbm);
 
-        auto activated_input = layer<I - 1>().prepare_output(big_batch_size);
+        auto input = layer<I - 1>().prepare_output(big_batch_size);
 
         //Train for max_epochs epoch
         for(std::size_t epoch = 0; epoch < max_epochs; ++epoch){
@@ -398,12 +403,17 @@ struct dbn final {
                 input_converter<rbm_type<0>, Iterator> converter(layer<0>(), batch_start, it);
 
                 //Collect a big batch
-                maybe_parallel_foreach_i(pool, converter.begin(), converter.end(), [this,&activated_input](auto& v, std::size_t i){
-                    this->activation_probabilities<0, I>(v, activated_input[i]);
+                maybe_parallel_foreach_i(pool, converter.begin(), converter.end(), [this,&input](auto& v, std::size_t i){
+                    this->activation_probabilities<0, I>(v, input[i]);
                 });
 
-                //Train the RBM on this big batch
-                r_trainer.train_sub(activated_input.begin(), activated_input.end(), activated_input.begin(), trainer, context, rbm);
+                if(desc::BatchSize == 1){
+                    //Train the RBM on this batch
+                    r_trainer.train_batch(input.begin(), input.end(), input.begin(), input.end(), trainer, context, rbm);
+                } else {
+                    //Train the RBM on this big batch
+                    r_trainer.train_sub(input.begin(), input.end(), input.begin(), trainer, context, rbm);
+                }
 
                 if(dbn_traits<this_type>::is_verbose()){
                     watcher.pretraining_batch(*this, big_batch);
