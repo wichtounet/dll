@@ -51,6 +51,10 @@ struct dbn_traits {
         return desc::parameters::template contains<parallel>();
     }
 
+    static constexpr bool is_verbose() noexcept {
+        return desc::parameters::template contains<verbose>();
+    }
+
     static constexpr bool scale() noexcept {
         return desc::parameters::template contains<svm_scale>();
     }
