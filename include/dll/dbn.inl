@@ -42,8 +42,8 @@ struct input_converter {
 
     container c;
 
-    input_converter(Layer& layer, Iterator first, Iterator last){
-        c = layer.convert_input(first, last);
+    input_converter(Layer& layer, const Iterator& first, const Iterator& last) : c(layer.convert_input(first, last)) {
+        //Nothing else to init
     }
 
     auto begin(){
@@ -57,18 +57,18 @@ struct input_converter {
 
 template<typename Layer, typename Iterator>
 struct input_converter <Layer, Iterator, std::enable_if_t<std::is_same<typename Layer::input_one_t, typename Iterator::value_type>::value>> {
-    Iterator first;
-    Iterator last;
+    Iterator& first;
+    Iterator& last;
 
-    input_converter(Layer& /*layer*/, Iterator first, Iterator last) : first(first), last(last) {
+    input_converter(Layer& /*layer*/, Iterator& first, Iterator& last) : first(first), last(last) {
         //Nothing else to init
     }
 
-    Iterator begin(){
+    Iterator& begin(){
         return first;
     }
 
-    Iterator end(){
+    Iterator& end(){
         return last;
     }
 };
@@ -322,10 +322,11 @@ struct dbn final {
                     ++i;
                 }
 
-                decltype(auto) input = rbm.convert_input(batch_start, it);
+                //Convert data to an useful form
+                input_converter<rbm_type<0>, Iterator> converter(layer<0>(), batch_start, it);
 
                 //Train the RBM on this big batch
-                r_trainer.train_sub(input.begin(), input.end(), input.begin(), trainer, context, rbm);
+                r_trainer.train_sub(converter.begin(), converter.end(), converter.begin(), trainer, context, rbm);
 
                 if(dbn_traits<this_type>::is_verbose()){
                     watcher.pretraining_batch(*this, big_batch);
@@ -393,10 +394,11 @@ struct dbn final {
                     ++i;
                 }
 
-                auto input = layer<0>().convert_input(batch_start, it);
+                //Convert data to an useful form
+                input_converter<rbm_type<0>, Iterator> converter(layer<0>(), batch_start, it);
 
                 //Collect a big batch
-                maybe_parallel_foreach_i(pool, input.begin(), input.end(), [this,&activated_input](auto& v, std::size_t i){
+                maybe_parallel_foreach_i(pool, converter.begin(), converter.end(), [this,&activated_input](auto& v, std::size_t i){
                     this->activation_probabilities<0, I>(v, activated_input[i]);
                 });
 
