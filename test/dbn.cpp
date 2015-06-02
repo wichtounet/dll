@@ -109,8 +109,10 @@ TEST_CASE( "dbn/mnist_4", "dbn::sgd" ) {
 
     auto dbn = std::make_unique<dbn_t>();
 
+    dbn->learning_rate = 0.3;
+
     dbn->pretrain(dataset.training_images, 20);
-    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100, 10);
+    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 200, 10);
 
     REQUIRE(error < 5e-2);
 
@@ -129,7 +131,7 @@ TEST_CASE( "dbn/mnist_5", "dbn::sgd_momentum" ) {
         dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
         dll::trainer<dll::sgd_trainer>, dll::momentum>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(500);
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
 
     REQUIRE(!dataset.training_images.empty());
 
@@ -137,10 +139,10 @@ TEST_CASE( "dbn/mnist_5", "dbn::sgd_momentum" ) {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->learning_rate = 0.001;
+    dbn->learning_rate = 0.01;
 
     dbn->pretrain(dataset.training_images, 20);
-    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100, 10);
+    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 200, 10);
 
     REQUIRE(error < 5e-2);
 
@@ -302,8 +304,11 @@ TEST_CASE( "dbn/mnist_11", "dbn::sgd_wd_momentum"){
 
     auto dbn = std::make_unique<dbn_t>();
 
+    dbn->learning_rate = 0.01;
+    dbn->initial_momentum = 0.9;
+
     dbn->pretrain(dataset.training_images, 10);
-    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 200, 10);
+    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 200, 100);
 
     REQUIRE(error < 5e-2);
 }
