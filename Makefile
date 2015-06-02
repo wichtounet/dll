@@ -39,6 +39,7 @@ TEST_FILES=$(TEST_CPP_FILES:test/%=%)
 
 DEBUG_D_FILES=$(CPP_FILES:%.cpp=debug/%.cpp.d) $(TEST_CPP_FILES:%.cpp=debug/%.cpp.d)
 RELEASE_D_FILES=$(CPP_FILES:%.cpp=release/%.cpp.d) $(TEST_CPP_FILES:%.cpp=release/%.cpp.d)
+RELEASE_DEBUG_D_FILES=$(CPP_FILES:%.cpp=release_debug/%.cpp.d) $(TEST_CPP_FILES:%.cpp=release_debug/%.cpp.d)
 
 $(eval $(call folder_compile,test_compile))
 $(eval $(call test_folder_compile,))
@@ -104,3 +105,4 @@ clean: base_clean
 
 -include $(DEBUG_D_FILES)
 -include $(RELEASE_D_FILES)
+-include $(RELEASE_DEBUG_D_FILES)
