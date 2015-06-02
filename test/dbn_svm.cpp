@@ -1,0 +1,88 @@
+//=======================================================================
+// Copyright (c) 2014-2015 Baptiste Wicht
+// Distributed under the terms of the MIT License.
+// (See accompanying file LICENSE or copy at
+//  http://opensource.org/licenses/MIT)
+//=======================================================================
+
+#include <deque>
+
+#include "catch.hpp"
+
+#define DLL_SVM_SUPPORT
+
+#include "dll/dbn.hpp"
+
+#include "mnist/mnist_reader.hpp"
+#include "mnist/mnist_utils.hpp"
+
+TEST_CASE( "dbn/mnist_12", "dbn::svm_simple" ) {
+    typedef dll::dbn_desc<
+        dll::dbn_layers<
+        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
+        dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t>>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(500);
+
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->pretrain(dataset.training_images, 20);
+    auto result = dbn->svm_train(dataset.training_images, dataset.training_labels);
+
+    REQUIRE(result);
+
+    auto test_error = dll::test_set(dbn, dataset.training_images, dataset.training_labels, dll::svm_predictor());
+    std::cout << "test_error:" << test_error << std::endl;
+    REQUIRE(test_error < 0.2);
+}
+
+TEST_CASE( "dbn/mnist_13", "dbn::svm_concatenate" ) {
+    typedef dll::dbn_desc<
+        dll::dbn_layers<
+        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
+        dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t>, dll::svm_concatenate>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(500);
+
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->pretrain(dataset.training_images, 20);
+    auto result = dbn->svm_train(dataset.training_images, dataset.training_labels);
+
+    REQUIRE(result);
+
+    auto test_error = dll::test_set(dbn, dataset.training_images, dataset.training_labels, dll::svm_predictor());
+    std::cout << "test_error:" << test_error << std::endl;
+    REQUIRE(test_error < 0.2);
+}
+
+TEST_CASE( "dbn/mnist_14", "dbn::svm_simple" ) {
+    typedef dll::dbn_desc<
+        dll::dbn_layers<
+        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t>>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(500);
+
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->pretrain(dataset.training_images, 20);
+    auto result = dbn->svm_train(dataset.training_images, dataset.training_labels);
+
+    REQUIRE(result);
+
+    auto test_error = dll::test_set(dbn, dataset.training_images, dataset.training_labels, dll::svm_predictor());
+    std::cout << "test_error:" << test_error << std::endl;
+    REQUIRE(test_error < 0.2);
+}
