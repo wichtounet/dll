@@ -186,9 +186,9 @@ TEST_CASE( "dbn/sgd/7", "[dbn][mnist][sgd][memory]" ) {
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
             dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
-            dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
-        dll::trainer<dll::sgd_trainer>,
-        dll::memory
+            dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
+        , dll::trainer<dll::sgd_trainer>
+        , dll::memory
         >::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(500);
