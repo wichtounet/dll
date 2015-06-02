@@ -278,7 +278,17 @@ protected:
             } else if(hidden_unit == unit_type::RELU1){
                 h_a = min(max(b + mul(v_a, w, t), 0.0), 1.0);
             } else if(hidden_unit == unit_type::SOFTMAX){
-                h_a = softmax(b + mul(v_a, w, t));
+                //h_a = softmax(b + mul(v_a, w, t));
+
+                //Temporary workaround for softmax (broken in ETL)
+
+                auto tmp = s(b + mul(v_a, w, t));
+                auto tmp2 = s(softmax(tmp));
+
+                for(std::size_t i = 0; i < etl::size(h_a); ++i){
+                    h_a(i) = tmp2(i);
+                }
+
             }
 
             nan_check_deep(h_a);
