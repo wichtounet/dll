@@ -140,7 +140,7 @@ TEST_CASE( "dbn/mnist_5", "dbn::sgd_momentum" ) {
     dbn->learning_rate = 0.01;
 
     dbn->pretrain(dataset.training_images, 20);
-    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 200, 10);
+    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100, 10);
 
     REQUIRE(error < 5e-2);
 
