@@ -89,9 +89,6 @@ TEST_CASE( "dbn/mnist_3", "dbn::labels" ) {
     REQUIRE(error < 0.3);
 }
 
-//TODO SGD is broken
-//Working in c56f36388b6b8ff5b69e93e44122315a216024d4
-
 TEST_CASE( "dbn/mnist_4", "dbn::sgd" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
@@ -107,7 +104,7 @@ TEST_CASE( "dbn/mnist_4", "dbn::sgd" ) {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->learning_rate = 0.3;
+    dbn->learning_rate = 0.1;
 
     dbn->pretrain(dataset.training_images, 20);
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100, 10);
@@ -137,7 +134,7 @@ TEST_CASE( "dbn/mnist_5", "dbn::sgd_momentum" ) {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->learning_rate = 0.01;
+    dbn->learning_rate = 0.05;
 
     dbn->pretrain(dataset.training_images, 20);
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100, 10);
@@ -195,7 +192,7 @@ TEST_CASE( "dbn/mnist_7", "dbn::sgd_gaussian" ) {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->learning_rate = 0.75;
+    dbn->learning_rate = 0.1;
 
     dbn->pretrain(dataset.training_images, 20);
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100, 20);
@@ -252,7 +249,7 @@ TEST_CASE( "dbn/mnist_9", "dbn::sgd_relu" ) {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->learning_rate = 0.05;
+    dbn->learning_rate = 0.1;
 
     dbn->pretrain(dataset.training_images, 20);
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100, 10);
@@ -278,10 +275,12 @@ TEST_CASE( "dbn/mnist_10", "dbn::sgd_wd" ) {
 
     auto dbn = std::make_unique<dbn_t>();
 
+    dbn->learning_rate = 0.1;
+
     dbn->pretrain(dataset.training_images, 5);
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 200, 10);
 
-    REQUIRE(error < 5e-2);
+    REQUIRE(error < 1e-1);
 }
 
 TEST_CASE( "dbn/mnist_11", "dbn::sgd_wd_momentum"){
@@ -302,8 +301,7 @@ TEST_CASE( "dbn/mnist_11", "dbn::sgd_wd_momentum"){
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->learning_rate = 0.01;
-    dbn->initial_momentum = 0.9;
+    dbn->learning_rate = 0.1;
 
     dbn->pretrain(dataset.training_images, 10);
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 200, 100);
