@@ -33,6 +33,8 @@ struct sgd_context {
     etl::fast_vector<weight, num_hidden> o_a;
     etl::fast_vector<weight, num_hidden> o_s;
     etl::fast_vector<weight, num_hidden> errors;
+
+    sgd_context() : w_inc(0), b_inc(0), c_inc(0), o_a(0), o_s(0), errors(0) {}
 };
 
 template<typename DBN>
@@ -85,6 +87,8 @@ struct sgd_trainer {
         }
 
         ctx.b_grad += ctx.errors;
+
+        nan_check_deep_3(ctx.w_grad, ctx.b_grad, ctx.c_grad);
     }
 
     template<typename T1, typename T2, bool M = dbn_traits<dbn_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
@@ -105,16 +109,12 @@ struct sgd_trainer {
 
         constexpr const auto n_outputs = dbn_t::template layer_output_size<layers - 1>();
 
+        //Reset the gradients
+
         cpp::for_each(rbm_contexts, [](auto& context){
             context.w_grad = 0.0;
             context.b_grad = 0.0;
             context.c_grad = 0.0;
-
-            if(dbn_traits<dbn_t>::has_momentum()){
-                context.w_inc = 0.0;
-                context.b_inc = 0.0;
-                context.c_inc = 0.0;
-            }
         });
 
         //Compute the total gradients for the mini batch
@@ -134,8 +134,10 @@ struct sgd_trainer {
             for(std::size_t j = 0; j < n_outputs; ++j){
                 auto observed = last_ctx.o_a[j];
                 auto desired = (*lit)[j];
-                last_ctx.errors[j] = observed * (1 - observed) * (desired - observed);
+                last_ctx.errors[j] = observed * (1.0 - observed) * (desired - observed);
             }
+
+            nan_check_deep(last_ctx.errors);
 
             //Compute the gradients of each layer
 
@@ -143,6 +145,8 @@ struct sgd_trainer {
                 this_type::compute_gradients(r2, ctx2, ctx1.o_a);
 
                 ctx1.errors = ctx1.o_a >> (1 - ctx1.o_a) >> (r2.w * ctx2.errors);
+
+                nan_check_deep(ctx1.errors);
             });
 
             ++it;
@@ -155,6 +159,8 @@ struct sgd_trainer {
             context.w_grad /= n_samples;
             context.b_grad /= n_samples;
             context.c_grad /= n_samples;
+
+            nan_check_deep_3(context.w_grad, context.b_grad, context.c_grad);
         });
 
         //Apply gradients
@@ -165,7 +171,7 @@ struct sgd_trainer {
             this->update_grad(rbm.b, context.b_grad, b_decay(dbn_traits<dbn_t>::decay()), 0.0);
             this->update_grad(rbm.c, context.c_grad, b_decay(dbn_traits<dbn_t>::decay()), 0.0);
 
-            //Update momentum and learning rate
+            //Update with momentum and learning rate
             if(dbn_traits<dbn_t>::has_momentum()){
                 auto momentum = dbn.momentum;
                 auto eps = dbn.learning_rate;
@@ -173,18 +179,24 @@ struct sgd_trainer {
                 context.w_inc = momentum * context.w_inc + eps * context.w_grad;
                 context.b_inc = momentum * context.b_inc + eps * context.b_grad;
                 context.c_inc = momentum * context.c_inc + eps * context.c_grad;
+
+                nan_check_deep_3(context.w_inc, context.b_inc, context.c_inc);
             } else {
                 auto eps = dbn.learning_rate;
 
                 context.w_grad *= eps;
                 context.b_grad *= eps;
                 context.c_grad *= eps;
+
+                nan_check_deep_3(context.w_grad, context.b_grad, context.c_grad);
             }
 
             //Apply the final gradients
             rbm.w += this_type::get_fgrad(context.w_grad, context.w_inc);
             rbm.b += this_type::get_fgrad(context.b_grad, context.b_inc);
             rbm.c += this_type::get_fgrad(context.c_grad, context.c_inc);
+
+            nan_check_deep_3(rbm.w, rbm.b, rbm.c);
         });
     }
 
