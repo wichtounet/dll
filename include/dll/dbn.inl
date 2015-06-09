@@ -73,6 +73,21 @@ struct input_converter <Layer, Iterator, std::enable_if_t<std::is_same<typename 
     }
 };
 
+//TODO Could be good to ensure that either a) all rbm have the same weight b) use the correct type for each rbm
+
+template<std::size_t I, typename DBN, typename Enable = void>
+struct extract_weight_t;
+
+template<std::size_t I, typename DBN>
+struct extract_weight_t <I, DBN, std::enable_if_t<layer_traits<typename DBN::template rbm_type<I>>::is_transform_layer()>> {
+    using type = typename extract_weight_t<I+1, DBN>::type;
+};
+
+template<std::size_t I, typename DBN>
+struct extract_weight_t <I, DBN, cpp::disable_if_t<layer_traits<typename DBN::template rbm_type<I>>::is_transform_layer()>> {
+    using type = typename DBN::template rbm_type<I>::weight;
+};
+
 /*!
  * \brief A Deep Belief Network implementation
  */
@@ -89,8 +104,7 @@ struct dbn final {
     template <std::size_t N>
     using rbm_type = typename std::tuple_element<N, tuple_type>::type;
 
-    //TODO Could be good to ensure that either a) all rbm have the same weight b) use the correct type for each rbm
-    using weight = typename rbm_type<0>::weight;
+    using weight = typename extract_weight_t<0, this_type>::type;
 
     using watcher_t = typename desc::template watcher_t<this_type>;
 
