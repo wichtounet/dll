@@ -278,8 +278,6 @@ TEST_CASE( "dbn/mnist_18", "dbn::binarize_layer" ) {
 
     REQUIRE(!dataset.training_images.empty());
 
-    mnist::binarize_dataset(dataset);
-
     auto dbn = std::make_unique<dbn_t>();
 
     dbn->pretrain(dataset.training_images, 20);

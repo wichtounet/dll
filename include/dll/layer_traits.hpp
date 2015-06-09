@@ -70,6 +70,13 @@ struct layer_traits {
     }
 
     /*!
+     * \brief Indicates if this layer is trained or not.
+     */
+    static constexpr bool is_trained(){
+        return !is_transform_layer();
+    }
+
+    /*!
      * \brief Indicates if this layer should be trained if it is the last layer.
      */
     template<cpp_enable_if_cst(layer_traits<rbm_t>::is_rbm_layer())>

@@ -273,10 +273,12 @@ struct dbn final {
 
         watcher.template pretrain_layer<rbm_t>(*this, I, fast_distance(first, last));
 
-        rbm.template train<
-            !watcher_t::ignore_sub, //Enable the RBM Watcher or not
-            dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
-                (first, last, max_epochs);
+        cpp::static_if<layer_traits<rbm_t>::is_trained()>([&](auto& rbm){
+            rbm.template train<
+                !watcher_t::ignore_sub, //Enable the RBM Watcher or not
+                dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
+                    (first, last, max_epochs);
+        }, rbm);
 
         if(train_next<I+1>::value){
             auto next_a = rbm.template prepare_output<layer_input_t<I, Iterator>>(std::distance(first, last));
