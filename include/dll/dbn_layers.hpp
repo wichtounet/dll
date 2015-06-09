@@ -20,6 +20,19 @@ struct is_dynamic : cpp::bool_constant_c<cpp::or_u<layer_traits<Layers>::is_dyna
 template<typename... Layers>
 struct is_convolutional : cpp::bool_constant_c<cpp::or_u<layer_traits<Layers>::is_convolutional()...>> {};
 
+// TODO validate_layer_pair should be made more robust when
+// transform layer are present between layers
+
+template<typename L1, typename L2, typename Enable = void>
+struct validate_layer_pair;
+
+template<typename L1, typename L2>
+struct validate_layer_pair <L1, L2, std::enable_if_t<layer_traits<L1>::is_transform_layer() || layer_traits<L2>::is_transform_layer()>>
+    : std::true_type {};
+
+template<typename L1, typename L2>
+struct validate_layer_pair <L1, L2, cpp::disable_if_t<layer_traits<L1>::is_transform_layer() || layer_traits<L2>::is_transform_layer()>> : cpp::bool_constant<layer_traits<L1>::output_size() == layer_traits<L2>::input_size()> {};
+
 template<typename... Layers>
 struct validate_layers_impl;
 
@@ -30,7 +43,7 @@ template<typename L1, typename L2, typename... Layers>
 struct validate_layers_impl <L1, L2, Layers...> :
     cpp::bool_constant_c<
         cpp::and_u<
-            layer_traits<L1>::output_size() == layer_traits<L2>::input_size(),
+            validate_layer_pair<L1, L2>::value,
             validate_layers_impl<L2, Layers...>::value
         >> {};
 
