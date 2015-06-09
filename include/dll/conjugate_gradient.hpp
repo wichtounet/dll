@@ -7,6 +7,10 @@
 
 /*! \file Conjugate Gradient (CG) descent Implementation */
 
+//TODO: The handling of transform layers is not complete, this should
+//be completed and support for pooling layers should be added as
+//well
+
 #ifndef DLL_CONJUGATE_GRADIENT_HPP
 #define DLL_CONJUGATE_GRADIENT_HPP
 
@@ -34,6 +38,8 @@ struct cg_context {
     using rbm_t = RBM;
     using weight = typename rbm_t::weight;
 
+    static constexpr const bool is_trained = true;
+
     static constexpr const std::size_t num_visible = rbm_t::num_visible;
     static constexpr const std::size_t num_hidden = rbm_t::num_hidden;
 
@@ -57,6 +63,41 @@ struct cg_context {
 
     etl::fast_matrix<weight, num_visible, num_hidden> gr_w_tmp;
     etl::fast_vector<weight, num_hidden> gr_b_tmp;
+
+    std::vector<etl::dyn_vector<weight>> gr_probs_a;
+    std::vector<etl::dyn_vector<weight>> gr_probs_s;
+};
+
+template<typename Desc>
+struct cg_context <binarize_layer<Desc>> {
+    using rbm_t = binarize_layer<Desc>;
+    using weight = double;
+
+    static constexpr const bool is_trained = false;
+
+    static constexpr const std::size_t num_visible = 1;
+    static constexpr const std::size_t num_hidden = 1;
+
+    etl::fast_matrix<weight, 1, 1> gr_w_incs;
+    etl::fast_vector<weight, 1> gr_b_incs;
+
+    etl::fast_matrix<weight, 1, 1> gr_w_best;
+    etl::fast_vector<weight, 1> gr_b_best;
+
+    etl::fast_matrix<weight, 1, 1> gr_w_best_incs;
+    etl::fast_vector<weight, 1> gr_b_best_incs;
+
+    etl::fast_matrix<weight, 1, 1> gr_w_df0;
+    etl::fast_vector<weight, 1> gr_b_df0;
+
+    etl::fast_matrix<weight, 1, 1> gr_w_df3;
+    etl::fast_vector<weight, 1> gr_b_df3;
+
+    etl::fast_matrix<weight, 1, 1> gr_w_s;
+    etl::fast_vector<weight, 1> gr_b_s;
+
+    etl::fast_matrix<weight, 1, 1> gr_w_tmp;
+    etl::fast_vector<weight, 1> gr_b_tmp;
 
     std::vector<etl::dyn_vector<weight>> gr_probs_a;
     std::vector<etl::dyn_vector<weight>> gr_probs_s;
@@ -90,12 +131,14 @@ struct cg_trainer {
 
     void init_training(std::size_t batch_size){
         cpp::for_each(rbm_contexts, [batch_size](auto& ctx){
-            typedef typename std::remove_reference<decltype(ctx)>::type ctx_t;
-            constexpr const auto num_hidden = ctx_t::num_hidden;
+            if(ctx.is_trained){
+                typedef typename std::remove_reference<decltype(ctx)>::type ctx_t;
+                constexpr const auto num_hidden = ctx_t::num_hidden;
 
-            for(std::size_t i = 0; i < batch_size; ++i){
-                ctx.gr_probs_a.emplace_back(num_hidden);
-                ctx.gr_probs_s.emplace_back(num_hidden);
+                for(std::size_t i = 0; i < batch_size; ++i){
+                    ctx.gr_probs_a.emplace_back(num_hidden);
+                    ctx.gr_probs_s.emplace_back(num_hidden);
+                }
             }
         });
     }

@@ -81,6 +81,42 @@ struct input_converter <DBN, I, Iterator, std::enable_if_t<layer_traits<typename
     using input_converter<DBN, I + 1, Iterator>::input_converter;
 };
 
+template<typename DBN, std::size_t I, typename Sample, typename Enable = void>
+struct sample_converter {
+    using layer_t = typename DBN::template rbm_type<I>;
+    using result = decltype(std::declval<layer_t>().convert_sample(std::declval<Sample>()));
+
+    result r;
+
+    sample_converter(const DBN& dbn, const Sample& sample) : r(dbn.template layer<I>().convert_sample(sample)) {
+        //Nothing else to init
+    }
+
+    decltype(auto) get(){
+        return r;
+    }
+};
+
+template<typename DBN, std::size_t I, typename Sample>
+struct sample_converter <DBN, I, Sample,
+        std::enable_if_t<std::is_same<typename DBN::template rbm_type<I>::input_one_t, Sample>::value>> {
+    const Sample& r;
+
+    sample_converter(const DBN& /*dbn*/, const Sample& sample) : r(sample) {
+        //Nothing else to init
+    }
+
+    decltype(auto) get(){
+        return r;
+    }
+};
+
+template<typename DBN, std::size_t I, typename Sample>
+struct sample_converter <DBN, I, Sample, std::enable_if_t<layer_traits<typename DBN::template rbm_type<I>>::is_transform_layer()>> :
+        sample_converter<DBN, I + 1, Sample> {
+    using sample_converter<DBN, I + 1, Sample>::sample_converter;
+};
+
 //TODO Could be good to ensure that either a) all rbm have the same weight b) use the correct type for each rbm
 
 template<std::size_t I, typename DBN, typename Enable = void>
@@ -699,9 +735,9 @@ struct dbn final {
 
     template<typename Sample, typename Output>
     void activation_probabilities(const Sample& item_data, Output& result) const {
-        auto data = layer<0>().convert_sample(item_data);
+        sample_converter<this_type, 0, Sample> converter(*this, item_data);
 
-        activation_probabilities<0>(data, result);
+        activation_probabilities<0>(converter.get(), result);
     }
 
     template<typename Sample>
@@ -735,11 +771,11 @@ struct dbn final {
 
     template<typename Sample, typename Output>
     void full_activation_probabilities(const Sample& item_data, Output& result) const {
-        auto data = layer<0>().convert_sample(item_data);
+        sample_converter<this_type, 0, Sample> converter(*this, item_data);
 
         std::size_t i = 0;
 
-        full_activation_probabilities<0>(data, i, result);
+        full_activation_probabilities<0>(converter.get(), i, result);
     }
 
     template<typename Sample>
