@@ -353,6 +353,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         return result;
     }
 
+    template<typename Input>
     static output_t prepare_output(std::size_t samples){
         output_t output;
         output.reserve(samples);
@@ -364,6 +365,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         return output;
     }
 
+    template<typename Input>
     static output_one_t prepare_one_output(){
         return output_one_t(K, NH1, NH2);
     }

@@ -473,6 +473,7 @@ public:
         return input;
     }
 
+    template<typename Input>
     output_t prepare_output(std::size_t samples, bool is_last = false, std::size_t labels = 0) const {
         output_t output;
         output.reserve(samples);
@@ -484,6 +485,7 @@ public:
         return output;
     }
 
+    template<typename Input>
     output_one_t prepare_one_output(bool is_last = false, std::size_t labels = 0) const {
         return output_one_t(static_cast<const parent_t*>(this)->output_size() + (is_last ? labels : 0));
     }

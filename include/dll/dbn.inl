@@ -36,13 +36,14 @@ void load_layer(Layer& layer, std::istream& is){
     layer.load(is);
 }
 
-template<typename Layer, typename Iterator, typename Enable = void>
+template<typename DBN, std::size_t I, typename Iterator, typename Enable = void>
 struct input_converter {
-    using container = decltype(std::declval<Layer>().convert_input(std::declval<Iterator>(), std::declval<Iterator>()));
+    using layer_t = typename DBN::template rbm_type<I>;
+    using container = decltype(std::declval<layer_t>().convert_input(std::declval<Iterator>(), std::declval<Iterator>()));
 
     container c;
 
-    input_converter(Layer& layer, const Iterator& first, const Iterator& last) : c(layer.convert_input(first, last)) {
+    input_converter(DBN& dbn, const Iterator& first, const Iterator& last) : c(dbn.template layer<I>().convert_input(first, last)) {
         //Nothing else to init
     }
 
@@ -55,12 +56,13 @@ struct input_converter {
     }
 };
 
-template<typename Layer, typename Iterator>
-struct input_converter <Layer, Iterator, std::enable_if_t<std::is_same<typename Layer::input_one_t, typename Iterator::value_type>::value>> {
+template<typename DBN, std::size_t I, typename Iterator>
+struct input_converter <DBN, I, Iterator,
+        std::enable_if_t<std::is_same<typename DBN::template rbm_type<I>::input_one_t, typename Iterator::value_type>::value>> {
     Iterator& first;
     Iterator& last;
 
-    input_converter(Layer& /*layer*/, Iterator& first, Iterator& last) : first(first), last(last) {
+    input_converter(DBN& /*dbn*/, Iterator& first, Iterator& last) : first(first), last(last) {
         //Nothing else to init
     }
 
@@ -71,6 +73,12 @@ struct input_converter <Layer, Iterator, std::enable_if_t<std::is_same<typename 
     Iterator& end(){
         return last;
     }
+};
+
+template<typename DBN, std::size_t I, typename Iterator>
+struct input_converter <DBN, I, Iterator, std::enable_if_t<layer_traits<typename DBN::template rbm_type<I>>::is_transform_layer()>> :
+        input_converter<DBN, I + 1, Iterator> {
+    using input_converter<DBN, I + 1, Iterator>::input_converter;
 };
 
 //TODO Could be good to ensure that either a) all rbm have the same weight b) use the correct type for each rbm
@@ -272,7 +280,7 @@ struct dbn final {
                 (first, last, max_epochs);
 
         if(train_next<I+1>::value){
-            auto next_a = rbm.prepare_output(std::distance(first, last));
+            auto next_a = rbm.template prepare_output<layer_input_t<I, Iterator>>(std::distance(first, last));
 
             maybe_parallel_foreach_i(pool, first, last, [&rbm, &next_a](auto& v, std::size_t i){
                 rbm.activate_one(v, next_a[i]);
@@ -337,7 +345,7 @@ struct dbn final {
                 }
 
                 //Convert data to an useful form
-                input_converter<rbm_type<0>, Iterator> converter(layer<0>(), batch_start, it);
+                input_converter<this_type, 0, Iterator> converter(*this, batch_start, it);
 
                 if(desc::BatchSize == 1){
                     //Train the RBM on this batch
@@ -369,6 +377,48 @@ struct dbn final {
         pretrain_layer_batch<I+1>(first, last, watcher, max_epochs);
     }
 
+    template<std::size_t I, typename Input, typename Enable = void>
+    struct layer_output;
+
+    template<std::size_t I, typename Input>
+    using layer_output_t = typename layer_output<I, Input>::type;
+
+    template<std::size_t I, typename Input, typename Enable = void>
+    struct layer_input;
+
+    template<std::size_t I, typename Input>
+    using layer_input_t = typename layer_input<I, Input>::type;
+
+    template<std::size_t I, typename Input>
+    struct layer_output<I, Input, std::enable_if_t<!layer_traits<rbm_type<I>>::is_transform_layer()>> {
+        using type = typename rbm_type<I>::output_one_t;
+    };
+
+    template<std::size_t I, typename Input>
+    struct layer_output<I, Input, std::enable_if_t<I == 0 && layer_traits<rbm_type<I>>::is_transform_layer()>> {
+        using type = typename Input::value_type;
+    };
+
+    template<std::size_t I, typename Input>
+    struct layer_output<I, Input, std::enable_if_t<(I > 0) && layer_traits<rbm_type<I>>::is_transform_layer()>> {
+        using type = layer_input_t<I, Input>;
+    };
+
+    template<std::size_t I, typename Input>
+    struct layer_input<I, Input, std::enable_if_t<!layer_traits<rbm_type<I>>::is_transform_layer()>> {
+        using type = typename rbm_type<I>::input_one_t;
+    };
+
+    template<std::size_t I, typename Input>
+    struct layer_input<I, Input, std::enable_if_t<I == 0 && layer_traits<rbm_type<I>>::is_transform_layer()>> {
+        using type = layer_input_t<I + 1, Input>;
+    };
+
+    template<std::size_t I, typename Input>
+    struct layer_input<I, Input, std::enable_if_t<(I > 0) && layer_traits<rbm_type<I>>::is_transform_layer()>> {
+        using type = layer_output_t<I - 1, Input>;
+    };
+
     template<std::size_t I, typename Iterator, typename Watcher, cpp_enable_if((I>0 && I<layers && !batch_layer_ignore<I>::value))>
     void pretrain_layer_batch(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
         using rbm_t = rbm_type<I>;
@@ -390,7 +440,7 @@ struct dbn final {
 
         auto big_batch_size = desc::BatchSize * get_batch_size(rbm);
 
-        auto input = layer<I - 1>().prepare_output(big_batch_size);
+        auto input = layer<I - 1>().template prepare_output<layer_input_t<I - 1, Iterator>>(big_batch_size);
 
         //Train for max_epochs epoch
         for(std::size_t epoch = 0; epoch < max_epochs; ++epoch){
@@ -414,7 +464,7 @@ struct dbn final {
                 }
 
                 //Convert data to an useful form
-                input_converter<rbm_type<0>, Iterator> converter(layer<0>(), batch_start, it);
+                input_converter<this_type, 0, Iterator> converter(*this, batch_start, it);
 
                 //Collect a big batch
                 maybe_parallel_foreach_i(pool, converter.begin(), converter.end(), [this,&input](auto& v, std::size_t i){
@@ -474,7 +524,7 @@ struct dbn final {
             pretrain_layer_batch<0>(first, last, watcher, max_epochs);
         } else {
             //Convert data to an useful form
-            input_converter<rbm_type<0>, Iterator> converter(layer<0>(), first, last);
+            input_converter<this_type, 0, Iterator> converter(*this, first, last);
 
             pretrain_layer<0>(converter.begin(), converter.end(), watcher, max_epochs);
         }
@@ -512,13 +562,13 @@ struct dbn final {
         if(I < layers - 1){
             bool is_last = I == layers - 2;
 
-            auto next_a = rbm.prepare_output(input.size());
-            auto next_s = rbm.prepare_output(input.size());
+            auto next_a = rbm.template prepare_output<layer_input_t<I, Input>>(input.size());
+            auto next_s = rbm.template prepare_output<layer_input_t<I, Input>>(input.size());
 
             rbm.activate_many(input, next_a, next_s);
 
             if(is_last){
-                auto big_next_a = rbm.prepare_output(input.size(), is_last, labels);
+                auto big_next_a = rbm.template prepare_output<layer_input_t<I, Input>>(input.size(), is_last, labels);
 
                 //Cannot use std copy since the sub elements have different size
                 for(std::size_t i = 0; i < next_a.size(); ++i){
@@ -574,8 +624,8 @@ struct dbn final {
     std::enable_if_t<(I<layers)> predict_labels(const Input& input, Output& output, std::size_t labels) const {
         decltype(auto) rbm = layer<I>();
 
-        auto next_a = rbm.prepare_one_output();
-        auto next_s = rbm.prepare_one_output();
+        auto next_a = rbm.template prepare_one_output<Input>();
+        auto next_s = rbm.template prepare_one_output<Input>();
 
         rbm.activate_hidden(next_a, next_s, input, input);
 
@@ -591,7 +641,7 @@ struct dbn final {
 
             //If the next layers is the last layer
             if(is_last){
-                auto big_next_a = rbm.prepare_one_output(is_last, labels);
+                auto big_next_a = rbm.template prepare_one_output<layer_input_t<I, Input>>(is_last, labels);
 
                 for(std::size_t i = 0; i < next_a.size(); ++i){
                     big_next_a[i] = next_a[i];
@@ -634,7 +684,7 @@ struct dbn final {
         auto& rbm = layer<I>();
 
         if(I < S - 1){
-            auto next_a = rbm.prepare_one_output();
+            auto next_a = rbm.template prepare_one_output<Input>();
             rbm.activate_one(input, next_a);
             activation_probabilities<I+1, S>(next_a, result);
         } else {
@@ -655,7 +705,7 @@ struct dbn final {
 
     template<typename Sample>
     auto activation_probabilities(const Sample& item_data) const {
-        auto result = layer<layers - 1>().prepare_one_output();
+        auto result = layer<layers - 1>().template prepare_one_output<Sample>();
 
         activation_probabilities(item_data, result);
 
@@ -666,8 +716,8 @@ struct dbn final {
     std::enable_if_t<(I<layers)> full_activation_probabilities(const Input& input, std::size_t& i, Result& result) const {
         auto& rbm = layer<I>();
 
-        auto next_s = rbm.prepare_one_output();
-        auto next_a = rbm.prepare_one_output();
+        auto next_s = rbm.template prepare_one_output<Input>();
+        auto next_a = rbm.template prepare_one_output<Input>();
 
         rbm.activate_one(input, next_a, next_s);
 
@@ -744,8 +794,10 @@ struct dbn final {
     using output_one_t = typename rbm_type<layers - 1>::output_one_t;
     using output_t = typename rbm_type<layers - 1>::output_one_t;
 
+    //TODO This is broken if the last layer is a transform layer
+
     output_one_t prepare_one_output() const {
-        return layer<layers - 1>().prepare_one_output();
+        return layer<layers - 1>().template prepare_one_output<rbm_type<layers - 1>::input_one_t>();
     }
 
 #ifdef DLL_SVM_SUPPORT
@@ -765,7 +817,7 @@ struct dbn final {
 
     template<typename DBN = this_type, typename Result, typename Sample, cpp::disable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
     void add_activation_probabilities(Result& result, const Sample& sample){
-        result.push_back(layer<layers - 1>().prepare_one_output());
+        result.push_back(layer<layers - 1>().template prepare_one_output<Sample>());
         activation_probabilities(sample, result.back());
     }
 

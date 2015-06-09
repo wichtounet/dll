@@ -57,6 +57,16 @@ struct binarize_layer {
             activate_one(input[i], h_a[i]);
         }
     }
+
+    template<typename Input>
+    static std::vector<Input> prepare_output(std::size_t samples){
+        return std::vector<Input>(samples);
+    }
+
+    template<typename Input>
+    static Input prepare_one_output(){
+        return {};
+    }
 };
 
 //Allow odr-use of the constexpr static members

@@ -84,6 +84,7 @@ struct pooling_layer_3d {
         return result;
     }
 
+    template<typename Input>
     static output_t prepare_output(std::size_t samples){
         output_t output;
         output.reserve(samples);
@@ -95,6 +96,7 @@ struct pooling_layer_3d {
         return output;
     }
 
+    template<typename Input>
     static output_one_t prepare_one_output(){
         return output_one_t(O1, O2, O3);
     }
