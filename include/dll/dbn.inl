@@ -290,12 +290,12 @@ struct dbn final {
     struct batch_layer_ignore : std::false_type {};
 
     template<std::size_t I>
-    struct batch_layer_ignore<I, std::enable_if_t<(I < layers)>> : cpp::bool_constant_c<cpp::or_u<layer_traits<rbm_type<I>>::is_pooling_layer(), !layer_traits<rbm_type<I>>::pretrain_last()>> {};
+    struct batch_layer_ignore<I, std::enable_if_t<(I < layers)>> : cpp::or_u<layer_traits<rbm_type<I>>::is_pooling_layer(), layer_traits<rbm_type<I>>::is_transform_layer(), !layer_traits<rbm_type<I>>::pretrain_last()> {};
 
     //Special handling for the layer 0
     //data is coming from iterators not from input
-    template<std::size_t I, typename Iterator, typename Watcher>
-    std::enable_if_t<(I==0)> pretrain_layer_batch(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
+    template<std::size_t I, typename Iterator, typename Watcher, cpp_enable_if((I == 0 && !batch_layer_ignore<I>::value))>
+    void pretrain_layer_batch(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
         using rbm_t = rbm_type<I>;
 
         decltype(auto) rbm = layer<I>();
@@ -362,15 +362,15 @@ struct dbn final {
         pretrain_layer_batch<I+1>(first, last, watcher, max_epochs);
     }
 
-    //Special handling for pooling layers
-    template<std::size_t I, typename Iterator, typename Watcher>
-    std::enable_if_t<batch_layer_ignore<I>::value> pretrain_layer_batch(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
+    //Special handling for untrained layers
+    template<std::size_t I, typename Iterator, typename Watcher, cpp_enable_if(batch_layer_ignore<I>::value)>
+    void pretrain_layer_batch(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
         //We simply go up one layer on pooling layers
         pretrain_layer_batch<I+1>(first, last, watcher, max_epochs);
     }
 
-    template<std::size_t I, typename Iterator, typename Watcher>
-    std::enable_if_t<(I>0 && I<layers && !batch_layer_ignore<I>::value)> pretrain_layer_batch(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
+    template<std::size_t I, typename Iterator, typename Watcher, cpp_enable_if((I>0 && I<layers && !batch_layer_ignore<I>::value))>
+    void pretrain_layer_batch(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
         using rbm_t = rbm_type<I>;
 
         decltype(auto) rbm = layer<I>();
@@ -446,8 +446,8 @@ struct dbn final {
     }
 
     //Stop template recursion
-    template<std::size_t I, typename Iterator, typename Watcher>
-    std::enable_if_t<(I==layers && !batch_layer_ignore<I>::value)> pretrain_layer_batch(Iterator, Iterator, Watcher&, std::size_t){}
+    template<std::size_t I, typename Iterator, typename Watcher, cpp_enable_if((I==layers && !batch_layer_ignore<I>::value))>
+    void pretrain_layer_batch(Iterator, Iterator, Watcher&, std::size_t){}
 
     /*!
      * \brief Pretrain the network by training all layers in an unsupervised
