@@ -256,7 +256,6 @@ struct dbn final {
     template<std::size_t I>
     struct train_next<I, std::enable_if_t<(I > layers - 1)>> : std::false_type {};
 
-
     template<typename Iterator>
     std::size_t fast_distance(Iterator& first, Iterator& last){
         if(std::is_same<typename std::iterator_traits<Iterator>::iterator_category, std::random_access_iterator_tag>::value){
