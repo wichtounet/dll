@@ -29,6 +29,9 @@ struct mp_layer_3d;
 template<typename Desc>
 struct avgp_layer_3d;
 
+template<typename Desc>
+struct binarize_layer;
+
 /*!
  * \brief Type Traits to get information on RBM type
  */
@@ -48,7 +51,7 @@ struct layer_traits {
      * \brief Indicates if this layer is a RBM layer.
      */
     static constexpr bool is_rbm_layer(){
-        return !is_pooling_layer();
+        return !(is_pooling_layer() || is_transform_layer());
     }
 
     /*!
@@ -59,6 +62,16 @@ struct layer_traits {
             || cpp::is_specialization_of<avgp_layer_3d, rbm_t>::value;
     }
 
+    /*!
+     * \brief Indicates if this layer is a transformation layer.
+     */
+    static constexpr bool is_transform_layer(){
+        return cpp::is_specialization_of<binarize_layer, rbm_t>::value;
+    }
+
+    /*!
+     * \brief Indicates if this layer should be trained if it is the last layer.
+     */
     template<cpp_enable_if_cst(layer_traits<rbm_t>::is_rbm_layer())>
     static constexpr bool pretrain_last(){
         //Softmax unit should not be pretrained
