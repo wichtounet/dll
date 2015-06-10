@@ -221,6 +221,20 @@ struct dbn final {
         }
     }
 
+    template<typename One>
+    std::vector<One> flatten(std::vector<std::vector<One>>& deep){
+        std::vector<One> flat;
+        flat.reserve(deep.size());
+
+        for(auto& d : deep){
+            std::move(d.begin(), d.end(), std::back_inserter(flat));
+        }
+
+        deep.clear();
+
+        return flat;
+    }
+
     template<std::size_t I, typename Iterator, typename Watcher>
     std::enable_if_t<(I<layers)> pretrain_layer(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
         using rbm_t = rbm_type<I>;
@@ -243,7 +257,17 @@ struct dbn final {
                 rbm.activate_one(v, next_a[i]);
             });
 
-            pretrain_layer<I+1>(next_a.begin(), next_a.end(), watcher, max_epochs);
+            //In the standard case, pass the output to the next layer
+            cpp::static_if<!layer_traits<rbm_t>::is_multiplex_layer()>([&](auto& dbn){
+                dbn.template pretrain_layer<I+1>(next_a.begin(), next_a.end(), watcher, max_epochs);
+            }, *this);
+
+            //In case of a multiplex layer, the output is flattened
+            cpp::static_if<layer_traits<rbm_t>::is_multiplex_layer()>([&](auto& dbn){
+                auto flattened_next_a = dbn.flatten(next_a);
+
+                dbn.template pretrain_layer<I+1>(flattened_next_a.begin(), flattened_next_a.end(), watcher, max_epochs);
+            }, *this);
         }
     }
 
