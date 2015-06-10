@@ -231,8 +231,8 @@ struct dbn final {
 
         cpp::static_if<layer_traits<rbm_t>::is_trained()>([&](auto& rbm){
             rbm.template train<
-                !watcher_t::ignore_sub, //Enable the RBM Watcher or not
-                dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
+                !watcher_t::ignore_sub,                 //Enable the RBM Watcher or not
+                dbn_detail::rbm_watcher_t<watcher_t>>    //Replace the RBM watcher if not void
                     (first, last, max_epochs);
         }, rbm);
 
@@ -478,7 +478,7 @@ struct dbn final {
         //Pretrain each layer one-by-one
         if(dbn_traits<this_type>::save_memory()){
             std::cout << "DBN: Pretraining done in batch mode to save memory" << std::endl;
-            pretrain_layer_batch<0>(first, last, watcher, max_epochs);
+            //TODO pretrain_layer_batch<0>(first, last, watcher, max_epochs);
         } else {
             //Convert data to an useful form
             input_converter<this_type, 0, Iterator> converter(*this, first, last);
