@@ -32,7 +32,14 @@ TEST_CASE( "dbn/mnist/patches/1", "[dbn][conv][mnist][patches]" ) {
 
     mnist::binarize_dataset(dataset);
 
+    std::vector<etl::dyn_matrix<double>> converted;
+    converted.reserve(500);
+
+    for(auto& image : dataset.training_images){
+        converted.emplace_back(etl::dyn_vector<double>(image));
+    }
+
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->pretrain(dataset.training_images, 20);
+    dbn->pretrain(converted, 20);
 }
