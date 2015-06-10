@@ -11,32 +11,9 @@
 #include "tmp.hpp"
 #include "decay_type.hpp"
 #include "sparsity_method.hpp"
+#include "layer_fwd.hpp"
 
 namespace dll {
-
-template<typename Desc>
-struct dyn_rbm;
-
-template<typename Desc>
-struct conv_rbm;
-
-template<typename Desc>
-struct conv_rbm_mp;
-
-template<typename Desc>
-struct mp_layer_3d;
-
-template<typename Desc>
-struct avgp_layer_3d;
-
-template<typename Desc>
-struct binarize_layer;
-
-template<typename Desc>
-struct normalize_layer;
-
-template<typename Desc>
-struct patches_layer;
 
 /*!
  * \brief Type Traits to get information on RBM type
