@@ -11,6 +11,7 @@
 
 #include "catch.hpp"
 
+#include "dll/conv_rbm.hpp"
 #include "dll/dbn.hpp"
 
 #include "dll/patches_layer.hpp"

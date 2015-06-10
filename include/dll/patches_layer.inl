@@ -39,13 +39,17 @@ struct patches_layer {
         std::cout << to_short_string() << std::endl;
     }
 
+    static constexpr std::size_t output_size() noexcept {
+        return width * height;
+    }
+
     //TODO Ideally, the dbn should guess if h_a/h_s are used or only h_a
 
     static void activate_one(const input_one_t& input, output_one_t& h_a){
         activate_one(input, h_a, h_a);
     }
 
-    static void activate_one(const input_one_t& input, output_one_t& h_a, output_one_t& h_s){
+    static void activate_one(const input_one_t& /*input*/, output_one_t& /*h_a*/, output_one_t& /*h_s*/){
         //TODO
     }
 
@@ -63,7 +67,7 @@ struct patches_layer {
 
     template<typename Input>
     static output_t prepare_output(std::size_t samples){
-        return output_t();
+        return output_t(samples);
     }
 
     template<typename Input>

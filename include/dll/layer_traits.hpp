@@ -35,6 +35,9 @@ struct binarize_layer;
 template<typename Desc>
 struct normalize_layer;
 
+template<typename Desc>
+struct patches_layer;
+
 /*!
  * \brief Type Traits to get information on RBM type
  */
@@ -69,7 +72,15 @@ struct layer_traits {
      * \brief Indicates if this layer is a transformation layer.
      */
     static constexpr bool is_transform_layer(){
-        return cpp::is_specialization_of<binarize_layer, rbm_t>::value || cpp::is_specialization_of<normalize_layer, rbm_t>::value;
+        return cpp::is_specialization_of<binarize_layer, rbm_t>::value
+            || cpp::is_specialization_of<normalize_layer, rbm_t>::value;
+    }
+
+    /*!
+     * \brief Indicates if this layer is a transformation layer.
+     */
+    static constexpr bool is_multiplex_layer(){
+        return cpp::is_specialization_of<patches_layer, rbm_t>::value;
     }
 
     /*!
