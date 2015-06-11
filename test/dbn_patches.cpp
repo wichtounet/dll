@@ -43,4 +43,8 @@ TEST_CASE( "dbn/mnist/patches/1", "[dbn][conv][mnist][patches]" ) {
     auto dbn = std::make_unique<dbn_t>();
 
     dbn->pretrain(converted, 20);
+
+    auto probs = dbn->activation_probabilities(converted[0]);
+
+    std::cout << probs.size() << std::endl;
 }

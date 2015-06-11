@@ -11,6 +11,7 @@
 #include <tuple>
 
 #include "cpp_utils/tuple_utils.hpp"
+#include "cpp_utils/static_if.hpp"
 
 #include "unit_type.hpp"
 #include "dbn_trainer.hpp"
@@ -243,12 +244,12 @@ struct dbn final {
 
         watcher.template pretrain_layer<rbm_t>(*this, I, fast_distance(first, last));
 
-        cpp::static_if<layer_traits<rbm_t>::is_trained()>([&](auto& rbm){
-            rbm.template train<
+        cpp::static_if<layer_traits<rbm_t>::is_trained()>([&](auto f){
+            f(rbm).template train<
                 !watcher_t::ignore_sub,                 //Enable the RBM Watcher or not
                 dbn_detail::rbm_watcher_t<watcher_t>>    //Replace the RBM watcher if not void
                     (first, last, max_epochs);
-        }, rbm);
+        });
 
         if(train_next<I+1>::value){
             auto next_a = rbm.template prepare_output<layer_input_t<I, Iterator>>(std::distance(first, last));
@@ -258,16 +259,16 @@ struct dbn final {
             });
 
             //In the standard case, pass the output to the next layer
-            cpp::static_if<!layer_traits<rbm_t>::is_multiplex_layer()>([&](auto& dbn){
-                dbn.template pretrain_layer<I+1>(next_a.begin(), next_a.end(), watcher, max_epochs);
-            }, *this);
+            cpp::static_if<!layer_traits<rbm_t>::is_multiplex_layer()>([&](auto f){
+                f(*this).template pretrain_layer<I+1>(next_a.begin(), next_a.end(), watcher, max_epochs);
+            });
 
             //In case of a multiplex layer, the output is flattened
-            cpp::static_if<layer_traits<rbm_t>::is_multiplex_layer()>([&](auto& dbn){
-                auto flattened_next_a = dbn.flatten(next_a);
+            cpp::static_if<layer_traits<rbm_t>::is_multiplex_layer()>([&](auto f){
+                auto flattened_next_a = f(this)->flatten(next_a);
 
-                dbn.template pretrain_layer<I+1>(flattened_next_a.begin(), flattened_next_a.end(), watcher, max_epochs);
-            }, *this);
+                f(this)->template pretrain_layer<I+1>(flattened_next_a.begin(), flattened_next_a.end(), watcher, max_epochs);
+            });
         }
     }
 
@@ -660,17 +661,33 @@ struct dbn final {
 
     /*{{{ Predict */
 
+    //activation_probabilities
+
     template<std::size_t I, std::size_t S = layers, typename Input, typename Result>
     std::enable_if_t<(I<S)> activation_probabilities(const Input& input, Result& result) const {
+        static constexpr const bool multi_rbm = layer_traits<rbm_type<I>>::is_multiplex_layer();
+
         auto& rbm = layer<I>();
 
-        if(I < S - 1){
+        cpp::static_if<(I < S - 1 && !multi_rbm)>([&](auto f){
+            auto next_a = rbm.template prepare_one_output<Input>();
+            f(rbm).activate_one(input, next_a);
+            activation_probabilities<I+1, S>(next_a, result);
+        });
+
+        cpp::static_if<(I < S - 1 && multi_rbm)>([&](auto f){
             auto next_a = rbm.template prepare_one_output<Input>();
             rbm.activate_one(input, next_a);
-            activation_probabilities<I+1, S>(next_a, result);
-        } else {
-            rbm.activate_one(input, result);
-        }
+
+            for(std::size_t i = 0; i < next_a.size(); ++i){
+                f(result).push_back(layer<layers - 1>().template prepare_one_output<typename rbm_type<I>::input_one_t>());
+                activation_probabilities<I+1, S>(next_a[i], f(result)[i]);
+            }
+        });
+
+        cpp::static_if<(I == S - 1)>([&](auto f){
+            f(rbm).activate_one(input, result);
+        });
     }
 
     //Stop template recursion
@@ -684,7 +701,7 @@ struct dbn final {
         activation_probabilities<0>(converter.get(), result);
     }
 
-    template<typename Sample>
+    template<typename Sample, typename T = this_type, cpp_disable_if(dbn_traits<T>::is_multiplex())>
     auto activation_probabilities(const Sample& item_data) const {
         auto result = layer<layers - 1>().template prepare_one_output<Sample>();
 
@@ -692,6 +709,17 @@ struct dbn final {
 
         return result;
     }
+
+    template<typename Sample, typename T = this_type, cpp_enable_if(dbn_traits<T>::is_multiplex())>
+    auto activation_probabilities(const Sample& item_data) const {
+        std::vector<typename rbm_type<layers - 1>::output_one_t> result;
+
+        activation_probabilities(item_data, result);
+
+        return result;
+    }
+
+    //full_activation_probabilities
 
     template<std::size_t I, typename Input, typename Result>
     std::enable_if_t<(I<layers)> full_activation_probabilities(const Input& input, std::size_t& i, Result& result) const {
@@ -749,7 +777,7 @@ struct dbn final {
     template<typename Sample>
     size_t predict(const Sample& item) const {
         auto result = activation_probabilities(item);
-        return predict_label(result);;
+        return predict_label(result);
     }
 
     /*}}}*/
