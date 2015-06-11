@@ -22,8 +22,8 @@ CXX_FLAGS += -DETL_VECTORIZE_FULL
 
 # Activate BLAS mode on demand
 ifneq (,$(ETL_MKL))
-CXX_FLAGS += -DETL_MKL_MODE $(shell pkg-config --cflags cblas)
-LD_FLAGS += $(shell pkg-config --libs cblas)
+CXX_FLAGS += -DETL_MKL_MODE $(shell pkg-config --cflags mkl)
+LD_FLAGS += $(shell pkg-config --libs mkl)
 CXX_FLAGS += -Wno-tautological-compare
 else
 ifneq (,$(ETL_BLAS))
