@@ -260,7 +260,7 @@ struct dbn final {
 
             //In the standard case, pass the output to the next layer
             cpp::static_if<!layer_traits<rbm_t>::is_multiplex_layer()>([&](auto f){
-                f(*this).template pretrain_layer<I+1>(next_a.begin(), next_a.end(), watcher, max_epochs);
+                f(this)->template pretrain_layer<I+1>(next_a.begin(), next_a.end(), watcher, max_epochs);
             });
 
             //In case of a multiplex layer, the output is flattened
