@@ -24,6 +24,9 @@ struct patches_layer {
 
     using weight = double; //TODO Should be made configurable
 
+    using input_deep_t = etl::dyn_matrix<weight, 3>;
+    using output_deep_t= etl::dyn_matrix<weight, 3>;
+
     using input_one_t = etl::dyn_matrix<weight, 3>;
     using input_t = std::vector<input_one_t>;
 
@@ -52,6 +55,8 @@ struct patches_layer {
 
     static void activate_one(const input_one_t& input, output_one_t& h_a, output_one_t& /*h_s*/){
         cpp_assert(etl::dim<0>(input) == 1, "Only one channel is supported for now");
+
+        h_a.clear();
 
         for(std::size_t y = 0; y + height <= etl::dim<1>(input); y += v_stride){
             for(std::size_t x = 0; x + width <= etl::dim<2>(input); x += h_stride){
