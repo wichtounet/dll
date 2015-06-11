@@ -90,6 +90,9 @@ struct input_converter <DBN, I, Iterator, std::enable_if_t<layer_traits<typename
     }
 };
 
+//Standard implementation
+//Use convert_sample  on the layer to convert the input
+
 template<typename DBN, std::size_t I, typename Sample, typename Enable = void>
 struct sample_converter {
     using layer_t = typename DBN::template rbm_type<I>;
@@ -106,9 +109,13 @@ struct sample_converter {
     }
 };
 
+//Fast specialization when the type is already of the correct type
+//Simply returns the input without conversion
+
 template<typename DBN, std::size_t I, typename Sample>
-struct sample_converter <DBN, I, Sample,
-        std::enable_if_t<std::is_same<typename DBN::template rbm_type<I>::input_one_t, Sample>::value>> {
+struct sample_converter <DBN, I, Sample, std::enable_if_t<
+            std::is_same<typename DBN::template rbm_type<I>::input_one_t, Sample>::value
+        &&  !layer_traits<typename DBN::template rbm_type<I>>::is_multiplex_layer()>> {
     const Sample& r;
 
     sample_converter(const DBN& /*dbn*/, const Sample& sample) : r(sample) {
@@ -120,10 +127,33 @@ struct sample_converter <DBN, I, Sample,
     }
 };
 
+//Specialization for transform layer
+//Use the next layer to perform the conversion
+
 template<typename DBN, std::size_t I, typename Sample>
 struct sample_converter <DBN, I, Sample, std::enable_if_t<layer_traits<typename DBN::template rbm_type<I>>::is_transform_layer()>> :
         sample_converter<DBN, I + 1, Sample> {
     using sample_converter<DBN, I + 1, Sample>::sample_converter;
+};
+
+//Specialization for multiplex layer
+//Fails if the type is not the same
+
+template<typename DBN, std::size_t I, typename Sample>
+struct sample_converter <DBN, I, Sample, std::enable_if_t<layer_traits<typename DBN::template rbm_type<I>>::is_multiplex_layer()>> {
+    static_assert(
+        std::is_same<typename DBN::template rbm_type<I>::input_one_t, Sample>::value,
+        "Multiplex layer cannot perform input conversion on their own");
+
+    const Sample& r;
+
+    sample_converter(const DBN& /*dbn*/, const Sample& sample) : r(sample) {
+        //Nothing else to init
+    }
+
+    decltype(auto) get(){
+        return r;
+    }
 };
 
 } //end of namespace dll
