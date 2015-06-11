@@ -22,7 +22,7 @@
 TEST_CASE( "dbn/mnist/patches/1", "[dbn][conv][mnist][patches]" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::patches_layer_desc<14, 14, 1, 1>::layer_t,
+        dll::patches_layer_desc<14, 14, 14, 14>::layer_t,
         dll::conv_rbm_desc_square<14, 1, 10, 20, dll::momentum, dll::batch_size<25>>::rbm_t,
         dll::conv_rbm_desc_square<10, 20, 6, 20, dll::momentum, dll::batch_size<25>>::rbm_t>>::dbn_t dbn_t;
 
@@ -33,7 +33,7 @@ TEST_CASE( "dbn/mnist/patches/1", "[dbn][conv][mnist][patches]" ) {
     mnist::binarize_dataset(dataset);
 
     std::vector<etl::dyn_matrix<double, 3>> converted;
-    converted.reserve(500);
+    converted.reserve(dataset.training_images.size());
 
     for(auto& image : dataset.training_images){
         converted.emplace_back(1, 28, 28);

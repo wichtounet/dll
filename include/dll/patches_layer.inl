@@ -51,11 +51,11 @@ struct patches_layer {
     }
 
     static void activate_one(const input_one_t& input, output_one_t& h_a, output_one_t& /*h_s*/){
-        cpp_assert(etl::dim<0>(h_a) == 1, "Only one channel is supported for now");
+        cpp_assert(etl::dim<0>(input) == 1, "Only one channel is supported for now");
 
-        for(std::size_t y = 0; y + height < etl::dim<0>(h_a); y += v_stride){
-            for(std::size_t x = 0; x + width < etl::dim<1>(h_a); x += h_stride){
-                h_a.emplace_back(1, height, width);
+        for(std::size_t y = 0; y + height <= etl::dim<1>(input); y += v_stride){
+            for(std::size_t x = 0; x + width <= etl::dim<2>(input); x += h_stride){
+                h_a.emplace_back(1UL, height, width);
 
                 auto& patch = h_a.back();
 
