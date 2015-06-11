@@ -15,10 +15,13 @@ namespace dll {
 namespace detail {
 
 template<typename... Layers>
-struct is_dynamic : cpp::bool_constant_c<cpp::or_u<layer_traits<Layers>::is_dynamic()...>> {};
+struct is_dynamic : cpp::or_u<layer_traits<Layers>::is_dynamic()...> {};
 
 template<typename... Layers>
-struct is_convolutional : cpp::bool_constant_c<cpp::or_u<layer_traits<Layers>::is_convolutional()...>> {};
+struct is_convolutional : cpp::or_u<layer_traits<Layers>::is_convolutional()...> {};
+
+template<typename... Layers>
+struct is_multiplex : cpp::or_u<layer_traits<Layers>::is_multiplex_layer()...> {};
 
 // TODO validate_layer_pair should be made more robust when
 // transform layer are present between layers
@@ -84,6 +87,7 @@ struct dbn_layers {
     static constexpr const std::size_t layers = sizeof...(Layers);
     static constexpr const bool is_dynamic = detail::is_dynamic<Layers...>();
     static constexpr const bool is_convolutional = detail::is_convolutional<Layers...>();
+    static constexpr const bool is_multiplex = detail::is_multiplex<Layers...>();
 
     static_assert(layers > 0, "A DBN must have at least 1 layer");
     static_assert(detail::are_layers_valid<Layers...>(), "The inner sizes of RBM must correspond");
@@ -101,7 +105,8 @@ template<typename... Layers>
 struct dbn_label_layers {
     static constexpr const std::size_t layers = sizeof...(Layers);
     static constexpr const bool is_dynamic = false;
-    static constexpr const bool is_convolutional = false; //There is no support for convolutional RBM and labels
+    static constexpr const bool is_convolutional = false;   //There is no support for convolutional RBM and labels
+    static constexpr const bool is_multiplex = false;       //There is no support for multiplex layers and labels
 
     static_assert(layers > 0, "A DBN must have at least 1 layer");
     static_assert(detail::validate_label_layers<Layers...>::value, "The inner sizes of RBM must correspond");
