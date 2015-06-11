@@ -223,8 +223,16 @@ struct dbn final {
     }
 
     template<typename One>
-    std::vector<One> flatten(std::vector<std::vector<One>>& deep){
-        std::vector<One> flat;
+    void flatten_in(std::vector<std::vector<One>>& deep, std::vector<One>& flat){
+        flat.reserve(deep.size());
+
+        for(auto& d : deep){
+            std::move(d.begin(), d.end(), std::back_inserter(flat));
+        }
+    }
+
+    template<typename One>
+    void flatten_in_clr(std::vector<std::vector<One>>& deep, std::vector<One>& flat){
         flat.reserve(deep.size());
 
         for(auto& d : deep){
@@ -232,6 +240,22 @@ struct dbn final {
         }
 
         deep.clear();
+    }
+
+    template<typename One>
+    std::vector<One> flatten_clr(std::vector<std::vector<One>>& deep){
+        std::vector<One> flat;
+
+        flatten_in_clr(deep, flat);
+
+        return flat;
+    }
+
+    template<typename One>
+    std::vector<One> flatten(std::vector<std::vector<One>>& deep){
+        std::vector<One> flat;
+
+        flatten_in(deep, flat);
 
         return flat;
     }
@@ -265,7 +289,7 @@ struct dbn final {
 
             //In case of a multiplex layer, the output is flattened
             cpp::static_if<layer_traits<rbm_t>::is_multiplex_layer()>([&](auto f){
-                auto flattened_next_a = f(this)->flatten(next_a);
+                auto flattened_next_a = f(this)->flatten_clr(next_a);
 
                 f(this)->template pretrain_layer<I+1>(flattened_next_a.begin(), flattened_next_a.end(), watcher, max_epochs);
             });
@@ -401,7 +425,8 @@ struct dbn final {
         using type = layer_output_t<I - 1, Input>;
     };
 
-    template<std::size_t I, typename Iterator, typename Watcher, cpp_enable_if((I>0 && I<layers && !batch_layer_ignore<I>::value))>
+    //Normal version
+    template<std::size_t I, typename Iterator, typename Watcher, cpp_enable_if((I>0 && I<layers && !dbn_traits<this_type>::is_multiplex() && !batch_layer_ignore<I>::value))>
     void pretrain_layer_batch(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
         using rbm_t = rbm_type<I>;
 
@@ -477,6 +502,98 @@ struct dbn final {
         pretrain_layer_batch<I+1>(first, last, watcher, max_epochs);
     }
 
+    //Multiplex version
+    template<std::size_t I, typename Iterator, typename Watcher, cpp_enable_if((I>0 && I<layers && dbn_traits<this_type>::is_multiplex() && !batch_layer_ignore<I>::value))>
+    void pretrain_layer_batch(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
+        using rbm_t = rbm_type<I>;
+
+        decltype(auto) rbm = layer<I>();
+
+        watcher.template pretrain_layer<rbm_t>(*this, I, 0);
+
+        using rbm_trainer_t = dll::rbm_trainer<rbm_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>>;
+
+        //Initialize the RBM trainer
+        rbm_trainer_t r_trainer;
+
+        //Init the RBM and training parameters
+        r_trainer.init_training(rbm, first, last);
+
+        //Get the specific trainer (CD)
+        auto trainer = rbm_trainer_t::template get_trainer<false>(rbm);
+
+        auto rbm_batch_size = get_batch_size(rbm);
+        auto big_batch_size = desc::BatchSize * rbm_batch_size;
+
+        std::vector<std::vector<typename rbm_type<I - 1>::output_deep_t>> input(big_batch_size);
+
+        //TODO If layer I - 1 is not multiplex, needs to prepare
+        //sub outputs
+
+        std::vector<typename rbm_t::input_one_t> input_flat;
+
+        //Train for max_epochs epoch
+        for(std::size_t epoch = 0; epoch < max_epochs; ++epoch){
+            std::size_t big_batch = 0;
+
+            //Create a new context for this epoch
+            rbm_training_context context;
+
+            r_trainer.init_epoch();
+
+            auto it = first;
+            auto end = last;
+
+            while(it != end){
+                auto batch_start = it;
+
+                std::size_t i = 0;
+                while(it != end && i < big_batch_size){
+                    ++it;
+                    ++i;
+                }
+
+                //Convert data to an useful form
+                input_converter<this_type, 0, Iterator> converter(*this, batch_start, it);
+
+                //Collect a big batch
+                maybe_parallel_foreach_i(pool, converter.begin(), converter.end(), [this,&input](auto& v, std::size_t i){
+                    this->activation_probabilities<0, I>(v, input[i]);
+                });
+
+                flatten_in(input, input_flat);
+
+                auto batches = input_flat.size() / rbm_batch_size;
+                auto offset = std::min(batches * rbm_batch_size, input_flat.size());
+
+                if(batches <= 1){
+                    //Train the RBM on one batch
+                    r_trainer.train_batch(
+                        input_flat.begin(), input_flat.begin() + offset,
+                        input_flat.begin(), input_flat.begin() + offset, trainer, context, rbm);
+                } else if(batches > 1){
+                    //Train the RBM on this big batch
+                    r_trainer.train_sub(input_flat.begin(), input_flat.begin() + offset, input_flat.begin(), trainer, context, rbm);
+                }
+
+                input_flat.erase(input_flat.begin(), input_flat.begin() + offset);
+
+                if(dbn_traits<this_type>::is_verbose()){
+                    watcher.pretraining_batch(*this, big_batch);
+                }
+
+                ++big_batch;
+            }
+
+            r_trainer.finalize_epoch(epoch, context, rbm);
+        }
+
+        r_trainer.finalize_training(rbm);
+
+        //train the next layer, if any
+        pretrain_layer_batch<I+1>(first, last, watcher, max_epochs);
+    }
+
     //Stop template recursion
     template<std::size_t I, typename Iterator, typename Watcher, cpp_enable_if((I==layers && !batch_layer_ignore<I>::value))>
     void pretrain_layer_batch(Iterator, Iterator, Watcher&, std::size_t){}
@@ -503,7 +620,7 @@ struct dbn final {
         //Pretrain each layer one-by-one
         if(dbn_traits<this_type>::save_memory()){
             std::cout << "DBN: Pretraining done in batch mode to save memory" << std::endl;
-            //TODO pretrain_layer_batch<0>(first, last, watcher, max_epochs);
+            pretrain_layer_batch<0>(first, last, watcher, max_epochs);
         } else {
             //Convert data to an useful form
             input_converter<this_type, 0, Iterator> converter(*this, first, last);
@@ -680,7 +797,7 @@ struct dbn final {
             rbm.activate_one(input, next_a);
 
             for(std::size_t i = 0; i < next_a.size(); ++i){
-                f(result).push_back(layer<layers - 1>().template prepare_one_output<typename rbm_type<I>::input_one_t>());
+                f(result).push_back(layer<layers - 1>().template prepare_one_output<layer_input_t<I, Input>>());
                 activation_probabilities<I+1, S>(next_a[i], f(result)[i]);
             }
         });
