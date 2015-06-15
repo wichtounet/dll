@@ -527,9 +527,6 @@ struct dbn final {
 
         std::vector<std::vector<typename rbm_type<I - 1>::output_deep_t>> input(big_batch_size);
 
-        //TODO If layer I - 1 is not multiplex, needs to prepare
-        //sub outputs
-
         std::vector<typename rbm_t::input_one_t> input_flat;
 
         //Train for max_epochs epoch
@@ -562,6 +559,10 @@ struct dbn final {
                 });
 
                 flatten_in(input, input_flat);
+
+                for(auto& i : input){
+                    i.clear();
+                }
 
                 auto batches = input_flat.size() / rbm_batch_size;
                 auto offset = std::min(batches * rbm_batch_size, input_flat.size());
@@ -796,8 +797,12 @@ struct dbn final {
             auto next_a = rbm.template prepare_one_output<Input>();
             rbm.activate_one(input, next_a);
 
+            cpp_assert(f(result).empty(), "result must be empty on entry of activation_probabilities");
+
+            f(result).reserve(next_a.size());
+
             for(std::size_t i = 0; i < next_a.size(); ++i){
-                f(result).push_back(layer<layers - 1>().template prepare_one_output<layer_input_t<I, Input>>());
+                f(result).push_back(layer<S-1>().template prepare_one_output<layer_input_t<I, Input>>());
                 activation_probabilities<I+1, S>(next_a[i], f(result)[i]);
             }
         });
