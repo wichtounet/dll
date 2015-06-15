@@ -64,7 +64,7 @@ struct layer_traits {
      * \brief Indicates if this layer is trained or not.
      */
     static constexpr bool is_trained(){
-        return !is_transform_layer() && !is_multiplex_layer();
+        return !is_transform_layer() && !is_multiplex_layer() && !is_pooling_layer();
     }
 
     /*!

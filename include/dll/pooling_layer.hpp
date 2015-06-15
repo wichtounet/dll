@@ -47,18 +47,6 @@ struct pooling_layer_3d {
         return 0;
     }
 
-    //TODO Ideally, the dbn should guess by TMP that Max Pooling don't need any training
-
-    template<bool EnableWatcher = true, typename RW = void, typename Samples, typename... Args>
-    double train(const Samples& /*training_data*/, std::size_t /*max_epochs*/, Args... /*args*/){
-        return 1.0;
-    }
-
-    template<bool EnableWatcher = true, typename RW = void, typename Iterator, typename... Args>
-    double train(Iterator&& /*first*/, Iterator&& /*last*/, std::size_t /*max_epochs*/, Args... /*args*/){
-        return 1.0;
-    }
-
     using input_one_t = etl::dyn_matrix<weight, 3>;
     using output_one_t = etl::dyn_matrix<weight, 3>;
     using input_t = std::vector<input_one_t>;
