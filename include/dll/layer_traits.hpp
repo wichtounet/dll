@@ -16,18 +16,18 @@
 namespace dll {
 
 /*!
- * \brief Type Traits to get information on RBM type
+ * \brief Type Traits to get information on layer type
  */
-template<typename RBM>
+template<typename Layer>
 struct layer_traits {
-    using rbm_t = RBM;
+    using layer_t = Layer;
 
     /*!
-     * \brief Indicates if the RBM is convolutional
+     * \brief Indicates if the layer is convolutional
      */
     static constexpr bool is_convolutional(){
-        return cpp::is_specialization_of<conv_rbm, rbm_t>::value
-            || cpp::is_specialization_of<conv_rbm_mp, rbm_t>::value;
+        return cpp::is_specialization_of<conv_rbm, layer_t>::value
+            || cpp::is_specialization_of<conv_rbm_mp, layer_t>::value;
     }
 
     /*!
@@ -41,23 +41,23 @@ struct layer_traits {
      * \brief Indicates if this layer is a pooling layer.
      */
     static constexpr bool is_pooling_layer(){
-        return cpp::is_specialization_of<mp_layer_3d, rbm_t>::value
-            || cpp::is_specialization_of<avgp_layer_3d, rbm_t>::value;
+        return cpp::is_specialization_of<mp_layer_3d, layer_t>::value
+            || cpp::is_specialization_of<avgp_layer_3d, layer_t>::value;
     }
 
     /*!
      * \brief Indicates if this layer is a transformation layer.
      */
     static constexpr bool is_transform_layer(){
-        return cpp::is_specialization_of<binarize_layer, rbm_t>::value
-            || cpp::is_specialization_of<normalize_layer, rbm_t>::value;
+        return cpp::is_specialization_of<binarize_layer, layer_t>::value
+            || cpp::is_specialization_of<normalize_layer, layer_t>::value;
     }
 
     /*!
      * \brief Indicates if this layer is a transformation layer.
      */
     static constexpr bool is_multiplex_layer(){
-        return cpp::is_specialization_of<patches_layer, rbm_t>::value;
+        return cpp::is_specialization_of<patches_layer, layer_t>::value;
     }
 
     /*!
@@ -70,13 +70,13 @@ struct layer_traits {
     /*!
      * \brief Indicates if this layer should be trained if it is the last layer.
      */
-    template<cpp_enable_if_cst(layer_traits<rbm_t>::is_rbm_layer())>
+    template<cpp_enable_if_cst(layer_traits<layer_t>::is_rbm_layer())>
     static constexpr bool pretrain_last(){
         //Softmax unit should not be pretrained
-        return rbm_t::hidden_unit != unit_type::SOFTMAX;
+        return layer_t::hidden_unit != unit_type::SOFTMAX;
     }
 
-    template<cpp_disable_if_cst(layer_traits<rbm_t>::is_rbm_layer())>
+    template<cpp_disable_if_cst(layer_traits<layer_t>::is_rbm_layer())>
     static constexpr bool pretrain_last(){
         //if the pooling layer is the last, we spare the time to activate the previous layer by not training it
         //since training pooling layer is a nop, that doesn't change anything
@@ -84,54 +84,54 @@ struct layer_traits {
     }
 
     /*!
-     * \brief Indicates if the RBM is dynamic
+     * \brief Indicates if the layer is dynamic
      */
     static constexpr bool is_dynamic(){
-        return cpp::is_specialization_of<dyn_rbm, rbm_t>::value;
+        return cpp::is_specialization_of<dyn_rbm, layer_t>::value;
     }
 
     /*!
-     * \brief Indicates if the RBM is convolutional and has probabilistic max
+     * \brief Indicates if the layer is convolutional and has probabilistic max
      * pooling
      */
     static constexpr bool has_probabilistic_max_pooling(){
-        return cpp::is_specialization_of<conv_rbm_mp, rbm_t>::value;
+        return cpp::is_specialization_of<conv_rbm_mp, layer_t>::value;
     }
 
     static constexpr std::size_t input_size(){
-        return rbm_t::input_size();
+        return layer_t::input_size();
     }
 
     static constexpr std::size_t output_size(){
-        return rbm_t::output_size();
+        return layer_t::output_size();
     }
 
     static constexpr std::size_t batch_size(){
-        return detail::get_value_l<dll::batch_size<1>, typename rbm_t::desc::parameters>::value;
+        return detail::get_value_l<dll::batch_size<1>, typename layer_t::desc::parameters>::value;
     }
 
     static constexpr bool has_momentum(){
-        return rbm_t::desc::parameters::template contains<momentum>();
+        return layer_t::desc::parameters::template contains<momentum>();
     }
 
     static constexpr bool is_parallel(){
-        return rbm_t::desc::parameters::template contains<parallel>();
+        return layer_t::desc::parameters::template contains<parallel>();
     }
 
     static constexpr bool is_verbose(){
-        return rbm_t::desc::parameters::template contains<verbose>();
+        return layer_t::desc::parameters::template contains<verbose>();
     }
 
     static constexpr bool has_shuffle(){
-        return rbm_t::desc::parameters::template contains<shuffle>();
+        return layer_t::desc::parameters::template contains<shuffle>();
     }
 
     static constexpr bool is_dbn_only(){
-        return rbm_t::desc::parameters::template contains<dbn_only>();
+        return layer_t::desc::parameters::template contains<dbn_only>();
     }
 
     static constexpr bool is_memory(){
-        return rbm_t::desc::parameters::template contains<memory>();
+        return layer_t::desc::parameters::template contains<memory>();
     }
 
     static constexpr bool has_sparsity(){
@@ -139,25 +139,28 @@ struct layer_traits {
     }
 
     static constexpr dll::sparsity_method sparsity_method(){
-        return detail::get_value_l<sparsity<dll::sparsity_method::NONE>, typename rbm_t::desc::parameters>::value;
+        return detail::get_value_l<sparsity<dll::sparsity_method::NONE>, typename layer_t::desc::parameters>::value;
     }
 
     static constexpr enum dll::bias_mode bias_mode(){
-        return detail::get_value_l<bias<dll::bias_mode::SIMPLE>, typename rbm_t::desc::parameters>::value;
+        return detail::get_value_l<bias<dll::bias_mode::SIMPLE>, typename layer_t::desc::parameters>::value;
     }
 
     static constexpr decay_type decay(){
-        return detail::get_value_l<weight_decay<decay_type::NONE>, typename rbm_t::desc::parameters>::value;
+        return detail::get_value_l<weight_decay<decay_type::NONE>, typename layer_t::desc::parameters>::value;
     }
 
     static constexpr bool init_weights(){
-        return rbm_t::desc::parameters::template contains<dll::init_weights>();
+        return layer_t::desc::parameters::template contains<dll::init_weights>();
     }
 
     static constexpr bool free_energy(){
-        return rbm_t::desc::parameters::template contains<dll::free_energy>();
+        return layer_t::desc::parameters::template contains<dll::free_energy>();
     }
 };
+
+template<typename T>
+using decay_layer_traits = layer_traits<std::decay_t<T>>;
 
 template<typename RBM, cpp::enable_if_u<layer_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
 std::size_t get_batch_size(const RBM& rbm){
