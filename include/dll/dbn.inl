@@ -928,7 +928,7 @@ struct dbn final {
     //TODO This is broken if the last layer is a transform layer
 
     output_one_t prepare_one_output() const {
-        return layer<layers - 1>().template prepare_one_output<rbm_type<layers - 1>::input_one_t>();
+        return layer<layers - 1>().template prepare_one_output<typename rbm_type<layers - 1>::input_one_t>();
     }
 
 #ifdef DLL_SVM_SUPPORT
