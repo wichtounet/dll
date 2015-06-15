@@ -22,22 +22,6 @@
 
 namespace dll {
 
-template<typename Layer, cpp_enable_if(layer_traits<Layer>::is_pooling_layer())>
-void store_layer(const Layer&, std::ostream&){}
-
-template<typename Layer, cpp_disable_if(layer_traits<Layer>::is_pooling_layer())>
-void store_layer(const Layer& layer, std::ostream& os){
-    layer.store(os);
-}
-
-template<typename Layer, cpp_enable_if(layer_traits<Layer>::is_pooling_layer())>
-void load_layer(Layer&, std::istream&) {}
-
-template<typename Layer, cpp_disable_if(layer_traits<Layer>::is_pooling_layer())>
-void load_layer(Layer& layer, std::istream& is){
-    layer.load(is);
-}
-
 //TODO Could be good to ensure that either a) all rbm have the same weight b) use the correct type for each rbm
 
 template<std::size_t I, typename DBN, typename Enable = void>
@@ -145,7 +129,9 @@ struct dbn final {
 
     void store(std::ostream& os) const {
         cpp::for_each(tuples, [&os](auto& layer){
-            store_layer(layer, os);
+            cpp::static_if<decay_layer_traits<decltype(layer)>::is_rbm_layer()>([&](auto f){
+                f(layer).store(os);
+            });
         });
 
 #ifdef DLL_SVM_SUPPORT
@@ -155,7 +141,9 @@ struct dbn final {
 
     void load(std::istream& is){
         cpp::for_each(tuples, [&is](auto& layer){
-            load_layer(layer, is);
+            cpp::static_if<decay_layer_traits<decltype(layer)>::is_rbm_layer()>([&](auto f){
+                f(layer).load(is);
+            });
         });
 
 #ifdef DLL_SVM_SUPPORT
