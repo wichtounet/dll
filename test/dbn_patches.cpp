@@ -78,4 +78,10 @@ TEST_CASE( "dbn/mnist/patches/2", "[dbn][conv][mnist][patches][memory]" ) {
     auto probs = dbn->activation_probabilities(converted[0]);
 
     REQUIRE(probs.size() == 4);
+
+    //Simply to ensure compilation
+    if(false){
+        dbn->store("test.dat");
+        dbn->load("test.dat");
+    }
 }
