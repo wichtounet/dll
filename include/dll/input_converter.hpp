@@ -15,7 +15,7 @@ namespace dll {
 
 template<typename DBN, std::size_t I, typename Iterator, typename Enable = void>
 struct input_converter {
-    using layer_t = typename DBN::template rbm_type<I>;
+    using layer_t = typename DBN::template layer_type<I>;
     using container = decltype(std::declval<layer_t>().convert_input(std::declval<Iterator>(), std::declval<Iterator>()));
 
     container c;
@@ -38,8 +38,8 @@ struct input_converter {
 
 template<typename DBN, std::size_t I, typename Iterator>
 struct input_converter <DBN, I, Iterator, std::enable_if_t<
-            std::is_same<typename DBN::template rbm_type<I>::input_one_t, typename Iterator::value_type>::value
-        &&  !layer_traits<typename DBN::template rbm_type<I>>::is_multiplex_layer()>> {
+            std::is_same<typename DBN::template layer_type<I>::input_one_t, typename Iterator::value_type>::value
+        &&  !layer_traits<typename DBN::template layer_type<I>>::is_multiplex_layer()>> {
     Iterator& first;
     Iterator& last;
 
@@ -60,7 +60,7 @@ struct input_converter <DBN, I, Iterator, std::enable_if_t<
 //Use the next layer to perform the conversion
 
 template<typename DBN, std::size_t I, typename Iterator>
-struct input_converter <DBN, I, Iterator, std::enable_if_t<layer_traits<typename DBN::template rbm_type<I>>::is_transform_layer()>> :
+struct input_converter <DBN, I, Iterator, std::enable_if_t<layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> :
         input_converter<DBN, I + 1, Iterator> {
     using input_converter<DBN, I + 1, Iterator>::input_converter;
 };
@@ -69,9 +69,9 @@ struct input_converter <DBN, I, Iterator, std::enable_if_t<layer_traits<typename
 //Fails if the type is not the same
 
 template<typename DBN, std::size_t I, typename Iterator>
-struct input_converter <DBN, I, Iterator, std::enable_if_t<layer_traits<typename DBN::template rbm_type<I>>::is_multiplex_layer()>> {
+struct input_converter <DBN, I, Iterator, std::enable_if_t<layer_traits<typename DBN::template layer_type<I>>::is_multiplex_layer()>> {
     static_assert(
-        std::is_same<typename DBN::template rbm_type<I>::input_one_t, typename Iterator::value_type>::value,
+        std::is_same<typename DBN::template layer_type<I>::input_one_t, typename Iterator::value_type>::value,
         "Multiplex layer cannot perform input conversion on their own");
 
     Iterator& first;
@@ -95,7 +95,7 @@ struct input_converter <DBN, I, Iterator, std::enable_if_t<layer_traits<typename
 
 template<typename DBN, std::size_t I, typename Sample, typename Enable = void>
 struct sample_converter {
-    using layer_t = typename DBN::template rbm_type<I>;
+    using layer_t = typename DBN::template layer_type<I>;
     using result = decltype(std::declval<layer_t>().convert_sample(std::declval<Sample>()));
 
     result r;
@@ -114,8 +114,8 @@ struct sample_converter {
 
 template<typename DBN, std::size_t I, typename Sample>
 struct sample_converter <DBN, I, Sample, std::enable_if_t<
-            std::is_same<typename DBN::template rbm_type<I>::input_one_t, Sample>::value
-        &&  !layer_traits<typename DBN::template rbm_type<I>>::is_multiplex_layer()>> {
+            std::is_same<typename DBN::template layer_type<I>::input_one_t, Sample>::value
+        &&  !layer_traits<typename DBN::template layer_type<I>>::is_multiplex_layer()>> {
     const Sample& r;
 
     sample_converter(const DBN& /*dbn*/, const Sample& sample) : r(sample) {
@@ -131,7 +131,7 @@ struct sample_converter <DBN, I, Sample, std::enable_if_t<
 //Use the next layer to perform the conversion
 
 template<typename DBN, std::size_t I, typename Sample>
-struct sample_converter <DBN, I, Sample, std::enable_if_t<layer_traits<typename DBN::template rbm_type<I>>::is_transform_layer()>> :
+struct sample_converter <DBN, I, Sample, std::enable_if_t<layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> :
         sample_converter<DBN, I + 1, Sample> {
     using sample_converter<DBN, I + 1, Sample>::sample_converter;
 };
@@ -140,9 +140,9 @@ struct sample_converter <DBN, I, Sample, std::enable_if_t<layer_traits<typename 
 //Fails if the type is not the same
 
 template<typename DBN, std::size_t I, typename Sample>
-struct sample_converter <DBN, I, Sample, std::enable_if_t<layer_traits<typename DBN::template rbm_type<I>>::is_multiplex_layer()>> {
+struct sample_converter <DBN, I, Sample, std::enable_if_t<layer_traits<typename DBN::template layer_type<I>>::is_multiplex_layer()>> {
     static_assert(
-        std::is_same<typename DBN::template rbm_type<I>::input_one_t, Sample>::value,
+        std::is_same<typename DBN::template layer_type<I>::input_one_t, Sample>::value,
         "Multiplex layer cannot perform input conversion on their own");
 
     const Sample& r;

@@ -22,19 +22,19 @@
 
 namespace dll {
 
-//TODO Could be good to ensure that either a) all rbm have the same weight b) use the correct type for each rbm
+//TODO Could be good to ensure that either a) all layer have the same weight b) use the correct type for each layer
 
 template<std::size_t I, typename DBN, typename Enable = void>
 struct extract_weight_t;
 
 template<std::size_t I, typename DBN>
-struct extract_weight_t <I, DBN, std::enable_if_t<layer_traits<typename DBN::template rbm_type<I>>::is_transform_layer()>> {
+struct extract_weight_t <I, DBN, std::enable_if_t<layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
     using type = typename extract_weight_t<I+1, DBN>::type;
 };
 
 template<std::size_t I, typename DBN>
-struct extract_weight_t <I, DBN, cpp::disable_if_t<layer_traits<typename DBN::template rbm_type<I>>::is_transform_layer()>> {
-    using type = typename DBN::template rbm_type<I>::weight;
+struct extract_weight_t <I, DBN, cpp::disable_if_t<layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
+    using type = typename DBN::template layer_type<I>::weight;
 };
 
 /*!
@@ -51,7 +51,7 @@ struct dbn final {
     static constexpr const std::size_t layers = desc::layers::layers;
 
     template <std::size_t N>
-    using rbm_type = typename std::tuple_element<N, tuple_type>::type;
+    using layer_type = typename std::tuple_element<N, tuple_type>::type;
 
     using weight = typename extract_weight_t<0, this_type>::type;
 
@@ -154,31 +154,31 @@ struct dbn final {
     }
 
     template<std::size_t N>
-    auto layer() -> typename std::add_lvalue_reference<rbm_type<N>>::type {
+    auto layer() -> typename std::add_lvalue_reference<layer_type<N>>::type {
         return std::get<N>(tuples);
     }
 
     template<std::size_t N>
-    constexpr auto layer() const -> typename std::add_lvalue_reference<typename std::add_const<rbm_type<N>>::type>::type {
+    constexpr auto layer() const -> typename std::add_lvalue_reference<typename std::add_const<layer_type<N>>::type>::type {
         return std::get<N>(tuples);
     }
 
     template<std::size_t N>
     static constexpr std::size_t layer_input_size() noexcept {
-        return layer_traits<rbm_type<N>>::input_size();
+        return layer_traits<layer_type<N>>::input_size();
     }
 
     template<std::size_t N>
     static constexpr std::size_t layer_output_size() noexcept {
-        return layer_traits<rbm_type<N>>::output_size();
+        return layer_traits<layer_type<N>>::output_size();
     }
 
     static constexpr std::size_t input_size() noexcept {
-        return layer_traits<rbm_type<0>>::input_size();
+        return layer_traits<layer_type<0>>::input_size();
     }
 
     static constexpr std::size_t output_size() noexcept {
-        return layer_traits<rbm_type<layers - 1>>::output_size();
+        return layer_traits<layer_type<layers - 1>>::output_size();
     }
 
     static std::size_t full_output_size() noexcept {
@@ -198,7 +198,7 @@ struct dbn final {
     struct train_next<I, std::enable_if_t<(I < layers - 1)>> : std::true_type {};
 
     template<std::size_t I>
-    struct train_next<I, std::enable_if_t<(I == layers - 1)>> : cpp::bool_constant<layer_traits<rbm_type<I>>::pretrain_last()> {};
+    struct train_next<I, std::enable_if_t<(I == layers - 1)>> : cpp::bool_constant<layer_traits<layer_type<I>>::pretrain_last()> {};
 
     template<std::size_t I>
     struct train_next<I, std::enable_if_t<(I > layers - 1)>> : std::false_type {};
@@ -252,7 +252,7 @@ struct dbn final {
 
     template<std::size_t I, typename Iterator, typename Watcher>
     std::enable_if_t<(I<layers)> pretrain_layer(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
-        using rbm_t = rbm_type<I>;
+        using rbm_t = layer_type<I>;
 
         decltype(auto) rbm = layer<I>();
 
@@ -294,13 +294,13 @@ struct dbn final {
     struct batch_layer_ignore : std::false_type {};
 
     template<std::size_t I>
-    struct batch_layer_ignore<I, std::enable_if_t<(I < layers)>> : cpp::or_u<layer_traits<rbm_type<I>>::is_pooling_layer(), layer_traits<rbm_type<I>>::is_transform_layer(), !layer_traits<rbm_type<I>>::pretrain_last()> {};
+    struct batch_layer_ignore<I, std::enable_if_t<(I < layers)>> : cpp::or_u<layer_traits<layer_type<I>>::is_pooling_layer(), layer_traits<layer_type<I>>::is_transform_layer(), !layer_traits<layer_type<I>>::pretrain_last()> {};
 
     //Special handling for the layer 0
     //data is coming from iterators not from input
     template<std::size_t I, typename Iterator, typename Watcher, cpp_enable_if((I == 0 && !batch_layer_ignore<I>::value))>
     void pretrain_layer_batch(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
-        using rbm_t = rbm_type<I>;
+        using rbm_t = layer_type<I>;
 
         decltype(auto) rbm = layer<I>();
 
@@ -386,39 +386,39 @@ struct dbn final {
     using layer_input_t = typename layer_input<I, Input>::type;
 
     template<std::size_t I, typename Input>
-    struct layer_output<I, Input, std::enable_if_t<!layer_traits<rbm_type<I>>::is_transform_layer()>> {
-        using type = typename rbm_type<I>::output_one_t;
+    struct layer_output<I, Input, std::enable_if_t<!layer_traits<layer_type<I>>::is_transform_layer()>> {
+        using type = typename layer_type<I>::output_one_t;
     };
 
     template<std::size_t I, typename Input>
-    struct layer_output<I, Input, std::enable_if_t<I == 0 && layer_traits<rbm_type<I>>::is_transform_layer()>> {
+    struct layer_output<I, Input, std::enable_if_t<I == 0 && layer_traits<layer_type<I>>::is_transform_layer()>> {
         using type = typename Input::value_type;
     };
 
     template<std::size_t I, typename Input>
-    struct layer_output<I, Input, std::enable_if_t<(I > 0) && layer_traits<rbm_type<I>>::is_transform_layer()>> {
+    struct layer_output<I, Input, std::enable_if_t<(I > 0) && layer_traits<layer_type<I>>::is_transform_layer()>> {
         using type = layer_input_t<I, Input>;
     };
 
     template<std::size_t I, typename Input>
-    struct layer_input<I, Input, std::enable_if_t<!layer_traits<rbm_type<I>>::is_transform_layer()>> {
-        using type = typename rbm_type<I>::input_one_t;
+    struct layer_input<I, Input, std::enable_if_t<!layer_traits<layer_type<I>>::is_transform_layer()>> {
+        using type = typename layer_type<I>::input_one_t;
     };
 
     template<std::size_t I, typename Input>
-    struct layer_input<I, Input, std::enable_if_t<I == 0 && layer_traits<rbm_type<I>>::is_transform_layer()>> {
+    struct layer_input<I, Input, std::enable_if_t<I == 0 && layer_traits<layer_type<I>>::is_transform_layer()>> {
         using type = layer_input_t<I + 1, Input>;
     };
 
     template<std::size_t I, typename Input>
-    struct layer_input<I, Input, std::enable_if_t<(I > 0) && layer_traits<rbm_type<I>>::is_transform_layer()>> {
+    struct layer_input<I, Input, std::enable_if_t<(I > 0) && layer_traits<layer_type<I>>::is_transform_layer()>> {
         using type = layer_output_t<I - 1, Input>;
     };
 
     //Normal version
     template<std::size_t I, typename Iterator, typename Watcher, cpp_enable_if((I>0 && I<layers && !dbn_traits<this_type>::is_multiplex() && !batch_layer_ignore<I>::value))>
     void pretrain_layer_batch(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
-        using rbm_t = rbm_type<I>;
+        using rbm_t = layer_type<I>;
 
         decltype(auto) rbm = layer<I>();
 
@@ -495,7 +495,7 @@ struct dbn final {
     //Multiplex version
     template<std::size_t I, typename Iterator, typename Watcher, cpp_enable_if((I>0 && I<layers && dbn_traits<this_type>::is_multiplex() && !batch_layer_ignore<I>::value))>
     void pretrain_layer_batch(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
-        using rbm_t = rbm_type<I>;
+        using rbm_t = layer_type<I>;
 
         decltype(auto) rbm = layer<I>();
 
@@ -515,7 +515,7 @@ struct dbn final {
         auto rbm_batch_size = get_batch_size(rbm);
         auto big_batch_size = desc::BatchSize * rbm_batch_size;
 
-        std::vector<std::vector<typename rbm_type<I - 1>::output_deep_t>> input(big_batch_size);
+        std::vector<std::vector<typename layer_type<I - 1>::output_deep_t>> input(big_batch_size);
 
         std::vector<typename rbm_t::input_one_t> input_flat;
 
@@ -638,7 +638,7 @@ struct dbn final {
 
     template<std::size_t I, typename Input, typename Watcher, typename LabelIterator>
     std::enable_if_t<(I<layers)> train_with_labels(const Input& input, Watcher& watcher, LabelIterator lit, LabelIterator lend, std::size_t labels, std::size_t max_epochs){
-        using rbm_t = rbm_type<I>;
+        using rbm_t = layer_type<I>;
 
         decltype(auto) rbm = layer<I>();
 
@@ -754,7 +754,7 @@ struct dbn final {
     size_t predict_labels(const TrainingItem& item_data, std::size_t labels) const {
         cpp_assert(dll::input_size(layer<layers - 1>()) == dll::output_size(layer<layers - 2>()) + labels, "There is no room for the labels units");
 
-        typename rbm_type<0>::input_one_t item(item_data);
+        typename layer_type<0>::input_one_t item(item_data);
 
         auto output_a = layer<layers - 1>().prepare_one_input();
 
@@ -773,7 +773,7 @@ struct dbn final {
 
     template<std::size_t I, std::size_t S = layers, typename Input, typename Result>
     std::enable_if_t<(I<S)> activation_probabilities(const Input& input, Result& result) const {
-        static constexpr const bool multi_rbm = layer_traits<rbm_type<I>>::is_multiplex_layer();
+        static constexpr const bool multi_rbm = layer_traits<layer_type<I>>::is_multiplex_layer();
 
         auto& rbm = layer<I>();
 
@@ -824,7 +824,7 @@ struct dbn final {
 
     template<typename Sample, typename T = this_type, cpp_enable_if(dbn_traits<T>::is_multiplex())>
     auto activation_probabilities(const Sample& item_data) const {
-        std::vector<typename rbm_type<layers - 1>::output_one_t> result;
+        std::vector<typename layer_type<layers - 1>::output_one_t> result;
 
         activation_probabilities(item_data, result);
 
@@ -912,13 +912,13 @@ struct dbn final {
 
     /*}}}*/
 
-    using output_one_t = typename rbm_type<layers - 1>::output_one_t;
-    using output_t = typename rbm_type<layers - 1>::output_one_t;
+    using output_one_t = typename layer_type<layers - 1>::output_one_t;
+    using output_t = typename layer_type<layers - 1>::output_one_t;
 
     //TODO This is broken if the last layer is a transform layer
 
     output_one_t prepare_one_output() const {
-        return layer<layers - 1>().template prepare_one_output<typename rbm_type<layers - 1>::input_one_t>();
+        return layer<layers - 1>().template prepare_one_output<typename layer_type<layers - 1>::input_one_t>();
     }
 
 #ifdef DLL_SVM_SUPPORT
@@ -928,7 +928,7 @@ struct dbn final {
     using svm_samples_t = std::conditional_t<
         dbn_traits<this_type>::concatenate(),
         std::vector<etl::dyn_vector<weight>>,     //In full mode, use a simple 1D vector
-        typename rbm_type<layers - 1>::output_t>; //In normal mode, use the output of the last layer
+        typename layer_type<layers - 1>::output_t>; //In normal mode, use the output of the last layer
 
     template<typename DBN = this_type, typename Result, typename Sample, cpp::enable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
     void add_activation_probabilities(Result& result, const Sample& sample){
