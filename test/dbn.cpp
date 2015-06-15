@@ -256,7 +256,10 @@ TEST_CASE( "dbn/mnist_17", "dbn::memory" ) {
     auto dbn = std::make_unique<dbn_t>();
 
     dbn->pretrain(dataset.training_images, 20);
-    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 10, 50);
+    auto error = dbn->fine_tune(
+        dataset.training_images.begin(), dataset.training_images.end(),
+        dataset.training_labels.begin(), dataset.training_labels.end(),
+        10, 50);
 
     REQUIRE(error < 5e-2);
 
