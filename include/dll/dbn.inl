@@ -638,27 +638,29 @@ struct dbn final {
 
     template<std::size_t I, typename Input, typename Watcher, typename LabelIterator>
     std::enable_if_t<(I<layers)> train_with_labels(const Input& input, Watcher& watcher, LabelIterator lit, LabelIterator lend, std::size_t labels, std::size_t max_epochs){
-        using rbm_t = layer_type<I>;
+        using layer_t = layer_type<I>;
 
-        decltype(auto) rbm = layer_get<I>();
+        decltype(auto) layer = layer_get<I>();
 
-        watcher.template pretrain_layer<rbm_t>(*this, I, input.size());
+        watcher.template pretrain_layer<layer_t>(*this, I, input.size());
 
-        rbm.template train<
-            !watcher_t::ignore_sub, //Enable the RBM Watcher or not
-            dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
-                (input, max_epochs);
+        cpp::static_if<layer_traits<layer_t>::is_trained()>([&](auto f){
+            f(layer).template train<
+                !watcher_t::ignore_sub, //Enable the RBM Watcher or not
+                dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
+                    (input, max_epochs);
+        });
 
         if(I < layers - 1){
             bool is_last = I == layers - 2;
 
-            auto next_a = rbm.template prepare_output<layer_input_t<I, Input>>(input.size());
-            auto next_s = rbm.template prepare_output<layer_input_t<I, Input>>(input.size());
+            auto next_a = layer.template prepare_output<layer_input_t<I, Input>>(input.size());
+            auto next_s = layer.template prepare_output<layer_input_t<I, Input>>(input.size());
 
-            rbm.activate_many(input, next_a, next_s);
+            layer.activate_many(input, next_a, next_s);
 
             if(is_last){
-                auto big_next_a = rbm.template prepare_output<layer_input_t<I, Input>>(input.size(), is_last, labels);
+                auto big_next_a = layer.template prepare_output<layer_input_t<I, Input>>(input.size(), is_last, labels);
 
                 //Cannot use std copy since the sub elements have different size
                 for(std::size_t i = 0; i < next_a.size(); ++i){
@@ -672,7 +674,7 @@ struct dbn final {
                     decltype(auto) label = *lit;
 
                     for(size_t l = 0; l < labels; ++l){
-                        big_next_a[i][dll::output_size(rbm) + l] = label == l ? 1.0 : 0.0;
+                        big_next_a[i][dll::output_size(layer) + l] = label == l ? 1.0 : 0.0;
                     }
 
                     ++i;
