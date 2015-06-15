@@ -20,7 +20,7 @@ struct input_converter {
 
     container c;
 
-    input_converter(DBN& dbn, const Iterator& first, const Iterator& last) : c(dbn.template layer<I>().convert_input(first, last)) {
+    input_converter(DBN& dbn, const Iterator& first, const Iterator& last) : c(dbn.template layer_get<I>().convert_input(first, last)) {
         //Nothing else to init
     }
 
@@ -100,7 +100,7 @@ struct sample_converter {
 
     result r;
 
-    sample_converter(const DBN& dbn, const Sample& sample) : r(dbn.template layer<I>().convert_sample(sample)) {
+    sample_converter(const DBN& dbn, const Sample& sample) : r(dbn.template layer_get<I>().convert_sample(sample)) {
         //Nothing else to init
     }
 

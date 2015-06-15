@@ -68,7 +68,7 @@ struct sgd_trainer {
     void compute_outputs(const Sample& item_data){
         etl::dyn_vector<typename Sample::value_type> item(item_data);
 
-        auto& first_rbm = dbn.template layer<0>();
+        auto& first_rbm = dbn.template layer_get<0>();
         auto& first_rbm_context = std::get<0>(rbm_contexts);
 
         first_rbm.activate_hidden(first_rbm_context.o_a, first_rbm_context.o_s, item, item);

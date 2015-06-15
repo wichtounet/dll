@@ -85,12 +85,12 @@ struct dbn final {
 
 #ifdef __clang__
     template<typename... T, cpp_enable_if_cst(dbn_traits<this_type>::is_dynamic())>
-    explicit dbn(T&&... rbms) : tuples(std::forward<T>(rbms)...) {
+    explicit dbn(T&&... layers) : tuples(std::forward<T>(layers)...) {
         //Nothing else to init
     }
 #else
     template<typename... T, cpp_enable_if_cst(dbn_traits<this_type>::is_dynamic())>
-    explicit dbn(T&&... rbms) : tuples({std::forward<T>(rbms)}...) {
+    explicit dbn(T&&... layers) : tuples({std::forward<T>(layers)}...) {
         //Nothing else to init
     }
 #endif
@@ -154,12 +154,12 @@ struct dbn final {
     }
 
     template<std::size_t N>
-    auto layer() -> typename std::add_lvalue_reference<layer_type<N>>::type {
+    auto layer_get() -> typename std::add_lvalue_reference<layer_type<N>>::type {
         return std::get<N>(tuples);
     }
 
     template<std::size_t N>
-    constexpr auto layer() const -> typename std::add_lvalue_reference<typename std::add_const<layer_type<N>>::type>::type {
+    constexpr auto layer_get() const -> typename std::add_lvalue_reference<typename std::add_const<layer_type<N>>::type>::type {
         return std::get<N>(tuples);
     }
 
@@ -183,8 +183,8 @@ struct dbn final {
 
     static std::size_t full_output_size() noexcept {
         std::size_t output = 0;
-        for_each_type<tuple_type>([&output](auto* rbm){
-            output += std::decay_t<std::remove_pointer_t<decltype(rbm)>>::output_size();
+        for_each_type<tuple_type>([&output](auto* layer){
+            output += std::decay_t<std::remove_pointer_t<decltype(layer)>>::output_size();
         });
         return output;
     }
@@ -252,33 +252,33 @@ struct dbn final {
 
     template<std::size_t I, typename Iterator, typename Watcher>
     std::enable_if_t<(I<layers)> pretrain_layer(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
-        using rbm_t = layer_type<I>;
+        using layer_t = layer_type<I>;
 
-        decltype(auto) rbm = layer<I>();
+        decltype(auto) layer = layer_get<I>();
 
-        watcher.template pretrain_layer<rbm_t>(*this, I, fast_distance(first, last));
+        watcher.template pretrain_layer<layer_t>(*this, I, fast_distance(first, last));
 
-        cpp::static_if<layer_traits<rbm_t>::is_trained()>([&](auto f){
-            f(rbm).template train<
-                !watcher_t::ignore_sub,                 //Enable the RBM Watcher or not
+        cpp::static_if<layer_traits<layer_t>::is_trained()>([&](auto f){
+            f(layer).template train<
+                !watcher_t::ignore_sub,                  //Enable the RBM Watcher or not
                 dbn_detail::rbm_watcher_t<watcher_t>>    //Replace the RBM watcher if not void
                     (first, last, max_epochs);
         });
 
         if(train_next<I+1>::value){
-            auto next_a = rbm.template prepare_output<layer_input_t<I, Iterator>>(std::distance(first, last));
+            auto next_a = layer.template prepare_output<layer_input_t<I, Iterator>>(std::distance(first, last));
 
-            maybe_parallel_foreach_i(pool, first, last, [&rbm, &next_a](auto& v, std::size_t i){
-                rbm.activate_one(v, next_a[i]);
+            maybe_parallel_foreach_i(pool, first, last, [&layer, &next_a](auto& v, std::size_t i){
+                layer.activate_one(v, next_a[i]);
             });
 
             //In the standard case, pass the output to the next layer
-            cpp::static_if<!layer_traits<rbm_t>::is_multiplex_layer()>([&](auto f){
+            cpp::static_if<!layer_traits<layer_t>::is_multiplex_layer()>([&](auto f){
                 f(this)->template pretrain_layer<I+1>(next_a.begin(), next_a.end(), watcher, max_epochs);
             });
 
             //In case of a multiplex layer, the output is flattened
-            cpp::static_if<layer_traits<rbm_t>::is_multiplex_layer()>([&](auto f){
+            cpp::static_if<layer_traits<layer_t>::is_multiplex_layer()>([&](auto f){
                 auto flattened_next_a = f(this)->flatten_clr(next_a);
 
                 f(this)->template pretrain_layer<I+1>(flattened_next_a.begin(), flattened_next_a.end(), watcher, max_epochs);
@@ -302,7 +302,7 @@ struct dbn final {
     void pretrain_layer_batch(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
         using rbm_t = layer_type<I>;
 
-        decltype(auto) rbm = layer<I>();
+        decltype(auto) rbm = layer_get<I>();
 
         watcher.template pretrain_layer<rbm_t>(*this, I, 0);
 
@@ -420,7 +420,7 @@ struct dbn final {
     void pretrain_layer_batch(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
         using rbm_t = layer_type<I>;
 
-        decltype(auto) rbm = layer<I>();
+        decltype(auto) rbm = layer_get<I>();
 
         watcher.template pretrain_layer<rbm_t>(*this, I, 0);
 
@@ -437,7 +437,7 @@ struct dbn final {
 
         auto big_batch_size = desc::BatchSize * get_batch_size(rbm);
 
-        auto input = layer<I - 1>().template prepare_output<layer_input_t<I - 1, Iterator>>(big_batch_size);
+        auto input = layer_get<I - 1>().template prepare_output<layer_input_t<I - 1, Iterator>>(big_batch_size);
 
         //Train for max_epochs epoch
         for(std::size_t epoch = 0; epoch < max_epochs; ++epoch){
@@ -497,7 +497,7 @@ struct dbn final {
     void pretrain_layer_batch(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
         using rbm_t = layer_type<I>;
 
-        decltype(auto) rbm = layer<I>();
+        decltype(auto) rbm = layer_get<I>();
 
         watcher.template pretrain_layer<rbm_t>(*this, I, 0);
 
@@ -631,7 +631,7 @@ struct dbn final {
     template<typename Samples, typename Labels>
     void train_with_labels(const Samples& training_data, const Labels& training_labels, std::size_t labels, std::size_t max_epochs){
         cpp_assert(training_data.size() == training_labels.size(), "There must be the same number of values than labels");
-        cpp_assert(dll::input_size(layer<layers - 1>()) == dll::output_size(layer<layers - 2>()) + labels, "There is no room for the labels units");
+        cpp_assert(dll::input_size(layer_get<layers - 1>()) == dll::output_size(layer_get<layers - 2>()) + labels, "There is no room for the labels units");
 
         train_with_labels(training_data.begin(), training_data.end(), training_labels.begin(), training_labels.end(), labels, max_epochs);
     }
@@ -640,7 +640,7 @@ struct dbn final {
     std::enable_if_t<(I<layers)> train_with_labels(const Input& input, Watcher& watcher, LabelIterator lit, LabelIterator lend, std::size_t labels, std::size_t max_epochs){
         using rbm_t = layer_type<I>;
 
-        decltype(auto) rbm = layer<I>();
+        decltype(auto) rbm = layer_get<I>();
 
         watcher.template pretrain_layer<rbm_t>(*this, I, input.size());
 
@@ -692,14 +692,14 @@ struct dbn final {
     template<typename Iterator, typename LabelIterator>
     void train_with_labels(Iterator&& first, Iterator&& last, LabelIterator&& lfirst, LabelIterator&& llast, std::size_t labels, std::size_t max_epochs){
         cpp_assert(std::distance(first, last) == std::distance(lfirst, llast), "There must be the same number of values than labels");
-        cpp_assert(dll::input_size(layer<layers - 1>()) == dll::output_size(layer<layers - 2>()) + labels, "There is no room for the labels units");
+        cpp_assert(dll::input_size(layer_get<layers - 1>()) == dll::output_size(layer_get<layers - 2>()) + labels, "There is no room for the labels units");
 
         watcher_t watcher;
 
         watcher.pretraining_begin(*this, max_epochs);
 
         //Convert data to an useful form
-        auto data = layer<0>().convert_input(std::forward<Iterator>(first), std::forward<Iterator>(last));
+        auto data = layer_get<0>().convert_input(std::forward<Iterator>(first), std::forward<Iterator>(last));
 
         train_with_labels<0>(data, watcher, std::forward<LabelIterator>(lfirst), std::forward<LabelIterator>(llast), labels, max_epochs);
 
@@ -712,7 +712,7 @@ struct dbn final {
 
     template<std::size_t I, typename Input, typename Output>
     std::enable_if_t<(I<layers)> predict_labels(const Input& input, Output& output, std::size_t labels) const {
-        decltype(auto) rbm = layer<I>();
+        decltype(auto) rbm = layer_get<I>();
 
         auto next_a = rbm.template prepare_one_output<Input>();
         auto next_s = rbm.template prepare_one_output<Input>();
@@ -752,11 +752,11 @@ struct dbn final {
 
     template<typename TrainingItem>
     size_t predict_labels(const TrainingItem& item_data, std::size_t labels) const {
-        cpp_assert(dll::input_size(layer<layers - 1>()) == dll::output_size(layer<layers - 2>()) + labels, "There is no room for the labels units");
+        cpp_assert(dll::input_size(layer_get<layers - 1>()) == dll::output_size(layer_get<layers - 2>()) + labels, "There is no room for the labels units");
 
         typename layer_type<0>::input_one_t item(item_data);
 
-        auto output_a = layer<layers - 1>().prepare_one_input();
+        auto output_a = layer_get<layers - 1>().prepare_one_input();
 
         predict_labels<0>(item, output_a, labels);
 
@@ -775,7 +775,7 @@ struct dbn final {
     std::enable_if_t<(I<S)> activation_probabilities(const Input& input, Result& result) const {
         static constexpr const bool multi_rbm = layer_traits<layer_type<I>>::is_multiplex_layer();
 
-        auto& rbm = layer<I>();
+        auto& rbm = layer_get<I>();
 
         cpp::static_if<(I < S - 1 && !multi_rbm)>([&](auto f){
             auto next_a = rbm.template prepare_one_output<Input>();
@@ -792,7 +792,7 @@ struct dbn final {
             f(result).reserve(next_a.size());
 
             for(std::size_t i = 0; i < next_a.size(); ++i){
-                f(result).push_back(layer<S-1>().template prepare_one_output<layer_input_t<I, Input>>());
+                f(result).push_back(layer_get<S-1>().template prepare_one_output<layer_input_t<I, Input>>());
                 activation_probabilities<I+1, S>(next_a[i], f(result)[i]);
             }
         });
@@ -815,7 +815,7 @@ struct dbn final {
 
     template<typename Sample, typename T = this_type, cpp_disable_if(dbn_traits<T>::is_multiplex())>
     auto activation_probabilities(const Sample& item_data) const {
-        auto result = layer<layers - 1>().template prepare_one_output<Sample>();
+        auto result = layer_get<layers - 1>().template prepare_one_output<Sample>();
 
         activation_probabilities(item_data, result);
 
@@ -835,7 +835,7 @@ struct dbn final {
 
     template<std::size_t I, typename Input, typename Result>
     std::enable_if_t<(I<layers)> full_activation_probabilities(const Input& input, std::size_t& i, Result& result) const {
-        auto& rbm = layer<I>();
+        auto& rbm = layer_get<I>();
 
         auto next_s = rbm.template prepare_one_output<Input>();
         auto next_a = rbm.template prepare_one_output<Input>();
@@ -918,7 +918,7 @@ struct dbn final {
     //TODO This is broken if the last layer is a transform layer
 
     output_one_t prepare_one_output() const {
-        return layer<layers - 1>().template prepare_one_output<typename layer_type<layers - 1>::input_one_t>();
+        return layer_get<layers - 1>().template prepare_one_output<typename layer_type<layers - 1>::input_one_t>();
     }
 
 #ifdef DLL_SVM_SUPPORT
@@ -938,7 +938,7 @@ struct dbn final {
 
     template<typename DBN = this_type, typename Result, typename Sample, cpp::disable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
     void add_activation_probabilities(Result& result, const Sample& sample){
-        result.push_back(layer<layers - 1>().template prepare_one_output<Sample>());
+        result.push_back(layer_get<layers - 1>().template prepare_one_output<Sample>());
         activation_probabilities(sample, result.back());
     }
 
