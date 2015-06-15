@@ -191,6 +191,7 @@ struct dbn final {
 
     /*{{{ Pretrain */
 
+private:
     template<std::size_t I, class Enable = void>
     struct train_next;
 
@@ -204,7 +205,7 @@ struct dbn final {
     struct train_next<I, std::enable_if_t<(I > layers - 1)>> : std::false_type {};
 
     template<typename Iterator>
-    std::size_t fast_distance(Iterator& first, Iterator& last){
+    static std::size_t fast_distance(Iterator& first, Iterator& last){
         if(std::is_same<typename std::iterator_traits<Iterator>::iterator_category, std::random_access_iterator_tag>::value){
             return std::distance(first, last);
         } else {
@@ -213,7 +214,7 @@ struct dbn final {
     }
 
     template<typename One>
-    void flatten_in(std::vector<std::vector<One>>& deep, std::vector<One>& flat){
+    static void flatten_in(std::vector<std::vector<One>>& deep, std::vector<One>& flat){
         flat.reserve(deep.size());
 
         for(auto& d : deep){
@@ -222,7 +223,7 @@ struct dbn final {
     }
 
     template<typename One>
-    void flatten_in_clr(std::vector<std::vector<One>>& deep, std::vector<One>& flat){
+    static void flatten_in_clr(std::vector<std::vector<One>>& deep, std::vector<One>& flat){
         flat.reserve(deep.size());
 
         for(auto& d : deep){
@@ -233,7 +234,7 @@ struct dbn final {
     }
 
     template<typename One>
-    std::vector<One> flatten_clr(std::vector<std::vector<One>>& deep){
+    static std::vector<One> flatten_clr(std::vector<std::vector<One>>& deep){
         std::vector<One> flat;
 
         flatten_in_clr(deep, flat);
@@ -242,7 +243,7 @@ struct dbn final {
     }
 
     template<typename One>
-    std::vector<One> flatten(std::vector<std::vector<One>>& deep){
+    static std::vector<One> flatten(std::vector<std::vector<One>>& deep){
         std::vector<One> flat;
 
         flatten_in(deep, flat);
@@ -589,6 +590,7 @@ struct dbn final {
     template<std::size_t I, typename Iterator, typename Watcher, cpp_enable_if((I==layers && !batch_layer_ignore<I>::value))>
     void pretrain_layer_batch(Iterator, Iterator, Watcher&, std::size_t){}
 
+public:
     /*!
      * \brief Pretrain the network by training all layers in an unsupervised
      * manner.
@@ -626,15 +628,7 @@ struct dbn final {
 
     /*{{{ Train with labels */
 
-    //Note: dyn_vector cannot be replaced with fast_vector, because labels is runtime
-
-    template<typename Samples, typename Labels>
-    void train_with_labels(const Samples& training_data, const Labels& training_labels, std::size_t labels, std::size_t max_epochs){
-        cpp_assert(training_data.size() == training_labels.size(), "There must be the same number of values than labels");
-        cpp_assert(dll::input_size(layer_get<layers - 1>()) == dll::output_size(layer_get<layers - 2>()) + labels, "There is no room for the labels units");
-
-        train_with_labels(training_data.begin(), training_data.end(), training_labels.begin(), training_labels.end(), labels, max_epochs);
-    }
+private:
 
     template<std::size_t I, typename Input, typename Watcher, typename LabelIterator>
     std::enable_if_t<(I<layers)> train_with_labels(const Input& input, Watcher& watcher, LabelIterator lit, LabelIterator lend, std::size_t labels, std::size_t max_epochs){
@@ -691,6 +685,8 @@ struct dbn final {
     template<std::size_t I, typename Input, typename Watcher, typename LabelIterator>
     std::enable_if_t<(I==layers)> train_with_labels(Input&, Watcher&, LabelIterator, LabelIterator, std::size_t, std::size_t){}
 
+public:
+
     template<typename Iterator, typename LabelIterator>
     void train_with_labels(Iterator&& first, Iterator&& last, LabelIterator&& lfirst, LabelIterator&& llast, std::size_t labels, std::size_t max_epochs){
         cpp_assert(std::distance(first, last) == std::distance(lfirst, llast), "There must be the same number of values than labels");
@@ -708,9 +704,21 @@ struct dbn final {
         watcher.pretraining_end(*this);
     }
 
+    //Note: dyn_vector cannot be replaced with fast_vector, because labels is runtime
+
+    template<typename Samples, typename Labels>
+    void train_with_labels(const Samples& training_data, const Labels& training_labels, std::size_t labels, std::size_t max_epochs){
+        cpp_assert(training_data.size() == training_labels.size(), "There must be the same number of values than labels");
+        cpp_assert(dll::input_size(layer_get<layers - 1>()) == dll::output_size(layer_get<layers - 2>()) + labels, "There is no room for the labels units");
+
+        train_with_labels(training_data.begin(), training_data.end(), training_labels.begin(), training_labels.end(), labels, max_epochs);
+    }
+
     /*}}}*/
 
     /*{{{ Predict with labels */
+
+private:
 
     template<std::size_t I, typename Input, typename Output>
     std::enable_if_t<(I<layers)> predict_labels(const Input& input, Output& output, std::size_t labels) const {
@@ -752,6 +760,8 @@ struct dbn final {
     template<std::size_t I, typename Input, typename Output>
     std::enable_if_t<(I==layers)> predict_labels(const Input&, Output&, std::size_t) const {}
 
+public:
+
     template<typename TrainingItem>
     size_t predict_labels(const TrainingItem& item_data, std::size_t labels) const {
         cpp_assert(dll::input_size(layer_get<layers - 1>()) == dll::output_size(layer_get<layers - 2>()) + labels, "There is no room for the labels units");
@@ -772,6 +782,8 @@ struct dbn final {
     /*{{{ Predict */
 
     //activation_probabilities
+
+private:
 
     template<std::size_t I, std::size_t S = layers, typename Input, typename Result>
     std::enable_if_t<(I<S)> activation_probabilities(const Input& input, Result& result) const {
@@ -808,6 +820,8 @@ struct dbn final {
     template<std::size_t I, std::size_t S = layers, typename Input, typename Result>
     std::enable_if_t<(I==S)> activation_probabilities(const Input&, Result&) const {}
 
+public:
+
     template<typename Sample, typename Output>
     void activation_probabilities(const Sample& item_data, Output& result) const {
         sample_converter<this_type, 0, Sample> converter(*this, item_data);
@@ -835,6 +849,8 @@ struct dbn final {
 
     //full_activation_probabilities
 
+private:
+
     template<std::size_t I, typename Input, typename Result>
     std::enable_if_t<(I<layers)> full_activation_probabilities(const Input& input, std::size_t& i, Result& result) const {
         auto& layer = layer_get<I>();
@@ -854,6 +870,8 @@ struct dbn final {
     //Stop template recursion
     template<std::size_t I, typename Input, typename Result>
     std::enable_if_t<(I==layers)> full_activation_probabilities(const Input&, std::size_t&, Result&) const {}
+
+public:
 
     template<typename Sample, typename Output>
     void full_activation_probabilities(const Sample& item_data, Output& result) const {
@@ -932,6 +950,8 @@ struct dbn final {
         std::vector<etl::dyn_vector<weight>>,     //In full mode, use a simple 1D vector
         typename layer_type<layers - 1>::output_t>; //In normal mode, use the output of the last layer
 
+private:
+
     template<typename DBN = this_type, typename Result, typename Sample, cpp::enable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
     void add_activation_probabilities(Result& result, const Sample& sample){
         result.emplace_back(full_output_size());
@@ -972,6 +992,8 @@ struct dbn final {
             svm_samples.begin(), svm_samples.end(),
             scale);
     }
+
+public:
 
     template<typename Samples, typename Labels>
     bool svm_train(const Samples& training_data, const Labels& labels, const svm_parameter& parameters = default_svm_parameters()){
