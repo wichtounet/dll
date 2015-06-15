@@ -712,18 +712,18 @@ struct dbn final {
 
     template<std::size_t I, typename Input, typename Output>
     std::enable_if_t<(I<layers)> predict_labels(const Input& input, Output& output, std::size_t labels) const {
-        decltype(auto) rbm = layer_get<I>();
+        decltype(auto) layer = layer_get<I>();
 
-        auto next_a = rbm.template prepare_one_output<Input>();
-        auto next_s = rbm.template prepare_one_output<Input>();
+        auto next_a = layer.template prepare_one_output<Input>();
+        auto next_s = layer.template prepare_one_output<Input>();
 
-        rbm.activate_hidden(next_a, next_s, input, input);
+        layer.activate_hidden(next_a, next_s, input, input);
 
         if(I == layers - 1){
-            auto output_a = rbm.prepare_one_input();
-            auto output_s = rbm.prepare_one_input();
+            auto output_a = layer.prepare_one_input();
+            auto output_s = layer.prepare_one_input();
 
-            rbm.activate_visible(next_a, next_s, output_a, output_s);
+            layer.activate_visible(next_a, next_s, output_a, output_s);
 
             output = std::move(output_a);
         } else {
@@ -731,14 +731,13 @@ struct dbn final {
 
             //If the next layers is the last layer
             if(is_last){
-                auto big_next_a = rbm.template prepare_one_output<layer_input_t<I, Input>>(is_last, labels);
+                auto big_next_a = layer.template prepare_one_output<layer_input_t<I, Input>>(is_last, labels);
 
                 for(std::size_t i = 0; i < next_a.size(); ++i){
                     big_next_a[i] = next_a[i];
                 }
 
-                //std::copy(next_a.begin(), next_a.end(), big_next_a.begin() + dll::output_size(rbm));
-                std::fill(big_next_a.begin() + dll::output_size(rbm), big_next_a.end(), 0.1);
+                std::fill(big_next_a.begin() + dll::output_size(layer), big_next_a.end(), 0.1);
 
                 predict_labels<I+1>(big_next_a, output, labels);
             } else {
@@ -747,6 +746,7 @@ struct dbn final {
         }
     }
 
+    //Stop recursion
     template<std::size_t I, typename Input, typename Output>
     std::enable_if_t<(I==layers)> predict_labels(const Input&, Output&, std::size_t) const {}
 
@@ -773,19 +773,19 @@ struct dbn final {
 
     template<std::size_t I, std::size_t S = layers, typename Input, typename Result>
     std::enable_if_t<(I<S)> activation_probabilities(const Input& input, Result& result) const {
-        static constexpr const bool multi_rbm = layer_traits<layer_type<I>>::is_multiplex_layer();
+        static constexpr const bool multi_layer = layer_traits<layer_type<I>>::is_multiplex_layer();
 
-        auto& rbm = layer_get<I>();
+        auto& layer = layer_get<I>();
 
-        cpp::static_if<(I < S - 1 && !multi_rbm)>([&](auto f){
-            auto next_a = rbm.template prepare_one_output<Input>();
-            f(rbm).activate_one(input, next_a);
+        cpp::static_if<(I < S - 1 && !multi_layer)>([&](auto f){
+            auto next_a = layer.template prepare_one_output<Input>();
+            f(layer).activate_one(input, next_a);
             activation_probabilities<I+1, S>(next_a, result);
         });
 
-        cpp::static_if<(I < S - 1 && multi_rbm)>([&](auto f){
-            auto next_a = rbm.template prepare_one_output<Input>();
-            rbm.activate_one(input, next_a);
+        cpp::static_if<(I < S - 1 && multi_layer)>([&](auto f){
+            auto next_a = layer.template prepare_one_output<Input>();
+            layer.activate_one(input, next_a);
 
             cpp_assert(f(result).empty(), "result must be empty on entry of activation_probabilities");
 
@@ -798,7 +798,7 @@ struct dbn final {
         });
 
         cpp::static_if<(I == S - 1)>([&](auto f){
-            f(rbm).activate_one(input, result);
+            f(layer).activate_one(input, result);
         });
     }
 
@@ -835,12 +835,12 @@ struct dbn final {
 
     template<std::size_t I, typename Input, typename Result>
     std::enable_if_t<(I<layers)> full_activation_probabilities(const Input& input, std::size_t& i, Result& result) const {
-        auto& rbm = layer_get<I>();
+        auto& layer = layer_get<I>();
 
-        auto next_s = rbm.template prepare_one_output<Input>();
-        auto next_a = rbm.template prepare_one_output<Input>();
+        auto next_s = layer.template prepare_one_output<Input>();
+        auto next_a = layer.template prepare_one_output<Input>();
 
-        rbm.activate_one(input, next_a, next_s);
+        layer.activate_one(input, next_a, next_s);
 
         for(auto& value : next_a){
             result[i++] = value;
