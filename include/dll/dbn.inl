@@ -108,10 +108,12 @@ struct dbn final {
 
         std::cout << "DBN with " << layers << " layers" << std::endl;
 
-        cpp::for_each(tuples, [&parameters](auto& rbm){
+        cpp::for_each(tuples, [&parameters](auto& layer){
             std::cout << "\t";
-            parameters += rbm.parameters();
-            rbm.display();
+            cpp::static_if<decay_layer_traits<decltype(layer)>::is_rbm_layer()>([&](auto f){
+                parameters += f(layer).parameters();
+            });
+            layer.display();
         });
 
         std::cout << "Total parameters: " << parameters << std::endl;

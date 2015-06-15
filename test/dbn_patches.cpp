@@ -81,6 +81,7 @@ TEST_CASE( "dbn/mnist/patches/2", "[dbn][conv][mnist][patches][memory]" ) {
 
     //Simply to ensure compilation
     if(false){
+        dbn->display();
         dbn->store("test.dat");
         dbn->load("test.dat");
     }
