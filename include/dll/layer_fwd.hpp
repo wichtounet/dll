@@ -36,6 +36,9 @@ struct normalize_layer;
 template<typename Desc>
 struct patches_layer;
 
+template<typename Desc>
+struct patches_layer_padh;
+
 } //end of dll namespace
 
 #endif

@@ -57,7 +57,8 @@ struct layer_traits {
      * \brief Indicates if this layer is a transformation layer.
      */
     static constexpr bool is_multiplex_layer(){
-        return cpp::is_specialization_of<patches_layer, layer_t>::value;
+        return cpp::is_specialization_of<patches_layer, layer_t>::value
+            || cpp::is_specialization_of<patches_layer_padh, layer_t>::value;
     }
 
     /*!
