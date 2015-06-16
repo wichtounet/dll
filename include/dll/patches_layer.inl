@@ -36,7 +36,9 @@ struct patches_layer {
     patches_layer() = default;
 
     static std::string to_short_string(){
-        return "patches";
+        char buffer[1024];
+        snprintf(buffer, 1024, "Patches -> (%lu:%lux%lu:%lu)", height, v_stride, width, h_stride);
+        return {buffer};
     }
 
     static void display(){
