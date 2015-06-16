@@ -163,69 +163,6 @@ TEST_CASE( "crbm/mnist_6", "crbm::gaussian" ) {
     REQUIRE(error < 2e-2);
 }
 
-TEST_CASE( "crbm/mnist_7", "crbm::relu" ) {
-    dll::conv_rbm_desc_square<
-        28, 1, 12, 40,
-        dll::batch_size<25>,
-        dll::hidden<dll::unit_type::RELU>
-    >::rbm_t rbm;
-
-    rbm.learning_rate *= 2;
-
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
-
-    REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(100);
-
-    mnist::binarize_dataset(dataset);
-
-    auto error = rbm.train(dataset.training_images, 100);
-
-    REQUIRE(error < 1e-2);
-}
-
-TEST_CASE( "crbm/mnist_8", "crbm::relu6" ) {
-    dll::conv_rbm_desc_square<
-        28, 1, 12, 40,
-        dll::batch_size<25>,
-        dll::hidden<dll::unit_type::RELU6>
-    >::rbm_t rbm;
-
-    rbm.learning_rate *= 2;
-
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
-
-    REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(100);
-
-    mnist::binarize_dataset(dataset);
-
-    auto error = rbm.train(dataset.training_images, 100);
-
-    REQUIRE(error < 5e-3);
-}
-
-TEST_CASE( "crbm/mnist_9", "crbm::relu1" ) {
-    dll::conv_rbm_desc_square<
-        28, 1, 12, 40,
-        dll::batch_size<25>,
-        dll::hidden<dll::unit_type::RELU1>
-    >::rbm_t rbm;
-
-    rbm.learning_rate *= 2;
-
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
-
-    REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(100);
-
-    mnist::binarize_dataset(dataset);
-
-    auto error = rbm.train(dataset.training_images, 100);
-
-    REQUIRE(error < 5e-2);
-}
-
 TEST_CASE( "crbm/mnist_10", "crbm::pcd" ) {
     dll::conv_rbm_desc_square<
         28, 1, 12, 40,
