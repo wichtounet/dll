@@ -5,8 +5,6 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include <deque>
-
 #include "catch.hpp"
 
 #define DLL_SVM_SUPPORT
