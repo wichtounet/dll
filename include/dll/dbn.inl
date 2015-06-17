@@ -794,7 +794,7 @@ private:
         cpp::static_if<(I < S - 1 && !multi_layer)>([&](auto f){
             auto next_a = layer.template prepare_one_output<Input>();
             f(layer).activate_one(input, next_a);
-            activation_probabilities<I+1, S>(next_a, result);
+            this->template activation_probabilities<I+1, S>(next_a, result);
         });
 
         cpp::static_if<(I < S - 1 && multi_layer)>([&](auto f){
@@ -806,8 +806,8 @@ private:
             f(result).reserve(next_a.size());
 
             for(std::size_t i = 0; i < next_a.size(); ++i){
-                f(result).push_back(layer_get<S-1>().template prepare_one_output<layer_input_t<I, Input>>());
-                activation_probabilities<I+1, S>(next_a[i], f(result)[i]);
+                f(result).push_back(this->template layer_get<S-1>().template prepare_one_output<layer_input_t<I, Input>>());
+                this->template activation_probabilities<I+1, S>(next_a[i], f(result)[i]);
             }
         });
 
