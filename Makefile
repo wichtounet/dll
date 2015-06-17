@@ -24,11 +24,16 @@ CXX_FLAGS += -DETL_VECTORIZE_FULL
 ifneq (,$(ETL_MKL))
 CXX_FLAGS += -DETL_MKL_MODE $(shell pkg-config --cflags mkl)
 LD_FLAGS += $(shell pkg-config --libs mkl)
+ifneq (,$(findstring clang,$(CXX)))
 CXX_FLAGS += -Wno-tautological-compare
+endif
 else
 ifneq (,$(ETL_BLAS))
 CXX_FLAGS += -DETL_BLAS_MODE $(shell pkg-config --cflags cblas)
 LD_FLAGS += $(shell pkg-config --libs cblas)
+ifneq (,$(findstring clang,$(CXX)))
+CXX_FLAGS += -Wno-tautological-compare
+endif
 endif
 endif
 
