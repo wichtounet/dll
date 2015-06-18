@@ -146,7 +146,7 @@ TEST_CASE( "unit/dbn/mnist/5", "[dbn][sgd][unit]" ) {
     dbn->pretrain(dataset.training_images, 20);
 
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 50, 10);
-    REQUIRE(error < 5e-2);
+    REQUIRE(error < 1e-1);
 
     auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
     REQUIRE(test_error < 0.3);
