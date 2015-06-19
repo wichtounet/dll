@@ -11,62 +11,56 @@
 
 #include "cpp_utils/data.hpp"
 
-#include "dll/conv_rbm.hpp"
+#include "dll/conv_rbm_mp.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE( "unit/crbm/mnist/1", "[crbm][unit]" ) {
-    dll::conv_rbm_desc_square<
-        28, 1, 12, 40,
+TEST_CASE( "unit/crbm_mp/mnist/1", "[crbm_mp][gaussian][unit]" ) {
+    dll::conv_rbm_mp_desc_square<
+        28, 1, 12, 40, 2,
         dll::batch_size<25>,
-        dll::weight_decay<dll::decay_type::L2_FULL>,
         dll::momentum
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
-
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
     REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(100);
 
     mnist::binarize_dataset(dataset);
 
-    auto error = rbm.train(dataset.training_images, 25);
-    REQUIRE(error < 5e-2);
+    auto error = rbm.train(dataset.training_images, 50);
+    REQUIRE(error < 5-2);
 }
 
-TEST_CASE( "unit/crbm/mnist/2", "[crbm][parallel][unit]" ) {
-    dll::conv_rbm_desc_square<
-        28, 1, 12, 20,
+TEST_CASE( "unit/crbm_mp/mnist/2", "[crbm_mp][gaussian][unit]" ) {
+    dll::conv_rbm_mp_desc_square<
+        28, 1, 12, 40, 2,
         dll::batch_size<25>,
         dll::momentum,
-        dll::parallel,
-        dll::weight_decay<dll::decay_type::L2>,
+        dll::weight_decay<>,
         dll::visible<dll::unit_type::GAUSSIAN>
     >::rbm_t rbm;
 
-    rbm.learning_rate *= 0.5;
+    rbm.learning_rate *= 8;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::normalize_dataset(dataset);
 
-    auto error = rbm.train(dataset.training_images, 25);
-    REQUIRE(error < 0.1);
+    auto error = rbm.train(dataset.training_images, 50);
+    REQUIRE(error < 5e-2);
 }
 
-TEST_CASE( "unit/crbm/mnist/3", "[crbm][unit]" ) {
-    dll::conv_rbm_desc_square<
-        28, 2, 12, 40,
+TEST_CASE( "unit/crbm_mp/mnist/3", "[crbm_mp][multic][unit]" ) {
+    dll::conv_rbm_mp_desc_square<
+        28, 2, 12, 40, 2,
         dll::batch_size<25>,
         dll::momentum
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
-
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
     REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(200);
 
     mnist::binarize_dataset(dataset);
 
@@ -78,14 +72,14 @@ TEST_CASE( "unit/crbm/mnist/3", "[crbm][unit]" ) {
         }
     }
 
-    auto error = rbm.train(dataset.training_images, 20);
+    auto error = rbm.train(dataset.training_images, 50);
 
     REQUIRE(error < 5e-2);
 }
 
-TEST_CASE( "unit/crbm/mnist/4", "[crbm][unit]" ) {
-    dll::conv_rbm_desc_square<
-        28, 1, 12, 40,
+TEST_CASE( "unit/crbm_mp/mnist/4", "[crbm_mp][denoising][unit]" ) {
+    dll::conv_rbm_mp_desc_square<
+        28, 1, 12, 40, 2,
         dll::batch_size<25>,
         dll::momentum,
         dll::weight_decay<dll::decay_type::L2>,
@@ -95,8 +89,7 @@ TEST_CASE( "unit/crbm/mnist/4", "[crbm][unit]" ) {
 
     rbm.learning_rate *= 2;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
-
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::normalize_dataset(dataset);
@@ -115,69 +108,72 @@ TEST_CASE( "unit/crbm/mnist/4", "[crbm][unit]" ) {
 
     cpp::normalize_each(noisy);
 
-    auto error = rbm.train_denoising(noisy, dataset.training_images, 100);
-    REQUIRE(error < 0.1);
+    auto error = rbm.train_denoising(noisy, dataset.training_images, 50);
+    REQUIRE(error < 2e-2);
 }
 
-TEST_CASE( "unit/crbm/mnist/5", "[crbm][unit]" ) {
-    dll::conv_rbm_desc_square<
-        28, 1, 12, 40,
+TEST_CASE( "unit/crbm_mp/mnist/5", "[crbm_mp][relu][unit]" ) {
+    dll::conv_rbm_mp_desc_square<
+        28, 1, 12, 40, 2,
         dll::batch_size<25>,
         dll::hidden<dll::unit_type::RELU>
     >::rbm_t rbm;
 
     rbm.learning_rate *= 2;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
+
     REQUIRE(!dataset.training_images.empty());
+    dataset.training_images.resize(100);
 
     mnist::binarize_dataset(dataset);
 
-    auto error = rbm.train(dataset.training_images, 50);
+    auto error = rbm.train(dataset.training_images, 100);
+
     REQUIRE(error < 5e-2);
 }
 
-TEST_CASE( "unit/crbm/mnist/6", "[crbm][unit]" ) {
-    using rbm_type = dll::conv_rbm_desc_square<
-        28, 1, 12, 40,
-        dll::batch_size<25>,
-        dll::sparsity<>
-    >::rbm_t;
+TEST_CASE( "unit/crbm_mp/mnist/6", "[crbm_mp][lee][unit]" ) {
+    dll::conv_rbm_mp_desc_square<
+        28, 1, 12, 40, 2,
+        dll::batch_size<10>,
+        dll::momentum,
+        dll::weight_decay<dll::decay_type::L2>,
+        dll::sparsity<dll::sparsity_method::LEE>,
+        dll::bias<dll::bias_mode::SIMPLE>
+    >::rbm_t rbm;
 
-    REQUIRE(dll::layer_traits<rbm_type>::sparsity_method() == dll::sparsity_method::GLOBAL_TARGET);
-
-    rbm_type rbm;
-
-    //0.01 (default) is way too low for few hidden units
-    rbm.sparsity_target = 0.1;
-    rbm.sparsity_cost = 0.9;
+    rbm.l2_weight_cost = 0.01;
+    rbm.learning_rate = 0.01;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
 
-    auto error = rbm.train(dataset.training_images, 50);
-    REQUIRE(error < 5e-2);
+    auto error = rbm.train(dataset.training_images, 25);
+    REQUIRE(error < 3e-2);
 }
 
-TEST_CASE( "unit/crbm/mnist/7", "[crbm][unit]" ) {
-    using rbm_type = dll::conv_rbm_desc_square<
-        28, 1, 12, 40,
-        dll::batch_size<25>,
-        dll::sparsity<dll::sparsity_method::LOCAL_TARGET>
-    >::rbm_t;
+TEST_CASE( "unit/crbm_mp/mnist/7", "[crbm_mp][lee][gaussian][unit]" ) {
+    dll::conv_rbm_mp_desc_square<
+        28, 1, 12, 40, 2,
+        dll::batch_size<5>,
+        dll::momentum,
+        dll::visible<dll::unit_type::GAUSSIAN>,
+        dll::weight_decay<dll::decay_type::L2>,
+        dll::sparsity<dll::sparsity_method::LEE>,
+        dll::bias<dll::bias_mode::SIMPLE>
+    >::rbm_t rbm;
 
-    rbm_type rbm;
-
-    //0.01 (default) is way too low for few hidden units
-    rbm.sparsity_target = 0.1;
-    rbm.sparsity_cost = 0.9;
+    rbm.pbias = 0.01;
+    rbm.pbias_lambda = 0.1;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
     REQUIRE(!dataset.training_images.empty());
 
-    mnist::binarize_dataset(dataset);
+    mnist::normalize_dataset(dataset);
+    //mnist::binarize_dataset(dataset);
 
     auto error = rbm.train(dataset.training_images, 50);
     REQUIRE(error < 1e-2);
