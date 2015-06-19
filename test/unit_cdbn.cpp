@@ -26,7 +26,6 @@ TEST_CASE( "unit/cdbn/mnist/1", "[cdbn][svm][unit]" ) {
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
 
     REQUIRE(!dataset.training_images.empty());
-
     mnist::binarize_dataset(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
@@ -34,10 +33,9 @@ TEST_CASE( "unit/cdbn/mnist/1", "[cdbn][svm][unit]" ) {
     dbn->pretrain(dataset.training_images, 20);
 
     auto result = dbn->svm_train(dataset.training_images, dataset.training_labels);
-
     REQUIRE(result);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::svm_predictor());
+    auto test_error = dll::test_set(dbn, dataset.training_images, dataset.training_labels, dll::svm_predictor());
     std::cout << "test_error:" << test_error << std::endl;
     REQUIRE(test_error < 0.1);
 }
@@ -49,7 +47,6 @@ TEST_CASE( "unit/cdbn/mnist/2", "[cdbn][svm][unit]" ) {
         dll::conv_rbm_desc_square<12, 40, 10, 40, dll::momentum, dll::batch_size<25>>::rbm_t>, dll::svm_concatenate>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -59,7 +56,6 @@ TEST_CASE( "unit/cdbn/mnist/2", "[cdbn][svm][unit]" ) {
     dbn->pretrain(dataset.training_images, 20);
 
     auto result = dbn->svm_train(dataset.training_images, dataset.training_labels);
-
     REQUIRE(result);
 
     auto test_error = dll::test_set(dbn, dataset.training_images, dataset.training_labels, dll::svm_predictor());
@@ -74,7 +70,6 @@ TEST_CASE( "unit/cdbn/mnist/3", "[cdbn][gaussian][svm][unit]" ) {
         dll::conv_rbm_desc_square<12, 40, 10, 40, dll::momentum, dll::batch_size<25>>::rbm_t>, dll::svm_concatenate>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
     REQUIRE(!dataset.training_images.empty());
 
     mnist::normalize_dataset(dataset);
@@ -84,7 +79,6 @@ TEST_CASE( "unit/cdbn/mnist/3", "[cdbn][gaussian][svm][unit]" ) {
     dbn->pretrain(dataset.training_images, 20);
 
     auto result = dbn->svm_train(dataset.training_images, dataset.training_labels);
-
     REQUIRE(result);
 
     auto test_error = dll::test_set(dbn, dataset.training_images, dataset.training_labels, dll::svm_predictor());
@@ -100,7 +94,6 @@ TEST_CASE( "unit/cdbn/mnist/4", "[cdbn][gaussian][svm][unit]" ) {
         dll::svm_concatenate, dll::svm_scale>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
     REQUIRE(!dataset.training_images.empty());
 
     mnist::normalize_dataset(dataset);
@@ -110,7 +103,6 @@ TEST_CASE( "unit/cdbn/mnist/4", "[cdbn][gaussian][svm][unit]" ) {
     dbn->pretrain(dataset.training_images, 20);
 
     auto result = dbn->svm_train(dataset.training_images, dataset.training_labels);
-
     REQUIRE(result);
 
     auto test_error = dll::test_set(dbn, dataset.training_images, dataset.training_labels, dll::svm_predictor());
