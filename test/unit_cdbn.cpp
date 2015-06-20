@@ -297,7 +297,7 @@ TEST_CASE( "unit/cdbn/mnist/10", "[dbn][conv][mnist][patches][memory][unit]" ) {
     }
 }
 
-TEST_CASE( "unit/dbn/mnist/11", "[dbn][conv][mnist][patches][unit]" ) {
+TEST_CASE( "unit/cdbn/mnist/11", "[dbn][conv][mnist][patches][unit]" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
         dll::patches_layer_padh_desc<14, 14, 14, 14, 1>::layer_t,
