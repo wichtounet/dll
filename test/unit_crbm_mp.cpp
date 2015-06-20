@@ -16,7 +16,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE( "unit/crbm_mp/mnist/1", "[crbm_mp][gaussian][unit]" ) {
+TEST_CASE( "unit/crbm_mp/mnist/1", "[crbm_mp][unit]" ) {
     dll::conv_rbm_mp_desc_square<
         28, 1, 12, 40, 2,
         dll::batch_size<25>,
@@ -41,7 +41,7 @@ TEST_CASE( "unit/crbm_mp/mnist/2", "[crbm_mp][gaussian][unit]" ) {
         dll::visible<dll::unit_type::GAUSSIAN>
     >::rbm_t rbm;
 
-    rbm.learning_rate *= 8;
+    rbm.learning_rate *= 10;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
     REQUIRE(!dataset.training_images.empty());
