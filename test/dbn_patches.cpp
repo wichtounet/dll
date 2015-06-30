@@ -46,7 +46,6 @@ TEST_CASE( "dbn/mnist/patches/1", "[dbn][conv][mnist][patches]" ) {
     dbn->pretrain(converted, 20);
 
     auto probs = dbn->activation_probabilities(converted[0]);
-
     REQUIRE(probs.size() == 4);
 }
 
@@ -77,15 +76,7 @@ TEST_CASE( "dbn/mnist/patches/2", "[dbn][conv][mnist][patches][memory]" ) {
     dbn->pretrain(converted, 20);
 
     auto probs = dbn->activation_probabilities(converted[0]);
-
     REQUIRE(probs.size() == 4);
-
-    //Simply to ensure compilation
-    if(false){
-        dbn->display();
-        dbn->store("test.dat");
-        dbn->load("test.dat");
-    }
 }
 
 TEST_CASE( "dbn/mnist/patches/3", "[dbn][conv][mnist][patches]" ) {
@@ -114,7 +105,6 @@ TEST_CASE( "dbn/mnist/patches/3", "[dbn][conv][mnist][patches]" ) {
     dbn->pretrain(converted, 20);
 
     auto probs = dbn->activation_probabilities(converted[0]);
-
     REQUIRE(probs.size() == 4);
 }
 
@@ -145,13 +135,5 @@ TEST_CASE( "dbn/mnist/patches/4", "[dbn][conv][mnist][patches][memory]" ) {
     dbn->pretrain(converted, 20);
 
     auto probs = dbn->activation_probabilities(converted[0]);
-
     REQUIRE(probs.size() == 4);
-
-    //Simply to ensure compilation
-    if(false){
-        dbn->display();
-        dbn->store("test.dat");
-        dbn->load("test.dat");
-    }
 }
