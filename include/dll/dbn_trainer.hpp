@@ -107,7 +107,7 @@ struct dbn_trainer {
                     auto bit = it;
                     auto blit = lit;
 
-                    for(std::size_t i = 0; i < batch_size && bit < end; ++i, ++it, ++lit){}
+                    for(std::size_t i = 0; i < batch_size && bit != end; ++i, ++it, ++lit){}
 
                     //Convert data to an useful form
                     data.clear();
