@@ -278,7 +278,7 @@ protected:
             } else if(hidden_unit == unit_type::RELU1){
                 h_a = min(max(b + mul(v_a, w, t), 0.0), 1.0);
             } else if(hidden_unit == unit_type::SOFTMAX){
-                h_a = softmax(b + mul(v_a, w, t));
+                h_a = stable_softmax(b + mul(v_a, w, t));
             }
 
             nan_check_deep(h_a);
@@ -311,7 +311,7 @@ protected:
             } else if(hidden_unit == unit_type::RELU1){
                 h_s = ranged_noise(min(max(b + mul(v_a, w, t), 0.0), 1.0), 1.0); //TODO This is probably wrong
             } else if(hidden_unit == unit_type::SOFTMAX){
-                h_s = one_if_max(softmax(b + mul(v_a, w, t)));
+                h_s = one_if_max(stable_softmax(b + mul(v_a, w, t)));
             }
 
             nan_check_deep(h_s);
@@ -366,7 +366,7 @@ protected:
             } else if(hidden_unit == unit_type::RELU1){
                 h_a = min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 1.0);
             } else if(hidden_unit == unit_type::SOFTMAX){
-                h_a = softmax(rep_l(b, Batch) + mul(v_a, w));
+                h_a = stable_softmax(rep_l(b, Batch) + mul(v_a, w));
             }
 
             nan_check_deep(h_a);
@@ -399,7 +399,7 @@ protected:
             } else if(hidden_unit == unit_type::RELU1){
                 h_s = ranged_noise(min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 1.0), 1.0); //TODO This is probably wrong
             } else if(hidden_unit == unit_type::SOFTMAX){
-                h_s = one_if_max(softmax(rep_l(b, Batch) + mul(v_a, w)));
+                h_s = one_if_max(stable_softmax(rep_l(b, Batch) + mul(v_a, w)));
             }
 
             nan_check_deep(h_s);
