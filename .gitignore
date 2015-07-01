@@ -9,3 +9,4 @@ test_reports
 html
 latex
 *.svg
+*.pyc
