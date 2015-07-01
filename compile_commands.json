@@ -1,0 +1,212 @@
+[
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/rbm_relu.cpp.o -c test/rbm_relu.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/rbm_relu.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/dbn_perf.cpp.o -c test/dbn_perf.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/dbn_perf.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/conv_dbn.cpp.o -c test/conv_dbn.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/conv_dbn.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/crbm_mp_relu.cpp.o -c test/crbm_mp_relu.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/crbm_mp_relu.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/dbn_sgd.cpp.o -c test/dbn_sgd.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/dbn_sgd.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/dyn_dbn.cpp.o -c test/dyn_dbn.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/dyn_dbn.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/unit_dbn.cpp.o -c test/unit_dbn.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/unit_dbn.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/conv_dbn_mp.cpp.o -c test/conv_dbn_mp.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/conv_dbn_mp.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/unit_dyn_rbm.cpp.o -c test/unit_dyn_rbm.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/unit_dyn_rbm.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/unit_crbm.cpp.o -c test/unit_crbm.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/unit_crbm.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/crbm.cpp.o -c test/crbm.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/crbm.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/test.cpp.o -c test/test.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/test.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/rbm_pcd.cpp.o -c test/rbm_pcd.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/rbm_pcd.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/unit_rbm.cpp.o -c test/unit_rbm.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/unit_rbm.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/dbn.cpp.o -c test/dbn.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/dbn.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/unit.cpp.o -c test/unit.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/unit.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test_compile/rbm_view.cpp.o -c test_compile/rbm_view.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test_compile/rbm_view.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test_compile/crbm_view.cpp.o -c test_compile/crbm_view.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test_compile/crbm_view.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test_compile/crbm_mp_view.cpp.o -c test_compile/crbm_mp_view.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test_compile/crbm_mp_view.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test_compile/compile_rbm.cpp.o -c test_compile/compile_rbm.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test_compile/compile_rbm.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test_compile/compile_conv_rbm.cpp.o -c test_compile/compile_conv_rbm.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test_compile/compile_conv_rbm.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test_compile/compile_conv_rbm_mp.cpp.o -c test_compile/compile_conv_rbm_mp.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test_compile/compile_conv_rbm_mp.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test_compile/compile_dbn.cpp.o -c test_compile/compile_dbn.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test_compile/compile_dbn.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test_compile/compile_conv_dbn_mp.cpp.o -c test_compile/compile_conv_dbn_mp.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test_compile/compile_conv_dbn_mp.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test_compile/compile_dbn_svm.cpp.o -c test_compile/compile_dbn_svm.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test_compile/compile_dbn_svm.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test_compile/compile_conv_dbn.cpp.o -c test_compile/compile_conv_dbn.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test_compile/compile_conv_dbn.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test_compile/compile_conv_dbn_svm.cpp.o -c test_compile/compile_conv_dbn_svm.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test_compile/compile_conv_dbn_svm.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test_compile/compile_dyn_dbn.cpp.o -c test_compile/compile_dyn_dbn.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test_compile/compile_dyn_dbn.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/unit_crbm_mp.cpp.o -c test/unit_crbm_mp.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/unit_crbm_mp.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/dbn_svm.cpp.o -c test/dbn_svm.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/dbn_svm.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/dyn_rbm.cpp.o -c test/dyn_rbm.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/dyn_rbm.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/crbm_sparsity.cpp.o -c test/crbm_sparsity.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/crbm_sparsity.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/crbm_mp.cpp.o -c test/crbm_mp.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/crbm_mp.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/rbm.cpp.o -c test/rbm.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/rbm.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/rbm_perf.cpp.o -c test/rbm_perf.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/rbm_perf.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/rbm_sparsity.cpp.o -c test/rbm_sparsity.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/rbm_sparsity.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/crbm_mp_sparsity.cpp.o -c test/crbm_mp_sparsity.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/crbm_mp_sparsity.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/dbn_patches.cpp.o -c test/dbn_patches.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/dbn_patches.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/dbn_transform.cpp.o -c test/dbn_transform.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/dbn_transform.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/cdbn_pooling.cpp.o -c test/cdbn_pooling.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/cdbn_pooling.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/crbm_relu.cpp.o -c test/crbm_relu.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/crbm_relu.cpp"
+    }, 
+    {
+        "command": "clang++ -Iinclude -std=c++1y -Wextra -Wall -Qunused-arguments -Wuninitialized -Wsometimes-uninitialized -Wno-long-long -Winit-self -Wdocumentation -pedantic -Werror -ftemplate-backtrace-limit=0 -stdlib=libc++ -Wno-documentation -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include -DETL_VECTORIZE_FULL -g -o debug/test/unit_cdbn.cpp.o -c test/unit_cdbn.cpp", 
+        "directory": "/home/wichtounet/dev/dll", 
+        "file": "/home/wichtounet/dev/dll/test/unit_cdbn.cpp"
+    }
+]
