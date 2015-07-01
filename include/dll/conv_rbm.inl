@@ -379,15 +379,11 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     }
 
     void activate_one(const input_one_t& input, output_one_t& h_a, output_one_t& h_s) const {
-        etl::fast_dyn_matrix<weight, NC, NV1, NV2> v1;        //visible units
-        v1 = input;
-        activate_hidden(h_a, h_s, v1, v1);
+        activate_hidden(h_a, h_s, input, input);
     }
 
     void activate_one(const input_one_t& input, output_one_t& h_a) const {
-        etl::fast_dyn_matrix<weight, NC, NV1, NV2> v1;        //visible units
-        v1 = input;
-        activate_hidden<true,false>(h_a, h_a, v1, v1);
+        activate_hidden<true,false>(h_a, h_a, input, input);
     }
 
     void activate_many(const input_t& input, output_t& h_a, output_t& h_s) const {
