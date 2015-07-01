@@ -97,7 +97,7 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
 
     template<bool P = true, bool S = true, typename H1, typename H2, typename V>
     void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s) const {
-        etl::dyn_matrix<weight, 1> t(num_hidden);
+        etl::fast_dyn_matrix<weight, num_hidden> t;
         base_type::template std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, t);
     }
 
@@ -108,13 +108,13 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
 
     template<bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W>
     static void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, const B& b, const W& w){
-        etl::dyn_matrix<weight, 1> t(num_hidden);
+        etl::fast_dyn_matrix<weight, num_hidden> t;
         base_type::template std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, t);
     }
 
     template<bool P = true, bool S = true, typename H, typename V>
     void activate_visible(const H& h_a, const H& h_s, V&& v_a, V&& v_s) const {
-        etl::dyn_matrix<weight, 1> t(num_visible);
+        etl::fast_dyn_matrix<weight, num_visible> t;
         base_type::template std_activate_visible<P, S>(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), c, w, t);
     }
 
@@ -135,8 +135,8 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
 
     template<typename Sample, typename Output>
     void activation_probabilities(const Sample& item_data, Output& result) const {
-        etl::dyn_vector<weight> item(item_data);
-        etl::dyn_vector<weight> next_s(num_hidden);
+        etl::fast_dyn_vector<weight, num_visible> item(item_data);
+        etl::fast_dyn_matrix<weight, num_hidden> next_s;
 
         activate_hidden(result, next_s, item, item);
     }
