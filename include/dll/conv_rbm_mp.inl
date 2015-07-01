@@ -298,11 +298,8 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
     template<typename V, typename H, cpp::disable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
     weight energy(const V& v, const H& h) const {
-        etl::fast_dyn_matrix<weight, NC, NV1, NV2> ev;
-        etl::fast_dyn_matrix<weight, K, NH1, NH2> eh;
-
-        ev = v;
-        eh = h;
+        etl::fast_dyn_matrix<weight, NC, NV1, NV2> ev(v);
+        etl::fast_dyn_matrix<weight, K, NH1, NH2> eh(h);
 
         return energy(ev, eh);
     }
@@ -350,8 +347,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
     template<typename V>
     weight free_energy(const V& v) const {
-        etl::fast_dyn_matrix<weight, NC, NV1, NV2> ev;
-        ev = v;
+        etl::fast_dyn_matrix<weight, NC, NV1, NV2> ev(v);
         return free_energy_impl(ev);
     }
 
@@ -361,10 +357,10 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
     //Utilities for DBNs
 
-    using input_deep_t = etl::dyn_matrix<weight, 3>;
-    using output_deep_t= etl::dyn_matrix<weight, 3>;
-    using input_one_t = etl::dyn_matrix<weight, 3>;
-    using output_one_t = etl::dyn_matrix<weight, 3>;
+    using input_deep_t = etl::fast_dyn_matrix<weight, NC, NV1, NV2>;
+    using output_deep_t= etl::fast_dyn_matrix<weight, K, NP1, NP2>;
+    using input_one_t = etl::fast_dyn_matrix<weight, NC, NV1, NV2>;
+    using output_one_t = etl::fast_dyn_matrix<weight, K, NP1, NP2>;
     using input_t = std::vector<input_one_t>;
     using output_t = std::vector<output_one_t>;
 
@@ -377,8 +373,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         }
 
         std::for_each(first, last, [&input](auto& sample){
-            input.emplace_back(NC, NV1, NV2);
-            input.back() = sample;
+            input.emplace_back(sample);
         });
 
         return input;
@@ -386,26 +381,17 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
     template<typename Sample>
     static input_one_t convert_sample(const Sample& sample){
-        input_one_t result(NC, NV1, NV2);
-        result = sample;
-        return result;
+        return input_one_t(sample);
     }
 
     template<typename Input>
     static output_t prepare_output(std::size_t samples){
-        output_t output;
-        output.reserve(samples);
-
-        for(std::size_t i = 0; i < samples; ++i){
-            output.emplace_back(K, NP1, NP2);
-        }
-
-        return output;
+        return output_t(samples);
     }
 
     template<typename Input>
     static output_one_t prepare_one_output(){
-        return output_one_t(K, NP1, NP2);
+        return {};
     }
 
     void activate_one(const input_one_t& input, output_one_t& h_a, output_one_t& h_s) const {
