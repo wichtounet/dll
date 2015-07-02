@@ -37,6 +37,28 @@ struct extract_weight_t <I, DBN, cpp::disable_if_t<layer_traits<typename DBN::te
     using type = typename DBN::template layer_type<I>::weight;
 };
 
+namespace detail {
+
+template<typename Iterator>
+std::size_t fast_distance(Iterator& first, Iterator& last){
+    if(std::is_same<typename std::iterator_traits<Iterator>::iterator_category, std::random_access_iterator_tag>::value){
+        return std::distance(first, last);
+    } else {
+        return 0;
+    }
+}
+
+template<typename Iterator>
+void safe_advance(Iterator& it, const Iterator& end, std::size_t distance){
+    std::size_t i = 0;
+    while(it != end && i < distance){
+        ++it;
+        ++i;
+    }
+}
+
+} //end of namespace detail
+
 /*!
  * \brief A Deep Belief Network implementation
  */
@@ -192,26 +214,13 @@ struct dbn final {
     /*{{{ Pretrain */
 
 private:
+    //By default all layer are trained
     template<std::size_t I, class Enable = void>
-    struct train_next;
+    struct train_next : std::true_type {};
 
-    template<std::size_t I>
-    struct train_next<I, std::enable_if_t<(I < layers - 1)>> : std::true_type {};
-
+    //The last layer is not always trained (softmax for instance)
     template<std::size_t I>
     struct train_next<I, std::enable_if_t<(I == layers - 1)>> : cpp::bool_constant<layer_traits<layer_type<I>>::pretrain_last()> {};
-
-    template<std::size_t I>
-    struct train_next<I, std::enable_if_t<(I > layers - 1)>> : std::false_type {};
-
-    template<typename Iterator>
-    static std::size_t fast_distance(Iterator& first, Iterator& last){
-        if(std::is_same<typename std::iterator_traits<Iterator>::iterator_category, std::random_access_iterator_tag>::value){
-            return std::distance(first, last);
-        } else {
-            return 0;
-        }
-    }
 
     template<typename One>
     static void flatten_in(std::vector<std::vector<One>>& deep, std::vector<One>& flat){
@@ -251,13 +260,13 @@ private:
         return flat;
     }
 
-    template<std::size_t I, typename Iterator, typename Watcher>
-    std::enable_if_t<(I<layers)> pretrain_layer(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
+    template<std::size_t I, typename Iterator, typename Watcher, cpp_enable_if((I < layers))>
+    void pretrain_layer(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
         using layer_t = layer_type<I>;
 
         decltype(auto) layer = layer_get<I>();
 
-        watcher.template pretrain_layer<layer_t>(*this, I, fast_distance(first, last));
+        watcher.template pretrain_layer<layer_t>(*this, I, detail::fast_distance(first, last));
 
         cpp::static_if<layer_traits<layer_t>::is_trained()>([&](auto f){
             f(layer).template train<
@@ -288,12 +297,14 @@ private:
     }
 
     //Stop template recursion
-    template<std::size_t I, typename Iterator, typename Watcher>
-    std::enable_if_t<(I==layers)> pretrain_layer(Iterator, Iterator, Watcher&, std::size_t){}
+    template<std::size_t I, typename Iterator, typename Watcher, cpp_enable_if((I == layers))>
+    void pretrain_layer(Iterator, Iterator, Watcher&, std::size_t){}
 
+    //By default no layer is ignored
     template<std::size_t I, class Enable = void>
     struct batch_layer_ignore : std::false_type {};
 
+    //Transform and pooling layers can safely be skipped
     template<std::size_t I>
     struct batch_layer_ignore<I, std::enable_if_t<(I < layers)>> : cpp::or_u<layer_traits<layer_type<I>>::is_pooling_layer(), layer_traits<layer_type<I>>::is_transform_layer(), !layer_traits<layer_type<I>>::pretrain_last()> {};
 
@@ -335,15 +346,12 @@ private:
             while(it != end){
                 auto batch_start = it;
 
-                std::size_t i = 0;
-                while(it != end && i < big_batch_size){
-                    ++it;
-                    ++i;
-                }
+                detail::safe_advance(it, end, big_batch_size);
 
                 //Convert data to an useful form
                 input_converter<this_type, 0, Iterator> converter(*this, batch_start, it);
 
+                //With only 1 batch, some work can be skipped
                 if(desc::BatchSize == 1){
                     //Train the RBM on this batch
                     r_trainer.train_batch(converter.begin(), converter.end(), converter.begin(), converter.end(), trainer, context, rbm);
@@ -364,6 +372,7 @@ private:
 
         r_trainer.finalize_training(rbm);
 
+        //Train the next layer
         pretrain_layer_batch<I+1>(first, last, watcher, max_epochs);
     }
 
@@ -392,13 +401,8 @@ private:
     };
 
     template<std::size_t I, typename Input>
-    struct layer_output<I, Input, std::enable_if_t<I == 0 && layer_traits<layer_type<I>>::is_transform_layer()>> {
-        using type = typename Input::value_type;
-    };
-
-    template<std::size_t I, typename Input>
-    struct layer_output<I, Input, std::enable_if_t<(I > 0) && layer_traits<layer_type<I>>::is_transform_layer()>> {
-        using type = layer_input_t<I, Input>;
+    struct layer_output<I, Input, std::enable_if_t<layer_traits<layer_type<I>>::is_transform_layer()>> {
+        using type = std::conditional_t<I == 0, typename Input::value_type, layer_input_t<I, Input>>;
     };
 
     template<std::size_t I, typename Input>
@@ -455,11 +459,7 @@ private:
             while(it != end){
                 auto batch_start = it;
 
-                std::size_t i = 0;
-                while(it != end && i < big_batch_size){
-                    ++it;
-                    ++i;
-                }
+                detail::safe_advance(it, end, big_batch_size);
 
                 //Convert data to an useful form
                 input_converter<this_type, 0, Iterator> converter(*this, batch_start, it);
@@ -535,11 +535,7 @@ private:
             while(it != end){
                 auto batch_start = it;
 
-                std::size_t i = 0;
-                while(it != end && i < big_batch_size){
-                    ++it;
-                    ++i;
-                }
+                detail::safe_advance(it, end, big_batch_size);
 
                 //Convert data to an useful form
                 input_converter<this_type, 0, Iterator> converter(*this, batch_start, it);
@@ -555,6 +551,7 @@ private:
                     i.clear();
                 }
 
+                //Compute the number of batches that have been gathered
                 auto batches = input_flat.size() / rbm_batch_size;
                 auto offset = std::min(batches * rbm_batch_size, input_flat.size());
 
@@ -568,6 +565,7 @@ private:
                     r_trainer.train_sub(input_flat.begin(), input_flat.begin() + offset, input_flat.begin(), trainer, context, rbm);
                 }
 
+                //Erase what we already passed to the trainer
                 input_flat.erase(input_flat.begin(), input_flat.begin() + offset);
 
                 if(dbn_traits<this_type>::is_verbose()){
@@ -595,15 +593,6 @@ public:
      * \brief Pretrain the network by training all layers in an unsupervised
      * manner.
      */
-    template<typename Samples>
-    void pretrain(const Samples& training_data, std::size_t max_epochs){
-        pretrain(training_data.begin(), training_data.end(), max_epochs);
-    }
-
-    /*!
-     * \brief Pretrain the network by training all layers in an unsupervised
-     * manner.
-     */
     template<typename Iterator>
     void pretrain(Iterator first, Iterator last, std::size_t max_epochs){
         watcher_t watcher;
@@ -622,6 +611,15 @@ public:
         }
 
         watcher.pretraining_end(*this);
+    }
+
+    /*!
+     * \brief Pretrain the network by training all layers in an unsupervised
+     * manner.
+     */
+    template<typename Samples>
+    void pretrain(const Samples& training_data, std::size_t max_epochs){
+        pretrain(training_data.begin(), training_data.end(), max_epochs);
     }
 
     /*}}}*/
