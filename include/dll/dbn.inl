@@ -851,7 +851,7 @@ public:
     auto activation_probabilities_sub(const Sample& item_data) const {
         auto result = layer_get<I>().template prepare_one_output<Sample>();
 
-        activation_probabilities<0, I>(item_data, result);
+        activation_probabilities<0, I+1>(item_data, result);
 
         return result;
     }
