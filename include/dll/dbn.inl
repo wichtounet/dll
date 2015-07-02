@@ -874,7 +874,6 @@ public:
         sample_converter<this_type, 0, Sample> converter(*this, item_data);
 
         std::size_t i = 0;
-
         full_activation_probabilities<0>(converter.get(), i, result);
     }
 
