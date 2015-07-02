@@ -847,6 +847,15 @@ public:
         return result;
     }
 
+    template<std::size_t I, typename Sample, typename T = this_type, cpp_disable_if(dbn_traits<T>::is_multiplex())>
+    auto activation_probabilities_sub(const Sample& item_data) const {
+        auto result = layer_get<I>().template prepare_one_output<Sample>();
+
+        activation_probabilities<0, I>(item_data, result);
+
+        return result;
+    }
+
     //full_activation_probabilities
 
 private:
