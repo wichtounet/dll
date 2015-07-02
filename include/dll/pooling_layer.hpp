@@ -47,8 +47,8 @@ struct pooling_layer_3d {
         return 0;
     }
 
-    using input_one_t = etl::dyn_matrix<weight, 3>;
-    using output_one_t = etl::dyn_matrix<weight, 3>;
+    using input_one_t = etl::fast_dyn_matrix<weight, I1, I2, I3>;
+    using output_one_t = etl::fast_dyn_matrix<weight, O1, O2, O3>;
     using input_t = std::vector<input_one_t>;
     using output_t = std::vector<output_one_t>;
 
@@ -58,8 +58,7 @@ struct pooling_layer_3d {
         input.reserve(std::distance(std::forward<Iterator>(first), std::forward<Iterator>(last)));
 
         std::for_each(std::forward<Iterator>(first), std::forward<Iterator>(last), [&input](auto& sample){
-            input.emplace_back(I1, I2, I3);
-            input.back() = sample;
+            input.emplace_back(sample);
         });
 
         return input;
@@ -67,26 +66,17 @@ struct pooling_layer_3d {
 
     template<typename Sample>
     static input_one_t convert_sample(const Sample& sample){
-        input_one_t result(I1, I2, I3);
-        result = sample;
-        return result;
+        return input_one_t{sample};
     }
 
     template<typename Input>
     static output_t prepare_output(std::size_t samples){
-        output_t output;
-        output.reserve(samples);
-
-        for(std::size_t i = 0; i < samples; ++i){
-            output.emplace_back(O1, O2, O3);
-        }
-
-        return output;
+        return output_t{samples};
     }
 
     template<typename Input>
     static output_one_t prepare_one_output(){
-        return output_one_t(O1, O2, O3);
+        return output_one_t();
     }
 };
 

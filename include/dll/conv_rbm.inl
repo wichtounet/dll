@@ -148,7 +148,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
             v_cv(1) += v_cv(0);
         }
 
-
         if(P){
             if(hidden_unit == unit_type::BINARY){
                 if(visible_unit == unit_type::GAUSSIAN){
@@ -331,10 +330,10 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     //Utilities for DBNs
 
     //TODO These should really all be renamed...
-    using input_deep_t = etl::dyn_matrix<weight, 3>;
-    using output_deep_t= etl::dyn_matrix<weight, 3>;
-    using input_one_t = etl::dyn_matrix<weight, 3>;
-    using output_one_t = etl::dyn_matrix<weight, 3>;
+    using input_deep_t = etl::fast_dyn_matrix<weight, NC, NV1, NV2>;
+    using output_deep_t= etl::fast_dyn_matrix<weight, K, NH1, NH2>;
+    using input_one_t = etl::fast_dyn_matrix<weight, NC, NV1, NV2>;
+    using output_one_t = etl::fast_dyn_matrix<weight, K, NH1, NH2>;
     using input_t = std::vector<input_one_t>;
     using output_t = std::vector<output_one_t>;
 
@@ -347,8 +346,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         }
 
         std::for_each(first, last, [&input](auto& sample){
-            input.emplace_back(NC, NV1, NV2);
-            input.back() = sample;
+            input.emplace_back(sample);
         });
 
         return input;
@@ -356,26 +354,17 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
     template<typename Sample>
     static input_one_t convert_sample(const Sample& sample){
-        input_one_t result(NC, NV1, NV2);
-        result = sample;
-        return result;
+        return input_one_t{sample};
     }
 
     template<typename Input>
     static output_t prepare_output(std::size_t samples){
-        output_t output;
-        output.reserve(samples);
-
-        for(std::size_t i = 0; i < samples; ++i){
-            output.emplace_back(K, NH1, NH2);
-        }
-
-        return output;
+        return output_t{samples};
     }
 
     template<typename Input>
     static output_one_t prepare_one_output(){
-        return output_one_t(K, NH1, NH2);
+        return output_one_t{};
     }
 
     void activate_one(const input_one_t& input, output_one_t& h_a, output_one_t& h_s) const {

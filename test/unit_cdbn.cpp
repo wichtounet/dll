@@ -141,9 +141,9 @@ TEST_CASE( "unit/cdbn/mnist/6", "[cdbn][mp][svm][unit]" ) {
     typedef dll::dbn_desc<
             dll::dbn_layers<
             dll::conv_rbm_desc<28, 28, 1, 20, 21, 40, dll::momentum, dll::batch_size<25>>::rbm_t,
-            dll::mp_layer_3d_desc<20, 21, 40, 2, 3, 2>::layer_t,
+            dll::mp_layer_3d_desc<40, 20, 21, 2, 2, 3>::layer_t,
             dll::conv_rbm_desc<10, 7, 20, 8, 5, 40, dll::momentum, dll::batch_size<25>>::rbm_t,
-            dll::mp_layer_3d_desc<8, 5, 40, 2, 1, 1>::layer_t
+            dll::mp_layer_3d_desc<40, 8, 5, 2, 1, 1>::layer_t
         >>::dbn_t dbn_t;
 
     REQUIRE(dbn_t::output_size() == 800);
@@ -172,9 +172,9 @@ TEST_CASE( "unit/cdbn/mnist/7", "[cdbn][ap][svm][unit]" ) {
     typedef dll::dbn_desc<
             dll::dbn_layers<
             dll::conv_rbm_desc<28, 28, 1, 20, 21, 40, dll::momentum, dll::batch_size<25>>::rbm_t,
-            dll::avgp_layer_3d_desc<20, 21, 40, 2, 3, 2>::layer_t,
+            dll::avgp_layer_3d_desc<40, 20, 21, 2, 2, 3>::layer_t,
             dll::conv_rbm_desc<10, 7, 20, 8, 5, 40, dll::momentum, dll::batch_size<25>>::rbm_t,
-            dll::avgp_layer_3d_desc<8, 5, 40, 2, 1, 1>::layer_t
+            dll::avgp_layer_3d_desc<40, 8, 5, 2, 1, 1>::layer_t
         >>::dbn_t dbn_t;
 
     REQUIRE(dbn_t::output_size() == 800);

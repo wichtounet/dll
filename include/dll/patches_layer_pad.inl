@@ -28,12 +28,11 @@ struct patches_layer_padh {
     using weight = double; //TODO Should be made configurable
 
     using input_deep_t = etl::dyn_matrix<weight, 3>;
-    using output_deep_t= etl::dyn_matrix<weight, 3>;
-
     using input_one_t = etl::dyn_matrix<weight, 3>;
     using input_t = std::vector<input_one_t>;
 
-    using output_one_t = std::vector<etl::dyn_matrix<weight, 3>>;
+    using output_deep_t= etl::fast_dyn_matrix<weight, 1UL, height, width>;
+    using output_one_t = std::vector<etl::fast_dyn_matrix<weight, 1UL, height, width>>;
     using output_t = std::vector<output_one_t>;
 
     patches_layer_padh() = default;
@@ -65,7 +64,7 @@ struct patches_layer_padh {
 
         for(std::size_t y = 0; y + height <= etl::dim<1>(input); y += v_stride){
             for(std::size_t x = 0; x < etl::dim<2>(input); x += h_stride){
-                h_a.emplace_back(1UL, height, width);
+                h_a.emplace_back();
 
                 auto& patch = h_a.back();
 
