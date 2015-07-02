@@ -461,13 +461,7 @@ private:
 
                 detail::safe_advance(it, end, big_batch_size);
 
-                //Convert data to an useful form
-                input_converter<this_type, 0, Iterator> converter(*this, batch_start, it);
-
-                //Collect a big batch
-                maybe_parallel_foreach_i(pool, converter.begin(), converter.end(), [this,&input](auto& v, std::size_t i){
-                    this->activation_probabilities<0, I>(v, input[i]);
-                });
+                multi_activation_probabilities<I>(batch_start, it, input);
 
                 if(desc::BatchSize == 1){
                     //Train the RBM on this batch
@@ -537,13 +531,7 @@ private:
 
                 detail::safe_advance(it, end, big_batch_size);
 
-                //Convert data to an useful form
-                input_converter<this_type, 0, Iterator> converter(*this, batch_start, it);
-
-                //Collect a big batch
-                maybe_parallel_foreach_i(pool, converter.begin(), converter.end(), [this,&input](auto& v, std::size_t i){
-                    this->activation_probabilities<0, I>(v, input[i]);
-                });
+                multi_activation_probabilities<I>(batch_start, it, input);
 
                 flatten_in(input, input_flat);
 
@@ -782,6 +770,17 @@ public:
     //activation_probabilities
 
 private:
+
+    template<std::size_t I, typename Iterator, typename Ouput>
+    void multi_activation_probabilities(Iterator first, Iterator last, Ouput& output){
+        //Convert data to an useful form
+        input_converter<this_type, 0, Iterator> converter(*this, first, last);
+
+        //Collect an entire batch
+        maybe_parallel_foreach_i(pool, converter.begin(), converter.end(), [this, &output](auto& v, std::size_t i){
+            this->activation_probabilities<0, I>(v, output[i]);
+        });
+    }
 
     template<std::size_t I, std::size_t S = layers, typename Input, typename Result>
     std::enable_if_t<(I<S)> activation_probabilities(const Input& input, Result& result) const {
