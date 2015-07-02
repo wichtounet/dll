@@ -18,7 +18,7 @@
 
 TEST_CASE( "unit/crbm_mp/mnist/1", "[crbm_mp][unit]" ) {
     dll::conv_rbm_mp_desc_square<
-        28, 1, 12, 40, 2,
+        1, 28, 40, 12, 2,
         dll::batch_size<25>,
         dll::momentum
     >::rbm_t rbm;
@@ -34,7 +34,7 @@ TEST_CASE( "unit/crbm_mp/mnist/1", "[crbm_mp][unit]" ) {
 
 TEST_CASE( "unit/crbm_mp/mnist/2", "[crbm_mp][gaussian][unit]" ) {
     dll::conv_rbm_mp_desc_square<
-        28, 1, 12, 40, 2,
+        1, 28, 40, 12, 2,
         dll::batch_size<25>,
         dll::momentum,
         dll::weight_decay<>,
@@ -54,7 +54,7 @@ TEST_CASE( "unit/crbm_mp/mnist/2", "[crbm_mp][gaussian][unit]" ) {
 
 TEST_CASE( "unit/crbm_mp/mnist/3", "[crbm_mp][multic][unit]" ) {
     dll::conv_rbm_mp_desc_square<
-        28, 2, 12, 40, 2,
+        2, 28, 40, 12, 2,
         dll::batch_size<25>,
         dll::momentum
     >::rbm_t rbm;
@@ -79,7 +79,7 @@ TEST_CASE( "unit/crbm_mp/mnist/3", "[crbm_mp][multic][unit]" ) {
 
 TEST_CASE( "unit/crbm_mp/mnist/4", "[crbm_mp][denoising][unit]" ) {
     dll::conv_rbm_mp_desc_square<
-        28, 1, 12, 40, 2,
+        1, 28, 40, 12, 2,
         dll::batch_size<25>,
         dll::momentum,
         dll::weight_decay<dll::decay_type::L2>,
@@ -114,7 +114,7 @@ TEST_CASE( "unit/crbm_mp/mnist/4", "[crbm_mp][denoising][unit]" ) {
 
 TEST_CASE( "unit/crbm_mp/mnist/5", "[crbm_mp][relu][unit]" ) {
     dll::conv_rbm_mp_desc_square<
-        28, 1, 12, 40, 2,
+        1, 28, 40, 12, 2,
         dll::batch_size<25>,
         dll::hidden<dll::unit_type::RELU>
     >::rbm_t rbm;
@@ -135,7 +135,7 @@ TEST_CASE( "unit/crbm_mp/mnist/5", "[crbm_mp][relu][unit]" ) {
 
 TEST_CASE( "unit/crbm_mp/mnist/6", "[crbm_mp][lee][unit]" ) {
     dll::conv_rbm_mp_desc_square<
-        28, 1, 12, 40, 2,
+        1, 28, 40, 12, 2,
         dll::batch_size<10>,
         dll::momentum,
         dll::weight_decay<dll::decay_type::L2>,
@@ -157,7 +157,7 @@ TEST_CASE( "unit/crbm_mp/mnist/6", "[crbm_mp][lee][unit]" ) {
 
 TEST_CASE( "unit/crbm_mp/mnist/7", "[crbm_mp][lee][gaussian][unit]" ) {
     dll::conv_rbm_mp_desc_square<
-        28, 1, 12, 40, 2,
+        1, 28, 40, 12, 2,
         dll::batch_size<5>,
         dll::momentum,
         dll::visible<dll::unit_type::GAUSSIAN>,

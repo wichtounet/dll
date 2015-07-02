@@ -116,8 +116,8 @@ TEST_CASE( "unit/cdbn/mnist/4", "[cdbn][gaussian][svm][unit]" ) {
 TEST_CASE( "unit/cdbn/mnist/5", "[cdbn][crbm_mp][svm][unit]" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::conv_rbm_mp_desc_square<28, 1, 18, 20, 2, dll::momentum, dll::batch_size<10>>::rbm_t,
-        dll::conv_rbm_mp_desc_square<9, 20, 6, 20, 2, dll::momentum, dll::batch_size<10>>::rbm_t
+        dll::conv_rbm_mp_desc_square<1, 28, 20, 18, 2, dll::momentum, dll::batch_size<10>>::rbm_t,
+        dll::conv_rbm_mp_desc_square<20, 9, 20, 6, 2, dll::momentum, dll::batch_size<10>>::rbm_t
     >>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
