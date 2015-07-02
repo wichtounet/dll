@@ -819,28 +819,11 @@ private:
     std::enable_if_t<(I==S)> activation_probabilities(const Input&, Result&) const {}
 
 public:
-
-    template<typename Sample, typename Output>
-    void activation_probabilities(const Sample& item_data, Output& result) const {
+    template<std::size_t I, typename Sample, typename Output, typename T = this_type>
+    auto activation_probabilities_sub(const Sample& item_data, Output& result) const {
         sample_converter<this_type, 0, Sample> converter(*this, item_data);
 
-        activation_probabilities<0>(converter.get(), result);
-    }
-
-    template<typename Sample, typename T = this_type, cpp_disable_if(dbn_traits<T>::is_multiplex())>
-    auto activation_probabilities(const Sample& item_data) const {
-        auto result = layer_get<layers - 1>().template prepare_one_output<Sample>();
-
-        activation_probabilities(item_data, result);
-
-        return result;
-    }
-
-    template<typename Sample, typename T = this_type, cpp_enable_if(dbn_traits<T>::is_multiplex())>
-    auto activation_probabilities(const Sample& item_data) const {
-        std::vector<typename layer_type<layers - 1>::output_one_t> result;
-
-        activation_probabilities(item_data, result);
+        activation_probabilities<0, I+1>(converter.get(), result);
 
         return result;
     }
@@ -849,9 +832,29 @@ public:
     auto activation_probabilities_sub(const Sample& item_data) const {
         auto result = layer_get<I>().template prepare_one_output<Sample>();
 
-        activation_probabilities<0, I+1>(item_data, result);
+        return activation_probabilities_sub<I>(item_data, result);;
+    }
 
-        return result;
+    template<std::size_t I, typename Sample, typename T = this_type, cpp_enable_if(dbn_traits<T>::is_multiplex())>
+    auto activation_probabilities_sub(const Sample& item_data) const {
+        std::vector<typename layer_type<layers - 1>::output_one_t> result;
+        return activation_probabilities_sub<I>(item_data, result);;
+    }
+
+    template<typename Sample, typename Output>
+    auto activation_probabilities(const Sample& item_data, Output& result) const {
+        return activation_probabilities_sub<layers - 1>(item_data, result);
+    }
+
+    template<typename Sample, typename T = this_type, cpp_disable_if(dbn_traits<T>::is_multiplex())>
+    auto activation_probabilities(const Sample& item_data) const {
+        return activation_probabilities_sub<layers - 1>(item_data);
+    }
+
+    template<typename Sample, typename T = this_type, cpp_enable_if(dbn_traits<T>::is_multiplex())>
+    auto activation_probabilities(const Sample& item_data) const {
+        std::vector<typename layer_type<layers - 1>::output_one_t> result;
+        return activation_probabilities_sub<layers - 1>(item_data, result);
     }
 
     //full_activation_probabilities
