@@ -200,6 +200,6 @@ TEST_CASE( "dbn/mnist_17", "dbn::memory" ) {
     REQUIRE(test_error < 0.2);
 
     //Mostly here to ensure compilation
-    auto out = dbn->prepare_one_output();
+    auto out = dbn->prepare_one_output<std::vector<double>>();
     REQUIRE(out.size() > 0);
 }

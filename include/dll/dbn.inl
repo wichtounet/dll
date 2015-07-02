@@ -828,16 +828,9 @@ public:
         return result;
     }
 
-    template<std::size_t I, typename Sample, typename T = this_type, cpp_disable_if(dbn_traits<T>::is_multiplex())>
+    template<std::size_t I, typename Sample>
     auto activation_probabilities_sub(const Sample& item_data) const {
-        auto result = layer_get<I>().template prepare_one_output<Sample>();
-
-        return activation_probabilities_sub<I>(item_data, result);;
-    }
-
-    template<std::size_t I, typename Sample, typename T = this_type, cpp_enable_if(dbn_traits<T>::is_multiplex())>
-    auto activation_probabilities_sub(const Sample& item_data) const {
-        std::vector<typename layer_type<layers - 1>::output_one_t> result;
+        auto result = prepare_output<I, Sample>();
         return activation_probabilities_sub<I>(item_data, result);;
     }
 
@@ -846,15 +839,9 @@ public:
         return activation_probabilities_sub<layers - 1>(item_data, result);
     }
 
-    template<typename Sample, typename T = this_type, cpp_disable_if(dbn_traits<T>::is_multiplex())>
+    template<typename Sample, typename T = this_type>
     auto activation_probabilities(const Sample& item_data) const {
         return activation_probabilities_sub<layers - 1>(item_data);
-    }
-
-    template<typename Sample, typename T = this_type, cpp_enable_if(dbn_traits<T>::is_multiplex())>
-    auto activation_probabilities(const Sample& item_data) const {
-        std::vector<typename layer_type<layers - 1>::output_one_t> result;
-        return activation_probabilities_sub<layers - 1>(item_data, result);
     }
 
     //full_activation_probabilities
@@ -942,13 +929,19 @@ public:
 
     /*}}}*/
 
-    using output_one_t = typename layer_type<layers - 1>::output_one_t;
-    using output_t = typename layer_type<layers - 1>::output_one_t;
+    template<std::size_t I, typename Sample, typename T = this_type, cpp_disable_if(dbn_traits<T>::is_multiplex())>
+    auto prepare_output() const {
+        return layer_get<I>().template prepare_one_output<Sample>();
+    }
 
-    //TODO This is broken if the last layer is a transform layer
+    template<std::size_t I, typename Sample, typename T = this_type, cpp_enable_if(dbn_traits<T>::is_multiplex())>
+    auto prepare_output() const {
+        return std::vector<typename layer_type<layers - 1>::output_one_t>();
+    }
 
-    output_one_t prepare_one_output() const {
-        return layer_get<layers - 1>().template prepare_one_output<typename layer_type<layers - 1>::input_one_t>();
+    template<typename Sample>
+    auto prepare_one_output() const {
+        return  prepare_output<layers - 1, Sample>();
     }
 
 #ifdef DLL_SVM_SUPPORT
