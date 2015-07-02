@@ -19,7 +19,7 @@ namespace dll {
  * This struct should be used to define a RBM either as standalone or for a DBN.
  * Once configured, the ::rbm_t member returns the type of the configured RBM.
  */
-template<std::size_t NV_1, std::size_t NV_2, std::size_t NC_T, std::size_t NH_1, std::size_t NH_2, std::size_t K_T, typename... Parameters>
+template<std::size_t NC_T, std::size_t NV_1, std::size_t NV_2, std::size_t K_T, std::size_t NH_1, std::size_t NH_2, typename... Parameters>
 struct conv_rbm_desc {
     static constexpr const std::size_t NV1 = NV_1;
     static constexpr const std::size_t NV2 = NV_2;
@@ -30,8 +30,7 @@ struct conv_rbm_desc {
 
     using parameters = cpp::type_list<Parameters...>;
 
-    static constexpr const std::size_t BatchSize = detail::get_value<batch_size<1>, Parameters...>::value;
-    static constexpr const unit_type visible_unit = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;
+    static constexpr const std::size_t BatchSize = detail::get_value<batch_size<1>, Parameters...>::value; static constexpr const unit_type visible_unit = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;
     static constexpr const unit_type hidden_unit = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
     static constexpr const sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;
     static constexpr const bias_mode Bias = detail::get_value<bias<bias_mode::SIMPLE>, Parameters...>::value;
@@ -48,7 +47,7 @@ struct conv_rbm_desc {
     using watcher_t = typename detail::get_template_type<watcher<default_rbm_watcher>, Parameters...>::template value<RBM>;
 
     /*! The RBM type */
-    using rbm_t = conv_rbm<conv_rbm_desc<NV1, NV2, NC_T, NH1, NH2, K_T, Parameters...>>;
+    using rbm_t = conv_rbm<conv_rbm_desc<NC_T, NV1, NV2, K_T, NH1, NH2, Parameters...>>;
 
     //Validate all parameters
 
@@ -82,8 +81,8 @@ struct conv_rbm_desc {
  * This struct should be used to define a RBM either as standalone or for a DBN.
  * Once configured, the ::rbm_t member returns the type of the configured RBM.
  */
-template<std::size_t NV_T, std::size_t NC_T, std::size_t NH_T, std::size_t K_T, typename... Parameters>
-using conv_rbm_desc_square = conv_rbm_desc<NV_T, NV_T, NC_T, NH_T, NH_T, K_T, Parameters...>;
+template<std::size_t NC_T, std::size_t NV_T, std::size_t K_T, std::size_t NH_T, typename... Parameters>
+using conv_rbm_desc_square = conv_rbm_desc<NC_T, NV_T, NV_T, K_T, NH_T, NH_T, Parameters...>;
 
 } //end of dll namespace
 

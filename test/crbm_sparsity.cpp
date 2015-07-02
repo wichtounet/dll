@@ -14,7 +14,7 @@
 
 TEST_CASE( "crbm/mnist_60", "crbm::global_sparsity" ) {
     using rbm_type = dll::conv_rbm_desc_square<
-        28, 1, 12, 40,
+        1, 28, 40, 12,
         dll::batch_size<25>,
         dll::sparsity<>
     >::rbm_t;
@@ -41,7 +41,7 @@ TEST_CASE( "crbm/mnist_60", "crbm::global_sparsity" ) {
 
 TEST_CASE( "crbm/mnist_61", "crbm::local_sparsity" ) {
     using rbm_type = dll::conv_rbm_desc_square<
-        28, 1, 12, 40,
+        1, 28, 40, 12,
         dll::batch_size<25>,
         dll::sparsity<dll::sparsity_method::LOCAL_TARGET>
     >::rbm_t;
@@ -66,7 +66,7 @@ TEST_CASE( "crbm/mnist_61", "crbm::local_sparsity" ) {
 
 TEST_CASE( "crbm/mnist_11", "crbm::bias_mode_simple" ) {
     dll::conv_rbm_desc_square<
-        28, 1, 12, 40,
+        1, 28, 40, 12,
         dll::batch_size<25>,
         dll::momentum,
         dll::bias<dll::bias_mode::SIMPLE>
@@ -86,7 +86,7 @@ TEST_CASE( "crbm/mnist_11", "crbm::bias_mode_simple" ) {
 
 TEST_CASE( "crbm/mnist_12", "crbm::bias_mode_none" ) {
     dll::conv_rbm_desc_square<
-        28, 1, 12, 40,
+        1, 28, 40, 12,
         dll::batch_size<25>,
         dll::momentum,
         dll::bias<dll::bias_mode::NONE>
