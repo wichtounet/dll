@@ -43,6 +43,11 @@ endif
 endif
 endif
 
+# Enable coverage if enabled
+ifeq (,$(DLL_COVERAGE))
+$(eval $(call enable_coverage))
+endif
+
 CPP_FILES=$(wildcard test_compile/*.cpp)
 
 TEST_CPP_FILES=$(wildcard test/*.cpp)
