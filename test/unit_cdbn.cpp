@@ -87,6 +87,7 @@ TEST_CASE( "unit/cdbn/mnist/3", "[cdbn][gaussian][svm][unit]" ) {
     auto test_error = dll::test_set(dbn, dataset.training_images, dataset.training_labels, dll::svm_predictor());
     std::cout << "test_error:" << test_error << std::endl;
     //TODO Gaussian is broken REQUIRE(test_error < 0.1);
+    cpp_unused(test_error);
 }
 
 TEST_CASE( "unit/cdbn/mnist/4", "[cdbn][gaussian][svm][unit]" ) {
@@ -111,6 +112,7 @@ TEST_CASE( "unit/cdbn/mnist/4", "[cdbn][gaussian][svm][unit]" ) {
     auto test_error = dll::test_set(dbn, dataset.training_images, dataset.training_labels, dll::svm_predictor());
     std::cout << "test_error:" << test_error << std::endl;
     //TODO Gaussian is broken REQUIRE(test_error < 0.1);
+    cpp_unused(test_error);
 }
 
 TEST_CASE( "unit/cdbn/mnist/5", "[cdbn][crbm_mp][svm][unit]" ) {

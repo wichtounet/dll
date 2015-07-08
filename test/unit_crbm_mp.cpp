@@ -51,6 +51,7 @@ TEST_CASE( "unit/crbm_mp/mnist/2", "[crbm_mp][gaussian][unit]" ) {
 
     auto error = rbm.train(dataset.training_images, 50);
     //TODO Gaussian is broken REQUIRE(error < 5e-2);
+    cpp_unused(error);
 }
 
 TEST_CASE( "unit/crbm_mp/mnist/3", "[crbm_mp][multic][unit]" ) {
@@ -113,6 +114,7 @@ TEST_CASE( "unit/crbm_mp/mnist/4", "[crbm_mp][denoising][unit]" ) {
 
     auto error = rbm.train_denoising(noisy, dataset.training_images, 50);
     //TODO Gaussian is broken REQUIRE(error < 2e-2);
+    cpp_unused(error);
 }
 
 TEST_CASE( "unit/crbm_mp/mnist/5", "[crbm_mp][relu][unit]" ) {
@@ -180,4 +182,5 @@ TEST_CASE( "unit/crbm_mp/mnist/7", "[crbm_mp][lee][gaussian][unit]" ) {
 
     auto error = rbm.train(dataset.training_images, 50);
     //TODO Gaussian is broken REQUIRE(error < 1e-2);
+    cpp_unused(error);
 }
