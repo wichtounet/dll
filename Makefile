@@ -45,7 +45,7 @@ endif
 
 # Enable coverage if enabled
 ifeq (,$(DLL_COVERAGE))
-$(eval $(call enable_coverage))
+$(eval $(call enable_coverage_release))
 endif
 
 CPP_FILES=$(wildcard test_compile/*.cpp)
