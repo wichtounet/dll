@@ -22,9 +22,9 @@
 TEST_CASE( "unit/dbn/mnist/1", "[dbn][unit]" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 125, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<125, 250, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<250, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>>::dbn_t dbn_t;
+        dll::rbm_desc<28 * 28, 125, dll::momentum, dll::batch_size<10>, dll::init_weights>::rbm_t,
+        dll::rbm_desc<125, 250, dll::momentum, dll::batch_size<10>>::rbm_t,
+        dll::rbm_desc<250, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(250);
 
@@ -44,11 +44,9 @@ TEST_CASE( "unit/dbn/mnist/1", "[dbn][unit]" ) {
 }
 
 TEST_CASE( "unit/dbn/mnist/2", "[dbn][unit]" ) {
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(250);
 
     REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(250);
-    dataset.training_labels.resize(250);
 
     mnist::binarize_dataset(dataset);
 
@@ -85,7 +83,7 @@ TEST_CASE( "unit/dbn/mnist/3", "[dbn][unit]" ) {
 
     dbn->pretrain(dataset.training_images, 20);
 
-    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 6, 10);
+    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 5, 25);
     REQUIRE(error < 5e-2);
 
     auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
@@ -113,12 +111,12 @@ TEST_CASE( "unit/dbn/mnist/4", "[dbn][cg][unit]" ) {
     auto error = dbn->fine_tune(
         dataset.training_images.begin(), dataset.training_images.end(),
         dataset.training_labels.begin(), dataset.training_labels.end(),
-        6, 50);
+        5, 25);
 
     REQUIRE(error < 5e-2);
 
     auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    REQUIRE(test_error < 0.2);
+    REQUIRE(test_error < 0.25);
 
     //Mostly here to ensure compilation
     auto out = dbn->prepare_one_output<std::vector<double>>();

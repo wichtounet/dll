@@ -18,16 +18,14 @@
 
 TEST_CASE( "unit/crbm/mnist/1", "[crbm][unit]" ) {
     dll::conv_rbm_desc_square<
-        1, 28, 40, 12,
-        dll::batch_size<25>,
+        1, 28, 20, 12,
+        dll::batch_size<10>,
         dll::weight_decay<dll::decay_type::L2_FULL>,
         dll::momentum
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
-
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
     REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(100);
 
     mnist::binarize_dataset(dataset);
 
@@ -58,15 +56,15 @@ TEST_CASE( "unit/crbm/mnist/2", "[crbm][parallel][unit]" ) {
 
 TEST_CASE( "unit/crbm/mnist/3", "[crbm][unit]" ) {
     dll::conv_rbm_desc_square<
-        2, 28, 40, 12,
+        2, 28, 20, 12,
         dll::batch_size<25>,
-        dll::momentum
+        dll::momentum,
+        dll::parallel
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
 
     REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(200);
 
     mnist::binarize_dataset(dataset);
 
@@ -85,9 +83,10 @@ TEST_CASE( "unit/crbm/mnist/3", "[crbm][unit]" ) {
 
 TEST_CASE( "unit/crbm/mnist/4", "[crbm][unit]" ) {
     dll::conv_rbm_desc_square<
-        1, 28, 40, 12,
+        1, 28, 20, 12,
         dll::batch_size<25>,
         dll::momentum,
+        dll::parallel,
         dll::weight_decay<dll::decay_type::L2>,
         dll::visible<dll::unit_type::GAUSSIAN>,
         dll::shuffle
@@ -115,14 +114,15 @@ TEST_CASE( "unit/crbm/mnist/4", "[crbm][unit]" ) {
 
     cpp::normalize_each(noisy);
 
-    auto error = rbm.train_denoising(noisy, dataset.training_images, 100);
+    auto error = rbm.train_denoising(noisy, dataset.training_images, 50);
     REQUIRE(error < 0.1);
 }
 
 TEST_CASE( "unit/crbm/mnist/5", "[crbm][unit]" ) {
     dll::conv_rbm_desc_square<
-        1, 28, 40, 12,
-        dll::batch_size<25>,
+        1, 28, 20, 12,
+        dll::batch_size<10>,
+        dll::parallel,
         dll::hidden<dll::unit_type::RELU>
     >::rbm_t rbm;
 
@@ -139,8 +139,9 @@ TEST_CASE( "unit/crbm/mnist/5", "[crbm][unit]" ) {
 
 TEST_CASE( "unit/crbm/mnist/6", "[crbm][unit]" ) {
     using rbm_type = dll::conv_rbm_desc_square<
-        1, 28, 40, 12,
+        1, 28, 20, 12,
         dll::batch_size<25>,
+        dll::parallel,
         dll::sparsity<>
     >::rbm_t;
 
@@ -163,8 +164,9 @@ TEST_CASE( "unit/crbm/mnist/6", "[crbm][unit]" ) {
 
 TEST_CASE( "unit/crbm/mnist/7", "[crbm][unit]" ) {
     using rbm_type = dll::conv_rbm_desc_square<
-        1, 28, 40, 12,
-        dll::batch_size<25>,
+        1, 28, 20, 12,
+        dll::batch_size<5>,
+        dll::parallel,
         dll::sparsity<dll::sparsity_method::LOCAL_TARGET>
     >::rbm_t;
 
@@ -180,5 +182,5 @@ TEST_CASE( "unit/crbm/mnist/7", "[crbm][unit]" ) {
     mnist::binarize_dataset(dataset);
 
     auto error = rbm.train(dataset.training_images, 50);
-    REQUIRE(error < 1e-2);
+    REQUIRE(error < 7e-2);
 }
