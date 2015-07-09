@@ -19,7 +19,6 @@
 
 #include "standard_conv_rbm.hpp"  //The base class
 #include "base_conf.hpp"          //The configuration helpers
-#include "math.hpp"               //Logistic sigmoid
 #include "io.hpp"                 //Binary load/store functions
 #include "layer_traits.hpp"
 #include "tmp.hpp"

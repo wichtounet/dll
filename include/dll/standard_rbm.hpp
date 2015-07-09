@@ -21,7 +21,6 @@
 
 #include "rbm_base.hpp"         //The base class
 #include "base_conf.hpp"
-#include "math.hpp"
 #include "io.hpp"
 #include "checks.hpp"           //NaN checks
 
