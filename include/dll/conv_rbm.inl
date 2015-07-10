@@ -264,26 +264,24 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
                     h_a(batch) = min(max(rep<NH1, NH2>(b) + v_cv(batch)(1), 0.0), 1.0);
                 }
             }
-
-            if(S){
-                if(hidden_unit == unit_type::BINARY){
-                    h_s(batch) = bernoulli(h_a(batch));
-                } else if(hidden_unit == unit_type::RELU){
-                    h_s(batch) = logistic_noise(h_a(batch));
-                } else if(hidden_unit == unit_type::RELU6){
-                    h_s(batch) = ranged_noise(h_a(batch), 6.0);
-                } else if(hidden_unit == unit_type::RELU1){
-                    h_s(batch) = ranged_noise(h_a(batch), 1.0);
-                }
-            }
         }
 
         if(P){
-            nan_check_deep(v_a);
+            nan_check_deep(h_a);
         }
 
         if(S){
-            nan_check_deep(v_s);
+            if(hidden_unit == unit_type::BINARY){
+                h_s = bernoulli(h_a);
+            } else if(hidden_unit == unit_type::RELU){
+                h_s = logistic_noise(h_a);
+            } else if(hidden_unit == unit_type::RELU6){
+                h_s = ranged_noise(h_a, 6.0);
+            } else if(hidden_unit == unit_type::RELU1){
+                h_s = ranged_noise(h_a, 1.0);
+            }
+
+            nan_check_deep(h_s);
         }
     }
 
@@ -319,14 +317,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
                         v_a(batch)(channel) = c(channel) + h_cv(batch)(1);
                     }
                 }
-
-                if(S){
-                    if(visible_unit == unit_type::BINARY){
-                        v_s(batch)(channel) = bernoulli(v_a(batch)(channel));
-                    } else if(visible_unit == unit_type::GAUSSIAN){
-                        v_s(batch)(channel) = normal_noise(v_a(batch)(channel));
-                    }
-                }
             }
         }
 
@@ -335,6 +325,12 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         }
 
         if(S){
+            if(visible_unit == unit_type::BINARY){
+                v_s = bernoulli(v_a);
+            } else if(visible_unit == unit_type::GAUSSIAN){
+                v_s = normal_noise(v_a);
+            }
+
             nan_check_deep(v_s);
         }
     }

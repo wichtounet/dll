@@ -292,20 +292,20 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
                 nan_check_deep(h_a(batch));
             }
+        }
 
-            if(S){
-                if(hidden_unit == unit_type::BINARY){
-                    h_s(batch) = bernoulli(h_a(batch));
-                } else if(hidden_unit == unit_type::RELU){
-                    h_s(batch) = logistic_noise(h_a(batch));
-                } else if(hidden_unit == unit_type::RELU6){
-                    h_s(batch) = ranged_noise(h_a(batch), 6.0);
-                } else if(hidden_unit == unit_type::RELU1){
-                    h_s(batch) = ranged_noise(h_a(batch), 1.0);
-                }
-
-                nan_check_deep(h_s(batch));
+        if(S){
+            if(hidden_unit == unit_type::BINARY){
+                h_s = bernoulli(h_a);
+            } else if(hidden_unit == unit_type::RELU){
+                h_s = logistic_noise(h_a);
+            } else if(hidden_unit == unit_type::RELU6){
+                h_s = ranged_noise(h_a, 6.0);
+            } else if(hidden_unit == unit_type::RELU1){
+                h_s = ranged_noise(h_a, 1.0);
             }
+
+            nan_check_deep(h_s);
         }
     }
 
@@ -338,17 +338,17 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
                     nan_check_deep(v_a(batch));
                 }
-
-                if(S){
-                    if(visible_unit == unit_type::BINARY){
-                        v_s(batch)(channel) = bernoulli(v_a(batch)(channel));
-                    } else if(visible_unit == unit_type::GAUSSIAN){
-                        v_s(batch)(channel) = normal_noise(v_a(batch)(channel));
-                    }
-
-                    nan_check_deep(v_s(batch));
-                }
             }
+        }
+
+        if(S){
+            if(visible_unit == unit_type::BINARY){
+                v_s = bernoulli(v_a);
+            } else if(visible_unit == unit_type::GAUSSIAN){
+                v_s = normal_noise(v_a);
+            }
+
+            nan_check_deep(v_s);
         }
     }
 
