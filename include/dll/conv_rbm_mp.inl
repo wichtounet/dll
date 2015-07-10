@@ -266,13 +266,21 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         cpp_assert(etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
         cpp_assert(etl::dim<0>(v_cv) == Batch, "The number of batch must be consistent");
 
+        auto w_f = force_temporary(w);
+
+        //flip all the kernels horizontally and vertically
+
+        for(std::size_t channel = 0; channel < NC; ++channel){
+            for(size_t k = 0; k < K; ++k){
+                w_f(channel)(k).fflip_inplace();
+            }
+        }
+
         for(std::size_t batch = 0; batch < Batch; ++batch){
             v_cv(batch)(1) = 0;
 
             for(std::size_t channel = 0; channel < NC; ++channel){
-                for(size_t k = 0; k < K; ++k){
-                    v_cv(batch)(0)(k) = etl::conv_2d_valid(v_a(batch)(channel), fflip(w(channel)(k)));
-                }
+                conv_2d_valid_multi(v_a(batch)(channel), w_f(channel), v_cv(batch)(0));
 
                 v_cv(batch)(1) += v_cv(batch)(0);
             }
