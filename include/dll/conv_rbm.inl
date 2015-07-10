@@ -149,11 +149,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
         if(P){
             if(hidden_unit == unit_type::BINARY){
-                if(visible_unit == unit_type::GAUSSIAN){
-                    h_a = sigmoid((base_type::c_sigm / (base_type::std_gaussian * base_type::std_gaussian)) * (rep<NH1, NH2>(b) + v_cv(1)));
-                } else {
-                    h_a = sigmoid(rep<NH1, NH2>(b) + v_cv(1));
-                }
+                h_a = sigmoid(rep<NH1, NH2>(b) + v_cv(1));
             } else if(hidden_unit == unit_type::RELU){
                 h_a = max(rep<NH1, NH2>(b) + v_cv(1), 0.0);
             } else if(hidden_unit == unit_type::RELU6){
