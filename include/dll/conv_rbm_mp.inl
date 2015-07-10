@@ -208,16 +208,16 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
                 nan_check_deep(v_a);
             }
+        }
 
-            if(S){
-                if(visible_unit == unit_type::BINARY){
-                    v_s(channel) = bernoulli(v_a(channel));
-                } else if(visible_unit == unit_type::GAUSSIAN){
-                    v_s(channel) = normal_noise(v_a(channel));
-                }
-
-                nan_check_deep(v_s);
+        if(S){
+            if(visible_unit == unit_type::BINARY){
+                v_s = bernoulli(v_a);
+            } else if(visible_unit == unit_type::GAUSSIAN){
+                v_s = normal_noise(v_a);
             }
+
+            nan_check_deep(v_s);
         }
     }
 

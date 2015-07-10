@@ -201,14 +201,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
                     v_a(channel) = c(channel) + h_cv(1);
                 }
             }
-
-            if(S){
-                if(visible_unit == unit_type::BINARY){
-                    v_s(channel) = bernoulli(v_a(channel));
-                } else if(visible_unit == unit_type::GAUSSIAN){
-                    v_s(channel) = normal_noise(v_a(channel));
-                }
-            }
         }
 
         if(P){
@@ -216,6 +208,12 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         }
 
         if(S){
+            if(visible_unit == unit_type::BINARY){
+                v_s = bernoulli(v_a);
+            } else if(visible_unit == unit_type::GAUSSIAN){
+                v_s = normal_noise(v_a);
+            }
+
             nan_check_deep(v_s);
         }
     }
