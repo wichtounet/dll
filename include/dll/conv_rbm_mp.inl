@@ -325,7 +325,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
                 h_cv(batch)(1) = 0.0;
 
                 for(std::size_t k = 0; k < K; ++k){
-                    h_cv(batch)(0) = etl::conv_2d_full(h_s(batch)(k), w(channel)(k));
+                    h_cv(batch)(0) = etl::fast_conv_2d_full(h_s(batch)(k), w(channel)(k));
                     h_cv(batch)(1) += h_cv(batch)(0);
                 }
 
