@@ -559,11 +559,18 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
         //Copy input/expected for computations
         auto iit = input_batch.begin();
         auto iend = input_batch.end();
-        auto eit = expected_batch.begin();
 
-        for(std::size_t i = 0; iit != iend; ++i, ++iit, ++eit){
+        for(std::size_t i = 0; iit != iend; ++i, ++iit){
             t.v1(i) = *iit;
-            t.vf(i) = *eit;
+        }
+
+        if(Denoising){
+            auto eit = expected_batch.begin();
+            auto eend = expected_batch.end();
+
+            for(std::size_t i = 0; eit != eend; ++i, ++eit){
+                t.vf(i) = *eit;
+            }
         }
 
         //First step
