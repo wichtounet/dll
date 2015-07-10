@@ -339,7 +339,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
                 if(P){
                     if(visible_unit == unit_type::BINARY){
-                        v_a(batch)(channel) = sigmoid(c(channel) + h_cv(batch)(1));
+                        v_a(batch)(channel) = etl::sigmoid(c(channel) + h_cv(batch)(1));
                     } else if(visible_unit == unit_type::GAUSSIAN){
                         v_a(batch)(channel) = c(channel) + h_cv(batch)(1);
                     }
