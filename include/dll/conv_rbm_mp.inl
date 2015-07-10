@@ -219,7 +219,6 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
                 nan_check_deep(v_s);
             }
         }
-
     }
 
     template<bool P = true, bool S = true, typename Po, typename V>
@@ -253,6 +252,103 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
             }
 
             nan_check_deep(p_s);
+        }
+    }
+
+    template<bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename VCV>
+    void batch_activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2&, VCV&& v_cv) const {
+        static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit), "Invalid hidden unit type");
+        static_assert(P, "Computing S without P is not implemented");
+
+        const auto Batch = etl::dim<0>(h_a);
+
+        cpp_assert(etl::dim<0>(h_s) == Batch, "The number of batch must be consistent");
+        cpp_assert(etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
+        cpp_assert(etl::dim<0>(v_cv) == Batch, "The number of batch must be consistent");
+
+        for(std::size_t batch = 0; batch < Batch; ++batch){
+            v_cv(batch)(1) = 0;
+
+            for(std::size_t channel = 0; channel < NC; ++channel){
+                for(size_t k = 0; k < K; ++k){
+                    v_cv(batch)(0)(k) = etl::conv_2d_valid(v_a(batch)(channel), fflip(w(channel)(k)));
+                }
+
+                v_cv(batch)(1) += v_cv(batch)(0);
+            }
+
+            nan_check_deep(v_cv(batch));
+
+            if(P){
+                if(hidden_unit == unit_type::BINARY){
+                    h_a(batch) = etl::p_max_pool_h<C, C>(etl::rep<NH1, NH2>(b) + v_cv(batch)(1));
+                } else if(hidden_unit == unit_type::RELU){
+                    h_a(batch) = max(etl::rep<NH1, NH2>(b) + v_cv(batch)(1), 0.0);
+                } else if(hidden_unit == unit_type::RELU6){
+                    h_a(batch) = min(max(etl::rep<NH1, NH2>(b) + v_cv(batch)(1), 0.0), 6.0);
+                } else if(hidden_unit == unit_type::RELU1){
+                    h_a(batch) = min(max(etl::rep<NH1, NH2>(b) + v_cv(batch)(1), 0.0), 1.0);
+                }
+
+                nan_check_deep(h_a(batch));
+            }
+
+            if(S){
+                if(hidden_unit == unit_type::BINARY){
+                    h_s(batch) = bernoulli(h_a(batch));
+                } else if(hidden_unit == unit_type::RELU){
+                    h_s(batch) = logistic_noise(h_a(batch));
+                } else if(hidden_unit == unit_type::RELU6){
+                    h_s(batch) = ranged_noise(h_a(batch), 6.0);
+                } else if(hidden_unit == unit_type::RELU1){
+                    h_s(batch) = ranged_noise(h_a(batch), 1.0);
+                }
+
+                nan_check_deep(h_s(batch));
+            }
+        }
+    }
+
+    template<bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename HCV>
+    void batch_activate_visible(const H1&, const H2& h_s, V1&& v_a, V2&& v_s, HCV&& h_cv) const {
+        static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN, "Invalid visible unit type");
+        static_assert(P, "Computing S without P is not implemented");
+
+        const auto Batch = etl::dim<0>(v_s);
+
+        cpp_assert(etl::dim<0>(h_s) == Batch, "The number of batch must be consistent");
+        cpp_assert(etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
+        cpp_assert(etl::dim<0>(h_cv) == Batch, "The number of batch must be consistent");
+
+        for(std::size_t batch = 0; batch < Batch; ++batch){
+            for(std::size_t channel = 0; channel < NC; ++channel){
+                h_cv(batch)(1) = 0.0;
+
+                for(std::size_t k = 0; k < K; ++k){
+                    h_cv(batch)(0) = etl::conv_2d_full(h_s(batch)(k), w(channel)(k));
+                    h_cv(batch)(1) += h_cv(batch)(0);
+                }
+
+                if(P){
+                    if(visible_unit == unit_type::BINARY){
+                        v_a(batch)(channel) = sigmoid(c(channel) + h_cv(batch)(1));
+                    } else if(visible_unit == unit_type::GAUSSIAN){
+                        v_a(batch)(channel) = c(channel) + h_cv(batch)(1);
+                    }
+
+                    nan_check_deep(v_a(batch));
+                }
+
+                if(S){
+                    if(visible_unit == unit_type::BINARY){
+                        v_s(batch)(channel) = bernoulli(v_a(batch)(channel));
+                    } else if(visible_unit == unit_type::GAUSSIAN){
+                        v_s(batch)(channel) = normal_noise(v_a(batch)(channel));
+                    }
+
+                    nan_check_deep(v_s(batch));
+                }
+            }
         }
     }
 
