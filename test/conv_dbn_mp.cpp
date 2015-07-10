@@ -86,3 +86,19 @@ TEST_CASE( "conv_dbn_mp/mnist_3", "conv_dbn::svm_concatenate" ) {
     std::cout << "test_error:" << test_error << std::endl;
     REQUIRE(test_error < 0.2);
 }
+
+TEST_CASE( "conv_dbn_mp/mnist_slow", "[cdbn][slow][benchmark]" ) {
+    typedef dll::dbn_desc<
+        dll::dbn_layers<
+            dll::conv_rbm_mp_desc_square<1, 28, 40, 16, 2, dll::momentum, dll::batch_size<25>>::rbm_t,
+            dll::conv_rbm_mp_desc_square<40, 8, 40, 4, 2, dll::momentum, dll::batch_size<25>>::rbm_t
+        >>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(250);
+
+    mnist::binarize_dataset(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->pretrain(dataset.training_images, 20);
+}
