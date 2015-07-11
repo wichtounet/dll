@@ -317,16 +317,13 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         }
     }
 
-    template<bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename HCV>
-    void batch_activate_visible(const H1&, const H2& h_s, V1&& v_a, V2&& v_s, HCV&& h_cv) const {
-        static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN, "Invalid visible unit type");
-        static_assert(P, "Computing S without P is not implemented");
+private:
 
-        const auto Batch = etl::dim<0>(v_s);
+#ifdef ETL_MKL_MODE
 
-        cpp_assert(etl::dim<0>(h_s) == Batch, "The number of batch must be consistent");
-        cpp_assert(etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
-        cpp_assert(etl::dim<0>(h_cv) == Batch, "The number of batch must be consistent");
+    template<typename H2, typename V1, typename HCV>
+    void batch_activate_visible_a(const H2& h_s, V1&& v_a, HCV&& h_cv) const {
+        const auto Batch = etl::dim<0>(h_s);
 
         for(std::size_t batch = 0; batch < Batch; ++batch){
             for(std::size_t channel = 0; channel < NC; ++channel){
@@ -337,17 +334,58 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
                     h_cv(batch)(1) += h_cv(batch)(0);
                 }
 
-                if(P){
-                    if(visible_unit == unit_type::BINARY){
-                        v_a(batch)(channel) = etl::sigmoid(c(channel) + h_cv(batch)(1));
-                    } else if(visible_unit == unit_type::GAUSSIAN){
-                        v_a(batch)(channel) = c(channel) + h_cv(batch)(1);
-                    }
-
-                    nan_check_deep(v_a(batch));
+                if(visible_unit == unit_type::BINARY){
+                    v_a(batch)(channel) = etl::sigmoid(c(channel) + h_cv(batch)(1));
+                } else if(visible_unit == unit_type::GAUSSIAN){
+                    v_a(batch)(channel) = c(channel) + h_cv(batch)(1);
                 }
             }
         }
+    }
+
+#else
+
+    template<typename H2, typename V1, typename HCV>
+    void batch_activate_visible_a(const H2& h_s, V1&& v_a, HCV&& h_cv) const {
+        const auto Batch = etl::dim<0>(h_s);
+
+        for(std::size_t batch = 0; batch < Batch; ++batch){
+            for(std::size_t channel = 0; channel < NC; ++channel){
+                h_cv(batch)(1) = 0.0;
+
+                for(std::size_t k = 0; k < K; ++k){
+                    h_cv(batch)(0) = etl::fast_conv_2d_full(h_s(batch)(k), w(channel)(k));
+                    h_cv(batch)(1) += h_cv(batch)(0);
+                }
+
+                if(visible_unit == unit_type::BINARY){
+                    v_a(batch)(channel) = etl::sigmoid(c(channel) + h_cv(batch)(1));
+                } else if(visible_unit == unit_type::GAUSSIAN){
+                    v_a(batch)(channel) = c(channel) + h_cv(batch)(1);
+                }
+            }
+        }
+    }
+
+#endif
+
+public:
+
+    template<bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename HCV>
+    void batch_activate_visible(const H1&, const H2& h_s, V1&& v_a, V2&& v_s, HCV&& h_cv) const {
+        static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN, "Invalid visible unit type");
+        static_assert(P, "Computing S without P is not implemented");
+
+        const auto Batch = etl::dim<0>(v_s);
+
+        cpp_assert(etl::dim<0>(h_s) == Batch, "The number of batch must be consistent");
+        cpp_assert(etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
+        cpp_assert(etl::dim<0>(h_cv) == Batch, "The number of batch must be consistent");
+        cpp_unused(Batch);
+
+        batch_activate_visible_a(h_s, v_a, h_cv);
+
+        nan_check_deep(v_a);
 
         if(S){
             if(visible_unit == unit_type::BINARY){
