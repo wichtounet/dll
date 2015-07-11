@@ -321,28 +321,6 @@ private:
 
 #ifdef ETL_MKL_MODE
 
-    template<typename H2, typename V1, typename HCV, cpp_enable_if(std::is_same<etl::value_t<H2>, float>::value)>
-    void batch_activate_visible_a(const H2& h_s, V1&& v_a, HCV&& h_cv) const {
-        static constexpr const auto Batch = layer_traits<this_type>::batch_size();
-
-        for(std::size_t batch = 0; batch < Batch; ++batch){
-            for(std::size_t channel = 0; channel < NC; ++channel){
-                h_cv(batch)(1) = 0.0;
-
-                for(std::size_t k = 0; k < K; ++k){
-                    h_cv(batch)(0) = etl::fast_conv_2d_full(h_s(batch)(k), w(channel)(k));
-                    h_cv(batch)(1) += h_cv(batch)(0);
-                }
-
-                if(visible_unit == unit_type::BINARY){
-                    v_a(batch)(channel) = etl::sigmoid(c(channel) + h_cv(batch)(1));
-                } else if(visible_unit == unit_type::GAUSSIAN){
-                    v_a(batch)(channel) = c(channel) + h_cv(batch)(1);
-                }
-            }
-        }
-    }
-
     template<typename F1, typename F2>
     void deep_pad(const F1& in, F2& out) const {
         for(std::size_t outer1 = 0; outer1 < in.template dim<0>(); ++outer1){
@@ -357,7 +335,23 @@ private:
         }
     }
 
-    template<typename H2, typename V1, typename HCV, cpp_enable_if(std::is_same<etl::value_t<H2>, double>::value)>
+    static void inplace_fft2(std::complex<double>* memory, std::size_t m1, std::size_t m2){
+        etl::impl::blas::detail::inplace_zfft2_kernel(memory, m1, m2);
+    }
+
+    static void inplace_fft2(std::complex<float>* memory, std::size_t m1, std::size_t m2){
+        etl::impl::blas::detail::inplace_cfft2_kernel(memory, m1, m2);
+    }
+
+    static void inplace_ifft2(std::complex<double>* memory, std::size_t m1, std::size_t m2){
+        etl::impl::blas::detail::inplace_zifft2_kernel(memory, m1, m2);
+    }
+
+    static void inplace_ifft2(std::complex<float>* memory, std::size_t m1, std::size_t m2){
+        etl::impl::blas::detail::inplace_cifft2_kernel(memory, m1, m2);
+    }
+
+    template<typename H2, typename V1, typename HCV>
     void batch_activate_visible_a(const H2& h_s, V1&& v_a, HCV&& h_cv) const {
         static constexpr const auto Batch = layer_traits<this_type>::batch_size();
 
@@ -370,13 +364,13 @@ private:
 
         for(std::size_t batch = 0; batch < Batch; ++batch){
             for(std::size_t k = 0; k < K; ++k){
-                etl::impl::blas::detail::inplace_zfft2_kernel(h_s_padded(batch)(k).memory_start(), NV1, NV2);
+                inplace_fft2(h_s_padded(batch)(k).memory_start(), NV1, NV2);
             }
         }
 
         for(std::size_t channel = 0; channel < NC; ++channel){
             for(std::size_t k = 0; k < K; ++k){
-                etl::impl::blas::detail::inplace_zfft2_kernel(w_padded(channel)(k).memory_start(), NV1, NV2);
+                inplace_fft2(w_padded(channel)(k).memory_start(), NV1, NV2);
             }
         }
 
@@ -389,7 +383,7 @@ private:
                         tmp_result[i] = h_s_padded(batch)(k)[i] * w_padded(channel)(k)[i];
                     }
 
-                    etl::impl::blas::detail::inplace_zifft2_kernel(tmp_result.memory_start(), NV1, NV2);
+                    inplace_ifft2(tmp_result.memory_start(), NV1, NV2);
 
                     for(std::size_t i = 0; i < tmp_result.size(); ++i){
                         h_cv(batch)(1)[i] += tmp_result[i].real();
