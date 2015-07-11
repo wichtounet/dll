@@ -321,9 +321,9 @@ private:
 
 #ifdef ETL_MKL_MODE
 
-    template<typename H2, typename V1, typename HCV>
+    template<typename H2, typename V1, typename HCV, cpp_enable_if(std::is_same<etl::value_t<H2>, float>::value)>
     void batch_activate_visible_a(const H2& h_s, V1&& v_a, HCV&& h_cv) const {
-        const auto Batch = etl::dim<0>(h_s);
+        static constexpr const auto Batch = layer_traits<this_type>::batch_size();
 
         for(std::size_t batch = 0; batch < Batch; ++batch){
             for(std::size_t channel = 0; channel < NC; ++channel){
@@ -332,6 +332,75 @@ private:
                 for(std::size_t k = 0; k < K; ++k){
                     h_cv(batch)(0) = etl::fast_conv_2d_full(h_s(batch)(k), w(channel)(k));
                     h_cv(batch)(1) += h_cv(batch)(0);
+                }
+
+                if(visible_unit == unit_type::BINARY){
+                    v_a(batch)(channel) = etl::sigmoid(c(channel) + h_cv(batch)(1));
+                } else if(visible_unit == unit_type::GAUSSIAN){
+                    v_a(batch)(channel) = c(channel) + h_cv(batch)(1);
+                }
+            }
+        }
+    }
+
+    template<typename H2, typename V1, typename HCV, cpp_enable_if(std::is_same<etl::value_t<H2>, double>::value)>
+    void batch_activate_visible_a(const H2& h_s, V1&& v_a, HCV&& h_cv) const {
+        static constexpr const auto Batch = layer_traits<this_type>::batch_size();
+
+        etl::fast_dyn_matrix<std::complex<weight>, Batch, K, NV1, NV2> h_s_padded;
+        etl::fast_dyn_matrix<std::complex<weight>, NC, K, NV1, NV2> w_padded;
+        etl::fast_dyn_matrix<std::complex<weight>, NV1, NV2> tmp_result;
+
+        for(std::size_t batch = 0; batch < Batch; ++batch){
+            for(std::size_t k = 0; k < K; ++k){
+                auto* direct = h_s_padded(batch)(k).memory_start();
+                for(std::size_t i = 0; i < NH1; ++i){
+                    for(std::size_t j = 0; j < NH2; ++j){
+                        direct[i * NV2 + j] = h_s(batch,k,i,j);
+                    }
+                }
+            }
+        }
+
+        for(std::size_t channel = 0; channel < NC; ++channel){
+            for(std::size_t k = 0; k < K; ++k){
+                auto* direct = w_padded(channel)(k).memory_start();
+                for(std::size_t i = 0; i < NW1; ++i){
+                    for(std::size_t j = 0; j < NW2; ++j){
+                        direct[i * NV2 + j] = w(channel,k,i,j);
+                    }
+                }
+            }
+        }
+
+        for(std::size_t batch = 0; batch < Batch; ++batch){
+            for(std::size_t k = 0; k < K; ++k){
+                etl::impl::blas::detail::inplace_zfft2_kernel(h_s_padded(batch)(k).memory_start(), NV1, NV2);
+            }
+        }
+
+        for(std::size_t channel = 0; channel < NC; ++channel){
+            for(std::size_t k = 0; k < K; ++k){
+                etl::impl::blas::detail::inplace_zfft2_kernel(w_padded(channel)(k).memory_start(), NV1, NV2);
+            }
+        }
+
+        for(std::size_t batch = 0; batch < Batch; ++batch){
+            for(std::size_t channel = 0; channel < NC; ++channel){
+                h_cv(batch)(1) = 0.0;
+
+                for(std::size_t k = 0; k < K; ++k){
+                    //tmp_result = h_s_padded(batch)(k) * w_padded(channel)(k);
+
+                    for(std::size_t i = 0; i < tmp_result.size(); ++i){
+                        tmp_result[i] = h_s_padded(batch)(k)[i] * w_padded(channel)(k)[i];
+                    }
+
+                    etl::impl::blas::detail::inplace_zifft2_kernel(tmp_result.memory_start(), NV1, NV2);
+
+                    for(std::size_t i = 0; i < tmp_result.size(); ++i){
+                        h_cv(batch)(1)[i] += tmp_result[i].real();
+                    }
                 }
 
                 if(visible_unit == unit_type::BINARY){
@@ -347,7 +416,7 @@ private:
 
     template<typename H2, typename V1, typename HCV>
     void batch_activate_visible_a(const H2& h_s, V1&& v_a, HCV&& h_cv) const {
-        const auto Batch = etl::dim<0>(h_s);
+        static constexpr const auto Batch = layer_traits<this_type>::batch_size();
 
         for(std::size_t batch = 0; batch < Batch; ++batch){
             for(std::size_t channel = 0; channel < NC; ++channel){
@@ -367,6 +436,7 @@ private:
         }
     }
 
+
 #endif
 
 public:
@@ -376,10 +446,11 @@ public:
         static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN, "Invalid visible unit type");
         static_assert(P, "Computing S without P is not implemented");
 
-        const auto Batch = etl::dim<0>(v_s);
+        static constexpr const auto Batch = layer_traits<this_type>::batch_size();
 
         cpp_assert(etl::dim<0>(h_s) == Batch, "The number of batch must be consistent");
         cpp_assert(etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
+        cpp_assert(etl::dim<0>(v_s) == Batch, "The number of batch must be consistent");
         cpp_assert(etl::dim<0>(h_cv) == Batch, "The number of batch must be consistent");
         cpp_unused(Batch);
 
