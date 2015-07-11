@@ -343,6 +343,20 @@ private:
         }
     }
 
+    template<typename F1, typename F2>
+    void deep_pad(const F1& in, F2& out) const {
+        for(std::size_t outer1 = 0; outer1 < in.template dim<0>(); ++outer1){
+            for(std::size_t outer2 = 0; outer2 < in.template dim<1>(); ++outer2){
+                auto* direct = out(outer1)(outer2).memory_start();
+                for(std::size_t i = 0; i < in.template dim<2>(); ++i){
+                    for(std::size_t j = 0; j < in.template dim<3>(); ++j){
+                        direct[i * out.template dim<3>() + j] = in(outer1,outer2,i,j);
+                    }
+                }
+            }
+        }
+    }
+
     template<typename H2, typename V1, typename HCV, cpp_enable_if(std::is_same<etl::value_t<H2>, double>::value)>
     void batch_activate_visible_a(const H2& h_s, V1&& v_a, HCV&& h_cv) const {
         static constexpr const auto Batch = layer_traits<this_type>::batch_size();
@@ -351,27 +365,8 @@ private:
         etl::fast_dyn_matrix<std::complex<weight>, NC, K, NV1, NV2> w_padded;
         etl::fast_dyn_matrix<std::complex<weight>, NV1, NV2> tmp_result;
 
-        for(std::size_t batch = 0; batch < Batch; ++batch){
-            for(std::size_t k = 0; k < K; ++k){
-                auto* direct = h_s_padded(batch)(k).memory_start();
-                for(std::size_t i = 0; i < NH1; ++i){
-                    for(std::size_t j = 0; j < NH2; ++j){
-                        direct[i * NV2 + j] = h_s(batch,k,i,j);
-                    }
-                }
-            }
-        }
-
-        for(std::size_t channel = 0; channel < NC; ++channel){
-            for(std::size_t k = 0; k < K; ++k){
-                auto* direct = w_padded(channel)(k).memory_start();
-                for(std::size_t i = 0; i < NW1; ++i){
-                    for(std::size_t j = 0; j < NW2; ++j){
-                        direct[i * NV2 + j] = w(channel,k,i,j);
-                    }
-                }
-            }
-        }
+        deep_pad(h_s, h_s_padded);
+        deep_pad(w, w_padded);
 
         for(std::size_t batch = 0; batch < Batch; ++batch){
             for(std::size_t k = 0; k < K; ++k){
