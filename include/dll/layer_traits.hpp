@@ -9,9 +9,8 @@
 #define DLL_LAYER_TRAITS_HPP
 
 #include "tmp.hpp"
-#include "decay_type.hpp"
-#include "sparsity_method.hpp"
 #include "layer_fwd.hpp"
+#include "base_conf.hpp"
 
 namespace dll {
 
