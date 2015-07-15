@@ -32,9 +32,6 @@ struct dense_layer final {
     etl::fast_matrix<weight, num_visible, num_hidden> w;    //!< Weights
     etl::fast_vector<weight, num_hidden> b;                 //!< Hidden biases
 
-    conditional_fast_matrix_t<!dbn_only, weight, num_visible> v1; //!< State of the visible units
-    conditional_fast_matrix_t<!dbn_only, weight, num_hidden> h1_a; //!< Activation probabilities of hidden units after first CD-step
-
     //No copying
     dense_layer(const dense_layer& layer) = delete;
     dense_layer& operator=(const dense_layer& layer) = delete;
@@ -49,7 +46,7 @@ struct dense_layer final {
      * The weights are initialized from a normal distribution of
      * zero-mean and unit variance.
      */
-    rbm() : standard_rbm<rbm<Desc>, Desc>(), b(0.0) {
+    dense_layer() : b(0.0) {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
         w = etl::normal_generator<weight>() * 0.1;
     }
@@ -67,21 +64,49 @@ struct dense_layer final {
     }
 
     static std::string to_short_string(){
-        return "Dense: " + std::to_string(num_visible) + "(" + to_string(visible_unit) + ") -> " + std::to_string(num_hidden) + "(" + to_string(hidden_unit) + ")";
+        return "Dense: " + std::to_string(num_visible) + " -> (" + "TODO:function" + ") -> " + std::to_string(num_hidden);
     }
 
     void display() const {
         std::cout << to_short_string() << std::endl;
+    }
+
+    template<typename H1, typename V>
+    void activate_hidden(H1&& output, const V& v) const {
+        using namespace etl;
+
+        output = sigmoid(b + mul(v, w));
+    }
+
+    //Utilities to be used by DBNs
+
+    using input_one_t = etl::fast_dyn_matrix<weight, num_visible>;
+    using output_one_t = etl::fast_dyn_matrix<weight, num_hidden>;
+    using input_t = std::vector<input_one_t>;
+    using output_t = std::vector<output_one_t>;
+
+    template<typename Sample>
+    input_one_t convert_sample(const Sample& sample) const {
+        return input_one_t{sample};
+    }
+
+    template<typename Input>
+    output_one_t prepare_one_output(bool /*is_last*/ = false, std::size_t /*labels*/ = 0) const {
+        return {};
+    }
+
+    void activate_one(const input_one_t& input, output_one_t& h_a) const {
+        activate_hidden(h_a, input);
     }
 };
 
 //Allow odr-use of the constexpr static members
 
 template<typename Desc>
-const std::size_t dense_desc<Desc>::num_visible;
+const std::size_t dense_layer<Desc>::num_visible;
 
 template<typename Desc>
-const std::size_t dense_desc<Desc>::num_hidden;
+const std::size_t dense_layer<Desc>::num_hidden;
 
 } //end of dll namespace
 

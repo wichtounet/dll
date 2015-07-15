@@ -9,6 +9,7 @@
 #define DLL_DENSE_DESC_HPP
 
 #include "base_conf.hpp"
+#include "tmp.hpp"
 
 namespace dll {
 
@@ -26,7 +27,7 @@ struct dense_desc {
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
 
     /*! The dense type */
-    using rbm_t = dense_layer<dense_desc<visibles, hiddens, Parameters...>>;
+    using layer_t = dense_layer<dense_desc<visibles, hiddens, Parameters...>>;
 
     static_assert(num_visible > 0, "There must be at least 1 visible unit");
     static_assert(num_hidden > 0, "There must be at least 1 hidden unit");
