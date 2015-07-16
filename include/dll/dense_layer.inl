@@ -26,12 +26,13 @@ struct dense_layer final {
     static constexpr const std::size_t num_visible = desc::num_visible;
     static constexpr const std::size_t num_hidden = desc::num_hidden;
 
-    static constexpr bool dbn_only = layer_traits<this_type>::is_dbn_only();
+    static constexpr const bool dbn_only = layer_traits<this_type>::is_dbn_only();
+
+    static constexpr const function activation_function = desc::activation_function;
 
     //Weights and biases
     etl::fast_matrix<weight, num_visible, num_hidden> w;    //!< Weights
     etl::fast_vector<weight, num_hidden> b;                 //!< Hidden biases
-
     //No copying
     dense_layer(const dense_layer& layer) = delete;
     dense_layer& operator=(const dense_layer& layer) = delete;
@@ -73,9 +74,14 @@ struct dense_layer final {
 
     template<typename H1, typename V>
     void activate_hidden(H1&& output, const V& v) const {
-        using namespace etl;
-
-        output = sigmoid(b + mul(v, w));
+        switch(activation_function){
+            case function::SIGMOID:
+                output = etl::sigmoid(b + v * w);
+                break;
+            case function::TANH:
+                output = etl::tanh(b + v * w);
+                break;
+        }
     }
 
     //Utilities to be used by DBNs

@@ -113,18 +113,31 @@ struct dense_sgd_trainer {
                 auto observed = last_ctx.output[j];
                 auto target = (*lit)[j];
 
-                auto derivative = observed * (1.0 - observed); //derivative of the sigmoid function
-                last_ctx.errors[j] = derivative * (target - observed);
+                constexpr const auto a_f = dbn_t::template layer_type<layers - 1>::activation_function;
+
+                if(a_f == function::SIGMOID){
+                    auto derivative = observed * (1.0 - observed);      //derivative of the sigmoid function
+                    last_ctx.errors[j] = derivative * (target - observed);
+                } else if(a_f == function::TANH){
+                    auto derivative = 1.0 - observed * observed;        //derivative of the hyperbolic tangent function
+                    last_ctx.errors[j] = derivative * (target - observed);
+                }
             }
 
             nan_check_deep(last_ctx.errors);
 
             //Compute the gradients of each layer
 
-            cpp::for_each_rpair_i(tuples, contexts, [](std::size_t, auto&, auto& r2, auto& ctx1, auto& ctx2){
+            cpp::for_each_rpair_i(tuples, contexts, [](std::size_t, auto& r1, auto& r2, auto& ctx1, auto& ctx2){
                 this_type::compute_gradients(r2, ctx2, ctx1.output);
 
-                ctx1.errors = ctx1.output >> (1.0 - ctx1.output) >> (r2.w * ctx2.errors);
+                constexpr const auto a_f = std::decay_t<decltype(r1)>::activation_function;
+
+                if(a_f == function::SIGMOID){
+                    ctx1.errors = ctx1.output >> (1.0 - ctx1.output) >> (r2.w * ctx2.errors);
+                } else if(a_f == function::TANH){
+                    ctx1.errors = (1.0 - (ctx1.output >> ctx1.output)) >> (r2.w * ctx2.errors);
+                }
 
                 nan_check_deep(ctx1.errors);
             });
