@@ -72,13 +72,52 @@ struct dense_sgd_trainer {
         });
     }
 
+#ifndef ETL_BLAS_MODE
+
+    template<typename Weight, typename Grad, typename Inputs, typename Errors>
+    static void compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
+        for(std::size_t i = 0; i < batch_size; ++i){
+            grad += etl::outer(inputs(i), errors(i));
+        }
+    }
+
+#else
+
+    template<typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(std::is_same<Weight, float>::value)>
+    static void compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
+        for(std::size_t i = 0; i < batch_size; ++i){
+            cblas_sger(
+                CblasRowMajor,
+                etl::dim<1>(inputs), etl::dim<1>(errors),
+                1.0f,
+                inputs(i).memory_start(), 1,
+                errors(i).memory_start(), 1,
+                grad.memory_start(), etl::dim<1>(errors)
+            );
+        }
+    }
+
+    template<typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(std::is_same<Weight, double>::value)>
+    static void compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
+        for(std::size_t i = 0; i < batch_size; ++i){
+            cblas_dger(
+                CblasRowMajor,
+                etl::dim<1>(inputs), etl::dim<1>(errors),
+                1.0,
+                inputs(i).memory_start(), 1,
+                errors(i).memory_start(), 1,
+                grad.memory_start(), etl::dim<1>(errors)
+            );
+        }
+    }
+
+#endif
+
     template<typename RBM, typename Context, typename Inputs>
     static void compute_gradients(RBM& , Context& ctx, const Inputs& inputs){
         ctx.w_grad = 0;
 
-        for(std::size_t i = 0; i < batch_size; ++i){
-            ctx.w_grad += etl::outer(inputs(i), ctx.errors(i));
-        }
+        compute_weight_gradients<weight>(ctx.w_grad, inputs, ctx.errors);
 
         ctx.b_grad = etl::sum_l(ctx.errors);
 
