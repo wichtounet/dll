@@ -37,16 +37,6 @@ struct base_trainer {
 
     bool init = false;
 
-    template<typename T1, typename T2, cpp_enable_if_cst(layer_traits<rbm_t>::has_momentum())>
-    decltype(auto) get_fgrad(T1& , T2& inc){
-        return inc;
-    }
-
-    template<typename T1, typename T2, cpp_disable_if_cst(layer_traits<rbm_t>::has_momentum())>
-    decltype(auto) get_fgrad(T1& grad, T2& ){
-        return grad;
-    }
-
     template<typename V, typename G>
     void update_grad(G& grad, const V& value, const RBM& rbm, decay_type decay, double penalty){
         if(decay == decay_type::L1){
