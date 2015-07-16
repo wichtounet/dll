@@ -168,7 +168,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
             }
         }
 
-#ifndef NDEBUG
+#ifndef NAN_DEBUG
         if(P){
             if(!h_a.is_finite()){
                 std::cout << "h_a contains non finite numbers" << std::endl;

@@ -20,6 +20,9 @@ TEST_LD_FLAGS=$(LIBSVM_LD_FLAGS)
 
 CXX_FLAGS += -DETL_VECTORIZE_FULL
 
+# Activate NaN Debugging
+DEBUG_FLAGS += -DNAN_DEBUG
+
 # Activate BLAS mode on demand
 ifneq (,$(ETL_MKL))
 CXX_FLAGS += -DETL_MKL_MODE $(shell pkg-config --cflags mkl)
