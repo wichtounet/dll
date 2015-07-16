@@ -89,6 +89,11 @@ struct dbn_trainer {
                 }
 
                 watcher.ft_epoch_end(epoch, error, dbn);
+
+                //Once the goal is reached, stop training
+                if(error == 0.0){
+                    break;
+                }
             }
         } else {
             //Prepare some space for converted data
@@ -135,6 +140,11 @@ struct dbn_trainer {
                 }
 
                 watcher.ft_epoch_end(epoch, error, dbn);
+
+                //Once the goal is reached, stop training
+                if(error == 0.0){
+                    break;
+                }
             }
         }
 
