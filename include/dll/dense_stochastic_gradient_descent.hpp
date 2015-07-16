@@ -115,7 +115,9 @@ struct dense_sgd_trainer {
 
                 constexpr const auto a_f = dbn_t::template layer_type<layers - 1>::activation_function;
 
-                if(a_f == function::SIGMOID){
+                if(a_f == function::IDENTITY){
+                    last_ctx.errors[j] = 1.0 * (target - observed);
+                } else if(a_f == function::SIGMOID){
                     auto derivative = observed * (1.0 - observed);      //derivative of the sigmoid function
                     last_ctx.errors[j] = derivative * (target - observed);
                 } else if(a_f == function::TANH){
@@ -133,7 +135,9 @@ struct dense_sgd_trainer {
 
                 constexpr const auto a_f = std::decay_t<decltype(r1)>::activation_function;
 
-                if(a_f == function::SIGMOID){
+                if(a_f == function::IDENTITY){
+                    ctx1.errors = 1.0 >> (r2.w * ctx2.errors);
+                } else if(a_f == function::SIGMOID){
                     ctx1.errors = ctx1.output >> (1.0 - ctx1.output) >> (r2.w * ctx2.errors);
                 } else if(a_f == function::TANH){
                     ctx1.errors = (1.0 - (ctx1.output >> ctx1.output)) >> (r2.w * ctx2.errors);

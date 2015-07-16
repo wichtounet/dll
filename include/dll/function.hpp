@@ -14,12 +14,15 @@ namespace dll {
  * \brief An activation function
  */
 enum class function {
+    IDENTITY,    ///< Identity activation function
     SIGMOID,     ///< Sigmoid activation function
     TANH         ///< Hyperbolic tangent
 };
 
 inline std::string to_string(function f){
     switch(f){
+        case function::IDENTITY:
+            return "IDENTITY";
         case function::SIGMOID:
             return "SIGMOID";
         case function::TANH:

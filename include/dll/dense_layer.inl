@@ -79,6 +79,9 @@ struct dense_layer final {
     template<typename H1, typename V>
     void activate_hidden(H1&& output, const V& v) const {
         switch(activation_function){
+            case function::IDENTITY:
+                output = b + v * w;
+                break;
             case function::SIGMOID:
                 output = etl::sigmoid(b + v * w);
                 break;
