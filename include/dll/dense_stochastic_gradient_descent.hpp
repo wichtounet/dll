@@ -16,22 +16,24 @@
 
 namespace dll {
 
-template<typename Layer>
+template<typename DBN, typename Layer>
 struct dense_sgd_context {
     using layer_t = Layer;
+    using dbn_t = DBN;
     using weight = typename layer_t::weight;
 
-    static constexpr const std::size_t num_visible = layer_t::num_visible;
-    static constexpr const std::size_t num_hidden = layer_t::num_hidden;
-
-    etl::fast_matrix<weight, num_visible, num_hidden> w_grad;
-    etl::fast_vector<weight, num_hidden> b_grad;
+    static constexpr const auto num_visible = layer_t::num_visible;
+    static constexpr const auto num_hidden = layer_t::num_hidden;
+    static constexpr const auto batch_size = dbn_t::batch_size;
 
     etl::fast_matrix<weight, num_visible, num_hidden> w_inc;
-    etl::fast_vector<weight, num_hidden> b_inc;
+    etl::fast_matrix<weight, num_hidden> b_inc;
 
-    etl::fast_vector<weight, num_hidden> output;
-    etl::fast_vector<weight, num_hidden> errors;
+    etl::fast_matrix<weight, batch_size, num_hidden> output;
+    etl::fast_matrix<weight, batch_size, num_hidden> errors;
+
+    etl::fast_matrix<weight, num_visible, num_hidden> w_grad;
+    etl::fast_matrix<weight, num_hidden> b_grad;
 
     dense_sgd_context() : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
 };
@@ -42,9 +44,10 @@ struct dense_sgd_trainer {
     using weight = typename dbn_t::weight;
     using this_type = dense_sgd_trainer<dbn_t>;
 
-    using context_tuple_t = typename context_builder<dense_sgd_context, typename DBN::tuple_type>::type;
+    using context_tuple_t = typename dbn_context_builder<dense_sgd_context, dbn_t, typename dbn_t::tuple_type>::type;
 
-    static constexpr const std::size_t layers = dbn_t::layers;
+    static constexpr const auto layers = dbn_t::layers;
+    static constexpr const auto batch_size = dbn_t::batch_size;
 
     dbn_t& dbn;
     typename dbn_t::tuple_type& tuples;
@@ -62,20 +65,47 @@ struct dense_sgd_trainer {
         auto& first_layer = dbn.template layer_get<0>();
         auto& first_layer_context = std::get<0>(contexts);
 
-        first_layer.activate_hidden(first_layer_context.output, item_data);
+        first_layer.batch_activate_hidden(first_layer_context.output, item_data);
 
         cpp::for_each_pair(tuples, contexts, [](auto&, auto& layer_2, auto& ctx1, auto& ctx2){
-            layer_2.activate_hidden(ctx2.output, ctx1.output);
+            layer_2.batch_activate_hidden(ctx2.output, ctx1.output);
         });
     }
 
     template<typename RBM, typename Context, typename Inputs>
     static void compute_gradients(RBM& , Context& ctx, const Inputs& inputs){
-        ctx.w_grad += etl::outer(inputs, ctx.errors);
-        ctx.b_grad += ctx.errors;
+        ctx.w_grad = 0;
+
+        for(std::size_t i = 0; i < batch_size; ++i){
+            ctx.w_grad += etl::outer(inputs(i), ctx.errors(i));
+        }
+
+        ctx.b_grad = etl::sum_l(ctx.errors);
 
         nan_check_deep(ctx.w_grad);
         nan_check_deep(ctx.b_grad);
+    }
+
+    template<typename D, typename It>
+    void copy_inputs(D& dest, It first, It last){
+        std::size_t i = 0;
+
+        while(first != last){
+            dest(i++) = *first++;
+        }
+    }
+
+    template<typename D, typename It>
+    void copy_labels(D& dest, It first, It last){
+        std::size_t i = 0;
+
+        while(first != last){
+            for(std::size_t l = 0; l < etl::dim<1>(dest); ++l){
+                dest(i, l) = (*first)[l];
+            }
+            ++i;
+            ++first;
+        }
     }
 
     template<typename T, typename L>
@@ -84,74 +114,64 @@ struct dense_sgd_trainer {
 
         auto n = label_batch.size();
 
+        constexpr const auto n_inputs = dbn_t::template layer_input_size<0>();
         constexpr const auto n_outputs = dbn_t::template layer_output_size<layers - 1>();
 
-        //Reset the gradients
+        etl::fast_dyn_matrix<weight, batch_size, n_inputs> inputs;
+        etl::fast_dyn_matrix<weight, batch_size, n_outputs> labels;
 
-        cpp::for_each(contexts, [](auto& context){
-            context.w_grad = 0.0;
-            context.b_grad = 0.0;
-        });
+        //Copy inputs and labels into suitable data structure
 
-        //Compute the total gradients for the mini batch
+        copy_inputs(inputs, data_batch.begin(), data_batch.end());
+        copy_labels(labels, label_batch.begin(), label_batch.end());
 
-        auto it = data_batch.begin();
-        auto end = data_batch.end();
-        auto lit = label_batch.begin();
+        //Feedforward pass
 
-        while(it != end){
-            //Compute the outputs of each layer one after another
-            compute_outputs(*it);
+        compute_outputs(inputs);
 
-            //Compute the errors of the last layer
+        auto& first_layer = std::get<0>(tuples);
+        auto& first_ctx   = std::get<0>(contexts);
+        auto& last_ctx = std::get<layers - 1>(contexts);
 
-            auto& last_ctx = std::get<layers - 1>(contexts);
+        //Compute the errors of the last layer
 
-            for(std::size_t j = 0; j < n_outputs; ++j){
-                auto observed = last_ctx.output[j];
-                auto target = (*lit)[j];
+        constexpr const auto last_a_f = dbn_t::template layer_type<layers - 1>::activation_function;
 
-                constexpr const auto a_f = dbn_t::template layer_type<layers - 1>::activation_function;
+        for(std::size_t j = 0; j < n_outputs; ++j){
+            auto& observed = last_ctx.output;
 
-                if(a_f == function::IDENTITY){
-                    last_ctx.errors[j] = 1.0 * (target - observed);
-                } else if(a_f == function::SIGMOID){
-                    auto derivative = observed * (1.0 - observed);      //derivative of the sigmoid function
-                    last_ctx.errors[j] = derivative * (target - observed);
-                } else if(a_f == function::TANH){
-                    auto derivative = 1.0 - observed * observed;        //derivative of the hyperbolic tangent function
-                    last_ctx.errors[j] = derivative * (target - observed);
-                }
+            if(last_a_f == function::IDENTITY){
+                last_ctx.errors = 1.0                            >> (labels - observed);
+            } else if(last_a_f == function::SIGMOID){
+                last_ctx.errors = observed >> (1.0 - observed)   >> (labels - observed);
+            } else if(last_a_f == function::TANH){
+                last_ctx.errors = (1.0 - (observed >> observed)) >> (labels - observed);
             }
+        }
 
-            nan_check_deep(last_ctx.errors);
+        nan_check_deep(last_ctx.errors);
 
-            //Compute the gradients of each layer
+        //Compute the gradients of each layer
 
             cpp::for_each_rpair_i(tuples, contexts, [](std::size_t, auto& r1, auto& r2, auto& ctx1, auto& ctx2){
                 this_type::compute_gradients(r2, ctx2, ctx1.output);
 
                 constexpr const auto a_f = std::decay_t<decltype(r1)>::activation_function;
 
-                if(a_f == function::IDENTITY){
-                    ctx1.errors = 1.0 >> (r2.w * ctx2.errors);
-                } else if(a_f == function::SIGMOID){
-                    ctx1.errors = ctx1.output >> (1.0 - ctx1.output) >> (r2.w * ctx2.errors);
-                } else if(a_f == function::TANH){
-                    ctx1.errors = (1.0 - (ctx1.output >> ctx1.output)) >> (r2.w * ctx2.errors);
+                for(std::size_t i = 0; i < batch_size; ++i){
+                    if(a_f == function::IDENTITY){
+                        ctx1.errors(i) = 1.0                                        >> (r2.w * ctx2.errors(i));
+                    } else if(a_f == function::SIGMOID){
+                        ctx1.errors(i) = ctx1.output(i) >> (1.0 - ctx1.output(i))   >> (r2.w * ctx2.errors(i));
+                    } else if(a_f == function::TANH){
+                        ctx1.errors(i) = (1.0 - (ctx1.output(i) >> ctx1.output(i))) >> (r2.w * ctx2.errors(i));
+                    }
                 }
 
                 nan_check_deep(ctx1.errors);
             });
 
-            auto& first_layer = std::get<0>(tuples);
-            auto& first_ctx   = std::get<0>(contexts);
-
-            compute_gradients(first_layer, first_ctx, *it);
-
-            ++it;
-            ++lit;
-        }
+            compute_gradients(first_layer, first_ctx, inputs);
 
         //Apply gradients
 
