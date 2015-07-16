@@ -120,10 +120,12 @@ void update_normal(RBM& rbm, Trainer& t){
         }
     }
 
+    const auto n_samples = double(etl::dim<0>(t.w_grad_b));
+    auto eps = rbm.learning_rate / n_samples;
+
     //Apply momentum and learning rate
     if(layer_traits<rbm_t>::has_momentum()){
         auto momentum = rbm.momentum;
-        auto eps = rbm.learning_rate;
 
         t.w_inc = momentum * t.w_inc + eps * t.w_grad;
         t.b_inc = momentum * t.b_inc + eps * t.b_grad;
@@ -135,8 +137,6 @@ void update_normal(RBM& rbm, Trainer& t){
     }
     //Apply the learning rate
     else {
-        auto eps = rbm.learning_rate;
-
         rbm.w += eps * t.w_grad;
         rbm.b += eps * t.b_grad;
         rbm.c += eps * t.c_grad;
@@ -202,10 +202,12 @@ void update_convolutional(RBM& rbm, Trainer& t){
         t.c_grad -= rbm.pbias_lambda * t.c_bias;
     }
 
+    const auto n_samples = double(etl::dim<0>(t.w_pos));
+    auto eps = rbm.learning_rate / n_samples;
+
     //Apply momentum and learning rate
     if(layer_traits<rbm_t>::has_momentum()){
         auto momentum = rbm.momentum;
-        auto eps = rbm.learning_rate;
 
         t.w_inc = momentum * t.w_inc + eps * t.w_grad;
         t.b_inc = momentum * t.b_inc + eps * t.b_grad;
@@ -217,8 +219,6 @@ void update_convolutional(RBM& rbm, Trainer& t){
     }
     //Apply learning rate only
     else {
-        auto eps = rbm.learning_rate;
-
         rbm.w += eps * t.w_grad;
         rbm.b += eps * t.b_grad;
         rbm.c += eps * t.c_grad;
@@ -255,10 +255,6 @@ void batch_compute_gradients(Trainer& t){
             t.c_grad(i) += t.vf(b,i) - t.v2_a(b,i);
         }
     }
-
-    t.w_grad /= B;
-    t.b_grad /= B;
-    t.c_grad /= B;
 }
 
 #else
@@ -267,13 +263,11 @@ template<typename Weight, typename Trainer, cpp_enable_if(std::is_same<Weight, f
 void batch_compute_gradients(Trainer& t){
     const auto B = etl::dim<0>(t.w_grad_b);
 
-    auto Ba = static_cast<float>(B);
-
     for(std::size_t b = 0; b < B; b++){
         cblas_sger(
             CblasRowMajor,
             etl::dim<1>(t.vf), etl::dim<1>(t.h1_a),
-            1.0 / Ba,
+            1.0,
             t.vf(b).memory_start(), 1,
             t.h1_a(b).memory_start(), 1,
             t.w_grad.memory_start(), etl::dim<1>(t.h1_a)
@@ -282,7 +276,7 @@ void batch_compute_gradients(Trainer& t){
         cblas_sger(
             CblasRowMajor,
             etl::dim<1>(t.v2_a), etl::dim<1>(t.h2_a),
-            -1.0 / Ba,
+            -1.0,
             t.v2_a(b).memory_start(), 1,
             t.h2_a(b).memory_start(), 1,
             t.w_grad.memory_start(), etl::dim<1>(t.h2_a)
@@ -290,13 +284,13 @@ void batch_compute_gradients(Trainer& t){
     }
 
     for(std::size_t b = 0; b < B; b++){
-        cblas_saxpy(etl::dim<1>(t.h1_a), 1.0 / Ba, t.h1_a(b).memory_start(), 1, t.b_grad.memory_start(), 1);
-        cblas_saxpy(etl::dim<1>(t.h2_a), -1.0 / Ba, t.h2_a(b).memory_start(), 1, t.b_grad.memory_start(), 1);
+        cblas_saxpy(etl::dim<1>(t.h1_a), 1.0, t.h1_a(b).memory_start(), 1, t.b_grad.memory_start(), 1);
+        cblas_saxpy(etl::dim<1>(t.h2_a), -1.0, t.h2_a(b).memory_start(), 1, t.b_grad.memory_start(), 1);
     }
 
     for(std::size_t b = 0; b < B; b++){
-        cblas_saxpy(etl::dim<1>(t.vf), 1.0 / Ba, t.vf(b).memory_start(), 1, t.c_grad.memory_start(), 1);
-        cblas_saxpy(etl::dim<1>(t.v2_a), -1.0 / Ba, t.v2_a(b).memory_start(), 1, t.c_grad.memory_start(), 1);
+        cblas_saxpy(etl::dim<1>(t.vf), 1.0, t.vf(b).memory_start(), 1, t.c_grad.memory_start(), 1);
+        cblas_saxpy(etl::dim<1>(t.v2_a), -1.0, t.v2_a(b).memory_start(), 1, t.c_grad.memory_start(), 1);
     }
 }
 
@@ -304,13 +298,11 @@ template<typename Weight, typename Trainer, cpp_enable_if(std::is_same<Weight, d
 void batch_compute_gradients(Trainer& t){
     const auto B = etl::dim<0>(t.w_grad_b);
 
-    auto Ba = static_cast<float>(B);
-
     for(std::size_t b = 0; b < B; b++){
         cblas_dger(
             CblasRowMajor,
             etl::dim<1>(t.vf), etl::dim<1>(t.h1_a),
-            1.0 / Ba,
+            1.0,
             t.vf(b).memory_start(), 1,
             t.h1_a(b).memory_start(), 1,
             t.w_grad.memory_start(), etl::dim<1>(t.h1_a)
@@ -319,7 +311,7 @@ void batch_compute_gradients(Trainer& t){
         cblas_dger(
             CblasRowMajor,
             etl::dim<1>(t.v2_a), etl::dim<1>(t.h2_a),
-            -1.0 / Ba,
+            -1.0,
             t.v2_a(b).memory_start(), 1,
             t.h2_a(b).memory_start(), 1,
             t.w_grad.memory_start(), etl::dim<1>(t.h2_a)
@@ -327,13 +319,13 @@ void batch_compute_gradients(Trainer& t){
     }
 
     for(std::size_t b = 0; b < B; b++){
-        cblas_daxpy(etl::dim<1>(t.h1_a), 1.0 / Ba, t.h1_a(b).memory_start(), 1, t.b_grad.memory_start(), 1);
-        cblas_daxpy(etl::dim<1>(t.h2_a), -1.0 / Ba, t.h2_a(b).memory_start(), 1, t.b_grad.memory_start(), 1);
+        cblas_daxpy(etl::dim<1>(t.h1_a), 1.0, t.h1_a(b).memory_start(), 1, t.b_grad.memory_start(), 1);
+        cblas_daxpy(etl::dim<1>(t.h2_a), -1.0, t.h2_a(b).memory_start(), 1, t.b_grad.memory_start(), 1);
     }
 
     for(std::size_t b = 0; b < B; b++){
-        cblas_daxpy(etl::dim<1>(t.vf), 1.0 / Ba, t.vf(b).memory_start(), 1, t.c_grad.memory_start(), 1);
-        cblas_daxpy(etl::dim<1>(t.v2_a), -1.0 / Ba, t.v2_a(b).memory_start(), 1, t.c_grad.memory_start(), 1);
+        cblas_daxpy(etl::dim<1>(t.vf), 1.0, t.vf(b).memory_start(), 1, t.c_grad.memory_start(), 1);
+        cblas_daxpy(etl::dim<1>(t.v2_a), -1.0, t.v2_a(b).memory_start(), 1, t.c_grad.memory_start(), 1);
     }
 }
 
@@ -405,9 +397,9 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
         });
 
         //Compute the gradients
-        t.w_grad = mean_l(t.w_grad_b);
-        t.b_grad = mean_l(t.h1_a - t.h2_a);
-        t.c_grad = mean_l(t.vf - t.v2_a);
+        t.w_grad = sum_l(t.w_grad_b);
+        t.b_grad = sum_l(t.h1_a - t.h2_a);
+        t.c_grad = sum_l(t.vf - t.v2_a);
     } else {
         //Copy input/expected for computations
         auto iit = input_batch.begin();
@@ -549,13 +541,13 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
     }
 
     //Compute the gradients
-    t.w_grad = mean_l(t.w_pos - t.w_neg);
-    t.b_grad = mean_r(mean_l(t.h1_a - t.h2_a));
+    t.w_grad = sum_l(t.w_pos - t.w_neg);
+    t.b_grad = mean_r(sum_l(t.h1_a - t.h2_a));
 
     if(Denoising){
-        t.c_grad = mean_r(mean_l(t.vf - t.v2_a));
+        t.c_grad = mean_r(sum_l(t.vf - t.v2_a));
     } else {
-        t.c_grad = mean_r(mean_l(t.v1 - t.v2_a));
+        t.c_grad = mean_r(sum_l(t.v1 - t.v2_a));
     }
 
     nan_check_deep(t.w_grad);
