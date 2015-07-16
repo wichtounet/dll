@@ -52,7 +52,7 @@ TEST_CASE( "dense/sgd/1", "[dense][dbn][mnist][sgd]" ) {
 
     dbn->learning_rate = 0.05;
 
-    auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100, 10);
+    auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
     std::cout << "ft_error:" << ft_error << std::endl;
 
     CHECK(ft_error < 5e-2);
@@ -81,7 +81,7 @@ TEST_CASE( "dense/sgd/2", "[dense][dbn][mnist][sgd]" ) {
 
     dbn->learning_rate = 0.05;
 
-    auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100, 10);
+    auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
     std::cout << "ft_error:" << ft_error << std::endl;
 
     CHECK(ft_error < 5e-2);
@@ -113,7 +113,7 @@ TEST_CASE( "dense/sgd/3", "[dense][dbn][mnist][sgd]" ) {
     dbn->final_momentum = 0.9;
     dbn->learning_rate = 0.01;
 
-    auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100, 10);
+    auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
     std::cout << "ft_error:" << ft_error << std::endl;
 
     CHECK(ft_error < 5e-2);
@@ -146,7 +146,7 @@ TEST_CASE( "dense/sgd/4", "[dense][dbn][mnist][sgd]" ) {
     dbn->final_momentum = 0.9;
     dbn->learning_rate = 0.01;
 
-    auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100, 10);
+    auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
     std::cout << "ft_error:" << ft_error << std::endl;
 
     CHECK(ft_error < 5e-2);
@@ -179,7 +179,7 @@ TEST_CASE( "dense/sgd/5", "[dense][dbn][mnist][sgd]" ) {
     dbn->final_momentum = 0.9;
     dbn->learning_rate = 0.01;
 
-    auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100, 10);
+    auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
     std::cout << "ft_error:" << ft_error << std::endl;
 
     CHECK(ft_error < 5e-2);
@@ -212,7 +212,7 @@ TEST_CASE( "dense/sgd/6", "[dense][dbn][mnist][sgd]" ) {
     dbn->final_momentum = 0.9;
     dbn->learning_rate = 0.01;
 
-    auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100, 10);
+    auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
     std::cout << "ft_error:" << ft_error << std::endl;
 
     CHECK(ft_error < 5e-2);
