@@ -61,7 +61,7 @@ TEST_CASE( "dense/sgd/2", "[dense][dbn][mnist][sgd]" ) {
 
     dbn->initial_momentum = 0.9;
     dbn->final_momentum = 0.9;
-    dbn->learning_rate = 0.05;
+    dbn->learning_rate = 0.01;
 
     auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100, 10);
     std::cout << "ft_error:" << ft_error << std::endl;
