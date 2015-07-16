@@ -138,21 +138,19 @@ void update_normal(RBM& rbm, Trainer& t){
         t.w_inc = momentum * t.w_inc + eps * t.w_grad;
         t.b_inc = momentum * t.b_inc + eps * t.b_grad;
         t.c_inc = momentum * t.c_inc + eps * t.c_grad;
+
+        rbm.w += t.w_inc;
+        rbm.b += t.b_inc;
+        rbm.c += t.c_inc;
     }
     //Apply the learning rate
     else {
         auto eps = rbm.learning_rate;
 
-        t.w_grad *= eps;
-        t.b_grad *= eps;
-        t.c_grad *= eps;
+        rbm.w += eps * t.w_grad;
+        rbm.b += eps * t.b_grad;
+        rbm.c += eps * t.c_grad;
     }
-
-    //Update the weights and biases
-    //with the final gradients (if not momentum, these are the real gradients)
-    rbm.w += t.get_fgrad(t.w_grad, t.w_inc);
-    rbm.b += t.get_fgrad(t.b_grad, t.b_inc);
-    rbm.c += t.get_fgrad(t.c_grad, t.c_inc);
 
     //Check for NaN
     nan_check_deep_3(rbm.w, rbm.b, rbm.c);
@@ -222,21 +220,19 @@ void update_convolutional(RBM& rbm, Trainer& t){
         t.w_inc = momentum * t.w_inc + eps * t.w_grad;
         t.b_inc = momentum * t.b_inc + eps * t.b_grad;
         t.c_inc = momentum * t.c_inc + eps * t.c_grad;
+
+        rbm.w += t.w_inc;
+        rbm.b += t.b_inc;
+        rbm.c += t.c_inc;
     }
     //Apply learning rate only
     else {
         auto eps = rbm.learning_rate;
 
-        t.w_grad *= eps;
-        t.b_grad *= eps;
-        t.c_grad *= eps;
+        rbm.w += eps * t.w_grad;
+        rbm.b += eps * t.b_grad;
+        rbm.c += eps * t.c_grad;
     }
-
-    //Update the weights and biases with the final gradients (if not momentum,
-    //these are the real gradients)
-    rbm.w += t.get_fgrad(t.w_grad, t.w_inc);
-    rbm.b += t.get_fgrad(t.b_grad, t.b_inc);
-    rbm.c += t.get_fgrad(t.c_grad, t.c_inc);
 
     //Check for NaN
     nan_check_deep(rbm.w);
