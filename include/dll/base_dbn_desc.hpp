@@ -29,7 +29,7 @@ struct base_dbn_desc {
     using layers = Layers;
     using parameters = cpp::type_list<Parameters...>;
 
-    static constexpr const std::size_t BatchSize = detail::get_value<batch_size<2>, Parameters...>::value;
+    static constexpr const std::size_t BatchSize = detail::get_value<batch_size<1>, Parameters...>::value;
 
     /*! The type of the trainer to use to train the DBN */
     template <typename DBN>
@@ -41,6 +41,8 @@ struct base_dbn_desc {
 
     /*! The DBN type */
     using dbn_t = D<base_dbn_desc<Layers, D, Parameters...>>;
+
+    static_assert(BatchSize > 0, "Batch size must be at least 1");
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
