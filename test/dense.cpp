@@ -16,6 +16,25 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
+namespace {
+
+template<typename Dataset>
+void mnist_scale(Dataset& dataset){
+    for(auto& image : dataset.training_images){
+        for(auto& pixel : image){
+            pixel *= (1.0 / 256.0);
+        }
+    }
+
+    for(auto& image : dataset.test_images){
+        for(auto& pixel : image){
+            pixel *= (1.0 / 256.0);
+        }
+    }
+}
+
+} //end of anonymous namespace
+
 TEST_CASE( "dense/sgd/1", "[dense][dbn][mnist][sgd]" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
@@ -26,7 +45,6 @@ TEST_CASE( "dense/sgd/1", "[dense][dbn][mnist][sgd]" ) {
     >::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
-
     REQUIRE(!dataset.training_images.empty());
 
     auto dbn = std::make_unique<dbn_t>();
@@ -53,8 +71,9 @@ TEST_CASE( "dense/sgd/2", "[dense][dbn][mnist][sgd]" ) {
     >::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
-
     REQUIRE(!dataset.training_images.empty());
+
+    mnist_scale(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
 
@@ -81,8 +100,9 @@ TEST_CASE( "dense/sgd/3", "[dense][dbn][mnist][sgd]" ) {
     >::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
-
     REQUIRE(!dataset.training_images.empty());
+
+    mnist_scale(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
 
