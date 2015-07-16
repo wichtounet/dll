@@ -59,12 +59,10 @@ struct dense_sgd_trainer {
 
     template<typename Sample>
     void compute_outputs(const Sample& item_data){
-        etl::dyn_vector<typename Sample::value_type> item(item_data);
-
         auto& first_layer = dbn.template layer_get<0>();
         auto& first_layer_context = std::get<0>(contexts);
 
-        first_layer.activate_hidden(first_layer_context.output, item);
+        first_layer.activate_hidden(first_layer_context.output, item_data);
 
         cpp::for_each_pair(tuples, contexts, [](auto&, auto& layer_2, auto& ctx1, auto& ctx2){
             layer_2.activate_hidden(ctx2.output, ctx1.output);
