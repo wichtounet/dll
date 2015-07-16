@@ -192,32 +192,32 @@ struct dense_sgd_trainer {
 
         //Compute the gradients of each layer
 
-            cpp::for_each_rpair_i(tuples, contexts, [](std::size_t, auto& r1, auto& r2, auto& ctx1, auto& ctx2){
-                this_type::compute_gradients(r2, ctx2, ctx1.output);
+        cpp::for_each_rpair_i(tuples, contexts, [](std::size_t, auto& r1, auto& r2, auto& ctx1, auto& ctx2){
+            this_type::compute_gradients(r2, ctx2, ctx1.output);
 
-                constexpr const auto a_f = std::decay_t<decltype(r1)>::activation_function;
+            constexpr const auto a_f = std::decay_t<decltype(r1)>::activation_function;
 
-                for(std::size_t i = 0; i < batch_size; ++i){
-                    if(a_f == function::IDENTITY){
-                        ctx1.errors(i) = 1.0                                        >> (r2.w * ctx2.errors(i));
-                    } else if(a_f == function::SIGMOID){
-                        ctx1.errors(i) = ctx1.output(i) >> (1.0 - ctx1.output(i))   >> (r2.w * ctx2.errors(i));
-                    } else if(a_f == function::TANH){
-                        ctx1.errors(i) = (1.0 - (ctx1.output(i) >> ctx1.output(i))) >> (r2.w * ctx2.errors(i));
-                    }
+            for(std::size_t i = 0; i < batch_size; ++i){
+                if(a_f == function::IDENTITY){
+                    ctx1.errors(i) = 1.0                                        >> (r2.w * ctx2.errors(i));
+                } else if(a_f == function::SIGMOID){
+                    ctx1.errors(i) = ctx1.output(i) >> (1.0 - ctx1.output(i))   >> (r2.w * ctx2.errors(i));
+                } else if(a_f == function::TANH){
+                    ctx1.errors(i) = (1.0 - (ctx1.output(i) >> ctx1.output(i))) >> (r2.w * ctx2.errors(i));
                 }
+            }
 
-                nan_check_deep(ctx1.errors);
-            });
+            nan_check_deep(ctx1.errors);
+        });
 
-            compute_gradients(first_layer, first_ctx, inputs);
+        compute_gradients(first_layer, first_ctx, inputs);
 
         //Apply gradients
 
-        cpp::for_each(tuples, contexts, [this, n](auto& rbm, auto& context){
+        cpp::for_each(tuples, contexts, [this, n](auto& layer, auto& context){
             //Update the gradients
-            this->update_grad(rbm.w, context.w_grad, w_decay(dbn_traits<dbn_t>::decay()), 0.0);
-            this->update_grad(rbm.b, context.b_grad, b_decay(dbn_traits<dbn_t>::decay()), 0.0);
+            this->update_grad(layer.w, context.w_grad, w_decay(dbn_traits<dbn_t>::decay()), 0.0);
+            this->update_grad(layer.b, context.b_grad, b_decay(dbn_traits<dbn_t>::decay()), 0.0);
 
             //Update with momentum and learning rate
             if(dbn_traits<dbn_t>::has_momentum()){
@@ -227,17 +227,17 @@ struct dense_sgd_trainer {
                 context.w_inc = momentum * context.w_inc + (eps / n) * context.w_grad;
                 context.b_inc = momentum * context.b_inc + (eps / n) * context.b_grad;
 
-                rbm.w += context.w_inc;
-                rbm.b += context.b_inc;
+                layer.w += context.w_inc;
+                layer.b += context.b_inc;
             } else {
                 auto eps = dbn.learning_rate;
 
-                rbm.w += (eps / n) * context.w_grad;
-                rbm.b += (eps / n) * context.b_grad;
+                layer.w += (eps / n) * context.w_grad;
+                layer.b += (eps / n) * context.b_grad;
             }
 
-            nan_check_deep(rbm.w);
-            nan_check_deep(rbm.b);
+            nan_check_deep(layer.w);
+            nan_check_deep(layer.b);
         });
     }
 
