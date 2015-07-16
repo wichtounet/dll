@@ -91,6 +91,25 @@ struct dense_layer final {
         }
     }
 
+    template<typename H1, typename V>
+    void batch_activate_hidden(H1&& output, const V& v) const {
+        const auto Batch = etl::dim<0>(v);
+
+        cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
+
+        switch(activation_function){
+            case function::IDENTITY:
+                output = etl::rep_l(b, Batch) + v * w;
+                break;
+            case function::SIGMOID:
+                output = etl::sigmoid(etl::rep_l(b, Batch) + v * w);
+                break;
+            case function::TANH:
+                output = etl::tanh(etl::rep_l(b, Batch) + v * w);
+                break;
+        }
+    }
+
     //Utilities to be used by DBNs
 
     using input_one_t = etl::fast_dyn_matrix<weight, num_visible>;
