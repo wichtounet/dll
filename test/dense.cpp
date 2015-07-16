@@ -165,6 +165,7 @@ TEST_CASE( "dense/sgd/5", "[dense][dbn][mnist][sgd]" ) {
         , dll::momentum
         , dll::weight_decay<>
         , dll::trainer<dll::dense_sgd_trainer>
+        , dll::batch_size<10>
     >::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
@@ -197,6 +198,7 @@ TEST_CASE( "dense/sgd/6", "[dense][dbn][mnist][sgd]" ) {
         , dll::momentum
         , dll::weight_decay<>
         , dll::trainer<dll::dense_sgd_trainer>
+        , dll::batch_size<10>
     >::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
