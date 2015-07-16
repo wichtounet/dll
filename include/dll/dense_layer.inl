@@ -33,6 +33,7 @@ struct dense_layer final {
     //Weights and biases
     etl::fast_matrix<weight, num_visible, num_hidden> w;    //!< Weights
     etl::fast_vector<weight, num_hidden> b;                 //!< Hidden biases
+
     //No copying
     dense_layer(const dense_layer& layer) = delete;
     dense_layer& operator=(const dense_layer& layer) = delete;
