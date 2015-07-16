@@ -91,16 +91,6 @@ struct sgd_trainer {
         nan_check_deep_3(ctx.w_grad, ctx.b_grad, ctx.c_grad);
     }
 
-    template<typename T1, typename T2, bool M = dbn_traits<dbn_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
-    static T2& get_fgrad(T1& , T2& inc){
-        return inc;
-    }
-
-    template<typename T1, typename T2, bool M = dbn_traits<dbn_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
-    static T1& get_fgrad(T1& grad, T2& ){
-        return grad;
-    }
-
     template<typename T, typename L>
     void train_batch(std::size_t /*epoch*/, const dll::batch<T>& data_batch, const dll::batch<L>& label_batch){
         cpp_assert(data_batch.size() == label_batch.size(), "Invalid sizes");
@@ -153,48 +143,34 @@ struct sgd_trainer {
             ++lit;
         }
 
-        //Finalize gradients
-
-        cpp::for_each(rbm_contexts, [n_samples](auto& context){
-            context.w_grad /= n_samples;
-            context.b_grad /= n_samples;
-            context.c_grad /= n_samples;
-
-            nan_check_deep_3(context.w_grad, context.b_grad, context.c_grad);
-        });
-
         //Apply gradients
 
-        cpp::for_each(tuples, rbm_contexts, [this](auto& rbm, auto& context){
+        cpp::for_each(tuples, rbm_contexts, [this, n_samples](auto& rbm, auto& context){
             //Update the gradients
             this->update_grad(rbm.w, context.w_grad, w_decay(dbn_traits<dbn_t>::decay()), 0.0);
             this->update_grad(rbm.b, context.b_grad, b_decay(dbn_traits<dbn_t>::decay()), 0.0);
             this->update_grad(rbm.c, context.c_grad, b_decay(dbn_traits<dbn_t>::decay()), 0.0);
 
+            auto eps = dbn.learning_rate / double(n_samples);
+
             //Update with momentum and learning rate
             if(dbn_traits<dbn_t>::has_momentum()){
                 auto momentum = dbn.momentum;
-                auto eps = dbn.learning_rate;
 
                 context.w_inc = momentum * context.w_inc + eps * context.w_grad;
                 context.b_inc = momentum * context.b_inc + eps * context.b_grad;
                 context.c_inc = momentum * context.c_inc + eps * context.c_grad;
 
                 nan_check_deep_3(context.w_inc, context.b_inc, context.c_inc);
+
+                rbm.w += context.w_inc;
+                rbm.b += context.b_inc;
+                rbm.c += context.c_inc;
             } else {
-                auto eps = dbn.learning_rate;
-
-                context.w_grad *= eps;
-                context.b_grad *= eps;
-                context.c_grad *= eps;
-
-                nan_check_deep_3(context.w_grad, context.b_grad, context.c_grad);
+                rbm.w += eps * context.w_grad;
+                rbm.b += eps * context.b_grad;
+                rbm.c += eps * context.c_grad;
             }
-
-            //Apply the final gradients
-            rbm.w += this_type::get_fgrad(context.w_grad, context.w_inc);
-            rbm.b += this_type::get_fgrad(context.b_grad, context.b_inc);
-            rbm.c += this_type::get_fgrad(context.c_grad, context.c_inc);
 
             nan_check_deep_3(rbm.w, rbm.b, rbm.c);
         });
