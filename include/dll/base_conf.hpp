@@ -11,6 +11,7 @@
 #include <cstddef>
 
 #include "unit_type.hpp"
+#include "function.hpp"
 #include "decay_type.hpp"
 #include "sparsity_method.hpp"
 #include "bias_mode.hpp"
@@ -54,6 +55,7 @@ struct batch_size_id;
 struct visible_id;
 struct hidden_id;
 struct pooling_id;
+struct activation_id;
 struct weight_decay_id;
 struct trainer_id;
 struct trainer_rbm_id;
@@ -83,6 +85,9 @@ struct hidden : value_conf_elt<hidden_id, unit_type, HT> {};
 
 template<unit_type PT>
 struct pooling : value_conf_elt<pooling_id, unit_type, PT> {};
+
+template<function FT>
+struct activation : value_conf_elt<activation_id, function, FT> {};
 
 template<decay_type T = decay_type::L2>
 struct weight_decay : value_conf_elt<weight_decay_id, decay_type, T> {};
