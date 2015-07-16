@@ -139,6 +139,11 @@ struct sgd_trainer {
                 nan_check_deep(ctx1.errors);
             });
 
+            auto& first_layer = std::get<0>(tuples);
+            auto& first_ctx   = std::get<0>(rbm_contexts);
+
+            this_type::compute_gradients(first_layer, first_ctx, *it);
+
             ++it;
             ++lit;
         }
