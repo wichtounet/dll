@@ -71,6 +71,7 @@ struct dbn final {
     tuple_type tuples;
 
     static constexpr const std::size_t layers = desc::layers::layers;
+    static constexpr const std::size_t batch_size = desc::BatchSize;
 
     template <std::size_t N>
     using layer_type = typename std::tuple_element<N, tuple_type>::type;
