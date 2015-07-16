@@ -42,6 +42,7 @@ TEST_CASE( "dense/sgd/1", "[dense][dbn][mnist][sgd]" ) {
             dll::dense_desc<100, 10>::layer_t
         >,
         dll::trainer<dll::dense_sgd_trainer>
+        , dll::batch_size<10>
     >::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
@@ -68,6 +69,7 @@ TEST_CASE( "dense/sgd/2", "[dense][dbn][mnist][sgd]" ) {
             dll::dense_desc<100, 10, dll::activation<dll::function::TANH>>::layer_t
         >,
         dll::trainer<dll::dense_sgd_trainer>
+        , dll::batch_size<10>
     >::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
@@ -97,6 +99,7 @@ TEST_CASE( "dense/sgd/3", "[dense][dbn][mnist][sgd]" ) {
         >
         , dll::momentum
         , dll::trainer<dll::dense_sgd_trainer>
+        , dll::batch_size<10>
     >::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
@@ -129,6 +132,7 @@ TEST_CASE( "dense/sgd/4", "[dense][dbn][mnist][sgd]" ) {
         , dll::momentum
         , dll::weight_decay<>
         , dll::trainer<dll::dense_sgd_trainer>
+        , dll::batch_size<10>
     >::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
