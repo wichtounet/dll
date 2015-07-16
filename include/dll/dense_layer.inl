@@ -47,9 +47,12 @@ struct dense_layer final {
      * The weights are initialized from a normal distribution of
      * zero-mean and unit variance.
      */
-    dense_layer() : b(0.0) {
-        //Initialize the weights with a zero-mean and unit variance Gaussian distribution
-        w = etl::normal_generator<weight>() * 0.1;
+    dense_layer(){
+        //Initialize the weights and biases following Lecun approach
+        //to initialization [lecun-98b]
+
+        b = etl::normal_generator<weight>(0.0, 1.0 / std::sqrt(double(num_visible)));
+        w = etl::normal_generator<weight>(0.0, 1.0 / std::sqrt(double(num_visible)));
     }
 
     static constexpr std::size_t input_size() noexcept {
