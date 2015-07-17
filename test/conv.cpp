@@ -10,6 +10,7 @@
 #include "catch.hpp"
 
 #include "dll/conv_layer.hpp"
+#include "dll/dense_layer.hpp"
 #include "dll/dbn.hpp"
 #include "dll/dense_stochastic_gradient_descent.hpp"
 
@@ -39,7 +40,8 @@ TEST_CASE( "conv/sgd/1", "[dense][dbn][mnist][sgd]" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_desc<1, 28, 28, 10, 24, 24>::layer_t,
-            dll::conv_desc<10, 24, 24, 6, 20, 20>::layer_t
+            dll::conv_desc<10, 24, 24, 6, 20, 20>::layer_t,
+            dll::dense_desc<6 * 20 * 20, 10>::layer_t
         >
         , dll::trainer<dll::dense_sgd_trainer>
         , dll::batch_size<10>
