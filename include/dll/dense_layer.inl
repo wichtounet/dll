@@ -91,7 +91,7 @@ struct dense_layer final {
         }
     }
 
-    template<typename H1, typename V>
+    template<typename H1, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 2)>
     void batch_activate_hidden(H1&& output, const V& v) const {
         const auto Batch = etl::dim<0>(v);
 
@@ -110,12 +110,46 @@ struct dense_layer final {
         }
     }
 
+    template<typename H1, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 2)>
+    void batch_activate_hidden(H1&& output, const V& v) const {
+        const auto Batch = etl::dim<0>(v);
+
+        input_batch_t<etl::decay_traits<V>::template dim<0>()> input;
+
+        for(std::size_t b = 0; b < Batch; ++b){
+            input(b) = v(b);
+        }
+
+        //TODO By improving reshape to be variadic, this could be
+        //made a lot faster
+
+        cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
+
+        switch(activation_function){
+            case function::IDENTITY:
+                output = etl::rep_l(b, Batch) + input * w;
+                break;
+            case function::SIGMOID:
+                output = etl::sigmoid(etl::rep_l(b, Batch) + input * w);
+                break;
+            case function::TANH:
+                output = etl::tanh(etl::rep_l(b, Batch) + input * w);
+                break;
+        }
+    }
+
     //Utilities to be used by DBNs
 
     using input_one_t = etl::fast_dyn_matrix<weight, num_visible>;
     using output_one_t = etl::fast_dyn_matrix<weight, num_hidden>;
     using input_t = std::vector<input_one_t>;
     using output_t = std::vector<output_one_t>;
+
+    template<std::size_t B>
+    using input_batch_t = etl::fast_dyn_matrix<weight, B, num_visible>;
+
+    template<std::size_t B>
+    using output_batch_t = etl::fast_dyn_matrix<weight, B, num_hidden>;
 
     template<typename Sample>
     input_one_t convert_sample(const Sample& sample) const {
@@ -128,6 +162,12 @@ struct dense_layer final {
     }
 
     void activate_one(const input_one_t& input, output_one_t& h_a) const {
+        activate_hidden(h_a, input);
+    }
+
+    template<typename T>
+    void activate_one(const T& i, output_one_t& h_a) const {
+        input_one_t input(i);
         activate_hidden(h_a, input);
     }
 };

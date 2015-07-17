@@ -12,19 +12,27 @@
 #ifndef DLL_DENSE_STOCHASTIC_GRADIENT_DESCENT
 #define DLL_DENSE_STOCHASTIC_GRADIENT_DESCENT
 
+#include "cpp_utils/static_if.hpp"
 #include "context.hpp"
 
 namespace dll {
 
+template<typename DBN, typename Layer, typename Enable = void>
+struct dense_sgd_context;
+
 template<typename DBN, typename Layer>
-struct dense_sgd_context {
+struct dense_sgd_context <DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_dense_layer()>> {
     using layer_t = Layer;
     using dbn_t = DBN;
     using weight = typename layer_t::weight;
 
     static constexpr const auto num_visible = layer_t::num_visible;
     static constexpr const auto num_hidden = layer_t::num_hidden;
+
     static constexpr const auto batch_size = dbn_t::batch_size;
+
+    etl::fast_matrix<weight, num_visible, num_hidden> w_grad;
+    etl::fast_matrix<weight, num_hidden> b_grad;
 
     etl::fast_matrix<weight, num_visible, num_hidden> w_inc;
     etl::fast_matrix<weight, num_hidden> b_inc;
@@ -32,8 +40,34 @@ struct dense_sgd_context {
     etl::fast_matrix<weight, batch_size, num_hidden> output;
     etl::fast_matrix<weight, batch_size, num_hidden> errors;
 
-    etl::fast_matrix<weight, num_visible, num_hidden> w_grad;
-    etl::fast_matrix<weight, num_hidden> b_grad;
+    dense_sgd_context() : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
+};
+
+template<typename DBN, typename Layer>
+struct dense_sgd_context <DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_convolutional_layer()>> {
+    using layer_t = Layer;
+    using dbn_t = DBN;
+    using weight = typename layer_t::weight;
+
+    static constexpr const std::size_t NV1 = layer_t::NV1;
+    static constexpr const std::size_t NV2 = layer_t::NV2;
+    static constexpr const std::size_t NH1 = layer_t::NH1;
+    static constexpr const std::size_t NH2 = layer_t::NH2;
+    static constexpr const std::size_t NW1 = layer_t::NW1;
+    static constexpr const std::size_t NW2 = layer_t::NW2;
+    static constexpr const std::size_t NC = layer_t::NC;
+    static constexpr const std::size_t K = layer_t::K;
+
+    static constexpr const auto batch_size = dbn_t::batch_size;
+
+    etl::fast_matrix<weight, NC, K, NW1, NW2> w_grad;
+    etl::fast_matrix<weight, K> b_grad;
+
+    etl::fast_matrix<weight, NC, K, NW1, NW2> w_inc;
+    etl::fast_matrix<weight, K> b_inc;
+
+    etl::fast_matrix<weight, batch_size, K, NH1, NH2> output;
+    etl::fast_matrix<weight, batch_size, K, NH1, NH2> errors;
 
     dense_sgd_context() : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
 };
@@ -74,16 +108,59 @@ struct dense_sgd_trainer {
 
 #ifndef ETL_BLAS_MODE
 
-    template<typename Weight, typename Grad, typename Inputs, typename Errors>
+    template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_dense_layer() && etl::decay_traits<Inputs>::dimensions() == 2)>
     static void compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
         for(std::size_t i = 0; i < batch_size; ++i){
             grad += etl::outer(inputs(i), errors(i));
         }
     }
 
+    template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_dense_layer() && etl::decay_traits<Inputs>::dimensions() != 2)>
+    static void compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
+        //TODO By improving reshape to be variadic, this could be
+        //made a lot faster
+
+        constexpr const auto Batch = etl::decay_traits<Inputs>::template dim<0>();
+        typename Layer::template input_batch_t<Batch> input;
+
+        for(std::size_t b = 0; b < Batch; ++b){
+            input(b) = inputs(b);
+        }
+
+        for(std::size_t i = 0; i < batch_size; ++i){
+            grad += etl::outer(input(i), errors(i));
+        }
+    }
+
+    template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_convolutional_layer())>
+    static void compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
+        constexpr const auto K = Layer::K;
+        constexpr const auto NC = Layer::NC;
+        constexpr const auto NW1 = Layer::NW1;
+        constexpr const auto NW2 = Layer::NW2;
+        constexpr const auto NH1 = Layer::NH1;
+        constexpr const auto NH2 = Layer::NH2;
+
+        for(std::size_t b = 0; b < batch_size; ++b){
+            for(std::size_t c = 0; c < NC; ++c){
+                for(std::size_t k = 0; k < K; ++k){
+                    for(std::size_t i = 0; i < NW1; ++i){
+                        for(std::size_t j = 0; j < NW2; ++j){
+                            for(std::size_t ii = 0; ii < NH1; ++ii){
+                                for(std::size_t jj = 0; jj < NH2; ++jj){
+                                    grad(c, k, i, j) += errors(b, k, ii, jj) * inputs(b, c, i + ii, j + jj);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 #else
 
-    template<typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(std::is_same<Weight, float>::value)>
+    template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(std::is_same<Weight, float>::value)>
     static void compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
         for(std::size_t i = 0; i < batch_size; ++i){
             cblas_sger(
@@ -97,7 +174,7 @@ struct dense_sgd_trainer {
         }
     }
 
-    template<typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(std::is_same<Weight, double>::value)>
+    template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(std::is_same<Weight, double>::value)>
     static void compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
         for(std::size_t i = 0; i < batch_size; ++i){
             cblas_dger(
@@ -113,16 +190,50 @@ struct dense_sgd_trainer {
 
 #endif
 
-    template<typename RBM, typename Context, typename Inputs>
-    static void compute_gradients(RBM& , Context& ctx, const Inputs& inputs){
+    template<typename Layer, typename Context, typename Inputs>
+    static void compute_gradients(Layer& , Context& ctx, const Inputs& inputs){
         ctx.w_grad = 0;
 
-        compute_weight_gradients<weight>(ctx.w_grad, inputs, ctx.errors);
+        compute_weight_gradients<Layer, weight>(ctx.w_grad, inputs, ctx.errors);
 
-        ctx.b_grad = etl::sum_l(ctx.errors);
+        cpp::static_if<decay_layer_traits<Layer>::is_dense_layer()>([&](auto f){
+            f(ctx.b_grad) = etl::sum_l(ctx.errors);
+        }).else_([&](auto f){
+            f(ctx.b_grad) = etl::mean_r(etl::sum_l(f(ctx.errors)));
+        });
 
         nan_check_deep(ctx.w_grad);
         nan_check_deep(ctx.b_grad);
+    }
+
+    template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(decay_layer_traits<Layer2>::is_dense_layer())>
+    static void compute_errors(Layer1& r1, Context1& ctx1, Layer2& r2, Context2& ctx2){
+        constexpr const auto a_f = std::decay_t<decltype(r1)>::activation_function;
+
+        for(std::size_t i = 0; i < batch_size; ++i){
+            if(a_f == function::IDENTITY){
+                ctx1.errors(i) = 1.0                                        >> (r2.w * ctx2.errors(i));
+            } else if(a_f == function::SIGMOID){
+                ctx1.errors(i) = ctx1.output(i) >> (1.0 - ctx1.output(i))   >> (r2.w * ctx2.errors(i));
+            } else if(a_f == function::TANH){
+                ctx1.errors(i) = (1.0 - (ctx1.output(i) >> ctx1.output(i))) >> (r2.w * ctx2.errors(i));
+            }
+        }
+
+        nan_check_deep(ctx1.errors);
+    }
+
+    template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(decay_layer_traits<Layer2>::is_convolutional_layer())>
+    static void compute_errors(Layer1& r1 , Context1& ctx1, Layer2& r2, Context2& ctx2){
+        //TODO
+
+        nan_check_deep(ctx1.errors);
+
+        //TODO Remove
+        cpp_nused(r1);
+        cpp_unused(r2);
+        cpp_unused(ctx1);
+        cpp_unused(ctx2);
     }
 
     template<typename D, typename It>
@@ -156,8 +267,17 @@ struct dense_sgd_trainer {
         constexpr const auto n_inputs = dbn_t::template layer_input_size<0>();
         constexpr const auto n_outputs = dbn_t::template layer_output_size<layers - 1>();
 
-        etl::fast_dyn_matrix<weight, batch_size, n_inputs> inputs;
-        etl::fast_dyn_matrix<weight, batch_size, n_outputs> labels;
+        decltype(auto) first_layer = std::get<0>(tuples);
+        decltype(auto) first_ctx   = std::get<0>(contexts);
+
+        decltype(auto) last_layer = std::get<layers - 1>(tuples);
+        decltype(auto) last_ctx = std::get<layers - 1>(contexts);
+
+        using inputs_t = typename std::decay_t<decltype(first_layer)>::template input_batch_t<batch_size>;
+        using outputs_t = typename std::decay_t<decltype(last_layer)>::template output_batch_t<batch_size>;
+
+        inputs_t inputs;
+        outputs_t labels;
 
         //Copy inputs and labels into suitable data structure
 
@@ -168,9 +288,7 @@ struct dense_sgd_trainer {
 
         compute_outputs(inputs);
 
-        auto& first_layer = std::get<0>(tuples);
-        auto& first_ctx   = std::get<0>(contexts);
-        auto& last_ctx = std::get<layers - 1>(contexts);
+        static_assert(decay_layer_traits<decltype(last_layer)>::is_dense_layer(), "The last layer must be dense for SGD trainining");
 
         //Compute the errors of the last layer
 
@@ -195,19 +313,7 @@ struct dense_sgd_trainer {
         cpp::for_each_rpair_i(tuples, contexts, [](std::size_t, auto& r1, auto& r2, auto& ctx1, auto& ctx2){
             this_type::compute_gradients(r2, ctx2, ctx1.output);
 
-            constexpr const auto a_f = std::decay_t<decltype(r1)>::activation_function;
-
-            for(std::size_t i = 0; i < batch_size; ++i){
-                if(a_f == function::IDENTITY){
-                    ctx1.errors(i) = 1.0                                        >> (r2.w * ctx2.errors(i));
-                } else if(a_f == function::SIGMOID){
-                    ctx1.errors(i) = ctx1.output(i) >> (1.0 - ctx1.output(i))   >> (r2.w * ctx2.errors(i));
-                } else if(a_f == function::TANH){
-                    ctx1.errors(i) = (1.0 - (ctx1.output(i) >> ctx1.output(i))) >> (r2.w * ctx2.errors(i));
-                }
-            }
-
-            nan_check_deep(ctx1.errors);
+            this_type::compute_errors(r1, ctx1, r2, ctx2);
         });
 
         compute_gradients(first_layer, first_ctx, inputs);

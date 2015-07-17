@@ -18,10 +18,10 @@ struct context_builder<Context, std::tuple<Args...>> {
     using type = std::tuple<Context<Args>...>;
 };
 
-template<template<typename,typename> class Context, typename DBN, typename T>
+template<template<typename...> class Context, typename DBN, typename T>
 struct dbn_context_builder;
 
-template<template<typename,typename> class Context, typename DBN, typename... Args>
+template<template<typename...> class Context, typename DBN, typename... Args>
 struct dbn_context_builder<Context, DBN, std::tuple<Args...>> {
     using type = std::tuple<Context<DBN, Args>...>;
 };

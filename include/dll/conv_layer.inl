@@ -105,7 +105,17 @@ struct conv_layer final {
             v_cv(1) += v_cv(0);
         }
 
-        output = etl::rep<NH1, NH2>(b) + v_cv(1);
+        switch(activation_function){
+            case function::IDENTITY:
+                output = etl::rep<NH1, NH2>(b) + v_cv(1);
+                break;
+            case function::SIGMOID:
+                output = etl::sigmoid(etl::rep<NH1, NH2>(b) + v_cv(1));
+                break;
+            case function::TANH:
+                output = etl::tanh(etl::rep<NH1, NH2>(b) + v_cv(1));
+                break;
+        }
     }
 
     template<typename H1, typename V>
@@ -125,15 +135,25 @@ struct conv_layer final {
         }
 
         for(std::size_t batch = 0; batch < Batch; ++batch){
-            v_cv(batch)(1) = 0;
+            v_cv(1) = 0;
 
             for(std::size_t channel = 0; channel < NC; ++channel){
-                etl::conv_2d_valid_multi(v(batch)(channel), w_f(channel), v_cv(batch)(0));
+                etl::conv_2d_valid_multi(v(batch)(channel), w_f(channel), v_cv(0));
 
-                v_cv(batch)(1) += v_cv(batch)(0);
+                v_cv(1) += v_cv(0);
             }
 
-            output(batch) = etl::rep<NH1, NH2>(b) + v_cv(batch)(1);
+            switch(activation_function){
+                case function::IDENTITY:
+                    output(batch) = etl::rep<NH1, NH2>(b) + v_cv(1);
+                    break;
+                case function::SIGMOID:
+                    output(batch) = etl::sigmoid(etl::rep<NH1, NH2>(b) + v_cv(1));
+                    break;
+                case function::TANH:
+                    output(batch) = etl::tanh(etl::rep<NH1, NH2>(b) + v_cv(1));
+                    break;
+            }
         }
     }
 
@@ -143,6 +163,12 @@ struct conv_layer final {
     using output_one_t = etl::fast_dyn_matrix<weight, K, NH1, NH2>;
     using input_t = std::vector<input_one_t>;
     using output_t = std::vector<output_one_t>;
+
+    template<std::size_t B>
+    using input_batch_t = etl::fast_dyn_matrix<weight, B, NC, NV1, NV2>;
+
+    template<std::size_t B>
+    using output_batch_t = etl::fast_dyn_matrix<weight, B, K, NH1, NH2>;
 
     template<typename Sample>
     input_one_t convert_sample(const Sample& sample) const {
