@@ -22,18 +22,47 @@ struct layer_traits {
     using layer_t = Layer;
 
     /*!
-     * \brief Indicates if the layer is convolutional
+     * \brief Indicates if the layer is a standard layer.
      */
-    static constexpr bool is_convolutional(){
-        return cpp::is_specialization_of<conv_rbm, layer_t>::value
-            || cpp::is_specialization_of<conv_rbm_mp, layer_t>::value;
+    static constexpr bool is_standard_layer(){
+        return is_dense_layer() || is_convolutional_layer();
+    }
+
+    /*!
+     * \brief Indicates if the layer is a standard dense layer.
+     */
+    static constexpr bool is_dense_layer(){
+        return cpp::is_specialization_of<dense_layer, layer_t>::value;
+    }
+
+    /*!
+     * \brief Indicates if the layer is a standard convolutionl layer.
+     */
+    static constexpr bool is_convolutional_layer(){
+        return cpp::is_specialization_of<conv_layer, layer_t>::value;
     }
 
     /*!
      * \brief Indicates if this layer is a RBM layer.
      */
     static constexpr bool is_rbm_layer(){
-        return !(is_pooling_layer() || is_transform_layer() || is_multiplex_layer());
+        return is_standard_rbm_layer() || is_convolutional_rbm_layer();
+    }
+
+    /*!
+     * \brief Indicates if this layer is a standard (non-convolutional) RBM layer.
+     */
+    static constexpr bool is_standard_rbm_layer(){
+        return cpp::is_specialization_of<dyn_rbm, layer_t>::value
+            || cpp::is_specialization_of<rbm, layer_t>::value;
+    }
+
+    /*!
+     * \brief Indicates if the layer is convolutional
+     */
+    static constexpr bool is_convolutional_rbm_layer(){
+        return cpp::is_specialization_of<conv_rbm, layer_t>::value
+            || cpp::is_specialization_of<conv_rbm_mp, layer_t>::value;
     }
 
     /*!
@@ -68,6 +97,21 @@ struct layer_traits {
     }
 
     /*!
+     * \brief Indicates if the layer is dynamic
+     */
+    static constexpr bool is_dynamic(){
+        return cpp::is_specialization_of<dyn_rbm, layer_t>::value;
+    }
+
+    /*!
+     * \brief Indicates if the layer is convolutional and has probabilistic max
+     * pooling
+     */
+    static constexpr bool has_probabilistic_max_pooling(){
+        return cpp::is_specialization_of<conv_rbm_mp, layer_t>::value;
+    }
+
+    /*!
      * \brief Indicates if this layer should be trained if it is the last layer.
      */
     template<cpp_enable_if_cst(layer_traits<layer_t>::is_rbm_layer())>
@@ -81,21 +125,6 @@ struct layer_traits {
         //if the pooling layer is the last, we spare the time to activate the previous layer by not training it
         //since training pooling layer is a nop, that doesn't change anything
         return false;
-    }
-
-    /*!
-     * \brief Indicates if the layer is dynamic
-     */
-    static constexpr bool is_dynamic(){
-        return cpp::is_specialization_of<dyn_rbm, layer_t>::value;
-    }
-
-    /*!
-     * \brief Indicates if the layer is convolutional and has probabilistic max
-     * pooling
-     */
-    static constexpr bool has_probabilistic_max_pooling(){
-        return cpp::is_specialization_of<conv_rbm_mp, layer_t>::value;
     }
 
     static constexpr std::size_t input_size(){

@@ -249,7 +249,7 @@ struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
 };
 
 template<typename RBM, typename C>
-struct opencv_rbm_visualizer<RBM, C, std::enable_if_t<layer_traits<RBM>::is_convolutional()>> : base_ocv_rbm_visualizer<RBM> {
+struct opencv_rbm_visualizer<RBM, C, std::enable_if_t<layer_traits<RBM>::is_convolutional_rbm_layer()>> : base_ocv_rbm_visualizer<RBM> {
     using rbm_t = RBM;
 
     static constexpr const detail::shape filter_shape{rbm_t::NW1, rbm_t::NW2};
@@ -692,7 +692,7 @@ template <typename DBN, typename C>
 std::size_t opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynamic()>>::current_image;
 
 template<typename DBN, typename C>
-struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convolutional()>> {
+struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convolutional_rbm_layer()>> {
     static constexpr const bool ignore_sub = false;
     static constexpr const bool replace_sub = true;
 
@@ -856,10 +856,10 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
 };
 
 template<typename DBN, typename C>
-std::vector<cv::Mat> opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convolutional()>>::buffer_images;
+std::vector<cv::Mat> opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convolutional_rbm_layer()>>::buffer_images;
 
 template<typename DBN, typename C>
-std::size_t opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convolutional()>>::current_image;
+std::size_t opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convolutional_rbm_layer()>>::current_image;
 
 template<typename RBM>
 void visualize_rbm(const RBM& rbm){

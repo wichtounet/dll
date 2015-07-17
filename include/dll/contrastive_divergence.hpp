@@ -820,7 +820,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
  * This class provides update which applies the gradients to the RBM.
  */
 template<std::size_t N, typename RBM, bool Persistent, bool Denoising>
-struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_traits<RBM>::is_convolutional()>> : base_trainer<RBM> {
+struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_traits<RBM>::is_convolutional_rbm_layer()>> : base_trainer<RBM> {
     static_assert(N > 0, "(P)CD-0 is not a valid training method");
 
     using rbm_t = RBM;
