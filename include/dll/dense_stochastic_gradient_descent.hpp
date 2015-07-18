@@ -236,7 +236,7 @@ struct dense_sgd_trainer {
         nan_check_deep(ctx1.errors);
 
         //TODO Remove
-        cpp_nused(r1);
+        cpp_unused(r1);
         cpp_unused(r2);
         cpp_unused(ctx1);
         cpp_unused(ctx2);
