@@ -106,13 +106,9 @@ struct dense_sgd_trainer {
         });
     }
 
-#ifndef ETL_BLAS_MODE
-
     template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_dense_layer() && etl::decay_traits<Inputs>::dimensions() == 2)>
     static void compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
-        for(std::size_t i = 0; i < batch_size; ++i){
-            grad += etl::outer(inputs(i), errors(i));
-        }
+        dense_compute_weight_gradients<Layer, Weight>(grad, inputs, errors);
     }
 
     template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_dense_layer() && etl::decay_traits<Inputs>::dimensions() != 2)>
@@ -127,15 +123,25 @@ struct dense_sgd_trainer {
             input(b) = inputs(b);
         }
 
+        dense_compute_weight_gradients<Layer, Weight>(grad, input, errors);
+    }
+
+#ifndef ETL_BLAS_MODE
+
+    template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_dense_layer() && etl::decay_traits<Inputs>::dimensions() == 2)>
+    static void dense_compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
         for(std::size_t i = 0; i < batch_size; ++i){
-            grad += etl::outer(input(i), errors(i));
+            grad += etl::outer(inputs(i), errors(i));
         }
     }
 
 #else
 
     template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_dense_layer() && std::is_same<Weight, float>::value)>
-    static void compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
+    static void dense_compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
+        cpp_unused(grad);
+        cpp_unused(inputs);
+        cpp_unused(errors);
         for(std::size_t i = 0; i < batch_size; ++i){
             cblas_sger(
                 CblasRowMajor,
@@ -149,7 +155,10 @@ struct dense_sgd_trainer {
     }
 
     template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_dense_layer() && std::is_same<Weight, double>::value)>
-    static void compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
+    static void dense_compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
+        cpp_unused(grad);
+        cpp_unused(inputs);
+        cpp_unused(errors);
         for(std::size_t i = 0; i < batch_size; ++i){
             cblas_dger(
                 CblasRowMajor,
@@ -172,6 +181,10 @@ struct dense_sgd_trainer {
         constexpr const auto NW2 = Layer::NW2;
         constexpr const auto NH1 = Layer::NH1;
         constexpr const auto NH2 = Layer::NH2;
+
+        cpp_unused(grad);
+        cpp_unused(inputs);
+        cpp_unused(errors);
 
         for(std::size_t b = 0; b < batch_size; ++b){
             for(std::size_t c = 0; c < NC; ++c){
