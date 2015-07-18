@@ -176,13 +176,22 @@ struct dense_sgd_trainer {
         constexpr const auto NH1 = Layer::NH1;
         constexpr const auto NH2 = Layer::NH2;
 
-        etl::fast_dyn_matrix<Weight, NW1, NW2> tmp;
+        etl::fast_dyn_matrix<Weight, K, NW1, NW2> tmp;
+
+        auto errors_f = force_temporary(errors);
+
+        //flip all the kernels horizontally and vertically
+
+        for(std::size_t b = 0; b < batch_size; ++b){
+            for(size_t k = 0; k < K; ++k){
+                errors_f(b)(k).fflip_inplace();
+            }
+        }
 
         for(std::size_t b = 0; b < batch_size; ++b){
             for(std::size_t c = 0; c < NC; ++c){
-                for(std::size_t k = 0; k < K; ++k){
-                    grad(c)(k) += etl::conv_2d_valid(inputs(b)(c), fflip(errors(b)(k)), tmp);
-                }
+                etl::conv_2d_valid_multi(inputs(b)(c), errors_f(b), tmp);
+                grad(c) += tmp;
             }
         }
     }
