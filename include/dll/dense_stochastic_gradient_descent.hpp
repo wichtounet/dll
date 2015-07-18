@@ -132,6 +132,38 @@ struct dense_sgd_trainer {
         }
     }
 
+#else
+
+    template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_dense_layer() && std::is_same<Weight, float>::value)>
+    static void compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
+        for(std::size_t i = 0; i < batch_size; ++i){
+            cblas_sger(
+                CblasRowMajor,
+                etl::dim<1>(inputs), etl::dim<1>(errors),
+                1.0f,
+                inputs(i).memory_start(), 1,
+                errors(i).memory_start(), 1,
+                grad.memory_start(), etl::dim<1>(errors)
+            );
+        }
+    }
+
+    template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_dense_layer() && std::is_same<Weight, double>::value)>
+    static void compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
+        for(std::size_t i = 0; i < batch_size; ++i){
+            cblas_dger(
+                CblasRowMajor,
+                etl::dim<1>(inputs), etl::dim<1>(errors),
+                1.0,
+                inputs(i).memory_start(), 1,
+                errors(i).memory_start(), 1,
+                grad.memory_start(), etl::dim<1>(errors)
+            );
+        }
+    }
+
+#endif
+
     template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_convolutional_layer())>
     static void compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
         constexpr const auto K = Layer::K;
@@ -157,38 +189,6 @@ struct dense_sgd_trainer {
             }
         }
     }
-
-#else
-
-    template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(std::is_same<Weight, float>::value)>
-    static void compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
-        for(std::size_t i = 0; i < batch_size; ++i){
-            cblas_sger(
-                CblasRowMajor,
-                etl::dim<1>(inputs), etl::dim<1>(errors),
-                1.0f,
-                inputs(i).memory_start(), 1,
-                errors(i).memory_start(), 1,
-                grad.memory_start(), etl::dim<1>(errors)
-            );
-        }
-    }
-
-    template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(std::is_same<Weight, double>::value)>
-    static void compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
-        for(std::size_t i = 0; i < batch_size; ++i){
-            cblas_dger(
-                CblasRowMajor,
-                etl::dim<1>(inputs), etl::dim<1>(errors),
-                1.0,
-                inputs(i).memory_start(), 1,
-                errors(i).memory_start(), 1,
-                grad.memory_start(), etl::dim<1>(errors)
-            );
-        }
-    }
-
-#endif
 
     template<typename Layer, typename Context, typename Inputs>
     static void compute_gradients(Layer& , Context& ctx, const Inputs& inputs){
