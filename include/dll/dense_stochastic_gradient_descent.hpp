@@ -72,6 +72,22 @@ struct dense_sgd_context <DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_c
     dense_sgd_context() : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
 };
 
+template<typename DBN, typename Layer>
+struct dense_sgd_context <DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_pooling_layer()>> {
+    using layer_t = Layer;
+    using dbn_t = DBN;
+    using weight = typename layer_t::weight;
+
+    static constexpr const std::size_t O1 = layer_t::O1;
+    static constexpr const std::size_t O2 = layer_t::O2;
+    static constexpr const std::size_t O3 = layer_t::O3;
+
+    static constexpr const auto batch_size = dbn_t::batch_size;
+
+    etl::fast_matrix<weight, batch_size, O1, O2, O3> output;
+    etl::fast_matrix<weight, batch_size, O1, O2, O3> errors;
+};
+
 template<typename DBN>
 struct dense_sgd_trainer {
     using dbn_t = DBN;
