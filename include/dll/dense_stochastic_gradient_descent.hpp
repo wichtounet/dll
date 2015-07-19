@@ -223,6 +223,12 @@ struct dense_sgd_trainer {
                 ctx1.errors(i) = ctx1.output(i) >> (1.0 - ctx1.output(i))   >> (r2.w * ctx2.errors(i));
             } else if(a_f == function::TANH){
                 ctx1.errors(i) = (1.0 - (ctx1.output(i) >> ctx1.output(i))) >> (r2.w * ctx2.errors(i));
+            } else if(a_f == function::RELU){
+                for(std::size_t ii = 0; ii < etl::size(ctx1.output(i)); ++ii){
+                    ctx1.errors(i)[ii] = ctx1.output(i)[ii] > 0.0 ? 1 : 0;
+                }
+
+                ctx1.errors(i) = ctx1.errors(i)                             >> (r2.w * ctx2.errors(i));
             }
         }
 
@@ -309,6 +315,12 @@ struct dense_sgd_trainer {
                 last_ctx.errors = observed >> (1.0 - observed)   >> (labels - observed);
             } else if(last_a_f == function::TANH){
                 last_ctx.errors = (1.0 - (observed >> observed)) >> (labels - observed);
+            } else if(last_a_f == function::RELU){
+                for(std::size_t ii = 0; ii < last_ctx.output.size(); ++ii){
+                    last_ctx.errors[ii] = observed[ii] > 0.0 ? 1.0 : 0.0;
+                }
+
+                last_ctx.errors = last_ctx.errors                >> (labels - observed);
             }
         }
 

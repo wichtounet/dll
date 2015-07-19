@@ -16,7 +16,8 @@ namespace dll {
 enum class function {
     IDENTITY,    ///< Identity activation function
     SIGMOID,     ///< Sigmoid activation function
-    TANH         ///< Hyperbolic tangent
+    TANH,        ///< Hyperbolic tangent
+    RELU         ///< Rectified Linear Unit
 };
 
 inline std::string to_string(function f){
@@ -27,6 +28,8 @@ inline std::string to_string(function f){
             return "SIGMOID";
         case function::TANH:
             return "TANH";
+        case function::RELU:
+            return "RELU";
     }
 
     cpp_unreachable("Unreachable code");

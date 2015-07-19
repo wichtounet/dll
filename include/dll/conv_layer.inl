@@ -115,6 +115,9 @@ struct conv_layer final {
             case function::TANH:
                 output = etl::tanh(etl::rep<NH1, NH2>(b) + v_cv(1));
                 break;
+            case function::RELU:
+                output = etl::max(etl::rep<NH1, NH2>(b) + v_cv(1), 0);
+                break;
         }
     }
 
@@ -152,6 +155,9 @@ struct conv_layer final {
                     break;
                 case function::TANH:
                     output(batch) = etl::tanh(etl::rep<NH1, NH2>(b) + v_cv(1));
+                    break;
+                case function::RELU:
+                    output(batch) = etl::max(etl::rep<NH1, NH2>(b) + v_cv(1), 0);
                     break;
             }
         }

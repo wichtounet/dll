@@ -88,6 +88,9 @@ struct dense_layer final {
             case function::TANH:
                 output = etl::tanh(b + v * w);
                 break;
+            case function::RELU:
+                output = etl::max(b + v * w, 0);
+                break;
         }
     }
 
@@ -106,6 +109,9 @@ struct dense_layer final {
                 break;
             case function::TANH:
                 output = etl::tanh(etl::rep_l(b, Batch) + v * w);
+                break;
+            case function::RELU:
+                output = etl::max(etl::rep_l(b, Batch) + v * w, 0);
                 break;
         }
     }
@@ -134,6 +140,9 @@ struct dense_layer final {
                 break;
             case function::TANH:
                 output = etl::tanh(etl::rep_l(b, Batch) + input * w);
+                break;
+            case function::RELU:
+                output = etl::max(etl::rep_l(b, Batch) + input * w, 0);
                 break;
         }
     }
