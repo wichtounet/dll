@@ -212,7 +212,7 @@ struct dense_sgd_trainer {
         }
     }
 
-    template<typename Layer, typename Context, typename Inputs>
+    template<typename Layer, typename Context, typename Inputs, cpp_enable_if(!decay_layer_traits<Layer>::is_pooling_layer())>
     static void compute_gradients(Layer& , Context& ctx, const Inputs& inputs){
         ctx.w_grad = 0;
 
@@ -228,7 +228,12 @@ struct dense_sgd_trainer {
         nan_check_deep(ctx.b_grad);
     }
 
-    template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(decay_layer_traits<Layer2>::is_dense_layer())>
+    template<typename Layer, typename Context, typename Inputs, cpp_enable_if(decay_layer_traits<Layer>::is_pooling_layer())>
+    static void compute_gradients(Layer&, Context&, const Inputs&){
+        //Pooling layers have no weight
+    }
+
+    template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(!decay_layer_traits<Layer1>::is_pooling_layer() && decay_layer_traits<Layer2>::is_dense_layer())>
     static void compute_errors(Layer1& r1, Context1& ctx1, Layer2& r2, Context2& ctx2){
         constexpr const auto a_f = std::decay_t<decltype(r1)>::activation_function;
 
@@ -251,7 +256,7 @@ struct dense_sgd_trainer {
         nan_check_deep(ctx1.errors);
     }
 
-    template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(decay_layer_traits<Layer2>::is_convolutional_layer())>
+    template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(!decay_layer_traits<Layer1>::is_pooling_layer() && decay_layer_traits<Layer2>::is_convolutional_layer())>
     static void compute_errors(Layer1& r1 , Context1& ctx1, Layer2& r2, Context2& ctx2){
         constexpr const auto a_f = std::decay_t<decltype(r1)>::activation_function;
 
@@ -387,30 +392,40 @@ struct dense_sgd_trainer {
         //Apply gradients
 
         cpp::for_each(tuples, contexts, [this, n](auto& layer, auto& context){
-            //Update the gradients
-            this->update_grad(layer.w, context.w_grad, w_decay(dbn_traits<dbn_t>::decay()), 0.0);
-            this->update_grad(layer.b, context.b_grad, b_decay(dbn_traits<dbn_t>::decay()), 0.0);
-
-            //Update with momentum and learning rate
-            if(dbn_traits<dbn_t>::has_momentum()){
-                auto momentum = dbn.momentum;
-                auto eps = dbn.learning_rate;
-
-                context.w_inc = momentum * context.w_inc + (eps / n) * context.w_grad;
-                context.b_inc = momentum * context.b_inc + (eps / n) * context.b_grad;
-
-                layer.w += context.w_inc;
-                layer.b += context.b_inc;
-            } else {
-                auto eps = dbn.learning_rate;
-
-                layer.w += (eps / n) * context.w_grad;
-                layer.b += (eps / n) * context.b_grad;
-            }
-
-            nan_check_deep(layer.w);
-            nan_check_deep(layer.b);
+            this->apply_gradients(layer, context, n);
         });
+    }
+
+    template<typename L, typename C, cpp_enable_if(!decay_layer_traits<L>::is_pooling_layer())>
+    void apply_gradients(L& layer, C& context, std::size_t n){
+        //Update the gradients
+        this->update_grad(layer.w, context.w_grad, w_decay(dbn_traits<dbn_t>::decay()), 0.0);
+        this->update_grad(layer.b, context.b_grad, b_decay(dbn_traits<dbn_t>::decay()), 0.0);
+
+        //Update with momentum and learning rate
+        if(dbn_traits<dbn_t>::has_momentum()){
+            auto momentum = dbn.momentum;
+            auto eps = dbn.learning_rate;
+
+            context.w_inc = momentum * context.w_inc + (eps / n) * context.w_grad;
+            context.b_inc = momentum * context.b_inc + (eps / n) * context.b_grad;
+
+            layer.w += context.w_inc;
+            layer.b += context.b_inc;
+        } else {
+            auto eps = dbn.learning_rate;
+
+            layer.w += (eps / n) * context.w_grad;
+            layer.b += (eps / n) * context.b_grad;
+        }
+
+        nan_check_deep(layer.w);
+        nan_check_deep(layer.b);
+    }
+
+    template<typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_pooling_layer())>
+    void apply_gradients(L&, C&, std::size_t){
+        //Pooling layers have no gradients
     }
 
     template<typename V, typename G>
