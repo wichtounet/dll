@@ -20,7 +20,7 @@ namespace dll {
 template<typename Desc>
 struct mp_layer_3d final : pooling_layer_3d<Desc> {
     using desc = Desc;
-    using weight = double; //This should be configurable or TMP computed
+    using weight = typename desc::weight;
     using base = pooling_layer_3d<desc>;
 
     mp_layer_3d() = default;
