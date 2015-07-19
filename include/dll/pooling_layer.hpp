@@ -18,7 +18,7 @@ namespace dll {
 template<typename Desc>
 struct pooling_layer_3d {
     using desc = Desc;
-    using weight = double; //This should be configurable or TMP computed
+    using weight = typename desc::weight;
 
     static constexpr const std::size_t I1 = desc::I1;
     static constexpr const std::size_t I2 = desc::I2;
