@@ -52,6 +52,12 @@ struct pooling_layer_3d {
     using input_t = std::vector<input_one_t>;
     using output_t = std::vector<output_one_t>;
 
+    template<std::size_t B>
+    using input_batch_t = etl::fast_dyn_matrix<weight, B, I1, I2, I3>;
+
+    template<std::size_t B>
+    using output_batch_t = etl::fast_dyn_matrix<weight, B, O1, O2, O3>;
+
     template<typename Iterator>
     static auto convert_input(Iterator&& first, Iterator&& last){
         input_t input;

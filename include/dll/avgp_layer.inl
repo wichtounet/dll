@@ -41,6 +41,12 @@ struct avgp_layer_3d final: pooling_layer_3d<Desc>  {
     using input_t = typename base::input_t;
     using output_t = typename base::output_t;
 
+    template<std::size_t B>
+    using input_batch_t = typename base::template input_batch_t<B>;
+
+    template<std::size_t B>
+    using output_batch_t = typename base::template output_batch_t<B>;
+
     //TODO Ideally, the dbn should guess if h_a/h_s are used or only h_a
     static void activate_one(const input_one_t& v, output_one_t& h){
         activate_one(v, h, h);
@@ -67,6 +73,29 @@ struct avgp_layer_3d final: pooling_layer_3d<Desc>  {
                     }
 
                     h(i,j,k) = avg / static_cast<weight>(base::C1 * base::C2 * base::C3);
+                }
+            }
+        }
+    }
+
+    template<typename Input, typename Output>
+    static void batch_activate_hidden(Output& output, const Input& input){
+        for(std::size_t b = 0; b < etl::dim<0>(input); ++b){
+            for(std::size_t i = 0; i < base::O1; ++i){
+                for(std::size_t j = 0; j < base::O2; ++j){
+                    for(std::size_t k = 0; k < base::O3; ++k){
+                        weight avg = 0;
+
+                        for(std::size_t ii = 0; ii < base::C1; ++ii){
+                            for(std::size_t jj = 0; jj < base::C2; ++jj){
+                                for(std::size_t kk = 0; kk < base::C3; ++kk){
+                                    avg += input(b, i * base::C1 + ii, j * base::C2 + jj, k * base::C3 + kk);
+                                }
+                            }
+                        }
+
+                        output(b, i,j,k) = avg / static_cast<weight>(base::C1 * base::C2 * base::C3);
+                    }
                 }
             }
         }
