@@ -237,15 +237,47 @@ struct dense_sgd_trainer {
 
     template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(decay_layer_traits<Layer2>::is_convolutional_layer())>
     static void compute_errors(Layer1& r1 , Context1& ctx1, Layer2& r2, Context2& ctx2){
-        //TODO
+        constexpr const auto a_f = std::decay_t<decltype(r1)>::activation_function;
+
+        constexpr const auto K = Layer2::K;
+        constexpr const auto NC = Layer2::NC;
+        constexpr const auto NV1 = Layer2::NV1;
+        constexpr const auto NV2 = Layer2::NV2;
+
+        auto w_f = force_temporary(r2.w);
+
+        for(size_t c = 0; c < NC; ++c){
+            for(size_t k = 0; k < K; ++k){
+                w_f(c)(k).fflip_inplace();
+            }
+        }
+
+        etl::fast_dyn_matrix<weight, NV1, NV2> tmp;
+        etl::fast_dyn_matrix<weight, Layer1::NH1, Layer1::NH2> tmp2;
+
+        ctx1.errors = 0;
+
+        for(std::size_t i = 0; i < batch_size; ++i){
+            for(size_t c = 0; c < NC; ++c){
+                for(size_t k = 0; k < K; ++k){
+                    if(a_f == function::IDENTITY){
+                        ctx1.errors(i)(c) += 1.0                                                >> etl::fast_conv_2d_full(ctx2.errors(i)(k), w_f(c)(k), tmp);
+                    } else if(a_f == function::SIGMOID){
+                        ctx1.errors(i)(c) += ctx1.output(i)(c) >> (1.0 - ctx1.output(i)(c))     >> etl::fast_conv_2d_full(ctx2.errors(i)(k), w_f(c)(k), tmp);
+                    } else if(a_f == function::TANH){
+                        ctx1.errors(i)(c) += (1.0 >> ctx1.output(i)(c) >> ctx1.output(i)(c))    >> etl::fast_conv_2d_full(ctx2.errors(i)(k), w_f(c)(k), tmp);
+                    } else if(a_f == function::RELU){
+                        for(std::size_t ii = 0; ii < etl::size(ctx1.output(i)(c)); ++ii){
+                            tmp2[ii] = ctx1.output(i)(c)[ii] > 0.0 ? 1 : 0;
+                        }
+
+                        ctx1.errors(i)(c) += tmp2                                               >> etl::fast_conv_2d_full(ctx2.errors(i)(k), w_f(c)(k), tmp);
+                    }
+                }
+            }
+        }
 
         nan_check_deep(ctx1.errors);
-
-        //TODO Remove
-        cpp_unused(r1);
-        cpp_unused(r2);
-        cpp_unused(ctx1);
-        cpp_unused(ctx2);
     }
 
     template<typename D, typename It>
