@@ -238,19 +238,7 @@ struct dense_sgd_trainer {
         constexpr const auto a_f = std::decay_t<decltype(r1)>::activation_function;
 
         for(std::size_t i = 0; i < batch_size; ++i){
-            if(a_f == function::IDENTITY){
-                ctx1.errors(i) = 1.0                                        >> (r2.w * ctx2.errors(i));
-            } else if(a_f == function::SIGMOID){
-                ctx1.errors(i) = ctx1.output(i) >> (1.0 - ctx1.output(i))   >> (r2.w * ctx2.errors(i));
-            } else if(a_f == function::TANH){
-                ctx1.errors(i) = (1.0 - (ctx1.output(i) >> ctx1.output(i))) >> (r2.w * ctx2.errors(i));
-            } else if(a_f == function::RELU){
-                for(std::size_t ii = 0; ii < etl::size(ctx1.output(i)); ++ii){
-                    ctx1.errors(i)[ii] = ctx1.output(i)[ii] > 0.0 ? 1 : 0;
-                }
-
-                ctx1.errors(i) = ctx1.errors(i)                             >> (r2.w * ctx2.errors(i));
-            }
+            ctx1.errors(i) = f_derivative<a_f>(ctx1.output(i)) >> (r2.w * ctx2.errors(i));
         }
 
         nan_check_deep(ctx1.errors);
@@ -274,26 +262,13 @@ struct dense_sgd_trainer {
         }
 
         etl::fast_dyn_matrix<weight, NV1, NV2> tmp;
-        etl::fast_dyn_matrix<weight, Layer1::NH1, Layer1::NH2> tmp2;
 
         ctx1.errors = 0;
 
         for(std::size_t i = 0; i < batch_size; ++i){
             for(size_t c = 0; c < NC; ++c){
                 for(size_t k = 0; k < K; ++k){
-                    if(a_f == function::IDENTITY){
-                        ctx1.errors(i)(c) += 1.0                                                >> etl::fast_conv_2d_full(ctx2.errors(i)(k), w_f(c)(k), tmp);
-                    } else if(a_f == function::SIGMOID){
-                        ctx1.errors(i)(c) += ctx1.output(i)(c) >> (1.0 - ctx1.output(i)(c))     >> etl::fast_conv_2d_full(ctx2.errors(i)(k), w_f(c)(k), tmp);
-                    } else if(a_f == function::TANH){
-                        ctx1.errors(i)(c) += (1.0 >> ctx1.output(i)(c) >> ctx1.output(i)(c))    >> etl::fast_conv_2d_full(ctx2.errors(i)(k), w_f(c)(k), tmp);
-                    } else if(a_f == function::RELU){
-                        for(std::size_t ii = 0; ii < etl::size(ctx1.output(i)(c)); ++ii){
-                            tmp2[ii] = ctx1.output(i)(c)[ii] > 0.0 ? 1 : 0;
-                        }
-
-                        ctx1.errors(i)(c) += tmp2                                               >> etl::fast_conv_2d_full(ctx2.errors(i)(k), w_f(c)(k), tmp);
-                    }
+                    ctx1.errors(i)(c) += f_derivative<a_f>(ctx1.output(i)(c)) >> etl::fast_conv_2d_full(ctx2.errors(i)(k), w_f(c)(k), tmp);
                 }
             }
         }

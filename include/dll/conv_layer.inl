@@ -105,20 +105,7 @@ struct conv_layer final {
             v_cv(1) += v_cv(0);
         }
 
-        switch(activation_function){
-            case function::IDENTITY:
-                output = etl::rep<NH1, NH2>(b) + v_cv(1);
-                break;
-            case function::SIGMOID:
-                output = etl::sigmoid(etl::rep<NH1, NH2>(b) + v_cv(1));
-                break;
-            case function::TANH:
-                output = etl::tanh(etl::rep<NH1, NH2>(b) + v_cv(1));
-                break;
-            case function::RELU:
-                output = etl::max(etl::rep<NH1, NH2>(b) + v_cv(1), 0);
-                break;
-        }
+        output = f_activate<activation_function>(etl::rep<NH1, NH2>(b) + v_cv(1));
     }
 
     template<typename H1, typename V>
@@ -146,20 +133,7 @@ struct conv_layer final {
                 v_cv(1) += v_cv(0);
             }
 
-            switch(activation_function){
-                case function::IDENTITY:
-                    output(batch) = etl::rep<NH1, NH2>(b) + v_cv(1);
-                    break;
-                case function::SIGMOID:
-                    output(batch) = etl::sigmoid(etl::rep<NH1, NH2>(b) + v_cv(1));
-                    break;
-                case function::TANH:
-                    output(batch) = etl::tanh(etl::rep<NH1, NH2>(b) + v_cv(1));
-                    break;
-                case function::RELU:
-                    output(batch) = etl::max(etl::rep<NH1, NH2>(b) + v_cv(1), 0);
-                    break;
-            }
+            output(batch) = f_activate<activation_function>(etl::rep<NH1, NH2>(b) + v_cv(1));
         }
     }
 

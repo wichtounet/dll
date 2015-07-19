@@ -78,20 +78,7 @@ struct dense_layer final {
 
     template<typename H1, typename V>
     void activate_hidden(H1&& output, const V& v) const {
-        switch(activation_function){
-            case function::IDENTITY:
-                output = b + v * w;
-                break;
-            case function::SIGMOID:
-                output = etl::sigmoid(b + v * w);
-                break;
-            case function::TANH:
-                output = etl::tanh(b + v * w);
-                break;
-            case function::RELU:
-                output = etl::max(b + v * w, 0);
-                break;
-        }
+        output = f_activate<activation_function>(b + v * w);
     }
 
     template<typename H1, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 2)>
@@ -100,20 +87,7 @@ struct dense_layer final {
 
         cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
 
-        switch(activation_function){
-            case function::IDENTITY:
-                output = etl::rep_l(b, Batch) + v * w;
-                break;
-            case function::SIGMOID:
-                output = etl::sigmoid(etl::rep_l(b, Batch) + v * w);
-                break;
-            case function::TANH:
-                output = etl::tanh(etl::rep_l(b, Batch) + v * w);
-                break;
-            case function::RELU:
-                output = etl::max(etl::rep_l(b, Batch) + v * w, 0);
-                break;
-        }
+        output = f_activate<activation_function>(etl::rep_l(b, Batch) + v * w);
     }
 
     template<typename H1, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 2)>
@@ -131,20 +105,7 @@ struct dense_layer final {
 
         cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
 
-        switch(activation_function){
-            case function::IDENTITY:
-                output = etl::rep_l(b, Batch) + input * w;
-                break;
-            case function::SIGMOID:
-                output = etl::sigmoid(etl::rep_l(b, Batch) + input * w);
-                break;
-            case function::TANH:
-                output = etl::tanh(etl::rep_l(b, Batch) + input * w);
-                break;
-            case function::RELU:
-                output = etl::max(etl::rep_l(b, Batch) + input * w, 0);
-                break;
-        }
+        output = f_activate<activation_function>(etl::rep_l(b, Batch) + input * w);
     }
 
     //Utilities to be used by DBNs
