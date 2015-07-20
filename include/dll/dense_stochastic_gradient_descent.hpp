@@ -378,23 +378,7 @@ struct dense_sgd_trainer {
 
         constexpr const auto last_a_f = dbn_t::template layer_type<layers - 1>::activation_function;
 
-        for(std::size_t j = 0; j < n_outputs; ++j){
-            auto& observed = last_ctx.output;
-
-            if(last_a_f == function::IDENTITY){
-                last_ctx.errors = 1.0                            >> (labels - observed);
-            } else if(last_a_f == function::SIGMOID){
-                last_ctx.errors = observed >> (1.0 - observed)   >> (labels - observed);
-            } else if(last_a_f == function::TANH){
-                last_ctx.errors = (1.0 - (observed >> observed)) >> (labels - observed);
-            } else if(last_a_f == function::RELU){
-                for(std::size_t ii = 0; ii < last_ctx.output.size(); ++ii){
-                    last_ctx.errors[ii] = observed[ii] > 0.0 ? 1.0 : 0.0;
-                }
-
-                last_ctx.errors = last_ctx.errors                >> (labels - observed);
-            }
-        }
+        last_ctx.errors = f_derivative<last_a_f>(last_ctx.output) >> (labels - last_ctx.output);
 
         nan_check_deep(last_ctx.errors);
 
