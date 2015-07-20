@@ -78,15 +78,30 @@ struct dense_sgd_context <DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_p
     using dbn_t = DBN;
     using weight = typename layer_t::weight;
 
+    static constexpr const std::size_t I1 = layer_t::I1;
+    static constexpr const std::size_t I2 = layer_t::I2;
+    static constexpr const std::size_t I3 = layer_t::I3;
+
     static constexpr const std::size_t O1 = layer_t::O1;
     static constexpr const std::size_t O2 = layer_t::O2;
     static constexpr const std::size_t O3 = layer_t::O3;
 
     static constexpr const auto batch_size = dbn_t::batch_size;
 
+    etl::fast_matrix<weight, batch_size, I1, I2, I3> input;
     etl::fast_matrix<weight, batch_size, O1, O2, O3> output;
     etl::fast_matrix<weight, batch_size, O1, O2, O3> errors;
 };
+
+template<typename Layer, typename Input, typename Output, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_max_pooling_layer())>
+auto upsample(Input&& input, Output&& output, Errors&& errors){
+    return etl::max_pool_derivative_3d<Layer::C1, Layer::C2, Layer::C3>(input, output) >> etl::upsample_3d<Layer::C1, Layer::C2, Layer::C3>(errors);
+}
+
+template<typename Layer, typename Input, typename Output, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_avg_pooling_layer())>
+auto upsample(Input&& input, Output&& output, Errors&& errors){
+    return etl::avg_pool_derivative_3d<Layer::C1, Layer::C2, Layer::C3>(input, output) >> etl::upsample_3d<Layer::C1, Layer::C2, Layer::C3>(errors);
+}
 
 template<typename DBN>
 struct dense_sgd_trainer {
@@ -119,6 +134,10 @@ struct dense_sgd_trainer {
 
         cpp::for_each_pair(tuples, contexts, [](auto&, auto& layer_2, auto& ctx1, auto& ctx2){
             layer_2.batch_activate_hidden(ctx2.output, ctx1.output);
+
+            cpp::static_if<decay_layer_traits<decltype(layer_2)>::is_pooling_layer()>([&](auto f){
+                f(ctx2).input = ctx1.output;
+            });
         });
     }
 
@@ -233,9 +252,20 @@ struct dense_sgd_trainer {
         //Pooling layers have no weight
     }
 
+    template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(decay_layer_traits<Layer2>::is_pooling_layer())>
+    static void compute_errors(Layer1&, Context1& ctx1, Layer2&, Context2& ctx2){
+        constexpr const auto a_f = std::decay_t<Layer1>::activation_function;
+
+        for(std::size_t i = 0; i < batch_size; ++i){
+            ctx1.errors(i) = f_derivative<a_f>(ctx1.output(i)) >> upsample<Layer2>(ctx2.input(i), ctx2.output(i), ctx2.errors(i));
+        }
+
+        nan_check_deep(ctx1.errors);
+    }
+
     template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(!decay_layer_traits<Layer1>::is_pooling_layer() && decay_layer_traits<Layer2>::is_dense_layer())>
-    static void compute_errors(Layer1& r1, Context1& ctx1, Layer2& r2, Context2& ctx2){
-        constexpr const auto a_f = std::decay_t<decltype(r1)>::activation_function;
+    static void compute_errors(Layer1&, Context1& ctx1, Layer2& r2, Context2& ctx2){
+        constexpr const auto a_f = std::decay_t<Layer1>::activation_function;
 
         for(std::size_t i = 0; i < batch_size; ++i){
             ctx1.errors(i) = f_derivative<a_f>(ctx1.output(i)) >> (r2.w * ctx2.errors(i));
@@ -245,8 +275,8 @@ struct dense_sgd_trainer {
     }
 
     template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(!decay_layer_traits<Layer1>::is_pooling_layer() && decay_layer_traits<Layer2>::is_convolutional_layer())>
-    static void compute_errors(Layer1& r1 , Context1& ctx1, Layer2& r2, Context2& ctx2){
-        constexpr const auto a_f = std::decay_t<decltype(r1)>::activation_function;
+    static void compute_errors(Layer1&, Context1& ctx1, Layer2& r2, Context2& ctx2){
+        constexpr const auto a_f = std::decay_t<Layer1>::activation_function;
 
         constexpr const auto K = Layer2::K;
         constexpr const auto NC = Layer2::NC;
@@ -269,6 +299,46 @@ struct dense_sgd_trainer {
             for(size_t c = 0; c < NC; ++c){
                 for(size_t k = 0; k < K; ++k){
                     ctx1.errors(i)(c) += f_derivative<a_f>(ctx1.output(i)(c)) >> etl::fast_conv_2d_full(ctx2.errors(i)(k), w_f(c)(k), tmp);
+                }
+            }
+        }
+
+        nan_check_deep(ctx1.errors);
+    }
+
+
+    template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(decay_layer_traits<Layer1>::is_pooling_layer() && decay_layer_traits<Layer2>::is_dense_layer())>
+    static void compute_errors(Layer1&, Context1& ctx1, Layer2& r2, Context2& ctx2){
+        for(std::size_t i = 0; i < batch_size; ++i){
+            ctx1.errors(i) = r2.w * ctx2.errors(i);
+        }
+
+        nan_check_deep(ctx1.errors);
+    }
+
+    template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(decay_layer_traits<Layer1>::is_pooling_layer() && decay_layer_traits<Layer2>::is_convolutional_layer())>
+    static void compute_errors(Layer1&, Context1& ctx1, Layer2& r2, Context2& ctx2){
+        constexpr const auto K = Layer2::K;
+        constexpr const auto NC = Layer2::NC;
+        constexpr const auto NV1 = Layer2::NV1;
+        constexpr const auto NV2 = Layer2::NV2;
+
+        auto w_f = force_temporary(r2.w);
+
+        for(size_t c = 0; c < NC; ++c){
+            for(size_t k = 0; k < K; ++k){
+                w_f(c)(k).fflip_inplace();
+            }
+        }
+
+        etl::fast_dyn_matrix<weight, NV1, NV2> tmp;
+
+        ctx1.errors = 0;
+
+        for(std::size_t i = 0; i < batch_size; ++i){
+            for(size_t c = 0; c < NC; ++c){
+                for(size_t k = 0; k < K; ++k){
+                    ctx1.errors(i)(c) += etl::fast_conv_2d_full(ctx2.errors(i)(k), w_f(c)(k), tmp);
                 }
             }
         }

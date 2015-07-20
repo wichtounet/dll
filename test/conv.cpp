@@ -14,6 +14,7 @@
 #include "dll/dbn.hpp"
 #include "dll/dense_stochastic_gradient_descent.hpp"
 #include "dll/mp_layer.hpp"
+#include "dll/avgp_layer.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -185,7 +186,7 @@ TEST_CASE( "conv/sgd/6", "[dense][dbn][mnist][sgd]" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_desc<1, 28, 28, 10, 24, 24, dll::activation<dll::function::RELU>>::layer_t,
-            dll::mp_layer_3d_desc<10, 24, 24, 1, 2, 2, dll::weight_type<float>>::layer_t,
+            dll::avgp_layer_3d_desc<10, 24, 24, 1, 2, 2, dll::weight_type<float>>::layer_t,
             dll::conv_desc<10, 12, 12, 6, 8, 8, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<6 * 8 * 8, 100, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<100, 10, dll::activation<dll::function::SIGMOID>>::layer_t
