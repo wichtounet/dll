@@ -87,7 +87,15 @@ struct dense_layer final {
 
         cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
 
-        output = f_activate<activation_function>(etl::rep_l(b, Batch) + v * w);
+        if(activation_function == function::SOFTMAX){
+            auto expr = etl::force_temporary(etl::rep_l(b, Batch) + v * w);
+
+            for(std::size_t i = 0; i < Batch; ++i){
+                output(i) = f_activate<activation_function>(expr(i));
+            }
+        } else {
+            output = f_activate<activation_function>(etl::rep_l(b, Batch) + v * w);
+        }
     }
 
     template<typename H1, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 2)>
@@ -96,7 +104,16 @@ struct dense_layer final {
 
         cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
 
-        output = f_activate<activation_function>(etl::rep_l(b, Batch) + etl::reshape<Batch, num_visible>(input) * w);
+        if(activation_function == function::SOFTMAX){
+            auto expr = etl::force_temporary(etl::rep_l(b, Batch) + etl::reshape<Batch, num_visible>(input) * w);
+
+            for(std::size_t i = 0; i < Batch; ++i){
+                output(i) = f_activate<activation_function>(expr(i));
+            }
+        } else {
+            output = f_activate<activation_function>(etl::rep_l(b, Batch) + etl::reshape<Batch, num_visible>(input) * w);
+        }
+
     }
 
     //Utilities to be used by DBNs
