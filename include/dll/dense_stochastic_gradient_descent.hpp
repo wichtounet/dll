@@ -148,16 +148,6 @@ struct dense_sgd_trainer {
 
     template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_dense_layer() && etl::decay_traits<Inputs>::dimensions() != 2)>
     static void compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
-        //TODO By improving reshape to be variadic, this could be
-        //made a lot faster
-
-        //constexpr const auto Batch = etl::decay_traits<Inputs>::template dim<0>();
-        //typename Layer::template input_batch_t<Batch> input;
-
-        //for(std::size_t b = 0; b < Batch; ++b){
-            //input(b) = inputs(b);
-        //}
-
         dense_compute_weight_gradients<Layer, Weight>(grad, etl::reshape<batch_size, Layer::num_visible>(inputs), errors);
     }
 
@@ -263,87 +253,71 @@ struct dense_sgd_trainer {
         nan_check_deep(ctx1.errors);
     }
 
+    template<typename Layer1, typename Context1, typename Layer2, typename Context2, typename DF>
+    static void compute_errors_from_dense(Layer1&, Context1& ctx1, Layer2& r2, Context2& ctx2, DF derivative){
+        for(std::size_t i = 0; i < batch_size; ++i){
+            ctx1.errors(i) = derivative(i) >> (r2.w * ctx2.errors(i));
+        }
+
+        nan_check_deep(ctx1.errors);
+    }
+
+    template<typename Layer1, typename Context1, typename Layer2, typename Context2, typename DF>
+    static void compute_errors_from_conv(Layer1&, Context1& ctx1, Layer2& r2, Context2& ctx2, DF derivative){
+        constexpr const auto K = Layer2::K;
+        constexpr const auto NC = Layer2::NC;
+        constexpr const auto NV1 = Layer2::NV1;
+        constexpr const auto NV2 = Layer2::NV2;
+
+        auto w_f = force_temporary(r2.w);
+
+        for(size_t c = 0; c < NC; ++c){
+            for(size_t k = 0; k < K; ++k){
+                w_f(c)(k).fflip_inplace();
+            }
+        }
+
+        etl::fast_dyn_matrix<weight, NV1, NV2> tmp;
+
+        ctx1.errors = 0;
+
+        for(std::size_t i = 0; i < batch_size; ++i){
+            for(size_t c = 0; c < NC; ++c){
+                for(size_t k = 0; k < K; ++k){
+                    ctx1.errors(i)(c) += derivative(i, c) >> etl::fast_conv_2d_full(ctx2.errors(i)(k), w_f(c)(k), tmp);
+                }
+            }
+        }
+
+        nan_check_deep(ctx1.errors);
+    }
+
+    //Backpropagate errors from dense to dense or conv
     template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(!decay_layer_traits<Layer1>::is_pooling_layer() && decay_layer_traits<Layer2>::is_dense_layer())>
-    static void compute_errors(Layer1&, Context1& ctx1, Layer2& r2, Context2& ctx2){
+    static void compute_errors(Layer1& r1, Context1& ctx1, Layer2& r2, Context2& ctx2){
         constexpr const auto a_f = std::decay_t<Layer1>::activation_function;
 
-        for(std::size_t i = 0; i < batch_size; ++i){
-            ctx1.errors(i) = f_derivative<a_f>(ctx1.output(i)) >> (r2.w * ctx2.errors(i));
-        }
-
-        nan_check_deep(ctx1.errors);
+        compute_errors_from_dense(r1, ctx1, r2, ctx2, [&](std::size_t i){ return f_derivative<a_f>(ctx1.output(i)); });
     }
 
+    //Backpropagate errors from conv to dense or conv
     template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(!decay_layer_traits<Layer1>::is_pooling_layer() && decay_layer_traits<Layer2>::is_convolutional_layer())>
-    static void compute_errors(Layer1&, Context1& ctx1, Layer2& r2, Context2& ctx2){
+    static void compute_errors(Layer1& r1, Context1& ctx1, Layer2& r2, Context2& ctx2){
         constexpr const auto a_f = std::decay_t<Layer1>::activation_function;
 
-        constexpr const auto K = Layer2::K;
-        constexpr const auto NC = Layer2::NC;
-        constexpr const auto NV1 = Layer2::NV1;
-        constexpr const auto NV2 = Layer2::NV2;
-
-        auto w_f = force_temporary(r2.w);
-
-        for(size_t c = 0; c < NC; ++c){
-            for(size_t k = 0; k < K; ++k){
-                w_f(c)(k).fflip_inplace();
-            }
-        }
-
-        etl::fast_dyn_matrix<weight, NV1, NV2> tmp;
-
-        ctx1.errors = 0;
-
-        for(std::size_t i = 0; i < batch_size; ++i){
-            for(size_t c = 0; c < NC; ++c){
-                for(size_t k = 0; k < K; ++k){
-                    ctx1.errors(i)(c) += f_derivative<a_f>(ctx1.output(i)(c)) >> etl::fast_conv_2d_full(ctx2.errors(i)(k), w_f(c)(k), tmp);
-                }
-            }
-        }
-
-        nan_check_deep(ctx1.errors);
+        compute_errors_from_conv(r1, ctx1, r2, ctx2, [&](std::size_t i, std::size_t c){ return f_derivative<a_f>(ctx1.output(i)(c)); });
     }
 
-
+    //Backpropagate errors from dense to pooling
     template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(decay_layer_traits<Layer1>::is_pooling_layer() && decay_layer_traits<Layer2>::is_dense_layer())>
-    static void compute_errors(Layer1&, Context1& ctx1, Layer2& r2, Context2& ctx2){
-        for(std::size_t i = 0; i < batch_size; ++i){
-            ctx1.errors(i) = r2.w * ctx2.errors(i);
-        }
-
-        nan_check_deep(ctx1.errors);
+    static void compute_errors(Layer1& r1, Context1& ctx1, Layer2& r2, Context2& ctx2){
+        compute_errors_from_dense(r1, ctx1, r2, ctx2, [](std::size_t){ return 1.0; });
     }
 
+    //Backpropagate errors from conv to pooling
     template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(decay_layer_traits<Layer1>::is_pooling_layer() && decay_layer_traits<Layer2>::is_convolutional_layer())>
-    static void compute_errors(Layer1&, Context1& ctx1, Layer2& r2, Context2& ctx2){
-        constexpr const auto K = Layer2::K;
-        constexpr const auto NC = Layer2::NC;
-        constexpr const auto NV1 = Layer2::NV1;
-        constexpr const auto NV2 = Layer2::NV2;
-
-        auto w_f = force_temporary(r2.w);
-
-        for(size_t c = 0; c < NC; ++c){
-            for(size_t k = 0; k < K; ++k){
-                w_f(c)(k).fflip_inplace();
-            }
-        }
-
-        etl::fast_dyn_matrix<weight, NV1, NV2> tmp;
-
-        ctx1.errors = 0;
-
-        for(std::size_t i = 0; i < batch_size; ++i){
-            for(size_t c = 0; c < NC; ++c){
-                for(size_t k = 0; k < K; ++k){
-                    ctx1.errors(i)(c) += etl::fast_conv_2d_full(ctx2.errors(i)(k), w_f(c)(k), tmp);
-                }
-            }
-        }
-
-        nan_check_deep(ctx1.errors);
+    static void compute_errors(Layer1& r1, Context1& ctx1, Layer2& r2, Context2& ctx2){
+        compute_errors_from_conv(r1, ctx1, r2, ctx2, [](std::size_t, std::size_t){ return 1.0; });
     }
 
     template<typename D, typename It>
