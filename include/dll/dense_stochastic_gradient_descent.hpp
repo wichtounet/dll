@@ -151,20 +151,20 @@ struct dense_sgd_trainer {
         //TODO By improving reshape to be variadic, this could be
         //made a lot faster
 
-        constexpr const auto Batch = etl::decay_traits<Inputs>::template dim<0>();
-        typename Layer::template input_batch_t<Batch> input;
+        //constexpr const auto Batch = etl::decay_traits<Inputs>::template dim<0>();
+        //typename Layer::template input_batch_t<Batch> input;
 
-        for(std::size_t b = 0; b < Batch; ++b){
-            input(b) = inputs(b);
-        }
+        //for(std::size_t b = 0; b < Batch; ++b){
+            //input(b) = inputs(b);
+        //}
 
-        dense_compute_weight_gradients<Layer, Weight>(grad, input, errors);
+        dense_compute_weight_gradients<Layer, Weight>(grad, etl::reshape<batch_size, Layer::num_visible>(inputs), errors);
     }
 
 #ifndef ETL_BLAS_MODE
 
     template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_dense_layer() && etl::decay_traits<Inputs>::dimensions() == 2)>
-    static void dense_compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
+    static void dense_compute_weight_gradients(Grad& grad, Inputs&& inputs, Errors& errors){
         for(std::size_t i = 0; i < batch_size; ++i){
             grad += etl::outer(inputs(i), errors(i));
         }
@@ -173,7 +173,7 @@ struct dense_sgd_trainer {
 #else
 
     template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_dense_layer() && std::is_same<Weight, float>::value)>
-    static void dense_compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
+    static void dense_compute_weight_gradients(Grad& grad, Inputs&& inputs, Errors& errors){
         for(std::size_t i = 0; i < batch_size; ++i){
             cblas_sger(
                 CblasRowMajor,
@@ -187,7 +187,7 @@ struct dense_sgd_trainer {
     }
 
     template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_dense_layer() && std::is_same<Weight, double>::value)>
-    static void dense_compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
+    static void dense_compute_weight_gradients(Grad& grad, Inputs&& inputs, Errors& errors){
         for(std::size_t i = 0; i < batch_size; ++i){
             cblas_dger(
                 CblasRowMajor,

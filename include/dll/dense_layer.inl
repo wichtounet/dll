@@ -91,21 +91,12 @@ struct dense_layer final {
     }
 
     template<typename H1, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 2)>
-    void batch_activate_hidden(H1&& output, const V& v) const {
-        const auto Batch = etl::dim<0>(v);
-
-        input_batch_t<etl::decay_traits<V>::template dim<0>()> input;
-
-        for(std::size_t b = 0; b < Batch; ++b){
-            input(b) = v(b);
-        }
-
-        //TODO By improving reshape to be variadic, this could be
-        //made a lot faster
+    void batch_activate_hidden(H1&& output, const V& input) const {
+        constexpr const auto Batch = etl::decay_traits<V>::template dim<0>();
 
         cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
 
-        output = f_activate<activation_function>(etl::rep_l(b, Batch) + input * w);
+        output = f_activate<activation_function>(etl::rep_l(b, Batch) + etl::reshape<Batch, num_visible>(input) * w);
     }
 
     //Utilities to be used by DBNs
