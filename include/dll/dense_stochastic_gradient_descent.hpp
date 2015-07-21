@@ -346,9 +346,6 @@ struct dense_sgd_trainer {
 
         auto n = label_batch.size();
 
-        constexpr const auto n_inputs = dbn_t::template layer_input_size<0>();
-        constexpr const auto n_outputs = dbn_t::template layer_output_size<layers - 1>();
-
         decltype(auto) first_layer = std::get<0>(tuples);
         decltype(auto) first_ctx   = std::get<0>(contexts);
 
