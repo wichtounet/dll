@@ -186,6 +186,38 @@ TEST_CASE( "conv/sgd/6", "[dense][dbn][mnist][sgd]" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_desc<1, 28, 28, 10, 24, 24, dll::activation<dll::function::RELU>>::layer_t,
+            dll::mp_layer_3d_desc<10, 24, 24, 1, 2, 2, dll::weight_type<float>>::layer_t,
+            dll::conv_desc<10, 12, 12, 6, 8, 8, dll::activation<dll::function::RELU>>::layer_t,
+            dll::dense_desc<6 * 8 * 8, 100, dll::activation<dll::function::RELU>>::layer_t,
+            dll::dense_desc<100, 10, dll::activation<dll::function::SIGMOID>>::layer_t
+        >
+        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::batch_size<10>
+    >::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist_scale(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->learning_rate = 0.05;
+
+    auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
+    std::cout << "ft_error:" << ft_error << std::endl;
+
+    CHECK(ft_error < 5e-2);
+
+    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
+    std::cout << "test_error:" << test_error << std::endl;
+    REQUIRE(test_error < 0.2);
+}
+
+TEST_CASE( "conv/sgd/7", "[dense][dbn][mnist][sgd]" ) {
+    typedef dll::dbn_desc<
+        dll::dbn_layers<
+            dll::conv_desc<1, 28, 28, 10, 24, 24, dll::activation<dll::function::RELU>>::layer_t,
             dll::avgp_layer_3d_desc<10, 24, 24, 1, 2, 2, dll::weight_type<float>>::layer_t,
             dll::conv_desc<10, 12, 12, 6, 8, 8, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<6 * 8 * 8, 100, dll::activation<dll::function::RELU>>::layer_t,
@@ -203,6 +235,44 @@ TEST_CASE( "conv/sgd/6", "[dense][dbn][mnist][sgd]" ) {
     auto dbn = std::make_unique<dbn_t>();
 
     dbn->learning_rate = 0.05;
+
+    auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
+    std::cout << "ft_error:" << ft_error << std::endl;
+
+    CHECK(ft_error < 5e-2);
+
+    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
+    std::cout << "test_error:" << test_error << std::endl;
+    REQUIRE(test_error < 0.2);
+}
+
+TEST_CASE( "lenet", "[dense][dbn][mnist][sgd]" ) {
+    typedef dll::dbn_desc<
+        dll::dbn_layers<
+            dll::conv_desc<1, 28, 28, 20, 24, 24, dll::activation<dll::function::RELU>>::layer_t,
+            dll::mp_layer_3d_desc<20, 24, 24, 1, 2, 2, dll::weight_type<float>>::layer_t,
+            dll::conv_desc<20, 12, 12, 50, 8, 8, dll::activation<dll::function::RELU>>::layer_t,
+            dll::mp_layer_3d_desc<50, 8, 8, 1, 2, 2, dll::weight_type<float>>::layer_t,
+            dll::dense_desc<50 * 4 * 4, 500, dll::activation<dll::function::RELU>>::layer_t,
+            dll::dense_desc<500, 10, dll::activation<dll::function::SIGMOID>>::layer_t
+        >
+        , dll::momentum
+        , dll::weight_decay<>
+        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::batch_size<25>
+    >::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist_scale(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->l2_weight_cost = 0.0005;
+    dbn->initial_momentum = 0.9;
+    dbn->final_momentum = 0.9;
+    dbn->learning_rate = 0.01;
 
     auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
     std::cout << "ft_error:" << ft_error << std::endl;
