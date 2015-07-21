@@ -379,9 +379,7 @@ private:
                 h_cv(batch)(1) = 0.0;
 
                 for(std::size_t k = 0; k < K; ++k){
-                    for(std::size_t i = 0; i < tmp_result.size(); ++i){
-                        tmp_result[i] = h_s_padded(batch)(k)[i] * w_padded(channel)(k)[i];
-                    }
+                    tmp_result = h_s_padded(batch)(k) >> w_padded(channel)(k);
 
                     inplace_ifft2(tmp_result.memory_start(), NV1, NV2);
 
