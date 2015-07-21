@@ -23,6 +23,7 @@
 #include "layer_traits.hpp"
 #include "tmp.hpp"
 #include "checks.hpp"
+#include "parallel.hpp"
 
 namespace dll {
 
@@ -85,6 +86,8 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
     //needed in dbn_only mode as well
     etl::fast_matrix<weight, 2, K, NH1, NH2> v_cv;      //Temporary convolution
     etl::fast_matrix<weight, 2, NV1, NV2> h_cv;         //Temporary convolution
+
+    mutable thread_pool<true> pool;
 
     conv_rbm_mp() : base_type() {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
@@ -276,7 +279,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
             }
         }
 
-        for(std::size_t batch = 0; batch < Batch; ++batch){
+        maybe_parallel_foreach_n(pool, 0, Batch, [&](std::size_t batch){
             v_cv(batch)(1) = 0;
 
             for(std::size_t channel = 0; channel < NC; ++channel){
@@ -300,7 +303,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
                 nan_check_deep(h_a(batch));
             }
-        }
+        });
 
         if(S){
             if(hidden_unit == unit_type::BINARY){
@@ -357,7 +360,7 @@ private:
 
         etl::fast_dyn_matrix<std::complex<weight>, Batch, K, NV1, NV2> h_s_padded;
         etl::fast_dyn_matrix<std::complex<weight>, NC, K, NV1, NV2> w_padded;
-        etl::fast_dyn_matrix<std::complex<weight>, NV1, NV2> tmp_result;
+        etl::fast_dyn_matrix<std::complex<weight>, Batch, NV1, NV2> tmp_result;
 
         deep_pad(h_s, h_s_padded);
         deep_pad(w, w_padded);
@@ -374,17 +377,17 @@ private:
             }
         }
 
-        for(std::size_t batch = 0; batch < Batch; ++batch){
+        maybe_parallel_foreach_n(pool, 0, Batch, [&](std::size_t batch){
             for(std::size_t channel = 0; channel < NC; ++channel){
                 h_cv(batch)(1) = 0.0;
 
                 for(std::size_t k = 0; k < K; ++k){
-                    tmp_result = h_s_padded(batch)(k) >> w_padded(channel)(k);
+                    tmp_result(batch) = h_s_padded(batch)(k) >> w_padded(channel)(k);
 
-                    inplace_ifft2(tmp_result.memory_start(), NV1, NV2);
+                    inplace_ifft2(tmp_result(batch).memory_start(), NV1, NV2);
 
-                    for(std::size_t i = 0; i < tmp_result.size(); ++i){
-                        h_cv(batch)(1)[i] += tmp_result[i].real();
+                    for(std::size_t i = 0; i < etl::size(tmp_result(batch)); ++i){
+                        h_cv(batch)(1)[i] += tmp_result(batch)[i].real();
                     }
                 }
 
@@ -394,7 +397,7 @@ private:
                     v_a(batch)(channel) = c(channel) + h_cv(batch)(1);
                 }
             }
-        }
+        });
     }
 
 #else
@@ -403,7 +406,7 @@ private:
     void batch_activate_visible_a(const H2& h_s, V1&& v_a, HCV&& h_cv) const {
         static constexpr const auto Batch = layer_traits<this_type>::batch_size();
 
-        for(std::size_t batch = 0; batch < Batch; ++batch){
+        maybe_parallel_foreach_n(pool, 0, Batch, [&](std::size_t batch){
             for(std::size_t channel = 0; channel < NC; ++channel){
                 h_cv(batch)(1) = 0.0;
 
@@ -418,7 +421,7 @@ private:
                     v_a(batch)(channel) = c(channel) + h_cv(batch)(1);
                 }
             }
-        }
+        });
     }
 
 
