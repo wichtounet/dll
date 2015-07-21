@@ -73,7 +73,7 @@ struct conv_rbm_mp_desc {
         detail::is_valid<cpp::type_list<
                 momentum_id, batch_size_id, visible_id, hidden_id, pooling_id, dbn_only_id,
                 weight_decay_id, sparsity_id, trainer_rbm_id, watcher_id, bias_id,
-                weight_type_id, shuffle_id, parallel_id, verbose_id>
+                weight_type_id, shuffle_id, parallel_mode_id, serial_id, verbose_id>
             , Parameters...>::value,
         "Invalid parameters type");
 

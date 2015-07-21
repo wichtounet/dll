@@ -92,7 +92,7 @@ struct dbn final {
 
     weight momentum = 0;                ///< The current momentum
 
-    thread_pool<dbn_traits<this_type>::is_parallel()> pool;
+    thread_pool<!dbn_traits<this_type>::is_serial()> pool;
 
 #ifdef DLL_SVM_SUPPORT
     svm::model svm_model;               ///< The learned model

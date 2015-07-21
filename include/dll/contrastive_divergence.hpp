@@ -342,7 +342,7 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
     using namespace etl;
     using rbm_t = RBM;
 
-    if(layer_traits<RBM>::is_parallel()){
+    if(layer_traits<RBM>::is_parallel_mode()){
         maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(),
                 [&](const auto& input, const auto& expected, std::size_t i)
         {
@@ -476,7 +476,7 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
 
     using rbm_t = RBM;
 
-    if(layer_traits<RBM>::is_parallel()){
+    if(layer_traits<RBM>::is_parallel_mode()){
         maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(),
                 [&](const auto& input, const auto& expected, std::size_t i)
         {
@@ -719,7 +719,7 @@ struct base_cd_trainer : base_trainer<RBM> {
     etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_a;
     etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_s;
 
-    thread_pool<layer_traits<rbm_t>::is_parallel()> pool;
+    thread_pool<!layer_traits<rbm_t>::is_serial()> pool;
 
     template<bool M = layer_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
     base_cd_trainer(rbm_t& rbm) : rbm(rbm), q_global_t(0.0), q_local_t(0.0) {
@@ -807,7 +807,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
     etl::dyn_matrix<weight> p_h_a;
     etl::dyn_matrix<weight> p_h_s;
 
-    thread_pool<layer_traits<rbm_t>::is_parallel()> pool;
+    thread_pool<!layer_traits<rbm_t>::is_serial()> pool;
 
     template<bool M = layer_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
     base_cd_trainer(rbm_t& rbm) : rbm(rbm),
@@ -944,7 +944,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> h2_a;
     conditional_fast_matrix_t<(N > 1), weight, batch_size, K, NH1, NH2> h2_s;
 
-    thread_pool<layer_traits<rbm_t>::is_parallel()> pool;
+    thread_pool<!layer_traits<rbm_t>::is_serial()> pool;
 
     template<bool M = layer_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
     base_cd_trainer(rbm_t& rbm) : rbm(rbm),

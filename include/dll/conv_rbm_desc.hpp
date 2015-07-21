@@ -30,7 +30,8 @@ struct conv_rbm_desc {
 
     using parameters = cpp::type_list<Parameters...>;
 
-    static constexpr const std::size_t BatchSize = detail::get_value<batch_size<1>, Parameters...>::value; static constexpr const unit_type visible_unit = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;
+    static constexpr const std::size_t BatchSize = detail::get_value<batch_size<1>, Parameters...>::value;
+    static constexpr const unit_type visible_unit = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;
     static constexpr const unit_type hidden_unit = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
     static constexpr const sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;
     static constexpr const bias_mode Bias = detail::get_value<bias<bias_mode::SIMPLE>, Parameters...>::value;
@@ -67,7 +68,7 @@ struct conv_rbm_desc {
         detail::is_valid<cpp::type_list<
                 momentum_id, batch_size_id, visible_id, hidden_id, dbn_only_id, memory_id,
                 weight_decay_id, sparsity_id, trainer_rbm_id, watcher_id,
-                bias_id, weight_type_id, shuffle_id, parallel_id, verbose_id>
+                bias_id, weight_type_id, shuffle_id, parallel_mode_id, serial_id, verbose_id>
             , Parameters...>::value,
         "Invalid parameters type");
 

@@ -274,7 +274,7 @@ TEST_CASE( "dyn_rbm/mnist_15", "rbm::fast" ) {
 }
 
 TEST_CASE( "dyn_rbm/mnist_16", "rbm::parallel" ) {
-    dll::dyn_rbm_desc<dll::parallel, dll::momentum>::rbm_t rbm(28 * 28, 100);
+    dll::dyn_rbm_desc<dll::parallel_mode, dll::momentum>::rbm_t rbm(28 * 28, 100);
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 

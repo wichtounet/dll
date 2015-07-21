@@ -52,9 +52,9 @@ TEST_CASE( "dyn_dbn/mnist_2", "dbn::parallel" ) {
     using dbn_t =
         dll::dbn_desc<
             dll::dbn_layers<
-                dll::dyn_rbm_desc<dll::momentum, dll::parallel, dll::init_weights>::rbm_t,
-                dll::dyn_rbm_desc<dll::momentum, dll::parallel>::rbm_t,
-                dll::dyn_rbm_desc<dll::momentum, dll::parallel, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t
+                dll::dyn_rbm_desc<dll::momentum, dll::parallel_mode, dll::init_weights>::rbm_t,
+                dll::dyn_rbm_desc<dll::momentum, dll::parallel_mode>::rbm_t,
+                dll::dyn_rbm_desc<dll::momentum, dll::parallel_mode, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t
         >>::dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(500);

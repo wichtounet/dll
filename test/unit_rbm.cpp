@@ -39,7 +39,7 @@ TEST_CASE( "unit/rbm/mnist/2", "[rbm][momentum][parallel][unit]" ) {
         28 * 28, 100,
         dll::batch_size<25>,
         dll::momentum,
-        dll::parallel
+        dll::parallel_mode
     >::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);

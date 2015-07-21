@@ -224,7 +224,7 @@ TEST_CASE( "crbm_mp/mnist_142", "crbm::slow_parallel" ) {
         2, 28, 40, 12, 2,
         dll::batch_size<25>,
         dll::momentum,
-        dll::parallel
+        dll::parallel_mode
     >::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
@@ -288,7 +288,7 @@ TEST_CASE( "crbm_mp/mnist_16", "crbm::momentum" ) {
         1, 28, 40, 12, 2,
         dll::batch_size<25>,
         dll::momentum,
-        dll::parallel
+        dll::parallel_mode
     >::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();

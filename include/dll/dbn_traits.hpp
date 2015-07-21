@@ -54,8 +54,8 @@ struct dbn_traits {
         return desc::parameters::template contains<svm_concatenate>();
     }
 
-    static constexpr bool is_parallel() noexcept {
-        return desc::parameters::template contains<parallel>();
+    static constexpr bool is_serial() noexcept {
+        return desc::parameters::template contains<serial>();
     }
 
     static constexpr bool is_verbose() noexcept {

@@ -157,8 +157,12 @@ struct layer_traits {
         return layer_t::desc::parameters::template contains<momentum>();
     }
 
-    static constexpr bool is_parallel(){
-        return layer_t::desc::parameters::template contains<parallel>();
+    static constexpr bool is_parallel_mode(){
+        return layer_t::desc::parameters::template contains<parallel_mode>();
+    }
+
+    static constexpr bool is_serial(){
+        return layer_t::desc::parameters::template contains<serial>();
     }
 
     static constexpr bool is_verbose(){

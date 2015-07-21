@@ -38,7 +38,7 @@ TEST_CASE( "unit/crbm/mnist/2", "[crbm][parallel][unit]" ) {
         1, 28, 20, 12,
         dll::batch_size<25>,
         dll::momentum,
-        dll::parallel,
+        dll::parallel_mode,
         dll::weight_decay<dll::decay_type::L2>,
         dll::visible<dll::unit_type::GAUSSIAN>
     >::rbm_t rbm;
@@ -58,8 +58,7 @@ TEST_CASE( "unit/crbm/mnist/3", "[crbm][unit]" ) {
     dll::conv_rbm_desc_square<
         2, 28, 20, 12,
         dll::batch_size<25>,
-        dll::momentum,
-        dll::parallel
+        dll::momentum
     >::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
@@ -86,7 +85,6 @@ TEST_CASE( "unit/crbm/mnist/4", "[crbm][unit]" ) {
         1, 28, 20, 12,
         dll::batch_size<25>,
         dll::momentum,
-        dll::parallel,
         dll::weight_decay<dll::decay_type::L2>,
         dll::visible<dll::unit_type::GAUSSIAN>,
         dll::shuffle
@@ -122,7 +120,6 @@ TEST_CASE( "unit/crbm/mnist/5", "[crbm][unit]" ) {
     dll::conv_rbm_desc_square<
         1, 28, 20, 12,
         dll::batch_size<10>,
-        dll::parallel,
         dll::hidden<dll::unit_type::RELU>
     >::rbm_t rbm;
 
@@ -141,7 +138,6 @@ TEST_CASE( "unit/crbm/mnist/6", "[crbm][unit]" ) {
     using rbm_type = dll::conv_rbm_desc_square<
         1, 28, 20, 12,
         dll::batch_size<25>,
-        dll::parallel,
         dll::sparsity<>
     >::rbm_t;
 
@@ -166,7 +162,6 @@ TEST_CASE( "unit/crbm/mnist/7", "[crbm][unit]" ) {
     using rbm_type = dll::conv_rbm_desc_square<
         1, 28, 20, 12,
         dll::batch_size<5>,
-        dll::parallel,
         dll::sparsity<dll::sparsity_method::LOCAL_TARGET>
     >::rbm_t;
 

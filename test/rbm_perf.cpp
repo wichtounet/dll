@@ -51,7 +51,7 @@ TEST_CASE( "rbm/mnist_102", "rbm::slow_parallel" ) {
     dll::rbm_desc<
         28 * 28, 459,
         dll::batch_size<48>,
-        dll::parallel
+        dll::parallel_mode
     >::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1099);

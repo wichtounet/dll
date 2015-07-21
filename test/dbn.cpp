@@ -154,9 +154,9 @@ TEST_CASE( "dbn/mnist_8", "dbn::cg_relu" ) {
 TEST_CASE( "dbn/mnist_15", "dbn::parallel" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::parallel, dll::batch_size<25>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<100, 200, dll::momentum, dll::parallel, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<200, 10, dll::momentum, dll::parallel, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
+        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::parallel_mode, dll::batch_size<25>, dll::init_weights>::rbm_t,
+        dll::rbm_desc<100, 200, dll::momentum, dll::parallel_mode, dll::batch_size<25>>::rbm_t,
+        dll::rbm_desc<200, 10, dll::momentum, dll::parallel_mode, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
         , dll::batch_size<50>
     >::dbn_t dbn_t;
 
