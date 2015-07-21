@@ -5,10 +5,10 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_BINARIZE_LAYER_HPP
-#define DLL_BINARIZE_LAYER_HPP
+#ifndef DLL_CONV_LAYER_HPP
+#define DLL_CONV_LAYER_HPP
 
-#include "dll/binarize_layer.inl"
-#include "dll/binarize_layer_desc.hpp"
+#include "dll/conv_layer.inl"
+#include "dll/conv_desc.hpp"
 
 #endif

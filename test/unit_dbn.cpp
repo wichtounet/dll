@@ -22,9 +22,11 @@
 TEST_CASE( "unit/dbn/mnist/1", "[dbn][unit]" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 125, dll::momentum, dll::batch_size<10>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<125, 250, dll::momentum, dll::batch_size<10>>::rbm_t,
-        dll::rbm_desc<250, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>>::dbn_t dbn_t;
+            dll::rbm_desc<28 * 28, 125, dll::momentum, dll::batch_size<10>, dll::init_weights>::rbm_t,
+            dll::rbm_desc<125, 250, dll::momentum, dll::batch_size<10>>::rbm_t,
+            dll::rbm_desc<250, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
+        , dll::batch_size<10>
+        >::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(250);
 
@@ -36,7 +38,7 @@ TEST_CASE( "unit/dbn/mnist/1", "[dbn][unit]" ) {
 
     dbn->pretrain(dataset.training_images, 20);
 
-    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 5, 10);
+    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 5);
     REQUIRE(error < 5e-2);
 
     auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
@@ -52,9 +54,11 @@ TEST_CASE( "unit/dbn/mnist/2", "[dbn][unit]" ) {
 
     typedef dll::dbn_desc<
         dll::dbn_label_layers<
-        dll::rbm_desc<28 * 28, 200, dll::batch_size<50>, dll::init_weights, dll::momentum>::rbm_t,
-        dll::rbm_desc<200, 300, dll::batch_size<50>, dll::momentum>::rbm_t,
-        dll::rbm_desc<310, 500, dll::batch_size<50>, dll::momentum>::rbm_t>>::dbn_t dbn_simple_t;
+            dll::rbm_desc<28 * 28, 200, dll::batch_size<50>, dll::init_weights, dll::momentum>::rbm_t,
+            dll::rbm_desc<200, 300, dll::batch_size<50>, dll::momentum>::rbm_t,
+            dll::rbm_desc<310, 500, dll::batch_size<50>, dll::momentum>::rbm_t>
+        , dll::batch_size<10>
+        >::dbn_t dbn_simple_t;
 
     auto dbn = std::make_unique<dbn_simple_t>();
 
@@ -68,10 +72,11 @@ TEST_CASE( "unit/dbn/mnist/2", "[dbn][unit]" ) {
 TEST_CASE( "unit/dbn/mnist/3", "[dbn][unit]" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 150, dll::momentum, dll::batch_size<25>, dll::visible<dll::unit_type::GAUSSIAN>>::rbm_t,
-        dll::rbm_desc<150, 350, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<350, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
-    >::dbn_t dbn_t;
+            dll::rbm_desc<28 * 28, 150, dll::momentum, dll::batch_size<25>, dll::visible<dll::unit_type::GAUSSIAN>>::rbm_t,
+            dll::rbm_desc<150, 350, dll::momentum, dll::batch_size<25>>::rbm_t,
+            dll::rbm_desc<350, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
+        , dll::batch_size<10>
+        >::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::deque, double>(250);
 
@@ -83,7 +88,7 @@ TEST_CASE( "unit/dbn/mnist/3", "[dbn][unit]" ) {
 
     dbn->pretrain(dataset.training_images, 20);
 
-    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 5, 25);
+    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 5);
     REQUIRE(error < 5e-2);
 
     auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
@@ -93,10 +98,12 @@ TEST_CASE( "unit/dbn/mnist/3", "[dbn][unit]" ) {
 TEST_CASE( "unit/dbn/mnist/4", "[dbn][cg][unit]" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 150, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<150, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
-    , dll::memory>::dbn_t dbn_t;
+            dll::rbm_desc<28 * 28, 150, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
+            dll::rbm_desc<150, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
+            dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
+        , dll::memory
+        , dll::batch_size<25>
+        >::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(250);
 
@@ -111,7 +118,7 @@ TEST_CASE( "unit/dbn/mnist/4", "[dbn][cg][unit]" ) {
     auto error = dbn->fine_tune(
         dataset.training_images.begin(), dataset.training_images.end(),
         dataset.training_labels.begin(), dataset.training_labels.end(),
-        5, 25);
+        5);
 
     REQUIRE(error < 5e-2);
 
@@ -124,12 +131,15 @@ TEST_CASE( "unit/dbn/mnist/4", "[dbn][cg][unit]" ) {
 }
 
 TEST_CASE( "unit/dbn/mnist/5", "[dbn][sgd][unit]" ) {
-    typedef dll::dbn_desc<
+    using dbn_t = dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 150, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<150, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
-        dll::trainer<dll::sgd_trainer>, dll::momentum>::dbn_t dbn_t;
+            dll::rbm_desc<28 * 28, 150, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
+            dll::rbm_desc<150, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
+            dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
+        , dll::trainer<dll::sgd_trainer>
+        , dll::momentum
+        , dll::batch_size<25>
+        >::dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(250);
 
@@ -143,7 +153,7 @@ TEST_CASE( "unit/dbn/mnist/5", "[dbn][sgd][unit]" ) {
 
     dbn->pretrain(dataset.training_images, 20);
 
-    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 50, 10);
+    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 50);
     REQUIRE(error < 1e-1);
 
     auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
@@ -156,8 +166,9 @@ TEST_CASE( "unit/dbn/mnist/6", "[dbn][dyn][unit]" ) {
             dll::dbn_layers<
                 dll::dyn_rbm_desc<dll::momentum, dll::init_weights>::rbm_t,
                 dll::dyn_rbm_desc<dll::momentum>::rbm_t,
-                dll::dyn_rbm_desc<dll::momentum, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t
-        >>::dbn_t;
+                dll::dyn_rbm_desc<dll::momentum, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
+        , dll::batch_size<25>
+        >::dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(250);
 
@@ -180,10 +191,12 @@ TEST_CASE( "unit/dbn/mnist/6", "[dbn][dyn][unit]" ) {
 }
 
 TEST_CASE( "unit/dbn/mnist/7", "[dbn][svm][unit]" ) {
-    typedef dll::dbn_desc<
+    using dbn_t = dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t>>::dbn_t dbn_t;
+            dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
+            dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t>
+        , dll::batch_size<25>
+        >::dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(500);
 
@@ -206,10 +219,12 @@ TEST_CASE( "unit/dbn/mnist/7", "[dbn][svm][unit]" ) {
 TEST_CASE( "unit/dbn/mnist/8", "[dbn][unit]" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::binarize_layer_desc<30>::layer_t,
-        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>>::dbn_t dbn_t;
+            dll::binarize_layer_desc<30>::layer_t,
+            dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
+            dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
+            dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
+        , dll::batch_size<25>
+        >::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(250);
     REQUIRE(!dataset.training_images.empty());

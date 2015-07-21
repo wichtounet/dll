@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright (c) 2014 Baptiste Wicht
+// Copyright (c) 2014-2015 Baptiste Wicht
 // Distributed under the terms of the MIT License.
 // (See accompanying file LICENSE or copy at
 //  http://opensource.org/licenses/MIT)
@@ -71,6 +71,7 @@ struct dbn final {
     tuple_type tuples;
 
     static constexpr const std::size_t layers = desc::layers::layers;
+    static constexpr const std::size_t batch_size = desc::BatchSize;
 
     template <std::size_t N>
     using layer_type = typename std::tuple_element<N, tuple_type>::type;
@@ -85,7 +86,8 @@ struct dbn final {
     weight final_momentum = 0.9;        ///< The final momentum applied after *final_momentum_epoch* epoch
     weight final_momentum_epoch = 6;    ///< The epoch at which momentum change
 
-    weight weight_cost = 0.0002;        ///< The weight cost for weight decay
+    weight l1_weight_cost = 0.0002;     ///< The weight cost for L1 weight decay
+    weight l2_weight_cost = 0.0002;     ///< The weight cost for L2 weight decay
 
     weight momentum = 0;                ///< The current momentum
 
@@ -912,17 +914,17 @@ public:
     /*{{{ Fine-tuning */
 
     template<typename Samples, typename Labels>
-    weight fine_tune(const Samples& training_data, Labels& labels, size_t max_epochs, size_t batch_size){
-        return fine_tune(training_data.begin(), training_data.end(), labels.begin(), labels.end(), max_epochs, batch_size);
+    weight fine_tune(const Samples& training_data, Labels& labels, size_t max_epochs){
+        return fine_tune(training_data.begin(), training_data.end(), labels.begin(), labels.end(), max_epochs);
     }
 
     template<typename Iterator, typename LIterator>
-    weight fine_tune(Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, size_t max_epochs, size_t batch_size){
+    weight fine_tune(Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, size_t max_epochs){
         dll::dbn_trainer<this_type> trainer;
         return trainer.train(*this,
             std::forward<Iterator>(first), std::forward<Iterator>(last),
             std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
-            max_epochs, batch_size);
+            max_epochs);
     }
 
     /*}}}*/

@@ -10,7 +10,7 @@
 
 #include "cpp_utils/assert.hpp"
 
-#ifdef NDEBUG
+#ifndef NAN_DEBUG
 
 #define nan_check(value) ((void)0)
 #define nan_check_deep(list) ((void)0)

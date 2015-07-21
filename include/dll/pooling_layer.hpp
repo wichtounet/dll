@@ -1,5 +1,5 @@
 //=======================================================================
-// Copyright (c) 2014 Baptiste Wicht
+// Copyright (c) 2014-2015 Baptiste Wicht
 // Distributed under the terms of the MIT License.
 // (See accompanying file LICENSE or copy at
 //  http://opensource.org/licenses/MIT)
@@ -18,7 +18,7 @@ namespace dll {
 template<typename Desc>
 struct pooling_layer_3d {
     using desc = Desc;
-    using weight = double; //This should be configurable or TMP computed
+    using weight = typename desc::weight;
 
     static constexpr const std::size_t I1 = desc::I1;
     static constexpr const std::size_t I2 = desc::I2;
@@ -51,6 +51,12 @@ struct pooling_layer_3d {
     using output_one_t = etl::fast_dyn_matrix<weight, O1, O2, O3>;
     using input_t = std::vector<input_one_t>;
     using output_t = std::vector<output_one_t>;
+
+    template<std::size_t B>
+    using input_batch_t = etl::fast_dyn_matrix<weight, B, I1, I2, I3>;
+
+    template<std::size_t B>
+    using output_batch_t = etl::fast_dyn_matrix<weight, B, O1, O2, O3>;
 
     template<typename Iterator>
     static auto convert_input(Iterator&& first, Iterator&& last){

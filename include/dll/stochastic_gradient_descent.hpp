@@ -183,12 +183,12 @@ struct sgd_trainer {
 
     template<typename V, typename G>
     void update_grad(const V& value, G& grad, decay_type decay, double penalty){
-        auto weight_cost = dbn.weight_cost;
-
         if(decay == decay_type::L1){
-            grad = grad - weight_cost * abs(value) - penalty;
+            grad = grad - dbn.l1_weight_cost * abs(value) - penalty;
         } else if(decay == decay_type::L2){
-            grad = grad - weight_cost * value - penalty;
+            grad = grad - dbn.l2_weight_cost * value - penalty;
+        } else if(decay == decay_type::L1L2){
+            grad = grad - dbn.l1_weight_cost * abs(value) - dbn.l2_weight_cost * value - penalty;
         } else {
             grad = grad - penalty;
         }

@@ -13,6 +13,9 @@
 namespace dll {
 
 template<typename Desc>
+struct rbm;
+
+template<typename Desc>
 struct dyn_rbm;
 
 template<typename Desc>
@@ -38,6 +41,12 @@ struct patches_layer;
 
 template<typename Desc>
 struct patches_layer_padh;
+
+template<typename Desc>
+struct dense_layer;
+
+template<typename Desc>
+struct conv_layer;
 
 } //end of dll namespace
 

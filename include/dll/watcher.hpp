@@ -119,6 +119,14 @@ struct default_dbn_watcher {
         if(dbn_traits<DBN>::has_momentum()){
             std::cout << "   momentum=" << dbn.momentum << std::endl;
         }
+
+        if(w_decay(dbn_traits<DBN>::decay()) == decay_type::L1 || w_decay(dbn_traits<DBN>::decay()) == decay_type::L1L2){
+            std::cout << "   weight_cost(L1)=" << dbn.l1_weight_cost << std::endl;
+        }
+
+        if(w_decay(dbn_traits<DBN>::decay()) == decay_type::L2 || w_decay(dbn_traits<DBN>::decay()) == decay_type::L1L2){
+            std::cout << "   weight_cost(L2)=" << dbn.l2_weight_cost << std::endl;
+        }
     }
 
     void ft_epoch_end(std::size_t epoch, double error, const DBN&){

@@ -33,7 +33,9 @@ struct dbn_trainer {
     using watcher_t = typename dbn_t::desc::template watcher_t<R>;
 
     template<typename Iterator, typename LIterator>
-    typename dbn_t::weight train(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator llast, std::size_t max_epochs, std::size_t batch_size) const {
+    typename dbn_t::weight train(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator llast, std::size_t max_epochs) const {
+        constexpr const auto batch_size = std::decay_t<DBN>::batch_size;
+
         //Get types for the batch
         using samples_t = std::vector<etl::dyn_vector<typename std::iterator_traits<Iterator>::value_type::value_type>>;
 
@@ -89,6 +91,11 @@ struct dbn_trainer {
                 }
 
                 watcher.ft_epoch_end(epoch, error, dbn);
+
+                //Once the goal is reached, stop training
+                if(error == 0.0){
+                    break;
+                }
             }
         } else {
             //Prepare some space for converted data
@@ -135,6 +142,11 @@ struct dbn_trainer {
                 }
 
                 watcher.ft_epoch_end(epoch, error, dbn);
+
+                //Once the goal is reached, stop training
+                if(error == 0.0){
+                    break;
+                }
             }
         }
 
