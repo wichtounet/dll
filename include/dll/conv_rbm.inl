@@ -409,6 +409,7 @@ public:
         cpp_assert(etl::dim<0>(h_s) == Batch, "The number of batch must be consistent");
         cpp_assert(etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
         cpp_assert(etl::dim<0>(h_cv) == Batch, "The number of batch must be consistent");
+        cpp_unused(Batch);
 
         batch_activate_visible_a(h_s, v_a, h_cv);
 

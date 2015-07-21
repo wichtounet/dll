@@ -268,6 +268,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         cpp_assert(etl::dim<0>(h_s) == Batch, "The number of batch must be consistent");
         cpp_assert(etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
         cpp_assert(etl::dim<0>(v_cv) == Batch, "The number of batch must be consistent");
+        cpp_unused(Batch);
 
         auto w_f = force_temporary(w);
 
