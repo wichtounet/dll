@@ -52,6 +52,7 @@ struct value_conf_elt : std::integral_constant<T, value> {
 };
 
 struct batch_size_id;
+struct big_batch_size_id;
 struct visible_id;
 struct hidden_id;
 struct pooling_id;
@@ -76,6 +77,9 @@ struct dbn_only_id;
 
 template<std::size_t B>
 struct batch_size : value_conf_elt<batch_size_id, std::size_t, B> {};
+
+template<std::size_t B>
+struct big_batch_size : value_conf_elt<big_batch_size_id, std::size_t, B> {};
 
 template<unit_type VT>
 struct visible : value_conf_elt<visible_id, unit_type, VT> {};

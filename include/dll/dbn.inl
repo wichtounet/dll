@@ -72,6 +72,7 @@ struct dbn final {
 
     static constexpr const std::size_t layers = desc::layers::layers;
     static constexpr const std::size_t batch_size = desc::BatchSize;
+    static constexpr const std::size_t big_batch_size = desc::BigBatchSize;
 
     template <std::size_t N>
     using layer_type = typename std::tuple_element<N, tuple_type>::type;
@@ -331,7 +332,8 @@ private:
         //Get the specific trainer (CD)
         auto trainer = rbm_trainer_t::template get_trainer<false>(rbm);
 
-        auto big_batch_size = desc::BatchSize * get_batch_size(rbm);
+        //Several RBM batches are propagated at once
+        auto total_batch_size = big_batch_size * get_batch_size(rbm);
 
         //Train for max_epochs epoch
         for(std::size_t epoch = 0; epoch < max_epochs; ++epoch){
@@ -348,13 +350,13 @@ private:
             while(it != end){
                 auto batch_start = it;
 
-                detail::safe_advance(it, end, big_batch_size);
+                detail::safe_advance(it, end, total_batch_size);
 
                 //Convert data to an useful form
                 input_converter<this_type, 0, Iterator> converter(*this, batch_start, it);
 
                 //With only 1 batch, some work can be skipped
-                if(desc::BatchSize == 1){
+                if(big_batch_size == 1){
                     //Train the RBM on this batch
                     r_trainer.train_batch(converter.begin(), converter.end(), converter.begin(), converter.end(), trainer, context, rbm);
                 } else {
@@ -442,9 +444,9 @@ private:
         //Get the specific trainer (CD)
         auto trainer = rbm_trainer_t::template get_trainer<false>(rbm);
 
-        auto big_batch_size = desc::BatchSize * get_batch_size(rbm);
+        auto total_batch_size = big_batch_size * get_batch_size(rbm);
 
-        auto input = layer_get<I - 1>().template prepare_output<layer_input_t<I - 1, Iterator>>(big_batch_size);
+        auto input = layer_get<I - 1>().template prepare_output<layer_input_t<I - 1, Iterator>>(total_batch_size);
 
         //Train for max_epochs epoch
         for(std::size_t epoch = 0; epoch < max_epochs; ++epoch){
@@ -461,11 +463,11 @@ private:
             while(it != end){
                 auto batch_start = it;
 
-                detail::safe_advance(it, end, big_batch_size);
+                detail::safe_advance(it, end, total_batch_size);
 
                 multi_activation_probabilities<I>(batch_start, it, input);
 
-                if(desc::BatchSize == 1){
+                if(big_batch_size == 1){
                     //Train the RBM on this batch
                     r_trainer.train_batch(input.begin(), input.end(), input.begin(), input.end(), trainer, context, rbm);
                 } else {
@@ -510,9 +512,9 @@ private:
         auto trainer = rbm_trainer_t::template get_trainer<false>(rbm);
 
         auto rbm_batch_size = get_batch_size(rbm);
-        auto big_batch_size = desc::BatchSize * rbm_batch_size;
+        auto total_batch_size = big_batch_size * rbm_batch_size;
 
-        std::vector<std::vector<typename layer_type<I - 1>::output_deep_t>> input(big_batch_size);
+        std::vector<std::vector<typename layer_type<I - 1>::output_deep_t>> input(total_batch_size);
 
         std::vector<typename rbm_t::input_one_t> input_flat;
 
@@ -531,7 +533,7 @@ private:
             while(it != end){
                 auto batch_start = it;
 
-                detail::safe_advance(it, end, big_batch_size);
+                detail::safe_advance(it, end, total_batch_size);
 
                 multi_activation_probabilities<I>(batch_start, it, input);
 

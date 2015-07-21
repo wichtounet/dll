@@ -30,6 +30,7 @@ struct base_dbn_desc {
     using parameters = cpp::type_list<Parameters...>;
 
     static constexpr const std::size_t BatchSize = detail::get_value<batch_size<1>, Parameters...>::value;
+    static constexpr const std::size_t BigBatchSize = detail::get_value<big_batch_size<1>, Parameters...>::value;
 
     /*! The type of the trainer to use to train the DBN */
     template <typename DBN>
@@ -43,12 +44,13 @@ struct base_dbn_desc {
     using dbn_t = D<base_dbn_desc<Layers, D, Parameters...>>;
 
     static_assert(BatchSize > 0, "Batch size must be at least 1");
+    static_assert(BigBatchSize > 0, "Big Batch size must be at least 1");
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
         detail::is_valid<
             cpp::type_list<
-                trainer_id, watcher_id, momentum_id, weight_decay_id, batch_size_id, verbose_id,
+                trainer_id, watcher_id, momentum_id, weight_decay_id, big_batch_size_id, batch_size_id, verbose_id,
                 memory_id, svm_concatenate_id, svm_scale_id, parallel_id>,
             Parameters...>::value,
         "Invalid parameters type");
