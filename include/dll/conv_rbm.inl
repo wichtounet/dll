@@ -22,6 +22,7 @@
 #include "layer_traits.hpp"
 #include "tmp.hpp"
 #include "checks.hpp"
+#include "parallel.hpp"
 
 namespace dll {
 
@@ -77,6 +78,8 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     //needed in dbn_only mode as well
     etl::fast_matrix<weight, V_CV_CHANNELS, K, NH1, NH2> v_cv;      //Temporary convolution
     etl::fast_matrix<weight, H_CV_CHANNELS, NV2, NV2> h_cv;         //Temporary convolution
+
+    mutable thread_pool<true> pool;
 
     conv_rbm() : base_type() {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
@@ -244,7 +247,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
             }
         }
 
-        for(std::size_t batch = 0; batch < Batch; ++batch){
+        maybe_parallel_foreach_n(pool, 0, Batch, [&](std::size_t batch){
             v_cv(batch)(1) = 0;
 
             for(std::size_t channel = 0; channel < NC; ++channel){
@@ -264,7 +267,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
                     h_a(batch) = min(max(rep<NH1, NH2>(b) + v_cv(batch)(1), 0.0), 1.0);
                 }
             }
-        }
+        });
 
         if(P){
             nan_check_deep(h_a);
@@ -285,6 +288,114 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         }
     }
 
+private:
+
+#ifdef ETL_MKL_MODE
+
+    template<typename F1, typename F2>
+    void deep_pad(const F1& in, F2& out) const {
+        for(std::size_t outer1 = 0; outer1 < in.template dim<0>(); ++outer1){
+            for(std::size_t outer2 = 0; outer2 < in.template dim<1>(); ++outer2){
+                auto* direct = out(outer1)(outer2).memory_start();
+                for(std::size_t i = 0; i < in.template dim<2>(); ++i){
+                    for(std::size_t j = 0; j < in.template dim<3>(); ++j){
+                        direct[i * out.template dim<3>() + j] = in(outer1,outer2,i,j);
+                    }
+                }
+            }
+        }
+    }
+
+    static void inplace_fft2(std::complex<double>* memory, std::size_t m1, std::size_t m2){
+        etl::impl::blas::detail::inplace_zfft2_kernel(memory, m1, m2);
+    }
+
+    static void inplace_fft2(std::complex<float>* memory, std::size_t m1, std::size_t m2){
+        etl::impl::blas::detail::inplace_cfft2_kernel(memory, m1, m2);
+    }
+
+    static void inplace_ifft2(std::complex<double>* memory, std::size_t m1, std::size_t m2){
+        etl::impl::blas::detail::inplace_zifft2_kernel(memory, m1, m2);
+    }
+
+    static void inplace_ifft2(std::complex<float>* memory, std::size_t m1, std::size_t m2){
+        etl::impl::blas::detail::inplace_cifft2_kernel(memory, m1, m2);
+    }
+
+    template<typename H2, typename V1, typename HCV>
+    void batch_activate_visible_a(const H2& h_s, V1&& v_a, HCV&& h_cv) const {
+        static constexpr const auto Batch = layer_traits<this_type>::batch_size();
+
+        etl::fast_dyn_matrix<std::complex<weight>, Batch, K, NV1, NV2> h_s_padded;
+        etl::fast_dyn_matrix<std::complex<weight>, NC, K, NV1, NV2> w_padded;
+        etl::fast_dyn_matrix<std::complex<weight>, Batch, NV1, NV2> tmp_result;
+
+        deep_pad(h_s, h_s_padded);
+        deep_pad(w, w_padded);
+
+        for(std::size_t batch = 0; batch < Batch; ++batch){
+            for(std::size_t k = 0; k < K; ++k){
+                inplace_fft2(h_s_padded(batch)(k).memory_start(), NV1, NV2);
+            }
+        }
+
+        for(std::size_t channel = 0; channel < NC; ++channel){
+            for(std::size_t k = 0; k < K; ++k){
+                inplace_fft2(w_padded(channel)(k).memory_start(), NV1, NV2);
+            }
+        }
+
+        maybe_parallel_foreach_n(pool, 0, Batch, [&](std::size_t batch){
+            for(std::size_t channel = 0; channel < NC; ++channel){
+                h_cv(batch)(1) = 0.0;
+
+                for(std::size_t k = 0; k < K; ++k){
+                    tmp_result(batch) = h_s_padded(batch)(k) >> w_padded(channel)(k);
+
+                    inplace_ifft2(tmp_result(batch).memory_start(), NV1, NV2);
+
+                    for(std::size_t i = 0; i < etl::size(tmp_result(batch)); ++i){
+                        h_cv(batch)(1)[i] += tmp_result(batch)[i].real();
+                    }
+                }
+
+                if(visible_unit == unit_type::BINARY){
+                    v_a(batch)(channel) = etl::sigmoid(c(channel) + h_cv(batch)(1));
+                } else if(visible_unit == unit_type::GAUSSIAN){
+                    v_a(batch)(channel) = c(channel) + h_cv(batch)(1);
+                }
+            }
+        });
+    }
+
+#else
+
+    template<typename H2, typename V1, typename HCV>
+    void batch_activate_visible_a(const H2& h_s, V1&& v_a, HCV&& h_cv) const {
+        static constexpr const auto Batch = layer_traits<this_type>::batch_size();
+
+        maybe_parallel_foreach_n(pool, 0, Batch, [&](std::size_t batch){
+            for(std::size_t channel = 0; channel < NC; ++channel){
+                h_cv(batch)(1) = 0.0;
+
+                for(std::size_t k = 0; k < K; ++k){
+                    h_cv(batch)(0) = etl::fast_conv_2d_full(h_s(batch)(k), w(channel)(k));
+                    h_cv(batch)(1) += h_cv(batch)(0);
+                }
+
+                if(visible_unit == unit_type::BINARY){
+                    v_a(batch)(channel) = etl::sigmoid(c(channel) + h_cv(batch)(1));
+                } else if(visible_unit == unit_type::GAUSSIAN){
+                    v_a(batch)(channel) = c(channel) + h_cv(batch)(1);
+                }
+            }
+        });
+    }
+
+#endif
+
+public:
+
     template<bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename HCV>
     void batch_activate_visible(const H1& h_a, const H2& h_s, V1&& v_a, V2&& v_s, HCV&& h_cv) const {
         static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN, "Invalid visible unit type");
@@ -299,30 +410,9 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         cpp_assert(etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
         cpp_assert(etl::dim<0>(h_cv) == Batch, "The number of batch must be consistent");
 
-        using namespace etl;
+        batch_activate_visible_a(h_s, v_a, h_cv);
 
-        for(std::size_t batch = 0; batch < Batch; ++batch){
-            for(std::size_t channel = 0; channel < NC; ++channel){
-                h_cv(batch)(1) = 0.0;
-
-                for(std::size_t k = 0; k < K; ++k){
-                    h_cv(batch)(0) = conv_2d_full(h_s(batch)(k), w(channel)(k));
-                    h_cv(batch)(1) += h_cv(batch)(0);
-                }
-
-                if(P){
-                    if(visible_unit == unit_type::BINARY){
-                        v_a(batch)(channel) = sigmoid(c(channel) + h_cv(batch)(1));
-                    } else if(visible_unit == unit_type::GAUSSIAN){
-                        v_a(batch)(channel) = c(channel) + h_cv(batch)(1);
-                    }
-                }
-            }
-        }
-
-        if(P){
-            nan_check_deep(v_a);
-        }
+        nan_check_deep(v_a);
 
         if(S){
             if(visible_unit == unit_type::BINARY){
