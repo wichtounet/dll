@@ -169,7 +169,7 @@ TEST_CASE( "crbm_mp/mnist_140", "crbm::slow" ) {
         2, 28, 40, 12, 2,
         dll::batch_size<25>,
         dll::momentum
-        //, dll::weight_type<float>
+        , dll::weight_type<float>
     >::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
@@ -196,7 +196,7 @@ TEST_CASE( "crbm_mp/mnist_141", "crbm::slow_second" ) {
         40, 12, 40, 6, 2,
         dll::batch_size<25>,
         dll::momentum
-        //, dll::weight_type<float>
+        , dll::weight_type<float>
     >::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
