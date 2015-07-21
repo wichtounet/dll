@@ -222,7 +222,7 @@ struct dense_sgd_trainer {
     }
 
     template<typename Layer, typename Context, typename Inputs, cpp_enable_if(!decay_layer_traits<Layer>::is_pooling_layer())>
-    static void compute_gradients(Layer& , Context& ctx, const Inputs& inputs){
+    static void compute_gradients(Layer& , Context& ctx, Inputs& inputs){
         ctx.w_grad = 0;
 
         compute_weight_gradients<Layer, weight>(ctx.w_grad, inputs, ctx.errors);
@@ -238,7 +238,7 @@ struct dense_sgd_trainer {
     }
 
     template<typename Layer, typename Context, typename Inputs, cpp_enable_if(decay_layer_traits<Layer>::is_pooling_layer())>
-    static void compute_gradients(Layer&, Context&, const Inputs&){
+    static void compute_gradients(Layer&, Context&, Inputs&){
         //Pooling layers have no weight
     }
 
