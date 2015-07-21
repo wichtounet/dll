@@ -186,6 +186,61 @@ TEST_CASE( "crbm/mnist_14", "crbm::fast" ) {
     REQUIRE(error < 1e-2);
 }
 
+TEST_CASE( "crbm/mnist_140", "crbm::slow_first" ) {
+    dll::conv_rbm_desc_square<
+        2, 28, 40, 12,
+        dll::batch_size<25>,
+        dll::momentum
+        , dll::weight_type<float>
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
+
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    for(auto& image : dataset.training_images){
+        image.reserve(image.size() * 2);
+        auto end = image.size();
+        for(std::size_t i = 0; i < end; ++i){
+            image.push_back(image[i]);
+        }
+    }
+
+    auto error = rbm.train(dataset.training_images, 25);
+
+    REQUIRE(error < 1e-2);
+}
+
+TEST_CASE( "crbm/mnist_141", "crbm::slow_second" ) {
+    dll::conv_rbm_desc_square<
+        40, 12, 40, 6,
+        dll::batch_size<25>,
+        dll::momentum
+        , dll::weight_type<float>
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
+
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    for(auto& image : dataset.training_images){
+        image.reserve(image.size() * 40);
+        auto end = image.size();
+        for(std::size_t i = 0; i < end; ++i){
+            image.push_back(image[i]);
+        }
+        image.resize(12 * 12 * 40);
+    }
+
+    auto error = rbm.train(dataset.training_images, 25);
+
+    REQUIRE(error < 1e-2);
+}
+
 TEST_CASE( "crbm/mnist_15", "crbm::denoising" ) {
     dll::conv_rbm_desc_square<
         1, 28, 40, 12,

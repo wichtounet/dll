@@ -476,62 +476,132 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
 
     using rbm_t = RBM;
 
-    maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(),
-            [&](const auto& input, const auto& expected, std::size_t i)
-    {
+    if(layer_traits<RBM>::is_parallel()){
+        maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(),
+                [&](const auto& input, const auto& expected, std::size_t i)
+        {
+            //Copy input/expected for computations
+            t.v1(i) = input;
+
+            if(Denoising){
+                t.vf(i) = expected;
+            }
+
+            //First step
+            rbm.template activate_hidden<true, true>(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i), t.v_cv(i));
+
+            if(Persistent && t.init){
+                t.p_h_a(i) = t.h1_a(i);
+                t.p_h_s(i) = t.h1_s(i);
+            }
+
+            //CD-1
+            if(Persistent){
+                rbm.template activate_visible<true, false>(t.p_h_a(i), t.p_h_s(i), t.v2_a(i), t.v2_s(i), t.h_cv(i));
+                rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.v_cv(i));
+            } else {
+                rbm.template activate_visible<true, false>(t.h1_a(i), t.h1_s(i), t.v2_a(i), t.v2_s(i), t.h_cv(i));
+                rbm.template activate_hidden<true, (N > 1)>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.v_cv(i));
+            }
+
+            //CD-k
+            for(std::size_t k = 1; k < N; ++k){
+                rbm.template activate_visible<true, false>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.h_cv(i));
+                rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.v_cv(i));
+            }
+
+            //Compute gradients
+
+            constexpr const auto K = rbm_t::K;
+            constexpr const auto NC = rbm_t::NC;
+
+            auto w_f_1 = force_temporary(t.h1_a(i));
+            auto w_f_2 = force_temporary(t.h2_a(i));
+
+            for(std::size_t k = 0; k < K; ++k){
+                w_f_1(k).fflip_inplace();
+                w_f_2(k).fflip_inplace();
+            }
+
+            for(std::size_t channel = 0; channel < NC; ++channel){
+                if(Denoising){
+                    conv_2d_valid_multi(t.vf(i)(channel), w_f_1, t.w_pos(i)(channel));
+                    conv_2d_valid_multi(t.v2_a(i)(channel), w_f_2, t.w_neg(i)(channel));
+                } else {
+                    conv_2d_valid_multi(t.v1(i)(channel), w_f_1, t.w_pos(i)(channel));
+                    conv_2d_valid_multi(t.v2_a(i)(channel), w_f_2, t.w_neg(i)(channel));
+                }
+            }
+        });
+    } else {
         //Copy input/expected for computations
-        t.v1(i) = input;
+        auto iit = input_batch.begin();
+        auto iend = input_batch.end();
+
+        for(std::size_t i = 0; iit != iend; ++i, ++iit){
+            t.v1(i) = *iit;
+        }
 
         if(Denoising){
-            t.vf(i) = expected;
+            auto eit = expected_batch.begin();
+            auto eend = expected_batch.end();
+
+            for(std::size_t i = 0; eit != eend; ++i, ++eit){
+                t.vf(i) = *eit;
+            }
         }
 
         //First step
-        rbm.template activate_hidden<true, true>(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i), t.v_cv(i));
+        rbm.template batch_activate_hidden<true, true>(t.h1_a, t.h1_s, t.v1, t.v1, t.v_cv);
 
         if(Persistent && t.init){
-            t.p_h_a(i) = t.h1_a(i);
-            t.p_h_s(i) = t.h1_s(i);
+            t.p_h_a = t.h1_a;
+            t.p_h_s = t.h1_s;
         }
 
         //CD-1
         if(Persistent){
-            rbm.template activate_visible<true, false>(t.p_h_a(i), t.p_h_s(i), t.v2_a(i), t.v2_s(i), t.h_cv(i));
-            rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.v_cv(i));
+            rbm.template batch_activate_visible<true, false>(t.p_h_a, t.p_h_s, t.v2_a, t.v2_s, t.h_cv);
+            rbm.template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s, t.v_cv);
         } else {
-            rbm.template activate_visible<true, false>(t.h1_a(i), t.h1_s(i), t.v2_a(i), t.v2_s(i), t.h_cv(i));
-            rbm.template activate_hidden<true, (N > 1)>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.v_cv(i));
+            rbm.template batch_activate_visible<true, false>(t.h1_a, t.h1_s, t.v2_a, t.v2_s, t.h_cv);
+            rbm.template batch_activate_hidden<true, (N > 1)>(t.h2_a, t.h2_s, t.v2_a, t.v2_s, t.v_cv);
         }
 
         //CD-k
         for(std::size_t k = 1; k < N; ++k){
-            rbm.template activate_visible<true, false>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.h_cv(i));
-            rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.v_cv(i));
+            rbm.template batch_activate_visible<true, false>(t.h2_a, t.h2_s, t.v2_a, t.v2_s, t.h_cv);
+            rbm.template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s, t.v_cv);
         }
 
         //Compute gradients
 
+        const auto B = get_batch_size(rbm);
         constexpr const auto K = rbm_t::K;
         constexpr const auto NC = rbm_t::NC;
 
-        auto w_f_1 = force_temporary(t.h1_a(i));
-        auto w_f_2 = force_temporary(t.h2_a(i));
+        auto w_f_1 = force_temporary(t.h1_a);
+        auto w_f_2 = force_temporary(t.h2_a);
 
-        for(std::size_t k = 0; k < K; ++k){
-            w_f_1(k).fflip_inplace();
-            w_f_2(k).fflip_inplace();
-        }
-
-        for(std::size_t channel = 0; channel < NC; ++channel){
-            if(Denoising){
-                conv_2d_valid_multi(t.vf(i)(channel), w_f_1, t.w_pos(i)(channel));
-                conv_2d_valid_multi(t.v2_a(i)(channel), w_f_2, t.w_neg(i)(channel));
-            } else {
-                conv_2d_valid_multi(t.v1(i)(channel), w_f_1, t.w_pos(i)(channel));
-                conv_2d_valid_multi(t.v2_a(i)(channel), w_f_2, t.w_neg(i)(channel));
+        for(std::size_t batch = 0; batch < B; ++batch){
+            for(std::size_t k = 0; k < K; ++k){
+                w_f_1(batch)(k).fflip_inplace();
+                w_f_2(batch)(k).fflip_inplace();
             }
         }
-    });
+
+        for(std::size_t batch = 0; batch < B; ++batch){
+            for(std::size_t channel = 0; channel < NC; ++channel){
+                if(Denoising){
+                    conv_2d_valid_multi(t.vf(batch)(channel), w_f_1(batch), t.w_pos(batch)(channel));
+                    conv_2d_valid_multi(t.v2_a(batch)(channel), w_f_2(batch), t.w_neg(batch)(channel));
+                } else {
+                    conv_2d_valid_multi(t.v1(batch)(channel), w_f_1(batch), t.w_pos(batch)(channel));
+                    conv_2d_valid_multi(t.v2_a(batch)(channel), w_f_2(batch), t.w_neg(batch)(channel));
+                }
+            }
+        }
+    }
 
     if(Persistent){
         t.p_h_a = t.h2_a;
