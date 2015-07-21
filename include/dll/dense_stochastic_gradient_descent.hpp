@@ -198,8 +198,6 @@ struct dense_sgd_trainer {
         constexpr const auto NC = Layer::NC;
         constexpr const auto NW1 = Layer::NW1;
         constexpr const auto NW2 = Layer::NW2;
-        constexpr const auto NH1 = Layer::NH1;
-        constexpr const auto NH2 = Layer::NH2;
 
         etl::fast_dyn_matrix<Weight, K, NW1, NW2> tmp;
 
