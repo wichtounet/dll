@@ -18,7 +18,7 @@ void test_dbn(){
     std::vector<uint8_t> labels;
 
     dbn.pretrain(images, 10);
-    dbn.fine_tune(images, labels, 10, 10);
+    dbn.fine_tune(images, labels, 10);
 }
 
 int main(){
