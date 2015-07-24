@@ -127,8 +127,9 @@ TEST_CASE( "rbm/mnist_43", "rbm::decay_l1l2_full" ) {
 
 TEST_CASE( "rbm/mnist_7", "rbm::gaussian" ) {
     dll::rbm_desc<
-        28 * 28, 100,
-       dll::batch_size<25>,
+        28 * 28, 333,
+       dll::batch_size<20>,
+       dll::weight_decay<>,
        dll::momentum,
        dll::visible<dll::unit_type::GAUSSIAN>
     >::rbm_t rbm;
