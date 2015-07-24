@@ -119,18 +119,21 @@ TEST_CASE( "unit/crbm/mnist/4", "[crbm][unit]" ) {
 TEST_CASE( "unit/crbm/mnist/5", "[crbm][unit]" ) {
     dll::conv_rbm_desc_square<
         1, 28, 40, 20,
-        dll::batch_size<10>,
+        dll::batch_size<20>,
+        dll::momentum,
+        dll::weight_decay<dll::decay_type::L2>,
+        dll::shuffle,
         dll::hidden<dll::unit_type::RELU>
     >::rbm_t rbm;
 
-    rbm.learning_rate *= 2;
+    rbm.learning_rate *= 5;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
 
-    auto error = rbm.train(dataset.training_images, 50);
+    auto error = rbm.train(dataset.training_images, 25);
     REQUIRE(error < 5e-2);
 }
 
