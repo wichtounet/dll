@@ -35,7 +35,7 @@ TEST_CASE( "unit/crbm/mnist/1", "[crbm][unit]" ) {
 
 TEST_CASE( "unit/crbm/mnist/2", "[crbm][parallel][unit]" ) {
     dll::conv_rbm_desc_square<
-        1, 28, 20, 12,
+        1, 28, 20, 24,
         dll::batch_size<25>,
         dll::momentum,
         dll::parallel_mode,
@@ -118,7 +118,7 @@ TEST_CASE( "unit/crbm/mnist/4", "[crbm][unit]" ) {
 
 TEST_CASE( "unit/crbm/mnist/5", "[crbm][unit]" ) {
     dll::conv_rbm_desc_square<
-        1, 28, 20, 12,
+        1, 28, 40, 20,
         dll::batch_size<10>,
         dll::hidden<dll::unit_type::RELU>
     >::rbm_t rbm;
