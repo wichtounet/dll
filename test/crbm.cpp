@@ -110,7 +110,7 @@ TEST_CASE( "crbm/mnist_6", "crbm::gaussian" ) {
 
     REQUIRE(error < 2e-2);
 }
-/*
+
 TEST_CASE( "crbm/mnist_10", "crbm::pcd" ) {
     dll::conv_rbm_desc_square<
         1, 28, 40, 12,
@@ -297,4 +297,3 @@ TEST_CASE( "crbm/mnist_16", "crbm::momentum" ) {
 
     REQUIRE(error < 2e-2);
 }
-*/
