@@ -138,8 +138,8 @@ TEST_CASE( "conv_dbn/mnist_5", "conv_dbn::svm_simple" ) {
 TEST_CASE( "conv_dbn/mnist_6", "conv_dbn::svm_gaussian" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::conv_rbm_desc_square<1, 28, 40, 12, dll::visible<dll::unit_type::GAUSSIAN>, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::conv_rbm_desc_square<40, 12, 40, 10, dll::momentum, dll::batch_size<25>>::rbm_t>, dll::svm_concatenate>::dbn_t dbn_t;
+        dll::conv_rbm_desc_square<1, 28, 20, 20, dll::visible<dll::unit_type::GAUSSIAN>, dll::momentum, dll::batch_size<25>>::rbm_t,
+        dll::conv_rbm_desc_square<20, 20, 20, 16, dll::momentum, dll::batch_size<25>>::rbm_t>, dll::svm_concatenate>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
 
