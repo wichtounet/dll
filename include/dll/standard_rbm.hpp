@@ -337,7 +337,7 @@ protected:
             if(visible_unit == unit_type::BINARY){
                 v_s = bernoulli(sigmoid(c + mul(w, h_s, t)));
             } else if(visible_unit == unit_type::GAUSSIAN){
-                v_s = c + mul(w, h_s, t);
+                v_s = normal_noise(c + mul(w, h_s, t));
             } else if(visible_unit == unit_type::RELU){
                 v_s = logistic_noise(max(c + mul(w, h_s, t), 0.0));
             }
@@ -429,7 +429,7 @@ protected:
             if(visible_unit == unit_type::BINARY){
                 v_s = bernoulli(sigmoid(rep_l(c,Batch) + transpose(mul(w, transpose(h_s)))));
             } else if(visible_unit == unit_type::GAUSSIAN){
-                v_s = rep_l(c,Batch) + transpose(mul(w, transpose(h_s)));
+                v_s = normal_noise(rep_l(c,Batch) + transpose(mul(w, transpose(h_s))));
             } else if(visible_unit == unit_type::RELU){
                 v_s = logistic_noise(max(rep_l(c,Batch) + transpose(mul(w, transpose(h_s))), 0.0));
             }
