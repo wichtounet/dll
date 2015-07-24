@@ -158,8 +158,7 @@ TEST_CASE( "unit/rbm/mnist/7", "[rbm][relu][unit]" ) {
 
     rbm.learning_rate *= 10;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
