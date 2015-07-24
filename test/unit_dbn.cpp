@@ -36,7 +36,7 @@ TEST_CASE( "unit/dbn/mnist/1", "[dbn][unit]" ) {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->pretrain(dataset.training_images, 20);
+    dbn->pretrain(dataset.training_images, 25);
 
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 5);
     std::cout << "error:" << error << std::endl;
