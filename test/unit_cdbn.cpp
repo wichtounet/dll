@@ -69,25 +69,24 @@ TEST_CASE( "unit/cdbn/mnist/2", "[cdbn][svm][unit]" ) {
 TEST_CASE( "unit/cdbn/mnist/3", "[cdbn][gaussian][svm][unit]" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::conv_rbm_desc_square<1, 28, 20, 12, dll::visible<dll::unit_type::GAUSSIAN>, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::conv_rbm_desc_square<20, 12, 20, 10, dll::momentum, dll::batch_size<25>>::rbm_t>, dll::svm_concatenate>::dbn_t dbn_t;
+        dll::conv_rbm_desc_square<1, 28, 20, 12, dll::visible<dll::unit_type::GAUSSIAN>, dll::momentum, dll::batch_size<20>>::rbm_t,
+        dll::conv_rbm_desc_square<20, 12, 20, 10, dll::momentum, dll::batch_size<20>>::rbm_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::normalize_dataset(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->pretrain(dataset.training_images, 20);
+    dbn->pretrain(dataset.training_images, 25);
 
     auto result = dbn->svm_train(dataset.training_images, dataset.training_labels);
     REQUIRE(result);
 
     auto test_error = dll::test_set(dbn, dataset.training_images, dataset.training_labels, dll::svm_predictor());
     std::cout << "test_error:" << test_error << std::endl;
-    //TODO Gaussian is broken REQUIRE(test_error < 0.1);
-    cpp_unused(test_error);
+    REQUIRE(test_error < 0.1);
 }
 
 TEST_CASE( "unit/cdbn/mnist/4", "[cdbn][gaussian][svm][unit]" ) {
@@ -95,7 +94,7 @@ TEST_CASE( "unit/cdbn/mnist/4", "[cdbn][gaussian][svm][unit]" ) {
         dll::dbn_layers<
         dll::conv_rbm_desc_square<1, 28, 20, 12, dll::visible<dll::unit_type::GAUSSIAN>, dll::momentum, dll::batch_size<25>>::rbm_t,
         dll::conv_rbm_desc_square<20, 12, 20, 10, dll::momentum, dll::batch_size<25>>::rbm_t>,
-        dll::svm_concatenate, dll::svm_scale>::dbn_t dbn_t;
+        dll::svm_scale>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -111,8 +110,7 @@ TEST_CASE( "unit/cdbn/mnist/4", "[cdbn][gaussian][svm][unit]" ) {
 
     auto test_error = dll::test_set(dbn, dataset.training_images, dataset.training_labels, dll::svm_predictor());
     std::cout << "test_error:" << test_error << std::endl;
-    //TODO Gaussian is broken REQUIRE(test_error < 0.1);
-    cpp_unused(test_error);
+    REQUIRE(test_error < 0.1);
 }
 
 TEST_CASE( "unit/cdbn/mnist/5", "[cdbn][crbm_mp][svm][unit]" ) {
