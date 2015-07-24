@@ -149,7 +149,11 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
         if(P){
             if(hidden_unit == unit_type::BINARY){
-                h_a = etl::p_max_pool_h<C, C>(etl::rep<NH1, NH2>(b) + v_cv(1));
+                if(visible_unit == unit_type::BINARY){
+                    h_a = etl::p_max_pool_h<C, C>(etl::rep<NH1, NH2>(b) + v_cv(1));
+                } else if(visible_unit == unit_type::GAUSSIAN){
+                    h_a = etl::p_max_pool_h<C, C>((1.0 / (0.1 * 0.1)) >> (etl::rep<NH1, NH2>(b) + v_cv(1)));
+                }
             } else if(hidden_unit == unit_type::RELU){
                 h_a = max(etl::rep<NH1, NH2>(b) + v_cv(1), 0.0);
             } else if(hidden_unit == unit_type::RELU6){
@@ -163,7 +167,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
             if(hidden_unit == unit_type::BINARY){
                 h_s = bernoulli(h_a);
             } else if(hidden_unit == unit_type::RELU){
-                h_s = logistic_noise(h_a);
+                h_s = max(logistic_noise(etl::rep<NH1, NH2>(b) + v_cv(1)), 0.0);
             } else if(hidden_unit == unit_type::RELU6){
                 h_s = ranged_noise(h_a, 6.0);
             } else if(hidden_unit == unit_type::RELU1){
@@ -293,9 +297,17 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
             if(P){
                 if(hidden_unit == unit_type::BINARY){
-                    h_a(batch) = etl::p_max_pool_h<C, C>(etl::rep<NH1, NH2>(b) + v_cv(batch)(1));
+                    if(visible_unit == unit_type::BINARY){
+                        h_a(batch) = etl::p_max_pool_h<C, C>(etl::rep<NH1, NH2>(b) + v_cv(batch)(1));
+                    } else if(visible_unit == unit_type::GAUSSIAN){
+                        h_a(batch) = etl::p_max_pool_h<C, C>((1.0 / (0.1 * 0.1)) >> (etl::rep<NH1, NH2>(b) + v_cv(batch)(1)));
+                    }
                 } else if(hidden_unit == unit_type::RELU){
                     h_a(batch) = max(etl::rep<NH1, NH2>(b) + v_cv(batch)(1), 0.0);
+
+                    if(S){
+                        h_s(batch) = max(logistic_noise(etl::rep<NH1, NH2>(b) + v_cv(batch)(1)), 0.0);
+                    }
                 } else if(hidden_unit == unit_type::RELU6){
                     h_a(batch) = min(max(etl::rep<NH1, NH2>(b) + v_cv(batch)(1), 0.0), 6.0);
                 } else if(hidden_unit == unit_type::RELU1){
@@ -309,8 +321,6 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         if(S){
             if(hidden_unit == unit_type::BINARY){
                 h_s = bernoulli(h_a);
-            } else if(hidden_unit == unit_type::RELU){
-                h_s = logistic_noise(h_a);
             } else if(hidden_unit == unit_type::RELU6){
                 h_s = ranged_noise(h_a, 6.0);
             } else if(hidden_unit == unit_type::RELU1){

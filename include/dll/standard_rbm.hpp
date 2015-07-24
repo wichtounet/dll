@@ -287,11 +287,11 @@ protected:
                 if(hidden_unit == unit_type::BINARY){
                     h_s = bernoulli(h_a);
                 } else if(hidden_unit == unit_type::RELU){
-                    h_s = logistic_noise(h_a); //TODO This is probably wrong
+                    h_s = max(logistic_noise(b + mul(v_a, w, t)), 0.0);
                 } else if(hidden_unit == unit_type::RELU6){
-                    h_s = ranged_noise(h_a, 6.0); //TODO This is probably wrong
+                    h_s = ranged_noise(h_a, 6.0);
                 } else if(hidden_unit == unit_type::RELU1){
-                    h_s = ranged_noise(h_a, 1.0); //TODO This is probably wrong
+                    h_s = ranged_noise(h_a, 1.0);
                 } else if(hidden_unit == unit_type::SOFTMAX){
                     h_s = one_if_max(h_a);
                 }
@@ -304,11 +304,11 @@ protected:
             if(hidden_unit == unit_type::BINARY){
                 h_s = bernoulli(sigmoid(b + mul(v_a, w, t)));
             } else if(hidden_unit == unit_type::RELU){
-                h_s = logistic_noise(max(b + mul(v_a, w, t), 0.0)); //TODO This is probably wrong
+                h_s = max(logistic_noise(b + mul(v_a, w, t)), 0.0);
             } else if(hidden_unit == unit_type::RELU6){
-                h_s = ranged_noise(min(max(b + mul(v_a, w, t), 0.0), 6.0), 6.0); //TODO This is probably wrong
+                h_s = ranged_noise(min(max(b + mul(v_a, w, t), 0.0), 6.0), 6.0);
             } else if(hidden_unit == unit_type::RELU1){
-                h_s = ranged_noise(min(max(b + mul(v_a, w, t), 0.0), 1.0), 1.0); //TODO This is probably wrong
+                h_s = ranged_noise(min(max(b + mul(v_a, w, t), 0.0), 1.0), 1.0);
             } else if(hidden_unit == unit_type::SOFTMAX){
                 h_s = one_if_max(stable_softmax(b + mul(v_a, w, t)));
             }
@@ -375,11 +375,11 @@ protected:
                 if(hidden_unit == unit_type::BINARY){
                     h_s = bernoulli(h_a);
                 } else if(hidden_unit == unit_type::RELU){
-                    h_s = logistic_noise(h_a); //TODO This is probably wrong
+                    h_s = max(logistic_noise(rep_l(b, Batch) + mul(v_a, w)), 0.0);
                 } else if(hidden_unit == unit_type::RELU6){
-                    h_s = ranged_noise(h_a, 6.0); //TODO This is probably wrong
+                    h_s = ranged_noise(h_a, 6.0);
                 } else if(hidden_unit == unit_type::RELU1){
-                    h_s = ranged_noise(h_a, 1.0); //TODO This is probably wrong
+                    h_s = ranged_noise(h_a, 1.0);
                 } else if(hidden_unit == unit_type::SOFTMAX){
                     h_s = one_if_max(h_a);
                 }
@@ -392,11 +392,11 @@ protected:
             if(hidden_unit == unit_type::BINARY){
                 h_s = bernoulli(sigmoid(rep_l(b, Batch) + mul(v_a, w)));
             } else if(hidden_unit == unit_type::RELU){
-                h_s = logistic_noise(max(rep_l(b, Batch) + mul(v_a, w), 0.0)); //TODO This is probably wrong
+                h_s = max(normal_noise(rep_l(b, Batch) + mul(v_a, w)), 0.0);
             } else if(hidden_unit == unit_type::RELU6){
-                h_s = ranged_noise(min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 6.0), 6.0); //TODO This is probably wrong
+                h_s = ranged_noise(min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 6.0), 6.0);
             } else if(hidden_unit == unit_type::RELU1){
-                h_s = ranged_noise(min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 1.0), 1.0); //TODO This is probably wrong
+                h_s = ranged_noise(min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 1.0), 1.0);
             } else if(hidden_unit == unit_type::SOFTMAX){
                 h_s = one_if_max(stable_softmax(rep_l(b, Batch) + mul(v_a, w)));
             }
