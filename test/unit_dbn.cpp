@@ -150,14 +150,16 @@ TEST_CASE( "unit/dbn/mnist/5", "[dbn][sgd][unit]" ) {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->learning_rate = 0.01;
+    dbn->learning_rate = 0.05;
 
     dbn->pretrain(dataset.training_images, 20);
 
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 50);
+    std::cout << "ft_error:" << error << std::endl;
     REQUIRE(error < 1e-1);
 
     auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
+    std::cout << "test_error:" << error << std::endl;
     REQUIRE(test_error < 0.3);
 }
 
