@@ -72,9 +72,9 @@ TEST_CASE( "unit/dbn/mnist/2", "[dbn][unit]" ) {
 TEST_CASE( "unit/dbn/mnist/3", "[dbn][unit]" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::rbm_desc<28 * 28, 150, dll::momentum, dll::batch_size<25>, dll::visible<dll::unit_type::GAUSSIAN>>::rbm_t,
-            dll::rbm_desc<150, 350, dll::momentum, dll::batch_size<25>>::rbm_t,
-            dll::rbm_desc<350, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
+            dll::rbm_desc<28 * 28, 200, dll::momentum, dll::batch_size<20>, dll::visible<dll::unit_type::GAUSSIAN>>::rbm_t,
+            dll::rbm_desc<200, 350, dll::momentum, dll::batch_size<20>>::rbm_t,
+            dll::rbm_desc<350, 10, dll::momentum, dll::batch_size<20>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
         , dll::batch_size<10>
         >::dbn_t dbn_t;
 
@@ -92,6 +92,7 @@ TEST_CASE( "unit/dbn/mnist/3", "[dbn][unit]" ) {
     REQUIRE(error < 5e-2);
 
     auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
+    std::cout << "test_error:" << error << std::endl;
     REQUIRE(test_error < 0.2);
 }
 
