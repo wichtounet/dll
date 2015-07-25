@@ -160,6 +160,9 @@ protected:
     static void batch_compute_hcv(TP& pool, const H2& h_s, HCV&& h_cv, W&& w, Functor activate){
         static constexpr const auto Batch = layer_traits<L>::batch_size();
 
+        static constexpr const auto K = L::K;
+        static constexpr const auto NC = L::NC;
+
         maybe_parallel_foreach_n(pool, 0, Batch, [&](std::size_t batch){
             for(std::size_t channel = 0; channel < NC; ++channel){
                 h_cv(batch)(1) = 0.0;
@@ -175,6 +178,36 @@ protected:
     }
 
 #endif
+
+    template<typename L, typename TP, typename V1, typename VCV, typename W, typename Functor>
+    static void batch_compute_vcv(TP& pool, const V1& v_a, VCV&& v_cv, W&& w, Functor activate){
+        static constexpr const auto Batch = layer_traits<L>::batch_size();
+
+        static constexpr const auto K = L::K;
+        static constexpr const auto NC = L::NC;
+
+        auto w_f = etl::force_temporary(w);
+
+        //flip all the kernels horizontally and vertically
+
+        for(std::size_t channel = 0; channel < NC; ++channel){
+            for(size_t k = 0; k < K; ++k){
+                w_f(channel)(k).fflip_inplace();
+            }
+        }
+
+        maybe_parallel_foreach_n(pool, 0, Batch, [&](std::size_t batch){
+            v_cv(batch)(1) = 0;
+
+            for(std::size_t channel = 0; channel < NC; ++channel){
+                etl::conv_2d_valid_multi(v_a(batch)(channel), w_f(channel), v_cv(batch)(0));
+
+                v_cv(batch)(1) += v_cv(batch)(0);
+            }
+
+            activate(batch);
+        });
+    }
 
 private:
 

@@ -273,49 +273,27 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         cpp_assert(etl::dim<0>(v_cv) == Batch, "The number of batch must be consistent");
         cpp_unused(Batch);
 
-        auto w_f = force_temporary(w);
-
-        //flip all the kernels horizontally and vertically
-
-        for(std::size_t channel = 0; channel < NC; ++channel){
-            for(size_t k = 0; k < K; ++k){
-                w_f(channel)(k).fflip_inplace();
-            }
-        }
-
-        maybe_parallel_foreach_n(pool, 0, Batch, [&](std::size_t batch){
-            v_cv(batch)(1) = 0;
-
-            for(std::size_t channel = 0; channel < NC; ++channel){
-                conv_2d_valid_multi(v_a(batch)(channel), w_f(channel), v_cv(batch)(0));
-
-                v_cv(batch)(1) += v_cv(batch)(0);
-            }
-
-            nan_check_deep(v_cv(batch));
-
-            if(P){
-                if(hidden_unit == unit_type::BINARY){
-                    if(visible_unit == unit_type::BINARY){
-                        h_a(batch) = etl::p_max_pool_h<C, C>(etl::rep<NH1, NH2>(b) + v_cv(batch)(1));
-                    } else if(visible_unit == unit_type::GAUSSIAN){
-                        h_a(batch) = etl::p_max_pool_h<C, C>((1.0 / (0.1 * 0.1)) >> (etl::rep<NH1, NH2>(b) + v_cv(batch)(1)));
-                    }
-                } else if(hidden_unit == unit_type::RELU){
-                    h_a(batch) = max(etl::rep<NH1, NH2>(b) + v_cv(batch)(1), 0.0);
-
-                    if(S){
-                        h_s(batch) = max(logistic_noise(etl::rep<NH1, NH2>(b) + v_cv(batch)(1)), 0.0);
-                    }
-                } else if(hidden_unit == unit_type::RELU6){
-                    h_a(batch) = min(max(etl::rep<NH1, NH2>(b) + v_cv(batch)(1), 0.0), 6.0);
-                } else if(hidden_unit == unit_type::RELU1){
-                    h_a(batch) = min(max(etl::rep<NH1, NH2>(b) + v_cv(batch)(1), 0.0), 1.0);
+        base_type::template batch_compute_vcv<this_type>(pool, v_a, v_cv, w, [&](std::size_t batch){
+            if(hidden_unit == unit_type::BINARY){
+                if(visible_unit == unit_type::BINARY){
+                    h_a(batch) = etl::p_max_pool_h<C, C>(etl::rep<NH1, NH2>(b) + v_cv(batch)(1));
+                } else if(visible_unit == unit_type::GAUSSIAN){
+                    h_a(batch) = etl::p_max_pool_h<C, C>((1.0 / (0.1 * 0.1)) >> (etl::rep<NH1, NH2>(b) + v_cv(batch)(1)));
                 }
+            } else if(hidden_unit == unit_type::RELU){
+                h_a(batch) = max(etl::rep<NH1, NH2>(b) + v_cv(batch)(1), 0.0);
 
-                nan_check_deep(h_a(batch));
+                if(S){
+                    h_s(batch) = max(logistic_noise(etl::rep<NH1, NH2>(b) + v_cv(batch)(1)), 0.0);
+                }
+            } else if(hidden_unit == unit_type::RELU6){
+                h_a(batch) = min(max(etl::rep<NH1, NH2>(b) + v_cv(batch)(1), 0.0), 6.0);
+            } else if(hidden_unit == unit_type::RELU1){
+                h_a(batch) = min(max(etl::rep<NH1, NH2>(b) + v_cv(batch)(1), 0.0), 1.0);
             }
         });
+
+        nan_check_deep(h_a);
 
         if(S){
             if(hidden_unit == unit_type::BINARY){
