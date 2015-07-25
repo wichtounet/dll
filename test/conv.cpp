@@ -255,7 +255,7 @@ TEST_CASE( "lenet", "[dense][dbn][mnist][sgd]" ) {
             dll::conv_desc<20, 12, 12, 50, 8, 8, dll::activation<dll::function::RELU>>::layer_t,
             dll::mp_layer_3d_desc<50, 8, 8, 1, 2, 2, dll::weight_type<float>>::layer_t,
             dll::dense_desc<50 * 4 * 4, 500, dll::activation<dll::function::RELU>>::layer_t,
-            dll::dense_desc<500, 10, dll::activation<dll::function::SIGMOID>>::layer_t
+            dll::dense_desc<500, 10, dll::activation<dll::function::SOFTMAX>>::layer_t
         >
         , dll::momentum
         , dll::weight_decay<>
