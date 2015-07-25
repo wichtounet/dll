@@ -10,6 +10,7 @@
 
 #include "base_conf.hpp"          //The configuration helpers
 #include "rbm_base.hpp"           //The base class
+#include "layer_traits.hpp"
 
 namespace dll {
 
@@ -71,6 +72,109 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
     void display_hidden_unit_samples() const {
         display_hidden_unit_samples(*static_cast<parent_t*>(this));
     }
+
+protected:
+
+#ifdef ETL_MKL_MODE
+
+    template<typename F1, typename F2>
+    static void deep_pad(const F1& in, F2& out){
+        for(std::size_t outer1 = 0; outer1 < in.template dim<0>(); ++outer1){
+            for(std::size_t outer2 = 0; outer2 < in.template dim<1>(); ++outer2){
+                auto* direct = out(outer1)(outer2).memory_start();
+                for(std::size_t i = 0; i < in.template dim<2>(); ++i){
+                    for(std::size_t j = 0; j < in.template dim<3>(); ++j){
+                        direct[i * out.template dim<3>() + j] = in(outer1,outer2,i,j);
+                    }
+                }
+            }
+        }
+    }
+
+    static void inplace_fft2(std::complex<double>* memory, std::size_t m1, std::size_t m2){
+        etl::impl::blas::detail::inplace_zfft2_kernel(memory, m1, m2);
+    }
+
+    static void inplace_fft2(std::complex<float>* memory, std::size_t m1, std::size_t m2){
+        etl::impl::blas::detail::inplace_cfft2_kernel(memory, m1, m2);
+    }
+
+    static void inplace_ifft2(std::complex<double>* memory, std::size_t m1, std::size_t m2){
+        etl::impl::blas::detail::inplace_zifft2_kernel(memory, m1, m2);
+    }
+
+    static void inplace_ifft2(std::complex<float>* memory, std::size_t m1, std::size_t m2){
+        etl::impl::blas::detail::inplace_cifft2_kernel(memory, m1, m2);
+    }
+
+    template<typename L, typename TP, typename H2, typename HCV, typename W, typename Functor>
+    static void batch_compute_hcv(TP& pool, const H2& h_s, HCV&& h_cv, W&& w, Functor activate){
+        static constexpr const auto Batch = layer_traits<L>::batch_size();
+
+        static constexpr const auto K = L::K;
+        static constexpr const auto NC = L::NC;
+        static constexpr const auto NV1 = L::NV1;
+        static constexpr const auto NV2 = L::NV2;
+
+        etl::fast_dyn_matrix<std::complex<weight>, Batch, K, NV1, NV2> h_s_padded;
+        etl::fast_dyn_matrix<std::complex<weight>, NC, K, NV1, NV2> w_padded;
+        etl::fast_dyn_matrix<std::complex<weight>, Batch, NV1, NV2> tmp_result;
+
+        deep_pad(h_s, h_s_padded);
+        deep_pad(w, w_padded);
+
+        for(std::size_t batch = 0; batch < Batch; ++batch){
+            for(std::size_t k = 0; k < K; ++k){
+                inplace_fft2(h_s_padded(batch)(k).memory_start(), NV1, NV2);
+            }
+        }
+
+        for(std::size_t channel = 0; channel < NC; ++channel){
+            for(std::size_t k = 0; k < K; ++k){
+                inplace_fft2(w_padded(channel)(k).memory_start(), NV1, NV2);
+            }
+        }
+
+        maybe_parallel_foreach_n(pool, 0, Batch, [&](std::size_t batch){
+            for(std::size_t channel = 0; channel < NC; ++channel){
+                h_cv(batch)(1) = 0.0;
+
+                for(std::size_t k = 0; k < K; ++k){
+                    tmp_result(batch) = h_s_padded(batch)(k) >> w_padded(channel)(k);
+
+                    inplace_ifft2(tmp_result(batch).memory_start(), NV1, NV2);
+
+                    for(std::size_t i = 0; i < etl::size(tmp_result(batch)); ++i){
+                        h_cv(batch)(1)[i] += tmp_result(batch)[i].real();
+                    }
+                }
+
+                activate(batch, channel);
+            }
+        });
+    }
+
+#else
+
+    template<typename L, typename TP, typename H2, typename HCV, typename W, typename Functor>
+    static void batch_compute_hcv(TP& pool, const H2& h_s, HCV&& h_cv, W&& w, Functor activate){
+        static constexpr const auto Batch = layer_traits<L>::batch_size();
+
+        maybe_parallel_foreach_n(pool, 0, Batch, [&](std::size_t batch){
+            for(std::size_t channel = 0; channel < NC; ++channel){
+                h_cv(batch)(1) = 0.0;
+
+                for(std::size_t k = 0; k < K; ++k){
+                    h_cv(batch)(0) = etl::fast_conv_2d_full(h_s(batch)(k), w(channel)(k));
+                    h_cv(batch)(1) += h_cv(batch)(0);
+                }
+
+                activate(batch, channel);
+            }
+        });
+    }
+
+#endif
 
 private:
 
