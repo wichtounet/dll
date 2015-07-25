@@ -26,6 +26,19 @@ struct dbn_context_builder<Context, DBN, std::tuple<Args...>> {
     using type = std::tuple<Context<DBN, Args>...>;
 };
 
+template<template<typename, std::size_t, typename...> class Context, typename DBN, typename T>
+struct dbn_context_builder_i_impl;
+
+template<template<typename, std::size_t, typename...> class Context, typename DBN, std::size_t... I>
+struct dbn_context_builder_i_impl <Context, DBN, std::index_sequence<I...>> {
+    using type = std::tuple<Context<DBN, I>...>;
+};
+
+template<template<typename, std::size_t, typename...> class Context, typename DBN>
+struct dbn_context_builder_i {
+    using type = typename dbn_context_builder_i_impl<Context, DBN, std::make_index_sequence<DBN::layers>>::type;
+};
+
 } //end of dll namespace
 
 #endif
