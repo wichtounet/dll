@@ -69,7 +69,9 @@ struct dense_layer final {
     }
 
     static std::string to_short_string(){
-        return "Dense: " + std::to_string(num_visible) + " -> (" + "TODO:function" + ") -> " + std::to_string(num_hidden);
+        char buffer[1024];
+        snprintf(buffer, 1024, "Dense: %lu -> %s -> %lu", num_visible, to_string(activation_function).c_str(), num_hidden);
+        return {buffer};
     }
 
     void display() const {

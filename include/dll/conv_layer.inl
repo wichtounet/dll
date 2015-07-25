@@ -75,7 +75,7 @@ struct conv_layer final {
 
     static std::string to_short_string(){
         char buffer[1024];
-        snprintf(buffer, 1024, "Dense: %lux%lux%lu -> (%lux%lu) -> %lux%lux%lu", NV1, NV2, NC, NW1, NW2, NH1, NH2, K);
+        snprintf(buffer, 1024, "Conv: %lux%lux%lu -> (%lux%lux%lu) -> %s -> %lux%lux%lu", NC, NV1, NV2, K, NW1, NW2, to_string(activation_function).c_str(), K, NH1, NH2);
         return {buffer};
     }
 
