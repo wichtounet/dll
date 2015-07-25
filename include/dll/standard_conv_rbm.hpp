@@ -11,6 +11,7 @@
 #include "base_conf.hpp"          //The configuration helpers
 #include "rbm_base.hpp"           //The base class
 #include "layer_traits.hpp"
+#include "checks.hpp"
 
 namespace dll {
 
@@ -74,6 +75,49 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
     }
 
 protected:
+
+    template<typename L, typename V1, typename VCV, typename W>
+    static void compute_vcv(const V1& v_a, VCV&& v_cv, W&& w){
+        static constexpr const auto K = L::K;
+        static constexpr const auto NC = L::NC;
+
+        auto w_f = etl::force_temporary(w);
+
+        //flip all the kernels horizontally and vertically
+
+        for(std::size_t channel = 0; channel < NC; ++channel){
+            for(size_t k = 0; k < K; ++k){
+                w_f(channel)(k).fflip_inplace();
+            }
+        }
+
+        v_cv(1) = 0;
+
+        for(std::size_t channel = 0; channel < NC; ++channel){
+            etl::conv_2d_valid_multi(v_a(channel), w_f(channel), v_cv(0));
+
+            v_cv(1) += v_cv(0);
+        }
+
+        nan_check_deep(v_cv);
+    }
+
+    template<typename L, typename H2, typename HCV, typename W, typename Functor>
+    static void compute_hcv(const H2& h_s, HCV&& h_cv, W&& w, Functor activate){
+        static constexpr const auto K = L::K;
+        static constexpr const auto NC = L::NC;
+
+        for(std::size_t channel = 0; channel < NC; ++channel){
+            h_cv(1) = 0.0;
+
+            for(std::size_t k = 0; k < K; ++k){
+                h_cv(0) = etl::fast_conv_2d_full(h_s(k), w(channel)(k));
+                h_cv(1) += h_cv(0);
+            }
+
+            activate(channel);
+        }
+    }
 
 #ifdef ETL_MKL_MODE
 

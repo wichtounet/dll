@@ -134,17 +134,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit), "Invalid hidden unit type");
         static_assert(P, "Computing S without P is not implemented");
 
-        v_cv(1) = 0;
-
-        for(std::size_t channel = 0; channel < NC; ++channel){
-            for(size_t k = 0; k < K; ++k){
-                v_cv(0)(k) = etl::conv_2d_valid(v_a(channel), fflip(w(channel)(k)));
-            }
-
-            v_cv(1) += v_cv(0);
-        }
-
-        nan_check_deep(v_cv);
+        base_type::template compute_vcv<this_type>(v_a, v_cv, w);
 
         if(hidden_unit == unit_type::BINARY){
             if(visible_unit == unit_type::BINARY){
@@ -182,24 +172,15 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
         using namespace etl;
 
-        for(std::size_t channel = 0; channel < NC; ++channel){
-            h_cv(1) = 0.0;
-
-            for(std::size_t k = 0; k < K; ++k){
-                h_cv(0) = etl::conv_2d_full(h_s(k), w(channel)(k));
-                h_cv(1) += h_cv(0);
+        base_type::template compute_hcv<this_type>(h_s, h_cv, w, [&](std::size_t channel){
+            if(visible_unit == unit_type::BINARY){
+                v_a(channel) = sigmoid(c(channel) + h_cv(1));
+            } else if(visible_unit == unit_type::GAUSSIAN){
+                v_a(channel) = c(channel) + h_cv(1);
             }
+        });
 
-            if(P){
-                if(visible_unit == unit_type::BINARY){
-                    v_a(channel) = sigmoid(c(channel) + h_cv(1));
-                } else if(visible_unit == unit_type::GAUSSIAN){
-                    v_a(channel) = c(channel) + h_cv(1);
-                }
-
-                nan_check_deep(v_a);
-            }
-        }
+        nan_check_deep(v_a);
 
         if(S){
             if(visible_unit == unit_type::BINARY){
@@ -219,23 +200,13 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
         etl::fast_dyn_matrix<weight, 2, K, NH1, NH2> v_cv;      //Temporary convolution
 
-        v_cv(1) = 0;
+        base_type::template compute_vcv<this_type>(v_a, v_cv, w);
 
-        for(std::size_t channel = 0; channel < NC; ++channel){
-            for(size_t k = 0; k < K; ++k){
-                v_cv(0)(k) = etl::conv_2d_valid(v_a(channel), fflip(w(channel)(k)));
-            }
-
-            v_cv(1) += v_cv(0);
+        if(pooling_unit == unit_type::BINARY){
+            p_a = etl::p_max_pool_p<C, C>(etl::rep<NH1, NH2>(b) + v_cv(1));
         }
 
-        if(P){
-            if(pooling_unit == unit_type::BINARY){
-                p_a = etl::p_max_pool_p<C, C>(etl::rep<NH1, NH2>(b) + v_cv(1));
-            }
-
-            nan_check_deep(p_a);
-        }
+        nan_check_deep(p_a);
 
         if(S){
             if(pooling_unit == unit_type::BINARY){

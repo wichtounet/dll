@@ -136,23 +136,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
         using namespace etl;
 
-        auto w_f = force_temporary(w);
-
-        //flip all the kernels horizontally and vertically
-
-        for(std::size_t channel = 0; channel < NC; ++channel){
-            for(size_t k = 0; k < K; ++k){
-                w_f(channel)(k).fflip_inplace();
-            }
-        }
-
-        v_cv(1) = 0;
-
-        for(std::size_t channel = 0; channel < NC; ++channel){
-            conv_2d_valid_multi(v_a(channel), w_f(channel), v_cv(0));
-
-            v_cv(1) += v_cv(0);
-        }
+        base_type::template compute_vcv<this_type>(v_a, v_cv, w);
 
         if(hidden_unit == unit_type::BINARY){
             if(visible_unit == unit_type::BINARY){
@@ -195,22 +179,13 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
         using namespace etl;
 
-        for(std::size_t channel = 0; channel < NC; ++channel){
-            h_cv(1) = 0.0;
-
-            for(std::size_t k = 0; k < K; ++k){
-                h_cv(0) = conv_2d_full(h_s(k), w(channel)(k));
-                h_cv(1) += h_cv(0);
+        base_type::template compute_hcv<this_type>(h_s, h_cv, w, [&](std::size_t channel){
+            if(visible_unit == unit_type::BINARY){
+                v_a(channel) = sigmoid(c(channel) + h_cv(1));
+            } else if(visible_unit == unit_type::GAUSSIAN){
+                v_a(channel) = c(channel) + h_cv(1);
             }
-
-            if(P){
-                if(visible_unit == unit_type::BINARY){
-                    v_a(channel) = sigmoid(c(channel) + h_cv(1));
-                } else if(visible_unit == unit_type::GAUSSIAN){
-                    v_a(channel) = c(channel) + h_cv(1);
-                }
-            }
-        }
+        });
 
         nan_check_deep(v_a);
 
