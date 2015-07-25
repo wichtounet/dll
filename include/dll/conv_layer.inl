@@ -57,8 +57,13 @@ struct conv_layer final {
         //to initialization [lecun-98b]
 
         //TODO Check initialization
-        b = etl::normal_generator<weight>(0.0, 1.0 / std::sqrt(double(NC * NV1 * NV2)));
-        w = etl::normal_generator<weight>(0.0, 1.0 / std::sqrt(double(NC * NV1 * NV2)));
+        w = etl::normal_generator<weight>() * std::sqrt(2.0 / double(NC * NV1 * NV2));
+
+        if(activation_function == function::RELU){
+            b = etl::normal_generator<weight>() * std::sqrt(2.0 / double(NC * NV1 * NV2));
+        } else {
+            b = etl::normal_generator<weight>() * std::sqrt(2.0 / double(NC * NV1 * NV2));
+        }
     }
 
     static constexpr std::size_t input_size() noexcept {
