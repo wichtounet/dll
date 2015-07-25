@@ -25,7 +25,7 @@ struct patches_layer_padh {
 
     static constexpr const std::size_t h_context = width / 2;
 
-    using weight = double; //TODO Should be made configurable
+    using weight = typename desc::weight;
 
     using input_deep_t = etl::dyn_matrix<weight, 3>;
     using input_one_t = etl::dyn_matrix<weight, 3>;

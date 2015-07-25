@@ -22,7 +22,7 @@ struct patches_layer {
     static constexpr const std::size_t v_stride = desc::v_stride;
     static constexpr const std::size_t h_stride = desc::h_stride;
 
-    using weight = double; //TODO Should be made configurable
+    using weight = typename desc::weight;
 
     using input_deep_t = etl::dyn_matrix<weight, 3>;
     using output_deep_t= etl::fast_dyn_matrix<weight, 1UL, height, width>;
