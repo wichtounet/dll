@@ -30,6 +30,11 @@ struct scale_layer {
         std::cout << to_short_string() << std::endl;
     }
 
+    template<typename Input, typename Output>
+    static void batch_activate_hidden(Output& output, const Input& input){
+        output = input * (double(A) / double(B));
+    }
+
     //TODO Ideally, the dbn should guess if h_a/h_s are used or only h_a
     template<typename I, typename O_A>
     static void activate_one(const I& v, O_A& h){
@@ -38,11 +43,7 @@ struct scale_layer {
 
     template<typename I, typename O_A, typename O_S>
     static void activate_one(const I& v, O_A& h, O_S& /*h_s*/){
-        h = v;
-
-        for(auto& p : h){
-            p *= (double(A) / double(B));
-        }
+        h = v * (double(A) / double(B));
     }
 
     template<typename I, typename O_A, typename O_S>
