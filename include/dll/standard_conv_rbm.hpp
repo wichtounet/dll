@@ -76,20 +76,24 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
 
 protected:
 
+    template<typename W>
+    static void deep_fflip(W&& w_f){
+        //flip all the kernels horizontally and vertically
+
+        for(std::size_t channel = 0; channel < etl::dim<0>(w_f); ++channel){
+            for(size_t k = 0; k < etl::dim<1>(w_f); ++k){
+                w_f(channel)(k).fflip_inplace();
+            }
+        }
+    }
+
     template<typename L, typename V1, typename VCV, typename W>
     static void compute_vcv(const V1& v_a, VCV&& v_cv, W&& w){
-        static constexpr const auto K = L::K;
         static constexpr const auto NC = L::NC;
 
         auto w_f = etl::force_temporary(w);
 
-        //flip all the kernels horizontally and vertically
-
-        for(std::size_t channel = 0; channel < NC; ++channel){
-            for(size_t k = 0; k < K; ++k){
-                w_f(channel)(k).fflip_inplace();
-            }
-        }
+        deep_fflip(w_f);
 
         v_cv(1) = 0;
 
@@ -227,18 +231,11 @@ protected:
     static void batch_compute_vcv(TP& pool, const V1& v_a, VCV&& v_cv, W&& w, Functor activate){
         static constexpr const auto Batch = layer_traits<L>::batch_size();
 
-        static constexpr const auto K = L::K;
         static constexpr const auto NC = L::NC;
 
         auto w_f = etl::force_temporary(w);
 
-        //flip all the kernels horizontally and vertically
-
-        for(std::size_t channel = 0; channel < NC; ++channel){
-            for(size_t k = 0; k < K; ++k){
-                w_f(channel)(k).fflip_inplace();
-            }
-        }
+        deep_fflip(w_f);
 
         maybe_parallel_foreach_n(pool, 0, Batch, [&](std::size_t batch){
             v_cv(batch)(1) = 0;
