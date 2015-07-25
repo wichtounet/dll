@@ -37,6 +37,9 @@ template<typename Desc>
 struct normalize_layer;
 
 template<typename Desc>
+struct scale_layer;
+
+template<typename Desc>
 struct patches_layer;
 
 template<typename Desc>

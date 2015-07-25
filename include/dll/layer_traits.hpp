@@ -92,7 +92,8 @@ struct layer_traits {
      */
     static constexpr bool is_transform_layer(){
         return cpp::is_specialization_of<binarize_layer, layer_t>::value
-            || cpp::is_specialization_of<normalize_layer, layer_t>::value;
+            || cpp::is_specialization_of<normalize_layer, layer_t>::value
+            || cpp::is_specialization_of<scale_layer, layer_t>::value;
     }
 
     /*!
