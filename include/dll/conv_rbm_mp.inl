@@ -306,30 +306,14 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
             //Definition according to Honglak Lee
             //E(v,h) = - sum_k (hk (Wk*v) + bk hk) - c sum_v v
 
-            v_cv(1) = 0;
-
-            for(std::size_t channel = 0; channel < NC; ++channel){
-                for(size_t k = 0; k < K; ++k){
-                    v_cv(0)(k) = etl::conv_2d_valid(v(channel), fflip(w(channel)(k)));
-                }
-
-                v_cv(1) += v_cv(0);
-            }
+            base_type::template compute_vcv<this_type>(v, v_cv, w);
 
             return - etl::sum(c >> etl::sum_r(v)) - etl::sum((h >> v_cv(1)) + (etl::rep<NH1, NH2>(b) >> h));
         } else if(desc::visible_unit == unit_type::GAUSSIAN && desc::hidden_unit == unit_type::BINARY){
             //Definition according to Honglak Lee / Mixed with Gaussian
             //E(v,h) = - sum_k (hk (Wk*v) + bk hk) - sum_v ((v - c) ^ 2 / 2)
 
-            v_cv(1) = 0;
-
-            for(std::size_t channel = 0; channel < NC; ++channel){
-                for(size_t k = 0; k < K; ++k){
-                    v_cv(0)(k) = etl::conv_2d_valid(v(channel), fflip(w(channel)(k)));
-                }
-
-                v_cv(1) += v_cv(0);
-            }
+            base_type::template compute_vcv<this_type>(v, v_cv, w);
 
             return -sum(etl::pow(v - etl::rep<NV1, NV2>(c), 2) / 2.0) - etl::sum((h >> v_cv(1)) + (etl::rep<NH1, NH2>(b) >> h));
         } else {
@@ -352,15 +336,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         if(desc::visible_unit == unit_type::BINARY && desc::hidden_unit == unit_type::BINARY){
             //Definition computed from E(v,h)
 
-            v_cv(1) = 0;
-
-            for(std::size_t channel = 0; channel < NC; ++channel){
-                for(size_t k = 0; k < K; ++k){
-                    v_cv(0)(k) = etl::conv_2d_valid(v(channel), fflip(w(channel)(k)));
-                }
-
-                v_cv(1) += v_cv(0);
-            }
+            base_type::template compute_vcv<this_type>(v, v_cv, w);
 
             auto x = etl::rep<NH1, NH2>(b) + v_cv(1);
 
@@ -368,15 +344,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         } else if(desc::visible_unit == unit_type::GAUSSIAN && desc::hidden_unit == unit_type::BINARY){
             //Definition computed from E(v,h)
 
-            v_cv(1) = 0;
-
-            for(std::size_t channel = 0; channel < NC; ++channel){
-                for(size_t k = 0; k < K; ++k){
-                    v_cv(0)(k) = etl::conv_2d_valid(v(channel), fflip(w(channel)(k)));
-                }
-
-                v_cv(1) += v_cv(0);
-            }
+            base_type::template compute_vcv<this_type>(v, v_cv, w);
 
             auto x = etl::rep<NH1, NH2>(b) + v_cv(1);
 
