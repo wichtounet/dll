@@ -60,45 +60,13 @@ struct mp_layer_3d final : pooling_layer_3d<Desc> {
 
     template<typename B = base, cpp_disable_if(B::is_nop)>
     static void activate_one(const input_one_t& v, output_one_t& h, output_one_t& /*h_s*/){
-        for(std::size_t i = 0; i < base::O1; ++i){
-            for(std::size_t j = 0; j < base::O2; ++j){
-                for(std::size_t k = 0; k < base::O3; ++k){
-                    auto max = v(i * base::C1, j * base::C2, k * base::C3);
-
-                    for(std::size_t ii = 0; ii < base::C1; ++ii){
-                        for(std::size_t jj = 0; jj < base::C2; ++jj){
-                            for(std::size_t kk = 0; kk < base::C3; ++kk){
-                                max = std::max(max, v(i * base::C1 + ii, j * base::C2 + jj, k * base::C3 + kk));
-                            }
-                        }
-                    }
-
-                    h(i,j,k) = max;
-                }
-            }
-        }
+        h = etl::max_pool_3d<base::C1, base::C2, base::C3>(v);
     }
 
     template<typename Input, typename Output>
     static void batch_activate_hidden(Output& output, const Input& input){
         for(std::size_t b = 0; b < etl::dim<0>(input); ++b){
-            for(std::size_t i = 0; i < base::O1; ++i){
-                for(std::size_t j = 0; j < base::O2; ++j){
-                    for(std::size_t k = 0; k < base::O3; ++k){
-                        auto max = input(b, i * base::C1, j * base::C2, k * base::C3);
-
-                        for(std::size_t ii = 0; ii < base::C1; ++ii){
-                            for(std::size_t jj = 0; jj < base::C2; ++jj){
-                                for(std::size_t kk = 0; kk < base::C3; ++kk){
-                                    max = std::max(max, input(b, i * base::C1 + ii, j * base::C2 + jj, k * base::C3 + kk));
-                                }
-                            }
-                        }
-
-                        output(b, i, j, k) = max;
-                    }
-                }
-            }
+            output(b) = etl::max_pool_3d<base::C1, base::C2, base::C3>(input(b));
         }
     }
 
