@@ -56,11 +56,10 @@ struct conv_layer final {
         //Initialize the weights and biases following Lecun approach
         //to initialization [lecun-98b]
 
-        //TODO Check initialization
         w = etl::normal_generator<weight>() * std::sqrt(2.0 / double(NC * NV1 * NV2));
 
         if(activation_function == function::RELU){
-            b = etl::normal_generator<weight>() * std::sqrt(2.0 / double(NC * NV1 * NV2));
+            b = 0.01;
         } else {
             b = etl::normal_generator<weight>() * std::sqrt(2.0 / double(NC * NV1 * NV2));
         }
