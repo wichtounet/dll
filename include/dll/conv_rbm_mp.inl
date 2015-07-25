@@ -146,21 +146,21 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
         nan_check_deep(v_cv);
 
-        if(P){
-            if(hidden_unit == unit_type::BINARY){
-                if(visible_unit == unit_type::BINARY){
-                    h_a = etl::p_max_pool_h<C, C>(etl::rep<NH1, NH2>(b) + v_cv(1));
-                } else if(visible_unit == unit_type::GAUSSIAN){
-                    h_a = etl::p_max_pool_h<C, C>((1.0 / (0.1 * 0.1)) >> (etl::rep<NH1, NH2>(b) + v_cv(1)));
-                }
-            } else if(hidden_unit == unit_type::RELU){
-                h_a = max(etl::rep<NH1, NH2>(b) + v_cv(1), 0.0);
-            } else if(hidden_unit == unit_type::RELU6){
-                h_a = min(max(etl::rep<NH1, NH2>(b) + v_cv(1), 0.0), 6.0);
-            } else if(hidden_unit == unit_type::RELU1){
-                h_a = min(max(etl::rep<NH1, NH2>(b) + v_cv(1), 0.0), 1.0);
+        if(hidden_unit == unit_type::BINARY){
+            if(visible_unit == unit_type::BINARY){
+                h_a = etl::p_max_pool_h<C, C>(etl::rep<NH1, NH2>(b) + v_cv(1));
+            } else if(visible_unit == unit_type::GAUSSIAN){
+                h_a = etl::p_max_pool_h<C, C>((1.0 / (0.1 * 0.1)) >> (etl::rep<NH1, NH2>(b) + v_cv(1)));
             }
+        } else if(hidden_unit == unit_type::RELU){
+            h_a = max(etl::rep<NH1, NH2>(b) + v_cv(1), 0.0);
+        } else if(hidden_unit == unit_type::RELU6){
+            h_a = min(max(etl::rep<NH1, NH2>(b) + v_cv(1), 0.0), 6.0);
+        } else if(hidden_unit == unit_type::RELU1){
+            h_a = min(max(etl::rep<NH1, NH2>(b) + v_cv(1), 0.0), 1.0);
         }
+
+        nan_check(h_a);
 
         if(S){
             if(hidden_unit == unit_type::BINARY){
@@ -173,21 +173,6 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
                 h_s = ranged_noise(h_a, 1.0);
             }
         }
-
-#ifndef NAN_DEBUG
-        if(P){
-            if(!h_a.is_finite()){
-                std::cout << "h_a contains non finite numbers" << std::endl;
-                std::cout << "Source expression: " << etl::p_max_pool_h<C, C>(etl::rep<NH1, NH2>(b) + v_cv(1)) << std::endl;
-            }
-
-            nan_check_deep(h_a);
-        }
-
-        if(S){
-            nan_check_deep(h_s);
-        }
-#endif
     }
 
     template<bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename HCV>

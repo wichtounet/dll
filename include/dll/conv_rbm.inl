@@ -154,23 +154,21 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
             v_cv(1) += v_cv(0);
         }
 
-        if(P){
-            if(hidden_unit == unit_type::BINARY){
-                if(visible_unit == unit_type::BINARY){
-                    h_a = sigmoid(rep<NH1, NH2>(b) + v_cv(1));
-                } else if(visible_unit == unit_type::GAUSSIAN){
-                    h_a = sigmoid((1.0 / (0.1 * 0.1)) >> (rep<NH1, NH2>(b) + v_cv(1)));
-                }
-            } else if(hidden_unit == unit_type::RELU){
-                h_a = max(rep<NH1, NH2>(b) + v_cv(1), 0.0);
-            } else if(hidden_unit == unit_type::RELU6){
-                h_a = min(max(rep<NH1, NH2>(b) + v_cv(1), 0.0), 6.0);
-            } else if(hidden_unit == unit_type::RELU1){
-                h_a = min(max(rep<NH1, NH2>(b) + v_cv(1), 0.0), 1.0);
+        if(hidden_unit == unit_type::BINARY){
+            if(visible_unit == unit_type::BINARY){
+                h_a = sigmoid(rep<NH1, NH2>(b) + v_cv(1));
+            } else if(visible_unit == unit_type::GAUSSIAN){
+                h_a = sigmoid((1.0 / (0.1 * 0.1)) >> (rep<NH1, NH2>(b) + v_cv(1)));
             }
-
-            nan_check_deep(h_a);
+        } else if(hidden_unit == unit_type::RELU){
+            h_a = max(rep<NH1, NH2>(b) + v_cv(1), 0.0);
+        } else if(hidden_unit == unit_type::RELU6){
+            h_a = min(max(rep<NH1, NH2>(b) + v_cv(1), 0.0), 6.0);
+        } else if(hidden_unit == unit_type::RELU1){
+            h_a = min(max(rep<NH1, NH2>(b) + v_cv(1), 0.0), 1.0);
         }
+
+        nan_check_deep(h_a);
 
         if(S){
             if(hidden_unit == unit_type::BINARY){
@@ -214,9 +212,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
             }
         }
 
-        if(P){
-            nan_check_deep(v_a);
-        }
+        nan_check_deep(v_a);
 
         if(S){
             if(visible_unit == unit_type::BINARY){
