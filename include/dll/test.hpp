@@ -58,8 +58,6 @@ double test_set(DBN& dbn, const Samples& images, const Labels& labels, Functor&&
 
 template<typename DBN, typename Functor, typename Iterator, typename LIterator>
 double test_set(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator /*llast*/, Functor&& f){
-    cpp::stop_watch<std::chrono::milliseconds> watch;
-
     std::size_t success = 0;
     std::size_t images = 0;
 
@@ -77,10 +75,6 @@ double test_set(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIter
         ++first;
         ++lfirst;
     }
-
-    auto elapsed = watch.elapsed();
-
-    std::cout << "Testing took " << watch.elapsed() << "ms, average: " << (elapsed / images) << "ms" << std::endl;
 
     return (images - success) / static_cast<double>(images);
 }
