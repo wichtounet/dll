@@ -17,6 +17,9 @@
 
 namespace dll {
 
+template<typename Layer>
+struct is_dense : cpp::bool_constant<decay_layer_traits<Layer>::is_dense_layer() || decay_layer_traits<Layer>::is_standard_rbm_layer()> {};
+
 template<typename DBN, std::size_t Layer, typename Enable = void>
 struct dense_sgd_context;
 
@@ -70,6 +73,29 @@ struct dense_sgd_context <DBN, Layer, std::enable_if_t<layer_traits<typename DBN
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> errors;
 
     dense_sgd_context() : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
+};
+
+template<typename DBN, std::size_t Layer>
+struct dense_sgd_context <DBN, Layer, std::enable_if_t<layer_traits<typename DBN::template layer_type<Layer>>::is_standard_rbm_layer()>> {
+    using layer_t = typename DBN::template layer_type<Layer>;
+    using dbn_t = DBN;
+    using weight = typename layer_t::weight;
+
+    static constexpr const std::size_t num_visible = layer_t::num_visible;
+    static constexpr const std::size_t num_hidden = layer_t::num_hidden;
+
+    static constexpr const auto batch_size = dbn_t::batch_size;
+
+    etl::fast_matrix<weight, num_visible, num_hidden> w_grad;
+    etl::fast_vector<weight, num_hidden> b_grad;
+
+    etl::fast_matrix<weight, num_visible, num_hidden> w_inc;
+    etl::fast_matrix<weight, num_hidden> b_inc;
+
+    etl::fast_matrix<weight, batch_size, num_hidden> output;
+    etl::fast_matrix<weight, batch_size, num_hidden> errors;
+
+    dense_sgd_context() : w_inc(0), b_inc(0), output(0), errors(0) {}
 };
 
 template<typename DBN, std::size_t Layer>
@@ -156,19 +182,19 @@ struct dense_sgd_trainer {
         });
     }
 
-    template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_dense_layer() && etl::decay_traits<Inputs>::dimensions() == 2)>
+    template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(is_dense<Layer>::value && etl::decay_traits<Inputs>::dimensions() == 2)>
     static void compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
-        dense_compute_weight_gradients<Layer, Weight>(grad, inputs, errors);
+        dense_compute_weight_gradients<Weight>(grad, inputs, errors);
     }
 
-    template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_dense_layer() && etl::decay_traits<Inputs>::dimensions() != 2)>
+    template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(is_dense<Layer>::value && etl::decay_traits<Inputs>::dimensions() != 2)>
     static void compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
-        dense_compute_weight_gradients<Layer, Weight>(grad, etl::reshape<batch_size, Layer::num_visible>(inputs), errors);
+        dense_compute_weight_gradients<Weight>(grad, etl::reshape<batch_size, Layer::num_visible>(inputs), errors);
     }
 
 #ifndef ETL_BLAS_MODE
 
-    template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_dense_layer() && etl::decay_traits<Inputs>::dimensions() == 2)>
+    template<typename Weight, typename Grad, typename Inputs, typename Errors>
     static void dense_compute_weight_gradients(Grad& grad, Inputs&& inputs, Errors& errors){
         for(std::size_t i = 0; i < batch_size; ++i){
             grad += etl::outer(inputs(i), errors(i));
@@ -177,7 +203,7 @@ struct dense_sgd_trainer {
 
 #else
 
-    template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_dense_layer() && std::is_same<Weight, float>::value)>
+    template<typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(std::is_same<Weight, float>::value)>
     static void dense_compute_weight_gradients(Grad& grad, Inputs&& inputs, Errors& errors){
         for(std::size_t i = 0; i < batch_size; ++i){
             cblas_sger(
@@ -191,7 +217,7 @@ struct dense_sgd_trainer {
         }
     }
 
-    template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_dense_layer() && std::is_same<Weight, double>::value)>
+    template<typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(std::is_same<Weight, double>::value)>
     static void dense_compute_weight_gradients(Grad& grad, Inputs&& inputs, Errors& errors){
         for(std::size_t i = 0; i < batch_size; ++i){
             cblas_dger(
@@ -234,13 +260,13 @@ struct dense_sgd_trainer {
         }
     }
 
-    template<typename Layer, typename Context, typename Inputs, cpp_enable_if(decay_layer_traits<Layer>::is_standard_layer())>
+    template<typename Layer, typename Context, typename Inputs, cpp_enable_if(decay_layer_traits<Layer>::is_standard_layer() || decay_layer_traits<Layer>::is_standard_rbm_layer())>
     static void compute_gradients(Layer& , Context& ctx, Inputs& inputs){
         ctx.w_grad = 0;
 
         compute_weight_gradients<Layer, weight>(ctx.w_grad, inputs, ctx.errors);
 
-        cpp::static_if<decay_layer_traits<Layer>::is_dense_layer()>([&](auto f){
+        cpp::static_if<decay_layer_traits<Layer>::is_dense_layer() || decay_layer_traits<Layer>::is_standard_rbm_layer()>([&](auto f){
             f(ctx.b_grad) = etl::sum_l(ctx.errors);
         }).else_([&](auto f){
             f(ctx.b_grad) = etl::mean_r(etl::sum_l(f(ctx.errors)));
@@ -305,7 +331,15 @@ struct dense_sgd_trainer {
         nan_check_deep(ctx1.errors);
     }
 
-    //Backpropagate errors from dense to dense or conv
+    //Backpropagate errors from rbm to rbm
+    template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(decay_layer_traits<Layer1>::is_standard_rbm_layer() && decay_layer_traits<Layer2>::is_standard_rbm_layer())>
+    static void compute_errors(Layer1& r1, Context1& ctx1, Layer2& r2, Context2& ctx2){
+        static_assert(std::decay_t<Layer1>::hidden_unit == unit_type::BINARY, "Only RBM with binary hidden unit are supported");
+
+        compute_errors_from_dense(r1, ctx1, r2, ctx2, [&](std::size_t i){ return etl::sigmoid_derivative(ctx1.output(i)); });
+    }
+
+    //Backpropagate errors from dense to (dense or conv)
     template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(decay_layer_traits<Layer1>::is_standard_layer() && decay_layer_traits<Layer2>::is_dense_layer())>
     static void compute_errors(Layer1& r1, Context1& ctx1, Layer2& r2, Context2& ctx2){
         constexpr const auto a_f = std::decay_t<Layer1>::activation_function;
@@ -313,7 +347,7 @@ struct dense_sgd_trainer {
         compute_errors_from_dense(r1, ctx1, r2, ctx2, [&](std::size_t i){ return f_derivative<a_f>(ctx1.output(i)); });
     }
 
-    //Backpropagate errors from conv to dense or conv
+    //Backpropagate errors from conv to (dense or conv)
     template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(decay_layer_traits<Layer1>::is_standard_layer() && decay_layer_traits<Layer2>::is_convolutional_layer())>
     static void compute_errors(Layer1& r1, Context1& ctx1, Layer2& r2, Context2& ctx2){
         constexpr const auto a_f = std::decay_t<Layer1>::activation_function;
@@ -370,6 +404,24 @@ struct dense_sgd_trainer {
         using type = typename std::decay_t<typename dbn_t::template layer_type<Layer>>::template output_batch_t<batch_size>;
     };
 
+    template<typename Layer, typename Context, typename Labels, cpp_enable_if(decay_layer_traits<Layer>::is_dense_layer())>
+    void compute_last_errors(Layer& /*layer*/, Context& context, Labels& labels){
+        constexpr const auto last_a_f = std::decay_t<Layer>::activation_function;
+
+        context.errors = f_derivative<last_a_f>(context.output) >> (labels - context.output);
+
+        nan_check_deep(context.errors);
+    }
+
+    template<typename Layer, typename Context, typename Labels, cpp_enable_if(decay_layer_traits<Layer>::is_standard_rbm_layer())>
+    void compute_last_errors(Layer& /*layer*/, Context& context, Labels& labels){
+        static_assert(std::decay_t<Layer>::hidden_unit == unit_type::SOFTMAX, "Only softmax RBM can be used as last RBM layer");
+
+        context.errors = 1.0 >> (labels - context.output);
+
+        nan_check_deep(context.errors);
+    }
+
     template<typename T, typename L>
     void train_batch(std::size_t /*epoch*/, const dll::batch<T>& data_batch, const dll::batch<L>& label_batch){
         cpp_assert(data_batch.size() == label_batch.size(), "Invalid sizes");
@@ -397,15 +449,14 @@ struct dense_sgd_trainer {
 
         compute_outputs(inputs);
 
-        static_assert(decay_layer_traits<decltype(last_layer)>::is_dense_layer(), "The last layer must be dense for SGD trainining");
+        static_assert(
+                    decay_layer_traits<decltype(last_layer)>::is_dense_layer()
+                ||  decay_layer_traits<decltype(last_layer)>::is_standard_rbm_layer(),
+                "The last layer must be dense for SGD trainining");
 
         //Compute the errors of the last layer
 
-        constexpr const auto last_a_f = dbn_t::template layer_type<layers - 1>::activation_function;
-
-        last_ctx.errors = f_derivative<last_a_f>(last_ctx.output) >> (labels - last_ctx.output);
-
-        nan_check_deep(last_ctx.errors);
+        compute_last_errors(last_layer, last_ctx, labels);
 
         //Compute the gradients of each layer
 
@@ -424,7 +475,7 @@ struct dense_sgd_trainer {
         });
     }
 
-    template<typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_standard_layer())>
+    template<typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_standard_layer() || decay_layer_traits<L>::is_standard_rbm_layer())>
     void apply_gradients(L& layer, C& context, std::size_t n){
         //Update the gradients
         this->update_grad(layer.w, context.w_grad, w_decay(dbn_traits<dbn_t>::decay()), 0.0);

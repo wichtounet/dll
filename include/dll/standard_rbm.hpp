@@ -365,7 +365,11 @@ protected:
             } else if(hidden_unit == unit_type::RELU1){
                 h_a = min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 1.0);
             } else if(hidden_unit == unit_type::SOFTMAX){
-                h_a = stable_softmax(rep_l(b, Batch) + mul(v_a, w));
+                auto x = etl::force_temporary(rep_l(b, Batch) + mul(v_a, w));
+
+                for(std::size_t b = 0; b < Batch; ++b){
+                    h_a(b) = stable_softmax(x(b));
+                }
             }
 
             nan_check_deep(h_a);
@@ -381,7 +385,9 @@ protected:
                 } else if(hidden_unit == unit_type::RELU1){
                     h_s = ranged_noise(h_a, 1.0);
                 } else if(hidden_unit == unit_type::SOFTMAX){
-                    h_s = one_if_max(h_a);
+                    for(std::size_t b = 0; b < Batch; ++b){
+                        h_s(b) = stable_softmax(h_a(b));
+                    }
                 }
 
                 nan_check_deep(h_s);
@@ -398,7 +404,11 @@ protected:
             } else if(hidden_unit == unit_type::RELU1){
                 h_s = ranged_noise(min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 1.0), 1.0);
             } else if(hidden_unit == unit_type::SOFTMAX){
-                h_s = one_if_max(stable_softmax(rep_l(b, Batch) + mul(v_a, w)));
+                auto x = etl::force_temporary(rep_l(b, Batch) + mul(v_a, w));
+
+                for(std::size_t b = 0; b < Batch; ++b){
+                    h_s(b) = one_if_max(stable_softmax(x(b)));
+                }
             }
 
             nan_check_deep(h_s);

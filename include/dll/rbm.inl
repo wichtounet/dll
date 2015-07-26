@@ -39,6 +39,12 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
 
     static constexpr bool dbn_only = layer_traits<this_type>::is_dbn_only();
 
+    template<std::size_t B>
+    using input_batch_t = etl::fast_dyn_matrix<weight, B, num_visible>;
+
+    template<std::size_t B>
+    using output_batch_t = etl::fast_dyn_matrix<weight, B, num_hidden>;
+
     //Weights and biases
     etl::fast_matrix<weight, num_visible, num_hidden> w;    //!< Weights
     etl::fast_vector<weight, num_hidden> b;                 //!< Hidden biases
@@ -148,6 +154,11 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
         activation_probabilities(item_data, result);
 
         return result;
+    }
+
+    template<typename H, typename V>
+    void batch_activate_hidden(H&& h_a, const V& v_a) const {
+        base_type::template batch_std_activate_hidden<true, false>(std::forward<H>(h_a), std::forward<H>(h_a), v_a, v_a, b, w);
     }
 };
 
