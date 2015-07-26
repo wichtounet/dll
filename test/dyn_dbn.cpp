@@ -14,8 +14,6 @@
 #include "dll/dyn_rbm.hpp"
 #include "dll/dbn.hpp"
 
-#include "dll/stochastic_gradient_descent.hpp"
-
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
