@@ -334,9 +334,16 @@ struct dense_sgd_trainer {
     //Backpropagate errors from rbm to rbm
     template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(decay_layer_traits<Layer1>::is_standard_rbm_layer() && decay_layer_traits<Layer2>::is_standard_rbm_layer())>
     static void compute_errors(Layer1& r1, Context1& ctx1, Layer2& r2, Context2& ctx2){
-        static_assert(std::decay_t<Layer1>::hidden_unit == unit_type::BINARY, "Only RBM with binary hidden unit are supported");
+        static_assert(
+                std::decay_t<Layer1>::hidden_unit == unit_type::BINARY
+            ||  std::decay_t<Layer1>::hidden_unit == unit_type::RELU,
+            "Only RBM with binary or RELU hidden unit are supported");
 
-        compute_errors_from_dense(r1, ctx1, r2, ctx2, [&](std::size_t i){ return etl::sigmoid_derivative(ctx1.output(i)); });
+        if(std::decay_t<Layer1>::hidden_unit == unit_type::BINARY){
+            compute_errors_from_dense(r1, ctx1, r2, ctx2, [&](std::size_t i){ return etl::sigmoid_derivative(ctx1.output(i)); });
+        } else if(std::decay_t<Layer1>::hidden_unit == unit_type::RELU){
+            compute_errors_from_dense(r1, ctx1, r2, ctx2, [&](std::size_t i){ return etl::relu_derivative(ctx1.output(i)); });
+        }
     }
 
     //Backpropagate errors from dense to (dense or conv)
