@@ -150,7 +150,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
             h_a = min(max(etl::rep<NH1, NH2>(b) + v_cv(1), 0.0), 1.0);
         }
 
-        nan_check(h_a);
+        nan_check_etl(h_a);
 
         if(S){
             if(hidden_unit == unit_type::BINARY){
@@ -180,7 +180,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
             }
         });
 
-        nan_check_deep(v_a);
+        nan_check_etl(v_a);
 
         if(S){
             if(visible_unit == unit_type::BINARY){
@@ -189,7 +189,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
                 v_s = normal_noise(v_a);
             }
 
-            nan_check_deep(v_s);
+            nan_check_etl(v_s);
         }
     }
 
@@ -206,14 +206,14 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
             p_a = etl::p_max_pool_p<C, C>(etl::rep<NH1, NH2>(b) + v_cv(1));
         }
 
-        nan_check_deep(p_a);
+        nan_check_etl(p_a);
 
         if(S){
             if(pooling_unit == unit_type::BINARY){
                 p_s = r_bernoulli(p_a);
             }
 
-            nan_check_deep(p_s);
+            nan_check_etl(p_s);
         }
     }
 
