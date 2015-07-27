@@ -303,7 +303,7 @@ private:
         });
 
         if(train_next<I+1>::value){
-            auto next_a = layer.prepare_output<layer_input_t<I>>(std::distance(first, last));
+            auto next_a = layer.template prepare_output<layer_input_t<I>>(std::distance(first, last));
 
             maybe_parallel_foreach_i(pool, first, last, [&layer, &next_a](auto& v, std::size_t i){
                 layer.activate_one(v, next_a[i]);
