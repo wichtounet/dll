@@ -424,6 +424,9 @@ private:
         using type = layer_output_t<I - 1, Input>;
     };
 
+    template<typename Input>
+    using output_t = layer_output_t<layers - 1, Input>;
+
     //Normal version
     template<std::size_t I, typename Iterator, typename Watcher, cpp_enable_if((I>0 && I<layers && !dbn_traits<this_type>::is_multiplex() && !batch_layer_ignore<I>::value))>
     void pretrain_layer_batch(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
