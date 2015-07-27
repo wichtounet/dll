@@ -79,6 +79,8 @@ struct dbn final {
 
     using weight = typename extract_weight_t<0, this_type>::type;
 
+    using desc_input_t = void; //TODO
+
     using watcher_t = typename desc::template watcher_t<this_type>;
 
     weight learning_rate = 0.77;        ///< The learning rate for finetuning
@@ -93,6 +95,28 @@ struct dbn final {
     weight momentum = 0;                ///< The current momentum
 
     thread_pool<!dbn_traits<this_type>::is_serial()> pool;
+
+private:
+    template<std::size_t I, typename Enable = void>
+    struct layer_input_simple;
+
+    template<std::size_t I>
+    struct layer_input_simple<I, std::enable_if_t<!layer_traits<layer_type<I>>::is_transform_layer()>> {
+        using type = typename layer_type<I>::input_one_t;
+    };
+
+    template<std::size_t I>
+    struct layer_input_simple<I, std::enable_if_t<layer_traits<layer_type<I>>::is_transform_layer()>> {
+        using type = typename layer_input_simple<I + 1>::type;
+    };
+
+public:
+    using input_t = std::conditional_t<
+        std::is_same<desc_input_t, void>::value,
+        typename layer_input_simple<0>::type,
+        desc_input_t
+        >;
+
 
 #ifdef DLL_SVM_SUPPORT
     svm::model svm_model;               ///< The learned model
@@ -279,7 +303,7 @@ private:
         });
 
         if(train_next<I+1>::value){
-            auto next_a = layer.template prepare_output<layer_input_t<I, Iterator>>(std::distance(first, last));
+            auto next_a = layer.prepare_output<layer_input_t<I>>(std::distance(first, last));
 
             maybe_parallel_foreach_i(pool, first, last, [&layer, &next_a](auto& v, std::size_t i){
                 layer.activate_one(v, next_a[i]);
@@ -387,45 +411,45 @@ private:
         pretrain_layer_batch<I+1>(first, last, watcher, max_epochs);
     }
 
-    template<std::size_t I, typename Input, typename Enable = void>
+    template<std::size_t I, typename Enable = void>
+
     struct layer_output;
 
-    template<std::size_t I, typename Input>
-    using layer_output_t = typename layer_output<I, Input>::type;
+    template<std::size_t I>
+    using layer_output_t = typename layer_output<I>::type;
 
-    template<std::size_t I, typename Input, typename Enable = void>
+    template<std::size_t I, typename Enable = void>
     struct layer_input;
 
-    template<std::size_t I, typename Input>
-    using layer_input_t = typename layer_input<I, Input>::type;
+    template<std::size_t I>
+    using layer_input_t = typename layer_input<I>::type;
 
-    template<std::size_t I, typename Input>
-    struct layer_output<I, Input, std::enable_if_t<!layer_traits<layer_type<I>>::is_transform_layer()>> {
+    template<std::size_t I>
+    struct layer_output<I, std::enable_if_t<!layer_traits<layer_type<I>>::is_transform_layer()>> {
         using type = typename layer_type<I>::output_one_t;
     };
 
-    template<std::size_t I, typename Input>
-    struct layer_output<I, Input, std::enable_if_t<layer_traits<layer_type<I>>::is_transform_layer()>> {
-        using type = std::conditional_t<I == 0, typename Input::value_type, layer_input_t<I, Input>>;
+    template<std::size_t I>
+    struct layer_output<I, std::enable_if_t<layer_traits<layer_type<I>>::is_transform_layer()>> {
+        using type = std::conditional_t<I == 0, input_t, layer_input_t<I>>;
     };
 
-    template<std::size_t I, typename Input>
-    struct layer_input<I, Input, std::enable_if_t<!layer_traits<layer_type<I>>::is_transform_layer()>> {
+    template<std::size_t I>
+    struct layer_input<I, std::enable_if_t<!layer_traits<layer_type<I>>::is_transform_layer()>> {
         using type = typename layer_type<I>::input_one_t;
     };
 
-    template<std::size_t I, typename Input>
-    struct layer_input<I, Input, std::enable_if_t<I == 0 && layer_traits<layer_type<I>>::is_transform_layer()>> {
-        using type = layer_input_t<I + 1, Input>;
+    template<std::size_t I>
+    struct layer_input<I, std::enable_if_t<I == 0 && layer_traits<layer_type<I>>::is_transform_layer()>> {
+        using type = layer_input_t<I + 1>;
     };
 
-    template<std::size_t I, typename Input>
-    struct layer_input<I, Input, std::enable_if_t<(I > 0) && layer_traits<layer_type<I>>::is_transform_layer()>> {
-        using type = layer_output_t<I - 1, Input>;
+    template<std::size_t I>
+    struct layer_input<I, std::enable_if_t<(I > 0) && layer_traits<layer_type<I>>::is_transform_layer()>> {
+        using type = layer_output_t<I - 1>;
     };
 
-    template<typename Input>
-    using output_t = layer_output_t<layers - 1, Input>;
+    using output_t = layer_output_t<layers - 1>;
 
     //Normal version
     template<std::size_t I, typename Iterator, typename Watcher, cpp_enable_if((I>0 && I<layers && !dbn_traits<this_type>::is_multiplex() && !batch_layer_ignore<I>::value))>
@@ -449,7 +473,7 @@ private:
 
         auto total_batch_size = big_batch_size * get_batch_size(rbm);
 
-        auto input = layer_get<I - 1>().template prepare_output<layer_input_t<I - 1, Iterator>>(total_batch_size);
+        auto input = layer_get<I - 1>().template prepare_output<layer_input_t<I - 1>>(total_batch_size);
 
         //Train for max_epochs epoch
         for(std::size_t epoch = 0; epoch < max_epochs; ++epoch){
@@ -641,13 +665,13 @@ private:
         if(I < layers - 1){
             bool is_last = I == layers - 2;
 
-            auto next_a = layer.template prepare_output<layer_input_t<I, Input>>(input.size());
-            auto next_s = layer.template prepare_output<layer_input_t<I, Input>>(input.size());
+            auto next_a = layer.template prepare_output<layer_input_t<I>>(input.size());
+            auto next_s = layer.template prepare_output<layer_input_t<I>>(input.size());
 
             layer.activate_many(input, next_a, next_s);
 
             if(is_last){
-                auto big_next_a = layer.template prepare_output<layer_input_t<I, Input>>(input.size(), is_last, labels);
+                auto big_next_a = layer.template prepare_output<layer_input_t<I>>(input.size(), is_last, labels);
 
                 //Cannot use std copy since the sub elements have different size
                 for(std::size_t i = 0; i < next_a.size(); ++i){
@@ -734,7 +758,7 @@ private:
 
             //If the next layers is the last layer
             if(is_last){
-                auto big_next_a = layer.template prepare_one_output<layer_input_t<I, Input>>(is_last, labels);
+                auto big_next_a = layer.template prepare_one_output<layer_input_t<I>>(is_last, labels);
 
                 for(std::size_t i = 0; i < next_a.size(); ++i){
                     big_next_a[i] = next_a[i];
@@ -755,8 +779,8 @@ private:
 
 public:
 
-    template<typename TrainingItem>
-    size_t predict_labels(const TrainingItem& item_data, std::size_t labels) const {
+    template<typename Sample>
+    size_t predict_labels(const Sample& item_data, std::size_t labels) const {
         cpp_assert(dll::input_size(layer_get<layers - 1>()) == dll::output_size(layer_get<layers - 2>()) + labels, "There is no room for the labels units");
 
         typename layer_type<0>::input_one_t item(item_data);
@@ -810,7 +834,7 @@ private:
             f(result).reserve(next_a.size());
 
             for(std::size_t i = 0; i < next_a.size(); ++i){
-                f(result).push_back(this->template layer_get<S-1>().template prepare_one_output<layer_input_t<I, Input>>());
+                f(result).push_back(this->template layer_get<S-1>().template prepare_one_output<layer_input_t<I>>());
                 this->template activation_probabilities<I+1, S>(next_a[i], f(result)[i]);
             }
         });
@@ -836,7 +860,7 @@ public:
 
     template<std::size_t I, typename Sample>
     auto activation_probabilities_sub(const Sample& item_data) const {
-        auto result = prepare_output<I, Sample>();
+        auto result = prepare_output<I>();
         return activation_probabilities_sub<I>(item_data, result);;
     }
 
@@ -934,19 +958,18 @@ public:
 
     /*}}}*/
 
-    template<std::size_t I, typename Sample, typename T = this_type, cpp_disable_if(dbn_traits<T>::is_multiplex())>
+    template<std::size_t I, typename T = this_type, cpp_disable_if(dbn_traits<T>::is_multiplex())>
     auto prepare_output() const {
-        return layer_get<I>().template prepare_one_output<Sample>();
+        return layer_get<I>().template prepare_one_output<input_t>();
     }
 
-    template<std::size_t I, typename Sample, typename T = this_type, cpp_enable_if(dbn_traits<T>::is_multiplex())>
+    template<std::size_t I, typename T = this_type, cpp_enable_if(dbn_traits<T>::is_multiplex())>
     auto prepare_output() const {
         return std::vector<typename layer_type<layers - 1>::output_one_t>();
     }
 
-    template<typename Sample>
     auto prepare_one_output() const {
-        return  prepare_output<layers - 1, Sample>();
+        return  prepare_output<layers - 1>();
     }
 
 #ifdef DLL_SVM_SUPPORT
