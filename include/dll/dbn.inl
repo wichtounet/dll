@@ -79,8 +79,6 @@ struct dbn final {
 
     using weight = typename extract_weight_t<0, this_type>::type;
 
-    using desc_input_t = void; //TODO
-
     using watcher_t = typename desc::template watcher_t<this_type>;
 
     weight learning_rate = 0.77;        ///< The learning rate for finetuning
@@ -111,12 +109,7 @@ private:
     };
 
 public:
-    using input_t = std::conditional_t<
-        std::is_same<desc_input_t, void>::value,
-        typename layer_input_simple<0>::type,
-        desc_input_t
-        >;
-
+    using input_t = typename layer_input_simple<0>::type,
 
 #ifdef DLL_SVM_SUPPORT
     svm::model svm_model;               ///< The learned model
