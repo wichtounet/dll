@@ -81,7 +81,7 @@ struct dbn final {
 
     using watcher_t = typename desc::template watcher_t<this_type>;
 
-    weight learning_rate = 0.77;
+    weight learning_rate = 0.77;        ///< The learning rate for finetuning
 
     weight initial_momentum = 0.5;      ///< The initial momentum
     weight final_momentum = 0.9;        ///< The final momentum applied after *final_momentum_epoch* epoch
