@@ -49,13 +49,7 @@ struct patches_layer {
         return width * height;
     }
 
-    //TODO Ideally, the dbn should guess if h_a/h_s are used or only h_a
-
-    static void activate_one(const input_one_t& input, output_one_t& h_a){
-        activate_one(input, h_a, h_a);
-    }
-
-    static void activate_one(const input_one_t& input, output_one_t& h_a, output_one_t& /*h_s*/){
+    static void activate_hidden(output_one_t& h_a, const input_one_t& input){
         cpp_assert(etl::dim<0>(input) == 1, "Only one channel is supported for now");
 
         h_a.clear();
@@ -75,13 +69,7 @@ struct patches_layer {
         }
     }
 
-    static void activate_many(const input_t& input, output_t& h_a, output_t& h_s){
-        for(std::size_t i = 0; i < input.size(); ++i){
-            activate_one(input[i], h_a[i], h_s[i]);
-        }
-    }
-
-    static void activate_many(const input_t& input, output_t& h_a){
+    static void activate_many(output_t& h_a, const input_t& input){
         for(std::size_t i = 0; i < input.size(); ++i){
             activate_one(input[i], h_a[i]);
         }

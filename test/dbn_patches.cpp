@@ -27,25 +27,16 @@ TEST_CASE( "dbn/mnist/patches/1", "[dbn][conv][mnist][patches]" ) {
         dll::conv_rbm_desc_square<1, 14, 20, 10, dll::momentum, dll::batch_size<25>>::rbm_t,
         dll::conv_rbm_desc_square<20, 10, 20, 6, dll::momentum, dll::batch_size<25>>::rbm_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(500);
-
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(500);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
 
-    std::vector<etl::dyn_matrix<double, 3>> converted;
-    converted.reserve(dataset.training_images.size());
-
-    for(auto& image : dataset.training_images){
-        converted.emplace_back(1, 28, 28);
-        converted.back() = image;
-    }
-
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->pretrain(converted, 20);
+    dbn->pretrain(dataset.training_images, 20);
 
-    auto probs = dbn->activation_probabilities(converted[0]);
+    auto probs = dbn->activation_probabilities(dataset.training_images[0]);
     REQUIRE(probs.size() == 4);
 }
 
@@ -57,25 +48,16 @@ TEST_CASE( "dbn/mnist/patches/2", "[dbn][conv][mnist][patches][memory]" ) {
             dll::conv_rbm_desc_square<20, 10, 20, 6, dll::momentum, dll::batch_size<25>>::rbm_t>,
         dll::memory>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(500);
-
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(500);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
 
-    std::vector<etl::dyn_matrix<double, 3>> converted;
-    converted.reserve(dataset.training_images.size());
-
-    for(auto& image : dataset.training_images){
-        converted.emplace_back(1, 28, 28);
-        converted.back() = image;
-    }
-
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->pretrain(converted, 20);
+    dbn->pretrain(dataset.training_images, 20);
 
-    auto probs = dbn->activation_probabilities(converted[0]);
+    auto probs = dbn->activation_probabilities(dataset.training_images[0]);
     REQUIRE(probs.size() == 4);
 }
 
@@ -86,25 +68,16 @@ TEST_CASE( "dbn/mnist/patches/3", "[dbn][conv][mnist][patches]" ) {
         dll::conv_rbm_desc_square<1, 14, 20, 10, dll::momentum, dll::batch_size<25>>::rbm_t,
         dll::conv_rbm_desc_square<20, 10, 20, 6, dll::momentum, dll::batch_size<25>>::rbm_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(500);
-
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(500);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
 
-    std::vector<etl::dyn_matrix<double, 3>> converted;
-    converted.reserve(dataset.training_images.size());
-
-    for(auto& image : dataset.training_images){
-        converted.emplace_back(1, 28, 28);
-        converted.back() = image;
-    }
-
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->pretrain(converted, 20);
+    dbn->pretrain(dataset.training_images, 20);
 
-    auto probs = dbn->activation_probabilities(converted[0]);
+    auto probs = dbn->activation_probabilities(dataset.training_images[0]);
     REQUIRE(probs.size() == 4);
 }
 
@@ -116,24 +89,15 @@ TEST_CASE( "dbn/mnist/patches/4", "[dbn][conv][mnist][patches][memory]" ) {
             dll::conv_rbm_desc_square<20, 10, 20, 6, dll::momentum, dll::batch_size<25>>::rbm_t>,
         dll::memory>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(500);
-
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(500);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
 
-    std::vector<etl::dyn_matrix<double, 3>> converted;
-    converted.reserve(dataset.training_images.size());
-
-    for(auto& image : dataset.training_images){
-        converted.emplace_back(1, 28, 28);
-        converted.back() = image;
-    }
-
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->pretrain(converted, 20);
+    dbn->pretrain(dataset.training_images, 20);
 
-    auto probs = dbn->activation_probabilities(converted[0]);
+    auto probs = dbn->activation_probabilities(dataset.training_images[0]);
     REQUIRE(probs.size() == 4);
 }

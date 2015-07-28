@@ -29,23 +29,16 @@ struct normalize_layer {
         std::cout << to_short_string() << std::endl;
     }
 
-    //TODO Ideally, the dbn should guess if h_a/h_s are used or only h_a
-    template<typename I, typename O_A>
-    static void activate_one(const I& v, O_A& h){
-        activate_one(v, h, h);
+    template<typename Input, typename Output>
+    static void activate_hidden(Output& output, const Input& input){
+        output = input;
+        cpp::normalize(output);
     }
 
-    template<typename I, typename O_A, typename O_S>
-    static void activate_one(const I& v, O_A& h, O_S& /*h_s*/){
-        h = v;
-        cpp::normalize(h);
-    }
-
-    template<typename I, typename O_A, typename O_S>
-    static void activate_many(const I& input, O_A& h_a, O_S& h_s){
-        for(std::size_t i = 0; i < input.size(); ++i){
-            activate_one(input[i], h_a[i], h_s[i]);
-        }
+    template<typename Input, typename Output>
+    static void batch_activate_hidden(Output& output, const Input& input){
+        output = input;
+        cpp::normalize(output);
     }
 
     template<typename I, typename O_A>

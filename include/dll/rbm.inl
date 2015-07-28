@@ -157,6 +157,12 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
     }
 
     template<typename H, typename V>
+    void activate_hidden(H&& h_a, const V& v_a) const {
+        etl::fast_dyn_matrix<weight, num_hidden> t;
+        base_type::template std_activate_hidden<true, false>(std::forward<H>(h_a), std::forward<H>(h_a), v_a, v_a, b, w, t);
+    }
+
+    template<typename H, typename V>
     void batch_activate_hidden(H&& h_a, const V& v_a) const {
         base_type::template batch_std_activate_hidden<true, false>(std::forward<H>(h_a), std::forward<H>(h_a), v_a, v_a, b, w);
     }

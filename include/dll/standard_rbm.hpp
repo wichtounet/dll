@@ -503,20 +503,6 @@ public:
         return input_one_t(static_cast<const parent_t*>(this)->input_size());
     }
 
-    void activate_one(const input_one_t& input, output_one_t& h_a, output_one_t& h_s) const {
-        static_cast<const parent_t*>(this)->activate_hidden(h_a, h_s, input, input);
-    }
-
-    void activate_one(const input_one_t& input, output_one_t& h_a) const {
-        static_cast<const parent_t*>(this)->template activate_hidden<true, false>(h_a, h_a, input, input);
-    }
-
-    void activate_many(const input_t& input, output_t& h_a, output_t& h_s) const {
-        for(std::size_t i = 0; i < input.size(); ++i){
-            activate_one(input[i], h_a[i], h_s[i]);
-        }
-    }
-
     void activate_many(const input_t& input, output_t& h_a) const {
         for(std::size_t i = 0; i < input.size(); ++i){
             activate_one(input[i], h_a[i]);

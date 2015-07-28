@@ -403,11 +403,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         return {};
     }
 
-    void activate_one(const input_one_t& input, output_one_t& h_a, output_one_t& h_s) const {
-        activate_pooling(h_a, h_s, input, input);
-    }
-
-    void activate_one(const input_one_t& input, output_one_t& h_a) const {
+    void activate_hidden(output_one_t& h_a, const input_one_t& input) const {
         activate_pooling<true, false>(h_a, h_a, input, input);
     }
 

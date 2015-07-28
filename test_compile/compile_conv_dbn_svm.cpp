@@ -16,7 +16,7 @@ void test_dbn(){
 
     dbn.display();
 
-    std::vector<etl::dyn_matrix<double, 3>> images;
+    std::vector<etl::fast_dyn_matrix<double, 1, 28, 28>> images;
     std::vector<uint8_t> labels;
 
     dbn.pretrain(images, 10);

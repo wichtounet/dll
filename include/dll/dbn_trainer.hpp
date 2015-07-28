@@ -37,7 +37,7 @@ struct dbn_trainer {
         constexpr const auto batch_size = std::decay_t<DBN>::batch_size;
 
         //Get types for the batch
-        using samples_t = std::vector<etl::dyn_vector<typename std::iterator_traits<Iterator>::value_type::value_type>>;
+        using samples_t = std::vector<typename std::iterator_traits<Iterator>::value_type>;
 
         //Initialize the momentum
         dbn.momentum = dbn.initial_momentum;
@@ -58,7 +58,7 @@ struct dbn_trainer {
             //Convert labels to an useful form
             auto fake_labels = dll::make_fake(lfirst, llast);
 
-            //Convert data to an useful form
+            //Make sure data is contiguous
             samples_t data;
             data.reserve(std::distance(first, last));
 

@@ -26,9 +26,9 @@ TEST_CASE( "unit/cdbn/mnist/1", "[cdbn][svm][unit]" ) {
         dll::conv_rbm_desc_square<1, 28, 20, 12, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::rbm_t,
         dll::conv_rbm_desc_square<20, 12, 20, 10, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::rbm_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
+
     mnist::binarize_dataset(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
@@ -49,7 +49,7 @@ TEST_CASE( "unit/cdbn/mnist/2", "[cdbn][svm][unit]" ) {
         dll::conv_rbm_desc_square<1, 28, 20, 12, dll::momentum, dll::batch_size<25>>::rbm_t,
         dll::conv_rbm_desc_square<20, 12, 20, 10, dll::momentum, dll::batch_size<25>>::rbm_t>, dll::svm_concatenate>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -72,7 +72,7 @@ TEST_CASE( "unit/cdbn/mnist/3", "[cdbn][gaussian][svm][unit]" ) {
         dll::conv_rbm_desc_square<1, 28, 20, 12, dll::visible<dll::unit_type::GAUSSIAN>, dll::momentum, dll::batch_size<20>>::rbm_t,
         dll::conv_rbm_desc_square<20, 12, 20, 10, dll::momentum, dll::batch_size<20>>::rbm_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::normalize_dataset(dataset);
@@ -96,7 +96,7 @@ TEST_CASE( "unit/cdbn/mnist/4", "[cdbn][gaussian][svm][unit]" ) {
         dll::conv_rbm_desc_square<20, 12, 20, 10, dll::momentum, dll::batch_size<25>>::rbm_t>,
         dll::svm_scale>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::normalize_dataset(dataset);
@@ -120,7 +120,7 @@ TEST_CASE( "unit/cdbn/mnist/5", "[cdbn][crbm_mp][svm][unit]" ) {
         dll::conv_rbm_mp_desc_square<20, 9, 20, 6, 2, dll::momentum, dll::batch_size<8>>::rbm_t
     >>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -148,7 +148,7 @@ TEST_CASE( "unit/cdbn/mnist/6", "[cdbn][mp][svm][unit]" ) {
 
     REQUIRE(dbn_t::output_size() == 400);
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(250);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(250);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -179,7 +179,7 @@ TEST_CASE( "unit/cdbn/mnist/7", "[cdbn][ap][svm][unit]" ) {
 
     REQUIRE(dbn_t::output_size() == 400);
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -211,7 +211,7 @@ TEST_CASE( "unit/cdbn/mnist/8", "[cdbn][ap][svm][unit]" ) {
 
     REQUIRE(dbn_t::output_size() == 1600);
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -238,25 +238,16 @@ TEST_CASE( "unit/cdbn/mnist/9", "[dbn][conv][mnist][patches][unit]" ) {
         dll::conv_rbm_desc_square<1, 14, 10, 10, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::rbm_t,
         dll::conv_rbm_desc_square<10, 10, 10, 6, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::rbm_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(50);
-
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(50);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
 
-    std::vector<etl::dyn_matrix<double, 3>> converted;
-    converted.reserve(dataset.training_images.size());
-
-    for(auto& image : dataset.training_images){
-        converted.emplace_back(1, 28, 28);
-        converted.back() = image;
-    }
-
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->pretrain(converted, 10);
+    dbn->pretrain(dataset.training_images, 10);
 
-    auto probs = dbn->activation_probabilities(converted[0]);
+    auto probs = dbn->activation_probabilities(dataset.training_images[0]);
     REQUIRE(probs.size() == 4);
 }
 
@@ -268,25 +259,16 @@ TEST_CASE( "unit/cdbn/mnist/10", "[dbn][conv][mnist][patches][memory][unit]" ) {
             dll::conv_rbm_desc_square<20, 10, 20, 6, dll::momentum, dll::batch_size<10>>::rbm_t>,
         dll::memory>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(50);
-
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(50);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
 
-    std::vector<etl::dyn_matrix<double, 3>> converted;
-    converted.reserve(dataset.training_images.size());
-
-    for(auto& image : dataset.training_images){
-        converted.emplace_back(1, 28, 28);
-        converted.back() = image;
-    }
-
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->pretrain(converted, 10);
+    dbn->pretrain(dataset.training_images, 10);
 
-    auto probs = dbn->activation_probabilities(converted[0]);
+    auto probs = dbn->activation_probabilities(dataset.training_images[0]);
     REQUIRE(probs.size() == 4);
 
     //Simply to ensure compilation
@@ -304,24 +286,15 @@ TEST_CASE( "unit/cdbn/mnist/11", "[dbn][conv][mnist][patches][unit]" ) {
         dll::conv_rbm_desc_square<1, 14, 20, 10, dll::momentum, dll::batch_size<10>>::rbm_t,
         dll::conv_rbm_desc_square<20, 10, 20, 6, dll::momentum, dll::batch_size<10>>::rbm_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(50);
-
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(50);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
 
-    std::vector<etl::dyn_matrix<double, 3>> converted;
-    converted.reserve(dataset.training_images.size());
-
-    for(auto& image : dataset.training_images){
-        converted.emplace_back(1, 28, 28);
-        converted.back() = image;
-    }
-
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->pretrain(converted, 10);
+    dbn->pretrain(dataset.training_images, 10);
 
-    auto probs = dbn->activation_probabilities(converted[0]);
+    auto probs = dbn->activation_probabilities(dataset.training_images[0]);
     REQUIRE(probs.size() == 4);
 }

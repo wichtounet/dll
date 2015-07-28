@@ -398,11 +398,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         return output_one_t{};
     }
 
-    void activate_one(const input_one_t& input, output_one_t& h_a, output_one_t& h_s) const {
-        activate_hidden(h_a, h_s, input, input);
-    }
-
-    void activate_one(const input_one_t& input, output_one_t& h_a) const {
+    void activate_hidden(output_one_t& h_a, const input_one_t& input) const {
         activate_hidden<true,false>(h_a, h_a, input, input);
     }
 

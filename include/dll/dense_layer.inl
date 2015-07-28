@@ -78,9 +78,14 @@ struct dense_layer final {
         std::cout << to_short_string() << std::endl;
     }
 
-    template<typename H1, typename V>
+    template<typename H1, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 1)>
     void activate_hidden(H1&& output, const V& v) const {
         output = f_activate<activation_function>(b + v * w);
+    }
+
+    template<typename H1, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 1)>
+    void activate_hidden(H1&& output, const V& v) const {
+        output = f_activate<activation_function>(b + etl::reshape<num_visible>(v) * w);
     }
 
     template<typename H1, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 2)>
@@ -115,7 +120,6 @@ struct dense_layer final {
         } else {
             output = f_activate<activation_function>(etl::rep_l(b, Batch) + etl::reshape<Batch, num_visible>(input) * w);
         }
-
     }
 
     //Utilities to be used by DBNs
@@ -139,16 +143,6 @@ struct dense_layer final {
     template<typename Input>
     output_one_t prepare_one_output(bool /*is_last*/ = false, std::size_t /*labels*/ = 0) const {
         return {};
-    }
-
-    void activate_one(const input_one_t& input, output_one_t& h_a) const {
-        activate_hidden(h_a, input);
-    }
-
-    template<typename T>
-    void activate_one(const T& i, output_one_t& h_a) const {
-        input_one_t input(i);
-        activate_hidden(h_a, input);
     }
 };
 

@@ -27,8 +27,7 @@ TEST_CASE( "dbn/mnist_18", "binarize_layer" ) {
         dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
         dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(500);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(500);
     REQUIRE(!dataset.training_images.empty());
 
     auto dbn = std::make_unique<dbn_t>();
@@ -45,8 +44,7 @@ TEST_CASE( "dbn/mnist_19", "normalize_layer" ) {
         dll::rbm_desc<500, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
     >::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::deque, double>(1000);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(1000);
     REQUIRE(!dataset.training_images.empty());
 
     auto dbn = std::make_unique<dbn_t>();

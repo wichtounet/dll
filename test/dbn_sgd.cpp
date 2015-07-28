@@ -25,7 +25,7 @@ TEST_CASE( "dbn/sgd/1", "[dbn][mnist][sgd]" ) {
         , dll::batch_size<10>
         >::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(500);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(500);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -56,7 +56,7 @@ TEST_CASE( "dbn/sgd/2", "[dbn][mnist][sgd]" ) {
         , dll::batch_size<10>
         >::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(1000);
 
     REQUIRE(!dataset.training_images.empty());
 
@@ -86,8 +86,7 @@ TEST_CASE( "dbn/sgd/3", "[dbn][mnist][sgd][gaussian]" ) {
         , dll::batch_size<10>
         >::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::deque, double>(1000);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(1000);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::normalize_dataset(dataset);
@@ -118,8 +117,7 @@ TEST_CASE( "dbn/sgd/4", "[dbn][mnist][sgd][relu]" ) {
         , dll::batch_size<10>
         >::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::deque, double>(200);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(200);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -145,7 +143,7 @@ TEST_CASE( "dbn/sgd/5", "[dbn][mnist][sgd]" ) {
         , dll::batch_size<10>
         >::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(200);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -173,7 +171,7 @@ TEST_CASE( "dbn/sgd/6", "[dbn][mnist][sgd]" ) {
         , dll::batch_size<100>
         >::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(300);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(300);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -199,7 +197,7 @@ TEST_CASE( "dbn/sgd/7", "[dbn][mnist][sgd][memory]" ) {
         , dll::batch_size<10>
         >::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(500);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(500);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);

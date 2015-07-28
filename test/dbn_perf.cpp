@@ -23,8 +23,7 @@ TEST_CASE( "dbn/mnist_100", "[dbn][bench][fast]" ) {
         , dll::batch_size<5>
         >::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(25);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float,1>>(25);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -32,14 +31,12 @@ TEST_CASE( "dbn/mnist_100", "[dbn][bench][fast]" ) {
     auto dbn = std::make_unique<dbn_t>();
 
     dbn->pretrain(dataset.training_images, 5);
-    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 2);
 
+    auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 2);
     REQUIRE(error < 5e-2);
 
     auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-
     std::cout << "test_error:" << test_error << std::endl;
-
     REQUIRE(test_error < 0.2);
 }
 
@@ -52,7 +49,7 @@ TEST_CASE( "dbn/mnist_101", "[dbn][bench][slow][parallel]" ) {
         , dll::batch_size<5>
         >::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(2000);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float,1>>(2000);
 
     REQUIRE(!dataset.training_images.empty());
 
@@ -72,7 +69,7 @@ TEST_CASE( "dbn/mnist_102", "[dbn][bench][slow]" ) {
         , dll::batch_size<5>
         >::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(2000);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float,1>>(2000);
 
     REQUIRE(!dataset.training_images.empty());
 

@@ -46,7 +46,7 @@ TEST_CASE( "dense/sgd/1", "[dense][dbn][mnist][sgd]" ) {
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(1000);
     REQUIRE(!dataset.training_images.empty());
 
     auto dbn = std::make_unique<dbn_t>();
@@ -73,7 +73,7 @@ TEST_CASE( "dense/sgd/2", "[dense][dbn][mnist][sgd]" ) {
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(1000);
     REQUIRE(!dataset.training_images.empty());
 
     mnist_scale(dataset);
@@ -103,7 +103,7 @@ TEST_CASE( "dense/sgd/3", "[dense][dbn][mnist][sgd]" ) {
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(1000);
     REQUIRE(!dataset.training_images.empty());
 
     mnist_scale(dataset);
@@ -136,7 +136,7 @@ TEST_CASE( "dense/sgd/4", "[dense][dbn][mnist][sgd]" ) {
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(1000);
     REQUIRE(!dataset.training_images.empty());
 
     mnist_scale(dataset);
@@ -169,7 +169,7 @@ TEST_CASE( "dense/sgd/5", "[dense][dbn][mnist][sgd]" ) {
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(1000);
     REQUIRE(!dataset.training_images.empty());
 
     mnist_scale(dataset);
@@ -202,7 +202,7 @@ TEST_CASE( "dense/sgd/6", "[dense][dbn][mnist][sgd]" ) {
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(1000);
     REQUIRE(!dataset.training_images.empty());
 
     mnist_scale(dataset);
@@ -235,7 +235,7 @@ TEST_CASE( "dense/sgd/7", "[dense][dbn][mnist][sgd]" ) {
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(1000);
     REQUIRE(!dataset.training_images.empty());
 
     mnist_scale(dataset);
@@ -268,7 +268,7 @@ TEST_CASE( "dense/sgd/8", "[dense][dbn][mnist][sgd]" ) {
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(1000);
     REQUIRE(!dataset.training_images.empty());
 
     mnist_scale(dataset);
@@ -302,7 +302,7 @@ TEST_CASE( "dense/sgd/9", "[dense][dbn][mnist][sgd]" ) {
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(1000);
     REQUIRE(!dataset.training_images.empty());
 
     auto dbn = std::make_unique<dbn_t>();

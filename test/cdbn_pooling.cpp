@@ -29,7 +29,7 @@ TEST_CASE( "conv_dbn/mnist_9", "max_pooling" ) {
 
     REQUIRE(dbn_t::output_size() == 800);
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
 
     REQUIRE(!dataset.training_images.empty());
 
@@ -63,7 +63,7 @@ TEST_CASE( "conv_dbn/mnist_10", "max_pooling" ) {
 
     REQUIRE(dbn_t::output_size() == 800);
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
 
     REQUIRE(!dataset.training_images.empty());
 
@@ -96,7 +96,7 @@ TEST_CASE( "conv_dbn/mnist_11", "avg_pooling" ) {
 
     REQUIRE(dbn_t::output_size() == 800);
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
 
     REQUIRE(!dataset.training_images.empty());
 
@@ -130,7 +130,7 @@ TEST_CASE( "conv_dbn/mnist_12", "avgp_pooling" ) {
 
     REQUIRE(dbn_t::output_size() == 800);
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
 
     REQUIRE(!dataset.training_images.empty());
 
@@ -164,7 +164,7 @@ TEST_CASE( "conv_dbn/mnist_13", "nop_layers" ) {
 
     REQUIRE(dbn_t::output_size() == 3200);
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
 
     REQUIRE(!dataset.training_images.empty());
 

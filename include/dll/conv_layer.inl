@@ -163,10 +163,6 @@ struct conv_layer final {
     output_one_t prepare_one_output(bool /*is_last*/ = false, std::size_t /*labels*/ = 0) const {
         return {};
     }
-
-    void activate_one(const input_one_t& input, output_one_t& h_a) const {
-        activate_hidden(h_a, input);
-    }
 };
 
 //Allow odr-use of the constexpr static members

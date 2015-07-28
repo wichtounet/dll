@@ -18,7 +18,7 @@
 #include "conjugate_gradient.hpp"
 #include "dbn_common.hpp"
 #include "svm_common.hpp"
-#include "input_converter.hpp"
+#include "flatten.hpp"
 
 namespace dll {
 
@@ -109,7 +109,7 @@ private:
     };
 
 public:
-    using input_t = typename layer_input_simple<0>::type,
+    using input_t = typename layer_input_simple<0>::type;
 
 #ifdef DLL_SVM_SUPPORT
     svm::model svm_model;               ///< The learned model
@@ -117,25 +117,10 @@ public:
     bool svm_loaded = false;            ///< Indicates if a SVM model has been loaded (and therefore must be saved)
 #endif //DLL_SVM_SUPPORT
 
-    //No arguments by default
-    template<cpp_disable_if_cst(dbn_traits<this_type>::is_dynamic())>
-    dbn(){}
-
-//Note: The tuple implementation of Clang and G++ seems highly
-//different. Indeed, g++ only allows to forward arguments to the
-//constructors if they are directly convertible.
-
-#ifdef __clang__
-    template<typename... T, cpp_enable_if_cst(dbn_traits<this_type>::is_dynamic())>
-    explicit dbn(T&&... layers) : tuples(std::forward<T>(layers)...) {
-        //Nothing else to init
-    }
-#else
-    template<typename... T, cpp_enable_if_cst(dbn_traits<this_type>::is_dynamic())>
+    template<typename... T>
     explicit dbn(T&&... layers) : tuples({std::forward<T>(layers)}...) {
         //Nothing else to init
     }
-#endif
 
     //No copying
     dbn(const dbn& dbn) = delete;
@@ -196,12 +181,12 @@ public:
     }
 
     template<std::size_t N>
-    auto layer_get() -> typename std::add_lvalue_reference<layer_type<N>>::type {
+    layer_type<N>& layer_get() {
         return std::get<N>(tuples);
     }
 
     template<std::size_t N>
-    constexpr auto layer_get() const -> typename std::add_lvalue_reference<typename std::add_const<layer_type<N>>::type>::type {
+    constexpr const layer_type<N>& layer_get() const {
         return std::get<N>(tuples);
     }
 
@@ -242,46 +227,8 @@ private:
     template<std::size_t I>
     struct train_next<I, std::enable_if_t<(I == layers - 1)>> : cpp::bool_constant<layer_traits<layer_type<I>>::pretrain_last()> {};
 
-    template<typename One>
-    static void flatten_in(std::vector<std::vector<One>>& deep, std::vector<One>& flat){
-        flat.reserve(deep.size());
-
-        for(auto& d : deep){
-            std::move(d.begin(), d.end(), std::back_inserter(flat));
-        }
-    }
-
-    template<typename One>
-    static void flatten_in_clr(std::vector<std::vector<One>>& deep, std::vector<One>& flat){
-        flat.reserve(deep.size());
-
-        for(auto& d : deep){
-            std::move(d.begin(), d.end(), std::back_inserter(flat));
-        }
-
-        deep.clear();
-    }
-
-    template<typename One>
-    static std::vector<One> flatten_clr(std::vector<std::vector<One>>& deep){
-        std::vector<One> flat;
-
-        flatten_in_clr(deep, flat);
-
-        return flat;
-    }
-
-    template<typename One>
-    static std::vector<One> flatten(std::vector<std::vector<One>>& deep){
-        std::vector<One> flat;
-
-        flatten_in(deep, flat);
-
-        return flat;
-    }
-
-    template<std::size_t I, typename Iterator, typename Watcher, cpp_enable_if((I < layers))>
-    void pretrain_layer(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
+    template<std::size_t I, typename Iterator, cpp_enable_if((I < layers))>
+    void pretrain_layer(Iterator first, Iterator last, watcher_t& watcher, std::size_t max_epochs){
         using layer_t = layer_type<I>;
 
         decltype(auto) layer = layer_get<I>();
@@ -299,7 +246,7 @@ private:
             auto next_a = layer.template prepare_output<layer_input_t<I>>(std::distance(first, last));
 
             maybe_parallel_foreach_i(pool, first, last, [&layer, &next_a](auto& v, std::size_t i){
-                layer.activate_one(v, next_a[i]);
+                layer.activate_hidden(next_a[i], v);
             });
 
             //In the standard case, pass the output to the next layer
@@ -309,7 +256,7 @@ private:
 
             //In case of a multiplex layer, the output is flattened
             cpp::static_if<layer_traits<layer_t>::is_multiplex_layer()>([&](auto f){
-                auto flattened_next_a = f(this)->flatten_clr(next_a);
+                auto flattened_next_a = flatten_clr(next_a);
 
                 f(this)->template pretrain_layer<I+1>(flattened_next_a.begin(), flattened_next_a.end(), watcher, max_epochs);
             });
@@ -317,8 +264,8 @@ private:
     }
 
     //Stop template recursion
-    template<std::size_t I, typename Iterator, typename Watcher, cpp_enable_if((I == layers))>
-    void pretrain_layer(Iterator, Iterator, Watcher&, std::size_t){}
+    template<std::size_t I, typename Iterator, cpp_enable_if((I == layers))>
+    void pretrain_layer(Iterator, Iterator, watcher_t&, std::size_t){}
 
     //By default no layer is ignored
     template<std::size_t I, class Enable = void>
@@ -330,8 +277,8 @@ private:
 
     //Special handling for the layer 0
     //data is coming from iterators not from input
-    template<std::size_t I, typename Iterator, typename Watcher, cpp_enable_if((I == 0 && !batch_layer_ignore<I>::value))>
-    void pretrain_layer_batch(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
+    template<std::size_t I, typename Iterator, cpp_enable_if((I == 0 && !batch_layer_ignore<I>::value))>
+    void pretrain_layer_batch(Iterator first, Iterator last, watcher_t& watcher, std::size_t max_epochs){
         using rbm_t = layer_type<I>;
 
         decltype(auto) rbm = layer_get<I>();
@@ -369,16 +316,13 @@ private:
 
                 detail::safe_advance(it, end, total_batch_size);
 
-                //Convert data to an useful form
-                input_converter<this_type, 0, Iterator> converter(*this, batch_start, it);
-
                 //With only 1 batch, some work can be skipped
                 if(big_batch_size == 1){
                     //Train the RBM on this batch
-                    r_trainer.train_batch(converter.begin(), converter.end(), converter.begin(), converter.end(), trainer, context, rbm);
+                    r_trainer.train_batch(batch_start, it, batch_start, it, trainer, context, rbm);
                 } else {
                     //Train the RBM on this big batch
-                    r_trainer.train_sub(converter.begin(), converter.end(), converter.begin(), trainer, context, rbm);
+                    r_trainer.train_sub(batch_start, it, batch_start, trainer, context, rbm);
                 }
 
                 if(dbn_traits<this_type>::is_verbose()){
@@ -398,14 +342,13 @@ private:
     }
 
     //Special handling for untrained layers
-    template<std::size_t I, typename Iterator, typename Watcher, cpp_enable_if(batch_layer_ignore<I>::value)>
-    void pretrain_layer_batch(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
+    template<std::size_t I, typename Iterator, cpp_enable_if(batch_layer_ignore<I>::value)>
+    void pretrain_layer_batch(Iterator first, Iterator last, watcher_t& watcher, std::size_t max_epochs){
         //We simply go up one layer on pooling layers
         pretrain_layer_batch<I+1>(first, last, watcher, max_epochs);
     }
 
     template<std::size_t I, typename Enable = void>
-
     struct layer_output;
 
     template<std::size_t I>
@@ -443,13 +386,18 @@ private:
     };
 
 public:
-    using output_t = layer_output_t<layers - 1>;
+    using output_one_t = layer_output_t<layers - 1>;
+
+    using output_t = std::conditional_t<
+            dbn_traits<this_type>::is_multiplex(),
+            std::vector<output_one_t>,
+            output_one_t>;
 
 private:
 
     //Normal version
-    template<std::size_t I, typename Iterator, typename Watcher, cpp_enable_if((I>0 && I<layers && !dbn_traits<this_type>::is_multiplex() && !batch_layer_ignore<I>::value))>
-    void pretrain_layer_batch(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
+    template<std::size_t I, typename Iterator, cpp_enable_if((I>0 && I<layers && !dbn_traits<this_type>::is_multiplex() && !batch_layer_ignore<I>::value))>
+    void pretrain_layer_batch(Iterator first, Iterator last, watcher_t& watcher, std::size_t max_epochs){
         using rbm_t = layer_type<I>;
 
         decltype(auto) rbm = layer_get<I>();
@@ -515,8 +463,8 @@ private:
     }
 
     //Multiplex version
-    template<std::size_t I, typename Iterator, typename Watcher, cpp_enable_if((I>0 && I<layers && dbn_traits<this_type>::is_multiplex() && !batch_layer_ignore<I>::value))>
-    void pretrain_layer_batch(Iterator first, Iterator last, Watcher& watcher, std::size_t max_epochs){
+    template<std::size_t I, typename Iterator, cpp_enable_if((I>0 && I<layers && dbn_traits<this_type>::is_multiplex() && !batch_layer_ignore<I>::value))>
+    void pretrain_layer_batch(Iterator first, Iterator last, watcher_t& watcher, std::size_t max_epochs){
         using rbm_t = layer_type<I>;
 
         decltype(auto) rbm = layer_get<I>();
@@ -600,8 +548,8 @@ private:
     }
 
     //Stop template recursion
-    template<std::size_t I, typename Iterator, typename Watcher, cpp_enable_if((I==layers && !batch_layer_ignore<I>::value))>
-    void pretrain_layer_batch(Iterator, Iterator, Watcher&, std::size_t){}
+    template<std::size_t I, typename Iterator, cpp_enable_if(I==layers)>
+    void pretrain_layer_batch(Iterator, Iterator, watcher_t&, std::size_t){}
 
 public:
     /*!
@@ -619,10 +567,7 @@ public:
             std::cout << "DBN: Pretraining done in batch mode to save memory" << std::endl;
             pretrain_layer_batch<0>(first, last, watcher, max_epochs);
         } else {
-            //Convert data to an useful form
-            input_converter<this_type, 0, Iterator> converter(*this, first, last);
-
-            pretrain_layer<0>(converter.begin(), converter.end(), watcher, max_epochs);
+            pretrain_layer<0>(first, last, watcher, max_epochs);
         }
 
         watcher.pretraining_end(*this);
@@ -643,31 +588,33 @@ public:
 
 private:
 
-    template<std::size_t I, typename Input, typename Watcher, typename LabelIterator>
-    std::enable_if_t<(I<layers)> train_with_labels(const Input& input, Watcher& watcher, LabelIterator lit, LabelIterator lend, std::size_t labels, std::size_t max_epochs){
+    template<std::size_t I, typename Iterator, typename LabelIterator>
+    std::enable_if_t<(I<layers)> train_with_labels(Iterator first, Iterator last, watcher_t& watcher, LabelIterator lit, LabelIterator lend, std::size_t labels, std::size_t max_epochs){
         using layer_t = layer_type<I>;
 
         decltype(auto) layer = layer_get<I>();
 
-        watcher.template pretrain_layer<layer_t>(*this, I, input.size());
+        auto input_size = std::distance(first, last);
+
+        watcher.template pretrain_layer<layer_t>(*this, I, input_size);
 
         cpp::static_if<layer_traits<layer_t>::is_trained()>([&](auto f){
             f(layer).template train<
                 !watcher_t::ignore_sub, //Enable the RBM Watcher or not
                 dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
-                    (input, max_epochs);
+                    (first, last, max_epochs);
         });
 
         if(I < layers - 1){
-            bool is_last = I == layers - 2;
+            auto next_a = layer.template prepare_output<layer_input_t<I>>(input_size);
 
-            auto next_a = layer.template prepare_output<layer_input_t<I>>(input.size());
-            auto next_s = layer.template prepare_output<layer_input_t<I>>(input.size());
+            cpp::foreach_i(first, last, [&](auto& sample, std::size_t i){
+                layer.activate_hidden(next_a[i], sample);
+            });
 
-            layer.activate_many(input, next_a, next_s);
-
-            if(is_last){
-                auto big_next_a = layer.template prepare_output<layer_input_t<I>>(input.size(), is_last, labels);
+            //If the next layer is the last layer
+            if(I == layers - 2){
+                auto big_next_a = layer.template prepare_output<layer_input_t<I>>(input_size, true, labels);
 
                 //Cannot use std copy since the sub elements have different size
                 for(std::size_t i = 0; i < next_a.size(); ++i){
@@ -688,15 +635,15 @@ private:
                     ++lit;
                 }
 
-                train_with_labels<I+1>(big_next_a, watcher, lit, lend, labels, max_epochs);
+                train_with_labels<I+1>(big_next_a.begin(), big_next_a.end(), watcher, lit, lend, labels, max_epochs);
             } else {
-                train_with_labels<I+1>(next_a, watcher, lit, lend, labels, max_epochs);
+                train_with_labels<I+1>(next_a.begin(), next_a.end(), watcher, lit, lend, labels, max_epochs);
             }
         }
     }
 
-    template<std::size_t I, typename Input, typename Watcher, typename LabelIterator>
-    std::enable_if_t<(I==layers)> train_with_labels(Input&, Watcher&, LabelIterator, LabelIterator, std::size_t, std::size_t){}
+    template<std::size_t I, typename Iterator, typename LabelIterator>
+    std::enable_if_t<(I==layers)> train_with_labels(Iterator, Iterator, watcher_t&, LabelIterator, LabelIterator, std::size_t, std::size_t){}
 
 public:
 
@@ -709,10 +656,7 @@ public:
 
         watcher.pretraining_begin(*this, max_epochs);
 
-        //Convert data to an useful form
-        auto data = layer_get<0>().convert_input(std::forward<Iterator>(first), std::forward<Iterator>(last));
-
-        train_with_labels<0>(data, watcher, std::forward<LabelIterator>(lfirst), std::forward<LabelIterator>(llast), labels, max_epochs);
+        train_with_labels<0>(first, last, watcher, std::forward<LabelIterator>(lfirst), std::forward<LabelIterator>(llast), labels, max_epochs);
 
         watcher.pretraining_end(*this);
     }
@@ -733,12 +677,14 @@ public:
 
 private:
 
-    template<std::size_t I, typename Input, typename Output>
-    std::enable_if_t<(I<layers)> predict_labels(const Input& input, Output& output, std::size_t labels) const {
+    using label_output_t = layer_input_t<layers - 1>;
+
+    template<std::size_t I>
+    std::enable_if_t<(I<layers)> predict_labels(const input_t& input, label_output_t& output, std::size_t labels) const {
         decltype(auto) layer = layer_get<I>();
 
-        auto next_a = layer.template prepare_one_output<Input>();
-        auto next_s = layer.template prepare_one_output<Input>();
+        auto next_a = layer.template prepare_one_output<layer_input_t<I>>();
+        auto next_s = layer.template prepare_one_output<layer_input_t<I>>();
 
         layer.activate_hidden(next_a, next_s, input, input);
 
@@ -770,18 +716,15 @@ private:
     }
 
     //Stop recursion
-    template<std::size_t I, typename Input, typename Output>
-    std::enable_if_t<(I==layers)> predict_labels(const Input&, Output&, std::size_t) const {}
+    template<std::size_t I>
+    std::enable_if_t<(I==layers)> predict_labels(const input_t&, label_output_t&, std::size_t) const {}
 
 public:
 
-    template<typename Sample>
-    size_t predict_labels(const Sample& item_data, std::size_t labels) const {
+    size_t predict_labels(const input_t& item, std::size_t labels) const {
         cpp_assert(dll::input_size(layer_get<layers - 1>()) == dll::output_size(layer_get<layers - 2>()) + labels, "There is no room for the labels units");
 
-        typename layer_type<0>::input_one_t item(item_data);
-
-        auto output_a = layer_get<layers - 1>().prepare_one_input();
+        label_output_t output_a = layer_get<layers - 1>().prepare_one_input();
 
         predict_labels<0>(item, output_a, labels);
 
@@ -800,11 +743,8 @@ private:
 
     template<std::size_t I, typename Iterator, typename Ouput>
     void multi_activation_probabilities(Iterator first, Iterator last, Ouput& output){
-        //Convert data to an useful form
-        input_converter<this_type, 0, Iterator> converter(*this, first, last);
-
         //Collect an entire batch
-        maybe_parallel_foreach_i(pool, converter.begin(), converter.end(), [this, &output](auto& v, std::size_t i){
+        maybe_parallel_foreach_i(pool, first, last, [this, &output](auto& v, std::size_t i){
             this->activation_probabilities<0, I>(v, output[i]);
         });
     }
@@ -817,13 +757,13 @@ private:
 
         cpp::static_if<(I < S - 1 && !multi_layer)>([&](auto f){
             auto next_a = layer.template prepare_one_output<Input>();
-            f(layer).activate_one(input, next_a);
+            f(layer).activate_hidden(next_a, input);
             this->template activation_probabilities<I+1, S>(next_a, result);
         });
 
         cpp::static_if<(I < S - 1 && multi_layer)>([&](auto f){
             auto next_a = layer.template prepare_one_output<Input>();
-            layer.activate_one(input, next_a);
+            layer.activate_hidden(next_a, input);
 
             cpp_assert(f(result).empty(), "result must be empty on entry of activation_probabilities");
 
@@ -836,7 +776,7 @@ private:
         });
 
         cpp::static_if<(I == S - 1)>([&](auto f){
-            f(layer).activate_one(input, result);
+            f(layer).activate_hidden(result, input);
         });
     }
 
@@ -845,43 +785,40 @@ private:
     std::enable_if_t<(I==S)> activation_probabilities(const Input&, Result&) const {}
 
 public:
-    template<std::size_t I, typename Sample, typename Output, typename T = this_type>
-    auto activation_probabilities_sub(const Sample& item_data, Output& result) const {
-        sample_converter<this_type, 0, Sample> converter(*this, item_data);
-
-        activation_probabilities<0, I+1>(converter.get(), result);
+    template<std::size_t I, typename Output, typename T = this_type>
+    auto activation_probabilities_sub(const input_t& sample, Output& result) const {
+        activation_probabilities<0, I+1>(sample, result);
 
         return result;
     }
 
-    template<std::size_t I, typename Sample>
-    auto activation_probabilities_sub(const Sample& item_data) const {
+    template<std::size_t I>
+    auto activation_probabilities_sub(const input_t& sample) const {
         auto result = prepare_output<I>();
-        return activation_probabilities_sub<I>(item_data, result);;
+        return activation_probabilities_sub<I>(sample, result);;
     }
 
-    template<typename Sample, typename Output>
-    auto activation_probabilities(const Sample& item_data, Output& result) const {
-        return activation_probabilities_sub<layers - 1>(item_data, result);
+    auto activation_probabilities(const input_t& sample, output_t& result) const {
+        return activation_probabilities_sub<layers - 1>(sample, result);
     }
 
-    template<typename Sample, typename T = this_type>
-    auto activation_probabilities(const Sample& item_data) const {
-        return activation_probabilities_sub<layers - 1>(item_data);
+    auto activation_probabilities(const input_t& sample) const {
+        return activation_probabilities_sub<layers - 1>(sample);
     }
 
     //full_activation_probabilities
 
+    using full_output_t = etl::dyn_vector<weight>;
+
 private:
 
-    template<std::size_t I, typename Input, typename Result>
-    std::enable_if_t<(I<layers)> full_activation_probabilities(const Input& input, std::size_t& i, Result& result) const {
+    template<std::size_t I, typename Input>
+    std::enable_if_t<(I<layers)> full_activation_probabilities(const Input& input, std::size_t& i, full_output_t& result) const {
         auto& layer = layer_get<I>();
 
-        auto next_s = layer.template prepare_one_output<Input>();
         auto next_a = layer.template prepare_one_output<Input>();
 
-        layer.activate_one(input, next_a, next_s);
+        layer.activate_hidden(next_a, input);
 
         for(auto& value : next_a){
             result[i++] = value;
@@ -891,45 +828,39 @@ private:
     }
 
     //Stop template recursion
-    template<std::size_t I, typename Input, typename Result>
-    std::enable_if_t<(I==layers)> full_activation_probabilities(const Input&, std::size_t&, Result&) const {}
+    template<std::size_t I, typename Input>
+    std::enable_if_t<(I==layers)> full_activation_probabilities(const Input&, std::size_t&, full_output_t&) const {}
 
 public:
 
-    template<typename Sample, typename Output>
-    void full_activation_probabilities(const Sample& item_data, Output& result) const {
-        sample_converter<this_type, 0, Sample> converter(*this, item_data);
-
+    void full_activation_probabilities(const input_t& sample, full_output_t& result) const {
         std::size_t i = 0;
-        full_activation_probabilities<0>(converter.get(), i, result);
+        full_activation_probabilities<0>(sample, i, result);
     }
 
-    template<typename Sample>
-    etl::dyn_vector<weight> full_activation_probabilities(const Sample& item_data) const {
-        etl::dyn_vector<weight> result(full_output_size());
+    full_output_t full_activation_probabilities(const input_t& item_data) const {
+        full_output_t result(full_output_size());
 
         full_activation_probabilities(item_data, result);
 
         return result;
     }
 
-    template<typename Sample, typename DBN = this_type, cpp::enable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
-    auto get_final_activation_probabilities(const Sample& sample) const {
+    template<typename DBN = this_type, cpp::enable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
+    full_output_t get_final_activation_probabilities(const input_t& sample) const {
         return full_activation_probabilities(sample);
     }
 
-    template<typename Sample, typename DBN = this_type, cpp::disable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
-    auto get_final_activation_probabilities(const Sample& sample) const {
+    template<typename DBN = this_type, cpp::disable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
+    output_t get_final_activation_probabilities(const input_t& sample) const {
         return activation_probabilities(sample);
     }
 
-    template<typename Weights>
-    size_t predict_label(const Weights& result) const {
+    size_t predict_label(const output_t& result) const {
         return std::distance(result.begin(), std::max_element(result.begin(), result.end()));
     }
 
-    template<typename Sample>
-    size_t predict(const Sample& item) const {
+    size_t predict(const input_t& item) const {
         auto result = activation_probabilities(item);
         return predict_label(result);
     }
@@ -965,7 +896,7 @@ public:
     }
 
     auto prepare_one_output() const {
-        return  prepare_output<layers - 1>();
+        return prepare_output<layers - 1>();
     }
 
 #ifdef DLL_SVM_SUPPORT
@@ -979,15 +910,15 @@ public:
 
 private:
 
-    template<typename DBN = this_type, typename Result, typename Sample, cpp::enable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
-    void add_activation_probabilities(Result& result, const Sample& sample){
+    template<typename DBN = this_type, cpp::enable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
+    void add_activation_probabilities(svm_samples_t& result, const input_t& sample){
         result.emplace_back(full_output_size());
         full_activation_probabilities(sample, result.back());
     }
 
-    template<typename DBN = this_type, typename Result, typename Sample, cpp::disable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
-    void add_activation_probabilities(Result& result, const Sample& sample){
-        result.push_back(layer_get<layers - 1>().template prepare_one_output<Sample>());
+    template<typename DBN = this_type, cpp::disable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
+    void add_activation_probabilities(svm_samples_t& result, const input_t& sample){
+        result.push_back(layer_get<layers - 1>().template prepare_one_output<input_t>());
         activation_probabilities(sample, result.back());
     }
 
@@ -1116,8 +1047,7 @@ public:
         return true;
     }
 
-    template<typename Sample>
-    double svm_predict(const Sample& sample){
+    double svm_predict(const input_t& sample){
         auto features = get_final_activation_probabilities(sample);
         return svm::predict(svm_model, features);
     }
@@ -1125,7 +1055,6 @@ public:
     /*}}}*/
 
 #endif //DLL_SVM_SUPPORT
-
 };
 
 } //end of namespace dll
