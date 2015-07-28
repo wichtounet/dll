@@ -58,23 +58,6 @@ struct pooling_layer_3d {
     template<std::size_t B>
     using output_batch_t = etl::fast_dyn_matrix<weight, B, O1, O2, O3>;
 
-    template<typename Iterator>
-    static auto convert_input(Iterator&& first, Iterator&& last){
-        input_t input;
-        input.reserve(std::distance(std::forward<Iterator>(first), std::forward<Iterator>(last)));
-
-        std::for_each(std::forward<Iterator>(first), std::forward<Iterator>(last), [&input](auto& sample){
-            input.emplace_back(sample);
-        });
-
-        return input;
-    }
-
-    template<typename Sample>
-    static input_one_t convert_sample(const Sample& sample){
-        return input_one_t{sample};
-    }
-
     template<typename Input>
     static output_t prepare_output(std::size_t samples){
         return output_t{samples};

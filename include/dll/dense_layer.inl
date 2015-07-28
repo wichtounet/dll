@@ -135,13 +135,8 @@ struct dense_layer final {
     template<std::size_t B>
     using output_batch_t = etl::fast_dyn_matrix<weight, B, num_hidden>;
 
-    template<typename Sample>
-    input_one_t convert_sample(const Sample& sample) const {
-        return input_one_t{sample};
-    }
-
     template<typename Input>
-    output_one_t prepare_one_output(bool /*is_last*/ = false, std::size_t /*labels*/ = 0) const {
+    output_one_t prepare_one_output() const {
         return {};
     }
 };

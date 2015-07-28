@@ -373,26 +373,6 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
     using input_t = std::vector<input_one_t>;
     using output_t = std::vector<output_one_t>;
 
-    template<typename Iterator>
-    static auto convert_input(Iterator first, Iterator last){
-        input_t input;
-
-        if(std::is_same<typename std::iterator_traits<Iterator>::iterator_category, std::random_access_iterator_tag>::value){
-            input.reserve(std::distance(std::forward<Iterator>(first), std::forward<Iterator>(last)));
-        }
-
-        std::for_each(first, last, [&input](auto& sample){
-            input.emplace_back(sample);
-        });
-
-        return input;
-    }
-
-    template<typename Sample>
-    static input_one_t convert_sample(const Sample& sample){
-        return input_one_t(sample);
-    }
-
     template<typename Input>
     static output_t prepare_output(std::size_t samples){
         return output_t(samples);

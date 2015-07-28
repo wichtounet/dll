@@ -457,31 +457,6 @@ public:
     using input_t = std::vector<input_one_t>;
     using output_t = std::vector<output_one_t>;
 
-    template<typename Iterator>
-    auto convert_input(const Iterator& first, const Iterator& last) const {
-        input_t input;
-
-        if(std::is_same<typename std::iterator_traits<Iterator>::iterator_category, std::random_access_iterator_tag>::value){
-            input.reserve(std::distance(first, last));
-        }
-
-        auto& derived = *static_cast<const parent_t*>(this);
-
-        std::for_each(first, last, [&input, &derived](auto& sample){
-            input.emplace_back(derived.input_size());
-            input.back() = sample;
-        });
-
-        return input;
-    }
-
-    template<typename Sample>
-    input_one_t convert_sample(const Sample& sample) const {
-        input_one_t input(static_cast<const parent_t*>(this)->input_size());
-        input = sample;
-        return input;
-    }
-
     template<typename Input>
     output_t prepare_output(std::size_t samples, bool is_last = false, std::size_t labels = 0) const {
         output_t output;
