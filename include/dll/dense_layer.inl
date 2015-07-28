@@ -30,6 +30,15 @@ struct dense_layer final {
 
     static constexpr const function activation_function = desc::activation_function;
 
+    using input_one_t = etl::fast_dyn_matrix<weight, num_visible>;
+    using output_one_t = etl::fast_dyn_matrix<weight, num_hidden>;
+
+    template<std::size_t B>
+    using input_batch_t = etl::fast_dyn_matrix<weight, B, num_visible>;
+
+    template<std::size_t B>
+    using output_batch_t = etl::fast_dyn_matrix<weight, B, num_hidden>;
+
     //Weights and biases
     etl::fast_matrix<weight, num_visible, num_hidden> w;    //!< Weights
     etl::fast_vector<weight, num_hidden> b;                 //!< Hidden biases
@@ -78,18 +87,18 @@ struct dense_layer final {
         std::cout << to_short_string() << std::endl;
     }
 
-    template<typename H1, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 1)>
-    void activate_hidden(H1&& output, const V& v) const {
+    template<typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 1)>
+    void activate_hidden(output_one_t& output, const V& v) const {
         output = f_activate<activation_function>(b + v * w);
     }
 
-    template<typename H1, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 1)>
-    void activate_hidden(H1&& output, const V& v) const {
+    template<typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 1)>
+    void activate_hidden(output_one_t& output, const V& v) const {
         output = f_activate<activation_function>(b + etl::reshape<num_visible>(v) * w);
     }
 
-    template<typename H1, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 2)>
-    void batch_activate_hidden(H1&& output, const V& v) const {
+    template<typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 2)>
+    void batch_activate_hidden(H&& output, const V& v) const {
         const auto Batch = etl::dim<0>(v);
 
         cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
@@ -105,8 +114,8 @@ struct dense_layer final {
         }
     }
 
-    template<typename H1, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 2)>
-    void batch_activate_hidden(H1&& output, const V& input) const {
+    template<typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 2)>
+    void batch_activate_hidden(H&& output, const V& input) const {
         constexpr const auto Batch = etl::decay_traits<V>::template dim<0>();
 
         cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
@@ -121,19 +130,6 @@ struct dense_layer final {
             output = f_activate<activation_function>(etl::rep_l(b, Batch) + etl::reshape<Batch, num_visible>(input) * w);
         }
     }
-
-    //Utilities to be used by DBNs
-
-    using input_one_t = etl::fast_dyn_matrix<weight, num_visible>;
-    using output_one_t = etl::fast_dyn_matrix<weight, num_hidden>;
-    using input_t = std::vector<input_one_t>;
-    using output_t = std::vector<output_one_t>;
-
-    template<std::size_t B>
-    using input_batch_t = etl::fast_dyn_matrix<weight, B, num_visible>;
-
-    template<std::size_t B>
-    using output_batch_t = etl::fast_dyn_matrix<weight, B, num_hidden>;
 
     template<typename Input>
     output_one_t prepare_one_output() const {

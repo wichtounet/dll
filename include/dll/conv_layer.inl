@@ -37,6 +37,15 @@ struct conv_layer final {
 
     static constexpr const function activation_function = desc::activation_function;
 
+    using input_one_t = etl::fast_dyn_matrix<weight, NC, NV1, NV2>;
+    using output_one_t = etl::fast_dyn_matrix<weight, K, NH1, NH2>;
+
+    template<std::size_t B>
+    using input_batch_t = etl::fast_dyn_matrix<weight, B, NC, NV1, NV2>;
+
+    template<std::size_t B>
+    using output_batch_t = etl::fast_dyn_matrix<weight, B, K, NH1, NH2>;
+
     //Weights and biases
     etl::fast_matrix<weight, NC, K, NW1, NW2> w;        //!< Weights
     etl::fast_matrix<weight, K> b;                      //!< Hidden biases
@@ -87,8 +96,8 @@ struct conv_layer final {
         std::cout << to_short_string() << std::endl;
     }
 
-    template<typename H1, typename V>
-    void activate_hidden(H1&& output, const V& v) const {
+    template<typename V>
+    void activate_hidden(output_one_t& output, const V& v) const {
         etl::fast_dyn_matrix<weight, 2, K, NH1, NH2> v_cv;      //Temporary convolution
 
         auto w_f = etl::force_temporary(w);
@@ -140,19 +149,6 @@ struct conv_layer final {
             output(batch) = f_activate<activation_function>(etl::rep<NH1, NH2>(b) + v_cv(1));
         }
     }
-
-    //Utilities to be used by DBNs
-
-    using input_one_t = etl::fast_dyn_matrix<weight, NC, NV1, NV2>;
-    using output_one_t = etl::fast_dyn_matrix<weight, K, NH1, NH2>;
-    using input_t = std::vector<input_one_t>;
-    using output_t = std::vector<output_one_t>;
-
-    template<std::size_t B>
-    using input_batch_t = etl::fast_dyn_matrix<weight, B, NC, NV1, NV2>;
-
-    template<std::size_t B>
-    using output_batch_t = etl::fast_dyn_matrix<weight, B, K, NH1, NH2>;
 
     template<typename Input>
     output_one_t prepare_one_output() const {
