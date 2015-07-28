@@ -11,10 +11,10 @@ template<typename RBM>
 void test_rbm(){
     RBM rbm;
 
-    std::vector<std::vector<double>> training;
+    std::vector<etl::dyn_vector<float>> training;
     rbm.train(training, 10);
 
-    std::vector<double> sample;
+    etl::dyn_vector<float> sample;
     rbm.reconstruct(sample);
 }
 

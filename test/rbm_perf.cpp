@@ -19,8 +19,7 @@ TEST_CASE( "rbm/mnist_18", "rbm::fast" ) {
         dll::batch_size<5>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(25);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(25);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -36,8 +35,7 @@ TEST_CASE( "rbm/mnist_101", "rbm::slow" ) {
         dll::batch_size<48>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, float>(1099);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(1099);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -54,8 +52,7 @@ TEST_CASE( "rbm/mnist_102", "rbm::slow_parallel" ) {
         dll::parallel_mode
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1099);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(1099);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);

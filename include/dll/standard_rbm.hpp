@@ -39,6 +39,12 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
     using base_type = rbm_base<parent_t, desc>;
     using weight = typename desc::weight;
 
+    //These should probably be specialized in the parent
+    using input_one_t = etl::dyn_vector<weight>;
+    using output_one_t = etl::dyn_vector<weight>;
+    using input_t = std::vector<input_one_t>;
+    using output_t = std::vector<output_one_t>;
+
     static constexpr const unit_type visible_unit = desc::visible_unit;
     static constexpr const unit_type hidden_unit = desc::hidden_unit;
 
@@ -60,8 +66,7 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
         return free_energy(*static_cast<const parent_t*>(this), v, h);
     }
 
-    template<typename V>
-    weight free_energy(const V& v) const {
+    weight free_energy(const input_one_t& v) const {
         return free_energy(*static_cast<const parent_t*>(this), v);
     }
 
@@ -77,8 +82,7 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
         init_weights(std::forward<Iterator>(first), std::forward<Iterator>(last), *static_cast<parent_t*>(this));
     }
 
-    template<typename Sample>
-    void reconstruct(const Sample& items){
+    void reconstruct(const input_one_t& items){
         reconstruct(items, *static_cast<parent_t*>(this));
     }
 
@@ -115,8 +119,8 @@ protected:
     //to put the fields in standard_rbm, therefore, it is necessary to use template
     //functions to implement the details
 
-    template<typename Iterator, typename RBM>
-    static void init_weights(Iterator first, Iterator last, RBM& rbm){
+    template<typename Iterator>
+    static void init_weights(Iterator first, Iterator last, parent_t& rbm){
         auto size = std::distance(first, last);
 
         //Initialize the visible biases to log(pi/(1-pi))
@@ -132,8 +136,7 @@ protected:
         }
     }
 
-    template<typename Sample, typename RBM>
-    static void reconstruct(const Sample& items, RBM& rbm){
+    static void reconstruct(const input_one_t& items, parent_t& rbm){
         cpp_assert(items.size() == num_visible(rbm), "The size of the training sample must match visible units");
 
         cpp::stop_watch<> watch;
@@ -148,8 +151,7 @@ protected:
         std::cout << "Reconstruction took " << watch.elapsed() << "ms" << std::endl;
     }
 
-    template<typename RBM>
-    static void display_weights(RBM& rbm){
+    static void display_weights(const parent_t& rbm){
         for(std::size_t j = 0; j < num_hidden(rbm); ++j){
             for(std::size_t i = 0; i < num_visible(rbm); ++i){
                 std::cout << rbm.w(i, j) << " ";
@@ -158,8 +160,7 @@ protected:
         }
     }
 
-    template<typename RBM>
-    static void display_weights(RBM& rbm, std::size_t matrix){
+    static void display_weights(const parent_t& rbm, std::size_t matrix){
         for(std::size_t j = 0; j < num_hidden(rbm); ++j){
             for(std::size_t i = 0; i < num_visible(rbm);){
                 for(std::size_t m = 0; m < matrix; ++m){
@@ -170,8 +171,7 @@ protected:
         }
     }
 
-    template<typename RBM>
-    static void display_visible_units(RBM& rbm){
+    static void display_visible_units(const parent_t& rbm){
         std::cout << "Visible  Value" << std::endl;
 
         for(std::size_t i = 0; i < num_visible(rbm); ++i){
@@ -179,8 +179,7 @@ protected:
         }
     }
 
-    template<typename RBM>
-    static void display_visible_units(RBM& rbm, std::size_t matrix){
+    static void display_visible_units(const parent_t& rbm, std::size_t matrix){
         for(std::size_t i = 0; i < matrix; ++i){
             for(std::size_t j = 0; j < matrix; ++j){
                 std::cout << rbm.v2_s(i * matrix + j) << " ";
@@ -189,8 +188,7 @@ protected:
         }
     }
 
-    template<typename RBM>
-    static void display_hidden_units(RBM& rbm){
+    static void display_hidden_units(const parent_t& rbm){
         std::cout << "Hidden Value" << std::endl;
 
         for(std::size_t j = 0; j < num_hidden(rbm); ++j){
@@ -201,16 +199,16 @@ protected:
     //Note: Considering that energy and free energy are not critical, their implementations
     //are not highly optimized.
 
-    template<typename RBM, typename V, typename H, cpp::enable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
-    static typename RBM::weight energy(const RBM& rbm, const V& v, const H& h){
-        if(RBM::desc::visible_unit == unit_type::BINARY && RBM::desc::hidden_unit == unit_type::BINARY){
+    template<typename V, typename H, cpp::enable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
+    static weight energy(const parent_t& rbm, const V& v, const H& h){
+        if(visible_unit == unit_type::BINARY && hidden_unit == unit_type::BINARY){
             //Definition according to G. Hinton
             //E(v,h) = -sum(ai*vi) - sum(bj*hj) -sum(vi*hj*wij)
 
             auto x = rbm.b + v * rbm.w;
 
             return -etl::dot(rbm.c, v) - etl::dot(rbm.b, h) - etl::sum(x);
-        } else if(RBM::desc::visible_unit == unit_type::GAUSSIAN && RBM::desc::hidden_unit == unit_type::BINARY){
+        } else if(visible_unit == unit_type::GAUSSIAN && hidden_unit == unit_type::BINARY){
             //Definition according to G. Hinton
             //E(v,h) = -sum((vi - ai)^2/(2*var*var)) - sum(bj*hj) -sum((vi/var)*hj*wij)
 
@@ -222,8 +220,8 @@ protected:
         }
     }
 
-    template<typename RBM, typename V, typename H, cpp::disable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
-    static typename RBM::weight energy(const RBM& rbm, const V& v, const H& h){
+    template<typename V, typename H, cpp::disable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
+    static weight energy(const parent_t& rbm, const V& v, const H& h){
         etl::dyn_vector<typename V::value_type> ev(v);
         etl::dyn_vector<typename H::value_type> eh(h);
         return energy(rbm, ev, eh);
@@ -235,16 +233,16 @@ protected:
     //3. by considering only binary hidden units, the values are only 0 and 1
     //and therefore the values can be "integrated out" easily.
 
-    template<typename RBM, typename V, cpp::enable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
-    static typename RBM::weight free_energy(const RBM& rbm, const V& v){
-        if(RBM::desc::visible_unit == unit_type::BINARY && RBM::desc::hidden_unit == unit_type::BINARY){
+    template<typename V, cpp::enable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
+    static weight free_energy(const parent_t& rbm, const V& v){
+        if(visible_unit == unit_type::BINARY && hidden_unit == unit_type::BINARY){
             //Definition according to G. Hinton
             //F(v) = -sum(ai*vi) - sum(log(1 + e^(xj)))
 
             auto x = rbm.b + v * rbm.w;
 
             return -etl::dot(rbm.c, v) - etl::sum(etl::log(1.0 + etl::exp(x)));
-        } else if(RBM::desc::visible_unit == unit_type::GAUSSIAN && RBM::desc::hidden_unit == unit_type::BINARY){
+        } else if(visible_unit == unit_type::GAUSSIAN && hidden_unit == unit_type::BINARY){
             //Definition computed from E(v,h)
             //F(v) = sum((vi-ai)^2/2) - sum(log(1 + e^(xj)))
 
@@ -256,8 +254,8 @@ protected:
         }
     }
 
-    template<typename RBM, typename V, cpp::disable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
-    static typename RBM::weight free_energy(const RBM& rbm, const V& v){
+    template<typename V, cpp::disable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
+    static weight free_energy(const parent_t& rbm, const V& v){
         etl::dyn_vector<typename V::value_type> ev(v);
         return free_energy(rbm, ev);
     }
@@ -449,13 +447,6 @@ protected:
     }
 
 public:
-
-    //Utilities to be used by DBNs
-
-    using input_one_t = etl::dyn_vector<weight>;
-    using output_one_t = etl::dyn_vector<weight>;
-    using input_t = std::vector<input_one_t>;
-    using output_t = std::vector<output_one_t>;
 
     template<typename Input>
     output_t prepare_output(std::size_t samples, bool is_last = false, std::size_t labels = 0) const {

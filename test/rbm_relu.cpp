@@ -21,8 +21,7 @@ TEST_CASE( "rbm/mnist_9", "rbm::relu" ) {
        dll::hidden<dll::unit_type::RELU>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -41,8 +40,7 @@ TEST_CASE( "rbm/mnist_10", "rbm::relu1" ) {
 
     rbm.learning_rate *= 2.0;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -59,8 +57,7 @@ TEST_CASE( "rbm/mnist_11", "rbm::relu6" ) {
        dll::hidden<dll::unit_type::RELU6>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);

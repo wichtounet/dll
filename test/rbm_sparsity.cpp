@@ -31,8 +31,7 @@ TEST_CASE( "rbm/mnist_60", "rbm::global_sparsity" ) {
     //0.01 (default) is way too low for 100 hidden units
     rbm.sparsity_target = 0.1;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -52,8 +51,7 @@ TEST_CASE( "rbm/mnist_61", "rbm::local_sparsity" ) {
     //0.01 (default) is way too low for 100 hidden units
     rbm.sparsity_target = 0.1;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -73,10 +71,8 @@ TEST_CASE( "rbm/mnist_62", "rbm::sparsity_gaussian" ) {
        dll::visible<dll::unit_type::GAUSSIAN>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(500);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(500);
     REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(500);
 
     mnist::normalize_dataset(dataset);
 

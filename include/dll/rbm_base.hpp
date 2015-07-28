@@ -115,32 +115,24 @@ struct rbm_base {
 
 private:
 
-    //Since the sub classes does not have the same fields, it is not possible
-    //to put the fields in standard_rbm, therefore, it is necessary to use template
-    //functions to implement the details
-
-    template<typename RBM>
-    static void store(std::ostream& os, const RBM& rbm){
+    static void store(std::ostream& os, const parent_t& rbm){
         binary_write_all(os, rbm.w);
         binary_write_all(os, rbm.b);
         binary_write_all(os, rbm.c);
     }
 
-    template<typename RBM>
-    static void load(std::istream& is, RBM& rbm){
+    static void load(std::istream& is, parent_t& rbm){
         binary_load_all(is, rbm.w);
         binary_load_all(is, rbm.b);
         binary_load_all(is, rbm.c);
     }
 
-    template<typename RBM>
-    static void store(const std::string& file, const RBM& rbm){
+    static void store(const std::string& file, const parent_t& rbm){
         std::ofstream os(file, std::ofstream::binary);
         store(os, rbm);
     }
 
-    template<typename RBM>
-    static void load(const std::string& file, RBM& rbm){
+    static void load(const std::string& file, parent_t& rbm){
         std::ifstream is(file, std::ifstream::binary);
         load(is, rbm);
     }

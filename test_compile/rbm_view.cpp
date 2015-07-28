@@ -22,7 +22,7 @@ int main(int /*argc*/, char* /*argv*/[]){
             dll::visible<dll::unit_type::GAUSSIAN>,
             dll::watcher<dll::opencv_rbm_visualizer>>::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>();
 
     mnist::normalize_dataset(dataset);
 

@@ -256,9 +256,9 @@ private:
     //to put the fields in standard_rbm, therefore, it is necessary to use template
     //functions to implement the details
 
-    template<typename Sample, typename RBM>
-    static void reconstruct(const Sample& items, RBM& rbm){
-        cpp_assert(items.size() == RBM::input_size(), "The size of the training sample must match visible units");
+    template<typename Sample>
+    static void reconstruct(const Sample& items, parent_t& rbm){
+        cpp_assert(items.size() == parent_t::input_size(), "The size of the training sample must match visible units");
 
         cpp::stop_watch<> watch;
 
@@ -273,13 +273,12 @@ private:
         std::cout << "Reconstruction took " << watch.elapsed() << "ms" << std::endl;
     }
 
-    template<typename RBM>
-    static void display_visible_unit_activations(const RBM& rbm){
-        for(std::size_t channel = 0; channel < RBM::NC; ++channel){
+    static void display_visible_unit_activations(const parent_t& rbm){
+        for(std::size_t channel = 0; channel < parent_t::NC; ++channel){
             std::cout << "Channel " << channel << std::endl;
 
-            for(size_t i = 0; i < RBM::NV; ++i){
-                for(size_t j = 0; j < RBM::NV; ++j){
+            for(size_t i = 0; i < parent_t::NV; ++i){
+                for(size_t j = 0; j < parent_t::NV; ++j){
                     std::cout << rbm.v2_a(channel, i, j) << " ";
                 }
                 std::cout << std::endl;
@@ -287,13 +286,12 @@ private:
         }
     }
 
-    template<typename RBM>
-    static void display_visible_unit_samples(const RBM& rbm){
-        for(std::size_t channel = 0; channel < RBM::NC; ++channel){
+    static void display_visible_unit_samples(const parent_t& rbm){
+        for(std::size_t channel = 0; channel < parent_t::NC; ++channel){
             std::cout << "Channel " << channel << std::endl;
 
-            for(size_t i = 0; i < RBM::NV; ++i){
-                for(size_t j = 0; j < RBM::NV; ++j){
+            for(size_t i = 0; i < parent_t::NV; ++i){
+                for(size_t j = 0; j < parent_t::NV; ++j){
                     std::cout << rbm.v2_s(channel, i, j) << " ";
                 }
                 std::cout << std::endl;
@@ -301,11 +299,10 @@ private:
         }
     }
 
-    template<typename RBM>
-    static void display_hidden_unit_activations(const RBM& rbm){
-        for(size_t k = 0; k < RBM::K; ++k){
-            for(size_t i = 0; i < RBM::NV; ++i){
-                for(size_t j = 0; j < RBM::NV; ++j){
+    static void display_hidden_unit_activations(const parent_t& rbm){
+        for(size_t k = 0; k < parent_t::K; ++k){
+            for(size_t i = 0; i < parent_t::NV; ++i){
+                for(size_t j = 0; j < parent_t::NV; ++j){
                     std::cout << rbm.h2_a(k)(i, j) << " ";
                 }
                 std::cout << std::endl;
@@ -314,11 +311,10 @@ private:
         }
     }
 
-    template<typename RBM>
-    static void display_hidden_unit_samples(const RBM& rbm){
-        for(size_t k = 0; k < RBM::K; ++k){
-            for(size_t i = 0; i < RBM::NV; ++i){
-                for(size_t j = 0; j < RBM::NV; ++j){
+    static void display_hidden_unit_samples(const parent_t& rbm){
+        for(size_t k = 0; k < parent_t::K; ++k){
+            for(size_t i = 0; i < parent_t::NV; ++i){
+                for(size_t j = 0; j < parent_t::NV; ++j){
                     std::cout << rbm.h2_s(k)(i, j) << " ";
                 }
                 std::cout << std::endl;

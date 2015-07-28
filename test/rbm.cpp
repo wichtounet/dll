@@ -24,8 +24,7 @@ TEST_CASE( "rbm/mnist_1", "rbm::simple" ) {
         dll::serial
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -42,8 +41,7 @@ TEST_CASE( "rbm/mnist_2", "rbm::momentum" ) {
        dll::momentum
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -60,8 +58,7 @@ TEST_CASE( "rbm/mnist_40", "rbm::decay_l1" ) {
        dll::weight_decay<dll::decay_type::L1>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -78,8 +75,7 @@ TEST_CASE( "rbm/mnist_41", "rbm::decay_l2" ) {
        dll::weight_decay<dll::decay_type::L2>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -96,8 +92,7 @@ TEST_CASE( "rbm/mnist_42", "rbm::decay_l1l2" ) {
        dll::weight_decay<dll::decay_type::L1L2>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -114,8 +109,7 @@ TEST_CASE( "rbm/mnist_43", "rbm::decay_l1l2_full" ) {
        dll::weight_decay<dll::decay_type::L1L2_FULL>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -136,8 +130,7 @@ TEST_CASE( "rbm/mnist_7", "rbm::gaussian" ) {
 
     rbm.learning_rate *= 2;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::normalize_dataset(dataset);
@@ -154,8 +147,7 @@ TEST_CASE( "rbm/mnist_8", "rbm::softmax" ) {
        dll::hidden<dll::unit_type::SOFTMAX>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -172,8 +164,7 @@ TEST_CASE( "rbm/mnist_12", "rbm::init_weights" ) {
        dll::init_weights
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -189,8 +180,7 @@ TEST_CASE( "rbm/mnist_16", "rbm::iterators" ) {
         dll::batch_size<25>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -210,8 +200,7 @@ TEST_CASE( "rbm/mnist_19", "rbm::simple_double" ) {
         dll::weight_type<double>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<double>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -228,8 +217,7 @@ TEST_CASE( "rbm/mnist_20", "rbm::simple_float" ) {
         dll::weight_type<float>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -246,8 +234,7 @@ TEST_CASE( "rbm/mnist_21", "rbm::shuffle" ) {
         dll::shuffle
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(1000);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -270,8 +257,7 @@ TEST_CASE( "rbm/mnist_22", "rbm::denoising" ) {
 
     rbm.learning_rate *= 2;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(200);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::normalize_dataset(dataset);
@@ -279,7 +265,7 @@ TEST_CASE( "rbm/mnist_22", "rbm::denoising" ) {
     auto noisy = dataset.training_images;
 
     std::default_random_engine rand_engine(56);
-    std::normal_distribution<double> normal_distribution(0.0, 0.1);
+    std::normal_distribution<float> normal_distribution(0.0, 0.1);
     auto noise = std::bind(normal_distribution, rand_engine);
 
     for(auto& image : noisy){
@@ -303,8 +289,7 @@ TEST_CASE( "rbm/mnist_23", "rbm::parallel" ) {
        dll::parallel_mode
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(200);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);

@@ -23,8 +23,7 @@ TEST_CASE( "unit/rbm/mnist/1", "[rbm][momentum][unit]" ) {
         dll::momentum
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -42,8 +41,7 @@ TEST_CASE( "unit/rbm/mnist/2", "[rbm][momentum][parallel][unit]" ) {
         dll::parallel_mode
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -63,8 +61,7 @@ TEST_CASE( "unit/rbm/mnist/3", "[rbm][momemtum][gaussian][unit]" ) {
 
     rbm.learning_rate *= 20;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::normalize_dataset(dataset);
@@ -81,8 +78,7 @@ TEST_CASE( "unit/rbm/mnist/4", "[rbm][shuffle][unit]" ) {
         dll::shuffle
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -104,8 +100,7 @@ TEST_CASE( "unit/rbm/mnist/5", "[rbm][denoising][unit]" ) {
 
     rbm.learning_rate *= 5;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::normalize_dataset(dataset);
@@ -113,7 +108,7 @@ TEST_CASE( "unit/rbm/mnist/5", "[rbm][denoising][unit]" ) {
     auto noisy = dataset.training_images;
 
     std::default_random_engine rand_engine(56);
-    std::normal_distribution<double> normal_distribution(0.0, 0.1);
+    std::normal_distribution<float> normal_distribution(0.0, 0.1);
     auto noise = std::bind(normal_distribution, rand_engine);
 
     for(auto& image : noisy){
@@ -136,8 +131,7 @@ TEST_CASE( "unit/rbm/mnist/6", "[rbm][pcd][unit]" ) {
         dll::trainer_rbm<dll::pcd1_trainer_t>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -158,7 +152,7 @@ TEST_CASE( "unit/rbm/mnist/7", "[rbm][relu][unit]" ) {
 
     rbm.learning_rate *= 10;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -185,8 +179,7 @@ TEST_CASE( "unit/rbm/mnist/8", "[rbm][sparse][unit]" ) {
     //0.01 (default) is way too low for 100 hidden units
     rbm.sparsity_target = 0.1;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -208,8 +201,7 @@ TEST_CASE( "unit/rbm/mnist/9", "[rbm][sparse][unit]" ) {
     //0.01 (default) is way too low for 100 hidden units
     rbm.sparsity_target = 0.1;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);

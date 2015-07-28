@@ -22,8 +22,7 @@ TEST_CASE( "rbm/mnist_3", "rbm::pcd_trainer" ) {
         dll::trainer_rbm<dll::pcd1_trainer_t>
     >::rbm_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -45,8 +44,7 @@ TEST_CASE( "rbm/mnist_15", "rbm::pcd_gaussian" ) {
 
     rbm.learning_rate /= 20.0;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(500);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(500);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::normalize_dataset(dataset);
