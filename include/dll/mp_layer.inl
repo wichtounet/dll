@@ -8,8 +8,6 @@
 #ifndef DLL_MP_LAYER_INL
 #define DLL_MP_LAYER_INL
 
-#include "etl/etl.hpp"
-
 #include "pooling_layer.hpp"
 
 namespace dll {

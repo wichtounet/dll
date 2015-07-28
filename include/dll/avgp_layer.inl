@@ -8,8 +8,6 @@
 #ifndef DLL_AVGP_LAYER_INL
 #define DLL_AVGP_LAYER_INL
 
-#include "etl/etl.hpp"
-
 #include "pooling_layer.hpp"
 
 namespace dll {
@@ -23,6 +21,17 @@ struct avgp_layer_3d final: pooling_layer_3d<Desc>  {
     using weight = typename desc::weight;
     using base = pooling_layer_3d<desc>;
 
+    using input_one_t = typename base::input_one_t;
+    using output_one_t = typename base::output_one_t;
+    using input_t = typename base::input_t;
+    using output_t = typename base::output_t;
+
+    template<std::size_t B>
+    using input_batch_t = typename base::template input_batch_t<B>;
+
+    template<std::size_t B>
+    using output_batch_t = typename base::template output_batch_t<B>;
+
     avgp_layer_3d() = default;
 
     static std::string to_short_string(){
@@ -35,17 +44,6 @@ struct avgp_layer_3d final: pooling_layer_3d<Desc>  {
     static void display(){
         std::cout << to_short_string() << std::endl;
     }
-
-    using input_one_t = typename base::input_one_t;
-    using output_one_t = typename base::output_one_t;
-    using input_t = typename base::input_t;
-    using output_t = typename base::output_t;
-
-    template<std::size_t B>
-    using input_batch_t = typename base::template input_batch_t<B>;
-
-    template<std::size_t B>
-    using output_batch_t = typename base::template output_batch_t<B>;
 
     static void activate_hidden(output_one_t& h, const input_one_t& v){
         h = etl::avg_pool_3d<base::C1, base::C2, base::C3>(v);

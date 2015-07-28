@@ -33,6 +33,17 @@ struct pooling_layer_3d {
 
     static constexpr const bool is_nop = C1 + C2 + C3 == 1;
 
+    using input_one_t = etl::fast_dyn_matrix<weight, I1, I2, I3>;
+    using output_one_t = etl::fast_dyn_matrix<weight, O1, O2, O3>;
+    using input_t = std::vector<input_one_t>;
+    using output_t = std::vector<output_one_t>;
+
+    template<std::size_t B>
+    using input_batch_t = etl::fast_dyn_matrix<weight, B, I1, I2, I3>;
+
+    template<std::size_t B>
+    using output_batch_t = etl::fast_dyn_matrix<weight, B, O1, O2, O3>;
+
     pooling_layer_3d() = default;
 
     static constexpr std::size_t input_size() noexcept {
@@ -47,17 +58,6 @@ struct pooling_layer_3d {
         return 0;
     }
 
-    using input_one_t = etl::fast_dyn_matrix<weight, I1, I2, I3>;
-    using output_one_t = etl::fast_dyn_matrix<weight, O1, O2, O3>;
-    using input_t = std::vector<input_one_t>;
-    using output_t = std::vector<output_one_t>;
-
-    template<std::size_t B>
-    using input_batch_t = etl::fast_dyn_matrix<weight, B, I1, I2, I3>;
-
-    template<std::size_t B>
-    using output_batch_t = etl::fast_dyn_matrix<weight, B, O1, O2, O3>;
-
     template<typename Input>
     static output_t prepare_output(std::size_t samples){
         return output_t{samples};
@@ -68,35 +68,6 @@ struct pooling_layer_3d {
         return output_one_t();
     }
 };
-
-//Allow odr-use of the constexpr static members
-
-template<typename Desc>
-const std::size_t pooling_layer_3d<Desc>::I1;
-
-template<typename Desc>
-const std::size_t pooling_layer_3d<Desc>::I2;
-
-template<typename Desc>
-const std::size_t pooling_layer_3d<Desc>::I3;
-
-template<typename Desc>
-const std::size_t pooling_layer_3d<Desc>::C1;
-
-template<typename Desc>
-const std::size_t pooling_layer_3d<Desc>::C2;
-
-template<typename Desc>
-const std::size_t pooling_layer_3d<Desc>::C3;
-
-template<typename Desc>
-const std::size_t pooling_layer_3d<Desc>::O1;
-
-template<typename Desc>
-const std::size_t pooling_layer_3d<Desc>::O2;
-
-template<typename Desc>
-const std::size_t pooling_layer_3d<Desc>::O3;
 
 } //end of dll namespace
 
