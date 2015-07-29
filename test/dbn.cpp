@@ -188,7 +188,7 @@ TEST_CASE( "dbn/mnist_17", "dbn::memory" ) {
     , dll::big_batch_size<3>
     >::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(1000);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(1078);
 
     REQUIRE(!dataset.training_images.empty());
 
