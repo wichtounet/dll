@@ -137,8 +137,8 @@ struct dbn_trainer {
 
                     //Train the last incomplete batch, if any
                     if(i % batch_size > 0){
-                        auto data_batch = make_batch(input_cache.begin() + full_batches * batch_size, input_cache.end());
-                        auto label_batch = make_batch(fake_labels.begin() + full_batches * batch_size, fake_labels.end());
+                        auto data_batch = make_batch(input_cache.begin() + full_batches * batch_size, input_cache.begin() + i);
+                        auto label_batch = make_batch(fake_labels.begin() + full_batches * batch_size, fake_labels.begin()+ i);
 
                         trainer->train_batch(epoch, data_batch, label_batch);
                     }
