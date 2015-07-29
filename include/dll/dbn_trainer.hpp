@@ -35,9 +35,11 @@ struct dbn_trainer {
     template<typename Iterator, typename LIterator>
     typename dbn_t::weight train(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator llast, std::size_t max_epochs) const {
         constexpr const auto batch_size = std::decay_t<DBN>::batch_size;
+        constexpr const auto big_batch_size = std::decay_t<DBN>::big_batch_size;
 
         //Get types for the batch
         using samples_t = std::vector<typename std::iterator_traits<Iterator>::value_type>;
+        using labels_t = std::vector<typename std::iterator_traits<LIterator>::value_type>;
 
         //Initialize the momentum
         dbn.momentum = dbn.initial_momentum;
@@ -98,39 +100,48 @@ struct dbn_trainer {
                 }
             }
         } else {
+            auto total_batch_size = big_batch_size * batch_size;
+
             //Prepare some space for converted data
-            samples_t data;
-            data.reserve(batch_size);
+            samples_t input_cache(total_batch_size);
+            labels_t label_cache(total_batch_size);
 
             //Train for max_epochs epoch
             for(std::size_t epoch= 0; epoch < max_epochs; ++epoch){
                 auto it = first;
-                auto end = last;
 
                 auto lit = lfirst;
 
                 //Train all mini-batches
-                while(it != end){
-                    auto bit = it;
-                    auto blit = lit;
-
-                    for(std::size_t i = 0; i < batch_size && bit != end; ++i, ++it, ++lit){}
-
-                    //Convert data to an useful form
-                    data.clear();
-                    std::for_each(bit, it, [&data](auto& sample){
-                        data.emplace_back(sample);
-                    });
+                while(it != last){
+                    //Fill the input caches
+                    std::size_t i = 0;
+                    while(it != last && i < total_batch_size){
+                        input_cache[i] = *it++;
+                        label_cache[i] = *lit++;
+                        ++i;
+                    }
 
                     //Convert labels to an useful form
-                    auto fake_labels = dll::make_fake(blit, lit);
+                    auto fake_labels = dll::make_fake(label_cache.begin(), label_cache.end());
 
-                    //Train one mini-batch
+                    auto full_batches = i / batch_size;
 
-                    auto data_batch = make_batch(data.begin(), data.end());
-                    auto label_batch = make_batch(fake_labels.begin(), fake_labels.end());
+                    //Train all the full batches
+                    for(std::size_t b = 0; b < full_batches; ++b){
+                        auto data_batch = make_batch(input_cache.begin() + b * batch_size, input_cache.begin() + (b+1) * batch_size);
+                        auto label_batch = make_batch(fake_labels.begin() + b * batch_size, fake_labels.begin() + (b+1) * batch_size);
 
-                    trainer->train_batch(epoch, data_batch, label_batch);
+                        trainer->train_batch(epoch, data_batch, label_batch);
+                    }
+
+                    //Train the last incomplete batch, if any
+                    if(i % batch_size > 0){
+                        auto data_batch = make_batch(input_cache.begin() + full_batches * batch_size, input_cache.end());
+                        auto label_batch = make_batch(fake_labels.begin() + full_batches * batch_size, fake_labels.end());
+
+                        trainer->train_batch(epoch, data_batch, label_batch);
+                    }
                 }
 
                 error = test_set(dbn, first, last, lfirst, llast,
