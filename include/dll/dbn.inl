@@ -299,6 +299,8 @@ private:
         //Several RBM batches are propagated at once
         auto total_batch_size = big_batch_size * get_batch_size(rbm);
 
+        std::vector<typename rbm_t::input_one_t> input_cache(total_batch_size);
+
         //Train for max_epochs epoch
         for(std::size_t epoch = 0; epoch < max_epochs; ++epoch){
             std::size_t big_batch = 0;
@@ -312,17 +314,18 @@ private:
             auto end = last;
 
             while(it != end){
-                auto batch_start = it;
+                //Fill the input cache
+                std::size_t i = 0;
+                while(it != end && i < total_batch_size){
+                    input_cache[i++] = *it++;
+                }
 
-                detail::safe_advance(it, end, total_batch_size);
-
-                //With only 1 batch, some work can be skipped
                 if(big_batch_size == 1){
                     //Train the RBM on this batch
-                    r_trainer.train_batch(batch_start, it, batch_start, it, trainer, context, rbm);
+                    r_trainer.train_batch(input_cache.begin(), input_cache.end(), input_cache.begin(), input_cache.end(), trainer, context, rbm);
                 } else {
                     //Train the RBM on this big batch
-                    r_trainer.train_sub(batch_start, it, batch_start, trainer, context, rbm);
+                    r_trainer.train_sub(input_cache.begin(), input_cache.begin() + i, input_cache.begin(), trainer, context, rbm);
                 }
 
                 if(dbn_traits<this_type>::is_verbose()){
@@ -417,7 +420,9 @@ private:
 
         auto total_batch_size = big_batch_size * get_batch_size(rbm);
 
-        auto input = layer_get<I - 1>().template prepare_output<layer_input_t<I - 1>>(total_batch_size);
+        std::vector<typename Iterator::value_type> input_cache(total_batch_size);
+
+        auto next_input = layer_get<I - 1>().template prepare_output<layer_input_t<I - 1>>(total_batch_size);
 
         //Train for max_epochs epoch
         for(std::size_t epoch = 0; epoch < max_epochs; ++epoch){
@@ -432,18 +437,20 @@ private:
             auto end = last;
 
             while(it != end){
-                auto batch_start = it;
+                //Fill the input cache
+                std::size_t i = 0;
+                while(it != end && i < total_batch_size){
+                    input_cache[i++] = *it++;
+                }
 
-                detail::safe_advance(it, end, total_batch_size);
-
-                multi_activation_probabilities<I>(batch_start, it, input);
+                multi_activation_probabilities<I>(input_cache.begin(), input_cache.begin() + i, next_input);
 
                 if(big_batch_size == 1){
                     //Train the RBM on this batch
-                    r_trainer.train_batch(input.begin(), input.end(), input.begin(), input.end(), trainer, context, rbm);
+                    r_trainer.train_batch(next_input.begin(), next_input.end(), next_input.begin(), next_input.end(), trainer, context, rbm);
                 } else {
                     //Train the RBM on this big batch
-                    r_trainer.train_sub(input.begin(), input.end(), input.begin(), trainer, context, rbm);
+                    r_trainer.train_sub(next_input.begin(), next_input.end(), next_input.begin(), trainer, context, rbm);
                 }
 
                 if(dbn_traits<this_type>::is_verbose()){
