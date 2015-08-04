@@ -256,7 +256,7 @@ private:
 
             //In case of a multiplex layer, the output is flattened
             cpp::static_if<layer_traits<layer_t>::is_multiplex_layer()>([&](auto f){
-                auto flattened_next_a = flatten_clr(next_a);
+                auto flattened_next_a = flatten_clr(f(next_a));
 
                 f(this)->template pretrain_layer<I+1>(flattened_next_a.begin(), flattened_next_a.end(), watcher, max_epochs);
             });
