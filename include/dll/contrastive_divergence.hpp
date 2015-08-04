@@ -583,14 +583,12 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
         auto w_f_1 = force_temporary(t.h1_a);
         auto w_f_2 = force_temporary(t.h2_a);
 
-        for(std::size_t batch = 0; batch < B; ++batch){
+        maybe_parallel_foreach_n(t.pool, 0, B, [&](std::size_t batch){
             for(std::size_t k = 0; k < K; ++k){
                 w_f_1(batch)(k).fflip_inplace();
                 w_f_2(batch)(k).fflip_inplace();
             }
-        }
 
-        for(std::size_t batch = 0; batch < B; ++batch){
             for(std::size_t channel = 0; channel < NC; ++channel){
                 if(Denoising){
                     conv_2d_valid_multi(t.vf(batch)(channel), w_f_1(batch), t.w_pos(batch)(channel));
@@ -600,7 +598,7 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
                     conv_2d_valid_multi(t.v2_a(batch)(channel), w_f_2(batch), t.w_neg(batch)(channel));
                 }
             }
-        }
+        });
     }
 
     if(Persistent){
