@@ -86,7 +86,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
     etl::fast_matrix<weight, 2, K, NH1, NH2> v_cv;      //Temporary convolution
     etl::fast_matrix<weight, 2, NV1, NV2> h_cv;         //Temporary convolution
 
-    mutable thread_pool<true> pool;
+    mutable thread_pool<!layer_traits<this_type>::is_serial()> pool;
 
     conv_rbm_mp() : base_type() {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution

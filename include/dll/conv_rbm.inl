@@ -78,7 +78,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     etl::fast_matrix<weight, V_CV_CHANNELS, K, NH1, NH2> v_cv;      //Temporary convolution
     etl::fast_matrix<weight, H_CV_CHANNELS, NV2, NV2> h_cv;         //Temporary convolution
 
-    mutable thread_pool<true> pool;
+    mutable thread_pool<!layer_traits<this_type>::is_serial()> pool;
 
     conv_rbm() : base_type() {
         if(is_relu(hidden_unit)){
