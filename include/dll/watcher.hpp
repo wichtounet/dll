@@ -59,20 +59,20 @@ struct default_rbm_watcher {
     void epoch_end(std::size_t epoch, const rbm_training_context& context, const RBM& /*rbm*/){
         char formatted[1024];
         if(layer_traits<RBM>::free_energy()){
-            snprintf(formatted, 1024, "epoch %ld - Reconstruction error: %.5f - Free energy: %.3f - Sparsity: %.5f\n", epoch,
+            snprintf(formatted, 1024, "epoch %ld - Reconstruction error: %.5f - Free energy: %.3f - Sparsity: %.5f", epoch,
                 context.reconstruction_error, context.free_energy, context.sparsity);
         } else {
-            snprintf(formatted, 1024, "epoch %ld - Reconstruction error: %.5f - Sparsity: %.5f\n", epoch, context.reconstruction_error, context.sparsity);
+            snprintf(formatted, 1024, "epoch %ld - Reconstruction error: %.5f - Sparsity: %.5f", epoch, context.reconstruction_error, context.sparsity);
         }
-        std::cout << formatted;
+        std::cout << formatted << std::endl;
     }
 
     template<typename RBM = R>
     void batch_end(const RBM& /* rbm */, const rbm_training_context& context, std::size_t batch, std::size_t batches){
         char formatted[1024];
-        sprintf(formatted, "Batch %ld/%ld - Reconstruction error: %.5f - Sparsity: %.5f\n", batch, batches,
+        sprintf(formatted, "Batch %ld/%ld - Reconstruction error: %.5f - Sparsity: %.5f", batch, batches,
             context.batch_error, context.batch_sparsity);
-        std::cout << formatted;
+        std::cout << formatted << std::endl;
     }
 
     template<typename RBM = R>
@@ -131,8 +131,8 @@ struct default_dbn_watcher {
 
     void ft_epoch_end(std::size_t epoch, double error, const DBN&){
         char formatted[1024];
-        snprintf(formatted, 1024, "epoch %ld - Classification error: %.5f \n", epoch, error);
-        std::cout << formatted;
+        snprintf(formatted, 1024, "epoch %ld - Classification error: %.5f", epoch, error);
+        std::cout << formatted std::endl;
     }
 
     void fine_tuning_end(const DBN&){
