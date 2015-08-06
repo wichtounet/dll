@@ -219,6 +219,15 @@ public:
     /*{{{ Pretrain */
 
 private:
+    mutable int fake_resource;
+
+    void release(int& resource){}
+
+    template<typename T>
+    void release(std::vector<T>& resource){
+        std::vector<T>().swap(resource);
+    }
+
     //By default all layer are trained
     template<std::size_t I, class Enable = void>
     struct train_next : std::true_type {};
@@ -227,8 +236,8 @@ private:
     template<std::size_t I>
     struct train_next<I, std::enable_if_t<(I == layers - 1)>> : cpp::bool_constant<layer_traits<layer_type<I>>::pretrain_last()> {};
 
-    template<std::size_t I, typename Iterator, cpp_enable_if((I < layers))>
-    void pretrain_layer(Iterator first, Iterator last, watcher_t& watcher, std::size_t max_epochs){
+    template<std::size_t I, typename Iterator, typename Container, cpp_enable_if((I < layers))>
+    void pretrain_layer(Iterator first, Iterator last, watcher_t& watcher, std::size_t max_epochs, Container& previous){
         using layer_t = layer_type<I>;
 
         decltype(auto) layer = layer_get<I>();
@@ -249,23 +258,26 @@ private:
                 layer.activate_hidden(next_a[i], v);
             });
 
+            //At this point we don't need the storage of the previous layer
+            release(previous);
+
             //In the standard case, pass the output to the next layer
             cpp::static_if<!layer_traits<layer_t>::is_multiplex_layer()>([&](auto f){
-                f(this)->template pretrain_layer<I+1>(next_a.begin(), next_a.end(), watcher, max_epochs);
+                f(this)->template pretrain_layer<I+1>(next_a.begin(), next_a.end(), watcher, max_epochs, next_a);
             });
 
             //In case of a multiplex layer, the output is flattened
             cpp::static_if<layer_traits<layer_t>::is_multiplex_layer()>([&](auto f){
                 auto flattened_next_a = flatten_clr(f(next_a));
-
-                f(this)->template pretrain_layer<I+1>(flattened_next_a.begin(), flattened_next_a.end(), watcher, max_epochs);
+                release(next_a);
+                f(this)->template pretrain_layer<I+1>(flattened_next_a.begin(), flattened_next_a.end(), watcher, max_epochs, flattened_next_a);
             });
         }
     }
 
     //Stop template recursion
-    template<std::size_t I, typename Iterator, cpp_enable_if((I == layers))>
-    void pretrain_layer(Iterator, Iterator, watcher_t&, std::size_t){}
+    template<std::size_t I, typename Iterator, typename Container, cpp_enable_if((I == layers))>
+    void pretrain_layer(Iterator, Iterator, watcher_t&, std::size_t, Container&){}
 
     //By default no layer is ignored
     template<std::size_t I, class Enable = void>
@@ -574,7 +586,7 @@ public:
             std::cout << "DBN: Pretraining done in batch mode to save memory" << std::endl;
             pretrain_layer_batch<0>(first, last, watcher, max_epochs);
         } else {
-            pretrain_layer<0>(first, last, watcher, max_epochs);
+            pretrain_layer<0>(first, last, watcher, max_epochs, fake_resource);
         }
 
         watcher.pretraining_end(*this);
