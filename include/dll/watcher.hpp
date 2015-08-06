@@ -132,7 +132,7 @@ struct default_dbn_watcher {
     void ft_epoch_end(std::size_t epoch, double error, const DBN&){
         char formatted[1024];
         snprintf(formatted, 1024, "epoch %ld - Classification error: %.5f", epoch, error);
-        std::cout << formatted std::endl;
+        std::cout << formatted << std::endl;
     }
 
     void fine_tuning_end(const DBN&){
