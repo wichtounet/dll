@@ -236,6 +236,12 @@ private:
     template<std::size_t I>
     struct train_next<I, std::enable_if_t<(I == layers - 1)>> : cpp::bool_constant<layer_traits<layer_type<I>>::pretrain_last()> {};
 
+    template<std::size_t I, typename Enable = void>
+    struct inline_next : std::false_type {};
+
+    template<std::size_t I>
+    struct inline_next<I, std::enable_if_t<(I < layers)>> : cpp::bool_constant<layer_traits<layer_type<I>>::is_pooling_layer()> {};
+
     template<std::size_t I, typename Iterator, typename Container, cpp_enable_if((I < layers))>
     void pretrain_layer(Iterator first, Iterator last, watcher_t& watcher, std::size_t max_epochs, Container& previous){
         using layer_t = layer_type<I>;
@@ -251,7 +257,26 @@ private:
                     (first, last, max_epochs);
         });
 
-        if(train_next<I+1>::value){
+        //When the next layer is a pooling layer, a lot of memory can be saved by directly computing
+        //the activations of two layers at once
+        cpp::static_if<inline_next<I+1>::value>([&](auto f){
+            decltype(auto) next_layer = f(this)->template layer_get<I+1>();
+
+            auto next_a = next_layer.template prepare_output<layer_input_t<I>>(std::distance(first, last));
+
+            maybe_parallel_foreach_i(pool, first, last, [&layer, &next_layer, &next_a](auto& v, std::size_t i){
+                auto tmp = layer.template prepare_one_output<layer_input_t<I+1>>();
+
+                layer.activate_hidden(tmp, v);
+                next_layer.activate_hidden(next_a[i], tmp);
+            });
+
+            this_type::release(previous);
+
+            f(this)->template pretrain_layer<I+2>(next_a.begin(), next_a.end(), watcher, max_epochs, next_a);
+        });
+
+        if(train_next<I+1>::value && !inline_next<I+1>::value){
             auto next_a = layer.template prepare_output<layer_input_t<I>>(std::distance(first, last));
 
             maybe_parallel_foreach_i(pool, first, last, [&layer, &next_a](auto& v, std::size_t i){
