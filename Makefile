@@ -51,7 +51,7 @@ endif
 endif
 
 # Enable coverage if enabled
-ifeq (,$(DLL_COVERAGE))
+ifneq (,$(DLL_COVERAGE))
 $(eval $(call enable_coverage_release))
 endif
 
