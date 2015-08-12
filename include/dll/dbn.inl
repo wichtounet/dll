@@ -93,7 +93,7 @@ struct dbn final {
 
     weight momentum = 0;                ///< The current momentum
 
-    thread_pool<!dbn_traits<this_type>::is_serial()> pool;
+    cpp::thread_pool<!dbn_traits<this_type>::is_serial()> pool;
 
 private:
     template<std::size_t I, typename Enable = void>

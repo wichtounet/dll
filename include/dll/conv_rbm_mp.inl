@@ -14,6 +14,7 @@
 
 #include "cpp_utils/assert.hpp"             //Assertions
 #include "cpp_utils/stop_watch.hpp"         //Performance counter
+#include "cpp_utils/maybe_parallel.hpp"
 
 #include "etl/etl.hpp"
 
@@ -22,7 +23,6 @@
 #include "io.hpp"                 //Binary load/store functions
 #include "tmp.hpp"
 #include "checks.hpp"
-#include "parallel.hpp"
 
 namespace dll {
 
@@ -86,7 +86,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
     etl::fast_matrix<weight, 2, K, NH1, NH2> v_cv;      //Temporary convolution
     etl::fast_matrix<weight, 2, NV1, NV2> h_cv;         //Temporary convolution
 
-    mutable thread_pool<!layer_traits<this_type>::is_serial()> pool;
+    mutable cpp::thread_pool<!layer_traits<this_type>::is_serial()> pool;
 
     conv_rbm_mp() : base_type() {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution

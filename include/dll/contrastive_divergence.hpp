@@ -18,13 +18,13 @@
 #define DLL_CONTRASTIVE_DIVERGENCE_HPP
 
 #include "cpp_utils/assert.hpp"             //Assertions
+#include "cpp_utils/maybe_parallel.hpp"
 
 #include "etl/etl.hpp"
 
 #include "batch.hpp"
 #include "decay_type.hpp"
 #include "layer_traits.hpp"
-#include "parallel.hpp"
 
 namespace dll {
 
@@ -717,7 +717,7 @@ struct base_cd_trainer : base_trainer<RBM> {
     etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_a;
     etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_s;
 
-    thread_pool<!layer_traits<rbm_t>::is_serial()> pool;
+    cpp::thread_pool<!layer_traits<rbm_t>::is_serial()> pool;
 
     template<bool M = layer_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
     base_cd_trainer(rbm_t& rbm) : rbm(rbm), q_global_t(0.0), q_local_t(0.0) {
@@ -805,7 +805,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
     etl::dyn_matrix<weight> p_h_a;
     etl::dyn_matrix<weight> p_h_s;
 
-    thread_pool<!layer_traits<rbm_t>::is_serial()> pool;
+    cpp::thread_pool<!layer_traits<rbm_t>::is_serial()> pool;
 
     template<bool M = layer_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
     base_cd_trainer(rbm_t& rbm) : rbm(rbm),
@@ -942,7 +942,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> h2_a;
     conditional_fast_matrix_t<(N > 1), weight, batch_size, K, NH1, NH2> h2_s;
 
-    thread_pool<!layer_traits<rbm_t>::is_serial()> pool;
+    cpp::thread_pool<!layer_traits<rbm_t>::is_serial()> pool;
 
     template<bool M = layer_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
     base_cd_trainer(rbm_t& rbm) : rbm(rbm),
