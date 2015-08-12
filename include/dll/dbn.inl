@@ -19,6 +19,7 @@
 #include "dbn_common.hpp"
 #include "svm_common.hpp"
 #include "flatten.hpp"
+#include "compat.hpp"
 
 namespace dll {
 
@@ -117,10 +118,17 @@ public:
     bool svm_loaded = false;            ///< Indicates if a SVM model has been loaded (and therefore must be saved)
 #endif //DLL_SVM_SUPPORT
 
+#ifdef __clang__ //Ideally this should only be used with libc++
+    template<typename... T>
+    explicit dbn(T&&... layers) : tuples(std::forward<T>(layers)...) {
+        //Nothing else to init
+    }
+#else
     template<typename... T>
     explicit dbn(T&&... layers) : tuples({std::forward<T>(layers)}...) {
         //Nothing else to init
     }
+#endif
 
     //No copying
     dbn(const dbn& dbn) = delete;
@@ -948,7 +956,7 @@ public:
         return std::vector<typename layer_type<layers - 1>::output_one_t>();
     }
 
-    auto prepare_one_output() const {
+    CLANG_AUTO_TRICK auto prepare_one_output() const {
         return prepare_output<layers - 1>();
     }
 
