@@ -851,11 +851,11 @@ public:
         return activation_probabilities_sub<I>(sample, result);;
     }
 
-    auto activation_probabilities(const input_t& sample, output_t& result) const {
+    CLANG_AUTO_TRICK auto activation_probabilities(const input_t& sample, output_t& result) const {
         return activation_probabilities_sub<layers - 1>(sample, result);
     }
 
-    auto activation_probabilities(const input_t& sample) const {
+    CLANG_AUTO_TRICK auto activation_probabilities(const input_t& sample) const {
         return activation_probabilities_sub<layers - 1>(sample);
     }
 
