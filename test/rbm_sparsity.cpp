@@ -61,15 +61,17 @@ TEST_CASE( "rbm/mnist_61", "rbm::local_sparsity" ) {
     REQUIRE(error < 1e-2);
 }
 
-//TODO Still not very convincing
 TEST_CASE( "rbm/mnist_62", "rbm::sparsity_gaussian" ) {
     dll::rbm_desc<
-        28 * 28, 200,
-       dll::batch_size<25>,
+        28 * 28, 300,
+       dll::batch_size<10>,
        dll::momentum,
-       dll::sparsity<>,
+       dll::sparsity<dll::sparsity_method::LOCAL_TARGET>,
        dll::visible<dll::unit_type::GAUSSIAN>
     >::rbm_t rbm;
+
+    rbm.learning_rate *= 2;
+    rbm.sparsity_target = 0.1;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(500);
     REQUIRE(!dataset.training_images.empty());
@@ -78,5 +80,5 @@ TEST_CASE( "rbm/mnist_62", "rbm::sparsity_gaussian" ) {
 
     auto error = rbm.train(dataset.training_images, 200);
 
-    REQUIRE(error < 1e-2);
+    REQUIRE(error < 0.25);
 }
