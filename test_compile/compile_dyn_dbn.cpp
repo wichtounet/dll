@@ -13,7 +13,7 @@ template<typename DBN>
 void test_dbn(DBN& dbn){
     dbn->display();
 
-    std::vector<etl::dyn_vector<double>> images;
+    std::vector<etl::dyn_vector<float>> images;
 
     dbn->pretrain(images, 10);
 }
