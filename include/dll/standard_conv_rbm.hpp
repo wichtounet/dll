@@ -139,14 +139,6 @@ protected:
         }
     }
 
-    static void inplace_fft2(std::complex<double>* memory, std::size_t m1, std::size_t m2){
-        etl::impl::blas::detail::inplace_zfft2_kernel(memory, m1, m2);
-    }
-
-    static void inplace_fft2(std::complex<float>* memory, std::size_t m1, std::size_t m2){
-        etl::impl::blas::detail::inplace_cfft2_kernel(memory, m1, m2);
-    }
-
     static void inplace_ifft2(std::complex<double>* memory, std::size_t m1, std::size_t m2){
         etl::impl::blas::detail::inplace_zifft2_kernel(memory, m1, m2);
     }
@@ -171,17 +163,8 @@ protected:
         deep_pad(h_s, h_s_padded);
         deep_pad(w, w_padded);
 
-        for(std::size_t batch = 0; batch < Batch; ++batch){
-            for(std::size_t k = 0; k < K; ++k){
-                inplace_fft2(h_s_padded(batch)(k).memory_start(), NV1, NV2);
-            }
-        }
-
-        for(std::size_t channel = 0; channel < NC; ++channel){
-            for(std::size_t k = 0; k < K; ++k){
-                inplace_fft2(w_padded(channel)(k).memory_start(), NV1, NV2);
-            }
-        }
+        h_s_padded.fft2_many_inplace();
+        w_padded.fft2_many_inplace();
 
         maybe_parallel_foreach_n(pool, 0, Batch, [&](std::size_t batch){
             for(std::size_t channel = 0; channel < NC; ++channel){
@@ -190,7 +173,7 @@ protected:
                 for(std::size_t k = 0; k < K; ++k){
                     tmp_result(batch) = h_s_padded(batch)(k) >> w_padded(channel)(k);
 
-                    inplace_ifft2(tmp_result(batch).memory_start(), NV1, NV2);
+                    tmp_result(batch).ifft2_inplace();
 
                     for(std::size_t i = 0; i < etl::size(tmp_result(batch)); ++i){
                         h_cv(batch)(1)[i] += tmp_result(batch)[i].real();
