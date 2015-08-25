@@ -57,15 +57,11 @@ endif
 
 CPP_FILES=$(wildcard test_compile/*.cpp)
 
-TEST_CPP_FILES=$(wildcard test/*.cpp)
+TEST_CPP_FILES=$(wildcard test/src/*.cpp)
 TEST_FILES=$(TEST_CPP_FILES:test/%=%)
 
-DEBUG_D_FILES=$(CPP_FILES:%.cpp=debug/%.cpp.d) $(TEST_CPP_FILES:%.cpp=debug/%.cpp.d)
-RELEASE_D_FILES=$(CPP_FILES:%.cpp=release/%.cpp.d) $(TEST_CPP_FILES:%.cpp=release/%.cpp.d)
-RELEASE_DEBUG_D_FILES=$(CPP_FILES:%.cpp=release_debug/%.cpp.d) $(TEST_CPP_FILES:%.cpp=release_debug/%.cpp.d)
-
-$(eval $(call folder_compile,test_compile))
-$(eval $(call test_folder_compile,))
+$(eval $(call auto_folder_compile,test_compile))
+$(eval $(call auto_folder_compile,test/src))
 
 $(eval $(call add_executable,compile_rbm,test_compile/compile_rbm.cpp))
 $(eval $(call add_executable,compile_conv_rbm,test_compile/compile_conv_rbm.cpp))
@@ -126,6 +122,4 @@ clean: base_clean
 
 -include tests.mk
 
--include $(DEBUG_D_FILES)
--include $(RELEASE_D_FILES)
--include $(RELEASE_DEBUG_D_FILES)
+include make-utils/cpp-utils-finalize.mk
