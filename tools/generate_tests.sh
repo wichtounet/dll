@@ -1,6 +1,6 @@
 #!/bin/bash
 
-./release/bin/dll_test -l > tests.tmp
+./release/bin/dll_test --list-test-names-only > tests.tmp
 
 rm -f tests.mk
 rm -f tests_list
