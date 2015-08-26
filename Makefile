@@ -60,8 +60,11 @@ CPP_FILES=$(wildcard test_compile/*.cpp)
 TEST_CPP_FILES=$(wildcard test/src/*.cpp)
 TEST_FILES=$(TEST_CPP_FILES:test/%=%)
 
+PROCESSOR_CPP_FILES=$(wildcard processor/src/*.cpp)
+
 $(eval $(call auto_folder_compile,test_compile/src))
 $(eval $(call auto_folder_compile,test/src))
+$(eval $(call auto_folder_compile,processor/src))
 
 $(eval $(call add_executable,compile_rbm,test_compile/src/compile_rbm.cpp))
 $(eval $(call add_executable,compile_conv_rbm,test_compile/src/compile_conv_rbm.cpp))
@@ -75,6 +78,8 @@ $(eval $(call add_executable,compile_conv_dbn_svm,test_compile/src/compile_conv_
 $(eval $(call add_executable,compile_ocv_1,test_compile/src/rbm_view.cpp,$(OPENCV_LD_FLAGS)))
 $(eval $(call add_executable,compile_ocv_2,test_compile/src/crbm_view.cpp,$(OPENCV_LD_FLAGS)))
 $(eval $(call add_executable,compile_ocv_3,test_compile/src/crbm_mp_view.cpp,$(OPENCV_LD_FLAGS)))
+
+$(eval $(call add_executable,dll,$(PROCESSOR_CPP_FILES)))
 
 $(eval $(call add_test_executable,dll_test,$(TEST_FILES),$(TEST_LD_FLAGS)))
 
