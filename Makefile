@@ -79,7 +79,7 @@ $(eval $(call add_executable,compile_ocv_1,test_compile/src/rbm_view.cpp,$(OPENC
 $(eval $(call add_executable,compile_ocv_2,test_compile/src/crbm_view.cpp,$(OPENCV_LD_FLAGS)))
 $(eval $(call add_executable,compile_ocv_3,test_compile/src/crbm_mp_view.cpp,$(OPENCV_LD_FLAGS)))
 
-$(eval $(call add_executable,dll,$(PROCESSOR_CPP_FILES)))
+$(eval $(call add_executable,dllp,$(PROCESSOR_CPP_FILES)))
 
 $(eval $(call add_test_executable,dll_test,$(TEST_FILES),$(TEST_LD_FLAGS)))
 

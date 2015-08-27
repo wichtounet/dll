@@ -10,3 +10,4 @@ html
 latex
 *.svg
 *.pyc
+.dbn.cpp

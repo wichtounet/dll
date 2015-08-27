@@ -13,18 +13,18 @@
 
 #include "cpp_utils/string.hpp"
 
-namespace {
+namespace dllp {
 
 struct layer {
-    virtual void print() = 0;
+    virtual void print(std::ostream& out) = 0;
 };
 
 struct rbm_layer : layer {
     std::size_t visible = 0;
     std::size_t hidden = 0;
 
-    void print() override {
-        std::cout << "dll::rbm_layer<>::rbm_t" << std::endl;
+    void print(std::ostream& out) override {
+        out << "dll::rbm_layer<>::rbm_t \n";
     }
 };
 
@@ -42,7 +42,7 @@ struct task {
 };
 
 void print_usage(){
-    std::cout << "Usage: dll conf_file action" << std::endl;
+    std::cout << "Usage: dllp conf_file action" << std::endl;
 }
 
 bool starts_with(const std::string& str, const std::string& search){
@@ -71,18 +71,20 @@ datasource parse_datasource(const std::vector<std::string>& lines, std::size_t& 
     }
 
     if(source.source_file.empty()){
-        std::cout << "dll:: error: missing source" << std::endl;
+        std::cout << "dllp:: error: missing source" << std::endl;
     }
 
     return source;
 }
 
-} //end of anonymous namespace
+void generate(task& t);
+
+} //end of dllp namespace
 
 int main(int argc, char* argv[]){
     if(argc < 3){
-        std::cout << "dll: Not enough arguments" << std::endl;
-        print_usage();
+        std::cout << "dllp: Not enough arguments" << std::endl;
+        dllp::print_usage();
         return 1;
     }
 
@@ -98,7 +100,7 @@ int main(int argc, char* argv[]){
         lines.push_back(cpp::trim(current_line));
     }
 
-    task t;
+    dllp::task t;
 
     for(std::size_t i = 0; i < lines.size();){
         auto& current_line = lines[i];
@@ -107,18 +109,18 @@ int main(int argc, char* argv[]){
             ++i;
 
             if(i == lines.size()){
-                std::cout << "dll: error: input expect at least one child" << std::endl;
+                std::cout << "dllp: error: input expect at least one child" << std::endl;
 
                 return 1;
             }
 
             while(i < lines.size()){
                 if(lines[i] == "pretraining:"){
-                    t.pretraining = parse_datasource(lines, ++i);
+                    t.pretraining = dllp::parse_datasource(lines, ++i);
                 } else if(lines[i] == "samples:"){
-                    t.samples = parse_datasource(lines, ++i);
+                    t.samples = dllp::parse_datasource(lines, ++i);
                 } else if(lines[i] == "labels:"){
-                    t.labels = parse_datasource(lines, ++i);
+                    t.labels = dllp::parse_datasource(lines, ++i);
                 } else {
                     break;
                 }
@@ -127,19 +129,19 @@ int main(int argc, char* argv[]){
             ++i;
 
             if(i == lines.size()){
-                std::cout << "dll: error: rbm expect at least visible and hidden parameters" << std::endl;
+                std::cout << "dllp: error: rbm expect at least visible and hidden parameters" << std::endl;
 
                 return 1;
             }
 
-            auto rbm = std::make_shared<rbm_layer>();
+            auto rbm = std::make_shared<dllp::rbm_layer>();
 
             while(i < lines.size()){
-                if(starts_with(lines[i], "visible:")){
-                    rbm->visible = std::stol(extract_value(lines[i], "visible: "));
+                if(dllp::starts_with(lines[i], "visible:")){
+                    rbm->visible = std::stol(dllp::extract_value(lines[i], "visible: "));
                     ++i;
-                } else if(starts_with(lines[i], "hidden:")){
-                    rbm->hidden = std::stol(extract_value(lines[i], "hidden: "));
+                } else if(dllp::starts_with(lines[i], "hidden:")){
+                    rbm->hidden = std::stol(dllp::extract_value(lines[i], "hidden: "));
                     ++i;
                 } else {
                     break;
@@ -148,11 +150,28 @@ int main(int argc, char* argv[]){
 
             t.layers.push_back(std::move(rbm));
         } else {
-            std::cout << "dll: error: Invalid line: " << current_line << std::endl;
+            std::cout << "dllp: error: Invalid line: " << current_line << std::endl;
 
             return 1;
         }
     }
 
+    dllp::generate(t);
+
     return 0;
 }
+
+namespace dllp {
+
+void generate(task& t){
+    std::ofstream out_stream(".dbn.cpp");
+
+    //TODO
+
+    for(auto& layer : t.layers){
+        layer->print(out_stream);
+    }
+}
+
+} //end of namespace dllp
+
