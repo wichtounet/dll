@@ -9,10 +9,24 @@
 #include<vector>
 #include<iostream>
 #include<fstream>
+#include<memory>
 
 #include "cpp_utils/string.hpp"
 
 namespace {
+
+struct layer {
+    virtual void print() = 0;
+};
+
+struct rbm_layer : layer {
+    std::size_t visible = 0;
+    std::size_t hidden = 0;
+
+    void print() override {
+        std::cout << "dll::rbm_layer<>::rbm_t" << std::endl;
+    }
+};
 
 struct datasource {
     std::string source_file;
@@ -23,6 +37,8 @@ struct task {
     datasource pretraining;
     datasource samples;
     datasource labels;
+
+    std::vector<std::shared_ptr<layer>> layers;
 };
 
 void print_usage(){
@@ -34,7 +50,7 @@ bool starts_with(const std::string& str, const std::string& search){
 }
 
 std::string extract_value(const std::string& str, const std::string& search){
-    return {str.begin() + str.find(search), str.end()};
+    return {str.begin() + str.find(search) + search.size(), str.end()};
 }
 
 datasource parse_datasource(const std::vector<std::string>& lines, std::size_t& i){
@@ -84,7 +100,7 @@ int main(int argc, char* argv[]){
 
     task t;
 
-    for(std::size_t i = 0; i < lines.size(); ++i){
+    for(std::size_t i = 0; i < lines.size();){
         auto& current_line = lines[i];
 
         if(current_line == "input:"){
@@ -107,8 +123,30 @@ int main(int argc, char* argv[]){
                     break;
                 }
             }
-        } else if(current_line == "rbm"){
+        } else if(current_line == "rbm:"){
+            ++i;
 
+            if(i == lines.size()){
+                std::cout << "dll: error: rbm expect at least visible and hidden parameters" << std::endl;
+
+                return 1;
+            }
+
+            auto rbm = std::make_shared<rbm_layer>();
+
+            while(i < lines.size()){
+                if(starts_with(lines[i], "visible:")){
+                    rbm->visible = std::stol(extract_value(lines[i], "visible: "));
+                    ++i;
+                } else if(starts_with(lines[i], "hidden:")){
+                    rbm->hidden = std::stol(extract_value(lines[i], "hidden: "));
+                    ++i;
+                } else {
+                    break;
+                }
+            }
+
+            t.layers.push_back(std::move(rbm));
         } else {
             std::cout << "dll: error: Invalid line: " << current_line << std::endl;
 
