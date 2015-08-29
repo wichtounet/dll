@@ -24,7 +24,7 @@ struct rbm_layer : layer {
     std::size_t hidden = 0;
 
     void print(std::ostream& out) override {
-        out << "dll::rbm_layer<>::rbm_t \n";
+        out << "dll::rbm_layer<>::rbm_t";
     }
 };
 
@@ -166,11 +166,19 @@ namespace dllp {
 void generate(task& t){
     std::ofstream out_stream(".dbn.cpp");
 
+    out_stream << "using dbn_t = dll:dbn_desc<dll::dbn_layers<\n";
+
     //TODO
 
+    std::string comma = "  ";
+
     for(auto& layer : t.layers){
+        out_stream << comma;
         layer->print(out_stream);
+        comma = "\n, ";
     }
+
+    out_stream << "\n>>::dbn_t;";
 }
 
 } //end of namespace dllp
