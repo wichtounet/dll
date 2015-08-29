@@ -166,6 +166,8 @@ namespace dllp {
 void generate(task& t){
     std::ofstream out_stream(".dbn.cpp");
 
+    out_stream << "#include \"dll/processor/processor.hpp\"\n\n";
+
     out_stream << "using dbn_t = dll:dbn_desc<dll::dbn_layers<\n";
 
     //TODO
@@ -178,7 +180,10 @@ void generate(task& t){
         comma = "\n, ";
     }
 
-    out_stream << "\n>>::dbn_t;";
+    out_stream << "\n>>::dbn_t;\n\n";
+
+    out_stream << "int main(int argc, char* argv[]){\n";
+    out_stream << "}\n";
 }
 
 } //end of namespace dllp
