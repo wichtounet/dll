@@ -79,7 +79,7 @@ datasource parse_datasource(const std::vector<std::string>& lines, std::size_t& 
 }
 
 void generate(task& t);
-void compile(const char* cxx, const char* ld);
+void compile(const char* cxx);
 
 } //end of dllp namespace
 
@@ -91,15 +91,9 @@ int main(int argc, char* argv[]){
     }
 
     const auto* cxx = std::getenv("CXX");
-    const auto* ld = std::getenv("LD");
 
     if(!cxx){
         std::cout << "CXX environment variable must be set" << std::endl;
-        return 2;
-    }
-
-    if(!ld){
-        std::cout << "LD environment variable must be set" << std::endl;
         return 2;
     }
 
@@ -173,7 +167,7 @@ int main(int argc, char* argv[]){
 
     dllp::generate(t);
 
-    dllp::compile(cxx, ld);
+    dllp::compile(cxx);
 
     return 0;
 }
@@ -205,8 +199,18 @@ void generate(task& t){
     out_stream << "}\n";
 }
 
-void compile(const char* cxx, const char* ld){
-    //TODO
+void compile(const char* cxx){
+    std::string compile_command(cxx);
+
+    compile_command += " -o .dbn.out ";
+    compile_command += " -I/usr/include/dll/ ";
+    compile_command += " .dbn.cpp ";
+
+    int compile_result = system(compile_command.c_str());
+
+    if(compile_result){
+        std::cout << "Compilation failed" << std::endl;
+    }
 }
 
 } //end of namespace dllp
