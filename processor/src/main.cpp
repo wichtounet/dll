@@ -5,11 +5,12 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include<string>
-#include<vector>
-#include<iostream>
-#include<fstream>
-#include<memory>
+#include <string>
+#include <vector>
+#include <iostream>
+#include <fstream>
+#include <memory>
+#include <cstdlib>
 
 #include "cpp_utils/string.hpp"
 
@@ -78,6 +79,7 @@ datasource parse_datasource(const std::vector<std::string>& lines, std::size_t& 
 }
 
 void generate(task& t);
+void compile(const char* cxx, const char* ld);
 
 } //end of dllp namespace
 
@@ -86,6 +88,19 @@ int main(int argc, char* argv[]){
         std::cout << "dllp: Not enough arguments" << std::endl;
         dllp::print_usage();
         return 1;
+    }
+
+    const auto* cxx = std::getenv("CXX");
+    const auto* ld = std::getenv("LD");
+
+    if(!cxx){
+        std::cout << "CXX environment variable must be set" << std::endl;
+        return 2;
+    }
+
+    if(!ld){
+        std::cout << "LD environment variable must be set" << std::endl;
+        return 2;
     }
 
     std::string source_file(argv[1]);
@@ -158,6 +173,8 @@ int main(int argc, char* argv[]){
 
     dllp::generate(t);
 
+    dllp::compile(cxx, ld);
+
     return 0;
 }
 
@@ -166,6 +183,7 @@ namespace dllp {
 void generate(task& t){
     std::ofstream out_stream(".dbn.cpp");
 
+    out_stream << "#include <memory>\n";
     out_stream << "#include \"dll/processor/processor.hpp\"\n\n";
 
     out_stream << "using dbn_t = dll:dbn_desc<dll::dbn_layers<\n";
@@ -183,7 +201,12 @@ void generate(task& t){
     out_stream << "\n>>::dbn_t;\n\n";
 
     out_stream << "int main(int argc, char* argv[]){\n";
+    out_stream << "   auto dbn = std::make_unique<dbn_t>();\n";
     out_stream << "}\n";
+}
+
+void compile(const char* cxx, const char* ld){
+    //TODO
 }
 
 } //end of namespace dllp
