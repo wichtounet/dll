@@ -1,4 +1,4 @@
-default: release
+default: release_debug/bin/dllp
 
 .PHONY: default release debug all clean
 
@@ -115,6 +115,19 @@ test: all
 	./debug/bin/dll_test
 	./release/bin/dll_test
 	./release_debug/bin/dll_test
+
+prefix = /usr
+bindir = $(prefix)/bin
+incdir = $(prefix)/include
+
+install: release_debug/bin/dllp
+	@ echo "Installation of dll"
+	@ echo "============================="
+	@ echo ""
+	install release_debug/bin/dllp $(bindir)/dllp
+	cp -r include/dll $(incdir)/
+	cp -r etl/include/etl $(incdir)/
+	cp -r etl/lib/include/cpp_utils $(incdir)/
 
 update_tests: release_dll_test
 	bash tools/generate_tests.sh
