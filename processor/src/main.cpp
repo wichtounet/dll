@@ -14,6 +14,8 @@
 
 #include "cpp_utils/string.hpp"
 
+#include "dll/processor/processor.hpp"
+
 namespace dllp {
 
 struct layer {
@@ -29,15 +31,10 @@ struct rbm_layer : layer {
     }
 };
 
-struct datasource {
-    std::string source_file;
-    std::string reader;
-};
-
 struct task {
-    datasource pretraining;
-    datasource samples;
-    datasource labels;
+    dll::processor::datasource pretraining;
+    dll::processor::datasource samples;
+    dll::processor::datasource labels;
 
     std::vector<std::shared_ptr<layer>> layers;
 };
@@ -54,8 +51,8 @@ std::string extract_value(const std::string& str, const std::string& search){
     return {str.begin() + str.find(search) + search.size(), str.end()};
 }
 
-datasource parse_datasource(const std::vector<std::string>& lines, std::size_t& i){
-    datasource source;
+dll::processor::datasource parse_datasource(const std::vector<std::string>& lines, std::size_t& i){
+    dll::processor::datasource source;
 
     source.reader = "default";
 
@@ -184,6 +181,20 @@ int main(int argc, char* argv[]){
 
 namespace dllp {
 
+std::string datasource_to_string(const std::string& name, const dll::processor::datasource& ds){
+    std::string result;
+
+    result += "auto ";
+    result += name;
+    result += " = std::make_unique<dll::processor::datasource>(\"";
+    result += ds.source_file;
+    result += "\", \"";
+    result += ds.reader;
+    result += "\");";
+
+    return result;
+}
+
 void generate(task& t){
     std::ofstream out_stream(".dbn.cpp");
 
@@ -206,6 +217,7 @@ void generate(task& t){
 
     out_stream << "int main(int argc, char* argv[]){\n";
     out_stream << "   auto dbn = std::make_unique<dbn_t>();\n";
+    out_stream << datasource_to_string("pt", t.pretraining) << "\n";
     out_stream << "}\n";
 }
 
