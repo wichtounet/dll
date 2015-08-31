@@ -25,7 +25,7 @@ struct rbm_layer : layer {
     std::size_t hidden = 0;
 
     void print(std::ostream& out) override {
-        out << "dll::rbm_layer<>::rbm_t";
+        out << "dll::rbm_desc<" << visible << ", " << hidden << ">::rbm_t";
     }
 };
 
@@ -165,9 +165,19 @@ int main(int argc, char* argv[]){
         }
     }
 
+    //Generate the CPP file
     dllp::generate(t);
 
+    //Compile the generate file
     dllp::compile(cxx);
+
+    //Run the generate program
+    int exec_result = system("./.dbn.out");
+
+    if(exec_result){
+        std::cout << "Impossible to execute the generated file" << std::endl;
+        return exec_result;
+    }
 
     return 0;
 }
@@ -180,7 +190,7 @@ void generate(task& t){
     out_stream << "#include <memory>\n";
     out_stream << "#include \"dll/processor/processor.hpp\"\n\n";
 
-    out_stream << "using dbn_t = dll:dbn_desc<dll::dbn_layers<\n";
+    out_stream << "using dbn_t = dll::dbn_desc<dll::dbn_layers<\n";
 
     //TODO
 
@@ -203,6 +213,8 @@ void compile(const char* cxx){
     std::string compile_command(cxx);
 
     compile_command += " -o .dbn.out ";
+    compile_command += " -std=c++1y ";
+    compile_command += " -pthread ";
     compile_command += " -I/usr/include/dll/ ";
     compile_command += " .dbn.cpp ";
 
