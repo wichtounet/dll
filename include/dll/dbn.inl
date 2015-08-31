@@ -144,7 +144,7 @@ public:
         std::cout << "DBN with " << layers << " layers" << std::endl;
 
         cpp::for_each(tuples, [&parameters](auto& layer){
-            std::cout << "\t";
+            std::cout << "    ";
             cpp::static_if<decay_layer_traits<decltype(layer)>::is_rbm_layer()>([&](auto f){
                 parameters += f(layer).parameters();
             });
