@@ -75,7 +75,7 @@ dll::processor::datasource parse_datasource(const std::vector<std::string>& line
     return source;
 }
 
-void generate(task& t);
+void generate(task& t, const std::vector<std::string>& actions);
 void compile(const char* cxx);
 
 } //end of dllp namespace
@@ -95,7 +95,12 @@ int main(int argc, char* argv[]){
     }
 
     std::string source_file(argv[1]);
-    std::string action(argv[2]);
+
+    std::vector<std::string> actions;
+
+    for(int i = 2; i < argc; ++i){
+        actions.emplace_back(argv[i]);
+    }
 
     std::ifstream source_stream(source_file);
 
@@ -163,7 +168,7 @@ int main(int argc, char* argv[]){
     }
 
     //Generate the CPP file
-    dllp::generate(t);
+    dllp::generate(t, actions);
 
     //Compile the generate file
     dllp::compile(cxx);
@@ -195,7 +200,26 @@ std::string datasource_to_string(const std::string& name, const dll::processor::
     return result;
 }
 
-void generate(task& t){
+std::string vector_to_string(const std::string& name, const std::vector<std::string>& vec){
+    std::string result;
+
+    result += "   std::vector<std::string> ";
+    result += name;
+    result += "{";
+    std::string comma = "";
+    for(auto& value : vec){
+        result += comma;
+        result += "\"";
+        result += value;
+        result += "\"";
+        comma = ", ";
+    }
+    result += "};";
+
+    return result;
+}
+
+void generate(task& t, const std::vector<std::string>& actions){
     std::ofstream out_stream(".dbn.cpp");
 
     out_stream << "#include <memory>\n";
@@ -220,6 +244,8 @@ void generate(task& t){
     out_stream << datasource_to_string("pt", t.pretraining) << "\n";
     out_stream << datasource_to_string("fts", t.samples) << "\n";
     out_stream << datasource_to_string("ftl", t.labels) << "\n";
+    out_stream << vector_to_string("actions", actions) << "\n";
+    out_stream << "   dll::processor::execute(*dbn, pt, fts, ftl, actions);\n";
     out_stream << "}\n";
 }
 
