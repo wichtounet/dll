@@ -16,6 +16,8 @@
 
 #include "dll/dbn.hpp"
 
+#include "mnist/mnist_reader.hpp"
+
 namespace dll {
 
 namespace processor {
@@ -24,32 +26,74 @@ struct datasource {
     std::string source_file;
     std::string reader;
 
+    bool binarize = false;
+    bool normalize = false;
+
     datasource(){}
     datasource(std::string source_file, std::string reader) : source_file(source_file), reader(reader) {}
+
+    bool empty() const {
+        return source_file.empty();
+    }
 };
 
-using datasource_p = const std::unique_ptr<datasource>;
+struct pretraining_desc {
+    std::size_t epochs = 25;
+};
+
+struct task {
+    dll::processor::datasource pretraining;
+    dll::processor::datasource samples;
+    dll::processor::datasource labels;
+
+    dll::processor::pretraining_desc pt_desc;
+};
+
+template<typename Sample>
+bool read_samples(const datasource& ds, std::vector<Sample>& samples){
+    if(ds.reader == "mnist"){
+        mnist::read_mnist_image_file<std::vector, Sample>(samples, ds.source_file, 0, []{ return Sample(1 * 28 * 28); });
+
+        return !samples.empty();
+    } else {
+        std::cout << "dllp: error: unknown reader: " << ds.reader << std::endl;
+        return false;
+    }
+}
 
 template<typename DBN>
-void execute(DBN& dbn, datasource_p& pt, datasource_p& fts, datasource_p& ftl, const std::vector<std::string>& actions){
+void execute(DBN& dbn, task& task, const std::vector<std::string>& actions){
     std::cout << "Configured network:" << std::endl;
     dbn.display();
+
+    using dbn_t = std::decay_t<DBN>;
 
     //Execute all the actions sequentially
     for(auto& action : actions){
         if(action == "pretrain"){
-            if(!pt){
+            if(task.pretraining.empty()){
                 std::cout << "dllp: error: pretrain is not possible with a pretraining input" << std::endl;
                 return;
             }
+
+            std::vector<typename dbn_t::input_t> pt_samples;
+
+            //Try to read the samples
+            if(!read_samples(task.pretraining, pt_samples)){
+                std::cout << "dllp: error: failed to read the pretraining samples" << std::endl;
+                return;
+            }
+
+            //Pretrain the network
+            dbn.pretrain(pt_samples.begin(), pt_samples.end(), task.pt_desc.epochs);
         } else if(action == "train"){
-            if(!fts || !ftl){
+            if(task.samples.empty() || task.labels.empty()){
                 std::cout << "dllp: error: train is not possible without samples and labels" << std::endl;
                 return;
             }
 
         } else if(action == "test"){
-            if(!fts || !ftl){
+            if(task.samples.empty() || task.labels.empty()){
                 std::cout << "dllp: error: test is not possible without samples and labels" << std::endl;
                 return;
             }

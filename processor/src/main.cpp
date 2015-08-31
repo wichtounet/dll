@@ -31,14 +31,6 @@ struct rbm_layer : layer {
     }
 };
 
-struct task {
-    dll::processor::datasource pretraining;
-    dll::processor::datasource samples;
-    dll::processor::datasource labels;
-
-    std::vector<std::shared_ptr<layer>> layers;
-};
-
 void print_usage(){
     std::cout << "Usage: dllp conf_file action" << std::endl;
 }
@@ -75,7 +67,7 @@ dll::processor::datasource parse_datasource(const std::vector<std::string>& line
     return source;
 }
 
-void generate(task& t, const std::vector<std::string>& actions);
+void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, dll::processor::task& t, const std::vector<std::string>& actions);
 void compile(const char* cxx);
 
 } //end of dllp namespace
@@ -111,7 +103,9 @@ int main(int argc, char* argv[]){
         lines.push_back(cpp::trim(current_line));
     }
 
-    dllp::task t;
+    dll::processor::task t;
+
+    std::vector<std::shared_ptr<dllp::layer>> layers;
 
     for(std::size_t i = 0; i < lines.size();){
         auto& current_line = lines[i];
@@ -159,24 +153,40 @@ int main(int argc, char* argv[]){
                 }
             }
 
-            t.layers.push_back(std::move(rbm));
+            layers.push_back(std::move(rbm));
+        } else if(current_line == "pretraining:"){
+            ++i;
+
+            while(i < lines.size()){
+                if(dllp::starts_with(lines[i], "epochs:")){
+                    t.pt_desc.epochs = std::stol(dllp::extract_value(lines[i], "epochs: "));
+                    ++i;
+                } else {
+                    break;
+                }
+            }
+        } else if(current_line.empty()) {
+            ++i;
         } else {
-            std::cout << "dllp: error: Invalid line: " << current_line << std::endl;
+            std::cout << "dllp: error: invalid line: " << current_line << std::endl;
 
             return 1;
         }
     }
 
     //Generate the CPP file
-    dllp::generate(t, actions);
+    dllp::generate(layers, t, actions);
 
     //Compile the generate file
     dllp::compile(cxx);
 
-    //Run the generate program
-    int exec_result = system("./.dbn.out");
+    //Run the generated program
 
-    if(exec_result){
+    std::cout << "Executing the program" << std::endl;
+
+    auto exec_result = system("./dbn.out");
+
+    if(exex_result){
         std::cout << "Impossible to execute the generated file" << std::endl;
         return exec_result;
     }
@@ -186,16 +196,40 @@ int main(int argc, char* argv[]){
 
 namespace dllp {
 
-std::string datasource_to_string(const std::string& name, const dll::processor::datasource& ds){
+struct datasource {
+    std::string source_file;
+    std::string reader;
+
+    bool binarize = false;
+    bool normalize = false;
+};
+
+std::string datasource_to_string(const std::string& lhs, const dll::processor::datasource& ds){
     std::string result;
 
-    result += "   auto ";
+    result += lhs + ".source_file = \"" + ds.source_file + "\";";
+    result += lhs + ".reader = \"" + ds.reader + "\";";
+    result += lhs + ".binarize = \"" + (ds.binarize ? "true" : "false") + "\";";
+    result += lhs + ".normalize = \"" + (ds.normalize ? "true" : "false") + "\";";
+
+    return result;
+}
+
+std::string task_to_string(const std::string& name, const dll::processor::task& t){
+    std::string result;
+
+    result += "   dll::processor::task ";
     result += name;
-    result += " = std::make_unique<dll::processor::datasource>(\"";
-    result += ds.source_file;
-    result += "\", \"";
-    result += ds.reader;
-    result += "\");";
+    result += ";";
+    result += datasource_to_string(name + ".pretraining", t.pretraining);
+    result += "\n";
+    result += datasource_to_string(name + ".samples", t.samples);
+    result += "\n";
+    result += datasource_to_string(name + ".labels", t.labels);
+    result += "\n";
+
+    //TODO Generalize that
+    result += name + ".pt_desc.epochs = " + std::to_string(t.pt_desc.epochs) + ";";
 
     return result;
 }
@@ -219,7 +253,7 @@ std::string vector_to_string(const std::string& name, const std::vector<std::str
     return result;
 }
 
-void generate(task& t, const std::vector<std::string>& actions){
+void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, dll::processor::task& t, const std::vector<std::string>& actions){
     std::ofstream out_stream(".dbn.cpp");
 
     out_stream << "#include <memory>\n";
@@ -231,7 +265,7 @@ void generate(task& t, const std::vector<std::string>& actions){
 
     std::string comma = "  ";
 
-    for(auto& layer : t.layers){
+    for(auto& layer : layers){
         out_stream << comma;
         layer->print(out_stream);
         comma = "\n, ";
@@ -241,27 +275,28 @@ void generate(task& t, const std::vector<std::string>& actions){
 
     out_stream << "int main(int argc, char* argv[]){\n";
     out_stream << "   auto dbn = std::make_unique<dbn_t>();\n";
-    out_stream << datasource_to_string("pt", t.pretraining) << "\n";
-    out_stream << datasource_to_string("fts", t.samples) << "\n";
-    out_stream << datasource_to_string("ftl", t.labels) << "\n";
+    out_stream << task_to_string("t", t) << "\n";
     out_stream << vector_to_string("actions", actions) << "\n";
-    out_stream << "   dll::processor::execute(*dbn, pt, fts, ftl, actions);\n";
+    out_stream << "   dll::processor::execute(*dbn, t, actions);\n";
     out_stream << "}\n";
 }
 
 void compile(const char* cxx){
+    std::cout << "Compiling the program..." << std::endl;
+
     std::string compile_command(cxx);
 
     compile_command += " -o .dbn.out ";
     compile_command += " -std=c++1y ";
     compile_command += " -pthread ";
-    compile_command += " -I/usr/include/dll/ ";
     compile_command += " .dbn.cpp ";
 
     int compile_result = system(compile_command.c_str());
 
     if(compile_result){
         std::cout << "Compilation failed" << std::endl;
+    } else {
+        std::cout << "... done" << std::endl;
     }
 }
 
