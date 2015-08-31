@@ -184,7 +184,7 @@ namespace dllp {
 std::string datasource_to_string(const std::string& name, const dll::processor::datasource& ds){
     std::string result;
 
-    result += "auto ";
+    result += "   auto ";
     result += name;
     result += " = std::make_unique<dll::processor::datasource>(\"";
     result += ds.source_file;
@@ -218,6 +218,8 @@ void generate(task& t){
     out_stream << "int main(int argc, char* argv[]){\n";
     out_stream << "   auto dbn = std::make_unique<dbn_t>();\n";
     out_stream << datasource_to_string("pt", t.pretraining) << "\n";
+    out_stream << datasource_to_string("fts", t.samples) << "\n";
+    out_stream << datasource_to_string("ftl", t.labels) << "\n";
     out_stream << "}\n";
 }
 
