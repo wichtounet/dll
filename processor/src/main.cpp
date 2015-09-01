@@ -27,12 +27,42 @@ struct layer {
     virtual void print(std::ostream& out) = 0;
 };
 
+std::string unit_type(const std::string& unit){
+    if(unit == "binary"){
+        return "BINARY";
+    } else if(unit == "softmax"){
+        return "SOFTMAX";
+    } else if(unit == "gaussian"){
+        return "GAUSSIAN";
+    } else {
+        return "INVALID";
+    }
+}
+
+bool valid_unit(const std::string& unit){
+    return unit == "binary" || unit == "softmax" || unit == "gaussian";
+}
+
 struct rbm_layer : layer {
     std::size_t visible = 0;
     std::size_t hidden = 0;
 
+    std::string visible_unit;
+    std::string hidden_unit;
+
+
     void print(std::ostream& out) override {
-        out << "dll::rbm_desc<" << visible << ", " << hidden << ">::rbm_t";
+        out << "dll::rbm_desc<" << visible << ", " << hidden;
+
+        if(!visible_unit.empty()){
+            out << ", dll::visible<dll::unit_type::" << unit_type(visible_unit) << ">";
+        }
+
+        if(!hidden_unit.empty()){
+            out << ", dll::hidden<dll::unit_type::" << unit_type(hidden_unit) << ">";
+        }
+
+        out << ">::rbm_t";
     }
 };
 
@@ -178,6 +208,22 @@ int main(int argc, char* argv[]){
                 } else if(dllp::starts_with(lines[i], "hidden:")){
                     rbm->hidden = std::stol(dllp::extract_value(lines[i], "hidden: "));
                     ++i;
+                } else if(dllp::starts_with(lines[i], "hidden_unit:")){
+                    rbm->hidden_unit = dllp::extract_value(lines[i], "hidden_unit: ");
+                    ++i;
+
+                    if(!dllp::valid_unit(rbm->hidden_unit)){
+                        std::cout << "dllp: error: invalid hidden unit type must be one of [binary, softmax, gaussian]" << std::endl;
+                        return 1;
+                    }
+                } else if(dllp::starts_with(lines[i], "visible_unit:")){
+                    rbm->visible_unit = dllp::extract_value(lines[i], "visible_unit: ");
+                    ++i;
+
+                    if(!dllp::valid_unit(rbm->visible_unit)){
+                        std::cout << "dllp: error: invalid visible unit type must be one of [binary, softmax, gaussian]" << std::endl;
+                        return 1;
+                    }
                 } else {
                     break;
                 }
@@ -190,6 +236,17 @@ int main(int argc, char* argv[]){
             while(i < lines.size()){
                 if(dllp::starts_with(lines[i], "epochs:")){
                     t.pt_desc.epochs = std::stol(dllp::extract_value(lines[i], "epochs: "));
+                    ++i;
+                } else {
+                    break;
+                }
+            }
+        } else if(current_line == "training:"){
+            ++i;
+
+            while(i < lines.size()){
+                if(dllp::starts_with(lines[i], "epochs:")){
+                    t.ft_desc.epochs = std::stol(dllp::extract_value(lines[i], "epochs: "));
                     ++i;
                 } else {
                     break;
@@ -248,6 +305,14 @@ std::string pt_desc_to_string(const std::string& lhs, const dll::processor::pret
     return result;
 }
 
+std::string ft_desc_to_string(const std::string& lhs, const dll::processor::training_desc& desc){
+    std::string result;
+
+    result += lhs + ".epochs = " + std::to_string(desc.epochs) + ";";
+
+    return result;
+}
+
 std::string task_to_string(const std::string& name, const dll::processor::task& t){
     std::string result;
 
@@ -261,6 +326,8 @@ std::string task_to_string(const std::string& name, const dll::processor::task& 
     result += datasource_to_string(name + ".labels", t.labels);
     result += "\n";
     result += pt_desc_to_string(name + ".pt_desc", t.pt_desc);
+    result += "\n";
+    result += ft_desc_to_string(name + ".ft_desc", t.ft_desc);
     result += "\n";
 
     return result;

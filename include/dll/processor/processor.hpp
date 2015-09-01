@@ -44,12 +44,17 @@ struct pretraining_desc {
     std::size_t epochs = 25;
 };
 
+struct training_desc {
+    std::size_t epochs = 25;
+};
+
 struct task {
     dll::processor::datasource pretraining;
     dll::processor::datasource samples;
     dll::processor::datasource labels;
 
     dll::processor::pretraining_desc pt_desc;
+    dll::processor::training_desc ft_desc;
 };
 
 template<typename Sample>
@@ -73,7 +78,25 @@ bool read_samples(const datasource& ds, std::vector<Sample>& samples){
 
         return !samples.empty();
     } else {
-        std::cout << "dllp: error: unknown reader: " << ds.reader << std::endl;
+        std::cout << "dllp: error: unknown samples reader: " << ds.reader << std::endl;
+        return false;
+    }
+}
+
+template<typename Label>
+bool read_labels(const datasource& ds, std::vector<Label>& labels){
+    if(ds.reader == "mnist"){
+        std::size_t limit = 0;
+
+        if(ds.limit > 0){
+            limit = ds.limit;
+        }
+
+        mnist::read_mnist_label_file<std::vector, Label>(labels, ds.source_file, limit);
+
+        return !labels.empty();
+    } else {
+        std::cout << "dllp: error: unknown labels reader: " << ds.reader << std::endl;
         return false;
     }
 }
@@ -106,6 +129,21 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions){
         } else if(action == "train"){
             if(task.samples.empty() || task.labels.empty()){
                 std::cout << "dllp: error: train is not possible without samples and labels" << std::endl;
+                return;
+            }
+
+            std::vector<typename dbn_t::input_t> ft_samples;
+            std::vector<std::size_t> ft_labels;
+
+            //Try to read the samples
+            if(!read_samples(task.samples, ft_samples)){
+                std::cout << "dllp: error: failed to read the training samples" << std::endl;
+                return;
+            }
+
+            //Try to read the labels
+            if(!read_labels(task.labels, ft_labels)){
+                std::cout << "dllp: error: failed to read the training labels" << std::endl;
                 return;
             }
 
