@@ -17,6 +17,7 @@
 #include "dll/dbn.hpp"
 
 #include "mnist/mnist_reader.hpp"
+#include "mnist/mnist_utils.hpp"
 
 namespace dll {
 
@@ -28,6 +29,8 @@ struct datasource {
 
     bool binarize = false;
     bool normalize = false;
+
+    long limit = -1;
 
     datasource(){}
     datasource(std::string source_file, std::string reader) : source_file(source_file), reader(reader) {}
@@ -52,7 +55,21 @@ struct task {
 template<typename Sample>
 bool read_samples(const datasource& ds, std::vector<Sample>& samples){
     if(ds.reader == "mnist"){
-        mnist::read_mnist_image_file<std::vector, Sample>(samples, ds.source_file, 0, []{ return Sample(1 * 28 * 28); });
+        std::size_t limit = 0;
+
+        if(ds.limit > 0){
+            limit = ds.limit;
+        }
+
+        mnist::read_mnist_image_file<std::vector, Sample>(samples, ds.source_file, limit, []{ return Sample(1 * 28 * 28); });
+
+        if(ds.binarize){
+            mnist::binarize_each(samples);
+        }
+
+        if(ds.normalize){
+            mnist::normalize_each(samples);
+        }
 
         return !samples.empty();
     } else {

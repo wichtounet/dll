@@ -18,6 +18,11 @@
 
 namespace dllp {
 
+struct options {
+    bool mkl = false;
+    bool cache = false;
+};
+
 struct layer {
     virtual void print(std::ostream& out) = 0;
 };
@@ -55,6 +60,15 @@ dll::processor::datasource parse_datasource(const std::vector<std::string>& line
         } else if(starts_with(lines[i], "reader: ")){
             source.reader = extract_value(lines[i], "reader: ");
             ++i;
+        } else if(starts_with(lines[i], "binarize: ")){
+            source.binarize = extract_value(lines[i], "binarize: ") == "true" ? true : false;
+            ++i;
+        } else if(starts_with(lines[i], "normalize: ")){
+            source.normalize = extract_value(lines[i], "normalize: ") == "true" ? true : false;
+            ++i;
+        } else if(starts_with(lines[i], "limit: ")){
+            source.limit = std::stol(extract_value(lines[i], "limit: "));
+            ++i;
         } else {
             break;
         }
@@ -68,7 +82,7 @@ dll::processor::datasource parse_datasource(const std::vector<std::string>& line
 }
 
 void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, dll::processor::task& t, const std::vector<std::string>& actions);
-void compile(const char* cxx);
+bool compile(const char* cxx, const options& opt);
 
 } //end of dllp namespace
 
@@ -86,11 +100,27 @@ int main(int argc, char* argv[]){
         return 2;
     }
 
-    std::string source_file(argv[1]);
+    dllp::options opt;
+
+    std::size_t i = 1;
+
+    while(true){
+        if(std::string(argv[i]) == "--mkl"){
+            opt.mkl = true;
+            ++i;
+        } else if(std::string(argv[i]) == "--cache"){
+            opt.cache = true;
+            ++i;
+        } else {
+            break;
+        }
+    }
+
+    std::string source_file(argv[i++]);
 
     std::vector<std::string> actions;
 
-    for(int i = 2; i < argc; ++i){
+    for(; i < std::size_t(argc); ++i){
         actions.emplace_back(argv[i]);
     }
 
@@ -178,15 +208,17 @@ int main(int argc, char* argv[]){
     dllp::generate(layers, t, actions);
 
     //Compile the generate file
-    dllp::compile(cxx);
+    if(!dllp::compile(cxx, opt)){
+        return 1;
+    }
 
     //Run the generated program
 
     std::cout << "Executing the program" << std::endl;
 
-    auto exec_result = system("./dbn.out");
+    auto exec_result = system("./.dbn.out");
 
-    if(exex_result){
+    if(exec_result){
         std::cout << "Impossible to execute the generated file" << std::endl;
         return exec_result;
     }
@@ -196,21 +228,22 @@ int main(int argc, char* argv[]){
 
 namespace dllp {
 
-struct datasource {
-    std::string source_file;
-    std::string reader;
-
-    bool binarize = false;
-    bool normalize = false;
-};
-
 std::string datasource_to_string(const std::string& lhs, const dll::processor::datasource& ds){
     std::string result;
 
-    result += lhs + ".source_file = \"" + ds.source_file + "\";";
-    result += lhs + ".reader = \"" + ds.reader + "\";";
-    result += lhs + ".binarize = \"" + (ds.binarize ? "true" : "false") + "\";";
-    result += lhs + ".normalize = \"" + (ds.normalize ? "true" : "false") + "\";";
+    result += lhs + ".source_file = \"" + ds.source_file + "\";\n";
+    result += lhs + ".reader = \"" + ds.reader + "\";\n";
+    result += lhs + ".binarize = " + (ds.binarize ? "true" : "false") + ";\n";
+    result += lhs + ".normalize = " + (ds.normalize ? "true" : "false") + ";\n";
+    result += lhs + ".limit = " + std::to_string(ds.limit) + ";\n";
+
+    return result;
+}
+
+std::string pt_desc_to_string(const std::string& lhs, const dll::processor::pretraining_desc& desc){
+    std::string result;
+
+    result += lhs + ".epochs = " + std::to_string(desc.epochs) + ";";
 
     return result;
 }
@@ -220,16 +253,15 @@ std::string task_to_string(const std::string& name, const dll::processor::task& 
 
     result += "   dll::processor::task ";
     result += name;
-    result += ";";
+    result += ";\n";
     result += datasource_to_string(name + ".pretraining", t.pretraining);
     result += "\n";
     result += datasource_to_string(name + ".samples", t.samples);
     result += "\n";
     result += datasource_to_string(name + ".labels", t.labels);
     result += "\n";
-
-    //TODO Generalize that
-    result += name + ".pt_desc.epochs = " + std::to_string(t.pt_desc.epochs) + ";";
+    result += pt_desc_to_string(name + ".pt_desc", t.pt_desc);
+    result += "\n";
 
     return result;
 }
@@ -261,8 +293,6 @@ void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, dll::proc
 
     out_stream << "using dbn_t = dll::dbn_desc<dll::dbn_layers<\n";
 
-    //TODO
-
     std::string comma = "  ";
 
     for(auto& layer : layers){
@@ -281,22 +311,77 @@ void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, dll::proc
     out_stream << "}\n";
 }
 
-void compile(const char* cxx){
+std::string command_result(const std::string& command) {
+    std::stringstream output;
+
+    char buffer[1024];
+
+    FILE* stream = popen(command.c_str(), "r");
+
+    if(!stream){
+        return {};
+    }
+
+    while (fgets(buffer, 1024, stream) != NULL) {
+        output << buffer;
+    }
+
+    if(pclose(stream)){
+        return {};
+    }
+
+    std::string out(output.str());
+
+    if(out[out.size() - 1] == '\n'){
+        return {out.begin(), out.end() - 1};
+    }
+
+    return out;
+}
+
+bool compile(const char* cxx, const options& opt){
     std::cout << "Compiling the program..." << std::endl;
 
     std::string compile_command(cxx);
 
     compile_command += " -o .dbn.out ";
+    compile_command += " -g ";
+    compile_command += " -O2 -DETL_VECTORIZE_FULL ";
     compile_command += " -std=c++1y ";
     compile_command += " -pthread ";
     compile_command += " .dbn.cpp ";
+
+    if(opt.mkl){
+        compile_command += " -DETL_MKL_MODE ";
+
+        auto cflags = command_result("pkg-config --cflags mkl");
+
+        if(cflags.empty()){
+            std::cout << "Failed to get compilation flags for MKL" << std::endl;
+            std::cout << "   `pkg-config --cflags mkl` should return the compilation for MKL" << std::endl;
+            return false;
+        }
+
+        auto ldflags = command_result("pkg-config --libs mkl");
+
+        if(ldflags.empty()){
+            std::cout << "Failed to get linking flags for MKL" << std::endl;
+            std::cout << "   `pkg-config --libs mkl` should return the linking for MKL" << std::endl;
+            return false;
+        }
+
+        compile_command += " " + cflags + " ";
+        compile_command += " " + ldflags + " ";
+    }
 
     int compile_result = system(compile_command.c_str());
 
     if(compile_result){
         std::cout << "Compilation failed" << std::endl;
+        return false;
     } else {
         std::cout << "... done" << std::endl;
+        return true;
     }
 }
 
