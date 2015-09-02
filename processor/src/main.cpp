@@ -111,6 +111,18 @@ dll::processor::datasource parse_datasource(const std::vector<std::string>& line
     return source;
 }
 
+void parse_datasource_pack(dll::processor::datasource_pack& pack, const std::vector<std::string>& lines, std::size_t& i){
+    while(i < lines.size()){
+        if(starts_with(lines[i], "samples:")){
+            pack.samples = parse_datasource(lines, ++i);
+        } else if(starts_with(lines[i], "labels:")){
+            pack.labels = parse_datasource(lines, ++i);
+        } else {
+            break;
+        }
+    }
+}
+
 void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, dll::processor::task& t, const std::vector<std::string>& actions);
 bool compile(const char* cxx, const options& opt);
 
@@ -160,7 +172,11 @@ int main(int argc, char* argv[]){
     std::vector<std::string> lines;
 
     while(std::getline(source_stream, current_line)) {
-        lines.push_back(cpp::trim(current_line));
+        std::string processed(cpp::trim(current_line));
+
+        if(!processed.empty()){
+            lines.emplace_back(std::move(processed));
+        }
     }
 
     dll::processor::task t;
@@ -170,22 +186,16 @@ int main(int argc, char* argv[]){
     for(std::size_t i = 0; i < lines.size();){
         auto& current_line = lines[i];
 
-        if(current_line == "input:"){
+        if(current_line == "data:"){
             ++i;
-
-            if(i == lines.size()){
-                std::cout << "dllp: error: input expect at least one child" << std::endl;
-
-                return 1;
-            }
 
             while(i < lines.size()){
                 if(lines[i] == "pretraining:"){
-                    t.pretraining = dllp::parse_datasource(lines, ++i);
-                } else if(lines[i] == "samples:"){
-                    t.samples = dllp::parse_datasource(lines, ++i);
-                } else if(lines[i] == "labels:"){
-                    t.labels = dllp::parse_datasource(lines, ++i);
+                    dllp::parse_datasource_pack(t.pretraining, lines, ++i);
+                } else if(lines[i] == "training:"){
+                    dllp::parse_datasource_pack(t.training, lines, ++i);
+                } else if(lines[i] == "testing:"){
+                    dllp::parse_datasource_pack(t.testing, lines, ++i);
                 } else {
                     break;
                 }
@@ -248,14 +258,18 @@ int main(int argc, char* argv[]){
                 if(dllp::starts_with(lines[i], "epochs:")){
                     t.ft_desc.epochs = std::stol(dllp::extract_value(lines[i], "epochs: "));
                     ++i;
+                } else if(dllp::starts_with(lines[i], "learning_rate:")){
+                    t.ft_desc.learning_rate = std::stod(dllp::extract_value(lines[i], "learning_rate: "));
+                    ++i;
+                } else if(dllp::starts_with(lines[i], "momentum:")){
+                    t.ft_desc.momentum = std::stod(dllp::extract_value(lines[i], "momentum: "));
+                    ++i;
                 } else {
                     break;
                 }
             }
-        } else if(current_line.empty()) {
-            ++i;
         } else {
-            std::cout << "dllp: error: invalid line: " << current_line << std::endl;
+            std::cout << "dllp: error: invalid line: " << i << ":" << current_line << std::endl;
 
             return 1;
         }
@@ -319,11 +333,15 @@ std::string task_to_string(const std::string& name, const dll::processor::task& 
     result += "   dll::processor::task ";
     result += name;
     result += ";\n";
-    result += datasource_to_string(name + ".pretraining", t.pretraining);
+    result += datasource_to_string(name + ".pretraining.samples", t.pretraining.samples);
     result += "\n";
-    result += datasource_to_string(name + ".samples", t.samples);
+    result += datasource_to_string(name + ".training.samples", t.training.samples);
     result += "\n";
-    result += datasource_to_string(name + ".labels", t.labels);
+    result += datasource_to_string(name + ".training.labels", t.training.labels);
+    result += "\n";
+    result += datasource_to_string(name + ".testing.samples", t.testing.samples);
+    result += "\n";
+    result += datasource_to_string(name + ".testing.labels", t.testing.labels);
     result += "\n";
     result += pt_desc_to_string(name + ".pt_desc", t.pt_desc);
     result += "\n";
@@ -356,7 +374,8 @@ void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, dll::proc
     std::ofstream out_stream(".dbn.cpp");
 
     out_stream << "#include <memory>\n";
-    out_stream << "#include \"dll/processor/processor.hpp\"\n\n";
+    out_stream << "#include \"dll/processor/processor.hpp\"\n";
+    out_stream << "#include \"dll/dense_stochastic_gradient_descent.hpp\"\n\n";
 
     out_stream << "using dbn_t = dll::dbn_desc<dll::dbn_layers<\n";
 
@@ -368,7 +387,15 @@ void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, dll::proc
         comma = "\n, ";
     }
 
-    out_stream << "\n>>::dbn_t;\n\n";
+    out_stream << "\n>";
+
+    out_stream << ", dll::trainer<dll::dense_sgd_trainer>\n";
+
+    if(t.ft_desc.momentum != -666.0){
+        out_stream << ", dll::momentum\n";
+    }
+
+    out_stream << ">::dbn_t;\n\n";
 
     out_stream << "int main(int argc, char* argv[]){\n";
     out_stream << "   auto dbn = std::make_unique<dbn_t>();\n";
