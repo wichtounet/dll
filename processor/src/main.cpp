@@ -50,7 +50,6 @@ struct rbm_layer : layer {
     std::string visible_unit;
     std::string hidden_unit;
 
-
     void print(std::ostream& out) override {
         out << "dll::rbm_desc<" << visible << ", " << hidden;
 
@@ -268,6 +267,17 @@ int main(int argc, char* argv[]){
                     break;
                 }
             }
+        } else if(current_line == "weights:"){
+            ++i;
+
+            while(i < lines.size()){
+                if(dllp::starts_with(lines[i], "file:")){
+                    t.w_desc.file = dllp::extract_value(lines[i], "file: ");
+                    ++i;
+                } else {
+                    break;
+                }
+            }
         } else {
             std::cout << "dllp: error: invalid line: " << i << ":" << current_line << std::endl;
 
@@ -327,6 +337,14 @@ std::string ft_desc_to_string(const std::string& lhs, const dll::processor::trai
     return result;
 }
 
+std::string w_desc_to_string(const std::string& lhs, const dll::processor::weights_desc& desc){
+    std::string result;
+
+    result += lhs + ".file = \"" + desc.file + "\";";
+
+    return result;
+}
+
 std::string task_to_string(const std::string& name, const dll::processor::task& t){
     std::string result;
 
@@ -346,6 +364,8 @@ std::string task_to_string(const std::string& name, const dll::processor::task& 
     result += pt_desc_to_string(name + ".pt_desc", t.pt_desc);
     result += "\n";
     result += ft_desc_to_string(name + ".ft_desc", t.ft_desc);
+    result += "\n";
+    result += w_desc_to_string(name + ".w_desc", t.w_desc);
     result += "\n";
 
     return result;

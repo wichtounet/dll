@@ -57,6 +57,10 @@ struct training_desc {
     double momentum = -666.0;
 };
 
+struct weights_desc {
+    std::string file = "weights.dat";
+};
+
 struct task {
     dll::processor::datasource_pack pretraining;
     dll::processor::datasource_pack training;
@@ -64,6 +68,7 @@ struct task {
 
     dll::processor::pretraining_desc pt_desc;
     dll::processor::training_desc ft_desc;
+    dll::processor::weights_desc w_desc;
 };
 
 template<typename Sample>
@@ -257,6 +262,16 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions){
                 std::cout << std::endl;
             }
             std::cout << std::endl;
+        } else if(action == "save"){
+            print_title("Save Weights");
+
+            dbn.store(task.w_desc.file);
+            std::cout << "Weights saved" << std::endl;
+        } else if(action == "load"){
+            print_title("Load Weights");
+
+            dbn.load(task.w_desc.file);
+            std::cout << "Weights loaded" << std::endl;
         } else {
             std::cout << "dllp: error: Invalid action: " << action << std::endl;
         }
