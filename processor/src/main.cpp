@@ -421,8 +421,6 @@ std::string ft_desc_to_string(const std::string& lhs, const dll::processor::trai
     std::string result;
 
     result += lhs + ".epochs = " + std::to_string(desc.epochs) + ";";
-    result += lhs + ".learning_rate = " + std::to_string(desc.learning_rate) + ";";
-    result += lhs + ".momentum = " + std::to_string(desc.momentum) + ";";
 
     return result;
 }
@@ -509,6 +507,15 @@ void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, dll::proc
 
     out_stream << "int main(int argc, char* argv[]){\n";
     out_stream << "   auto dbn = std::make_unique<dbn_t>();\n";
+
+    if(t.ft_desc.learning_rate != dll::processor::stupid_default){
+        out_stream << "   dbn->learning_rate = " << t.ft_desc.learning_rate << ";\n";
+    }
+
+    if(t.ft_desc.momentum != dll::processor::stupid_default){
+        out_stream << "   dbn->initial_momentum = " << t.ft_desc.momentum << ";\n";
+        out_stream << "   dbn->final_momentum = " << t.ft_desc.momentum << ";\n";
+    }
 
     for(std::size_t i = 0; i < layers.size(); ++i){
         auto& layer = layers[i];

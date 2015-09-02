@@ -55,7 +55,7 @@ struct pretraining_desc {
 
 struct training_desc {
     std::size_t epochs = 25;
-    double learning_rate = 0.1;
+    double learning_rate = stupid_default;
     double momentum = stupid_default;
 };
 
@@ -173,12 +173,6 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions){
             if(!read_labels(task.training.labels, ft_labels)){
                 std::cout << "dllp: error: failed to read the training labels" << std::endl;
                 return;
-            }
-
-            dbn.learning_rate = task.ft_desc.learning_rate;
-
-            if(task.ft_desc.momentum != stupid_default){
-                dbn.momentum = task.ft_desc.momentum;
             }
 
             //Train the network
