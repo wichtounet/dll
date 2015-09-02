@@ -326,6 +326,9 @@ int main(int argc, char* argv[]){
                         } else if(dllp::starts_with(lines[i], "momentum:")){
                             t.ft_desc.momentum = std::stod(dllp::extract_value(lines[i], "momentum: "));
                             ++i;
+                        } else if(dllp::starts_with(lines[i], "batch:")){
+                            t.ft_desc.batch_size = std::stol(dllp::extract_value(lines[i], "batch: "));
+                            ++i;
                         } else {
                             break;
                         }
@@ -501,6 +504,10 @@ void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, dll::proc
 
     if(t.ft_desc.momentum != dll::processor::stupid_default){
         out_stream << ", dll::momentum\n";
+    }
+
+    if(t.ft_desc.batch_size > 0){
+        out_stream << ", dll::batch_size<" << t.ft_desc.batch_size << ">\n";
     }
 
     out_stream << ">::dbn_t;\n\n";

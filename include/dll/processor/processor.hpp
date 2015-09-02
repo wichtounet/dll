@@ -57,6 +57,7 @@ struct training_desc {
     std::size_t epochs = 25;
     double learning_rate = stupid_default;
     double momentum = stupid_default;
+    std::size_t batch_size = 0;
 };
 
 struct weights_desc {
