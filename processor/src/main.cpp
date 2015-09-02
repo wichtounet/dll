@@ -199,81 +199,98 @@ int main(int argc, char* argv[]){
                     break;
                 }
             }
-        } else if(current_line == "rbm:"){
+        } else if(current_line == "network:"){
             ++i;
 
-            if(i == lines.size()){
-                std::cout << "dllp: error: rbm expect at least visible and hidden parameters" << std::endl;
-
-                return 1;
-            }
-
-            auto rbm = std::make_shared<dllp::rbm_layer>();
-
             while(i < lines.size()){
-                if(dllp::starts_with(lines[i], "visible:")){
-                    rbm->visible = std::stol(dllp::extract_value(lines[i], "visible: "));
-                    ++i;
-                } else if(dllp::starts_with(lines[i], "hidden:")){
-                    rbm->hidden = std::stol(dllp::extract_value(lines[i], "hidden: "));
-                    ++i;
-                } else if(dllp::starts_with(lines[i], "hidden_unit:")){
-                    rbm->hidden_unit = dllp::extract_value(lines[i], "hidden_unit: ");
+                if(lines[i] == "rbm:"){
                     ++i;
 
-                    if(!dllp::valid_unit(rbm->hidden_unit)){
-                        std::cout << "dllp: error: invalid hidden unit type must be one of [binary, softmax, gaussian]" << std::endl;
+                    if(i == lines.size()){
+                        std::cout << "dllp: error: rbm expect at least one option" << std::endl;
+
                         return 1;
                     }
-                } else if(dllp::starts_with(lines[i], "visible_unit:")){
-                    rbm->visible_unit = dllp::extract_value(lines[i], "visible_unit: ");
-                    ++i;
 
-                    if(!dllp::valid_unit(rbm->visible_unit)){
-                        std::cout << "dllp: error: invalid visible unit type must be one of [binary, softmax, gaussian]" << std::endl;
-                        return 1;
+                    auto rbm = std::make_shared<dllp::rbm_layer>();
+
+                    while(i < lines.size()){
+                        if(dllp::starts_with(lines[i], "visible:")){
+                            rbm->visible = std::stol(dllp::extract_value(lines[i], "visible: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "hidden:")){
+                            rbm->hidden = std::stol(dllp::extract_value(lines[i], "hidden: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "hidden_unit:")){
+                            rbm->hidden_unit = dllp::extract_value(lines[i], "hidden_unit: ");
+                            ++i;
+
+                            if(!dllp::valid_unit(rbm->hidden_unit)){
+                                std::cout << "dllp: error: invalid hidden unit type must be one of [binary, softmax, gaussian]" << std::endl;
+                                return 1;
+                            }
+                        } else if(dllp::starts_with(lines[i], "visible_unit:")){
+                            rbm->visible_unit = dllp::extract_value(lines[i], "visible_unit: ");
+                            ++i;
+
+                            if(!dllp::valid_unit(rbm->visible_unit)){
+                                std::cout << "dllp: error: invalid visible unit type must be one of [binary, softmax, gaussian]" << std::endl;
+                                return 1;
+                            }
+                        } else {
+                            break;
+                        }
                     }
+
+                    layers.push_back(std::move(rbm));
                 } else {
                     break;
                 }
             }
 
-            layers.push_back(std::move(rbm));
-        } else if(current_line == "pretraining:"){
+        } else if(current_line == "options:"){
             ++i;
 
             while(i < lines.size()){
-                if(dllp::starts_with(lines[i], "epochs:")){
-                    t.pt_desc.epochs = std::stol(dllp::extract_value(lines[i], "epochs: "));
+                if(lines[i] == "pretraining:"){
                     ++i;
-                } else {
-                    break;
-                }
-            }
-        } else if(current_line == "training:"){
-            ++i;
 
-            while(i < lines.size()){
-                if(dllp::starts_with(lines[i], "epochs:")){
-                    t.ft_desc.epochs = std::stol(dllp::extract_value(lines[i], "epochs: "));
+                    while(i < lines.size()){
+                        if(dllp::starts_with(lines[i], "epochs:")){
+                            t.pt_desc.epochs = std::stol(dllp::extract_value(lines[i], "epochs: "));
+                            ++i;
+                        } else {
+                            break;
+                        }
+                    }
+                } else if(lines[i] == "training:"){
                     ++i;
-                } else if(dllp::starts_with(lines[i], "learning_rate:")){
-                    t.ft_desc.learning_rate = std::stod(dllp::extract_value(lines[i], "learning_rate: "));
-                    ++i;
-                } else if(dllp::starts_with(lines[i], "momentum:")){
-                    t.ft_desc.momentum = std::stod(dllp::extract_value(lines[i], "momentum: "));
-                    ++i;
-                } else {
-                    break;
-                }
-            }
-        } else if(current_line == "weights:"){
-            ++i;
 
-            while(i < lines.size()){
-                if(dllp::starts_with(lines[i], "file:")){
-                    t.w_desc.file = dllp::extract_value(lines[i], "file: ");
+                    while(i < lines.size()){
+                        if(dllp::starts_with(lines[i], "epochs:")){
+                            t.ft_desc.epochs = std::stol(dllp::extract_value(lines[i], "epochs: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "learning_rate:")){
+                            t.ft_desc.learning_rate = std::stod(dllp::extract_value(lines[i], "learning_rate: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "momentum:")){
+                            t.ft_desc.momentum = std::stod(dllp::extract_value(lines[i], "momentum: "));
+                            ++i;
+                        } else {
+                            break;
+                        }
+                    }
+                } else if(lines[i] == "weights:"){
                     ++i;
+
+                    while(i < lines.size()){
+                        if(dllp::starts_with(lines[i], "file:")){
+                            t.w_desc.file = dllp::extract_value(lines[i], "file: ");
+                            ++i;
+                        } else {
+                            break;
+                        }
+                    }
                 } else {
                     break;
                 }
@@ -333,6 +350,8 @@ std::string ft_desc_to_string(const std::string& lhs, const dll::processor::trai
     std::string result;
 
     result += lhs + ".epochs = " + std::to_string(desc.epochs) + ";";
+    result += lhs + ".learning_rate = " + std::to_string(desc.learning_rate) + ";";
+    result += lhs + ".momentum = " + std::to_string(desc.momentum) + ";";
 
     return result;
 }
@@ -411,7 +430,7 @@ void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, dll::proc
 
     out_stream << ", dll::trainer<dll::dense_sgd_trainer>\n";
 
-    if(t.ft_desc.momentum != -666.0){
+    if(t.ft_desc.momentum != dll::processor::stupid_default){
         out_stream << ", dll::momentum\n";
     }
 

@@ -25,6 +25,8 @@ namespace dll {
 
 namespace processor {
 
+constexpr const double stupid_default = -666.0;
+
 struct datasource {
     std::string source_file;
     std::string reader;
@@ -54,7 +56,7 @@ struct pretraining_desc {
 struct training_desc {
     std::size_t epochs = 25;
     double learning_rate = 0.1;
-    double momentum = -666.0;
+    double momentum = stupid_default;
 };
 
 struct weights_desc {
@@ -175,7 +177,7 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions){
 
             dbn.learning_rate = task.ft_desc.learning_rate;
 
-            if(task.ft_desc.momentum != -666.0){
+            if(task.ft_desc.momentum != stupid_default){
                 dbn.momentum = task.ft_desc.momentum;
             }
 
