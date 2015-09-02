@@ -29,6 +29,8 @@ struct options {
 struct layer {
     virtual void print(std::ostream& out) const = 0;
     virtual std::size_t hidden_get() const = 0;
+
+    virtual void set(std::ostream& /*out*/, const std::string& /*lhs*/) const { /* Nothing */ };
 };
 
 std::string unit_type(const std::string& unit){
@@ -54,6 +56,10 @@ struct rbm_layer : layer {
     std::string visible_unit;
     std::string hidden_unit;
 
+    double learning_rate = dll::processor::stupid_default;
+    double momentum = dll::processor::stupid_default;
+    std::size_t batch_size = 0;
+
     void print(std::ostream& out) const override {
         out << "dll::rbm_desc<" << visible << ", " << hidden;
 
@@ -65,7 +71,26 @@ struct rbm_layer : layer {
             out << ", dll::hidden<dll::unit_type::" << unit_type(hidden_unit) << ">";
         }
 
+        if(batch_size > 0){
+            out << ", dll::batch_size<" << batch_size << ">";
+        }
+
+        if(momentum != dll::processor::stupid_default){
+            out << ", dll::momentum";
+        }
+
         out << ">::rbm_t";
+    }
+
+    virtual void set(std::ostream& out, const std::string& lhs) const override {
+        if(learning_rate != dll::processor::stupid_default){
+            out << lhs << ".learning_rate = " << learning_rate << ";\n";
+        }
+
+        if(momentum != dll::processor::stupid_default){
+            out << lhs << ".initial_momentum = " << momentum << ";\n";
+            out << lhs << ".final_momentum = " << momentum << ";\n";
+        }
     }
 
     std::size_t hidden_get() const override {
@@ -226,6 +251,15 @@ int main(int argc, char* argv[]){
                             ++i;
                         } else if(dllp::starts_with(lines[i], "hidden:")){
                             rbm->hidden = std::stol(dllp::extract_value(lines[i], "hidden: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "batch:")){
+                            rbm->batch_size = std::stol(dllp::extract_value(lines[i], "batch: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "momentum:")){
+                            rbm->momentum = std::stod(dllp::extract_value(lines[i], "momentum: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "learning_rate:")){
+                            rbm->learning_rate = std::stod(dllp::extract_value(lines[i], "learning_rate: "));
                             ++i;
                         } else if(dllp::starts_with(lines[i], "hidden_unit:")){
                             rbm->hidden_unit = dllp::extract_value(lines[i], "hidden_unit: ");
@@ -406,22 +440,22 @@ std::string task_to_string(const std::string& name, const dll::processor::task& 
 
     result += "   dll::processor::task ";
     result += name;
-    result += ";\n";
-    result += datasource_to_string(name + ".pretraining.samples", t.pretraining.samples);
+    result += ";\n\n";
+    result += datasource_to_string("   " + name + ".pretraining.samples", t.pretraining.samples);
     result += "\n";
-    result += datasource_to_string(name + ".training.samples", t.training.samples);
+    result += datasource_to_string("   " + name + ".training.samples", t.training.samples);
     result += "\n";
-    result += datasource_to_string(name + ".training.labels", t.training.labels);
+    result += datasource_to_string("   " + name + ".training.labels", t.training.labels);
     result += "\n";
-    result += datasource_to_string(name + ".testing.samples", t.testing.samples);
+    result += datasource_to_string("   " + name + ".testing.samples", t.testing.samples);
     result += "\n";
-    result += datasource_to_string(name + ".testing.labels", t.testing.labels);
+    result += datasource_to_string("   " + name + ".testing.labels", t.testing.labels);
     result += "\n";
-    result += pt_desc_to_string(name + ".pt_desc", t.pt_desc);
+    result += pt_desc_to_string("   " + name + ".pt_desc", t.pt_desc);
     result += "\n";
-    result += ft_desc_to_string(name + ".ft_desc", t.ft_desc);
+    result += ft_desc_to_string("   " + name + ".ft_desc", t.ft_desc);
     result += "\n";
-    result += w_desc_to_string(name + ".w_desc", t.w_desc);
+    result += w_desc_to_string("   " + name + ".w_desc", t.w_desc);
     result += "\n";
 
     return result;
@@ -475,6 +509,13 @@ void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, dll::proc
 
     out_stream << "int main(int argc, char* argv[]){\n";
     out_stream << "   auto dbn = std::make_unique<dbn_t>();\n";
+
+    for(std::size_t i = 0; i < layers.size(); ++i){
+        auto& layer = layers[i];
+
+        layer->set(out_stream, "   dbn->layer_get<" + std::to_string(i) + ">()");
+    }
+
     out_stream << task_to_string("t", t) << "\n";
     out_stream << vector_to_string("actions", actions) << "\n";
     out_stream << "   dll::processor::execute(*dbn, t, actions);\n";
@@ -556,4 +597,3 @@ bool compile(const char* cxx, const options& opt){
 }
 
 } //end of namespace dllp
-
