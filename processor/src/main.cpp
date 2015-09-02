@@ -215,6 +215,11 @@ int main(int argc, char* argv[]){
         }
     }
 
+    if(lines.empty()){
+        std::cout << "dllp: error: file does not exist or is empty" << std::endl;
+        return 1;
+    }
+
     dll::processor::task t;
 
     std::vector<std::shared_ptr<dllp::layer>> layers;
@@ -353,6 +358,11 @@ int main(int argc, char* argv[]){
 
             return 1;
         }
+    }
+
+    if(layers.empty()){
+        std::cout << "dllp: error: no layer has been declared" << std::endl;
+        return 1;
     }
 
     bool process = true;
