@@ -24,7 +24,8 @@ struct options {
 };
 
 struct layer {
-    virtual void print(std::ostream& out) = 0;
+    virtual void print(std::ostream& out) const = 0;
+    virtual std::size_t hidden_get() const = 0;
 };
 
 std::string unit_type(const std::string& unit){
@@ -50,7 +51,7 @@ struct rbm_layer : layer {
     std::string visible_unit;
     std::string hidden_unit;
 
-    void print(std::ostream& out) override {
+    void print(std::ostream& out) const override {
         out << "dll::rbm_desc<" << visible << ", " << hidden;
 
         if(!visible_unit.empty()){
@@ -62,6 +63,10 @@ struct rbm_layer : layer {
         }
 
         out << ">::rbm_t";
+    }
+
+    std::size_t hidden_get() const override {
+        return hidden;
     }
 };
 
@@ -95,9 +100,6 @@ dll::processor::datasource parse_datasource(const std::vector<std::string>& line
         } else if(starts_with(lines[i], "normalize: ")){
             source.normalize = extract_value(lines[i], "normalize: ") == "true" ? true : false;
             ++i;
-        } else if(starts_with(lines[i], "limit: ")){
-            source.limit = std::stol(extract_value(lines[i], "limit: "));
-            ++i;
         } else {
             break;
         }
@@ -111,15 +113,22 @@ dll::processor::datasource parse_datasource(const std::vector<std::string>& line
 }
 
 void parse_datasource_pack(dll::processor::datasource_pack& pack, const std::vector<std::string>& lines, std::size_t& i){
+    std::size_t limit = -1;
     while(i < lines.size()){
         if(starts_with(lines[i], "samples:")){
             pack.samples = parse_datasource(lines, ++i);
         } else if(starts_with(lines[i], "labels:")){
             pack.labels = parse_datasource(lines, ++i);
+        } else if(starts_with(lines[i], "limit:")){
+            limit = std::stol(extract_value(lines[i], "limit: "));
+            ++i;
         } else {
             break;
         }
     }
+
+    pack.samples.limit = limit;
+    pack.labels.limit = limit;
 }
 
 void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, dll::processor::task& t, const std::vector<std::string>& actions);
@@ -206,12 +215,6 @@ int main(int argc, char* argv[]){
                 if(lines[i] == "rbm:"){
                     ++i;
 
-                    if(i == lines.size()){
-                        std::cout << "dllp: error: rbm expect at least one option" << std::endl;
-
-                        return 1;
-                    }
-
                     auto rbm = std::make_shared<dllp::rbm_layer>();
 
                     while(i < lines.size()){
@@ -240,6 +243,16 @@ int main(int argc, char* argv[]){
                         } else {
                             break;
                         }
+                    }
+
+                    if(layers.empty() && (rbm->visible == 0 || rbm->hidden == 0)){
+                        std::cout << "dllp: error: The first layer needs visible and hidden sizes" << std::endl;
+                    } else if(!layers.empty() && rbm->hidden == 0){
+                        std::cout << "dllp: error: The number of hidden units is mandatory" << std::endl;
+                    }
+
+                    if(!layers.empty()){
+                        rbm->visible = layers.back()->hidden_get();
                     }
 
                     layers.push_back(std::move(rbm));
