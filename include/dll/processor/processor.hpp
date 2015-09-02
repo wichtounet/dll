@@ -229,14 +229,17 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions){
             std::cout << "Error rate: " << test_error << std::endl;
             std::cout << "Accuracy: " << (1.0 - test_error) << std::endl << std::endl;
 
-            std::cout << "Error rate per class" << std::endl;
+            std::cout << "Results per class" << std::endl;
 
             double overall = 0.0;
+
+            std::cout << "   | Accuracy | Error rate |" << std::endl;
 
             for(std::size_t l = 0; l < classes; ++l){
                 std::size_t total = etl::sum(conf(l));
                 double acc = (total - conf(l, l)) / double(total);
-                std::cout << l << " : " << acc << std::endl;
+                std::cout << std::setw(3) << l;
+                std::cout << "|" << std::setw(10) << (1.0 - acc) << "|" << std::setw(12) << acc << "|" << std::endl;
                 overall += acc;
             }
 
@@ -245,9 +248,9 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions){
             std::cout << "Overall Error rate: " << overall / classes << std::endl;
             std::cout << "Overall Accuracy: " << 1.0 - (overall / classes) << std::endl << std::endl;
 
-            std::cout << "Confusion Matrix" << std::endl << std::endl;
+            std::cout << "Confusion Matrix (%)" << std::endl << std::endl;
 
-            std::cout << "  ";
+            std::cout << "    ";
             for(std::size_t l = 0; l < classes; ++l){
                 std::cout << std::setw(5) << l << " ";
             }
@@ -255,7 +258,7 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions){
 
             for(std::size_t l = 0; l < classes; ++l){
                 std::size_t total = etl::sum(conf(l));
-                std::cout << l << "|";
+                std::cout << std::setw(3) << l << "|";
                 for(std::size_t p = 0; p < classes; ++p){
                     std::cout << std::setw(5) << std::setprecision(2) << 100.0 * (conf(l,p) / double(total)) << "|";
                 }
