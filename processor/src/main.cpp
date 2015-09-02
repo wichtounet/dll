@@ -12,6 +12,9 @@
 #include <memory>
 #include <cstdlib>
 
+#include <sys/stat.h>
+#include <sys/types.h>
+
 #include "cpp_utils/string.hpp"
 
 #include "dll/processor/processor.hpp"
@@ -315,12 +318,33 @@ int main(int argc, char* argv[]){
         }
     }
 
-    //Generate the CPP file
-    dllp::generate(layers, t, actions);
+    bool process = true;
 
-    //Compile the generate file
-    if(!dllp::compile(cxx, opt)){
-        return 1;
+    if(opt.cache){
+        struct stat attr_conf;
+        struct stat attr_exec;
+
+        if(!stat(source_file.c_str(), &attr_conf)){
+            if(!stat("./.dbn.out", &attr_exec)){
+                auto mtime_conf = attr_conf.st_mtime;
+                auto mtime_exec = attr_exec.st_mtime;
+
+                if(mtime_exec > mtime_conf){
+                    std::cout << "Skip compilation" << std::endl;
+                    process = false;
+                }
+            }
+        }
+    }
+
+    if(process){
+        //Generate the CPP file
+        dllp::generate(layers, t, actions);
+
+        //Compile the generate file
+        if(!dllp::compile(cxx, opt)){
+            return 1;
+        }
     }
 
     //Run the generated program
