@@ -278,7 +278,7 @@ struct sgd_trainer {
     //Backpropagate errors from pooling
     template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(decay_layer_traits<Layer2>::is_pooling_layer())>
     static void compute_errors(Layer1&, Context1& ctx1, Layer2&, Context2& ctx2){
-        constexpr const auto a_f = std::decay_t<Layer1>::activation_function;
+        constexpr const auto a_f = extract_function<Layer1>::activation_function;
 
         for(std::size_t i = 0; i < batch_size; ++i){
             ctx1.errors(i) = f_derivative<a_f>(ctx1.output(i)) >> upsample<Layer2>(ctx2.input(i), ctx2.output(i), ctx2.errors(i));
@@ -393,7 +393,7 @@ struct sgd_trainer {
 
     template<typename Layer, typename Context, typename Labels, cpp_enable_if(decay_layer_traits<Layer>::is_dense_layer())>
     void compute_last_errors(Layer& /*layer*/, Context& context, Labels& labels){
-        constexpr const auto last_a_f = std::decay_t<Layer>::activation_function;
+        constexpr const auto last_a_f = extract_function<Layer>::activation_function;
 
         context.errors = f_derivative<last_a_f>(context.output) >> (labels - context.output);
 
