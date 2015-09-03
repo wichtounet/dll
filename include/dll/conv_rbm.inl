@@ -133,12 +133,12 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     }
 
     template<bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename VCV>
-    void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& v_s, VCV&& v_cv) const {
+    void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& /*v_s*/, VCV&& v_cv) const {
         static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit), "Invalid hidden unit type");
         static_assert(P, "Computing S without P is not implemented");
 
-        validate_inputs(v_a, v_s);
-        validate_outputs(h_a, h_s);
+        validate_inputs<V1,V2>();
+        validate_outputs<H1,H2>();
 
         using namespace etl;
 
@@ -176,12 +176,12 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     }
 
     template<bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename HCV>
-    void activate_visible(const H1& h_a, const H2& h_s, V1&& v_a, V2&& v_s, HCV&& h_cv) const {
+    void activate_visible(const H1& /*h_a*/, const H2& h_s, V1&& v_a, V2&& v_s, HCV&& h_cv) const {
         static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN, "Invalid visible unit type");
         static_assert(P, "Computing S without P is not implemented");
 
-        validate_inputs(v_a, v_s);
-        validate_outputs(h_a, h_s);
+        validate_inputs<V1,V2>();
+        validate_outputs<H1,H2>();
 
         using namespace etl;
 
@@ -207,19 +207,17 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     }
 
     template<bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename VCV>
-    void batch_activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& v_s, VCV&& v_cv) const {
+    void batch_activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& /*v_s*/, VCV&& v_cv) const {
         static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit), "Invalid hidden unit type");
         static_assert(P, "Computing S without P is not implemented");
 
-        validate_inputs(v_a(0), v_s(0));
-        validate_outputs(h_a(0), h_s(0));
+        static_assert(etl::decay_traits<H1>::template dim<0>() == etl::decay_traits<H2>::template dim<0>(), "Inconsistent number of batches");
+        static_assert(etl::decay_traits<H1>::template dim<0>() == etl::decay_traits<V1>::template dim<0>(), "Inconsistent number of batches");
+        static_assert(etl::decay_traits<H1>::template dim<0>() == etl::decay_traits<V2>::template dim<0>(), "Inconsistent number of batches");
+        static_assert(etl::decay_traits<H1>::template dim<0>() == etl::decay_traits<VCV>::template dim<0>(), "Inconsistent number of batches");
 
-        const auto Batch = etl::dim<0>(h_a);
-
-        cpp_assert(etl::dim<0>(h_s) == Batch, "The number of batch must be consistent");
-        cpp_assert(etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
-        cpp_assert(etl::dim<0>(v_cv) == Batch, "The number of batch must be consistent");
-        cpp_unused(Batch);
+        validate_inputs<V1,V2,1>();
+        validate_outputs<H1,H2,1>();
 
         using namespace etl;
 
@@ -259,19 +257,17 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     }
 
     template<bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename HCV>
-    void batch_activate_visible(const H1& h_a, const H2& h_s, V1&& v_a, V2&& v_s, HCV&& h_cv) const {
+    void batch_activate_visible(const H1& /*h_a*/, const H2& h_s, V1&& v_a, V2&& v_s, HCV&& h_cv) const {
         static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN, "Invalid visible unit type");
         static_assert(P, "Computing S without P is not implemented");
 
-        validate_inputs(v_a(0), v_s(0));
-        validate_outputs(h_a(0), h_s(0));
+        static_assert(etl::decay_traits<H1>::template dim<0>() == etl::decay_traits<H2>::template dim<0>(), "Inconsistent number of batches");
+        static_assert(etl::decay_traits<H1>::template dim<0>() == etl::decay_traits<V1>::template dim<0>(), "Inconsistent number of batches");
+        static_assert(etl::decay_traits<H1>::template dim<0>() == etl::decay_traits<V2>::template dim<0>(), "Inconsistent number of batches");
+        static_assert(etl::decay_traits<H1>::template dim<0>() == etl::decay_traits<HCV>::template dim<0>(), "Inconsistent number of batches");
 
-        const auto Batch = etl::dim<0>(v_s);
-
-        cpp_assert(etl::dim<0>(h_s) == Batch, "The number of batch must be consistent");
-        cpp_assert(etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
-        cpp_assert(etl::dim<0>(h_cv) == Batch, "The number of batch must be consistent");
-        cpp_unused(Batch);
+        validate_inputs<V1,V2,1>();
+        validate_outputs<H1,H2,1>();
 
         base_type::template batch_compute_hcv<this_type>(pool, h_s, h_cv, w, [&](std::size_t batch, std::size_t channel){
             if(visible_unit == unit_type::BINARY){
@@ -407,36 +403,32 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     }
 
 private:
-    template<typename V1, typename V2>
-    static void validate_inputs(const V1& v_a, const V2& v_s){
-        static_assert(etl::etl_traits<V1>::dimensions() == 3, "Inputs must be 3D");
-        static_assert(etl::etl_traits<V2>::dimensions() == 3, "Inputs must be 3D");
+    template<typename V1, typename V2, std::size_t Off = 0>
+    static void validate_inputs(){
+        static_assert(etl::decay_traits<V1>::dimensions() == 3 + Off, "Inputs must be 3D");
+        static_assert(etl::decay_traits<V2>::dimensions() == 3 + Off, "Inputs must be 3D");
 
-        cpp_assert(etl::dim<0>(v_a) == NC, "Invalid number of input channels");
-        cpp_assert(etl::dim<1>(v_a) == NV1, "Invalid input dimensions");
-        cpp_assert(etl::dim<2>(v_a) == NV2, "Invalid input dimensions");
-        cpp_assert(etl::dim<0>(v_s) == NC, "Invalid number of input channels");
-        cpp_assert(etl::dim<1>(v_s) == NV1, "Invalid input dimensions");
-        cpp_assert(etl::dim<2>(v_s) == NV2, "Invalid input dimensions");
+        static_assert(etl::decay_traits<V1>::template dim<0 + Off>() == NC, "Invalid number of input channels");
+        static_assert(etl::decay_traits<V1>::template dim<1 + Off>() == NV1, "Invalid input dimensions");
+        static_assert(etl::decay_traits<V1>::template dim<2 + Off>() == NV2, "Invalid input dimensions");
 
-        cpp_unused(v_a);
-        cpp_unused(v_s);
+        static_assert(etl::decay_traits<V2>::template dim<0 + Off>() == NC, "Invalid number of input channels");
+        static_assert(etl::decay_traits<V2>::template dim<1 + Off>() == NV1, "Invalid input dimensions");
+        static_assert(etl::decay_traits<V2>::template dim<2 + Off>() == NV2, "Invalid input dimensions");
     }
 
-    template<typename H1, typename H2>
-    static void validate_outputs(const H1& h_a, const H2& h_s){
-        static_assert(etl::etl_traits<H1>::dimensions() == 3, "Outputs must be 3D");
-        static_assert(etl::etl_traits<H2>::dimensions() == 3, "Outputs must be 3D");
+    template<typename H1, typename H2, std::size_t Off = 0>
+    static void validate_outputs(){
+        static_assert(etl::decay_traits<H1>::dimensions() == 3 + Off, "Outputs must be 3D");
+        static_assert(etl::decay_traits<H2>::dimensions() == 3 + Off, "Outputs must be 3D");
 
-        cpp_assert(etl::dim<0>(h_a) == K, "Invalid number of output channels");
-        cpp_assert(etl::dim<1>(h_a) == NH1, "Invalid output dimensions");
-        cpp_assert(etl::dim<2>(h_a) == NH2, "Invalid output dimensions");
-        cpp_assert(etl::dim<0>(h_s) == K, "Invalid number of output channels");
-        cpp_assert(etl::dim<1>(h_s) == NH1, "Invalid output dimensions");
-        cpp_assert(etl::dim<2>(h_s) == NH2, "Invalid output dimensions");
+        static_assert(etl::decay_traits<H1>::template dim<0 + Off>() == K, "Invalid number of output channels");
+        static_assert(etl::decay_traits<H1>::template dim<1 + Off>() == NH1, "Invalid output dimensions");
+        static_assert(etl::decay_traits<H1>::template dim<2 + Off>() == NH2, "Invalid output dimensions");
 
-        cpp_unused(h_a);
-        cpp_unused(h_s);
+        static_assert(etl::decay_traits<H2>::template dim<0 + Off>() == K, "Invalid number of output channels");
+        static_assert(etl::decay_traits<H2>::template dim<1 + Off>() == NH1, "Invalid output dimensions");
+        static_assert(etl::decay_traits<H2>::template dim<2 + Off>() == NH2, "Invalid output dimensions");
     }
 };
 
