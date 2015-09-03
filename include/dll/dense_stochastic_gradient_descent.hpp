@@ -6,7 +6,8 @@
 //=======================================================================
 
 /*!
- * \file Stochastic Gradient Descent (SGD) Implementation for Dense networks
+ * \file dense_stochastic_gradient_descent.hpp
+ * \brief Stochastic Gradient Descent (SGD) Implementation for Dense networks
  */
 
 #ifndef DLL_DENSE_STOCHASTIC_GRADIENT_DESCENT
