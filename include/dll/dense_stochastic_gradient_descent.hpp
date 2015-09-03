@@ -216,6 +216,7 @@ struct dense_sgd_trainer {
         for(std::size_t i = 0; i < batch_size; ++i){
             blas_ger(
                 etl::dim<1>(inputs), etl::dim<1>(errors),
+                1.0,
                 inputs(i).memory_start(), errors(i).memory_start(), grad.memory_start()
             );
         }

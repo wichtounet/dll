@@ -25,6 +25,7 @@
 #include "batch.hpp"
 #include "decay_type.hpp"
 #include "layer_traits.hpp"
+#include "blas.hpp"
 
 namespace dll {
 
@@ -232,7 +233,7 @@ void update_convolutional(RBM& rbm, Trainer& t){
 
 #ifndef ETL_BLAS_MODE
 
-template<typename Weight, typename Trainer>
+template<typename Trainer>
 void batch_compute_gradients(Trainer& t){
     const auto B = etl::dim<0>(t.w_grad_b);
 
@@ -259,73 +260,36 @@ void batch_compute_gradients(Trainer& t){
 
 #else
 
-template<typename Weight, typename Trainer, cpp_enable_if(std::is_same<Weight, float>::value)>
+template<typename Trainer>
 void batch_compute_gradients(Trainer& t){
     const auto B = etl::dim<0>(t.w_grad_b);
 
     for(std::size_t b = 0; b < B; b++){
-        cblas_sger(
-            CblasRowMajor,
+        blas_ger(
             etl::dim<1>(t.vf), etl::dim<1>(t.h1_a),
             1.0,
-            t.vf(b).memory_start(), 1,
-            t.h1_a(b).memory_start(), 1,
-            t.w_grad.memory_start(), etl::dim<1>(t.h1_a)
+            t.vf(b).memory_start(),
+            t.h1_a(b).memory_start(),
+            t.w_grad.memory_start()
         );
 
-        cblas_sger(
-            CblasRowMajor,
+        blas_ger(
             etl::dim<1>(t.v2_a), etl::dim<1>(t.h2_a),
             -1.0,
-            t.v2_a(b).memory_start(), 1,
-            t.h2_a(b).memory_start(), 1,
-            t.w_grad.memory_start(), etl::dim<1>(t.h2_a)
+            t.v2_a(b).memory_start(),
+            t.h2_a(b).memory_start(),
+            t.w_grad.memory_start()
         );
     }
 
     for(std::size_t b = 0; b < B; b++){
-        cblas_saxpy(etl::dim<1>(t.h1_a), 1.0, t.h1_a(b).memory_start(), 1, t.b_grad.memory_start(), 1);
-        cblas_saxpy(etl::dim<1>(t.h2_a), -1.0, t.h2_a(b).memory_start(), 1, t.b_grad.memory_start(), 1);
+        blas_axpy(etl::dim<1>(t.h1_a), 1.0, t.h1_a(b).memory_start(), t.b_grad.memory_start());
+        blas_axpy(etl::dim<1>(t.h2_a), -1.0, t.h2_a(b).memory_start(), t.b_grad.memory_start());
     }
 
     for(std::size_t b = 0; b < B; b++){
-        cblas_saxpy(etl::dim<1>(t.vf), 1.0, t.vf(b).memory_start(), 1, t.c_grad.memory_start(), 1);
-        cblas_saxpy(etl::dim<1>(t.v2_a), -1.0, t.v2_a(b).memory_start(), 1, t.c_grad.memory_start(), 1);
-    }
-}
-
-template<typename Weight, typename Trainer, cpp_enable_if(std::is_same<Weight, double>::value)>
-void batch_compute_gradients(Trainer& t){
-    const auto B = etl::dim<0>(t.w_grad_b);
-
-    for(std::size_t b = 0; b < B; b++){
-        cblas_dger(
-            CblasRowMajor,
-            etl::dim<1>(t.vf), etl::dim<1>(t.h1_a),
-            1.0,
-            t.vf(b).memory_start(), 1,
-            t.h1_a(b).memory_start(), 1,
-            t.w_grad.memory_start(), etl::dim<1>(t.h1_a)
-        );
-
-        cblas_dger(
-            CblasRowMajor,
-            etl::dim<1>(t.v2_a), etl::dim<1>(t.h2_a),
-            -1.0,
-            t.v2_a(b).memory_start(), 1,
-            t.h2_a(b).memory_start(), 1,
-            t.w_grad.memory_start(), etl::dim<1>(t.h2_a)
-        );
-    }
-
-    for(std::size_t b = 0; b < B; b++){
-        cblas_daxpy(etl::dim<1>(t.h1_a), 1.0, t.h1_a(b).memory_start(), 1, t.b_grad.memory_start(), 1);
-        cblas_daxpy(etl::dim<1>(t.h2_a), -1.0, t.h2_a(b).memory_start(), 1, t.b_grad.memory_start(), 1);
-    }
-
-    for(std::size_t b = 0; b < B; b++){
-        cblas_daxpy(etl::dim<1>(t.vf), 1.0, t.vf(b).memory_start(), 1, t.c_grad.memory_start(), 1);
-        cblas_daxpy(etl::dim<1>(t.v2_a), -1.0, t.v2_a(b).memory_start(), 1, t.c_grad.memory_start(), 1);
+        blas_axpy(etl::dim<1>(t.vf), 1.0, t.vf(b).memory_start(), t.c_grad.memory_start());
+        blas_axpy(etl::dim<1>(t.v2_a), -1.0, t.v2_a(b).memory_start(), t.c_grad.memory_start());
     }
 }
 
@@ -440,7 +404,7 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
         t.b_grad = 0;
         t.c_grad = 0;
 
-        batch_compute_gradients<etl::value_t<decltype(t.w_grad)>>(t);
+        batch_compute_gradients(t);
     }
 
     if(Persistent){
