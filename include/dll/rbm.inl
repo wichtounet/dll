@@ -156,15 +156,25 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
         return result;
     }
 
-    template<typename H, typename V>
+    template<typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 1)>
     void activate_hidden(H&& h_a, const V& v_a) const {
         etl::fast_dyn_matrix<weight, num_hidden> t;
         base_type::template std_activate_hidden<true, false>(std::forward<H>(h_a), std::forward<H>(h_a), v_a, v_a, b, w, t);
     }
 
-    template<typename H, typename V>
+    template<typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 1)>
+    void activate_hidden(H&& h_a, const V& v_a) const {
+        activate_hidden(h_a, etl::reshape<num_visible>(v_a));
+    }
+
+    template<typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 2)>
     void batch_activate_hidden(H&& h_a, const V& v_a) const {
         base_type::template batch_std_activate_hidden<true, false>(std::forward<H>(h_a), std::forward<H>(h_a), v_a, v_a, b, w);
+    }
+
+    template<typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 2)>
+    void batch_activate_hidden(H&& h_a, const V& v_a) const {
+        batch_activate_hidden(h_a, etl::reshape<etl::decay_traits<H>::template dim<0>(), num_visible>(v_a));
     }
 };
 

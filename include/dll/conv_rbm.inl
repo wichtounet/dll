@@ -53,6 +53,12 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     static constexpr const bool dbn_only = layer_traits<this_type>::is_dbn_only();
     static constexpr const bool memory = layer_traits<this_type>::is_memory();
 
+    template<std::size_t B>
+    using input_batch_t = etl::fast_dyn_matrix<weight, B, NC, NV1, NV2>;
+
+    template<std::size_t B>
+    using output_batch_t = etl::fast_dyn_matrix<weight, B, K, NH1, NH2>;
+
     etl::fast_matrix<weight, NC, K, NW1, NW2> w;      //shared weights
     etl::fast_vector<weight, K> b;                  //hidden biases bk
     etl::fast_vector<weight, NC> c;                 //visible single bias c
@@ -380,6 +386,12 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
     void activate_hidden(output_one_t& h_a, const input_one_t& input) const {
         activate_hidden<true,false>(h_a, h_a, input, input);
+    }
+
+    template<typename V, typename H>
+    void batch_activate_hidden(H& h_a, const V& input) const {
+        etl::fast_dyn_matrix<weight, etl::decay_traits<H>::template dim<0>(), V_CV_CHANNELS, K, NH1, NH2> v_cv;      //Temporary convolution
+        batch_activate_hidden<true,false>(h_a, h_a, input, input, v_cv);
     }
 
     void activate_many(const input_t& input, output_t& h_a, output_t& h_s) const {

@@ -20,6 +20,33 @@ namespace dll {
 template<typename Layer>
 struct is_dense : cpp::bool_constant<decay_layer_traits<Layer>::is_dense_layer() || decay_layer_traits<Layer>::is_standard_rbm_layer()> {};
 
+template<typename Layer>
+struct is_conv : cpp::bool_constant<decay_layer_traits<Layer>::is_convolutional_layer() || decay_layer_traits<Layer>::is_convolutional_rbm_layer()> {};
+
+template<typename Layer>
+struct is_neural : cpp::or_c<is_dense<Layer>, is_conv<Layer>> {};
+
+template<typename L, typename Enable = void>
+struct extract_function;
+
+template<typename L>
+struct extract_function<L, std::enable_if_t<decay_layer_traits<L>::is_standard_layer()>> {
+    static constexpr const function activation_function = std::decay_t<L>::activation_function;
+};
+
+template<typename L>
+struct extract_function<L, std::enable_if_t<decay_layer_traits<L>::is_rbm_layer()>> {
+    static_assert(
+            std::decay_t<L>::hidden_unit == unit_type::BINARY
+        ||  std::decay_t<L>::hidden_unit == unit_type::RELU,
+        "Only (C)RBM with binary or RELU hidden unit are supported");
+
+    static constexpr const function activation_function =
+            std::decay_t<L>::hidden_unit == unit_type::BINARY
+        ?   function::SIGMOID
+        :   function::RELU;
+};
+
 template<typename DBN, std::size_t Layer, typename Enable = void>
 struct dense_sgd_context;
 
@@ -47,10 +74,35 @@ struct dense_sgd_context <DBN, Layer, std::enable_if_t<layer_traits<typename DBN
 };
 
 template<typename DBN, std::size_t Layer>
-struct dense_sgd_context <DBN, Layer, std::enable_if_t<layer_traits<typename DBN::template layer_type<Layer>>::is_convolutional_layer()>> {
+struct dense_sgd_context <DBN, Layer, std::enable_if_t<layer_traits<typename DBN::template layer_type<Layer>>::is_standard_rbm_layer()>> {
     using layer_t = typename DBN::template layer_type<Layer>;
     using dbn_t = DBN;
     using weight = typename layer_t::weight;
+
+    static constexpr const std::size_t num_visible = layer_t::num_visible;
+    static constexpr const std::size_t num_hidden = layer_t::num_hidden;
+
+    static constexpr const auto batch_size = dbn_t::batch_size;
+
+    etl::fast_matrix<weight, num_visible, num_hidden> w_grad;
+    etl::fast_vector<weight, num_hidden> b_grad;
+
+    etl::fast_matrix<weight, num_visible, num_hidden> w_inc;
+    etl::fast_matrix<weight, num_hidden> b_inc;
+
+    etl::fast_matrix<weight, batch_size, num_hidden> output;
+    etl::fast_matrix<weight, batch_size, num_hidden> errors;
+
+    dense_sgd_context() : w_inc(0), b_inc(0), output(0), errors(0) {}
+};
+
+template<typename DBN, std::size_t Layer>
+struct dense_sgd_context <DBN, Layer, std::enable_if_t<is_conv<typename DBN::template layer_type<Layer>>::value>> {
+    using layer_t = typename DBN::template layer_type<Layer>;
+    using dbn_t = DBN;
+    using weight = typename layer_t::weight;
+
+    static_assert(!layer_traits<layer_t>::has_probabilistic_max_pooling(), "Probabilistic Max Pooling is not supported in backpropagation");
 
     static constexpr const std::size_t NV1 = layer_t::NV1;
     static constexpr const std::size_t NV2 = layer_t::NV2;
@@ -73,29 +125,6 @@ struct dense_sgd_context <DBN, Layer, std::enable_if_t<layer_traits<typename DBN
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> errors;
 
     dense_sgd_context() : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
-};
-
-template<typename DBN, std::size_t Layer>
-struct dense_sgd_context <DBN, Layer, std::enable_if_t<layer_traits<typename DBN::template layer_type<Layer>>::is_standard_rbm_layer()>> {
-    using layer_t = typename DBN::template layer_type<Layer>;
-    using dbn_t = DBN;
-    using weight = typename layer_t::weight;
-
-    static constexpr const std::size_t num_visible = layer_t::num_visible;
-    static constexpr const std::size_t num_hidden = layer_t::num_hidden;
-
-    static constexpr const auto batch_size = dbn_t::batch_size;
-
-    etl::fast_matrix<weight, num_visible, num_hidden> w_grad;
-    etl::fast_vector<weight, num_hidden> b_grad;
-
-    etl::fast_matrix<weight, num_visible, num_hidden> w_inc;
-    etl::fast_matrix<weight, num_hidden> b_inc;
-
-    etl::fast_matrix<weight, batch_size, num_hidden> output;
-    etl::fast_matrix<weight, batch_size, num_hidden> errors;
-
-    dense_sgd_context() : w_inc(0), b_inc(0), output(0), errors(0) {}
 };
 
 template<typename DBN, std::size_t Layer>
@@ -233,7 +262,7 @@ struct dense_sgd_trainer {
 
 #endif
 
-    template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_convolutional_layer())>
+    template<typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(is_conv<Layer>::value)>
     static void compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors){
         constexpr const auto K = Layer::K;
         constexpr const auto NC = Layer::NC;
@@ -260,7 +289,7 @@ struct dense_sgd_trainer {
         }
     }
 
-    template<typename Layer, typename Context, typename Inputs, cpp_enable_if(decay_layer_traits<Layer>::is_standard_layer() || decay_layer_traits<Layer>::is_standard_rbm_layer())>
+    template<typename Layer, typename Context, typename Inputs, cpp_enable_if((is_dense<Layer>::value || is_conv<Layer>::value))>
     static void compute_gradients(Layer& , Context& ctx, Inputs& inputs){
         ctx.w_grad = 0;
 
@@ -331,33 +360,18 @@ struct dense_sgd_trainer {
         nan_check_deep(ctx1.errors);
     }
 
-    //Backpropagate errors from rbm to rbm
-    template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(decay_layer_traits<Layer1>::is_standard_rbm_layer() && decay_layer_traits<Layer2>::is_standard_rbm_layer())>
-    static void compute_errors(Layer1& r1, Context1& ctx1, Layer2& r2, Context2& ctx2){
-        static_assert(
-                std::decay_t<Layer1>::hidden_unit == unit_type::BINARY
-            ||  std::decay_t<Layer1>::hidden_unit == unit_type::RELU,
-            "Only RBM with binary or RELU hidden unit are supported");
-
-        if(std::decay_t<Layer1>::hidden_unit == unit_type::BINARY){
-            compute_errors_from_dense(r1, ctx1, r2, ctx2, [&](std::size_t i){ return etl::sigmoid_derivative(ctx1.output(i)); });
-        } else if(std::decay_t<Layer1>::hidden_unit == unit_type::RELU){
-            compute_errors_from_dense(r1, ctx1, r2, ctx2, [&](std::size_t i){ return etl::relu_derivative(ctx1.output(i)); });
-        }
-    }
-
     //Backpropagate errors from dense to (dense or conv)
-    template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(decay_layer_traits<Layer1>::is_standard_layer() && decay_layer_traits<Layer2>::is_dense_layer())>
+    template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(is_neural<Layer1>::value && is_dense<Layer2>::value)>
     static void compute_errors(Layer1& r1, Context1& ctx1, Layer2& r2, Context2& ctx2){
-        constexpr const auto a_f = std::decay_t<Layer1>::activation_function;
+        constexpr const auto a_f = extract_function<Layer1>::activation_function;
 
         compute_errors_from_dense(r1, ctx1, r2, ctx2, [&](std::size_t i){ return f_derivative<a_f>(ctx1.output(i)); });
     }
 
     //Backpropagate errors from conv to (dense or conv)
-    template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(decay_layer_traits<Layer1>::is_standard_layer() && decay_layer_traits<Layer2>::is_convolutional_layer())>
+    template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(is_neural<Layer1>::value && is_conv<Layer2>::value)>
     static void compute_errors(Layer1& r1, Context1& ctx1, Layer2& r2, Context2& ctx2){
-        constexpr const auto a_f = std::decay_t<Layer1>::activation_function;
+        constexpr const auto a_f = extract_function<Layer1>::activation_function;
 
         compute_errors_from_conv(r1, ctx1, r2, ctx2, [&](std::size_t i, std::size_t c){ return f_derivative<a_f>(ctx1.output(i)(c)); });
     }
@@ -482,7 +496,7 @@ struct dense_sgd_trainer {
         });
     }
 
-    template<typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_standard_layer() || decay_layer_traits<L>::is_standard_rbm_layer())>
+    template<typename L, typename C, cpp_enable_if(is_dense<L>::value || is_conv<L>::value)>
     void apply_gradients(L& layer, C& context, std::size_t n){
         //Update the gradients
         this->update_grad(layer.w, context.w_grad, w_decay(dbn_traits<dbn_t>::decay()), 0.0);

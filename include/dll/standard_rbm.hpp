@@ -70,6 +70,11 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
         return free_energy(*static_cast<const parent_t*>(this), v);
     }
 
+    template<typename T, cpp_enable_if((etl::decay_traits<T>::dimensions() != 1))>
+    weight free_energy(const T& v) const {
+        return free_energy(*static_cast<const parent_t*>(this), etl::reshape(v, static_cast<const parent_t*>(this)->input_size()));
+    }
+
     weight free_energy() const {
         auto& rbm = *static_cast<const parent_t*>(this);
         return free_energy(rbm, rbm.v1);
