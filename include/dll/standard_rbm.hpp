@@ -86,6 +86,10 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
         reconstruct(items, *static_cast<parent_t*>(this));
     }
 
+    double reconstruction_error(const input_one_t& item){
+        return reconstruction_error(item, *static_cast<parent_t*>(this));
+    }
+
     //Display functions
 
     void display_units() const {
@@ -149,6 +153,18 @@ protected:
         rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
 
         std::cout << "Reconstruction took " << watch.elapsed() << "ms" << std::endl;
+    }
+
+    static double reconstruction_error(const input_one_t& items, parent_t& rbm){
+        cpp_assert(items.size() == num_visible(rbm), "The size of the training sample must match visible units");
+
+        //Set the state of the visible units
+        rbm.v1 = items;
+
+        rbm.activate_hidden(rbm.h1_a, rbm.h1_s, rbm.v1, rbm.v1);
+        rbm.activate_visible(rbm.h1_a, rbm.h1_s, rbm.v2_a, rbm.v2_s);
+
+        return etl::mean((rbm.v1 - rbm.v2_a) >> (rbm.v1 - rbm.v2_a));
     }
 
     static void display_weights(const parent_t& rbm){
