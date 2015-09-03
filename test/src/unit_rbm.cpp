@@ -31,6 +31,10 @@ TEST_CASE( "unit/rbm/mnist/1", "[rbm][momentum][unit]" ) {
     auto error = rbm.train(dataset.training_images, 50);
 
     REQUIRE(error < 1e-2);
+
+    auto rec_error = rbm.reconstruction_error(dataset.training_images[4]);
+
+    REQUIRE(rec_error < 1e-2);
 }
 
 TEST_CASE( "unit/rbm/mnist/2", "[rbm][momentum][parallel][unit]" ) {

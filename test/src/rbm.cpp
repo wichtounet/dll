@@ -31,7 +31,11 @@ TEST_CASE( "rbm/mnist_1", "rbm::simple" ) {
 
     auto error = rbm.train(dataset.training_images, 100);
 
-    REQUIRE(error < 1e-2);
+    REQUIRE(error < 3e-2);
+
+    auto rec_error = rbm.reconstruction_error(dataset.training_images[1]);
+
+    REQUIRE(rec_error < 3e-2);
 }
 
 TEST_CASE( "rbm/mnist_2", "rbm::momentum" ) {
