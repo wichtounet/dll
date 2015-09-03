@@ -29,7 +29,8 @@ namespace dll {
 /*!
  * \brief Standard version of Restricted Boltzmann Machine
  *
- * This follows the definition of a RBM by Geoffrey Hinton.
+ * This follows the definition of a RBM by Geoffrey Hinton. This is an "abstract" class,
+ * using CRTP technique to inject functions into its children.
  */
 template<typename Parent, typename Desc>
 struct standard_rbm : public rbm_base<Parent, Desc> {
@@ -59,24 +60,32 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
             :   /* Only ReLU and Gaussian Units needs lower rate */           1e-1;
     }
 
+    parent_t& as_derived(){
+        return *static_cast<parent_t*>(this);
+    }
+
+    const parent_t& as_derived() const {
+        return *static_cast<const parent_t*>(this);
+    }
+
     //Energy functions
 
     template<typename V, typename H>
     weight energy(const V& v, const H& h) const {
-        return free_energy(*static_cast<const parent_t*>(this), v, h);
+        return free_energy(as_derived(), v, h);
     }
 
     weight free_energy(const input_one_t& v) const {
-        return free_energy(*static_cast<const parent_t*>(this), v);
+        return free_energy(as_derived(), v);
     }
 
     template<typename T, cpp_enable_if((etl::decay_traits<T>::dimensions() != 1))>
     weight free_energy(const T& v) const {
-        return free_energy(*static_cast<const parent_t*>(this), etl::reshape(v, static_cast<const parent_t*>(this)->input_size()));
+        return free_energy(as_derived(), etl::reshape(v, as_derived().input_size()));
     }
 
     weight free_energy() const {
-        auto& rbm = *static_cast<const parent_t*>(this);
+        auto& rbm = as_derived();
         return free_energy(rbm, rbm.v1);
     }
 
@@ -84,15 +93,15 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
 
     template<typename Iterator>
     void init_weights(Iterator&& first, Iterator&& last){
-        init_weights(std::forward<Iterator>(first), std::forward<Iterator>(last), *static_cast<parent_t*>(this));
+        init_weights(std::forward<Iterator>(first), std::forward<Iterator>(last), as_derived());
     }
 
     void reconstruct(const input_one_t& items){
-        reconstruct(items, *static_cast<parent_t*>(this));
+        reconstruct(items, as_derived());
     }
 
     double reconstruction_error(const input_one_t& item){
-        return reconstruction_error(item, *static_cast<parent_t*>(this));
+        return reconstruction_error(item, as_derived());
     }
 
     //Display functions
@@ -103,23 +112,23 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
     }
 
     void display_visible_units() const {
-        display_visible_units(*static_cast<const parent_t*>(this));
+        display_visible_units(as_derived());
     }
 
     void display_visible_units(std::size_t matrix) const {
-        display_visible_units(*static_cast<const parent_t*>(this), matrix);
+        display_visible_units(as_derived(), matrix);
     }
 
     void display_hidden_units() const {
-        display_hidden_units(*static_cast<const parent_t*>(this));
+        display_hidden_units(as_derived());
     }
 
     void display_weights() const {
-        display_weights(*static_cast<const parent_t*>(this));
+        display_weights(as_derived());
     }
 
     void display_weights(std::size_t matrix) const {
-        display_weights(matrix, *static_cast<const parent_t*>(this));
+        display_weights(matrix, as_derived());
     }
 
 protected:
@@ -475,7 +484,7 @@ public:
         output.reserve(samples);
 
         for(std::size_t i = 0; i < samples; ++i){
-            output.emplace_back(static_cast<const parent_t*>(this)->output_size() + (is_last ? labels : 0));
+            output.emplace_back(as_derived().output_size() + (is_last ? labels : 0));
         }
 
         return output;
@@ -483,11 +492,11 @@ public:
 
     template<typename Input>
     output_one_t prepare_one_output(bool is_last = false, std::size_t labels = 0) const {
-        return output_one_t(static_cast<const parent_t*>(this)->output_size() + (is_last ? labels : 0));
+        return output_one_t(as_derived().output_size() + (is_last ? labels : 0));
     }
 
     input_one_t prepare_one_input() const {
-        return input_one_t(static_cast<const parent_t*>(this)->input_size());
+        return input_one_t(as_derived().input_size());
     }
 
     void activate_many(const input_t& input, output_t& h_a) const {

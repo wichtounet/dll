@@ -18,7 +18,8 @@ namespace dll {
 /*!
  * \brief Standard version of Convolutional Restricted Boltzmann Machine
  *
- * This follows the definition of a CRBM by Honglak Lee.
+ * This follows the definition of a CRBM by Honglak Lee. This is an "abstract" class,
+ * using CRTP to inject features into its children.
  */
 template<typename Parent, typename Desc>
 struct standard_conv_rbm : public rbm_base<Parent, Desc> {
@@ -51,27 +52,35 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
             :   /* Only Gaussian Units needs lower rate */         1e-3;
     }
 
+    parent_t& as_derived(){
+        return *static_cast<parent_t*>(this);
+    }
+
+    const parent_t& as_derived() const {
+        return *static_cast<const parent_t*>(this);
+    }
+
     //Utility functions
 
     template<typename Sample>
     void reconstruct(const Sample& items){
-        reconstruct(items, *static_cast<parent_t*>(this));
+        reconstruct(items, as_derived());
     }
 
     void display_visible_unit_activations() const {
-        display_visible_unit_activations(*static_cast<parent_t*>(this));
+        display_visible_unit_activations(as_derived());
     }
 
     void display_visible_unit_samples() const {
-        display_visible_unit_samples(*static_cast<parent_t*>(this));
+        display_visible_unit_samples(as_derived());
     }
 
     void display_hidden_unit_activations() const {
-        display_hidden_unit_samples(*static_cast<parent_t*>(this));
+        display_hidden_unit_samples(as_derived());
     }
 
     void display_hidden_unit_samples() const {
-        display_hidden_unit_samples(*static_cast<parent_t*>(this));
+        display_hidden_unit_samples(as_derived());
     }
 
 protected:

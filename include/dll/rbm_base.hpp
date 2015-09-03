@@ -19,8 +19,9 @@ namespace dll {
 /*!
  * \brief Base class for Restricted Boltzmann Machine.
  *
- * It only contains configurable properties that are used by each
- * version of RBM.
+ * It contains configurable properties that are used by each
+ * version of RBM. It also contains common functions that are
+ * injected using CRTP technique.
  */
 template<typename Parent, typename Desc>
 struct rbm_base {
@@ -64,18 +65,26 @@ struct rbm_base {
         //Nothing to do
     }
 
+    parent_t& as_derived(){
+        return *static_cast<parent_t*>(this);
+    }
+
+    const parent_t& as_derived() const {
+        return *static_cast<const parent_t*>(this);
+    }
+
     //Normal Train functions
 
     template<bool EnableWatcher = true, typename RW = void, typename Samples, typename... Args>
     double train(const Samples& training_data, std::size_t max_epochs, Args... args){
         dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
-        return trainer.train(*static_cast<parent_t*>(this), training_data.begin(), training_data.end(), max_epochs);
+        return trainer.train(as_derived(), training_data.begin(), training_data.end(), max_epochs);
     }
 
     template<bool EnableWatcher = true, typename RW = void, typename Iterator, typename... Args>
     double train(Iterator&& first, Iterator&& last, std::size_t max_epochs, Args... args){
         dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
-        return trainer.train(*static_cast<parent_t*>(this), std::forward<Iterator>(first), std::forward<Iterator>(last), max_epochs);
+        return trainer.train(as_derived(), std::forward<Iterator>(first), std::forward<Iterator>(last), max_epochs);
     }
 
     //Train denoising autoencoder
@@ -83,13 +92,13 @@ struct rbm_base {
     template<typename Samples, bool EnableWatcher = true, typename RW = void, typename... Args>
     double train_denoising(const Samples& noisy, const Samples& clean, std::size_t max_epochs, Args... args){
         dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
-        return trainer.train(*static_cast<parent_t*>(this), noisy.begin(), noisy.end(), clean.begin(), clean.end(), max_epochs);
+        return trainer.train(as_derived(), noisy.begin(), noisy.end(), clean.begin(), clean.end(), max_epochs);
     }
 
     template<typename NIterator, typename CIterator, bool EnableWatcher = true, typename RW = void, typename... Args>
     double train_denoising(NIterator&& noisy_it, NIterator&& noisy_end, CIterator&& clean_it, CIterator&& clean_end, std::size_t max_epochs, Args... args){
         dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
-        return trainer.train(*static_cast<parent_t*>(this),
+        return trainer.train(as_derived(),
             std::forward<NIterator>(noisy_it), std::forward<NIterator>(noisy_end),
             std::forward<CIterator>(clean_it), std::forward<CIterator>(clean_end),
             max_epochs);
@@ -98,19 +107,19 @@ struct rbm_base {
     //I/O functions
 
     void store(const std::string& file) const {
-        store(file, *static_cast<const parent_t*>(this));
+        store(file, as_derived());
     }
 
     void store(std::ostream& os) const {
-        store(os, *static_cast<const parent_t*>(this));
+        store(os, as_derived());
     }
 
     void load(const std::string& file){
-        load(file, *static_cast<parent_t*>(this));
+        load(file, as_derived());
     }
 
     void load(std::istream& is){
-        load(is, *static_cast<parent_t*>(this));
+        load(is, as_derived());
     }
 
 private:
