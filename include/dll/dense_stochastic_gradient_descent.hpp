@@ -51,7 +51,7 @@ template<typename DBN, std::size_t Layer, typename Enable = void>
 struct dense_sgd_context;
 
 template<typename DBN, std::size_t Layer>
-struct dense_sgd_context <DBN, Layer, std::enable_if_t<layer_traits<typename DBN::template layer_type<Layer>>::is_dense_layer()>> {
+struct dense_sgd_context <DBN, Layer, std::enable_if_t<is_dense<typename DBN::template layer_type<Layer>>::value>> {
     using layer_t = typename DBN::template layer_type<Layer>;
     using dbn_t = DBN;
     using weight = typename layer_t::weight;
@@ -71,29 +71,6 @@ struct dense_sgd_context <DBN, Layer, std::enable_if_t<layer_traits<typename DBN
     etl::fast_matrix<weight, batch_size, num_hidden> errors;
 
     dense_sgd_context() : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
-};
-
-template<typename DBN, std::size_t Layer>
-struct dense_sgd_context <DBN, Layer, std::enable_if_t<layer_traits<typename DBN::template layer_type<Layer>>::is_standard_rbm_layer()>> {
-    using layer_t = typename DBN::template layer_type<Layer>;
-    using dbn_t = DBN;
-    using weight = typename layer_t::weight;
-
-    static constexpr const std::size_t num_visible = layer_t::num_visible;
-    static constexpr const std::size_t num_hidden = layer_t::num_hidden;
-
-    static constexpr const auto batch_size = dbn_t::batch_size;
-
-    etl::fast_matrix<weight, num_visible, num_hidden> w_grad;
-    etl::fast_vector<weight, num_hidden> b_grad;
-
-    etl::fast_matrix<weight, num_visible, num_hidden> w_inc;
-    etl::fast_matrix<weight, num_hidden> b_inc;
-
-    etl::fast_matrix<weight, batch_size, num_hidden> output;
-    etl::fast_matrix<weight, batch_size, num_hidden> errors;
-
-    dense_sgd_context() : w_inc(0), b_inc(0), output(0), errors(0) {}
 };
 
 template<typename DBN, std::size_t Layer>
