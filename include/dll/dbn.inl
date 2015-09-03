@@ -280,7 +280,7 @@ private:
 
         watcher.template pretrain_layer<layer_t>(*this, I, detail::fast_distance(first, last));
 
-        cpp::static_if<layer_traits<layer_t>::is_trained()>([&](auto f){
+        cpp::static_if<layer_traits<layer_t>::is_pretrained()>([&](auto f){
             f(layer).template train<
                 !watcher_t::ignore_sub,                  //Enable the RBM Watcher or not
                 dbn_detail::rbm_watcher_t<watcher_t>>    //Replace the RBM watcher if not void
@@ -327,7 +327,7 @@ private:
 
     //Transform and pooling layers can safely be skipped
     template<std::size_t I>
-    struct batch_layer_ignore<I, std::enable_if_t<(I < layers)>> : cpp::or_u<layer_traits<layer_type<I>>::is_pooling_layer(), layer_traits<layer_type<I>>::is_transform_layer(), !layer_traits<layer_type<I>>::pretrain_last()> {};
+    struct batch_layer_ignore<I, std::enable_if_t<(I < layers)>> : cpp::or_u<layer_traits<layer_type<I>>::is_pooling_layer(), layer_traits<layer_type<I>>::is_transform_layer(), layer_traits<layer_type<I>>::is_standard_layer(), !layer_traits<layer_type<I>>::pretrain_last()> {};
 
     //Special handling for the layer 0
     //data is coming from iterators not from input

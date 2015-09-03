@@ -112,6 +112,13 @@ struct layer_traits {
     }
 
     /*!
+     * \brief Indicates if this layer is pretrained or not.
+     */
+    static constexpr bool is_pretrained(){
+        return is_rbm_layer();
+    }
+
+    /*!
      * \brief Indicates if the layer is dynamic
      */
     static constexpr bool is_dynamic(){
