@@ -34,8 +34,6 @@ TEST_CASE( "cdbn/sgd/1", "[dbn][mnist][sgd]" ) {
 
     dbn->pretrain(dataset.training_images, 20);
 
-    dbn->learning_rate = 0.1;
-
     auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 50);
     std::cout << "ft_error:" << ft_error << std::endl;
     CHECK(ft_error < 5e-2);
@@ -64,8 +62,6 @@ TEST_CASE( "cdbn/sgd/2", "[dbn][mnist][sgd]" ) {
     auto dbn = std::make_unique<dbn_t>();
 
     dbn->pretrain(dataset.training_images, 20);
-
-    dbn->learning_rate = 0.1;
 
     auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 50);
     std::cout << "ft_error:" << ft_error << std::endl;
@@ -97,8 +93,6 @@ TEST_CASE( "cdbn/sgd/3", "[dbn][mnist][sgd]" ) {
 
     dbn->pretrain(dataset.training_images, 20);
 
-    dbn->learning_rate = 0.1;
-
     auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 50);
     std::cout << "ft_error:" << ft_error << std::endl;
     CHECK(ft_error < 5e-2);
@@ -127,8 +121,6 @@ TEST_CASE( "cdbn/sgd/4", "[dbn][mnist][sgd]" ) {
     auto dbn = std::make_unique<dbn_t>();
 
     dbn->pretrain(dataset.training_images, 20);
-
-    dbn->learning_rate = 0.1;
 
     auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 50);
     std::cout << "ft_error:" << ft_error << std::endl;

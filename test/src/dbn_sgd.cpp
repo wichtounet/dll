@@ -34,8 +34,6 @@ TEST_CASE( "dbn/sgd/1", "[dbn][mnist][sgd]" ) {
 
     dbn->pretrain(dataset.training_images, 50);
 
-    dbn->learning_rate = 0.1;
-
     auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
     std::cout << "ft_error:" << ft_error << std::endl;
     CHECK(ft_error < 5e-2);
@@ -64,8 +62,6 @@ TEST_CASE( "dbn/sgd/2", "[dbn][mnist][sgd]" ) {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->learning_rate = 0.05;
-
     dbn->pretrain(dataset.training_images, 20);
 
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
@@ -92,8 +88,6 @@ TEST_CASE( "dbn/sgd/3", "[dbn][mnist][sgd][gaussian]" ) {
     mnist::normalize_dataset(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
-
-    dbn->learning_rate = 0.1;
 
     dbn->pretrain(dataset.training_images, 20);
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
@@ -124,8 +118,6 @@ TEST_CASE( "dbn/sgd/4", "[dbn][mnist][sgd][relu]" ) {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->learning_rate = 0.1;
-
     dbn->pretrain(dataset.training_images, 20);
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
 
@@ -149,8 +141,6 @@ TEST_CASE( "dbn/sgd/5", "[dbn][mnist][sgd]" ) {
     mnist::binarize_dataset(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
-
-    dbn->learning_rate = 0.1;
 
     dbn->pretrain(dataset.training_images, 20);
 
@@ -178,8 +168,6 @@ TEST_CASE( "dbn/sgd/6", "[dbn][mnist][sgd]" ) {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->learning_rate = 0.1;
-
     dbn->pretrain(dataset.training_images, 10);
 
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
@@ -205,8 +193,6 @@ TEST_CASE( "dbn/sgd/7", "[dbn][mnist][sgd][memory]" ) {
     auto dbn = std::make_unique<dbn_t>();
 
     dbn->pretrain(dataset.training_images, 20);
-
-    dbn->learning_rate = 0.1;
 
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
     REQUIRE(error < 5e-2);
