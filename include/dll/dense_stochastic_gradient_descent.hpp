@@ -14,6 +14,7 @@
 
 #include "cpp_utils/static_if.hpp"
 #include "context.hpp"
+#include "blas.hpp"
 
 namespace dll {
 
@@ -209,30 +210,12 @@ struct dense_sgd_trainer {
 
 #else
 
-    template<typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(std::is_same<Weight, float>::value)>
+    template<typename Weight, typename Grad, typename Inputs, typename Errors>
     static void dense_compute_weight_gradients(Grad& grad, Inputs&& inputs, Errors& errors){
         for(std::size_t i = 0; i < batch_size; ++i){
-            cblas_sger(
-                CblasRowMajor,
+            blas_ger(
                 etl::dim<1>(inputs), etl::dim<1>(errors),
-                1.0f,
-                inputs(i).memory_start(), 1,
-                errors(i).memory_start(), 1,
-                grad.memory_start(), etl::dim<1>(errors)
-            );
-        }
-    }
-
-    template<typename Weight, typename Grad, typename Inputs, typename Errors, cpp_enable_if(std::is_same<Weight, double>::value)>
-    static void dense_compute_weight_gradients(Grad& grad, Inputs&& inputs, Errors& errors){
-        for(std::size_t i = 0; i < batch_size; ++i){
-            cblas_dger(
-                CblasRowMajor,
-                etl::dim<1>(inputs), etl::dim<1>(errors),
-                1.0,
-                inputs(i).memory_start(), 1,
-                errors(i).memory_start(), 1,
-                grad.memory_start(), etl::dim<1>(errors)
+                inputs(i).memory_start(), errors(i).memory_start(), grad.memory_start()
             );
         }
     }
