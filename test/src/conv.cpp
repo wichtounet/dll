@@ -13,7 +13,7 @@
 #include "dll/dense_layer.hpp"
 #include "dll/scale_layer.hpp"
 #include "dll/dbn.hpp"
-#include "dll/dense_stochastic_gradient_descent.hpp"
+#include "dll/stochastic_gradient_descent.hpp"
 #include "dll/mp_layer.hpp"
 #include "dll/avgp_layer.hpp"
 
@@ -45,7 +45,7 @@ TEST_CASE( "conv/sgd/1", "[dense][dbn][mnist][sgd]" ) {
             dll::conv_desc<1, 28, 28, 10, 24, 24, dll::activation<dll::function::SIGMOID>>::layer_t,
             dll::dense_desc<10 * 24 * 24, 10, dll::activation<dll::function::SIGMOID>>::layer_t
         >
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 
@@ -72,7 +72,7 @@ TEST_CASE( "conv/sgd/2", "[dense][dbn][mnist][sgd]" ) {
             dll::conv_desc<1, 28, 28, 10, 24, 24, dll::activation<dll::function::TANH>>::layer_t,
             dll::dense_desc<10 * 24 * 24, 10, dll::activation<dll::function::TANH>>::layer_t
         >
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 
@@ -101,7 +101,7 @@ TEST_CASE( "conv/sgd/3", "[dense][dbn][mnist][sgd]" ) {
             dll::conv_desc<1, 28, 28, 10, 24, 24, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<10 * 24 * 24, 10, dll::activation<dll::function::TANH>>::layer_t
         >
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 
@@ -131,7 +131,7 @@ TEST_CASE( "conv/sgd/4", "[dense][dbn][mnist][sgd]" ) {
             dll::conv_desc<10, 24, 24, 6, 20, 20, dll::activation<dll::function::SIGMOID>>::layer_t,
             dll::dense_desc<6 * 20 * 20, 10, dll::activation<dll::function::SIGMOID>>::layer_t
         >
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 
@@ -160,7 +160,7 @@ TEST_CASE( "conv/sgd/5", "[dense][dbn][mnist][sgd]" ) {
             dll::dense_desc<6 * 20 * 20, 200, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<200, 10, dll::activation<dll::function::SIGMOID>>::layer_t
         >
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 
@@ -192,7 +192,7 @@ TEST_CASE( "conv/sgd/6", "[dense][dbn][mnist][sgd]" ) {
             dll::dense_desc<6 * 8 * 8, 100, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<100, 10, dll::activation<dll::function::SIGMOID>>::layer_t
         >
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 
@@ -224,7 +224,7 @@ TEST_CASE( "conv/sgd/7", "[dense][dbn][mnist][sgd]" ) {
             dll::dense_desc<6 * 8 * 8, 100, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<100, 10, dll::activation<dll::function::SIGMOID>>::layer_t
         >
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 
@@ -259,7 +259,7 @@ TEST_CASE( "lenet", "[dense][dbn][mnist][sgd]" ) {
         >
         , dll::momentum
         , dll::weight_decay<>
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::batch_size<25>
     >::dbn_t dbn_t;
 
@@ -292,7 +292,7 @@ TEST_CASE( "conv/sgd/8", "[dense][dbn][mnist][sgd]" ) {
             dll::conv_desc<1, 28, 28, 10, 24, 24, dll::activation<dll::function::TANH>>::layer_t,
             dll::dense_desc<10 * 24 * 24, 10, dll::activation<dll::function::TANH>>::layer_t
         >
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 

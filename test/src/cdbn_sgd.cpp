@@ -9,7 +9,7 @@
 
 #include "dll/conv_rbm.hpp"
 #include "dll/dbn.hpp"
-#include "dll/dense_stochastic_gradient_descent.hpp"
+#include "dll/stochastic_gradient_descent.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -20,7 +20,7 @@ TEST_CASE( "cdbn/sgd/1", "[dbn][mnist][sgd]" ) {
             dll::conv_rbm_desc_square<1, 28, 10, 12, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::rbm_t,
             dll::rbm_desc<12 * 12 * 10, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t
             >
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::batch_size<10>
         >::dbn_t dbn_t;
 
@@ -51,7 +51,7 @@ TEST_CASE( "cdbn/sgd/2", "[dbn][mnist][sgd]" ) {
             dll::conv_rbm_desc_square<10, 12, 6, 6, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::rbm_t,
             dll::rbm_desc<6 * 6 * 6, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t
             >
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::batch_size<10>
         >::dbn_t dbn_t;
 
@@ -83,7 +83,7 @@ TEST_CASE( "cdbn/sgd/3", "[dbn][mnist][sgd]" ) {
             dll::rbm_desc<10 * 14 * 14, 700, dll::momentum, dll::batch_size<10>>::rbm_t,
             dll::rbm_desc<700, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t
             >
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::batch_size<10>
         >::dbn_t dbn_t;
 

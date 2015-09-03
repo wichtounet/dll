@@ -6,12 +6,15 @@
 //=======================================================================
 
 /*!
- * \file dense_stochastic_gradient_descent.hpp
- * \brief Stochastic Gradient Descent (SGD) Implementation for Dense networks
+ * \file _stochastic_gradient_descent.hpp
+ * \brief Stochastic Gradient Descent (SGD) Implementation for neural networks
+ *
+ * This implementations supports fully-connected layers, convolutional layers,
+ * RBM layers, CRBM layers, transform layers and pooling layers.
  */
 
-#ifndef DLL_DENSE_STOCHASTIC_GRADIENT_DESCENT
-#define DLL_DENSE_STOCHASTIC_GRADIENT_DESCENT
+#ifndef DLL_STOCHASTIC_GRADIENT_DESCENT
+#define DLL_STOCHASTIC_GRADIENT_DESCENT
 
 #include "cpp_utils/static_if.hpp"
 #include "context.hpp"
@@ -50,10 +53,10 @@ struct extract_function<L, std::enable_if_t<decay_layer_traits<L>::is_rbm_layer(
 };
 
 template<typename DBN, std::size_t Layer, typename Enable = void>
-struct dense_sgd_context;
+struct sgd_context;
 
 template<typename DBN, std::size_t Layer>
-struct dense_sgd_context <DBN, Layer, std::enable_if_t<is_dense<typename DBN::template layer_type<Layer>>::value>> {
+struct sgd_context <DBN, Layer, std::enable_if_t<is_dense<typename DBN::template layer_type<Layer>>::value>> {
     using layer_t = typename DBN::template layer_type<Layer>;
     using dbn_t = DBN;
     using weight = typename layer_t::weight;
@@ -72,11 +75,11 @@ struct dense_sgd_context <DBN, Layer, std::enable_if_t<is_dense<typename DBN::te
     etl::fast_matrix<weight, batch_size, num_hidden> output;
     etl::fast_matrix<weight, batch_size, num_hidden> errors;
 
-    dense_sgd_context() : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
+    sgd_context() : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
 };
 
 template<typename DBN, std::size_t Layer>
-struct dense_sgd_context <DBN, Layer, std::enable_if_t<is_conv<typename DBN::template layer_type<Layer>>::value>> {
+struct sgd_context <DBN, Layer, std::enable_if_t<is_conv<typename DBN::template layer_type<Layer>>::value>> {
     using layer_t = typename DBN::template layer_type<Layer>;
     using dbn_t = DBN;
     using weight = typename layer_t::weight;
@@ -103,11 +106,11 @@ struct dense_sgd_context <DBN, Layer, std::enable_if_t<is_conv<typename DBN::tem
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> output;
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> errors;
 
-    dense_sgd_context() : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
+    sgd_context() : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
 };
 
 template<typename DBN, std::size_t Layer>
-struct dense_sgd_context <DBN, Layer, std::enable_if_t<layer_traits<typename DBN::template layer_type<Layer>>::is_pooling_layer()>> {
+struct sgd_context <DBN, Layer, std::enable_if_t<layer_traits<typename DBN::template layer_type<Layer>>::is_pooling_layer()>> {
     using layer_t = typename DBN::template layer_type<Layer>;
     using dbn_t = DBN;
     using weight = typename layer_t::weight;
@@ -128,7 +131,7 @@ struct dense_sgd_context <DBN, Layer, std::enable_if_t<layer_traits<typename DBN
 };
 
 template<typename DBN, std::size_t Layer>
-struct dense_sgd_context <DBN, Layer, std::enable_if_t<layer_traits<typename DBN::template layer_type<Layer>>::is_transform_layer()>> {
+struct sgd_context <DBN, Layer, std::enable_if_t<layer_traits<typename DBN::template layer_type<Layer>>::is_transform_layer()>> {
     using layer_t = typename DBN::template layer_type<Layer>;
     using dbn_t = DBN;
     using weight = typename extract_weight_t<Layer, DBN>::type;
@@ -153,12 +156,12 @@ auto upsample(Input&& input, Output&& output, Errors&& errors){
 }
 
 template<typename DBN>
-struct dense_sgd_trainer {
+struct sgd_trainer {
     using dbn_t = DBN;
     using weight = typename dbn_t::weight;
-    using this_type = dense_sgd_trainer<dbn_t>;
+    using this_type = sgd_trainer<dbn_t>;
 
-    using context_tuple_t = typename dbn_context_builder_i<dense_sgd_context, dbn_t>::type;
+    using context_tuple_t = typename dbn_context_builder_i<sgd_context, dbn_t>::type;
 
     static constexpr const auto layers = dbn_t::layers;
     static constexpr const auto batch_size = dbn_t::batch_size;
@@ -168,7 +171,7 @@ struct dense_sgd_trainer {
 
     context_tuple_t contexts;
 
-    dense_sgd_trainer(dbn_t& dbn) : dbn(dbn), tuples(dbn.tuples) {
+    sgd_trainer(dbn_t& dbn) : dbn(dbn), tuples(dbn.tuples) {
         //Nothing else to init
     }
 

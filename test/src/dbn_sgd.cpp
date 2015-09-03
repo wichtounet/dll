@@ -10,7 +10,7 @@
 #include "catch.hpp"
 
 #include "dll/dbn.hpp"
-#include "dll/dense_stochastic_gradient_descent.hpp"
+#include "dll/stochastic_gradient_descent.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -21,7 +21,7 @@ TEST_CASE( "dbn/sgd/1", "[dbn][mnist][sgd]" ) {
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
             dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
             dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::batch_size<10>
         >::dbn_t dbn_t;
 
@@ -51,7 +51,7 @@ TEST_CASE( "dbn/sgd/2", "[dbn][mnist][sgd]" ) {
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
             dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
             dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::momentum
         , dll::batch_size<10>
         >::dbn_t dbn_t;
@@ -82,7 +82,7 @@ TEST_CASE( "dbn/sgd/3", "[dbn][mnist][sgd][gaussian]" ) {
             dll::rbm_desc<28 * 28, 200, dll::momentum, dll::batch_size<25>, dll::visible<dll::unit_type::GAUSSIAN>>::rbm_t,
             dll::rbm_desc<200, 500, dll::momentum, dll::batch_size<25>>::rbm_t,
             dll::rbm_desc<500, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::batch_size<10>
         >::dbn_t dbn_t;
 
@@ -113,7 +113,7 @@ TEST_CASE( "dbn/sgd/4", "[dbn][mnist][sgd][relu]" ) {
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::RELU>, dll::init_weights>::rbm_t,
             dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
             dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::batch_size<10>
         >::dbn_t dbn_t;
 
@@ -138,7 +138,7 @@ TEST_CASE( "dbn/sgd/5", "[dbn][mnist][sgd]" ) {
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
             dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
             dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::weight_decay<dll::decay_type::L2>
         , dll::batch_size<10>
         >::dbn_t dbn_t;
@@ -165,7 +165,7 @@ TEST_CASE( "dbn/sgd/6", "[dbn][mnist][sgd]" ) {
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
             dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
             dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::momentum
         , dll::weight_decay<dll::decay_type::L2>
         , dll::batch_size<100>
@@ -192,7 +192,7 @@ TEST_CASE( "dbn/sgd/7", "[dbn][mnist][sgd][memory]" ) {
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
             dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
             dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::memory
         , dll::batch_size<10>
         >::dbn_t dbn_t;

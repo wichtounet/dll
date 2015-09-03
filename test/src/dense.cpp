@@ -12,7 +12,7 @@
 #include "dll/dense_layer.hpp"
 #include "dll/scale_layer.hpp"
 #include "dll/dbn.hpp"
-#include "dll/dense_stochastic_gradient_descent.hpp"
+#include "dll/stochastic_gradient_descent.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -42,7 +42,7 @@ TEST_CASE( "dense/sgd/1", "[dense][dbn][mnist][sgd]" ) {
             dll::dense_desc<28 * 28, 100>::layer_t,
             dll::dense_desc<100, 10>::layer_t
         >,
-        dll::trainer<dll::dense_sgd_trainer>
+        dll::trainer<dll::sgd_trainer>
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 
@@ -69,7 +69,7 @@ TEST_CASE( "dense/sgd/2", "[dense][dbn][mnist][sgd]" ) {
             dll::dense_desc<28 * 28, 100, dll::activation<dll::function::TANH>>::layer_t,
             dll::dense_desc<100, 10, dll::activation<dll::function::TANH>>::layer_t
         >,
-        dll::trainer<dll::dense_sgd_trainer>
+        dll::trainer<dll::sgd_trainer>
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 
@@ -99,7 +99,7 @@ TEST_CASE( "dense/sgd/3", "[dense][dbn][mnist][sgd]" ) {
             dll::dense_desc<100, 10>::layer_t
         >
         , dll::momentum
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 
@@ -132,7 +132,7 @@ TEST_CASE( "dense/sgd/4", "[dense][dbn][mnist][sgd]" ) {
         >
         , dll::momentum
         , dll::weight_decay<>
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 
@@ -165,7 +165,7 @@ TEST_CASE( "dense/sgd/5", "[dense][dbn][mnist][sgd]" ) {
         >
         , dll::momentum
         , dll::weight_decay<>
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 
@@ -198,7 +198,7 @@ TEST_CASE( "dense/sgd/6", "[dense][dbn][mnist][sgd]" ) {
         >
         , dll::momentum
         , dll::weight_decay<>
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 
@@ -231,7 +231,7 @@ TEST_CASE( "dense/sgd/7", "[dense][dbn][mnist][sgd]" ) {
         >
         , dll::momentum
         , dll::weight_decay<>
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 
@@ -264,7 +264,7 @@ TEST_CASE( "dense/sgd/8", "[dense][dbn][mnist][sgd]" ) {
         >
         , dll::momentum
         , dll::weight_decay<>
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 
@@ -298,7 +298,7 @@ TEST_CASE( "dense/sgd/9", "[dense][dbn][mnist][sgd]" ) {
         >
         , dll::momentum
         , dll::weight_decay<>
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::batch_size<10>
     >::dbn_t dbn_t;
 

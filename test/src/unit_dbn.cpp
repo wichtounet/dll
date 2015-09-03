@@ -14,7 +14,7 @@
 #include "dll/dyn_rbm.hpp"
 #include "dll/dbn.hpp"
 #include "dll/binarize_layer.hpp"
-#include "dll/dense_stochastic_gradient_descent.hpp"
+#include "dll/stochastic_gradient_descent.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -137,7 +137,7 @@ TEST_CASE( "unit/dbn/mnist/5", "[dbn][sgd][unit]" ) {
             dll::rbm_desc<28 * 28, 150, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
             dll::rbm_desc<150, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
             dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
-        , dll::trainer<dll::dense_sgd_trainer>
+        , dll::trainer<dll::sgd_trainer>
         , dll::momentum
         , dll::batch_size<25>
         >::dbn_t;
