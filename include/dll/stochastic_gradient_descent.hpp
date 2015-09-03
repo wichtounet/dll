@@ -275,6 +275,7 @@ struct sgd_trainer {
         //Pooling and transform layers have no weight
     }
 
+    //Backpropagate errors from pooling
     template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(decay_layer_traits<Layer2>::is_pooling_layer())>
     static void compute_errors(Layer1&, Context1& ctx1, Layer2&, Context2& ctx2){
         constexpr const auto a_f = std::decay_t<Layer1>::activation_function;
@@ -342,13 +343,13 @@ struct sgd_trainer {
     }
 
     //Backpropagate errors from dense to pooling
-    template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(!decay_layer_traits<Layer1>::is_standard_layer() && decay_layer_traits<Layer2>::is_dense_layer())>
+    template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(!is_neural<Layer1>::value && is_dense<Layer2>::value)>
     static void compute_errors(Layer1& r1, Context1& ctx1, Layer2& r2, Context2& ctx2){
         compute_errors_from_dense(r1, ctx1, r2, ctx2, [](std::size_t){ return 1.0; });
     }
 
     //Backpropagate errors from conv to pooling
-    template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(!decay_layer_traits<Layer1>::is_standard_layer() && decay_layer_traits<Layer2>::is_convolutional_layer())>
+    template<typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(!is_neural<Layer1>::value && is_conv<Layer2>::value)>
     static void compute_errors(Layer1& r1, Context1& ctx1, Layer2& r2, Context2& ctx2){
         compute_errors_from_conv(r1, ctx1, r2, ctx2, [](std::size_t, std::size_t){ return 1.0; });
     }
