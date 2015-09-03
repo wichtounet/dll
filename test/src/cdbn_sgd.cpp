@@ -124,8 +124,6 @@ TEST_CASE( "cdbn/sgd/4", "[dbn][mnist][sgd]" ) {
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(500);
     REQUIRE(!dataset.training_images.empty());
 
-    //mnist::binarize_dataset(dataset);
-
     auto dbn = std::make_unique<dbn_t>();
 
     dbn->pretrain(dataset.training_images, 20);
