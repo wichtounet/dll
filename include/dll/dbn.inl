@@ -68,15 +68,18 @@ struct dbn final {
     using desc = Desc;
     using this_type = dbn<desc>;
 
-    using tuple_type = typename desc::layers::tuple_type;
-    tuple_type tuples;
+    //using tuple_type = typename desc::layers::tuple_type;
+    //tuple_type tuples;
 
-    static constexpr const std::size_t layers = desc::layers::layers;
+    using layers_t = typename desc::layers;
+    layers_t tuples;
+
+    static constexpr const std::size_t layers = layers_t::size;
     static constexpr const std::size_t batch_size = desc::BatchSize;
     static constexpr const std::size_t big_batch_size = desc::BigBatchSize;
 
-    template <std::size_t N>
-    using layer_type = typename std::tuple_element<N, tuple_type>::type;
+    template<std::size_t N>
+    using layer_type = detail::layer_type_t<N, layers_t>;
 
     using weight = typename extract_weight_t<0, this_type>::type;
 
@@ -136,16 +139,20 @@ public:
     bool svm_loaded = false;            ///< Indicates if a SVM model has been loaded (and therefore must be saved)
 #endif //DLL_SVM_SUPPORT
 
+    dbn(){
+        //Nothing else to init
+    }
+
 #ifdef __clang__ //Ideally this should only be used with libc++
-    template<typename... T>
-    explicit dbn(T&&... layers) : tuples(std::forward<T>(layers)...) {
-        //Nothing else to init
-    }
+    //template<typename... T>
+    //explicit dbn(T&&... layers) : tuples(std::forward<T>(layers)...) {
+        ////Nothing else to init
+    //}
 #else
-    template<typename... T>
-    explicit dbn(T&&... layers) : tuples({std::forward<T>(layers)}...) {
-        //Nothing else to init
-    }
+    //template<typename... T>
+    //explicit dbn(T&&... layers) : tuples({std::forward<T>(layers)}...) {
+        ////Nothing else to init
+    //}
 #endif
 
     //No copying
@@ -161,7 +168,7 @@ public:
 
         std::cout << "DBN with " << layers << " layers" << std::endl;
 
-        cpp::for_each(tuples, [&parameters](auto& layer){
+        for_each_layer([&parameters](auto& layer){
             std::cout << "    ";
             cpp::static_if<decay_layer_traits<decltype(layer)>::is_rbm_layer()>([&](auto f){
                 parameters += f(layer).parameters();
@@ -208,12 +215,12 @@ public:
 
     template<std::size_t N>
     layer_type<N>& layer_get() {
-        return std::get<N>(tuples);
+        return detail::layer_get<N>(tuples);
     }
 
     template<std::size_t N>
     constexpr const layer_type<N>& layer_get() const {
-        return std::get<N>(tuples);
+        return detail::layer_get<N>(tuples);
     }
 
     template<std::size_t N>
@@ -236,7 +243,7 @@ public:
 
     static std::size_t full_output_size() noexcept {
         std::size_t output = 0;
-        for_each_type<tuple_type>([&output](auto* layer){
+        detail::for_each_layer_type<layers_t>([&output](auto* layer){
             output += std::decay_t<std::remove_pointer_t<decltype(layer)>>::output_size();
         });
         return output;
@@ -1134,6 +1141,33 @@ public:
     /*}}}*/
 
 #endif //DLL_SVM_SUPPORT
+
+private:
+
+    template<typename... T>
+    void wormhole(T&&...){}
+
+
+    template<typename T>
+    struct for_each_impl;
+
+    template<std::size_t... I>
+    struct for_each_impl<std::index_sequence<I...>> {
+        template<typename Functor>
+        void for_each_layer(Functor& functor){
+            wormhole(functor(layer_get<I>())...);
+        }
+    };
+
+    using for_each_impl_t = for_each_impl<std::make_index_sequence<layers>>;
+
+public:
+
+    template<typename Functor>
+    void for_each_layer(Functor& functor){
+        for_each_impl_t::for_each_layer(functor);
+    }
+
 };
 
 } //end of namespace dll

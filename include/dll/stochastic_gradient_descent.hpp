@@ -62,7 +62,7 @@ struct sgd_trainer {
     static constexpr const auto batch_size = dbn_t::batch_size;
 
     dbn_t& dbn;
-    typename dbn_t::tuple_type& tuples;
+    typename dbn_t::layers_t& tuples;
 
     sgd_trainer(dbn_t& dbn) : dbn(dbn), tuples(dbn.tuples) {
         cpp::for_each(tuples, [](auto& layer){
@@ -313,10 +313,10 @@ struct sgd_trainer {
 
         auto n = label_batch.size();
 
-        decltype(auto) first_layer = std::get<0>(tuples);
+        decltype(auto) first_layer = dbn.template layer_get<0>();
         decltype(auto) first_ctx   = first_layer.template get_sgd_context<dbn_t>();
 
-        decltype(auto) last_layer = std::get<layers - 1>(tuples);
+        decltype(auto) last_layer = dbn.template layer_get<layers - 1>(tuples);
         decltype(auto) last_ctx   = last_layer.template get_sgd_context<dbn_t>();
 
         using inputs_t = typename input_batch_t<0>::type;
