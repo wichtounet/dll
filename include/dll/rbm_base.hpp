@@ -10,9 +10,11 @@
 
 #include <iostream>
 #include <fstream>
+#include <memory>
 
 #include "io.hpp"
 #include "rbm_trainer_fwd.hpp"
+#include "cg_context.hpp" //Context for CG
 
 namespace dll {
 
@@ -48,6 +50,9 @@ struct rbm_base {
     weight pbias = 0.002;
     weight pbias_lambda = 5;
 
+    //Needs to be shared because of dyn_rbm
+    mutable std::shared_ptr<cg_context<parent_t>> cg_context_ptr;
+
     //No copying
 
 #ifdef __clang__
@@ -71,6 +76,22 @@ struct rbm_base {
 
     const parent_t& as_derived() const {
         return *static_cast<const parent_t*>(this);
+    }
+
+    //CG context
+
+    void init_cg_context(){
+        if(!cg_context_ptr){
+            cg_context_ptr = std::make_shared<cg_context<parent_t>>();
+        }
+    }
+
+    cg_context<parent_t>& get_cg_context(){
+        return *cg_context_ptr;
+    }
+
+    const cg_context<parent_t>& get_cg_context() const {
+        return *cg_context_ptr;
     }
 
     //Normal Train functions

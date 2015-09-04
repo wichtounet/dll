@@ -5,7 +5,10 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-/*! \file Conjugate Gradient (CG) descent Implementation */
+/*!
+ * \file conjugate_gradient.hpp
+ * \brief Conjugate Gradient (CG) descent Implementation
+ */
 
 //TODO: The handling of transform layers is not complete, this should
 //be completed and support for pooling layers should be added as
@@ -14,7 +17,6 @@
 #ifndef DLL_CONJUGATE_GRADIENT_HPP
 #define DLL_CONJUGATE_GRADIENT_HPP
 
-#include "context.hpp"
 #include "batch.hpp"
 
 namespace dll {
@@ -33,76 +35,6 @@ struct gradient_context {
     }
 };
 
-template<typename RBM>
-struct cg_context {
-    using rbm_t = RBM;
-    using weight = typename rbm_t::weight;
-
-    static constexpr const bool is_trained = true;
-
-    static constexpr const std::size_t num_visible = rbm_t::num_visible;
-    static constexpr const std::size_t num_hidden = rbm_t::num_hidden;
-
-    etl::fast_matrix<weight, num_visible, num_hidden> gr_w_incs;
-    etl::fast_vector<weight, num_hidden> gr_b_incs;
-
-    etl::fast_matrix<weight, num_visible, num_hidden> gr_w_best;
-    etl::fast_vector<weight, num_hidden> gr_b_best;
-
-    etl::fast_matrix<weight, num_visible, num_hidden> gr_w_best_incs;
-    etl::fast_vector<weight, num_hidden> gr_b_best_incs;
-
-    etl::fast_matrix<weight, num_visible, num_hidden> gr_w_df0;
-    etl::fast_vector<weight, num_hidden> gr_b_df0;
-
-    etl::fast_matrix<weight, num_visible, num_hidden> gr_w_df3;
-    etl::fast_vector<weight, num_hidden> gr_b_df3;
-
-    etl::fast_matrix<weight, num_visible, num_hidden> gr_w_s;
-    etl::fast_vector<weight, num_hidden> gr_b_s;
-
-    etl::fast_matrix<weight, num_visible, num_hidden> gr_w_tmp;
-    etl::fast_vector<weight, num_hidden> gr_b_tmp;
-
-    std::vector<etl::dyn_vector<weight>> gr_probs_a;
-    std::vector<etl::dyn_vector<weight>> gr_probs_s;
-};
-
-template<typename Desc>
-struct cg_context <binarize_layer<Desc>> {
-    using rbm_t = binarize_layer<Desc>;
-    using weight = double;
-
-    static constexpr const bool is_trained = false;
-
-    static constexpr const std::size_t num_visible = 1;
-    static constexpr const std::size_t num_hidden = 1;
-
-    etl::fast_matrix<weight, 1, 1> gr_w_incs;
-    etl::fast_vector<weight, 1> gr_b_incs;
-
-    etl::fast_matrix<weight, 1, 1> gr_w_best;
-    etl::fast_vector<weight, 1> gr_b_best;
-
-    etl::fast_matrix<weight, 1, 1> gr_w_best_incs;
-    etl::fast_vector<weight, 1> gr_b_best_incs;
-
-    etl::fast_matrix<weight, 1, 1> gr_w_df0;
-    etl::fast_vector<weight, 1> gr_b_df0;
-
-    etl::fast_matrix<weight, 1, 1> gr_w_df3;
-    etl::fast_vector<weight, 1> gr_b_df3;
-
-    etl::fast_matrix<weight, 1, 1> gr_w_s;
-    etl::fast_vector<weight, 1> gr_b_s;
-
-    etl::fast_matrix<weight, 1, 1> gr_w_tmp;
-    etl::fast_vector<weight, 1> gr_b_tmp;
-
-    std::vector<etl::dyn_vector<weight>> gr_probs_a;
-    std::vector<etl::dyn_vector<weight>> gr_probs_s;
-};
-
 template<typename DBN, bool Debug = false>
 struct cg_trainer {
     using dbn_t = DBN;
@@ -110,17 +42,15 @@ struct cg_trainer {
 
     using this_type = cg_trainer<DBN, Debug>;
 
-    using rbm_context_tuple_t = typename context_builder<cg_context, typename dbn_t::tuple_type>::type;
-
     static constexpr const std::size_t layers = dbn_t::layers;
 
     dbn_t& dbn;
     typename dbn_t::tuple_type& tuples;
 
-    rbm_context_tuple_t rbm_contexts;
-
     cg_trainer(dbn_t& dbn) : dbn(dbn), tuples(dbn.tuples) {
         cpp::for_each(tuples, [](auto& r1){
+            r1.init_cg_context();
+
             using rbm_t = std::decay_t<decltype(r1)>;
 
             if(is_relu(rbm_t::hidden_unit)){
@@ -130,7 +60,9 @@ struct cg_trainer {
     }
 
     void init_training(std::size_t batch_size){
-        cpp::for_each(rbm_contexts, [batch_size](auto& ctx){
+        cpp::for_each(tuples, [batch_size](auto& rbm){
+            auto& ctx = rbm.get_cg_context();
+
             if(ctx.is_trained){
                 typedef typename std::remove_reference<decltype(ctx)>::type ctx_t;
                 constexpr const auto num_hidden = ctx_t::num_hidden;
@@ -213,9 +145,9 @@ struct cg_trainer {
         static std::vector<std::vector<weight>> diffs;
         diffs.resize(n_samples);
 
-        cpp::for_each(rbm_contexts, [](auto& ctx){
-            ctx.gr_w_incs = 0.0;
-            ctx.gr_b_incs = 0.0;
+        cpp::for_each(tuples, [](auto& rbm){
+            rbm.get_cg_context().gr_w_incs = 0.0;
+            rbm.get_cg_context().gr_b_incs = 0.0;
         });
 
         cost = 0.0;
@@ -229,10 +161,11 @@ struct cg_trainer {
 
         while(it != end){
             auto& input = *it;
-            auto output = std::ref(std::get<0>(rbm_contexts).gr_probs_a[sample]);
+            auto output = std::ref(std::get<0>(tuples).get_cg_context().gr_probs_a[sample]);
             auto& target = *tit;
 
-            cpp::for_each_i(tuples, rbm_contexts, [&input,&output,sample](std::size_t I, auto& rbm, auto& ctx){
+            cpp::for_each_i(tuples, [&input,&output,sample](std::size_t I, auto& rbm){
+                auto& ctx = rbm.get_cg_context();
                 auto& output_ref = static_cast<etl::dyn_vector<weight>&>(output);
 
                 if(I == 0){
@@ -246,7 +179,7 @@ struct cg_trainer {
             auto& diff = diffs[sample];
             diff.resize(n_hidden);
 
-            auto& result = std::get<layers - 1>(rbm_contexts).gr_probs_a[sample];
+            auto& result = std::get<layers - 1>(tuples).get_cg_context().gr_probs_a[sample];
             weight scale = std::accumulate(result.begin(), result.end(), 0.0);
 
             for(auto& r : result){
@@ -268,15 +201,18 @@ struct cg_trainer {
 
         //Get pointers to the different gr_probs
         std::array<std::vector<etl::dyn_vector<weight>>*, layers> probs_refs;
-        cpp::for_each_i(rbm_contexts, [&probs_refs](std::size_t I, auto& ctx){
-            probs_refs[I] = &ctx.gr_probs_a;
+        cpp::for_each_i(tuples, [&probs_refs](std::size_t I, auto& rbm){
+            probs_refs[I] = &rbm.get_cg_context().gr_probs_a;
         });
 
-        update_incs<Temp>(std::get<layers-1>(rbm_contexts), diffs, std::get<layers-2>(rbm_contexts).gr_probs_a);
+        update_incs<Temp>(std::get<layers-1>(tuples).get_cg_context(), diffs, std::get<layers-2>(tuples).get_cg_context().gr_probs_a);
 
         std::vector<std::vector<weight>>& diffs_p = diffs;
 
-        cpp::for_each_rpair_i(tuples, rbm_contexts, [&diffs_p, n_samples, &probs_refs](std::size_t I, auto& r1, auto& r2, auto& c1, auto& c2){
+        cpp::for_each_rpair_i(tuples, [&diffs_p, n_samples, &probs_refs](std::size_t I, auto& r1, auto& r2){
+            auto& c1 = r1.get_cg_context();
+            auto& c2 = r2.get_cg_context();
+
             this_type::update_diffs<Temp>(r1, r2, c1, c2, diffs_p, n_samples);
 
             if(I > 0){
@@ -284,7 +220,7 @@ struct cg_trainer {
             }
         });
 
-        update_incs<Temp>(std::get<0>(rbm_contexts), diffs, context.inputs);
+        update_incs<Temp>(std::get<0>(tuples).get_cg_context(), diffs, context.inputs);
 
         if(Debug){
             std::cout << "evaluating(" << Temp << "): cost:" << cost << " error: " << (error / n_samples) << std::endl;
@@ -294,10 +230,12 @@ struct cg_trainer {
     bool is_finite(){
         bool finite = true;
 
-        cpp::for_each(rbm_contexts, [&finite](auto& a){
+        cpp::for_each(tuples, [&finite](auto& r){
             if(!finite){
                 return;
             }
+
+            auto& a = r.get_cg_context();
 
             for(auto value : a.gr_w_incs){
                 if(!std::isfinite(value)){
@@ -319,7 +257,8 @@ struct cg_trainer {
 
     weight s_dot_s(){
         weight acc = 0.0;
-        cpp::for_each(rbm_contexts, [&acc](auto& ctx){
+        cpp::for_each(tuples, [&acc](auto& rbm){
+            auto& ctx = rbm.get_cg_context();
             acc += dot(ctx.gr_w_s, ctx.gr_w_s) + dot(ctx.gr_b_s, ctx.gr_b_s);
         });
         return acc;
@@ -327,7 +266,8 @@ struct cg_trainer {
 
     weight df3_dot_s(){
         weight acc = 0.0;
-        cpp::for_each(rbm_contexts, [&acc](auto& ctx){
+        cpp::for_each(tuples, [&acc](auto& rbm){
+            auto& ctx = rbm.get_cg_context();
             acc += dot(ctx.gr_w_df3, ctx.gr_w_s) + dot(ctx.gr_b_df3, ctx.gr_b_s);
         });
         return acc;
@@ -335,7 +275,8 @@ struct cg_trainer {
 
     weight df3_dot_df3(){
         weight acc = 0.0;
-        cpp::for_each(rbm_contexts, [&acc](auto& ctx){
+        cpp::for_each(tuples, [&acc](auto& rbm){
+            auto& ctx = rbm.get_cg_context();
             acc += dot(ctx.gr_w_df3, ctx.gr_w_df3) + dot(ctx.gr_b_df3, ctx.gr_b_df3);
         });
         return acc;
@@ -343,7 +284,8 @@ struct cg_trainer {
 
     weight df0_dot_df0(){
         weight acc = 0.0;
-        cpp::for_each(rbm_contexts, [&acc](auto& ctx){
+        cpp::for_each(tuples, [&acc](auto& rbm){
+            auto& ctx = rbm.get_cg_context();
             acc += dot(ctx.gr_w_df0, ctx.gr_w_df0) + dot(ctx.gr_b_df0, ctx.gr_b_df0);
         });
         return acc;
@@ -351,7 +293,8 @@ struct cg_trainer {
 
     weight df0_dot_df3(){
         weight acc = 0.0;
-        cpp::for_each(rbm_contexts, [&acc](auto& ctx){
+        cpp::for_each(tuples, [&acc](auto& rbm){
+            auto& ctx = rbm.get_cg_context();
             acc += dot(ctx.gr_w_df0, ctx.gr_w_df3) + dot(ctx.gr_b_df0, ctx.gr_b_df3);
         });
         return acc;
@@ -378,7 +321,9 @@ struct cg_trainer {
         weight cost = 0.0;
         gradient<false>(context, cost);
 
-        cpp::for_each(rbm_contexts, [](auto& ctx){
+        cpp::for_each(tuples, [](auto& rbm){
+            auto& ctx = rbm.get_cg_context();
+
             ctx.gr_w_df0 = ctx.gr_w_incs;
             ctx.gr_b_df0 = ctx.gr_b_incs;
 
@@ -394,7 +339,9 @@ struct cg_trainer {
             auto best_cost = i0.f;
             i3.f = 0.0;
 
-            cpp::for_each(tuples, rbm_contexts, [](auto& rbm, auto& ctx){
+            cpp::for_each(tuples, [](auto& rbm){
+                auto& ctx = rbm.get_cg_context();
+
                 ctx.gr_w_best = rbm.w;
                 ctx.gr_b_best = rbm.b;
 
@@ -416,7 +363,9 @@ struct cg_trainer {
                 i2.d = i0.d;
                 i3.f = i0.f;
 
-                cpp::for_each(rbm_contexts, [](auto& ctx){
+                cpp::for_each(tuples, [](auto& rbm){
+                    auto& ctx = rbm.get_cg_context();
+
                     ctx.gr_w_df3 = ctx.gr_w_df0;
                     ctx.gr_b_df3 = ctx.gr_b_df0;
                 });
@@ -426,7 +375,9 @@ struct cg_trainer {
                         break;
                     }
 
-                    cpp::for_each(tuples, rbm_contexts, [&i3](auto& rbm, auto& ctx){
+                    cpp::for_each(tuples, [&i3](auto& rbm){
+                        auto& ctx = rbm.get_cg_context();
+
                         ctx.gr_w_tmp = rbm.w + ctx.gr_w_s * i3.x;
                         ctx.gr_b_tmp = rbm.b + ctx.gr_b_s * i3.x;
                     });
@@ -434,7 +385,9 @@ struct cg_trainer {
                     gradient<true>(context, cost);
 
                     i3.f = cost;
-                    cpp::for_each(rbm_contexts, [](auto& ctx){
+                    cpp::for_each(tuples, [](auto& rbm){
+                        auto& ctx = rbm.get_cg_context();
+
                         ctx.gr_w_df3 = ctx.gr_w_incs;
                         ctx.gr_b_df3 = ctx.gr_b_incs;
                     });
@@ -442,7 +395,9 @@ struct cg_trainer {
                     if(std::isfinite(cost) && is_finite()){
                         if(i3.f < best_cost){
                             best_cost = i3.f;
-                            cpp::for_each(rbm_contexts, [](auto& ctx){
+                            cpp::for_each(tuples, [](auto& rbm){
+                                auto& ctx = rbm.get_cg_context();
+
                                 ctx.gr_w_best = ctx.gr_w_tmp;
                                 ctx.gr_b_best = ctx.gr_b_tmp;
 
@@ -504,7 +459,9 @@ struct cg_trainer {
 
                 i3.x = std::max(std::min(i3.x, i4.x - INT * (i4.x - i2.x)), i2.x + INT * (i4.x -i2.x));
 
-                cpp::for_each(tuples, rbm_contexts, [&i3](auto& rbm, auto& ctx){
+                cpp::for_each(tuples, [&i3](auto& rbm){
+                    auto& ctx = rbm.get_cg_context();
+
                     ctx.gr_w_tmp = rbm.w + ctx.gr_w_s * i3.x;
                     ctx.gr_b_tmp = rbm.b + ctx.gr_b_s * i3.x;
                 });
@@ -512,14 +469,18 @@ struct cg_trainer {
                 gradient<true>(context, cost);
 
                 i3.f = cost;
-                cpp::for_each(rbm_contexts, [](auto& ctx){
+                cpp::for_each(tuples, [](auto& rbm){
+                    auto& ctx = rbm.get_cg_context();
+
                     ctx.gr_w_df3 = ctx.gr_w_incs;
                     ctx.gr_b_df3 = ctx.gr_b_incs;
                 });
 
                 if(i3.f < best_cost){
                     best_cost = i3.f;
-                    cpp::for_each(rbm_contexts, [](auto& ctx){
+                    cpp::for_each(tuples, [](auto& rbm){
+                        auto& ctx = rbm.get_cg_context();
+
                         ctx.gr_w_best = ctx.gr_w_tmp;
                         ctx.gr_b_best = ctx.gr_b_tmp;
 
@@ -534,7 +495,9 @@ struct cg_trainer {
             }
 
             if(std::abs(i3.d) < -SIG * i0.d && i3.f < i0.f + i3.x * RHO * i0.d){
-                cpp::for_each(tuples, rbm_contexts, [&i3](auto& rbm, auto& ctx){
+                cpp::for_each(tuples, [&i3](auto& rbm){
+                    auto& ctx = rbm.get_cg_context();
+
                     rbm.w += ctx.gr_w_s * i3.x;
                     rbm.b += ctx.gr_b_s * i3.x;
                 });
@@ -543,7 +506,8 @@ struct cg_trainer {
 
                 auto g = (df3_dot_df3() - df0_dot_df3()) / df0_dot_df0();
 
-                cpp::for_each(rbm_contexts, [g](auto& ctx){
+                cpp::for_each(tuples, [g](auto& rbm){
+                    auto& ctx = rbm.get_cg_context();
                     ctx.gr_w_s = (ctx.gr_w_s * g) + (ctx.gr_w_df3 * -1.0);
                     ctx.gr_b_s = (ctx.gr_b_s * g) + (ctx.gr_b_df3 * -1.0);
                 });
@@ -551,13 +515,15 @@ struct cg_trainer {
                 i3.d = i0.d;
                 i0.d = df3_dot_s();
 
-                cpp::for_each(rbm_contexts, [](auto& ctx){
+                cpp::for_each(tuples, [](auto& rbm){
+                    auto& ctx = rbm.get_cg_context();
                     ctx.gr_w_df0 = ctx.gr_w_df3;
                     ctx.gr_b_df0 = ctx.gr_b_df3;
                 });
 
                 if(i0.d > 0){
-                    cpp::for_each(rbm_contexts, [] (auto& ctx) {
+                    cpp::for_each(tuples, [] (auto& rbm) {
+                    auto& ctx = rbm.get_cg_context();
                         ctx.gr_w_s = ctx.gr_w_df0 * -1.0;
                         ctx.gr_b_s = ctx.gr_b_df0 * -1.0;
                     });
@@ -571,7 +537,9 @@ struct cg_trainer {
                     break;
                 }
 
-                cpp::for_each(rbm_contexts, [] (auto& ctx) {
+                cpp::for_each(tuples, [] (auto& rbm) {
+                    auto& ctx = rbm.get_cg_context();
+
                     ctx.gr_w_s = ctx.gr_w_df0 * -1.0;
                     ctx.gr_b_s = ctx.gr_b_df0 * -1.0;
                 });
