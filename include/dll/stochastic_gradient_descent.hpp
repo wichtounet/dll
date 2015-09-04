@@ -62,10 +62,9 @@ struct sgd_trainer {
     static constexpr const auto batch_size = dbn_t::batch_size;
 
     dbn_t& dbn;
-    typename dbn_t::layers_t& tuples;
 
-    sgd_trainer(dbn_t& dbn) : dbn(dbn), tuples(dbn.tuples) {
-        cpp::for_each(tuples, [](auto& layer){
+    sgd_trainer(dbn_t& dbn) : dbn(dbn) {
+        dbn.for_each_layer([](auto& layer){
             layer.template init_sgd_context<dbn_t>();
         });
     }
@@ -79,7 +78,7 @@ struct sgd_trainer {
 
         first_layer.batch_activate_hidden(first_layer_context.output, item_data);
 
-        cpp::for_each_pair(tuples, [](auto& layer_1, auto& layer_2){
+        dbn.for_each_layer_pair([](auto& layer_1, auto& layer_2){
             auto& ctx1 = layer_1.template get_sgd_context<dbn_t>();
             auto& ctx2 = layer_2.template get_sgd_context<dbn_t>();
 
@@ -316,7 +315,7 @@ struct sgd_trainer {
         decltype(auto) first_layer = dbn.template layer_get<0>();
         decltype(auto) first_ctx   = first_layer.template get_sgd_context<dbn_t>();
 
-        decltype(auto) last_layer = dbn.template layer_get<layers - 1>(tuples);
+        decltype(auto) last_layer = dbn.template layer_get<layers - 1>();
         decltype(auto) last_ctx   = last_layer.template get_sgd_context<dbn_t>();
 
         using inputs_t = typename input_batch_t<0>::type;
@@ -345,7 +344,7 @@ struct sgd_trainer {
 
         //Compute the gradients of each layer
 
-        cpp::for_each_rpair_i(tuples, [](std::size_t, auto& r1, auto& r2){
+        dbn.for_each_layer_rpair([](auto& r1, auto& r2){
             auto& ctx1 = r1.template get_sgd_context<dbn_t>();
             auto& ctx2 = r2.template get_sgd_context<dbn_t>();
 
@@ -358,7 +357,7 @@ struct sgd_trainer {
 
         //Apply gradients
 
-        cpp::for_each(tuples, [this, n](auto& layer){
+        dbn.for_each_layer([this, n](auto& layer){
             this->apply_gradients(layer, n);
         });
     }

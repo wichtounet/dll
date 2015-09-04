@@ -190,7 +190,7 @@ public:
     }
 
     void store(std::ostream& os) const {
-        cpp::for_each(tuples, [&os](auto& layer){
+        for_each_layer([&os](auto& layer){
             cpp::static_if<decay_layer_traits<decltype(layer)>::is_rbm_layer()>([&](auto f){
                 f(layer).store(os);
             });
@@ -202,7 +202,7 @@ public:
     }
 
     void load(std::istream& is){
-        cpp::for_each(tuples, [&is](auto& layer){
+        for_each_layer([&is](auto& layer){
             cpp::static_if<decay_layer_traits<decltype(layer)>::is_rbm_layer()>([&](auto f){
                 f(layer).load(is);
             });
@@ -1144,30 +1144,83 @@ public:
 
 private:
 
-    template<typename... T>
-    void wormhole(T&&...){}
-
-
     template<typename T>
     struct for_each_impl;
 
     template<std::size_t... I>
     struct for_each_impl<std::index_sequence<I...>> {
+        this_type& dbn;
+
+        for_each_impl(this_type& dbn) : dbn(dbn) {}
+
+        template<typename... T>
+        static void wormhole(T&&...){}
+
         template<typename Functor>
-        void for_each_layer(Functor& functor){
-            wormhole(functor(layer_get<I>())...);
+        void for_each_layer(Functor&& functor){
+            wormhole((functor(dbn.layer_get<I>()),0)...);
+        }
+
+        template<typename Functor>
+        void for_each_layer_i(Functor&& functor){
+            wormhole((functor(I, dbn.layer_get<I>()),0)...);
+        }
+
+        template<typename Functor>
+        void for_each_layer_pair(Functor&& functor){
+            wormhole((functor(dbn.layer_get<I>(), dbn.layer_get<I+1>()),0)...);
+        }
+
+        template<typename Functor>
+        void for_each_layer_pair_i(Functor&& functor){
+            wormhole((functor(I, dbn.layer_get<I>(), dbn.layer_get<I+1>()),0)...);
+        }
+
+        template<typename Functor>
+        void for_each_layer_rpair(Functor&& functor){
+            wormhole((functor(dbn.layer_get<layers - I - 2>(), dbn.layer_get<layers - I - 1>()),0)...);
+        }
+
+        template<typename Functor>
+        void for_each_layer_rpair_i(Functor&& functor){
+            wormhole((functor(layers - I - 2, dbn.layer_get<layers - I - 2>(), dbn.layer_get<layers - I - 1>()),0)...);
         }
     };
 
     using for_each_impl_t = for_each_impl<std::make_index_sequence<layers>>;
+    using for_each_pair_impl_t = for_each_impl<std::make_index_sequence<layers - 1>>;
 
 public:
 
     template<typename Functor>
-    void for_each_layer(Functor& functor){
-        for_each_impl_t::for_each_layer(functor);
+    void for_each_layer(Functor&& functor){
+        for_each_impl_t(*this).for_each_layer(std::forward<Functor>(functor));
     }
 
+    template<typename Functor>
+    void for_each_layer_i(Functor&& functor){
+        for_each_impl_t(*this).for_each_layer_i(std::forward<Functor>(functor));
+    }
+
+    template<typename Functor>
+    void for_each_layer_pair(Functor&& functor){
+        for_each_pair_impl_t(*this).for_each_layer_pair(std::forward<Functor>(functor));
+    }
+
+    template<typename Functor>
+    void for_each_layer_pair_i(Functor&& functor){
+        for_each_pair_impl_t(*this).for_each_layer_pair_i(std::forward<Functor>(functor));
+    }
+
+    template<typename Functor>
+    void for_each_layer_rpair(Functor&& functor){
+        for_each_pair_impl_t(*this).for_each_layer_rpair(std::forward<Functor>(functor));
+    }
+
+    template<typename Functor>
+    void for_each_layer_rpair_i(Functor&& functor){
+        for_each_pair_impl_t(*this).for_each_layer_rpair_i(std::forward<Functor>(functor));
+    }
 };
 
 } //end of namespace dll
