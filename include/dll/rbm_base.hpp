@@ -8,7 +8,7 @@
 #ifndef DLL_RBM_BASE_HPP
 #define DLL_RBM_BASE_HPP
 
-#include <iostream>
+#include <iosfwd>
 #include <fstream>
 
 #include "neural_base.hpp"
