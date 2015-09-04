@@ -115,6 +115,67 @@ struct dbn_label_layers {
     using tuple_type = std::tuple<Layers...>;
 };
 
+namespace detail {
+
+template<std::size_t I, typename T>
+struct layers_leaf {
+    T value;
+
+    constexpr T& get() noexcept {
+        return value;
+    }
+
+    constexpr const T& get() const noexcept {
+        return value;
+    }
+};
+
+template<typename Indices, typename... Layers>
+struct layers_impl;
+
+template<std::size_t... I, typename... Layers>
+struct layers_impl <std::index_sequence<I...>, Layers...>> : layers_leaf<I, Layers>... {
+
+};
+
+template<typename... Layers>
+struct layers {
+    static constexpr const std::size_t layers = sizeof...(Layers);
+
+    using base_t = layers_impl<std::make_index_sequence<layers>, Layers...>;
+
+    base_t base;
+}
+
+//Note: Maybe simplify further removing the type_list
+
+template<typename... T>
+struct type_list {};
+
+template<std::size_t I, typename T>
+struct layer_type;
+
+template<std::sizesize_t I>
+struct layer_type<I, type_list<> >{
+    static_assert(I == 0, "index out of range");
+    static_assert(I != 0, "index out of range");
+};
+
+template<typename Head, typename... T>
+struct layer_type<0, type_list<Head, T...>> {
+    using type = Head;
+};
+
+template<std::size_t I, typename Head, typename ... T>
+struct layer_type<I, type_list<Head,  T...>> {
+    using type = typename layer_type<I-1, type_list<T...> >::type
+};
+
+template<std::size_t I, typename... T>
+using layer_type_t = typename layer_type <I, type_list<T...>>::type;
+
+} //end of namespace detail
+
 } //end of namespace dll
 
 #endif
