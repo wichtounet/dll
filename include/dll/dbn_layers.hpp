@@ -121,11 +121,11 @@ template<std::size_t I, typename T>
 struct layers_leaf {
     T value;
 
-    constexpr T& get() noexcept {
+    T& get() noexcept {
         return value;
     }
 
-    constexpr const T& get() const noexcept {
+    const T& get() const noexcept {
         return value;
     }
 };
@@ -134,18 +134,18 @@ template<typename Indices, typename... Layers>
 struct layers_impl;
 
 template<std::size_t... I, typename... Layers>
-struct layers_impl <std::index_sequence<I...>, Layers...>> : layers_leaf<I, Layers>... {
+struct layers_impl <std::index_sequence<I...>, Layers...> : layers_leaf<I, Layers>... {
 
 };
 
 template<typename... Layers>
 struct layers {
-    static constexpr const std::size_t layers = sizeof...(Layers);
+    static constexpr const std::size_t size = sizeof...(Layers);
 
-    using base_t = layers_impl<std::make_index_sequence<layers>, Layers...>;
+    using base_t = layers_impl<std::make_index_sequence<size>, Layers...>;
 
     base_t base;
-}
+};
 
 //Note: Maybe simplify further removing the type_list
 
@@ -155,7 +155,7 @@ struct type_list {};
 template<std::size_t I, typename T>
 struct layer_type;
 
-template<std::sizesize_t I>
+template<std::size_t I>
 struct layer_type<I, type_list<> >{
     static_assert(I == 0, "index out of range");
     static_assert(I != 0, "index out of range");
@@ -168,7 +168,7 @@ struct layer_type<0, type_list<Head, T...>> {
 
 template<std::size_t I, typename Head, typename ... T>
 struct layer_type<I, type_list<Head,  T...>> {
-    using type = typename layer_type<I-1, type_list<T...> >::type
+    using type = typename layer_type<I-1, type_list<T...> >::type;
 };
 
 template<std::size_t I, typename... T>
