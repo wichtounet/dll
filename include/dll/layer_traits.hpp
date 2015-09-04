@@ -267,6 +267,17 @@ constexpr std::size_t input_size(const RBM&){
     return layer_traits<RBM>::input_size();
 }
 
+//TODO This should probably be moved into the traits class
+
+template<typename Layer>
+struct is_dense : cpp::bool_constant<decay_layer_traits<Layer>::is_dense_layer() || decay_layer_traits<Layer>::is_standard_rbm_layer()> {};
+
+template<typename Layer>
+struct is_conv : cpp::bool_constant<decay_layer_traits<Layer>::is_convolutional_layer() || decay_layer_traits<Layer>::is_convolutional_rbm_layer()> {};
+
+template<typename Layer>
+struct is_neural : cpp::or_c<is_dense<Layer>, is_conv<Layer>> {};
+
 } //end of dll namespace
 
 #endif

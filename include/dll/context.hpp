@@ -26,15 +26,15 @@ struct dbn_context_builder<Context, DBN, std::tuple<Args...>> {
     using type = std::tuple<Context<DBN, Args>...>;
 };
 
-template<template<typename, std::size_t, typename...> class Context, typename DBN, typename T>
+template<template<typename...> class Context, typename DBN, typename T>
 struct dbn_context_builder_i_impl;
 
-template<template<typename, std::size_t, typename...> class Context, typename DBN, std::size_t... I>
+template<template<typename...> class Context, typename DBN, std::size_t... I>
 struct dbn_context_builder_i_impl <Context, DBN, std::index_sequence<I...>> {
-    using type = std::tuple<Context<DBN, I>...>;
+    using type = std::tuple<Context<DBN, typename DBN::template layer_type<I>>...>;
 };
 
-template<template<typename, std::size_t, typename...> class Context, typename DBN>
+template<template<typename...> class Context, typename DBN>
 struct dbn_context_builder_i {
     using type = typename dbn_context_builder_i_impl<Context, DBN, std::make_index_sequence<DBN::layers>>::type;
 };

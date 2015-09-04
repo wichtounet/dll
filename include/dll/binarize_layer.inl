@@ -8,13 +8,15 @@
 #ifndef DLL_BINARIZE_LAYER_INL
 #define DLL_BINARIZE_LAYER_INL
 
+#include "neural_base.hpp"
+
 namespace dll {
 
 /*!
  * \brief Simple thresholding binarize layer
  */
 template<typename Desc>
-struct binarize_layer {
+struct binarize_layer : neural_base<binarize_layer<Desc>> {
     using desc = Desc;
 
     static constexpr const std::size_t Threshold = desc::T;

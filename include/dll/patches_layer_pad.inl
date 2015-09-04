@@ -31,6 +31,9 @@ struct patches_layer_padh {
     using input_one_t = etl::dyn_matrix<weight, 3>;
     using input_t = std::vector<input_one_t>;
 
+    template<std::size_t B>
+    using input_batch_t = etl::fast_dyn_matrix<weight, 1, 1, 1, 1>; //This is fake, should never be used
+
     using output_deep_t= etl::fast_dyn_matrix<weight, 1UL, height, width>;
     using output_one_t = std::vector<etl::fast_dyn_matrix<weight, 1UL, height, width>>;
     using output_t = std::vector<output_one_t>;

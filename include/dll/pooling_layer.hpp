@@ -10,13 +10,15 @@
 
 #include "etl/etl.hpp"
 
+#include "neural_base.hpp"
+
 namespace dll {
 
 /*!
  * \brief Standard pooling layer
  */
-template<typename Desc>
-struct pooling_layer_3d {
+template<typename Parent, typename Desc>
+struct pooling_layer_3d : neural_base<Parent> {
     using desc = Desc;
     using weight = typename desc::weight;
 

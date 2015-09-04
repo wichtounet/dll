@@ -8,13 +8,15 @@
 #ifndef DLL_SCALE_LAYER_INL
 #define DLL_SCALE_LAYER_INL
 
+#include "neural_base.hpp"
+
 namespace dll {
 
 /*!
  * \brief Simple scaling layer
  */
 template<typename Desc>
-struct scale_layer {
+struct scale_layer : neural_base<scale_layer<Desc>> {
     using desc = Desc;
 
     static constexpr const int A = desc::A;

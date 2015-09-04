@@ -10,11 +10,10 @@
 
 #include <iostream>
 #include <fstream>
-#include <memory>
 
+#include "neural_base.hpp"
 #include "io.hpp"
 #include "rbm_trainer_fwd.hpp"
-#include "cg_context.hpp" //Context for CG
 
 namespace dll {
 
@@ -26,7 +25,7 @@ namespace dll {
  * injected using CRTP technique.
  */
 template<typename Parent, typename Desc>
-struct rbm_base {
+struct rbm_base : neural_base<Parent> {
     using conf = Desc;
     using parent_t = Parent;
     using weight = typename conf::weight;
@@ -50,11 +49,9 @@ struct rbm_base {
     weight pbias = 0.002;
     weight pbias_lambda = 5;
 
-    //Needs to be shared because of dyn_rbm
-    mutable std::shared_ptr<cg_context<parent_t>> cg_context_ptr;
-
     //No copying
 
+    //TODO Simplify once new layers system is in place
 #ifdef __clang__
     rbm_base(const rbm_base& rbm) = delete;
 #else
@@ -76,22 +73,6 @@ struct rbm_base {
 
     const parent_t& as_derived() const {
         return *static_cast<const parent_t*>(this);
-    }
-
-    //CG context
-
-    void init_cg_context(){
-        if(!cg_context_ptr){
-            cg_context_ptr = std::make_shared<cg_context<parent_t>>();
-        }
-    }
-
-    cg_context<parent_t>& get_cg_context(){
-        return *cg_context_ptr;
-    }
-
-    const cg_context<parent_t>& get_cg_context() const {
-        return *cg_context_ptr;
     }
 
     //Normal Train functions

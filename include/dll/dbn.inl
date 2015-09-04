@@ -109,8 +109,26 @@ private:
         using type = typename layer_input_simple<I + 1>::type;
     };
 
+    template<std::size_t I, typename Enable = void>
+    struct layer_input_batch;
+
+    template<std::size_t I>
+    struct layer_input_batch<I, std::enable_if_t<!layer_traits<layer_type<I>>::is_transform_layer()>> {
+        template<std::size_t B>
+        using type = typename layer_type<I>::template input_batch_t<B>;
+    };
+
+    template<std::size_t I>
+    struct layer_input_batch<I, std::enable_if_t<layer_traits<layer_type<I>>::is_transform_layer()>> {
+        template<std::size_t B>
+        using type = typename layer_input_batch<I + 1>::template type<B>;
+    };
+
 public:
     using input_t = typename layer_input_simple<0>::type;
+
+    template<std::size_t B>
+    using input_batch_t = typename layer_input_batch<0>::template type<B>;
 
 #ifdef DLL_SVM_SUPPORT
     svm::model svm_model;               ///< The learned model

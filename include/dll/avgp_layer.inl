@@ -16,10 +16,10 @@ namespace dll {
  * \brief Standard average pooling layer
  */
 template<typename Desc>
-struct avgp_layer_3d final: pooling_layer_3d<Desc>  {
+struct avgp_layer_3d final: pooling_layer_3d<avgp_layer_3d<Desc>, Desc>  {
     using desc = Desc;
     using weight = typename desc::weight;
-    using base = pooling_layer_3d<desc>;
+    using base = pooling_layer_3d<avgp_layer_3d<Desc>, desc>;
 
     using input_one_t = typename base::input_one_t;
     using output_one_t = typename base::output_one_t;

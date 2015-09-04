@@ -12,13 +12,14 @@
 
 #include "etl/etl.hpp"
 
+#include "neural_base.hpp"
 #include "tmp.hpp"
 #include "layer_traits.hpp"
 
 namespace dll {
 
 template<typename Desc>
-struct dense_layer final {
+struct dense_layer final : neural_base<dense_layer<Desc>> {
     using desc = Desc;
     using weight = typename desc::weight;
     using this_type = dense_layer<desc>;

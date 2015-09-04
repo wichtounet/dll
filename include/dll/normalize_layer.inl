@@ -10,13 +10,15 @@
 
 #include "cpp_utils/data.hpp"
 
+#include "neural_base.hpp"
+
 namespace dll {
 
 /*!
  * \brief Simple thresholding normalize layer
  */
 template<typename Desc>
-struct normalize_layer {
+struct normalize_layer : neural_base<normalize_layer<Desc>> {
     using desc = Desc;
 
     normalize_layer() = default;

@@ -16,10 +16,10 @@ namespace dll {
  * \brief Standard max pooling layer
  */
 template<typename Desc>
-struct mp_layer_3d final : pooling_layer_3d<Desc> {
+struct mp_layer_3d final : pooling_layer_3d<mp_layer_3d<Desc>, Desc> {
     using desc = Desc;
     using weight = typename desc::weight;
-    using base = pooling_layer_3d<desc>;
+    using base = pooling_layer_3d<mp_layer_3d<Desc>, desc>;
 
     mp_layer_3d() = default;
 

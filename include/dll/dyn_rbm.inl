@@ -45,6 +45,9 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
     etl::dyn_vector<weight> h2_a; //!< Activation probabilities of hidden units after last CD-step
     etl::dyn_vector<weight> h2_s; //!< Sampled value of hidden units after last CD-step
 
+    template<std::size_t B>
+    using input_batch_t = etl::fast_dyn_matrix<weight, B, 1>; //This is fake, should never be used
+
     const size_t num_visible;
     const size_t num_hidden;
 
