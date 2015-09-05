@@ -1147,37 +1147,43 @@ private:
 
         for_each_impl(D& dbn) : dbn(dbn) {}
 
-        template<typename... T>
-        static void wormhole(T&&...){}
+        //template<typename... T>
+        //static void wormhole(T&&...){}
 
         template<typename Functor>
         void for_each_layer(Functor&& functor){
-            wormhole((functor(dbn.template layer_get<I>()),0)...);
+            int wormhole[] = {(functor(dbn.template layer_get<I>()),0)...};
+            cpp_unused(wormhole);
         }
 
         template<typename Functor>
         void for_each_layer_i(Functor&& functor){
-            wormhole((functor(I, dbn.template layer_get<I>()),0)...);
+            int wormhole[] = {(functor(I, dbn.template layer_get<I>()),0)...};
+            cpp_unused(wormhole);
         }
 
         template<typename Functor>
         void for_each_layer_pair(Functor&& functor){
-            wormhole((functor(dbn.template layer_get<I>(), dbn.template layer_get<I+1>()),0)...);
+            int wormhole[] = {(functor(dbn.template layer_get<I>(), dbn.template layer_get<I+1>()),0)...};
+            cpp_unused(wormhole);
         }
 
         template<typename Functor>
         void for_each_layer_pair_i(Functor&& functor){
-            wormhole((functor(I, dbn.template layer_get<I>(), dbn.template layer_get<I+1>()),0)...);
+            int wormhole[] = {(functor(I, dbn.template layer_get<I>(), dbn.template layer_get<I+1>()),0)...};
+            cpp_unused(wormhole);
         }
 
         template<typename Functor>
         void for_each_layer_rpair(Functor&& functor){
-            wormhole((functor(dbn.template layer_get<layers - I - 2>(), dbn.template layer_get<layers - I - 1>()),0)...);
+            int wormhole[] = {(functor(dbn.template layer_get<layers - I - 2>(), dbn.template layer_get<layers - I - 1>()),0)...};
+            cpp_unused(wormhole);
         }
 
         template<typename Functor>
         void for_each_layer_rpair_i(Functor&& functor){
-            wormhole((functor(layers - I - 2, dbn.template layer_get<layers - I - 2>(), dbn.template layer_get<layers - I - 1>()),0)...);
+            int wormhole[] = {(functor(layers - I - 2, dbn.template layer_get<layers - I - 2>(), dbn.template layer_get<layers - I - 1>()),0)...};
+            cpp_unused(wormhole);
         }
     };
 
