@@ -51,12 +51,7 @@ struct rbm_base : neural_base<Parent> {
 
     //No copying
 
-    //TODO Simplify once new layers system is in place
-#ifdef __clang__
     rbm_base(const rbm_base& rbm) = delete;
-#else
-    rbm_base(const rbm_base& rbm) = default;
-#endif
     rbm_base& operator=(const rbm_base& rbm) = delete;
 
     //No moving

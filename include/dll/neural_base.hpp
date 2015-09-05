@@ -25,12 +25,7 @@ struct neural_base {
     //Needs to be shared because of dyn_rbm
     mutable std::shared_ptr<void> sgd_context_ptr;
 
-    //TODO Simplify once new layers system is in place
-#ifdef __clang__
     neural_base(const neural_base& rbm) = delete;
-#else
-    neural_base(const neural_base& rbm) = default;
-#endif
     neural_base& operator=(const neural_base& rbm) = delete;
 
     //No moving

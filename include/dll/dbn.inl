@@ -137,18 +137,6 @@ public:
         //Nothing else to init
     }
 
-#ifdef __clang__ //Ideally this should only be used with libc++
-    //template<typename... T>
-    //explicit dbn(T&&... layers) : tuples(std::forward<T>(layers)...) {
-        ////Nothing else to init
-    //}
-#else
-    //template<typename... T>
-    //explicit dbn(T&&... layers) : tuples({std::forward<T>(layers)}...) {
-        ////Nothing else to init
-    //}
-#endif
-
     //No copying
     dbn(const dbn& dbn) = delete;
     dbn& operator=(const dbn& dbn) = delete;
@@ -237,7 +225,7 @@ public:
 
     static std::size_t full_output_size() noexcept {
         std::size_t output = 0;
-        detail::for_each_layer_type<layers_t>([&output](auto* layer){
+        detail::for_each_layer_type<this_type>([&output](auto* layer){
             output += std::decay_t<std::remove_pointer_t<decltype(layer)>>::output_size();
         });
         return output;

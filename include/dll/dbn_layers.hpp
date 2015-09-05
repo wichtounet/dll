@@ -113,7 +113,8 @@ struct layers {
     static constexpr const bool is_multiplex = Labels ? false : detail::is_multiplex<Layers...>();
 
     static_assert(size > 0, "A network must have at least 1 layer");
-    //TODO Validation
+    //TODO static_assert(Labels ? detail::validate_label_layers<Layers...>::value : detail::are_layers_valid<Layers...>(), "The inner sizes of RBM must correspond");
+    static_assert(!Labels || !detail::is_dynamic<Layers...>(), "dbn_label_layers should not be used with dynamic RBMs");
 
     using base_t = layers_impl<std::make_index_sequence<size>, Layers...>;
     using layers_list = cpp::type_list<Layers...>;
@@ -160,61 +161,18 @@ const layer_type_t<I, Layers>& layer_get(const Layers& layers){
     return static_cast<const layers_leaf<I, layer_type_t<I, Layers>>&>(layers.base).get();
 }
 
-//Note: This function is not satisfactory
-
-template<typename Layers, typename Functor, std::size_t I1>
-void for_each_layer_type_sub(Functor&& functor, const std::index_sequence<I1>& /* i */){
-    functor(static_cast<layer_type_t<I1, Layers>*>(nullptr));
+template<typename DBN, typename Functor, std::size_t... I>
+void for_each_layer_type_sub(Functor&& functor, const std::index_sequence<I...>& /* i */){
+    int wormhole[] = {(functor(static_cast<typename DBN::template layer_type<I>*>(nullptr)),0)...};
+    cpp_unused(wormhole);
 }
 
-template<typename Layers, typename Functor, std::size_t I1, std::size_t I2, std::size_t... I>
-void for_each_layer_type_sub(Functor&& functor, const std::index_sequence<I1, I2, I...>& /* i */){
-    functor(static_cast<layer_type_t<I1, Layers>*>(nullptr));
-    for_each_layer_type_sub<Layers>(functor, std::index_sequence<I2, I...>());
-}
-
-template<typename Layers, typename Functor>
+template<typename DBN, typename Functor>
 void for_each_layer_type(Functor&& functor){
-    for_each_layer_type_sub<Layers>(functor, std::make_index_sequence<Layers::size>());
+    for_each_layer_type_sub<DBN>(functor, std::make_index_sequence<DBN::layers>());
 }
 
 } //end of namespace detail
-
-/**
- * \brief Simple placeholder for a collection of layers
- */
-//template<typename... Layers>
-//struct dbn_layers {
-    //static constexpr const std::size_t layers = sizeof...(Layers);
-    //static constexpr const bool is_dynamic = detail::is_dynamic<Layers...>();
-    //static constexpr const bool is_convolutional = detail::is_convolutional<Layers...>();
-    //static constexpr const bool is_multiplex = detail::is_multiplex<Layers...>();
-
-    //static_assert(layers > 0, "A DBN must have at least 1 layer");
-    //static_assert(detail::are_layers_valid<Layers...>(), "The inner sizes of RBM must correspond");
-
-    //using tuple_type = std::tuple<Layers...>;
-//};
-
-/**
- * \brief Simple placeholder for a collection of layers
- *
- * This version has to be used instead of dbn_layers when labels are placed in
- * the last layer.
- */
-//template<typename... Layers>
-//struct dbn_label_layers {
-    //static constexpr const std::size_t layers = sizeof...(Layers);
-    //static constexpr const bool is_dynamic = false;
-    //static constexpr const bool is_convolutional = false;   //There is no support for convolutional RBM and labels
-    //static constexpr const bool is_multiplex = false;       //There is no support for multiplex layers and labels
-
-    //static_assert(layers > 0, "A DBN must have at least 1 layer");
-    //static_assert(detail::validate_label_layers<Layers...>::value, "The inner sizes of RBM must correspond");
-    //static_assert(!detail::is_dynamic<Layers...>(), "dbn_label_layers should not be used with dynamic RBMs");
-
-    //using tuple_type = std::tuple<Layers...>;
-//};
 
 template<typename... Layers>
 using dbn_layers = detail::layers<false, Layers...>;
