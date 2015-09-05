@@ -179,10 +179,11 @@ TEST_CASE( "unit/dbn/mnist/6", "[dbn][dyn][unit]" ) {
 
     mnist::binarize_dataset(dataset);
 
-    auto dbn = std::make_unique<dbn_t>(
-        std::make_tuple(28*28,100),
-        std::make_tuple(100,200),
-        std::make_tuple(200,10));
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->template layer_get<0>().init_rbm(28 * 28, 100);
+    dbn->template layer_get<1>().init_rbm(100, 200);
+    dbn->template layer_get<2>().init_rbm(200, 10);
 
     dbn->pretrain(dataset.training_images, 20);
 

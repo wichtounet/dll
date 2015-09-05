@@ -48,22 +48,20 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
     template<std::size_t B>
     using input_batch_t = etl::fast_dyn_matrix<weight, B, 1>; //This is fake, should never be used
 
-    const size_t num_visible;
-    const size_t num_hidden;
+    size_t num_visible;
+    size_t num_hidden;
 
     size_t batch_size = 25;
 
     //No copying
-#ifdef __clang__
     dyn_rbm(const dyn_rbm& rbm) = delete;
-#else
-    dyn_rbm(const dyn_rbm& rbm) = default;
-#endif
     dyn_rbm& operator=(const dyn_rbm& rbm) = delete;
 
     //No moving
     dyn_rbm(dyn_rbm&& rbm) = delete;
     dyn_rbm& operator=(dyn_rbm&& rbm) = delete;
+
+    dyn_rbm() : standard_rbm<dyn_rbm<Desc>, Desc>() {}
 
     /*!
      * \brief Initialize a RBM with basic weights.
@@ -80,8 +78,23 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         w = etl::normal_generator<weight>() * 0.1;
     }
 
-    dyn_rbm(const std::tuple<std::size_t, std::size_t>& dims) : dyn_rbm(std::get<0>(dims), std::get<1>(dims)) {
-        //work is delegatd to the other constructor
+    void init_rbm(size_t nv, size_t nh){
+        num_visible = nv;
+        num_hidden = nh;
+
+        w = etl::dyn_matrix<weight>(num_visible, num_hidden);
+        b = etl::dyn_vector<weight>(num_hidden, static_cast<weight>(0.0));
+        c = etl::dyn_vector<weight>(num_visible, static_cast<weight>(0.0));
+        v1 = etl::dyn_vector<weight>(num_visible);
+        h1_a = etl::dyn_vector<weight>(num_hidden);
+        h1_s = etl::dyn_vector<weight>(num_hidden);
+        v2_a = etl::dyn_vector<weight>(num_visible);
+        v2_s = etl::dyn_vector<weight>(num_visible);
+        h2_a = etl::dyn_vector<weight>(num_hidden);
+        h2_s = etl::dyn_vector<weight>(num_hidden);
+
+        //Initialize the weights with a zero-mean and unit variance Gaussian distribution
+        w = etl::normal_generator<weight>() * 0.1;
     }
 
     std::size_t input_size() const noexcept {

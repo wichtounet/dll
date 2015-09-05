@@ -31,10 +31,11 @@ TEST_CASE( "dyn_dbn/mnist_1", "dbn::simple" ) {
 
     mnist::binarize_dataset(dataset);
 
-    auto dbn = std::make_unique<dbn_t>(
-        std::make_tuple(28*28,100),
-        std::make_tuple(100,200),
-        std::make_tuple(200,10));
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->template layer_get<0>().init_rbm(28 * 28, 100);
+    dbn->template layer_get<1>().init_rbm(100, 200);
+    dbn->template layer_get<2>().init_rbm(200, 10);
 
     dbn->pretrain(dataset.training_images, 20);
 
@@ -59,10 +60,11 @@ TEST_CASE( "dyn_dbn/mnist_2", "dbn::parallel" ) {
 
     mnist::binarize_dataset(dataset);
 
-    auto dbn = std::make_unique<dbn_t>(
-        std::make_tuple(28*28,100),
-        std::make_tuple(100,200),
-        std::make_tuple(200,10));
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->template layer_get<0>().init_rbm(28 * 28, 100);
+    dbn->template layer_get<1>().init_rbm(100, 200);
+    dbn->template layer_get<2>().init_rbm(200, 10);
 
     dbn->pretrain(dataset.training_images, 20);
 
@@ -87,10 +89,11 @@ TEST_CASE( "dyn_dbn/mnist_3", "dbn::labels" ) {
 
     mnist::binarize_dataset(dataset);
 
-    auto dbn = std::make_unique<dbn_t>(
-        std::make_tuple(28*28,200),
-        std::make_tuple(200,300),
-        std::make_tuple(310,500));
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->template layer_get<0>().init_rbm(28 * 28, 200);
+    dbn->template layer_get<1>().init_rbm(200, 300);
+    dbn->template layer_get<2>().init_rbm(310, 500);
 
     dbn->train_with_labels(dataset.training_images, dataset.training_labels, 10, 10);
 
@@ -106,9 +109,10 @@ TEST_CASE( "dyn_dbn/mnist_4", "dbn::svm_simple" ) {
                 dll::dyn_rbm_desc<dll::momentum>::rbm_t
         >>::dbn_t;
 
-    auto dbn = std::make_unique<dbn_t>(
-        std::make_tuple(28*28,150),
-        std::make_tuple(150,250));
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->template layer_get<0>().init_rbm(28 * 28, 150);
+    dbn->template layer_get<1>().init_rbm(150, 250);
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(500);
 
@@ -141,7 +145,9 @@ TEST_CASE( "dyn_dbn/mnist_5", "dbn::simple_single" ) {
 
     mnist::binarize_dataset(dataset);
 
-    auto dbn = std::make_unique<dbn_t>(std::make_tuple(28*28,100));
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->template layer_get<0>().init_rbm(28 * 28, 100);
 
     dbn->pretrain(dataset.training_images, 20);
 }
@@ -162,10 +168,11 @@ TEST_CASE( "dyn_dbn/mnist_6", "dbn::labels_fast" ) {
                 dll::dyn_rbm_desc<dll::momentum>::rbm_t
         >>::dbn_t;
 
-    auto dbn = std::make_unique<dbn_t>(
-        std::make_tuple(28*28,80),
-        std::make_tuple(80,100),
-        std::make_tuple(110,130));
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->template layer_get<0>().init_rbm(28 * 28, 80);
+    dbn->template layer_get<1>().init_rbm(80, 100);
+    dbn->template layer_get<2>().init_rbm(110, 130);
 
     dbn->train_with_labels(dataset.training_images, dataset.training_labels, 10, 5);
 
