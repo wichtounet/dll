@@ -8,9 +8,6 @@
 #ifndef DLL_DBN_INL
 #define DLL_DBN_INL
 
-#include <tuple>
-
-#include "cpp_utils/tuple_utils.hpp"
 #include "cpp_utils/static_if.hpp"
 
 #include "unit_type.hpp"
@@ -67,9 +64,6 @@ template<typename Desc>
 struct dbn final {
     using desc = Desc;
     using this_type = dbn<desc>;
-
-    //using tuple_type = typename desc::layers::tuple_type;
-    //tuple_type tuples;
 
     using layers_t = typename desc::layers;
     layers_t tuples;
