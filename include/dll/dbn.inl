@@ -1138,51 +1138,54 @@ public:
 
 private:
 
-    template<typename T>
+    template<typename D, typename T>
     struct for_each_impl;
 
-    template<std::size_t... I>
-    struct for_each_impl<std::index_sequence<I...>> {
-        this_type& dbn;
+    template<typename D, std::size_t... I>
+    struct for_each_impl<D, std::index_sequence<I...>> {
+        D& dbn;
 
-        for_each_impl(this_type& dbn) : dbn(dbn) {}
+        for_each_impl(D& dbn) : dbn(dbn) {}
 
         template<typename... T>
         static void wormhole(T&&...){}
 
         template<typename Functor>
         void for_each_layer(Functor&& functor){
-            wormhole((functor(dbn.layer_get<I>()),0)...);
+            wormhole((functor(dbn.template layer_get<I>()),0)...);
         }
 
         template<typename Functor>
         void for_each_layer_i(Functor&& functor){
-            wormhole((functor(I, dbn.layer_get<I>()),0)...);
+            wormhole((functor(I, dbn.template layer_get<I>()),0)...);
         }
 
         template<typename Functor>
         void for_each_layer_pair(Functor&& functor){
-            wormhole((functor(dbn.layer_get<I>(), dbn.layer_get<I+1>()),0)...);
+            wormhole((functor(dbn.template layer_get<I>(), dbn.template layer_get<I+1>()),0)...);
         }
 
         template<typename Functor>
         void for_each_layer_pair_i(Functor&& functor){
-            wormhole((functor(I, dbn.layer_get<I>(), dbn.layer_get<I+1>()),0)...);
+            wormhole((functor(I, dbn.template layer_get<I>(), dbn.template layer_get<I+1>()),0)...);
         }
 
         template<typename Functor>
         void for_each_layer_rpair(Functor&& functor){
-            wormhole((functor(dbn.layer_get<layers - I - 2>(), dbn.layer_get<layers - I - 1>()),0)...);
+            wormhole((functor(dbn.template layer_get<layers - I - 2>(), dbn.template layer_get<layers - I - 1>()),0)...);
         }
 
         template<typename Functor>
         void for_each_layer_rpair_i(Functor&& functor){
-            wormhole((functor(layers - I - 2, dbn.layer_get<layers - I - 2>(), dbn.layer_get<layers - I - 1>()),0)...);
+            wormhole((functor(layers - I - 2, dbn.template layer_get<layers - I - 2>(), dbn.template layer_get<layers - I - 1>()),0)...);
         }
     };
 
-    using for_each_impl_t = for_each_impl<std::make_index_sequence<layers>>;
-    using for_each_pair_impl_t = for_each_impl<std::make_index_sequence<layers - 1>>;
+    using for_each_impl_t = for_each_impl<this_type, std::make_index_sequence<layers>>;
+    using for_each_pair_impl_t = for_each_impl<this_type, std::make_index_sequence<layers - 1>>;
+
+    using const_for_each_impl_t = for_each_impl<const this_type, std::make_index_sequence<layers>>;
+    using const_for_each_pair_impl_t = for_each_impl<const this_type, std::make_index_sequence<layers - 1>>;
 
 public:
 
@@ -1214,6 +1217,36 @@ public:
     template<typename Functor>
     void for_each_layer_rpair_i(Functor&& functor){
         for_each_pair_impl_t(*this).for_each_layer_rpair_i(std::forward<Functor>(functor));
+    }
+
+    template<typename Functor>
+    void for_each_layer(Functor&& functor) const {
+        const_for_each_impl_t(*this).for_each_layer(std::forward<Functor>(functor));
+    }
+
+    template<typename Functor>
+    void for_each_layer_i(Functor&& functor) const {
+        const_for_each_impl_t(*this).for_each_layer_i(std::forward<Functor>(functor));
+    }
+
+    template<typename Functor>
+    void for_each_layer_pair(Functor&& functor) const {
+        const_for_each_pair_impl_t(*this).for_each_layer_pair(std::forward<Functor>(functor));
+    }
+
+    template<typename Functor>
+    void for_each_layer_pair_i(Functor&& functor) const {
+        const_for_each_pair_impl_t(*this).for_each_layer_pair_i(std::forward<Functor>(functor));
+    }
+
+    template<typename Functor>
+    void for_each_layer_rpair(Functor&& functor) const {
+        const_for_each_pair_impl_t(*this).for_each_layer_rpair(std::forward<Functor>(functor));
+    }
+
+    template<typename Functor>
+    void for_each_layer_rpair_i(Functor&& functor) const {
+        const_for_each_pair_impl_t(*this).for_each_layer_rpair_i(std::forward<Functor>(functor));
     }
 };
 
