@@ -1147,9 +1147,6 @@ private:
 
         for_each_impl(D& dbn) : dbn(dbn) {}
 
-        //template<typename... T>
-        //static void wormhole(T&&...){}
-
         template<typename Functor>
         void for_each_layer(Functor&& functor){
             int wormhole[] = {(functor(dbn.template layer_get<I>()),0)...};
