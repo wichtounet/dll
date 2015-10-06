@@ -16,6 +16,7 @@
 #include <iostream>
 #include <iomanip>
 
+#include "dll/dense_layer.hpp"
 #include "dll/dbn.hpp"
 
 #include "mnist/mnist_reader.hpp"

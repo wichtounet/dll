@@ -45,8 +45,26 @@ std::string unit_type(const std::string& unit){
     }
 }
 
+std::string activation_function(const std::string& unit){
+    if(unit == "sigmoid"){
+        return "SIGMOID";
+    } else if(unit == "tanh"){
+        return "TANH";
+    } else if(unit == "softmax"){
+        return "SOFTMAX";
+    } else if(unit == "relu"){
+        return "RELU";
+    } else {
+        return "INVALID";
+    }
+}
+
 bool valid_unit(const std::string& unit){
     return unit == "binary" || unit == "softmax" || unit == "gaussian";
+}
+
+bool valid_activation(const std::string& unit){
+    return unit == "sigmoid" || unit == "softmax" || unit == "tanh" || unit == "relu";
 }
 
 struct rbm_layer : layer {
@@ -80,6 +98,41 @@ struct rbm_layer : layer {
         }
 
         out << ">::rbm_t";
+    }
+
+    virtual void set(std::ostream& out, const std::string& lhs) const override {
+        if(learning_rate != dll::processor::stupid_default){
+            out << lhs << ".learning_rate = " << learning_rate << ";\n";
+        }
+
+        if(momentum != dll::processor::stupid_default){
+            out << lhs << ".initial_momentum = " << momentum << ";\n";
+            out << lhs << ".final_momentum = " << momentum << ";\n";
+        }
+    }
+
+    std::size_t hidden_get() const override {
+        return hidden;
+    }
+};
+
+struct dense_layer : layer {
+    std::size_t visible = 0;
+    std::size_t hidden = 0;
+
+    std::string activation;
+
+    double learning_rate = dll::processor::stupid_default;
+    double momentum = dll::processor::stupid_default;
+
+    void print(std::ostream& out) const override {
+        out << "dll::dense_desc<" << visible << ", " << hidden;
+
+        if(!activation.empty()){
+            out << ", dll::activation<dll::function::" << activation_function(activation) << ">";
+        }
+
+        out << ">::layer_t";
     }
 
     virtual void set(std::ostream& out, const std::string& lhs) const override {
@@ -302,6 +355,48 @@ int main(int argc, char* argv[]){
                     }
 
                     layers.push_back(std::move(rbm));
+                } else if(lines[i] == "dense:"){
+                    ++i;
+
+                    auto dense = std::make_shared<dllp::dense_layer>();
+
+                    while(i < lines.size()){
+                        if(dllp::starts_with(lines[i], "visible:")){
+                            dense->visible = std::stol(dllp::extract_value(lines[i], "visible: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "hidden:")){
+                            dense->hidden = std::stol(dllp::extract_value(lines[i], "hidden: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "momentum:")){
+                            dense->momentum = std::stod(dllp::extract_value(lines[i], "momentum: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "learning_rate:")){
+                            dense->learning_rate = std::stod(dllp::extract_value(lines[i], "learning_rate: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "activation:")){
+                            dense->activation = dllp::extract_value(lines[i], "activation: ");
+                            ++i;
+
+                            if(!dllp::valid_activation(dense->activation)){
+                                std::cout << "dllp: error: invalid activation function, must be [sigmoid,tanh,relu,softmax]" << std::endl;
+                                return 1;
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+
+                    if(layers.empty() && (dense->visible == 0 || dense->hidden == 0)){
+                        std::cout << "dllp: error: The first layer needs visible and hidden sizes" << std::endl;
+                    } else if(!layers.empty() && dense->hidden == 0){
+                        std::cout << "dllp: error: The number of hidden units is mandatory" << std::endl;
+                    }
+
+                    if(!layers.empty()){
+                        dense->visible = layers.back()->hidden_get();
+                    }
+
+                    layers.push_back(std::move(dense));
                 } else {
                     break;
                 }
