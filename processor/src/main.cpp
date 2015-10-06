@@ -32,6 +32,12 @@ struct layer {
     virtual void print(std::ostream& out) const = 0;
     virtual std::size_t hidden_get() const = 0;
 
+    virtual bool is_conv() const { return false; }
+
+    virtual std::size_t hidden_get_1() const { return 0; }
+    virtual std::size_t hidden_get_2() const { return 0; }
+    virtual std::size_t hidden_get_3() const { return 0; }
+
     virtual void set(std::ostream& /*out*/, const std::string& /*lhs*/) const { /* Nothing */ };
 };
 
@@ -155,19 +161,60 @@ struct dense_layer : layer {
         out << ">::layer_t";
     }
 
-    virtual void set(std::ostream& out, const std::string& lhs) const override {
-        if(learning_rate != dll::processor::stupid_default){
-            out << lhs << ".learning_rate = " << learning_rate << ";\n";
-        }
-
-        if(momentum != dll::processor::stupid_default){
-            out << lhs << ".initial_momentum = " << momentum << ";\n";
-            out << lhs << ".final_momentum = " << momentum << ";\n";
-        }
+    virtual void set(std::ostream& /*out*/, const std::string& /*lhs*/) const override {
+        //Nothing to set here
     }
 
     std::size_t hidden_get() const override {
         return hidden;
+    }
+};
+
+struct conv_layer : layer {
+    std::size_t nc = 0;
+    std::size_t nv1 = 0;
+    std::size_t nv2 = 0;
+    std::size_t k = 0;
+    std::size_t nw1 = 0;
+    std::size_t nw2 = 0;
+
+    std::string activation;
+
+    double learning_rate = dll::processor::stupid_default;
+    double momentum = dll::processor::stupid_default;
+
+    bool is_conv() const override {
+        return false;
+    }
+
+    void print(std::ostream& out) const override {
+        out << "dll::conv_desc<" << nc << ", " << nv1 << ", " << nv2 << ", " << k << ", " << (nv1 - nw1 + 1) << ", " << (nv2 - nw2 + 1);
+
+        if(!activation.empty()){
+            out << ", dll::activation<dll::function::" << activation_function(activation) << ">";
+        }
+
+        out << ">::layer_t";
+    }
+
+    virtual void set(std::ostream& /*out*/, const std::string& /*lhs*/) const override {
+        //Nothing to set here
+    }
+
+    std::size_t hidden_get() const override {
+        return k * (nv1 - nw1 + 1) * (nv2 - nw2 + 1);
+    }
+
+    std::size_t hidden_get_1() const override {
+        return k;
+    }
+
+    std::size_t hidden_get_2() const override {
+        return nv1 - nw1 + 1;
+    }
+
+    std::size_t hidden_get_3() const override {
+        return nv2 - nw2 + 1;
     }
 };
 
