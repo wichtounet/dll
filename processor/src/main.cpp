@@ -23,6 +23,8 @@ namespace dllp {
 
 struct options {
     bool mkl = false;
+    bool cublas = false;
+    bool cufft = false;
     bool cache = false;
 };
 
@@ -260,6 +262,12 @@ int main(int argc, char* argv[]){
     while(true){
         if(std::string(argv[i]) == "--mkl"){
             opt.mkl = true;
+            ++i;
+        } else if(std::string(argv[i]) == "--cufft"){
+            opt.cufft = true;
+            ++i;
+        } else if(std::string(argv[i]) == "--cublas"){
+            opt.cublas = true;
             ++i;
         } else if(std::string(argv[i]) == "--cache"){
             opt.cache = true;
@@ -710,6 +718,29 @@ std::string command_result(const std::string& command) {
     return out;
 }
 
+bool append_pkg_flags(std::string& flags, const std::string& pkg){
+    auto cflags = command_result("pkg-config --cflags " + pkg);
+
+    if(cflags.empty()){
+        std::cout << "Failed to get compilation flags for " << pkg << std::endl;
+        std::cout << "   `pkg-config --cflags " << pkg << "` should return the compilation for " << pkg << std::endl;
+        return false;
+    }
+
+    auto ldflags = command_result("pkg-config --libs " + pkg);
+
+    if(ldflags.empty()){
+        std::cout << "Failed to get linking flags for " << pkg << std::endl;
+        std::cout << "   `pkg-config --libs " << pkg << "` should return the linking for " << pkg << std::endl;
+        return false;
+    }
+
+    flags += " " + cflags + " ";
+    flags += " " + ldflags + " ";
+
+    return true;
+}
+
 bool compile(const char* cxx, const options& opt){
     std::cout << "Compiling the program..." << std::endl;
 
@@ -725,24 +756,25 @@ bool compile(const char* cxx, const options& opt){
     if(opt.mkl){
         compile_command += " -DETL_MKL_MODE ";
 
-        auto cflags = command_result("pkg-config --cflags mkl");
-
-        if(cflags.empty()){
-            std::cout << "Failed to get compilation flags for MKL" << std::endl;
-            std::cout << "   `pkg-config --cflags mkl` should return the compilation for MKL" << std::endl;
+        if(!append_pkg_flags(compile_command, "mkl")){
             return false;
         }
+    }
 
-        auto ldflags = command_result("pkg-config --libs mkl");
+    if(opt.cublas){
+        compile_command += " -DETL_CUBLAS_MODE ";
 
-        if(ldflags.empty()){
-            std::cout << "Failed to get linking flags for MKL" << std::endl;
-            std::cout << "   `pkg-config --libs mkl` should return the linking for MKL" << std::endl;
+        if(!append_pkg_flags(compile_command, "cublas")){
             return false;
         }
+    }
 
-        compile_command += " " + cflags + " ";
-        compile_command += " " + ldflags + " ";
+    if(opt.cufft){
+        compile_command += " -DETL_CUFFT_MODE ";
+
+        if(!append_pkg_flags(compile_command, "cufft")){
+            return false;
+        }
     }
 
     int compile_result = system(compile_command.c_str());
