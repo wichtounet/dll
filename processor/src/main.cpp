@@ -148,9 +148,6 @@ struct dense_layer : layer {
 
     std::string activation;
 
-    double learning_rate = dll::processor::stupid_default;
-    double momentum = dll::processor::stupid_default;
-
     void print(std::ostream& out) const override {
         out << "dll::dense_desc<" << visible << ", " << hidden;
 
@@ -171,12 +168,12 @@ struct dense_layer : layer {
 };
 
 struct conv_layer : layer {
-    std::size_t nc = 0;
-    std::size_t nv1 = 0;
-    std::size_t nv2 = 0;
+    std::size_t c = 0;
+    std::size_t v1 = 0;
+    std::size_t v2 = 0;
     std::size_t k = 0;
-    std::size_t nw1 = 0;
-    std::size_t nw2 = 0;
+    std::size_t w1 = 0;
+    std::size_t w2 = 0;
 
     std::string activation;
 
@@ -188,7 +185,7 @@ struct conv_layer : layer {
     }
 
     void print(std::ostream& out) const override {
-        out << "dll::conv_desc<" << nc << ", " << nv1 << ", " << nv2 << ", " << k << ", " << (nv1 - nw1 + 1) << ", " << (nv2 - nw2 + 1);
+        out << "dll::conv_desc<" << c << ", " << v1 << ", " << v2 << ", " << k << ", " << (v1 - w1 + 1) << ", " << (v2 - w2 + 1);
 
         if(!activation.empty()){
             out << ", dll::activation<dll::function::" << activation_function(activation) << ">";
@@ -202,7 +199,7 @@ struct conv_layer : layer {
     }
 
     std::size_t hidden_get() const override {
-        return k * (nv1 - nw1 + 1) * (nv2 - nw2 + 1);
+        return k * (v1 - w1 + 1) * (v2 - w2 + 1);
     }
 
     std::size_t hidden_get_1() const override {
@@ -210,11 +207,11 @@ struct conv_layer : layer {
     }
 
     std::size_t hidden_get_2() const override {
-        return nv1 - nw1 + 1;
+        return v1 - w1 + 1;
     }
 
     std::size_t hidden_get_3() const override {
-        return nv2 - nw2 + 1;
+        return v2 - w2 + 1;
     }
 };
 
@@ -440,12 +437,6 @@ int main(int argc, char* argv[]){
                         } else if(dllp::starts_with(lines[i], "hidden:")){
                             dense->hidden = std::stol(dllp::extract_value(lines[i], "hidden: "));
                             ++i;
-                        } else if(dllp::starts_with(lines[i], "momentum:")){
-                            dense->momentum = std::stod(dllp::extract_value(lines[i], "momentum: "));
-                            ++i;
-                        } else if(dllp::starts_with(lines[i], "learning_rate:")){
-                            dense->learning_rate = std::stod(dllp::extract_value(lines[i], "learning_rate: "));
-                            ++i;
                         } else if(dllp::starts_with(lines[i], "activation:")){
                             dense->activation = dllp::extract_value(lines[i], "activation: ");
                             ++i;
@@ -470,6 +461,58 @@ int main(int argc, char* argv[]){
                     }
 
                     layers.push_back(std::move(dense));
+                } else if(lines[i] == "conv:"){
+                    ++i;
+
+                    auto conv = std::make_shared<dllp::conv_layer>();
+
+                    while(i < lines.size()){
+                        if(dllp::starts_with(lines[i], "channels:")){
+                            conv->c = std::stol(dllp::extract_value(lines[i], "channels: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "filters:")){
+                            conv->k = std::stol(dllp::extract_value(lines[i], "filters: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "v1:")){
+                            conv->v1 = std::stol(dllp::extract_value(lines[i], "v1: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "v2:")){
+                            conv->v2 = std::stol(dllp::extract_value(lines[i], "v2: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "w1:")){
+                            conv->w1 = std::stol(dllp::extract_value(lines[i], "w1: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "w2:")){
+                            conv->w2 = std::stol(dllp::extract_value(lines[i], "w2: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "activation:")){
+                            conv->activation = dllp::extract_value(lines[i], "activation: ");
+                            ++i;
+
+                            if(!dllp::valid_activation(conv->activation)){
+                                std::cout << "dllp: error: invalid activation function, must be [sigmoid,tanh,relu,softmax]" << std::endl;
+                                return 1;
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+
+                    if(layers.empty() && (!conv->c || !conv->v1 || !conv->v2 || !conv->k || !conv->w1 || !conv->w2)){
+                        std::cout << "dllp: error: The first layer needs input and output sizes" << std::endl;
+                    } else if(!layers.empty() && !conv->k){
+                        std::cout << "dllp: error: The number of filters is mandatory" << std::endl;
+                    } else if(!layers.empty() && (!conv->w1 || !conv->w2)){
+                        std::cout << "dllp: error: The size of the filters is mandatory" << std::endl;
+                    }
+
+                    if(!layers.empty()){
+                        conv->c = layers.back()->hidden_get_1();
+                        conv->v1 = layers.back()->hidden_get_2();
+                        conv->v2 = layers.back()->hidden_get_3();
+                    }
+
+                    layers.push_back(std::move(conv));
                 } else {
                     break;
                 }

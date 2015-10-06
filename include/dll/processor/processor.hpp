@@ -16,6 +16,7 @@
 #include <iostream>
 #include <iomanip>
 
+#include "dll/conv_layer.hpp"
 #include "dll/dense_layer.hpp"
 #include "dll/dbn.hpp"
 
