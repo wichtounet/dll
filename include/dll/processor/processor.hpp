@@ -61,6 +61,10 @@ struct training_desc {
     double learning_rate = stupid_default;
     double momentum = stupid_default;
     std::size_t batch_size = 0;
+
+    std::string decay = "none";
+    double l1_weight_cost = stupid_default;
+    double l2_weight_cost = stupid_default;
 };
 
 struct weights_desc {

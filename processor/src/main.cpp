@@ -59,6 +59,24 @@ std::string activation_function(const std::string& unit){
     }
 }
 
+std::string decay_to_str(const std::string& decay){
+    if(decay == "l1"){
+        return "L1";
+    } else if(decay == "l1_full"){
+        return "L1_FULL";
+    } else if(decay == "l2"){
+        return "L2";
+    } else if(decay == "l2_full"){
+        return "L2_FULL";
+    } else if(decay == "l1l2"){
+        return "L1L2";
+    } else if(decay == "l1l2_full"){
+        return "L1L2_FULL";
+    } else {
+        return "INVALID";
+    }
+}
+
 bool valid_unit(const std::string& unit){
     return unit == "binary" || unit == "softmax" || unit == "gaussian";
 }
@@ -433,6 +451,15 @@ int main(int argc, char* argv[]){
                         } else if(dllp::starts_with(lines[i], "batch:")){
                             t.ft_desc.batch_size = std::stol(dllp::extract_value(lines[i], "batch: "));
                             ++i;
+                        } else if(dllp::starts_with(lines[i], "weight_decay:")){
+                            t.ft_desc.decay = dllp::extract_value(lines[i], "weight_decay: ");
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "l1_weight_cost:")){
+                            t.ft_desc.l1_weight_cost = std::stod(dllp::extract_value(lines[i], "l1_weight_cost: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "l2_weight_cost:")){
+                            t.ft_desc.l2_weight_cost = std::stod(dllp::extract_value(lines[i], "l2_weight_cost: "));
+                            ++i;
                         } else {
                             break;
                         }
@@ -619,6 +646,8 @@ void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, dll::proc
         out_stream << ", dll::batch_size<" << t.ft_desc.batch_size << ">\n";
     }
 
+    out_stream << ", dll::weight_decay<dll::decay_type::" << decay_to_str(t.ft_desc.decay) << ">\n";
+
     out_stream << ">::dbn_t;\n\n";
 
     out_stream << "int main(int argc, char* argv[]){\n";
@@ -631,6 +660,14 @@ void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, dll::proc
     if(t.ft_desc.momentum != dll::processor::stupid_default){
         out_stream << "   dbn->initial_momentum = " << t.ft_desc.momentum << ";\n";
         out_stream << "   dbn->final_momentum = " << t.ft_desc.momentum << ";\n";
+    }
+
+    if(t.ft_desc.l1_weight_cost != dll::processor::stupid_default){
+        out_stream << "   dbn->l1_weight_cost = " << t.ft_desc.l1_weight_cost << ";\n";
+    }
+
+    if(t.ft_desc.l2_weight_cost != dll::processor::stupid_default){
+        out_stream << "   dbn->l2_weight_cost = " << t.ft_desc.l2_weight_cost << ";\n";
     }
 
     for(std::size_t i = 0; i < layers.size(); ++i){
