@@ -60,6 +60,12 @@ TEST_CASE( "unit/cdbn/mnist/2", "[cdbn][svm][unit]" ) {
 
     auto result = dbn->svm_train(dataset.training_images, dataset.training_labels);
     REQUIRE(result);
+    svm::rbf_grid g;
+    g.c_steps = 5;
+    g.gamma_steps = 5;
+
+    auto gs_result = dbn->svm_grid_search(dataset.training_images, dataset.training_labels, 3, g);
+    REQUIRE(gs_result);
 
     auto test_error = dll::test_set(dbn, dataset.training_images, dataset.training_labels, dll::svm_predictor());
     std::cout << "test_error:" << test_error << std::endl;
