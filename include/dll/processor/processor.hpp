@@ -188,7 +188,8 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions){
             }
 
             //Train the network
-            dbn.fine_tune(ft_samples, ft_labels, task.ft_desc.epochs);
+            auto ft_error = dbn.fine_tune(ft_samples, ft_labels, task.ft_desc.epochs);
+            std::cout << "Test Classification Error:" << ft_error << std::endl;
         } else if(action == "test"){
             print_title("Testing");
 
