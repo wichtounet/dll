@@ -80,6 +80,8 @@ std::string decay_to_str(const std::string& decay){
         return "L1L2";
     } else if(decay == "l1l2_full"){
         return "L1L2_FULL";
+    } else if(decay == "none"){
+        return "NONE";
     } else {
         return "INVALID";
     }
