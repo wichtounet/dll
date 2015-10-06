@@ -31,6 +31,16 @@ TEST_CASE( "unit/crbm/mnist/1", "[crbm][unit]" ) {
 
     auto error = rbm.train(dataset.training_images, 25);
     REQUIRE(error < 5e-2);
+
+    rbm.v1 = dataset.training_images[1];
+
+    rbm.template activate_hidden<true, false>(rbm.h1_a, rbm.h1_a, rbm.v1, rbm.v1);
+
+    auto energy = rbm.energy(dataset.training_images[1], rbm.h1_a);
+    REQUIRE(energy < 0.0);
+
+    auto free_energy = rbm.free_energy();
+    REQUIRE(free_energy < 0.0);
 }
 
 TEST_CASE( "unit/crbm/mnist/2", "[crbm][parallel][unit]" ) {
