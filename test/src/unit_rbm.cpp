@@ -214,3 +214,26 @@ TEST_CASE( "unit/rbm/mnist/9", "[rbm][sparse][unit]" ) {
 
     REQUIRE(error < 5e-2);
 }
+
+template <typename RBM, bool Denoising>
+using pcd2_trainer_t = dll::persistent_cd_trainer<2, RBM, Denoising>;
+
+TEST_CASE( "unit/rbm/mnist/10", "[rbm][pcd][unit]" ) {
+    dll::rbm_desc<
+        28 * 28, 100,
+        dll::batch_size<5>,
+        dll::momentum,
+        dll::trainer_rbm<pcd2_trainer_t>
+    >::rbm_t rbm;
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 100);
+
+    if(std::isfinite(error)){
+        REQUIRE(error < 15e-2);
+    }
+}
