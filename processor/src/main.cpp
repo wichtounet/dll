@@ -128,6 +128,10 @@ dll::processor::datasource parse_datasource(const std::vector<std::string>& line
         } else if(starts_with(lines[i], "normalize: ")){
             source.normalize = extract_value(lines[i], "normalize: ") == "true" ? true : false;
             ++i;
+        } else if(starts_with(lines[i], "scale: ")){
+            source.scale = true;
+            source.scale_d = std::stod(extract_value(lines[i], "scale: "));
+            ++i;
         } else {
             break;
         }
@@ -496,7 +500,7 @@ void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, dll::proc
 
     out_stream << "#include <memory>\n";
     out_stream << "#include \"dll/processor/processor.hpp\"\n";
-    out_stream << "#include \"dll/dense_stochastic_gradient_descent.hpp\"\n\n";
+    out_stream << "#include \"dll/stochastic_gradient_descent.hpp\"\n\n";
 
     out_stream << "using dbn_t = dll::dbn_desc<dll::dbn_layers<\n";
 
@@ -510,7 +514,7 @@ void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, dll::proc
 
     out_stream << "\n>";
 
-    out_stream << ", dll::trainer<dll::dense_sgd_trainer>\n";
+    out_stream << ", dll::trainer<dll::sgd_trainer>\n";
 
     if(t.ft_desc.momentum != dll::processor::stupid_default){
         out_stream << ", dll::momentum\n";

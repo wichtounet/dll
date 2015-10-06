@@ -33,6 +33,8 @@ struct datasource {
 
     bool binarize = false;
     bool normalize = false;
+    bool scale = false;
+    double scale_d = 0.0;
 
     long limit = -1;
 
@@ -91,6 +93,14 @@ bool read_samples(const datasource& ds, std::vector<Sample>& samples){
 
         if(ds.normalize){
             mnist::normalize_each(samples);
+        }
+
+        if(ds.scale){
+            for(auto& vec : samples){
+                for(auto& v : vec){
+                    v *= ds.scale_d;
+                }
+            }
         }
 
         return !samples.empty();
