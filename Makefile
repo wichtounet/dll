@@ -55,7 +55,7 @@ ifneq (,$(DLL_COVERAGE))
 $(eval $(call enable_coverage_release))
 endif
 
-CPP_FILES=$(wildcard test_compile/*.cpp)
+CPP_FILES=$(wildcard view/*.cpp)
 
 TEST_CPP_FILES=$(wildcard test/src/*.cpp)
 TEST_FILES=$(TEST_CPP_FILES:test/%=%)
@@ -65,7 +65,7 @@ PROCESSOR_CPP_FILES=$(wildcard processor/src/*.cpp)
 # Compile all the sources
 $(eval $(call auto_folder_compile,processor/src))
 $(eval $(call auto_folder_compile,test/src))
-$(eval $(call auto_folder_compile,test_compile/src))
+$(eval $(call auto_folder_compile,view/src))
 
 # Generate executable for the prepropcessor
 $(eval $(call add_executable,dllp,$(PROCESSOR_CPP_FILES)))
@@ -76,9 +76,9 @@ $(eval $(call add_test_executable,dll_test,$(TEST_FILES),$(TEST_LD_FLAGS)))
 $(eval $(call add_executable_set,dll_test,dll_test))
 
 # Generate executables for visualization
-$(eval $(call add_executable,dll_view_rbm,test_compile/src/rbm_view.cpp,$(OPENCV_LD_FLAGS)))
-$(eval $(call add_executable,dll_view_crbm,test_compile/src/crbm_view.cpp,$(OPENCV_LD_FLAGS)))
-$(eval $(call add_executable,dll_view_crbm_mp,test_compile/src/crbm_mp_view.cpp,$(OPENCV_LD_FLAGS)))
+$(eval $(call add_executable,dll_view_rbm,view/src/rbm_view.cpp,$(OPENCV_LD_FLAGS)))
+$(eval $(call add_executable,dll_view_crbm,view/src/crbm_view.cpp,$(OPENCV_LD_FLAGS)))
+$(eval $(call add_executable,dll_view_crbm_mp,view/src/crbm_mp_view.cpp,$(OPENCV_LD_FLAGS)))
 $(eval $(call add_executable_set,dll_view_rbm,dll_view_rbm))
 $(eval $(call add_executable_set,dll_view_crbm,dll_view_crbm))
 $(eval $(call add_executable_set,dll_view_crbm_mp,dll_view_crbm_mp))
