@@ -64,7 +64,7 @@ PROCESSOR_CPP_FILES=$(wildcard processor/src/*.cpp)
 
 # Compile all the sources
 $(eval $(call auto_folder_compile,processor/src))
-$(eval $(call auto_folder_compile,test/src))
+$(eval $(call auto_folder_compile,test/src,-Itest/include))
 $(eval $(call auto_folder_compile,view/src))
 
 # Generate executable for the prepropcessor
