@@ -7,7 +7,7 @@
 
 #include <deque>
 
-#include "catch.hpp"
+#include "dll_test.hpp"
 
 #include "dll/conv_layer.hpp"
 #include "dll/dense_layer.hpp"
@@ -19,25 +19,6 @@
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
-
-namespace {
-
-template<typename Dataset>
-void mnist_scale(Dataset& dataset){
-    for(auto& image : dataset.training_images){
-        for(auto& pixel : image){
-            pixel *= (1.0 / 256.0);
-        }
-    }
-
-    for(auto& image : dataset.test_images){
-        for(auto& pixel : image){
-            pixel *= (1.0 / 256.0);
-        }
-    }
-}
-
-} //end of anonymous namespace
 
 TEST_CASE( "conv/sgd/1", "[dense][dbn][mnist][sgd]" ) {
     typedef dll::dbn_desc<
@@ -79,7 +60,7 @@ TEST_CASE( "conv/sgd/2", "[dense][dbn][mnist][sgd]" ) {
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(1000);
     REQUIRE(!dataset.training_images.empty());
 
-    mnist_scale(dataset);
+    dll_test::mnist_scale(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
 
@@ -108,7 +89,7 @@ TEST_CASE( "conv/sgd/3", "[dense][dbn][mnist][sgd]" ) {
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(1000);
     REQUIRE(!dataset.training_images.empty());
 
-    mnist_scale(dataset);
+    dll_test::mnist_scale(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
 
@@ -167,7 +148,7 @@ TEST_CASE( "conv/sgd/5", "[dense][dbn][mnist][sgd]" ) {
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(1000);
     REQUIRE(!dataset.training_images.empty());
 
-    mnist_scale(dataset);
+    dll_test::mnist_scale(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
 
@@ -199,7 +180,7 @@ TEST_CASE( "conv/sgd/6", "[dense][dbn][mnist][sgd]" ) {
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(1000);
     REQUIRE(!dataset.training_images.empty());
 
-    mnist_scale(dataset);
+    dll_test::mnist_scale(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
 
@@ -231,7 +212,7 @@ TEST_CASE( "conv/sgd/7", "[dense][dbn][mnist][sgd]" ) {
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(1000);
     REQUIRE(!dataset.training_images.empty());
 
-    mnist_scale(dataset);
+    dll_test::mnist_scale(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
 
@@ -266,7 +247,7 @@ TEST_CASE( "lenet", "[dense][dbn][mnist][sgd]" ) {
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(1000);
     REQUIRE(!dataset.training_images.empty());
 
-    mnist_scale(dataset);
+    dll_test::mnist_scale(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
 
