@@ -13,6 +13,7 @@
  */
 
 #include <string>
+#include <vector>
 #include <iostream>
 #include <iomanip>
 
@@ -26,6 +27,16 @@
 namespace dll {
 
 namespace processor {
+
+struct options {
+    bool mkl = false;
+    bool cublas = false;
+    bool cufft = false;
+    bool cache = false;
+};
+
+//This function is only exposed to be able to unit-test the program
+std::string process_file_result(const options& opt, const std::vector<std::string>& actions, const std::string& source_file);
 
 constexpr const double stupid_default = -666.0;
 

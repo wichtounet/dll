@@ -21,12 +21,7 @@
 
 namespace dllp {
 
-struct options {
-    bool mkl = false;
-    bool cublas = false;
-    bool cufft = false;
-    bool cache = false;
-};
+using options = dll::processor::options;
 
 struct layer {
     virtual void print(std::ostream& out) const = 0;
@@ -229,6 +224,34 @@ std::string extract_value(const std::string& str, const std::string& search){
     return {str.begin() + str.find(search) + search.size(), str.end()};
 }
 
+std::string command_result(const std::string& command) {
+    std::stringstream output;
+
+    char buffer[1024];
+
+    FILE* stream = popen(command.c_str(), "r");
+
+    if(!stream){
+        return {};
+    }
+
+    while (fgets(buffer, 1024, stream) != NULL) {
+        output << buffer;
+    }
+
+    if(pclose(stream)){
+        return {};
+    }
+
+    std::string out(output.str());
+
+    if(out[out.size() - 1] == '\n'){
+        return {out.begin(), out.end() - 1};
+    }
+
+    return out;
+}
+
 dll::processor::datasource parse_datasource(const std::vector<std::string>& lines, std::size_t& i){
     dll::processor::datasource source;
 
@@ -282,27 +305,11 @@ void parse_datasource_pack(dll::processor::datasource_pack& pack, const std::vec
     pack.labels.limit = limit;
 }
 
-void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, dll::processor::task& t, const std::vector<std::string>& actions);
-bool compile(const char* cxx, const options& opt);
 
-} //end of dllp namespace
+void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, const dll::processor::task& t, const std::vector<std::string>& actions);
+bool compile(const options& opt);
 
-int main(int argc, char* argv[]){
-    if(argc < 3){
-        std::cout << "dllp: Not enough arguments" << std::endl;
-        dllp::print_usage();
-        return 1;
-    }
-
-    const auto* cxx = std::getenv("CXX");
-
-    if(!cxx){
-        std::cout << "CXX environment variable must be set" << std::endl;
-        return 2;
-    }
-
-    dllp::options opt;
-
+void parse_options(int argc, char* argv[], dllp::options& opt, std::vector<std::string>& actions, std::string& source_file){
     std::size_t i = 1;
 
     while(true){
@@ -323,13 +330,15 @@ int main(int argc, char* argv[]){
         }
     }
 
-    std::string source_file(argv[i++]);
-
-    std::vector<std::string> actions;
+    source_file = argv[i++];
 
     for(; i < std::size_t(argc); ++i){
         actions.emplace_back(argv[i]);
     }
+}
+
+bool parse_file(const std::string& source_file, dll::processor::task& t, std::vector<std::shared_ptr<dllp::layer>>& layers){
+    //Parse the source_file
 
     std::ifstream source_stream(source_file);
 
@@ -346,12 +355,10 @@ int main(int argc, char* argv[]){
 
     if(lines.empty()){
         std::cout << "dllp: error: file does not exist or is empty" << std::endl;
-        return 1;
+        return false;
     }
 
-    dll::processor::task t;
-
-    std::vector<std::shared_ptr<dllp::layer>> layers;
+    //Process the lines
 
     for(std::size_t i = 0; i < lines.size();){
         auto& current_line = lines[i];
@@ -401,7 +408,7 @@ int main(int argc, char* argv[]){
 
                             if(!dllp::valid_unit(rbm->hidden_unit)){
                                 std::cout << "dllp: error: invalid hidden unit type must be one of [binary, softmax, gaussian]" << std::endl;
-                                return 1;
+                                return false;
                             }
                         } else if(dllp::starts_with(lines[i], "visible_unit:")){
                             rbm->visible_unit = dllp::extract_value(lines[i], "visible_unit: ");
@@ -409,7 +416,7 @@ int main(int argc, char* argv[]){
 
                             if(!dllp::valid_unit(rbm->visible_unit)){
                                 std::cout << "dllp: error: invalid visible unit type must be one of [binary, softmax, gaussian]" << std::endl;
-                                return 1;
+                                return false;
                             }
                         } else {
                             break;
@@ -445,7 +452,7 @@ int main(int argc, char* argv[]){
 
                             if(!dllp::valid_activation(dense->activation)){
                                 std::cout << "dllp: error: invalid activation function, must be [sigmoid,tanh,relu,softmax]" << std::endl;
-                                return 1;
+                                return false;
                             }
                         } else {
                             break;
@@ -493,7 +500,7 @@ int main(int argc, char* argv[]){
 
                             if(!dllp::valid_activation(conv->activation)){
                                 std::cout << "dllp: error: invalid activation function, must be [sigmoid,tanh,relu,softmax]" << std::endl;
-                                return 1;
+                                return false;
                             }
                         } else {
                             break;
@@ -582,15 +589,19 @@ int main(int argc, char* argv[]){
         } else {
             std::cout << "dllp: error: invalid line: " << i << ":" << current_line << std::endl;
 
-            return 1;
+            return false;
         }
     }
 
     if(layers.empty()){
         std::cout << "dllp: error: no layer has been declared" << std::endl;
-        return 1;
+        return false;
     }
 
+    return true;
+}
+
+bool compile_exe(const dllp::options& opt, const std::vector<std::string>& actions, const std::string& source_file, const dll::processor::task& t, const std::vector<std::shared_ptr<dllp::layer>>& layers){
     bool process = true;
 
     if(opt.cache){
@@ -615,12 +626,31 @@ int main(int argc, char* argv[]){
         dllp::generate(layers, t, actions);
 
         //Compile the generate file
-        if(!dllp::compile(cxx, opt)){
-            return 1;
+        if(!dllp::compile(opt)){
+            return false;
         }
     }
 
-    //Run the generated program
+    return true;
+}
+
+int process_file(const dllp::options& opt, const std::vector<std::string>& actions, const std::string& source_file){
+    //1. Parse the configuration file
+
+    dll::processor::task t;
+    std::vector<std::shared_ptr<dllp::layer>> layers;
+
+    if(!parse_file(source_file, t, layers)){
+        return 1;
+    }
+
+    //2. Generate the executable
+
+    if(!compile_exe(opt, actions, source_file, t, layers)){
+        return 1;
+    }
+
+    //3. Run the generated program
 
     std::cout << "Executing the program" << std::endl;
 
@@ -632,6 +662,37 @@ int main(int argc, char* argv[]){
     }
 
     return 0;
+}
+
+} //end of dllp namespace
+
+int main(int argc, char* argv[]){
+    if(argc < 3){
+        std::cout << "dllp: Not enough arguments" << std::endl;
+        dllp::print_usage();
+        return 1;
+    }
+
+    //Check that $CXX is defined
+
+    const auto* cxx = std::getenv("CXX");
+
+    if(!cxx){
+        std::cout << "CXX environment variable must be set" << std::endl;
+        return 2;
+    }
+
+    //Parse the options
+
+    dllp::options opt;
+    std::vector<std::string> actions;
+    std::string source_file;
+
+    dllp::parse_options(argc, argv, opt, actions, source_file);
+
+    //Process the file
+
+    return dllp::process_file(opt, actions, source_file);
 }
 
 namespace dllp {
@@ -717,7 +778,7 @@ std::string vector_to_string(const std::string& name, const std::vector<std::str
     return result;
 }
 
-void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, dll::processor::task& t, const std::vector<std::string>& actions){
+void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, const dll::processor::task& t, const std::vector<std::string>& actions){
     std::ofstream out_stream(".dbn.cpp");
 
     out_stream << "#include <memory>\n";
@@ -782,34 +843,6 @@ void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, dll::proc
     out_stream << "}\n";
 }
 
-std::string command_result(const std::string& command) {
-    std::stringstream output;
-
-    char buffer[1024];
-
-    FILE* stream = popen(command.c_str(), "r");
-
-    if(!stream){
-        return {};
-    }
-
-    while (fgets(buffer, 1024, stream) != NULL) {
-        output << buffer;
-    }
-
-    if(pclose(stream)){
-        return {};
-    }
-
-    std::string out(output.str());
-
-    if(out[out.size() - 1] == '\n'){
-        return {out.begin(), out.end() - 1};
-    }
-
-    return out;
-}
-
 bool append_pkg_flags(std::string& flags, const std::string& pkg){
     auto cflags = command_result("pkg-config --cflags " + pkg);
 
@@ -833,8 +866,10 @@ bool append_pkg_flags(std::string& flags, const std::string& pkg){
     return true;
 }
 
-bool compile(const char* cxx, const options& opt){
+bool compile(const options& opt){
     std::cout << "Compiling the program..." << std::endl;
+
+    const auto* cxx = std::getenv("CXX");
 
     std::string compile_command(cxx);
 
@@ -881,3 +916,25 @@ bool compile(const char* cxx, const options& opt){
 }
 
 } //end of namespace dllp
+
+std::string dll::processor::process_file_result(const dllp::options& opt, const std::vector<std::string>& actions, const std::string& source_file){
+    //1. Parse the configuration file
+
+    dll::processor::task t;
+    std::vector<std::shared_ptr<dllp::layer>> layers;
+
+    if(!dllp::parse_file(source_file, t, layers)){
+        return "";
+    }
+
+    //2. Generate the executable
+
+    if(!dllp::compile_exe(opt, actions, source_file, t, layers)){
+        return "";
+    }
+
+    //3. Execute and return the result directly
+
+    return dllp::command_result("./.dbn.out");
+}
+
