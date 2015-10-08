@@ -56,11 +56,11 @@ $(eval $(call enable_coverage_release))
 endif
 
 CPP_FILES=$(wildcard view/*.cpp)
-
-TEST_CPP_FILES=$(wildcard test/src/*.cpp)
-TEST_FILES=$(TEST_CPP_FILES:test/%=%)
-
 PROCESSOR_CPP_FILES=$(wildcard processor/src/*.cpp)
+TEST_CPP_FILES=$(wildcard test/src/*.cpp)
+PROCESSOR_TEST_CPP_FILES := $(filter-out processor/src/main.cpp,$(PROCESSOR_CPP_FILES))
+
+TEST_FILES=$(TEST_CPP_FILES) $(PROCESSOR_TEST_CPP_FILES)
 
 # Compile all the sources
 $(eval $(call auto_folder_compile,processor/src))
@@ -72,7 +72,7 @@ $(eval $(call add_executable,dllp,$(PROCESSOR_CPP_FILES)))
 $(eval $(call add_executable_set,dllp,dllp))
 
 # Generate executable for the test executable
-$(eval $(call add_test_executable,dll_test,$(TEST_FILES),$(TEST_LD_FLAGS)))
+$(eval $(call add_executable,dll_test,$(TEST_FILES),$(TEST_LD_FLAGS)))
 $(eval $(call add_executable_set,dll_test,dll_test))
 
 # Generate executables for visualization
