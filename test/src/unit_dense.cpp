@@ -331,7 +331,7 @@ TEST_CASE( "unit/dense/sgd/12", "[unit][dense][dbn][mnist][sgd]" ) {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->learning_rate = 0.1;
+    dbn->learning_rate = 0.01;
 
     FT_CHECK(100, 5e-2);
     TEST_CHECK(0.3);
