@@ -305,13 +305,12 @@ void parse_datasource_pack(dll::processor::datasource_pack& pack, const std::vec
 void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, const dll::processor::task& t, const std::vector<std::string>& actions);
 bool compile(const options& opt);
 
-bool parse_file(const std::string& source_file, dll::processor::task& t, std::vector<std::shared_ptr<dllp::layer>>& layers){
-    //Parse the source_file
+std::vector<std::string> read_lines(const std::string& source_file){
+    std::vector<std::string> lines;
 
     std::ifstream source_stream(source_file);
 
     std::string current_line;
-    std::vector<std::string> lines;
 
     while(std::getline(source_stream, current_line)) {
         std::string processed(cpp::trim(current_line));
@@ -321,17 +320,49 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
         }
     }
 
+    return lines;
+}
+
+bool parse_file(const std::string& source_file, dll::processor::task& t, std::vector<std::shared_ptr<dllp::layer>>& layers){
+    //0. Parse the source file
+
+    auto lines = read_lines(source_file);
+
     if(lines.empty()){
-        std::cout << "dllp: error: file does not exist or is empty" << std::endl;
+        std::cout << "dllp: warning: included file is empty or does not exist" << std::endl;
         return false;
     }
 
-    //Process the lines
+    //1. Process includes
 
     for(std::size_t i = 0; i < lines.size();){
         auto& current_line = lines[i];
 
-        if(current_line == "data:"){
+        if(dllp::starts_with(current_line, "include: ")){
+            auto include_file = dllp::extract_value(current_line, "include: ");
+            auto include_lines = read_lines(include_file);
+
+            if(lines.empty()){
+                std::cout << "dllp: error: file does not exist or is empty" << std::endl;
+            } else {
+                std::copy(include_lines.begin(), include_lines.end(), std::inserter(lines, lines.begin() + i));
+
+                i += include_lines.size();
+            }
+        }
+
+        ++i;
+    }
+
+
+    //2. Process the lines
+
+    for(std::size_t i = 0; i < lines.size();){
+        auto& current_line = lines[i];
+
+        if(dllp::starts_with(current_line, "include: ")){
+            ++i;
+        } else if(current_line == "data:"){
             ++i;
 
             while(i < lines.size()){
