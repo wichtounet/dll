@@ -42,9 +42,16 @@ struct dense_layer final : neural_base<dense_layer<Desc>> {
     template<std::size_t B>
     using output_batch_t = etl::fast_dyn_matrix<weight, B, num_hidden>;
 
+    using w_type = etl::fast_matrix<weight, num_visible, num_hidden>;
+    using b_type = etl::fast_matrix<weight, num_hidden>;
+
     //Weights and biases
-    etl::fast_matrix<weight, num_visible, num_hidden> w;    //!< Weights
-    etl::fast_vector<weight, num_hidden> b;                 //!< Hidden biases
+    w_type w;    //!< Weights
+    b_type b;    //!< Hidden biases
+
+    //Backup Weights and biases
+    std::unique_ptr<w_type> bak_w;    //!< Backup Weights
+    std::unique_ptr<b_type> bak_b;    //!< Backup Hidden biases
 
     //No copying
     dense_layer(const dense_layer& layer) = delete;
@@ -88,6 +95,16 @@ struct dense_layer final : neural_base<dense_layer<Desc>> {
 
     void display() const {
         std::cout << to_short_string() << std::endl;
+    }
+
+    void backup_weights(){
+        unique_safe_get(bak_w) = w;
+        unique_safe_get(bak_b) = b;
+    }
+
+    void restore_weights(){
+        w = *bak_w;
+        b = *bak_b;
     }
 
     template<typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 1)>

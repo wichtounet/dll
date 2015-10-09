@@ -59,9 +59,17 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     template<std::size_t B>
     using output_batch_t = etl::fast_dyn_matrix<weight, B, K, NH1, NH2>;
 
-    etl::fast_matrix<weight, NC, K, NW1, NW2> w;      //shared weights
-    etl::fast_vector<weight, K> b;                  //hidden biases bk
-    etl::fast_vector<weight, NC> c;                 //visible single bias c
+    using w_type = etl::fast_matrix<weight, NC, K, NW1, NW2>;
+    using b_type = etl::fast_vector<weight, K>;
+    using c_type = etl::fast_vector<weight, NC>;
+
+    w_type w;      //!< shared weights
+    b_type b;      //!< hidden biases bk
+    c_type c;      //!< visible single bias c
+
+    std::unique_ptr<w_type> bak_w;      //!< backup shared weights
+    std::unique_ptr<b_type> bak_b;      //!< backup hidden biases bk
+    std::unique_ptr<c_type> bak_c;      //!< backup visible single bias c
 
     etl::fast_matrix<weight, NC, NV1, NV2> v1;        //visible units
 
@@ -118,6 +126,18 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
     void display() const {
         std::cout << to_short_string() << std::endl;
+    }
+
+    void backup_weights(){
+        unique_safe_get(bak_w) = w;
+        unique_safe_get(bak_b) = b;
+        unique_safe_get(bak_c) = c;
+    }
+
+    void restore_weights(){
+        w = *bak_w;
+        b = *bak_b;
+        c = *bak_c;
     }
 
     template<bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2>

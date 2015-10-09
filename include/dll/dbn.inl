@@ -163,6 +163,22 @@ public:
         std::cout << "Total parameters: " << parameters << std::endl;
     }
 
+    void backup_weights(){
+        for_each_layer([](auto& layer){
+            cpp::static_if<decay_layer_traits<decltype(layer)>::is_trained()>([&layer](auto f){
+                f(layer).backup_weights();
+            });
+        });
+    }
+
+    void restore_weights(){
+        for_each_layer([](auto& layer){
+            cpp::static_if<decay_layer_traits<decltype(layer)>::is_trained()>([&layer](auto f){
+                f(layer).restore_weights();
+            });
+        });
+    }
+
     void store(const std::string& file) const {
         std::ofstream os(file, std::ofstream::binary);
         store(os);

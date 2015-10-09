@@ -15,6 +15,15 @@
 
 namespace dll {
 
+template<typename T>
+T& unique_safe_get(std::unique_ptr<T>& ptr){
+    if(!ptr){
+        ptr = std::make_unique<T>();
+    }
+
+    return *ptr;
+}
+
 template<typename Parent>
 struct neural_base {
     using parent_t = Parent;

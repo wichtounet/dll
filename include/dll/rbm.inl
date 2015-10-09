@@ -45,10 +45,19 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
     template<std::size_t B>
     using output_batch_t = etl::fast_dyn_matrix<weight, B, num_hidden>;
 
+    using w_type = etl::fast_matrix<weight, num_visible, num_hidden>;
+    using b_type = etl::fast_vector<weight, num_hidden>;
+    using c_type = etl::fast_vector<weight, num_visible>;
+
     //Weights and biases
-    etl::fast_matrix<weight, num_visible, num_hidden> w;    //!< Weights
-    etl::fast_vector<weight, num_hidden> b;                 //!< Hidden biases
-    etl::fast_vector<weight, num_visible> c;                //!< Visible biases
+    w_type w;    //!< Weights
+    b_type b;    //!< Hidden biases
+    c_type c;    //!< Visible biases
+
+    //Backup weights and biases
+    std::unique_ptr<w_type> bak_w;    //!< Backup Weights
+    std::unique_ptr<b_type> bak_b;    //!< Backup Hidden biases
+    std::unique_ptr<c_type> bak_c;    //!< Backup Visible biases
 
     //Reconstruction data
     conditional_fast_matrix_t<!dbn_only, weight, num_visible> v1; //!< State of the visible units
@@ -99,6 +108,18 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
 
     void display() const {
         std::cout << to_short_string() << std::endl;
+    }
+
+    void backup_weights(){
+        unique_safe_get(bak_w) = w;
+        unique_safe_get(bak_b) = b;
+        unique_safe_get(bak_c) = c;
+    }
+
+    void restore_weights(){
+        w = *bak_w;
+        b = *bak_b;
+        c = *bak_c;
     }
 
     template<bool P = true, bool S = true, typename H1, typename H2, typename V>

@@ -49,9 +49,16 @@ struct conv_layer final : neural_base<conv_layer<Desc>> {
     template<std::size_t B>
     using output_batch_t = etl::fast_dyn_matrix<weight, B, K, NH1, NH2>;
 
+    using w_type = etl::fast_matrix<weight, NC, K, NW1, NW2>;
+    using b_type = etl::fast_matrix<weight, K>;
+
     //Weights and biases
-    etl::fast_matrix<weight, NC, K, NW1, NW2> w;        //!< Weights
-    etl::fast_matrix<weight, K> b;                      //!< Hidden biases
+    w_type w;        //!< Weights
+    b_type b;        //!< Hidden biases
+
+    //Backup weights and biases
+    std::unique_ptr<w_type> bak_w;        //!< Backup Weights
+    std::unique_ptr<b_type> bak_b;        //!< Backup Hidden biases
 
     //No copying
     conv_layer(const conv_layer& layer) = delete;
@@ -97,6 +104,16 @@ struct conv_layer final : neural_base<conv_layer<Desc>> {
 
     void display() const {
         std::cout << to_short_string() << std::endl;
+    }
+
+    void backup_weights(){
+        unique_safe_get(bak_w) = w;
+        unique_safe_get(bak_b) = b;
+    }
+
+    void restore_weights(){
+        w = *bak_w;
+        b = *bak_b;
     }
 
     template<typename V>

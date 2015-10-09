@@ -28,22 +28,31 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
     static constexpr const unit_type visible_unit = desc::visible_unit;
     static constexpr const unit_type hidden_unit = desc::hidden_unit;
 
+    using w_type = etl::dyn_matrix<weight>;
+    using b_type = etl::dyn_vector<weight>;
+    using c_type = etl::dyn_vector<weight>;
+
     //Weights and biases
-    etl::dyn_matrix<weight> w;              //!< Weights
-    etl::dyn_vector<weight> b;              //!< Hidden biases
-    etl::dyn_vector<weight> c;              //!< Visible biases
+    w_type w;                         //!< Weights
+    b_type b;                         //!< Hidden biases
+    c_type c;                         //!< Visible biases
+
+    //Backup weights and biases
+    std::unique_ptr<w_type> bak_w;    //!< Backup Weights
+    std::unique_ptr<b_type> bak_b;    //!< Backup Hidden biases
+    std::unique_ptr<c_type> bak_c;    //!< Backup Visible biases
 
     //Reconstruction data
-    etl::dyn_vector<weight> v1; //!< State of the visible units
+    etl::dyn_vector<weight> v1;       //!< State of the visible units
 
-    etl::dyn_vector<weight> h1_a; //!< Activation probabilities of hidden units after first CD-step
-    etl::dyn_vector<weight> h1_s; //!< Sampled value of hidden units after first CD-step
+    etl::dyn_vector<weight> h1_a;     //!< Activation probabilities of hidden units after first CD-step
+    etl::dyn_vector<weight> h1_s;     //!< Sampled value of hidden units after first CD-step
 
-    etl::dyn_vector<weight> v2_a; //!< Activation probabilities of visible units after first CD-step
-    etl::dyn_vector<weight> v2_s; //!< Sampled value of visible units after first CD-step
+    etl::dyn_vector<weight> v2_a;     //!< Activation probabilities of visible units after first CD-step
+    etl::dyn_vector<weight> v2_s;     //!< Sampled value of visible units after first CD-step
 
-    etl::dyn_vector<weight> h2_a; //!< Activation probabilities of hidden units after last CD-step
-    etl::dyn_vector<weight> h2_s; //!< Sampled value of hidden units after last CD-step
+    etl::dyn_vector<weight> h2_a;     //!< Activation probabilities of hidden units after last CD-step
+    etl::dyn_vector<weight> h2_s;     //!< Sampled value of hidden units after last CD-step
 
     template<std::size_t B>
     using input_batch_t = etl::fast_dyn_matrix<weight, B, 1>; //This is fake, should never be used
