@@ -72,7 +72,7 @@ struct dbn_trainer {
             auto batches = data.size() / batch_size + (data.size() % batch_size == 0 ? 0 : 1);
 
             //Train for max_epochs epoch
-            for(std::size_t epoch= 0; epoch < max_epochs; ++epoch){
+            for(std::size_t epoch = 0; epoch < max_epochs; ++epoch){
                 //Train one mini-batch at a time
                 for(std::size_t i = 0; i < batches; ++i){
                     auto start = i * batch_size;
@@ -84,6 +84,7 @@ struct dbn_trainer {
                     trainer->train_batch(epoch, data_batch, label_batch);
                 }
 
+                auto last_error = error;
                 error = test_set(dbn, first, last, lfirst, llast,
                     [](dbn_t& dbn, auto& image){ return dbn.predict(image); });
 
@@ -97,6 +98,22 @@ struct dbn_trainer {
                 //Once the goal is reached, stop training
                 if(error == 0.0){
                     break;
+                }
+
+                if(dbn_traits<dbn_t>::lr_driver() == lr_driver_type::BOLD){
+                    if(epoch){
+                        //Error increased
+                        if(error > last_error + 1e-8){
+                            dbn.learning_rate *= dbn.lr_bold_dec;
+                            watcher.bold_lr_adapt(dbn);
+                        }
+
+                        //Error decreased
+                        if(error < last_error - 1e-10){
+                            dbn.learning_rate *= dbn.lr_bold_inc;
+                            watcher.bold_lr_adapt(dbn);
+                        }
+                    }
                 }
             }
         } else {

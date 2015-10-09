@@ -66,6 +66,10 @@ struct dbn_traits {
         return desc::parameters::template contains<svm_scale>();
     }
 
+    static constexpr lr_driver_type lr_driver() noexcept {
+        return detail::get_value_l<dll::lr_driver<lr_driver_type::FIXED>, typename desc::parameters>::value;
+    }
+
     static constexpr decay_type decay() noexcept {
         return detail::get_value_l<weight_decay<decay_type::NONE>, typename desc::parameters>::value;
     }

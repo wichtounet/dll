@@ -51,7 +51,7 @@ struct dbn_desc {
         detail::is_valid<
             cpp::type_list<
                 trainer_id, watcher_id, momentum_id, weight_decay_id, big_batch_size_id, batch_size_id, verbose_id,
-                memory_id, svm_concatenate_id, svm_scale_id, serial_id>,
+                memory_id, svm_concatenate_id, svm_scale_id, serial_id, lr_driver_id>,
             Parameters...>::value,
         "Invalid parameters type");
 };

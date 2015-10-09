@@ -135,6 +135,12 @@ struct default_dbn_watcher {
         std::cout << formatted << std::endl;
     }
 
+    void bold_lr_adapt(const DBN& dbn){
+        char formatted[1024];
+        snprintf(formatted, 1024, "Bold driver: learning rate adapted to %.5f", dbn.learning_rate);
+        std::cout << formatted << std::endl;
+    }
+
     void fine_tuning_end(const DBN&){
         std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
     }

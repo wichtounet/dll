@@ -313,3 +313,26 @@ TEST_CASE( "unit/dense/sgd/11", "[unit][dense][dbn][mnist][sgd]" ) {
     FT_CHECK(50, 5e-2);
     TEST_CHECK(0.2);
 }
+
+// Test Sigmoid -> Sigmoid network with bold driver
+TEST_CASE( "unit/dense/sgd/12", "[unit][dense][dbn][mnist][sgd]" ) {
+    typedef dll::dbn_desc<
+        dll::dbn_layers<
+            dll::dense_desc<28 * 28, 150>::layer_t,
+            dll::dense_desc<150, 10>::layer_t
+        >,
+          dll::trainer<dll::sgd_trainer>
+        , dll::lr_driver<dll::lr_driver_type::BOLD>
+        , dll::batch_size<10>
+    >::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(350);
+    REQUIRE(!dataset.training_images.empty());
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->learning_rate = 0.1;
+
+    FT_CHECK(100, 5e-2);
+    TEST_CHECK(0.3);
+}
