@@ -15,7 +15,8 @@ namespace dll {
  */
 enum class lr_driver_type {
     FIXED,          ///< The learning rate never changes
-    BOLD            ///< Bold drive of the learning rate
+    BOLD,           ///< Bold driver of the learning rate
+    STEP            ///< Step drive of the learning rate
 };
 
 } //end of dll namespace

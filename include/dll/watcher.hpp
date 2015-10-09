@@ -127,6 +127,14 @@ struct default_dbn_watcher {
         if(w_decay(dbn_traits<DBN>::decay()) == decay_type::L2 || w_decay(dbn_traits<DBN>::decay()) == decay_type::L1L2){
             std::cout << "   weight_cost(L2)=" << dbn.l2_weight_cost << std::endl;
         }
+
+        if(dbn_traits<DBN>::lr_driver() == lr_driver_type::BOLD){
+            std::cout << "   lr_driver(BOLD)=" << dbn.lr_bold_inc << ":" << dbn.lr_bold_dec << std::endl;
+        }
+
+        if(dbn_traits<DBN>::lr_driver() == lr_driver_type::STEP){
+            std::cout << "   lr_driver(STEP)=" << dbn.lr_step_size << ":" << dbn.lr_step_gamma << std::endl;
+        }
     }
 
     void ft_epoch_end(std::size_t epoch, double error, const DBN&){
@@ -135,9 +143,9 @@ struct default_dbn_watcher {
         std::cout << formatted << std::endl;
     }
 
-    void bold_lr_adapt(const DBN& dbn){
+    void lr_adapt(const DBN& dbn){
         char formatted[1024];
-        snprintf(formatted, 1024, "Bold driver: learning rate adapted to %.5f", dbn.learning_rate);
+        snprintf(formatted, 1024, "driver: learning rate adapted to %.5f", dbn.learning_rate);
         std::cout << formatted << std::endl;
     }
 

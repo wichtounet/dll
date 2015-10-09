@@ -82,6 +82,8 @@ struct dbn final {
     weight learning_rate = 0.1;         ///< The learning rate for finetuning
     weight lr_bold_inc = 1.05;          ///< The multiplicative increase of learning rate for the bold driver
     weight lr_bold_dec = 0.5;           ///< The multiplicative decrease of learning rate for the bold driver
+    weight lr_step_gamma = 0.5;         ///< The multiplicative decrease of learning rate for the step driver
+    std::size_t lr_step_size = 10;      ///< The number of steps after which the step driver decreases the learning rate
 
     weight initial_momentum = 0.5;      ///< The initial momentum
     weight final_momentum = 0.9;        ///< The final momentum applied after *final_momentum_epoch* epoch

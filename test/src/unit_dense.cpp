@@ -315,6 +315,7 @@ TEST_CASE( "unit/dense/sgd/11", "[unit][dense][dbn][mnist][sgd]" ) {
 }
 
 // Test Sigmoid -> Sigmoid network with bold driver
+// Note: The bold driver is not really satisfying
 TEST_CASE( "unit/dense/sgd/12", "[unit][dense][dbn][mnist][sgd]" ) {
     typedef dll::dbn_desc<
         dll::dbn_layers<
@@ -333,6 +334,32 @@ TEST_CASE( "unit/dense/sgd/12", "[unit][dense][dbn][mnist][sgd]" ) {
 
     dbn->learning_rate = 0.01;
 
-    FT_CHECK(100, 5e-2);
+    FT_CHECK(100, 1e-1);
+    TEST_CHECK(0.3);
+}
+
+// Test Sigmoid -> Sigmoid network with step driver
+// Note: The step driver is not really satisfying
+TEST_CASE( "unit/dense/sgd/13", "[unit][dense][dbn][mnist][sgd]" ) {
+    typedef dll::dbn_desc<
+        dll::dbn_layers<
+            dll::dense_desc<28 * 28, 150>::layer_t,
+            dll::dense_desc<150, 10>::layer_t
+        >,
+          dll::trainer<dll::sgd_trainer>
+        , dll::lr_driver<dll::lr_driver_type::STEP>
+        , dll::batch_size<10>
+    >::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(350);
+    REQUIRE(!dataset.training_images.empty());
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->learning_rate = 0.1;
+    dbn->lr_step_gamma = 0.8;
+    dbn->lr_step_size = 10;
+
+    FT_CHECK(200, 1e-1);
     TEST_CHECK(0.3);
 }

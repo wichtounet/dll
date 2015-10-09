@@ -105,12 +105,12 @@ struct dbn_trainer {
                         if(error > last_error + 1e-8){
                             //Error increased
                             dbn.learning_rate *= dbn.lr_bold_dec;
-                            watcher.bold_lr_adapt(dbn);
+                            watcher.lr_adapt(dbn);
                             dbn.restore_weights();
                         } else if(error < last_error - 1e-10){
                             //Error decreased
                             dbn.learning_rate *= dbn.lr_bold_inc;
-                            watcher.bold_lr_adapt(dbn);
+                            watcher.lr_adapt(dbn);
                             dbn.backup_weights();
                         } else {
                             //Error didn't change enough
@@ -118,6 +118,13 @@ struct dbn_trainer {
                         }
                     } else {
                         dbn.backup_weights();
+                    }
+                }
+
+                if(dbn_traits<dbn_t>::lr_driver() == lr_driver_type::STEP){
+                    if(epoch && epoch % dbn.lr_step_size == 0){
+                        dbn.learning_rate *= dbn.lr_step_gamma;
+                        watcher.lr_adapt(dbn);
                     }
                 }
             }
