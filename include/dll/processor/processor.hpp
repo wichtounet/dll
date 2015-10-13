@@ -17,8 +17,10 @@
 #include <iostream>
 #include <iomanip>
 
-#include "dll/conv_layer.hpp"
+#include "dll/rbm.hpp"
+#include "dll/conv_rbm.hpp"
 #include "dll/dense_layer.hpp"
+#include "dll/conv_layer.hpp"
 #include "dll/dbn.hpp"
 
 #include "mnist/mnist_reader.hpp"
@@ -205,9 +207,15 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions){
                 return;
             }
 
+            using last_layer_traits = decay_layer_traits<typename dbn_t::template layer_type<dbn_t::layers - 1>>;
+            static constexpr const bool sgd_possible = last_layer_traits::is_dense_layer() || last_layer_traits::is_standard_rbm_layer();
+
             //Train the network
-            auto ft_error = dbn.fine_tune(ft_samples, ft_labels, task.ft_desc.epochs);
-            std::cout << "Test Classification Error:" << ft_error << std::endl;
+            cpp::static_if<sgd_possible>([&](auto f){
+                auto ft_error = f(dbn).fine_tune(ft_samples, ft_labels, task.ft_desc.epochs);
+                std::cout << "Test Classification Error:" << ft_error << std::endl;
+            });
+
         } else if(action == "test"){
             print_title("Testing");
 
