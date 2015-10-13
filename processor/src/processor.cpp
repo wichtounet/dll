@@ -139,6 +139,75 @@ struct rbm_layer : layer {
     }
 };
 
+struct conv_rbm_layer : layer {
+    std::size_t c = 0;
+    std::size_t v1 = 0;
+    std::size_t v2 = 0;
+    std::size_t k = 0;
+    std::size_t w1 = 0;
+    std::size_t w2 = 0;
+
+    std::string visible_unit;
+    std::string hidden_unit;
+
+    double learning_rate = dll::processor::stupid_default;
+    double momentum = dll::processor::stupid_default;
+    std::size_t batch_size = 0;
+
+    bool is_conv() const override {
+        return true;
+    }
+
+    void print(std::ostream& out) const override {
+        out << "dll::conv_rbm_desc<" << c << ", " << v1 << ", " << v2 << ", " << k << ", " << (v1 - w1 + 1) << ", " << (v2 - w2 + 1);
+
+        if(!visible_unit.empty()){
+            out << ", dll::visible<dll::unit_type::" << unit_type(visible_unit) << ">";
+        }
+
+        if(!hidden_unit.empty()){
+            out << ", dll::hidden<dll::unit_type::" << unit_type(hidden_unit) << ">";
+        }
+
+        if(batch_size > 0){
+            out << ", dll::batch_size<" << batch_size << ">";
+        }
+
+        if(momentum != dll::processor::stupid_default){
+            out << ", dll::momentum";
+        }
+
+        out << ">::rbm_t";
+    }
+
+    virtual void set(std::ostream& out, const std::string& lhs) const override {
+        if(learning_rate != dll::processor::stupid_default){
+            out << lhs << ".learning_rate = " << learning_rate << ";\n";
+        }
+
+        if(momentum != dll::processor::stupid_default){
+            out << lhs << ".initial_momentum = " << momentum << ";\n";
+            out << lhs << ".final_momentum = " << momentum << ";\n";
+        }
+    }
+
+    std::size_t hidden_get() const override {
+        return k * (v1 - w1 + 1) * (v2 - w2 + 1);
+    }
+
+    std::size_t hidden_get_1() const override {
+        return k;
+    }
+
+    std::size_t hidden_get_2() const override {
+        return v1 - w1 + 1;
+    }
+
+    std::size_t hidden_get_3() const override {
+        return v2 - w2 + 1;
+    }
+};
+
 struct dense_layer : layer {
     std::size_t visible = 0;
     std::size_t hidden = 0;
@@ -433,6 +502,75 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
                     }
 
                     layers.push_back(std::move(rbm));
+                } else if(lines[i] == "crbm:"){
+                    ++i;
+
+                    auto crbm = std::make_shared<dllp::conv_rbm_layer>();
+
+                    while(i < lines.size()){
+                        if(dllp::starts_with(lines[i], "channels:")){
+                            crbm->c = std::stol(dllp::extract_value(lines[i], "channels: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "filters:")){
+                            crbm->k = std::stol(dllp::extract_value(lines[i], "filters: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "v1:")){
+                            crbm->v1 = std::stol(dllp::extract_value(lines[i], "v1: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "v2:")){
+                            crbm->v2 = std::stol(dllp::extract_value(lines[i], "v2: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "w1:")){
+                            crbm->w1 = std::stol(dllp::extract_value(lines[i], "w1: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "w2:")){
+                            crbm->w2 = std::stol(dllp::extract_value(lines[i], "w2: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "batch:")){
+                            crbm->batch_size = std::stol(dllp::extract_value(lines[i], "batch: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "momentum:")){
+                            crbm->momentum = std::stod(dllp::extract_value(lines[i], "momentum: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "learning_rate:")){
+                            crbm->learning_rate = std::stod(dllp::extract_value(lines[i], "learning_rate: "));
+                            ++i;
+                        } else if(dllp::starts_with(lines[i], "hidden_unit:")){
+                            crbm->hidden_unit = dllp::extract_value(lines[i], "hidden_unit: ");
+                            ++i;
+
+                            if(!dllp::valid_unit(crbm->hidden_unit)){
+                                std::cout << "dllp: error: invalid hidden unit type must be one of [binary, softmax, gaussian]" << std::endl;
+                                return false;
+                            }
+                        } else if(dllp::starts_with(lines[i], "visible_unit:")){
+                            crbm->visible_unit = dllp::extract_value(lines[i], "visible_unit: ");
+                            ++i;
+
+                            if(!dllp::valid_unit(crbm->visible_unit)){
+                                std::cout << "dllp: error: invalid visible unit type must be one of [binary, softmax, gaussian]" << std::endl;
+                                return false;
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+
+                    if(layers.empty() && (!crbm->c || !crbm->v1 || !crbm->v2 || !crbm->k || !crbm->w1 || !crbm->w2)){
+                        std::cout << "dllp: error: The first layer needs input and output sizes" << std::endl;
+                    } else if(!layers.empty() && !crbm->k){
+                        std::cout << "dllp: error: The number of filters is mandatory" << std::endl;
+                    } else if(!layers.empty() && (!crbm->w1 || !crbm->w2)){
+                        std::cout << "dllp: error: The size of the filters is mandatory" << std::endl;
+                    }
+
+                    if(!layers.empty()){
+                        crbm->c = layers.back()->hidden_get_1();
+                        crbm->v1 = layers.back()->hidden_get_2();
+                        crbm->v2 = layers.back()->hidden_get_3();
+                    }
+
+                    layers.push_back(std::move(crbm));
                 } else if(lines[i] == "dense:"){
                     ++i;
 
