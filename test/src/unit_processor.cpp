@@ -84,24 +84,38 @@ dll::processor::options default_options(){
 
 } // end of anonymous namespace
 
+#define FT_ERROR_BELOW(min)                 \
+    {                                       \
+    double ft_error = 1.0;                  \
+    REQUIRE(get_ft_error(lines, ft_error)); \
+    REQUIRE(ft_error < min);                \
+    }
+
+#define TEST_ERROR_BELOW(min)                   \
+    {                                           \
+    double test_error = 1.0;                    \
+    REQUIRE(get_test_error(lines, test_error)); \
+    REQUIRE(test_error < min);                  \
+    }
+
+#define REC_ERROR_BELOW(epoch, min)                         \
+    {                                                       \
+    double rec_error = 1.0;                                 \
+    REQUIRE(get_last_rec_error(epoch, lines, rec_error));   \
+    REQUIRE(rec_error < min);                               \
+    }
+
 TEST_CASE( "unit/processor/dense/sgd/1", "[unit][dense][dbn][mnist][sgd]" ) {
     auto lines = get_result(default_options(), {"train", "test"}, "dense_sgd_1.conf");
     REQUIRE(!lines.empty());
 
-    double ft_error = 1.0;
-    REQUIRE(get_ft_error(lines, ft_error));
-    REQUIRE(ft_error < 5e-2);
-
-    double test_error = 1.0;
-    REQUIRE(get_test_error(lines, test_error));
-    REQUIRE(test_error < 0.3);
+    FT_ERROR_BELOW(5e-2);
+    TEST_ERROR_BELOW(0.3);
 }
 
 TEST_CASE( "unit/processor/crbm/1", "[unit][crbm][dbn][mnist]" ) {
     auto lines = get_result(default_options(), {"pretrain"}, "crbm_1.conf");
     REQUIRE(!lines.empty());
 
-    double rec_error = 1.0;
-    REQUIRE(get_last_rec_error("epoch 24", lines, rec_error));
-    REQUIRE(rec_error < 0.01);
+    REC_ERROR_BELOW("epoch 24", 0.01);
 }
