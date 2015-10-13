@@ -56,16 +56,8 @@ bool get_last_rec_error(std::string epoch, const std::vector<std::string>& lines
     return found;
 }
 
-} // end of anonymous namespace
-
-TEST_CASE( "unit/processor/dense/sgd/1", "[unit][dense][dbn][mnist][sgd]" ) {
-    dll::processor::options opt;
-    opt.mkl = true;
-    opt.quiet = true;
-
-    std::vector<std::string> actions{"train", "test"};
-
-    auto result = dll::processor::process_file_result(opt, actions, "test/processor/dense_sgd_1.conf");
+std::vector<std::string> get_result(const dll::processor::options& opt, const std::vector<std::string>& actions, const std::string& source_file){
+    auto result = dll::processor::process_file_result(opt, actions, "test/processor/" + source_file);
 
     std::stringstream stream(result);
     std::string current_line;
@@ -79,6 +71,21 @@ TEST_CASE( "unit/processor/dense/sgd/1", "[unit][dense][dbn][mnist][sgd]" ) {
         }
     }
 
+    return lines;
+}
+
+dll::processor::options default_options(){
+    dll::processor::options opt;
+    opt.mkl = true;
+    opt.quiet = true;
+    opt.cache = false;
+    return opt;
+}
+
+} // end of anonymous namespace
+
+TEST_CASE( "unit/processor/dense/sgd/1", "[unit][dense][dbn][mnist][sgd]" ) {
+    auto lines = get_result(default_options(), {"train", "test"}, "dense_sgd_1.conf");
     REQUIRE(!lines.empty());
 
     double ft_error = 1.0;
@@ -91,26 +98,7 @@ TEST_CASE( "unit/processor/dense/sgd/1", "[unit][dense][dbn][mnist][sgd]" ) {
 }
 
 TEST_CASE( "unit/processor/crbm/1", "[unit][crbm][dbn][mnist]" ) {
-    dll::processor::options opt;
-    opt.mkl = true;
-    opt.quiet = true;
-
-    std::vector<std::string> actions{"pretrain"};
-
-    auto result = dll::processor::process_file_result(opt, actions, "test/processor/crbm_1.conf");
-
-    std::stringstream stream(result);
-    std::string current_line;
-    std::vector<std::string> lines;
-
-    while(std::getline(stream, current_line)) {
-        std::string processed(cpp::trim(current_line));
-
-        if(!processed.empty()){
-            lines.emplace_back(std::move(processed));
-        }
-    }
-
+    auto lines = get_result(default_options(), {"pretrain"}, "crbm_1.conf");
     REQUIRE(!lines.empty());
 
     double rec_error = 1.0;
