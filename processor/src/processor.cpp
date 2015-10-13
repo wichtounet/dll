@@ -243,9 +243,6 @@ struct conv_layer : layer {
 
     std::string activation;
 
-    double learning_rate = dll::processor::stupid_default;
-    double momentum = dll::processor::stupid_default;
-
     bool is_conv() const override {
         return false;
     }
