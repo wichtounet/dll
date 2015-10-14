@@ -63,7 +63,7 @@ PROCESSOR_TEST_CPP_FILES := $(filter-out processor/src/main.cpp,$(PROCESSOR_CPP_
 TEST_FILES=$(TEST_CPP_FILES) $(PROCESSOR_TEST_CPP_FILES)
 
 # Compile all the sources
-$(eval $(call auto_folder_compile,processor/src))
+$(eval $(call auto_folder_compile,processor/src,-Iprocessor/include))
 $(eval $(call auto_folder_compile,test/src,-Itest/include))
 $(eval $(call auto_folder_compile,view/src))
 
