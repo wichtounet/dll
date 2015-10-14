@@ -88,6 +88,7 @@ dll::processor::options default_options(){
     {                                       \
     double ft_error = 1.0;                  \
     REQUIRE(get_ft_error(lines, ft_error)); \
+    std::cout << "ft_error:" << ft_error << std::endl;    \
     REQUIRE(ft_error < min);                \
     }
 
@@ -95,6 +96,7 @@ dll::processor::options default_options(){
     {                                           \
     double test_error = 1.0;                    \
     REQUIRE(get_test_error(lines, test_error)); \
+    std::cout << "test_error:" << test_error << std::endl;    \
     REQUIRE(test_error < min);                  \
     }
 
@@ -102,10 +104,13 @@ dll::processor::options default_options(){
     {                                                       \
     double rec_error = 1.0;                                 \
     REQUIRE(get_last_rec_error(epoch, lines, rec_error));   \
+    std::cout << "rec_error:" << rec_error << std::endl;    \
     REQUIRE(rec_error < min);                               \
     }
 
-TEST_CASE( "unit/processor/dense/sgd/1", "[unit][dense][dbn][mnist][sgd]" ) {
+// Dense (SGD)
+
+TEST_CASE( "unit/processor/dense/sgd/1", "[unit][dense][dbn][mnist][sgd][proc]" ) {
     auto lines = get_result(default_options(), {"train", "test"}, "dense_sgd_1.conf");
     REQUIRE(!lines.empty());
 
@@ -113,14 +118,32 @@ TEST_CASE( "unit/processor/dense/sgd/1", "[unit][dense][dbn][mnist][sgd]" ) {
     TEST_ERROR_BELOW(0.3);
 }
 
-TEST_CASE( "unit/processor/crbm/1", "[unit][crbm][dbn][mnist]" ) {
+// RBM
+
+TEST_CASE( "unit/processor/rbm/1", "[unit][rbm][dbn][mnist][proc]" ) {
+    auto lines = get_result(default_options(), {"pretrain"}, "rbm_1.conf");
+    REQUIRE(!lines.empty());
+
+    REC_ERROR_BELOW("epoch 24", 0.01);
+}
+
+TEST_CASE( "unit/processor/rbm/2", "[unit][rbm][dbn][mnist][proc]" ) {
+    auto lines = get_result(default_options(), {"pretrain"}, "rbm_2.conf");
+    REQUIRE(!lines.empty());
+
+    REC_ERROR_BELOW("epoch 24", 0.01);
+}
+
+// CRBM
+
+TEST_CASE( "unit/processor/crbm/1", "[unit][crbm][dbn][mnist][proc]" ) {
     auto lines = get_result(default_options(), {"pretrain"}, "crbm_1.conf");
     REQUIRE(!lines.empty());
 
     REC_ERROR_BELOW("epoch 24", 0.01);
 }
 
-TEST_CASE( "unit/processor/crbm/2", "[unit][crbm][dbn][mnist]" ) {
+TEST_CASE( "unit/processor/crbm/2", "[unit][crbm][dbn][mnist][proc]" ) {
     auto lines = get_result(default_options(), {"pretrain"}, "crbm_2.conf");
     REQUIRE(!lines.empty());
 

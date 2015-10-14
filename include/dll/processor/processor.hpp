@@ -38,6 +38,21 @@ struct options {
     bool cache = false;
 };
 
+template<typename LastLayer, typename Enable = void>
+struct sgd_possible {
+    static constexpr bool value = false;
+};
+
+template<typename LastLayer>
+struct sgd_possible <LastLayer, std::enable_if_t<decay_layer_traits<LastLayer>::is_dense_layer()>> {
+    static constexpr bool value = true;
+};
+
+template<typename LastLayer>
+struct sgd_possible <LastLayer, std::enable_if_t<decay_layer_traits<LastLayer>::is_standard_rbm_layer()>> {
+    static constexpr bool value = std::decay_t<LastLayer>::hidden_unit == unit_type::SOFTMAX;
+};
+
 //These functions are only exposed to be able to unit-test the program
 int process_file(const options& opt, const std::vector<std::string>& actions, const std::string& source_file);
 std::string process_file_result(const options& opt, const std::vector<std::string>& actions, const std::string& source_file);
@@ -207,11 +222,10 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions){
                 return;
             }
 
-            using last_layer_traits = decay_layer_traits<typename dbn_t::template layer_type<dbn_t::layers - 1>>;
-            static constexpr const bool sgd_possible = last_layer_traits::is_dense_layer() || last_layer_traits::is_standard_rbm_layer();
+            using last_layer = typename dbn_t::template layer_type<dbn_t::layers - 1>;
 
             //Train the network
-            cpp::static_if<sgd_possible>([&](auto f){
+            cpp::static_if<sgd_possible<last_layer>::value>([&](auto f){
                 auto ft_error = f(dbn).fine_tune(ft_samples, ft_labels, task.ft_desc.epochs);
                 std::cout << "Test Classification Error:" << ft_error << std::endl;
             });
