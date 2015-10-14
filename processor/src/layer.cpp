@@ -31,6 +31,10 @@ void dllp::rbm_layer::print(std::ostream& out) const {
         out << ", dll::momentum";
     }
 
+    if(parallel_mode){
+        out << ", dll::parallel_mode";
+    }
+
     out << ">::rbm_t";
 }
 
@@ -47,6 +51,9 @@ bool dllp::rbm_layer::parse(const layers_t& layers, const std::vector<std::strin
             ++i;
         } else if(dllp::starts_with(lines[i], "momentum:")){
             momentum = std::stod(dllp::extract_value(lines[i], "momentum: "));
+            ++i;
+        } else if(dllp::starts_with(lines[i], "parallel_mode:")){
+            parallel_mode = dllp::extract_value(lines[i], "parallel_mode: ") == "true";
             ++i;
         } else if(dllp::starts_with(lines[i], "learning_rate:")){
             learning_rate = std::stod(dllp::extract_value(lines[i], "learning_rate: "));
@@ -144,6 +151,10 @@ void dllp::conv_rbm_layer::print(std::ostream& out) const {
         out << ", dll::momentum";
     }
 
+    if(parallel_mode){
+        out << ", dll::parallel_mode";
+    }
+
     if(!decay.empty()){
         out << ", dll::weight_decay<dll::decay_type::" << decay_to_str(decay) << ">\n";
     }
@@ -176,6 +187,9 @@ bool dllp::conv_rbm_layer::parse(const layers_t& layers, const std::vector<std::
             ++i;
         } else if(dllp::starts_with(lines[i], "momentum:")){
             momentum = std::stod(dllp::extract_value(lines[i], "momentum: "));
+            ++i;
+        } else if(dllp::starts_with(lines[i], "parallel_mode:")){
+            parallel_mode = dllp::extract_value(lines[i], "parallel_mode: ") == "true";
             ++i;
         } else if(dllp::starts_with(lines[i], "learning_rate:")){
             learning_rate = std::stod(dllp::extract_value(lines[i], "learning_rate: "));
