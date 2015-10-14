@@ -50,6 +50,7 @@ struct rbm_layer : layer {
     double l2_weight_cost = dll::processor::stupid_default;
 
     bool parallel_mode = false;
+    bool shuffle = false;
 
     void print(std::ostream& out) const override ;
     bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override ;
@@ -78,6 +79,7 @@ struct conv_rbm_layer : layer {
     double l2_weight_cost = dll::processor::stupid_default;
 
     bool parallel_mode = false;
+    bool shuffle = false;
 
     void print(std::ostream& out) const override ;
     bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override ;
