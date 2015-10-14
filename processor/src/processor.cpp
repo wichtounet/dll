@@ -76,6 +76,10 @@ dll::processor::datasource parse_datasource(const std::vector<std::string>& line
             source.scale = true;
             source.scale_d = std::stod(extract_value(lines[i], "scale: "));
             ++i;
+        } else if(starts_with(lines[i], "shift: ")){
+            source.shift = true;
+            source.shift_d = std::stod(extract_value(lines[i], "shift: "));
+            ++i;
         } else {
             break;
         }

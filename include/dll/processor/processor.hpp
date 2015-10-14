@@ -67,6 +67,8 @@ struct datasource {
     bool normalize = false;
     bool scale = false;
     double scale_d = 0.0;
+    bool shift = false;
+    double shift_d = 0.0;
 
     long limit = -1;
 
@@ -129,6 +131,14 @@ bool read_samples(const datasource& ds, std::vector<Sample>& samples){
 
         if(ds.normalize){
             mnist::normalize_each(samples);
+        }
+
+        if(ds.shift){
+            for(auto& vec : samples){
+                for(auto& v : vec){
+                    v += ds.shift_d;
+                }
+            }
         }
 
         if(ds.scale){
