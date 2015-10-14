@@ -45,6 +45,10 @@ struct rbm_layer : layer {
     double momentum = dll::processor::stupid_default;
     std::size_t batch_size = 0;
 
+    std::string decay = "none";
+    double l1_weight_cost = dll::processor::stupid_default;
+    double l2_weight_cost = dll::processor::stupid_default;
+
     void print(std::ostream& out) const override ;
     bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override ;
     void set(std::ostream& out, const std::string& lhs) const override ;
@@ -66,6 +70,10 @@ struct conv_rbm_layer : layer {
     double learning_rate = dll::processor::stupid_default;
     double momentum = dll::processor::stupid_default;
     std::size_t batch_size = 0;
+
+    std::string decay = "none";
+    double l1_weight_cost = dll::processor::stupid_default;
+    double l2_weight_cost = dll::processor::stupid_default;
 
     void print(std::ostream& out) const override ;
     bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override ;

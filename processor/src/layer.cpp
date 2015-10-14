@@ -19,6 +19,10 @@ void dllp::rbm_layer::print(std::ostream& out) const {
         out << ", dll::hidden<dll::unit_type::" << unit_type(hidden_unit) << ">";
     }
 
+    if(!decay.empty()){
+        out << ", dll::weight_decay<dll::decay_type::" << decay_to_str(decay) << ">\n";
+    }
+
     if(batch_size > 0){
         out << ", dll::batch_size<" << batch_size << ">";
     }
@@ -46,6 +50,15 @@ bool dllp::rbm_layer::parse(const layers_t& layers, const std::vector<std::strin
             ++i;
         } else if(dllp::starts_with(lines[i], "learning_rate:")){
             learning_rate = std::stod(dllp::extract_value(lines[i], "learning_rate: "));
+            ++i;
+        } else if(dllp::starts_with(lines[i], "weight_decay:")){
+            decay = dllp::extract_value(lines[i], "weight_decay: ");
+            ++i;
+        } else if(dllp::starts_with(lines[i], "l1_weight_cost:")){
+            l1_weight_cost = std::stod(dllp::extract_value(lines[i], "l1_weight_cost: "));
+            ++i;
+        } else if(dllp::starts_with(lines[i], "l2_weight_cost:")){
+            l2_weight_cost = std::stod(dllp::extract_value(lines[i], "l2_weight_cost: "));
             ++i;
         } else if(dllp::starts_with(lines[i], "hidden_unit:")){
             hidden_unit = dllp::extract_value(lines[i], "hidden_unit: ");
@@ -94,6 +107,14 @@ void dllp::rbm_layer::set(std::ostream& out, const std::string& lhs) const {
         out << lhs << ".initial_momentum = " << momentum << ";\n";
         out << lhs << ".final_momentum = " << momentum << ";\n";
     }
+
+    if(l1_weight_cost != dll::processor::stupid_default){
+        out << lhs << ".l1_weight_cost = " << l1_weight_cost << ";\n";
+    }
+
+    if(l2_weight_cost != dll::processor::stupid_default){
+        out << lhs << ".l2_weight_cost = " << l2_weight_cost << ";\n";
+    }
 }
 
 std::size_t dllp::rbm_layer::hidden_get() const {
@@ -121,6 +142,10 @@ void dllp::conv_rbm_layer::print(std::ostream& out) const {
 
     if(momentum != dll::processor::stupid_default){
         out << ", dll::momentum";
+    }
+
+    if(!decay.empty()){
+        out << ", dll::weight_decay<dll::decay_type::" << decay_to_str(decay) << ">\n";
     }
 
     out << ">::rbm_t";
@@ -154,6 +179,15 @@ bool dllp::conv_rbm_layer::parse(const layers_t& layers, const std::vector<std::
             ++i;
         } else if(dllp::starts_with(lines[i], "learning_rate:")){
             learning_rate = std::stod(dllp::extract_value(lines[i], "learning_rate: "));
+            ++i;
+        } else if(dllp::starts_with(lines[i], "weight_decay:")){
+            decay = dllp::extract_value(lines[i], "weight_decay: ");
+            ++i;
+        } else if(dllp::starts_with(lines[i], "l1_weight_cost:")){
+            l1_weight_cost = std::stod(dllp::extract_value(lines[i], "l1_weight_cost: "));
+            ++i;
+        } else if(dllp::starts_with(lines[i], "l2_weight_cost:")){
+            l2_weight_cost = std::stod(dllp::extract_value(lines[i], "l2_weight_cost: "));
             ++i;
         } else if(dllp::starts_with(lines[i], "hidden_unit:")){
             hidden_unit = dllp::extract_value(lines[i], "hidden_unit: ");
@@ -204,6 +238,14 @@ void dllp::conv_rbm_layer::set(std::ostream& out, const std::string& lhs) const 
     if(momentum != dll::processor::stupid_default){
         out << lhs << ".initial_momentum = " << momentum << ";\n";
         out << lhs << ".final_momentum = " << momentum << ";\n";
+    }
+
+    if(l1_weight_cost != dll::processor::stupid_default){
+        out << lhs << ".l1_weight_cost = " << l1_weight_cost << ";\n";
+    }
+
+    if(l2_weight_cost != dll::processor::stupid_default){
+        out << lhs << ".l2_weight_cost = " << l2_weight_cost << ";\n";
     }
 }
 
