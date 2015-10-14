@@ -59,6 +59,8 @@ bool get_last_rec_error(std::string epoch, const std::vector<std::string>& lines
 std::vector<std::string> get_result(const dll::processor::options& opt, const std::vector<std::string>& actions, const std::string& source_file){
     auto result = dll::processor::process_file_result(opt, actions, "test/processor/" + source_file);
 
+    std::cout << result << std::endl;
+
     std::stringstream stream(result);
     std::string current_line;
     std::vector<std::string> lines;
@@ -132,6 +134,13 @@ TEST_CASE( "unit/processor/rbm/2", "[unit][rbm][dbn][mnist][proc]" ) {
     REQUIRE(!lines.empty());
 
     REC_ERROR_BELOW("epoch 24", 0.01);
+}
+
+TEST_CASE( "unit/processor/rbm/3", "[unit][rbm][dbn][mnist][proc]" ) {
+    auto lines = get_result(default_options(), {"pretrain"}, "rbm_3.conf");
+    REQUIRE(!lines.empty());
+
+    REC_ERROR_BELOW("epoch 99", 0.15);
 }
 
 // CRBM
