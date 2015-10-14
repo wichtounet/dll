@@ -21,20 +21,15 @@
 
 namespace dllp {
 
+bool starts_with(const std::string& str, const std::string& search){
+    return std::mismatch(search.begin(), search.end(), str.begin()).first == search.end();
+}
+
+std::string extract_value(const std::string& str, const std::string& search){
+    return {str.begin() + str.find(search) + search.size(), str.end()};
+}
+
 using options = dll::processor::options;
-
-struct layer {
-    virtual void print(std::ostream& out) const = 0;
-    virtual std::size_t hidden_get() const = 0;
-
-    virtual bool is_conv() const { return false; }
-
-    virtual std::size_t hidden_get_1() const { return 0; }
-    virtual std::size_t hidden_get_2() const { return 0; }
-    virtual std::size_t hidden_get_3() const { return 0; }
-
-    virtual void set(std::ostream& /*out*/, const std::string& /*lhs*/) const { /* Nothing */ };
-};
 
 std::string unit_type(const std::string& unit){
     if(unit == "binary"){
@@ -90,6 +85,25 @@ bool valid_activation(const std::string& unit){
     return unit == "sigmoid" || unit == "softmax" || unit == "tanh" || unit == "relu";
 }
 
+struct layer;
+
+using layers_t = std::vector<std::shared_ptr<dllp::layer>>;
+
+struct layer {
+    virtual void print(std::ostream& out) const = 0;
+    virtual std::size_t hidden_get() const = 0;
+
+    virtual bool is_conv() const { return false; }
+
+    virtual std::size_t hidden_get_1() const { return 0; }
+    virtual std::size_t hidden_get_2() const { return 0; }
+    virtual std::size_t hidden_get_3() const { return 0; }
+
+    virtual bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) = 0;
+
+    virtual void set(std::ostream& /*out*/, const std::string& /*lhs*/) const { /* Nothing */ };
+};
+
 struct rbm_layer : layer {
     std::size_t visible = 0;
     std::size_t hidden = 0;
@@ -121,6 +135,61 @@ struct rbm_layer : layer {
         }
 
         out << ">::rbm_t";
+    }
+
+    bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override {
+        while(i < lines.size()){
+            if(dllp::starts_with(lines[i], "visible:")){
+                visible = std::stol(dllp::extract_value(lines[i], "visible: "));
+                ++i;
+            } else if(dllp::starts_with(lines[i], "hidden:")){
+                hidden = std::stol(dllp::extract_value(lines[i], "hidden: "));
+                ++i;
+            } else if(dllp::starts_with(lines[i], "batch:")){
+                batch_size = std::stol(dllp::extract_value(lines[i], "batch: "));
+                ++i;
+            } else if(dllp::starts_with(lines[i], "momentum:")){
+                momentum = std::stod(dllp::extract_value(lines[i], "momentum: "));
+                ++i;
+            } else if(dllp::starts_with(lines[i], "learning_rate:")){
+                learning_rate = std::stod(dllp::extract_value(lines[i], "learning_rate: "));
+                ++i;
+            } else if(dllp::starts_with(lines[i], "hidden_unit:")){
+                hidden_unit = dllp::extract_value(lines[i], "hidden_unit: ");
+                ++i;
+
+                if(!dllp::valid_unit(hidden_unit)){
+                    std::cout << "dllp: error: invalid hidden unit type must be one of [binary, softmax, gaussian]" << std::endl;
+                    return false;
+                }
+            } else if(dllp::starts_with(lines[i], "visible_unit:")){
+                visible_unit = dllp::extract_value(lines[i], "visible_unit: ");
+                ++i;
+
+                if(!dllp::valid_unit(visible_unit)){
+                    std::cout << "dllp: error: invalid visible unit type must be one of [binary, softmax, gaussian]" << std::endl;
+                    return false;
+                }
+            } else {
+                break;
+            }
+        }
+
+        if(layers.empty() && !visible){
+            std::cout << "dllp: error: The first layer needs number of visible units" << std::endl;
+            return false;
+        }
+
+        if(!hidden){
+            std::cout << "dllp: error: The number of hidden units is mandatory" << std::endl;
+            return false;
+        }
+
+        if(!layers.empty()){
+            visible = layers.back()->hidden_get();
+        }
+
+        return true;
     }
 
     virtual void set(std::ostream& out, const std::string& lhs) const override {
@@ -180,6 +249,76 @@ struct conv_rbm_layer : layer {
         out << ">::rbm_t";
     }
 
+    bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override {
+        while(i < lines.size()){
+            if(dllp::starts_with(lines[i], "channels:")){
+                c = std::stol(dllp::extract_value(lines[i], "channels: "));
+                ++i;
+            } else if(dllp::starts_with(lines[i], "filters:")){
+                k = std::stol(dllp::extract_value(lines[i], "filters: "));
+                ++i;
+            } else if(dllp::starts_with(lines[i], "v1:")){
+                v1 = std::stol(dllp::extract_value(lines[i], "v1: "));
+                ++i;
+            } else if(dllp::starts_with(lines[i], "v2:")){
+                v2 = std::stol(dllp::extract_value(lines[i], "v2: "));
+                ++i;
+            } else if(dllp::starts_with(lines[i], "w1:")){
+                w1 = std::stol(dllp::extract_value(lines[i], "w1: "));
+                ++i;
+            } else if(dllp::starts_with(lines[i], "w2:")){
+                w2 = std::stol(dllp::extract_value(lines[i], "w2: "));
+                ++i;
+            } else if(dllp::starts_with(lines[i], "batch:")){
+                batch_size = std::stol(dllp::extract_value(lines[i], "batch: "));
+                ++i;
+            } else if(dllp::starts_with(lines[i], "momentum:")){
+                momentum = std::stod(dllp::extract_value(lines[i], "momentum: "));
+                ++i;
+            } else if(dllp::starts_with(lines[i], "learning_rate:")){
+                learning_rate = std::stod(dllp::extract_value(lines[i], "learning_rate: "));
+                ++i;
+            } else if(dllp::starts_with(lines[i], "hidden_unit:")){
+                hidden_unit = dllp::extract_value(lines[i], "hidden_unit: ");
+                ++i;
+
+                if(!dllp::valid_unit(hidden_unit)){
+                    std::cout << "dllp: error: invalid hidden unit type must be one of [binary, softmax, gaussian]" << std::endl;
+                    return false;
+                }
+            } else if(dllp::starts_with(lines[i], "visible_unit:")){
+                visible_unit = dllp::extract_value(lines[i], "visible_unit: ");
+                ++i;
+
+                if(!dllp::valid_unit(visible_unit)){
+                    std::cout << "dllp: error: invalid visible unit type must be one of [binary, softmax, gaussian]" << std::endl;
+                    return false;
+                }
+            } else {
+                break;
+            }
+        }
+
+        if(layers.empty() && (!c || !v1 || !v2 || !k || !w1 || !w2)){
+            std::cout << "dllp: error: The first layer needs input and output sizes" << std::endl;
+            return false;
+        } else if(!layers.empty() && !k){
+            std::cout << "dllp: error: The number of filters is mandatory" << std::endl;
+            return false;
+        } else if(!layers.empty() && (!w1 || !w2)){
+            std::cout << "dllp: error: The size of the filters is mandatory" << std::endl;
+            return false;
+        }
+
+        if(!layers.empty()){
+            c = layers.back()->hidden_get_1();
+            v1 = layers.back()->hidden_get_2();
+            v2 = layers.back()->hidden_get_3();
+        }
+
+        return true;
+    }
+
     virtual void set(std::ostream& out, const std::string& lhs) const override {
         if(learning_rate != dll::processor::stupid_default){
             out << lhs << ".learning_rate = " << learning_rate << ";\n";
@@ -224,8 +363,40 @@ struct dense_layer : layer {
         out << ">::layer_t";
     }
 
-    virtual void set(std::ostream& /*out*/, const std::string& /*lhs*/) const override {
-        //Nothing to set here
+    bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override {
+        while(i < lines.size()){
+            if(dllp::starts_with(lines[i], "visible:")){
+                visible = std::stol(dllp::extract_value(lines[i], "visible: "));
+                ++i;
+            } else if(dllp::starts_with(lines[i], "hidden:")){
+                hidden = std::stol(dllp::extract_value(lines[i], "hidden: "));
+                ++i;
+            } else if(dllp::starts_with(lines[i], "activation:")){
+                activation = dllp::extract_value(lines[i], "activation: ");
+                ++i;
+
+                if(!dllp::valid_activation(activation)){
+                    std::cout << "dllp: error: invalid activation function, must be [sigmoid,tanh,relu,softmax]" << std::endl;
+                    return false;
+                }
+            } else {
+                break;
+            }
+        }
+
+        if(layers.empty() && (visible == 0 || hidden == 0)){
+            std::cout << "dllp: error: The first layer needs visible and hidden sizes" << std::endl;
+            return false;
+        } else if(!layers.empty() && hidden == 0){
+            std::cout << "dllp: error: The number of hidden units is mandatory" << std::endl;
+            return false;
+        }
+
+        if(!layers.empty()){
+            visible = layers.back()->hidden_get();
+        }
+
+        return true;
     }
 
     std::size_t hidden_get() const override {
@@ -257,8 +428,57 @@ struct conv_layer : layer {
         out << ">::layer_t";
     }
 
-    virtual void set(std::ostream& /*out*/, const std::string& /*lhs*/) const override {
-        //Nothing to set here
+    bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override {
+        while(i < lines.size()){
+            if(dllp::starts_with(lines[i], "channels:")){
+                c = std::stol(dllp::extract_value(lines[i], "channels: "));
+                ++i;
+            } else if(dllp::starts_with(lines[i], "filters:")){
+                k = std::stol(dllp::extract_value(lines[i], "filters: "));
+                ++i;
+            } else if(dllp::starts_with(lines[i], "v1:")){
+                v1 = std::stol(dllp::extract_value(lines[i], "v1: "));
+                ++i;
+            } else if(dllp::starts_with(lines[i], "v2:")){
+                v2 = std::stol(dllp::extract_value(lines[i], "v2: "));
+                ++i;
+            } else if(dllp::starts_with(lines[i], "w1:")){
+                w1 = std::stol(dllp::extract_value(lines[i], "w1: "));
+                ++i;
+            } else if(dllp::starts_with(lines[i], "w2:")){
+                w2 = std::stol(dllp::extract_value(lines[i], "w2: "));
+                ++i;
+            } else if(dllp::starts_with(lines[i], "activation:")){
+                activation = dllp::extract_value(lines[i], "activation: ");
+                ++i;
+
+                if(!dllp::valid_activation(activation)){
+                    std::cout << "dllp: error: invalid activation function, must be [sigmoid,tanh,relu,softmax]" << std::endl;
+                    return false;
+                }
+            } else {
+                break;
+            }
+        }
+
+        if(layers.empty() && (!c || !v1 || !v2 || !k || !w1 || !w2)){
+            std::cout << "dllp: error: The first layer needs input and output sizes" << std::endl;
+            return false;
+        } else if(!layers.empty() && !k){
+            std::cout << "dllp: error: The number of filters is mandatory" << std::endl;
+            return false;
+        } else if(!layers.empty() && (!w1 || !w2)){
+            std::cout << "dllp: error: The size of the filters is mandatory" << std::endl;
+            return false;
+        }
+
+        if(!layers.empty()){
+            c = layers.back()->hidden_get_1();
+            v1 = layers.back()->hidden_get_2();
+            v2 = layers.back()->hidden_get_3();
+        }
+
+        return true;
     }
 
     std::size_t hidden_get() const override {
@@ -277,14 +497,6 @@ struct conv_layer : layer {
         return v2 - w2 + 1;
     }
 };
-
-bool starts_with(const std::string& str, const std::string& search){
-    return std::mismatch(search.begin(), search.end(), str.begin()).first == search.end();
-}
-
-std::string extract_value(const std::string& str, const std::string& search){
-    return {str.begin() + str.find(search) + search.size(), str.end()};
-}
 
 std::string command_result(const std::string& command) {
     std::stringstream output;
@@ -451,51 +663,8 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
 
                     auto rbm = std::make_shared<dllp::rbm_layer>();
 
-                    while(i < lines.size()){
-                        if(dllp::starts_with(lines[i], "visible:")){
-                            rbm->visible = std::stol(dllp::extract_value(lines[i], "visible: "));
-                            ++i;
-                        } else if(dllp::starts_with(lines[i], "hidden:")){
-                            rbm->hidden = std::stol(dllp::extract_value(lines[i], "hidden: "));
-                            ++i;
-                        } else if(dllp::starts_with(lines[i], "batch:")){
-                            rbm->batch_size = std::stol(dllp::extract_value(lines[i], "batch: "));
-                            ++i;
-                        } else if(dllp::starts_with(lines[i], "momentum:")){
-                            rbm->momentum = std::stod(dllp::extract_value(lines[i], "momentum: "));
-                            ++i;
-                        } else if(dllp::starts_with(lines[i], "learning_rate:")){
-                            rbm->learning_rate = std::stod(dllp::extract_value(lines[i], "learning_rate: "));
-                            ++i;
-                        } else if(dllp::starts_with(lines[i], "hidden_unit:")){
-                            rbm->hidden_unit = dllp::extract_value(lines[i], "hidden_unit: ");
-                            ++i;
-
-                            if(!dllp::valid_unit(rbm->hidden_unit)){
-                                std::cout << "dllp: error: invalid hidden unit type must be one of [binary, softmax, gaussian]" << std::endl;
-                                return false;
-                            }
-                        } else if(dllp::starts_with(lines[i], "visible_unit:")){
-                            rbm->visible_unit = dllp::extract_value(lines[i], "visible_unit: ");
-                            ++i;
-
-                            if(!dllp::valid_unit(rbm->visible_unit)){
-                                std::cout << "dllp: error: invalid visible unit type must be one of [binary, softmax, gaussian]" << std::endl;
-                                return false;
-                            }
-                        } else {
-                            break;
-                        }
-                    }
-
-                    if(layers.empty() && (rbm->visible == 0 || rbm->hidden == 0)){
-                        std::cout << "dllp: error: The first layer needs visible and hidden sizes" << std::endl;
-                    } else if(!layers.empty() && rbm->hidden == 0){
-                        std::cout << "dllp: error: The number of hidden units is mandatory" << std::endl;
-                    }
-
-                    if(!layers.empty()){
-                        rbm->visible = layers.back()->hidden_get();
+                    if(!rbm->parse(layers, lines, i)){
+                        return false;
                     }
 
                     layers.push_back(std::move(rbm));
@@ -504,67 +673,8 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
 
                     auto crbm = std::make_shared<dllp::conv_rbm_layer>();
 
-                    while(i < lines.size()){
-                        if(dllp::starts_with(lines[i], "channels:")){
-                            crbm->c = std::stol(dllp::extract_value(lines[i], "channels: "));
-                            ++i;
-                        } else if(dllp::starts_with(lines[i], "filters:")){
-                            crbm->k = std::stol(dllp::extract_value(lines[i], "filters: "));
-                            ++i;
-                        } else if(dllp::starts_with(lines[i], "v1:")){
-                            crbm->v1 = std::stol(dllp::extract_value(lines[i], "v1: "));
-                            ++i;
-                        } else if(dllp::starts_with(lines[i], "v2:")){
-                            crbm->v2 = std::stol(dllp::extract_value(lines[i], "v2: "));
-                            ++i;
-                        } else if(dllp::starts_with(lines[i], "w1:")){
-                            crbm->w1 = std::stol(dllp::extract_value(lines[i], "w1: "));
-                            ++i;
-                        } else if(dllp::starts_with(lines[i], "w2:")){
-                            crbm->w2 = std::stol(dllp::extract_value(lines[i], "w2: "));
-                            ++i;
-                        } else if(dllp::starts_with(lines[i], "batch:")){
-                            crbm->batch_size = std::stol(dllp::extract_value(lines[i], "batch: "));
-                            ++i;
-                        } else if(dllp::starts_with(lines[i], "momentum:")){
-                            crbm->momentum = std::stod(dllp::extract_value(lines[i], "momentum: "));
-                            ++i;
-                        } else if(dllp::starts_with(lines[i], "learning_rate:")){
-                            crbm->learning_rate = std::stod(dllp::extract_value(lines[i], "learning_rate: "));
-                            ++i;
-                        } else if(dllp::starts_with(lines[i], "hidden_unit:")){
-                            crbm->hidden_unit = dllp::extract_value(lines[i], "hidden_unit: ");
-                            ++i;
-
-                            if(!dllp::valid_unit(crbm->hidden_unit)){
-                                std::cout << "dllp: error: invalid hidden unit type must be one of [binary, softmax, gaussian]" << std::endl;
-                                return false;
-                            }
-                        } else if(dllp::starts_with(lines[i], "visible_unit:")){
-                            crbm->visible_unit = dllp::extract_value(lines[i], "visible_unit: ");
-                            ++i;
-
-                            if(!dllp::valid_unit(crbm->visible_unit)){
-                                std::cout << "dllp: error: invalid visible unit type must be one of [binary, softmax, gaussian]" << std::endl;
-                                return false;
-                            }
-                        } else {
-                            break;
-                        }
-                    }
-
-                    if(layers.empty() && (!crbm->c || !crbm->v1 || !crbm->v2 || !crbm->k || !crbm->w1 || !crbm->w2)){
-                        std::cout << "dllp: error: The first layer needs input and output sizes" << std::endl;
-                    } else if(!layers.empty() && !crbm->k){
-                        std::cout << "dllp: error: The number of filters is mandatory" << std::endl;
-                    } else if(!layers.empty() && (!crbm->w1 || !crbm->w2)){
-                        std::cout << "dllp: error: The size of the filters is mandatory" << std::endl;
-                    }
-
-                    if(!layers.empty()){
-                        crbm->c = layers.back()->hidden_get_1();
-                        crbm->v1 = layers.back()->hidden_get_2();
-                        crbm->v2 = layers.back()->hidden_get_3();
+                    if(!crbm->parse(layers, lines, i)){
+                        return false;
                     }
 
                     layers.push_back(std::move(crbm));
@@ -573,34 +683,8 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
 
                     auto dense = std::make_shared<dllp::dense_layer>();
 
-                    while(i < lines.size()){
-                        if(dllp::starts_with(lines[i], "visible:")){
-                            dense->visible = std::stol(dllp::extract_value(lines[i], "visible: "));
-                            ++i;
-                        } else if(dllp::starts_with(lines[i], "hidden:")){
-                            dense->hidden = std::stol(dllp::extract_value(lines[i], "hidden: "));
-                            ++i;
-                        } else if(dllp::starts_with(lines[i], "activation:")){
-                            dense->activation = dllp::extract_value(lines[i], "activation: ");
-                            ++i;
-
-                            if(!dllp::valid_activation(dense->activation)){
-                                std::cout << "dllp: error: invalid activation function, must be [sigmoid,tanh,relu,softmax]" << std::endl;
-                                return false;
-                            }
-                        } else {
-                            break;
-                        }
-                    }
-
-                    if(layers.empty() && (dense->visible == 0 || dense->hidden == 0)){
-                        std::cout << "dllp: error: The first layer needs visible and hidden sizes" << std::endl;
-                    } else if(!layers.empty() && dense->hidden == 0){
-                        std::cout << "dllp: error: The number of hidden units is mandatory" << std::endl;
-                    }
-
-                    if(!layers.empty()){
-                        dense->visible = layers.back()->hidden_get();
+                    if(!dense->parse(layers, lines, i)){
+                        return false;
                     }
 
                     layers.push_back(std::move(dense));
@@ -609,50 +693,8 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
 
                     auto conv = std::make_shared<dllp::conv_layer>();
 
-                    while(i < lines.size()){
-                        if(dllp::starts_with(lines[i], "channels:")){
-                            conv->c = std::stol(dllp::extract_value(lines[i], "channels: "));
-                            ++i;
-                        } else if(dllp::starts_with(lines[i], "filters:")){
-                            conv->k = std::stol(dllp::extract_value(lines[i], "filters: "));
-                            ++i;
-                        } else if(dllp::starts_with(lines[i], "v1:")){
-                            conv->v1 = std::stol(dllp::extract_value(lines[i], "v1: "));
-                            ++i;
-                        } else if(dllp::starts_with(lines[i], "v2:")){
-                            conv->v2 = std::stol(dllp::extract_value(lines[i], "v2: "));
-                            ++i;
-                        } else if(dllp::starts_with(lines[i], "w1:")){
-                            conv->w1 = std::stol(dllp::extract_value(lines[i], "w1: "));
-                            ++i;
-                        } else if(dllp::starts_with(lines[i], "w2:")){
-                            conv->w2 = std::stol(dllp::extract_value(lines[i], "w2: "));
-                            ++i;
-                        } else if(dllp::starts_with(lines[i], "activation:")){
-                            conv->activation = dllp::extract_value(lines[i], "activation: ");
-                            ++i;
-
-                            if(!dllp::valid_activation(conv->activation)){
-                                std::cout << "dllp: error: invalid activation function, must be [sigmoid,tanh,relu,softmax]" << std::endl;
-                                return false;
-                            }
-                        } else {
-                            break;
-                        }
-                    }
-
-                    if(layers.empty() && (!conv->c || !conv->v1 || !conv->v2 || !conv->k || !conv->w1 || !conv->w2)){
-                        std::cout << "dllp: error: The first layer needs input and output sizes" << std::endl;
-                    } else if(!layers.empty() && !conv->k){
-                        std::cout << "dllp: error: The number of filters is mandatory" << std::endl;
-                    } else if(!layers.empty() && (!conv->w1 || !conv->w2)){
-                        std::cout << "dllp: error: The size of the filters is mandatory" << std::endl;
-                    }
-
-                    if(!layers.empty()){
-                        conv->c = layers.back()->hidden_get_1();
-                        conv->v1 = layers.back()->hidden_get_2();
-                        conv->v2 = layers.back()->hidden_get_3();
+                    if(!conv->parse(layers, lines, i)){
+                        return false;
                     }
 
                     layers.push_back(std::move(conv));
