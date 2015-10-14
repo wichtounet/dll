@@ -17,7 +17,7 @@ namespace dllp {
 
 struct layer;
 
-using layers_t = std::vector<std::shared_ptr<dllp::layer>>;
+using layers_t = std::vector<std::unique_ptr<dllp::layer>>;
 
 struct layer {
     virtual void print(std::ostream& out) const = 0;

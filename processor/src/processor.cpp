@@ -112,10 +112,10 @@ void parse_datasource_pack(dll::processor::datasource_pack& pack, const std::vec
 }
 
 
-void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, const dll::processor::task& t, const std::vector<std::string>& actions);
+void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll::processor::task& t, const std::vector<std::string>& actions);
 bool compile(const options& opt);
 
-bool parse_file(const std::string& source_file, dll::processor::task& t, std::vector<std::shared_ptr<dllp::layer>>& layers){
+bool parse_file(const std::string& source_file, dll::processor::task& t, std::vector<std::unique_ptr<dllp::layer>>& layers){
     //0. Parse the source file
 
     auto lines = read_lines(source_file);
@@ -175,7 +175,7 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
                 if(lines[i] == "rbm:"){
                     ++i;
 
-                    auto rbm = std::make_shared<dllp::rbm_layer>();
+                    auto rbm = std::make_unique<dllp::rbm_layer>();
 
                     if(!rbm->parse(layers, lines, i)){
                         return false;
@@ -185,7 +185,7 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
                 } else if(lines[i] == "crbm:"){
                     ++i;
 
-                    auto crbm = std::make_shared<dllp::conv_rbm_layer>();
+                    auto crbm = std::make_unique<dllp::conv_rbm_layer>();
 
                     if(!crbm->parse(layers, lines, i)){
                         return false;
@@ -195,7 +195,7 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
                 } else if(lines[i] == "dense:"){
                     ++i;
 
-                    auto dense = std::make_shared<dllp::dense_layer>();
+                    auto dense = std::make_unique<dllp::dense_layer>();
 
                     if(!dense->parse(layers, lines, i)){
                         return false;
@@ -205,7 +205,7 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
                 } else if(lines[i] == "conv:"){
                     ++i;
 
-                    auto conv = std::make_shared<dllp::conv_layer>();
+                    auto conv = std::make_unique<dllp::conv_layer>();
 
                     if(!conv->parse(layers, lines, i)){
                         return false;
@@ -291,7 +291,7 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
     return true;
 }
 
-bool compile_exe(const dllp::options& opt, const std::vector<std::string>& actions, const std::string& source_file, const dll::processor::task& t, const std::vector<std::shared_ptr<dllp::layer>>& layers){
+bool compile_exe(const dllp::options& opt, const std::vector<std::string>& actions, const std::string& source_file, const dll::processor::task& t, const std::vector<std::unique_ptr<dllp::layer>>& layers){
     bool process = true;
 
     if(opt.cache){
@@ -407,7 +407,7 @@ std::string vector_to_string(const std::string& name, const std::vector<std::str
     return result;
 }
 
-void generate(const std::vector<std::shared_ptr<dllp::layer>>& layers, const dll::processor::task& t, const std::vector<std::string>& actions){
+void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll::processor::task& t, const std::vector<std::string>& actions){
     std::ofstream out_stream(".dbn.cpp");
 
     out_stream << "#include <memory>\n";
@@ -554,7 +554,7 @@ int dll::processor::process_file(const dllp::options& opt, const std::vector<std
     //1. Parse the configuration file
 
     dll::processor::task t;
-    std::vector<std::shared_ptr<dllp::layer>> layers;
+    std::vector<std::unique_ptr<dllp::layer>> layers;
 
     if(!dllp::parse_file(source_file, t, layers)){
         return 1;
@@ -586,7 +586,7 @@ std::string dll::processor::process_file_result(const dllp::options& opt, const 
     //1. Parse the configuration file
 
     dll::processor::task t;
-    std::vector<std::shared_ptr<dllp::layer>> layers;
+    std::vector<std::unique_ptr<dllp::layer>> layers;
 
     if(!dllp::parse_file(source_file, t, layers)){
         return "";
