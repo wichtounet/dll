@@ -143,6 +143,13 @@ TEST_CASE( "unit/processor/rbm/3", "[unit][rbm][dbn][mnist][proc]" ) {
     REC_ERROR_BELOW("epoch 99", 0.15);
 }
 
+TEST_CASE( "unit/processor/rbm/4", "[unit][rbm][dbn][mnist][proc]" ) {
+    auto lines = get_result(default_options(), {"pretrain"}, "rbm_4.conf");
+    REQUIRE(!lines.empty());
+
+    REC_ERROR_BELOW("epoch 49", 0.01);
+}
+
 // CRBM
 
 TEST_CASE( "unit/processor/crbm/1", "[unit][crbm][dbn][mnist][proc]" ) {
