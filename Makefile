@@ -104,6 +104,28 @@ test: all
 	./release/bin/dll_test
 	./release_debug/bin/dll_test
 
+CLANG_FORMAT ?= clang-format-3.7
+CLANG_MODERNIZE ?= clang-modernize-3.7
+CLANG_TIDY ?= clang-tidy-3.7
+
+format:
+	find include test processor view -name "*.hpp" -o -name "*.cpp" | xargs ${CLANG_FORMAT} -i -style=file
+
+modernize:
+	find include test processor view -name "*.hpp" -o -name "*.cpp" > dll_file_list
+	${CLANG_MODERNIZE} -add-override -loop-convert -pass-by-value -use-auto -use-nullptr -p ${PWD} -include-from=etl_file_list
+	rm etl_file_list
+
+# clang-tidy with some false positive checks removed
+tidy:
+	${CLANG_TIDY} -checks='*,-llvm-include-order,-clang-analyzer-alpha.core.PointerArithm,-clang-analyzer-alpha.deadcode.UnreachableCode,-clang-analyzer-alpha.core.IdenticalExpr' -p ${PWD} test/src/*.cpp processor/src/*.cpp -header-filter='include/etl/*' &> tidy_report_light
+	echo "The report from clang-tidy is availabe in tidy_report_light"
+
+# clang-tidy with all the checks
+tidy_all:
+	${CLANG_TIDY} -checks='*' -p ${PWD} test/*.cpp processor/src/*.cpp -header-filter='include/etl/*' &> tidy_report_all
+	echo "The report from clang-tidy is availabe in tidy_report_all"
+
 prefix = /usr
 bindir = $(prefix)/bin
 incdir = $(prefix)/include
