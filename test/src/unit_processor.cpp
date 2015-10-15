@@ -56,6 +56,21 @@ bool get_last_rec_error(std::string epoch, const std::vector<std::string>& lines
     return found;
 }
 
+bool get_last_sparsity(std::string epoch, const std::vector<std::string>& lines, double& error){
+    bool found = false;
+    auto begin = epoch + " - Reconstruction error: ";
+
+    for(auto& line : lines){
+        if(starts_with(line, begin)){
+            auto sub = std::string(line.begin() + line.find(" - Sparsity: ") + 13, line.end());
+            error = std::stod(sub);
+            found = true;
+        }
+    }
+
+    return found;
+}
+
 std::vector<std::string> get_result(const dll::processor::options& opt, const std::vector<std::string>& actions, const std::string& source_file){
     auto result = dll::processor::process_file_result(opt, actions, "test/processor/" + source_file);
 
@@ -110,6 +125,14 @@ dll::processor::options default_options(){
     REQUIRE(rec_error < min);                               \
     }
 
+#define SPARSITY_BELOW(epoch, min)                         \
+    {                                                      \
+    double sparsity = 1.0;                                 \
+    REQUIRE(get_last_sparsity(epoch, lines, sparsity));    \
+    std::cout << "sparsity:" << sparsity << std::endl;     \
+    REQUIRE(sparsity < min);                               \
+    }
+
 // Dense (SGD)
 
 TEST_CASE( "unit/processor/dense/sgd/1", "[unit][dense][dbn][mnist][sgd][proc]" ) {
@@ -162,6 +185,22 @@ TEST_CASE( "unit/processor/rbm/6", "[unit][rbm][dbn][mnist][proc]" ) {
     REQUIRE(!lines.empty());
 
     REC_ERROR_BELOW("epoch 99", 0.1);
+}
+
+TEST_CASE( "unit/processor/rbm/7", "[unit][rbm][dbn][mnist][proc]" ) {
+    auto lines = get_result(default_options(), {"pretrain"}, "rbm_7.conf");
+    REQUIRE(!lines.empty());
+
+    REC_ERROR_BELOW("epoch 49", 0.01);
+    SPARSITY_BELOW("epoch 49", 0.12);
+}
+
+TEST_CASE( "unit/processor/rbm/8", "[unit][rbm][dbn][mnist][proc]" ) {
+    auto lines = get_result(default_options(), {"pretrain"}, "rbm_8.conf");
+    REQUIRE(!lines.empty());
+
+    REC_ERROR_BELOW("epoch 49", 0.03);
+    SPARSITY_BELOW("epoch 49", 0.12);
 }
 
 // CRBM

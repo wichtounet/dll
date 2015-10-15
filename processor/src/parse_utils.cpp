@@ -25,29 +25,15 @@ bool dllp::extract_value(const std::string& line, const std::string& search, std
 }
 
 std::string dllp::unit_type(const std::string& unit){
-    if(unit == "binary"){
-        return "BINARY";
-    } else if(unit == "softmax"){
-        return "SOFTMAX";
-    } else if(unit == "gaussian"){
-        return "GAUSSIAN";
-    } else {
-        return "INVALID";
-    }
+    std::string upper(unit);
+    std::transform(upper.begin(), upper.end(), upper.begin(), [](char c){ return std::toupper(c); });
+    return upper;
 }
 
-std::string dllp::activation_function(const std::string& unit){
-    if(unit == "sigmoid"){
-        return "SIGMOID";
-    } else if(unit == "tanh"){
-        return "TANH";
-    } else if(unit == "softmax"){
-        return "SOFTMAX";
-    } else if(unit == "relu"){
-        return "RELU";
-    } else {
-        return "INVALID";
-    }
+std::string dllp::activation_function(const std::string& function){
+    std::string upper(function);
+    std::transform(upper.begin(), upper.end(), upper.begin(), [](char c){ return std::toupper(c); });
+    return upper;
 }
 
 std::string dllp::decay_to_str(const std::string& decay){
@@ -70,6 +56,20 @@ std::string dllp::decay_to_str(const std::string& decay){
     }
 }
 
+std::string dllp::sparsity_to_str(const std::string& sparsity){
+    if(sparsity == "local"){
+        return "LOCAL_TARGET";
+    } else if(sparsity == "global"){
+        return "GLOBAL_TARGET";
+    } else if(sparsity == "lee"){
+        return "LEE";
+    } else if(sparsity == "none"){
+        return "NONE";
+    } else {
+        return "INVALID";
+    }
+}
+
 bool dllp::valid_unit(const std::string& unit){
     return unit == "binary" || unit == "softmax" || unit == "gaussian";
 }
@@ -80,6 +80,10 @@ bool dllp::valid_trainer(const std::string& unit){
 
 bool dllp::valid_activation(const std::string& unit){
     return unit == "sigmoid" || unit == "softmax" || unit == "tanh" || unit == "relu";
+}
+
+bool dllp::valid_sparsity(const std::string& sparsity){
+    return sparsity == "global" || sparsity == "local" || sparsity == "lee";
 }
 
 std::vector<std::string> dllp::read_lines(const std::string& source_file){

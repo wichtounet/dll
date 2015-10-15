@@ -52,6 +52,9 @@ struct base_rbm_layer : layer {
     double l1_weight_cost = dll::processor::stupid_default;
     double l2_weight_cost = dll::processor::stupid_default;
 
+    std::string sparsity = "none";
+    double sparsity_target = dll::processor::stupid_default;
+
     std::string trainer = "cd";
 
     bool parallel_mode = false;

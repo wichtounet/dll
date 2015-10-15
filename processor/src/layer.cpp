@@ -17,12 +17,22 @@ dllp::parse_result dllp::base_rbm_layer::base_parse(const std::vector<std::strin
     } else if(dllp::extract_value(lines[i], "momentum: ", value)){
         momentum = std::stod(value);
         return parse_result::PARSED;
+    } else if(dllp::extract_value(lines[i], "sparsity_target: ", value)){
+        sparsity_target = std::stod(value);
+        return parse_result::PARSED;
     } else if(dllp::extract_value(lines[i], "shuffle: ", value)){
         shuffle = value == "true";
         return parse_result::PARSED;
     } else if(dllp::extract_value(lines[i], "trainer: ", trainer)){
         if(!dllp::valid_trainer(trainer)){
             std::cout << "dllp: error: invalid trainer must be one of [cd, pcd]" << std::endl;
+            return parse_result::ERROR;
+        }
+
+        return parse_result::PARSED;
+    } else if(dllp::extract_value(lines[i], "sparsity: ", sparsity)){
+        if(!dllp::valid_sparsity(sparsity)){
+            std::cout << "dllp: error: invalid sparsity must be one of [local, global, lee]" << std::endl;
             return parse_result::ERROR;
         }
 
@@ -77,31 +87,42 @@ void dllp::base_rbm_layer::set(std::ostream& out, const std::string& lhs) const 
     if(l2_weight_cost != dll::processor::stupid_default){
         out << lhs << ".l2_weight_cost = " << l2_weight_cost << ";\n";
     }
+
+    if(sparsity_target != dll::processor::stupid_default){
+        out << lhs << ".sparsity_target = " << sparsity_target << ";\n";
+    }
 }
 
 void dllp::base_rbm_layer::print(std::ostream& out) const {
-    if(!decay.empty()){
-        out << ", dll::weight_decay<dll::decay_type::" << decay_to_str(decay) << ">\n";
+    out << "\n  , dll::weight_decay<dll::decay_type::" << decay_to_str(decay) << ">";
+    out << "\n  , dll::sparsity<dll::sparsity_method::" << sparsity_to_str(sparsity) << ">";
+
+    if(!visible_unit.empty()){
+        out << "\n  , dll::visible<dll::unit_type::" << unit_type(visible_unit) << ">";
+    }
+
+    if(!hidden_unit.empty()){
+        out << "\n  , dll::hidden<dll::unit_type::" << unit_type(hidden_unit) << ">";
     }
 
     if(batch_size > 0){
-        out << ", dll::batch_size<" << batch_size << ">";
+        out << "\n  , dll::batch_size<" << batch_size << ">";
     }
 
     if(momentum != dll::processor::stupid_default){
-        out << ", dll::momentum";
+        out << "\n  , dll::momentum";
     }
 
     if(trainer == "pcd"){
-        out << ", dll::trainer_rbm<dll::pcd1_trainer_t>";
+        out << "\n  , dll::trainer_rbm<dll::pcd1_trainer_t>";
     }
 
     if(parallel_mode){
-        out << ", dll::parallel_mode";
+        out << "\n  , dll::parallel_mode";
     }
 
     if(shuffle){
-        out << ", dll::shuffle";
+        out << "\n  , dll::shuffle";
     }
 }
 
@@ -246,7 +267,7 @@ void dllp::dense_layer::print(std::ostream& out) const {
     out << "dll::dense_desc<" << visible << ", " << hidden;
 
     if(!activation.empty()){
-        out << ", dll::activation<dll::function::" << activation_function(activation) << ">";
+        out << "\n  , dll::activation<dll::function::" << activation_function(activation) << ">";
     }
 
     out << ">::layer_t";
@@ -301,7 +322,7 @@ void dllp::conv_layer::print(std::ostream& out) const {
     out << "dll::conv_desc<" << c << ", " << v1 << ", " << v2 << ", " << k << ", " << (v1 - w1 + 1) << ", " << (v2 - w2 + 1);
 
     if(!activation.empty()){
-        out << ", dll::activation<dll::function::" << activation_function(activation) << ">";
+        out << "\n  , dll::activation<dll::function::" << activation_function(activation) << ">";
     }
 
     out << ">::layer_t";

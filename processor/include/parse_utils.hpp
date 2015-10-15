@@ -21,15 +21,15 @@ bool extract_value(const std::string& line, const std::string& search, std::stri
 bool starts_with(const std::string& str, const std::string& search);
 std::string extract_value(const std::string& str, const std::string& search);
 
-std::string unit_type(const std::string& unit);
-
-std::string activation_function(const std::string& unit);
-
-std::string decay_to_str(const std::string& decay);
-
 bool valid_unit(const std::string& unit);
 bool valid_trainer(const std::string& unit);
 bool valid_activation(const std::string& unit);
+bool valid_sparsity(const std::string& unit);
+
+std::string unit_type(const std::string& unit);
+std::string activation_function(const std::string& unit);
+std::string decay_to_str(const std::string& decay);
+std::string sparsity_to_str(const std::string& decay);
 
 std::vector<std::string> read_lines(const std::string& source_file);
 
