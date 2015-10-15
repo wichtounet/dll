@@ -49,6 +49,8 @@ struct rbm_layer : layer {
     double l1_weight_cost = dll::processor::stupid_default;
     double l2_weight_cost = dll::processor::stupid_default;
 
+    std::string trainer = "cd";
+
     bool parallel_mode = false;
     bool shuffle = false;
 
@@ -77,6 +79,8 @@ struct conv_rbm_layer : layer {
     std::string decay = "none";
     double l1_weight_cost = dll::processor::stupid_default;
     double l2_weight_cost = dll::processor::stupid_default;
+
+    std::string trainer = "cd";
 
     bool parallel_mode = false;
     bool shuffle = false;

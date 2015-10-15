@@ -28,7 +28,7 @@ std::string activation_function(const std::string& unit);
 std::string decay_to_str(const std::string& decay);
 
 bool valid_unit(const std::string& unit);
-
+bool valid_trainer(const std::string& unit);
 bool valid_activation(const std::string& unit);
 
 std::vector<std::string> read_lines(const std::string& source_file);

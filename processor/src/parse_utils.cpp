@@ -65,6 +65,10 @@ bool dllp::valid_unit(const std::string& unit){
     return unit == "binary" || unit == "softmax" || unit == "gaussian";
 }
 
+bool dllp::valid_trainer(const std::string& unit){
+    return unit == "cd" || unit == "pcd";
+}
+
 bool dllp::valid_activation(const std::string& unit){
     return unit == "sigmoid" || unit == "softmax" || unit == "tanh" || unit == "relu";
 }
