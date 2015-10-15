@@ -34,10 +34,7 @@ struct layer {
     virtual void set(std::ostream& /*out*/, const std::string& /*lhs*/) const { /* Nothing */ };
 };
 
-struct rbm_layer : layer {
-    std::size_t visible = 0;
-    std::size_t hidden = 0;
-
+struct base_rbm_layer : layer {
     std::string visible_unit;
     std::string hidden_unit;
 
@@ -54,14 +51,20 @@ struct rbm_layer : layer {
     bool parallel_mode = false;
     bool shuffle = false;
 
+    void set(std::ostream& out, const std::string& lhs) const override ;
+};
+
+struct rbm_layer : base_rbm_layer {
+    std::size_t visible = 0;
+    std::size_t hidden = 0;
+
     void print(std::ostream& out) const override ;
     bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override ;
-    void set(std::ostream& out, const std::string& lhs) const override ;
 
     std::size_t hidden_get() const override ;
 };
 
-struct conv_rbm_layer : layer {
+struct conv_rbm_layer : base_rbm_layer {
     std::size_t c = 0;
     std::size_t v1 = 0;
     std::size_t v2 = 0;
@@ -69,25 +72,8 @@ struct conv_rbm_layer : layer {
     std::size_t w1 = 0;
     std::size_t w2 = 0;
 
-    std::string visible_unit;
-    std::string hidden_unit;
-
-    double learning_rate = dll::processor::stupid_default;
-    double momentum = dll::processor::stupid_default;
-    std::size_t batch_size = 0;
-
-    std::string decay = "none";
-    double l1_weight_cost = dll::processor::stupid_default;
-    double l2_weight_cost = dll::processor::stupid_default;
-
-    std::string trainer = "cd";
-
-    bool parallel_mode = false;
-    bool shuffle = false;
-
     void print(std::ostream& out) const override ;
     bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override ;
-    void set(std::ostream& out, const std::string& lhs) const override ;
 
     bool is_conv() const override ;
     std::size_t hidden_get() const override ;

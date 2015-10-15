@@ -122,7 +122,7 @@ bool dllp::rbm_layer::parse(const layers_t& layers, const std::vector<std::strin
     return true;
 }
 
-void dllp::rbm_layer::set(std::ostream& out, const std::string& lhs) const {
+void dllp::base_rbm_layer::set(std::ostream& out, const std::string& lhs) const {
     if(learning_rate != dll::processor::stupid_default){
         out << lhs << ".learning_rate = " << learning_rate << ";\n";
     }
@@ -276,25 +276,6 @@ bool dllp::conv_rbm_layer::parse(const layers_t& layers, const std::vector<std::
     }
 
     return true;
-}
-
-void dllp::conv_rbm_layer::set(std::ostream& out, const std::string& lhs) const {
-    if(learning_rate != dll::processor::stupid_default){
-        out << lhs << ".learning_rate = " << learning_rate << ";\n";
-    }
-
-    if(momentum != dll::processor::stupid_default){
-        out << lhs << ".initial_momentum = " << momentum << ";\n";
-        out << lhs << ".final_momentum = " << momentum << ";\n";
-    }
-
-    if(l1_weight_cost != dll::processor::stupid_default){
-        out << lhs << ".l1_weight_cost = " << l1_weight_cost << ";\n";
-    }
-
-    if(l2_weight_cost != dll::processor::stupid_default){
-        out << lhs << ".l2_weight_cost = " << l2_weight_cost << ";\n";
-    }
 }
 
 std::size_t dllp::conv_rbm_layer::hidden_get() const {
