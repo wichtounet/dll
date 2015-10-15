@@ -17,8 +17,8 @@
 
 namespace dllp {
 
+bool extract_value(const std::string& line, const std::string& search, std::string& value);
 bool starts_with(const std::string& str, const std::string& search);
-
 std::string extract_value(const std::string& str, const std::string& search);
 
 std::string unit_type(const std::string& unit);

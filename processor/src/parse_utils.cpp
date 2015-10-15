@@ -15,6 +15,15 @@ std::string dllp::extract_value(const std::string& str, const std::string& searc
     return {str.begin() + str.find(search) + search.size(), str.end()};
 }
 
+bool dllp::extract_value(const std::string& line, const std::string& search, std::string& value){
+    if(starts_with(line, search)){
+        value = extract_value(line, search);
+        return true;
+    }
+
+    return false;
+}
+
 std::string dllp::unit_type(const std::string& unit){
     if(unit == "binary"){
         return "BINARY";

@@ -47,55 +47,53 @@ void dllp::rbm_layer::print(std::ostream& out) const {
 }
 
 bool dllp::rbm_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) {
+    std::string value;
+
     while(i < lines.size()){
-        if(dllp::starts_with(lines[i], "visible:")){
-            visible = std::stol(dllp::extract_value(lines[i], "visible: "));
+        if(dllp::extract_value(lines[i], "visible: ", value)){
+            visible = std::stol(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "hidden:")){
-            hidden = std::stol(dllp::extract_value(lines[i], "hidden: "));
+        } else if(dllp::extract_value(lines[i], "hidden: ", value)){
+            hidden = std::stol(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "batch:")){
-            batch_size = std::stol(dllp::extract_value(lines[i], "batch: "));
+        } else if(dllp::extract_value(lines[i], "batch: ", value)){
+            batch_size = std::stol(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "momentum:")){
-            momentum = std::stod(dllp::extract_value(lines[i], "momentum: "));
+        } else if(dllp::extract_value(lines[i], "momentum: ", value)){
+            momentum = std::stod(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "shuffle:")){
-            shuffle = dllp::extract_value(lines[i], "shuffle: ") == "true";
+        } else if(dllp::extract_value(lines[i], "shuffle: ", value)){
+            shuffle = value == "true";
             ++i;
-        } else if(dllp::starts_with(lines[i], "trainer:")){
-            trainer = dllp::extract_value(lines[i], "trainer: ");
+        } else if(dllp::extract_value(lines[i], "trainer: ", trainer)){
             ++i;
 
             if(!dllp::valid_trainer(trainer)){
                 std::cout << "dllp: error: invalid trainer must be one of [cd, pcd]" << std::endl;
                 return false;
             }
-        } else if(dllp::starts_with(lines[i], "parallel_mode:")){
-            parallel_mode = dllp::extract_value(lines[i], "parallel_mode: ") == "true";
+        } else if(dllp::extract_value(lines[i], "parallel_mode: ", value)){
+            parallel_mode = value == "true";
             ++i;
-        } else if(dllp::starts_with(lines[i], "learning_rate:")){
-            learning_rate = std::stod(dllp::extract_value(lines[i], "learning_rate: "));
+        } else if(dllp::extract_value(lines[i], "learning_rate: ", value)){
+            learning_rate = std::stod(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "weight_decay:")){
-            decay = dllp::extract_value(lines[i], "weight_decay: ");
+        } else if(dllp::extract_value(lines[i], "weight_decay: ", decay)){
             ++i;
-        } else if(dllp::starts_with(lines[i], "l1_weight_cost:")){
-            l1_weight_cost = std::stod(dllp::extract_value(lines[i], "l1_weight_cost: "));
+        } else if(dllp::extract_value(lines[i], "l1_weight_cost: ", value)){
+            l1_weight_cost = std::stod(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "l2_weight_cost:")){
-            l2_weight_cost = std::stod(dllp::extract_value(lines[i], "l2_weight_cost: "));
+        } else if(dllp::extract_value(lines[i], "l2_weight_cost: ", value)){
+            l2_weight_cost = std::stod(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "hidden_unit:")){
-            hidden_unit = dllp::extract_value(lines[i], "hidden_unit: ");
+        } else if(dllp::extract_value(lines[i], "hidden_unit: ", hidden_unit)){
             ++i;
 
             if(!dllp::valid_unit(hidden_unit)){
                 std::cout << "dllp: error: invalid hidden unit type must be one of [binary, softmax, gaussian]" << std::endl;
                 return false;
             }
-        } else if(dllp::starts_with(lines[i], "visible_unit:")){
-            visible_unit = dllp::extract_value(lines[i], "visible_unit: ");
+        } else if(dllp::extract_value(lines[i], "visible_unit: ", visible_unit)){
             ++i;
 
             if(!dllp::valid_unit(visible_unit)){
@@ -190,67 +188,65 @@ void dllp::conv_rbm_layer::print(std::ostream& out) const {
 }
 
 bool dllp::conv_rbm_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) {
+    std::string value;
+
     while(i < lines.size()){
-        if(dllp::starts_with(lines[i], "channels:")){
-            c = std::stol(dllp::extract_value(lines[i], "channels: "));
+        if(dllp::extract_value(lines[i], "channels: ", value)){
+            c = std::stol(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "filters:")){
-            k = std::stol(dllp::extract_value(lines[i], "filters: "));
+        } else if(dllp::extract_value(lines[i], "filters: ", value)){
+            k = std::stol(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "v1:")){
-            v1 = std::stol(dllp::extract_value(lines[i], "v1: "));
+        } else if(dllp::extract_value(lines[i], "v1: ", value)){
+            v1 = std::stol(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "v2:")){
-            v2 = std::stol(dllp::extract_value(lines[i], "v2: "));
+        } else if(dllp::extract_value(lines[i], "v2: ", value)){
+            v2 = std::stol(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "w1:")){
-            w1 = std::stol(dllp::extract_value(lines[i], "w1: "));
+        } else if(dllp::extract_value(lines[i], "w1: ", value)){
+            w1 = std::stol(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "w2:")){
-            w2 = std::stol(dllp::extract_value(lines[i], "w2: "));
+        } else if(dllp::extract_value(lines[i], "w2: ", value)){
+            w2 = std::stol(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "batch:")){
-            batch_size = std::stol(dllp::extract_value(lines[i], "batch: "));
+        } else if(dllp::extract_value(lines[i], "batch: ", value)){
+            batch_size = std::stol(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "momentum:")){
-            momentum = std::stod(dllp::extract_value(lines[i], "momentum: "));
+        } else if(dllp::extract_value(lines[i], "momentum: ", value)){
+            momentum = std::stod(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "trainer:")){
-            trainer = dllp::extract_value(lines[i], "parallel_mode: ");
+        } else if(dllp::extract_value(lines[i], "shuffle: ", value)){
+            shuffle = value == "true";
+            ++i;
+        } else if(dllp::extract_value(lines[i], "trainer: ", trainer)){
             ++i;
 
             if(!dllp::valid_trainer(trainer)){
                 std::cout << "dllp: error: invalid trainer must be one of [cd, pcd]" << std::endl;
                 return false;
             }
-        } else if(dllp::starts_with(lines[i], "shuffle:")){
-            shuffle = dllp::extract_value(lines[i], "shuffle: ") == "true";
+        } else if(dllp::extract_value(lines[i], "parallel_mode: ", value)){
+            parallel_mode = value == "true";
             ++i;
-        } else if(dllp::starts_with(lines[i], "parallel_mode:")){
-            parallel_mode = dllp::extract_value(lines[i], "parallel_mode: ") == "true";
+        } else if(dllp::extract_value(lines[i], "learning_rate: ", value)){
+            learning_rate = std::stod(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "learning_rate:")){
-            learning_rate = std::stod(dllp::extract_value(lines[i], "learning_rate: "));
+        } else if(dllp::extract_value(lines[i], "weight_decay: ", decay)){
             ++i;
-        } else if(dllp::starts_with(lines[i], "weight_decay:")){
-            decay = dllp::extract_value(lines[i], "weight_decay: ");
+        } else if(dllp::extract_value(lines[i], "l1_weight_cost: ", value)){
+            l1_weight_cost = std::stod(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "l1_weight_cost:")){
-            l1_weight_cost = std::stod(dllp::extract_value(lines[i], "l1_weight_cost: "));
+        } else if(dllp::extract_value(lines[i], "l2_weight_cost: ", value)){
+            l2_weight_cost = std::stod(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "l2_weight_cost:")){
-            l2_weight_cost = std::stod(dllp::extract_value(lines[i], "l2_weight_cost: "));
-            ++i;
-        } else if(dllp::starts_with(lines[i], "hidden_unit:")){
-            hidden_unit = dllp::extract_value(lines[i], "hidden_unit: ");
+        } else if(dllp::extract_value(lines[i], "hidden_unit: ", hidden_unit)){
             ++i;
 
             if(!dllp::valid_unit(hidden_unit)){
                 std::cout << "dllp: error: invalid hidden unit type must be one of [binary, softmax, gaussian]" << std::endl;
                 return false;
             }
-        } else if(dllp::starts_with(lines[i], "visible_unit:")){
-            visible_unit = dllp::extract_value(lines[i], "visible_unit: ");
+        } else if(dllp::extract_value(lines[i], "visible_unit: ", visible_unit)){
             ++i;
 
             if(!dllp::valid_unit(visible_unit)){
@@ -328,15 +324,16 @@ void dllp::dense_layer::print(std::ostream& out) const {
 }
 
 bool dllp::dense_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) {
+    std::string value;
+
     while(i < lines.size()){
-        if(dllp::starts_with(lines[i], "visible:")){
-            visible = std::stol(dllp::extract_value(lines[i], "visible: "));
+        if(dllp::extract_value(lines[i], "visible: ", value)){
+            visible = std::stol(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "hidden:")){
-            hidden = std::stol(dllp::extract_value(lines[i], "hidden: "));
+        } else if(dllp::extract_value(lines[i], "hidden: ", value)){
+            hidden = std::stol(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "activation:")){
-            activation = dllp::extract_value(lines[i], "activation: ");
+        } else if(dllp::extract_value(lines[i], "activation: ", activation)){
             ++i;
 
             if(!dllp::valid_activation(activation)){
@@ -382,27 +379,28 @@ void dllp::conv_layer::print(std::ostream& out) const {
 }
 
 bool dllp::conv_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) {
+    std::string value;
+
     while(i < lines.size()){
-        if(dllp::starts_with(lines[i], "channels:")){
-            c = std::stol(dllp::extract_value(lines[i], "channels: "));
+        if(dllp::extract_value(lines[i], "channels: ", value)){
+            c = std::stol(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "filters:")){
-            k = std::stol(dllp::extract_value(lines[i], "filters: "));
+        } else if(dllp::extract_value(lines[i], "filters: ", value)){
+            k = std::stol(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "v1:")){
-            v1 = std::stol(dllp::extract_value(lines[i], "v1: "));
+        } else if(dllp::extract_value(lines[i], "v1: ", value)){
+            v1 = std::stol(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "v2:")){
-            v2 = std::stol(dllp::extract_value(lines[i], "v2: "));
+        } else if(dllp::extract_value(lines[i], "v2: ", value)){
+            v2 = std::stol(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "w1:")){
-            w1 = std::stol(dllp::extract_value(lines[i], "w1: "));
+        } else if(dllp::extract_value(lines[i], "w1: ", value)){
+            w1 = std::stol(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "w2:")){
-            w2 = std::stol(dllp::extract_value(lines[i], "w2: "));
+        } else if(dllp::extract_value(lines[i], "w2: ", value)){
+            w2 = std::stol(value);
             ++i;
-        } else if(dllp::starts_with(lines[i], "activation:")){
-            activation = dllp::extract_value(lines[i], "activation: ");
+        } else if(dllp::extract_value(lines[i], "activation: ", activation)){
             ++i;
 
             if(!dllp::valid_activation(activation)){
