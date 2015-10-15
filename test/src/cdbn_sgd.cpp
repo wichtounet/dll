@@ -19,15 +19,12 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE( "cdbn/sgd/1", "[dbn][mnist][sgd]" ) {
+TEST_CASE("cdbn/sgd/1", "[dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_desc_square<1, 28, 10, 12, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::rbm_t,
-            dll::rbm_desc<12 * 12 * 10, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t
-            >
-        , dll::trainer<dll::sgd_trainer>
-        , dll::batch_size<10>
-        >::dbn_t dbn_t;
+            dll::rbm_desc<12 * 12 * 10, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
+        dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(500);
     REQUIRE(!dataset.training_images.empty());
@@ -47,16 +44,13 @@ TEST_CASE( "cdbn/sgd/1", "[dbn][mnist][sgd]" ) {
     REQUIRE(test_error < 0.2);
 }
 
-TEST_CASE( "cdbn/sgd/2", "[dbn][mnist][sgd]" ) {
+TEST_CASE("cdbn/sgd/2", "[dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_desc_square<1, 28, 10, 12, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::rbm_t,
             dll::conv_rbm_desc_square<10, 12, 6, 6, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::rbm_t,
-            dll::rbm_desc<6 * 6 * 6, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t
-            >
-        , dll::trainer<dll::sgd_trainer>
-        , dll::batch_size<10>
-        >::dbn_t dbn_t;
+            dll::rbm_desc<6 * 6 * 6, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
+        dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(500);
     REQUIRE(!dataset.training_images.empty());
@@ -76,17 +70,14 @@ TEST_CASE( "cdbn/sgd/2", "[dbn][mnist][sgd]" ) {
     REQUIRE(test_error < 0.2);
 }
 
-TEST_CASE( "cdbn/sgd/3", "[dbn][mnist][sgd]" ) {
+TEST_CASE("cdbn/sgd/3", "[dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_desc_square<1, 28, 10, 20, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::rbm_t,
             dll::conv_rbm_desc_square<10, 20, 10, 14, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::rbm_t,
             dll::rbm_desc<10 * 14 * 14, 700, dll::momentum, dll::batch_size<10>>::rbm_t,
-            dll::rbm_desc<700, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t
-            >
-        , dll::trainer<dll::sgd_trainer>
-        , dll::batch_size<10>
-        >::dbn_t dbn_t;
+            dll::rbm_desc<700, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
+        dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(500);
     REQUIRE(!dataset.training_images.empty());
@@ -106,18 +97,15 @@ TEST_CASE( "cdbn/sgd/3", "[dbn][mnist][sgd]" ) {
     REQUIRE(test_error < 0.2);
 }
 
-TEST_CASE( "cdbn/sgd/4", "[dbn][mnist][sgd]" ) {
+TEST_CASE("cdbn/sgd/4", "[dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::scale_layer_desc<1, 256>::layer_t,
             dll::conv_rbm_desc_square<1, 28, 10, 20, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::rbm_t,
             dll::conv_rbm_desc_square<10, 20, 10, 14, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::rbm_t,
             dll::rbm_desc<10 * 14 * 14, 700, dll::momentum, dll::batch_size<10>>::rbm_t,
-            dll::rbm_desc<700, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t
-            >
-        , dll::trainer<dll::sgd_trainer>
-        , dll::batch_size<10>
-        >::dbn_t dbn_t;
+            dll::rbm_desc<700, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
+        dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(500);
     REQUIRE(!dataset.training_images.empty());
@@ -135,7 +123,7 @@ TEST_CASE( "cdbn/sgd/4", "[dbn][mnist][sgd]" ) {
     REQUIRE(test_error < 0.2);
 }
 
-TEST_CASE( "lenet_rbm", "[dbn][mnist][sgd]" ) {
+TEST_CASE("lenet_rbm", "[dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::scale_layer_desc<1, 256>::layer_t,
@@ -144,23 +132,18 @@ TEST_CASE( "lenet_rbm", "[dbn][mnist][sgd]" ) {
             dll::conv_rbm_desc_square<20, 12, 50, 8, dll::hidden<dll::unit_type::BINARY>, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::rbm_t,
             dll::mp_layer_3d_desc<50, 8, 8, 1, 2, 2, dll::weight_type<float>>::layer_t,
             dll::rbm_desc<50 * 4 * 4, 500, dll::hidden<dll::unit_type::BINARY>, dll::momentum, dll::batch_size<10>>::rbm_t,
-            dll::rbm_desc<500, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t
-            >
-        , dll::trainer<dll::sgd_trainer>
-        , dll::momentum
-        , dll::weight_decay<>
-        , dll::batch_size<25>
-        >::dbn_t dbn_t;
+            dll::rbm_desc<500, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
+        dll::trainer<dll::sgd_trainer>, dll::momentum, dll::weight_decay<>, dll::batch_size<25>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(1000);
     REQUIRE(!dataset.training_images.empty());
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->l2_weight_cost = 0.0005;
+    dbn->l2_weight_cost   = 0.0005;
     dbn->initial_momentum = 0.9;
-    dbn->final_momentum = 0.9;
-    dbn->learning_rate = 0.1;
+    dbn->final_momentum   = 0.9;
+    dbn->learning_rate    = 0.1;
 
     dbn->pretrain(dataset.training_images, 20);
 
@@ -173,7 +156,7 @@ TEST_CASE( "lenet_rbm", "[dbn][mnist][sgd]" ) {
     REQUIRE(test_error < 0.2);
 }
 
-TEST_CASE( "lenet_mix", "[dbn][mnist][sgd]" ) {
+TEST_CASE("lenet_mix", "[dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::scale_layer_desc<1, 256>::layer_t,
@@ -184,23 +167,18 @@ TEST_CASE( "lenet_mix", "[dbn][mnist][sgd]" ) {
             dll::mp_layer_3d_desc<50, 8, 8, 1, 2, 2, dll::weight_type<float>>::layer_t,
             dll::rbm_desc<50 * 4 * 4, 500, dll::hidden<dll::unit_type::RELU>, dll::momentum, dll::batch_size<10>>::rbm_t,
             //dll::rbm_desc<500, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t
-            dll::dense_desc<500, 10, dll::activation<dll::function::SOFTMAX>>::layer_t
-            >
-        , dll::trainer<dll::sgd_trainer>
-        , dll::momentum
-        , dll::weight_decay<>
-        , dll::batch_size<25>
-        >::dbn_t dbn_t;
+            dll::dense_desc<500, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
+        dll::trainer<dll::sgd_trainer>, dll::momentum, dll::weight_decay<>, dll::batch_size<25>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(1000);
     REQUIRE(!dataset.training_images.empty());
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->l2_weight_cost = 0.0005;
+    dbn->l2_weight_cost   = 0.0005;
     dbn->initial_momentum = 0.9;
-    dbn->final_momentum = 0.9;
-    dbn->learning_rate = 0.01;
+    dbn->final_momentum   = 0.9;
+    dbn->learning_rate    = 0.01;
 
     dbn->pretrain(dataset.training_images, 20);
 

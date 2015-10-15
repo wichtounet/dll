@@ -10,7 +10,7 @@
 
 namespace dll {
 
-template<std::size_t T_I1, std::size_t T_I2, std::size_t T_I3, std::size_t T_C1, std::size_t T_C2, std::size_t T_C3, typename... Parameters>
+template <std::size_t T_I1, std::size_t T_I2, std::size_t T_I3, std::size_t T_C1, std::size_t T_C2, std::size_t T_C3, typename... Parameters>
 struct pooling_layer_3d_desc {
     static constexpr const std::size_t I1 = T_I1;
     static constexpr const std::size_t I2 = T_I2;

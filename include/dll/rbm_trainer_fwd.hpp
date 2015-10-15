@@ -10,7 +10,7 @@
 
 namespace dll {
 
-template<typename RBM, bool EnableWatcher = true, typename RW = void>
+template <typename RBM, bool EnableWatcher = true, typename RW = void>
 struct rbm_trainer;
 
 } //end of dll namespace

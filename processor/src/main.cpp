@@ -21,24 +21,24 @@
 
 namespace {
 
-void print_usage(){
+void print_usage() {
     std::cout << "Usage: dllp conf_file action" << std::endl;
 }
 
-void parse_options(int argc, char* argv[], dll::processor::options& opt, std::vector<std::string>& actions, std::string& source_file){
+void parse_options(int argc, char* argv[], dll::processor::options& opt, std::vector<std::string>& actions, std::string& source_file) {
     std::size_t i = 1;
 
-    while(true){
-        if(std::string(argv[i]) == "--mkl"){
+    while (true) {
+        if (std::string(argv[i]) == "--mkl") {
             opt.mkl = true;
             ++i;
-        } else if(std::string(argv[i]) == "--cufft"){
+        } else if (std::string(argv[i]) == "--cufft") {
             opt.cufft = true;
             ++i;
-        } else if(std::string(argv[i]) == "--cublas"){
+        } else if (std::string(argv[i]) == "--cublas") {
             opt.cublas = true;
             ++i;
-        } else if(std::string(argv[i]) == "--cache"){
+        } else if (std::string(argv[i]) == "--cache") {
             opt.cache = true;
             ++i;
         } else {
@@ -48,15 +48,15 @@ void parse_options(int argc, char* argv[], dll::processor::options& opt, std::ve
 
     source_file = argv[i++];
 
-    for(; i < std::size_t(argc); ++i){
+    for (; i < std::size_t(argc); ++i) {
         actions.emplace_back(argv[i]);
     }
 }
 
 } //end of anonymous namespace
 
-int main(int argc, char* argv[]){
-    if(argc < 3){
+int main(int argc, char* argv[]) {
+    if (argc < 3) {
         std::cout << "dllp: Not enough arguments" << std::endl;
         print_usage();
         return 1;
@@ -66,7 +66,7 @@ int main(int argc, char* argv[]){
 
     const auto* cxx = std::getenv("CXX");
 
-    if(!cxx){
+    if (!cxx) {
         std::cout << "CXX environment variable must be set" << std::endl;
         return 2;
     }

@@ -16,16 +16,15 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE( "rbm/mnist_60", "rbm::global_sparsity" ) {
+TEST_CASE("rbm/mnist_60", "rbm::global_sparsity") {
     using rbm_type = dll::rbm_desc<
         28 * 28, 100,
-       dll::batch_size<25>,
-       dll::sparsity<>
-    >::rbm_t;
+        dll::batch_size<25>,
+        dll::sparsity<>>::rbm_t;
 
     rbm_type rbm;
 
-	//Ensure that the default is correct
+    //Ensure that the default is correct
     REQUIRE(dll::layer_traits<rbm_type>::sparsity_method() == dll::sparsity_method::GLOBAL_TARGET);
 
     //0.01 (default) is way too low for 100 hidden units
@@ -41,12 +40,11 @@ TEST_CASE( "rbm/mnist_60", "rbm::global_sparsity" ) {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE( "rbm/mnist_61", "rbm::local_sparsity" ) {
+TEST_CASE("rbm/mnist_61", "rbm::local_sparsity") {
     dll::rbm_desc<
         28 * 28, 100,
-       dll::batch_size<25>,
-       dll::sparsity<dll::sparsity_method::LOCAL_TARGET>
-    >::rbm_t rbm;
+        dll::batch_size<25>,
+        dll::sparsity<dll::sparsity_method::LOCAL_TARGET>>::rbm_t rbm;
 
     //0.01 (default) is way too low for 100 hidden units
     rbm.sparsity_target = 0.1;
@@ -61,14 +59,13 @@ TEST_CASE( "rbm/mnist_61", "rbm::local_sparsity" ) {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE( "rbm/mnist_62", "rbm::sparsity_gaussian" ) {
+TEST_CASE("rbm/mnist_62", "rbm::sparsity_gaussian") {
     dll::rbm_desc<
         28 * 28, 300,
-       dll::batch_size<10>,
-       dll::momentum,
-       dll::sparsity<dll::sparsity_method::LOCAL_TARGET>,
-       dll::visible<dll::unit_type::GAUSSIAN>
-    >::rbm_t rbm;
+        dll::batch_size<10>,
+        dll::momentum,
+        dll::sparsity<dll::sparsity_method::LOCAL_TARGET>,
+        dll::visible<dll::unit_type::GAUSSIAN>>::rbm_t rbm;
 
     rbm.learning_rate *= 2;
     rbm.sparsity_target = 0.1;

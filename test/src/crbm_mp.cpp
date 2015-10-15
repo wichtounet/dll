@@ -16,11 +16,10 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE( "crbm_mp/mnist_1", "crbm::simple" ) {
+TEST_CASE("crbm_mp/mnist_1", "crbm::simple") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 40, 12, 2,
-        dll::batch_size<25>
-    >::rbm_t rbm;
+        dll::batch_size<25>>::rbm_t rbm;
 
     rbm.learning_rate = 0.01;
 
@@ -36,12 +35,11 @@ TEST_CASE( "crbm_mp/mnist_1", "crbm::simple" ) {
     REQUIRE(error < 1e-1);
 }
 
-TEST_CASE( "crbm_mp/mnist_2", "crbm::momentum" ) {
+TEST_CASE("crbm_mp/mnist_2", "crbm::momentum") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 40, 12, 2,
         dll::batch_size<25>,
-        dll::momentum
-    >::rbm_t rbm;
+        dll::momentum>::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
@@ -55,12 +53,11 @@ TEST_CASE( "crbm_mp/mnist_2", "crbm::momentum" ) {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE( "crbm_mp/mnist_3", "crbm::decay_l1" ) {
+TEST_CASE("crbm_mp/mnist_3", "crbm::decay_l1") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 40, 12, 2,
         dll::batch_size<25>,
-        dll::weight_decay<dll::decay_type::L1_FULL>
-    >::rbm_t rbm;
+        dll::weight_decay<dll::decay_type::L1_FULL>>::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
@@ -74,12 +71,11 @@ TEST_CASE( "crbm_mp/mnist_3", "crbm::decay_l1" ) {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE( "crbm_mp/mnist_4", "crbm::decay_l2" ) {
+TEST_CASE("crbm_mp/mnist_4", "crbm::decay_l2") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 40, 12, 2,
         dll::batch_size<25>,
-        dll::weight_decay<dll::decay_type::L2_FULL>
-    >::rbm_t rbm;
+        dll::weight_decay<dll::decay_type::L2_FULL>>::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
@@ -93,14 +89,13 @@ TEST_CASE( "crbm_mp/mnist_4", "crbm::decay_l2" ) {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE( "crbm_mp/mnist_6", "crbm::gaussian" ) {
+TEST_CASE("crbm_mp/mnist_6", "crbm::gaussian") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 40, 12, 2,
         dll::batch_size<25>,
         dll::momentum,
         dll::weight_decay<>,
-        dll::visible<dll::unit_type::GAUSSIAN>
-    >::rbm_t rbm;
+        dll::visible<dll::unit_type::GAUSSIAN>>::rbm_t rbm;
 
     //rbm.learning_rate *= 10;
 
@@ -115,13 +110,12 @@ TEST_CASE( "crbm_mp/mnist_6", "crbm::gaussian" ) {
     REQUIRE(error < 5e-2);
 }
 
-TEST_CASE( "crbm_mp/mnist_10", "crbm::pcd_trainer" ) {
+TEST_CASE("crbm_mp/mnist_10", "crbm::pcd_trainer") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 40, 12, 2,
         dll::batch_size<10>,
         dll::momentum,
-        dll::trainer_rbm<dll::pcd1_trainer_t>
-    >::rbm_t rbm;
+        dll::trainer_rbm<dll::pcd1_trainer_t>>::rbm_t rbm;
 
     rbm.learning_rate /= 100.0;
 
@@ -137,12 +131,11 @@ TEST_CASE( "crbm_mp/mnist_10", "crbm::pcd_trainer" ) {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE( "crbm_mp/mnist_13", "crbm::multi_channel" ) {
+TEST_CASE("crbm_mp/mnist_13", "crbm::multi_channel") {
     dll::conv_rbm_mp_desc_square<
         2, 28, 40, 12, 2,
         dll::batch_size<25>,
-        dll::momentum
-    >::rbm_t rbm;
+        dll::momentum>::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
@@ -151,10 +144,10 @@ TEST_CASE( "crbm_mp/mnist_13", "crbm::multi_channel" ) {
 
     mnist::binarize_dataset(dataset);
 
-    for(auto& image : dataset.training_images){
+    for (auto& image : dataset.training_images) {
         image.reserve(image.size() * 2);
         auto end = image.size();
-        for(std::size_t i = 0; i < end; ++i){
+        for (std::size_t i = 0; i < end; ++i) {
             image.push_back(image[i]);
         }
     }
@@ -164,15 +157,14 @@ TEST_CASE( "crbm_mp/mnist_13", "crbm::multi_channel" ) {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE( "crbm_mp/mnist_15", "crbm::denoising" ) {
+TEST_CASE("crbm_mp/mnist_15", "crbm::denoising") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 40, 12, 2,
         dll::batch_size<25>,
         dll::momentum,
         dll::weight_decay<dll::decay_type::L2>,
         dll::visible<dll::unit_type::GAUSSIAN>,
-        dll::shuffle
-    >::rbm_t rbm;
+        dll::shuffle>::rbm_t rbm;
 
     rbm.learning_rate *= 2;
 
@@ -188,8 +180,8 @@ TEST_CASE( "crbm_mp/mnist_15", "crbm::denoising" ) {
     std::normal_distribution<double> normal_distribution(0.0, 0.1);
     auto noise = std::bind(normal_distribution, rand_engine);
 
-    for(auto& image : noisy){
-        for(auto& noisy_x : image){
+    for (auto& image : noisy) {
+        for (auto& noisy_x : image) {
             noisy_x += noise();
         }
     }
@@ -201,13 +193,12 @@ TEST_CASE( "crbm_mp/mnist_15", "crbm::denoising" ) {
     REQUIRE(error < 2e-2);
 }
 
-TEST_CASE( "crbm_mp/mnist_16", "crbm::momentum" ) {
+TEST_CASE("crbm_mp/mnist_16", "crbm::momentum") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 40, 12, 2,
         dll::batch_size<25>,
         dll::momentum,
-        dll::parallel_mode
-    >::rbm_t rbm;
+        dll::parallel_mode>::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 

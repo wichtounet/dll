@@ -12,17 +12,17 @@ namespace dll {
 
 namespace dbn_detail {
 
-template<typename W, typename Enable = void>
+template <typename W, typename Enable = void>
 struct rbm_watcher_type {
     using type = void;
 };
 
-template<typename W>
-struct rbm_watcher_type<W, std::enable_if_t<W::replace_sub> > {
+template <typename W>
+struct rbm_watcher_type<W, std::enable_if_t<W::replace_sub>> {
     using type = W;
 };
 
-template<typename W>
+template <typename W>
 using rbm_watcher_t = typename rbm_watcher_type<W>::type;
 
 } //end of namespace dbn_detail

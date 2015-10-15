@@ -18,12 +18,12 @@ namespace dll {
  * training.
  */
 struct rbm_training_context {
-    double reconstruction_error = 0.0;  ///< The mean reconstruction error
-    double free_energy = 0.0;           ///< The mean free energy
-    double sparsity = 0.0;              ///< The mean sparsity
+    double reconstruction_error = 0.0; ///< The mean reconstruction error
+    double free_energy          = 0.0; ///< The mean free energy
+    double sparsity             = 0.0; ///< The mean sparsity
 
-    double batch_error = 0.0;           ///< The mean reconstruction error for the last batch
-    double batch_sparsity = 0.0;        ///< The mean sparsity for the last batch
+    double batch_error    = 0.0; ///< The mean reconstruction error for the last batch
+    double batch_sparsity = 0.0; ///< The mean sparsity for the last batch
 };
 
 } //end of dll namespace

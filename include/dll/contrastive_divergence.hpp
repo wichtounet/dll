@@ -17,7 +17,7 @@
 #ifndef DLL_CONTRASTIVE_DIVERGENCE_HPP
 #define DLL_CONTRASTIVE_DIVERGENCE_HPP
 
-#include "cpp_utils/assert.hpp"             //Assertions
+#include "cpp_utils/assert.hpp" //Assertions
 #include "cpp_utils/maybe_parallel.hpp"
 
 #include "etl/etl.hpp"
@@ -32,19 +32,19 @@ namespace dll {
 /*!
  * \brief Base class for all standard trainer
  */
-template<typename RBM>
+template <typename RBM>
 struct base_trainer {
     typedef RBM rbm_t;
 
     bool init = false;
 
-    template<typename V, typename G>
-    void update_grad(G& grad, const V& value, const RBM& rbm, decay_type decay, double penalty){
-        if(decay == decay_type::L1){
+    template <typename V, typename G>
+    void update_grad(G& grad, const V& value, const RBM& rbm, decay_type decay, double penalty) {
+        if (decay == decay_type::L1) {
             grad = grad - rbm.l1_weight_cost * abs(value) - penalty;
-        } else if(decay == decay_type::L2){
+        } else if (decay == decay_type::L2) {
             grad = grad - rbm.l2_weight_cost * value - penalty;
-        } else if(decay == decay_type::L1L2){
+        } else if (decay == decay_type::L1L2) {
             grad = grad - rbm.l1_weight_cost * abs(value) - rbm.l2_weight_cost * value - penalty;
         } else {
             grad = grad - penalty;
@@ -54,30 +54,30 @@ struct base_trainer {
 
 /* Some utilities */
 
-template<typename RBM, typename C, cpp::enable_if_u<layer_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
-auto reshape_nv1(RBM& rbm, C&& container){
+template <typename RBM, typename C, cpp::enable_if_u<layer_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
+auto reshape_nv1(RBM& rbm, C&& container) {
     return etl::reshape(container, rbm.num_visible, 1);
 }
 
-template<typename RBM, typename C, cpp::disable_if_u<layer_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
-auto reshape_nv1(RBM&, C&& container){
+template <typename RBM, typename C, cpp::disable_if_u<layer_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
+auto reshape_nv1(RBM&, C&& container) {
     return etl::reshape<RBM::num_visible, 1>(container);
 }
 
-template<typename RBM, typename C, cpp::enable_if_u<layer_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
-auto reshape_1nh(RBM& rbm, C&& container){
+template <typename RBM, typename C, cpp::enable_if_u<layer_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
+auto reshape_1nh(RBM& rbm, C&& container) {
     return etl::reshape(container, 1, rbm.num_hidden);
 }
 
-template<typename RBM, typename C, cpp::disable_if_u<layer_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
-auto reshape_1nh(RBM&, C&& container){
+template <typename RBM, typename C, cpp::disable_if_u<layer_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
+auto reshape_1nh(RBM&, C&& container) {
     return etl::reshape<1, RBM::num_hidden>(container);
 }
 
 /* The update weights procedure */
 
-template<typename RBM, typename Trainer>
-void update_normal(RBM& rbm, Trainer& t){
+template <typename RBM, typename Trainer>
+void update_normal(RBM& rbm, Trainer& t) {
     using rbm_t = RBM;
 
     //Penalty to be applied to weights and hidden biases
@@ -86,10 +86,10 @@ void update_normal(RBM& rbm, Trainer& t){
     typename rbm_t::weight v_penalty = 0.0;
 
     //Global sparsity method
-    if(layer_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET){
+    if (layer_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET) {
         auto decay_rate = rbm.decay_rate;
-        auto p = rbm.sparsity_target;
-        auto cost = rbm.sparsity_cost;
+        auto p          = rbm.sparsity_target;
+        auto cost       = rbm.sparsity_cost;
 
         t.q_global_t = decay_rate * t.q_global_t + (1.0 - decay_rate) * t.q_global_batch;
 
@@ -103,10 +103,10 @@ void update_normal(RBM& rbm, Trainer& t){
     t.update_grad(t.c_grad, rbm.c, rbm, b_decay(layer_traits<rbm_t>::decay()), v_penalty);
 
     //Local sparsity method
-    if(layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
+    if (layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET) {
         auto decay_rate = rbm.decay_rate;
-        auto p = rbm.sparsity_target;
-        auto cost = rbm.sparsity_cost;
+        auto p          = rbm.sparsity_target;
+        auto cost       = rbm.sparsity_cost;
 
         t.q_local_t = decay_rate * t.q_local_t + (1.0 - decay_rate) * t.q_local_batch;
 
@@ -114,18 +114,18 @@ void update_normal(RBM& rbm, Trainer& t){
 
         t.b_grad -= q_local_penalty;
 
-        for(std::size_t i = 0; i < num_hidden(rbm); ++i){
-            for(std::size_t j = 0; j < num_visible(rbm); ++j){
+        for (std::size_t i = 0; i < num_hidden(rbm); ++i) {
+            for (std::size_t j = 0; j < num_visible(rbm); ++j) {
                 t.w_grad(j, i) -= q_local_penalty(i);
             }
         }
     }
 
     const auto n_samples = double(etl::dim<0>(t.w_grad_b));
-    auto eps = rbm.learning_rate / n_samples;
+    auto eps             = rbm.learning_rate / n_samples;
 
     //Apply momentum and learning rate
-    if(layer_traits<rbm_t>::has_momentum()){
+    if (layer_traits<rbm_t>::has_momentum()) {
         auto momentum = rbm.momentum;
 
         t.w_inc = momentum * t.w_inc + eps * t.w_grad;
@@ -147,12 +147,12 @@ void update_normal(RBM& rbm, Trainer& t){
     nan_check_deep_3(rbm.w, rbm.b, rbm.c);
 }
 
-template<typename RBM, typename Trainer>
-void update_convolutional(RBM& rbm, Trainer& t){
-    using rbm_t = RBM;
+template <typename RBM, typename Trainer>
+void update_convolutional(RBM& rbm, Trainer& t) {
+    using rbm_t  = RBM;
     using weight = typename rbm_t::weight;
 
-    constexpr const auto NC = rbm_t::NC;
+    constexpr const auto NC  = rbm_t::NC;
     constexpr const auto NW1 = rbm_t::NW1;
     constexpr const auto NW2 = rbm_t::NW2;
 
@@ -162,10 +162,10 @@ void update_convolutional(RBM& rbm, Trainer& t){
     weight v_penalty = 0.0;
 
     //Global sparsity method
-    if(layer_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET){
+    if (layer_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET) {
         auto decay_rate = rbm.decay_rate;
-        auto p = rbm.sparsity_target;
-        auto cost = rbm.sparsity_cost;
+        auto p          = rbm.sparsity_target;
+        auto cost       = rbm.sparsity_cost;
 
         t.q_global_t = decay_rate * t.q_global_t + (1.0 - decay_rate) * t.q_global_batch;
 
@@ -179,10 +179,10 @@ void update_convolutional(RBM& rbm, Trainer& t){
     t.update_grad(t.c_grad, rbm.c, rbm, b_decay(layer_traits<rbm_t>::decay()), v_penalty);
 
     //Local sparsity method
-    if(layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
+    if (layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET) {
         auto decay_rate = rbm.decay_rate;
-        auto p = rbm.sparsity_target;
-        auto cost = rbm.sparsity_cost;
+        auto p          = rbm.sparsity_target;
+        auto cost       = rbm.sparsity_cost;
 
         t.q_local_t = decay_rate * t.q_local_t + (1.0 - decay_rate) * t.q_local_batch;
 
@@ -191,23 +191,23 @@ void update_convolutional(RBM& rbm, Trainer& t){
         t.b_grad -= sum_r(q_local_penalty);
 
         auto k_penalty = etl::rep<NW1, NW2>(sum_r(q_local_penalty));
-        for(std::size_t channel = 0; channel < NC; ++channel){
+        for (std::size_t channel = 0; channel < NC; ++channel) {
             t.w_grad(channel) = t.w_grad(channel) - k_penalty;
         }
     }
 
     //Honglak Lee's sparsity method
-    if(layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE){
+    if (layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE) {
         t.w_grad -= rbm.pbias_lambda * t.w_bias;
         t.b_grad -= rbm.pbias_lambda * t.b_bias;
         t.c_grad -= rbm.pbias_lambda * t.c_bias;
     }
 
     const auto n_samples = double(etl::dim<0>(t.w_pos));
-    auto eps = rbm.learning_rate / n_samples;
+    auto eps             = rbm.learning_rate / n_samples;
 
     //Apply momentum and learning rate
-    if(layer_traits<rbm_t>::has_momentum()){
+    if (layer_traits<rbm_t>::has_momentum()) {
         auto momentum = rbm.momentum;
 
         t.w_inc = momentum * t.w_inc + eps * t.w_grad;
@@ -233,61 +233,59 @@ void update_convolutional(RBM& rbm, Trainer& t){
 
 #ifndef ETL_BLAS_MODE
 
-template<typename Trainer>
-void batch_compute_gradients(Trainer& t){
+template <typename Trainer>
+void batch_compute_gradients(Trainer& t) {
     const auto B = etl::dim<0>(t.w_grad_b);
 
-    for(std::size_t b = 0; b < B; b++){
-        for(std::size_t i = 0; i < etl::dim<1>(t.w_grad_b); i++){
-            for(std::size_t j = 0; j < etl::dim<2>(t.w_grad_b); j++){
-                t.w_grad(i,j) += t.vf(b,i) * t.h1_a(b,j) - t.v2_a(b,i) * t.h2_a(b,j);
+    for (std::size_t b = 0; b < B; b++) {
+        for (std::size_t i = 0; i < etl::dim<1>(t.w_grad_b); i++) {
+            for (std::size_t j = 0; j < etl::dim<2>(t.w_grad_b); j++) {
+                t.w_grad(i, j) += t.vf(b, i) * t.h1_a(b, j) - t.v2_a(b, i) * t.h2_a(b, j);
             }
         }
     }
 
-    for(std::size_t b = 0; b < B; b++){
-        for(std::size_t i = 0; i < etl::dim<1>(t.h1_a); i++){
-            t.b_grad(i) += t.h1_a(b,i) - t.h2_a(b,i);
+    for (std::size_t b = 0; b < B; b++) {
+        for (std::size_t i = 0; i < etl::dim<1>(t.h1_a); i++) {
+            t.b_grad(i) += t.h1_a(b, i) - t.h2_a(b, i);
         }
     }
 
-    for(std::size_t b = 0; b < B; b++){
-        for(std::size_t i = 0; i < etl::dim<1>(t.vf); i++){
-            t.c_grad(i) += t.vf(b,i) - t.v2_a(b,i);
+    for (std::size_t b = 0; b < B; b++) {
+        for (std::size_t i = 0; i < etl::dim<1>(t.vf); i++) {
+            t.c_grad(i) += t.vf(b, i) - t.v2_a(b, i);
         }
     }
 }
 
 #else
 
-template<typename Trainer>
-void batch_compute_gradients(Trainer& t){
+template <typename Trainer>
+void batch_compute_gradients(Trainer& t) {
     const auto B = etl::dim<0>(t.w_grad_b);
 
-    for(std::size_t b = 0; b < B; b++){
+    for (std::size_t b = 0; b < B; b++) {
         blas_ger(
             etl::dim<1>(t.vf), etl::dim<1>(t.h1_a),
             1.0,
             t.vf(b).memory_start(),
             t.h1_a(b).memory_start(),
-            t.w_grad.memory_start()
-        );
+            t.w_grad.memory_start());
 
         blas_ger(
             etl::dim<1>(t.v2_a), etl::dim<1>(t.h2_a),
             -1.0,
             t.v2_a(b).memory_start(),
             t.h2_a(b).memory_start(),
-            t.w_grad.memory_start()
-        );
+            t.w_grad.memory_start());
     }
 
-    for(std::size_t b = 0; b < B; b++){
+    for (std::size_t b = 0; b < B; b++) {
         blas_axpy(etl::dim<1>(t.h1_a), 1.0, t.h1_a(b).memory_start(), t.b_grad.memory_start());
         blas_axpy(etl::dim<1>(t.h2_a), -1.0, t.h2_a(b).memory_start(), t.b_grad.memory_start());
     }
 
-    for(std::size_t b = 0; b < B; b++){
+    for (std::size_t b = 0; b < B; b++) {
         blas_axpy(etl::dim<1>(t.vf), 1.0, t.vf(b).memory_start(), t.c_grad.memory_start());
         blas_axpy(etl::dim<1>(t.v2_a), -1.0, t.v2_a(b).memory_start(), t.c_grad.memory_start());
     }
@@ -297,8 +295,8 @@ void batch_compute_gradients(Trainer& t){
 
 /* The training procedures */
 
-template<bool Persistent, std::size_t K, typename T, typename RBM, typename Trainer>
-void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context, RBM& rbm, Trainer& t){
+template <bool Persistent, std::size_t K, typename T, typename RBM, typename Trainer>
+void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context, RBM& rbm, Trainer& t) {
     cpp_assert(input_batch.size() > 0, "Invalid batch size");
     cpp_assert(input_batch.size() <= get_batch_size(rbm), "Invalid batch size");
     cpp_assert(input_batch.begin()->size() == input_size(rbm), "The size of the training sample must match visible units");
@@ -306,7 +304,8 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
     using namespace etl;
     using rbm_t = RBM;
 
-    if(layer_traits<RBM>::is_parallel_mode()){
+    if (layer_traits<RBM>::is_parallel_mode()) {
+        // clang-format off
         maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(),
                 [&](const auto& input, const auto& expected, std::size_t i)
         {
@@ -359,6 +358,7 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
                 }
             }
         });
+        // clang-format on
 
         //Compute the gradients
         t.w_grad = sum_l(t.w_grad_b);
@@ -366,11 +366,11 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
         t.c_grad = sum_l(t.vf - t.v2_a);
     } else {
         //Copy input/expected for computations
-        auto iit = input_batch.begin();
+        auto iit  = input_batch.begin();
         auto iend = input_batch.end();
-        auto eit = expected_batch.begin();
+        auto eit  = expected_batch.begin();
 
-        for(std::size_t i = 0; iit != iend; ++i, ++iit, ++eit){
+        for (std::size_t i = 0; iit != iend; ++i, ++iit, ++eit) {
             t.v1(i) = *iit;
             t.vf(i) = *eit;
         }
@@ -378,13 +378,13 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
         //First step
         rbm.template batch_activate_hidden<true, true>(t.h1_a, t.h1_s, t.v1, t.v1);
 
-        if(Persistent && t.init){
+        if (Persistent && t.init) {
             t.p_h_a = t.h1_a;
             t.p_h_s = t.h1_s;
         }
 
         //CD-1
-        if(Persistent){
+        if (Persistent) {
             rbm.template batch_activate_visible<true, false>(t.p_h_a, t.p_h_s, t.v2_a, t.v2_s);
             rbm.template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
         } else {
@@ -393,7 +393,7 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
         }
 
         //CD-k
-        for(std::size_t k = 1; k < K; ++k){
+        for (std::size_t k = 1; k < K; ++k) {
             rbm.template batch_activate_visible<true, false>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
             rbm.template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
         }
@@ -407,7 +407,7 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
         batch_compute_gradients(t);
     }
 
-    if(Persistent){
+    if (Persistent) {
         t.p_h_a = t.h2_a;
         t.p_h_s = t.h2_s;
 
@@ -421,7 +421,7 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
     //Compute the mean activation probabilities
     t.q_global_batch = mean(t.h2_a);
 
-    if(layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
+    if (layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET) {
         t.q_local_batch = mean_l(t.h2_a);
     }
 
@@ -431,8 +431,8 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
     t.update(rbm);
 }
 
-template<bool Persistent, bool Denoising, std::size_t N, typename Trainer, typename T, typename RBM>
-void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context, RBM& rbm, Trainer& t){
+template <bool Persistent, bool Denoising, std::size_t N, typename Trainer, typename T, typename RBM>
+void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context, RBM& rbm, Trainer& t) {
     cpp_assert(input_batch.size() > 0, "Invalid batch size");
     cpp_assert(input_batch.size() <= get_batch_size(rbm), "Invalid batch size");
     cpp_assert(input_batch.size() == expected_batch.size(), "Batches do not match");
@@ -440,7 +440,8 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
 
     using rbm_t = RBM;
 
-    if(layer_traits<RBM>::is_parallel_mode()){
+    if (layer_traits<RBM>::is_parallel_mode()) {
+        // clang-format off
         maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(),
                 [&](const auto& input, const auto& expected, std::size_t i)
         {
@@ -497,20 +498,21 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
                 }
             }
         });
+        // clang-format on
     } else {
         //Copy input/expected for computations
-        auto iit = input_batch.begin();
+        auto iit  = input_batch.begin();
         auto iend = input_batch.end();
 
-        for(std::size_t i = 0; iit != iend; ++i, ++iit){
+        for (std::size_t i = 0; iit != iend; ++i, ++iit) {
             t.v1(i) = *iit;
         }
 
-        if(Denoising){
-            auto eit = expected_batch.begin();
+        if (Denoising) {
+            auto eit  = expected_batch.begin();
             auto eend = expected_batch.end();
 
-            for(std::size_t i = 0; eit != eend; ++i, ++eit){
+            for (std::size_t i = 0; eit != eend; ++i, ++eit) {
                 t.vf(i) = *eit;
             }
         }
@@ -518,13 +520,13 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
         //First step
         rbm.template batch_activate_hidden<true, true>(t.h1_a, t.h1_s, t.v1, t.v1, t.v_cv);
 
-        if(Persistent && t.init){
+        if (Persistent && t.init) {
             t.p_h_a = t.h1_a;
             t.p_h_s = t.h1_s;
         }
 
         //CD-1
-        if(Persistent){
+        if (Persistent) {
             rbm.template batch_activate_visible<true, false>(t.p_h_a, t.p_h_s, t.v2_a, t.v2_s, t.h_cv);
             rbm.template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s, t.v_cv);
         } else {
@@ -533,28 +535,28 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
         }
 
         //CD-k
-        for(std::size_t k = 1; k < N; ++k){
+        for (std::size_t k = 1; k < N; ++k) {
             rbm.template batch_activate_visible<true, false>(t.h2_a, t.h2_s, t.v2_a, t.v2_s, t.h_cv);
             rbm.template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s, t.v_cv);
         }
 
         //Compute gradients
 
-        const auto B = get_batch_size(rbm);
-        constexpr const auto K = rbm_t::K;
+        const auto B            = get_batch_size(rbm);
+        constexpr const auto K  = rbm_t::K;
         constexpr const auto NC = rbm_t::NC;
 
         auto w_f_1 = force_temporary(t.h1_a);
         auto w_f_2 = force_temporary(t.h2_a);
 
-        maybe_parallel_foreach_n(t.pool, 0, B, [&](std::size_t batch){
-            for(std::size_t k = 0; k < K; ++k){
+        maybe_parallel_foreach_n(t.pool, 0, B, [&](std::size_t batch) {
+            for (std::size_t k = 0; k < K; ++k) {
                 w_f_1(batch)(k).fflip_inplace();
                 w_f_2(batch)(k).fflip_inplace();
             }
 
-            for(std::size_t channel = 0; channel < NC; ++channel){
-                if(Denoising){
+            for (std::size_t channel = 0; channel < NC; ++channel) {
+                if (Denoising) {
                     conv_2d_valid_multi(t.vf(batch)(channel), w_f_1(batch), t.w_pos(batch)(channel));
                     conv_2d_valid_multi(t.v2_a(batch)(channel), w_f_2(batch), t.w_neg(batch)(channel));
                 } else {
@@ -565,7 +567,7 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
         });
     }
 
-    if(Persistent){
+    if (Persistent) {
         t.p_h_a = t.h2_a;
         t.p_h_s = t.h2_s;
 
@@ -576,7 +578,7 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
     t.w_grad = sum_l(t.w_pos - t.w_neg);
     t.b_grad = mean_r(sum_l(t.h1_a - t.h2_a));
 
-    if(Denoising){
+    if (Denoising) {
         t.c_grad = mean_r(sum_l(t.vf - t.v2_a));
     } else {
         t.c_grad = mean_r(sum_l(t.v1 - t.v2_a));
@@ -589,15 +591,15 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
     //Compute the mean activation probabilities
     t.q_global_batch = mean(t.h2_a);
 
-    if(layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET){
+    if (layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET) {
         t.q_local_batch = mean_l(t.h2_a);
     }
 
     //Compute the biases for sparsity
 
-    if(layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE){
+    if (layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE) {
         //Only b_bias are supported for now
-        if(layer_traits<rbm_t>::bias_mode() == bias_mode::SIMPLE){
+        if (layer_traits<rbm_t>::bias_mode() == bias_mode::SIMPLE) {
             t.b_bias = mean_r(mean_l(t.h2_a)) - rbm.pbias;
         }
     }
@@ -606,7 +608,7 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
     context.batch_sparsity = t.q_global_batch;
 
     //Accumulate the error
-    if(Denoising){
+    if (Denoising) {
         context.batch_error = mean(etl::scale((t.vf - t.v2_a), (t.vf - t.v2_a)));
     } else {
         context.batch_error = mean(etl::scale((t.v1 - t.v2_a), (t.v1 - t.v2_a)));
@@ -616,7 +618,6 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
     t.update(rbm);
 }
 
-
 /* The specialized trainers */
 
 /*!
@@ -624,14 +625,14 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
  *
  * This class provides update which applies the gradients to the RBM.
  */
-template<std::size_t N, typename RBM, bool Persistent, bool Denoising, typename Enable = void>
+template <std::size_t N, typename RBM, bool Persistent, bool Denoising, typename Enable = void>
 struct base_cd_trainer : base_trainer<RBM> {
     static_assert(N > 0, "(P)CD-0 is not a valid training method");
 
-    using rbm_t = RBM;
+    using rbm_t  = RBM;
     using weight = typename rbm_t::weight;
 
-    static constexpr const auto num_hidden = rbm_t::num_hidden;
+    static constexpr const auto num_hidden  = rbm_t::num_hidden;
     static constexpr const auto num_visible = rbm_t::num_visible;
 
     static constexpr const auto batch_size = layer_traits<rbm_t>::batch_size();
@@ -683,31 +684,29 @@ struct base_cd_trainer : base_trainer<RBM> {
 
     cpp::thread_pool<!layer_traits<rbm_t>::is_serial()> pool;
 
-    template<bool M = layer_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
-    base_cd_trainer(rbm_t& rbm) : rbm(rbm), q_global_t(0.0), q_local_t(0.0) {
+    template <bool M = layer_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
+    base_cd_trainer(rbm_t& rbm)
+            : rbm(rbm), q_global_t(0.0), q_local_t(0.0) {
         static_assert(!layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
-    template<bool M = layer_traits<rbm_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
-    base_cd_trainer(rbm_t& rbm) : rbm(rbm), w_inc(0.0), b_inc(0.0), c_inc(0.0), q_global_t(0.0), q_local_t(0.0) {
+    template <bool M = layer_traits<rbm_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
+    base_cd_trainer(rbm_t& rbm)
+            : rbm(rbm), w_inc(0.0), b_inc(0.0), c_inc(0.0), q_global_t(0.0), q_local_t(0.0) {
         static_assert(layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
-    void update(RBM& rbm){
+    void update(RBM& rbm) {
         update_normal(rbm, *this);
     }
 
-    template<typename T>
-    void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
+    template <typename T>
+    void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context) {
         train_normal<Persistent, N>(input_batch, expected_batch, context, rbm, *this);
     }
 
-    static std::string name(){
-        return
-                std::string("")
-            +   (Persistent ? "Persistent " : "")
-            +   (Denoising ? "Denoising " : "")
-            +   "Contrastive Divergence";
+    static std::string name() {
+        return std::string("") + (Persistent ? "Persistent " : "") + (Denoising ? "Denoising " : "") + "Contrastive Divergence";
     }
 };
 
@@ -716,7 +715,7 @@ struct base_cd_trainer : base_trainer<RBM> {
  *
  * This class provides update which applies the gradients to the RBM.
  */
-template<std::size_t N, typename RBM, bool Persistent, bool Denoising>
+template <std::size_t N, typename RBM, bool Persistent, bool Denoising>
 struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_traits<RBM>::is_dynamic()>> : base_trainer<RBM> {
     static_assert(N > 0, "(P)CD-0 is not a valid training method");
 
@@ -771,56 +770,73 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
 
     cpp::thread_pool<!layer_traits<rbm_t>::is_serial()> pool;
 
-    template<bool M = layer_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
-    base_cd_trainer(rbm_t& rbm) : rbm(rbm),
-            v1(get_batch_size(rbm), rbm.num_visible),
-            vf(get_batch_size(rbm), rbm.num_visible),
-            h1_a(get_batch_size(rbm), rbm.num_hidden), h1_s(get_batch_size(rbm), rbm.num_hidden),
-            v2_a(get_batch_size(rbm), rbm.num_visible), v2_s(get_batch_size(rbm), rbm.num_visible),
-            h2_a(get_batch_size(rbm), rbm.num_hidden), h2_s(get_batch_size(rbm), rbm.num_hidden),
-            ht(get_batch_size(rbm), rbm.num_hidden), vt(get_batch_size(rbm), rbm.num_visible),
-            w_grad_b(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden),
-            w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
-            w_inc(0,0), b_inc(0), c_inc(0),
-            q_global_t(0.0),
-            q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden, static_cast<weight>(0.0)),
-            p_h_a(get_batch_size(rbm), rbm.num_hidden), p_h_s(get_batch_size(rbm), rbm.num_hidden)
-    {
+    template <bool M = layer_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
+    base_cd_trainer(rbm_t& rbm)
+            : rbm(rbm),
+              v1(get_batch_size(rbm), rbm.num_visible),
+              vf(get_batch_size(rbm), rbm.num_visible),
+              h1_a(get_batch_size(rbm), rbm.num_hidden),
+              h1_s(get_batch_size(rbm), rbm.num_hidden),
+              v2_a(get_batch_size(rbm), rbm.num_visible),
+              v2_s(get_batch_size(rbm), rbm.num_visible),
+              h2_a(get_batch_size(rbm), rbm.num_hidden),
+              h2_s(get_batch_size(rbm), rbm.num_hidden),
+              ht(get_batch_size(rbm), rbm.num_hidden),
+              vt(get_batch_size(rbm), rbm.num_visible),
+              w_grad_b(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden),
+              w_grad(rbm.num_visible, rbm.num_hidden),
+              b_grad(rbm.num_hidden),
+              c_grad(rbm.num_visible),
+              w_inc(0, 0),
+              b_inc(0),
+              c_inc(0),
+              q_global_t(0.0),
+              q_local_batch(rbm.num_hidden),
+              q_local_t(rbm.num_hidden, static_cast<weight>(0.0)),
+              p_h_a(get_batch_size(rbm), rbm.num_hidden),
+              p_h_s(get_batch_size(rbm), rbm.num_hidden) {
         static_assert(!layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
-    template<bool M = layer_traits<rbm_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
-    base_cd_trainer(rbm_t& rbm) : rbm(rbm),
-            v1(get_batch_size(rbm), rbm.num_visible),
-            vf(get_batch_size(rbm), rbm.num_visible),
-            h1_a(get_batch_size(rbm), rbm.num_hidden), h1_s(get_batch_size(rbm), rbm.num_hidden),
-            v2_a(get_batch_size(rbm), rbm.num_visible), v2_s(get_batch_size(rbm), rbm.num_visible),
-            h2_a(get_batch_size(rbm), rbm.num_hidden), h2_s(get_batch_size(rbm), rbm.num_hidden),
-            ht(get_batch_size(rbm), rbm.num_hidden), vt(get_batch_size(rbm), rbm.num_visible),
-            w_grad_b(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden),
-            w_grad(rbm.num_visible, rbm.num_hidden), b_grad(rbm.num_hidden), c_grad(rbm.num_visible),
-            w_inc(rbm.num_visible, rbm.num_hidden, static_cast<weight>(0.0)), b_inc(rbm.num_hidden, static_cast<weight>(0.0)), c_inc(rbm.num_visible, static_cast<weight>(0.0)),
-            q_global_t(0.0), q_local_batch(rbm.num_hidden), q_local_t(rbm.num_hidden, static_cast<weight>(0.0)),
-            p_h_a(get_batch_size(rbm), rbm.num_hidden), p_h_s(get_batch_size(rbm), rbm.num_hidden)
-    {
+    template <bool M = layer_traits<rbm_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
+    base_cd_trainer(rbm_t& rbm)
+            : rbm(rbm),
+              v1(get_batch_size(rbm), rbm.num_visible),
+              vf(get_batch_size(rbm), rbm.num_visible),
+              h1_a(get_batch_size(rbm), rbm.num_hidden),
+              h1_s(get_batch_size(rbm), rbm.num_hidden),
+              v2_a(get_batch_size(rbm), rbm.num_visible),
+              v2_s(get_batch_size(rbm), rbm.num_visible),
+              h2_a(get_batch_size(rbm), rbm.num_hidden),
+              h2_s(get_batch_size(rbm), rbm.num_hidden),
+              ht(get_batch_size(rbm), rbm.num_hidden),
+              vt(get_batch_size(rbm), rbm.num_visible),
+              w_grad_b(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden),
+              w_grad(rbm.num_visible, rbm.num_hidden),
+              b_grad(rbm.num_hidden),
+              c_grad(rbm.num_visible),
+              w_inc(rbm.num_visible, rbm.num_hidden, static_cast<weight>(0.0)),
+              b_inc(rbm.num_hidden, static_cast<weight>(0.0)),
+              c_inc(rbm.num_visible, static_cast<weight>(0.0)),
+              q_global_t(0.0),
+              q_local_batch(rbm.num_hidden),
+              q_local_t(rbm.num_hidden, static_cast<weight>(0.0)),
+              p_h_a(get_batch_size(rbm), rbm.num_hidden),
+              p_h_s(get_batch_size(rbm), rbm.num_hidden) {
         static_assert(layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
-    void update(RBM& rbm){
+    void update(RBM& rbm) {
         update_normal(rbm, *this);
     }
 
-    template<typename T>
-    void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
+    template <typename T>
+    void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context) {
         train_normal<Persistent, N>(input_batch, expected_batch, context, rbm, *this);
     }
 
-    static std::string name(){
-        return
-                std::string("")
-            +   (Persistent ? "Persistent " : "")
-            +   (Denoising ? "Denoising " : "")
-            +   "Contrastive Divergence (dynamic)";
+    static std::string name() {
+        return std::string("") + (Persistent ? "Persistent " : "") + (Denoising ? "Denoising " : "") + "Contrastive Divergence (dynamic)";
     }
 };
 
@@ -829,14 +845,14 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
  *
  * This class provides update which applies the gradients to the RBM.
  */
-template<std::size_t N, typename RBM, bool Persistent, bool Denoising>
+template <std::size_t N, typename RBM, bool Persistent, bool Denoising>
 struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_traits<RBM>::is_convolutional_rbm_layer()>> : base_trainer<RBM> {
     static_assert(N > 0, "(P)CD-0 is not a valid training method");
 
     using rbm_t = RBM;
 
-    static constexpr const auto K = rbm_t::K;
-    static constexpr const auto NC = rbm_t::NC;
+    static constexpr const auto K   = rbm_t::K;
+    static constexpr const auto NC  = rbm_t::NC;
     static constexpr const auto NV1 = rbm_t::NV1;
     static constexpr const auto NV2 = rbm_t::NV2;
     static constexpr const auto NH1 = rbm_t::NH1;
@@ -845,16 +861,16 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
     static constexpr const auto NW2 = rbm_t::NW2;
 
     static constexpr const auto batch_size = layer_traits<rbm_t>::batch_size();
-    static constexpr const bool memory = layer_traits<rbm_t>::is_memory();
+    static constexpr const bool memory     = layer_traits<rbm_t>::is_memory();
 
     typedef typename rbm_t::weight weight;
 
     rbm_t& rbm;
 
     //Gradients
-    etl::fast_matrix<weight, NC, K, NW1, NW2> w_grad;  //Gradients of shared weights
-    etl::fast_vector<weight, K> b_grad;              //Gradients of hidden biases bk
-    etl::fast_vector<weight, NC> c_grad;             //Visible gradient
+    etl::fast_matrix<weight, NC, K, NW1, NW2> w_grad; //Gradients of shared weights
+    etl::fast_vector<weight, K> b_grad;               //Gradients of hidden biases bk
+    etl::fast_vector<weight, NC> c_grad;              //Visible gradient
 
     //{{{ Momentum
 
@@ -894,7 +910,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
     etl::fast_matrix<weight, batch_size, NC, K, NW1, NW2> w_pos;
     etl::fast_matrix<weight, batch_size, NC, K, NW1, NW2> w_neg;
 
-    etl::fast_matrix<weight, batch_size, NC, NV1, NV2> v1; //Input
+    etl::fast_matrix<weight, batch_size, NC, NV1, NV2> v1;                     //Input
     conditional_fast_matrix_t<Denoising, weight, batch_size, NC, NV1, NV2> vf; //Expected
 
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> h1_a;
@@ -908,50 +924,56 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
 
     cpp::thread_pool<!layer_traits<rbm_t>::is_serial()> pool;
 
-    template<bool M = layer_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
-    base_cd_trainer(rbm_t& rbm) : rbm(rbm),
-            q_global_t(0.0), q_local_t(0.0),
-            w_bias(0.0), b_bias(0.0), c_bias(0.0) {
+    template <bool M = layer_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
+    base_cd_trainer(rbm_t& rbm)
+            : rbm(rbm),
+              q_global_t(0.0),
+              q_local_t(0.0),
+              w_bias(0.0),
+              b_bias(0.0),
+              c_bias(0.0) {
         static_assert(!layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
-    template<bool M = layer_traits<rbm_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
-    base_cd_trainer(rbm_t& rbm) : rbm(rbm),
-            w_inc(0.0), b_inc(0.0), c_inc(0.0),
-            q_global_t(0.0), q_local_t(0.0),
-            w_bias(0.0), b_bias(0.0), c_bias(0.0) {
+    template <bool M = layer_traits<rbm_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
+    base_cd_trainer(rbm_t& rbm)
+            : rbm(rbm),
+              w_inc(0.0),
+              b_inc(0.0),
+              c_inc(0.0),
+              q_global_t(0.0),
+              q_local_t(0.0),
+              w_bias(0.0),
+              b_bias(0.0),
+              c_bias(0.0) {
         static_assert(layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
-    void update(RBM& rbm){
+    void update(RBM& rbm) {
         update_convolutional(rbm, *this);
     }
 
-    template<typename T>
-    void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context){
+    template <typename T>
+    void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context) {
         train_convolutional<Persistent, Denoising, N>(input_batch, expected_batch, context, rbm, *this);
     }
 
-    static std::string name(){
-        return
-                std::string("")
-            +   (Persistent ? "Persistent " : "")
-            +   (Denoising ? "Denoising " : "")
-            +   "Contrastive Divergence (convolutional)";
+    static std::string name() {
+        return std::string("") + (Persistent ? "Persistent " : "") + (Denoising ? "Denoising " : "") + "Contrastive Divergence (convolutional)";
     }
 };
 
 /*!
  * \brief Contrastive Divergence Trainer for RBM.
  */
-template<std::size_t N, typename RBM, bool Denoising, typename Enable = void>
-using cd_trainer = base_cd_trainer<N, RBM, false, Denoising>;
+template <std::size_t N, typename RBM, bool Denoising, typename Enable = void>
+using cd_trainer                                                       = base_cd_trainer<N, RBM, false, Denoising>;
 
 /*!
  * \brief Persistent Contrastive Divergence Trainer for RBM.
  */
-template<std::size_t N, typename RBM, bool Denoising, typename Enable = void>
-using persistent_cd_trainer = base_cd_trainer<N, RBM, true, Denoising>;
+template <std::size_t N, typename RBM, bool Denoising, typename Enable = void>
+using persistent_cd_trainer                                            = base_cd_trainer<N, RBM, true, Denoising>;
 
 /*!
  * \brief CD-1 trainer for RBM

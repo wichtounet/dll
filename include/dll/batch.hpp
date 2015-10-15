@@ -14,17 +14,17 @@
 
 namespace dll {
 
-template<typename Iterator>
+template <typename Iterator>
 struct batch {
-    using size_type = std::size_t;
+    using size_type  = std::size_t;
     using value_type = typename std::decay_t<Iterator>::value_type;
 
     Iterator first;
     Iterator last;
 
-    batch(Iterator&& first, Iterator&& last):
-            first(std::forward<Iterator>(first)),
-            last(std::forward<Iterator>(last)){
+    batch(Iterator&& first, Iterator&& last)
+            : first(std::forward<Iterator>(first)),
+              last(std::forward<Iterator>(last)) {
         cpp_assert(std::distance(first, last) > 0, "Batch cannot be empty or reversed");
     }
 
@@ -41,8 +41,8 @@ struct batch {
     }
 };
 
-template<typename Iterator>
-batch<Iterator> make_batch(Iterator&& first, Iterator&& last){
+template <typename Iterator>
+batch<Iterator> make_batch(Iterator&& first, Iterator&& last) {
     return {std::forward<Iterator>(first), std::forward<Iterator>(last)};
 }
 

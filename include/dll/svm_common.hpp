@@ -17,21 +17,21 @@
 
 namespace dll {
 
-inline svm_parameter default_svm_parameters(){
+inline svm_parameter default_svm_parameters() {
     auto parameters = svm::default_parameters();
 
-    parameters.svm_type = C_SVC;
+    parameters.svm_type    = C_SVC;
     parameters.kernel_type = RBF;
     parameters.probability = 1;
-    parameters.C = 2.8;
-    parameters.gamma = 0.0073;
+    parameters.C           = 2.8;
+    parameters.gamma       = 0.0073;
 
     return parameters;
 }
 
-template<typename DBN>
-void svm_store(const DBN& dbn, std::ostream& os){
-    if(dbn.svm_loaded){
+template <typename DBN>
+void svm_store(const DBN& dbn, std::ostream& os) {
+    if (dbn.svm_loaded) {
         binary_write(os, true);
 
         svm::save(dbn.svm_model, "..tmp.svm");
@@ -40,10 +40,10 @@ void svm_store(const DBN& dbn, std::ostream& os){
 
         char buffer[1024];
 
-        while(true){
+        while (true) {
             svm_is.read(buffer, 1024);
 
-            if(svm_is.gcount() == 0){
+            if (svm_is.gcount() == 0) {
                 break;
             }
 
@@ -54,23 +54,23 @@ void svm_store(const DBN& dbn, std::ostream& os){
     }
 }
 
-template<typename DBN>
-void svm_load(DBN& dbn, std::istream& is){
+template <typename DBN>
+void svm_load(DBN& dbn, std::istream& is) {
     dbn.svm_loaded = false;
 
-    if(is.good()){
+    if (is.good()) {
         bool svm;
         binary_load(is, svm);
 
-        if(svm){
+        if (svm) {
             std::ofstream svm_os("..tmp.svm", std::ios::binary);
 
             char buffer[1024];
 
-            while(true){
+            while (true) {
                 is.read(buffer, 1024);
 
-                if(is.gcount() ==0){
+                if (is.gcount() == 0) {
                     break;
                 }
 
@@ -86,35 +86,35 @@ void svm_load(DBN& dbn, std::istream& is){
     }
 }
 
-template<typename DBN, typename Result, typename Sample, cpp::enable_if_u<dbn_traits<std::decay_t<DBN>>::concatenate()> = cpp::detail::dummy>
-void add_activation_probabilities(DBN& dbn, Result& result, Sample& sample){
+template <typename DBN, typename Result, typename Sample, cpp::enable_if_u<dbn_traits<std::decay_t<DBN>>::concatenate()> = cpp::detail::dummy>
+void add_activation_probabilities(DBN& dbn, Result& result, Sample& sample) {
     result.emplace_back(dbn_full_output_size(dbn));
     dbn.full_activation_probabilities(sample, result.back());
 }
 
-template<typename DBN, typename Result, typename Sample, cpp::disable_if_u<dbn_traits<std::decay_t<DBN>>::concatenate()> = cpp::detail::dummy>
-void add_activation_probabilities(DBN& dbn, Result& result, Sample& sample){
+template <typename DBN, typename Result, typename Sample, cpp::disable_if_u<dbn_traits<std::decay_t<DBN>>::concatenate()> = cpp::detail::dummy>
+void add_activation_probabilities(DBN& dbn, Result& result, Sample& sample) {
     result.emplace_back(dbn_output_size(dbn));
     dbn.activation_probabilities(sample, result.back());
 }
 
-template<typename DBN, typename Sample, cpp::enable_if_u<dbn_traits<std::decay_t<DBN>>::concatenate()> = cpp::detail::dummy>
-etl::dyn_vector<typename DBN::weight> get_activation_probabilities(DBN& dbn, Sample& sample){
+template <typename DBN, typename Sample, cpp::enable_if_u<dbn_traits<std::decay_t<DBN>>::concatenate()> = cpp::detail::dummy>
+etl::dyn_vector<typename DBN::weight> get_activation_probabilities(DBN& dbn, Sample& sample) {
     return dbn.full_activation_probabilities(sample);
 }
 
-template<typename DBN, typename Sample, cpp::disable_if_u<dbn_traits<std::decay_t<DBN>>::concatenate()> = cpp::detail::dummy>
-etl::dyn_vector<typename DBN::weight> get_activation_probabilities(DBN& dbn, Sample& sample){
+template <typename DBN, typename Sample, cpp::disable_if_u<dbn_traits<std::decay_t<DBN>>::concatenate()> = cpp::detail::dummy>
+etl::dyn_vector<typename DBN::weight> get_activation_probabilities(DBN& dbn, Sample& sample) {
     return dbn.activation_probabilities(sample);
 }
 
-template<typename DBN, typename Samples, typename Labels>
-void make_problem(DBN& dbn, const Samples& training_data, const Labels& labels, bool scale = false){
+template <typename DBN, typename Samples, typename Labels>
+void make_problem(DBN& dbn, const Samples& training_data, const Labels& labels, bool scale = false) {
     using svm_samples_t = std::vector<etl::dyn_vector<typename DBN::weight>>;
     svm_samples_t svm_samples;
 
     //Get all the activation probabilities
-    for(auto& sample : training_data){
+    for (auto& sample : training_data) {
         add_activation_probabilities(dbn, svm_samples, sample);
     }
 
@@ -122,12 +122,12 @@ void make_problem(DBN& dbn, const Samples& training_data, const Labels& labels, 
     dbn.problem = svm::make_problem(labels, static_cast<const svm_samples_t&>(svm_samples), scale);
 }
 
-template<typename DBN, typename Iterator, typename LIterator>
-void make_problem(DBN& dbn, Iterator first, Iterator last, LIterator&& lfirst, LIterator&& llast, bool scale = false){
+template <typename DBN, typename Iterator, typename LIterator>
+void make_problem(DBN& dbn, Iterator first, Iterator last, LIterator&& lfirst, LIterator&& llast, bool scale = false) {
     std::vector<etl::dyn_vector<typename DBN::weight>> svm_samples;
 
     //Get all the activation probabilities
-    std::for_each(first, last, [&dbn, &svm_samples](auto& sample){
+    std::for_each(first, last, [&dbn, &svm_samples](auto& sample) {
         add_activation_probabilities(dbn, svm_samples, sample);
     });
 
@@ -138,8 +138,8 @@ void make_problem(DBN& dbn, Iterator first, Iterator last, LIterator&& lfirst, L
         scale);
 }
 
-template<typename DBN, typename Samples, typename Labels>
-bool svm_train(DBN& dbn, const Samples& training_data, const Labels& labels, const svm_parameter& parameters){
+template <typename DBN, typename Samples, typename Labels>
+bool svm_train(DBN& dbn, const Samples& training_data, const Labels& labels, const svm_parameter& parameters) {
     cpp::stop_watch<std::chrono::seconds> watch;
 
     make_problem(dbn, training_data, labels, dbn_traits<DBN>::scale());
@@ -148,7 +148,7 @@ bool svm_train(DBN& dbn, const Samples& training_data, const Labels& labels, con
     svm::make_quiet();
 
     //Make sure parameters are not messed up
-    if(!svm::check(dbn.problem, parameters)){
+    if (!svm::check(dbn.problem, parameters)) {
         return false;
     }
 
@@ -162,20 +162,20 @@ bool svm_train(DBN& dbn, const Samples& training_data, const Labels& labels, con
     return true;
 }
 
-template<typename DBN, typename Iterator, typename LIterator>
-bool svm_train(DBN& dbn, Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, const svm_parameter& parameters){
+template <typename DBN, typename Iterator, typename LIterator>
+bool svm_train(DBN& dbn, Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, const svm_parameter& parameters) {
     cpp::stop_watch<std::chrono::seconds> watch;
 
     make_problem(dbn,
-        std::forward<Iterator>(first), std::forward<Iterator>(last),
-        std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
-        dbn_traits<DBN>::scale());
+                 std::forward<Iterator>(first), std::forward<Iterator>(last),
+                 std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
+                 dbn_traits<DBN>::scale());
 
     //Make libsvm quiet
     svm::make_quiet();
 
     //Make sure parameters are not messed up
-    if(!svm::check(dbn.problem, parameters)){
+    if (!svm::check(dbn.problem, parameters)) {
         return false;
     }
 
@@ -189,8 +189,8 @@ bool svm_train(DBN& dbn, Iterator&& first, Iterator&& last, LIterator&& lfirst, 
     return true;
 }
 
-template<typename DBN, typename Samples, typename Labels>
-bool svm_grid_search(DBN& dbn, const Samples& training_data, const Labels& labels, std::size_t n_fold = 5, const svm::rbf_grid& g = svm::rbf_grid()){
+template <typename DBN, typename Samples, typename Labels>
+bool svm_grid_search(DBN& dbn, const Samples& training_data, const Labels& labels, std::size_t n_fold = 5, const svm::rbf_grid& g = svm::rbf_grid()) {
     make_problem(dbn, training_data, labels, dbn_traits<DBN>::scale());
 
     //Make libsvm quiet
@@ -199,7 +199,7 @@ bool svm_grid_search(DBN& dbn, const Samples& training_data, const Labels& label
     auto parameters = default_svm_parameters();
 
     //Make sure parameters are not messed up
-    if(!svm::check(dbn.problem, parameters)){
+    if (!svm::check(dbn.problem, parameters)) {
         return false;
     }
 
@@ -209,12 +209,12 @@ bool svm_grid_search(DBN& dbn, const Samples& training_data, const Labels& label
     return true;
 }
 
-template<typename DBN, typename Iterator, typename LIterator>
-bool svm_grid_search(DBN& dbn, Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, std::size_t n_fold = 5, const svm::rbf_grid& g = svm::rbf_grid()){
+template <typename DBN, typename Iterator, typename LIterator>
+bool svm_grid_search(DBN& dbn, Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, std::size_t n_fold = 5, const svm::rbf_grid& g = svm::rbf_grid()) {
     make_problem(dbn,
-        std::forward<Iterator>(first), std::forward<Iterator>(last),
-        std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
-        dbn_traits<DBN>::scale());
+                 std::forward<Iterator>(first), std::forward<Iterator>(last),
+                 std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
+                 dbn_traits<DBN>::scale());
 
     //Make libsvm quiet
     svm::make_quiet();
@@ -222,7 +222,7 @@ bool svm_grid_search(DBN& dbn, Iterator&& first, Iterator&& last, LIterator&& lf
     auto parameters = default_svm_parameters();
 
     //Make sure parameters are not messed up
-    if(!svm::check(dbn.problem, parameters)){
+    if (!svm::check(dbn.problem, parameters)) {
         return false;
     }
 
@@ -232,8 +232,8 @@ bool svm_grid_search(DBN& dbn, Iterator&& first, Iterator&& last, LIterator&& lf
     return true;
 }
 
-template<typename DBN, typename Sample>
-double svm_predict(DBN& dbn, const Sample& sample){
+template <typename DBN, typename Sample>
+double svm_predict(DBN& dbn, const Sample& sample) {
     auto features = get_activation_probabilities(dbn, sample);
     return svm::predict(dbn.svm_model, features);
 }

@@ -12,10 +12,9 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE( "unit/dyn_rbm/mnist/1", "[rbm][dyn][momentum][unit]" ) {
+TEST_CASE("unit/dyn_rbm/mnist/1", "[rbm][dyn][momentum][unit]") {
     dll::dyn_rbm_desc<
-        dll::momentum
-    >::rbm_t rbm(28 * 28, 100);
+        dll::momentum>::rbm_t rbm(28 * 28, 100);
 
     rbm.batch_size = 25;
 
@@ -28,11 +27,10 @@ TEST_CASE( "unit/dyn_rbm/mnist/1", "[rbm][dyn][momentum][unit]" ) {
     REQUIRE(error < 5e-2);
 }
 
-TEST_CASE( "unit/dyn_rbm/mnist/2", "[rbm][dyn][gaussian][momentum][unit]" ) {
+TEST_CASE("unit/dyn_rbm/mnist/2", "[rbm][dyn][gaussian][momentum][unit]") {
     dll::dyn_rbm_desc<
-       dll::visible<dll::unit_type::GAUSSIAN>,
-       dll::momentum
-    >::rbm_t rbm(28 * 28, 100);
+        dll::visible<dll::unit_type::GAUSSIAN>,
+        dll::momentum>::rbm_t rbm(28 * 28, 100);
 
     rbm.learning_rate *= 10;
 
@@ -45,11 +43,10 @@ TEST_CASE( "unit/dyn_rbm/mnist/2", "[rbm][dyn][gaussian][momentum][unit]" ) {
     REQUIRE(error < 1e-1);
 }
 
-TEST_CASE( "unit/dyn_rbm/mnist/3", "[rbm][dyn][relu][momentum][unit]" ) {
+TEST_CASE("unit/dyn_rbm/mnist/3", "[rbm][dyn][relu][momentum][unit]") {
     dll::dyn_rbm_desc<
-       dll::hidden<dll::unit_type::RELU>,
-       dll::momentum
-    >::rbm_t rbm(28 * 28, 100);
+        dll::hidden<dll::unit_type::RELU>,
+        dll::momentum>::rbm_t rbm(28 * 28, 100);
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());

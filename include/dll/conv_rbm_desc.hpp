@@ -19,22 +19,22 @@ namespace dll {
  * This struct should be used to define a RBM either as standalone or for a DBN.
  * Once configured, the ::rbm_t member returns the type of the configured RBM.
  */
-template<std::size_t NC_T, std::size_t NV_1, std::size_t NV_2, std::size_t K_T, std::size_t NH_1, std::size_t NH_2, typename... Parameters>
+template <std::size_t NC_T, std::size_t NV_1, std::size_t NV_2, std::size_t K_T, std::size_t NH_1, std::size_t NH_2, typename... Parameters>
 struct conv_rbm_desc {
     static constexpr const std::size_t NV1 = NV_1;
     static constexpr const std::size_t NV2 = NV_2;
     static constexpr const std::size_t NH1 = NH_1;
     static constexpr const std::size_t NH2 = NH_2;
-    static constexpr const std::size_t NC = NC_T;
-    static constexpr const std::size_t K = K_T;
+    static constexpr const std::size_t NC  = NC_T;
+    static constexpr const std::size_t K   = K_T;
 
     using parameters = cpp::type_list<Parameters...>;
 
-    static constexpr const std::size_t BatchSize = detail::get_value<batch_size<1>, Parameters...>::value;
-    static constexpr const unit_type visible_unit = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;
-    static constexpr const unit_type hidden_unit = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
+    static constexpr const std::size_t BatchSize    = detail::get_value<batch_size<1>, Parameters...>::value;
+    static constexpr const unit_type visible_unit   = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;
+    static constexpr const unit_type hidden_unit    = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
     static constexpr const sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;
-    static constexpr const bias_mode Bias = detail::get_value<bias<bias_mode::SIMPLE>, Parameters...>::value;
+    static constexpr const bias_mode Bias           = detail::get_value<bias<bias_mode::SIMPLE>, Parameters...>::value;
 
     /*! The type used to store the weights */
     using weight = typename detail::get_type<weight_type<double>, Parameters...>::value;
@@ -66,14 +66,14 @@ struct conv_rbm_desc {
     //Make sure only valid types are passed to the configuration list
     static_assert(
         detail::is_valid<cpp::type_list<
-                momentum_id, batch_size_id, visible_id, hidden_id, dbn_only_id, memory_id,
-                weight_decay_id, sparsity_id, trainer_rbm_id, watcher_id,
-                bias_id, weight_type_id, shuffle_id, parallel_mode_id, serial_id, verbose_id>
-            , Parameters...>::value,
+                             momentum_id, batch_size_id, visible_id, hidden_id, dbn_only_id, memory_id,
+                             weight_decay_id, sparsity_id, trainer_rbm_id, watcher_id,
+                             bias_id, weight_type_id, shuffle_id, parallel_mode_id, serial_id, verbose_id>,
+                         Parameters...>::value,
         "Invalid parameters type");
 
     static_assert(Sparsity == sparsity_method::NONE || hidden_unit == unit_type::BINARY,
-        "Sparsity only works with binary hidden units");
+                  "Sparsity only works with binary hidden units");
 };
 
 /*!
@@ -82,7 +82,7 @@ struct conv_rbm_desc {
  * This struct should be used to define a RBM either as standalone or for a DBN.
  * Once configured, the ::rbm_t member returns the type of the configured RBM.
  */
-template<std::size_t NC_T, std::size_t NV_T, std::size_t K_T, std::size_t NH_T, typename... Parameters>
+template <std::size_t NC_T, std::size_t NV_T, std::size_t K_T, std::size_t NH_T, typename... Parameters>
 using conv_rbm_desc_square = conv_rbm_desc<NC_T, NV_T, NV_T, K_T, NH_T, NH_T, Parameters...>;
 
 } //end of dll namespace

@@ -24,12 +24,12 @@ using default_dbn_trainer_t = cg_trainer<DBN, false>;
  * This struct should be used to define a DBN.
  * Once configured, the ::dbn_t member returns the type of the configured DBN.
  */
-template<typename Layers, typename... Parameters>
+template <typename Layers, typename... Parameters>
 struct dbn_desc {
-    using layers = Layers;
+    using layers     = Layers;
     using parameters = cpp::type_list<Parameters...>;
 
-    static constexpr const std::size_t BatchSize = detail::get_value<batch_size<1>, Parameters...>::value;
+    static constexpr const std::size_t BatchSize    = detail::get_value<batch_size<1>, Parameters...>::value;
     static constexpr const std::size_t BigBatchSize = detail::get_value<big_batch_size<1>, Parameters...>::value;
 
     /*! The type of the trainer to use to train the DBN */

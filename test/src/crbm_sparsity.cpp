@@ -12,12 +12,11 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE( "crbm/mnist_60", "crbm::global_sparsity" ) {
+TEST_CASE("crbm/mnist_60", "crbm::global_sparsity") {
     using rbm_type = dll::conv_rbm_desc_square<
         1, 28, 40, 12,
         dll::batch_size<25>,
-        dll::sparsity<>
-    >::rbm_t;
+        dll::sparsity<>>::rbm_t;
 
     REQUIRE(dll::layer_traits<rbm_type>::sparsity_method() == dll::sparsity_method::GLOBAL_TARGET);
 
@@ -25,7 +24,7 @@ TEST_CASE( "crbm/mnist_60", "crbm::global_sparsity" ) {
 
     //0.01 (default) is way too low for few hidden units
     rbm.sparsity_target = 0.1;
-    rbm.sparsity_cost = 0.9;
+    rbm.sparsity_cost   = 0.9;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
@@ -39,18 +38,17 @@ TEST_CASE( "crbm/mnist_60", "crbm::global_sparsity" ) {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE( "crbm/mnist_61", "crbm::local_sparsity" ) {
+TEST_CASE("crbm/mnist_61", "crbm::local_sparsity") {
     using rbm_type = dll::conv_rbm_desc_square<
         1, 28, 40, 12,
         dll::batch_size<25>,
-        dll::sparsity<dll::sparsity_method::LOCAL_TARGET>
-    >::rbm_t;
+        dll::sparsity<dll::sparsity_method::LOCAL_TARGET>>::rbm_t;
 
     rbm_type rbm;
 
     //0.01 (default) is way too low for few hidden units
     rbm.sparsity_target = 0.1;
-    rbm.sparsity_cost = 0.9;
+    rbm.sparsity_cost   = 0.9;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
@@ -64,13 +62,12 @@ TEST_CASE( "crbm/mnist_61", "crbm::local_sparsity" ) {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE( "crbm/mnist_11", "crbm::bias_mode_simple" ) {
+TEST_CASE("crbm/mnist_11", "crbm::bias_mode_simple") {
     dll::conv_rbm_desc_square<
         1, 28, 40, 12,
         dll::batch_size<25>,
         dll::momentum,
-        dll::bias<dll::bias_mode::SIMPLE>
-    >::rbm_t rbm;
+        dll::bias<dll::bias_mode::SIMPLE>>::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
@@ -84,13 +81,12 @@ TEST_CASE( "crbm/mnist_11", "crbm::bias_mode_simple" ) {
     REQUIRE(error < 5e-2);
 }
 
-TEST_CASE( "crbm/mnist_12", "crbm::bias_mode_none" ) {
+TEST_CASE("crbm/mnist_12", "crbm::bias_mode_none") {
     dll::conv_rbm_desc_square<
         1, 28, 40, 12,
         dll::batch_size<25>,
         dll::momentum,
-        dll::bias<dll::bias_mode::NONE>
-    >::rbm_t rbm;
+        dll::bias<dll::bias_mode::NONE>>::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 

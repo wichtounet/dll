@@ -12,43 +12,43 @@
 
 namespace dll {
 
-template<typename Desc>
+template <typename Desc>
 struct rbm;
 
-template<typename Desc>
+template <typename Desc>
 struct dyn_rbm;
 
-template<typename Desc>
+template <typename Desc>
 struct conv_rbm;
 
-template<typename Desc>
+template <typename Desc>
 struct conv_rbm_mp;
 
-template<typename Desc>
+template <typename Desc>
 struct mp_layer_3d;
 
-template<typename Desc>
+template <typename Desc>
 struct avgp_layer_3d;
 
-template<typename Desc>
+template <typename Desc>
 struct binarize_layer;
 
-template<typename Desc>
+template <typename Desc>
 struct normalize_layer;
 
-template<typename Desc>
+template <typename Desc>
 struct scale_layer;
 
-template<typename Desc>
+template <typename Desc>
 struct patches_layer;
 
-template<typename Desc>
+template <typename Desc>
 struct patches_layer_padh;
 
-template<typename Desc>
+template <typename Desc>
 struct dense_layer;
 
-template<typename Desc>
+template <typename Desc>
 struct conv_layer;
 
 } //end of dll namespace

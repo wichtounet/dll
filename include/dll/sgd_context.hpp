@@ -17,16 +17,16 @@
 
 namespace dll {
 
-template<typename DBN, typename Layer, typename Enable = void>
+template <typename DBN, typename Layer, typename Enable = void>
 struct sgd_context;
 
-template<typename DBN, typename Layer>
-struct sgd_context <DBN, Layer, std::enable_if_t<is_dense<Layer>::value>> {
+template <typename DBN, typename Layer>
+struct sgd_context<DBN, Layer, std::enable_if_t<is_dense<Layer>::value>> {
     using layer_t = Layer;
-    using weight = typename layer_t::weight;
+    using weight  = typename layer_t::weight;
 
     static constexpr const auto num_visible = layer_t::num_visible;
-    static constexpr const auto num_hidden = layer_t::num_hidden;
+    static constexpr const auto num_hidden  = layer_t::num_hidden;
 
     static constexpr const auto batch_size = DBN::batch_size;
 
@@ -39,13 +39,14 @@ struct sgd_context <DBN, Layer, std::enable_if_t<is_dense<Layer>::value>> {
     etl::fast_matrix<weight, batch_size, num_hidden> output;
     etl::fast_matrix<weight, batch_size, num_hidden> errors;
 
-    sgd_context() : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
+    sgd_context()
+            : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
 };
 
-template<typename DBN, typename Layer>
-struct sgd_context <DBN, Layer, std::enable_if_t<is_conv<Layer>::value>> {
+template <typename DBN, typename Layer>
+struct sgd_context<DBN, Layer, std::enable_if_t<is_conv<Layer>::value>> {
     using layer_t = Layer;
-    using weight = typename layer_t::weight;
+    using weight  = typename layer_t::weight;
 
     static_assert(!layer_traits<layer_t>::has_probabilistic_max_pooling(), "Probabilistic Max Pooling is not supported in backpropagation");
 
@@ -55,8 +56,8 @@ struct sgd_context <DBN, Layer, std::enable_if_t<is_conv<Layer>::value>> {
     static constexpr const std::size_t NH2 = layer_t::NH2;
     static constexpr const std::size_t NW1 = layer_t::NW1;
     static constexpr const std::size_t NW2 = layer_t::NW2;
-    static constexpr const std::size_t NC = layer_t::NC;
-    static constexpr const std::size_t K = layer_t::K;
+    static constexpr const std::size_t NC  = layer_t::NC;
+    static constexpr const std::size_t K   = layer_t::K;
 
     static constexpr const auto batch_size = DBN::batch_size;
 
@@ -69,13 +70,14 @@ struct sgd_context <DBN, Layer, std::enable_if_t<is_conv<Layer>::value>> {
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> output;
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> errors;
 
-    sgd_context() : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
+    sgd_context()
+            : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
 };
 
-template<typename DBN, typename Layer>
-struct sgd_context <DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_pooling_layer()>> {
+template <typename DBN, typename Layer>
+struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_pooling_layer()>> {
     using layer_t = Layer;
-    using weight = typename layer_t::weight;
+    using weight  = typename layer_t::weight;
 
     static constexpr const std::size_t I1 = layer_t::I1;
     static constexpr const std::size_t I2 = layer_t::I2;
@@ -92,10 +94,10 @@ struct sgd_context <DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_pooling
     etl::fast_matrix<weight, batch_size, O1, O2, O3> errors;
 };
 
-template<typename DBN, typename Layer>
-struct sgd_context <DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_transform_layer()>> {
+template <typename DBN, typename Layer>
+struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_transform_layer()>> {
     using layer_t = Layer;
-    using weight = typename DBN::weight;
+    using weight  = typename DBN::weight;
 
     static constexpr const auto batch_size = DBN::batch_size;
 

@@ -14,13 +14,12 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE( "rbm/mnist_3", "rbm::pcd_trainer" ) {
+TEST_CASE("rbm/mnist_3", "rbm::pcd_trainer") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
         dll::momentum,
-        dll::trainer_rbm<dll::pcd1_trainer_t>
-    >::rbm_t rbm;
+        dll::trainer_rbm<dll::pcd1_trainer_t>>::rbm_t rbm;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -33,14 +32,13 @@ TEST_CASE( "rbm/mnist_3", "rbm::pcd_trainer" ) {
 }
 
 //TODO Still not very convincing
-TEST_CASE( "rbm/mnist_15", "rbm::pcd_gaussian" ) {
+TEST_CASE("rbm/mnist_15", "rbm::pcd_gaussian") {
     dll::rbm_desc<
         28 * 28, 144,
-       dll::batch_size<25>,
-       dll::momentum,
-       dll::trainer_rbm<dll::pcd1_trainer_t>,
-       dll::visible<dll::unit_type::GAUSSIAN>
-    >::rbm_t rbm;
+        dll::batch_size<25>,
+        dll::momentum,
+        dll::trainer_rbm<dll::pcd1_trainer_t>,
+        dll::visible<dll::unit_type::GAUSSIAN>>::rbm_t rbm;
 
     rbm.learning_rate /= 20.0;
 

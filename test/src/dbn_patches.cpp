@@ -20,12 +20,12 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE( "dbn/mnist/patches/1", "[dbn][conv][mnist][patches]" ) {
+TEST_CASE("dbn/mnist/patches/1", "[dbn][conv][mnist][patches]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::patches_layer_desc<14, 14, 14, 14>::layer_t,
-        dll::conv_rbm_desc_square<1, 14, 20, 10, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::conv_rbm_desc_square<20, 10, 20, 6, dll::momentum, dll::batch_size<25>>::rbm_t>>::dbn_t dbn_t;
+            dll::patches_layer_desc<14, 14, 14, 14>::layer_t,
+            dll::conv_rbm_desc_square<1, 14, 20, 10, dll::momentum, dll::batch_size<25>>::rbm_t,
+            dll::conv_rbm_desc_square<20, 10, 20, 6, dll::momentum, dll::batch_size<25>>::rbm_t>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(500);
     REQUIRE(!dataset.training_images.empty());
@@ -40,7 +40,7 @@ TEST_CASE( "dbn/mnist/patches/1", "[dbn][conv][mnist][patches]" ) {
     REQUIRE(probs.size() == 4);
 }
 
-TEST_CASE( "dbn/mnist/patches/2", "[dbn][conv][mnist][patches][memory]" ) {
+TEST_CASE("dbn/mnist/patches/2", "[dbn][conv][mnist][patches][memory]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::patches_layer_desc<14, 14, 14, 14>::layer_t,
@@ -61,12 +61,12 @@ TEST_CASE( "dbn/mnist/patches/2", "[dbn][conv][mnist][patches][memory]" ) {
     REQUIRE(probs.size() == 4);
 }
 
-TEST_CASE( "dbn/mnist/patches/3", "[dbn][conv][mnist][patches]" ) {
+TEST_CASE("dbn/mnist/patches/3", "[dbn][conv][mnist][patches]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::patches_layer_padh_desc<14, 14, 14, 14, 1>::layer_t,
-        dll::conv_rbm_desc_square<1, 14, 20, 10, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::conv_rbm_desc_square<20, 10, 20, 6, dll::momentum, dll::batch_size<25>>::rbm_t>>::dbn_t dbn_t;
+            dll::patches_layer_padh_desc<14, 14, 14, 14, 1>::layer_t,
+            dll::conv_rbm_desc_square<1, 14, 20, 10, dll::momentum, dll::batch_size<25>>::rbm_t,
+            dll::conv_rbm_desc_square<20, 10, 20, 6, dll::momentum, dll::batch_size<25>>::rbm_t>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(500);
     REQUIRE(!dataset.training_images.empty());
@@ -81,7 +81,7 @@ TEST_CASE( "dbn/mnist/patches/3", "[dbn][conv][mnist][patches]" ) {
     REQUIRE(probs.size() == 4);
 }
 
-TEST_CASE( "dbn/mnist/patches/4", "[dbn][conv][mnist][patches][memory]" ) {
+TEST_CASE("dbn/mnist/patches/4", "[dbn][conv][mnist][patches][memory]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::patches_layer_padh_desc<14, 14, 14, 14, 1>::layer_t,

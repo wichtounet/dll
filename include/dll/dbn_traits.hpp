@@ -16,10 +16,10 @@ namespace dll {
 /*!
  * \brief Type Traits to get information on DBN type
  */
-template<typename DBN>
+template <typename DBN>
 struct dbn_traits {
     using dbn_t = DBN;
-    using desc = typename dbn_t::desc;
+    using desc  = typename dbn_t::desc;
 
     /*!
      * \brief Indicates if the DBN is convolutional
@@ -77,43 +77,43 @@ struct dbn_traits {
 
 /** Functions to get the dimensions of DBN regardless of dynamic or not **/
 
-template<typename DBN, cpp::disable_if_u<dbn_traits<DBN>::is_dynamic()> = cpp::detail::dummy>
-constexpr std::size_t dbn_output_size(const DBN& /*dbn*/){
+template <typename DBN, cpp::disable_if_u<dbn_traits<DBN>::is_dynamic()> = cpp::detail::dummy>
+constexpr std::size_t dbn_output_size(const DBN& /*dbn*/) {
     return DBN::output_size();
 }
 
-template<typename DBN, cpp::enable_if_u<dbn_traits<DBN>::is_dynamic()> = cpp::detail::dummy>
-std::size_t dbn_output_size(const DBN& dbn){
+template <typename DBN, cpp::enable_if_u<dbn_traits<DBN>::is_dynamic()> = cpp::detail::dummy>
+std::size_t dbn_output_size(const DBN& dbn) {
     return dbn.output_size();
 }
 
-template<typename DBN, cpp::disable_if_u<dbn_traits<DBN>::is_dynamic()> = cpp::detail::dummy>
-constexpr std::size_t dbn_full_output_size(const DBN& /*dbn*/){
+template <typename DBN, cpp::disable_if_u<dbn_traits<DBN>::is_dynamic()> = cpp::detail::dummy>
+constexpr std::size_t dbn_full_output_size(const DBN& /*dbn*/) {
     return DBN::full_output_size();
 }
 
-template<typename DBN, cpp::enable_if_u<dbn_traits<DBN>::is_dynamic()> = cpp::detail::dummy>
-std::size_t dbn_full_output_size(const DBN& dbn){
+template <typename DBN, cpp::enable_if_u<dbn_traits<DBN>::is_dynamic()> = cpp::detail::dummy>
+std::size_t dbn_full_output_size(const DBN& dbn) {
     return dbn.full_output_size();
 }
 
-template<typename DBN, cpp::disable_if_u<dbn_traits<DBN>::is_dynamic()> = cpp::detail::dummy>
-constexpr std::size_t dbn_input_size(const DBN& /*dbn*/){
+template <typename DBN, cpp::disable_if_u<dbn_traits<DBN>::is_dynamic()> = cpp::detail::dummy>
+constexpr std::size_t dbn_input_size(const DBN& /*dbn*/) {
     return DBN::input_size();
 }
 
-template<typename DBN, cpp::enable_if_u<dbn_traits<DBN>::is_dynamic()> = cpp::detail::dummy>
-std::size_t dbn_input_size(const DBN& dbn){
+template <typename DBN, cpp::enable_if_u<dbn_traits<DBN>::is_dynamic()> = cpp::detail::dummy>
+std::size_t dbn_input_size(const DBN& dbn) {
     return dbn.input_size();
 }
 
-template<typename DBN, cpp::disable_if_u<dbn_traits<DBN>::is_dynamic()> = cpp::detail::dummy>
-constexpr std::size_t dbn_full_input_size(const DBN& /*dbn*/){
+template <typename DBN, cpp::disable_if_u<dbn_traits<DBN>::is_dynamic()> = cpp::detail::dummy>
+constexpr std::size_t dbn_full_input_size(const DBN& /*dbn*/) {
     return DBN::full_input_size();
 }
 
-template<typename DBN, cpp::enable_if_u<dbn_traits<DBN>::is_dynamic()> = cpp::detail::dummy>
-std::size_t dbn_full_input_size(const DBN& dbn){
+template <typename DBN, cpp::enable_if_u<dbn_traits<DBN>::is_dynamic()> = cpp::detail::dummy>
+std::size_t dbn_full_input_size(const DBN& dbn) {
     return dbn.full_input_size();
 }
 

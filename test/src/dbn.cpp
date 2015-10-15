@@ -14,14 +14,13 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE( "dbn/mnist_1", "dbn::simple" ) {
+TEST_CASE("dbn/mnist_1", "dbn::simple") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
-        , dll::batch_size<50>
-    >::dbn_t dbn_t;
+            dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
+            dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
+            dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
+        dll::batch_size<50>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(500);
 
@@ -43,14 +42,13 @@ TEST_CASE( "dbn/mnist_1", "dbn::simple" ) {
     REQUIRE(test_error < 0.2);
 }
 
-TEST_CASE( "dbn/mnist_2", "dbn::containers" ) {
+TEST_CASE("dbn/mnist_2", "dbn::containers") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
-        , dll::batch_size<50>
-    >::dbn_t dbn_t;
+            dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
+            dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
+            dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
+        dll::batch_size<50>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(500);
 
@@ -68,7 +66,7 @@ TEST_CASE( "dbn/mnist_2", "dbn::containers" ) {
     REQUIRE(error < 5e-2);
 }
 
-TEST_CASE( "dbn/mnist_3", "dbn::labels" ) {
+TEST_CASE("dbn/mnist_3", "dbn::labels") {
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(1000);
     REQUIRE(!dataset.training_images.empty());
 
@@ -76,11 +74,10 @@ TEST_CASE( "dbn/mnist_3", "dbn::labels" ) {
 
     typedef dll::dbn_desc<
         dll::dbn_label_layers<
-        dll::rbm_desc<28 * 28, 200, dll::batch_size<50>, dll::init_weights, dll::momentum>::rbm_t,
-        dll::rbm_desc<200, 300, dll::batch_size<50>, dll::momentum>::rbm_t,
-        dll::rbm_desc<310, 500, dll::batch_size<50>, dll::momentum>::rbm_t>
-        , dll::batch_size<10>
-    >::dbn_t dbn_t;
+            dll::rbm_desc<28 * 28, 200, dll::batch_size<50>, dll::init_weights, dll::momentum>::rbm_t,
+            dll::rbm_desc<200, 300, dll::batch_size<50>, dll::momentum>::rbm_t,
+            dll::rbm_desc<310, 500, dll::batch_size<50>, dll::momentum>::rbm_t>,
+        dll::batch_size<10>>::dbn_t dbn_t;
 
     auto dbn = std::make_unique<dbn_t>();
 
@@ -91,14 +88,13 @@ TEST_CASE( "dbn/mnist_3", "dbn::labels" ) {
     REQUIRE(error < 0.3);
 }
 
-TEST_CASE( "dbn/mnist_6", "dbn::cg_gaussian" ) {
+TEST_CASE("dbn/mnist_6", "dbn::cg_gaussian") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 200, dll::momentum, dll::batch_size<25>, dll::visible<dll::unit_type::GAUSSIAN>>::rbm_t,
-        dll::rbm_desc<200, 500, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<500, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
-        , dll::batch_size<50>
-    >::dbn_t dbn_t;
+            dll::rbm_desc<28 * 28, 200, dll::momentum, dll::batch_size<25>, dll::visible<dll::unit_type::GAUSSIAN>>::rbm_t,
+            dll::rbm_desc<200, 500, dll::momentum, dll::batch_size<25>>::rbm_t,
+            dll::rbm_desc<500, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
+        dll::batch_size<50>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(1000);
 
@@ -121,14 +117,13 @@ TEST_CASE( "dbn/mnist_6", "dbn::cg_gaussian" ) {
 }
 
 //This test should not perform well, but should not fail
-TEST_CASE( "dbn/mnist_8", "dbn::cg_relu" ) {
+TEST_CASE("dbn/mnist_8", "dbn::cg_relu") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::RELU>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
-        , dll::batch_size<50>
-    >::dbn_t dbn_t;
+            dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::RELU>, dll::init_weights>::rbm_t,
+            dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
+            dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
+        dll::batch_size<50>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(200);
 
@@ -148,14 +143,13 @@ TEST_CASE( "dbn/mnist_8", "dbn::cg_relu" ) {
     std::cout << "test_error:" << test_error << std::endl;
 }
 
-TEST_CASE( "dbn/mnist_15", "dbn::parallel" ) {
+TEST_CASE("dbn/mnist_15", "dbn::parallel") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::parallel_mode, dll::batch_size<25>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<100, 200, dll::momentum, dll::parallel_mode, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<200, 10, dll::momentum, dll::parallel_mode, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
-        , dll::batch_size<50>
-    >::dbn_t dbn_t;
+            dll::rbm_desc<28 * 28, 100, dll::momentum, dll::parallel_mode, dll::batch_size<25>, dll::init_weights>::rbm_t,
+            dll::rbm_desc<100, 200, dll::momentum, dll::parallel_mode, dll::batch_size<25>>::rbm_t,
+            dll::rbm_desc<200, 10, dll::momentum, dll::parallel_mode, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
+        dll::batch_size<50>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(500);
 
@@ -177,16 +171,13 @@ TEST_CASE( "dbn/mnist_15", "dbn::parallel" ) {
     REQUIRE(test_error < 0.2);
 }
 
-TEST_CASE( "dbn/mnist_17", "dbn::memory" ) {
+TEST_CASE("dbn/mnist_17", "dbn::memory") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-        dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
-        dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
-        dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>
-    , dll::memory
-    , dll::batch_size<50>
-    , dll::big_batch_size<3>
-    >::dbn_t dbn_t;
+            dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::rbm_t,
+            dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
+            dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::rbm_t>,
+        dll::memory, dll::batch_size<50>, dll::big_batch_size<3>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(1078);
 

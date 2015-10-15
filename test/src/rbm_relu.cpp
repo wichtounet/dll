@@ -14,12 +14,11 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE( "rbm/mnist_9", "rbm::relu" ) {
+TEST_CASE("rbm/mnist_9", "rbm::relu") {
     dll::rbm_desc<
         28 * 28, 100,
-       dll::batch_size<25>,
-       dll::hidden<dll::unit_type::RELU>
-    >::rbm_t rbm;
+        dll::batch_size<25>,
+        dll::hidden<dll::unit_type::RELU>>::rbm_t rbm;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -31,12 +30,11 @@ TEST_CASE( "rbm/mnist_9", "rbm::relu" ) {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE( "rbm/mnist_10", "rbm::relu1" ) {
+TEST_CASE("rbm/mnist_10", "rbm::relu1") {
     dll::rbm_desc<
         28 * 28, 100,
-       dll::batch_size<25>,
-       dll::hidden<dll::unit_type::RELU1>
-    >::rbm_t rbm;
+        dll::batch_size<25>,
+        dll::hidden<dll::unit_type::RELU1>>::rbm_t rbm;
 
     rbm.learning_rate *= 2.0;
 
@@ -50,12 +48,11 @@ TEST_CASE( "rbm/mnist_10", "rbm::relu1" ) {
     REQUIRE(error < 1e-1);
 }
 
-TEST_CASE( "rbm/mnist_11", "rbm::relu6" ) {
+TEST_CASE("rbm/mnist_11", "rbm::relu6") {
     dll::rbm_desc<
         28 * 28, 100,
-       dll::batch_size<25>,
-       dll::hidden<dll::unit_type::RELU6>
-    >::rbm_t rbm;
+        dll::batch_size<25>,
+        dll::hidden<dll::unit_type::RELU6>>::rbm_t rbm;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());

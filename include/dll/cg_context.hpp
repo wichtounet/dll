@@ -15,22 +15,22 @@
 
 namespace dll {
 
-template<typename RBM>
+template <typename RBM>
 struct cg_context {};
 
 //Foward
-template<typename Desc>
+template <typename Desc>
 struct rbm;
 
-template<typename Desc>
-struct cg_context <rbm<Desc>> {
-    using rbm_t = rbm<Desc>;
+template <typename Desc>
+struct cg_context<rbm<Desc>> {
+    using rbm_t  = rbm<Desc>;
     using weight = typename rbm_t::weight;
 
     static constexpr const bool is_trained = true;
 
     static constexpr const std::size_t num_visible = rbm_t::num_visible;
-    static constexpr const std::size_t num_hidden = rbm_t::num_hidden;
+    static constexpr const std::size_t num_hidden  = rbm_t::num_hidden;
 
     etl::fast_matrix<weight, num_visible, num_hidden> gr_w_incs;
     etl::fast_vector<weight, num_hidden> gr_b_incs;
@@ -58,18 +58,18 @@ struct cg_context <rbm<Desc>> {
 };
 
 //Forward
-template<typename Desc>
+template <typename Desc>
 struct binarize_layer;
 
-template<typename Desc>
-struct cg_context <binarize_layer<Desc>> {
-    using rbm_t = binarize_layer<Desc>;
+template <typename Desc>
+struct cg_context<binarize_layer<Desc>> {
+    using rbm_t  = binarize_layer<Desc>;
     using weight = double;
 
     static constexpr const bool is_trained = false;
 
     static constexpr const std::size_t num_visible = 1;
-    static constexpr const std::size_t num_hidden = 1;
+    static constexpr const std::size_t num_hidden  = 1;
 
     etl::fast_matrix<weight, 1, 1> gr_w_incs;
     etl::fast_vector<weight, 1> gr_b_incs;

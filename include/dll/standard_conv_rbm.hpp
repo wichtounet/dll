@@ -8,8 +8,8 @@
 #ifndef DLL_STANDARD_CONV_RBM_HPP
 #define DLL_STANDARD_CONV_RBM_HPP
 
-#include "base_conf.hpp"          //The configuration helpers
-#include "rbm_base.hpp"           //The base class
+#include "base_conf.hpp" //The configuration helpers
+#include "rbm_base.hpp"  //The base class
 #include "layer_traits.hpp"
 #include "checks.hpp"
 
@@ -21,38 +21,38 @@ namespace dll {
  * This follows the definition of a CRBM by Honglak Lee. This is an "abstract" class,
  * using CRTP to inject features into its children.
  */
-template<typename Parent, typename Desc>
+template <typename Parent, typename Desc>
 struct standard_conv_rbm : public rbm_base<Parent, Desc> {
-    using desc = Desc;
-    using parent_t = Parent;
+    using desc      = Desc;
+    using parent_t  = Parent;
     using this_type = standard_conv_rbm<parent_t, desc>;
     using base_type = rbm_base<parent_t, Desc>;
-    using weight = typename desc::weight;
+    using weight    = typename desc::weight;
 
     static constexpr const unit_type visible_unit = desc::visible_unit;
-    static constexpr const unit_type hidden_unit = desc::hidden_unit;
+    static constexpr const unit_type hidden_unit  = desc::hidden_unit;
 
     static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN,
-        "Only binary and linear visible units are supported");
+                  "Only binary and linear visible units are supported");
     static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit),
-        "Only binary hidden units are supported");
+                  "Only binary hidden units are supported");
 
     double std_gaussian = 0.2;
-    double c_sigm = 1.0;
+    double c_sigm       = 1.0;
 
     //Constructors
 
-    standard_conv_rbm(){
+    standard_conv_rbm() {
         //Note: Convolutional RBM needs lower learning rate than standard RBM
 
         //Better initialization of learning rate
         base_type::learning_rate =
-                visible_unit == unit_type::GAUSSIAN  ?             1e-5
-            :   is_relu(hidden_unit)                 ?             1e-4
-            :   /* Only Gaussian Units needs lower rate */         1e-3;
+            visible_unit == unit_type::GAUSSIAN ? 1e-5
+                                                : is_relu(hidden_unit) ? 1e-4
+                                                                       : /* Only Gaussian Units needs lower rate */ 1e-3;
     }
 
-    parent_t& as_derived(){
+    parent_t& as_derived() {
         return *static_cast<parent_t*>(this);
     }
 
@@ -62,8 +62,8 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
 
     //Utility functions
 
-    template<typename Sample>
-    void reconstruct(const Sample& items){
+    template <typename Sample>
+    void reconstruct(const Sample& items) {
         reconstruct(items, as_derived());
     }
 
@@ -84,20 +84,19 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
     }
 
 protected:
-
-    template<typename W>
-    static void deep_fflip(W&& w_f){
+    template <typename W>
+    static void deep_fflip(W&& w_f) {
         //flip all the kernels horizontally and vertically
 
-        for(std::size_t channel = 0; channel < etl::dim<0>(w_f); ++channel){
-            for(size_t k = 0; k < etl::dim<1>(w_f); ++k){
+        for (std::size_t channel = 0; channel < etl::dim<0>(w_f); ++channel) {
+            for (size_t k = 0; k < etl::dim<1>(w_f); ++k) {
                 w_f(channel)(k).fflip_inplace();
             }
         }
     }
 
-    template<typename L, typename V1, typename VCV, typename W>
-    static void compute_vcv(const V1& v_a, VCV&& v_cv, W&& w){
+    template <typename L, typename V1, typename VCV, typename W>
+    static void compute_vcv(const V1& v_a, VCV&& v_cv, W&& w) {
         static constexpr const auto NC = L::NC;
 
         auto w_f = etl::force_temporary(w);
@@ -106,7 +105,7 @@ protected:
 
         v_cv(1) = 0;
 
-        for(std::size_t channel = 0; channel < NC; ++channel){
+        for (std::size_t channel = 0; channel < NC; ++channel) {
             etl::conv_2d_valid_multi(v_a(channel), w_f(channel), v_cv(0));
 
             v_cv(1) += v_cv(0);
@@ -115,15 +114,15 @@ protected:
         nan_check_deep(v_cv);
     }
 
-    template<typename L, typename H2, typename HCV, typename W, typename Functor>
-    static void compute_hcv(const H2& h_s, HCV&& h_cv, W&& w, Functor activate){
-        static constexpr const auto K = L::K;
+    template <typename L, typename H2, typename HCV, typename W, typename Functor>
+    static void compute_hcv(const H2& h_s, HCV&& h_cv, W&& w, Functor activate) {
+        static constexpr const auto K  = L::K;
         static constexpr const auto NC = L::NC;
 
-        for(std::size_t channel = 0; channel < NC; ++channel){
+        for (std::size_t channel = 0; channel < NC; ++channel) {
             h_cv(1) = 0.0;
 
-            for(std::size_t k = 0; k < K; ++k){
+            for (std::size_t k = 0; k < K; ++k) {
                 h_cv(0) = etl::fast_conv_2d_full(h_s(k), w(channel)(k));
                 h_cv(1) += h_cv(0);
             }
@@ -134,34 +133,34 @@ protected:
 
 #ifdef ETL_MKL_MODE
 
-    template<typename F1, typename F2>
-    static void deep_pad(const F1& in, F2& out){
-        for(std::size_t outer1 = 0; outer1 < in.template dim<0>(); ++outer1){
-            for(std::size_t outer2 = 0; outer2 < in.template dim<1>(); ++outer2){
+    template <typename F1, typename F2>
+    static void deep_pad(const F1& in, F2& out) {
+        for (std::size_t outer1 = 0; outer1 < in.template dim<0>(); ++outer1) {
+            for (std::size_t outer2 = 0; outer2 < in.template dim<1>(); ++outer2) {
                 auto* direct = out(outer1)(outer2).memory_start();
-                for(std::size_t i = 0; i < in.template dim<2>(); ++i){
-                    for(std::size_t j = 0; j < in.template dim<3>(); ++j){
-                        direct[i * out.template dim<3>() + j] = in(outer1,outer2,i,j);
+                for (std::size_t i = 0; i < in.template dim<2>(); ++i) {
+                    for (std::size_t j = 0; j < in.template dim<3>(); ++j) {
+                        direct[i * out.template dim<3>() + j] = in(outer1, outer2, i, j);
                     }
                 }
             }
         }
     }
 
-    static void inplace_ifft2(std::complex<double>* memory, std::size_t m1, std::size_t m2){
+    static void inplace_ifft2(std::complex<double>* memory, std::size_t m1, std::size_t m2) {
         etl::impl::blas::detail::inplace_zifft2_kernel(memory, m1, m2);
     }
 
-    static void inplace_ifft2(std::complex<float>* memory, std::size_t m1, std::size_t m2){
+    static void inplace_ifft2(std::complex<float>* memory, std::size_t m1, std::size_t m2) {
         etl::impl::blas::detail::inplace_cifft2_kernel(memory, m1, m2);
     }
 
-    template<typename L, typename TP, typename H2, typename HCV, typename W, typename Functor>
-    static void batch_compute_hcv(TP& pool, const H2& h_s, HCV&& h_cv, W&& w, Functor activate){
+    template <typename L, typename TP, typename H2, typename HCV, typename W, typename Functor>
+    static void batch_compute_hcv(TP& pool, const H2& h_s, HCV&& h_cv, W&& w, Functor activate) {
         static constexpr const auto Batch = layer_traits<L>::batch_size();
 
-        static constexpr const auto K = L::K;
-        static constexpr const auto NC = L::NC;
+        static constexpr const auto K   = L::K;
+        static constexpr const auto NC  = L::NC;
         static constexpr const auto NV1 = L::NV1;
         static constexpr const auto NV2 = L::NV2;
 
@@ -175,16 +174,16 @@ protected:
         h_s_padded.fft2_many_inplace();
         w_padded.fft2_many_inplace();
 
-        maybe_parallel_foreach_n(pool, 0, Batch, [&](std::size_t batch){
-            for(std::size_t channel = 0; channel < NC; ++channel){
+        maybe_parallel_foreach_n(pool, 0, Batch, [&](std::size_t batch) {
+            for (std::size_t channel = 0; channel < NC; ++channel) {
                 h_cv(batch)(1) = 0.0;
 
-                for(std::size_t k = 0; k < K; ++k){
+                for (std::size_t k = 0; k < K; ++k) {
                     tmp_result(batch) = h_s_padded(batch)(k) >> w_padded(channel)(k);
 
                     tmp_result(batch).ifft2_inplace();
 
-                    for(std::size_t i = 0; i < etl::size(tmp_result(batch)); ++i){
+                    for (std::size_t i = 0; i < etl::size(tmp_result(batch)); ++i) {
                         h_cv(batch)(1)[i] += tmp_result(batch)[i].real();
                     }
                 }
@@ -196,18 +195,18 @@ protected:
 
 #else
 
-    template<typename L, typename TP, typename H2, typename HCV, typename W, typename Functor>
-    static void batch_compute_hcv(TP& pool, const H2& h_s, HCV&& h_cv, W&& w, Functor activate){
+    template <typename L, typename TP, typename H2, typename HCV, typename W, typename Functor>
+    static void batch_compute_hcv(TP& pool, const H2& h_s, HCV&& h_cv, W&& w, Functor activate) {
         static constexpr const auto Batch = layer_traits<L>::batch_size();
 
-        static constexpr const auto K = L::K;
+        static constexpr const auto K  = L::K;
         static constexpr const auto NC = L::NC;
 
-        maybe_parallel_foreach_n(pool, 0, Batch, [&](std::size_t batch){
-            for(std::size_t channel = 0; channel < NC; ++channel){
+        maybe_parallel_foreach_n(pool, 0, Batch, [&](std::size_t batch) {
+            for (std::size_t channel = 0; channel < NC; ++channel) {
                 h_cv(batch)(1) = 0.0;
 
-                for(std::size_t k = 0; k < K; ++k){
+                for (std::size_t k = 0; k < K; ++k) {
                     h_cv(batch)(0) = etl::fast_conv_2d_full(h_s(batch)(k), w(channel)(k));
                     h_cv(batch)(1) += h_cv(batch)(0);
                 }
@@ -219,8 +218,8 @@ protected:
 
 #endif
 
-    template<typename L, typename TP, typename V1, typename VCV, typename W, typename Functor>
-    static void batch_compute_vcv(TP& pool, const V1& v_a, VCV&& v_cv, W&& w, Functor activate){
+    template <typename L, typename TP, typename V1, typename VCV, typename W, typename Functor>
+    static void batch_compute_vcv(TP& pool, const V1& v_a, VCV&& v_cv, W&& w, Functor activate) {
         static constexpr const auto Batch = layer_traits<L>::batch_size();
 
         static constexpr const auto NC = L::NC;
@@ -229,10 +228,10 @@ protected:
 
         deep_fflip(w_f);
 
-        maybe_parallel_foreach_n(pool, 0, Batch, [&](std::size_t batch){
+        maybe_parallel_foreach_n(pool, 0, Batch, [&](std::size_t batch) {
             etl::conv_2d_valid_multi(v_a(batch)(0), w_f(0), v_cv(batch)(1));
 
-            for(std::size_t channel = 1; channel < NC; ++channel){
+            for (std::size_t channel = 1; channel < NC; ++channel) {
                 etl::conv_2d_valid_multi(v_a(batch)(channel), w_f(channel), v_cv(batch)(0));
 
                 v_cv(batch)(1) += v_cv(batch)(0);
@@ -243,13 +242,12 @@ protected:
     }
 
 private:
-
     //Since the sub classes do not have the same fields, it is not possible
     //to put the fields in standard_rbm, therefore, it is necessary to use template
     //functions to implement the details
 
-    template<typename Sample>
-    static void reconstruct(const Sample& items, parent_t& rbm){
+    template <typename Sample>
+    static void reconstruct(const Sample& items, parent_t& rbm) {
         cpp_assert(items.size() == parent_t::input_size(), "The size of the training sample must match visible units");
 
         cpp::stop_watch<> watch;
@@ -265,12 +263,12 @@ private:
         std::cout << "Reconstruction took " << watch.elapsed() << "ms" << std::endl;
     }
 
-    static void display_visible_unit_activations(const parent_t& rbm){
-        for(std::size_t channel = 0; channel < parent_t::NC; ++channel){
+    static void display_visible_unit_activations(const parent_t& rbm) {
+        for (std::size_t channel = 0; channel < parent_t::NC; ++channel) {
             std::cout << "Channel " << channel << std::endl;
 
-            for(size_t i = 0; i < parent_t::NV; ++i){
-                for(size_t j = 0; j < parent_t::NV; ++j){
+            for (size_t i = 0; i < parent_t::NV; ++i) {
+                for (size_t j = 0; j < parent_t::NV; ++j) {
                     std::cout << rbm.v2_a(channel, i, j) << " ";
                 }
                 std::cout << std::endl;
@@ -278,12 +276,12 @@ private:
         }
     }
 
-    static void display_visible_unit_samples(const parent_t& rbm){
-        for(std::size_t channel = 0; channel < parent_t::NC; ++channel){
+    static void display_visible_unit_samples(const parent_t& rbm) {
+        for (std::size_t channel = 0; channel < parent_t::NC; ++channel) {
             std::cout << "Channel " << channel << std::endl;
 
-            for(size_t i = 0; i < parent_t::NV; ++i){
-                for(size_t j = 0; j < parent_t::NV; ++j){
+            for (size_t i = 0; i < parent_t::NV; ++i) {
+                for (size_t j = 0; j < parent_t::NV; ++j) {
                     std::cout << rbm.v2_s(channel, i, j) << " ";
                 }
                 std::cout << std::endl;
@@ -291,27 +289,29 @@ private:
         }
     }
 
-    static void display_hidden_unit_activations(const parent_t& rbm){
-        for(size_t k = 0; k < parent_t::K; ++k){
-            for(size_t i = 0; i < parent_t::NV; ++i){
-                for(size_t j = 0; j < parent_t::NV; ++j){
+    static void display_hidden_unit_activations(const parent_t& rbm) {
+        for (size_t k = 0; k < parent_t::K; ++k) {
+            for (size_t i = 0; i < parent_t::NV; ++i) {
+                for (size_t j = 0; j < parent_t::NV; ++j) {
                     std::cout << rbm.h2_a(k)(i, j) << " ";
                 }
                 std::cout << std::endl;
             }
-            std::cout << std::endl << std::endl;
+            std::cout << std::endl
+                      << std::endl;
         }
     }
 
-    static void display_hidden_unit_samples(const parent_t& rbm){
-        for(size_t k = 0; k < parent_t::K; ++k){
-            for(size_t i = 0; i < parent_t::NV; ++i){
-                for(size_t j = 0; j < parent_t::NV; ++j){
+    static void display_hidden_unit_samples(const parent_t& rbm) {
+        for (size_t k = 0; k < parent_t::K; ++k) {
+            for (size_t i = 0; i < parent_t::NV; ++i) {
+                for (size_t j = 0; j < parent_t::NV; ++j) {
                     std::cout << rbm.h2_s(k)(i, j) << " ";
                 }
                 std::cout << std::endl;
             }
-            std::cout << std::endl << std::endl;
+            std::cout << std::endl
+                      << std::endl;
         }
     }
 };

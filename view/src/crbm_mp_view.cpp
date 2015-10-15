@@ -13,12 +13,12 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-int main(int /*argc*/, char* /*argv*/[]){
+int main(int /*argc*/, char* /*argv*/ []) {
     dll::conv_rbm_mp_desc_square<
-            1, 28, 40, 12, 2,
-            dll::momentum,
-            dll::batch_size<50>,
-            dll::watcher<dll::opencv_rbm_visualizer>>::rbm_t rbm;
+        1, 28, 40, 12, 2,
+        dll::momentum,
+        dll::batch_size<50>,
+        dll::watcher<dll::opencv_rbm_visualizer>>::rbm_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 

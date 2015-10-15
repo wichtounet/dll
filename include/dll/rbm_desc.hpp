@@ -21,16 +21,16 @@ namespace dll {
  * This struct should be used to define a RBM either as standalone or for a DBN.
  * Once configured, the ::rbm_t member returns the type of the configured RBM.
  */
-template<std::size_t visibles, std::size_t hiddens, typename... Parameters>
+template <std::size_t visibles, std::size_t hiddens, typename... Parameters>
 struct rbm_desc {
     static constexpr const std::size_t num_visible = visibles;
-    static constexpr const std::size_t num_hidden = hiddens;
+    static constexpr const std::size_t num_hidden  = hiddens;
 
     using parameters = cpp::type_list<Parameters...>;
 
-    static constexpr const std::size_t BatchSize = detail::get_value<batch_size<1>, Parameters...>::value;
-    static constexpr const unit_type visible_unit = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;
-    static constexpr const unit_type hidden_unit = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
+    static constexpr const std::size_t BatchSize    = detail::get_value<batch_size<1>, Parameters...>::value;
+    static constexpr const unit_type visible_unit   = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;
+    static constexpr const unit_type hidden_unit    = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
     static constexpr const sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;
 
     /*! The type used to store the weights */
@@ -53,13 +53,14 @@ struct rbm_desc {
     //Make sure only valid types are passed to the configuration list
     static_assert(
         detail::is_valid<cpp::type_list<momentum_id, parallel_mode_id, serial_id, verbose_id, batch_size_id, visible_id, hidden_id, weight_decay_id,
-              init_weights_id, sparsity_id, trainer_rbm_id, watcher_id, weight_type_id, shuffle_id, free_energy_id, dbn_only_id>, Parameters...>::value,
+                                        init_weights_id, sparsity_id, trainer_rbm_id, watcher_id, weight_type_id, shuffle_id, free_energy_id, dbn_only_id>,
+                         Parameters...>::value,
         "Invalid parameters type for rbm_desc");
 
     static_assert(BatchSize > 0, "Batch size must be at least 1");
 
     static_assert(Sparsity == sparsity_method::NONE || hidden_unit == unit_type::BINARY,
-        "Sparsity only works with binary hidden units");
+                  "Sparsity only works with binary hidden units");
 };
 
 } //end of dll namespace

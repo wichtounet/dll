@@ -21,12 +21,12 @@ namespace dll {
  * This struct should be used to define a RBM either as standalone or for a DBN.
  * Once configured, the ::rbm_t member returns the type of the configured RBM.
  */
-template<typename... Parameters>
+template <typename... Parameters>
 struct dyn_rbm_desc {
     using parameters = cpp::type_list<Parameters...>;
 
-    static constexpr const unit_type visible_unit = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;
-    static constexpr const unit_type hidden_unit = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
+    static constexpr const unit_type visible_unit   = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;
+    static constexpr const unit_type hidden_unit    = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
     static constexpr const sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;
 
     /*! The type used to store the weights */
@@ -46,11 +46,12 @@ struct dyn_rbm_desc {
     //Make sure only valid types are passed to the configuration list
     static_assert(
         detail::is_valid<cpp::type_list<momentum_id, visible_id, hidden_id, weight_decay_id, parallel_mode_id, serial_id, verbose_id,
-              init_weights_id, sparsity_id, trainer_rbm_id, weight_type_id, shuffle_id, free_energy_id>, Parameters...>::value,
+                                        init_weights_id, sparsity_id, trainer_rbm_id, weight_type_id, shuffle_id, free_energy_id>,
+                         Parameters...>::value,
         "Invalid parameters type");
 
     static_assert(Sparsity == sparsity_method::NONE || hidden_unit == unit_type::BINARY,
-        "Sparsity only works with binary hidden units");
+                  "Sparsity only works with binary hidden units");
 };
 
 } //end of dll namespace

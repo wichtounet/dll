@@ -16,14 +16,14 @@ namespace dll {
 /*!
  * \brief Describe a convolutional layer.
  */
-template<std::size_t NC_T, std::size_t NV_1, std::size_t NV_2, std::size_t K_T, std::size_t NH_1, std::size_t NH_2, typename... Parameters>
+template <std::size_t NC_T, std::size_t NV_1, std::size_t NV_2, std::size_t K_T, std::size_t NH_1, std::size_t NH_2, typename... Parameters>
 struct conv_desc {
     static constexpr const std::size_t NV1 = NV_1;
     static constexpr const std::size_t NV2 = NV_2;
     static constexpr const std::size_t NH1 = NH_1;
     static constexpr const std::size_t NH2 = NH_2;
-    static constexpr const std::size_t NC = NC_T;
-    static constexpr const std::size_t K = K_T;
+    static constexpr const std::size_t NC  = NC_T;
+    static constexpr const std::size_t K   = K_T;
 
     using parameters = cpp::type_list<Parameters...>;
 

@@ -33,7 +33,7 @@ std::string command_result(const std::string& command) {
 
     FILE* stream = popen(command.c_str(), "r");
 
-    if(!stream){
+    if (!stream) {
         return {};
     }
 
@@ -41,43 +41,43 @@ std::string command_result(const std::string& command) {
         output << buffer;
     }
 
-    if(pclose(stream)){
+    if (pclose(stream)) {
         return {};
     }
 
     std::string out(output.str());
 
-    if(out[out.size() - 1] == '\n'){
+    if (out[out.size() - 1] == '\n') {
         return {out.begin(), out.end() - 1};
     }
 
     return out;
 }
 
-dll::processor::datasource parse_datasource(const std::vector<std::string>& lines, std::size_t& i){
+dll::processor::datasource parse_datasource(const std::vector<std::string>& lines, std::size_t& i) {
     dll::processor::datasource source;
 
     source.reader = "default";
 
-    while(i < lines.size()){
-        if(starts_with(lines[i], "source: ")){
+    while (i < lines.size()) {
+        if (starts_with(lines[i], "source: ")) {
             source.source_file = extract_value(lines[i], "source: ");
             ++i;
-        } else if(starts_with(lines[i], "reader: ")){
+        } else if (starts_with(lines[i], "reader: ")) {
             source.reader = extract_value(lines[i], "reader: ");
             ++i;
-        } else if(starts_with(lines[i], "binarize: ")){
+        } else if (starts_with(lines[i], "binarize: ")) {
             source.binarize = extract_value(lines[i], "binarize: ") == "true" ? true : false;
             ++i;
-        } else if(starts_with(lines[i], "normalize: ")){
+        } else if (starts_with(lines[i], "normalize: ")) {
             source.normalize = extract_value(lines[i], "normalize: ") == "true" ? true : false;
             ++i;
-        } else if(starts_with(lines[i], "scale: ")){
-            source.scale = true;
+        } else if (starts_with(lines[i], "scale: ")) {
+            source.scale   = true;
             source.scale_d = std::stod(extract_value(lines[i], "scale: "));
             ++i;
-        } else if(starts_with(lines[i], "shift: ")){
-            source.shift = true;
+        } else if (starts_with(lines[i], "shift: ")) {
+            source.shift   = true;
             source.shift_d = std::stod(extract_value(lines[i], "shift: "));
             ++i;
         } else {
@@ -85,21 +85,21 @@ dll::processor::datasource parse_datasource(const std::vector<std::string>& line
         }
     }
 
-    if(source.source_file.empty()){
+    if (source.source_file.empty()) {
         std::cout << "dllp:: error: missing source" << std::endl;
     }
 
     return source;
 }
 
-void parse_datasource_pack(dll::processor::datasource_pack& pack, const std::vector<std::string>& lines, std::size_t& i){
+void parse_datasource_pack(dll::processor::datasource_pack& pack, const std::vector<std::string>& lines, std::size_t& i) {
     std::size_t limit = -1;
-    while(i < lines.size()){
-        if(starts_with(lines[i], "samples:")){
+    while (i < lines.size()) {
+        if (starts_with(lines[i], "samples:")) {
             pack.samples = parse_datasource(lines, ++i);
-        } else if(starts_with(lines[i], "labels:")){
+        } else if (starts_with(lines[i], "labels:")) {
             pack.labels = parse_datasource(lines, ++i);
-        } else if(starts_with(lines[i], "limit:")){
+        } else if (starts_with(lines[i], "limit:")) {
             limit = std::stol(extract_value(lines[i], "limit: "));
             ++i;
         } else {
@@ -108,33 +108,32 @@ void parse_datasource_pack(dll::processor::datasource_pack& pack, const std::vec
     }
 
     pack.samples.limit = limit;
-    pack.labels.limit = limit;
+    pack.labels.limit  = limit;
 }
-
 
 void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll::processor::task& t, const std::vector<std::string>& actions);
 bool compile(const options& opt);
 
-bool parse_file(const std::string& source_file, dll::processor::task& t, std::vector<std::unique_ptr<dllp::layer>>& layers){
+bool parse_file(const std::string& source_file, dll::processor::task& t, std::vector<std::unique_ptr<dllp::layer>>& layers) {
     //0. Parse the source file
 
     auto lines = read_lines(source_file);
 
-    if(lines.empty()){
+    if (lines.empty()) {
         std::cout << "dllp: warning: included file is empty or does not exist" << std::endl;
         return false;
     }
 
     //1. Process includes
 
-    for(std::size_t i = 0; i < lines.size();){
+    for (std::size_t i = 0; i < lines.size();) {
         auto& current_line = lines[i];
 
-        if(dllp::starts_with(current_line, "include: ")){
-            auto include_file = dllp::extract_value(current_line, "include: ");
+        if (dllp::starts_with(current_line, "include: ")) {
+            auto include_file  = dllp::extract_value(current_line, "include: ");
             auto include_lines = read_lines(include_file);
 
-            if(lines.empty()){
+            if (lines.empty()) {
                 std::cout << "dllp: error: file does not exist or is empty" << std::endl;
             } else {
                 std::copy(include_lines.begin(), include_lines.end(), std::inserter(lines, lines.begin() + i));
@@ -146,68 +145,67 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
         ++i;
     }
 
-
     //2. Process the lines
 
-    for(std::size_t i = 0; i < lines.size();){
+    for (std::size_t i = 0; i < lines.size();) {
         auto& current_line = lines[i];
 
-        if(dllp::starts_with(current_line, "include: ")){
+        if (dllp::starts_with(current_line, "include: ")) {
             ++i;
-        } else if(current_line == "data:"){
+        } else if (current_line == "data:") {
             ++i;
 
-            while(i < lines.size()){
-                if(lines[i] == "pretraining:"){
+            while (i < lines.size()) {
+                if (lines[i] == "pretraining:") {
                     dllp::parse_datasource_pack(t.pretraining, lines, ++i);
-                } else if(lines[i] == "training:"){
+                } else if (lines[i] == "training:") {
                     dllp::parse_datasource_pack(t.training, lines, ++i);
-                } else if(lines[i] == "testing:"){
+                } else if (lines[i] == "testing:") {
                     dllp::parse_datasource_pack(t.testing, lines, ++i);
                 } else {
                     break;
                 }
             }
-        } else if(current_line == "network:"){
+        } else if (current_line == "network:") {
             ++i;
 
-            while(i < lines.size()){
-                if(lines[i] == "rbm:"){
+            while (i < lines.size()) {
+                if (lines[i] == "rbm:") {
                     ++i;
 
                     auto rbm = std::make_unique<dllp::rbm_layer>();
 
-                    if(!rbm->parse(layers, lines, i)){
+                    if (!rbm->parse(layers, lines, i)) {
                         return false;
                     }
 
                     layers.push_back(std::move(rbm));
-                } else if(lines[i] == "crbm:"){
+                } else if (lines[i] == "crbm:") {
                     ++i;
 
                     auto crbm = std::make_unique<dllp::conv_rbm_layer>();
 
-                    if(!crbm->parse(layers, lines, i)){
+                    if (!crbm->parse(layers, lines, i)) {
                         return false;
                     }
 
                     layers.push_back(std::move(crbm));
-                } else if(lines[i] == "dense:"){
+                } else if (lines[i] == "dense:") {
                     ++i;
 
                     auto dense = std::make_unique<dllp::dense_layer>();
 
-                    if(!dense->parse(layers, lines, i)){
+                    if (!dense->parse(layers, lines, i)) {
                         return false;
                     }
 
                     layers.push_back(std::move(dense));
-                } else if(lines[i] == "conv:"){
+                } else if (lines[i] == "conv:") {
                     ++i;
 
                     auto conv = std::make_unique<dllp::conv_layer>();
 
-                    if(!conv->parse(layers, lines, i)){
+                    if (!conv->parse(layers, lines, i)) {
                         return false;
                     }
 
@@ -217,55 +215,55 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
                 }
             }
 
-        } else if(current_line == "options:"){
+        } else if (current_line == "options:") {
             ++i;
 
-            while(i < lines.size()){
-                if(lines[i] == "pretraining:"){
+            while (i < lines.size()) {
+                if (lines[i] == "pretraining:") {
                     ++i;
 
-                    while(i < lines.size()){
-                        if(dllp::starts_with(lines[i], "epochs:")){
+                    while (i < lines.size()) {
+                        if (dllp::starts_with(lines[i], "epochs:")) {
                             t.pt_desc.epochs = std::stol(dllp::extract_value(lines[i], "epochs: "));
                             ++i;
                         } else {
                             break;
                         }
                     }
-                } else if(lines[i] == "training:"){
+                } else if (lines[i] == "training:") {
                     ++i;
 
-                    while(i < lines.size()){
-                        if(dllp::starts_with(lines[i], "epochs:")){
+                    while (i < lines.size()) {
+                        if (dllp::starts_with(lines[i], "epochs:")) {
                             t.ft_desc.epochs = std::stol(dllp::extract_value(lines[i], "epochs: "));
                             ++i;
-                        } else if(dllp::starts_with(lines[i], "learning_rate:")){
+                        } else if (dllp::starts_with(lines[i], "learning_rate:")) {
                             t.ft_desc.learning_rate = std::stod(dllp::extract_value(lines[i], "learning_rate: "));
                             ++i;
-                        } else if(dllp::starts_with(lines[i], "momentum:")){
+                        } else if (dllp::starts_with(lines[i], "momentum:")) {
                             t.ft_desc.momentum = std::stod(dllp::extract_value(lines[i], "momentum: "));
                             ++i;
-                        } else if(dllp::starts_with(lines[i], "batch:")){
+                        } else if (dllp::starts_with(lines[i], "batch:")) {
                             t.ft_desc.batch_size = std::stol(dllp::extract_value(lines[i], "batch: "));
                             ++i;
-                        } else if(dllp::starts_with(lines[i], "weight_decay:")){
+                        } else if (dllp::starts_with(lines[i], "weight_decay:")) {
                             t.ft_desc.decay = dllp::extract_value(lines[i], "weight_decay: ");
                             ++i;
-                        } else if(dllp::starts_with(lines[i], "l1_weight_cost:")){
+                        } else if (dllp::starts_with(lines[i], "l1_weight_cost:")) {
                             t.ft_desc.l1_weight_cost = std::stod(dllp::extract_value(lines[i], "l1_weight_cost: "));
                             ++i;
-                        } else if(dllp::starts_with(lines[i], "l2_weight_cost:")){
+                        } else if (dllp::starts_with(lines[i], "l2_weight_cost:")) {
                             t.ft_desc.l2_weight_cost = std::stod(dllp::extract_value(lines[i], "l2_weight_cost: "));
                             ++i;
                         } else {
                             break;
                         }
                     }
-                } else if(lines[i] == "weights:"){
+                } else if (lines[i] == "weights:") {
                     ++i;
 
-                    while(i < lines.size()){
-                        if(dllp::starts_with(lines[i], "file:")){
+                    while (i < lines.size()) {
+                        if (dllp::starts_with(lines[i], "file:")) {
                             t.w_desc.file = dllp::extract_value(lines[i], "file: ");
                             ++i;
                         } else {
@@ -283,7 +281,7 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
         }
     }
 
-    if(layers.empty()){
+    if (layers.empty()) {
         std::cout << "dllp: error: no layer has been declared" << std::endl;
         return false;
     }
@@ -291,20 +289,20 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
     return true;
 }
 
-bool compile_exe(const dllp::options& opt, const std::vector<std::string>& actions, const std::string& source_file, const dll::processor::task& t, const std::vector<std::unique_ptr<dllp::layer>>& layers){
+bool compile_exe(const dllp::options& opt, const std::vector<std::string>& actions, const std::string& source_file, const dll::processor::task& t, const std::vector<std::unique_ptr<dllp::layer>>& layers) {
     bool process = true;
 
-    if(opt.cache){
+    if (opt.cache) {
         struct stat attr_conf;
         struct stat attr_exec;
 
-        if(!stat(source_file.c_str(), &attr_conf)){
-            if(!stat("./.dbn.out", &attr_exec)){
+        if (!stat(source_file.c_str(), &attr_conf)) {
+            if (!stat("./.dbn.out", &attr_exec)) {
                 auto mtime_conf = attr_conf.st_mtime;
                 auto mtime_exec = attr_exec.st_mtime;
 
-                if(mtime_exec > mtime_conf){
-                    if(!opt.quiet){
+                if (mtime_exec > mtime_conf) {
+                    if (!opt.quiet) {
                         std::cout << "Skip compilation" << std::endl;
                     }
                     process = false;
@@ -313,12 +311,12 @@ bool compile_exe(const dllp::options& opt, const std::vector<std::string>& actio
         }
     }
 
-    if(process){
+    if (process) {
         //Generate the CPP file
         dllp::generate(layers, t, actions);
 
         //Compile the generate file
-        if(!dllp::compile(opt)){
+        if (!dllp::compile(opt)) {
             return false;
         }
     }
@@ -326,7 +324,7 @@ bool compile_exe(const dllp::options& opt, const std::vector<std::string>& actio
     return true;
 }
 
-std::string datasource_to_string(const std::string& lhs, const dll::processor::datasource& ds){
+std::string datasource_to_string(const std::string& lhs, const dll::processor::datasource& ds) {
     std::string result;
 
     result += lhs + ".source_file = \"" + ds.source_file + "\";\n";
@@ -338,7 +336,7 @@ std::string datasource_to_string(const std::string& lhs, const dll::processor::d
     return result;
 }
 
-std::string pt_desc_to_string(const std::string& lhs, const dll::processor::pretraining_desc& desc){
+std::string pt_desc_to_string(const std::string& lhs, const dll::processor::pretraining_desc& desc) {
     std::string result;
 
     result += lhs + ".epochs = " + std::to_string(desc.epochs) + ";";
@@ -346,7 +344,7 @@ std::string pt_desc_to_string(const std::string& lhs, const dll::processor::pret
     return result;
 }
 
-std::string ft_desc_to_string(const std::string& lhs, const dll::processor::training_desc& desc){
+std::string ft_desc_to_string(const std::string& lhs, const dll::processor::training_desc& desc) {
     std::string result;
 
     result += lhs + ".epochs = " + std::to_string(desc.epochs) + ";";
@@ -354,7 +352,7 @@ std::string ft_desc_to_string(const std::string& lhs, const dll::processor::trai
     return result;
 }
 
-std::string w_desc_to_string(const std::string& lhs, const dll::processor::weights_desc& desc){
+std::string w_desc_to_string(const std::string& lhs, const dll::processor::weights_desc& desc) {
     std::string result;
 
     result += lhs + ".file = \"" + desc.file + "\";";
@@ -362,7 +360,7 @@ std::string w_desc_to_string(const std::string& lhs, const dll::processor::weigh
     return result;
 }
 
-std::string task_to_string(const std::string& name, const dll::processor::task& t){
+std::string task_to_string(const std::string& name, const dll::processor::task& t) {
     std::string result;
 
     result += "   dll::processor::task ";
@@ -388,14 +386,14 @@ std::string task_to_string(const std::string& name, const dll::processor::task& 
     return result;
 }
 
-std::string vector_to_string(const std::string& name, const std::vector<std::string>& vec){
+std::string vector_to_string(const std::string& name, const std::vector<std::string>& vec) {
     std::string result;
 
     result += "   std::vector<std::string> ";
     result += name;
     result += "{";
     std::string comma = "";
-    for(auto& value : vec){
+    for (auto& value : vec) {
         result += comma;
         result += "\"";
         result += value;
@@ -407,7 +405,7 @@ std::string vector_to_string(const std::string& name, const std::vector<std::str
     return result;
 }
 
-void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll::processor::task& t, const std::vector<std::string>& actions){
+void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll::processor::task& t, const std::vector<std::string>& actions) {
     std::ofstream out_stream(".dbn.cpp");
 
     out_stream << "#include <memory>\n";
@@ -418,7 +416,7 @@ void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll
 
     std::string comma = "  ";
 
-    for(auto& layer : layers){
+    for (auto& layer : layers) {
         out_stream << comma;
         layer->print(out_stream);
         comma = "\n, ";
@@ -428,11 +426,11 @@ void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll
 
     out_stream << ", dll::trainer<dll::sgd_trainer>\n";
 
-    if(t.ft_desc.momentum != dll::processor::stupid_default){
+    if (t.ft_desc.momentum != dll::processor::stupid_default) {
         out_stream << ", dll::momentum\n";
     }
 
-    if(t.ft_desc.batch_size > 0){
+    if (t.ft_desc.batch_size > 0) {
         out_stream << ", dll::batch_size<" << t.ft_desc.batch_size << ">\n";
     }
 
@@ -443,24 +441,24 @@ void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll
     out_stream << "int main(int argc, char* argv[]){\n";
     out_stream << "   auto dbn = std::make_unique<dbn_t>();\n";
 
-    if(t.ft_desc.learning_rate != dll::processor::stupid_default){
+    if (t.ft_desc.learning_rate != dll::processor::stupid_default) {
         out_stream << "   dbn->learning_rate = " << t.ft_desc.learning_rate << ";\n";
     }
 
-    if(t.ft_desc.momentum != dll::processor::stupid_default){
+    if (t.ft_desc.momentum != dll::processor::stupid_default) {
         out_stream << "   dbn->initial_momentum = " << t.ft_desc.momentum << ";\n";
         out_stream << "   dbn->final_momentum = " << t.ft_desc.momentum << ";\n";
     }
 
-    if(t.ft_desc.l1_weight_cost != dll::processor::stupid_default){
+    if (t.ft_desc.l1_weight_cost != dll::processor::stupid_default) {
         out_stream << "   dbn->l1_weight_cost = " << t.ft_desc.l1_weight_cost << ";\n";
     }
 
-    if(t.ft_desc.l2_weight_cost != dll::processor::stupid_default){
+    if (t.ft_desc.l2_weight_cost != dll::processor::stupid_default) {
         out_stream << "   dbn->l2_weight_cost = " << t.ft_desc.l2_weight_cost << ";\n";
     }
 
-    for(std::size_t i = 0; i < layers.size(); ++i){
+    for (std::size_t i = 0; i < layers.size(); ++i) {
         auto& layer = layers[i];
 
         layer->set(out_stream, "   dbn->layer_get<" + std::to_string(i) + ">()");
@@ -472,10 +470,10 @@ void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll
     out_stream << "}\n";
 }
 
-bool append_pkg_flags(std::string& flags, const std::string& pkg){
+bool append_pkg_flags(std::string& flags, const std::string& pkg) {
     auto cflags = command_result("pkg-config --cflags " + pkg);
 
-    if(cflags.empty()){
+    if (cflags.empty()) {
         std::cout << "Failed to get compilation flags for " << pkg << std::endl;
         std::cout << "   `pkg-config --cflags " << pkg << "` should return the compilation for " << pkg << std::endl;
         return false;
@@ -483,7 +481,7 @@ bool append_pkg_flags(std::string& flags, const std::string& pkg){
 
     auto ldflags = command_result("pkg-config --libs " + pkg);
 
-    if(ldflags.empty()){
+    if (ldflags.empty()) {
         std::cout << "Failed to get linking flags for " << pkg << std::endl;
         std::cout << "   `pkg-config --libs " << pkg << "` should return the linking for " << pkg << std::endl;
         return false;
@@ -495,8 +493,8 @@ bool append_pkg_flags(std::string& flags, const std::string& pkg){
     return true;
 }
 
-bool compile(const options& opt){
-    if(!opt.quiet){
+bool compile(const options& opt) {
+    if (!opt.quiet) {
         std::cout << "Compiling the program..." << std::endl;
     }
 
@@ -511,37 +509,37 @@ bool compile(const options& opt){
     compile_command += " -pthread ";
     compile_command += " .dbn.cpp ";
 
-    if(opt.mkl){
+    if (opt.mkl) {
         compile_command += " -DETL_MKL_MODE ";
 
-        if(!append_pkg_flags(compile_command, "mkl")){
+        if (!append_pkg_flags(compile_command, "mkl")) {
             return false;
         }
     }
 
-    if(opt.cublas){
+    if (opt.cublas) {
         compile_command += " -DETL_CUBLAS_MODE ";
 
-        if(!append_pkg_flags(compile_command, "cublas")){
+        if (!append_pkg_flags(compile_command, "cublas")) {
             return false;
         }
     }
 
-    if(opt.cufft){
+    if (opt.cufft) {
         compile_command += " -DETL_CUFFT_MODE ";
 
-        if(!append_pkg_flags(compile_command, "cufft")){
+        if (!append_pkg_flags(compile_command, "cufft")) {
             return false;
         }
     }
 
     int compile_result = system(compile_command.c_str());
 
-    if(compile_result){
+    if (compile_result) {
         std::cout << "Compilation failed" << std::endl;
         return false;
     } else {
-        if(!opt.quiet){
+        if (!opt.quiet) {
             std::cout << "... done" << std::endl;
         }
         return true;
@@ -550,31 +548,31 @@ bool compile(const options& opt){
 
 } //end of namespace dllp
 
-int dll::processor::process_file(const dllp::options& opt, const std::vector<std::string>& actions, const std::string& source_file){
+int dll::processor::process_file(const dllp::options& opt, const std::vector<std::string>& actions, const std::string& source_file) {
     //1. Parse the configuration file
 
     dll::processor::task t;
     std::vector<std::unique_ptr<dllp::layer>> layers;
 
-    if(!dllp::parse_file(source_file, t, layers)){
+    if (!dllp::parse_file(source_file, t, layers)) {
         return 1;
     }
 
     //2. Generate the executable
 
-    if(!dllp::compile_exe(opt, actions, source_file, t, layers)){
+    if (!dllp::compile_exe(opt, actions, source_file, t, layers)) {
         return 1;
     }
 
     //3. Run the generated program
 
-    if(!opt.quiet){
+    if (!opt.quiet) {
         std::cout << "Executing the program" << std::endl;
     }
 
     auto exec_result = system("./.dbn.out");
 
-    if(exec_result){
+    if (exec_result) {
         std::cout << "Impossible to execute the generated file" << std::endl;
         return exec_result;
     }
@@ -582,19 +580,19 @@ int dll::processor::process_file(const dllp::options& opt, const std::vector<std
     return 0;
 }
 
-std::string dll::processor::process_file_result(const dllp::options& opt, const std::vector<std::string>& actions, const std::string& source_file){
+std::string dll::processor::process_file_result(const dllp::options& opt, const std::vector<std::string>& actions, const std::string& source_file) {
     //1. Parse the configuration file
 
     dll::processor::task t;
     std::vector<std::unique_ptr<dllp::layer>> layers;
 
-    if(!dllp::parse_file(source_file, t, layers)){
+    if (!dllp::parse_file(source_file, t, layers)) {
         return "";
     }
 
     //2. Generate the executable
 
-    if(!dllp::compile_exe(opt, actions, source_file, t, layers)){
+    if (!dllp::compile_exe(opt, actions, source_file, t, layers)) {
         return "";
     }
 

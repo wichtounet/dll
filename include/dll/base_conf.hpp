@@ -19,19 +19,19 @@
 
 namespace dll {
 
-template<typename ID>
+template <typename ID>
 struct basic_conf_elt {
     using type_id = ID;
 };
 
-template<typename ID, typename T>
+template <typename ID, typename T>
 struct type_conf_elt {
     using type_id = ID;
 
     using value = T;
 };
 
-template<typename ID, template<typename...> class T>
+template <typename ID, template <typename...> class T>
 struct template_type_conf_elt {
     using type_id = ID;
 
@@ -39,7 +39,7 @@ struct template_type_conf_elt {
     using value = T<RBM>;
 };
 
-template<typename ID, template<typename,bool> class T>
+template <typename ID, template <typename, bool> class T>
 struct template_type_tb_conf_elt {
     using type_id = ID;
 
@@ -47,7 +47,7 @@ struct template_type_tb_conf_elt {
     using value = T<RBM, Denoising>;
 };
 
-template<typename ID, typename T, T value>
+template <typename ID, typename T, T value>
 struct value_conf_elt : std::integral_constant<T, value> {
     using type_id = ID;
 };
@@ -78,52 +78,52 @@ struct free_energy_id;
 struct memory_id;
 struct dbn_only_id;
 
-template<std::size_t B>
+template <std::size_t B>
 struct batch_size : value_conf_elt<batch_size_id, std::size_t, B> {};
 
-template<std::size_t B>
+template <std::size_t B>
 struct big_batch_size : value_conf_elt<big_batch_size_id, std::size_t, B> {};
 
-template<unit_type VT>
+template <unit_type VT>
 struct visible : value_conf_elt<visible_id, unit_type, VT> {};
 
-template<unit_type HT>
+template <unit_type HT>
 struct hidden : value_conf_elt<hidden_id, unit_type, HT> {};
 
-template<unit_type PT>
+template <unit_type PT>
 struct pooling : value_conf_elt<pooling_id, unit_type, PT> {};
 
-template<function FT>
+template <function FT>
 struct activation : value_conf_elt<activation_id, function, FT> {};
 
-template<decay_type T = decay_type::L2>
+template <decay_type T = decay_type::L2>
 struct weight_decay : value_conf_elt<weight_decay_id, decay_type, T> {};
 
-template<lr_driver_type T = lr_driver_type::FIXED>
+template <lr_driver_type T = lr_driver_type::FIXED>
 struct lr_driver : value_conf_elt<lr_driver_id, lr_driver_type, T> {};
 
 /*!
  * \brief Activate sparsity and select the method to use
  */
-template<sparsity_method M = sparsity_method::GLOBAL_TARGET>
+template <sparsity_method M = sparsity_method::GLOBAL_TARGET>
 struct sparsity : value_conf_elt<sparsity_id, sparsity_method, M> {};
 
 /*!
  * \brief Select the bias method
  */
-template<bias_mode M = bias_mode::SIMPLE>
-struct bias : value_conf_elt<bias_id, bias_mode, M>{};
+template <bias_mode M = bias_mode::SIMPLE>
+struct bias : value_conf_elt<bias_id, bias_mode, M> {};
 
-template<typename T>
+template <typename T>
 struct weight_type : type_conf_elt<weight_type_id, T> {};
 
-template<template<typename...> class T>
+template <template <typename...> class T>
 struct trainer : template_type_conf_elt<trainer_id, T> {};
 
-template<template<typename,bool> class T>
+template <template <typename, bool> class T>
 struct trainer_rbm : template_type_tb_conf_elt<trainer_rbm_id, T> {};
 
-template<template<typename...> class T>
+template <template <typename...> class T>
 struct watcher : template_type_conf_elt<watcher_id, T> {};
 
 struct momentum : basic_conf_elt<momentum_id> {};

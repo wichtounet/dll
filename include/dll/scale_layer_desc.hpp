@@ -10,7 +10,7 @@
 
 namespace dll {
 
-template<int A_T, int B_T>
+template <int A_T, int B_T>
 struct scale_layer_desc {
     static constexpr const int A = A_T;
     static constexpr const int B = B_T;

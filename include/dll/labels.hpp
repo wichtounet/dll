@@ -13,17 +13,18 @@
 
 namespace dll {
 
-template<typename V>
+template <typename V>
 struct fake_label_array {
     using value_type = V;
-    using this_type = fake_label_array<value_type>;
+    using this_type  = fake_label_array<value_type>;
 
     value_type value;
 
-    fake_label_array(value_type v) : value(v) {}
+    fake_label_array(value_type v)
+            : value(v) {}
 
     double operator[](std::size_t i) const {
-        if(i == value){
+        if (i == value) {
             return 1.0;
         } else {
             return 0.0;
@@ -31,12 +32,12 @@ struct fake_label_array {
     }
 };
 
-template<typename Iterator>
-std::vector<fake_label_array<typename std::iterator_traits<Iterator>::value_type>> make_fake(Iterator first, Iterator last){
+template <typename Iterator>
+std::vector<fake_label_array<typename std::iterator_traits<Iterator>::value_type>> make_fake(Iterator first, Iterator last) {
     std::vector<fake_label_array<typename std::iterator_traits<Iterator>::value_type>> fake;
     fake.reserve(std::distance(first, last));
 
-    std::for_each(first, last, [&fake](auto v){
+    std::for_each(first, last, [&fake](auto v) {
         fake.emplace_back(v);
     });
 
