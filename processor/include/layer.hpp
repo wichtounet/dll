@@ -34,6 +34,12 @@ struct layer {
     virtual void set(std::ostream& /*out*/, const std::string& /*lhs*/) const { /* Nothing */ };
 };
 
+enum class parse_result {
+    PARSED,
+    ERROR,
+    NOT_PARSED
+};
+
 struct base_rbm_layer : layer {
     std::string visible_unit;
     std::string hidden_unit;
@@ -51,7 +57,10 @@ struct base_rbm_layer : layer {
     bool parallel_mode = false;
     bool shuffle = false;
 
+    void print(std::ostream& out) const override ;
     void set(std::ostream& out, const std::string& lhs) const override ;
+
+    parse_result base_parse(const std::vector<std::string>& lines, std::size_t& i);
 };
 
 struct rbm_layer : base_rbm_layer {
@@ -59,7 +68,7 @@ struct rbm_layer : base_rbm_layer {
     std::size_t hidden = 0;
 
     void print(std::ostream& out) const override ;
-    bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override ;
+    bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override;
 
     std::size_t hidden_get() const override ;
 };
