@@ -67,10 +67,10 @@ dll::processor::datasource parse_datasource(const std::vector<std::string>& line
             source.reader = extract_value(lines[i], "reader: ");
             ++i;
         } else if (starts_with(lines[i], "binarize: ")) {
-            source.binarize = extract_value(lines[i], "binarize: ") == "true" ? true : false;
+            source.binarize = extract_value(lines[i], "binarize: ") == "true"
             ++i;
         } else if (starts_with(lines[i], "normalize: ")) {
-            source.normalize = extract_value(lines[i], "normalize: ") == "true" ? true : false;
+            source.normalize = extract_value(lines[i], "normalize: ") == "true"
             ++i;
         } else if (starts_with(lines[i], "scale: ")) {
             source.scale   = true;
@@ -538,12 +538,13 @@ bool compile(const options& opt) {
     if (compile_result) {
         std::cout << "Compilation failed" << std::endl;
         return false;
-    } else {
-        if (!opt.quiet) {
-            std::cout << "... done" << std::endl;
-        }
-        return true;
     }
+
+    if (!opt.quiet) {
+        std::cout << "... done" << std::endl;
+    }
+
+    return true;
 }
 
 } //end of namespace dllp
