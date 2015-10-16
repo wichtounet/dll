@@ -67,14 +67,18 @@ dll::processor::datasource parse_datasource(const std::vector<std::string>& line
             source.reader = extract_value(lines[i], "reader: ");
             ++i;
         } else if (starts_with(lines[i], "binarize: ")) {
-            source.binarize = extract_value(lines[i], "binarize: ") == "true"
+            source.binarize = extract_value(lines[i], "binarize: ") == "true";
             ++i;
         } else if (starts_with(lines[i], "normalize: ")) {
-            source.normalize = extract_value(lines[i], "normalize: ") == "true"
+            source.normalize = extract_value(lines[i], "normalize: ") == "true";
             ++i;
         } else if (starts_with(lines[i], "scale: ")) {
             source.scale   = true;
             source.scale_d = std::stod(extract_value(lines[i], "scale: "));
+            ++i;
+        } else if (starts_with(lines[i], "normal_noise: ")) {
+            source.normal_noise   = true;
+            source.normal_noise_d = std::stod(extract_value(lines[i], "normal_noise: "));
             ++i;
         } else if (starts_with(lines[i], "shift: ")) {
             source.shift   = true;
@@ -158,6 +162,8 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
             while (i < lines.size()) {
                 if (lines[i] == "pretraining:") {
                     dllp::parse_datasource_pack(t.pretraining, lines, ++i);
+                } else if (lines[i] == "pretraining_clean:") {
+                    dllp::parse_datasource_pack(t.pretraining_clean, lines, ++i);
                 } else if (lines[i] == "training:") {
                     dllp::parse_datasource_pack(t.training, lines, ++i);
                 } else if (lines[i] == "testing:") {
@@ -223,8 +229,11 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
                     ++i;
 
                     while (i < lines.size()) {
-                        if (dllp::starts_with(lines[i], "epochs:")) {
+                        if (dllp::starts_with(lines[i], "epochs: ")) {
                             t.pt_desc.epochs = std::stol(dllp::extract_value(lines[i], "epochs: "));
+                            ++i;
+                        } else if (dllp::starts_with(lines[i], "denoising: ")) {
+                            t.pt_desc.epochs = dllp::extract_value(lines[i], "denoising: ") == "true";
                             ++i;
                         } else {
                             break;

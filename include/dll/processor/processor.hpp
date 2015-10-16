@@ -63,12 +63,14 @@ struct datasource {
     std::string source_file;
     std::string reader;
 
-    bool binarize  = false;
-    bool normalize = false;
-    bool scale     = false;
-    double scale_d = 0.0;
-    bool shift     = false;
-    double shift_d = 0.0;
+    bool binarize         = false;
+    bool normalize        = false;
+    bool scale            = false;
+    double scale_d        = 0.0;
+    bool shift            = false;
+    double shift_d        = 0.0;
+    bool normal_noise     = false;
+    double normal_noise_d = 0.0;
 
     long limit = -1;
 
@@ -88,6 +90,7 @@ struct datasource_pack {
 
 struct pretraining_desc {
     std::size_t epochs = 25;
+    bool denoising     = false;
 };
 
 struct training_desc {
@@ -107,6 +110,7 @@ struct weights_desc {
 
 struct task {
     dll::processor::datasource_pack pretraining;
+    dll::processor::datasource_pack pretraining_clean;
     dll::processor::datasource_pack training;
     dll::processor::datasource_pack testing;
 
@@ -148,6 +152,21 @@ bool read_samples(const datasource& ds, std::vector<Sample>& samples) {
                     v *= ds.scale_d;
                 }
             }
+        }
+
+        if (ds.normal_noise) {
+            std::random_device rd;
+            std::default_random_engine rand_engine(rd());
+            std::normal_distribution<float> normal_distribution(0.0, 0.1);
+            auto noise = std::bind(normal_distribution, rand_engine);
+
+            for (auto& vec : samples) {
+                for (auto& noisy_x : vec) {
+                    noisy_x += noise();
+                }
+            }
+
+            mnist::normalize_each(samples);
         }
 
         return !samples.empty();
