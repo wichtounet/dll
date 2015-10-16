@@ -37,7 +37,7 @@ std::string command_result(const std::string& command) {
         return {};
     }
 
-    while (fgets(buffer, 1024, stream) != NULL) {
+    while (fgets(buffer, 1024, stream) != nullptr) {
         output << buffer;
     }
 

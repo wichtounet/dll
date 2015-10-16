@@ -74,7 +74,7 @@ struct datasource {
 
     datasource() {}
     datasource(std::string source_file, std::string reader)
-            : source_file(source_file), reader(reader) {}
+            : source_file(std::move(source_file)), reader(std::move(reader)) {}
 
     bool empty() const {
         return source_file.empty();

@@ -18,6 +18,7 @@
 #define DLL_CONJUGATE_GRADIENT_HPP
 
 #include "batch.hpp"
+#include <utility>
 
 namespace dll {
 
@@ -30,7 +31,7 @@ struct gradient_context {
     std::size_t start_layer;
 
     gradient_context(batch<Sample> i, batch<Label> t, std::size_t e)
-            : max_iterations(5), epoch(e), inputs(i), targets(t), start_layer(0) {
+            : max_iterations(5), epoch(e), inputs(std::move(i)), targets(std::move(t)), start_layer(0) {
         //Nothing else to init
     }
 };
