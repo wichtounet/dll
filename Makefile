@@ -113,7 +113,7 @@ format:
 
 modernize:
 	find include test processor view -name "*.hpp" -o -name "*.cpp" > dll_file_list
-	${CLANG_MODERNIZE} -add-override -loop-convert -pass-by-value -use-auto -use-nullptr -p ${PWD} -include-from=etl_file_list
+	${CLANG_MODERNIZE} -add-override -loop-convert -pass-by-value -use-auto -use-nullptr -p ${PWD} -include-from=dll_file_list
 	rm etl_file_list
 
 # clang-tidy with some false positive checks removed
