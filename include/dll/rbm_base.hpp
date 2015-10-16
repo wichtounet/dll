@@ -93,11 +93,11 @@ struct rbm_base : neural_base<Parent> {
     }
 
     template <typename NIterator, typename CIterator, bool EnableWatcher = true, typename RW = void, typename... Args>
-    double train_denoising(NIterator&& noisy_it, NIterator&& noisy_end, CIterator&& clean_it, CIterator&& clean_end, std::size_t max_epochs, Args... args) {
+    double train_denoising(NIterator noisy_it, NIterator noisy_end, CIterator clean_it, CIterator clean_end, std::size_t max_epochs, Args... args) {
         dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
         return trainer.train(as_derived(),
-                             std::forward<NIterator>(noisy_it), std::forward<NIterator>(noisy_end),
-                             std::forward<CIterator>(clean_it), std::forward<CIterator>(clean_end),
+                             noisy_it, noisy_end,
+                             clean_it, clean_end,
                              max_epochs);
     }
 

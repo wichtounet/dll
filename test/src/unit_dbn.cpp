@@ -225,3 +225,91 @@ TEST_CASE("unit/dbn/mnist/8", "[dbn][unit]") {
     auto dbn = std::make_unique<dbn_t>();
     dbn->pretrain(dataset.training_images, 20);
 }
+
+TEST_CASE("unit/dbn/mnist/9", "[dbn][denoising][unit]") {
+    using dbn_t =
+        dll::dbn_desc<
+        dll::dbn_layers<
+            dll::rbm_desc<
+                28 * 28, 200,
+                dll::batch_size<25>,
+                dll::momentum,
+                dll::weight_decay<>,
+                dll::visible<dll::unit_type::GAUSSIAN>,
+                dll::shuffle,
+                dll::weight_type<float>>::rbm_t
+        >>::dbn_t;
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->template layer_get<0>().learning_rate *= 5;
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(250);
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::normalize_dataset(dataset);
+
+    auto noisy = dataset.training_images;
+
+    std::default_random_engine rand_engine(56);
+    std::normal_distribution<float> normal_distribution(0.0, 0.5);
+    auto noise = std::bind(normal_distribution, rand_engine);
+
+    for (auto& image : noisy) {
+        for (auto& noisy_x : image) {
+            noisy_x += noise();
+        }
+    }
+
+    mnist::normalize_each(noisy);
+
+    dbn->pretrain_denoising(noisy, dataset.training_images, 50);
+}
+
+TEST_CASE("unit/dbn/mnist/10", "[dbn][denoising][unit]") {
+    using dbn_t =
+        dll::dbn_desc<
+        dll::dbn_layers<
+            dll::rbm_desc<
+                28 * 28, 200,
+                dll::batch_size<25>,
+                dll::momentum,
+                dll::weight_decay<>,
+                dll::visible<dll::unit_type::GAUSSIAN>,
+                dll::shuffle
+            >::rbm_t
+            , dll::rbm_desc<
+                200, 200,
+                dll::batch_size<25>,
+                dll::momentum,
+                dll::weight_decay<>,
+                dll::visible<dll::unit_type::BINARY>,
+                dll::shuffle
+            >::rbm_t
+        >>::dbn_t;
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->template layer_get<0>().learning_rate *= 5;
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(250);
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::normalize_dataset(dataset);
+
+    auto noisy = dataset.training_images;
+
+    std::default_random_engine rand_engine(56);
+    std::normal_distribution<float> normal_distribution(0.0, 0.5);
+    auto noise = std::bind(normal_distribution, rand_engine);
+
+    for (auto& image : noisy) {
+        for (auto& noisy_x : image) {
+            noisy_x += noise();
+        }
+    }
+
+    mnist::normalize_each(noisy);
+
+    dbn->pretrain_denoising(noisy, dataset.training_images, 50);
+}
