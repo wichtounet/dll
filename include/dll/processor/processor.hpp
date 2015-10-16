@@ -155,9 +155,11 @@ bool read_samples(const datasource& ds, std::vector<Sample>& samples) {
         }
 
         if (ds.normal_noise) {
+            mnist::normalize_each(samples);
+
             std::random_device rd;
             std::default_random_engine rand_engine(rd());
-            std::normal_distribution<float> normal_distribution(0.0, 0.1);
+            std::normal_distribution<float> normal_distribution(0.0, ds.normal_noise_d);
             auto noise = std::bind(normal_distribution, rand_engine);
 
             for (auto& vec : samples) {
@@ -227,8 +229,23 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
                 return;
             }
 
-            //Pretrain the network
-            dbn.pretrain(pt_samples.begin(), pt_samples.end(), task.pt_desc.epochs);
+            if(task.pt_desc.denoising){
+                std::vector<typename dbn_t::input_t> clean_samples;
+
+                //Try to read the samples
+                if (!read_samples(task.pretraining_clean.samples, clean_samples)) {
+                    std::cout << "dllp: error: failed to read the clean samples" << std::endl;
+                    return;
+                }
+
+                //Pretrain the network
+                cpp::static_if<dbn_t::layers_t::is_denoising>([&](auto f){
+                    f(dbn).pretrain_denoising(pt_samples.begin(), pt_samples.end(), clean_samples.begin(), clean_samples.end(), task.pt_desc.epochs);
+                });
+            } else {
+                //Pretrain the network
+                dbn.pretrain(pt_samples.begin(), pt_samples.end(), task.pt_desc.epochs);
+            }
         } else if (action == "train") {
             print_title("Training");
 

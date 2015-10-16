@@ -233,7 +233,7 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
                             t.pt_desc.epochs = std::stol(dllp::extract_value(lines[i], "epochs: "));
                             ++i;
                         } else if (dllp::starts_with(lines[i], "denoising: ")) {
-                            t.pt_desc.epochs = dllp::extract_value(lines[i], "denoising: ") == "true";
+                            t.pt_desc.denoising = dllp::extract_value(lines[i], "denoising: ") == "true";
                             ++i;
                         } else {
                             break;
@@ -340,6 +340,8 @@ std::string datasource_to_string(const std::string& lhs, const dll::processor::d
     result += lhs + ".reader = \"" + ds.reader + "\";\n";
     result += lhs + ".binarize = " + (ds.binarize ? "true" : "false") + ";\n";
     result += lhs + ".normalize = " + (ds.normalize ? "true" : "false") + ";\n";
+    result += lhs + ".normal_noise = " + (ds.normal_noise ? "true" : "false") + ";\n";
+    result += lhs + ".normal_noise_d = " + std::to_string(ds.normal_noise_d) + ";\n";
     result += lhs + ".limit = " + std::to_string(ds.limit) + ";\n";
 
     return result;
@@ -376,6 +378,8 @@ std::string task_to_string(const std::string& name, const dll::processor::task& 
     result += name;
     result += ";\n\n";
     result += datasource_to_string("   " + name + ".pretraining.samples", t.pretraining.samples);
+    result += "\n";
+    result += datasource_to_string("   " + name + ".pretraining_clean.samples", t.pretraining_clean.samples);
     result += "\n";
     result += datasource_to_string("   " + name + ".training.samples", t.training.samples);
     result += "\n";

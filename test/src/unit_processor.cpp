@@ -203,6 +203,13 @@ TEST_CASE("unit/processor/rbm/8", "[unit][rbm][dbn][mnist][proc]") {
     SPARSITY_BELOW("epoch 49", 0.12);
 }
 
+TEST_CASE("unit/processor/rbm/9", "[unit][rbm][dbn][mnist][proc]") {
+    auto lines = get_result(default_options(), {"pretrain"}, "rbm_9.conf");
+    REQUIRE(!lines.empty());
+
+    REC_ERROR_BELOW("epoch 49", 0.2);
+}
+
 // CRBM
 
 TEST_CASE("unit/processor/crbm/1", "[unit][crbm][dbn][mnist][proc]") {
