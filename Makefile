@@ -118,12 +118,12 @@ modernize:
 
 # clang-tidy with some false positive checks removed
 tidy:
-	${CLANG_TIDY} -checks='*,-llvm-include-order,-clang-analyzer-alpha.core.PointerArithm,-clang-analyzer-alpha.deadcode.UnreachableCode,-clang-analyzer-alpha.core.IdenticalExpr' -p ${PWD} test/src/*.cpp processor/src/*.cpp -header-filter='include/etl/*' &> tidy_report_light
+	${CLANG_TIDY} -checks='*,-llvm-include-order,-clang-analyzer-alpha.core.PointerArithm,-clang-analyzer-alpha.deadcode.UnreachableCode,-clang-analyzer-alpha.core.IdenticalExpr' -p ${PWD} test/src/*.cpp processor/src/*.cpp -header-filter='include/dll/*' &> tidy_report_light
 	echo "The report from clang-tidy is availabe in tidy_report_light"
 
 # clang-tidy with all the checks
 tidy_all:
-	${CLANG_TIDY} -checks='*' -p ${PWD} test/*.cpp processor/src/*.cpp -header-filter='include/etl/*' &> tidy_report_all
+	${CLANG_TIDY} -checks='*' -p ${PWD} test/*.cpp processor/src/*.cpp -header-filter='include/dll/*' &> tidy_report_all
 	echo "The report from clang-tidy is availabe in tidy_report_all"
 
 prefix = /usr
