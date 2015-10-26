@@ -23,6 +23,7 @@ std::string extract_value(const std::string& str, const std::string& search);
 
 bool valid_unit(const std::string& unit);
 bool valid_trainer(const std::string& unit);
+bool valid_ft_trainer(const std::string& unit);
 bool valid_activation(const std::string& unit);
 bool valid_sparsity(const std::string& unit);
 

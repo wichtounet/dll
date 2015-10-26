@@ -264,6 +264,15 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
                         } else if (dllp::starts_with(lines[i], "l2_weight_cost:")) {
                             t.ft_desc.l2_weight_cost = std::stod(dllp::extract_value(lines[i], "l2_weight_cost: "));
                             ++i;
+                        } else if (dllp::starts_with(lines[i], "trainer: ")) {
+                            t.ft_desc.trainer = dllp::extract_value(lines[i], "trainer: ");
+
+                            if (!dllp::valid_ft_trainer(t.ft_desc.trainer)) {
+                                std::cout << "dllp: error: invalid trainer must be one of [sgd, cg]" << std::endl;
+                                return false;
+                            }
+
+                            ++i;
                         } else {
                             break;
                         }
@@ -423,7 +432,8 @@ void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll
 
     out_stream << "#include <memory>\n";
     out_stream << "#include \"dll/processor/processor.hpp\"\n";
-    out_stream << "#include \"dll/stochastic_gradient_descent.hpp\"\n\n";
+    out_stream << "#include \"dll/stochastic_gradient_descent.hpp\"\n";
+    out_stream << "#include \"dll/conjugate_gradient.hpp\"\n\n";
 
     out_stream << "using dbn_t = dll::dbn_desc<dll::dbn_layers<\n";
 
@@ -437,7 +447,11 @@ void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll
 
     out_stream << "\n>";
 
-    out_stream << ", dll::trainer<dll::sgd_trainer>\n";
+    if (t.ft_desc.trainer == "sgd" || t.ft_desc.trainer == "none"){
+        out_stream << ", dll::trainer<dll::sgd_trainer>\n";
+    } else if(t.ft_desc.trainer == "cg"){
+        out_stream << ", dll::trainer<dll::cg_trainer_simple>\n";
+    }
 
     if (t.ft_desc.momentum != dll::processor::stupid_default) {
         out_stream << ", dll::momentum\n";

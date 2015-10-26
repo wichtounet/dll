@@ -235,3 +235,13 @@ TEST_CASE("unit/processor/dbn/sgd/1", "[unit][dense][dbn][mnist][sgd][proc]") {
     FT_ERROR_BELOW(5e-2);
     TEST_ERROR_BELOW(0.3);
 }
+
+// DBN (CG)
+
+TEST_CASE("unit/processor/dbn/cg/1", "[unit][dense][dbn][mnist][sgd][proc]") {
+    auto lines = get_result(default_options(), {"pretrain", "train", "test"}, "dbn_cg_1.conf");
+    REQUIRE(!lines.empty());
+
+    FT_ERROR_BELOW(5e-2);
+    TEST_ERROR_BELOW(0.3);
+}

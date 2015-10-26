@@ -74,12 +74,16 @@ bool dllp::valid_unit(const std::string& unit) {
     return unit == "binary" || unit == "softmax" || unit == "gaussian";
 }
 
-bool dllp::valid_trainer(const std::string& unit) {
-    return unit == "cd" || unit == "pcd";
+bool dllp::valid_trainer(const std::string& trainer) {
+    return trainer == "cd" || trainer == "pcd";
 }
 
-bool dllp::valid_activation(const std::string& unit) {
-    return unit == "sigmoid" || unit == "softmax" || unit == "tanh" || unit == "relu";
+bool dllp::valid_ft_trainer(const std::string& trainer) {
+    return trainer == "sgd" || trainer == "cg";
+}
+
+bool dllp::valid_activation(const std::string& function) {
+    return function == "sigmoid" || function == "softmax" || function == "tanh" || function == "relu";
 }
 
 bool dllp::valid_sparsity(const std::string& sparsity) {

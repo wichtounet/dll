@@ -102,6 +102,8 @@ struct training_desc {
     std::string decay     = "none";
     double l1_weight_cost = stupid_default;
     double l2_weight_cost = stupid_default;
+
+    std::string trainer = "none";
 };
 
 struct weights_desc {
