@@ -225,3 +225,13 @@ TEST_CASE("unit/processor/crbm/2", "[unit][crbm][dbn][mnist][proc]") {
 
     REC_ERROR_BELOW("epoch 24", 0.01);
 }
+
+// DBN (SGD)
+
+TEST_CASE("unit/processor/dbn/sgd/1", "[unit][dense][dbn][mnist][sgd][proc]") {
+    auto lines = get_result(default_options(), {"pretrain", "train", "test"}, "dbn_sgd_1.conf");
+    REQUIRE(!lines.empty());
+
+    FT_ERROR_BELOW(5e-2);
+    TEST_ERROR_BELOW(0.3);
+}
