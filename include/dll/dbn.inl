@@ -251,7 +251,7 @@ public:
         return output;
     }
 
-    /*{{{ Pretrain */
+    /* Pretrain */
 
 private:
     mutable int fake_resource;
@@ -744,9 +744,7 @@ public:
         pretrain_denoising(noisy.begin(), noisy.end(), clean.begin(), clean.end(), max_epochs);
     }
 
-    /*}}}*/
-
-    /*{{{ Train with labels */
+    /* Train with labels */
 
 private:
 
@@ -833,9 +831,7 @@ public:
         train_with_labels(training_data.begin(), training_data.end(), training_labels.begin(), training_labels.end(), labels, max_epochs);
     }
 
-    /*}}}*/
-
-    /*{{{ Predict with labels */
+    /* Predict with labels */
 
 private:
 
@@ -895,9 +891,7 @@ public:
             std::max_element(std::prev(output_a.end(), labels), output_a.end()));
     }
 
-    /*}}}*/
-
-    /*{{{ Predict */
+    /* Predict */
 
     //activation_probabilities
 
@@ -1027,9 +1021,7 @@ public:
         return predict_label(result);
     }
 
-    /*}}}*/
-
-    /*{{{ Fine-tuning */
+    /* Fine-tuning */
 
     template<typename Samples, typename Labels>
     weight fine_tune(const Samples& training_data, Labels& labels, size_t max_epochs){
@@ -1044,8 +1036,6 @@ public:
             std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
             max_epochs);
     }
-
-    /*}}}*/
 
     template<std::size_t I, typename T = this_type, cpp_disable_if(dbn_traits<T>::is_multiplex())>
     auto prepare_output() const {
@@ -1063,7 +1053,7 @@ public:
 
 #ifdef DLL_SVM_SUPPORT
 
-    /*{{{ SVM Training and prediction */
+    /* SVM Training and prediction */
 
     using svm_samples_t = std::conditional_t<
         dbn_traits<this_type>::concatenate(),
@@ -1213,8 +1203,6 @@ public:
         auto features = get_final_activation_probabilities(sample);
         return svm::predict(svm_model, features);
     }
-
-    /*}}}*/
 
 #endif //DLL_SVM_SUPPORT
 
