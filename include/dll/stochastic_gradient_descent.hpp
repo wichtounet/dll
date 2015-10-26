@@ -62,7 +62,7 @@ struct sgd_trainer {
 
     dbn_t& dbn;
 
-    sgd_trainer(dbn_t& dbn)
+    explicit sgd_trainer(dbn_t& dbn)
             : dbn(dbn) {
         dbn.for_each_layer([](auto& layer) {
             layer.template init_sgd_context<dbn_t>();

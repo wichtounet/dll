@@ -47,7 +47,7 @@ struct cg_trainer {
 
     dbn_t& dbn;
 
-    cg_trainer(dbn_t& dbn)
+    explicit cg_trainer(dbn_t& dbn)
             : dbn(dbn) {
         dbn.for_each_layer([](auto& r1) {
             r1.init_cg_context();
