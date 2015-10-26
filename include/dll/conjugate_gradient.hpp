@@ -558,6 +558,12 @@ struct cg_trainer {
     }
 };
 
+template <typename DBN>
+using cg_trainer_simple = cg_trainer<DBN, false>;
+
+template <typename DBN>
+using cg_trainer_debug = cg_trainer<DBN, true>;
+
 } //end of dll namespace
 
 #endif
