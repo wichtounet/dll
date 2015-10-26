@@ -97,8 +97,6 @@ TEST_CASE("crbm_mp/mnist_6", "crbm::gaussian") {
         dll::weight_decay<>,
         dll::visible<dll::unit_type::GAUSSIAN>>::rbm_t rbm;
 
-    //rbm.learning_rate *= 10;
-
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
 
     REQUIRE(!dataset.training_images.empty());
