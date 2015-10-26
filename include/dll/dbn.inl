@@ -957,7 +957,7 @@ public:
     template<std::size_t I>
     auto activation_probabilities_sub(const input_t& sample) const {
         auto result = prepare_output<I>();
-        return activation_probabilities_sub<I>(sample, result);;
+        return activation_probabilities_sub<I>(sample, result);
     }
 
     CLANG_AUTO_TRICK auto activation_probabilities(const input_t& sample, output_t& result) const {
