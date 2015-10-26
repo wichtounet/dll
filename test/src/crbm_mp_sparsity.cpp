@@ -94,14 +94,12 @@ TEST_CASE("crbm_mp/mnist_12", "crbm::lee") {
 
     rbm.pbias        = 0.01;
     rbm.pbias_lambda = 0.1;
-    //rbm.learning_rate = 0.01;
     rbm.learning_rate *= 12;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::normalize_dataset(dataset);
-    //mnist::binarize_dataset(dataset);
 
     auto error = rbm.train(dataset.training_images, 100);
 
