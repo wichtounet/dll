@@ -229,16 +229,15 @@ TEST_CASE("unit/dbn/mnist/8", "[dbn][unit]") {
 TEST_CASE("unit/dbn/mnist/9", "[dbn][denoising][unit]") {
     using dbn_t =
         dll::dbn_desc<
-        dll::dbn_layers<
-            dll::rbm_desc<
-                28 * 28, 200,
-                dll::batch_size<25>,
-                dll::momentum,
-                dll::weight_decay<>,
-                dll::visible<dll::unit_type::GAUSSIAN>,
-                dll::shuffle,
-                dll::weight_type<float>>::rbm_t
-        >>::dbn_t;
+            dll::dbn_layers<
+                dll::rbm_desc<
+                    28 * 28, 200,
+                    dll::batch_size<25>,
+                    dll::momentum,
+                    dll::weight_decay<>,
+                    dll::visible<dll::unit_type::GAUSSIAN>,
+                    dll::shuffle,
+                    dll::weight_type<float>>::rbm_t>>::dbn_t;
 
     auto dbn = std::make_unique<dbn_t>();
 
@@ -269,24 +268,21 @@ TEST_CASE("unit/dbn/mnist/9", "[dbn][denoising][unit]") {
 TEST_CASE("unit/dbn/mnist/10", "[dbn][denoising][unit]") {
     using dbn_t =
         dll::dbn_desc<
-        dll::dbn_layers<
-            dll::rbm_desc<
-                28 * 28, 200,
-                dll::batch_size<25>,
-                dll::momentum,
-                dll::weight_decay<>,
-                dll::visible<dll::unit_type::GAUSSIAN>,
-                dll::shuffle
-            >::rbm_t
-            , dll::rbm_desc<
-                200, 200,
-                dll::batch_size<25>,
-                dll::momentum,
-                dll::weight_decay<>,
-                dll::visible<dll::unit_type::BINARY>,
-                dll::shuffle
-            >::rbm_t
-        >>::dbn_t;
+            dll::dbn_layers<
+                dll::rbm_desc<
+                    28 * 28, 200,
+                    dll::batch_size<25>,
+                    dll::momentum,
+                    dll::weight_decay<>,
+                    dll::visible<dll::unit_type::GAUSSIAN>,
+                    dll::shuffle>::rbm_t,
+                dll::rbm_desc<
+                    200, 200,
+                    dll::batch_size<25>,
+                    dll::momentum,
+                    dll::weight_decay<>,
+                    dll::visible<dll::unit_type::BINARY>,
+                    dll::shuffle>::rbm_t>>::dbn_t;
 
     auto dbn = std::make_unique<dbn_t>();
 

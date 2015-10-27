@@ -106,7 +106,7 @@ dll::processor::options default_options() {
         double ft_error = 1.0;                             \
         REQUIRE(get_ft_error(lines, ft_error));            \
         std::cout << "ft_error:" << ft_error << std::endl; \
-        REQUIRE(ft_error < (min));                           \
+        REQUIRE(ft_error < (min));                         \
     }
 
 #define TEST_ERROR_BELOW(min)                                  \
@@ -114,7 +114,7 @@ dll::processor::options default_options() {
         double test_error = 1.0;                               \
         REQUIRE(get_test_error(lines, test_error));            \
         std::cout << "test_error:" << test_error << std::endl; \
-        REQUIRE(test_error < (min));                             \
+        REQUIRE(test_error < (min));                           \
     }
 
 #define REC_ERROR_BELOW(epoch, min)                           \
@@ -122,7 +122,7 @@ dll::processor::options default_options() {
         double rec_error = 1.0;                               \
         REQUIRE(get_last_rec_error(epoch, lines, rec_error)); \
         std::cout << "rec_error:" << rec_error << std::endl;  \
-        REQUIRE(rec_error < (min));                             \
+        REQUIRE(rec_error < (min));                           \
     }
 
 #define SPARSITY_BELOW(epoch, min)                          \
@@ -130,7 +130,7 @@ dll::processor::options default_options() {
         double sparsity = 1.0;                              \
         REQUIRE(get_last_sparsity(epoch, lines, sparsity)); \
         std::cout << "sparsity:" << sparsity << std::endl;  \
-        REQUIRE(sparsity < (min));                            \
+        REQUIRE(sparsity < (min));                          \
     }
 
 // Dense (SGD)

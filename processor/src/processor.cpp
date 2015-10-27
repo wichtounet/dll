@@ -447,9 +447,9 @@ void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll
 
     out_stream << "\n>";
 
-    if (t.ft_desc.trainer == "sgd" || t.ft_desc.trainer == "none"){
+    if (t.ft_desc.trainer == "sgd" || t.ft_desc.trainer == "none") {
         out_stream << ", dll::trainer<dll::sgd_trainer>\n";
-    } else if(t.ft_desc.trainer == "cg"){
+    } else if (t.ft_desc.trainer == "cg") {
         out_stream << ", dll::trainer<dll::cg_trainer_simple>\n";
     }
 

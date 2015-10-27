@@ -231,7 +231,7 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
                 return;
             }
 
-            if(task.pt_desc.denoising){
+            if (task.pt_desc.denoising) {
                 std::vector<typename dbn_t::input_t> clean_samples;
 
                 //Try to read the samples
@@ -241,7 +241,7 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
                 }
 
                 //Pretrain the network
-                cpp::static_if<dbn_t::layers_t::is_denoising>([&](auto f){
+                cpp::static_if<dbn_t::layers_t::is_denoising>([&](auto f) {
                     f(dbn).pretrain_denoising(pt_samples.begin(), pt_samples.end(), clean_samples.begin(), clean_samples.end(), task.pt_desc.epochs);
                 });
             } else {
