@@ -102,6 +102,25 @@ struct conv_rbm_layer : base_rbm_layer {
     std::size_t hidden_get_3() const override;
 };
 
+struct conv_rbm_mp_layer : base_rbm_layer {
+    std::size_t c  = 0;
+    std::size_t v1 = 0;
+    std::size_t v2 = 0;
+    std::size_t k  = 0;
+    std::size_t w1 = 0;
+    std::size_t w2 = 0;
+    std::size_t p  = 0;
+
+    void print(std::ostream& out) const override;
+    bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override;
+
+    bool is_conv() const override;
+    std::size_t hidden_get() const override;
+    std::size_t hidden_get_1() const override;
+    std::size_t hidden_get_2() const override;
+    std::size_t hidden_get_3() const override;
+};
+
 struct dense_layer : layer {
     std::size_t visible = 0;
     std::size_t hidden  = 0;

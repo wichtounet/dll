@@ -196,6 +196,16 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
                     }
 
                     layers.push_back(std::move(crbm));
+                } else if (lines[i] == "crbm_mp:") {
+                    ++i;
+
+                    auto crbm_mp = std::make_unique<dllp::conv_rbm_mp_layer>();
+
+                    if (!crbm_mp->parse(layers, lines, i)) {
+                        return false;
+                    }
+
+                    layers.push_back(std::move(crbm_mp));
                 } else if (lines[i] == "dense:") {
                     ++i;
 

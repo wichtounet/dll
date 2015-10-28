@@ -263,6 +263,84 @@ std::size_t dllp::conv_rbm_layer::hidden_get_3() const {
     return v2 - w2 + 1;
 }
 
+bool dllp::conv_rbm_mp_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) {
+    std::string value;
+
+    while (i < lines.size()) {
+        auto result = base_parse(lines, i);
+
+        if (result == dllp::parse_result::PARSED) {
+            ++i;
+            continue;
+        } else if (result == dllp::parse_result::ERROR) {
+            return false;
+        }
+
+        if (dllp::extract_value(lines[i], "channels: ", value)) {
+            c = std::stol(value);
+            ++i;
+        } else if (dllp::extract_value(lines[i], "filters: ", value)) {
+            k = std::stol(value);
+            ++i;
+        } else if (dllp::extract_value(lines[i], "pool: ", value)) {
+            p = std::stol(value);
+            ++i;
+        } else if (dllp::extract_value(lines[i], "v1: ", value)) {
+            v1 = std::stol(value);
+            ++i;
+        } else if (dllp::extract_value(lines[i], "v2: ", value)) {
+            v2 = std::stol(value);
+            ++i;
+        } else if (dllp::extract_value(lines[i], "w1: ", value)) {
+            w1 = std::stol(value);
+            ++i;
+        } else if (dllp::extract_value(lines[i], "w2: ", value)) {
+            w2 = std::stol(value);
+            ++i;
+        } else {
+            break;
+        }
+    }
+
+    if (layers.empty() && (!c || !v1 || !v2 || !k || !w1 || !w2)) {
+        std::cout << "dllp: error: The first layer needs input and output sizes" << std::endl;
+        return false;
+    } else if (!p) {
+        std::cout << "dllp: error: The pool parameter is mandatory" << std::endl;
+        return false;
+    } else if (!layers.empty() && !k) {
+        std::cout << "dllp: error: The number of filters is mandatory" << std::endl;
+        return false;
+    } else if (!layers.empty() && (!w1 || !w2)) {
+        std::cout << "dllp: error: The size of the filters is mandatory" << std::endl;
+        return false;
+    }
+
+    if (!layers.empty()) {
+        c  = layers.back()->hidden_get_1();
+        v1 = layers.back()->hidden_get_2();
+        v2 = layers.back()->hidden_get_3();
+    }
+
+    return true;
+}
+
+std::size_t dllp::conv_rbm_mp_layer::hidden_get() const {
+    return k * ((v1 - w1 + 1) / p) * ((v2 - w2 + 1) / p);
+}
+
+std::size_t dllp::conv_rbm_mp_layer::hidden_get_1() const {
+    return k;
+}
+
+std::size_t dllp::conv_rbm_mp_layer::hidden_get_2() const {
+    return (v1 - w1 + 1) / p;
+}
+
+std::size_t dllp::conv_rbm_mp_layer::hidden_get_3() const {
+    return (v2 - w2 + 1) / p;
+}
+
 void dllp::dense_layer::print(std::ostream& out) const {
     out << "dll::dense_desc<" << visible << ", " << hidden;
 
