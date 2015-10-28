@@ -143,6 +143,56 @@ TEST_CASE("unit/processor/dense/sgd/1", "[unit][dense][dbn][mnist][sgd][proc]") 
     TEST_ERROR_BELOW(0.3);
 }
 
+// Conv+Dense (SGD)
+
+TEST_CASE("unit/processor/conv/sgd/1", "[unit][conv][dense][dbn][mnist][sgd][proc]") {
+    auto lines = get_result(default_options(), {"train", "test"}, "conv_sgd_1.conf");
+    REQUIRE(!lines.empty());
+
+    FT_ERROR_BELOW(0.1);
+    TEST_ERROR_BELOW(0.2);
+}
+
+TEST_CASE("unit/processor/conv/sgd/2", "[unit][conv][dense][dbn][mnist][sgd][proc]") {
+    auto lines = get_result(default_options(), {"train", "test"}, "conv_sgd_2.conf");
+    REQUIRE(!lines.empty());
+
+    FT_ERROR_BELOW(1e-3);
+    TEST_ERROR_BELOW(0.3);
+}
+
+TEST_CASE("unit/processor/conv/sgd/3", "[unit][conv][dense][dbn][mnist][sgd][proc]") {
+    auto lines = get_result(default_options(), {"train", "test"}, "conv_sgd_3.conf");
+    REQUIRE(!lines.empty());
+
+    FT_ERROR_BELOW(5e-2);
+    TEST_ERROR_BELOW(0.3);
+}
+
+TEST_CASE("unit/processor/conv/sgd/4", "[unit][conv][dense][dbn][mnist][sgd][proc]") {
+    auto lines = get_result(default_options(), {"train", "test"}, "conv_sgd_4.conf");
+    REQUIRE(!lines.empty());
+
+    FT_ERROR_BELOW(1e-3);
+    TEST_ERROR_BELOW(0.3);
+}
+
+TEST_CASE("unit/processor/conv/sgd/5", "[unit][conv][dense][dbn][mnist][sgd][proc]") {
+    auto lines = get_result(default_options(), {"train", "test"}, "conv_sgd_5.conf");
+    REQUIRE(!lines.empty());
+
+    FT_ERROR_BELOW(1e-3);
+    TEST_ERROR_BELOW(0.3);
+}
+
+TEST_CASE("unit/processor/conv/sgd/6", "[unit][conv][dense][dbn][mnist][sgd][proc]") {
+    auto lines = get_result(default_options(), {"train", "test"}, "conv_sgd_6.conf");
+    REQUIRE(!lines.empty());
+
+    FT_ERROR_BELOW(1e-3);
+    TEST_ERROR_BELOW(0.2);
+}
+
 // RBM
 
 TEST_CASE("unit/processor/rbm/1", "[unit][rbm][dbn][mnist][proc]") {
