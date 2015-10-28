@@ -359,6 +359,8 @@ std::string datasource_to_string(const std::string& lhs, const dll::processor::d
     result += lhs + ".reader = \"" + ds.reader + "\";\n";
     result += lhs + ".binarize = " + (ds.binarize ? "true" : "false") + ";\n";
     result += lhs + ".normalize = " + (ds.normalize ? "true" : "false") + ";\n";
+    result += lhs + ".scale = " + (ds.scale ? "true" : "false") + ";\n";
+    result += lhs + ".scale_d = " + std::to_string(ds.scale_d) + ";\n";
     result += lhs + ".normal_noise = " + (ds.normal_noise ? "true" : "false") + ";\n";
     result += lhs + ".normal_noise_d = " + std::to_string(ds.normal_noise_d) + ";\n";
     result += lhs + ".limit = " + std::to_string(ds.limit) + ";\n";
