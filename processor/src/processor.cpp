@@ -441,7 +441,9 @@ void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll
     std::ofstream out_stream(".dbn.cpp");
 
     out_stream << "#include <memory>\n";
+
     out_stream << "#include \"dll/processor/processor.hpp\"\n";
+    out_stream << "#include \"dll/conv_rbm_mp.hpp\"\n";
     out_stream << "#include \"dll/stochastic_gradient_descent.hpp\"\n";
     out_stream << "#include \"dll/conjugate_gradient.hpp\"\n\n";
 

@@ -226,6 +226,15 @@ TEST_CASE("unit/processor/crbm/2", "[unit][crbm][dbn][mnist][proc]") {
     REC_ERROR_BELOW("epoch 24", 0.01);
 }
 
+// CRBM (MP)
+
+TEST_CASE("unit/processor/crbm_mp/1", "[unit][crbm_mp][dbn][mnist][proc]") {
+    auto lines = get_result(default_options(), {"pretrain"}, "crbm_mp_1.conf");
+    REQUIRE(!lines.empty());
+
+    REC_ERROR_BELOW("epoch 24", 0.01);
+}
+
 // DBN (SGD)
 
 TEST_CASE("unit/processor/dbn/sgd/1", "[unit][dense][dbn][mnist][sgd][proc]") {

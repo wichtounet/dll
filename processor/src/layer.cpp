@@ -263,6 +263,18 @@ std::size_t dllp::conv_rbm_layer::hidden_get_3() const {
     return v2 - w2 + 1;
 }
 
+bool dllp::conv_rbm_mp_layer::is_conv() const {
+    return true;
+}
+
+void dllp::conv_rbm_mp_layer::print(std::ostream& out) const {
+    out << "dll::conv_rbm_mp_desc<" << c << ", " << v1 << ", " << v2 << ", " << k << ", " << (v1 - w1 + 1) << ", " << (v2 - w2 + 1) << ", " << p;
+
+    base_rbm_layer::print(out);
+
+    out << ">::rbm_t";
+}
+
 bool dllp::conv_rbm_mp_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) {
     std::string value;
 
