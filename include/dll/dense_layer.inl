@@ -18,6 +18,9 @@
 
 namespace dll {
 
+/*!
+ * \brief Standard dense layer of neural network.
+ */
 template<typename Desc>
 struct dense_layer final : neural_base<dense_layer<Desc>> {
     using desc = Desc;
