@@ -997,6 +997,8 @@ private:
     std::enable_if_t<(I==S)> activation_probabilities(const Input&, Result&) const {}
 
 public:
+    //activation_probabilities_sub
+
     template<std::size_t I, typename Output, typename T = this_type>
     auto activation_probabilities_sub(const input_t& sample, Output& result) const {
         activation_probabilities<0, I+1>(sample, result);
@@ -1010,12 +1012,47 @@ public:
         return activation_probabilities_sub<I>(sample, result);
     }
 
+    //Note: features_sub are alias functions for activation_probabilities_sub
+
+    template<std::size_t I, typename Output, typename T = this_type>
+    auto features_sub(const input_t& sample, Output& result) const {
+        return activation_probabilities_sub<I>(sample, result);
+    }
+
+    template<std::size_t I>
+    auto features_sub(const input_t& sample) const {
+        return activation_probabilities_sub<I>(sample);
+    }
+
+    // activation_probabilities
+
     CLANG_AUTO_TRICK auto activation_probabilities(const input_t& sample, output_t& result) const {
         return activation_probabilities_sub<layers - 1>(sample, result);
     }
 
     CLANG_AUTO_TRICK auto activation_probabilities(const input_t& sample) const {
         return activation_probabilities_sub<layers - 1>(sample);
+    }
+
+    //Note: features are alias functions for activation_probabilities
+
+    /*!
+     * \brief Computes the output features for the given sample and saves them in the given container
+     * \param sample The sample to get features from
+     * \param result The container where to save the features
+     * \return result
+     */
+    CLANG_AUTO_TRICK auto features(const input_t& sample, output_t& result) const {
+        return activation_probabilities(sample, result);
+    }
+
+    /*!
+     * \brief Returns the output features for the given sample
+     * \param sample The sample to get features from
+     * \return the output features of the last layer of the network
+     */
+    CLANG_AUTO_TRICK auto features(const input_t& sample) const {
+        return activation_probabilities(sample);
     }
 
     //full_activation_probabilities
