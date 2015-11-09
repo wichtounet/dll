@@ -999,6 +999,13 @@ private:
 public:
     //activation_probabilities_sub
 
+    /*!
+     * \brief Returns the output features of the Ith layer for the given sample and saves them in the given container
+     * \param sample The sample to get features from
+     * \param result The container where the results will be saved
+     * \tparam I The index of the layer for features (starts at 0)
+     * \return the output features of the Ith layer of the network
+     */
     template<std::size_t I, typename Output, typename T = this_type>
     auto activation_probabilities_sub(const input_t& sample, Output& result) const {
         activation_probabilities<0, I+1>(sample, result);
@@ -1006,6 +1013,12 @@ public:
         return result;
     }
 
+    /*!
+     * \brief Returns the output features of the Ith layer for the given sample
+     * \param sample The sample to get features from
+     * \tparam I The index of the layer for features (starts at 0)
+     * \return the output features of the Ith layer of the network
+     */
     template<std::size_t I>
     auto activation_probabilities_sub(const input_t& sample) const {
         auto result = prepare_output<I>();
@@ -1014,11 +1027,24 @@ public:
 
     //Note: features_sub are alias functions for activation_probabilities_sub
 
+    /*!
+     * \brief Returns the output features of the Ith layer for the given sample and saves them in the given container
+     * \param sample The sample to get features from
+     * \param result The container where the results will be saved
+     * \tparam I The index of the layer for features (starts at 0)
+     * \return the output features of the Ith layer of the network
+     */
     template<std::size_t I, typename Output, typename T = this_type>
     auto features_sub(const input_t& sample, Output& result) const {
         return activation_probabilities_sub<I>(sample, result);
     }
 
+    /*!
+     * \brief Returns the output features of the Ith layer for the given sample
+     * \param sample The sample to get features from
+     * \tparam I The index of the layer for features (starts at 0)
+     * \return the output features of the Ith layer of the network
+     */
     template<std::size_t I>
     auto features_sub(const input_t& sample) const {
         return activation_probabilities_sub<I>(sample);
@@ -1026,10 +1052,21 @@ public:
 
     // activation_probabilities
 
+    /*!
+     * \brief Computes the output features for the given sample and saves them in the given container
+     * \param sample The sample to get features from
+     * \param result The container where to save the features
+     * \return result
+     */
     CLANG_AUTO_TRICK auto activation_probabilities(const input_t& sample, output_t& result) const {
         return activation_probabilities_sub<layers - 1>(sample, result);
     }
 
+    /*!
+     * \brief Returns the output features for the given sample
+     * \param sample The sample to get features from
+     * \return the output features of the last layer of the network
+     */
     CLANG_AUTO_TRICK auto activation_probabilities(const input_t& sample) const {
         return activation_probabilities_sub<layers - 1>(sample);
     }
