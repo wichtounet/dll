@@ -5,6 +5,11 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+/*!
+ * \file function.hpp
+ * \brief Activation functions for neural networks
+ */
+
 #ifndef DLL_FUNCTION_HPP
 #define DLL_FUNCTION_HPP
 
