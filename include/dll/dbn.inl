@@ -26,6 +26,8 @@
 #include "svm_common.hpp"
 #include "flatten.hpp"
 #include "compat.hpp"
+#include "format.hpp"
+#include "export.hpp"
 
 namespace dll {
 
@@ -1090,6 +1092,23 @@ public:
      */
     CLANG_AUTO_TRICK auto features(const input_t& sample) const {
         return activation_probabilities(sample);
+    }
+
+    /*!
+     * \brief Save the features generated for the given sample in the given file.
+     * \param sample The sample to get features from
+     * \param file The output file
+     * \param format The format of the exported features
+
+     */
+    void save_features(const input_t& sample, const std::string& file, format f = format::DLL) const {
+        cpp_assert(f == format::DLL, "Only DLL format is supported for now");
+
+        decltype(auto) probs = features(sample);
+
+        if(f == format::DLL){
+            export_features_dll(probs, file);
+        }
     }
 
     //full_activation_probabilities
