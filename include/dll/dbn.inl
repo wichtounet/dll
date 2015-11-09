@@ -5,6 +5,15 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+/*!
+ * \file dbn.inl
+ * \brief Deep Belief Network implementation.
+ *
+ * In this library, a DBN can also be used with standard neural network layers,
+ * in which case, it acts as a standard neural network and cannot be
+ * pretrained.
+ */
+
 #ifndef DLL_DBN_INL
 #define DLL_DBN_INL
 
@@ -62,22 +71,23 @@ void safe_advance(Iterator& it, const Iterator& end, std::size_t distance){
  */
 template<typename Desc>
 struct dbn final {
-    using desc = Desc;
-    using this_type = dbn<desc>;
+    using desc = Desc;              ///< The network descriptor
+    using this_type = dbn<desc>;    ///< The network type
 
-    using layers_t = typename desc::layers;
-    layers_t tuples;
+    using layers_t = typename desc::layers;  ///< The layers container type
 
-    static constexpr const std::size_t layers = layers_t::size;
-    static constexpr const std::size_t batch_size = desc::BatchSize;
-    static constexpr const std::size_t big_batch_size = desc::BigBatchSize;
+    static constexpr const std::size_t layers = layers_t::size;                 ///< The number of layers
+    static constexpr const std::size_t batch_size = desc::BatchSize;            ///< The batch size (for finetuning)
+    static constexpr const std::size_t big_batch_size = desc::BigBatchSize;     ///< The number of pretraining batch to do at once
 
     template<std::size_t N>
-    using layer_type = detail::layer_type_t<N, layers_t>;
+    using layer_type = detail::layer_type_t<N, layers_t>;             ///< The type of the layer at index Nth
 
-    using weight = typename extract_weight_t<0, this_type>::type;
+    using weight = typename extract_weight_t<0, this_type>::type;     ///< The tpyeof the weights
 
-    using watcher_t = typename desc::template watcher_t<this_type>;
+    using watcher_t = typename desc::template watcher_t<this_type>;   ///< The watcher type
+
+    layers_t tuples;                    ///< The layers
 
     weight learning_rate = 0.1;         ///< The learning rate for finetuning
     weight lr_bold_inc = 1.05;          ///< The multiplicative increase of learning rate for the bold driver
@@ -126,10 +136,10 @@ private:
     };
 
 public:
-    using input_t = typename layer_input_simple<0>::type;
+    using input_t = typename layer_input_simple<0>::type;                   ///< The input type of the network
 
     template<std::size_t B>
-    using input_batch_t = typename layer_input_batch<0>::template type<B>;
+    using input_batch_t = typename layer_input_batch<0>::template type<B>;  ///< The input batch type of the network for a batch size of B
 
 #ifdef DLL_SVM_SUPPORT
     svm::model svm_model;               ///< The learned model
@@ -149,6 +159,9 @@ public:
     dbn(dbn&& dbn) = delete;
     dbn& operator=(dbn&& dbn) = delete;
 
+    /*!
+     * \brief Prints a textual representation of the network.
+     */
     void display() const {
         std::size_t parameters = 0;
 
@@ -165,6 +178,12 @@ public:
         std::cout << "Total parameters: " << parameters << std::endl;
     }
 
+    /*!
+     * \brief Backup the weights of all the layers into a temporary storage.
+     *
+     * Only one temporary storage is available, i.e. calling this function
+     * twice will erase the first saved weights.
+     */
     void backup_weights(){
         for_each_layer([](auto& layer){
             cpp::static_if<decay_layer_traits<decltype(layer)>::is_trained()>([&layer](auto f){
@@ -173,6 +192,12 @@ public:
         });
     }
 
+    /*!
+     * \brief Restore the weights previously saved.
+     *
+     * This function has no effect if the weights were not saved before.
+     * Calling this function twice will restore the same weights.
+     */
     void restore_weights(){
         for_each_layer([](auto& layer){
             cpp::static_if<decay_layer_traits<decltype(layer)>::is_trained()>([&layer](auto f){
@@ -181,16 +206,28 @@ public:
         });
     }
 
+    /*!
+     * \brief Store the network weights to the given file.
+     * \param file The path to the file
+     */
     void store(const std::string& file) const {
         std::ofstream os(file, std::ofstream::binary);
         store(os);
     }
 
+    /*!
+     * \brief Load the network weights from the given file.
+     * \param file The path to the file
+     */
     void load(const std::string& file){
         std::ifstream is(file, std::ifstream::binary);
         load(is);
     }
 
+    /*!
+     * \brief Store the network weights using the given output stream.
+     * \param os The stream to output the network weights to.
+     */
     void store(std::ostream& os) const {
         for_each_layer([&os](auto& layer){
             cpp::static_if<decay_layer_traits<decltype(layer)>::is_rbm_layer()>([&](auto f){
@@ -203,6 +240,10 @@ public:
 #endif //DLL_SVM_SUPPORT
     }
 
+    /*!
+     * \brief Load the network weights using the given output stream.
+     * \param is The stream to load the network weights from.
+     */
     void load(std::istream& is){
         for_each_layer([&is](auto& layer){
             cpp::static_if<decay_layer_traits<decltype(layer)>::is_rbm_layer()>([&](auto f){
@@ -215,11 +256,21 @@ public:
 #endif //DLL_SVM_SUPPORT
     }
 
+    /*!
+     * \brief Returns the Nth layer.
+     * \return The Nth layer
+     * \tparam N The index of the layer to return (from 0)
+     */
     template<std::size_t N>
     layer_type<N>& layer_get() {
         return detail::layer_get<N>(tuples);
     }
 
+    /*!
+     * \brief Returns the Nth layer.
+     * \return The Nth layer
+     * \tparam N The index of the layer to return (from 0)
+     */
     template<std::size_t N>
     constexpr const layer_type<N>& layer_get() const {
         return detail::layer_get<N>(tuples);
@@ -517,15 +568,14 @@ private:
     };
 
 public:
-    using output_one_t = layer_output_t<layers - 1>;
+    using output_one_t = layer_output_t<layers - 1>; ///< The type of a single output of the network
 
     using output_t = std::conditional_t<
             dbn_traits<this_type>::is_multiplex(),
             std::vector<output_one_t>,
-            output_one_t>;
+            output_one_t>;                           ///< The output type of the network
 
 private:
-
     //Normal version
     template<std::size_t I, typename Iterator, cpp_enable_if((I>0 && I<layers && !dbn_traits<this_type>::is_multiplex() && !batch_layer_ignore<I>::value))>
     void pretrain_layer_batch(Iterator first, Iterator last, watcher_t& watcher, std::size_t max_epochs){
@@ -687,9 +737,15 @@ private:
     void pretrain_layer_batch(Iterator, Iterator, watcher_t&, std::size_t){}
 
 public:
+
     /*!
-     * \brief Pretrain the network by training all layers in an unsupervised
-     * manner.
+     * \brief Pretrain the network by training all layers in an unsupervised manner.
+     *
+     * \param first Iterator to the first element of the sequence
+     * \param last Iterator to the last element of the sequence
+     * \param max_epochs The maximum number of epochs for pretraining.
+     *
+     * \tparam Iterator the type of iterator
      */
     template<typename Iterator>
     void pretrain(Iterator first, Iterator last, std::size_t max_epochs){
