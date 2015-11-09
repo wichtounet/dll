@@ -43,6 +43,27 @@ TEST_CASE("unit/dbn/mnist/1", "[dbn][unit]") {
     auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
     std::cout << "test_error:" << test_error << std::endl;
     REQUIRE(test_error < 0.2);
+
+    dbn->save_features(dataset.training_images[0], ".tmp.features");
+
+    std::ifstream is(".tmp.features");
+
+    std::size_t big = 0;
+    for(std::size_t i = 0; i < 10; ++i){
+        double v;
+        char dump;
+        is >> v;
+
+        if(i < 9){
+            is >> dump;
+        }
+
+        if(v > 0.01){
+            ++big;
+        }
+    }
+
+    REQUIRE(big == 1);
 }
 
 TEST_CASE("unit/dbn/mnist/2", "[dbn][unit]") {
