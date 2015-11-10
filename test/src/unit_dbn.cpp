@@ -49,16 +49,16 @@ TEST_CASE("unit/dbn/mnist/1", "[dbn][unit]") {
     std::ifstream is(".tmp.features");
 
     std::size_t big = 0;
-    for(std::size_t i = 0; i < 10; ++i){
+    for (std::size_t i = 0; i < 10; ++i) {
         double v;
         char dump;
         is >> v;
 
-        if(i < 9){
+        if (i < 9) {
             is >> dump;
         }
 
-        if(v > 0.01){
+        if (v > 0.01) {
             ++big;
         }
     }

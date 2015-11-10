@@ -23,7 +23,7 @@ void export_features_dll(const Features& features, const std::string& file) {
 
     std::string comma = "";
 
-    for(auto& feature : features){
+    for (auto& feature : features) {
         os << comma << feature;
         comma = ";";
     }
