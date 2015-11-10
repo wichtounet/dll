@@ -54,22 +54,22 @@ struct base_trainer {
 
 /* Some utilities */
 
-template <typename RBM, typename C, cpp::enable_if_u<layer_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
+template <typename RBM, typename C, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
 auto reshape_nv1(RBM& rbm, C&& container) {
     return etl::reshape(container, rbm.num_visible, 1);
 }
 
-template <typename RBM, typename C, cpp::disable_if_u<layer_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
+template <typename RBM, typename C, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
 auto reshape_nv1(RBM&, C&& container) {
     return etl::reshape<RBM::num_visible, 1>(container);
 }
 
-template <typename RBM, typename C, cpp::enable_if_u<layer_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
+template <typename RBM, typename C, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
 auto reshape_1nh(RBM& rbm, C&& container) {
     return etl::reshape(container, 1, rbm.num_hidden);
 }
 
-template <typename RBM, typename C, cpp::disable_if_u<layer_traits<RBM>::is_dynamic()> = cpp::detail::dummy>
+template <typename RBM, typename C, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
 auto reshape_1nh(RBM&, C&& container) {
     return etl::reshape<1, RBM::num_hidden>(container);
 }
@@ -684,13 +684,13 @@ struct base_cd_trainer : base_trainer<RBM> {
 
     cpp::thread_pool<!layer_traits<rbm_t>::is_serial()> pool;
 
-    template <bool M = layer_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
+    template <bool M = layer_traits<rbm_t>::has_momentum(), cpp_disable_if(M)>
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm), q_global_t(0.0), q_local_t(0.0) {
         static_assert(!layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
-    template <bool M = layer_traits<rbm_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
+    template <bool M = layer_traits<rbm_t>::has_momentum(), cpp_enable_if(M)>
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm), w_inc(0.0), b_inc(0.0), c_inc(0.0), q_global_t(0.0), q_local_t(0.0) {
         static_assert(layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
@@ -770,7 +770,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
 
     cpp::thread_pool<!layer_traits<rbm_t>::is_serial()> pool;
 
-    template <bool M = layer_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
+    template <bool M = layer_traits<rbm_t>::has_momentum(), cpp_disable_if(M)>
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm),
               v1(get_batch_size(rbm), rbm.num_visible),
@@ -798,7 +798,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
         static_assert(!layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
-    template <bool M = layer_traits<rbm_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
+    template <bool M = layer_traits<rbm_t>::has_momentum(), cpp_enable_if(M)>
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm),
               v1(get_batch_size(rbm), rbm.num_visible),
@@ -924,7 +924,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
 
     cpp::thread_pool<!layer_traits<rbm_t>::is_serial()> pool;
 
-    template <bool M = layer_traits<rbm_t>::has_momentum(), cpp::disable_if_u<M> = cpp::detail::dummy>
+    template <bool M = layer_traits<rbm_t>::has_momentum(), cpp_disable_if(M)>
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm),
               q_global_t(0.0),
@@ -935,7 +935,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
         static_assert(!layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
-    template <bool M = layer_traits<rbm_t>::has_momentum(), cpp::enable_if_u<M> = cpp::detail::dummy>
+    template <bool M = layer_traits<rbm_t>::has_momentum(), cpp_enable_if(M)>
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm),
               w_inc(0.0),

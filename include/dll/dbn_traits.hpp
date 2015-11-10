@@ -77,42 +77,42 @@ struct dbn_traits {
 
 /** Functions to get the dimensions of DBN regardless of dynamic or not **/
 
-template <typename DBN, cpp::disable_if_u<dbn_traits<DBN>::is_dynamic()> = cpp::detail::dummy>
+template <typename DBN, cpp_disable_if(dbn_traits<DBN>::is_dynamic())>
 constexpr std::size_t dbn_output_size(const DBN& /*dbn*/) {
     return DBN::output_size();
 }
 
-template <typename DBN, cpp::enable_if_u<dbn_traits<DBN>::is_dynamic()> = cpp::detail::dummy>
+template <typename DBN, cpp_enable_if(dbn_traits<DBN>::is_dynamic())>
 std::size_t dbn_output_size(const DBN& dbn) {
     return dbn.output_size();
 }
 
-template <typename DBN, cpp::disable_if_u<dbn_traits<DBN>::is_dynamic()> = cpp::detail::dummy>
+template <typename DBN, cpp_disable_if(dbn_traits<DBN>::is_dynamic())>
 constexpr std::size_t dbn_full_output_size(const DBN& /*dbn*/) {
     return DBN::full_output_size();
 }
 
-template <typename DBN, cpp::enable_if_u<dbn_traits<DBN>::is_dynamic()> = cpp::detail::dummy>
+template <typename DBN, cpp_enable_if(dbn_traits<DBN>::is_dynamic())>
 std::size_t dbn_full_output_size(const DBN& dbn) {
     return dbn.full_output_size();
 }
 
-template <typename DBN, cpp::disable_if_u<dbn_traits<DBN>::is_dynamic()> = cpp::detail::dummy>
+template <typename DBN, cpp_disable_if(dbn_traits<DBN>::is_dynamic())>
 constexpr std::size_t dbn_input_size(const DBN& /*dbn*/) {
     return DBN::input_size();
 }
 
-template <typename DBN, cpp::enable_if_u<dbn_traits<DBN>::is_dynamic()> = cpp::detail::dummy>
+template <typename DBN, cpp_enable_if(dbn_traits<DBN>::is_dynamic())>
 std::size_t dbn_input_size(const DBN& dbn) {
     return dbn.input_size();
 }
 
-template <typename DBN, cpp::disable_if_u<dbn_traits<DBN>::is_dynamic()> = cpp::detail::dummy>
+template <typename DBN, cpp_disable_if(dbn_traits<DBN>::is_dynamic())>
 constexpr std::size_t dbn_full_input_size(const DBN& /*dbn*/) {
     return DBN::full_input_size();
 }
 
-template <typename DBN, cpp::enable_if_u<dbn_traits<DBN>::is_dynamic()> = cpp::detail::dummy>
+template <typename DBN, cpp_enable_if(dbn_traits<DBN>::is_dynamic())>
 std::size_t dbn_full_input_size(const DBN& dbn) {
     return dbn.full_input_size();
 }

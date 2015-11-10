@@ -496,12 +496,12 @@ public:
         return result;
     }
 
-    template<typename DBN = this_type, cpp::enable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
+    template<typename DBN = this_type, cpp_enable_if(dbn_traits<DBN>::concatenate())>
     full_output_t get_final_activation_probabilities(const input_t& sample) const {
         return full_activation_probabilities(sample);
     }
 
-    template<typename DBN = this_type, cpp::disable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
+    template<typename DBN = this_type, cpp_disable_if(dbn_traits<DBN>::concatenate())>
     output_t get_final_activation_probabilities(const input_t& sample) const {
         return activation_probabilities(sample);
     }
@@ -1260,13 +1260,13 @@ private:
 
 #ifdef DLL_SVM_SUPPORT
 
-    template<typename DBN = this_type, cpp::enable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
+    template<typename DBN = this_type, cpp_enable_if(dbn_traits<DBN>::concatenate())>
     void add_activation_probabilities(svm_samples_t& result, const input_t& sample){
         result.emplace_back(full_output_size());
         full_activation_probabilities(sample, result.back());
     }
 
-    template<typename DBN = this_type, cpp::disable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
+    template<typename DBN = this_type, cpp_disable_if(dbn_traits<DBN>::concatenate())>
     void add_activation_probabilities(svm_samples_t& result, const input_t& sample){
         result.push_back(layer_get<layers - 1>().template prepare_one_output<input_t>());
         activation_probabilities(sample, result.back());

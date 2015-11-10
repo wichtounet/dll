@@ -318,7 +318,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         }
     }
 
-    template<typename V, typename H, cpp::enable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
+    template<typename V, typename H, cpp_enable_if(etl::is_etl_expr<V>::value)>
     weight energy(const V& v, const H& h) const {
         etl::fast_dyn_matrix<weight, 2, K, NH1, NH2> v_cv;      //Temporary convolution
 
@@ -341,7 +341,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         }
     }
 
-    template<typename V, typename H, cpp::disable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
+    template<typename V, typename H, cpp_disable_if(etl::is_etl_expr<V>::value)>
     weight energy(const V& v, const H& h) const {
         etl::fast_dyn_matrix<weight, NC, NV1, NV2> ev(v);
         etl::fast_dyn_matrix<weight, K, NH1, NH2> eh(h);

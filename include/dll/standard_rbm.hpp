@@ -228,7 +228,7 @@ protected:
     //Note: Considering that energy and free energy are not critical, their implementations
     //are not highly optimized.
 
-    template <typename V, typename H, cpp::enable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
+    template <typename V, typename H, cpp_enable_if(etl::is_etl_expr<V>::value)>
     static weight energy(const parent_t& rbm, const V& v, const H& h) {
         if (visible_unit == unit_type::BINARY && hidden_unit == unit_type::BINARY) {
             //Definition according to G. Hinton
@@ -249,7 +249,7 @@ protected:
         }
     }
 
-    template <typename V, typename H, cpp::disable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
+    template <typename V, typename H, cpp_disable_if(etl::is_etl_expr<V>::value)>
     static weight energy(const parent_t& rbm, const V& v, const H& h) {
         etl::dyn_vector<typename V::value_type> ev(v);
         etl::dyn_vector<typename H::value_type> eh(h);
@@ -262,7 +262,7 @@ protected:
     //3. by considering only binary hidden units, the values are only 0 and 1
     //and therefore the values can be "integrated out" easily.
 
-    template <typename V, cpp::enable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
+    template <typename V, cpp_enable_if(etl::is_etl_expr<V>::value)>
     static weight free_energy(const parent_t& rbm, const V& v) {
         if (visible_unit == unit_type::BINARY && hidden_unit == unit_type::BINARY) {
             //Definition according to G. Hinton
@@ -283,7 +283,7 @@ protected:
         }
     }
 
-    template <typename V, cpp::disable_if_u<etl::is_etl_expr<V>::value> = cpp::detail::dummy>
+    template <typename V, cpp_disable_if(etl::is_etl_expr<V>::value)>
     static weight free_energy(const parent_t& rbm, const V& v) {
         etl::dyn_vector<typename V::value_type> ev(v);
         return free_energy(rbm, ev);
