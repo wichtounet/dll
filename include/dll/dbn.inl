@@ -470,8 +470,7 @@ public:
      * \brief Save the features generated for the given sample in the given file.
      * \param sample The sample to get features from
      * \param file The output file
-     * \param format The format of the exported features
-
+     * \param f The format of the exported features
      */
     void save_features(const input_t& sample, const std::string& file, format f = format::DLL) const {
         cpp_assert(f == format::DLL, "Only DLL format is supported for now");
