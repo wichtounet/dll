@@ -46,7 +46,7 @@ struct extract_weight_t <I, DBN, cpp::disable_if_t<layer_traits<typename DBN::te
     using type = typename DBN::template layer_type<I>::weight;
 };
 
-namespace detail {
+namespace dbn_detail {
 
 template<typename Iterator>
 std::size_t fast_distance(Iterator& first, Iterator& last){
@@ -66,7 +66,118 @@ void safe_advance(Iterator& it, const Iterator& end, std::size_t distance){
     }
 }
 
-} //end of namespace detail
+template<typename DBN, std::size_t I, typename Enable = void>
+struct layer_input_simple;
+
+template<typename DBN, std::size_t I>
+struct layer_input_simple<DBN, I, std::enable_if_t<!layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
+    using type = typename DBN::template layer_type<I>::input_one_t;
+};
+
+template<typename DBN, std::size_t I>
+struct layer_input_simple<DBN, I, std::enable_if_t<layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
+    using type = typename layer_input_simple<DBN, I + 1>::type;
+};
+
+template<typename DBN, std::size_t I, typename Enable = void>
+struct layer_input_batch;
+
+template<typename DBN, std::size_t I>
+struct layer_input_batch<DBN, I, std::enable_if_t<!layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
+    template<std::size_t B>
+    using type = typename DBN::template layer_type<I>::template input_batch_t<B>;
+};
+
+template<typename DBN, std::size_t I>
+struct layer_input_batch<DBN, I, std::enable_if_t<layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
+    template<std::size_t B>
+    using type = typename layer_input_batch<DBN, I + 1>::template type<B>;
+};
+
+template<typename DBN, std::size_t I, typename Enable = void>
+struct layer_output;
+
+template<typename DBN, std::size_t I>
+using layer_output_t = typename layer_output<DBN, I>::type;
+
+template<typename DBN, std::size_t I, typename Enable = void>
+struct layer_input;
+
+template<typename DBN, std::size_t I>
+using layer_input_t = typename layer_input<DBN, I>::type;
+
+template<typename DBN, std::size_t I>
+struct layer_output<DBN, I, std::enable_if_t<!layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
+    using type = typename DBN::template layer_type<I>::output_one_t;
+};
+
+template<typename DBN, std::size_t I>
+struct layer_output<DBN, I, std::enable_if_t<layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
+    using type = std::conditional_t<I == 0, typename DBN::input_t, layer_input_t<DBN, I>>;
+};
+
+template<typename DBN, std::size_t I>
+struct layer_input<DBN, I, std::enable_if_t<!layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
+    using type = typename DBN::template layer_type<I>::input_one_t;
+};
+
+template<typename DBN, std::size_t I>
+struct layer_input<DBN, I, std::enable_if_t<I == 0 && layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
+    using type = layer_input_t<DBN, I + 1>;
+};
+
+template<typename DBN, std::size_t I>
+struct layer_input<DBN, I, std::enable_if_t<(I > 0) && layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
+    using type = layer_output_t<DBN, I - 1>;
+};
+
+    template<typename D, typename T>
+    struct for_each_impl;
+
+    template<typename D, std::size_t... I>
+    struct for_each_impl<D, std::index_sequence<I...>> {
+        D& dbn;
+
+        for_each_impl(D& dbn) : dbn(dbn) {}
+
+        template<typename Functor>
+        void for_each_layer(Functor&& functor){
+            int wormhole[] = {(functor(dbn.template layer_get<I>()),0)...};
+            cpp_unused(wormhole);
+        }
+
+        template<typename Functor>
+        void for_each_layer_i(Functor&& functor){
+            int wormhole[] = {(functor(I, dbn.template layer_get<I>()),0)...};
+            cpp_unused(wormhole);
+        }
+
+        template<typename Functor>
+        void for_each_layer_pair(Functor&& functor){
+            int wormhole[] = {(functor(dbn.template layer_get<I>(), dbn.template layer_get<I+1>()),0)...};
+            cpp_unused(wormhole);
+        }
+
+        template<typename Functor>
+        void for_each_layer_pair_i(Functor&& functor){
+            int wormhole[] = {(functor(I, dbn.template layer_get<I>(), dbn.template layer_get<I+1>()),0)...};
+            cpp_unused(wormhole);
+        }
+
+        template<typename Functor>
+        void for_each_layer_rpair(Functor&& functor){
+            int wormhole[] = {(functor(dbn.template layer_get<D::layers - I - 2>(), dbn.template layer_get<D::layers - I - 1>()),0)...};
+            cpp_unused(wormhole);
+        }
+
+        template<typename Functor>
+        void for_each_layer_rpair_i(Functor&& functor){
+            int wormhole[] = {(functor(D::layers - I - 2, dbn.template layer_get<D::layers - I - 2>(), dbn.template layer_get<D::layers - I - 1>()),0)...};
+            cpp_unused(wormhole);
+        }
+    };
+
+} //end of namespace dbn_detail
 
 /*!
  * \brief A Deep Belief Network implementation
@@ -78,16 +189,48 @@ struct dbn final {
 
     using layers_t = typename desc::layers;  ///< The layers container type
 
-    static constexpr const std::size_t layers = layers_t::size;                 ///< The number of layers
-    static constexpr const std::size_t batch_size = desc::BatchSize;            ///< The batch size (for finetuning)
-    static constexpr const std::size_t big_batch_size = desc::BigBatchSize;     ///< The number of pretraining batch to do at once
-
     template<std::size_t N>
     using layer_type = detail::layer_type_t<N, layers_t>;             ///< The type of the layer at index Nth
 
     using weight = typename extract_weight_t<0, this_type>::type;     ///< The tpyeof the weights
 
     using watcher_t = typename desc::template watcher_t<this_type>;   ///< The watcher type
+
+    using input_t = typename dbn_detail::layer_input_simple<this_type, 0>::type;    ///< The input type of the network
+
+    template<std::size_t B>
+    using input_batch_t = typename dbn_detail::layer_input_batch<this_type, 0>::template type<B>;      ///< The input batch type of the network for a batch size of B
+
+    template<std::size_t N>
+    using layer_input_t = dbn_detail::layer_input_t<this_type, N>;
+
+    template<std::size_t N>
+    using layer_output_t = dbn_detail::layer_output_t<this_type, N>;
+
+    using label_output_t = layer_input_t<layers_t::size - 1>;
+    using output_one_t = layer_output_t<layers_t::size - 1>; ///< The type of a single output of the network
+
+    using output_t = std::conditional_t<
+            dbn_traits<this_type>::is_multiplex(),
+            std::vector<output_one_t>,
+            output_one_t>;                           ///< The output type of the network
+
+    using full_output_t = etl::dyn_vector<weight>;
+
+    using svm_samples_t = std::conditional_t<
+        dbn_traits<this_type>::concatenate(),
+        std::vector<etl::dyn_vector<weight>>,       //In full mode, use a simple 1D vector
+        typename layer_type<layers_t::size - 1>::output_t>; //In normal mode, use the output of the last layer
+
+    using for_each_impl_t = dbn_detail::for_each_impl<this_type, std::make_index_sequence<layers_t::size>>;
+    using for_each_pair_impl_t = dbn_detail::for_each_impl<this_type, std::make_index_sequence<layers_t::size - 1>>;
+
+    using const_for_each_impl_t = dbn_detail::for_each_impl<const this_type, std::make_index_sequence<layers_t::size>>;
+    using const_for_each_pair_impl_t = dbn_detail::for_each_impl<const this_type, std::make_index_sequence<layers_t::size - 1>>;
+
+    static constexpr const std::size_t layers = layers_t::size;                 ///< The number of layers
+    static constexpr const std::size_t batch_size = desc::BatchSize;            ///< The batch size (for finetuning)
+    static constexpr const std::size_t big_batch_size = desc::BigBatchSize;     ///< The number of pretraining batch to do at once
 
     layers_t tuples;                    ///< The layers
 
@@ -106,49 +249,24 @@ struct dbn final {
 
     weight momentum = 0;                ///< The current momentum
 
-    cpp::thread_pool<!dbn_traits<this_type>::is_serial()> pool;
-
-private:
-    template<std::size_t I, typename Enable = void>
-    struct layer_input_simple;
-
-    template<std::size_t I>
-    struct layer_input_simple<I, std::enable_if_t<!layer_traits<layer_type<I>>::is_transform_layer()>> {
-        using type = typename layer_type<I>::input_one_t;
-    };
-
-    template<std::size_t I>
-    struct layer_input_simple<I, std::enable_if_t<layer_traits<layer_type<I>>::is_transform_layer()>> {
-        using type = typename layer_input_simple<I + 1>::type;
-    };
-
-    template<std::size_t I, typename Enable = void>
-    struct layer_input_batch;
-
-    template<std::size_t I>
-    struct layer_input_batch<I, std::enable_if_t<!layer_traits<layer_type<I>>::is_transform_layer()>> {
-        template<std::size_t B>
-        using type = typename layer_type<I>::template input_batch_t<B>;
-    };
-
-    template<std::size_t I>
-    struct layer_input_batch<I, std::enable_if_t<layer_traits<layer_type<I>>::is_transform_layer()>> {
-        template<std::size_t B>
-        using type = typename layer_input_batch<I + 1>::template type<B>;
-    };
-
-public:
-    using input_t = typename layer_input_simple<0>::type;                   ///< The input type of the network
-
-    template<std::size_t B>
-    using input_batch_t = typename layer_input_batch<0>::template type<B>;  ///< The input batch type of the network for a batch size of B
-
 #ifdef DLL_SVM_SUPPORT
+    //TODO Ideally these fields should be private
     svm::model svm_model;               ///< The learned model
     svm::problem problem;               ///< libsvm is stupid, therefore, you cannot destroy the problem if you want to use the model...
     bool svm_loaded = false;            ///< Indicates if a SVM model has been loaded (and therefore must be saved)
 #endif //DLL_SVM_SUPPORT
 
+private:
+    cpp::thread_pool<!dbn_traits<this_type>::is_serial()> pool;
+
+    mutable int fake_resource;          ///< Simple field to get a reference from for resource management
+
+public:
+    /*!
+     * Constructs a DBN and initializes all its members.
+     *
+     * This is the only way to create a DBN.
+     */
     dbn(){
         //Nothing else to init
     }
@@ -304,10 +422,440 @@ public:
         return output;
     }
 
-    /* Pretrain */
+    /*!
+     * \brief Pretrain the network by training all layers in an unsupervised manner.
+     *
+     * \param first Iterator to the first element of the sequence
+     * \param last Iterator to the last element of the sequence
+     * \param max_epochs The maximum number of epochs for pretraining.
+     *
+     * \tparam Iterator the type of iterator
+     */
+    template<typename Iterator>
+    void pretrain(Iterator first, Iterator last, std::size_t max_epochs){
+        watcher_t watcher;
+
+        watcher.pretraining_begin(*this, max_epochs);
+
+        //Pretrain each layer one-by-one
+        if(dbn_traits<this_type>::save_memory()){
+            std::cout << "DBN: Pretraining done in batch mode to save memory" << std::endl;
+            pretrain_layer_batch<0>(first, last, watcher, max_epochs);
+        } else {
+            pretrain_layer<0>(first, last, watcher, max_epochs, fake_resource);
+        }
+
+        watcher.pretraining_end(*this);
+    }
+
+    /*!
+     * \brief Pretrain the network by training all layers in an unsupervised
+     * manner.
+     */
+    template<typename Samples>
+    void pretrain(const Samples& training_data, std::size_t max_epochs){
+        pretrain(training_data.begin(), training_data.end(), max_epochs);
+    }
+
+    /*!
+     * \brief Pretrain the network by training all layers in an unsupervised
+     * manner, the network will learn to reconstruct noisy input.
+     */
+    template<typename NIterator, typename CIterator>
+    void pretrain_denoising(NIterator nit, NIterator nend, CIterator cit, CIterator cend, std::size_t max_epochs){
+        watcher_t watcher;
+
+        watcher.pretraining_begin(*this, max_epochs);
+
+        static_assert(!dbn_traits<this_type>::save_memory(), "pretrain_denoising has not yet been implemented in memory");
+
+        //Pretrain each layer one-by-one
+        pretrain_layer_denoising<0>(nit, nend, cit, cend, watcher, max_epochs, fake_resource, fake_resource);
+
+        watcher.pretraining_end(*this);
+    }
+
+    /*!
+     * \brief Pretrain the network by training all layers in an unsupervised
+     * manner, the network will learn to reconstruct noisy input.
+     */
+    template<typename Noisy, typename Clean>
+    void pretrain_denoising(const Noisy& noisy, const Clean& clean, std::size_t max_epochs){
+        pretrain_denoising(noisy.begin(), noisy.end(), clean.begin(), clean.end(), max_epochs);
+    }
+
+    template<typename Iterator, typename LabelIterator>
+    void train_with_labels(Iterator&& first, Iterator&& last, LabelIterator&& lfirst, LabelIterator&& llast, std::size_t labels, std::size_t max_epochs){
+        cpp_assert(std::distance(first, last) == std::distance(lfirst, llast), "There must be the same number of values than labels");
+        cpp_assert(dll::input_size(layer_get<layers - 1>()) == dll::output_size(layer_get<layers - 2>()) + labels, "There is no room for the labels units");
+
+        watcher_t watcher;
+
+        watcher.pretraining_begin(*this, max_epochs);
+
+        train_with_labels<0>(first, last, watcher, std::forward<LabelIterator>(lfirst), std::forward<LabelIterator>(llast), labels, max_epochs);
+
+        watcher.pretraining_end(*this);
+    }
+
+    template<typename Samples, typename Labels>
+    void train_with_labels(const Samples& training_data, const Labels& training_labels, std::size_t labels, std::size_t max_epochs){
+        cpp_assert(training_data.size() == training_labels.size(), "There must be the same number of values than labels");
+        cpp_assert(dll::input_size(layer_get<layers - 1>()) == dll::output_size(layer_get<layers - 2>()) + labels, "There is no room for the labels units");
+
+        train_with_labels(training_data.begin(), training_data.end(), training_labels.begin(), training_labels.end(), labels, max_epochs);
+    }
+
+    size_t predict_labels(const input_t& item, std::size_t labels) const {
+        cpp_assert(dll::input_size(layer_get<layers - 1>()) == dll::output_size(layer_get<layers - 2>()) + labels, "There is no room for the labels units");
+
+        label_output_t output_a = layer_get<layers - 1>().prepare_one_input();
+
+        predict_labels<0>(item, output_a, labels);
+
+        return std::distance(
+            std::prev(output_a.end(), labels),
+            std::max_element(std::prev(output_a.end(), labels), output_a.end()));
+    }
+
+    //activation_probabilities_sub
+
+    /*!
+     * \brief Returns the output features of the Ith layer for the given sample and saves them in the given container
+     * \param sample The sample to get features from
+     * \param result The container where the results will be saved
+     * \tparam I The index of the layer for features (starts at 0)
+     * \return the output features of the Ith layer of the network
+     */
+    template<std::size_t I, typename Output, typename T = this_type>
+    auto activation_probabilities_sub(const input_t& sample, Output& result) const {
+        activation_probabilities<0, I+1>(sample, result);
+
+        return result;
+    }
+
+    /*!
+     * \brief Returns the output features of the Ith layer for the given sample
+     * \param sample The sample to get features from
+     * \tparam I The index of the layer for features (starts at 0)
+     * \return the output features of the Ith layer of the network
+     */
+    template<std::size_t I>
+    auto activation_probabilities_sub(const input_t& sample) const {
+        auto result = prepare_output<I>();
+        return activation_probabilities_sub<I>(sample, result);
+    }
+
+    //Note: features_sub are alias functions for activation_probabilities_sub
+
+    /*!
+     * \brief Returns the output features of the Ith layer for the given sample and saves them in the given container
+     * \param sample The sample to get features from
+     * \param result The container where the results will be saved
+     * \tparam I The index of the layer for features (starts at 0)
+     * \return the output features of the Ith layer of the network
+     */
+    template<std::size_t I, typename Output, typename T = this_type>
+    auto features_sub(const input_t& sample, Output& result) const {
+        return activation_probabilities_sub<I>(sample, result);
+    }
+
+    /*!
+     * \brief Returns the output features of the Ith layer for the given sample
+     * \param sample The sample to get features from
+     * \tparam I The index of the layer for features (starts at 0)
+     * \return the output features of the Ith layer of the network
+     */
+    template<std::size_t I>
+    auto features_sub(const input_t& sample) const {
+        return activation_probabilities_sub<I>(sample);
+    }
+
+    // activation_probabilities
+
+    /*!
+     * \brief Computes the output features for the given sample and saves them in the given container
+     * \param sample The sample to get features from
+     * \param result The container where to save the features
+     * \return result
+     */
+    CLANG_AUTO_TRICK auto activation_probabilities(const input_t& sample, output_t& result) const {
+        return activation_probabilities_sub<layers - 1>(sample, result);
+    }
+
+    /*!
+     * \brief Returns the output features for the given sample
+     * \param sample The sample to get features from
+     * \return the output features of the last layer of the network
+     */
+    CLANG_AUTO_TRICK auto activation_probabilities(const input_t& sample) const {
+        return activation_probabilities_sub<layers - 1>(sample);
+    }
+
+    //Note: features are alias functions for activation_probabilities
+
+    /*!
+     * \brief Computes the output features for the given sample and saves them in the given container
+     * \param sample The sample to get features from
+     * \param result The container where to save the features
+     * \return result
+     */
+    CLANG_AUTO_TRICK auto features(const input_t& sample, output_t& result) const {
+        return activation_probabilities(sample, result);
+    }
+
+    /*!
+     * \brief Returns the output features for the given sample
+     * \param sample The sample to get features from
+     * \return the output features of the last layer of the network
+     */
+    CLANG_AUTO_TRICK auto features(const input_t& sample) const {
+        return activation_probabilities(sample);
+    }
+
+    /*!
+     * \brief Save the features generated for the given sample in the given file.
+     * \param sample The sample to get features from
+     * \param file The output file
+     * \param format The format of the exported features
+
+     */
+    void save_features(const input_t& sample, const std::string& file, format f = format::DLL) const {
+        cpp_assert(f == format::DLL, "Only DLL format is supported for now");
+
+        decltype(auto) probs = features(sample);
+
+        if(f == format::DLL){
+            export_features_dll(probs, file);
+        }
+    }
+
+    void full_activation_probabilities(const input_t& sample, full_output_t& result) const {
+        std::size_t i = 0;
+        full_activation_probabilities<0>(sample, i, result);
+    }
+
+    full_output_t full_activation_probabilities(const input_t& item_data) const {
+        full_output_t result(full_output_size());
+
+        full_activation_probabilities(item_data, result);
+
+        return result;
+    }
+
+    template<typename DBN = this_type, cpp::enable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
+    full_output_t get_final_activation_probabilities(const input_t& sample) const {
+        return full_activation_probabilities(sample);
+    }
+
+    template<typename DBN = this_type, cpp::disable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
+    output_t get_final_activation_probabilities(const input_t& sample) const {
+        return activation_probabilities(sample);
+    }
+
+    size_t predict_label(const output_t& result) const {
+        return std::distance(result.begin(), std::max_element(result.begin(), result.end()));
+    }
+
+    size_t predict(const input_t& item) const {
+        auto result = activation_probabilities(item);
+        return predict_label(result);
+    }
+
+    /* Fine-tuning */
+
+    template<typename Samples, typename Labels>
+    weight fine_tune(const Samples& training_data, Labels& labels, size_t max_epochs){
+        return fine_tune(training_data.begin(), training_data.end(), labels.begin(), labels.end(), max_epochs);
+    }
+
+    template<typename Iterator, typename LIterator>
+    weight fine_tune(Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, size_t max_epochs){
+        dll::dbn_trainer<this_type> trainer;
+        return trainer.train(*this,
+            std::forward<Iterator>(first), std::forward<Iterator>(last),
+            std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
+            max_epochs);
+    }
+
+    template<std::size_t I, typename T = this_type, cpp_disable_if(dbn_traits<T>::is_multiplex())>
+    auto prepare_output() const {
+        return layer_get<I>().template prepare_one_output<input_t>();
+    }
+
+    template<std::size_t I, typename T = this_type, cpp_enable_if(dbn_traits<T>::is_multiplex())>
+    auto prepare_output() const {
+        return std::vector<typename layer_type<layers - 1>::output_one_t>();
+    }
+
+    CLANG_AUTO_TRICK auto prepare_one_output() const {
+        return prepare_output<layers - 1>();
+    }
+
+    template<typename Functor>
+    void for_each_layer(Functor&& functor){
+        for_each_impl_t(*this).for_each_layer(std::forward<Functor>(functor));
+    }
+
+    template<typename Functor>
+    void for_each_layer_i(Functor&& functor){
+        for_each_impl_t(*this).for_each_layer_i(std::forward<Functor>(functor));
+    }
+
+    template<typename Functor>
+    void for_each_layer_pair(Functor&& functor){
+        for_each_pair_impl_t(*this).for_each_layer_pair(std::forward<Functor>(functor));
+    }
+
+    template<typename Functor>
+    void for_each_layer_pair_i(Functor&& functor){
+        for_each_pair_impl_t(*this).for_each_layer_pair_i(std::forward<Functor>(functor));
+    }
+
+    template<typename Functor>
+    void for_each_layer_rpair(Functor&& functor){
+        for_each_pair_impl_t(*this).for_each_layer_rpair(std::forward<Functor>(functor));
+    }
+
+    template<typename Functor>
+    void for_each_layer_rpair_i(Functor&& functor){
+        for_each_pair_impl_t(*this).for_each_layer_rpair_i(std::forward<Functor>(functor));
+    }
+
+    template<typename Functor>
+    void for_each_layer(Functor&& functor) const {
+        const_for_each_impl_t(*this).for_each_layer(std::forward<Functor>(functor));
+    }
+
+    template<typename Functor>
+    void for_each_layer_i(Functor&& functor) const {
+        const_for_each_impl_t(*this).for_each_layer_i(std::forward<Functor>(functor));
+    }
+
+    template<typename Functor>
+    void for_each_layer_pair(Functor&& functor) const {
+        const_for_each_pair_impl_t(*this).for_each_layer_pair(std::forward<Functor>(functor));
+    }
+
+    template<typename Functor>
+    void for_each_layer_pair_i(Functor&& functor) const {
+        const_for_each_pair_impl_t(*this).for_each_layer_pair_i(std::forward<Functor>(functor));
+    }
+
+    template<typename Functor>
+    void for_each_layer_rpair(Functor&& functor) const {
+        const_for_each_pair_impl_t(*this).for_each_layer_rpair(std::forward<Functor>(functor));
+    }
+
+    template<typename Functor>
+    void for_each_layer_rpair_i(Functor&& functor) const {
+        const_for_each_pair_impl_t(*this).for_each_layer_rpair_i(std::forward<Functor>(functor));
+    }
+
+#ifdef DLL_SVM_SUPPORT
+
+    template<typename Samples, typename Labels>
+    bool svm_train(const Samples& training_data, const Labels& labels, const svm_parameter& parameters = default_svm_parameters()){
+        cpp::stop_watch<std::chrono::seconds> watch;
+
+        make_problem(training_data, labels, dbn_traits<this_type>::scale());
+
+        //Make libsvm quiet
+        svm::make_quiet();
+
+        //Make sure parameters are not messed up
+        if(!svm::check(problem, parameters)){
+            return false;
+        }
+
+        //Train the SVM
+        svm_model = svm::train(problem, parameters);
+
+        svm_loaded = true;
+
+        std::cout << "SVM training took " << watch.elapsed() << "s" << std::endl;
+
+        return true;
+    }
+
+    template<typename Iterator, typename LIterator>
+    bool svm_train(Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, const svm_parameter& parameters = default_svm_parameters()){
+        cpp::stop_watch<std::chrono::seconds> watch;
+
+        make_problem(
+            std::forward<Iterator>(first), std::forward<Iterator>(last),
+            std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
+            dbn_traits<this_type>::scale());
+
+        //Make libsvm quiet
+        svm::make_quiet();
+
+        //Make sure parameters are not messed up
+        if(!svm::check(problem, parameters)){
+            return false;
+        }
+
+        //Train the SVM
+        svm_model = svm::train(problem, parameters);
+
+        svm_loaded = true;
+
+        std::cout << "SVM training took " << watch.elapsed() << "s" << std::endl;
+
+        return true;
+    }
+
+    template<typename Samples, typename Labels>
+    bool svm_grid_search(const Samples& training_data, const Labels& labels, std::size_t n_fold = 5, const svm::rbf_grid& g = svm::rbf_grid()){
+        make_problem(training_data, labels, dbn_traits<this_type>::scale());
+
+        //Make libsvm quiet
+        svm::make_quiet();
+
+        auto parameters = default_svm_parameters();
+
+        //Make sure parameters are not messed up
+        if(!svm::check(problem, parameters)){
+            return false;
+        }
+
+        //Perform a grid-search
+        svm::rbf_grid_search(problem, parameters, n_fold, g);
+
+        return true;
+    }
+
+    template<typename It, typename LIt>
+    bool svm_grid_search(It&& first, It&& last, LIt&& lfirst, LIt&& llast, std::size_t n_fold = 5, const svm::rbf_grid& g = svm::rbf_grid()){
+        make_problem(
+            std::forward<It>(first), std::forward<It>(last),
+            std::forward<LIt>(lfirst), std::forward<LIt>(llast),
+            dbn_traits<this_type>::scale());
+
+        //Make libsvm quiet
+        svm::make_quiet();
+
+        auto parameters = default_svm_parameters();
+
+        //Make sure parameters are not messed up
+        if(!svm::check(problem, parameters)){
+            return false;
+        }
+
+        //Perform a grid-search
+        svm::rbf_grid_search(problem, parameters, n_fold, g);
+
+        return true;
+    }
+
+    double svm_predict(const input_t& sample){
+        auto features = get_final_activation_probabilities(sample);
+        return svm::predict(svm_model, features);
+    }
+
+#endif //DLL_SVM_SUPPORT
 
 private:
-    mutable int fake_resource;
 
     static void release(int&){}
 
@@ -358,7 +906,7 @@ private:
 
         decltype(auto) layer = layer_get<I>();
 
-        watcher.template pretrain_layer<layer_t>(*this, I, detail::fast_distance(first, last));
+        watcher.template pretrain_layer<layer_t>(*this, I, dbn_detail::fast_distance(first, last));
 
         cpp::static_if<layer_traits<layer_t>::is_pretrained()>([&](auto f){
             f(layer).template train<
@@ -409,7 +957,7 @@ private:
 
         decltype(auto) layer = layer_get<I>();
 
-        watcher.template pretrain_layer<layer_t>(*this, I, detail::fast_distance(nit, nend));
+        watcher.template pretrain_layer<layer_t>(*this, I, dbn_detail::fast_distance(nit, nend));
 
         cpp::static_if<layer_traits<layer_t>::is_pretrained()>([&](auto f){
             f(layer).template train_denoising<
@@ -532,52 +1080,6 @@ private:
         pretrain_layer_batch<I+1>(first, last, watcher, max_epochs);
     }
 
-    template<std::size_t I, typename Enable = void>
-    struct layer_output;
-
-    template<std::size_t I>
-    using layer_output_t = typename layer_output<I>::type;
-
-    template<std::size_t I, typename Enable = void>
-    struct layer_input;
-
-    template<std::size_t I>
-    using layer_input_t = typename layer_input<I>::type;
-
-    template<std::size_t I>
-    struct layer_output<I, std::enable_if_t<!layer_traits<layer_type<I>>::is_transform_layer()>> {
-        using type = typename layer_type<I>::output_one_t;
-    };
-
-    template<std::size_t I>
-    struct layer_output<I, std::enable_if_t<layer_traits<layer_type<I>>::is_transform_layer()>> {
-        using type = std::conditional_t<I == 0, input_t, layer_input_t<I>>;
-    };
-
-    template<std::size_t I>
-    struct layer_input<I, std::enable_if_t<!layer_traits<layer_type<I>>::is_transform_layer()>> {
-        using type = typename layer_type<I>::input_one_t;
-    };
-
-    template<std::size_t I>
-    struct layer_input<I, std::enable_if_t<I == 0 && layer_traits<layer_type<I>>::is_transform_layer()>> {
-        using type = layer_input_t<I + 1>;
-    };
-
-    template<std::size_t I>
-    struct layer_input<I, std::enable_if_t<(I > 0) && layer_traits<layer_type<I>>::is_transform_layer()>> {
-        using type = layer_output_t<I - 1>;
-    };
-
-public:
-    using output_one_t = layer_output_t<layers - 1>; ///< The type of a single output of the network
-
-    using output_t = std::conditional_t<
-            dbn_traits<this_type>::is_multiplex(),
-            std::vector<output_one_t>,
-            output_one_t>;                           ///< The output type of the network
-
-private:
     //Normal version
     template<std::size_t I, typename Iterator, cpp_enable_if((I>0 && I<layers && !dbn_traits<this_type>::is_multiplex() && !batch_layer_ignore<I>::value))>
     void pretrain_layer_batch(Iterator first, Iterator last, watcher_t& watcher, std::size_t max_epochs){
@@ -691,7 +1193,7 @@ private:
             while(it != end){
                 auto batch_start = it;
 
-                detail::safe_advance(it, end, total_batch_size);
+                dbn_detail::safe_advance(it, end, total_batch_size);
 
                 multi_activation_probabilities<I>(batch_start, it, input);
 
@@ -738,73 +1240,7 @@ private:
     template<std::size_t I, typename Iterator, cpp_enable_if(I==layers)>
     void pretrain_layer_batch(Iterator, Iterator, watcher_t&, std::size_t){}
 
-public:
-
-    /*!
-     * \brief Pretrain the network by training all layers in an unsupervised manner.
-     *
-     * \param first Iterator to the first element of the sequence
-     * \param last Iterator to the last element of the sequence
-     * \param max_epochs The maximum number of epochs for pretraining.
-     *
-     * \tparam Iterator the type of iterator
-     */
-    template<typename Iterator>
-    void pretrain(Iterator first, Iterator last, std::size_t max_epochs){
-        watcher_t watcher;
-
-        watcher.pretraining_begin(*this, max_epochs);
-
-        //Pretrain each layer one-by-one
-        if(dbn_traits<this_type>::save_memory()){
-            std::cout << "DBN: Pretraining done in batch mode to save memory" << std::endl;
-            pretrain_layer_batch<0>(first, last, watcher, max_epochs);
-        } else {
-            pretrain_layer<0>(first, last, watcher, max_epochs, fake_resource);
-        }
-
-        watcher.pretraining_end(*this);
-    }
-
-    /*!
-     * \brief Pretrain the network by training all layers in an unsupervised
-     * manner.
-     */
-    template<typename Samples>
-    void pretrain(const Samples& training_data, std::size_t max_epochs){
-        pretrain(training_data.begin(), training_data.end(), max_epochs);
-    }
-
-    /*!
-     * \brief Pretrain the network by training all layers in an unsupervised
-     * manner, the network will learn to reconstruct noisy input.
-     */
-    template<typename NIterator, typename CIterator>
-    void pretrain_denoising(NIterator nit, NIterator nend, CIterator cit, CIterator cend, std::size_t max_epochs){
-        watcher_t watcher;
-
-        watcher.pretraining_begin(*this, max_epochs);
-
-        static_assert(!dbn_traits<this_type>::save_memory(), "pretrain_denoising has not yet been implemented in memory");
-
-        //Pretrain each layer one-by-one
-        pretrain_layer_denoising<0>(nit, nend, cit, cend, watcher, max_epochs, fake_resource, fake_resource);
-
-        watcher.pretraining_end(*this);
-    }
-
-    /*!
-     * \brief Pretrain the network by training all layers in an unsupervised
-     * manner, the network will learn to reconstruct noisy input.
-     */
-    template<typename Noisy, typename Clean>
-    void pretrain_denoising(const Noisy& noisy, const Clean& clean, std::size_t max_epochs){
-        pretrain_denoising(noisy.begin(), noisy.end(), clean.begin(), clean.end(), max_epochs);
-    }
-
     /* Train with labels */
-
-private:
 
     template<std::size_t I, typename Iterator, typename LabelIterator>
     std::enable_if_t<(I<layers)> train_with_labels(Iterator first, Iterator last, watcher_t& watcher, LabelIterator lit, LabelIterator lend, std::size_t labels, std::size_t max_epochs){
@@ -863,37 +1299,7 @@ private:
     template<std::size_t I, typename Iterator, typename LabelIterator>
     std::enable_if_t<(I==layers)> train_with_labels(Iterator, Iterator, watcher_t&, LabelIterator, LabelIterator, std::size_t, std::size_t){}
 
-public:
-
-    template<typename Iterator, typename LabelIterator>
-    void train_with_labels(Iterator&& first, Iterator&& last, LabelIterator&& lfirst, LabelIterator&& llast, std::size_t labels, std::size_t max_epochs){
-        cpp_assert(std::distance(first, last) == std::distance(lfirst, llast), "There must be the same number of values than labels");
-        cpp_assert(dll::input_size(layer_get<layers - 1>()) == dll::output_size(layer_get<layers - 2>()) + labels, "There is no room for the labels units");
-
-        watcher_t watcher;
-
-        watcher.pretraining_begin(*this, max_epochs);
-
-        train_with_labels<0>(first, last, watcher, std::forward<LabelIterator>(lfirst), std::forward<LabelIterator>(llast), labels, max_epochs);
-
-        watcher.pretraining_end(*this);
-    }
-
-    //Note: dyn_vector cannot be replaced with fast_vector, because labels is runtime
-
-    template<typename Samples, typename Labels>
-    void train_with_labels(const Samples& training_data, const Labels& training_labels, std::size_t labels, std::size_t max_epochs){
-        cpp_assert(training_data.size() == training_labels.size(), "There must be the same number of values than labels");
-        cpp_assert(dll::input_size(layer_get<layers - 1>()) == dll::output_size(layer_get<layers - 2>()) + labels, "There is no room for the labels units");
-
-        train_with_labels(training_data.begin(), training_data.end(), training_labels.begin(), training_labels.end(), labels, max_epochs);
-    }
-
     /* Predict with labels */
-
-private:
-
-    using label_output_t = layer_input_t<layers - 1>;
 
     template<std::size_t I>
     std::enable_if_t<(I<layers)> predict_labels(const input_t& input, label_output_t& output, std::size_t labels) const {
@@ -935,25 +1341,7 @@ private:
     template<std::size_t I>
     std::enable_if_t<(I==layers)> predict_labels(const input_t&, label_output_t&, std::size_t) const {}
 
-public:
-
-    size_t predict_labels(const input_t& item, std::size_t labels) const {
-        cpp_assert(dll::input_size(layer_get<layers - 1>()) == dll::output_size(layer_get<layers - 2>()) + labels, "There is no room for the labels units");
-
-        label_output_t output_a = layer_get<layers - 1>().prepare_one_input();
-
-        predict_labels<0>(item, output_a, labels);
-
-        return std::distance(
-            std::prev(output_a.end(), labels),
-            std::max_element(std::prev(output_a.end(), labels), output_a.end()));
-    }
-
-    /* Predict */
-
-    //activation_probabilities
-
-private:
+    /* Activation Probabilities */
 
     template<std::size_t I, typename Iterator, typename Ouput>
     void multi_activation_probabilities(Iterator first, Iterator last, Ouput& output){
@@ -998,125 +1386,6 @@ private:
     template<std::size_t I, std::size_t S = layers, typename Input, typename Result>
     std::enable_if_t<(I==S)> activation_probabilities(const Input&, Result&) const {}
 
-public:
-    //activation_probabilities_sub
-
-    /*!
-     * \brief Returns the output features of the Ith layer for the given sample and saves them in the given container
-     * \param sample The sample to get features from
-     * \param result The container where the results will be saved
-     * \tparam I The index of the layer for features (starts at 0)
-     * \return the output features of the Ith layer of the network
-     */
-    template<std::size_t I, typename Output, typename T = this_type>
-    auto activation_probabilities_sub(const input_t& sample, Output& result) const {
-        activation_probabilities<0, I+1>(sample, result);
-
-        return result;
-    }
-
-    /*!
-     * \brief Returns the output features of the Ith layer for the given sample
-     * \param sample The sample to get features from
-     * \tparam I The index of the layer for features (starts at 0)
-     * \return the output features of the Ith layer of the network
-     */
-    template<std::size_t I>
-    auto activation_probabilities_sub(const input_t& sample) const {
-        auto result = prepare_output<I>();
-        return activation_probabilities_sub<I>(sample, result);
-    }
-
-    //Note: features_sub are alias functions for activation_probabilities_sub
-
-    /*!
-     * \brief Returns the output features of the Ith layer for the given sample and saves them in the given container
-     * \param sample The sample to get features from
-     * \param result The container where the results will be saved
-     * \tparam I The index of the layer for features (starts at 0)
-     * \return the output features of the Ith layer of the network
-     */
-    template<std::size_t I, typename Output, typename T = this_type>
-    auto features_sub(const input_t& sample, Output& result) const {
-        return activation_probabilities_sub<I>(sample, result);
-    }
-
-    /*!
-     * \brief Returns the output features of the Ith layer for the given sample
-     * \param sample The sample to get features from
-     * \tparam I The index of the layer for features (starts at 0)
-     * \return the output features of the Ith layer of the network
-     */
-    template<std::size_t I>
-    auto features_sub(const input_t& sample) const {
-        return activation_probabilities_sub<I>(sample);
-    }
-
-    // activation_probabilities
-
-    /*!
-     * \brief Computes the output features for the given sample and saves them in the given container
-     * \param sample The sample to get features from
-     * \param result The container where to save the features
-     * \return result
-     */
-    CLANG_AUTO_TRICK auto activation_probabilities(const input_t& sample, output_t& result) const {
-        return activation_probabilities_sub<layers - 1>(sample, result);
-    }
-
-    /*!
-     * \brief Returns the output features for the given sample
-     * \param sample The sample to get features from
-     * \return the output features of the last layer of the network
-     */
-    CLANG_AUTO_TRICK auto activation_probabilities(const input_t& sample) const {
-        return activation_probabilities_sub<layers - 1>(sample);
-    }
-
-    //Note: features are alias functions for activation_probabilities
-
-    /*!
-     * \brief Computes the output features for the given sample and saves them in the given container
-     * \param sample The sample to get features from
-     * \param result The container where to save the features
-     * \return result
-     */
-    CLANG_AUTO_TRICK auto features(const input_t& sample, output_t& result) const {
-        return activation_probabilities(sample, result);
-    }
-
-    /*!
-     * \brief Returns the output features for the given sample
-     * \param sample The sample to get features from
-     * \return the output features of the last layer of the network
-     */
-    CLANG_AUTO_TRICK auto features(const input_t& sample) const {
-        return activation_probabilities(sample);
-    }
-
-    /*!
-     * \brief Save the features generated for the given sample in the given file.
-     * \param sample The sample to get features from
-     * \param file The output file
-     * \param format The format of the exported features
-
-     */
-    void save_features(const input_t& sample, const std::string& file, format f = format::DLL) const {
-        cpp_assert(f == format::DLL, "Only DLL format is supported for now");
-
-        decltype(auto) probs = features(sample);
-
-        if(f == format::DLL){
-            export_features_dll(probs, file);
-        }
-    }
-
-    //full_activation_probabilities
-
-    using full_output_t = etl::dyn_vector<weight>;
-
-private:
-
     template<std::size_t I, typename Input>
     std::enable_if_t<(I<layers)> full_activation_probabilities(const Input& input, std::size_t& i, full_output_t& result) const {
         auto& layer = layer_get<I>();
@@ -1136,80 +1405,7 @@ private:
     template<std::size_t I, typename Input>
     std::enable_if_t<(I==layers)> full_activation_probabilities(const Input&, std::size_t&, full_output_t&) const {}
 
-public:
-
-    void full_activation_probabilities(const input_t& sample, full_output_t& result) const {
-        std::size_t i = 0;
-        full_activation_probabilities<0>(sample, i, result);
-    }
-
-    full_output_t full_activation_probabilities(const input_t& item_data) const {
-        full_output_t result(full_output_size());
-
-        full_activation_probabilities(item_data, result);
-
-        return result;
-    }
-
-    template<typename DBN = this_type, cpp::enable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
-    full_output_t get_final_activation_probabilities(const input_t& sample) const {
-        return full_activation_probabilities(sample);
-    }
-
-    template<typename DBN = this_type, cpp::disable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
-    output_t get_final_activation_probabilities(const input_t& sample) const {
-        return activation_probabilities(sample);
-    }
-
-    size_t predict_label(const output_t& result) const {
-        return std::distance(result.begin(), std::max_element(result.begin(), result.end()));
-    }
-
-    size_t predict(const input_t& item) const {
-        auto result = activation_probabilities(item);
-        return predict_label(result);
-    }
-
-    /* Fine-tuning */
-
-    template<typename Samples, typename Labels>
-    weight fine_tune(const Samples& training_data, Labels& labels, size_t max_epochs){
-        return fine_tune(training_data.begin(), training_data.end(), labels.begin(), labels.end(), max_epochs);
-    }
-
-    template<typename Iterator, typename LIterator>
-    weight fine_tune(Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, size_t max_epochs){
-        dll::dbn_trainer<this_type> trainer;
-        return trainer.train(*this,
-            std::forward<Iterator>(first), std::forward<Iterator>(last),
-            std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
-            max_epochs);
-    }
-
-    template<std::size_t I, typename T = this_type, cpp_disable_if(dbn_traits<T>::is_multiplex())>
-    auto prepare_output() const {
-        return layer_get<I>().template prepare_one_output<input_t>();
-    }
-
-    template<std::size_t I, typename T = this_type, cpp_enable_if(dbn_traits<T>::is_multiplex())>
-    auto prepare_output() const {
-        return std::vector<typename layer_type<layers - 1>::output_one_t>();
-    }
-
-    CLANG_AUTO_TRICK auto prepare_one_output() const {
-        return prepare_output<layers - 1>();
-    }
-
 #ifdef DLL_SVM_SUPPORT
-
-    /* SVM Training and prediction */
-
-    using svm_samples_t = std::conditional_t<
-        dbn_traits<this_type>::concatenate(),
-        std::vector<etl::dyn_vector<weight>>,     //In full mode, use a simple 1D vector
-        typename layer_type<layers - 1>::output_t>; //In normal mode, use the output of the last layer
-
-private:
 
     template<typename DBN = this_type, cpp::enable_if_u<dbn_traits<DBN>::concatenate()> = cpp::detail::dummy>
     void add_activation_probabilities(svm_samples_t& result, const input_t& sample){
@@ -1252,224 +1448,7 @@ private:
             scale);
     }
 
-public:
-
-    template<typename Samples, typename Labels>
-    bool svm_train(const Samples& training_data, const Labels& labels, const svm_parameter& parameters = default_svm_parameters()){
-        cpp::stop_watch<std::chrono::seconds> watch;
-
-        make_problem(training_data, labels, dbn_traits<this_type>::scale());
-
-        //Make libsvm quiet
-        svm::make_quiet();
-
-        //Make sure parameters are not messed up
-        if(!svm::check(problem, parameters)){
-            return false;
-        }
-
-        //Train the SVM
-        svm_model = svm::train(problem, parameters);
-
-        svm_loaded = true;
-
-        std::cout << "SVM training took " << watch.elapsed() << "s" << std::endl;
-
-        return true;
-    }
-
-    template<typename Iterator, typename LIterator>
-    bool svm_train(Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, const svm_parameter& parameters = default_svm_parameters()){
-        cpp::stop_watch<std::chrono::seconds> watch;
-
-        make_problem(
-            std::forward<Iterator>(first), std::forward<Iterator>(last),
-            std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
-            dbn_traits<this_type>::scale());
-
-        //Make libsvm quiet
-        svm::make_quiet();
-
-        //Make sure parameters are not messed up
-        if(!svm::check(problem, parameters)){
-            return false;
-        }
-
-        //Train the SVM
-        svm_model = svm::train(problem, parameters);
-
-        svm_loaded = true;
-
-        std::cout << "SVM training took " << watch.elapsed() << "s" << std::endl;
-
-        return true;
-    }
-
-    template<typename Samples, typename Labels>
-    bool svm_grid_search(const Samples& training_data, const Labels& labels, std::size_t n_fold = 5, const svm::rbf_grid& g = svm::rbf_grid()){
-        make_problem(training_data, labels, dbn_traits<this_type>::scale());
-
-        //Make libsvm quiet
-        svm::make_quiet();
-
-        auto parameters = default_svm_parameters();
-
-        //Make sure parameters are not messed up
-        if(!svm::check(problem, parameters)){
-            return false;
-        }
-
-        //Perform a grid-search
-        svm::rbf_grid_search(problem, parameters, n_fold, g);
-
-        return true;
-    }
-
-    template<typename It, typename LIt>
-    bool svm_grid_search(It&& first, It&& last, LIt&& lfirst, LIt&& llast, std::size_t n_fold = 5, const svm::rbf_grid& g = svm::rbf_grid()){
-        make_problem(
-            std::forward<It>(first), std::forward<It>(last),
-            std::forward<LIt>(lfirst), std::forward<LIt>(llast),
-            dbn_traits<this_type>::scale());
-
-        //Make libsvm quiet
-        svm::make_quiet();
-
-        auto parameters = default_svm_parameters();
-
-        //Make sure parameters are not messed up
-        if(!svm::check(problem, parameters)){
-            return false;
-        }
-
-        //Perform a grid-search
-        svm::rbf_grid_search(problem, parameters, n_fold, g);
-
-        return true;
-    }
-
-    double svm_predict(const input_t& sample){
-        auto features = get_final_activation_probabilities(sample);
-        return svm::predict(svm_model, features);
-    }
-
 #endif //DLL_SVM_SUPPORT
-
-private:
-
-    template<typename D, typename T>
-    struct for_each_impl;
-
-    template<typename D, std::size_t... I>
-    struct for_each_impl<D, std::index_sequence<I...>> {
-        D& dbn;
-
-        for_each_impl(D& dbn) : dbn(dbn) {}
-
-        template<typename Functor>
-        void for_each_layer(Functor&& functor){
-            int wormhole[] = {(functor(dbn.template layer_get<I>()),0)...};
-            cpp_unused(wormhole);
-        }
-
-        template<typename Functor>
-        void for_each_layer_i(Functor&& functor){
-            int wormhole[] = {(functor(I, dbn.template layer_get<I>()),0)...};
-            cpp_unused(wormhole);
-        }
-
-        template<typename Functor>
-        void for_each_layer_pair(Functor&& functor){
-            int wormhole[] = {(functor(dbn.template layer_get<I>(), dbn.template layer_get<I+1>()),0)...};
-            cpp_unused(wormhole);
-        }
-
-        template<typename Functor>
-        void for_each_layer_pair_i(Functor&& functor){
-            int wormhole[] = {(functor(I, dbn.template layer_get<I>(), dbn.template layer_get<I+1>()),0)...};
-            cpp_unused(wormhole);
-        }
-
-        template<typename Functor>
-        void for_each_layer_rpair(Functor&& functor){
-            int wormhole[] = {(functor(dbn.template layer_get<layers - I - 2>(), dbn.template layer_get<layers - I - 1>()),0)...};
-            cpp_unused(wormhole);
-        }
-
-        template<typename Functor>
-        void for_each_layer_rpair_i(Functor&& functor){
-            int wormhole[] = {(functor(layers - I - 2, dbn.template layer_get<layers - I - 2>(), dbn.template layer_get<layers - I - 1>()),0)...};
-            cpp_unused(wormhole);
-        }
-    };
-
-    using for_each_impl_t = for_each_impl<this_type, std::make_index_sequence<layers>>;
-    using for_each_pair_impl_t = for_each_impl<this_type, std::make_index_sequence<layers - 1>>;
-
-    using const_for_each_impl_t = for_each_impl<const this_type, std::make_index_sequence<layers>>;
-    using const_for_each_pair_impl_t = for_each_impl<const this_type, std::make_index_sequence<layers - 1>>;
-
-public:
-
-    template<typename Functor>
-    void for_each_layer(Functor&& functor){
-        for_each_impl_t(*this).for_each_layer(std::forward<Functor>(functor));
-    }
-
-    template<typename Functor>
-    void for_each_layer_i(Functor&& functor){
-        for_each_impl_t(*this).for_each_layer_i(std::forward<Functor>(functor));
-    }
-
-    template<typename Functor>
-    void for_each_layer_pair(Functor&& functor){
-        for_each_pair_impl_t(*this).for_each_layer_pair(std::forward<Functor>(functor));
-    }
-
-    template<typename Functor>
-    void for_each_layer_pair_i(Functor&& functor){
-        for_each_pair_impl_t(*this).for_each_layer_pair_i(std::forward<Functor>(functor));
-    }
-
-    template<typename Functor>
-    void for_each_layer_rpair(Functor&& functor){
-        for_each_pair_impl_t(*this).for_each_layer_rpair(std::forward<Functor>(functor));
-    }
-
-    template<typename Functor>
-    void for_each_layer_rpair_i(Functor&& functor){
-        for_each_pair_impl_t(*this).for_each_layer_rpair_i(std::forward<Functor>(functor));
-    }
-
-    template<typename Functor>
-    void for_each_layer(Functor&& functor) const {
-        const_for_each_impl_t(*this).for_each_layer(std::forward<Functor>(functor));
-    }
-
-    template<typename Functor>
-    void for_each_layer_i(Functor&& functor) const {
-        const_for_each_impl_t(*this).for_each_layer_i(std::forward<Functor>(functor));
-    }
-
-    template<typename Functor>
-    void for_each_layer_pair(Functor&& functor) const {
-        const_for_each_pair_impl_t(*this).for_each_layer_pair(std::forward<Functor>(functor));
-    }
-
-    template<typename Functor>
-    void for_each_layer_pair_i(Functor&& functor) const {
-        const_for_each_pair_impl_t(*this).for_each_layer_pair_i(std::forward<Functor>(functor));
-    }
-
-    template<typename Functor>
-    void for_each_layer_rpair(Functor&& functor) const {
-        const_for_each_pair_impl_t(*this).for_each_layer_rpair(std::forward<Functor>(functor));
-    }
-
-    template<typename Functor>
-    void for_each_layer_rpair_i(Functor&& functor) const {
-        const_for_each_pair_impl_t(*this).for_each_layer_rpair_i(std::forward<Functor>(functor));
-    }
 };
 
 } //end of namespace dll
