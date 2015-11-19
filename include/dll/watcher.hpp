@@ -32,6 +32,7 @@ struct default_rbm_watcher {
 
         std::cout << "With parameters:" << std::endl;
         std::cout << "   learning_rate=" << rbm.learning_rate << std::endl;
+        std::cout << "   batch_size=" << get_batch_size(rbm) << std::endl;
 
         if (layer_traits<RBM>::has_momentum()) {
             std::cout << "   momentum=" << rbm.momentum << std::endl;
