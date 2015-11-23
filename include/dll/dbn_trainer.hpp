@@ -56,7 +56,7 @@ struct dbn_trainer {
 
         typename dbn_t::weight error = 0.0;
 
-        if (!dbn_traits<dbn_t>::save_memory()) {
+        if (!dbn.save_memory()) {
             //Convert labels to an useful form
             auto fake_labels = dll::make_fake(lfirst, llast);
 

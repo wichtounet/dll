@@ -102,6 +102,8 @@ struct dbn final {
 
     weight momentum = 0;                ///< The current momentum
 
+    bool memory_mode = false;
+
 #ifdef DLL_SVM_SUPPORT
     //TODO Ideally these fields should be private
     svm::model svm_model;               ///< The learned model
@@ -276,6 +278,17 @@ public:
     }
 
     /*!
+     * \brief Indicates if training should save memory (true) or run as efficiently as possible (false).
+     *
+     * This can be configured in the dbn type or using the memory_mode field.
+     *
+     * \return true if the training should save memory, false otherwise.
+     */
+    bool save_memory() const noexcept {
+        return dbn_traits<this_type>::save_memory() || memory_mode;
+    }
+
+    /*!
      * \brief Pretrain the network by training all layers in an unsupervised manner.
      *
      * \param first Iterator to the first element of the sequence
@@ -291,7 +304,7 @@ public:
         watcher.pretraining_begin(*this, max_epochs);
 
         //Pretrain each layer one-by-one
-        if(dbn_traits<this_type>::save_memory()){
+        if(save_memory()){
             std::cout << "DBN: Pretraining done in batch mode to save memory" << std::endl;
             pretrain_layer_batch<0>(first, last, watcher, max_epochs);
         } else {
@@ -320,7 +333,7 @@ public:
 
         watcher.pretraining_begin(*this, max_epochs);
 
-        static_assert(!dbn_traits<this_type>::save_memory(), "pretrain_denoising has not yet been implemented in memory");
+        cpp_assert(!save_memory(), "pretrain_denoising has not yet been implemented in memory");
 
         //Pretrain each layer one-by-one
         pretrain_layer_denoising<0>(nit, nend, cit, cend, watcher, max_epochs, fake_resource, fake_resource);
