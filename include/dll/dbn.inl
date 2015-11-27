@@ -529,11 +529,27 @@ public:
 
     /* Fine-tuning */
 
+    /*!
+     * \brief Fine tune the network for classifcation.
+     * \param training_data A container containing all the samples
+     * \param labels A container containing all the labels
+     * \param max_epochs The maximum number of epochs to train the network for.
+     * \return The final classification error
+     */
     template<typename Samples, typename Labels>
     weight fine_tune(const Samples& training_data, Labels& labels, size_t max_epochs){
         return fine_tune(training_data.begin(), training_data.end(), labels.begin(), labels.end(), max_epochs);
     }
 
+    /*!
+     * \brief Fine tune the network for classifcation.
+     * \param first Iterator to the first sample
+     * \param last Iterator to the last sample
+     * \param lfirst Iterator the first label
+     * \param llast Iterator the last label
+     * \param max_epochs The maximum number of epochs to train the network for.
+     * \return The final classification error
+     */
     template<typename Iterator, typename LIterator>
     weight fine_tune(Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, size_t max_epochs){
         dll::dbn_trainer<this_type> trainer;
