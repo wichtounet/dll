@@ -527,8 +527,6 @@ public:
         return predict_label(result);
     }
 
-    /* Fine-tuning */
-
     /*!
      * \brief Fine tune the network for classifcation.
      * \param training_data A container containing all the samples
@@ -556,6 +554,36 @@ public:
         return trainer.train(*this,
             std::forward<Iterator>(first), std::forward<Iterator>(last),
             std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
+            max_epochs);
+    }
+
+    /*!
+     * \brief Fine tune the network for autoencoder.
+     * \param training_data A container containing all the samples
+     * \param max_epochs The maximum number of epochs to train the network for.
+     * \return The final classification error
+     */
+    template<typename Samples>
+    weight fine_tune_ae(const Samples& training_data, size_t max_epochs){
+        return fine_tune_ae(
+            training_data.begin(), training_data.end(),
+            max_epochs);
+    }
+
+    /*!
+     * \brief Fine tune the network for autoencoder.
+     * \param first Iterator to the first sample
+     * \param last Iterator to the last sample
+     * \param max_epochs The maximum number of epochs to train the network for.
+     * \return The final classification error
+     */
+    template<typename Iterator>
+    weight fine_tune_ae(Iterator&& first, Iterator&& last, size_t max_epochs){
+        cpp_assert(dll::input_size(layer_get<0>()) == dll::output_size(layer_get<layers - 1>()), "The network is not build as an autoencoder");
+
+        dll::dbn_trainer<this_type> trainer;
+        return trainer.train_ae(*this,
+            first, last,
             max_epochs);
     }
 

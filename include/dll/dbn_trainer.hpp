@@ -16,6 +16,27 @@
 
 namespace dll {
 
+template<typename Iterator>
+struct range {
+    Iterator first;
+    Iterator last;
+
+    range(Iterator first, Iterator last) : first(first), last(last) {}
+
+    Iterator begin(){
+        return first;
+    }
+
+    Iterator end(){
+        return last;
+    }
+};
+
+template<typename Iterator>
+range<Iterator> make_range(Iterator&& first, Iterator&& last){
+    return {std::forward<Iterator>(first), std::forward<Iterator>(last)};
+}
+
 /*!
  * \brief A generic trainer for Deep Belief Network
  *
@@ -34,6 +55,36 @@ struct dbn_trainer {
 
     template <typename Iterator, typename LIterator>
     typename dbn_t::weight train(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator llast, std::size_t max_epochs) const {
+        auto error_function = [&dbn, first, last, lfirst, llast] () {
+            return test_set(dbn, first, last, lfirst, llast,
+                [](dbn_t& dbn, auto& image) { return dbn.predict(image); });
+        };
+
+        auto label_transformer = [](auto first, auto last){
+            return dll::make_fake(first, last);
+        };
+
+        return train_impl(dbn, first, last, lfirst, llast, max_epochs, error_function, label_transformer);
+    }
+
+    template <typename Iterator>
+    typename dbn_t::weight train_ae(DBN& dbn, Iterator first, Iterator last, std::size_t max_epochs) const {
+        auto error_function = [&dbn, first, last] () {
+            return test_set_ae(dbn, first, last);
+        };
+
+        std::cout << "0:" << std::distance(first, last) << std::endl;
+
+        auto label_transformer = [](auto first, auto last){
+            std::cout << "1:" << std::distance(first, last) << std::endl;
+            return make_range(first, last);
+        };
+
+        return train_impl(dbn, first, last, first, last, max_epochs, error_function, label_transformer);
+    }
+
+    template <typename Iterator, typename LIterator, typename Error, typename LabelTransformer>
+    typename dbn_t::weight train_impl(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator llast, std::size_t max_epochs, Error error_function, LabelTransformer label_transformer) const {
         constexpr const auto batch_size     = std::decay_t<DBN>::batch_size;
         constexpr const auto big_batch_size = std::decay_t<DBN>::big_batch_size;
 
@@ -58,7 +109,7 @@ struct dbn_trainer {
 
         if (!dbn.save_memory()) {
             //Convert labels to an useful form
-            auto fake_labels = dll::make_fake(lfirst, llast);
+            auto fake_labels = label_transformer(lfirst, llast);
 
             //Make sure data is contiguous
             samples_t data;
@@ -78,6 +129,9 @@ struct dbn_trainer {
                     auto start = i * batch_size;
                     auto end   = std::min(start + batch_size, data.size());
 
+
+            //std::cout << "2:" << std::distance(fake_labels.begin() + start, fake_labels.begin() + end) << std::endl;
+
                     auto data_batch  = make_batch(data.begin() + start, data.begin() + end);
                     auto label_batch = make_batch(fake_labels.begin() + start, fake_labels.begin() + end);
 
@@ -85,8 +139,7 @@ struct dbn_trainer {
                 }
 
                 auto last_error = error;
-                error = test_set(dbn, first, last, lfirst, llast,
-                                 [](dbn_t& dbn, auto& image) { return dbn.predict(image); });
+                error = error_function();
 
                 //After some time increase the momentum
                 if (dbn_traits<dbn_t>::has_momentum() && epoch == dbn.final_momentum_epoch) {
@@ -152,7 +205,7 @@ struct dbn_trainer {
                     }
 
                     //Convert labels to an useful form
-                    auto fake_labels = dll::make_fake(label_cache.begin(), label_cache.end());
+                    auto fake_labels = label_transformer(label_cache.begin(), label_cache.end());
 
                     auto full_batches = i / batch_size;
 
@@ -173,8 +226,7 @@ struct dbn_trainer {
                     }
                 }
 
-                error = test_set(dbn, first, last, lfirst, llast,
-                                 [](dbn_t& dbn, auto& image) { return dbn.predict(image); });
+                error = error_function();
 
                 //After some time increase the momentum
                 if (dbn_traits<dbn_t>::has_momentum() && epoch == dbn.final_momentum_epoch) {

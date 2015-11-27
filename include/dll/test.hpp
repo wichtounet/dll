@@ -79,6 +79,29 @@ double test_set(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIter
     return (images - success) / static_cast<double>(images);
 }
 
+template <typename DBN, typename Samples>
+double test_set_ae(DBN& dbn, const Samples& images) {
+    return test_set_ae(dbn, images.begin(), images.end());
+}
+
+template <typename DBN, typename Iterator>
+double test_set_ae(DBN& dbn, Iterator first, Iterator last) {
+    double rate = 0.0;
+    std::size_t images  = 0;
+
+    while (first != last) {
+        decltype(auto) image = *first;
+        decltype(auto) rec_image = dbn.features(image);
+
+        rate += etl::mean(image - rec_image);
+
+        ++images;
+        ++first;
+    }
+
+    return rate / images;
+}
+
 } //end of dll namespace
 
 #endif
