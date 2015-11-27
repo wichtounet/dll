@@ -73,10 +73,7 @@ struct dbn_trainer {
             return test_set_ae(dbn, first, last);
         };
 
-        std::cout << "0:" << std::distance(first, last) << std::endl;
-
         auto label_transformer = [](auto first, auto last){
-            std::cout << "1:" << std::distance(first, last) << std::endl;
             return make_range(first, last);
         };
 
@@ -128,9 +125,6 @@ struct dbn_trainer {
                 for (std::size_t i = 0; i < batches; ++i) {
                     auto start = i * batch_size;
                     auto end   = std::min(start + batch_size, data.size());
-
-
-            //std::cout << "2:" << std::distance(fake_labels.begin() + start, fake_labels.begin() + end) << std::endl;
 
                     auto data_batch  = make_batch(data.begin() + start, data.begin() + end);
                     auto label_batch = make_batch(fake_labels.begin() + start, fake_labels.begin() + end);
