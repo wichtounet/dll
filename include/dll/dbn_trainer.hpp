@@ -18,23 +18,25 @@ namespace dll {
 
 template<typename Iterator>
 struct range {
+private:
     Iterator first;
     Iterator last;
 
+public:
     range(Iterator first, Iterator last) : first(first), last(last) {}
 
-    Iterator begin(){
+    Iterator begin() const {
         return first;
     }
 
-    Iterator end(){
+    Iterator end() const {
         return last;
     }
 };
 
 template<typename Iterator>
-range<Iterator> make_range(Iterator&& first, Iterator&& last){
-    return {std::forward<Iterator>(first), std::forward<Iterator>(last)};
+range<Iterator> make_range(Iterator first, Iterator last){
+    return {first, last};
 }
 
 /*!
