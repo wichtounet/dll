@@ -32,13 +32,13 @@ struct extract_function<L, std::enable_if_t<decay_layer_traits<L>::is_standard_l
 template <typename L>
 struct extract_function<L, std::enable_if_t<decay_layer_traits<L>::is_rbm_layer()>> {
     static_assert(
-        std::decay_t<L>::hidden_unit == unit_type::BINARY || std::decay_t<L>::hidden_unit == unit_type::RELU,
-        "Only (C)RBM with binary or RELU hidden unit are supported");
+        std::decay_t<L>::hidden_unit == unit_type::BINARY || std::decay_t<L>::hidden_unit == unit_type::RELU || std::decay_t<L>::hidden_unit == unit_type::SOFTMAX,
+        "Only (C)RBM with binary, softmax or RELU hidden unit are supported");
 
     static constexpr const function activation_function =
         std::decay_t<L>::hidden_unit == unit_type::BINARY
             ? function::SIGMOID
-            : function::RELU;
+            : (std::decay_t<L>::hidden_unit == unit_type::SOFTMAX ? function::SOFTMAX : function::RELU);
 };
 
 template <typename Layer, typename Input, typename Output, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_max_pooling_layer())>
@@ -296,9 +296,11 @@ struct sgd_trainer {
 
     template <typename Layer, typename Context, typename Labels, cpp_enable_if(decay_layer_traits<Layer>::is_standard_rbm_layer())>
     void compute_last_errors(Layer& /*layer*/, Context& context, Labels& labels) {
-        static_assert(std::decay_t<Layer>::hidden_unit == unit_type::SOFTMAX, "Only softmax RBM can be used as last RBM layer");
+        constexpr const auto last_a_f = extract_function<Layer>::activation_function;
 
-        context.errors = 1.0 >> (labels - context.output);
+        static_assert(last_a_f == function::SOFTMAX || last_a_f == function::SIGMOID, "Only softmax and sigmoid RBM can be used as last RBM layer");
+
+        context.errors = f_derivative<last_a_f>(context.output) >> (labels - context.output);
 
         nan_check_deep(context.errors);
     }
