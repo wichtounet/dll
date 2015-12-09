@@ -99,7 +99,7 @@ double test_set_ae(DBN& dbn, Iterator first, Iterator last) {
         ++first;
     }
 
-    return rate / images;
+    return std::abs(rate) / images;
 }
 
 } //end of dll namespace
