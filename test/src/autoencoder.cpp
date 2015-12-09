@@ -72,3 +72,31 @@ TEST_CASE("dense/ae/2", "[dense][dbn][mnist][sgd][ae]") {
     std::cout << "test_error:" << test_error << std::endl;
     REQUIRE(test_error < 0.1);
 }
+
+TEST_CASE("dense/ae/3", "[dense][dbn][mnist][sgd][ae]") {
+    typedef dll::dbn_desc<
+        dll::dbn_layers<
+            dll::dense_desc<28 * 28, 200, dll::activation<dll::function::RELU>>::layer_t,
+            dll::dense_desc<200, 28 * 28, dll::activation<dll::function::RELU>>::layer_t
+        >, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(1000);
+    REQUIRE(!dataset.training_images.empty());
+
+    dll_test::mnist_scale(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->display();
+
+    dbn->learning_rate = 0.1;
+
+    auto ft_error = dbn->fine_tune_ae(dataset.training_images, 50);
+    std::cout << "ft_error:" << ft_error << std::endl;
+
+    CHECK(ft_error < 5e-2);
+
+    auto test_error = dll::test_set_ae(*dbn, dataset.test_images);
+    std::cout << "test_error:" << test_error << std::endl;
+    REQUIRE(test_error < 0.1);
+}
