@@ -917,13 +917,13 @@ private:
     //data is coming from iterators not from input
     template<std::size_t I, typename Iterator, cpp_enable_if((I == 0 && !batch_layer_ignore<I>::value))>
     void pretrain_layer_batch(Iterator first, Iterator last, watcher_t& watcher, std::size_t max_epochs){
-        using rbm_t = layer_type<I>;
+        using layer_t = layer_type<I>;
 
         decltype(auto) rbm = layer_get<I>();
 
-        watcher.template pretrain_layer<rbm_t>(*this, I, 0);
+        watcher.template pretrain_layer<layer_t>(*this, I, 0);
 
-        using rbm_trainer_t = dll::rbm_trainer<rbm_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>>;
+        using rbm_trainer_t = dll::rbm_trainer<layer_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>>;
 
         //Initialize the RBM trainer
         rbm_trainer_t r_trainer;
@@ -937,7 +937,7 @@ private:
         //Several RBM batches are propagated at once
         auto total_batch_size = big_batch_size * get_batch_size(rbm);
 
-        std::vector<typename rbm_t::input_one_t> input_cache(total_batch_size);
+        std::vector<typename layer_t::input_one_t> input_cache(total_batch_size);
 
         //Train for max_epochs epoch
         for(std::size_t epoch = 0; epoch < max_epochs; ++epoch){
@@ -992,13 +992,13 @@ private:
     //Normal version
     template<std::size_t I, typename Iterator, cpp_enable_if((I>0 && I<layers && !dbn_traits<this_type>::is_multiplex() && !batch_layer_ignore<I>::value))>
     void pretrain_layer_batch(Iterator first, Iterator last, watcher_t& watcher, std::size_t max_epochs){
-        using rbm_t = layer_type<I>;
+        using layer_t = layer_type<I>;
 
         decltype(auto) rbm = layer_get<I>();
 
-        watcher.template pretrain_layer<rbm_t>(*this, I, 0);
+        watcher.template pretrain_layer<layer_t>(*this, I, 0);
 
-        using rbm_trainer_t = dll::rbm_trainer<rbm_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>>;
+        using rbm_trainer_t = dll::rbm_trainer<layer_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>>;
 
         //Initialize the RBM trainer
         rbm_trainer_t r_trainer;
@@ -1063,13 +1063,13 @@ private:
     //Multiplex version
     template<std::size_t I, typename Iterator, cpp_enable_if((I>0 && I<layers && dbn_traits<this_type>::is_multiplex() && !batch_layer_ignore<I>::value))>
     void pretrain_layer_batch(Iterator first, Iterator last, watcher_t& watcher, std::size_t max_epochs){
-        using rbm_t = layer_type<I>;
+        using layer_t = layer_type<I>;
 
         decltype(auto) rbm = layer_get<I>();
 
-        watcher.template pretrain_layer<rbm_t>(*this, I, 0);
+        watcher.template pretrain_layer<layer_t>(*this, I, 0);
 
-        using rbm_trainer_t = dll::rbm_trainer<rbm_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>>;
+        using rbm_trainer_t = dll::rbm_trainer<layer_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>>;
 
         //Initialize the RBM trainer
         rbm_trainer_t r_trainer;
@@ -1085,7 +1085,7 @@ private:
 
         std::vector<std::vector<typename layer_type<I - 1>::output_deep_t>> input(total_batch_size);
 
-        std::vector<typename rbm_t::input_one_t> input_flat;
+        std::vector<typename layer_t::input_one_t> input_flat;
 
         //Train for max_epochs epoch
         for(std::size_t epoch = 0; epoch < max_epochs; ++epoch){
