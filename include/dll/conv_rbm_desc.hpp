@@ -17,7 +17,7 @@ namespace dll {
 
 /*!  * \brief Describe a Convolutional Restricted Boltzmann Machine.  *
  * This struct should be used to define a RBM either as standalone or for a DBN.
- * Once configured, the ::rbm_t member returns the type of the configured RBM.
+ * Once configured, the ::layer_t member returns the type of the configured RBM.
  */
 template <std::size_t NC_T, std::size_t NV_1, std::size_t NV_2, std::size_t K_T, std::size_t NH_1, std::size_t NH_2, typename... Parameters>
 struct conv_rbm_desc {
@@ -49,6 +49,9 @@ struct conv_rbm_desc {
 
     /*! The RBM type */
     using rbm_t = conv_rbm<conv_rbm_desc<NC_T, NV1, NV2, K_T, NH1, NH2, Parameters...>>;
+
+    /*! The layer type */
+    using layer_t = rbm_t;
 
     //Validate all parameters
 

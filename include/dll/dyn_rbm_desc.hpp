@@ -19,7 +19,7 @@ namespace dll {
  * \brief Describe a dyn RBM.
  *
  * This struct should be used to define a RBM either as standalone or for a DBN.
- * Once configured, the ::rbm_t member returns the type of the configured RBM.
+ * Once configured, the ::layer_t member returns the type of the configured RBM.
  */
 template <typename... Parameters>
 struct dyn_rbm_desc {
@@ -42,6 +42,9 @@ struct dyn_rbm_desc {
 
     /*! The RBM type */
     using rbm_t = dyn_rbm<dyn_rbm_desc<Parameters...>>;
+
+    /*! The layer type */
+    using layer_t = rbm_t;
 
     //Make sure only valid types are passed to the configuration list
     static_assert(

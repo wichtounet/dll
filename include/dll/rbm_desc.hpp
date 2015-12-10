@@ -19,7 +19,7 @@ namespace dll {
  * \brief Describe a RBM.
  *
  * This struct should be used to define a RBM either as standalone or for a DBN.
- * Once configured, the ::rbm_t member returns the type of the configured RBM.
+ * Once configured, the ::layer_t member returns the type of the configured RBM.
  */
 template <std::size_t visibles, std::size_t hiddens, typename... Parameters>
 struct rbm_desc {
@@ -46,6 +46,9 @@ struct rbm_desc {
 
     /*! The RBM type */
     using rbm_t = rbm<rbm_desc<visibles, hiddens, Parameters...>>;
+
+    /*! The layer type */
+    using layer_t = rbm_t;
 
     static_assert(num_visible > 0, "There must be at least 1 visible unit");
     static_assert(num_hidden > 0, "There must be at least 1 hidden unit");

@@ -20,7 +20,7 @@ namespace dll {
  * Probabilistic Max Pooling layer.
  *
  * This struct should be used to define a RBM either as standalone or for a DBN.
- * Once configured, the ::rbm_t member returns the type of the configured RBM.
+ * Once configured, the ::layer_t member returns the type of the configured RBM.
  */
 template <std::size_t NC_T, std::size_t NV_1, std::size_t NV_2, std::size_t K_T, std::size_t NH_1, std::size_t NH_2, std::size_t C_T, typename... Parameters>
 struct conv_rbm_mp_desc {
@@ -54,6 +54,9 @@ struct conv_rbm_mp_desc {
 
     /*! The RBM type */
     using rbm_t = conv_rbm_mp<conv_rbm_mp_desc<NC_T, NV_1, NV_2, K_T, NH_1, NH_2, C_T, Parameters...>>;
+
+    /*! The layer type */
+    using layer_t = rbm_t;;
 
     //Validate all parameters
 
