@@ -46,53 +46,53 @@ inline std::string to_string(function f) {
 }
 
 template <function F, typename E, cpp_enable_if(F == function::IDENTITY)>
-auto f_activate(E&& expr) {
-    return etl::identity(expr);
+decltype(auto) f_activate(E&& expr) {
+    return etl::identity(std::forward<E>(expr));
 }
 
 template <function F, typename E, cpp_enable_if(F == function::SIGMOID)>
-auto f_activate(E&& expr) {
-    return etl::sigmoid(expr);
+decltype(auto) f_activate(E&& expr) {
+    return etl::sigmoid(std::forward<E>(expr));
 }
 
 template <function F, typename E, cpp_enable_if(F == function::TANH)>
-auto f_activate(E&& expr) {
-    return etl::tanh(expr);
+decltype(auto) f_activate(E&& expr) {
+    return etl::tanh(std::forward<E>(expr));
 }
 
 template <function F, typename E, cpp_enable_if(F == function::RELU)>
-auto f_activate(E&& expr) {
-    return etl::relu(expr);
+decltype(auto) f_activate(E&& expr) {
+    return etl::relu(std::forward<E>(expr));
 }
 
 template <function F, typename E, cpp_enable_if(F == function::SOFTMAX)>
-auto f_activate(E&& expr) {
-    return etl::softmax(expr);
+decltype(auto) f_activate(E&& expr) {
+    return etl::softmax(std::forward<E>(expr));
 }
 
 template <function F, typename E, cpp_enable_if(F == function::IDENTITY)>
-auto f_derivative(E&& expr) {
-    return etl::identity_derivative(expr);
+decltype(auto) f_derivative(E&& expr) {
+    return etl::identity_derivative(std::forward<E>(expr));
 }
 
 template <function F, typename E, cpp_enable_if(F == function::SIGMOID)>
-auto f_derivative(E&& expr) {
-    return etl::sigmoid_derivative(expr);
+decltype(auto) f_derivative(E&& expr) {
+    return etl::sigmoid_derivative(std::forward<E>(expr));
 }
 
 template <function F, typename E, cpp_enable_if(F == function::TANH)>
-auto f_derivative(E&& expr) {
-    return etl::tanh_derivative(expr);
+decltype(auto) f_derivative(E&& expr) {
+    return etl::tanh_derivative(std::forward<E>(expr));
 }
 
 template <function F, typename E, cpp_enable_if(F == function::RELU)>
-auto f_derivative(E&& expr) {
-    return etl::relu_derivative(expr);
+decltype(auto) f_derivative(E&& expr) {
+    return etl::relu_derivative(std::forward<E>(expr));
 }
 
 template <function F, typename E, cpp_enable_if(F == function::SOFTMAX)>
-auto f_derivative(E&&) {
-    return 1.0;
+decltype(auto) f_derivative(E&& expr) {
+    return etl::softmax_derivative(std::forward<E>(expr));
 }
 
 } //end of dll namespace
