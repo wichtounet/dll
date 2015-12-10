@@ -20,7 +20,7 @@ TEST_CASE("crbm/mnist_140", "crbm::slow") {
     dll::conv_rbm_desc_square<
         2, 28, 40, 12,
         dll::batch_size<25>,
-        dll::momentum, dll::weight_type<float>>::rbm_t rbm;
+        dll::momentum, dll::weight_type<float>>::layer_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, float>(500);
 
@@ -46,7 +46,7 @@ TEST_CASE("crbm/mnist_141", "crbm::slow_parallel") {
         2, 28, 40, 12,
         dll::batch_size<25>,
         dll::momentum,
-        dll::parallel_mode, dll::weight_type<float>>::rbm_t rbm;
+        dll::parallel_mode, dll::weight_type<float>>::layer_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, float>(500);
 
@@ -71,7 +71,7 @@ TEST_CASE("crbm/mnist_142", "crbm::slow_second") {
     dll::conv_rbm_desc_square<
         40, 12, 40, 6,
         dll::batch_size<25>,
-        dll::momentum, dll::weight_type<float>>::rbm_t rbm;
+        dll::momentum, dll::weight_type<float>>::layer_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, float>(500);
 
@@ -98,7 +98,7 @@ TEST_CASE("crbm/mnist_143", "crbm::slow_parallel_second") {
         40, 12, 40, 6,
         dll::batch_size<25>,
         dll::momentum,
-        dll::parallel_mode, dll::weight_type<float>>::rbm_t rbm;
+        dll::parallel_mode, dll::weight_type<float>>::layer_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, float>(500);
 
@@ -124,7 +124,7 @@ TEST_CASE("crbm/mnist_144", "crbm::slow") {
     dll::conv_rbm_desc_square<
         1, 28, 40, 24,
         dll::batch_size<25>,
-        dll::momentum, dll::weight_type<float>>::rbm_t rbm;
+        dll::momentum, dll::weight_type<float>>::layer_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, float>(500);
 
@@ -141,7 +141,7 @@ TEST_CASE("crbm/mnist_145", "crbm::slow") {
     dll::conv_rbm_desc_square<
         1, 28, 40, 24,
         dll::batch_size<25>,
-        dll::momentum, dll::parallel_mode, dll::weight_type<float>>::rbm_t rbm;
+        dll::momentum, dll::parallel_mode, dll::weight_type<float>>::layer_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, float>(500);
 

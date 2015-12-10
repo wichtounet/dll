@@ -20,8 +20,8 @@
 TEST_CASE("dbn/ae/1", "[rbm][dbn][mnist][sgd][ae]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::rbm_desc<28 * 28, 200, dll::momentum, dll::batch_size<25>>::rbm_t,
-            dll::rbm_desc<200, 28 * 28, dll::momentum, dll::batch_size<25>>::rbm_t
+            dll::rbm_desc<28 * 28, 200, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::rbm_desc<200, 28 * 28, dll::momentum, dll::batch_size<25>>::layer_t
         >, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(1000);

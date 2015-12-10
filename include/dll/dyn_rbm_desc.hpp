@@ -44,7 +44,7 @@ struct dyn_rbm_desc {
     using layer_t = dyn_rbm<dyn_rbm_desc<Parameters...>>;
 
     /*! The RBM type */
-    using [[deprecated("use layer_t instead")]] rbm_t = layer_t;
+    using rbm_t [[deprecated("use layer_t instead")]] = layer_t;
 
     //Make sure only valid types are passed to the configuration list
     static_assert(

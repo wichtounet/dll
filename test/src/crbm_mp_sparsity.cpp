@@ -18,7 +18,7 @@ TEST_CASE("crbm_mp/mnist_5", "crbm::sparsity") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 40, 12, 2,
         dll::batch_size<25>,
-        dll::sparsity<>>::rbm_t rbm;
+        dll::sparsity<>>::layer_t rbm;
 
     //0.01 (default) is way too low for few hidden units
     rbm.sparsity_target = 0.1;
@@ -41,7 +41,7 @@ TEST_CASE("crbm_mp/mnist_110", "crbm::bias_mode_none") {
         dll::batch_size<10>,
         dll::momentum,
         dll::sparsity<dll::sparsity_method::LEE>,
-        dll::bias<dll::bias_mode::NONE>>::rbm_t rbm;
+        dll::bias<dll::bias_mode::NONE>>::layer_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
@@ -62,7 +62,7 @@ TEST_CASE("crbm_mp/mnist_111", "crbm::bias_mode_simple") {
         dll::momentum,
         dll::weight_decay<dll::decay_type::L2>,
         dll::sparsity<dll::sparsity_method::LEE>,
-        dll::bias<dll::bias_mode::SIMPLE>>::rbm_t rbm;
+        dll::bias<dll::bias_mode::SIMPLE>>::layer_t rbm;
 
     rbm.l2_weight_cost = 0.01;
     rbm.learning_rate  = 0.01;
@@ -90,7 +90,7 @@ TEST_CASE("crbm_mp/mnist_12", "crbm::lee") {
         dll::visible<dll::unit_type::GAUSSIAN>,
         dll::weight_decay<dll::decay_type::L2>,
         dll::sparsity<dll::sparsity_method::LEE>,
-        dll::bias<dll::bias_mode::SIMPLE>>::rbm_t rbm;
+        dll::bias<dll::bias_mode::SIMPLE>>::layer_t rbm;
 
     rbm.pbias        = 0.01;
     rbm.pbias_lambda = 0.1;

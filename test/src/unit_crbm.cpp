@@ -21,7 +21,7 @@ TEST_CASE("unit/crbm/mnist/1", "[crbm][unit]") {
         1, 28, 20, 12,
         dll::batch_size<10>,
         dll::weight_decay<dll::decay_type::L2_FULL>,
-        dll::momentum>::rbm_t rbm;
+        dll::momentum>::layer_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -49,7 +49,7 @@ TEST_CASE("unit/crbm/mnist/2", "[crbm][parallel][unit]") {
         dll::momentum,
         dll::parallel_mode,
         dll::weight_decay<dll::decay_type::L2>,
-        dll::visible<dll::unit_type::GAUSSIAN>>::rbm_t rbm;
+        dll::visible<dll::unit_type::GAUSSIAN>>::layer_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
     REQUIRE(!dataset.training_images.empty());
@@ -64,7 +64,7 @@ TEST_CASE("unit/crbm/mnist/3", "[crbm][unit]") {
     dll::conv_rbm_desc_square<
         2, 28, 20, 12,
         dll::batch_size<25>,
-        dll::momentum>::rbm_t rbm;
+        dll::momentum>::layer_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
 
@@ -92,7 +92,7 @@ TEST_CASE("unit/crbm/mnist/4", "[crbm][unit]") {
         dll::momentum,
         dll::weight_decay<dll::decay_type::L2>,
         dll::visible<dll::unit_type::GAUSSIAN>,
-        dll::shuffle>::rbm_t rbm;
+        dll::shuffle>::layer_t rbm;
 
     rbm.learning_rate *= 2;
 
@@ -127,7 +127,7 @@ TEST_CASE("unit/crbm/mnist/5", "[crbm][unit]") {
         dll::momentum,
         dll::weight_decay<dll::decay_type::L2>,
         dll::shuffle,
-        dll::hidden<dll::unit_type::RELU>>::rbm_t rbm;
+        dll::hidden<dll::unit_type::RELU>>::layer_t rbm;
 
     rbm.learning_rate *= 5;
 
@@ -141,14 +141,14 @@ TEST_CASE("unit/crbm/mnist/5", "[crbm][unit]") {
 }
 
 TEST_CASE("unit/crbm/mnist/6", "[crbm][unit]") {
-    using rbm_type = dll::conv_rbm_desc_square<
+    using layer_type = dll::conv_rbm_desc_square<
         1, 28, 20, 12,
         dll::batch_size<25>,
-        dll::sparsity<>>::rbm_t;
+        dll::sparsity<>>::layer_t;
 
-    REQUIRE(dll::layer_traits<rbm_type>::sparsity_method() == dll::sparsity_method::GLOBAL_TARGET);
+    REQUIRE(dll::layer_traits<layer_type>::sparsity_method() == dll::sparsity_method::GLOBAL_TARGET);
 
-    rbm_type rbm;
+    layer_type rbm;
 
     //0.01 (default) is way too low for few hidden units
     rbm.sparsity_target = 0.1;
@@ -164,12 +164,12 @@ TEST_CASE("unit/crbm/mnist/6", "[crbm][unit]") {
 }
 
 TEST_CASE("unit/crbm/mnist/7", "[crbm][unit]") {
-    using rbm_type = dll::conv_rbm_desc_square<
+    using layer_type = dll::conv_rbm_desc_square<
         1, 28, 20, 12,
         dll::batch_size<5>,
-        dll::sparsity<dll::sparsity_method::LOCAL_TARGET>>::rbm_t;
+        dll::sparsity<dll::sparsity_method::LOCAL_TARGET>>::layer_t;
 
-    rbm_type rbm;
+    layer_type rbm;
 
     //0.01 (default) is way too low for few hidden units
     rbm.sparsity_target = 0.1;

@@ -16,7 +16,7 @@ TEST_CASE("crbm/mnist_60", "crbm::global_sparsity") {
     using rbm_type = dll::conv_rbm_desc_square<
         1, 28, 40, 12,
         dll::batch_size<25>,
-        dll::sparsity<>>::rbm_t;
+        dll::sparsity<>>::layer_t;
 
     REQUIRE(dll::layer_traits<rbm_type>::sparsity_method() == dll::sparsity_method::GLOBAL_TARGET);
 
@@ -42,7 +42,7 @@ TEST_CASE("crbm/mnist_61", "crbm::local_sparsity") {
     using rbm_type = dll::conv_rbm_desc_square<
         1, 28, 40, 12,
         dll::batch_size<25>,
-        dll::sparsity<dll::sparsity_method::LOCAL_TARGET>>::rbm_t;
+        dll::sparsity<dll::sparsity_method::LOCAL_TARGET>>::layer_t;
 
     rbm_type rbm;
 
@@ -67,7 +67,7 @@ TEST_CASE("crbm/mnist_11", "crbm::bias_mode_simple") {
         1, 28, 40, 12,
         dll::batch_size<25>,
         dll::momentum,
-        dll::bias<dll::bias_mode::SIMPLE>>::rbm_t rbm;
+        dll::bias<dll::bias_mode::SIMPLE>>::layer_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 
@@ -86,7 +86,7 @@ TEST_CASE("crbm/mnist_12", "crbm::bias_mode_none") {
         1, 28, 40, 12,
         dll::batch_size<25>,
         dll::momentum,
-        dll::bias<dll::bias_mode::NONE>>::rbm_t rbm;
+        dll::bias<dll::bias_mode::NONE>>::layer_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
 

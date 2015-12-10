@@ -22,8 +22,8 @@
 TEST_CASE("conv_dbn/mnist_9", "max_pooling") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_rbm_desc<1, 28, 28, 40, 14, 12, dll::momentum, dll::batch_size<25>>::rbm_t,
-            dll::conv_rbm_desc<40, 14, 12, 40, 8, 10, dll::momentum, dll::batch_size<25>>::rbm_t,
+            dll::conv_rbm_desc<1, 28, 28, 40, 14, 12, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::conv_rbm_desc<40, 14, 12, 40, 8, 10, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::mp_layer_3d_desc<40, 8, 10, 2, 2, 1>::layer_t>>::dbn_t dbn_t;
 
     REQUIRE(dbn_t::output_size() == 800);
@@ -54,9 +54,9 @@ TEST_CASE("conv_dbn/mnist_9", "max_pooling") {
 TEST_CASE("conv_dbn/mnist_10", "max_pooling") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_rbm_desc<1, 28, 28, 40, 20, 21, dll::momentum, dll::batch_size<25>>::rbm_t,
+            dll::conv_rbm_desc<1, 28, 28, 40, 20, 21, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::mp_layer_3d_desc<40, 20, 21, 2, 2, 3>::layer_t,
-            dll::conv_rbm_desc<20, 10, 7, 40, 8, 5, dll::momentum, dll::batch_size<25>>::rbm_t,
+            dll::conv_rbm_desc<20, 10, 7, 40, 8, 5, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::mp_layer_3d_desc<40, 8, 5, 2, 1, 1>::layer_t>>::dbn_t dbn_t;
 
     REQUIRE(dbn_t::output_size() == 800);
@@ -87,8 +87,8 @@ TEST_CASE("conv_dbn/mnist_10", "max_pooling") {
 TEST_CASE("conv_dbn/mnist_11", "avg_pooling") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_rbm_desc<1, 28, 28, 40, 14, 12, dll::momentum, dll::batch_size<25>>::rbm_t,
-            dll::conv_rbm_desc<40, 14, 12, 40, 8, 10, dll::momentum, dll::batch_size<25>>::rbm_t,
+            dll::conv_rbm_desc<1, 28, 28, 40, 14, 12, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::conv_rbm_desc<40, 14, 12, 40, 8, 10, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::avgp_layer_3d_desc<40, 8, 10, 2, 2, 1>::layer_t>>::dbn_t dbn_t;
 
     REQUIRE(dbn_t::output_size() == 800);
@@ -119,9 +119,9 @@ TEST_CASE("conv_dbn/mnist_11", "avg_pooling") {
 TEST_CASE("conv_dbn/mnist_12", "avgp_pooling") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_rbm_desc<1, 28, 28, 40, 20, 21, dll::momentum, dll::batch_size<25>>::rbm_t,
+            dll::conv_rbm_desc<1, 28, 28, 40, 20, 21, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::avgp_layer_3d_desc<40, 20, 21, 2, 2, 3>::layer_t,
-            dll::conv_rbm_desc<20, 10, 7, 40, 8, 5, dll::momentum, dll::batch_size<25>>::rbm_t,
+            dll::conv_rbm_desc<20, 10, 7, 40, 8, 5, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::avgp_layer_3d_desc<40, 8, 5, 2, 1, 1>::layer_t>>::dbn_t dbn_t;
 
     REQUIRE(dbn_t::output_size() == 800);
@@ -152,7 +152,7 @@ TEST_CASE("conv_dbn/mnist_12", "avgp_pooling") {
 TEST_CASE("conv_dbn/mnist_13", "nop_layers") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_rbm_desc<1, 28, 28, 40, 14, 12, dll::momentum, dll::batch_size<25>>::rbm_t, dll::conv_rbm_desc<40, 14, 12, 40, 8, 10, dll::momentum, dll::batch_size<25>>::rbm_t, dll::mp_layer_3d_desc<40, 8, 10, 1, 1, 1>::layer_t, dll::avgp_layer_3d_desc<40, 8, 10, 1, 1, 1>::layer_t>>::dbn_t dbn_t;
+            dll::conv_rbm_desc<1, 28, 28, 40, 14, 12, dll::momentum, dll::batch_size<25>>::layer_t, dll::conv_rbm_desc<40, 14, 12, 40, 8, 10, dll::momentum, dll::batch_size<25>>::layer_t, dll::mp_layer_3d_desc<40, 8, 10, 1, 1, 1>::layer_t, dll::avgp_layer_3d_desc<40, 8, 10, 1, 1, 1>::layer_t>>::dbn_t dbn_t;
 
     REQUIRE(dbn_t::output_size() == 3200);
 

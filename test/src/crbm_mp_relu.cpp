@@ -18,7 +18,7 @@ TEST_CASE("crbm_mp/mnist_7", "crbm::relu") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 40, 12, 2,
         dll::batch_size<25>,
-        dll::hidden<dll::unit_type::RELU>>::rbm_t rbm;
+        dll::hidden<dll::unit_type::RELU>>::layer_t rbm;
 
     rbm.learning_rate *= 2;
 
@@ -38,7 +38,7 @@ TEST_CASE("crbm_mp/mnist_8", "crbm::relu1") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 40, 12, 2,
         dll::batch_size<25>,
-        dll::hidden<dll::unit_type::RELU1>>::rbm_t rbm;
+        dll::hidden<dll::unit_type::RELU1>>::layer_t rbm;
 
     rbm.learning_rate *= 2;
 
@@ -58,7 +58,7 @@ TEST_CASE("crbm_mp/mnist_9", "crbm::relu6") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 40, 12, 2,
         dll::batch_size<25>,
-        dll::hidden<dll::unit_type::RELU6>>::rbm_t rbm;
+        dll::hidden<dll::unit_type::RELU6>>::layer_t rbm;
 
     rbm.learning_rate *= 2;
 

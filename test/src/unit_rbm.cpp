@@ -20,7 +20,7 @@ TEST_CASE("unit/rbm/mnist/1", "[rbm][momentum][unit]") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
-        dll::momentum>::rbm_t rbm;
+        dll::momentum>::layer_t rbm;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -41,7 +41,7 @@ TEST_CASE("unit/rbm/mnist/2", "[rbm][momentum][parallel][unit]") {
         28 * 28, 100,
         dll::batch_size<25>,
         dll::momentum,
-        dll::parallel_mode>::rbm_t rbm;
+        dll::parallel_mode>::layer_t rbm;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -58,7 +58,7 @@ TEST_CASE("unit/rbm/mnist/3", "[rbm][momemtum][gaussian][unit]") {
         28 * 28, 150,
         dll::batch_size<25>,
         dll::momentum,
-        dll::visible<dll::unit_type::GAUSSIAN>>::rbm_t rbm;
+        dll::visible<dll::unit_type::GAUSSIAN>>::layer_t rbm;
 
     rbm.learning_rate *= 20;
 
@@ -76,7 +76,7 @@ TEST_CASE("unit/rbm/mnist/4", "[rbm][shuffle][unit]") {
         28 * 28, 100,
         dll::batch_size<25>,
         dll::momentum,
-        dll::shuffle>::rbm_t rbm;
+        dll::shuffle>::layer_t rbm;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -95,7 +95,7 @@ TEST_CASE("unit/rbm/mnist/5", "[rbm][denoising][unit]") {
         dll::weight_decay<>,
         dll::visible<dll::unit_type::GAUSSIAN>,
         dll::shuffle,
-        dll::weight_type<float>>::rbm_t rbm;
+        dll::weight_type<float>>::layer_t rbm;
 
     rbm.learning_rate *= 5;
 
@@ -127,7 +127,7 @@ TEST_CASE("unit/rbm/mnist/6", "[rbm][pcd][unit]") {
         28 * 28, 100,
         dll::batch_size<5>,
         dll::momentum,
-        dll::trainer_rbm<dll::pcd1_trainer_t>>::rbm_t rbm;
+        dll::trainer_rbm<dll::pcd1_trainer_t>>::layer_t rbm;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -145,7 +145,7 @@ TEST_CASE("unit/rbm/mnist/7", "[rbm][relu][unit]") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
-        dll::hidden<dll::unit_type::RELU>>::rbm_t rbm;
+        dll::hidden<dll::unit_type::RELU>>::layer_t rbm;
 
     rbm.learning_rate *= 10;
 
@@ -163,7 +163,7 @@ TEST_CASE("unit/rbm/mnist/8", "[rbm][sparse][unit]") {
     using rbm_type = dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
-        dll::sparsity<>>::rbm_t;
+        dll::sparsity<>>::layer_t;
 
     rbm_type rbm;
 
@@ -189,7 +189,7 @@ TEST_CASE("unit/rbm/mnist/9", "[rbm][sparse][unit]") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
-        dll::sparsity<dll::sparsity_method::LOCAL_TARGET>>::rbm_t rbm;
+        dll::sparsity<dll::sparsity_method::LOCAL_TARGET>>::layer_t rbm;
 
     rbm.learning_rate *= 2;
 
@@ -214,7 +214,7 @@ TEST_CASE("unit/rbm/mnist/10", "[rbm][pcd][unit]") {
         28 * 28, 100,
         dll::batch_size<5>,
         dll::momentum,
-        dll::trainer_rbm<pcd2_trainer_t>>::rbm_t rbm;
+        dll::trainer_rbm<pcd2_trainer_t>>::layer_t rbm;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
