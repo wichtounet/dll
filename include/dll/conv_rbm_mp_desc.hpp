@@ -52,11 +52,11 @@ struct conv_rbm_mp_desc {
     template <typename RBM>
     using watcher_t = typename detail::get_template_type<watcher<default_rbm_watcher>, Parameters...>::template value<RBM>;
 
-    /*! The RBM type */
-    using rbm_t = conv_rbm_mp<conv_rbm_mp_desc<NC_T, NV_1, NV_2, K_T, NH_1, NH_2, C_T, Parameters...>>;
-
     /*! The layer type */
-    using layer_t = rbm_t;
+    using layer_t = conv_rbm_mp<conv_rbm_mp_desc<NC_T, NV_1, NV_2, K_T, NH_1, NH_2, C_T, Parameters...>>;
+
+    /*! The RBM type */
+    using [[deprecated("use layer_t instead")]] rbm_t = layer_t;
 
     //Validate all parameters
 

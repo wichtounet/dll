@@ -40,11 +40,11 @@ struct dyn_rbm_desc {
     template <typename RBM>
     using watcher_t = typename detail::get_template_type<watcher<default_rbm_watcher>, Parameters...>::template value<RBM>;
 
-    /*! The RBM type */
-    using rbm_t = dyn_rbm<dyn_rbm_desc<Parameters...>>;
-
     /*! The layer type */
-    using layer_t = rbm_t;
+    using layer_t = dyn_rbm<dyn_rbm_desc<Parameters...>>;
+
+    /*! The RBM type */
+    using [[deprecated("use layer_t instead")]] rbm_t = layer_t;
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
