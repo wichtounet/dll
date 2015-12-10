@@ -298,7 +298,7 @@ struct sgd_trainer {
     void compute_last_errors(Layer& /*layer*/, Context& context, Labels& labels) {
         constexpr const auto last_a_f = extract_function<Layer>::activation_function;
 
-        static_assert(last_a_f == function::SOFTMAX || last_a_f == function::SIGMOID, "Only softmax and sigmoid RBM can be used as last RBM layer");
+        static_assert(last_a_f == function::SOFTMAX || last_a_f == function::SIGMOID || last_a_f == function::RELU, "Only softmax/sigmoid/relu RBM can be used as last RBM layer");
 
         context.errors = f_derivative<last_a_f>(context.output) >> (labels - context.output);
 
