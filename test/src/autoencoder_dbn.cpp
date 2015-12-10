@@ -47,6 +47,7 @@ TEST_CASE("dbn/ae/1", "[rbm][dbn][mnist][sgd][ae]") {
     REQUIRE(test_error < 0.1);
 }
 
+//TODO: This test does not work (pretraining seems to break havoc)
 TEST_CASE("dbn/ae/2", "[rbm][dbn][mnist][sgd][ae]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
@@ -62,6 +63,39 @@ TEST_CASE("dbn/ae/2", "[rbm][dbn][mnist][sgd][ae]") {
     auto dbn = std::make_unique<dbn_t>();
 
     dbn->display();
+
+    dbn->pretrain(dataset.training_images, 50);
+
+    dbn->learning_rate = 0.1;
+
+    auto ft_error = dbn->fine_tune_ae(dataset.training_images, 50);
+    std::cout << "ft_error:" << ft_error << std::endl;
+
+    CHECK(ft_error < 5e-2);
+
+    auto test_error = dll::test_set_ae(*dbn, dataset.test_images);
+    std::cout << "test_error:" << test_error << std::endl;
+    REQUIRE(test_error < 0.1);
+}
+
+TEST_CASE("dbn/ae/3", "[rbm][dbn][mnist][sgd][ae]") {
+    typedef dll::dbn_desc<
+        dll::dbn_layers<
+            dll::rbm_desc<28 * 28, 200>::layer_t,
+            dll::rbm_desc<200, 300>::layer_t,
+            dll::rbm_desc<300, 28 * 28>::layer_t
+        >, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(1000);
+    REQUIRE(!dataset.training_images.empty());
+
+    dll_test::mnist_scale(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->display();
+
+    dbn->pretrain(dataset.training_images, 50);
 
     dbn->learning_rate = 0.1;
 
