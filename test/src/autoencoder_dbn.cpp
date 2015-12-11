@@ -126,6 +126,8 @@ TEST_CASE("dbn/ae/4", "[dense][dbn][mnist][sgd][ae][momentum]") {
 
     dbn->display();
 
+    dbn->pretrain(dataset.training_images, 50);
+
     dbn->learning_rate = 0.1;
     dbn->initial_momentum = 0.9;
     dbn->final_momentum = 0.9;
@@ -156,6 +158,8 @@ TEST_CASE("dbn/ae/5", "[dense][dbn][mnist][sgd][ae][momentum][decay]") {
     auto dbn = std::make_unique<dbn_t>();
 
     dbn->display();
+
+    dbn->pretrain(dataset.training_images, 50);
 
     dbn->learning_rate = 0.1;
     dbn->initial_momentum = 0.9;
