@@ -109,7 +109,7 @@ TEST_CASE("dbn/ae/3", "[rbm][dbn][mnist][sgd][ae]") {
     REQUIRE(test_error < 0.1);
 }
 
-TEST_CASE("dense/ae/4", "[dense][dbn][mnist][sgd][ae][momentum]") {
+TEST_CASE("dbn/ae/4", "[dense][dbn][mnist][sgd][ae][momentum]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 200>::layer_t,
@@ -140,7 +140,7 @@ TEST_CASE("dense/ae/4", "[dense][dbn][mnist][sgd][ae][momentum]") {
     REQUIRE(test_error < 0.1);
 }
 
-TEST_CASE("dense/ae/5", "[dense][dbn][mnist][sgd][ae][momentum][decay]") {
+TEST_CASE("dbn/ae/5", "[dense][dbn][mnist][sgd][ae][momentum][decay]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 200>::layer_t,
