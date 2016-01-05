@@ -20,7 +20,7 @@ int main(int /*argc*/, char* /*argv*/ []) {
         dll::trainer_rbm<dll::pcd1_trainer_t>,
         dll::batch_size<50>,
         dll::visible<dll::unit_type::GAUSSIAN>,
-        dll::watcher<dll::opencv_rbm_visualizer>>::rbm_t rbm;
+        dll::watcher<dll::opencv_rbm_visualizer>>::layer_t rbm;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>();
 
