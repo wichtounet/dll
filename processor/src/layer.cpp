@@ -131,7 +131,7 @@ void dllp::rbm_layer::print(std::ostream& out) const {
 
     base_rbm_layer::print(out);
 
-    out << ">::rbm_t";
+    out << ">::layer_t";
 }
 
 bool dllp::rbm_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) {
@@ -188,7 +188,7 @@ void dllp::conv_rbm_layer::print(std::ostream& out) const {
 
     base_rbm_layer::print(out);
 
-    out << ">::rbm_t";
+    out << ">::layer_t";
 }
 
 bool dllp::conv_rbm_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) {
@@ -272,7 +272,7 @@ void dllp::conv_rbm_mp_layer::print(std::ostream& out) const {
 
     base_rbm_layer::print(out);
 
-    out << ">::rbm_t";
+    out << ">::layer_t";
 }
 
 bool dllp::conv_rbm_mp_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) {
