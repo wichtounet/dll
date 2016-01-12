@@ -10,7 +10,7 @@
 #include "dll/conv_layer.hpp"
 #include "dll/dense_layer.hpp"
 #include "dll/conv_rbm.hpp"
-#include "dll/dbn.hpp"
+#include "dll/dbn_fast.hpp"
 #include "dll/scale_layer.hpp"
 #include "dll/mp_layer.hpp"
 #include "dll/avgp_layer.hpp"
@@ -20,7 +20,7 @@
 #include "mnist/mnist_utils.hpp"
 
 TEST_CASE("fast/cdbn/sgd/1", "[dbn][mnist][sgd]") {
-    typedef dll::dbn_desc<
+    typedef dll::dbn_fast_desc<
         dll::dbn_layers<
             dll::conv_rbm_desc_square<1, 28, 10, 12, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::layer_t,
             dll::rbm_desc<12 * 12 * 10, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
