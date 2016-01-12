@@ -6,7 +6,7 @@
 //=======================================================================
 
 /*!
- * \file dbn.inl
+ * \file
  * \brief Deep Belief Network implementation.
  *
  * In this library, a DBN can also be used with standard neural network layers,
@@ -14,8 +14,7 @@
  * pretrained.
  */
 
-#ifndef DLL_DBN_INL
-#define DLL_DBN_INL
+#pragma once
 
 #include "cpp_utils/static_if.hpp"
 
@@ -1361,5 +1360,3 @@ private:
 };
 
 } //end of namespace dll
-
-#endif
