@@ -153,25 +153,21 @@ void update_convolutional(RBM& rbm, Trainer& t) {
     using rbm_t  = RBM;
     using weight = typename rbm_t::weight;
 
-    constexpr const auto NC  = rbm_t::NC;
-    constexpr const auto NW1 = rbm_t::NW1;
-    constexpr const auto NW2 = rbm_t::NW2;
-
     //Penalty to be applied to weights and hidden biases
     weight w_penalty = 0.0;
     weight h_penalty = 0.0;
     weight v_penalty = 0.0;
 
     //Global sparsity method
-    if (layer_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET) {
+    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET>([&](auto f){
         auto decay_rate = rbm.decay_rate;
         auto p          = rbm.sparsity_target;
         auto cost       = rbm.sparsity_cost;
 
-        t.q_global_t = decay_rate * t.q_global_t + (1.0 - decay_rate) * t.q_global_batch;
+        f(t).q_global_t = decay_rate * t.q_global_t + (1.0 - decay_rate) * t.q_global_batch;
 
-        w_penalty = h_penalty = cost * (t.q_global_t - p);
-    }
+        f(w_penalty) = h_penalty = cost * (t.q_global_t - p);
+    });
 
     //Apply L1/L2 regularization and penalties to the biases
 
@@ -180,51 +176,55 @@ void update_convolutional(RBM& rbm, Trainer& t) {
     t.update_grad(t.c_grad, rbm.c, rbm, b_decay(layer_traits<rbm_t>::decay()), v_penalty);
 
     //Local sparsity method
-    if (layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET) {
+    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f){
+        constexpr const auto NC  = rbm_t::NC;
+        constexpr const auto NW1 = rbm_t::NW1;
+        constexpr const auto NW2 = rbm_t::NW2;
+
         auto decay_rate = rbm.decay_rate;
         auto p          = rbm.sparsity_target;
         auto cost       = rbm.sparsity_cost;
 
-        t.q_local_t = decay_rate * t.q_local_t + (1.0 - decay_rate) * t.q_local_batch;
+        f(t).q_local_t = decay_rate * t.q_local_t + (1.0 - decay_rate) * t.q_local_batch;
 
         auto q_local_penalty = cost * (t.q_local_t - p);
 
-        t.b_grad -= sum_r(q_local_penalty);
+        f(t).b_grad -= sum_r(q_local_penalty);
 
         auto k_penalty = etl::rep<NW1, NW2>(sum_r(q_local_penalty));
         for (std::size_t channel = 0; channel < NC; ++channel) {
-            t.w_grad(channel) = t.w_grad(channel) - k_penalty;
+            f(t).w_grad(channel) = t.w_grad(channel) - k_penalty;
         }
-    }
+    });
 
     //Honglak Lee's sparsity method
-    if (layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE) {
-        t.w_grad -= rbm.pbias_lambda * t.w_bias;
-        t.b_grad -= rbm.pbias_lambda * t.b_bias;
-        t.c_grad -= rbm.pbias_lambda * t.c_bias;
-    }
+    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE>([&](auto f){
+        f(t).w_grad -= rbm.pbias_lambda * t.w_bias;
+        f(t).b_grad -= rbm.pbias_lambda * t.b_bias;
+        f(t).c_grad -= rbm.pbias_lambda * t.c_bias;
+    });
 
     const auto n_samples = double(etl::dim<0>(t.w_pos));
     auto eps             = rbm.learning_rate / n_samples;
 
     //Apply momentum and learning rate
-    if (layer_traits<rbm_t>::has_momentum()) {
+    cpp::static_if<layer_traits<rbm_t>::has_momentum()>([&](auto f){
         auto momentum = rbm.momentum;
 
-        t.w_inc = momentum * t.w_inc + eps * t.w_grad;
-        t.b_inc = momentum * t.b_inc + eps * t.b_grad;
-        t.c_inc = momentum * t.c_inc + eps * t.c_grad;
+        f(t).w_inc = momentum * t.w_inc + eps * t.w_grad;
+        f(t).b_inc = momentum * t.b_inc + eps * t.b_grad;
+        f(t).c_inc = momentum * t.c_inc + eps * t.c_grad;
 
-        rbm.w += t.w_inc;
-        rbm.b += t.b_inc;
-        rbm.c += t.c_inc;
-    }
+        f(rbm.w) += t.w_inc;
+        f(rbm.b) += t.b_inc;
+        f(rbm.c) += t.c_inc;
+    })
     //Apply learning rate only
-    else {
-        rbm.w += eps * t.w_grad;
-        rbm.b += eps * t.b_grad;
-        rbm.c += eps * t.c_grad;
-    }
+    .else_([&](auto f) {
+        f(rbm.w) += eps * t.w_grad;
+        f(rbm.b) += eps * t.b_grad;
+        f(rbm.c) += eps * t.c_grad;
+    });
 
     //Check for NaN
     nan_check_deep(rbm.w);
