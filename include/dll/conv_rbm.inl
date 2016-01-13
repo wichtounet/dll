@@ -346,6 +346,9 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
     template<typename V>
     weight free_energy_impl(const V& v) const {
+        //TODO This function takes ages to compile, must be improved
+        //     At least 5 seconds to be compiled on GCC-4.9
+
         etl::fast_dyn_matrix<weight, V_CV_CHANNELS, K, NH1, NH2> v_cv;      //Temporary convolution
 
         if(desc::visible_unit == unit_type::BINARY && desc::hidden_unit == unit_type::BINARY){
