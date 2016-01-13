@@ -589,11 +589,11 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
     t.w_grad = sum_l(t.w_pos - t.w_neg);
     t.b_grad = mean_r(sum_l(t.h1_a - t.h2_a));
 
-    if (Denoising) {
-        t.c_grad = mean_r(sum_l(t.vf - t.v2_a));
-    } else {
-        t.c_grad = mean_r(sum_l(t.v1 - t.v2_a));
-    }
+    cpp::static_if<Denoising>([&](auto f){
+        f(t).c_grad = mean_r(sum_l(t.vf - t.v2_a));
+    }).else_([&](auto f){
+        f(t).c_grad = mean_r(sum_l(t.v1 - t.v2_a));
+    });
 
     nan_check_deep(t.w_grad);
     nan_check_deep(t.b_grad);
@@ -602,30 +602,28 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
     //Compute the mean activation probabilities
     t.q_global_batch = mean(t.h2_a);
 
-    if (layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET) {
-        t.q_local_batch = mean_l(t.h2_a);
-    }
+    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f){
+        f(t).q_local_batch = mean_l(t.h2_a);
+    });
 
     //Compute the biases for sparsity
 
-    if (layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE) {
-        //Only b_bias are supported for now
-        if (layer_traits<rbm_t>::bias_mode() == bias_mode::SIMPLE) {
-            t.b_bias = mean_r(mean_l(t.h2_a)) - rbm.pbias;
-        }
-    }
+    //Only b_bias are supported for now
+    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE && layer_traits<rbm_t>::bias_mode() == bias_mode::SIMPLE>([&](auto f){
+        f(t).b_bias = mean_r(mean_l(t.h2_a)) - rbm.pbias;
+    });
 
-    //Accumulate the sparsity
+    ////Accumulate the sparsity
     context.batch_sparsity = t.q_global_batch;
 
-    //Accumulate the error
+    ////Accumulate the error
     cpp::static_if<Denoising>([&](auto f){
         f(context).batch_error = mean(etl::scale((t.vf - t.v2_a), (t.vf - t.v2_a)));
     }).else_([&](auto f){
         f(context).batch_error = mean(etl::scale((t.v1 - t.v2_a), (t.v1 - t.v2_a)));
     });
 
-    //Update the weights and biases based on the gradients
+    ////Update the weights and biases based on the gradients
     t.update(rbm);
 }
 
