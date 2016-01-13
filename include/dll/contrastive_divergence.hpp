@@ -17,8 +17,9 @@
 #ifndef DLL_CONTRASTIVE_DIVERGENCE_HPP
 #define DLL_CONTRASTIVE_DIVERGENCE_HPP
 
-#include "cpp_utils/assert.hpp" //Assertions
-#include "cpp_utils/maybe_parallel.hpp"
+#include "cpp_utils/assert.hpp"         //Assertions
+#include "cpp_utils/maybe_parallel.hpp" //conditional parallel loops
+#include "cpp_utils/static_if.hpp"      //static_if for compile-time reduction
 
 #include "etl/etl.hpp"
 
@@ -618,11 +619,11 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
     context.batch_sparsity = t.q_global_batch;
 
     //Accumulate the error
-    if (Denoising) {
-        context.batch_error = mean(etl::scale((t.vf - t.v2_a), (t.vf - t.v2_a)));
-    } else {
-        context.batch_error = mean(etl::scale((t.v1 - t.v2_a), (t.v1 - t.v2_a)));
-    }
+    cpp::static_if<Denoising>([&](auto f){
+        f(context).batch_error = mean(etl::scale((t.vf - t.v2_a), (t.vf - t.v2_a)));
+    }).else_([&](auto f){
+        f(context).batch_error = mean(etl::scale((t.v1 - t.v2_a), (t.v1 - t.v2_a)));
+    });
 
     //Update the weights and biases based on the gradients
     t.update(rbm);
