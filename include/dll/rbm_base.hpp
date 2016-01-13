@@ -74,13 +74,13 @@ struct rbm_base : neural_base<Parent> {
 
     template <bool EnableWatcher = true, typename RW = void, typename Samples, typename... Args>
     double train(const Samples& training_data, std::size_t max_epochs, Args... args) {
-        dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
+        dll::rbm_trainer<parent_t, EnableWatcher, RW, false> trainer(args...);
         return trainer.train(as_derived(), training_data.begin(), training_data.end(), max_epochs);
     }
 
     template <bool EnableWatcher = true, typename RW = void, typename Iterator, typename... Args>
     double train(Iterator&& first, Iterator&& last, std::size_t max_epochs, Args... args) {
-        dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
+        dll::rbm_trainer<parent_t, EnableWatcher, RW, false> trainer(args...);
         return trainer.train(as_derived(), std::forward<Iterator>(first), std::forward<Iterator>(last), max_epochs);
     }
 
@@ -88,13 +88,13 @@ struct rbm_base : neural_base<Parent> {
 
     template <typename Samples, bool EnableWatcher = true, typename RW = void, typename... Args>
     double train_denoising(const Samples& noisy, const Samples& clean, std::size_t max_epochs, Args... args) {
-        dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
+        dll::rbm_trainer<parent_t, EnableWatcher, RW, true> trainer(args...);
         return trainer.train(as_derived(), noisy.begin(), noisy.end(), clean.begin(), clean.end(), max_epochs);
     }
 
     template <typename NIterator, typename CIterator, bool EnableWatcher = true, typename RW = void, typename... Args>
     double train_denoising(NIterator noisy_it, NIterator noisy_end, CIterator clean_it, CIterator clean_end, std::size_t max_epochs, Args... args) {
-        dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
+        dll::rbm_trainer<parent_t, EnableWatcher, RW, true> trainer(args...);
         return trainer.train(as_derived(),
                              noisy_it, noisy_end,
                              clean_it, clean_end,

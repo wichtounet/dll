@@ -37,11 +37,11 @@ struct watcher_type<RBM, RW, std::enable_if_t<cpp::not_u<std::is_void<RW>::value
  * This trainer use the specified trainer of the RBM to perform unsupervised
  * training.
  */
-template <typename RBM, bool EnableWatcher, typename RW>
+template <typename RBM, bool EnableWatcher, typename RW, bool Denoising>
 struct rbm_trainer {
     using rbm_t = RBM;
 
-    template <typename R, bool Denoising>
+    template <typename R>
     using trainer_t = typename rbm_t::desc::template trainer_t<R, Denoising>;
 
     using watcher_t = typename watcher_type<rbm_t, RW>::watcher_t;
@@ -65,7 +65,7 @@ struct rbm_trainer {
         //NOP
     }
 
-    template <bool Denoising, typename IIterator, typename EIterator, cpp_enable_if_cst(layer_traits<rbm_t>::has_shuffle())>
+    template <typename IIterator, typename EIterator, cpp_enable_if_cst(layer_traits<rbm_t>::has_shuffle())>
     static void shuffle(IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast) {
         static std::random_device rd;
         static std::mt19937_64 g(rd());
@@ -77,10 +77,10 @@ struct rbm_trainer {
         }
     }
 
-    template <bool Denoising, typename IIterator, typename EIterator, cpp_disable_if_cst(layer_traits<rbm_t>::has_shuffle())>
+    template <typename IIterator, typename EIterator, cpp_disable_if_cst(layer_traits<rbm_t>::has_shuffle())>
     static void shuffle(IIterator, IIterator, EIterator, EIterator) {}
 
-    template <bool Denoising, typename IIterator, typename EIterator, typename IVector, typename EVector, cpp_enable_if_cst(layer_traits<rbm_t>::has_shuffle())>
+    template <typename IIterator, typename EIterator, typename IVector, typename EVector, cpp_enable_if_cst(layer_traits<rbm_t>::has_shuffle())>
     static auto prepare_it(IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast, IVector& ivec, EVector& evec) {
         std::copy(ifirst, ilast, std::back_inserter(ivec));
 
@@ -98,7 +98,7 @@ struct rbm_trainer {
         }
     }
 
-    template <bool Denoising, typename IIterator, typename EIterator, typename IVector, typename EVector, cpp_disable_if_cst(layer_traits<rbm_t>::has_shuffle())>
+    template <typename IIterator, typename EIterator, typename IVector, typename EVector, cpp_disable_if_cst(layer_traits<rbm_t>::has_shuffle())>
     static auto prepare_it(IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast, IVector&, EVector&) {
         return std::make_tuple(ifirst, ilast, efirst, elast);
     }
@@ -116,7 +116,7 @@ struct rbm_trainer {
     //Note: input_first/input_last only relevant for its size, not
     //values since they can point to the input of the first level
     //and not the current level
-    template <bool Denoising = true, typename Iterator>
+    template <typename Iterator>
     void init_training(RBM& rbm, Iterator input_first, Iterator input_last) {
         rbm.momentum = rbm.initial_momentum;
 
@@ -148,13 +148,12 @@ struct rbm_trainer {
 
     template <typename Iterator>
     typename rbm_t::weight train(RBM& rbm, Iterator first, Iterator last, std::size_t max_epochs) {
-        return train<false>(rbm, first, last, first, last, max_epochs);
+        return train(rbm, first, last, first, last, max_epochs);
     }
 
-    template <bool Denoising = false>
     static auto get_trainer(RBM& rbm) {
         //Allocate the trainer on the heap (may be large)
-        return std::make_unique<trainer_t<rbm_t, Denoising>>(rbm);
+        return std::make_unique<trainer_t<rbm_t>>(rbm);
     }
 
     typename rbm_t::weight finalize_training(RBM& rbm) {
@@ -165,14 +164,14 @@ struct rbm_trainer {
         return last_error;
     }
 
-    template <bool Denoising = true, typename IIterator, typename EIterator>
+    template <typename IIterator, typename EIterator>
     typename rbm_t::weight train(RBM& rbm, IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast, std::size_t max_epochs) {
         //In case of shuffle, we don't want to shuffle the input, therefore create a copy and shuffle it
 
         std::vector<typename std::iterator_traits<IIterator>::value_type> input_copy;
         std::vector<typename std::iterator_traits<EIterator>::value_type> expected_copy;
 
-        auto iterators = prepare_it<Denoising>(ifirst, ilast, efirst, elast, input_copy, expected_copy);
+        auto iterators = prepare_it(ifirst, ilast, efirst, elast, input_copy, expected_copy);
 
         decltype(auto) input_first = std::get<0>(iterators);
         decltype(auto) input_last = std::get<1>(iterators);
@@ -181,7 +180,7 @@ struct rbm_trainer {
         decltype(auto) expected_last = std::get<3>(iterators);
 
         //Initialize RBM and trainign parameters
-        init_training<Denoising>(rbm, input_first, input_last);
+        init_training(rbm, input_first, input_last);
 
         //Some RBM may init weights based on the training data
         //Note: This can't be done in init_training, since it will
@@ -189,12 +188,12 @@ struct rbm_trainer {
         init_weights(rbm, input_first, input_last);
 
         //Allocate the trainer
-        auto trainer = get_trainer<Denoising>(rbm);
+        auto trainer = get_trainer(rbm);
 
         //Train for max_epochs epoch
         for (std::size_t epoch = 0; epoch < max_epochs; ++epoch) {
             //Shuffle if necessary
-            shuffle<Denoising>(input_first, input_last, expected_first, expected_last);
+            shuffle(input_first, input_last, expected_first, expected_last);
 
             //Create a new context for this epoch
             rbm_training_context context;

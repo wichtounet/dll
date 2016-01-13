@@ -922,7 +922,7 @@ private:
 
         watcher.template pretrain_layer<layer_t>(*this, I, 0);
 
-        using rbm_trainer_t = dll::rbm_trainer<layer_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>>;
+        using rbm_trainer_t = dll::rbm_trainer<layer_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>, false>;
 
         //Initialize the RBM trainer
         rbm_trainer_t r_trainer;
@@ -931,7 +931,7 @@ private:
         r_trainer.init_training(rbm, first, last); //TODO This may be highly slow...
 
         //Get the specific trainer (CD)
-        auto trainer = rbm_trainer_t::template get_trainer<false>(rbm);
+        auto trainer = rbm_trainer_t::get_trainer(rbm);
 
         //Several RBM batches are propagated at once
         auto total_batch_size = big_batch_size * get_batch_size(rbm);
