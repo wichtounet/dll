@@ -44,6 +44,8 @@ struct rbm_trainer {
     template <typename R>
     using trainer_t = typename rbm_t::desc::template trainer_t<R, Denoising>;
 
+    using trainer_type = std::unique_ptr<trainer_t<rbm_t>>;
+
     using watcher_t = typename watcher_type<rbm_t, RW>::watcher_t;
 
     mutable watcher_t watcher;
@@ -151,7 +153,7 @@ struct rbm_trainer {
         return train(rbm, first, last, first, last, max_epochs);
     }
 
-    static auto get_trainer(RBM& rbm) {
+    static trainer_type get_trainer(RBM& rbm) {
         //Allocate the trainer on the heap (may be large)
         return std::make_unique<trainer_t<rbm_t>>(rbm);
     }
@@ -219,8 +221,8 @@ struct rbm_trainer {
         samples = 0;
     }
 
-    template <typename IIT, typename EIT, typename Trainer>
-    void train_sub(IIT input_first, IIT input_last, EIT expected_first, Trainer& trainer, rbm_training_context& context, rbm_t& rbm) {
+    template <typename IIT, typename EIT>
+    void train_sub(IIT input_first, IIT input_last, EIT expected_first, trainer_type& trainer, rbm_training_context& context, rbm_t& rbm) {
         auto iit = input_first;
         auto eit = expected_first;
         auto end = input_last;
@@ -242,8 +244,8 @@ struct rbm_trainer {
         }
     }
 
-    template <typename IIT, typename EIT, typename Trainer>
-    void train_batch(IIT input_first, IIT input_last, EIT expected_first, EIT expected_last, Trainer& trainer, rbm_training_context& context, rbm_t& rbm) {
+    template <typename IIT, typename EIT>
+    void train_batch(IIT input_first, IIT input_last, EIT expected_first, EIT expected_last, trainer_type& trainer, rbm_training_context& context, rbm_t& rbm) {
         ++batches;
 
         auto input_batch    = make_batch(input_first, input_last);
