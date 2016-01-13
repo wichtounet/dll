@@ -16,6 +16,7 @@
 
 #include "cpp_utils/stop_watch.hpp" //Performance counter
 #include "cpp_utils/assert.hpp"
+#include "cpp_utils/static_if.hpp"
 
 #include "etl/etl.hpp"
 
@@ -23,6 +24,7 @@
 #include "base_conf.hpp"
 #include "io.hpp"
 #include "checks.hpp" //NaN checks
+#include "rbm_tmp.hpp" // static_if macros
 
 namespace dll {
 
@@ -294,52 +296,31 @@ protected:
         using namespace etl;
 
         //Compute activation probabilities
-        if (P) {
-            if (hidden_unit == unit_type::BINARY) {
-                h_a = sigmoid(b + mul(v_a, w, t));
-            } else if (hidden_unit == unit_type::RELU) {
-                h_a = max(b + mul(v_a, w, t), 0.0);
-            } else if (hidden_unit == unit_type::RELU6) {
-                h_a = min(max(b + mul(v_a, w, t), 0.0), 6.0);
-            } else if (hidden_unit == unit_type::RELU1) {
-                h_a = min(max(b + mul(v_a, w, t), 0.0), 1.0);
-            } else if (hidden_unit == unit_type::SOFTMAX) {
-                h_a = stable_softmax(b + mul(v_a, w, t));
-            }
+        H_PROBS(unit_type::BINARY, f(h_a) = sigmoid(b + mul(v_a, w, t)));
+        H_PROBS(unit_type::RELU, f(h_a) = max(b + mul(v_a, w, t), 0.0));
+        H_PROBS(unit_type::RELU6, f(h_a) = min(max(b + mul(v_a, w, t), 0.0), 6.0));
+        H_PROBS(unit_type::RELU1, f(h_a) = min(max(b + mul(v_a, w, t), 0.0), 1.0));
+        H_PROBS(unit_type::SOFTMAX, f(h_a) = stable_softmax(b + mul(v_a, w, t)));
 
+        //Sample values from input
+        H_SAMPLE_INPUT(unit_type::BINARY, f(h_s) = bernoulli(h_a));
+        H_SAMPLE_INPUT(unit_type::RELU, f(h_s) = max(logistic_noise(b + mul(v_a, w, t)), 0.0));
+        H_SAMPLE_INPUT(unit_type::RELU6, f(h_s) = ranged_noise(h_a, 6.0));
+        H_SAMPLE_INPUT(unit_type::RELU1, f(h_s) = ranged_noise(h_a, 1.0));
+        H_SAMPLE_INPUT(unit_type::SOFTMAX, f(h_s) = one_if_max(h_a));
+
+        //Sample values from probs
+        H_SAMPLE_PROBS(unit_type::BINARY, f(h_s) = bernoulli(sigmoid(b + mul(v_a, w, t))));
+        H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = bernoulli(max(b + mul(v_a, w, t), 0.0)));
+        H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = bernoulli(min(max(b + mul(v_a, w, t), 0.0), 6.0)));
+        H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = bernoulli(min(max(b + mul(v_a, w, t), 0.0), 1.0)));
+        H_SAMPLE_PROBS(unit_type::SOFTMAX, f(h_s) = bernoulli(stable_softmax(b + mul(v_a, w, t))));
+
+        if(P){
             nan_check_deep(h_a);
-
-            //Compute sampled values directly
-            if (S) {
-                if (hidden_unit == unit_type::BINARY) {
-                    h_s = bernoulli(h_a);
-                } else if (hidden_unit == unit_type::RELU) {
-                    h_s = max(logistic_noise(b + mul(v_a, w, t)), 0.0);
-                } else if (hidden_unit == unit_type::RELU6) {
-                    h_s = ranged_noise(h_a, 6.0);
-                } else if (hidden_unit == unit_type::RELU1) {
-                    h_s = ranged_noise(h_a, 1.0);
-                } else if (hidden_unit == unit_type::SOFTMAX) {
-                    h_s = one_if_max(h_a);
-                }
-
-                nan_check_deep(h_s);
-            }
         }
-        //Compute sampled values
-        else if (S) {
-            if (hidden_unit == unit_type::BINARY) {
-                h_s = bernoulli(sigmoid(b + mul(v_a, w, t)));
-            } else if (hidden_unit == unit_type::RELU) {
-                h_s = max(logistic_noise(b + mul(v_a, w, t)), 0.0);
-            } else if (hidden_unit == unit_type::RELU6) {
-                h_s = ranged_noise(min(max(b + mul(v_a, w, t), 0.0), 6.0), 6.0);
-            } else if (hidden_unit == unit_type::RELU1) {
-                h_s = ranged_noise(min(max(b + mul(v_a, w, t), 0.0), 1.0), 1.0);
-            } else if (hidden_unit == unit_type::SOFTMAX) {
-                h_s = one_if_max(stable_softmax(b + mul(v_a, w, t)));
-            }
 
+        if(S){
             nan_check_deep(h_s);
         }
     }
@@ -348,27 +329,19 @@ protected:
     static void std_activate_visible(const H&, const H& h_s, V&& v_a, V&& v_s, const C& c, const W& w, T&& t) {
         using namespace etl;
 
-        if (P) {
-            if (visible_unit == unit_type::BINARY) {
-                v_a = sigmoid(c + mul(w, h_s, t));
-            } else if (visible_unit == unit_type::GAUSSIAN) {
-                v_a = c + mul(w, h_s, t);
-            } else if (visible_unit == unit_type::RELU) {
-                v_a = max(c + mul(w, h_s, t), 0.0);
-            }
+        V_PROBS(unit_type::BINARY, f(v_a) = sigmoid(c + mul(w, h_s, t)));
+        V_PROBS(unit_type::GAUSSIAN, f(v_a) = c + mul(w, h_s, t));
+        V_PROBS(unit_type::RELU, f(v_a) = max(c + mul(w, h_s, t), 0.0));
 
+        V_SAMPLE_INPUT(unit_type::BINARY, f(v_s) = bernoulli(sigmoid(c + mul(w, h_s, t))));
+        V_SAMPLE_INPUT(unit_type::GAUSSIAN, f(v_s) = normal_noise(c + mul(w, h_s, t)));
+        V_SAMPLE_INPUT(unit_type::RELU, f(v_s) = logistic_noise(max(c + mul(w, h_s, t), 0.0)));
+
+        if (P) {
             nan_check_deep(v_a);
         }
 
         if (S) {
-            if (visible_unit == unit_type::BINARY) {
-                v_s = bernoulli(sigmoid(c + mul(w, h_s, t)));
-            } else if (visible_unit == unit_type::GAUSSIAN) {
-                v_s = normal_noise(c + mul(w, h_s, t));
-            } else if (visible_unit == unit_type::RELU) {
-                v_s = logistic_noise(max(c + mul(w, h_s, t), 0.0));
-            }
-
             nan_check_deep(v_s);
         }
     }
@@ -381,63 +354,46 @@ protected:
 
         cpp_assert(etl::dim<0>(h_s) == Batch && etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
 
-        //Compute activation probabilities
+        H_PROBS(unit_type::BINARY, f(h_a) = sigmoid(rep_l(b, Batch) + mul(v_a, w)));
+        H_PROBS(unit_type::RELU, f(h_a) = max(rep_l(b, Batch) + mul(v_a, w), 0.0));
+        H_PROBS(unit_type::RELU6, f(h_a) = min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 6.0));
+        H_PROBS(unit_type::RELU1, f(h_a) = min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 1.0));
+
+        H_PROBS_MULTI(unit_type::SOFTMAX)([&](auto f){
+            auto x = f(etl::force_temporary(rep_l(b, Batch) + mul(v_a, w)));
+
+            for (std::size_t b = 0; b < Batch; ++b) {
+                f(h_a)(b) = stable_softmax(x(b));
+            }
+        });
+
+        H_SAMPLE_PROBS(unit_type::BINARY, f(h_s) = bernoulli(h_a));
+        H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = max(logistic_noise(rep_l(b, Batch) + mul(v_a, w)), 0.0));
+        H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = ranged_noise(h_a, 6.0));
+        H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = ranged_noise(h_a, 1.0));
+        H_SAMPLE_PROBS_MULTI(unit_type::SOFTMAX)([&](auto f){
+            for (std::size_t b = 0; b < Batch; ++b) {
+                f(h_s)(b) = stable_softmax(h_a(b));
+            }
+        });
+
+        H_SAMPLE_INPUT(unit_type::BINARY, f(h_s) = bernoulli(sigmoid(rep_l(b, Batch) + mul(v_a, w))));
+        H_SAMPLE_INPUT(unit_type::RELU, f(h_s) = max(normal_noise(rep_l(b, Batch) + mul(v_a, w)), 0.0));
+        H_SAMPLE_INPUT(unit_type::RELU6, f(h_s) = ranged_noise(min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 6.0), 6.0));
+        H_SAMPLE_INPUT(unit_type::RELU1, f(h_s) = ranged_noise(min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 1.0), 1.0));
+        H_SAMPLE_INPUT_MULTI(unit_type::RELU1)([&](auto f){
+            auto x = f(etl::force_temporary(rep_l(b, Batch) + mul(v_a, w)));
+
+            for (std::size_t b = 0; b < Batch; ++b) {
+                f(h_s)(b) = one_if_max(stable_softmax(x(b)));
+            }
+        });
+
         if (P) {
-            if (hidden_unit == unit_type::BINARY) {
-                h_a = sigmoid(rep_l(b, Batch) + mul(v_a, w));
-            } else if (hidden_unit == unit_type::RELU) {
-                h_a = max(rep_l(b, Batch) + mul(v_a, w), 0.0);
-            } else if (hidden_unit == unit_type::RELU6) {
-                h_a = min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 6.0);
-            } else if (hidden_unit == unit_type::RELU1) {
-                h_a = min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 1.0);
-            } else if (hidden_unit == unit_type::SOFTMAX) {
-                auto x = etl::force_temporary(rep_l(b, Batch) + mul(v_a, w));
-
-                for (std::size_t b = 0; b < Batch; ++b) {
-                    h_a(b) = stable_softmax(x(b));
-                }
-            }
-
             nan_check_deep(h_a);
-
-            //Compute sampled values directly
-            if (S) {
-                if (hidden_unit == unit_type::BINARY) {
-                    h_s = bernoulli(h_a);
-                } else if (hidden_unit == unit_type::RELU) {
-                    h_s = max(logistic_noise(rep_l(b, Batch) + mul(v_a, w)), 0.0);
-                } else if (hidden_unit == unit_type::RELU6) {
-                    h_s = ranged_noise(h_a, 6.0);
-                } else if (hidden_unit == unit_type::RELU1) {
-                    h_s = ranged_noise(h_a, 1.0);
-                } else if (hidden_unit == unit_type::SOFTMAX) {
-                    for (std::size_t b = 0; b < Batch; ++b) {
-                        h_s(b) = stable_softmax(h_a(b));
-                    }
-                }
-
-                nan_check_deep(h_s);
-            }
         }
-        //Compute sampled values
-        else if (S) {
-            if (hidden_unit == unit_type::BINARY) {
-                h_s = bernoulli(sigmoid(rep_l(b, Batch) + mul(v_a, w)));
-            } else if (hidden_unit == unit_type::RELU) {
-                h_s = max(normal_noise(rep_l(b, Batch) + mul(v_a, w)), 0.0);
-            } else if (hidden_unit == unit_type::RELU6) {
-                h_s = ranged_noise(min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 6.0), 6.0);
-            } else if (hidden_unit == unit_type::RELU1) {
-                h_s = ranged_noise(min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 1.0), 1.0);
-            } else if (hidden_unit == unit_type::SOFTMAX) {
-                auto x = etl::force_temporary(rep_l(b, Batch) + mul(v_a, w));
 
-                for (std::size_t b = 0; b < Batch; ++b) {
-                    h_s(b) = one_if_max(stable_softmax(x(b)));
-                }
-            }
-
+        if (S) {
             nan_check_deep(h_s);
         }
     }
@@ -450,27 +406,19 @@ protected:
 
         cpp_assert(etl::dim<0>(h_s) == Batch && etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
 
-        if (P) {
-            if (visible_unit == unit_type::BINARY) {
-                v_a = sigmoid(rep_l(c, Batch) + transpose(mul(w, transpose(h_s))));
-            } else if (visible_unit == unit_type::GAUSSIAN) {
-                v_a = rep_l(c, Batch) + transpose(mul(w, transpose(h_s)));
-            } else if (visible_unit == unit_type::RELU) {
-                v_a = max(rep_l(c, Batch) + transpose(mul(w, transpose(h_s))), 0.0);
-            }
+        V_PROBS(unit_type::BINARY, f(v_a) = sigmoid(rep_l(c, Batch) + transpose(mul(w, transpose(h_s)))));
+        V_PROBS(unit_type::GAUSSIAN, f(v_a) = rep_l(c, Batch) + transpose(mul(w, transpose(h_s))));
+        V_PROBS(unit_type::RELU, f(v_a) = max(rep_l(c, Batch) + transpose(mul(w, transpose(h_s))), 0.0));
 
+        V_SAMPLE_INPUT(unit_type::BINARY, f(v_s) = bernoulli(sigmoid(rep_l(c, Batch) + transpose(mul(w, transpose(h_s))))));
+        V_SAMPLE_INPUT(unit_type::GAUSSIAN, f(v_s) = normal_noise(rep_l(c, Batch) + transpose(mul(w, transpose(h_s)))));
+        V_SAMPLE_INPUT(unit_type::RELU, f(v_s) = logistic_noise(max(rep_l(c, Batch) + transpose(mul(w, transpose(h_s))), 0.0)));
+
+        if (P) {
             nan_check_deep(v_a);
         }
 
         if (S) {
-            if (visible_unit == unit_type::BINARY) {
-                v_s = bernoulli(sigmoid(rep_l(c, Batch) + transpose(mul(w, transpose(h_s)))));
-            } else if (visible_unit == unit_type::GAUSSIAN) {
-                v_s = normal_noise(rep_l(c, Batch) + transpose(mul(w, transpose(h_s))));
-            } else if (visible_unit == unit_type::RELU) {
-                v_s = logistic_noise(max(rep_l(c, Batch) + transpose(mul(w, transpose(h_s))), 0.0));
-            }
-
             nan_check_deep(v_s);
         }
     }
