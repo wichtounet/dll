@@ -1003,7 +1003,7 @@ private:
         r_trainer.init_training(rbm, first, last);
 
         //Get the specific trainer (CD)
-        auto trainer = rbm_trainer_t::template get_trainer<false>(rbm);
+        auto trainer = rbm_trainer_t::get_trainer(rbm);
 
         auto total_batch_size = big_batch_size * get_batch_size(rbm);
 
@@ -1074,7 +1074,7 @@ private:
         r_trainer.init_training(rbm, first, last);
 
         //Get the specific trainer (CD)
-        auto trainer = rbm_trainer_t::template get_trainer<false>(rbm);
+        auto trainer = rbm_trainer_t::get_trainer(rbm);
 
         auto rbm_batch_size = get_batch_size(rbm);
         auto total_batch_size = big_batch_size * rbm_batch_size;
