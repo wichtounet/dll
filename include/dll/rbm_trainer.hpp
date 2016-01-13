@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "cpp_utils/algorithm.hpp"
+#include "cpp_utils/static_if.hpp"
 
 #include "decay_type.hpp"
 #include "batch.hpp"
@@ -255,11 +256,11 @@ struct rbm_trainer {
         context.reconstruction_error += context.batch_error;
         context.sparsity += context.batch_sparsity;
 
-        if (EnableWatcher && layer_traits<rbm_t>::free_energy()) {
+        cpp::static_if<EnableWatcher && layer_traits<rbm_t>::free_energy()>([&](auto f){
             for (auto& v : input_batch) {
-                context.free_energy += rbm.free_energy(v);
+                context.free_energy += f(rbm).free_energy(v);
             }
-        }
+        });
 
         if (EnableWatcher && layer_traits<rbm_t>::is_verbose()) {
             watcher.batch_end(rbm, context, batches, total_batches);
