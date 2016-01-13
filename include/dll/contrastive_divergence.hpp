@@ -30,6 +30,8 @@
 
 namespace dll {
 
+#define STATIC_IF_DECAY(d, ...) cpp::static_if<decay == d>([&](auto f){ __VA_ARGS__ ; });
+
 /*!
  * \brief Base class for all standard trainer
  */
@@ -39,17 +41,12 @@ struct base_trainer {
 
     bool init = false;
 
-    template <typename V, typename G>
-    void update_grad(G& grad, const V& value, const RBM& rbm, decay_type decay, double penalty) {
-        if (decay == decay_type::L1) {
-            grad = grad - rbm.l1_weight_cost * abs(value) - penalty;
-        } else if (decay == decay_type::L2) {
-            grad = grad - rbm.l2_weight_cost * value - penalty;
-        } else if (decay == decay_type::L1L2) {
-            grad = grad - rbm.l1_weight_cost * abs(value) - rbm.l2_weight_cost * value - penalty;
-        } else {
-            grad = grad - penalty;
-        }
+    template <decay_type decay, typename V, typename G>
+    void update_grad(G& grad, const V& value, const RBM& rbm, double penalty) {
+        STATIC_IF_DECAY(decay_type::NONE, f(grad) = grad - penalty);
+        STATIC_IF_DECAY(decay_type::L1, f(grad) = grad - rbm.l1_weight_cost * abs(value) - penalty);
+        STATIC_IF_DECAY(decay_type::L2, f(grad) = grad - rbm.l2_weight_cost * value - penalty);
+        STATIC_IF_DECAY(decay_type::L1L2, f(grad) = grad - rbm.l1_weight_cost * abs(value) - rbm.l2_weight_cost * value - penalty);
     }
 };
 
@@ -99,9 +96,9 @@ void update_normal(RBM& rbm, Trainer& t) {
 
     //Apply L1/L2 regularization and penalties to the biases
 
-    t.update_grad(t.w_grad, rbm.w, rbm, w_decay(layer_traits<rbm_t>::decay()), w_penalty);
-    t.update_grad(t.b_grad, rbm.b, rbm, b_decay(layer_traits<rbm_t>::decay()), h_penalty);
-    t.update_grad(t.c_grad, rbm.c, rbm, b_decay(layer_traits<rbm_t>::decay()), v_penalty);
+    t.template update_grad<w_decay(layer_traits<rbm_t>::decay())>(t.w_grad, rbm.w, rbm, w_penalty);
+    t.template update_grad<b_decay(layer_traits<rbm_t>::decay())>(t.b_grad, rbm.b, rbm, h_penalty);
+    t.template update_grad<b_decay(layer_traits<rbm_t>::decay())>(t.c_grad, rbm.c, rbm, v_penalty);
 
     //Local sparsity method
     cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f){
@@ -171,9 +168,9 @@ void update_convolutional(RBM& rbm, Trainer& t) {
 
     //Apply L1/L2 regularization and penalties to the biases
 
-    t.update_grad(t.w_grad, rbm.w, rbm, w_decay(layer_traits<rbm_t>::decay()), w_penalty);
-    t.update_grad(t.b_grad, rbm.b, rbm, b_decay(layer_traits<rbm_t>::decay()), h_penalty);
-    t.update_grad(t.c_grad, rbm.c, rbm, b_decay(layer_traits<rbm_t>::decay()), v_penalty);
+    t.template update_grad<w_decay(layer_traits<rbm_t>::decay())>(t.w_grad, rbm.w, rbm, w_penalty);
+    t.template update_grad<b_decay(layer_traits<rbm_t>::decay())>(t.b_grad, rbm.b, rbm, h_penalty);
+    t.template update_grad<b_decay(layer_traits<rbm_t>::decay())>(t.c_grad, rbm.c, rbm, v_penalty);
 
     //Local sparsity method
     cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f){
@@ -619,17 +616,17 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
         f(t).b_bias = mean_r(mean_l(t.h2_a)) - rbm.pbias;
     });
 
-    ////Accumulate the sparsity
+    //Accumulate the sparsity
     context.batch_sparsity = t.q_global_batch;
 
-    ////Accumulate the error
+    //Accumulate the error
     cpp::static_if<Denoising>([&](auto f){
         f(context).batch_error = mean(etl::scale((t.vf - t.v2_a), (t.vf - t.v2_a)));
     }).else_([&](auto f){
         f(context).batch_error = mean(etl::scale((t.v1 - t.v2_a), (t.v1 - t.v2_a)));
     });
 
-    ////Update the weights and biases based on the gradients
+    //Update the weights and biases based on the gradients
     t.update(rbm);
 }
 
