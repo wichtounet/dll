@@ -87,15 +87,15 @@ void update_normal(RBM& rbm, Trainer& t) {
     typename rbm_t::weight v_penalty = 0.0;
 
     //Global sparsity method
-    if (layer_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET) {
+    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET>([&](auto f){
         auto decay_rate = rbm.decay_rate;
         auto p          = rbm.sparsity_target;
         auto cost       = rbm.sparsity_cost;
 
-        t.q_global_t = decay_rate * t.q_global_t + (1.0 - decay_rate) * t.q_global_batch;
+        f(t).q_global_t = decay_rate * t.q_global_t + (1.0 - decay_rate) * t.q_global_batch;
 
-        w_penalty = h_penalty = cost * (t.q_global_t - p);
-    }
+        f(w_penalty) = h_penalty = cost * (t.q_global_t - p);
+    });
 
     //Apply L1/L2 regularization and penalties to the biases
 
@@ -104,45 +104,45 @@ void update_normal(RBM& rbm, Trainer& t) {
     t.update_grad(t.c_grad, rbm.c, rbm, b_decay(layer_traits<rbm_t>::decay()), v_penalty);
 
     //Local sparsity method
-    if (layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET) {
+    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f){
         auto decay_rate = rbm.decay_rate;
         auto p          = rbm.sparsity_target;
         auto cost       = rbm.sparsity_cost;
 
-        t.q_local_t = decay_rate * t.q_local_t + (1.0 - decay_rate) * t.q_local_batch;
+        f(t).q_local_t = decay_rate * t.q_local_t + (1.0 - decay_rate) * t.q_local_batch;
 
         auto q_local_penalty = cost * (t.q_local_t - p);
 
-        t.b_grad -= q_local_penalty;
+        f(t).b_grad -= q_local_penalty;
 
         for (std::size_t i = 0; i < num_hidden(rbm); ++i) {
             for (std::size_t j = 0; j < num_visible(rbm); ++j) {
-                t.w_grad(j, i) -= q_local_penalty(i);
+                f(t).w_grad(j, i) -= q_local_penalty(i);
             }
         }
-    }
+    });
 
     const auto n_samples = double(etl::dim<0>(t.w_grad_b));
     auto eps             = rbm.learning_rate / n_samples;
 
     //Apply momentum and learning rate
-    if (layer_traits<rbm_t>::has_momentum()) {
+    cpp::static_if<layer_traits<rbm_t>::has_momentum()>([&](auto f){
         auto momentum = rbm.momentum;
 
-        t.w_inc = momentum * t.w_inc + eps * t.w_grad;
-        t.b_inc = momentum * t.b_inc + eps * t.b_grad;
-        t.c_inc = momentum * t.c_inc + eps * t.c_grad;
+        f(t).w_inc = momentum * t.w_inc + eps * t.w_grad;
+        f(t).b_inc = momentum * t.b_inc + eps * t.b_grad;
+        f(t).c_inc = momentum * t.c_inc + eps * t.c_grad;
 
-        rbm.w += t.w_inc;
-        rbm.b += t.b_inc;
-        rbm.c += t.c_inc;
-    }
+        f(rbm).w += t.w_inc;
+        f(rbm).b += t.b_inc;
+        f(rbm).c += t.c_inc;
+    })
     //Apply the learning rate
-    else {
-        rbm.w += eps * t.w_grad;
-        rbm.b += eps * t.b_grad;
-        rbm.c += eps * t.c_grad;
-    }
+    .else_([&](auto f){
+        f(rbm).w += eps * t.w_grad;
+        f(rbm).b += eps * t.b_grad;
+        f(rbm).c += eps * t.c_grad;
+    });
 
     //Check for NaN
     nan_check_deep_3(rbm.w, rbm.b, rbm.c);
@@ -296,6 +296,113 @@ void batch_compute_gradients(Trainer& t) {
 
 /* The training procedures */
 
+template <bool Persistent, std::size_t K, typename T, typename RBM, typename Trainer, cpp_enable_if(layer_traits<RBM>::is_parallel_mode())>
+void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
+    // clang-format off
+    maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(),
+            [&](const auto& input, const auto& expected, std::size_t i)
+    {
+        //Copy input/expected for computations
+        t.v1(i) = input;
+        t.vf(i) = expected;
+
+        //First step
+        rbm.template activate_hidden<true, true>(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i), t.ht(i));
+
+        if(Persistent && t.init){
+            t.p_h_a(i) = t.h1_a(i);
+            t.p_h_s(i) = t.h1_s(i);
+        }
+
+        //CD-1
+        cpp::static_if<Persistent>([&](auto f){
+            f(rbm).template activate_visible<true, false>(t.p_h_a(i), t.p_h_s(i), t.v2_a(i), t.v2_s(i), t.vt(i));
+            f(rbm).template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.ht(i));
+        }).else_([&](auto f){
+            f(rbm).template activate_visible<true, false>(t.h1_a(i), t.h1_s(i), t.v2_a(i), t.v2_s(i), t.vt(i));
+            f(rbm).template activate_hidden<true, (K > 1)>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.ht(i));
+        });
+
+        //CD-k
+        for(std::size_t k = 1; k < K; ++k){
+            rbm.template activate_visible<true, false>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.vt(i));
+            rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.ht(i));
+        }
+
+        //The following lines are equivalent to mmul(vf, h1_a) - mmul(v2_a, h2_a)
+        //Doing them this way is significantly faster than computing the two matrix mutplications
+        //and doing the subtraction later
+
+        auto g = t.w_grad_b(i);
+
+        //Reset the batch gradients
+        g = 0;
+
+        auto a1 = reshape_nv1(rbm, t.vf(i));
+        auto b1 = reshape_1nh(rbm, t.h1_a(i));
+        auto a2 = reshape_nv1(rbm, t.v2_a(i));
+        auto b2 = reshape_1nh(rbm, t.h2_a(i));
+
+        for(std::size_t i2 = 0; i2 < rows(a1); i2++){
+            for(std::size_t k = 0; k < columns(a1); k++){
+                for(std::size_t j = 0; j < columns(b1); j++){
+                    g(i2,j) += a1(i2,k) * b1(k,j) - a2(i2,k) * b2(k,j);
+                }
+            }
+        }
+    });
+    // clang-format on
+
+    //Compute the gradients
+    t.w_grad = sum_l(t.w_grad_b);
+    t.b_grad = sum_l(t.h1_a - t.h2_a);
+    t.c_grad = sum_l(t.vf - t.v2_a);
+}
+
+template <bool Persistent, std::size_t K, typename T, typename RBM, typename Trainer, cpp_disable_if(layer_traits<RBM>::is_parallel_mode())>
+void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
+    //Copy input/expected for computations
+    auto iit  = input_batch.begin();
+    auto iend = input_batch.end();
+    auto eit  = expected_batch.begin();
+
+    for (std::size_t i = 0; iit != iend; ++i, ++iit, ++eit) {
+        t.v1(i) = *iit;
+        t.vf(i) = *eit;
+    }
+
+    //First step
+    rbm.template batch_activate_hidden<true, true>(t.h1_a, t.h1_s, t.v1, t.v1);
+
+    if (Persistent && t.init) {
+        t.p_h_a = t.h1_a;
+        t.p_h_s = t.h1_s;
+    }
+
+    //CD-1
+    cpp::static_if<Persistent>([&](auto f){
+        f(rbm).template batch_activate_visible<true, false>(t.p_h_a, t.p_h_s, t.v2_a, t.v2_s);
+        f(rbm).template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
+    }).else_([&](auto f){
+        f(rbm).template batch_activate_visible<true, false>(t.h1_a, t.h1_s, t.v2_a, t.v2_s);
+        f(rbm).template batch_activate_hidden<true, (K > 1)>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
+    });
+
+    //CD-k
+    for (std::size_t k = 1; k < K; ++k) {
+        rbm.template batch_activate_visible<true, false>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
+        rbm.template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
+    }
+
+    //Compute the gradients
+
+    t.w_grad = 0;
+    t.b_grad = 0;
+    t.c_grad = 0;
+
+    batch_compute_gradients(t);
+}
+
 template <bool Persistent, std::size_t K, typename T, typename RBM, typename Trainer>
 void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context, RBM& rbm, Trainer& t) {
     cpp_assert(input_batch.size() > 0, "Invalid batch size");
@@ -305,108 +412,7 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
     using namespace etl;
     using rbm_t = RBM;
 
-    if (layer_traits<RBM>::is_parallel_mode()) {
-        // clang-format off
-        maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(),
-                [&](const auto& input, const auto& expected, std::size_t i)
-        {
-            //Copy input/expected for computations
-            t.v1(i) = input;
-            t.vf(i) = expected;
-
-            //First step
-            rbm.template activate_hidden<true, true>(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i), t.ht(i));
-
-            if(Persistent && t.init){
-                t.p_h_a(i) = t.h1_a(i);
-                t.p_h_s(i) = t.h1_s(i);
-            }
-
-            //CD-1
-            if(Persistent){
-                rbm.template activate_visible<true, false>(t.p_h_a(i), t.p_h_s(i), t.v2_a(i), t.v2_s(i), t.vt(i));
-                rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.ht(i));
-            } else {
-                rbm.template activate_visible<true, false>(t.h1_a(i), t.h1_s(i), t.v2_a(i), t.v2_s(i), t.vt(i));
-                rbm.template activate_hidden<true, (K > 1)>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.ht(i));
-            }
-
-            //CD-k
-            for(std::size_t k = 1; k < K; ++k){
-                rbm.template activate_visible<true, false>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.vt(i));
-                rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.ht(i));
-            }
-
-            //The following lines are equivalent to mmul(vf, h1_a) - mmul(v2_a, h2_a)
-            //Doing them this way is significantly faster than computing the two matrix mutplications
-            //and doing the subtraction later
-
-            auto g = t.w_grad_b(i);
-
-            //Reset the batch gradients
-            g = 0;
-
-            auto a1 = reshape_nv1(rbm, t.vf(i));
-            auto b1 = reshape_1nh(rbm, t.h1_a(i));
-            auto a2 = reshape_nv1(rbm, t.v2_a(i));
-            auto b2 = reshape_1nh(rbm, t.h2_a(i));
-
-            for(std::size_t i2 = 0; i2 < rows(a1); i2++){
-                for(std::size_t k = 0; k < columns(a1); k++){
-                    for(std::size_t j = 0; j < columns(b1); j++){
-                        g(i2,j) += a1(i2,k) * b1(k,j) - a2(i2,k) * b2(k,j);
-                    }
-                }
-            }
-        });
-        // clang-format on
-
-        //Compute the gradients
-        t.w_grad = sum_l(t.w_grad_b);
-        t.b_grad = sum_l(t.h1_a - t.h2_a);
-        t.c_grad = sum_l(t.vf - t.v2_a);
-    } else {
-        //Copy input/expected for computations
-        auto iit  = input_batch.begin();
-        auto iend = input_batch.end();
-        auto eit  = expected_batch.begin();
-
-        for (std::size_t i = 0; iit != iend; ++i, ++iit, ++eit) {
-            t.v1(i) = *iit;
-            t.vf(i) = *eit;
-        }
-
-        //First step
-        rbm.template batch_activate_hidden<true, true>(t.h1_a, t.h1_s, t.v1, t.v1);
-
-        if (Persistent && t.init) {
-            t.p_h_a = t.h1_a;
-            t.p_h_s = t.h1_s;
-        }
-
-        //CD-1
-        if (Persistent) {
-            rbm.template batch_activate_visible<true, false>(t.p_h_a, t.p_h_s, t.v2_a, t.v2_s);
-            rbm.template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
-        } else {
-            rbm.template batch_activate_visible<true, false>(t.h1_a, t.h1_s, t.v2_a, t.v2_s);
-            rbm.template batch_activate_hidden<true, (K > 1)>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
-        }
-
-        //CD-k
-        for (std::size_t k = 1; k < K; ++k) {
-            rbm.template batch_activate_visible<true, false>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
-            rbm.template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
-        }
-
-        //Compute the gradients
-
-        t.w_grad = 0;
-        t.b_grad = 0;
-        t.c_grad = 0;
-
-        batch_compute_gradients(t);
-    }
+    compute_gradients_normal<Persistent, K>(input_batch, expected_batch, rbm, t);
 
     if (Persistent) {
         t.p_h_a = t.h2_a;
@@ -422,9 +428,9 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
     //Compute the mean activation probabilities
     t.q_global_batch = mean(t.h2_a);
 
-    if (layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET) {
-        t.q_local_batch = mean_l(t.h2_a);
-    }
+    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f){
+        f(t).q_local_batch = mean_l(t.h2_a);
+    });
 
     context.batch_sparsity = t.q_global_batch;
 
