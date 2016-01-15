@@ -23,6 +23,7 @@
 #include "io.hpp"                 //Binary load/store functions
 #include "tmp.hpp"
 #include "checks.hpp"
+#include "rbm_tmp.hpp" // static_if macros
 
 namespace dll {
 
@@ -156,32 +157,21 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
         base_type::template compute_vcv<this_type>(v_a, v_cv, w);
 
-        if(hidden_unit == unit_type::BINARY){
-            if(visible_unit == unit_type::BINARY){
-                h_a = etl::p_max_pool_h<C, C>(etl::rep<NH1, NH2>(b) + v_cv(1));
-            } else if(visible_unit == unit_type::GAUSSIAN){
-                h_a = etl::p_max_pool_h<C, C>((1.0 / (0.1 * 0.1)) >> (etl::rep<NH1, NH2>(b) + v_cv(1)));
-            }
-        } else if(hidden_unit == unit_type::RELU){
-            h_a = max(etl::rep<NH1, NH2>(b) + v_cv(1), 0.0);
-        } else if(hidden_unit == unit_type::RELU6){
-            h_a = min(max(etl::rep<NH1, NH2>(b) + v_cv(1), 0.0), 6.0);
-        } else if(hidden_unit == unit_type::RELU1){
-            h_a = min(max(etl::rep<NH1, NH2>(b) + v_cv(1), 0.0), 1.0);
-        }
+        H_PROBS2(unit_type::BINARY, unit_type::BINARY, f(h_a) = etl::p_max_pool_h<C, C>(etl::rep<NH1, NH2>(b) + v_cv(1)));
+        H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, f(h_a) = etl::p_max_pool_h<C, C>((1.0 / (0.1 * 0.1)) >> (etl::rep<NH1, NH2>(b) + v_cv(1))));
+        H_PROBS(unit_type::RELU, f(h_a) = f(h_a) = max(etl::rep<NH1, NH2>(b) + v_cv(1), 0.0));
+        H_PROBS(unit_type::RELU6, f(h_a) = f(h_a) = min(max(etl::rep<NH1, NH2>(b) + v_cv(1), 0.0), 6.0));
+        H_PROBS(unit_type::RELU1, f(h_a) = f(h_a) = min(max(etl::rep<NH1, NH2>(b) + v_cv(1), 0.0), 1.0));
+
+        H_SAMPLE_PROBS(unit_type::BINARY, f(h_s) = bernoulli(h_a));
+        H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = max(logistic_noise(etl::rep<NH1, NH2>(b) + v_cv(1)), 0.0));
+        H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = ranged_noise(h_a, 6.0));
+        H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = ranged_noise(h_a, 1.0));
 
         nan_check_etl(h_a);
 
         if(S){
-            if(hidden_unit == unit_type::BINARY){
-                h_s = bernoulli(h_a);
-            } else if(hidden_unit == unit_type::RELU){
-                h_s = max(logistic_noise(etl::rep<NH1, NH2>(b) + v_cv(1)), 0.0);
-            } else if(hidden_unit == unit_type::RELU6){
-                h_s = ranged_noise(h_a, 6.0);
-            } else if(hidden_unit == unit_type::RELU1){
-                h_s = ranged_noise(h_a, 1.0);
-            }
+            nan_check_deep(h_s);
         }
     }
 
@@ -193,22 +183,16 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         using namespace etl;
 
         base_type::template compute_hcv<this_type>(h_s, h_cv, w, [&](std::size_t channel){
-            if(visible_unit == unit_type::BINARY){
-                v_a(channel) = sigmoid(c(channel) + h_cv(1));
-            } else if(visible_unit == unit_type::GAUSSIAN){
-                v_a(channel) = c(channel) + h_cv(1);
-            }
+            V_PROBS(unit_type::BINARY, f(v_a)(channel) = sigmoid(c(channel) + h_cv(1)));
+            V_PROBS(unit_type::GAUSSIAN, f(v_a)(channel) = c(channel) + h_cv(1));
         });
+
+        V_SAMPLE_PROBS(unit_type::BINARY, f(v_s) = bernoulli(v_a));
+        V_SAMPLE_PROBS(unit_type::GAUSSIAN, f(v_s) = normal_noise(v_a));
 
         nan_check_etl(v_a);
 
         if(S){
-            if(visible_unit == unit_type::BINARY){
-                v_s = bernoulli(v_a);
-            } else if(visible_unit == unit_type::GAUSSIAN){
-                v_s = normal_noise(v_a);
-            }
-
             nan_check_etl(v_s);
         }
     }
@@ -250,36 +234,22 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         cpp_unused(Batch);
 
         base_type::template batch_compute_vcv<this_type>(pool, v_a, v_cv, w, [&](std::size_t batch){
-            if(hidden_unit == unit_type::BINARY){
-                if(visible_unit == unit_type::BINARY){
-                    h_a(batch) = etl::p_max_pool_h<C, C>(etl::rep<NH1, NH2>(b) + v_cv(batch)(1));
-                } else if(visible_unit == unit_type::GAUSSIAN){
-                    h_a(batch) = etl::p_max_pool_h<C, C>((1.0 / (0.1 * 0.1)) >> (etl::rep<NH1, NH2>(b) + v_cv(batch)(1)));
-                }
-            } else if(hidden_unit == unit_type::RELU){
-                h_a(batch) = max(etl::rep<NH1, NH2>(b) + v_cv(batch)(1), 0.0);
+            H_PROBS2(unit_type::BINARY, unit_type::BINARY, f(h_a)(batch) = etl::p_max_pool_h<C, C>(etl::rep<NH1, NH2>(b) + v_cv(batch)(1)));
+            H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, f(h_a)(batch) = etl::p_max_pool_h<C, C>((1.0 / (0.1 * 0.1)) >> (etl::rep<NH1, NH2>(b) + v_cv(batch)(1))));
+            H_PROBS(unit_type::RELU, f(h_a)(batch) = max(etl::rep<NH1, NH2>(b) + v_cv(batch)(1), 0.0));
+            H_PROBS(unit_type::RELU6, f(h_a)(batch) = min(max(etl::rep<NH1, NH2>(b) + v_cv(batch)(1), 0.0), 6.0));
+            H_PROBS(unit_type::RELU1, f(h_a)(batch) = min(max(etl::rep<NH1, NH2>(b) + v_cv(batch)(1), 0.0), 1.0));
 
-                if(S){
-                    h_s(batch) = max(logistic_noise(etl::rep<NH1, NH2>(b) + v_cv(batch)(1)), 0.0);
-                }
-            } else if(hidden_unit == unit_type::RELU6){
-                h_a(batch) = min(max(etl::rep<NH1, NH2>(b) + v_cv(batch)(1), 0.0), 6.0);
-            } else if(hidden_unit == unit_type::RELU1){
-                h_a(batch) = min(max(etl::rep<NH1, NH2>(b) + v_cv(batch)(1), 0.0), 1.0);
-            }
+            H_SAMPLE_PROBS(unit_type::RELU, f(h_s)(batch) = max(logistic_noise(etl::rep<NH1, NH2>(b) + v_cv(batch)(1)), 0.0));
         });
+
+        H_SAMPLE_PROBS(unit_type::BINARY, f(h_s) = bernoulli(h_a));
+        H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = ranged_noise(h_a, 6.0));
+        H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = ranged_noise(h_a, 1.0));
 
         nan_check_deep(h_a);
 
         if(S){
-            if(hidden_unit == unit_type::BINARY){
-                h_s = bernoulli(h_a);
-            } else if(hidden_unit == unit_type::RELU6){
-                h_s = ranged_noise(h_a, 6.0);
-            } else if(hidden_unit == unit_type::RELU1){
-                h_s = ranged_noise(h_a, 1.0);
-            }
-
             nan_check_deep(h_s);
         }
     }
@@ -298,22 +268,16 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         cpp_unused(Batch);
 
         base_type::template batch_compute_hcv<this_type>(pool, h_s, h_cv, w, [&](std::size_t batch, std::size_t channel){
-            if(visible_unit == unit_type::BINARY){
-                v_a(batch)(channel) = etl::sigmoid(c(channel) + h_cv(batch)(1));
-            } else if(visible_unit == unit_type::GAUSSIAN){
-                v_a(batch)(channel) = c(channel) + h_cv(batch)(1);
-            }
+            V_PROBS(unit_type::BINARY, f(v_a)(batch)(channel) = etl::sigmoid(c(channel) + h_cv(batch)(1)));
+            V_PROBS(unit_type::GAUSSIAN, f(v_a)(batch)(channel) = c(channel) + h_cv(batch)(1));
         });
+
+        V_SAMPLE_PROBS(unit_type::BINARY, f(v_s) = bernoulli(v_a));
+        V_SAMPLE_PROBS(unit_type::GAUSSIAN, f(v_s) = normal_noise(v_a));
 
         nan_check_deep(v_a);
 
         if(S){
-            if(visible_unit == unit_type::BINARY){
-                v_s = bernoulli(v_a);
-            } else if(visible_unit == unit_type::GAUSSIAN){
-                v_s = normal_noise(v_a);
-            }
-
             nan_check_deep(v_s);
         }
     }
