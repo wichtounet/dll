@@ -140,6 +140,9 @@ struct memory : basic_conf_elt<memory_id> {};
 struct dbn_only : basic_conf_elt<dbn_only_id> {};
 struct nop : basic_conf_elt<nop_id> {};
 
+template<bool Cond>
+using shuffle_cond = std::conditional_t<Cond, shuffle, nop>;
+
 } //end of dll namespace
 
 #endif
