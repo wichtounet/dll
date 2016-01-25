@@ -77,6 +77,7 @@ struct weight_type_id;
 struct free_energy_id;
 struct memory_id;
 struct dbn_only_id;
+struct nop_id;
 
 template <std::size_t B>
 struct batch_size : value_conf_elt<batch_size_id, std::size_t, B> {};
@@ -137,6 +138,7 @@ struct shuffle : basic_conf_elt<shuffle_id> {};
 struct free_energy : basic_conf_elt<free_energy_id> {};
 struct memory : basic_conf_elt<memory_id> {};
 struct dbn_only : basic_conf_elt<dbn_only_id> {};
+struct nop : basic_conf_elt<nop_id> {};
 
 } //end of dll namespace
 
