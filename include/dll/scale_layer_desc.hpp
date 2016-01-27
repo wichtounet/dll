@@ -15,6 +15,8 @@ struct scale_layer_desc {
     static constexpr const int A = A_T;
     static constexpr const int B = B_T;
 
+    using parameters = cpp::type_list<>;
+
     /*! The layer type */
     using layer_t = scale_layer<scale_layer_desc<A, B>>;
 };

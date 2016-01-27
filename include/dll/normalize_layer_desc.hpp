@@ -11,6 +11,8 @@
 namespace dll {
 
 struct normalize_layer_desc {
+    using parameters = cpp::type_list<>;
+
     /*! The layer type */
     using layer_t = normalize_layer<normalize_layer_desc>;
 };
