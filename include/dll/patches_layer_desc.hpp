@@ -17,6 +17,8 @@ struct patches_layer_desc {
     static constexpr const std::size_t v_stride = VS_T;
     static constexpr const std::size_t h_stride = HS_T;
 
+    using parameters = cpp::type_list<Parameters...>;
+
     using weight = typename detail::get_type<weight_type<double>, Parameters...>::value;
 
     static_assert(width > 0, "A patch must be at least 1 pixel wide");
