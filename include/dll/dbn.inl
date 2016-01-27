@@ -316,7 +316,7 @@ public:
 
         //Pretrain each layer one-by-one
         if(batch_mode()){
-            std::cout << "DBN: Pretraining done in batch mode to save memory" << std::endl;
+            std::cout << "DBN: Pretraining done in batch mode" << std::endl;
             pretrain_layer_batch<0>(first, last, watcher, max_epochs);
         } else {
             pretrain_layer<0>(first, last, watcher, max_epochs, fake_resource);
