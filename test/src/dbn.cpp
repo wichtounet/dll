@@ -177,7 +177,7 @@ TEST_CASE("dbn/mnist_17", "dbn::memory") {
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
             dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
-        dll::memory, dll::batch_size<50>, dll::big_batch_size<3>>::dbn_t dbn_t;
+        dll::batch_mode, dll::batch_size<50>, dll::big_batch_size<3>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(1078);
 
