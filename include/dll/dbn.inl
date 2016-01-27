@@ -315,7 +315,7 @@ public:
         watcher.pretraining_begin(*this, max_epochs);
 
         //Pretrain each layer one-by-one
-        if(save_memory()){
+        if(batch_mode()){
             std::cout << "DBN: Pretraining done in batch mode to save memory" << std::endl;
             pretrain_layer_batch<0>(first, last, watcher, max_epochs);
         } else {
@@ -344,7 +344,7 @@ public:
 
         watcher.pretraining_begin(*this, max_epochs);
 
-        cpp_assert(!save_memory(), "pretrain_denoising has not yet been implemented in memory");
+        cpp_assert(!batch_mode(), "pretrain_denoising has not yet been implemented in memory");
 
         //Pretrain each layer one-by-one
         pretrain_layer_denoising<0>(nit, nend, cit, cend, watcher, max_epochs, fake_resource, fake_resource);

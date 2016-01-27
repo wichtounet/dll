@@ -53,7 +53,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     static constexpr const std::size_t NW2 = NV2 - NH2 + 1; //By definition
 
     static constexpr const bool dbn_only = layer_traits<this_type>::is_dbn_only();
-    static constexpr const bool memory = layer_traits<this_type>::is_memory();
 
     template<std::size_t B>
     using input_batch_t = etl::fast_dyn_matrix<weight, B, NC, NV1, NV2>;

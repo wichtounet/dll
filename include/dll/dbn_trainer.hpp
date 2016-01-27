@@ -106,7 +106,7 @@ struct dbn_trainer {
 
         typename dbn_t::weight error = 0.0;
 
-        if (!dbn.save_memory()) {
+        if (!dbn.batch_mode()) {
             //Convert labels to an useful form
             auto fake_labels = label_transformer(lfirst, llast);
 
