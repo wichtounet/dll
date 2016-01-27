@@ -41,6 +41,8 @@ struct dbn final {
 
     using layers_t = typename desc::layers;  ///< The layers container type
 
+    static_assert(!(dbn_traits<this_type>::batch_mode() && layers_t::has_shuffle_layer), "batch_mode dbn does not support shuffle in layers");
+
     template<std::size_t N>
     using layer_type = detail::layer_type_t<N, layers_t>;             ///< The type of the layer at index Nth
 

@@ -26,6 +26,9 @@ struct is_multiplex : cpp::or_u<layer_traits<Layers>::is_multiplex_layer()...> {
 template <typename... Layers>
 struct is_denoising : cpp::and_u<layer_traits<Layers>::is_standard_rbm_layer()...> {};
 
+template <typename... Layers>
+struct has_shuffle_layer : cpp::or_u<layer_traits<Layers>::has_shuffle()...> {};
+
 // TODO validate_layer_pair should be made more robust when
 // transform layer are present between layers
 
@@ -106,10 +109,11 @@ template <bool Labels, typename... Layers>
 struct layers {
     static constexpr const std::size_t size = sizeof...(Layers);
 
-    static constexpr const bool is_dynamic       = Labels ? false : detail::is_dynamic<Layers...>();
-    static constexpr const bool is_convolutional = Labels ? false : detail::is_convolutional<Layers...>();
-    static constexpr const bool is_multiplex     = Labels ? false : detail::is_multiplex<Layers...>();
-    static constexpr const bool is_denoising     = Labels ? false : detail::is_denoising<Layers...>();
+    static constexpr const bool is_dynamic        = Labels ? false : detail::is_dynamic<Layers...>();
+    static constexpr const bool is_convolutional  = Labels ? false : detail::is_convolutional<Layers...>();
+    static constexpr const bool is_multiplex      = Labels ? false : detail::is_multiplex<Layers...>();
+    static constexpr const bool is_denoising      = Labels ? false : detail::is_denoising<Layers...>();
+    static constexpr const bool has_shuffle_layer = detail::has_shuffle_layer<Layers...>();
 
     static_assert(size > 0, "A network must have at least 1 layer");
     //TODO static_assert(Labels ? detail::validate_label_layers<Layers...>::value : detail::are_layers_valid<Layers...>(), "The inner sizes of RBM must correspond");
