@@ -873,7 +873,6 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
     static constexpr const auto NW2 = rbm_t::NW2;
 
     static constexpr const auto batch_size = layer_traits<rbm_t>::batch_size();
-    static constexpr const bool memory     = layer_traits<rbm_t>::is_memory();
 
     typedef typename rbm_t::weight weight;
 
