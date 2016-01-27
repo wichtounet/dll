@@ -47,7 +47,7 @@ struct dbn_traits {
     }
 
     static constexpr bool save_memory() noexcept {
-        return desc::parameters::template contains<memory>();
+        return desc::parameters::template contains<memory_impl>();
     }
 
     static constexpr bool concatenate() noexcept {

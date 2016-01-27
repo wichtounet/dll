@@ -136,9 +136,11 @@ struct svm_scale : basic_conf_elt<svm_scale_id> {};
 struct init_weights : basic_conf_elt<init_weights_id> {};
 struct shuffle : basic_conf_elt<shuffle_id> {};
 struct free_energy : basic_conf_elt<free_energy_id> {};
-struct memory : basic_conf_elt<memory_id> {};
 struct dbn_only : basic_conf_elt<dbn_only_id> {};
 struct nop : basic_conf_elt<nop_id> {};
+struct memory_impl : basic_conf_elt<memory_id> {};
+
+using memory  [[deprecated("use batch_mode instead")]] = memory_impl;
 
 template<bool Cond>
 using shuffle_cond = std::conditional_t<Cond, shuffle, nop>;
