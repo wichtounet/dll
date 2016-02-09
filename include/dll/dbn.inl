@@ -61,6 +61,12 @@ struct dbn final {
     template<std::size_t N>
     using layer_output_one_t = dbn_detail::layer_output_one_t<this_type, N>;
 
+    template<std::size_t N>
+    using layer_input_t = dbn_detail::layer_input_t<this_type, N>;
+
+    template<std::size_t N>
+    using layer_output_t = dbn_detail::layer_output_t<this_type, N>;
+
     using label_output_t = layer_input_one_t<layers_t::size - 1>;
     using output_one_t = layer_output_one_t<layers_t::size - 1>; ///< The type of a single output of the network
 
@@ -74,7 +80,7 @@ struct dbn final {
     using svm_samples_t = std::conditional_t<
         dbn_traits<this_type>::concatenate(),
         std::vector<etl::dyn_vector<weight>>,       //In full mode, use a simple 1D vector
-        typename layer_type<layers_t::size - 1>::output_t>; //In normal mode, use the output of the last layer
+        layer_output_t<layers_t::size - 1>>; //In normal mode, use the output of the last layer
 
     using for_each_impl_t = dbn_detail::for_each_impl<this_type, std::make_index_sequence<layers_t::size>>;
     using for_each_pair_impl_t = dbn_detail::for_each_impl<this_type, std::make_index_sequence<layers_t::size - 1>>;
