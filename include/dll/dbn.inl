@@ -608,12 +608,12 @@ public:
 
     template<std::size_t I, typename T = this_type, cpp_disable_if(dbn_traits<T>::is_multiplex())>
     auto prepare_output() const {
-        return layer_get<I>().template prepare_one_output<input_t>();
+        return layer_get<I>().template prepare_one_output<layer_input_one_t<I>>();
     }
 
     template<std::size_t I, typename T = this_type, cpp_enable_if(dbn_traits<T>::is_multiplex())>
     auto prepare_output() const {
-        return std::vector<typename layer_type<layers - 1>::output_one_t>();
+        return std::vector<layer_output_one_t<layers - 1>>();
     }
 
     CLANG_AUTO_TRICK auto prepare_one_output() const {
