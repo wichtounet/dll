@@ -78,41 +78,97 @@ struct layer_input_batch<DBN, I, std::enable_if_t<layer_traits<typename DBN::tem
     using type = typename layer_input_batch<DBN, I + 1>::template type<B>;
 };
 
+// Get the output type for one sample of the given layer
 template <typename DBN, std::size_t I, typename Enable = void>
 struct layer_output_one;
 
+// Get the output type for one sample of the given layer
 template <typename DBN, std::size_t I>
 using layer_output_one_t = typename layer_output_one<DBN, I>::type;
 
+// Get the output type for multiple sample of the given layer
+template <typename DBN, std::size_t I, typename Enable = void>
+struct layer_output;
+
+// Get the output type for multiple sample of the given layer
+template <typename DBN, std::size_t I>
+using layer_output_t = typename layer_output<DBN, I>::type;
+
+// Get the input type for one sample of the given layer
 template <typename DBN, std::size_t I, typename Enable = void>
 struct layer_input_one;
 
+// Get the input type for one sample of the given layer
 template <typename DBN, std::size_t I>
 using layer_input_one_t = typename layer_input_one<DBN, I>::type;
 
+// Get the input type for multiple sample of the given layer
+template <typename DBN, std::size_t I, typename Enable = void>
+struct layer_input;
+
+// Get the input type for multiple sample of the given layer
+template <typename DBN, std::size_t I>
+using layer_input_t = typename layer_input<DBN, I>::type;
+
+//A standard layer has its own output type
 template <typename DBN, std::size_t I>
 struct layer_output_one<DBN, I, std::enable_if_t<!layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
     using type = typename DBN::template layer_type<I>::output_one_t;
 };
 
+//A transform layer don't change the type
 template <typename DBN, std::size_t I>
 struct layer_output_one<DBN, I, std::enable_if_t<layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
     using type = std::conditional_t<I == 0, typename DBN::input_t, layer_input_one_t<DBN, I>>;
 };
 
+//A standard layer has its own output type
+template <typename DBN, std::size_t I>
+struct layer_output<DBN, I, std::enable_if_t<!layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
+    using type = typename DBN::template layer_type<I>::output_t;
+};
+
+//A transform layer don't change the type
+template <typename DBN, std::size_t I>
+struct layer_output<DBN, I, std::enable_if_t<layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
+    //TODO This one needs to be checked by a test case
+    using type = std::conditional_t<I == 0, typename DBN::input_t, layer_input_t<DBN, I>>;
+};
+
+//A standard type has its own input type
 template <typename DBN, std::size_t I>
 struct layer_input_one<DBN, I, std::enable_if_t<!layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
     using type = typename DBN::template layer_type<I>::input_one_t;
 };
 
+//The first transform layer uses the input type of the next layer as input type
 template <typename DBN, std::size_t I>
 struct layer_input_one<DBN, I, std::enable_if_t<I == 0 && layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
     using type = layer_input_one_t<DBN, I + 1>;
 };
 
+//A transform layer uses the output type of the previous layer
 template <typename DBN, std::size_t I>
 struct layer_input_one<DBN, I, std::enable_if_t<(I > 0) && layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
     using type = layer_output_one_t<DBN, I - 1>;
+};
+
+//A standard type has its own input type
+template <typename DBN, std::size_t I>
+struct layer_input<DBN, I, std::enable_if_t<!layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
+    using type = typename DBN::template layer_type<I>::input_t;
+};
+
+//The first transform layer uses the input type of the next layer as input type
+template <typename DBN, std::size_t I>
+struct layer_input<DBN, I, std::enable_if_t<I == 0 && layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
+    using type = layer_input_t<DBN, I + 1>;
+};
+
+//A transform layer uses the output type of the previous layer
+template <typename DBN, std::size_t I>
+struct layer_input<DBN, I, std::enable_if_t<(I > 0) && layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
+    using type = layer_output_t<DBN, I - 1>;
 };
 
 template <typename D, typename T>
