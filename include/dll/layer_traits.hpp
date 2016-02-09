@@ -88,7 +88,12 @@ struct layer_traits {
      * \brief Indicates if this layer is a transformation layer.
      */
     static constexpr bool is_transform_layer() {
-        return cpp::is_specialization_of<binarize_layer, layer_t>::value || cpp::is_specialization_of<normalize_layer, layer_t>::value || cpp::is_specialization_of<scale_layer, layer_t>::value;
+        return
+                cpp::is_specialization_of<binarize_layer, layer_t>::value
+            ||  cpp::is_specialization_of<normalize_layer, layer_t>::value
+            ||  cpp::is_specialization_of<scale_layer, layer_t>::value
+            ||  cpp::is_specialization_of<rectifier_layer, layer_t>::value
+            ;
     }
 
     /*!
