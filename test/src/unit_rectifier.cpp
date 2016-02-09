@@ -42,3 +42,31 @@ TEST_CASE("unit/cdbn/rectifier/mnist/1", "[cdbn][rectifier][svm][unit]") {
     std::cout << "test_error:" << test_error << std::endl;
     REQUIRE(test_error < 0.1);
 }
+
+TEST_CASE("unit/cdbn/rectifier/mnist/2", "[cdbn][rectifier][svm][unit]") {
+    using dbn_t =
+        dll::dbn_desc<dll::dbn_layers<
+              dll::conv_rbm_desc_square<1, 28, 20, 12, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
+            , dll::rectifier_layer_desc<>::layer_t
+            , dll::conv_rbm_desc_square<20, 12, 20, 10, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
+            , dll::rectifier_layer_desc<>::layer_t
+        >>::dbn_t;
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->display();
+
+    dbn->pretrain(dataset.training_images, 20);
+
+    auto result = dbn->svm_train(dataset.training_images, dataset.training_labels);
+    REQUIRE(result);
+
+    auto test_error = dll::test_set(dbn, dataset.training_images, dataset.training_labels, dll::svm_predictor());
+    std::cout << "test_error:" << test_error << std::endl;
+    REQUIRE(test_error < 0.1);
+}
