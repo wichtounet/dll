@@ -56,13 +56,13 @@ struct dbn final {
     using input_batch_t = typename dbn_detail::layer_input_batch<this_type, 0>::template type<B>;      ///< The input batch type of the network for a batch size of B
 
     template<std::size_t N>
-    using layer_input_t = dbn_detail::layer_input_t<this_type, N>;
+    using layer_input_one_t = dbn_detail::layer_input_one_t<this_type, N>;
 
     template<std::size_t N>
-    using layer_output_t = dbn_detail::layer_output_t<this_type, N>;
+    using layer_output_one_t = dbn_detail::layer_output_one_t<this_type, N>;
 
-    using label_output_t = layer_input_t<layers_t::size - 1>;
-    using output_one_t = layer_output_t<layers_t::size - 1>; ///< The type of a single output of the network
+    using label_output_t = layer_input_one_t<layers_t::size - 1>;
+    using output_one_t = layer_output_one_t<layers_t::size - 1>; ///< The type of a single output of the network
 
     using output_t = std::conditional_t<
             dbn_traits<this_type>::is_multiplex(),
@@ -805,10 +805,10 @@ private:
         decltype(auto) layer = layer_get<I>();
         decltype(auto) next_layer = layer_get<I+1>();
 
-        auto next_a = next_layer.template prepare_output<layer_input_t<I>>(std::distance(first, last));
+        auto next_a = next_layer.template prepare_output<layer_input_one_t<I>>(std::distance(first, last));
 
         maybe_parallel_foreach_i(pool, first, last, [&layer, &next_layer, &next_a](auto& v, std::size_t i){
-            auto tmp = layer.template prepare_one_output<layer_input_t<I+1>>();
+            auto tmp = layer.template prepare_one_output<layer_input_one_t<I+1>>();
 
             layer.activate_hidden(tmp, v);
             next_layer.activate_hidden(next_a[i], tmp);
@@ -841,7 +841,7 @@ private:
         });
 
         if(train_next<I+1>::value && !inline_next<I+1>::value){
-            auto next_a = layer.template prepare_output<layer_input_t<I>>(std::distance(first, last));
+            auto next_a = layer.template prepare_output<layer_input_one_t<I>>(std::distance(first, last));
 
             maybe_parallel_foreach_i(pool, first, last, [&layer, &next_a](auto& v, std::size_t i){
                 layer.activate_hidden(next_a[i], v);
@@ -887,8 +887,8 @@ private:
         });
 
         if(train_next<I+1>::value){
-            auto next_n = layer.template prepare_output<layer_input_t<I>>(std::distance(nit, nend));
-            auto next_c = layer.template prepare_output<layer_input_t<I>>(std::distance(nit, nend));
+            auto next_n = layer.template prepare_output<layer_input_one_t<I>>(std::distance(nit, nend));
+            auto next_c = layer.template prepare_output<layer_input_one_t<I>>(std::distance(nit, nend));
 
             maybe_parallel_foreach_i(pool, nit, nend, [&layer, &next_n](auto& v, std::size_t i){
                 layer.activate_hidden(next_n[i], v);
@@ -1023,7 +1023,7 @@ private:
 
         std::vector<typename Iterator::value_type> input_cache(total_batch_size);
 
-        auto next_input = layer_get<I - 1>().template prepare_output<layer_input_t<I - 1>>(total_batch_size);
+        auto next_input = layer_get<I - 1>().template prepare_output<layer_input_one_t<I - 1>>(total_batch_size);
 
         //Train for max_epochs epoch
         for(std::size_t epoch = 0; epoch < max_epochs; ++epoch){
@@ -1179,7 +1179,7 @@ private:
         });
 
         if(I < layers - 1){
-            auto next_a = layer.template prepare_output<layer_input_t<I>>(input_size);
+            auto next_a = layer.template prepare_output<layer_input_one_t<I>>(input_size);
 
             cpp::foreach_i(first, last, [&](auto& sample, std::size_t i){
                 layer.activate_hidden(next_a[i], sample);
@@ -1187,7 +1187,7 @@ private:
 
             //If the next layer is the last layer
             if(I == layers - 2){
-                auto big_next_a = layer.template prepare_output<layer_input_t<I>>(input_size, true, labels);
+                auto big_next_a = layer.template prepare_output<layer_input_one_t<I>>(input_size, true, labels);
 
                 //Cannot use std copy since the sub elements have different size
                 for(std::size_t i = 0; i < next_a.size(); ++i){
@@ -1224,8 +1224,8 @@ private:
     std::enable_if_t<(I<layers)> predict_labels(const input_t& input, label_output_t& output, std::size_t labels) const {
         decltype(auto) layer = layer_get<I>();
 
-        auto next_a = layer.template prepare_one_output<layer_input_t<I>>();
-        auto next_s = layer.template prepare_one_output<layer_input_t<I>>();
+        auto next_a = layer.template prepare_one_output<layer_input_one_t<I>>();
+        auto next_s = layer.template prepare_one_output<layer_input_one_t<I>>();
 
         layer.activate_hidden(next_a, next_s, input, input);
 
@@ -1241,7 +1241,7 @@ private:
 
             //If the next layers is the last layer
             if(is_last){
-                auto big_next_a = layer.template prepare_one_output<layer_input_t<I>>(is_last, labels);
+                auto big_next_a = layer.template prepare_one_output<layer_input_one_t<I>>(is_last, labels);
 
                 for(std::size_t i = 0; i < next_a.size(); ++i){
                     big_next_a[i] = next_a[i];
@@ -1291,7 +1291,7 @@ private:
             f(result).reserve(next_a.size());
 
             for(std::size_t i = 0; i < next_a.size(); ++i){
-                f(result).push_back(this->template layer_get<S-1>().template prepare_one_output<layer_input_t<I>>());
+                f(result).push_back(this->template layer_get<S-1>().template prepare_one_output<layer_input_one_t<I>>());
                 this->template activation_probabilities<I+1, S>(next_a[i], f(result)[i]);
             }
         });

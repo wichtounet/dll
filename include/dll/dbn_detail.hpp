@@ -79,40 +79,40 @@ struct layer_input_batch<DBN, I, std::enable_if_t<layer_traits<typename DBN::tem
 };
 
 template <typename DBN, std::size_t I, typename Enable = void>
-struct layer_output;
+struct layer_output_one;
 
 template <typename DBN, std::size_t I>
-using layer_output_t = typename layer_output<DBN, I>::type;
+using layer_output_one_t = typename layer_output_one<DBN, I>::type;
 
 template <typename DBN, std::size_t I, typename Enable = void>
-struct layer_input;
+struct layer_input_one;
 
 template <typename DBN, std::size_t I>
-using layer_input_t = typename layer_input<DBN, I>::type;
+using layer_input_one_t = typename layer_input_one<DBN, I>::type;
 
 template <typename DBN, std::size_t I>
-struct layer_output<DBN, I, std::enable_if_t<!layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
+struct layer_output_one<DBN, I, std::enable_if_t<!layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
     using type = typename DBN::template layer_type<I>::output_one_t;
 };
 
 template <typename DBN, std::size_t I>
-struct layer_output<DBN, I, std::enable_if_t<layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
-    using type = std::conditional_t<I == 0, typename DBN::input_t, layer_input_t<DBN, I>>;
+struct layer_output_one<DBN, I, std::enable_if_t<layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
+    using type = std::conditional_t<I == 0, typename DBN::input_t, layer_input_one_t<DBN, I>>;
 };
 
 template <typename DBN, std::size_t I>
-struct layer_input<DBN, I, std::enable_if_t<!layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
+struct layer_input_one<DBN, I, std::enable_if_t<!layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
     using type = typename DBN::template layer_type<I>::input_one_t;
 };
 
 template <typename DBN, std::size_t I>
-struct layer_input<DBN, I, std::enable_if_t<I == 0 && layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
-    using type = layer_input_t<DBN, I + 1>;
+struct layer_input_one<DBN, I, std::enable_if_t<I == 0 && layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
+    using type = layer_input_one_t<DBN, I + 1>;
 };
 
 template <typename DBN, std::size_t I>
-struct layer_input<DBN, I, std::enable_if_t<(I > 0) && layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
-    using type = layer_output_t<DBN, I - 1>;
+struct layer_input_one<DBN, I, std::enable_if_t<(I > 0) && layer_traits<typename DBN::template layer_type<I>>::is_transform_layer()>> {
+    using type = layer_output_one_t<DBN, I - 1>;
 };
 
 template <typename D, typename T>
