@@ -1340,7 +1340,7 @@ private:
 
     template<typename DBN = this_type, cpp_disable_if(dbn_traits<DBN>::concatenate())>
     void add_activation_probabilities(svm_samples_t& result, const input_t& sample){
-        result.push_back(layer_get<layers - 1>().template prepare_one_output<input_t>());
+        result.push_back(layer_get<layers - 1>().template prepare_one_output<layer_input_one_t<layers - 1>>());
         activation_probabilities(sample, result.back());
     }
 
