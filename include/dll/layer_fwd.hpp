@@ -40,6 +40,9 @@ template <typename Desc>
 struct rectifier_layer;
 
 template <typename Desc>
+struct random_layer;
+
+template <typename Desc>
 struct scale_layer;
 
 template <typename Desc>
