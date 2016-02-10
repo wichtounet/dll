@@ -24,7 +24,7 @@ TEST_CASE("unit/cdbn/random/mnist/1", "[cdbn][rectifier][svm][unit]") {
             , dll::conv_rbm_desc_square<20, 12, 20, 10, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
         >>::dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(75);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -33,7 +33,7 @@ TEST_CASE("unit/cdbn/random/mnist/1", "[cdbn][rectifier][svm][unit]") {
 
     dbn->display();
 
-    dbn->pretrain(dataset.training_images, 20);
+    dbn->pretrain(dataset.training_images, 5);
 
     auto result = dbn->svm_train(dataset.training_images, dataset.training_labels);
     REQUIRE(result);
