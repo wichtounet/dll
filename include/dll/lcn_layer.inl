@@ -15,6 +15,12 @@ template<typename Desc>
 struct lcn_layer : neural_base<lcn_layer<Desc>> {
     using desc = Desc;
 
+    static constexpr const std::size_t K = desc::K;
+    static constexpr const std::size_t Mid = K / 2;
+
+    static_assert(K > 1, "The kernel size must be greater than 1");
+    static_assert(K % 2 == 1, "The kernel size must be odd");
+
     lcn_layer() = default;
 
     static std::string to_short_string(){
@@ -31,12 +37,12 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
     }
 
     template<typename W>
-    static etl::fast_dyn_matrix<W, 9, 9> filter(){
-        etl::fast_dyn_matrix<W, 9, 9> w;
+    static etl::fast_dyn_matrix<W, K, K> filter(){
+        etl::fast_dyn_matrix<W, K, K> w;
 
-        for(std::size_t i = 0; i < 9; ++i){
-            for(std::size_t j = 0; j < 9; ++j){
-                w(i, j) = gaussian(static_cast<double>(i) - 4.0, static_cast<double>(j) - 4.0);
+        for(std::size_t i = 0; i < K; ++i){
+            for(std::size_t j = 0; j < K; ++j){
+                w(i, j) = gaussian(static_cast<double>(i) - Mid, static_cast<double>(j) - Mid);
             }
         }
 
@@ -60,11 +66,11 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
                 for(std::size_t k = 0; k < etl::dim<2>(x); ++k){
                     weight_t sum(0.0);
 
-                    for (std::size_t p = 0; p < 9; ++p) {
-                        if (j + p >= 4 && j + p - 4 < etl::dim<1>(x)) {
-                            for (std::size_t q = 0; q < 9; ++q) {
-                                if (k + q >= 4 && k + q - 4 < etl::dim<2>(x)) {
-                                    sum += w(p, q) * x(c, j + p - 4, k + q - 4);
+                    for (std::size_t p = 0; p < K; ++p) {
+                        if (j + p >= Mid && j + p - Mid < etl::dim<1>(x)) {
+                            for (std::size_t q = 0; q < K; ++q) {
+                                if (k + q >= Mid && k + q - Mid < etl::dim<2>(x)) {
+                                    sum += w(p, q) * x(c, j + p - Mid, k + q - Mid);
                                 }
                             }
                         }
@@ -80,11 +86,11 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
                 for(std::size_t k = 0; k < etl::dim<2>(x); ++k){
                     weight_t sum(0.0);
 
-                    for (std::size_t p = 0; p < 9; ++p) {
-                        if (j + p >= 4 && j + p - 4 < etl::dim<1>(x)) {
-                            for (std::size_t q = 0; q < 9; ++q) {
-                                if (k + q >= 4 && k + q - 4 < etl::dim<2>(x)) {
-                                    sum += w(p, q) * x(c, j + p - 4, k + q - 4) * x(c, j + p - 4, k + q - 4);
+                    for (std::size_t p = 0; p < K; ++p) {
+                        if (j + p >= Mid && j + p - Mid < etl::dim<1>(x)) {
+                            for (std::size_t q = 0; q < K; ++q) {
+                                if (k + q >= Mid && k + q - Mid < etl::dim<2>(x)) {
+                                    sum += w(p, q) * x(c, j + p - Mid, k + q - Mid) * x(c, j + p - Mid, k + q - Mid);
                                 }
                             }
                         }

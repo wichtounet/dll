@@ -9,11 +9,14 @@
 
 namespace dll {
 
+template <std::size_t K_T>
 struct lcn_layer_desc {
+    static constexpr const std::size_t K = K_T;
+
     using parameters = cpp::type_list<>;
 
     /*! The layer type */
-    using layer_t = lcn_layer<lcn_layer_desc>;
+    using layer_t = lcn_layer<lcn_layer_desc<K>>;
 };
 
 } //end of dll namespace
