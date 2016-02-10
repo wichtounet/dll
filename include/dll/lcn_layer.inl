@@ -18,6 +18,8 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
     static constexpr const std::size_t K = desc::K;
     static constexpr const std::size_t Mid = K / 2;
 
+    double sigma = 2.0;
+
     static_assert(K > 1, "The kernel size must be greater than 1");
     static_assert(K % 2 == 1, "The kernel size must be odd");
 
@@ -31,18 +33,18 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
         std::cout << to_short_string() << std::endl;
     }
 
-    static cpp14_constexpr double gaussian(double x, double y, double sigma = 2.0){
+    static cpp14_constexpr double gaussian(double x, double y, double sigma){
         auto Z = 2.0 * M_PI * sigma * sigma;
         return  1.0 / Z * std::exp(-(x * x + y * y) / (2.0 * sigma * sigma));
     }
 
     template<typename W>
-    static etl::fast_dyn_matrix<W, K, K> filter(){
+    static etl::fast_dyn_matrix<W, K, K> filter(double sigma){
         etl::fast_dyn_matrix<W, K, K> w;
 
         for(std::size_t i = 0; i < K; ++i){
             for(std::size_t j = 0; j < K; ++j){
-                w(i, j) = gaussian(static_cast<double>(i) - Mid, static_cast<double>(j) - Mid);
+                w(i, j) = gaussian(static_cast<double>(i) - Mid, static_cast<double>(j) - Mid, sigma);
             }
         }
 
@@ -52,10 +54,10 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
     }
 
     template<typename Input, typename Output>
-    static void activate_hidden(Output& y, const Input& x){
+    void activate_hidden(Output& y, const Input& x) const {
         using weight_t = etl::value_t<Input>;
 
-        auto w = filter<weight_t>();
+        auto w = filter<weight_t>(sigma);
 
         auto v = etl::force_temporary(x(0));
         auto o = etl::force_temporary(x(0));
@@ -106,14 +108,14 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
     }
 
     template<typename Input, typename Output>
-    static void batch_activate_hidden(Output& output, const Input& input){
+    void batch_activate_hidden(Output& output, const Input& input) const {
         for(std::size_t b = 0; b < etl::dim<0>(input); ++b){
             activate_hidden(output(b), input(b));
         }
     }
 
     template<typename I, typename O_A>
-    static void activate_many(const I& input, O_A& h_a){
+    void activate_many(const I& input, O_A& h_a) const {
         for(std::size_t i = 0; i < input.size(); ++i){
             activate_one(input[i], h_a[i]);
         }
