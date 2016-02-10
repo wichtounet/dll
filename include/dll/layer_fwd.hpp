@@ -43,6 +43,9 @@ template <typename Desc>
 struct random_layer;
 
 template <typename Desc>
+struct lcn_layer;
+
+template <typename Desc>
 struct scale_layer;
 
 template <typename Desc>
