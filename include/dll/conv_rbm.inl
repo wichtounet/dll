@@ -163,16 +163,18 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
         using namespace etl;
 
+        auto b_rep = etl::force_temporary(etl::rep<NH1, NH2>(b));
+
         base_type::template compute_vcv<this_type>(v_a, v_cv, w);
 
-        H_PROBS2(unit_type::BINARY, unit_type::BINARY, f(h_a) = sigmoid(rep<NH1, NH2>(b) + v_cv(1)));
-        H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, f(h_a) = sigmoid((1.0 / (0.1 * 0.1)) >> (rep<NH1, NH2>(b) + v_cv(1))));
-        H_PROBS(unit_type::RELU, f(h_a) = max(rep<NH1, NH2>(b) + v_cv(1), 0.0));
-        H_PROBS(unit_type::RELU6, f(h_a) = min(max(rep<NH1, NH2>(b) + v_cv(1), 0.0), 6.0));
-        H_PROBS(unit_type::RELU1, f(h_a) = min(max(rep<NH1, NH2>(b) + v_cv(1), 0.0), 1.0));
+        H_PROBS2(unit_type::BINARY, unit_type::BINARY, f(h_a) = sigmoid(b_rep + v_cv(1)));
+        H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, f(h_a) = sigmoid((1.0 / (0.1 * 0.1)) >> (b_rep + v_cv(1))));
+        H_PROBS(unit_type::RELU, f(h_a) = max(b_rep + v_cv(1), 0.0));
+        H_PROBS(unit_type::RELU6, f(h_a) = min(max(b_rep + v_cv(1), 0.0), 6.0));
+        H_PROBS(unit_type::RELU1, f(h_a) = min(max(b_rep + v_cv(1), 0.0), 1.0));
 
         H_SAMPLE_PROBS(unit_type::BINARY, f(h_s) = bernoulli(h_a));
-        H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = max(logistic_noise(rep<NH1, NH2>(b) + v_cv(1)), 0.0));
+        H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = max(logistic_noise(b_rep + v_cv(1)), 0.0));
         H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = ranged_noise(h_a, 6.0));
         H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = ranged_noise(h_a, 1.0));
 
@@ -223,14 +225,16 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
         using namespace etl;
 
-        base_type::template batch_compute_vcv<this_type>(pool, v_a, v_cv, w, [&](std::size_t batch){
-            H_PROBS2(unit_type::BINARY, unit_type::BINARY, f(h_a)(batch) = sigmoid(rep<NH1, NH2>(b) + v_cv(batch)(1)));
-            H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, f(h_a)(batch) = sigmoid((1.0 / (0.1 * 0.1)) >> (rep<NH1, NH2>(b) + v_cv(batch)(1))));
-            H_PROBS(unit_type::RELU, f(h_a)(batch) = max(rep<NH1, NH2>(b) + v_cv(batch)(1), 0.0));
-            H_PROBS(unit_type::RELU6, f(h_a)(batch) = min(max(rep<NH1, NH2>(b) + v_cv(batch)(1), 0.0), 6.0));
-            H_PROBS(unit_type::RELU1, f(h_a)(batch) = min(max(rep<NH1, NH2>(b) + v_cv(batch)(1), 0.0), 1.0));
+        auto b_rep = etl::force_temporary(etl::rep<NH1, NH2>(b));
 
-            H_SAMPLE_PROBS(unit_type::RELU, f(h_s)(batch) = max(logistic_noise(rep<NH1, NH2>(b) + v_cv(batch)(1)), 0.0));
+        base_type::template batch_compute_vcv<this_type>(pool, v_a, v_cv, w, [&](std::size_t batch){
+            H_PROBS2(unit_type::BINARY, unit_type::BINARY, f(h_a)(batch) = sigmoid(b_rep + v_cv(batch)(1)));
+            H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, f(h_a)(batch) = sigmoid((1.0 / (0.1 * 0.1)) >> (b_rep + v_cv(batch)(1))));
+            H_PROBS(unit_type::RELU, f(h_a)(batch) = max(b_rep + v_cv(batch)(1), 0.0));
+            H_PROBS(unit_type::RELU6, f(h_a)(batch) = min(max(b_rep + v_cv(batch)(1), 0.0), 6.0));
+            H_PROBS(unit_type::RELU1, f(h_a)(batch) = min(max(b_rep + v_cv(batch)(1), 0.0), 1.0));
+
+            H_SAMPLE_PROBS(unit_type::RELU, f(h_s)(batch) = max(logistic_noise(b_rep + v_cv(batch)(1)), 0.0));
         });
 
         nan_check_deep(h_a);
