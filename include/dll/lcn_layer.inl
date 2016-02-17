@@ -16,7 +16,9 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
     using desc = Desc;
 
     static constexpr const std::size_t K = desc::K;
-    static constexpr const std::size_t Mid = K / 2;
+
+    //TODO We can probably remove this completely
+    static constexpr const std::size_t Mid = 0;
 
     double sigma = 2.0;
 
