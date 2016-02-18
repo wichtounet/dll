@@ -12,6 +12,7 @@
 #include "rbm_base.hpp"  //The base class
 #include "layer_traits.hpp"
 #include "checks.hpp"
+#include "conv_utils.hpp" //conv_2d_multi
 
 namespace dll {
 
@@ -218,46 +219,6 @@ protected:
 
 #endif
 
-    template <typename V, typename K, typename C>
-    static void conv_2d_multi(V&& v, K&& kernels, C&& features) {
-        if (etl::is_cblas_enabled || etl::is_cublas_enabled) {
-            static constexpr const std::size_t v1 = etl::decay_traits<V>::template dim<0>();
-            static constexpr const std::size_t v2 = etl::decay_traits<V>::template dim<1>();
-            static constexpr const std::size_t k1 = etl::decay_traits<K>::template dim<0>();
-            static constexpr const std::size_t k2 = etl::decay_traits<K>::template dim<1>();
-            static constexpr const std::size_t k3 = etl::decay_traits<K>::template dim<2>();
-            static constexpr const std::size_t F1 = etl::decay_traits<C>::template dim<0>();
-            static constexpr const std::size_t F2 = etl::decay_traits<C>::template dim<1>();
-            static constexpr const std::size_t F3 = etl::decay_traits<C>::template dim<2>();
-
-            etl::fast_dyn_matrix<weight, k2 * k3, (v1 - k2 + 1) * (v2 - k3 + 1)> input_col; //Rearranged input
-            etl::fast_dyn_matrix<weight, k1, k3, k2> prepared_k;                            //Transposed kernels
-            etl::fast_dyn_matrix<weight, F1, F3, F2> features_t;                            //Transposed features
-
-            //Note: Here, we do not need to fflip because in definition of the formula, the weights are flipped
-
-            for (std::size_t i = 0; i < k1; ++i) {
-                prepared_k(i) = transpose(kernels(i));
-            }
-
-            im2col_direct(input_col, v, k3, k2);
-
-            *mul(
-                etl::reshape<F1, k3 * k2>(prepared_k),
-                input_col,
-                etl::reshape<F1, F2 * F3>(features_t));
-
-            for (std::size_t k = 0; k < k1; ++k) {
-                features(k) = transpose(features_t(k));
-            }
-        } else {
-            //Standard version
-            for (size_t k = 0; k < etl::dim<0>(kernels); ++k) {
-                features(k) = etl::conv_2d_valid(v, kernels(k));
-            }
-        }
-    }
-
     template <typename L, typename TP, typename V1, typename VCV, typename W, typename Functor>
     static void batch_compute_vcv(TP& pool, const V1& v_a, VCV&& v_cv, W&& w, Functor activate) {
         static constexpr const auto Batch = layer_traits<L>::batch_size();
@@ -266,7 +227,7 @@ protected:
 
         auto w_f = etl::force_temporary(w);
 
-        if (!(etl::is_cblas_enabled || etl::is_cublas_enabled)) {
+        if (!conv_multi_fast) {
             deep_fflip(w_f);
         }
 
