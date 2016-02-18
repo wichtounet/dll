@@ -39,7 +39,7 @@ static void conv_2d_multi(V&& v, K&& kernels, C&& features) {
             prepared_k(i) = transpose(kernels(i));
         }
 
-        im2col_direct(input_col, v, k3, k2);
+        im2col_direct(input_col, v, k2, k3);
 
         *mul(
             etl::reshape<F1, k3 * k2>(prepared_k),
