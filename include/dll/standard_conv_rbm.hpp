@@ -225,17 +225,11 @@ protected:
 
         static constexpr const auto NC = L::NC;
 
-        auto w_f = etl::force_temporary(w);
-
-        if (!conv_multi_fast) {
-            deep_fflip(w_f);
-        }
-
         maybe_parallel_foreach_n(pool, 0, Batch, [&](std::size_t batch) {
-            conv_2d_multi(v_a(batch)(0), w_f(0), v_cv(batch)(1));
+            etl::conv_2d_valid_multi_flipped(v_a(batch)(0), w(0), v_cv(batch)(1));
 
             for (std::size_t channel = 1; channel < NC; ++channel) {
-                conv_2d_multi(v_a(batch)(channel), w_f(channel), v_cv(batch)(0));
+                etl::conv_2d_valid_multi_flipped(v_a(batch)(channel), w(channel), v_cv(batch)(0));
 
                 v_cv(batch)(1) += v_cv(batch)(0);
             }

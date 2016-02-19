@@ -547,27 +547,16 @@ void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T
     //Compute gradients
 
     const auto B            = get_batch_size(rbm);
-    constexpr const auto K  = rbm_t::K;
     constexpr const auto NC = rbm_t::NC;
 
-    auto w_f_1 = force_temporary(t.h1_a);
-    auto w_f_2 = force_temporary(t.h2_a);
-
     maybe_parallel_foreach_n(t.pool, 0, B, [&](std::size_t batch) {
-        if(!conv_multi_fast){
-            for (std::size_t k = 0; k < K; ++k) {
-                w_f_1(batch)(k).fflip_inplace();
-                w_f_2(batch)(k).fflip_inplace();
-            }
-        }
-
         for (std::size_t channel = 0; channel < NC; ++channel) {
             if (Denoising) {
-                conv_2d_multi(t.vf(batch)(channel), w_f_1(batch), t.w_pos(batch)(channel));
-                conv_2d_multi(t.v2_a(batch)(channel), w_f_2(batch), t.w_neg(batch)(channel));
+                etl::conv_2d_valid_multi_flipped(t.vf(batch)(channel), t.h1_a(batch), t.w_pos(batch)(channel));
+                etl::conv_2d_valid_multi_flipped(t.v2_a(batch)(channel), t.h2_a(batch), t.w_neg(batch)(channel));
             } else {
-                conv_2d_multi(t.v1(batch)(channel), w_f_1(batch), t.w_pos(batch)(channel));
-                conv_2d_multi(t.v2_a(batch)(channel), w_f_2(batch), t.w_neg(batch)(channel));
+                etl::conv_2d_valid_multi_flipped(t.v1(batch)(channel), t.h1_a(batch), t.w_pos(batch)(channel));
+                etl::conv_2d_valid_multi_flipped(t.v2_a(batch)(channel), t.h2_a(batch), t.w_neg(batch)(channel));
             }
         }
     });
