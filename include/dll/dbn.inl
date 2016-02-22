@@ -323,8 +323,13 @@ public:
         watcher.pretraining_begin(*this, max_epochs);
 
         //Pretrain each layer one-by-one
-        if(batch_mode()){
+        if (batch_mode()) {
             std::cout << "DBN: Pretraining done in batch mode" << std::endl;
+
+            if (layers_t::has_shuffle_layer){
+                std::cout << "warning: batch_mode dbn does not support shuffle in layers (will be ignored)";
+            }
+
             pretrain_layer_batch<0>(first, last, watcher, max_epochs);
         } else {
             pretrain_layer<0>(first, last, watcher, max_epochs, fake_resource);
