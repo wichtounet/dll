@@ -22,7 +22,7 @@
 
 #include "rbm_base.hpp" //The base class
 #include "base_conf.hpp"
-#include "io.hpp"
+#include "util/io.hpp"
 #include "checks.hpp" //NaN checks
 #include "rbm_tmp.hpp" // static_if macros
 

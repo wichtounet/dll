@@ -20,7 +20,7 @@
 
 #include "standard_conv_rbm.hpp"  //The base class
 #include "base_conf.hpp"          //The configuration helpers
-#include "io.hpp"                 //Binary load/store functions
+#include "util/io.hpp"                 //Binary load/store functions
 #include "checks.hpp"
 #include "rbm_tmp.hpp" // static_if macros
 

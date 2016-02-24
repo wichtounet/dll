@@ -12,7 +12,7 @@
 #include <fstream>
 
 #include "neural_base.hpp"
-#include "io.hpp"
+#include "util/io.hpp"
 #include "rbm_trainer_fwd.hpp"
 
 namespace dll {
