@@ -27,7 +27,6 @@
 #include "decay_type.hpp"
 #include "layer_traits.hpp"
 #include "util/blas.hpp"
-#include "conv_utils.hpp"
 
 namespace dll {
 

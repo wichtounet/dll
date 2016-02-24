@@ -12,7 +12,6 @@
 #include "rbm_base.hpp"  //The base class
 #include "layer_traits.hpp"
 #include "checks.hpp"
-#include "conv_utils.hpp" //conv_2d_multi
 
 namespace dll {
 
