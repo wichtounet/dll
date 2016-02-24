@@ -11,7 +11,7 @@
 #include <memory>
 
 #include "cg_context.hpp"  //Context for CG
-#include "sgd_context.hpp" //Context for SGD
+#include "util/sgd_context.hpp" //Context for SGD
 
 namespace dll {
 

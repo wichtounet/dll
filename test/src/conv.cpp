@@ -13,7 +13,7 @@
 #include "dll/dense_layer.hpp"
 #include "dll/scale_layer.hpp"
 #include "dll/dbn.hpp"
-#include "dll/stochastic_gradient_descent.hpp"
+#include "dll/trainer/stochastic_gradient_descent.hpp"
 #include "dll/mp_layer.hpp"
 #include "dll/avgp_layer.hpp"
 
