@@ -24,7 +24,7 @@
 #include "dbn_common.hpp"
 #include "svm_common.hpp"
 #include "util/flatten.hpp"
-#include "compat.hpp"
+#include "util/compat.hpp"
 #include "util/export.hpp"
 #include "dbn_detail.hpp" //dbn_detail namespace
 
