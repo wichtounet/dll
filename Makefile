@@ -46,6 +46,11 @@ endif
 endif
 endif
 
+# Disable timers on demand
+ifneq (,$(DLL_NO_TIMERS))
+CXX_FLAGS += -DDLL_NO_TIMERS
+endif
+
 # Enable coverage if enabled
 ifneq (,$(DLL_COVERAGE))
 $(eval $(call enable_coverage_release))
