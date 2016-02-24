@@ -11,7 +11,7 @@
 
 namespace dll {
 
-template<typename Desc>
+template <typename Desc>
 struct lcn_layer : neural_base<lcn_layer<Desc>> {
     using desc = Desc;
 
@@ -27,25 +27,25 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
 
     lcn_layer() = default;
 
-    static std::string to_short_string(){
+    static std::string to_short_string() {
         return "LCN";
     }
 
-    static void display(){
+    static void display() {
         std::cout << to_short_string() << std::endl;
     }
 
-    static cpp14_constexpr double gaussian(double x, double y, double sigma){
+    static cpp14_constexpr double gaussian(double x, double y, double sigma) {
         auto Z = 2.0 * M_PI * sigma * sigma;
-        return  1.0 / Z * std::exp(-(x * x + y * y) / (2.0 * sigma * sigma));
+        return 1.0 / Z * std::exp(-(x * x + y * y) / (2.0 * sigma * sigma));
     }
 
-    template<typename W>
-    static etl::fast_dyn_matrix<W, K, K> filter(double sigma){
+    template <typename W>
+    static etl::fast_dyn_matrix<W, K, K> filter(double sigma) {
         etl::fast_dyn_matrix<W, K, K> w;
 
-        for(std::size_t i = 0; i < K; ++i){
-            for(std::size_t j = 0; j < K; ++j){
+        for (std::size_t i = 0; i < K; ++i) {
+            for (std::size_t j = 0; j < K; ++j) {
                 w(i, j) = gaussian(static_cast<double>(i) - Mid, static_cast<double>(j) - Mid, sigma);
             }
         }
@@ -55,7 +55,7 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
         return w;
     }
 
-    template<typename Input, typename Output>
+    template <typename Input, typename Output>
     void activate_hidden(Output& y, const Input& x) const {
         using weight_t = etl::value_t<Input>;
 
@@ -64,10 +64,10 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
         auto v = etl::force_temporary(x(0));
         auto o = etl::force_temporary(x(0));
 
-        for(std::size_t c = 0; c < etl::dim<0>(x); ++c){
+        for (std::size_t c = 0; c < etl::dim<0>(x); ++c) {
             //1. For each pixel, remove mean of 9x9 neighborhood
-            for(std::size_t j = 0; j < etl::dim<1>(x); ++j){
-                for(std::size_t k = 0; k < etl::dim<2>(x); ++k){
+            for (std::size_t j = 0; j < etl::dim<1>(x); ++j) {
+                for (std::size_t k = 0; k < etl::dim<2>(x); ++k) {
                     weight_t sum(0.0);
 
                     for (std::size_t p = 0; p < K; ++p) {
@@ -86,8 +86,8 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
 
             //2. Scale down norm of 9x9 patch if norm is bigger than 1
 
-            for(std::size_t j = 0; j < etl::dim<1>(x); ++j){
-                for(std::size_t k = 0; k < etl::dim<2>(x); ++k){
+            for (std::size_t j = 0; j < etl::dim<1>(x); ++j) {
+                for (std::size_t k = 0; k < etl::dim<2>(x); ++k) {
                     weight_t sum(0.0);
 
                     for (std::size_t p = 0; p < K; ++p) {
@@ -109,27 +109,27 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
         }
     }
 
-    template<typename Input, typename Output>
+    template <typename Input, typename Output>
     void batch_activate_hidden(Output& output, const Input& input) const {
-        for(std::size_t b = 0; b < etl::dim<0>(input); ++b){
+        for (std::size_t b = 0; b < etl::dim<0>(input); ++b) {
             activate_hidden(output(b), input(b));
         }
     }
 
-    template<typename I, typename O_A>
+    template <typename I, typename O_A>
     void activate_many(const I& input, O_A& h_a) const {
-        for(std::size_t i = 0; i < input.size(); ++i){
+        for (std::size_t i = 0; i < input.size(); ++i) {
             activate_one(input[i], h_a[i]);
         }
     }
 
-    template<typename Input>
-    static std::vector<Input> prepare_output(std::size_t samples){
+    template <typename Input>
+    static std::vector<Input> prepare_output(std::size_t samples) {
         return std::vector<Input>(samples);
     }
 
-    template<typename Input>
-    static Input prepare_one_output(){
+    template <typename Input>
+    static Input prepare_one_output() {
         return {};
     }
 };

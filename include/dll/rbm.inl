@@ -8,8 +8,8 @@
 #ifndef DLL_RBM_INL
 #define DLL_RBM_INL
 
-#include "cpp_utils/assert.hpp"             //Assertions
-#include "cpp_utils/stop_watch.hpp"         //Performance counter
+#include "cpp_utils/assert.hpp"     //Assertions
+#include "cpp_utils/stop_watch.hpp" //Performance counter
 
 #include "etl/etl.hpp"
 
@@ -23,25 +23,25 @@ namespace dll {
  *
  * This follows the definition of a RBM by Geoffrey Hinton.
  */
-template<typename Desc>
+template <typename Desc>
 struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
-    using desc = Desc;
-    using weight = typename desc::weight;
+    using desc      = Desc;
+    using weight    = typename desc::weight;
     using this_type = rbm<desc>;
     using base_type = standard_rbm<this_type, desc>;
 
     static constexpr const std::size_t num_visible = desc::num_visible;
-    static constexpr const std::size_t num_hidden = desc::num_hidden;
+    static constexpr const std::size_t num_hidden  = desc::num_hidden;
 
     static constexpr const unit_type visible_unit = desc::visible_unit;
-    static constexpr const unit_type hidden_unit = desc::hidden_unit;
+    static constexpr const unit_type hidden_unit  = desc::hidden_unit;
 
     static constexpr bool dbn_only = layer_traits<this_type>::is_dbn_only();
 
-    template<std::size_t B>
+    template <std::size_t B>
     using input_batch_t = etl::fast_dyn_matrix<weight, B, num_visible>;
 
-    template<std::size_t B>
+    template <std::size_t B>
     using output_batch_t = etl::fast_dyn_matrix<weight, B, num_hidden>;
 
     using w_type = etl::fast_matrix<weight, num_visible, num_hidden>;
@@ -49,14 +49,14 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
     using c_type = etl::fast_vector<weight, num_visible>;
 
     //Weights and biases
-    w_type w;    //!< Weights
-    b_type b;    //!< Hidden biases
-    c_type c;    //!< Visible biases
+    w_type w; //!< Weights
+    b_type b; //!< Hidden biases
+    c_type c; //!< Visible biases
 
     //Backup weights and biases
-    std::unique_ptr<w_type> bak_w;    //!< Backup Weights
-    std::unique_ptr<b_type> bak_b;    //!< Backup Hidden biases
-    std::unique_ptr<c_type> bak_c;    //!< Backup Visible biases
+    std::unique_ptr<w_type> bak_w; //!< Backup Weights
+    std::unique_ptr<b_type> bak_b; //!< Backup Hidden biases
+    std::unique_ptr<c_type> bak_c; //!< Backup Visible biases
 
     //Reconstruction data
     conditional_fast_matrix_t<!dbn_only, weight, num_visible> v1; //!< State of the visible units
@@ -84,7 +84,8 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
      * The weights are initialized from a normal distribution of
      * zero-mean and 0.1 variance.
      */
-    rbm() : standard_rbm<rbm<Desc>, Desc>(), b(0.0), c(0.0) {
+    rbm()
+            : standard_rbm<rbm<Desc>, Desc>(), b(0.0), c(0.0) {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
         w = etl::normal_generator<weight>() * 0.1;
     }
@@ -101,7 +102,7 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
         return num_visible * num_hidden;
     }
 
-    static std::string to_short_string(){
+    static std::string to_short_string() {
         return "RBM: " + std::to_string(num_visible) + "(" + to_string(visible_unit) + ") -> " + std::to_string(num_hidden) + "(" + to_string(hidden_unit) + ")";
     }
 
@@ -109,57 +110,57 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
         std::cout << to_short_string() << std::endl;
     }
 
-    void backup_weights(){
+    void backup_weights() {
         unique_safe_get(bak_w) = w;
         unique_safe_get(bak_b) = b;
         unique_safe_get(bak_c) = c;
     }
 
-    void restore_weights(){
+    void restore_weights() {
         w = *bak_w;
         b = *bak_b;
         c = *bak_c;
     }
 
-    template<bool P = true, bool S = true, typename H1, typename H2, typename V>
+    template <bool P = true, bool S = true, typename H1, typename H2, typename V>
     void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s) const {
         etl::fast_dyn_matrix<weight, num_hidden> t;
         base_type::template std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, t);
     }
 
-    template<bool P = true, bool S = true, typename H1, typename H2, typename V, typename T>
+    template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename T>
     void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, T&& t) const {
         base_type::template std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, std::forward<T>(t));
     }
 
-    template<bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W>
-    static void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, const B& b, const W& w){
+    template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W>
+    static void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, const B& b, const W& w) {
         etl::fast_dyn_matrix<weight, num_hidden> t;
         base_type::template std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, t);
     }
 
-    template<bool P = true, bool S = true, typename H, typename V>
+    template <bool P = true, bool S = true, typename H, typename V>
     void activate_visible(const H& h_a, const H& h_s, V&& v_a, V&& v_s) const {
         etl::fast_dyn_matrix<weight, num_visible> t;
         base_type::template std_activate_visible<P, S>(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), c, w, t);
     }
 
-    template<bool P = true, bool S = true, typename H, typename V, typename T>
+    template <bool P = true, bool S = true, typename H, typename V, typename T>
     void activate_visible(const H& h_a, const H& h_s, V&& v_a, V&& v_s, T&& t) const {
         base_type::template std_activate_visible<P, S>(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), c, w, std::forward<T>(t));
     }
 
-    template<bool P = true, bool S = true, typename H1, typename H2, typename V>
+    template <bool P = true, bool S = true, typename H1, typename H2, typename V>
     void batch_activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s) const {
         base_type::template batch_std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w);
     }
 
-    template<bool P = true, bool S = true, typename H, typename V>
+    template <bool P = true, bool S = true, typename H, typename V>
     void batch_activate_visible(const H& h_a, const H& h_s, V&& v_a, V&& v_s) const {
         base_type::template batch_std_activate_visible<P, S>(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), c, w);
     }
 
-    template<typename Sample, typename Output>
+    template <typename Sample, typename Output>
     void activation_probabilities(const Sample& item_data, Output& result) const {
         etl::fast_dyn_vector<weight, num_visible> item(item_data);
         etl::fast_dyn_matrix<weight, num_hidden> next_s;
@@ -167,7 +168,7 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
         activate_hidden(result, next_s, item, item);
     }
 
-    template<typename Sample>
+    template <typename Sample>
     etl::dyn_vector<weight> activation_probabilities(const Sample& item_data) const {
         etl::dyn_vector<weight> result(output_size());
 
@@ -176,23 +177,23 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
         return result;
     }
 
-    template<typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 1)>
+    template <typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 1)>
     void activate_hidden(H&& h_a, const V& v_a) const {
         etl::fast_dyn_matrix<weight, num_hidden> t;
         base_type::template std_activate_hidden<true, false>(std::forward<H>(h_a), std::forward<H>(h_a), v_a, v_a, b, w, t);
     }
 
-    template<typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 1)>
+    template <typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 1)>
     void activate_hidden(H&& h_a, const V& v_a) const {
         activate_hidden(h_a, etl::reshape<num_visible>(v_a));
     }
 
-    template<typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 2)>
+    template <typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 2)>
     void batch_activate_hidden(H&& h_a, const V& v_a) const {
         base_type::template batch_std_activate_hidden<true, false>(std::forward<H>(h_a), std::forward<H>(h_a), v_a, v_a, b, w);
     }
 
-    template<typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 2)>
+    template <typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 2)>
     void batch_activate_hidden(H&& h_a, const V& v_a) const {
         batch_activate_hidden(h_a, etl::reshape<etl::decay_traits<H>::template dim<0>(), num_visible>(v_a));
     }
@@ -200,10 +201,10 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
 
 //Allow odr-use of the constexpr static members
 
-template<typename Desc>
+template <typename Desc>
 const std::size_t rbm<Desc>::num_visible;
 
-template<typename Desc>
+template <typename Desc>
 const std::size_t rbm<Desc>::num_hidden;
 
 } //end of dll namespace
