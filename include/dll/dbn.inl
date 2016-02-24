@@ -19,7 +19,7 @@
 #include "cpp_utils/static_if.hpp"
 
 #include "unit_type.hpp"
-#include "dbn_trainer.hpp"
+#include "trainer/dbn_trainer.hpp"
 #include "trainer/conjugate_gradient.hpp"
 #include "dbn_common.hpp"
 #include "svm_common.hpp"

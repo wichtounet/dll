@@ -14,7 +14,7 @@
 
 #include "cpp_utils/stop_watch.hpp"
 
-#include "rbm_training_context.hpp"
+#include "trainer/rbm_training_context.hpp"
 #include "layer_traits.hpp"
 #include "dbn_traits.hpp"
 

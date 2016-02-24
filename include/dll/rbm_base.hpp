@@ -13,7 +13,7 @@
 
 #include "neural_base.hpp"
 #include "util/io.hpp"
-#include "rbm_trainer_fwd.hpp"
+#include "trainer/rbm_trainer_fwd.hpp"
 
 namespace dll {
 
