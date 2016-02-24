@@ -10,7 +10,7 @@
 
 #include "etl/etl.hpp"
 
-#include "dll/labels.hpp"
+#include "dll/util/labels.hpp"
 #include "dll/test.hpp"
 #include "dll/dbn_traits.hpp"
 
