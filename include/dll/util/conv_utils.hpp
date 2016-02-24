@@ -11,7 +11,6 @@
 #include "base_conf.hpp" //The configuration helpers
 #include "rbm_base.hpp"  //The base class
 #include "layer_traits.hpp"
-#include "checks.hpp"
 
 namespace dll {
 

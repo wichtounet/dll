@@ -23,7 +23,7 @@
 #include "rbm_base.hpp" //The base class
 #include "base_conf.hpp"
 #include "util/io.hpp"
-#include "checks.hpp" //NaN checks
+#include "util/checks.hpp" //NaN checks
 #include "rbm_tmp.hpp" // static_if macros
 
 namespace dll {

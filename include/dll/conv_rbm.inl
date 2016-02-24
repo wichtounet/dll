@@ -21,7 +21,7 @@
 
 #include "standard_conv_rbm.hpp" //The base class
 #include "util/io.hpp"                //Binary load/store functions
-#include "checks.hpp"
+#include "util/checks.hpp"
 #include "rbm_tmp.hpp" // static_if macros
 
 namespace dll {
