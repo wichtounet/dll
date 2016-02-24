@@ -256,7 +256,7 @@ struct rbm_trainer {
         context.reconstruction_error += context.batch_error;
         context.sparsity += context.batch_sparsity;
 
-        cpp::static_if<EnableWatcher && layer_traits<rbm_t>::free_energy()>([&](auto f){
+        cpp::static_if<EnableWatcher && layer_traits<rbm_t>::free_energy()>([&](auto f) {
             for (auto& v : input_batch) {
                 context.free_energy += f(rbm).free_energy(v);
             }

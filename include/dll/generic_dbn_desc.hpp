@@ -23,7 +23,7 @@ using default_dbn_trainer_t = cg_trainer<DBN, false>;
  * This struct should be used to define a DBN.
  * Once configured, the ::dbn_t member returns the type of the configured DBN.
  */
-template <template<typename> class DBN_T, typename Layers, typename... Parameters>
+template <template <typename> class DBN_T, typename Layers, typename... Parameters>
 struct generic_dbn_desc {
     using layers     = Layers;
     using parameters = cpp::type_list<Parameters...>;

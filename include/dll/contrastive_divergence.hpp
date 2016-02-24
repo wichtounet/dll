@@ -30,7 +30,7 @@
 
 namespace dll {
 
-#define STATIC_IF_DECAY(d, ...) cpp::static_if<decay == d>([&](auto f){ __VA_ARGS__ ; });
+#define STATIC_IF_DECAY(d, ...) cpp::static_if<decay == d>([&](auto f) { __VA_ARGS__; });
 
 /*!
  * \brief Base class for all standard trainer
@@ -84,7 +84,7 @@ void update_normal(RBM& rbm, Trainer& t) {
     typename rbm_t::weight v_penalty = 0.0;
 
     //Global sparsity method
-    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET>([&](auto f){
+    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET>([&](auto f) {
         auto decay_rate = rbm.decay_rate;
         auto p          = rbm.sparsity_target;
         auto cost       = rbm.sparsity_cost;
@@ -101,7 +101,7 @@ void update_normal(RBM& rbm, Trainer& t) {
     t.template update_grad<b_decay(layer_traits<rbm_t>::decay())>(t.c_grad, rbm.c, rbm, v_penalty);
 
     //Local sparsity method
-    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f){
+    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f) {
         auto decay_rate = rbm.decay_rate;
         auto p          = rbm.sparsity_target;
         auto cost       = rbm.sparsity_cost;
@@ -123,7 +123,7 @@ void update_normal(RBM& rbm, Trainer& t) {
     auto eps             = rbm.learning_rate / n_samples;
 
     //Apply momentum and learning rate
-    cpp::static_if<layer_traits<rbm_t>::has_momentum()>([&](auto f){
+    cpp::static_if<layer_traits<rbm_t>::has_momentum()>([&](auto f) {
         auto momentum = rbm.momentum;
 
         f(t).w_inc = momentum * t.w_inc + eps * t.w_grad;
@@ -134,12 +134,12 @@ void update_normal(RBM& rbm, Trainer& t) {
         f(rbm).b += t.b_inc;
         f(rbm).c += t.c_inc;
     })
-    //Apply the learning rate
-    .else_([&](auto f){
-        f(rbm).w += eps * t.w_grad;
-        f(rbm).b += eps * t.b_grad;
-        f(rbm).c += eps * t.c_grad;
-    });
+        //Apply the learning rate
+        .else_([&](auto f) {
+            f(rbm).w += eps * t.w_grad;
+            f(rbm).b += eps * t.b_grad;
+            f(rbm).c += eps * t.c_grad;
+        });
 
     //Check for NaN
     nan_check_deep_3(rbm.w, rbm.b, rbm.c);
@@ -156,7 +156,7 @@ void update_convolutional(RBM& rbm, Trainer& t) {
     weight v_penalty = 0.0;
 
     //Global sparsity method
-    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET>([&](auto f){
+    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET>([&](auto f) {
         auto decay_rate = rbm.decay_rate;
         auto p          = rbm.sparsity_target;
         auto cost       = rbm.sparsity_cost;
@@ -173,7 +173,7 @@ void update_convolutional(RBM& rbm, Trainer& t) {
     t.template update_grad<b_decay(layer_traits<rbm_t>::decay())>(t.c_grad, rbm.c, rbm, v_penalty);
 
     //Local sparsity method
-    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f){
+    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f) {
         constexpr const auto NC  = rbm_t::NC;
         constexpr const auto NW1 = rbm_t::NW1;
         constexpr const auto NW2 = rbm_t::NW2;
@@ -195,7 +195,7 @@ void update_convolutional(RBM& rbm, Trainer& t) {
     });
 
     //Honglak Lee's sparsity method
-    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE>([&](auto f){
+    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE>([&](auto f) {
         f(t).w_grad -= rbm.pbias_lambda * t.w_bias;
         f(t).b_grad -= rbm.pbias_lambda * t.b_bias;
         f(t).c_grad -= rbm.pbias_lambda * t.c_bias;
@@ -205,7 +205,7 @@ void update_convolutional(RBM& rbm, Trainer& t) {
     auto eps             = rbm.learning_rate / n_samples;
 
     //Apply momentum and learning rate
-    cpp::static_if<layer_traits<rbm_t>::has_momentum()>([&](auto f){
+    cpp::static_if<layer_traits<rbm_t>::has_momentum()>([&](auto f) {
         auto momentum = rbm.momentum;
 
         f(t).w_inc = momentum * t.w_inc + eps * t.w_grad;
@@ -216,12 +216,12 @@ void update_convolutional(RBM& rbm, Trainer& t) {
         f(rbm.b) += t.b_inc;
         f(rbm.c) += t.c_inc;
     })
-    //Apply learning rate only
-    .else_([&](auto f) {
-        f(rbm.w) += eps * t.w_grad;
-        f(rbm.b) += eps * t.b_grad;
-        f(rbm.c) += eps * t.c_grad;
-    });
+        //Apply learning rate only
+        .else_([&](auto f) {
+            f(rbm.w) += eps * t.w_grad;
+            f(rbm.b) += eps * t.b_grad;
+            f(rbm.c) += eps * t.c_grad;
+        });
 
     //Check for NaN
     nan_check_deep(rbm.w);
@@ -377,13 +377,12 @@ void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch
     }
 
     //CD-1
-    cpp::static_if<Persistent>([&](auto f){
+    cpp::static_if<Persistent>([&](auto f) {
         f(rbm).template batch_activate_visible<true, false>(t.p_h_a, t.p_h_s, t.v2_a, t.v2_s);
         f(rbm).template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
-    }).else_([&](auto f){
+    }).else_([&](auto f) {
         f(rbm).template batch_activate_visible<true, false>(t.h1_a, t.h1_s, t.v2_a, t.v2_s);
-        f(rbm).template batch_activate_hidden<true, (K > 1)>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
-    });
+        f(rbm).template batch_activate_hidden<true, (K > 1)>(t.h2_a, t.h2_s, t.v2_a, t.v2_s); });
 
     //CD-k
     for (std::size_t k = 1; k < K; ++k) {
@@ -425,7 +424,7 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
     //Compute the mean activation probabilities
     t.q_global_batch = mean(t.h2_a);
 
-    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f){
+    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f) {
         f(t).q_local_batch = mean_l(t.h2_a);
     });
 
@@ -583,11 +582,9 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
     t.w_grad = sum_l(t.w_pos - t.w_neg);
     t.b_grad = mean_r(sum_l(t.h1_a - t.h2_a));
 
-    cpp::static_if<Denoising>([&](auto f){
+    cpp::static_if<Denoising>([&](auto f) {
         f(t).c_grad = mean_r(sum_l(t.vf - t.v2_a));
-    }).else_([&](auto f){
-        f(t).c_grad = mean_r(sum_l(t.v1 - t.v2_a));
-    });
+    }).else_([&](auto f) { f(t).c_grad = mean_r(sum_l(t.v1 - t.v2_a)); });
 
     nan_check_deep(t.w_grad);
     nan_check_deep(t.b_grad);
@@ -596,14 +593,14 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
     //Compute the mean activation probabilities
     t.q_global_batch = mean(t.h2_a);
 
-    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f){
+    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f) {
         f(t).q_local_batch = mean_l(t.h2_a);
     });
 
     //Compute the biases for sparsity
 
     //Only b_bias are supported for now
-    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE && layer_traits<rbm_t>::bias_mode() == bias_mode::SIMPLE>([&](auto f){
+    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE && layer_traits<rbm_t>::bias_mode() == bias_mode::SIMPLE>([&](auto f) {
         f(t).b_bias = mean_r(mean_l(t.h2_a)) - rbm.pbias;
     });
 
@@ -611,11 +608,9 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
     context.batch_sparsity = t.q_global_batch;
 
     //Accumulate the error
-    cpp::static_if<Denoising>([&](auto f){
+    cpp::static_if<Denoising>([&](auto f) {
         f(context).batch_error = mean(etl::scale((t.vf - t.v2_a), (t.vf - t.v2_a)));
-    }).else_([&](auto f){
-        f(context).batch_error = mean(etl::scale((t.v1 - t.v2_a), (t.v1 - t.v2_a)));
-    });
+    }).else_([&](auto f) { f(context).batch_error = mean(etl::scale((t.v1 - t.v2_a), (t.v1 - t.v2_a))); });
 
     //Update the weights and biases based on the gradients
     t.update(rbm);

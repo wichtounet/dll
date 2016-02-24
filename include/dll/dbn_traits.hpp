@@ -46,8 +46,7 @@ struct dbn_traits {
         return desc::parameters::template contains<momentum>();
     }
 
-    [[deprecated("use batch_mode instead")]]
-    static constexpr bool save_memory() noexcept {
+    [[deprecated("use batch_mode instead")]] static constexpr bool save_memory() noexcept {
         return batch_mode();
     }
 

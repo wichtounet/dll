@@ -86,8 +86,8 @@ double test_set_ae(DBN& dbn, const Samples& images) {
 
 template <typename DBN, typename Iterator>
 double test_set_ae(DBN& dbn, Iterator first, Iterator last) {
-    double rate = 0.0;
-    std::size_t images  = 0;
+    double rate        = 0.0;
+    std::size_t images = 0;
 
     while (first != last) {
         decltype(auto) image = *first;

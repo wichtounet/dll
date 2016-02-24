@@ -24,7 +24,7 @@
 #include "base_conf.hpp"
 #include "util/io.hpp"
 #include "util/checks.hpp" //NaN checks
-#include "rbm_tmp.hpp" // static_if macros
+#include "rbm_tmp.hpp"     // static_if macros
 
 namespace dll {
 
@@ -316,11 +316,11 @@ protected:
         H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = bernoulli(min(max(b + mul(v_a, w, t), 0.0), 1.0)));
         H_SAMPLE_PROBS(unit_type::SOFTMAX, f(h_s) = bernoulli(stable_softmax(b + mul(v_a, w, t))));
 
-        if(P){
+        if (P) {
             nan_check_deep(h_a);
         }
 
-        if(S){
+        if (S) {
             nan_check_deep(h_s);
         }
     }
@@ -359,7 +359,8 @@ protected:
         H_PROBS(unit_type::RELU6, f(h_a) = min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 6.0));
         H_PROBS(unit_type::RELU1, f(h_a) = min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 1.0));
 
-        H_PROBS_MULTI(unit_type::SOFTMAX)([&](auto f){
+        H_PROBS_MULTI(unit_type::SOFTMAX)
+        ([&](auto f) {
             auto x = f(etl::force_temporary(rep_l(b, Batch) + mul(v_a, w)));
 
             for (std::size_t b = 0; b < Batch; ++b) {
@@ -371,7 +372,8 @@ protected:
         H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = max(logistic_noise(rep_l(b, Batch) + mul(v_a, w)), 0.0));
         H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = ranged_noise(h_a, 6.0));
         H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = ranged_noise(h_a, 1.0));
-        H_SAMPLE_PROBS_MULTI(unit_type::SOFTMAX)([&](auto f){
+        H_SAMPLE_PROBS_MULTI(unit_type::SOFTMAX)
+        ([&](auto f) {
             for (std::size_t b = 0; b < Batch; ++b) {
                 f(h_s)(b) = stable_softmax(h_a(b));
             }
@@ -381,7 +383,8 @@ protected:
         H_SAMPLE_INPUT(unit_type::RELU, f(h_s) = max(normal_noise(rep_l(b, Batch) + mul(v_a, w)), 0.0));
         H_SAMPLE_INPUT(unit_type::RELU6, f(h_s) = ranged_noise(min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 6.0), 6.0));
         H_SAMPLE_INPUT(unit_type::RELU1, f(h_s) = ranged_noise(min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 1.0), 1.0));
-        H_SAMPLE_INPUT_MULTI(unit_type::RELU1)([&](auto f){
+        H_SAMPLE_INPUT_MULTI(unit_type::RELU1)
+        ([&](auto f) {
             auto x = f(etl::force_temporary(rep_l(b, Batch) + mul(v_a, w)));
 
             for (std::size_t b = 0; b < Batch; ++b) {

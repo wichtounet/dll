@@ -16,14 +16,15 @@
 
 namespace dll {
 
-template<typename Iterator>
+template <typename Iterator>
 struct range {
 private:
     Iterator first;
     Iterator last;
 
 public:
-    range(Iterator first, Iterator last) : first(first), last(last) {}
+    range(Iterator first, Iterator last)
+            : first(first), last(last) {}
 
     Iterator begin() const {
         return first;
@@ -34,8 +35,8 @@ public:
     }
 };
 
-template<typename Iterator>
-range<Iterator> make_range(Iterator first, Iterator last){
+template <typename Iterator>
+range<Iterator> make_range(Iterator first, Iterator last) {
     return {first, last};
 }
 
@@ -57,12 +58,12 @@ struct dbn_trainer {
 
     template <typename Iterator, typename LIterator>
     typename dbn_t::weight train(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator llast, std::size_t max_epochs) const {
-        auto error_function = [&dbn, first, last, lfirst, llast] () {
+        auto error_function = [&dbn, first, last, lfirst, llast]() {
             return test_set(dbn, first, last, lfirst, llast,
-                [](dbn_t& dbn, auto& image) { return dbn.predict(image); });
+                            [](dbn_t& dbn, auto& image) { return dbn.predict(image); });
         };
 
-        auto label_transformer = [](auto first, auto last){
+        auto label_transformer = [](auto first, auto last) {
             return dll::make_fake(first, last);
         };
 
@@ -71,11 +72,11 @@ struct dbn_trainer {
 
     template <typename Iterator>
     typename dbn_t::weight train_ae(DBN& dbn, Iterator first, Iterator last, std::size_t max_epochs) const {
-        auto error_function = [&dbn, first, last] () {
+        auto error_function = [&dbn, first, last]() {
             return test_set_ae(dbn, first, last);
         };
 
-        auto label_transformer = [](auto first, auto last){
+        auto label_transformer = [](auto first, auto last) {
             return make_range(first, last);
         };
 
@@ -135,7 +136,7 @@ struct dbn_trainer {
                 }
 
                 auto last_error = error;
-                error = error_function();
+                error           = error_function();
 
                 //After some time increase the momentum
                 if (dbn_traits<dbn_t>::has_momentum() && epoch == dbn.final_momentum_epoch) {
