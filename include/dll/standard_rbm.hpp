@@ -20,10 +20,11 @@
 
 #include "etl/etl.hpp"
 
-#include "rbm_base.hpp" //The base class
-#include "base_conf.hpp"
-#include "util/io.hpp"
+#include "util/io.hpp"     //Input/Output
 #include "util/checks.hpp" //NaN checks
+#include "util/timers.hpp" //auto_timer
+#include "rbm_base.hpp"    //The base class
+#include "base_conf.hpp"   //Descriptor configuration
 #include "rbm_tmp.hpp"     // static_if macros
 
 namespace dll {
@@ -293,6 +294,8 @@ protected:
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W, typename T>
     static void std_activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V&, const B& b, const W& w, T&& t) {
+        dll::auto_timer timer("rbm:std:activate_hidden");
+
         using namespace etl;
 
         //Compute activation probabilities
@@ -327,6 +330,8 @@ protected:
 
     template <bool P = true, bool S = true, typename H, typename V, typename C, typename W, typename T>
     static void std_activate_visible(const H&, const H& h_s, V&& v_a, V&& v_s, const C& c, const W& w, T&& t) {
+        dll::auto_timer timer("rbm:std:activate_visible");
+
         using namespace etl;
 
         V_PROBS(unit_type::BINARY, f(v_a) = sigmoid(c + mul(w, h_s, t)));
@@ -348,6 +353,8 @@ protected:
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W>
     static void batch_std_activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V&, const B& b, const W& w) {
+        dll::auto_timer timer("rbm:std:batch_activate_hidden");
+
         using namespace etl;
 
         const auto Batch = etl::dim<0>(h_a);
@@ -403,6 +410,8 @@ protected:
 
     template <bool P = true, bool S = true, typename H, typename V, typename C, typename W>
     static void batch_std_activate_visible(const H&, const H& h_s, V&& v_a, V&& v_s, const C& c, const W& w) {
+        dll::auto_timer timer("rbm:std:batch_activate_visible");
+
         using namespace etl;
 
         const auto Batch = etl::dim<0>(v_s);

@@ -21,8 +21,9 @@
 #include "standard_conv_rbm.hpp" //The base class
 #include "base_conf.hpp"         //The configuration helpers
 #include "util/io.hpp"           //Binary load/store functions
-#include "util/checks.hpp"
-#include "rbm_tmp.hpp" // static_if macros
+#include "util/timers.hpp"       //auto_timer
+#include "util/checks.hpp"       //nan_check
+#include "rbm_tmp.hpp"           // static_if macros
 
 namespace dll {
 
@@ -152,6 +153,8 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename VCV>
     void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2&, VCV&& v_cv) const {
+        dll::auto_timer timer("crbm:mp:activate_hidden");
+
         static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit), "Invalid hidden unit type");
         static_assert(P, "Computing S without P is not implemented");
 
@@ -177,6 +180,8 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename HCV>
     void activate_visible(const H1&, const H2& h_s, V1&& v_a, V2&& v_s, HCV&& h_cv) const {
+        dll::auto_timer timer("crbm:mp:activate_visible");
+
         static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN, "Invalid visible unit type");
         static_assert(P, "Computing S without P is not implemented");
 
@@ -199,6 +204,8 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
     template <bool P = true, bool S = true, typename Po, typename V>
     void activate_pooling(Po& p_a, Po& p_s, const V& v_a, const V&) const {
+        dll::auto_timer timer("crbm:mp:activate_pooling");
+
         static_assert(pooling_unit == unit_type::BINARY, "Invalid pooling unit type");
         static_assert(P, "Computing S without P is not implemented");
 
@@ -223,6 +230,8 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename VCV>
     void batch_activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2&, VCV&& v_cv) const {
+        dll::auto_timer timer("crbm:mp:batch_activate_hidden");
+
         static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit), "Invalid hidden unit type");
         static_assert(P, "Computing S without P is not implemented");
 
@@ -256,6 +265,8 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename HCV>
     void batch_activate_visible(const H1&, const H2& h_s, V1&& v_a, V2&& v_s, HCV&& h_cv) const {
+        dll::auto_timer timer("crbm:mp:batch_activate_visible");
+
         static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN, "Invalid visible unit type");
         static_assert(P, "Computing S without P is not implemented");
 

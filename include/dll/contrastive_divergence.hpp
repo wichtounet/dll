@@ -24,6 +24,7 @@
 #include "etl/etl.hpp"
 
 #include "util/batch.hpp"
+#include "util/timers.hpp"
 #include "decay_type.hpp"
 #include "layer_traits.hpp"
 #include "util/blas.hpp"
@@ -76,6 +77,8 @@ auto reshape_1nh(RBM&, C&& container) {
 
 template <typename RBM, typename Trainer>
 void update_normal(RBM& rbm, Trainer& t) {
+    dll::auto_timer timer("cd:update:normal");
+
     using rbm_t = RBM;
 
     //Penalty to be applied to weights and hidden biases
@@ -147,6 +150,8 @@ void update_normal(RBM& rbm, Trainer& t) {
 
 template <typename RBM, typename Trainer>
 void update_convolutional(RBM& rbm, Trainer& t) {
+    dll::auto_timer timer("cd:update:conv");
+
     using rbm_t  = RBM;
     using weight = typename rbm_t::weight;
 
@@ -295,6 +300,8 @@ void batch_compute_gradients(Trainer& t) {
 
 template <bool Persistent, std::size_t K, typename T, typename RBM, typename Trainer, cpp_enable_if(layer_traits<RBM>::is_parallel_mode())>
 void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
+    dll::auto_timer timer("cd:gradients:normal:par");
+
     // clang-format off
     maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(),
             [&](const auto& input, const auto& expected, std::size_t i)
@@ -358,6 +365,8 @@ void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch
 
 template <bool Persistent, std::size_t K, typename T, typename RBM, typename Trainer, cpp_disable_if(layer_traits<RBM>::is_parallel_mode())>
 void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
+    dll::auto_timer timer("cd:gradients:normal:batch");
+
     //Copy input/expected for computations
     auto iit  = input_batch.begin();
     auto iend = input_batch.end();
@@ -401,6 +410,8 @@ void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch
 
 template <bool Persistent, std::size_t K, typename T, typename RBM, typename Trainer>
 void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context, RBM& rbm, Trainer& t) {
+    dll::auto_timer timer("cd:train:normal");
+
     cpp_assert(input_batch.size() > 0, "Invalid batch size");
     cpp_assert(input_batch.size() <= get_batch_size(rbm), "Invalid batch size");
     cpp_assert(input_batch.begin()->size() == input_size(rbm), "The size of the training sample must match visible units");
@@ -436,6 +447,8 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
 
 template <bool Persistent, bool Denoising, std::size_t N, typename Trainer, typename T, typename RBM, cpp_enable_if(layer_traits<RBM>::is_parallel_mode())>
 void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
+    dll::auto_timer timer("cd:gradients:conv:par");
+
     using rbm_t = RBM;
 
     // clang-format off
@@ -500,6 +513,8 @@ void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T
 
 template <bool Persistent, bool Denoising, std::size_t N, typename Trainer, typename T, typename RBM, cpp_disable_if(layer_traits<RBM>::is_parallel_mode())>
 void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
+    dll::auto_timer timer("cd:gradients:conv:batch");
+
     using rbm_t = RBM;
 
     //Copy input/expected for computations
@@ -562,6 +577,8 @@ void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T
 
 template <bool Persistent, bool Denoising, std::size_t N, typename Trainer, typename T, typename RBM>
 void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context, RBM& rbm, Trainer& t) {
+    dll::auto_timer timer("cd:train:conv");
+
     cpp_assert(input_batch.size() > 0, "Invalid batch size");
     cpp_assert(input_batch.size() <= get_batch_size(rbm), "Invalid batch size");
     cpp_assert(input_batch.size() == expected_batch.size(), "Batches do not match");

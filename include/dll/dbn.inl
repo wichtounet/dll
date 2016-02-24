@@ -26,6 +26,7 @@
 #include "util/flatten.hpp"
 #include "util/compat.hpp"
 #include "util/export.hpp"
+#include "util/timers.hpp"
 #include "dbn_detail.hpp" //dbn_detail namespace
 
 namespace dll {
@@ -316,6 +317,8 @@ public:
      */
     template <typename Iterator>
     void pretrain(Iterator first, Iterator last, std::size_t max_epochs) {
+        dll::auto_timer timer("dbn:pretrain");
+
         watcher_t watcher;
 
         watcher.pretraining_begin(*this, max_epochs);
@@ -351,6 +354,8 @@ public:
      */
     template <typename NIterator, typename CIterator>
     void pretrain_denoising(NIterator nit, NIterator nend, CIterator cit, CIterator cend, std::size_t max_epochs) {
+        dll::auto_timer timer("dbn:pretrain:denoising");
+
         watcher_t watcher;
 
         watcher.pretraining_begin(*this, max_epochs);
@@ -374,6 +379,8 @@ public:
 
     template <typename Iterator, typename LabelIterator>
     void train_with_labels(Iterator&& first, Iterator&& last, LabelIterator&& lfirst, LabelIterator&& llast, std::size_t labels, std::size_t max_epochs) {
+        dll::auto_timer timer("dbn:train:labels");
+
         cpp_assert(std::distance(first, last) == std::distance(lfirst, llast), "There must be the same number of values than labels");
         cpp_assert(dll::input_size(layer_get<layers - 1>()) == dll::output_size(layer_get<layers - 2>()) + labels, "There is no room for the labels units");
 
@@ -572,6 +579,8 @@ public:
      */
     template <typename Iterator, typename LIterator>
     weight fine_tune(Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, size_t max_epochs) {
+        dll::auto_timer timer("dbn:train:ft");
+
         dll::dbn_trainer<this_type> trainer;
         return trainer.train(*this,
                              std::forward<Iterator>(first), std::forward<Iterator>(last),
@@ -601,6 +610,8 @@ public:
      */
     template <typename Iterator>
     weight fine_tune_ae(Iterator&& first, Iterator&& last, size_t max_epochs) {
+        dll::auto_timer timer("dbn:train:ft:ae");
+
         cpp_assert(dll::input_size(layer_get<0>()) == dll::output_size(layer_get<layers - 1>()), "The network is not build as an autoencoder");
 
         dll::dbn_trainer<this_type> trainer;

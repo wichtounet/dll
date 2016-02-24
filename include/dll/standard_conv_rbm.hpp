@@ -8,10 +8,11 @@
 #ifndef DLL_STANDARD_CONV_RBM_HPP
 #define DLL_STANDARD_CONV_RBM_HPP
 
-#include "base_conf.hpp" //The configuration helpers
-#include "rbm_base.hpp"  //The base class
-#include "layer_traits.hpp"
-#include "util/checks.hpp"
+#include "base_conf.hpp"    //The configuration helpers
+#include "rbm_base.hpp"     //The base class
+#include "layer_traits.hpp" //layer_traits
+#include "util/checks.hpp"  //nan_check
+#include "util/timers.hpp"  //auto_timer
 
 namespace dll {
 
@@ -97,6 +98,8 @@ protected:
 
     template <typename L, typename V1, typename VCV, typename W>
     static void compute_vcv(const V1& v_a, VCV&& v_cv, W&& w) {
+        dll::auto_timer timer("crbm:compute_vcv");
+
         static constexpr const auto NC = L::NC;
 
         auto w_f = etl::force_temporary(w);
@@ -116,6 +119,8 @@ protected:
 
     template <typename L, typename H2, typename HCV, typename W, typename Functor>
     static void compute_hcv(const H2& h_s, HCV&& h_cv, W&& w, Functor activate) {
+        dll::auto_timer timer("crbm:compute_hcv");
+
         static constexpr const auto K  = L::K;
         static constexpr const auto NC = L::NC;
 
@@ -157,6 +162,8 @@ protected:
 
     template <typename L, typename TP, typename H2, typename HCV, typename W, typename Functor>
     static void batch_compute_hcv(TP& pool, const H2& h_s, HCV&& h_cv, W&& w, Functor activate) {
+        dll::auto_timer timer("crbm:batch_compute_hcv:mkl");
+
         static constexpr const auto Batch = layer_traits<L>::batch_size();
 
         static constexpr const auto K   = L::K;
@@ -197,6 +204,8 @@ protected:
 
     template <typename L, typename TP, typename H2, typename HCV, typename W, typename Functor>
     static void batch_compute_hcv(TP& pool, const H2& h_s, HCV&& h_cv, W&& w, Functor activate) {
+        dll::auto_timer timer("crbm:batch_compute_hcv:std");
+
         static constexpr const auto Batch = layer_traits<L>::batch_size();
 
         static constexpr const auto K  = L::K;
@@ -220,6 +229,8 @@ protected:
 
     template <typename L, typename TP, typename V1, typename VCV, typename W, typename Functor>
     static void batch_compute_vcv(TP& pool, const V1& v_a, VCV&& v_cv, W&& w, Functor activate) {
+        dll::auto_timer timer("crbm:batch_compute_vcv");
+
         static constexpr const auto Batch = layer_traits<L>::batch_size();
 
         static constexpr const auto NC = L::NC;

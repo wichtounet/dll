@@ -15,6 +15,7 @@
 
 #include "dll/decay_type.hpp"
 #include "dll/util/batch.hpp"
+#include "dll/util/timers.hpp"
 #include "dll/layer_traits.hpp"
 
 namespace dll {
@@ -169,6 +170,8 @@ struct rbm_trainer {
 
     template <typename IIterator, typename EIterator>
     typename rbm_t::weight train(RBM& rbm, IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast, std::size_t max_epochs) {
+        dll::auto_timer timer("rbm_trainer:train");
+
         //In case of shuffle, we don't want to shuffle the input, therefore create a copy and shuffle it
 
         std::vector<typename std::iterator_traits<IIterator>::value_type> input_copy;
