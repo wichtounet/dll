@@ -7,23 +7,45 @@
 
 #pragma once
 
+#ifdef DLL_NO_TIMERS
+
+namespace dll {
+
+inline void dump_timers(){
+    //No timers
+}
+
+struct auto_timer {
+    auto_timer(const char* /*name*/) { }
+};
+
+} //end of namespace dll
+
+#else
+
 #include <chrono>
 
 namespace chrono = std::chrono;
 
 namespace dll {
 
-constexpr const std::size_t max_timers = 64;
+constexpr const std::size_t max_timers = 32;
 
 struct timer_t {
-    std::string name;
-    std::size_t count = 0;
-    std::size_t duration = 0;
+    const char* name;
+    std::atomic<std::size_t> count;
+    std::atomic<std::size_t> duration;
+
+    timer_t() : name(nullptr), count(0), duration(0) {}
+};
+
+struct timers_t {
+    std::array<timer_t, max_timers> timers;
     std::mutex lock;
 };
 
-inline std::array<timer_t, max_timers>& get_timers(){
-    static std::array<timer_t, max_timers> timers;
+inline timers_t& get_timers(){
+    static timers_t timers;
     return timers;
 }
 
@@ -48,20 +70,20 @@ inline std::string duration_str(double duration, int precision = 6){
 inline void dump_timers(){
     decltype(auto) timers = get_timers();
     for (std::size_t i = 0; i < max_timers; ++i) {
-        decltype(auto) timer = timers[i];
+        decltype(auto) timer = timers.timers[i];
 
-        if (!timer.name.empty()) {
+        if (timer.name) {
             std::cout << timer.name << "(" << timer.count << ") : " << duration_str(timer.duration) << std::endl;
         }
     }
 }
 
 struct auto_timer {
-    std::string name;
+    const char* name;
     chrono::time_point<chrono::steady_clock> start;
     chrono::time_point<chrono::steady_clock> end;
 
-    auto_timer(std::string name) : name(name) {
+    auto_timer(const char* name) : name(name) {
         start = chrono::steady_clock::now();
     }
 
@@ -71,29 +93,39 @@ struct auto_timer {
 
         decltype(auto) timers = get_timers();
 
-        for (std::size_t tries = 0; tries < 3; ++tries) {
-            for (std::size_t i = 0; i < max_timers; ++i) {
-                decltype(auto) timer = timers[i];
+        for (std::size_t i = 0; i < max_timers; ++i) {
+            decltype(auto) timer = timers.timers[i];
 
-                if (timer.name.empty()) {
-                    std::lock_guard<std::mutex> lock(timer.lock);
+            if (timer.name == name) {
+                timer.duration += duration;
+                ++timer.count;
 
-                    //Make sure another thread did not modifiy it in the mean time
-                    if (timer.name.empty()) {
-                        timer.name     = name;
-                        timer.duration = duration;
-                        timer.count    = 1;
+                return;
+            }
+        }
 
-                        return;
-                    }
-                } else if (timer.name == name) {
-                    std::lock_guard<std::mutex> lock(timer.lock);
+        std::lock_guard<std::mutex> lock(timers.lock);
 
-                    timer.duration += duration;
-                    ++timer.count;
+        for (std::size_t i = 0; i < max_timers; ++i) {
+            decltype(auto) timer = timers.timers[i];
 
-                    return;
-                }
+            if (timer.name == name) {
+                timer.duration += duration;
+                ++timer.count;
+
+                return;
+            }
+        }
+
+        for (std::size_t i = 0; i < max_timers; ++i) {
+            decltype(auto) timer = timers.timers[i];
+
+            if (!timer.name) {
+                timer.name = name;
+                timer.duration = duration;
+                timer.count = 1;
+
+                return;
             }
         }
 
@@ -102,3 +134,5 @@ struct auto_timer {
 };
 
 } //end of namespace dll
+
+#endif
