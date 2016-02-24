@@ -43,6 +43,8 @@ TEST_CASE("perf/kws_square", "[perf][crbm][mp][cdbn]") {
     mnist::binarize_dataset(dataset);
 
     cdbn->pretrain(dataset.training_images, 5);
+
+    dll::dump_timers();
 }
 
 TEST_CASE("perf/kws", "[perf][crbm][mp][cdbn]") {
@@ -81,6 +83,8 @@ TEST_CASE("perf/kws", "[perf][crbm][mp][cdbn]") {
     }
 
     cdbn->pretrain(augmented, 5);
+
+    dll::dump_timers();
 }
 
 TEST_CASE("perf/kws_sub", "[perf][crbm][mp][cdbn]") {
@@ -115,4 +119,6 @@ TEST_CASE("perf/kws_sub", "[perf][crbm][mp][cdbn]") {
     }
 
     cdbn->pretrain(augmented, 5);
+
+    dll::dump_timers();
 }
