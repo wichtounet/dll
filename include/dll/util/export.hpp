@@ -15,6 +15,8 @@
 
 #include <string>
 
+#include "format.hpp"
+
 namespace dll {
 
 template <typename Features>

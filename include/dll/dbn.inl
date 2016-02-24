@@ -25,8 +25,7 @@
 #include "svm_common.hpp"
 #include "util/flatten.hpp"
 #include "compat.hpp"
-#include "format.hpp"
-#include "export.hpp"
+#include "util/export.hpp"
 #include "dbn_detail.hpp" //dbn_detail namespace
 
 namespace dll {
