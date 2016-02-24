@@ -13,7 +13,7 @@
 #ifndef DLL_STOCHASTIC_GRADIENT_DESCENT_CONTEXT_HPP
 #define DLL_STOCHASTIC_GRADIENT_DESCENT_CONTEXT_HPP
 
-#include "layer_traits.hpp"
+#include "dll/layer_traits.hpp"
 
 namespace dll {
 

@@ -10,8 +10,8 @@
 
 #include <memory>
 
-#include "util/cg_context.hpp"  //Context for CG
-#include "util/sgd_context.hpp" //Context for SGD
+#include "trainer/cg_context.hpp"  //Context for CG
+#include "trainer/sgd_context.hpp" //Context for SGD
 
 namespace dll {
 
@@ -60,7 +60,7 @@ struct neural_base {
     const cg_context<parent_t>& get_cg_context() const {
         return *cg_context_ptr;
     }
-..
+
     //SGD context
 
     template <typename DBN>

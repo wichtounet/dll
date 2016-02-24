@@ -17,7 +17,8 @@
 #define DLL_STOCHASTIC_GRADIENT_DESCENT
 
 #include "cpp_utils/static_if.hpp"
-#include "util/blas.hpp"
+
+#include "dll/util/blas.hpp"
 
 namespace dll {
 
