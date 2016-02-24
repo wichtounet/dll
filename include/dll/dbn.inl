@@ -23,7 +23,7 @@
 #include "conjugate_gradient.hpp"
 #include "dbn_common.hpp"
 #include "svm_common.hpp"
-#include "flatten.hpp"
+#include "util/flatten.hpp"
 #include "compat.hpp"
 #include "format.hpp"
 #include "export.hpp"
