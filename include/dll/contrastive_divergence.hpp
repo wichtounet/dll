@@ -449,11 +449,39 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
     t.update(rbm);
 }
 
+template <bool Denoising, typename Trainer, typename RBM>
+void compute_gradients_conv(RBM& /*rbm*/, Trainer& t, std::size_t i) {
+    dll::auto_timer timer("cd:compute_gradients_conv");
+
+    using namespace etl;
+
+    using rbm_t = RBM;
+
+    constexpr const auto K = rbm_t::K;
+    constexpr const auto NC = rbm_t::NC;
+
+    auto w_f_1 = force_temporary(t.h1_a(i));
+    auto w_f_2 = force_temporary(t.h2_a(i));
+
+    for(std::size_t k = 0; k < K; ++k){
+        w_f_1(k).fflip_inplace();
+        w_f_2(k).fflip_inplace();
+    }
+
+    for(std::size_t channel = 0; channel < NC; ++channel){
+        if(Denoising){
+            conv_2d_valid_multi(t.vf(i)(channel), w_f_1, t.w_pos(i)(channel));
+            conv_2d_valid_multi(t.v2_a(i)(channel), w_f_2, t.w_neg(i)(channel));
+        } else {
+            conv_2d_valid_multi(t.v1(i)(channel), w_f_1, t.w_pos(i)(channel));
+            conv_2d_valid_multi(t.v2_a(i)(channel), w_f_2, t.w_neg(i)(channel));
+        }
+    }
+}
+
 template <bool Persistent, bool Denoising, std::size_t N, typename Trainer, typename T, typename RBM, cpp_enable_if(layer_traits<RBM>::is_parallel_mode())>
 void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:gradients:conv:par");
-
-    using rbm_t = RBM;
 
     // clang-format off
     maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(),
@@ -490,36 +518,38 @@ void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T
         }
 
         //Compute gradients
+        compute_gradients_conv<Denoising>(rbm, t, i);
+    });
+    // clang-format on
+}
 
-        constexpr const auto K = rbm_t::K;
-        constexpr const auto NC = rbm_t::NC;
+template <bool Denoising, typename Trainer, typename RBM>
+void batch_compute_gradients_conv(RBM& rbm, Trainer& t) {
+    dll::auto_timer timer("cd:batch_compute_gradients_conv");
 
-        auto w_f_1 = force_temporary(t.h1_a(i));
-        auto w_f_2 = force_temporary(t.h2_a(i));
+    using namespace etl;
 
-        for(std::size_t k = 0; k < K; ++k){
-            w_f_1(k).fflip_inplace();
-            w_f_2(k).fflip_inplace();
-        }
+    using rbm_t = RBM;
 
-        for(std::size_t channel = 0; channel < NC; ++channel){
-            if(Denoising){
-                conv_2d_valid_multi(t.vf(i)(channel), w_f_1, t.w_pos(i)(channel));
-                conv_2d_valid_multi(t.v2_a(i)(channel), w_f_2, t.w_neg(i)(channel));
+    const auto B            = get_batch_size(rbm);
+    constexpr const auto NC = rbm_t::NC;
+
+    maybe_parallel_foreach_n(t.pool, 0, B, [&](std::size_t batch) {
+        for (std::size_t channel = 0; channel < NC; ++channel) {
+            if (Denoising) {
+                etl::conv_2d_valid_multi_flipped(t.vf(batch)(channel), t.h1_a(batch), t.w_pos(batch)(channel));
+                etl::conv_2d_valid_multi_flipped(t.v2_a(batch)(channel), t.h2_a(batch), t.w_neg(batch)(channel));
             } else {
-                conv_2d_valid_multi(t.v1(i)(channel), w_f_1, t.w_pos(i)(channel));
-                conv_2d_valid_multi(t.v2_a(i)(channel), w_f_2, t.w_neg(i)(channel));
+                etl::conv_2d_valid_multi_flipped(t.v1(batch)(channel), t.h1_a(batch), t.w_pos(batch)(channel));
+                etl::conv_2d_valid_multi_flipped(t.v2_a(batch)(channel), t.h2_a(batch), t.w_neg(batch)(channel));
             }
         }
     });
-    // clang-format on
 }
 
 template <bool Persistent, bool Denoising, std::size_t N, typename Trainer, typename T, typename RBM, cpp_disable_if(layer_traits<RBM>::is_parallel_mode())>
 void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:gradients:conv:batch");
-
-    using rbm_t = RBM;
 
     //Copy input/expected for computations
     auto iit  = input_batch.begin();
@@ -562,21 +592,7 @@ void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T
     }
 
     //Compute gradients
-
-    const auto B            = get_batch_size(rbm);
-    constexpr const auto NC = rbm_t::NC;
-
-    maybe_parallel_foreach_n(t.pool, 0, B, [&](std::size_t batch) {
-        for (std::size_t channel = 0; channel < NC; ++channel) {
-            if (Denoising) {
-                etl::conv_2d_valid_multi_flipped(t.vf(batch)(channel), t.h1_a(batch), t.w_pos(batch)(channel));
-                etl::conv_2d_valid_multi_flipped(t.v2_a(batch)(channel), t.h2_a(batch), t.w_neg(batch)(channel));
-            } else {
-                etl::conv_2d_valid_multi_flipped(t.v1(batch)(channel), t.h1_a(batch), t.w_pos(batch)(channel));
-                etl::conv_2d_valid_multi_flipped(t.v2_a(batch)(channel), t.h2_a(batch), t.w_neg(batch)(channel));
-            }
-        }
-    });
+    batch_compute_gradients_conv<Denoising>(rbm, t);
 }
 
 template <bool Persistent, bool Denoising, std::size_t N, typename Trainer, typename T, typename RBM>
