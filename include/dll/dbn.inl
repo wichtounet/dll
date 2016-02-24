@@ -20,7 +20,7 @@
 
 #include "unit_type.hpp"
 #include "dbn_trainer.hpp"
-#include "conjugate_gradient.hpp"
+#include "trainer/conjugate_gradient.hpp"
 #include "dbn_common.hpp"
 #include "svm_common.hpp"
 #include "util/flatten.hpp"

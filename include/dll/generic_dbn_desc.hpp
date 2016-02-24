@@ -8,7 +8,7 @@
 #pragma once
 
 #include "base_conf.hpp"
-#include "conjugate_gradient.hpp"
+#include "trainer/conjugate_gradient.hpp"
 #include "watcher.hpp"
 #include "util/tmp.hpp"
 
