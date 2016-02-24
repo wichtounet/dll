@@ -13,7 +13,7 @@
 #include "etl/etl.hpp"
 
 #include "neural_base.hpp"
-#include "tmp.hpp"
+#include "util/tmp.hpp"
 #include "layer_traits.hpp"
 
 namespace dll {

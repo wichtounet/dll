@@ -21,7 +21,6 @@
 
 #include "standard_conv_rbm.hpp" //The base class
 #include "io.hpp"                //Binary load/store functions
-#include "tmp.hpp"
 #include "checks.hpp"
 #include "rbm_tmp.hpp" // static_if macros
 

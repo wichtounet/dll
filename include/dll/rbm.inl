@@ -14,7 +14,6 @@
 #include "etl/etl.hpp"
 
 #include "standard_rbm.hpp"
-#include "tmp.hpp"
 #include "layer_traits.hpp"
 
 namespace dll {

@@ -9,7 +9,7 @@
 #define DLL_DENSE_DESC_HPP
 
 #include "base_conf.hpp"
-#include "tmp.hpp"
+#include "util/tmp.hpp"
 
 namespace dll {
 

@@ -11,7 +11,7 @@
 #include "base_conf.hpp"
 #include "contrastive_divergence.hpp"
 #include "watcher.hpp"
-#include "tmp.hpp"
+#include "util/tmp.hpp"
 
 namespace dll {
 

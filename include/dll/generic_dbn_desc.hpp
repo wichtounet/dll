@@ -10,7 +10,7 @@
 #include "base_conf.hpp"
 #include "conjugate_gradient.hpp"
 #include "watcher.hpp"
-#include "tmp.hpp"
+#include "util/tmp.hpp"
 
 namespace dll {
 

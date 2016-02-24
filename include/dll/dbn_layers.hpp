@@ -8,7 +8,7 @@
 #ifndef DLL_DBN_LAYERS_HPP
 #define DLL_DBN_LAYERS_HPP
 
-#include "tmp.hpp"
+#include "util/tmp.hpp"
 
 namespace dll {
 

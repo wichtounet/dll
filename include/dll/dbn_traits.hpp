@@ -8,7 +8,7 @@
 #ifndef DLL_DBN_TRAITS_HPP
 #define DLL_DBN_TRAITS_HPP
 
-#include "tmp.hpp"
+#include "util/tmp.hpp"
 #include "decay_type.hpp"
 
 namespace dll {

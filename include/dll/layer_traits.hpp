@@ -8,7 +8,7 @@
 #ifndef DLL_LAYER_TRAITS_HPP
 #define DLL_LAYER_TRAITS_HPP
 
-#include "tmp.hpp"
+#include "util/tmp.hpp"
 #include "layer_fwd.hpp"
 #include "base_conf.hpp"
 
