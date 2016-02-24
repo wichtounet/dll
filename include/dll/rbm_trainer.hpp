@@ -14,7 +14,7 @@
 #include "cpp_utils/static_if.hpp"
 
 #include "decay_type.hpp"
-#include "batch.hpp"
+#include "util/batch.hpp"
 #include "layer_traits.hpp"
 
 namespace dll {

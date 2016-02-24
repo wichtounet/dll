@@ -23,7 +23,7 @@
 
 #include "etl/etl.hpp"
 
-#include "batch.hpp"
+#include "util/batch.hpp"
 #include "decay_type.hpp"
 #include "layer_traits.hpp"
 #include "util/blas.hpp"

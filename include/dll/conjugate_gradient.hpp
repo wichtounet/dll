@@ -17,7 +17,7 @@
 #ifndef DLL_CONJUGATE_GRADIENT_HPP
 #define DLL_CONJUGATE_GRADIENT_HPP
 
-#include "batch.hpp"
+#include "util/batch.hpp"
 #include <utility>
 
 namespace dll {
