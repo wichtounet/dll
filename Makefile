@@ -105,7 +105,7 @@ CLANG_MODERNIZE ?= clang-modernize-3.7
 CLANG_TIDY ?= clang-tidy-3.7
 
 format:
-	find include test processor view -name "*.hpp" -o -name "*.cpp" | xargs ${CLANG_FORMAT} -i -style=file
+	git ls-files "*.hpp" "*.cpp" "*.inl" | xargs ${CLANG_FORMAT} -i -style=file
 
 modernize:
 	find include test processor view -name "*.hpp" -o -name "*.cpp" > dll_file_list
