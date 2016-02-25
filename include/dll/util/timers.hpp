@@ -24,6 +24,9 @@ struct auto_timer {
 #else
 
 #include <chrono>
+#include <iosfwd>
+#include <iomanip>
+#include <sstream>
 
 namespace chrono = std::chrono;
 
