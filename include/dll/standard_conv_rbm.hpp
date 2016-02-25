@@ -152,14 +152,6 @@ protected:
         }
     }
 
-    static void inplace_ifft2(std::complex<double>* memory, std::size_t m1, std::size_t m2) {
-        etl::impl::blas::detail::inplace_zifft2_kernel(memory, m1, m2);
-    }
-
-    static void inplace_ifft2(std::complex<float>* memory, std::size_t m1, std::size_t m2) {
-        etl::impl::blas::detail::inplace_cifft2_kernel(memory, m1, m2);
-    }
-
     template <typename L, typename TP, typename H2, typename HCV, typename W, typename Functor>
     static void batch_compute_hcv(TP& pool, const H2& h_s, HCV&& h_cv, W&& w, Functor activate) {
         dll::auto_timer timer("crbm:batch_compute_hcv:mkl");
