@@ -167,7 +167,7 @@ protected:
 
         etl::fast_dyn_matrix<std::complex<weight>, Batch, K, NV1, NV2> h_s_padded;
         etl::fast_dyn_matrix<std::complex<weight>, NC, K, NV1, NV2> w_padded;
-        etl::fast_dyn_matrix<std::complex<weight>, Batch, NV1, NV2> tmp_result;
+        etl::fast_dyn_matrix<std::complex<weight>, Batch, K, NV1, NV2> tmp_result;
 
         deep_pad(h_s, h_s_padded);
         deep_pad(w, w_padded);
@@ -179,14 +179,12 @@ protected:
             for (std::size_t channel = 0; channel < NC; ++channel) {
                 h_cv(batch)(1) = 0.0;
 
+                tmp_result(batch) = h_s_padded(batch) >> w_padded(channel);
+
+                tmp_result(batch).ifft2_many_inplace();
+
                 for (std::size_t k = 0; k < K; ++k) {
-                    tmp_result(batch) = h_s_padded(batch)(k) >> w_padded(channel)(k);
-
-                    tmp_result(batch).ifft2_inplace();
-
-                    for (std::size_t i = 0; i < etl::size(tmp_result(batch)); ++i) {
-                        h_cv(batch)(1)[i] += tmp_result(batch)[i].real();
-                    }
+                    h_cv(batch)(1) += etl::real(tmp_result(batch)(k));
                 }
 
                 activate(batch, channel);
