@@ -172,8 +172,10 @@ protected:
         deep_pad(h_s, h_s_padded);
         deep_pad(w, w_padded);
 
-        h_s_padded.fft2_many_inplace();
-        w_padded.fft2_many_inplace();
+        PARALLEL_SECTION {
+            h_s_padded.fft2_many_inplace();
+            w_padded.fft2_many_inplace();
+        }
 
         maybe_parallel_foreach_n(pool, 0, Batch, [&](std::size_t batch) {
             for (std::size_t channel = 0; channel < NC; ++channel) {
