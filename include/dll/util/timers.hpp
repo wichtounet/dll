@@ -103,9 +103,7 @@ inline void dump_timers(){
     });
 
     // Print all the used timers
-    for (std::size_t i = 0; i < max_timers; ++i) {
-        decltype(auto) timer = timers[i];
-
+    for(decltype(auto) timer : timers){
         if (timer.name) {
             std::cout << timer.name << "(" << timer.count << ") : " << duration_str(timer.duration) << std::endl;
         }
@@ -127,9 +125,7 @@ struct auto_timer {
 
         decltype(auto) timers = get_timers();
 
-        for (std::size_t i = 0; i < max_timers; ++i) {
-            decltype(auto) timer = timers.timers[i];
-
+        for(decltype(auto) timer : timers.timers){
             if (timer.name == name) {
                 timer.duration += duration;
                 ++timer.count;
@@ -140,9 +136,7 @@ struct auto_timer {
 
         std::lock_guard<std::mutex> lock(timers.lock);
 
-        for (std::size_t i = 0; i < max_timers; ++i) {
-            decltype(auto) timer = timers.timers[i];
-
+        for(decltype(auto) timer : timers.timers){
             if (timer.name == name) {
                 timer.duration += duration;
                 ++timer.count;
@@ -151,9 +145,7 @@ struct auto_timer {
             }
         }
 
-        for (std::size_t i = 0; i < max_timers; ++i) {
-            decltype(auto) timer = timers.timers[i];
-
+        for(decltype(auto) timer : timers.timers){
             if (!timer.name) {
                 timer.name = name;
                 timer.duration = duration;
