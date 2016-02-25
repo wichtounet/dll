@@ -142,10 +142,12 @@ protected:
     static void deep_pad(const F1& in, F2& out) {
         for (std::size_t outer1 = 0; outer1 < in.template dim<0>(); ++outer1) {
             for (std::size_t outer2 = 0; outer2 < in.template dim<1>(); ++outer2) {
-                auto* direct = out(outer1)(outer2).memory_start();
+                auto* out_m = out(outer1)(outer2).memory_start();
+                auto* in_m = in(outer1)(outer2).memory_start();
+
                 for (std::size_t i = 0; i < in.template dim<2>(); ++i) {
                     for (std::size_t j = 0; j < in.template dim<3>(); ++j) {
-                        direct[i * out.template dim<3>() + j] = in(outer1, outer2, i, j);
+                        out_m[i * out.template dim<3>() + j] = in_m[i * in.template dim<3>() + j];
                     }
                 }
             }
