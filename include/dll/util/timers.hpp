@@ -36,7 +36,34 @@ struct timer_t {
     std::atomic<std::size_t> count;
     std::atomic<std::size_t> duration;
 
-    timer_t() : name(nullptr), count(0), duration(0) {}
+    timer_t()
+            : name(nullptr), count(0), duration(0) {}
+
+    timer_t(const timer_t& rhs)
+            : name(rhs.name), count(rhs.count.load()), duration(rhs.duration.load()) {}
+
+    timer_t& operator=(const timer_t& rhs){
+        if(&rhs != this){
+            name = rhs.name;
+            count = rhs.count.load();
+            duration = rhs.duration.load();
+        }
+
+        return *this;
+    }
+
+    timer_t(timer_t&& rhs)
+            : name(std::move(rhs.name)), count(rhs.count.load()), duration(rhs.duration.load()) {}
+
+    timer_t& operator=(timer_t&& rhs){
+        if(&rhs != this){
+            name = std::move(rhs.name);
+            count = rhs.count.load();
+            duration = rhs.duration.load();
+        }
+
+        return *this;
+    }
 };
 
 struct timers_t {
@@ -68,9 +95,16 @@ inline std::string duration_str(double duration, int precision = 6){
 }
 
 inline void dump_timers(){
-    decltype(auto) timers = get_timers();
+    decltype(auto) timers = get_timers().timers;
+
+    //Sort the timers by duration (DESC)
+    std::sort(timers.begin(), timers.end(), [](auto& left, auto& right){
+        return left.duration > right.duration;
+    });
+
+    // Print all the used timers
     for (std::size_t i = 0; i < max_timers; ++i) {
-        decltype(auto) timer = timers.timers[i];
+        decltype(auto) timer = timers[i];
 
         if (timer.name) {
             std::cout << timer.name << "(" << timer.count << ") : " << duration_str(timer.duration) << std::endl;
