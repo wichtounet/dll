@@ -238,7 +238,7 @@ void update_convolutional(RBM& rbm, Trainer& t) {
 
 template <typename Trainer>
 void batch_compute_gradients(Trainer& t) {
-    dll::auto_timer timer("cd:batch_computer_gradients:std");
+    dll::auto_timer timer("cd:batch_compute_gradients:std");
 
     const auto B = etl::dim<0>(t.w_grad_b);
 
@@ -267,7 +267,7 @@ void batch_compute_gradients(Trainer& t) {
 
 template <typename Trainer>
 void batch_compute_gradients(Trainer& t) {
-    dll::auto_timer timer("cd:batch_computer_gradients:blas");
+    dll::auto_timer timer("cd:batch_compute_gradients:blas");
 
     const auto B = etl::dim<0>(t.w_grad_b);
 
