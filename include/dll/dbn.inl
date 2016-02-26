@@ -824,6 +824,8 @@ private:
         decltype(auto) layer = layer_get<I>();
         decltype(auto) next_layer = layer_get<I + 1>();
 
+        watcher.template pretrain_layer<std::decay_t<decltype(next_layer)>>(*this, I+1, dbn_detail::fast_distance(first, last));
+
         auto next_a = next_layer.template prepare_output<layer_input_one_t<I>>(std::distance(first, last));
 
         maybe_parallel_foreach_i(pool, first, last, [&layer, &next_layer, &next_a](auto& v, std::size_t i) {
