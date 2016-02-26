@@ -174,7 +174,7 @@ TEST_CASE("unit/cdbn/lcn/mnist/6", "[cdbn][lcn][unit]") {
             , dll::lcn_layer_desc<7>::layer_t
             , dll::avgp_layer_3d_desc<20, 12, 12, 2, 2, 1>::layer_t
             , dll::conv_rbm_desc_square<20, 6, 20, 4, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
-            , dll::lcn_layer_desc<7>::layer_t
+            , dll::lcn_layer_desc<3>::layer_t
             , dll::avgp_layer_3d_desc<20, 4, 4, 2, 2, 1>::layer_t
         >>::dbn_t;
 
