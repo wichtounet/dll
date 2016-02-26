@@ -28,7 +28,9 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
     lcn_layer() = default;
 
     static std::string to_short_string() {
-        return "LCN";
+        std::string desc("LCN: ");
+        desc += std::to_string(K) + 'x' + std::to_string(K);
+        return desc;
     }
 
     static void display() {
