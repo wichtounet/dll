@@ -171,12 +171,17 @@ TEST_CASE("unit/cdbn/lcn/mnist/6", "[cdbn][lcn][unit]") {
     using dbn_t =
         dll::dbn_desc<dll::dbn_layers<
               dll::conv_rbm_desc_square<1, 28, 20, 12, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
-            , dll::lcn_layer_desc<7>::layer_t
+            , dll::lcn_layer_desc<5>::layer_t
             , dll::avgp_layer_3d_desc<20, 12, 12, 2, 2, 1>::layer_t
             , dll::conv_rbm_desc_square<20, 6, 20, 4, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
             , dll::lcn_layer_desc<3>::layer_t
             , dll::avgp_layer_3d_desc<20, 4, 4, 2, 2, 1>::layer_t
         >>::dbn_t;
+
+    REQUIRE(!dll::layer_traits<dbn_t::layer_type<1>>::is_pretrained());
+    REQUIRE(!dll::layer_traits<dbn_t::layer_type<1>>::is_trained());
+    REQUIRE(!dll::layer_traits<dbn_t::layer_type<2>>::is_pretrained());
+    REQUIRE(!dll::layer_traits<dbn_t::layer_type<2>>::is_trained());
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(150);
     REQUIRE(!dataset.training_images.empty());
@@ -184,6 +189,9 @@ TEST_CASE("unit/cdbn/lcn/mnist/6", "[cdbn][lcn][unit]") {
     mnist::binarize_dataset(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
+
+    dbn->template layer_get<1>().sigma = 1.0;
+    dbn->template layer_get<4>().sigma = 1.0;
 
     dbn->display();
 
