@@ -17,9 +17,6 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
 
     static constexpr const std::size_t K = desc::K;
 
-    //TODO We can probably remove this completely
-    static constexpr const std::size_t Mid = 0;
-
     double sigma = 2.0;
 
     static_assert(K > 1, "The kernel size must be greater than 1");
@@ -48,7 +45,7 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
 
         for (std::size_t i = 0; i < K; ++i) {
             for (std::size_t j = 0; j < K; ++j) {
-                w(i, j) = gaussian(static_cast<double>(i) - Mid, static_cast<double>(j) - Mid, sigma);
+                w(i, j) = gaussian(i, j, sigma);
             }
         }
 
@@ -73,10 +70,10 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
                     weight_t sum(0.0);
 
                     for (std::size_t p = 0; p < K; ++p) {
-                        if (j + p >= Mid && j + p - Mid < etl::dim<1>(x)) {
+                        if (j + p >= 0 && j + p < etl::dim<1>(x)) {
                             for (std::size_t q = 0; q < K; ++q) {
-                                if (k + q >= Mid && k + q - Mid < etl::dim<2>(x)) {
-                                    sum += w(p, q) * x(c, j + p - Mid, k + q - Mid);
+                                if (k + q >= 0 && k + q < etl::dim<2>(x)) {
+                                    sum += w(p, q) * x(c, j + p, k + q);
                                 }
                             }
                         }
@@ -93,10 +90,10 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
                     weight_t sum(0.0);
 
                     for (std::size_t p = 0; p < K; ++p) {
-                        if (j + p >= Mid && j + p - Mid < etl::dim<1>(x)) {
+                        if (j + p >= 0 && j + p < etl::dim<1>(x)) {
                             for (std::size_t q = 0; q < K; ++q) {
-                                if (k + q >= Mid && k + q - Mid < etl::dim<2>(x)) {
-                                    sum += w(p, q) * x(c, j + p - Mid, k + q - Mid) * x(c, j + p - Mid, k + q - Mid);
+                                if (k + q >= 0 && k + q < etl::dim<2>(x)) {
+                                    sum += w(p, q) * x(c, j + p, k + q) * x(c, j + p, k + q);
                                 }
                             }
                         }
