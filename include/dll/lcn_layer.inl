@@ -16,6 +16,7 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
     using desc = Desc;
 
     static constexpr const std::size_t K = desc::K;
+    static constexpr const std::size_t Mid = K / 2;
 
     double sigma = 2.0;
 
@@ -36,7 +37,7 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
 
     static cpp14_constexpr double gaussian(double x, double y, double sigma) {
         auto Z = 2.0 * M_PI * sigma * sigma;
-        return 1.0 / Z * std::exp(-(x * x + y * y) / (2.0 * sigma * sigma));
+        return (1.0 / Z) * std::exp(-((x * x + y * y) / (2.0 * sigma * sigma)));
     }
 
     template <typename W>
@@ -45,7 +46,7 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
 
         for (std::size_t i = 0; i < K; ++i) {
             for (std::size_t j = 0; j < K; ++j) {
-                w(i, j) = gaussian(i, j, sigma);
+                w(i, j) = gaussian(double(i) - Mid, double(j) - Mid, sigma);
             }
         }
 
@@ -70,10 +71,10 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
                     weight_t sum(0.0);
 
                     for (std::size_t p = 0; p < K; ++p) {
-                        if (j + p >= 0 && j + p < etl::dim<1>(x)) {
+                        if (long(j) + p - Mid >= 0 && long(j) + p - Mid < etl::dim<1>(x)) {
                             for (std::size_t q = 0; q < K; ++q) {
-                                if (k + q >= 0 && k + q < etl::dim<2>(x)) {
-                                    sum += w(p, q) * x(c, j + p, k + q);
+                                if (long(k) + q - Mid >= 0 && long(k) + q - Mid < etl::dim<2>(x)) {
+                                    sum += w(p, q) * x(c, j + p - Mid, k + q - Mid);
                                 }
                             }
                         }
@@ -90,10 +91,10 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
                     weight_t sum(0.0);
 
                     for (std::size_t p = 0; p < K; ++p) {
-                        if (j + p >= 0 && j + p < etl::dim<1>(x)) {
+                        if (long(j) + p - Mid >= 0 && long(j) + p - Mid < etl::dim<1>(x)) {
                             for (std::size_t q = 0; q < K; ++q) {
-                                if (k + q >= 0 && k + q < etl::dim<2>(x)) {
-                                    sum += w(p, q) * x(c, j + p, k + q) * x(c, j + p, k + q);
+                                if (long(k) + q - Mid >= 0 && long(k) + q - Mid < etl::dim<2>(x)) {
+                                    sum += w(p, q) * x(c, j + p - Mid, k + q - Mid) * x(c, j + p - Mid, k + q - Mid);
                                 }
                             }
                         }
