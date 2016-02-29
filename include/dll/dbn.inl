@@ -1238,6 +1238,9 @@ private:
 
     /* Predict with labels */
 
+    /*!
+     * \brief Predict the output labels (only when pretrain with labels)
+     */
     template <std::size_t I>
     std::enable_if_t<(I < layers)> predict_labels(const input_t& input, label_output_t& output, std::size_t labels) const {
         decltype(auto) layer = layer_get<I>();
@@ -1369,6 +1372,9 @@ private:
         problem = svm::make_problem(labels, static_cast<const svm_samples_t&>(svm_samples), scale);
     }
 
+    /*!
+     * \brief Create the svm problem for this dbn
+     */
     template <typename Iterator, typename LIterator>
     void make_problem(Iterator first, Iterator last, LIterator&& lfirst, LIterator&& llast, bool scale = false) {
         svm_samples_t svm_samples;
