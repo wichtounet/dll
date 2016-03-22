@@ -24,7 +24,6 @@
 #include "dbn_common.hpp"
 #include "svm_common.hpp"
 #include "util/flatten.hpp"
-#include "util/compat.hpp"
 #include "util/export.hpp"
 #include "util/timers.hpp"
 #include "dbn_detail.hpp" //dbn_detail namespace
@@ -474,7 +473,7 @@ public:
      * \param result The container where to save the features
      * \return result
      */
-    CLANG_AUTO_TRICK auto activation_probabilities(const input_t& sample, output_t& result) const {
+    auto activation_probabilities(const input_t& sample, output_t& result) const {
         return activation_probabilities_sub<layers - 1>(sample, result);
     }
 
@@ -483,7 +482,7 @@ public:
      * \param sample The sample to get features from
      * \return the output features of the last layer of the network
      */
-    CLANG_AUTO_TRICK auto activation_probabilities(const input_t& sample) const {
+    auto activation_probabilities(const input_t& sample) const {
         return activation_probabilities_sub<layers - 1>(sample);
     }
 
@@ -495,7 +494,7 @@ public:
      * \param result The container where to save the features
      * \return result
      */
-    CLANG_AUTO_TRICK auto features(const input_t& sample, output_t& result) const {
+    auto features(const input_t& sample, output_t& result) const {
         return activation_probabilities(sample, result);
     }
 
@@ -504,7 +503,7 @@ public:
      * \param sample The sample to get features from
      * \return the output features of the last layer of the network
      */
-    CLANG_AUTO_TRICK auto features(const input_t& sample) const {
+    auto features(const input_t& sample) const {
         return activation_probabilities(sample);
     }
 
@@ -630,7 +629,7 @@ public:
         return std::vector<layer_output_one_t<layers - 1>>();
     }
 
-    CLANG_AUTO_TRICK auto prepare_one_output() const {
+    auto prepare_one_output() const {
         return prepare_output<layers - 1>();
     }
 
