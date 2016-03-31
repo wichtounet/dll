@@ -52,6 +52,7 @@ struct value_conf_elt : std::integral_constant<T, value> {
     using type_id = ID;
 };
 
+struct copy_id;
 struct batch_size_id;
 struct big_batch_size_id;
 struct visible_id;
@@ -103,6 +104,9 @@ struct weight_decay : value_conf_elt<weight_decay_id, decay_type, T> {};
 
 template <lr_driver_type T = lr_driver_type::FIXED>
 struct lr_driver : value_conf_elt<lr_driver_id, lr_driver_type, T> {};
+
+template <std::size_t C>
+struct copy : value_conf_elt<copy_id, std::size_t, C> {};
 
 /*!
  * \brief Activate sparsity and select the method to use
