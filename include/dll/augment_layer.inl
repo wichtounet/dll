@@ -7,25 +7,9 @@
 
 #pragma once
 
+#include "augmenters.hpp"
+
 namespace dll {
-
-template <typename Augment>
-struct augmenter;
-
-template <std::size_t C>
-struct augmenter <copy<C>> {
-    template <typename Input, typename Output>
-    static void apply(Output& result, const Input& input) {
-        for(std::size_t c = 0; c < C; ++c){
-            // Simply create a copy
-            result.push_back(input);
-        }
-    }
-
-    static void concat_name(std::string& name) {
-        name += " copy<" + std::to_string(C) + ">";
-    }
-};
 
 /*!
  * \brief Layer to perform data augmentation
