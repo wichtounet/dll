@@ -125,8 +125,8 @@ struct augmenter <elastic<C, K>> {
             for (std::size_t channel = 0; channel < etl::dim<0>(input); ++channel) {
                 for (int x = 0; x < int(width); ++x) {
                     for (int y = 0; y < int(height); ++y) {
-                        auto dx = d_x_blur(y, x);
-                        auto dy = d_y_blur(y, x);
+                        auto dx = d_x_blur(x, y);
+                        auto dy = d_y_blur(x, y);
 
                         weight px = x + dx;
                         weight py = y + dy;
