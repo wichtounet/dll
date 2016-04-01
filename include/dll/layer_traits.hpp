@@ -14,6 +14,9 @@
 
 namespace dll {
 
+//TODO Maybe the traits should be reworked using the same model as
+//etl
+
 /*!
  * \brief Type Traits to get information on layer type
  */
@@ -92,17 +95,38 @@ struct layer_traits {
     }
 
     /*!
-     * \brief Indicates if this layer is a transformation layer.
+     * \brief Indicates if this layer is a patches layer.
+     */
+    static constexpr bool is_patches_layer() {
+        return cpp::is_specialization_of<patches_layer, layer_t>::value || cpp::is_specialization_of<patches_layer_padh, layer_t>::value;
+    }
+
+    /*!
+     * \brief Indicates if this layer is an augmentation layer.
+     */
+    static constexpr bool is_augment_layer() {
+        return cpp::is_specialization_of<augment_layer, layer_t>::value;
+    }
+
+    /*!
+     * \brief Indicates if this layer is a multipley layer.
      */
     static constexpr bool is_multiplex_layer() {
-        return cpp::is_specialization_of<patches_layer, layer_t>::value || cpp::is_specialization_of<patches_layer_padh, layer_t>::value;
+        return is_augment_layer() || is_patches_layer();
+    }
+
+    /*!
+     * \brief Indicates if this layer keeps the same type
+     */
+    static constexpr bool has_same_type() {
+        return is_transform_layer() || is_augment_layer();
     }
 
     /*!
      * \brief Indicates if this layer is trained or not.
      */
     static constexpr bool is_trained() {
-        return !is_transform_layer() && !is_multiplex_layer() && !is_pooling_layer();
+        return !is_transform_layer() && !is_multiplex_layer() && !is_augment_layer() && !is_pooling_layer();
     }
 
     /*!

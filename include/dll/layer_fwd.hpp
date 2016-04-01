@@ -5,10 +5,9 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-//Forward declaration of the layers
+#pragma once
 
-#ifndef DLL_LAYER_FWD_HPP
-#define DLL_LAYER_FWD_HPP
+//Forward declaration of the layers
 
 namespace dll {
 
@@ -60,6 +59,7 @@ struct dense_layer;
 template <typename Desc>
 struct conv_layer;
 
-} //end of dll namespace
+template <typename Desc>
+struct augment_layer;
 
-#endif
+} //end of dll namespace

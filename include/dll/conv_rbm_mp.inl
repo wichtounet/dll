@@ -361,8 +361,6 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
     //Utilities for DBNs
 
-    using input_deep_t  = etl::fast_dyn_matrix<weight, NC, NV1, NV2>;
-    using output_deep_t = etl::fast_dyn_matrix<weight, K, NP1, NP2>;
     using input_one_t   = etl::fast_dyn_matrix<weight, NC, NV1, NV2>;
     using output_one_t  = etl::fast_dyn_matrix<weight, K, NP1, NP2>;
     using input_t       = std::vector<input_one_t>;

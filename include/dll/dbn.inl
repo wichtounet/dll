@@ -1088,6 +1088,22 @@ private:
         pretrain_layer_batch<I + 1>(first, last, watcher, max_epochs);
     }
 
+    // TODO THis should not be necessary at all
+    // (i'm crazy and starting to pay the price for it...)
+
+    template <std::size_t I, typename Enable = void>
+    struct output_deep_t;
+
+    template <std::size_t I>
+    struct output_deep_t<I, std::enable_if_t<layer_traits<layer_type<I>>::is_patches_layer()>> {
+        using type = typename layer_output_one_t<I>::value_type;
+    };
+
+    template <std::size_t I>
+    struct output_deep_t<I, std::enable_if_t<!layer_traits<layer_type<I>>::is_patches_layer()>> {
+        using type = layer_output_one_t<I>;
+    };
+
     //Multiplex version
     template <std::size_t I, typename Iterator, cpp_enable_if((I > 0 && I < layers && dbn_traits<this_type>::is_multiplex() && !batch_layer_ignore<I>::value))>
     void pretrain_layer_batch(Iterator first, Iterator last, watcher_t& watcher, std::size_t max_epochs) {
@@ -1111,7 +1127,7 @@ private:
         auto rbm_batch_size   = get_batch_size(rbm);
         auto total_batch_size = big_batch_size * rbm_batch_size;
 
-        std::vector<std::vector<typename layer_type<I - 1>::output_deep_t>> input(total_batch_size);
+        std::vector<std::vector<typename output_deep_t<I - 1>::type>> input(total_batch_size);
 
         std::vector<typename layer_t::input_one_t> input_flat;
 
@@ -1292,6 +1308,9 @@ private:
 
     template <std::size_t I, std::size_t S = layers, typename Input, typename Result>
     std::enable_if_t<(I < S)> activation_probabilities(const Input& input, Result& result) const {
+        //TODO This function is way too complicated :(
+
+        //static constexpr const bool multi_input = etl::matrix_detail::is_vector<std::decay_t<Input>>::value;
         static constexpr const bool multi_layer = layer_traits<layer_type<I>>::is_multiplex_layer();
 
         auto& layer = layer_get<I>();
@@ -1302,17 +1321,33 @@ private:
             this->template activation_probabilities<I + 1, S>(next_a, result);
         });
 
-        cpp::static_if<(I < S - 1 && multi_layer)>([&](auto f) {
+        // Handle the first multiplex layer
+        cpp::static_if<(I < S - 1 && multi_layer /*&& !multi_input*/)>([&](auto f) {
             auto next_a = layer.template prepare_one_output<Input>();
             layer.activate_hidden(next_a, input);
 
-            cpp_assert(f(result).empty(), "result must be empty on entry of activation_probabilities");
+            //cpp_assert(f(result).empty(), "result must be empty on entry of activation_probabilities");
 
+            f(result).clear();
             f(result).reserve(next_a.size());
 
             for (std::size_t i = 0; i < next_a.size(); ++i) {
-                f(result).push_back(this->template layer_get<S - 1>().template prepare_one_output<layer_input_one_t<I>>());
-                this->template activation_probabilities<I + 1, S>(next_a[i], f(result)[i]);
+                auto final_output = this->template layer_get<S - 1>().template prepare_one_output<layer_input_one_t<S - 1>>();
+
+                static constexpr const bool multi = etl::matrix_detail::is_vector<std::decay_t<decltype(final_output)>>::value;
+
+                cpp::static_if<multi>([&](auto f){
+                    this->template activation_probabilities<I + 1, S>(next_a[i], final_output);
+
+                    for(decltype(auto) r : final_output){
+                        f(result).push_back(r);
+                    }
+                });
+
+                cpp::static_if<!multi>([&](auto f){
+                    f(result).push_back(final_output);
+                    this->template activation_probabilities<I + 1, S>(next_a[i], f(result)[i]);
+                });
             }
         });
 

@@ -24,9 +24,6 @@ struct patches_layer {
 
     using weight = typename desc::weight;
 
-    using input_deep_t  = etl::dyn_matrix<weight, 3>;
-    using output_deep_t = etl::fast_dyn_matrix<weight, 1UL, height, width>;
-
     using input_one_t = etl::dyn_matrix<weight, 3>;
     using input_t     = std::vector<input_one_t>;
 
