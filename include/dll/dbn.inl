@@ -1328,7 +1328,9 @@ private:
 
             //cpp_assert(f(result).empty(), "result must be empty on entry of activation_probabilities");
 
-            f(result).clear();
+            static constexpr const bool next_multi_layer = layer_traits<layer_type<I+1>>::is_multiplex_layer();
+
+            //f(result).clear();
             f(result).reserve(next_a.size());
 
             for (std::size_t i = 0; i < next_a.size(); ++i) {
@@ -1336,7 +1338,11 @@ private:
 
                 static constexpr const bool multi = etl::matrix_detail::is_vector<std::decay_t<decltype(final_output)>>::value;
 
-                cpp::static_if<multi>([&](auto f){
+                cpp::static_if<next_multi_layer>([&](auto f){
+                    this->template activation_probabilities<I + 1, S>(next_a[i], f(result));
+                });
+
+                cpp::static_if<!next_multi_layer && multi>([&](auto f){
                     this->template activation_probabilities<I + 1, S>(next_a[i], final_output);
 
                     for(decltype(auto) r : final_output){
@@ -1344,7 +1350,7 @@ private:
                     }
                 });
 
-                cpp::static_if<!multi>([&](auto f){
+                cpp::static_if<!next_multi_layer && !multi>([&](auto f){
                     f(result).push_back(final_output);
                     this->template activation_probabilities<I + 1, S>(next_a[i], f(result)[i]);
                 });
