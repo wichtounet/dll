@@ -17,7 +17,7 @@ struct augment_layer_desc {
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid<cpp::type_list<copy_id>, Parameters...>::value,
+        detail::is_valid<cpp::type_list<copy_id, elastic_id>, Parameters...>::value,
         "Invalid parameters type for augment_layer_desc");
 };
 

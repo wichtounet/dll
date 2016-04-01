@@ -53,6 +53,7 @@ struct value_conf_elt : std::integral_constant<T, value> {
 };
 
 struct copy_id;
+struct elastic_id;
 struct batch_size_id;
 struct big_batch_size_id;
 struct visible_id;
@@ -107,6 +108,9 @@ struct lr_driver : value_conf_elt<lr_driver_id, lr_driver_type, T> {};
 
 template <std::size_t C>
 struct copy : value_conf_elt<copy_id, std::size_t, C> {};
+
+template <std::size_t C, std::size_t K = 9>
+struct elastic : basic_conf_elt<elastic_id> {};
 
 /*!
  * \brief Activate sparsity and select the method to use
