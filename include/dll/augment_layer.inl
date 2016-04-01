@@ -21,6 +21,10 @@ struct augmenter <copy<C>> {
             result.push_back(input);
         }
     }
+
+    static void concat_name(std::string& name) {
+        name += " copy<" + std::to_string(C) + ">";
+    }
 };
 
 /*!
@@ -32,9 +36,20 @@ struct augment_layer {
 
     augment_layer() = default;
 
+    template <typename... Augmenter>
+    static void concat_all_names(const cpp::type_list<Augmenter...>&, std::string& name) {
+        int wormhole[] = {(augmenter<Augmenter>::concat_name(name), 0)...};
+        cpp_unused(wormhole);
+    }
+
     static std::string to_short_string() {
-        //TODO Ideally, infer name from the template parameters
-        return "Augment";
+        std::string name = "Augment<";
+
+        concat_all_names(typename desc::parameters(), name);
+
+        name += " >";
+
+        return name;
     }
 
     static void display() {
