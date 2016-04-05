@@ -633,6 +633,59 @@ public:
         return prepare_output<layers - 1>();
     }
 
+    template<typename T>
+    using is_multi_t = etl::matrix_detail::is_vector<std::decay_t<T>>;
+
+    template <typename Output, cpp_enable_if(is_multi_t<Output>::value && is_multi_t<etl::value_t<Output>>::value)>
+    etl::value_t<Output> smart_flatten(const Output& output){
+        etl::value_t<Output> flat;
+        flat.reserve(output.size() * output[0].size());
+        for(auto& sub : output){
+            std::move(sub.begin(), sub.end(), std::back_inserter(flat));
+        }
+        return flat;
+    }
+
+    template <typename Output, cpp_enable_if(!(is_multi_t<Output>::value && is_multi_t<etl::value_t<Output>>::value))>
+    Output&& smart_flatten(Output&& output){
+        return std::forward<Output>(output);
+    }
+
+    template <std::size_t I, std::size_t S, typename Input, cpp_enable_if(!is_multi_t<Input>::value && I == S)>
+    auto smart_activation_probabilities_sub(const Input& input){
+        decltype(auto) layer = layer_get<I>();
+        auto output = layer.template prepare_one_output<Input>();
+        layer.activate_hidden(output, input);
+        return smart_flatten(output);
+    }
+
+    template <std::size_t I, std::size_t S, typename Input, cpp_enable_if(is_multi_t<Input>::value && I == S)>
+    auto smart_activation_probabilities_sub(const Input& input){
+        auto n_inputs = input.size();
+        decltype(auto) layer = layer_get<I>();
+        auto output = layer.template prepare_output<etl::value_t<Input>>(n_inputs);
+        for(std::size_t i = 0; i < n_inputs; ++i){
+            layer.activate_hidden(output[i], input[i]);
+        }
+        return smart_flatten(output);
+    }
+
+    template <std::size_t I, std::size_t S, typename Input, cpp_enable_if(I != S)>
+    auto smart_activation_probabilities_sub(const Input& input){
+        decltype(auto) previous_output = smart_activation_probabilities_sub<I, I>(input);
+        return smart_activation_probabilities_sub<I+1, S>(previous_output);
+    }
+
+    template <typename Input>
+    auto smart_train_activation_probabilities(const Input& input){
+        return smart_activation_probabilities_sub<0, layers - 1>(input);
+    }
+
+    template <typename Input>
+    auto smart_activation_probabilities(const Input& input){
+        return smart_train_activation_probabilities(input);
+    }
+
     template <typename Functor>
     void for_each_layer(Functor&& functor) {
         for_each_impl_t(*this).for_each_layer(std::forward<Functor>(functor));
