@@ -45,6 +45,78 @@ struct neural_base {
         //Nothing to do
     }
 
+    //CRTP Deduction
+
+    Parent& as_derived(){
+        return *static_cast<Parent*>(this);
+    }
+
+    const Parent& as_derived() const {
+        return *static_cast<const Parent*>(this);
+    }
+
+    // Default function
+
+    template <typename Input, typename Output>
+    void test_activate_hidden(Output& output, const Input& input) const {
+        return as_derived().activate_hidden(output, input);
+    }
+
+    template <typename Input, typename Output>
+    void train_activate_hidden(Output& output, const Input& input) const {
+        return as_derived().activate_hidden(output, input);
+    }
+
+    template <bool Train, typename Input, typename Output, cpp_enable_if(Train)>
+    void select_activate_hidden(Output& output, const Input& input) const {
+        as_derived().train_activate_hidden(output, input);
+    }
+
+    template <bool Train, typename Input, typename Output, cpp_enable_if(!Train)>
+    void select_activate_hidden(Output& output, const Input& input) const {
+        as_derived().test_activate_hidden(output, input);
+    }
+
+    template <typename Input>
+    auto prepare_test_output(std::size_t samples) {
+        return as_derived().template prepare_output<Input>(samples);
+    }
+
+    template <typename Input>
+    auto prepare_one_test_output() {
+        return as_derived().template prepare_one_output<Input>();
+    }
+
+    template <typename Input>
+    auto prepare_train_output(std::size_t samples) {
+        return as_derived().template prepare_output<Input>(samples);
+    }
+
+    template <typename Input>
+    auto prepare_one_train_output() {
+        return as_derived().template prepare_one_output<Input>();
+    }
+
+    template <bool Train, typename Input, cpp_enable_if(Train)>
+    auto select_prepare_output(std::size_t samples) {
+        return as_derived().template prepare_train_output<Input>(samples);
+    }
+
+    template <bool Train, typename Input, cpp_enable_if(!Train)>
+    auto select_prepare_output(std::size_t samples) {
+        return as_derived().template prepare_test_output<Input>(samples);
+    }
+
+    template <bool Train, typename Input, cpp_enable_if(Train)>
+    auto select_prepare_one_output() {
+        return as_derived().template prepare_one_train_output<Input>();
+    }
+
+    template <bool Train, typename Input, cpp_enable_if(!Train)>
+    auto select_prepare_one_output() {
+        return as_derived().template prepare_one_test_output<Input>();
+    }
+
     //CG context
 
     void init_cg_context() {
