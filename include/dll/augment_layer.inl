@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "neural_base.hpp"
 #include "augmenters.hpp"
 
 namespace dll {
@@ -15,7 +16,7 @@ namespace dll {
  * \brief Layer to perform data augmentation
  */
 template <typename Desc>
-struct augment_layer {
+struct augment_layer : neural_base<augment_layer<Desc>> {
     using desc = Desc;
 
     augment_layer() = default;
@@ -57,6 +58,11 @@ struct augment_layer {
     }
 
     template <typename Input, typename Output>
+    static void test_activate_hidden(Output& h_a, const Input& input) {
+        h_a = input;
+    }
+
+    template <typename Input, typename Output>
     static void activate_many(Output& h_a, const Input& input) {
         for (std::size_t i = 0; i < input.size(); ++i) {
             activate_one(input[i], h_a[i]);
@@ -71,6 +77,16 @@ struct augment_layer {
     template <typename Input>
     static std::vector<Input> prepare_one_output() {
         return std::vector<Input>();
+    }
+
+    template <typename Input>
+    static std::vector<Input> prepare_test_output(std::size_t samples) {
+        return std::vector<Input>(samples);
+    }
+
+    template <typename Input>
+    static Input prepare_one_test_output() {
+        return {};
     }
 };
 
