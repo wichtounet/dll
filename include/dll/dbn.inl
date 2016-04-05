@@ -881,12 +881,15 @@ private:
         decltype(auto) layer = layer_get<I>();
         decltype(auto) next_layer = layer_get<I + 1>();
 
+        using input_t = etl::value_t<Iterator>;
+        using next_input_t = std::decay_t<decltype(layer.template prepare_one_output<input_t>())>;
+
         watcher.template pretrain_layer<std::decay_t<decltype(next_layer)>>(*this, I+1, dbn_detail::fast_distance(first, last));
 
-        auto next_a = next_layer.template prepare_output<layer_input_one_t<I>>(std::distance(first, last));
+        auto next_a = next_layer.template prepare_output<next_input_t>(std::distance(first, last));
 
         maybe_parallel_foreach_i(pool, first, last, [&layer, &next_layer, &next_a](auto& v, std::size_t i) {
-            auto tmp = layer.template prepare_one_output<layer_input_one_t<I + 1>>();
+            auto tmp = layer.template prepare_one_output<input_t>();
 
             layer.activate_hidden(tmp, v);
             next_layer.activate_hidden(next_a[i], tmp);
@@ -918,7 +921,7 @@ private:
         });
 
         if (train_next<I + 1>::value && !inline_next<I + 1>::value) {
-            auto next_a = layer.template prepare_output<layer_input_one_t<I>>(std::distance(first, last));
+            auto next_a = layer.template prepare_output<etl::value_t<Iterator>>(std::distance(first, last));
 
             maybe_parallel_foreach_i(pool, first, last, [&layer, &next_a](auto& v, std::size_t i) {
                 layer.activate_hidden(next_a[i], v);
@@ -963,8 +966,8 @@ private:
         });
 
         if (train_next<I + 1>::value) {
-            auto next_n = layer.template prepare_output<layer_input_one_t<I>>(std::distance(nit, nend));
-            auto next_c = layer.template prepare_output<layer_input_one_t<I>>(std::distance(nit, nend));
+            auto next_n = layer.template prepare_output<etl::value_t<NIterator>>(std::distance(nit, nend));
+            auto next_c = layer.template prepare_output<etl::value_t<CIterator>>(std::distance(nit, nend));
 
             maybe_parallel_foreach_i(pool, nit, nend, [&layer, &next_n](auto& v, std::size_t i) {
                 layer.activate_hidden(next_n[i], v);
@@ -1453,8 +1456,7 @@ private:
 
     template <typename DBN = this_type, cpp_disable_if(dbn_traits<DBN>::concatenate())>
     void add_activation_probabilities(svm_samples_t& result, const input_t& sample) {
-        result.push_back(layer_get<layers - 1>().template prepare_one_output<layer_input_one_t<layers - 1>>());
-        activation_probabilities(sample, result.back());
+        result.push_back(smart_activation_probabilities(sample));
     }
 
     template <typename Samples, typename Labels>
