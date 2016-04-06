@@ -49,6 +49,21 @@ struct dbn final {
 
     using watcher_t = typename desc::template watcher_t<this_type>; ///< The watcher type
 
+private:
+    template <std::size_t I, typename Input>
+    struct types_helper {
+        using input_t = typename types_helper<I - 1, Input>::output_t;
+        using output_t = std::decay_t<decltype(std::declval<layer_type<0>>().template prepare_one_output<input_t>())>;
+    };
+
+    template <typename Input>
+    struct types_helper<0, Input> {
+        using input_t = std::decay_t<Input>;
+        using output_t = std::decay_t<decltype(std::declval<layer_type<0>>().template prepare_one_output<input_t>())>;
+    };
+
+public:
+    //Note used in dbn_detail
     using input_t = typename dbn_detail::layer_input_simple<this_type, 0>::type; ///< The input type of the network
 
     template <std::size_t B>
@@ -61,12 +76,8 @@ struct dbn final {
     using layer_output_one_t = dbn_detail::layer_output_one_t<this_type, N>;
 
     template <std::size_t N>
-    using layer_input_t = dbn_detail::layer_input_t<this_type, N>;
-
-    template <std::size_t N>
     using layer_output_t = dbn_detail::layer_output_t<this_type, N>;
 
-    using label_output_t = layer_input_one_t<layers_t::size - 1>;
     using output_one_t   = layer_output_one_t<layers_t::size - 1>; ///< The type of a single output of the network
 
     using output_t = std::conditional_t<
@@ -400,10 +411,11 @@ public:
         train_with_labels(training_data.begin(), training_data.end(), training_labels.begin(), training_labels.end(), labels, max_epochs);
     }
 
-    size_t predict_labels(const input_t& item, std::size_t labels) const {
+    template<typename Input>
+    size_t predict_labels(const Input& item, std::size_t labels) const {
         cpp_assert(dll::input_size(layer_get<layers - 1>()) == dll::output_size(layer_get<layers - 2>()) + labels, "There is no room for the labels units");
 
-        label_output_t output_a = layer_get<layers - 1>().prepare_one_input();
+        auto output_a = layer_get<layers - 1>().prepare_one_input();
 
         predict_labels<0>(item, output_a, labels);
 
@@ -421,8 +433,8 @@ public:
      * \tparam I The index of the layer for features (starts at 0)
      * \return the output features of the Ith layer of the network
      */
-    template <std::size_t I, typename Output, typename T = this_type>
-    auto activation_probabilities_sub(const input_t& sample, Output& result) const {
+    template <std::size_t I, typename Input, typename Output, typename T = this_type>
+    auto activation_probabilities_sub(const Input& sample, Output& result) const {
         activation_probabilities<0, I + 1>(sample, result);
 
         return result;
@@ -434,8 +446,8 @@ public:
      * \tparam I The index of the layer for features (starts at 0)
      * \return the output features of the Ith layer of the network
      */
-    template <std::size_t I>
-    auto activation_probabilities_sub(const input_t& sample) const {
+    template <std::size_t I, typename Input>
+    auto activation_probabilities_sub(const Input& sample) const {
         auto result = prepare_output<I>();
         return activation_probabilities_sub<I>(sample, result);
     }
@@ -449,8 +461,8 @@ public:
      * \tparam I The index of the layer for features (starts at 0)
      * \return the output features of the Ith layer of the network
      */
-    template <std::size_t I, typename Output, typename T = this_type>
-    auto features_sub(const input_t& sample, Output& result) const {
+    template <std::size_t I, typename Input, typename Output, typename T = this_type>
+    auto features_sub(const Input& sample, Output& result) const {
         return activation_probabilities_sub<I>(sample, result);
     }
 
@@ -460,8 +472,8 @@ public:
      * \tparam I The index of the layer for features (starts at 0)
      * \return the output features of the Ith layer of the network
      */
-    template <std::size_t I>
-    auto features_sub(const input_t& sample) const {
+    template <std::size_t I, typename Input>
+    auto features_sub(const Input& sample) const {
         return activation_probabilities_sub<I>(sample);
     }
 
@@ -473,7 +485,8 @@ public:
      * \param result The container where to save the features
      * \return result
      */
-    auto activation_probabilities(const input_t& sample, output_t& result) const {
+    template <typename Input>
+    auto activation_probabilities(const Input& sample, output_t& result) const {
         return activation_probabilities_sub<layers - 1>(sample, result);
     }
 
@@ -482,7 +495,8 @@ public:
      * \param sample The sample to get features from
      * \return the output features of the last layer of the network
      */
-    auto activation_probabilities(const input_t& sample) const {
+    template <typename Input>
+    auto activation_probabilities(const Input& sample) const {
         return activation_probabilities_sub<layers - 1>(sample);
     }
 
@@ -494,7 +508,8 @@ public:
      * \param result The container where to save the features
      * \return result
      */
-    auto features(const input_t& sample, output_t& result) const {
+    template <typename Input>
+    auto features(const Input& sample, output_t& result) const {
         return activation_probabilities(sample, result);
     }
 
@@ -503,7 +518,8 @@ public:
      * \param sample The sample to get features from
      * \return the output features of the last layer of the network
      */
-    auto features(const input_t& sample) const {
+    template <typename Input>
+    auto features(const Input& sample) const {
         return activation_probabilities(sample);
     }
 
@@ -513,7 +529,8 @@ public:
      * \param file The output file
      * \param f The format of the exported features
      */
-    void save_features(const input_t& sample, const std::string& file, format f = format::DLL) const {
+    template <typename Input>
+    void save_features(const Input& sample, const std::string& file, format f = format::DLL) const {
         cpp_assert(f == format::DLL, "Only DLL format is supported for now");
 
         decltype(auto) probs = features(sample);
@@ -523,12 +540,14 @@ public:
         }
     }
 
-    void full_activation_probabilities(const input_t& sample, full_output_t& result) const {
+    template <typename Input>
+    void full_activation_probabilities(const Input& sample, full_output_t& result) const {
         std::size_t i = 0;
         full_activation_probabilities<0>(sample, i, result);
     }
 
-    full_output_t full_activation_probabilities(const input_t& item_data) const {
+    template <typename Input>
+    full_output_t full_activation_probabilities(const Input& item_data) const {
         full_output_t result(full_output_size());
 
         full_activation_probabilities(item_data, result);
@@ -536,13 +555,13 @@ public:
         return result;
     }
 
-    template <typename DBN = this_type, cpp_enable_if(dbn_traits<DBN>::concatenate())>
-    full_output_t get_final_activation_probabilities(const input_t& sample) const {
+    template <typename Input, typename DBN = this_type, cpp_enable_if(dbn_traits<DBN>::concatenate())>
+    full_output_t get_final_activation_probabilities(const Input& sample) const {
         return full_activation_probabilities(sample);
     }
 
-    template <typename DBN = this_type, cpp_disable_if(dbn_traits<DBN>::concatenate())>
-    output_t get_final_activation_probabilities(const input_t& sample) const {
+    template <typename Input, typename DBN = this_type, cpp_disable_if(dbn_traits<DBN>::concatenate())>
+    output_t get_final_activation_probabilities(const Input& sample) const {
         return activation_probabilities(sample);
     }
 
@@ -550,7 +569,8 @@ public:
         return std::distance(result.begin(), std::max_element(result.begin(), result.end()));
     }
 
-    size_t predict(const input_t& item) const {
+    template <typename Input>
+    size_t predict(const Input& item) const {
         auto result = activation_probabilities(item);
         return predict_label(result);
     }
@@ -847,7 +867,8 @@ public:
         return true;
     }
 
-    double svm_predict(const input_t& sample) {
+    template <typename Input>
+    double svm_predict(const Input& sample) {
         auto features = get_final_activation_probabilities(sample);
         return svm::predict(svm_model, features);
     }
@@ -1100,9 +1121,10 @@ private:
 
         auto total_batch_size = big_batch_size * get_batch_size(rbm);
 
-        std::vector<typename Iterator::value_type> input_cache(total_batch_size);
+        std::vector<etl::value_t<Iterator>> input_cache(total_batch_size);
 
-        auto next_input = layer_get<I - 1>().template prepare_output<layer_input_one_t<I - 1>>(total_batch_size);
+        using input_t = typename types_helper<I - 1, decltype(*first)>::output_t;
+        auto next_input = layer_get<I - 1>().template prepare_output<input_t>(total_batch_size);
 
         //Train for max_epochs epoch
         for (std::size_t epoch = 0; epoch < max_epochs; ++epoch) {
@@ -1273,7 +1295,8 @@ private:
         });
 
         if (I < layers - 1) {
-            auto next_a = layer.template prepare_output<layer_input_one_t<I>>(input_size);
+            using input_t = std::decay_t<decltype(*first)>;
+            auto next_a = layer.template prepare_output<input_t>(input_size);
 
             cpp::foreach_i(first, last, [&](auto& sample, std::size_t i) {
                 layer.activate_hidden(next_a[i], sample);
@@ -1281,7 +1304,7 @@ private:
 
             //If the next layer is the last layer
             if (I == layers - 2) {
-                auto big_next_a = layer.template prepare_output<layer_input_one_t<I>>(input_size, true, labels);
+                auto big_next_a = layer.template prepare_output<input_t>(input_size, true, labels);
 
                 //Cannot use std copy since the sub elements have different size
                 for (std::size_t i = 0; i < next_a.size(); ++i) {
@@ -1317,12 +1340,12 @@ private:
     /*!
      * \brief Predict the output labels (only when pretrain with labels)
      */
-    template <std::size_t I>
-    std::enable_if_t<(I < layers)> predict_labels(const input_t& input, label_output_t& output, std::size_t labels) const {
+    template <std::size_t I, typename Input, typename Output>
+    std::enable_if_t<(I < layers)> predict_labels(const Input& input, Output& output, std::size_t labels) const {
         decltype(auto) layer = layer_get<I>();
 
-        auto next_a = layer.template prepare_one_output<layer_input_one_t<I>>();
-        auto next_s = layer.template prepare_one_output<layer_input_one_t<I>>();
+        auto next_a = layer.template prepare_one_output<Input>();
+        auto next_s = layer.template prepare_one_output<Input>();
 
         layer.activate_hidden(next_a, next_s, input, input);
 
@@ -1338,7 +1361,7 @@ private:
 
             //If the next layers is the last layer
             if (is_last) {
-                auto big_next_a = layer.template prepare_one_output<layer_input_one_t<I>>(is_last, labels);
+                auto big_next_a = layer.template prepare_one_output<Input>(is_last, labels);
 
                 for (std::size_t i = 0; i < next_a.size(); ++i) {
                     big_next_a[i] = next_a[i];
@@ -1354,8 +1377,8 @@ private:
     }
 
     //Stop recursion
-    template <std::size_t I>
-    std::enable_if_t<(I == layers)> predict_labels(const input_t&, label_output_t&, std::size_t) const {}
+    template <std::size_t I, typename Input, typename Output>
+    std::enable_if_t<(I == layers)> predict_labels(const Input&, Output&, std::size_t) const {}
 
     /* Activation Probabilities */
 
@@ -1395,7 +1418,8 @@ private:
             f(result).reserve(next_a.size());
 
             for (std::size_t i = 0; i < next_a.size(); ++i) {
-                auto final_output = this->template layer_get<S - 1>().template prepare_one_output<layer_input_one_t<S - 1>>();
+                using input_t = typename types_helper<S - 1, Input>::input_t;
+                auto final_output = this->template layer_get<S - 1>().template prepare_one_output<input_t>();
 
                 static constexpr const bool multi = etl::matrix_detail::is_vector<std::decay_t<decltype(final_output)>>::value;
 
@@ -1448,14 +1472,14 @@ private:
 
 #ifdef DLL_SVM_SUPPORT
 
-    template <typename DBN = this_type, cpp_enable_if(dbn_traits<DBN>::concatenate())>
-    void add_activation_probabilities(svm_samples_t& result, const input_t& sample) {
+    template <typename Input, typename DBN = this_type, cpp_enable_if(dbn_traits<DBN>::concatenate())>
+    void add_activation_probabilities(svm_samples_t& result, const Input& sample) {
         result.emplace_back(full_output_size());
         full_activation_probabilities(sample, result.back());
     }
 
-    template <typename DBN = this_type, cpp_disable_if(dbn_traits<DBN>::concatenate())>
-    void add_activation_probabilities(svm_samples_t& result, const input_t& sample) {
+    template <typename Input, typename DBN = this_type, cpp_disable_if(dbn_traits<DBN>::concatenate())>
+    void add_activation_probabilities(svm_samples_t& result, const Input& sample) {
         result.push_back(smart_activation_probabilities(sample));
     }
 
