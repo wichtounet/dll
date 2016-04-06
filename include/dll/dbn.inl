@@ -85,7 +85,7 @@ public:
         std::vector<output_one_t>,
         output_one_t>; ///< The output type of the network
 
-    using full_output_t = etl::dyn_vector<weight>;
+    using full_output_t = etl::dyn_vector<weight>; ///< The type of output for concatenated activation probabilities
 
     using svm_samples_t = std::conditional_t<
         dbn_traits<this_type>::concatenate(),
@@ -709,6 +709,33 @@ public:
     template <typename Input>
     auto smart_activation_probabilities(const Input& input){
         return smart_train_activation_probabilities(input);
+    }
+
+    template <std::size_t I, std::size_t S, typename Input, cpp_enable_if(I != S)>
+    void smart_full_activation_probabilities(const Input& input, full_output_t& result, std::size_t& i){
+        auto probabilities = smart_activation_probabilities_sub<false, I, I>(input);
+        for(auto& feature : probabilities){
+            result[i++] = feature;
+        }
+        smart_full_activation_probabilities<I+1, S>(input, result, i);
+    }
+
+    template <std::size_t I, std::size_t S, typename Input, cpp_enable_if(I == S)>
+    void smart_full_activation_probabilities(const Input& input, full_output_t& result, std::size_t& i){
+        auto probabilities = smart_activation_probabilities_sub<false, I, I>(input);
+        for(auto& feature : probabilities){
+            result[i++] = feature;
+        }
+    }
+
+    template <typename Input>
+    auto smart_full_activation_probabilities(const Input& input){
+        static_assert(!dbn_traits<this_type>::is_multiplex(), "Multiplex DBN does not support full_activation_probabilities");
+
+        full_output_t result(full_output_size());
+        std::size_t i = 0;
+        smart_full_activation_probabilities<0, layers - 1>(input, result, i);
+        return result;
     }
 
     template <typename Functor>
