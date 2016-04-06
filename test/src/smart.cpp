@@ -35,6 +35,7 @@ TEST_CASE("smart/mnist/1", "[dbn][smart]") {
     REQUIRE(dbn->smart_activation_probabilities(dataset.training_images[0]).size() == 100);
     REQUIRE(dbn->smart_train_activation_probabilities(dataset.training_images[0]).size() == 100);
     REQUIRE(dbn->smart_test_activation_probabilities(dataset.training_images[0]).size() == 100);
+    REQUIRE(dbn->smart_full_activation_probabilities(dataset.training_images[0]).size() == 100);
 }
 
 TEST_CASE("smart/mnist/2", "[dbn][smart]") {
@@ -56,6 +57,7 @@ TEST_CASE("smart/mnist/2", "[dbn][smart]") {
     REQUIRE(dbn->smart_activation_probabilities(dataset.training_images[0]).size() == 100);
     REQUIRE(dbn->smart_train_activation_probabilities(dataset.training_images[0]).size() == 100);
     REQUIRE(dbn->smart_test_activation_probabilities(dataset.training_images[0]).size() == 100);
+    REQUIRE(dbn->smart_full_activation_probabilities(dataset.training_images[0]).size() == 300);
 }
 
 TEST_CASE("smart/mnist/3", "[smart][cdbn][augment]") {
