@@ -729,12 +729,19 @@ public:
     }
 
     template <typename Input>
+    void smart_full_activation_probabilities(const Input& input, full_output& result){
+        static_assert(!dbn_traits<this_type>::is_multiplex(), "Multiplex DBN does not support full_activation_probabilities");
+
+        std::size_t i = 0;
+        smart_full_activation_probabilities<0, layers - 1>(input, result, i);
+    }
+
+    template <typename Input>
     auto smart_full_activation_probabilities(const Input& input){
         static_assert(!dbn_traits<this_type>::is_multiplex(), "Multiplex DBN does not support full_activation_probabilities");
 
         full_output_t result(full_output_size());
-        std::size_t i = 0;
-        smart_full_activation_probabilities<0, layers - 1>(input, result, i);
+        smart_full_activation_probabilities(input, result);
         return result;
     }
 
