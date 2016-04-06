@@ -78,42 +78,42 @@ struct neural_base {
     }
 
     template <typename Input>
-    auto prepare_test_output(std::size_t samples) {
+    auto prepare_test_output(std::size_t samples) const {
         return as_derived().template prepare_output<Input>(samples);
     }
 
     template <typename Input>
-    auto prepare_one_test_output() {
+    auto prepare_one_test_output() const {
         return as_derived().template prepare_one_output<Input>();
     }
 
     template <typename Input>
-    auto prepare_train_output(std::size_t samples) {
+    auto prepare_train_output(std::size_t samples) const {
         return as_derived().template prepare_output<Input>(samples);
     }
 
     template <typename Input>
-    auto prepare_one_train_output() {
+    auto prepare_one_train_output() const {
         return as_derived().template prepare_one_output<Input>();
     }
 
     template <bool Train, typename Input, cpp_enable_if(Train)>
-    auto select_prepare_output(std::size_t samples) {
+    auto select_prepare_output(std::size_t samples) const {
         return as_derived().template prepare_train_output<Input>(samples);
     }
 
     template <bool Train, typename Input, cpp_enable_if(!Train)>
-    auto select_prepare_output(std::size_t samples) {
+    auto select_prepare_output(std::size_t samples) const {
         return as_derived().template prepare_test_output<Input>(samples);
     }
 
     template <bool Train, typename Input, cpp_enable_if(Train)>
-    auto select_prepare_one_output() {
+    auto select_prepare_one_output() const {
         return as_derived().template prepare_one_train_output<Input>();
     }
 
     template <bool Train, typename Input, cpp_enable_if(!Train)>
-    auto select_prepare_one_output() {
+    auto select_prepare_one_output() const {
         return as_derived().template prepare_one_test_output<Input>();
     }
 
