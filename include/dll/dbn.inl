@@ -53,7 +53,7 @@ private:
     template <std::size_t I, typename Input>
     struct types_helper {
         using input_t = typename types_helper<I - 1, Input>::output_t;
-        using output_t = std::decay_t<decltype(std::declval<layer_type<0>>().template prepare_one_output<input_t>())>;
+        using output_t = std::decay_t<decltype(std::declval<layer_type<I>>().template prepare_one_output<input_t>())>;
     };
 
     template <typename Input>
@@ -63,34 +63,10 @@ private:
     };
 
 public:
-    //Note used in dbn_detail
-    using input_t = typename dbn_detail::layer_input_simple<this_type, 0>::type; ///< The input type of the network
-
     template <std::size_t B>
     using input_batch_t = typename dbn_detail::layer_input_batch<this_type, 0>::template type<B>; ///< The input batch type of the network for a batch size of B
 
-    template <std::size_t N>
-    using layer_input_one_t = dbn_detail::layer_input_one_t<this_type, N>;
-
-    template <std::size_t N>
-    using layer_output_one_t = dbn_detail::layer_output_one_t<this_type, N>;
-
-    template <std::size_t N>
-    using layer_output_t = dbn_detail::layer_output_t<this_type, N>;
-
-    using output_one_t   = layer_output_one_t<layers_t::size - 1>; ///< The type of a single output of the network
-
-    using output_t = std::conditional_t<
-        dbn_traits<this_type>::is_multiplex(),
-        std::vector<output_one_t>,
-        output_one_t>; ///< The output type of the network
-
     using full_output_t = etl::dyn_vector<weight>; ///< The type of output for concatenated activation probabilities
-
-    using svm_samples_t = std::conditional_t<
-        dbn_traits<this_type>::concatenate(),
-        std::vector<etl::dyn_vector<weight>>, //In full mode, use a simple 1D vector
-        layer_output_t<layers_t::size - 1>>;  //In normal mode, use the output of the last layer
 
     using for_each_impl_t      = dbn_detail::for_each_impl<this_type, std::make_index_sequence<layers_t::size>>;
     using for_each_pair_impl_t = dbn_detail::for_each_impl<this_type, std::make_index_sequence<layers_t::size - 1>>;
@@ -448,7 +424,7 @@ public:
      */
     template <std::size_t I, typename Input>
     auto activation_probabilities_sub(const Input& sample) const {
-        auto result = prepare_output<I>();
+        auto result = prepare_output<I, Input>();
         return activation_probabilities_sub<I>(sample, result);
     }
 
@@ -485,8 +461,8 @@ public:
      * \param result The container where to save the features
      * \return result
      */
-    template <typename Input>
-    auto activation_probabilities(const Input& sample, output_t& result) const {
+    template <typename Input, typename Output>
+    auto activation_probabilities(const Input& sample, Output& result) const {
         return activation_probabilities_sub<layers - 1>(sample, result);
     }
 
@@ -508,8 +484,8 @@ public:
      * \param result The container where to save the features
      * \return result
      */
-    template <typename Input>
-    auto features(const Input& sample, output_t& result) const {
+    template <typename Input, typename Output>
+    auto features(const Input& sample, Output& result) const {
         return activation_probabilities(sample, result);
     }
 
@@ -550,7 +526,8 @@ public:
         return smart_activation_probabilities(sample);
     }
 
-    size_t predict_label(const output_t& result) const {
+    template <typename Output>
+    size_t predict_label(const Output& result) const {
         return std::distance(result.begin(), std::max_element(result.begin(), result.end()));
     }
 
@@ -624,18 +601,28 @@ public:
                                 max_epochs);
     }
 
-    template <std::size_t I, typename T = this_type, cpp_disable_if(dbn_traits<T>::is_multiplex())>
+    //TODO Normally this shoud suffice
+    //template <std::size_t I, typename Input>
+    //auto prepare_output() const {
+        //using layer_input_t = typename types_helper<I, Input>::input_t;
+        //return layer_get<I>().template prepare_one_output<layer_input_t>();
+    //}
+
+    template <std::size_t I, typename Input, typename T = this_type, cpp_disable_if(dbn_traits<T>::is_multiplex())>
     auto prepare_output() const {
-        return layer_get<I>().template prepare_one_output<layer_input_one_t<I>>();
+        using layer_input_t = typename types_helper<I, Input>::input_t;
+        return layer_get<I>().template prepare_one_output<layer_input_t>();
     }
 
-    template <std::size_t I, typename T = this_type, cpp_enable_if(dbn_traits<T>::is_multiplex())>
+    template <std::size_t I, typename Input, typename T = this_type, cpp_enable_if(dbn_traits<T>::is_multiplex())>
     auto prepare_output() const {
-        return std::vector<layer_output_one_t<layers - 1>>();
+        using layer_output_t = typename types_helper<I, Input>::output_t;
+        return std::vector<layer_output_t>();
     }
 
+    template <typename Input>
     auto prepare_one_output() const {
-        return prepare_output<layers - 1>();
+        return prepare_output<layers - 1, Input>();
     }
 
     template<typename T>
@@ -1191,19 +1178,18 @@ private:
     }
 
     // TODO THis should not be necessary at all
-    // (i'm crazy and starting to pay the price for it...)
 
-    template <std::size_t I, typename Enable = void>
+    template <std::size_t I, typename Input, typename Enable = void>
     struct output_deep_t;
 
-    template <std::size_t I>
-    struct output_deep_t<I, std::enable_if_t<layer_traits<layer_type<I>>::is_patches_layer()>> {
-        using type = typename layer_output_one_t<I>::value_type;
+    template <std::size_t I, typename Input>
+    struct output_deep_t<I, Input, std::enable_if_t<layer_traits<layer_type<I>>::is_multiplex_layer()>> {
+        using type = etl::value_t<typename types_helper<I, Input>::output_t>;
     };
 
-    template <std::size_t I>
-    struct output_deep_t<I, std::enable_if_t<!layer_traits<layer_type<I>>::is_patches_layer()>> {
-        using type = layer_output_one_t<I>;
+    template <std::size_t I, typename Input>
+    struct output_deep_t<I, Input, std::enable_if_t<!layer_traits<layer_type<I>>::is_multiplex_layer()>> {
+        using type = typename types_helper<I, Input>::output_t;
     };
 
     //Multiplex version
@@ -1229,7 +1215,7 @@ private:
         auto rbm_batch_size   = get_batch_size(rbm);
         auto total_batch_size = big_batch_size * rbm_batch_size;
 
-        std::vector<std::vector<typename output_deep_t<I - 1>::type>> input(total_batch_size);
+        std::vector<std::vector<typename output_deep_t<I - 1, decltype(*first)>::type>> input(total_batch_size);
 
         std::vector<typename layer_t::input_one_t> input_flat;
 
@@ -1472,20 +1458,29 @@ private:
 
 #ifdef DLL_SVM_SUPPORT
 
-    template <typename Input, typename DBN = this_type, cpp_enable_if(dbn_traits<DBN>::concatenate())>
-    void add_activation_probabilities(svm_samples_t& result, const Input& sample) {
+    template <typename Samples, typename Input, typename DBN = this_type, cpp_enable_if(dbn_traits<DBN>::concatenate())>
+    void add_activation_probabilities(Samples& result, const Input& sample) {
         result.emplace_back(full_output_size());
         smart_full_activation_probabilities(sample, result.back());
     }
 
-    template <typename Input, typename DBN = this_type, cpp_disable_if(dbn_traits<DBN>::concatenate())>
-    void add_activation_probabilities(svm_samples_t& result, const Input& sample) {
+    template <typename Samples,typename Input, typename DBN = this_type, cpp_disable_if(dbn_traits<DBN>::concatenate())>
+    void add_activation_probabilities(Samples& result, const Input& sample) {
         result.push_back(smart_activation_probabilities(sample));
     }
 
+    template <typename Input>
+    using svm_sample_t = std::conditional_t<
+        dbn_traits<this_type>::concatenate(),
+        etl::dyn_vector<weight>,                             //In full mode, use a simple 1D vector
+        typename types_helper<layers - 1, Input>::output_t>; //In normal mode, use the output of the last layer
+
+    template <typename Input>
+    using svm_samples_t = std::vector<svm_sample_t<Input>>;
+
     template <typename Samples, typename Labels>
     void make_problem(const Samples& training_data, const Labels& labels, bool scale = false) {
-        svm_samples_t svm_samples;
+        svm_samples_t<etl::value_t<Samples>> svm_samples;
 
         //Get all the activation probabilities
         for (auto& sample : training_data) {
@@ -1493,7 +1488,7 @@ private:
         }
 
         //static_cast ensure using the correct overload
-        problem = svm::make_problem(labels, static_cast<const svm_samples_t&>(svm_samples), scale);
+        problem = svm::make_problem(labels, static_cast<const svm_samples_t<etl::value_t<Samples>>&>(svm_samples), scale);
     }
 
     /*!
@@ -1501,7 +1496,7 @@ private:
      */
     template <typename Iterator, typename LIterator>
     void make_problem(Iterator first, Iterator last, LIterator&& lfirst, LIterator&& llast, bool scale = false) {
-        svm_samples_t svm_samples;
+        svm_samples_t<etl::value_t<Iterator>> svm_samples;
 
         //Get all the activation probabilities
         std::for_each(first, last, [this, &svm_samples](auto& sample) {
