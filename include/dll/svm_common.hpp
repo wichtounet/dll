@@ -89,7 +89,7 @@ void svm_load(DBN& dbn, std::istream& is) {
 template <typename DBN, typename Result, typename Sample, cpp_enable_if(dbn_traits<std::decay_t<DBN>>::concatenate())>
 void add_activation_probabilities(DBN& dbn, Result& result, Sample& sample) {
     result.emplace_back(dbn_full_output_size(dbn));
-    dbn.full_activation_probabilities(sample, result.back());
+    dbn.smart_full_activation_probabilities(sample, result.back());
 }
 
 template <typename DBN, typename Result, typename Sample, cpp_disable_if(dbn_traits<std::decay_t<DBN>>::concatenate())>
@@ -100,7 +100,7 @@ void add_activation_probabilities(DBN& dbn, Result& result, Sample& sample) {
 
 template <typename DBN, typename Sample, cpp_enable_if(dbn_traits<std::decay_t<DBN>>::concatenate())>
 etl::dyn_vector<typename DBN::weight> get_activation_probabilities(DBN& dbn, Sample& sample) {
-    return dbn.full_activation_probabilities(sample);
+    return dbn.smart_full_activation_probabilities(sample);
 }
 
 template <typename DBN, typename Sample, cpp_disable_if(dbn_traits<std::decay_t<DBN>>::concatenate())>

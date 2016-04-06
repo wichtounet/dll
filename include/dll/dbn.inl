@@ -540,24 +540,9 @@ public:
         }
     }
 
-    template <typename Input>
-    void full_activation_probabilities(const Input& sample, full_output_t& result) const {
-        std::size_t i = 0;
-        full_activation_probabilities<0>(sample, i, result);
-    }
-
-    template <typename Input>
-    full_output_t full_activation_probabilities(const Input& item_data) const {
-        full_output_t result(full_output_size());
-
-        full_activation_probabilities(item_data, result);
-
-        return result;
-    }
-
     template <typename Input, typename DBN = this_type, cpp_enable_if(dbn_traits<DBN>::concatenate())>
     auto get_final_activation_probabilities(const Input& sample) const {
-        return full_activation_probabilities(sample);
+        return smart_full_activation_probabilities(sample);
     }
 
     template <typename Input, typename DBN = this_type, cpp_disable_if(dbn_traits<DBN>::concatenate())>
@@ -713,17 +698,17 @@ public:
 
     template <std::size_t I, std::size_t S, typename Input, cpp_enable_if(I != S)>
     void smart_full_activation_probabilities(const Input& input, full_output_t& result, std::size_t& i) const {
-        auto probabilities = smart_activation_probabilities_sub<false, I, I>(input);
-        for(auto& feature : probabilities){
+        auto output = smart_activation_probabilities_sub<false, I, I>(input);
+        for(auto& feature : output){
             result[i++] = feature;
         }
-        smart_full_activation_probabilities<I+1, S>(input, result, i);
+        smart_full_activation_probabilities<I+1, S>(output, result, i);
     }
 
     template <std::size_t I, std::size_t S, typename Input, cpp_enable_if(I == S)>
     void smart_full_activation_probabilities(const Input& input, full_output_t& result, std::size_t& i) const {
-        auto probabilities = smart_activation_probabilities_sub<false, I, I>(input);
-        for(auto& feature : probabilities){
+        auto output = smart_activation_probabilities_sub<false, I, I>(input);
+        for(auto& feature : output){
             result[i++] = feature;
         }
     }
@@ -1485,31 +1470,12 @@ private:
     template <std::size_t I, std::size_t S = layers, typename Input, typename Result>
     std::enable_if_t<(I == S)> activation_probabilities(const Input&, Result&) const {}
 
-    template <std::size_t I, typename Input>
-    std::enable_if_t<(I < layers)> full_activation_probabilities(const Input& input, std::size_t& i, full_output_t& result) const {
-        auto& layer = layer_get<I>();
-
-        auto next_a = layer.template prepare_one_output<Input>();
-
-        layer.activate_hidden(next_a, input);
-
-        for (auto& value : next_a) {
-            result[i++] = value;
-        }
-
-        full_activation_probabilities<I + 1>(next_a, i, result);
-    }
-
-    //Stop template recursion
-    template <std::size_t I, typename Input>
-    std::enable_if_t<(I == layers)> full_activation_probabilities(const Input&, std::size_t&, full_output_t&) const {}
-
 #ifdef DLL_SVM_SUPPORT
 
     template <typename Input, typename DBN = this_type, cpp_enable_if(dbn_traits<DBN>::concatenate())>
     void add_activation_probabilities(svm_samples_t& result, const Input& sample) {
         result.emplace_back(full_output_size());
-        full_activation_probabilities(sample, result.back());
+        smart_full_activation_probabilities(sample, result.back());
     }
 
     template <typename Input, typename DBN = this_type, cpp_disable_if(dbn_traits<DBN>::concatenate())>
