@@ -145,7 +145,7 @@ TEST_CASE("unit/dbn/mnist/4", "[dbn][cg][unit]") {
     REQUIRE(test_error < 0.25);
 
     //Mostly here to ensure compilation
-    auto out = dbn->prepare_one_output();
+    auto out = dbn->prepare_one_output<etl::dyn_matrix<float, 1>>();
     REQUIRE(out.size() > 0);
 }
 
