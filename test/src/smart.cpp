@@ -18,6 +18,11 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
+/*
+ * These tests are ensuring compilation of functions gathering the features
+ * on different types of network with several multiplex layers
+ */
+
 TEST_CASE("smart/mnist/1", "[dbn][smart]") {
     using dbn_t = dll::dbn_desc<
         dll::dbn_layers<
@@ -32,10 +37,10 @@ TEST_CASE("smart/mnist/1", "[dbn][smart]") {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    REQUIRE(dbn->smart_activation_probabilities(dataset.training_images[0]).size() == 100);
-    REQUIRE(dbn->smart_train_activation_probabilities(dataset.training_images[0]).size() == 100);
-    REQUIRE(dbn->smart_test_activation_probabilities(dataset.training_images[0]).size() == 100);
-    REQUIRE(dbn->smart_full_activation_probabilities(dataset.training_images[0]).size() == 100);
+    REQUIRE(dbn->activation_probabilities(dataset.training_images[0]).size() == 100);
+    REQUIRE(dbn->train_activation_probabilities(dataset.training_images[0]).size() == 100);
+    REQUIRE(dbn->test_activation_probabilities(dataset.training_images[0]).size() == 100);
+    REQUIRE(dbn->full_activation_probabilities(dataset.training_images[0]).size() == 100);
 }
 
 TEST_CASE("smart/mnist/2", "[dbn][smart]") {
@@ -54,10 +59,10 @@ TEST_CASE("smart/mnist/2", "[dbn][smart]") {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    REQUIRE(dbn->smart_activation_probabilities(dataset.training_images[0]).size() == 100);
-    REQUIRE(dbn->smart_train_activation_probabilities(dataset.training_images[0]).size() == 100);
-    REQUIRE(dbn->smart_test_activation_probabilities(dataset.training_images[0]).size() == 100);
-    REQUIRE(dbn->smart_full_activation_probabilities(dataset.training_images[0]).size() == 300);
+    REQUIRE(dbn->activation_probabilities(dataset.training_images[0]).size() == 100);
+    REQUIRE(dbn->train_activation_probabilities(dataset.training_images[0]).size() == 100);
+    REQUIRE(dbn->test_activation_probabilities(dataset.training_images[0]).size() == 100);
+    REQUIRE(dbn->full_activation_probabilities(dataset.training_images[0]).size() == 300);
 }
 
 TEST_CASE("smart/mnist/3", "[smart][cdbn][augment]") {
@@ -76,9 +81,9 @@ TEST_CASE("smart/mnist/3", "[smart][cdbn][augment]") {
 
     dbn->display();
 
-    REQUIRE(dbn->smart_activation_probabilities(dataset.training_images[0]).size() == 6);
-    REQUIRE(dbn->smart_train_activation_probabilities(dataset.training_images[0]).size() == 6);
-    REQUIRE(dbn->smart_test_activation_probabilities(dataset.training_images[0]).size() == 8 * 20 * 20);
+    REQUIRE(dbn->activation_probabilities(dataset.training_images[0]).size() == 6);
+    REQUIRE(dbn->train_activation_probabilities(dataset.training_images[0]).size() == 6);
+    REQUIRE(dbn->test_activation_probabilities(dataset.training_images[0]).size() == 8 * 20 * 20);
 }
 
 TEST_CASE("smart/mnist/4", "[smart][cdbn][augment]") {
@@ -99,9 +104,9 @@ TEST_CASE("smart/mnist/4", "[smart][cdbn][augment]") {
 
     dbn->display();
 
-    REQUIRE(dbn->smart_activation_probabilities(dataset.training_images[0]).size() == 6);
-    REQUIRE(dbn->smart_train_activation_probabilities(dataset.training_images[0]).size() == 6);
-    REQUIRE(dbn->smart_test_activation_probabilities(dataset.training_images[0]).size() == 8 * 20 * 20);
+    REQUIRE(dbn->activation_probabilities(dataset.training_images[0]).size() == 6);
+    REQUIRE(dbn->train_activation_probabilities(dataset.training_images[0]).size() == 6);
+    REQUIRE(dbn->test_activation_probabilities(dataset.training_images[0]).size() == 8 * 20 * 20);
 }
 
 TEST_CASE("smart/mnist/5", "[smart][cdbn][augment]") {
@@ -123,7 +128,7 @@ TEST_CASE("smart/mnist/5", "[smart][cdbn][augment]") {
 
     dbn->display();
 
-    REQUIRE(dbn->smart_activation_probabilities(dataset.training_images[0]).size() == 120);
-    REQUIRE(dbn->smart_train_activation_probabilities(dataset.training_images[0]).size() == 120);
-    REQUIRE(dbn->smart_test_activation_probabilities(dataset.training_images[0]).size() == 4);
+    REQUIRE(dbn->activation_probabilities(dataset.training_images[0]).size() == 120);
+    REQUIRE(dbn->train_activation_probabilities(dataset.training_images[0]).size() == 120);
+    REQUIRE(dbn->test_activation_probabilities(dataset.training_images[0]).size() == 4);
 }

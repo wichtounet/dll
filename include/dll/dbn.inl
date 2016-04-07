@@ -400,34 +400,6 @@ public:
             std::max_element(std::prev(output_a.end(), labels), output_a.end()));
     }
 
-    //activation_probabilities_sub
-
-    /*!
-     * \brief Returns the output features of the Ith layer for the given sample and saves them in the given container
-     * \param sample The sample to get features from
-     * \param result The container where the results will be saved
-     * \tparam I The index of the layer for features (starts at 0)
-     * \return the output features of the Ith layer of the network
-     */
-    template <std::size_t I, typename Input, typename Output, typename T = this_type>
-    auto activation_probabilities_sub(const Input& sample, Output& result) const {
-        activation_probabilities<0, I + 1>(sample, result);
-
-        return result;
-    }
-
-    /*!
-     * \brief Returns the output features of the Ith layer for the given sample
-     * \param sample The sample to get features from
-     * \tparam I The index of the layer for features (starts at 0)
-     * \return the output features of the Ith layer of the network
-     */
-    template <std::size_t I, typename Input>
-    auto activation_probabilities_sub(const Input& sample) const {
-        auto result = prepare_output<I, Input>();
-        return activation_probabilities_sub<I>(sample, result);
-    }
-
     //Note: features_sub are alias functions for activation_probabilities_sub
 
     /*!
@@ -439,7 +411,7 @@ public:
      */
     template <std::size_t I, typename Input, typename Output, typename T = this_type>
     auto features_sub(const Input& sample, Output& result) const {
-        return result = smart_activation_probabilities_sub<I>(sample);
+        return result = activation_probabilities_sub<I>(sample);
     }
 
     /*!
@@ -450,30 +422,7 @@ public:
      */
     template <std::size_t I, typename Input>
     auto features_sub(const Input& sample) const {
-        return smart_activation_probabilities_sub<I>(sample);
-    }
-
-    // activation_probabilities
-
-    /*!
-     * \brief Computes the output features for the given sample and saves them in the given container
-     * \param sample The sample to get features from
-     * \param result The container where to save the features
-     * \return result
-     */
-    template <typename Input, typename Output>
-    auto activation_probabilities(const Input& sample, Output& result) const {
-        return activation_probabilities_sub<layers - 1>(sample, result);
-    }
-
-    /*!
-     * \brief Returns the output features for the given sample
-     * \param sample The sample to get features from
-     * \return the output features of the last layer of the network
-     */
-    template <typename Input>
-    auto activation_probabilities(const Input& sample) const {
-        return activation_probabilities_sub<layers - 1>(sample);
+        return activation_probabilities_sub<I>(sample);
     }
 
     //Note: features are alias functions for activation_probabilities
@@ -486,7 +435,7 @@ public:
      */
     template <typename Input, typename Output>
     auto features(const Input& sample, Output& result) const {
-        return smart_activation_probabilities(sample, result);
+        return activation_probabilities(sample, result);
     }
 
     /*!
@@ -496,7 +445,7 @@ public:
      */
     template <typename Input>
     auto features(const Input& sample) const {
-        return smart_activation_probabilities(sample);
+        return activation_probabilities(sample);
     }
 
     /*!
@@ -518,12 +467,12 @@ public:
 
     template <typename Input, typename DBN = this_type, cpp_enable_if(dbn_traits<DBN>::concatenate())>
     auto get_final_activation_probabilities(const Input& sample) const {
-        return smart_full_activation_probabilities(sample);
+        return full_activation_probabilities(sample);
     }
 
     template <typename Input, typename DBN = this_type, cpp_disable_if(dbn_traits<DBN>::concatenate())>
     auto get_final_activation_probabilities(const Input& sample) const {
-        return smart_activation_probabilities(sample);
+        return activation_probabilities(sample);
     }
 
     template <typename Output>
@@ -533,7 +482,7 @@ public:
 
     template <typename Input>
     size_t predict(const Input& item) const {
-        auto result = smart_activation_probabilities(item);
+        auto result = activation_probabilities(item);
         return predict_label(result);
     }
 
@@ -629,7 +578,7 @@ public:
     using is_multi_t = etl::matrix_detail::is_vector<std::decay_t<T>>;
 
     template <typename Output, cpp_enable_if(is_multi_t<Output>::value && is_multi_t<etl::value_t<Output>>::value)>
-    etl::value_t<Output> smart_flatten(const Output& output) const {
+    etl::value_t<Output> flatten(const Output& output) const {
         etl::value_t<Output> flat;
         flat.reserve(output.size() * output[0].size());
         for(auto& sub : output){
@@ -639,96 +588,96 @@ public:
     }
 
     template <typename Output, cpp_enable_if(!(is_multi_t<Output>::value && is_multi_t<etl::value_t<Output>>::value))>
-    Output&& smart_flatten(Output&& output) const {
+    Output&& flatten(Output&& output) const {
         return std::forward<Output>(output);
     }
 
     template <bool Train, std::size_t I, std::size_t S, typename Input, cpp_enable_if(!is_multi_t<Input>::value && I == S)>
-    auto smart_activation_probabilities_impl(const Input& input) const {
+    auto activation_probabilities_impl(const Input& input) const {
         decltype(auto) layer = layer_get<I>();
         auto output = layer.template select_prepare_one_output<Train, Input>();
         layer.template select_activate_hidden<Train>(output, input);
-        return smart_flatten(output);
+        return flatten(output);
     }
 
     template <bool Train, std::size_t I, std::size_t S, typename Input, cpp_enable_if(is_multi_t<Input>::value && I == S)>
-    auto smart_activation_probabilities_impl(const Input& input) const {
+    auto activation_probabilities_impl(const Input& input) const {
         auto n_inputs = input.size();
         decltype(auto) layer = layer_get<I>();
         auto output = layer.template select_prepare_output<Train, etl::value_t<Input>>(n_inputs);
         for(std::size_t i = 0; i < n_inputs; ++i){
             layer.template select_activate_hidden<Train>(output[i], input[i]);
         }
-        return smart_flatten(output);
+        return flatten(output);
     }
 
     template <bool Train, std::size_t I, std::size_t S, typename Input, cpp_enable_if(I != S)>
-    auto smart_activation_probabilities_impl(const Input& input) const {
-        decltype(auto) previous_output = smart_activation_probabilities_impl<Train, I, I>(input);
-        return smart_activation_probabilities_impl<Train, I+1, S>(previous_output);
+    auto activation_probabilities_impl(const Input& input) const {
+        decltype(auto) previous_output = activation_probabilities_impl<Train, I, I>(input);
+        return activation_probabilities_impl<Train, I+1, S>(previous_output);
     }
 
     template <std::size_t I, typename Input>
-    auto smart_train_activation_probabilities_sub(const Input& input) const {
-        return smart_activation_probabilities_impl<true, 0, I>(input);
+    auto train_activation_probabilities_sub(const Input& input) const {
+        return activation_probabilities_impl<true, 0, I>(input);
     }
 
     template <std::size_t I, typename Input>
-    auto smart_test_activation_probabilities_sub(const Input& input) const {
-        return smart_activation_probabilities_impl<false, 0, I>(input);
+    auto test_activation_probabilities_sub(const Input& input) const {
+        return activation_probabilities_impl<false, 0, I>(input);
     }
 
     template <std::size_t I, typename Input>
-    auto smart_activation_probabilities_sub(const Input& input) const {
-        return smart_train_activation_probabilities_sub<I>(input);
+    auto activation_probabilities_sub(const Input& input) const {
+        return train_activation_probabilities_sub<I>(input);
     }
 
     template <typename Input>
-    auto smart_train_activation_probabilities(const Input& input) const {
-        return smart_activation_probabilities_impl<true, 0, layers - 1>(input);
+    auto train_activation_probabilities(const Input& input) const {
+        return activation_probabilities_impl<true, 0, layers - 1>(input);
     }
 
     template <typename Input>
-    auto smart_test_activation_probabilities(const Input& input) const {
-        return smart_activation_probabilities_impl<false, 0, layers - 1>(input);
+    auto test_activation_probabilities(const Input& input) const {
+        return activation_probabilities_impl<false, 0, layers - 1>(input);
     }
 
     template <typename Input>
-    auto smart_activation_probabilities(const Input& input) const {
-        return smart_train_activation_probabilities(input);
+    auto activation_probabilities(const Input& input) const {
+        return train_activation_probabilities(input);
     }
 
     template <std::size_t I, std::size_t S, typename Input, cpp_enable_if(I != S)>
-    void smart_full_activation_probabilities(const Input& input, full_output_t& result, std::size_t& i) const {
-        auto output = smart_activation_probabilities_impl<false, I, I>(input);
+    void full_activation_probabilities(const Input& input, full_output_t& result, std::size_t& i) const {
+        auto output = activation_probabilities_impl<false, I, I>(input);
         for(auto& feature : output){
             result[i++] = feature;
         }
-        smart_full_activation_probabilities<I+1, S>(output, result, i);
+        full_activation_probabilities<I+1, S>(output, result, i);
     }
 
     template <std::size_t I, std::size_t S, typename Input, cpp_enable_if(I == S)>
-    void smart_full_activation_probabilities(const Input& input, full_output_t& result, std::size_t& i) const {
-        auto output = smart_activation_probabilities_impl<false, I, I>(input);
+    void full_activation_probabilities(const Input& input, full_output_t& result, std::size_t& i) const {
+        auto output = activation_probabilities_impl<false, I, I>(input);
         for(auto& feature : output){
             result[i++] = feature;
         }
     }
 
     template <typename Input>
-    void smart_full_activation_probabilities(const Input& input, full_output_t& result) const {
+    void full_activation_probabilities(const Input& input, full_output_t& result) const {
         static_assert(!dbn_traits<this_type>::is_multiplex(), "Multiplex DBN does not support full_activation_probabilities");
 
         std::size_t i = 0;
-        smart_full_activation_probabilities<0, layers - 1>(input, result, i);
+        full_activation_probabilities<0, layers - 1>(input, result, i);
     }
 
     template <typename Input>
-    auto smart_full_activation_probabilities(const Input& input) const {
+    auto full_activation_probabilities(const Input& input) const {
         static_assert(!dbn_traits<this_type>::is_multiplex(), "Multiplex DBN does not support full_activation_probabilities");
 
         full_output_t result(full_output_size());
-        smart_full_activation_probabilities(input, result);
+        full_activation_probabilities(input, result);
         return result;
     }
 
@@ -1406,82 +1355,21 @@ private:
     void multi_activation_probabilities(Iterator first, Iterator last, Output& output) {
         //Collect an entire batch
         maybe_parallel_foreach_i(pool, first, last, [this, &output](auto& v, std::size_t i) {
-            output[i] = this->smart_activation_probabilities_sub<I>(v);
+            output[i] = this->activation_probabilities_sub<I>(v);
         });
     }
-
-    template <std::size_t I, std::size_t S = layers, typename Input, typename Result>
-    std::enable_if_t<(I < S)> activation_probabilities(const Input& input, Result& result) const {
-        //TODO This function is way too complicated :(
-
-        //static constexpr const bool multi_input = etl::matrix_detail::is_vector<std::decay_t<Input>>::value;
-        static constexpr const bool multi_layer = layer_traits<layer_type<I>>::is_multiplex_layer();
-
-        auto& layer = layer_get<I>();
-
-        cpp::static_if<(I < S - 1 && !multi_layer)>([&](auto f) {
-            auto next_a = layer.template prepare_one_output<Input>();
-            f(layer).activate_hidden(next_a, input);
-            this->template activation_probabilities<I + 1, S>(next_a, result);
-        });
-
-        // Handle the first multiplex layer
-        cpp::static_if<(I < S - 1 && multi_layer /*&& !multi_input*/)>([&](auto f) {
-            auto next_a = layer.template prepare_one_output<Input>();
-            layer.activate_hidden(next_a, input);
-
-            //cpp_assert(f(result).empty(), "result must be empty on entry of activation_probabilities");
-
-            static constexpr const bool next_multi_layer = layer_traits<layer_type<I+1>>::is_multiplex_layer();
-
-            //f(result).clear();
-            f(result).reserve(next_a.size());
-
-            for (std::size_t i = 0; i < next_a.size(); ++i) {
-                using input_t = typename types_helper<S - 1, Input>::input_t;
-                auto final_output = this->template layer_get<S - 1>().template prepare_one_output<input_t>();
-
-                static constexpr const bool multi = etl::matrix_detail::is_vector<std::decay_t<decltype(final_output)>>::value;
-
-                cpp::static_if<next_multi_layer>([&](auto f){
-                    this->template activation_probabilities<I + 1, S>(next_a[i], f(result));
-                });
-
-                cpp::static_if<!next_multi_layer && multi>([&](auto f){
-                    this->template activation_probabilities<I + 1, S>(next_a[i], final_output);
-
-                    for(decltype(auto) r : final_output){
-                        f(result).push_back(r);
-                    }
-                });
-
-                cpp::static_if<!next_multi_layer && !multi>([&](auto f){
-                    f(result).push_back(final_output);
-                    this->template activation_probabilities<I + 1, S>(next_a[i], f(result)[i]);
-                });
-            }
-        });
-
-        cpp::static_if<(I == S - 1)>([&](auto f) {
-            f(layer).activate_hidden(result, input);
-        });
-    }
-
-    //Stop template recursion
-    template <std::size_t I, std::size_t S = layers, typename Input, typename Result>
-    std::enable_if_t<(I == S)> activation_probabilities(const Input&, Result&) const {}
 
 #ifdef DLL_SVM_SUPPORT
 
     template <typename Samples, typename Input, typename DBN = this_type, cpp_enable_if(dbn_traits<DBN>::concatenate())>
     void add_activation_probabilities(Samples& result, const Input& sample) {
         result.emplace_back(full_output_size());
-        smart_full_activation_probabilities(sample, result.back());
+        full_activation_probabilities(sample, result.back());
     }
 
     template <typename Samples,typename Input, typename DBN = this_type, cpp_disable_if(dbn_traits<DBN>::concatenate())>
     void add_activation_probabilities(Samples& result, const Input& sample) {
-        result.push_back(smart_activation_probabilities(sample));
+        result.push_back(activation_probabilities(sample));
     }
 
     template <typename Input>
