@@ -1129,7 +1129,7 @@ private:
 
         std::vector<etl::value_t<Iterator>> input_cache(total_batch_size);
 
-        using input_t = typename types_helper<I - 1, decltype(*first)>::output_t;
+        using input_t = typename types_helper<I - 1, etl::value_t<Iterator>>::input_t;
         auto next_input = layer_get<I - 1>().template prepare_output<input_t>(total_batch_size);
 
         //Train for max_epochs epoch
@@ -1151,7 +1151,7 @@ private:
                     input_cache[i++] = *it++;
                 }
 
-                multi_activation_probabilities<I>(input_cache.begin(), input_cache.begin() + i, next_input);
+                multi_activation_probabilities<I - 1>(input_cache.begin(), input_cache.begin() + i, next_input);
 
                 if (big_batch_size == 1) {
                     //Train the RBM on this batch
@@ -1236,7 +1236,7 @@ private:
 
                 dbn_detail::safe_advance(it, end, total_batch_size);
 
-                multi_activation_probabilities<I>(batch_start, it, input);
+                multi_activation_probabilities<I - 1>(batch_start, it, input);
 
                 flatten_in(input, input_flat);
 
@@ -1387,11 +1387,11 @@ private:
 
     /* Activation Probabilities */
 
-    template <std::size_t I, typename Iterator, typename Ouput>
-    void multi_activation_probabilities(Iterator first, Iterator last, Ouput& output) {
+    template <std::size_t I, typename Iterator, typename Output>
+    void multi_activation_probabilities(Iterator first, Iterator last, Output& output) {
         //Collect an entire batch
         maybe_parallel_foreach_i(pool, first, last, [this, &output](auto& v, std::size_t i) {
-            this->activation_probabilities<0, I>(v, output[i]);
+            output[i] = this->smart_activation_probabilities_sub<true, 0, I>(v);
         });
     }
 
