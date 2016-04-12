@@ -54,6 +54,10 @@ struct dbn_traits {
         return desc::parameters::template contains<dll::batch_mode>() || desc::parameters::template contains<memory_impl>();
     }
 
+    static constexpr bool shuffle() noexcept {
+        return desc::parameters::template contains<dll::shuffle>();
+    }
+
     static constexpr bool concatenate() noexcept {
         return desc::parameters::template contains<svm_concatenate>();
     }
