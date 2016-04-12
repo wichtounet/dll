@@ -551,23 +551,10 @@ public:
                                 max_epochs);
     }
 
-    //TODO Normally this shoud suffice
-    //template <std::size_t I, typename Input>
-    //auto prepare_output() const {
-        //using layer_input_t = typename types_helper<I, Input>::input_t;
-        //return layer_get<I>().template prepare_one_output<layer_input_t>();
-    //}
-
-    template <std::size_t I, typename Input, typename T = this_type, cpp_disable_if(dbn_traits<T>::is_multiplex())>
+    template <std::size_t I, typename Input>
     auto prepare_output() const {
         using layer_input_t = typename types_helper<I, Input>::input_t;
         return layer_get<I>().template prepare_one_output<layer_input_t>();
-    }
-
-    template <std::size_t I, typename Input, typename T = this_type, cpp_enable_if(dbn_traits<T>::is_multiplex())>
-    auto prepare_output() const {
-        using layer_output_t = typename types_helper<I, Input>::output_t;
-        return std::vector<layer_output_t>();
     }
 
     template <typename Input>
