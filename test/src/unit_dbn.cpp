@@ -332,3 +332,41 @@ TEST_CASE("unit/dbn/mnist/10", "[dbn][denoising][unit]") {
 
     dbn->pretrain_denoising(noisy, dataset.training_images, 50);
 }
+
+//Batch mode and shuffle
+TEST_CASE("unit/dbn/mnist/11", "[dbn][unit]") {
+    typedef dll::dbn_desc<
+        dll::dbn_layers<
+            dll::rbm_desc<28 * 28, 150, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
+            dll::rbm_desc<150, 200, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
+        dll::batch_mode, dll::momentum, dll::trainer<dll::sgd_trainer>, dll::batch_size<25>, dll::shuffle>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(250);
+
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    REQUIRE(dbn->batch_mode());
+
+    dbn->learning_rate = 0.05;
+
+    dbn->pretrain(dataset.training_images, 20);
+
+    auto error = dbn->fine_tune(
+        dataset.training_images.begin(), dataset.training_images.end(),
+        dataset.training_labels.begin(), dataset.training_labels.end(),
+        50);
+
+    REQUIRE(error < 5e-2);
+
+    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
+    REQUIRE(test_error < 0.25);
+
+    //Mostly here to ensure compilation
+    auto out = dbn->prepare_one_output<etl::dyn_matrix<float, 1>>();
+    REQUIRE(out.size() > 0);
+}
