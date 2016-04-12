@@ -188,7 +188,6 @@ struct dbn_trainer {
             //Train for max_epochs epoch
             for (std::size_t epoch = 0; epoch < max_epochs; ++epoch) {
                 auto it = first;
-
                 auto lit = lfirst;
 
                 //Train all mini-batches
