@@ -331,7 +331,7 @@ public:
      * manner.
      */
     template <typename Samples>
-    void pretrain(Samples& training_data, std::size_t max_epochs) {
+    void pretrain(const Samples& training_data, std::size_t max_epochs) {
         pretrain(training_data.begin(), training_data.end(), max_epochs);
     }
 
@@ -981,11 +981,36 @@ private:
     template <std::size_t I>
     struct batch_layer_ignore<I, std::enable_if_t<(I < layers)>> : cpp::or_u<layer_traits<layer_type<I>>::is_pooling_layer(), layer_traits<layer_type<I>>::is_transform_layer(), layer_traits<layer_type<I>>::is_standard_layer(), !layer_traits<layer_type<I>>::pretrain_last()> {};
 
+    template <bool Bypass, typename Iterator, typename Container, typename T = this_type, cpp_enable_if(Bypass && dbn_traits<T>::shuffle())>
+    auto prepare_it(Iterator it, Iterator end, Container& container){
+        std::copy(it, end, std::back_inserter(container));
+        return std::make_tuple(container.begin(), container.end());
+    }
+
+    template <bool Bypass, typename Iterator, typename Container, typename T = this_type, cpp_disable_if(Bypass && dbn_traits<T>::shuffle())>
+    auto prepare_it(Iterator it, Iterator end, Container& container){
+        cpp_unused(container);
+        return std::make_tuple(it, end);
+    }
+
+    template <typename Container>
+    void shuffle(Container& container){
+        static std::random_device rd;
+        static std::mt19937_64 g(rd());
+
+        std::shuffle(container.begin(), container.end(), g);
+    }
+
     //Special handling for the layer 0
     //data is coming from iterators not from input
     template <std::size_t I, typename Iterator, cpp_enable_if((I == 0 && !batch_layer_ignore<I>::value))>
-    void pretrain_layer_batch(Iterator first, Iterator last, watcher_t& watcher, std::size_t max_epochs) {
-        //TODO Ideally, we would like to shuffle a copy, not the original range
+    void pretrain_layer_batch(Iterator orig_first, Iterator orig_last, watcher_t& watcher, std::size_t max_epochs) {
+        std::vector<std::remove_cv_t<typename std::iterator_traits<Iterator>::value_type>> input_copy;
+
+        auto iterators = prepare_it<false>(orig_first, orig_last, input_copy);
+
+        decltype(auto) first = std::get<0>(iterators);
+        decltype(auto) last = std::get<1>(iterators);
 
         using layer_t = layer_type<I>;
 
@@ -1014,12 +1039,7 @@ private:
             std::size_t big_batch = 0;
 
             // Sort before training
-            if(dbn_traits<this_type>::shuffle()){
-                static std::random_device rd;
-                static std::mt19937_64 g(rd());
-
-                std::shuffle(first, last, g);
-            }
+            shuffle(input_copy);
 
             //Create a new context for this epoch
             rbm_training_context context;
@@ -1069,8 +1089,13 @@ private:
 
     //Normal version
     template <std::size_t I, typename Iterator, cpp_enable_if((I > 0 && I < layers && !dbn_traits<this_type>::is_multiplex() && !batch_layer_ignore<I>::value))>
-    void pretrain_layer_batch(Iterator first, Iterator last, watcher_t& watcher, std::size_t max_epochs) {
-        //TODO Ideally, we would like to shuffle a copy, not the original range
+    void pretrain_layer_batch(Iterator orig_first, Iterator orig_last, watcher_t& watcher, std::size_t max_epochs) {
+        std::vector<typename std::iterator_traits<Iterator>::value_type> input_copy;
+
+        auto iterators = prepare_it<!batch_layer_ignore<0>::value>(orig_first, orig_last, input_copy);
+
+        decltype(auto) first = std::get<0>(iterators);
+        decltype(auto) last = std::get<1>(iterators);
 
         using layer_t = layer_type<I>;
 
@@ -1101,12 +1126,7 @@ private:
             std::size_t big_batch = 0;
 
             // Sort before training
-            if(dbn_traits<this_type>::shuffle()){
-                static std::random_device rd;
-                static std::mt19937_64 g(rd());
-
-                std::shuffle(first, last, g);
-            }
+            shuffle(input_copy);
 
             //Create a new context for this epoch
             rbm_training_context context;
@@ -1166,8 +1186,13 @@ private:
 
     //Multiplex version
     template <std::size_t I, typename Iterator, cpp_enable_if((I > 0 && I < layers && dbn_traits<this_type>::is_multiplex() && !batch_layer_ignore<I>::value))>
-    void pretrain_layer_batch(Iterator first, Iterator last, watcher_t& watcher, std::size_t max_epochs) {
-        //TODO Ideally, we would like to shuffle a copy, not the original range
+    void pretrain_layer_batch(Iterator orig_first, Iterator orig_last, watcher_t& watcher, std::size_t max_epochs) {
+        std::vector<typename std::iterator_traits<Iterator>::value_type> input_copy;
+
+        auto iterators = prepare_it<!batch_layer_ignore<0>::value>(orig_first, orig_last, input_copy);
+
+        decltype(auto) first = std::get<0>(iterators);
+        decltype(auto) last = std::get<1>(iterators);
 
         using layer_t = layer_type<I>;
 
@@ -1198,12 +1223,7 @@ private:
             std::size_t big_batch = 0;
 
             // Sort before training
-            if(dbn_traits<this_type>::shuffle()){
-                static std::random_device rd;
-                static std::mt19937_64 g(rd());
-
-                std::shuffle(first, last, g);
-            }
+            shuffle(input_copy);
 
             //Create a new context for this epoch
             rbm_training_context context;
