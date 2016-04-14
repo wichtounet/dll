@@ -395,7 +395,8 @@ void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch
         f(rbm).template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
     }).else_([&](auto f) {
         f(rbm).template batch_activate_visible<true, false>(t.h1_a, t.h1_s, t.v2_a, t.v2_s);
-        f(rbm).template batch_activate_hidden<true, (K > 1)>(t.h2_a, t.h2_s, t.v2_a, t.v2_s); });
+        f(rbm).template batch_activate_hidden<true, (K > 1)>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
+    });
 
     //CD-k
     for (std::size_t k = 1; k < K; ++k) {
