@@ -137,8 +137,10 @@ struct rbm_trainer {
             //TODO Better handling of incomplete batch size would solve this problem (this could be done by
             //cleaning the data before the last batch)
             if (size % batch_size != 0) {
+#ifndef DLL_SILENT
                 std::cout << "WARNING: The number of samples should be divisible by the batch size" << std::endl;
                 std::cout << "         This may cause discrepancies in the results." << std::endl;
+#endif
             }
 
             //Only used for debugging purposes, no need to be precise
