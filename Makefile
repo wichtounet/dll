@@ -67,6 +67,7 @@ TEST_FILES=$(TEST_CPP_FILES) $(PROCESSOR_TEST_CPP_FILES)
 $(eval $(call auto_folder_compile,processor/src,-Iprocessor/include))
 $(eval $(call auto_folder_compile,test/src,-Itest/include))
 $(eval $(call auto_folder_compile,view/src))
+$(eval $(call auto_folder_compile,workbench/src,-DDLL_SILENT))
 
 # Generate executable for the prepropcessor
 $(eval $(call add_executable,dllp,$(PROCESSOR_CPP_FILES)))
@@ -84,6 +85,10 @@ $(eval $(call add_executable_set,dll_view_rbm,dll_view_rbm))
 $(eval $(call add_executable_set,dll_view_crbm,dll_view_crbm))
 $(eval $(call add_executable_set,dll_view_crbm_mp,dll_view_crbm_mp))
 $(eval $(call add_executable_set,dll_view,dll_view_rbm, dll_view_crbm, dll_view_crbm_mp))
+
+# Generate executables for performance analysis
+$(eval $(call add_executable,dll_perf,workbench/src/perf_paper.cpp))
+$(eval $(call add_executable_set,dll_perf,dll_perf))
 
 release: release_dllp release_dll_test release_dll_view
 release_debug: release_debug_dllp release_debug_dll_test release_debug_dll_view
