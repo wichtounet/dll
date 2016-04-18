@@ -263,6 +263,22 @@ void batch_compute_gradients(Trainer& t) {
     }
 }
 
+template <typename Trainer>
+void compute_gradients_one(Trainer& t) {
+    dll::auto_timer timer("cd:compute_gradients_one:std");
+
+    t.w_grad = 0;
+
+    for (std::size_t i = 0; i < etl::dim<0>(t.w_grad); i++) {
+        for (std::size_t j = 0; j < etl::dim<1>(t.w_grad); j++) {
+            t.w_grad(i, j) += t.vf(0, i) * t.h1_a(0, j) - t.v2_a(0, i) * t.h2_a(0, j);
+        }
+    }
+
+    t.b_grad = t.h1_a(0) - t.h2_a(0);
+    t.c_grad = t.vf(0) - t.v2_a(0);
+}
+
 #else
 
 template <typename Trainer>
@@ -298,6 +314,35 @@ void batch_compute_gradients(Trainer& t) {
     }
 }
 
+template <typename Trainer>
+void compute_gradients_one(Trainer& t) {
+    dll::auto_timer timer("cd:compute_gradients_one:blas");
+
+    t.w_grad = 0;
+    t.b_grad = 0;
+    t.c_grad = 0;
+
+    blas_ger(
+        etl::dim<1>(t.vf), etl::dim<1>(t.h1_a),
+        1.0,
+        t.vf(0).memory_start(),
+        t.h1_a(0).memory_start(),
+        t.w_grad.memory_start());
+
+    blas_ger(
+        etl::dim<1>(t.v2_a), etl::dim<1>(t.h2_a),
+        -1.0,
+        t.v2_a(0).memory_start(),
+        t.h2_a(0).memory_start(),
+        t.w_grad.memory_start());
+
+    blas_axpy(etl::dim<1>(t.h1_a), 1.0, t.h1_a(0).memory_start(), t.b_grad.memory_start());
+    blas_axpy(etl::dim<1>(t.h2_a), -1.0, t.h2_a(0).memory_start(), t.b_grad.memory_start());
+
+    blas_axpy(etl::dim<1>(t.vf), 1.0, t.vf(0).memory_start(), t.c_grad.memory_start());
+    blas_axpy(etl::dim<1>(t.v2_a), -1.0, t.v2_a(0).memory_start(), t.c_grad.memory_start());
+}
+
 #endif
 
 /* The training procedures */
@@ -305,6 +350,8 @@ void batch_compute_gradients(Trainer& t) {
 template <bool Persistent, std::size_t K, typename T, typename RBM, typename Trainer, cpp_enable_if(layer_traits<RBM>::is_parallel_mode())>
 void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:gradients:normal:par");
+
+    auto n = input_batch.size();
 
     // clang-format off
     maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(),
@@ -337,34 +384,40 @@ void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch
             rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.ht(i));
         }
 
-        //The following lines are equivalent to mmul(vf, h1_a) - mmul(v2_a, h2_a)
-        //Doing them this way is significantly faster than computing the two matrix mutplications
-        //and doing the subtraction later
+        if(n > 1){
+            //The following lines are equivalent to mmul(vf, h1_a) - mmul(v2_a, h2_a)
+            //Doing them this way is significantly faster than computing the two matrix mutplications
+            //and doing the subtraction later
 
-        auto g = t.w_grad_b(i);
+            auto g = t.w_grad_b(i);
 
-        //Reset the batch gradients
-        g = 0;
+            //Reset the batch gradients
+            g = 0;
 
-        auto a1 = reshape_nv1(rbm, t.vf(i));
-        auto b1 = reshape_1nh(rbm, t.h1_a(i));
-        auto a2 = reshape_nv1(rbm, t.v2_a(i));
-        auto b2 = reshape_1nh(rbm, t.h2_a(i));
+            auto a1 = reshape_nv1(rbm, t.vf(i));
+            auto b1 = reshape_1nh(rbm, t.h1_a(i));
+            auto a2 = reshape_nv1(rbm, t.v2_a(i));
+            auto b2 = reshape_1nh(rbm, t.h2_a(i));
 
-        for(std::size_t i2 = 0; i2 < rows(a1); i2++){
-            for(std::size_t k = 0; k < columns(a1); k++){
-                for(std::size_t j = 0; j < columns(b1); j++){
-                    g(i2,j) += a1(i2,k) * b1(k,j) - a2(i2,k) * b2(k,j);
+            for(std::size_t i2 = 0; i2 < rows(a1); i2++){
+                for(std::size_t k = 0; k < columns(a1); k++){
+                    for(std::size_t j = 0; j < columns(b1); j++){
+                        g(i2,j) += a1(i2,k) * b1(k,j) - a2(i2,k) * b2(k,j);
+                    }
                 }
             }
+        } else {
+            compute_gradients_one(t);
         }
     });
     // clang-format on
 
-    //Compute the gradients
-    t.w_grad = sum_l(t.w_grad_b);
-    t.b_grad = sum_l(t.h1_a - t.h2_a);
-    t.c_grad = sum_l(t.vf - t.v2_a);
+    if(n > 1){
+        //Compute the gradients
+        t.w_grad = sum_l(t.w_grad_b);
+        t.b_grad = sum_l(t.h1_a - t.h2_a);
+        t.c_grad = sum_l(t.vf - t.v2_a);
+    }
 }
 
 template <bool Persistent, std::size_t K, typename T, typename RBM, typename Trainer, cpp_disable_if(layer_traits<RBM>::is_parallel_mode())>
