@@ -385,19 +385,8 @@ void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch
         }
 
         if(n > 1){
-            //The following lines are equivalent to mmul(vf, h1_a) - mmul(v2_a, h2_a)
-            //Doing them this way is significantly faster than computing the two matrix mutplications
-            //and doing the subtraction later
-
-            //auto g = t.w_grad_b(i);
-
             //Reset the batch gradients
             t.w_grad_b(i) = 0;
-
-            //auto a1 = reshape_nv1(rbm, t.vf(i));
-            //auto b1 = reshape_1nh(rbm, t.h1_a(i));
-            //auto a2 = reshape_nv1(rbm, t.v2_a(i));
-            //auto b2 = reshape_1nh(rbm, t.h2_a(i));
 
             for(std::size_t i2 = 0; i2 < num_visible(rbm); i2++){
                 for(std::size_t j = 0; j < num_hidden(rbm); j++){
