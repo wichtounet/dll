@@ -21,7 +21,9 @@ TEST_LD_FLAGS=$(LIBSVM_LD_FLAGS)
 CXX_FLAGS += -DETL_VECTORIZE_FULL
 
 # Activate NaN Debugging
+ifeq (,$(DLL_PERF))
 DEBUG_FLAGS += -DNAN_DEBUG
+endif
 
 # Activate BLAS mode on demand
 ifneq (,$(ETL_MKL))
