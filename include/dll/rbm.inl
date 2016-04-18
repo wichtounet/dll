@@ -25,16 +25,16 @@ namespace dll {
  */
 template <typename Desc>
 struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
-    using desc      = Desc;
-    using weight    = typename desc::weight;
-    using this_type = rbm<desc>;
-    using base_type = standard_rbm<this_type, desc>;
+    using desc      = Desc;                          ///< The layer descriptor
+    using weight    = typename desc::weight;         ///< The weight type
+    using this_type = rbm<desc>;                     ///< The type of this layer
+    using base_type = standard_rbm<this_type, desc>; ///< The base type
 
-    static constexpr const std::size_t num_visible = desc::num_visible;
-    static constexpr const std::size_t num_hidden  = desc::num_hidden;
+    static constexpr const std::size_t num_visible = desc::num_visible; ///< The number of visible units
+    static constexpr const std::size_t num_hidden  = desc::num_hidden;  ///< The number of hidden units
 
-    static constexpr const unit_type visible_unit = desc::visible_unit;
-    static constexpr const unit_type hidden_unit  = desc::hidden_unit;
+    static constexpr const unit_type visible_unit = desc::visible_unit; ///< The type of visible units
+    static constexpr const unit_type hidden_unit  = desc::hidden_unit;  ///< The type of hidden units
 
     static constexpr bool dbn_only = layer_traits<this_type>::is_dbn_only();
 
@@ -44,9 +44,9 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
     template <std::size_t B>
     using output_batch_t = etl::fast_dyn_matrix<weight, B, num_hidden>;
 
-    using w_type = etl::fast_matrix<weight, num_visible, num_hidden>;
-    using b_type = etl::fast_vector<weight, num_hidden>;
-    using c_type = etl::fast_vector<weight, num_visible>;
+    using w_type = etl::fast_matrix<weight, num_visible, num_hidden>; ///< The type used to store weights
+    using b_type = etl::fast_vector<weight, num_hidden>;              ///< The type used to store hidden biases
+    using c_type = etl::fast_vector<weight, num_visible>;             ///< The type used to store visible biases
 
     //Weights and biases
     w_type w; //!< Weights
