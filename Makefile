@@ -25,10 +25,12 @@ ifeq (,$(DLL_PERF))
 DEBUG_FLAGS += -DNAN_DEBUG
 endif
 
+DLL_BLAS_PKG ?= mkl
+
 # Activate BLAS mode on demand
 ifneq (,$(ETL_MKL))
-CXX_FLAGS += -DETL_MKL_MODE $(shell pkg-config --cflags mkl)
-LD_FLAGS += $(shell pkg-config --libs mkl)
+CXX_FLAGS += -DETL_MKL_MODE $(shell pkg-config --cflags $(DLL_BLAS_PKG))
+LD_FLAGS += $(shell pkg-config --libs $(DLL_BLAS_PKG))
 
 # Disable warning for MKL
 ifneq (,$(findstring clang,$(CXX)))
