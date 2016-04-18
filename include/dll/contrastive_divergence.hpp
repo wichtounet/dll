@@ -389,21 +389,19 @@ void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch
             //Doing them this way is significantly faster than computing the two matrix mutplications
             //and doing the subtraction later
 
-            auto g = t.w_grad_b(i);
+            //auto g = t.w_grad_b(i);
 
             //Reset the batch gradients
-            g = 0;
+            t.w_grad_b(i) = 0;
 
-            auto a1 = reshape_nv1(rbm, t.vf(i));
-            auto b1 = reshape_1nh(rbm, t.h1_a(i));
-            auto a2 = reshape_nv1(rbm, t.v2_a(i));
-            auto b2 = reshape_1nh(rbm, t.h2_a(i));
+            //auto a1 = reshape_nv1(rbm, t.vf(i));
+            //auto b1 = reshape_1nh(rbm, t.h1_a(i));
+            //auto a2 = reshape_nv1(rbm, t.v2_a(i));
+            //auto b2 = reshape_1nh(rbm, t.h2_a(i));
 
-            for(std::size_t i2 = 0; i2 < rows(a1); i2++){
-                for(std::size_t k = 0; k < columns(a1); k++){
-                    for(std::size_t j = 0; j < columns(b1); j++){
-                        g(i2,j) += a1(i2,k) * b1(k,j) - a2(i2,k) * b2(k,j);
-                    }
+            for(std::size_t i2 = 0; i2 < num_visible(rbm); i2++){
+                for(std::size_t j = 0; j < num_hidden(rbm); j++){
+                    t.w_grad_b(i, i2, j) += t.vf(i, i2) * t.h1_a(i,j) - t.v2_a(i, i2) * t.h2_a(i, j);
                 }
             }
         } else {
