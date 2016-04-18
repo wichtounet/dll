@@ -15,25 +15,38 @@
 
 namespace {
 
-constexpr const std::size_t EPOCHS = 5;
+constexpr const std::size_t EPOCHS = 3;
+
+using clock      = std::chrono::steady_clock;
+using time_point = std::chrono::time_point<clock>;
+using resolution = std::chrono::milliseconds;
 
 struct perf_timer {
     std::string name;
     std::size_t repeat;
 
-    std::chrono::time_point<std::chrono::steady_clock> start;
+    time_point start;
 
     perf_timer(std::string name, std::size_t repeat) : name(name), repeat(repeat) {
-        start = std::chrono::steady_clock::now();
+        start = clock::now();
     }
 
     ~perf_timer(){
-        auto end      = std::chrono::steady_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+        auto end      = clock::now();
+        auto duration = std::chrono::duration_cast<resolution>(end - start).count();
 
         std::cout << name << ": " << duration / double(repeat) << "ms" << std::endl;
     }
 };
+
+#define MEASURE(rbm, name, data)                                                     \
+    {                                                                                \
+        time_point start = clock::now();                                             \
+        rbm.train<false>(data, EPOCHS);                                              \
+        time_point end = clock::now();                                               \
+        auto duration = std::chrono::duration_cast<resolution>(end - start).count(); \
+        std::cout << name << ": " << duration / double(EPOCHS) << "ms" << std::endl; \
+    }
 
 } //end of anonymous namespace
 
@@ -56,10 +69,14 @@ int main(int argc, char* argv []) {
     std::vector<etl::dyn_vector<float>> data_4(n, etl::dyn_vector<float>(2000));
 
     for(std::size_t i = 0; i < n; ++i){
-        data_2[i] = etl::normal_generator();
-        data_3[i] = etl::normal_generator();
-        data_4[i] = etl::normal_generator();
+        data_2[i] = etl::normal_generator() * 255.0;
+        data_3[i] = etl::normal_generator() * 255.0;
+        data_4[i] = etl::normal_generator() * 255.0;
     }
+
+    mnist::binarize_each(data_2);
+    mnist::binarize_each(data_3);
+    mnist::binarize_each(data_4);
 
     cpp_assert(data_1[0].size() == 784, "Invalid input size");
     cpp_assert(data_2[0].size() == 500, "Invalid input size");
@@ -69,30 +86,15 @@ int main(int argc, char* argv []) {
     std::cout << n << " images used for training" << std::endl;
 
     if(number.empty() || number == "1"){
-        dll::rbm_desc<784, 500, /*dll::parallel_mode, dll::serial,*/ dll::batch_size<1>, dll::weight_type<float>>::layer_t rbm_1;
-        dll::rbm_desc<500, 500, /*dll::parallel_mode, dll::serial,*/ dll::batch_size<1>, dll::weight_type<float>>::layer_t rbm_2;
-        dll::rbm_desc<500, 2000, /*dll::parallel_mode, dll::serial,*/ dll::batch_size<1>, dll::weight_type<float>>::layer_t rbm_3;
-        dll::rbm_desc<2000, 10, /*dll::parallel_mode, dll::serial,*/ dll::batch_size<1>, dll::weight_type<float>>::layer_t rbm_4;
+        dll::rbm_desc<784, 500, dll::parallel_mode, dll::serial, dll::batch_size<1>, dll::weight_type<float>>::layer_t rbm_1;
+        dll::rbm_desc<500, 500, dll::parallel_mode, dll::serial, dll::batch_size<1>, dll::weight_type<float>>::layer_t rbm_2;
+        dll::rbm_desc<500, 2000, dll::parallel_mode, dll::serial, dll::batch_size<1>, dll::weight_type<float>>::layer_t rbm_3;
+        dll::rbm_desc<2000, 10, dll::parallel_mode, dll::serial, dll::batch_size<1>, dll::weight_type<float>>::layer_t rbm_4;
 
-        {
-            perf_timer timer("rbm_784_500_normal", EPOCHS);
-            rbm_1.train<false>(data_1, EPOCHS);
-        }
-
-        {
-            perf_timer timer("rbm_500_500_normal", EPOCHS);
-            rbm_2.train<false>(data_2, EPOCHS);
-        }
-
-        {
-            perf_timer timer("rbm_500_2000_normal", EPOCHS);
-            rbm_3.train<false>(data_3, EPOCHS);
-        }
-
-        {
-            perf_timer timer("rbm_2000_10_normal", EPOCHS);
-            rbm_4.train<false>(data_4, EPOCHS);
-        }
+        MEASURE(rbm_1, "rbm_784_500_normal", data_1);
+        MEASURE(rbm_2, "rbm_500_500_normal", data_2);
+        MEASURE(rbm_3, "rbm_500_2000_normal", data_3);
+        MEASURE(rbm_4, "rbm_2000_10_normal", data_4);
     }
 
     if(number.empty() || number == "2"){
@@ -101,25 +103,10 @@ int main(int argc, char* argv []) {
         dll::rbm_desc<500, 2000, dll::parallel_mode, dll::batch_size<64>, dll::weight_type<float>>::layer_t rbm_3;
         dll::rbm_desc<2000, 10, dll::parallel_mode, dll::batch_size<64>, dll::weight_type<float>>::layer_t rbm_4;
 
-        {
-            perf_timer timer("rbm_784_500_par_64", EPOCHS);
-            rbm_1.train<false>(data_1, EPOCHS);
-        }
-
-        {
-            perf_timer timer("rbm_500_500_par_64", EPOCHS);
-            rbm_2.train<false>(data_2, EPOCHS);
-        }
-
-        {
-            perf_timer timer("rbm_500_2000_par_64", EPOCHS);
-            rbm_3.train<false>(data_3, EPOCHS);
-        }
-
-        {
-            perf_timer timer("rbm_2000_10_par_64", EPOCHS);
-            rbm_4.train<false>(data_4, EPOCHS);
-        }
+        MEASURE(rbm_1, "rbm_784_500_par_64", data_1);
+        MEASURE(rbm_2, "rbm_500_500_par_64", data_2);
+        MEASURE(rbm_3, "rbm_500_2000_par_64", data_3);
+        MEASURE(rbm_4, "rbm_2000_10_par_64", data_4);
     }
 
     if(number.empty() || number == "3"){
@@ -128,25 +115,10 @@ int main(int argc, char* argv []) {
         dll::rbm_desc<500, 2000, dll::batch_size<64>, dll::weight_type<float>>::layer_t rbm_3;
         dll::rbm_desc<2000, 10, dll::batch_size<64>, dll::weight_type<float>>::layer_t rbm_4;
 
-        {
-            perf_timer timer("rbm_784_500_batch_64", EPOCHS);
-            rbm_1.train<false>(data_1, EPOCHS);
-        }
-
-        {
-            perf_timer timer("rbm_500_500_batch_64", EPOCHS);
-            rbm_2.train<false>(data_2, EPOCHS);
-        }
-
-        {
-            perf_timer timer("rbm_500_2000_batch_64", EPOCHS);
-            rbm_3.train<false>(data_3, EPOCHS);
-        }
-
-        {
-            perf_timer timer("rbm_2000_10_batch_64", EPOCHS);
-            rbm_4.train<false>(data_4, EPOCHS);
-        }
+        MEASURE(rbm_1, "rbm_784_500_batch_64", data_1);
+        MEASURE(rbm_2, "rbm_500_500_batch_64", data_2);
+        MEASURE(rbm_3, "rbm_500_2000_batch_64", data_3);
+        MEASURE(rbm_4, "rbm_2000_10_batch_64", data_4);
     }
 
     return 0;
