@@ -15,7 +15,7 @@
 
 namespace {
 
-constexpr const std::size_t EPOCHS = 3;
+constexpr const std::size_t EPOCHS = 5;
 
 using clock      = std::chrono::steady_clock;
 using time_point = std::chrono::time_point<clock>;
@@ -52,7 +52,7 @@ struct perf_timer {
 
 int main(int argc, char* argv []) {
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>();
-    dataset.training_images.resize(1000);
+    //dataset.training_images.resize(1000);
 
     std::string number;
     if(argc > 1){
@@ -98,27 +98,37 @@ int main(int argc, char* argv []) {
     }
 
     if(number.empty() || number == "2"){
-        dll::rbm_desc<784, 500, dll::parallel_mode, dll::batch_size<64>, dll::weight_type<float>>::layer_t rbm_1;
-        dll::rbm_desc<500, 500, dll::parallel_mode, dll::batch_size<64>, dll::weight_type<float>>::layer_t rbm_2;
-        dll::rbm_desc<500, 2000, dll::parallel_mode, dll::batch_size<64>, dll::weight_type<float>>::layer_t rbm_3;
-        dll::rbm_desc<2000, 10, dll::parallel_mode, dll::batch_size<64>, dll::weight_type<float>>::layer_t rbm_4;
+        dll::rbm_desc<784, 500, dll::parallel_mode, dll::batch_size<8>, dll::weight_type<float>>::layer_t rbm_1;
+        dll::rbm_desc<500, 500, dll::parallel_mode, dll::batch_size<8>, dll::weight_type<float>>::layer_t rbm_2;
+        dll::rbm_desc<500, 2000, dll::parallel_mode, dll::batch_size<8>, dll::weight_type<float>>::layer_t rbm_3;
+        dll::rbm_desc<2000, 10, dll::parallel_mode, dll::batch_size<8>, dll::weight_type<float>>::layer_t rbm_4;
 
-        MEASURE(rbm_1, "rbm_784_500_par_64", data_1);
-        MEASURE(rbm_2, "rbm_500_500_par_64", data_2);
-        MEASURE(rbm_3, "rbm_500_2000_par_64", data_3);
-        MEASURE(rbm_4, "rbm_2000_10_par_64", data_4);
+        MEASURE(rbm_1, "rbm_784_500_par_8", data_1);
+        MEASURE(rbm_2, "rbm_500_500_par_8", data_2);
+        MEASURE(rbm_3, "rbm_500_2000_par_8", data_3);
+        MEASURE(rbm_4, "rbm_2000_10_par_8", data_4);
     }
 
     if(number.empty() || number == "3"){
-        dll::rbm_desc<784, 500, dll::batch_size<64>, dll::weight_type<float>>::layer_t rbm_1;
-        dll::rbm_desc<500, 500, dll::batch_size<64>, dll::weight_type<float>>::layer_t rbm_2;
-        dll::rbm_desc<500, 2000, dll::batch_size<64>, dll::weight_type<float>>::layer_t rbm_3;
-        dll::rbm_desc<2000, 10, dll::batch_size<64>, dll::weight_type<float>>::layer_t rbm_4;
-
-        MEASURE(rbm_1, "rbm_784_500_batch_64", data_1);
-        MEASURE(rbm_2, "rbm_500_500_batch_64", data_2);
-        MEASURE(rbm_3, "rbm_500_2000_batch_64", data_3);
-        MEASURE(rbm_4, "rbm_2000_10_batch_64", data_4);
+#define BATCH_MEASURE(batch)                                                                      \
+    {                                                                                             \
+        dll::rbm_desc<784, 500, dll::batch_size<batch>, dll::weight_type<float>>::layer_t rbm_1;  \
+        dll::rbm_desc<500, 500, dll::batch_size<batch>, dll::weight_type<float>>::layer_t rbm_2;  \
+        dll::rbm_desc<500, 2000, dll::batch_size<batch>, dll::weight_type<float>>::layer_t rbm_3; \
+        dll::rbm_desc<2000, 10, dll::batch_size<batch>, dll::weight_type<float>>::layer_t rbm_4;  \
+        MEASURE(rbm_1, "rbm_784_500_batch_" #batch, data_1);                                      \
+        MEASURE(rbm_2, "rbm_500_500_batch_" #batch, data_2);                                      \
+        MEASURE(rbm_3, "rbm_500_2000_batch_" #batch, data_3);                                     \
+        MEASURE(rbm_4, "rbm_2000_10_batch_" #batch, data_4);                                      \
+    }
+        BATCH_MEASURE(8);
+        BATCH_MEASURE(16);
+        BATCH_MEASURE(24);
+        BATCH_MEASURE(32);
+        BATCH_MEASURE(64);
+        BATCH_MEASURE(128);
+        BATCH_MEASURE(256);
+        BATCH_MEASURE(512);
     }
 
     return 0;
