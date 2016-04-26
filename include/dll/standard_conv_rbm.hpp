@@ -268,8 +268,8 @@ private:
         for (std::size_t channel = 0; channel < parent_t::NC; ++channel) {
             std::cout << "Channel " << channel << std::endl;
 
-            for (size_t i = 0; i < parent_t::NV; ++i) {
-                for (size_t j = 0; j < parent_t::NV; ++j) {
+            for (size_t i = 0; i < parent_t::NV1; ++i) {
+                for (size_t j = 0; j < parent_t::NV2; ++j) {
                     std::cout << rbm.v2_a(channel, i, j) << " ";
                 }
                 std::cout << std::endl;
@@ -281,8 +281,8 @@ private:
         for (std::size_t channel = 0; channel < parent_t::NC; ++channel) {
             std::cout << "Channel " << channel << std::endl;
 
-            for (size_t i = 0; i < parent_t::NV; ++i) {
-                for (size_t j = 0; j < parent_t::NV; ++j) {
+            for (size_t i = 0; i < parent_t::NV1; ++i) {
+                for (size_t j = 0; j < parent_t::NV2; ++j) {
                     std::cout << rbm.v2_s(channel, i, j) << " ";
                 }
                 std::cout << std::endl;
@@ -292,8 +292,8 @@ private:
 
     static void display_hidden_unit_activations(const parent_t& rbm) {
         for (size_t k = 0; k < parent_t::K; ++k) {
-            for (size_t i = 0; i < parent_t::NV; ++i) {
-                for (size_t j = 0; j < parent_t::NV; ++j) {
+            for (size_t i = 0; i < parent_t::NV1; ++i) {
+                for (size_t j = 0; j < parent_t::NV2; ++j) {
                     std::cout << rbm.h2_a(k)(i, j) << " ";
                 }
                 std::cout << std::endl;
@@ -305,8 +305,8 @@ private:
 
     static void display_hidden_unit_samples(const parent_t& rbm) {
         for (size_t k = 0; k < parent_t::K; ++k) {
-            for (size_t i = 0; i < parent_t::NV; ++i) {
-                for (size_t j = 0; j < parent_t::NV; ++j) {
+            for (size_t i = 0; i < parent_t::NV1; ++i) {
+                for (size_t j = 0; j < parent_t::NV2; ++j) {
                     std::cout << rbm.h2_s(k)(i, j) << " ";
                 }
                 std::cout << std::endl;
