@@ -299,25 +299,25 @@ protected:
         using namespace etl;
 
         //Compute activation probabilities
-        H_PROBS(unit_type::BINARY, f(h_a) = sigmoid(b + mul(v_a, w, t)));
-        H_PROBS(unit_type::RELU, f(h_a) = max(b + mul(v_a, w, t), 0.0));
-        H_PROBS(unit_type::RELU6, f(h_a) = min(max(b + mul(v_a, w, t), 0.0), 6.0));
-        H_PROBS(unit_type::RELU1, f(h_a) = min(max(b + mul(v_a, w, t), 0.0), 1.0));
-        H_PROBS(unit_type::SOFTMAX, f(h_a) = stable_softmax(b + mul(v_a, w, t)));
+        H_PROBS(unit_type::BINARY, f(h_a) = sigmoid(b + (t = v_a * w)));
+        H_PROBS(unit_type::RELU, f(h_a) = max(b + (t = v_a * w), 0.0));
+        H_PROBS(unit_type::RELU6, f(h_a) = min(max(b + (t = v_a * w), 0.0), 6.0));
+        H_PROBS(unit_type::RELU1, f(h_a) = min(max(b + (t = v_a * w), 0.0), 1.0));
+        H_PROBS(unit_type::SOFTMAX, f(h_a) = stable_softmax(b + (t = v_a * w)));
 
         //Sample values from input
         H_SAMPLE_INPUT(unit_type::BINARY, f(h_s) = bernoulli(h_a));
-        H_SAMPLE_INPUT(unit_type::RELU, f(h_s) = max(logistic_noise(b + mul(v_a, w, t)), 0.0));
+        H_SAMPLE_INPUT(unit_type::RELU, f(h_s) = max(logistic_noise(b + (t = v_a * w)), 0.0));
         H_SAMPLE_INPUT(unit_type::RELU6, f(h_s) = ranged_noise(h_a, 6.0));
         H_SAMPLE_INPUT(unit_type::RELU1, f(h_s) = ranged_noise(h_a, 1.0));
         H_SAMPLE_INPUT(unit_type::SOFTMAX, f(h_s) = one_if_max(h_a));
 
         //Sample values from probs
-        H_SAMPLE_PROBS(unit_type::BINARY, f(h_s) = bernoulli(sigmoid(b + mul(v_a, w, t))));
-        H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = bernoulli(max(b + mul(v_a, w, t), 0.0)));
-        H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = bernoulli(min(max(b + mul(v_a, w, t), 0.0), 6.0)));
-        H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = bernoulli(min(max(b + mul(v_a, w, t), 0.0), 1.0)));
-        H_SAMPLE_PROBS(unit_type::SOFTMAX, f(h_s) = bernoulli(stable_softmax(b + mul(v_a, w, t))));
+        H_SAMPLE_PROBS(unit_type::BINARY, f(h_s) = bernoulli(sigmoid(b + (t = v_a * w))));
+        H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = bernoulli(max(b + (t = v_a * w), 0.0)));
+        H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = bernoulli(min(max(b + (t = v_a * w), 0.0), 6.0)));
+        H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = bernoulli(min(max(b + (t = v_a * w), 0.0), 1.0)));
+        H_SAMPLE_PROBS(unit_type::SOFTMAX, f(h_s) = bernoulli(stable_softmax(b + (t = v_a * w))));
 
         if (P) {
             nan_check_deep(h_a);
@@ -334,13 +334,13 @@ protected:
 
         using namespace etl;
 
-        V_PROBS(unit_type::BINARY, f(v_a) = sigmoid(c + mul(w, h_s, t)));
-        V_PROBS(unit_type::GAUSSIAN, f(v_a) = c + mul(w, h_s, t));
-        V_PROBS(unit_type::RELU, f(v_a) = max(c + mul(w, h_s, t), 0.0));
+        V_PROBS(unit_type::BINARY, f(v_a) = sigmoid(c + (t = w * h_s)));
+        V_PROBS(unit_type::GAUSSIAN, f(v_a) = c + (t = w * h_s));
+        V_PROBS(unit_type::RELU, f(v_a) = max(c + (t = w * h_s), 0.0));
 
-        V_SAMPLE_INPUT(unit_type::BINARY, f(v_s) = bernoulli(sigmoid(c + mul(w, h_s, t))));
-        V_SAMPLE_INPUT(unit_type::GAUSSIAN, f(v_s) = normal_noise(c + mul(w, h_s, t)));
-        V_SAMPLE_INPUT(unit_type::RELU, f(v_s) = logistic_noise(max(c + mul(w, h_s, t), 0.0)));
+        V_SAMPLE_INPUT(unit_type::BINARY, f(v_s) = bernoulli(sigmoid(c + (t = w * h_s))));
+        V_SAMPLE_INPUT(unit_type::GAUSSIAN, f(v_s) = normal_noise(c + (t = w * h_s)));
+        V_SAMPLE_INPUT(unit_type::RELU, f(v_s) = logistic_noise(max(c + (t = w * h_s), 0.0)));
 
         if (P) {
             nan_check_deep(v_a);
@@ -361,14 +361,14 @@ protected:
 
         cpp_assert(etl::dim<0>(h_s) == Batch && etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
 
-        H_PROBS(unit_type::BINARY, f(h_a) = sigmoid(rep_l(b, Batch) + mul(v_a, w)));
-        H_PROBS(unit_type::RELU, f(h_a) = max(rep_l(b, Batch) + mul(v_a, w), 0.0));
-        H_PROBS(unit_type::RELU6, f(h_a) = min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 6.0));
-        H_PROBS(unit_type::RELU1, f(h_a) = min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 1.0));
+        H_PROBS(unit_type::BINARY, f(h_a) = sigmoid(rep_l(b, Batch) + v_a * w));
+        H_PROBS(unit_type::RELU, f(h_a) = max(rep_l(b, Batch) + v_a * w, 0.0));
+        H_PROBS(unit_type::RELU6, f(h_a) = min(max(rep_l(b, Batch) + v_a * w, 0.0), 6.0));
+        H_PROBS(unit_type::RELU1, f(h_a) = min(max(rep_l(b, Batch) + v_a * w, 0.0), 1.0));
 
         H_PROBS_MULTI(unit_type::SOFTMAX)
         ([&](auto f) {
-            auto x = f(etl::force_temporary(rep_l(b, Batch) + mul(v_a, w)));
+            auto x = f(etl::force_temporary(rep_l(b, Batch) + v_a * w));
 
             for (std::size_t b = 0; b < Batch; ++b) {
                 f(h_a)(b) = stable_softmax(x(b));
@@ -376,7 +376,7 @@ protected:
         });
 
         H_SAMPLE_PROBS(unit_type::BINARY, f(h_s) = bernoulli(h_a));
-        H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = max(logistic_noise(rep_l(b, Batch) + mul(v_a, w)), 0.0));
+        H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = max(logistic_noise(rep_l(b, Batch) + v_a * w), 0.0));
         H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = ranged_noise(h_a, 6.0));
         H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = ranged_noise(h_a, 1.0));
         H_SAMPLE_PROBS_MULTI(unit_type::SOFTMAX)
@@ -386,13 +386,13 @@ protected:
             }
         });
 
-        H_SAMPLE_INPUT(unit_type::BINARY, f(h_s) = bernoulli(sigmoid(rep_l(b, Batch) + mul(v_a, w))));
-        H_SAMPLE_INPUT(unit_type::RELU, f(h_s) = max(normal_noise(rep_l(b, Batch) + mul(v_a, w)), 0.0));
-        H_SAMPLE_INPUT(unit_type::RELU6, f(h_s) = ranged_noise(min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 6.0), 6.0));
-        H_SAMPLE_INPUT(unit_type::RELU1, f(h_s) = ranged_noise(min(max(rep_l(b, Batch) + mul(v_a, w), 0.0), 1.0), 1.0));
+        H_SAMPLE_INPUT(unit_type::BINARY, f(h_s) = bernoulli(sigmoid(rep_l(b, Batch) + v_a * w)));
+        H_SAMPLE_INPUT(unit_type::RELU, f(h_s) = max(normal_noise(rep_l(b, Batch) + v_a * w), 0.0));
+        H_SAMPLE_INPUT(unit_type::RELU6, f(h_s) = ranged_noise(min(max(rep_l(b, Batch) + v_a * w, 0.0), 6.0), 6.0));
+        H_SAMPLE_INPUT(unit_type::RELU1, f(h_s) = ranged_noise(min(max(rep_l(b, Batch) + v_a * w, 0.0), 1.0), 1.0));
         H_SAMPLE_INPUT_MULTI(unit_type::RELU1)
         ([&](auto f) {
-            auto x = f(etl::force_temporary(rep_l(b, Batch) + mul(v_a, w)));
+            auto x = f(etl::force_temporary(rep_l(b, Batch) + v_a * w));
 
             for (std::size_t b = 0; b < Batch; ++b) {
                 f(h_s)(b) = one_if_max(stable_softmax(x(b)));
@@ -418,13 +418,13 @@ protected:
 
         cpp_assert(etl::dim<0>(h_s) == Batch && etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
 
-        V_PROBS(unit_type::BINARY, f(v_a) = sigmoid(rep_l(c, Batch) + transpose(mul(w, transpose(h_s)))));
-        V_PROBS(unit_type::GAUSSIAN, f(v_a) = rep_l(c, Batch) + transpose(mul(w, transpose(h_s))));
-        V_PROBS(unit_type::RELU, f(v_a) = max(rep_l(c, Batch) + transpose(mul(w, transpose(h_s))), 0.0));
+        V_PROBS(unit_type::BINARY, f(v_a) = sigmoid(rep_l(c, Batch) + transpose(w * transpose(h_s))));
+        V_PROBS(unit_type::GAUSSIAN, f(v_a) = rep_l(c, Batch) + transpose(w * transpose(h_s)));
+        V_PROBS(unit_type::RELU, f(v_a) = max(rep_l(c, Batch) + transpose(w * transpose(h_s)), 0.0));
 
-        V_SAMPLE_INPUT(unit_type::BINARY, f(v_s) = bernoulli(sigmoid(rep_l(c, Batch) + transpose(mul(w, transpose(h_s))))));
-        V_SAMPLE_INPUT(unit_type::GAUSSIAN, f(v_s) = normal_noise(rep_l(c, Batch) + transpose(mul(w, transpose(h_s)))));
-        V_SAMPLE_INPUT(unit_type::RELU, f(v_s) = logistic_noise(max(rep_l(c, Batch) + transpose(mul(w, transpose(h_s))), 0.0)));
+        V_SAMPLE_INPUT(unit_type::BINARY, f(v_s) = bernoulli(sigmoid(rep_l(c, Batch) + transpose(w * transpose(h_s)))));
+        V_SAMPLE_INPUT(unit_type::GAUSSIAN, f(v_s) = normal_noise(rep_l(c, Batch) + transpose(w * transpose(h_s))));
+        V_SAMPLE_INPUT(unit_type::RELU, f(v_s) = logistic_noise(max(rep_l(c, Batch) + transpose(w * transpose(h_s)), 0.0)));
 
         if (P) {
             nan_check_deep(v_a);
