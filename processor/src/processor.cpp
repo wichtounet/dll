@@ -439,6 +439,15 @@ std::string vector_to_string(const std::string& name, const std::vector<std::str
     return result;
 }
 
+std::string get_data_type(const dll::processor::task& t){
+    if(t.training.samples.reader == "mnist"){
+        return "etl::fast_dyn_vector<float, 784>";
+    } else {
+        std::cerr << "dllp: error: unknown samples reader: " << t.training.samples.reader << std::endl;
+        return "";
+    }
+}
+
 void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll::processor::task& t, const std::vector<std::string>& actions) {
     std::ofstream out_stream(".dbn.cpp");
 
@@ -505,9 +514,11 @@ void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll
         layer->set(out_stream, "   dbn->layer_get<" + std::to_string(i) + ">()");
     }
 
+    //TODO The type should probably be selected more smart
     out_stream << task_to_string("t", t) << "\n";
     out_stream << vector_to_string("actions", actions) << "\n";
-    out_stream << "   dll::processor::execute(*dbn, t, actions);\n";
+    out_stream << "   using data_type = " << get_data_type(t) << ";\n";
+    out_stream << "   dll::processor::execute<data_type>(*dbn, t, actions);\n";
     out_stream << "}\n";
 }
 

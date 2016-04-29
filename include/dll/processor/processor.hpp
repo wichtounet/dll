@@ -206,7 +206,7 @@ inline void print_title(const std::string& value) {
     std::cout << std::string(25, ' ') << std::endl;
 }
 
-template <typename DBN>
+template <typename Container, typename DBN>
 void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
     print_title("Network");
     dbn.display();
@@ -223,7 +223,7 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
                 return;
             }
 
-            std::vector<typename dbn_t::input_t> pt_samples;
+            std::vector<Container> pt_samples;
 
             //Try to read the samples
             if (!read_samples(task.pretraining.samples, pt_samples)) {
@@ -232,7 +232,7 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
             }
 
             if (task.pt_desc.denoising) {
-                std::vector<typename dbn_t::input_t> clean_samples;
+                std::vector<Container> clean_samples;
 
                 //Try to read the samples
                 if (!read_samples(task.pretraining_clean.samples, clean_samples)) {
@@ -256,7 +256,7 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
                 return;
             }
 
-            std::vector<typename dbn_t::input_t> ft_samples;
+            std::vector<Container> ft_samples;
             std::vector<std::size_t> ft_labels;
 
             //Try to read the samples
@@ -287,7 +287,7 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
                 return;
             }
 
-            std::vector<typename dbn_t::input_t> test_samples;
+            std::vector<Container> test_samples;
             std::vector<std::size_t> test_labels;
 
             //Try to read the samples
