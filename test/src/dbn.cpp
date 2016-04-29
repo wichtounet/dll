@@ -10,6 +10,7 @@
 #include "catch.hpp"
 
 #include "dll/dbn.hpp"
+#include "dll/text_reader.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -204,4 +205,45 @@ TEST_CASE("dbn/mnist_17", "dbn::memory") {
     //Mostly here to ensure compilation
     auto out = dbn->prepare_one_output<etl::dyn_matrix<float, 1>>();
     REQUIRE(out.size() > 0);
+}
+
+TEST_CASE("dbn/mnist/text/1", "dbn::simple") {
+    typedef dll::dbn_desc<
+        dll::dbn_layers<
+            dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
+            dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
+        dll::batch_size<50>>::dbn_t dbn_t;
+
+    auto training_images = dll::text::read_images<std::vector, etl::dyn_matrix<float, 1>>(
+        "/home/wichtounet/datasets/mnist_text/train/images", 500,
+        [](){ return etl::dyn_matrix<float, 1>(28 * 28);});
+
+    auto test_images = dll::text::read_images<std::vector, etl::dyn_matrix<float, 1>>(
+        "/home/wichtounet/datasets/mnist_text/test/images", 500,
+        [](){ return etl::dyn_matrix<float, 1>(28 * 28);});
+
+    auto training_labels = dll::text::read_labels<std::vector, uint8_t>("/home/wichtounet/datasets/mnist_text/train/labels", 500);
+    auto test_labels = dll::text::read_labels<std::vector, uint8_t>("/home/wichtounet/datasets/mnist_text/test/labels", 500);
+
+    REQUIRE(training_images.size() == 500);
+    REQUIRE(test_images.size() == 500);
+    REQUIRE(training_labels.size() == 500);
+    REQUIRE(test_labels.size() == 500);
+
+    mnist::binarize_each(training_images);
+    mnist::binarize_each(test_images);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->pretrain(training_images, 20);
+    auto error = dbn->fine_tune(training_images, training_labels, 10);
+
+    REQUIRE(error < 5e-2);
+
+    auto test_error = dll::test_set(dbn, test_images, test_labels, dll::predictor());
+
+    std::cout << "test_error:" << test_error << std::endl;
+
+    REQUIRE(test_error < 0.2);
 }
