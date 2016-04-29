@@ -143,6 +143,14 @@ TEST_CASE("unit/processor/dense/sgd/1", "[unit][dense][dbn][mnist][sgd][proc]") 
     TEST_ERROR_BELOW(0.3);
 }
 
+TEST_CASE("unit/processor/dense/sgd/2", "[unit][dense][dbn][mnist][sgd][proc]") {
+    auto lines = get_result(default_options(), {"train", "test"}, "dense_sgd_2.conf");
+    REQUIRE(!lines.empty());
+
+    FT_ERROR_BELOW(5e-2);
+    TEST_ERROR_BELOW(0.3);
+}
+
 // Conv+Dense (SGD)
 
 TEST_CASE("unit/processor/conv/sgd/1", "[unit][conv][dense][dbn][mnist][sgd][proc]") {
