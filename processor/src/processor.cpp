@@ -518,7 +518,6 @@ void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll
         layer->set(out_stream, "   dbn->layer_get<" + std::to_string(i) + ">()");
     }
 
-    //TODO The type should probably be selected more smart
     out_stream << task_to_string("t", t) << "\n";
     out_stream << vector_to_string("actions", actions) << "\n";
     out_stream << "   using data_type = " << get_data_type(layers, t) << ";\n";
