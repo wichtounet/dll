@@ -276,7 +276,7 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
             //Train the network
             cpp::static_if<sgd_possible<last_layer>::value>([&](auto f) {
                 auto ft_error = f(dbn).fine_tune(ft_samples, ft_labels, task.ft_desc.epochs);
-                std::cout << "Test Classification Error:" << ft_error << std::endl;
+                std::cout << "Train Classification Error:" << ft_error << std::endl;
             });
 
         } else if (action == "test") {

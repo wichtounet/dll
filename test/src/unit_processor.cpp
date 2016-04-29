@@ -34,7 +34,7 @@ bool get_error(const std::vector<std::string>& lines, double& error, const char*
 }
 
 bool get_ft_error(const std::vector<std::string>& lines, double& error) {
-    return get_error(lines, error, "Test Classification Error:");
+    return get_error(lines, error, "Train Classification Error:");
 }
 
 bool get_test_error(const std::vector<std::string>& lines, double& error) {
