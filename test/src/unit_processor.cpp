@@ -136,7 +136,7 @@ dll::processor::options default_options() {
 // Dense (SGD)
 
 TEST_CASE("unit/processor/dense/sgd/1", "[unit][dense][dbn][mnist][sgd][proc]") {
-    auto lines = get_result(default_options(), {"train", "test"}, "dense_sgd_1.conf");
+    auto lines = get_result(default_options(), {"auto"}, "dense_sgd_1.conf");
     REQUIRE(!lines.empty());
 
     FT_ERROR_BELOW(5e-2);
