@@ -215,13 +215,11 @@ TEST_CASE("dbn/mnist/text/1", "dbn::simple") {
             dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
         dll::batch_size<50>>::dbn_t dbn_t;
 
-    auto training_images = dll::text::read_images<std::vector, etl::dyn_matrix<float, 1>>(
-        "/home/wichtounet/datasets/mnist_text/train/images", 500,
-        [](){ return etl::dyn_matrix<float, 1>(28 * 28);});
+    auto training_images = dll::text::read_images<std::vector, etl::dyn_matrix<float, 1>, false>(
+        "/home/wichtounet/datasets/mnist_text/train/images", 500);
 
-    auto test_images = dll::text::read_images<std::vector, etl::dyn_matrix<float, 1>>(
-        "/home/wichtounet/datasets/mnist_text/test/images", 500,
-        [](){ return etl::dyn_matrix<float, 1>(28 * 28);});
+    auto test_images = dll::text::read_images<std::vector, etl::dyn_matrix<float, 1>, false>(
+        "/home/wichtounet/datasets/mnist_text/test/images", 500);
 
     auto training_labels = dll::text::read_labels<std::vector, uint8_t>("/home/wichtounet/datasets/mnist_text/train/labels", 500);
     auto test_labels = dll::text::read_labels<std::vector, uint8_t>("/home/wichtounet/datasets/mnist_text/test/labels", 500);
