@@ -111,6 +111,8 @@ struct weights_desc {
 };
 
 struct task {
+    std::vector<std::string> default_actions;
+
     dll::processor::datasource_pack pretraining;
     dll::processor::datasource_pack pretraining_clean;
     dll::processor::datasource_pack training;

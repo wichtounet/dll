@@ -156,6 +156,10 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
 
         if (dllp::starts_with(current_line, "include: ")) {
             ++i;
+        } else if (dllp::starts_with(current_line, "action: ")) {
+            auto action  = dllp::extract_value(current_line, "action: ");
+            t.default_actions.push_back(action);
+            ++i;
         } else if (current_line == "data:") {
             ++i;
 
@@ -518,8 +522,14 @@ void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll
         layer->set(out_stream, "   dbn->layer_get<" + std::to_string(i) + ">()");
     }
 
+    auto final_actions = actions;
+
+    if(std::find(actions.begin(), actions.end(), "auto") != actions.end()){
+        final_actions = t.default_actions;
+    }
+
     out_stream << task_to_string("t", t) << "\n";
-    out_stream << vector_to_string("actions", actions) << "\n";
+    out_stream << vector_to_string("actions", final_actions) << "\n";
     out_stream << "   using data_type = " << get_data_type(layers, t) << ";\n";
     out_stream << "   dll::processor::execute<data_type>(*dbn, t, actions);\n";
     out_stream << "}\n";
