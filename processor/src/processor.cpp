@@ -450,6 +450,12 @@ std::string get_data_type(const std::vector<std::unique_ptr<dllp::layer>>& layer
         } else {
             return "etl::fast_dyn_vector<float, 784>";
         }
+    } else if(t.training.samples.reader == "text"){
+        if(layers.front()->is_conv()){
+            return "etl::dyn_matrix<float, 3>";
+        } else {
+            return "etl::dyn_vector<float>";
+        }
     } else {
         std::cerr << "dllp: error: unknown samples reader: " << t.training.samples.reader << std::endl;
         return "";
@@ -531,7 +537,8 @@ void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll
     out_stream << task_to_string("t", t) << "\n";
     out_stream << vector_to_string("actions", final_actions) << "\n";
     out_stream << "   using data_type = " << get_data_type(layers, t) << ";\n";
-    out_stream << "   dll::processor::execute<data_type>(*dbn, t, actions);\n";
+    out_stream << "   static constexpr const bool three = " << layers.front()->is_conv() << ";\n";
+    out_stream << "   dll::processor::execute<data_type, three>(*dbn, t, actions);\n";
     out_stream << "}\n";
 }
 

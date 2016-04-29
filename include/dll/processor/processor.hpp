@@ -22,6 +22,7 @@
 #include "dll/dense_layer.hpp"
 #include "dll/conv_layer.hpp"
 #include "dll/dbn.hpp"
+#include "dll/text_reader.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -123,81 +124,85 @@ struct task {
     dll::processor::weights_desc w_desc;
 };
 
-template <typename Sample>
+template <bool Three, typename Sample>
 bool read_samples(const datasource& ds, std::vector<Sample>& samples) {
+    std::size_t limit = 0;
+
+    if (ds.limit > 0) {
+        limit = ds.limit;
+    }
+
     if (ds.reader == "mnist") {
-        std::size_t limit = 0;
-
-        if (ds.limit > 0) {
-            limit = ds.limit;
-        }
-
         mnist::read_mnist_image_file<std::vector, Sample>(samples, ds.source_file, limit, [] { return Sample(1 * 28 * 28); });
-
-        if (ds.binarize) {
-            mnist::binarize_each(samples);
-        }
-
-        if (ds.normalize) {
-            mnist::normalize_each(samples);
-        }
-
-        if (ds.shift) {
-            for (auto& vec : samples) {
-                for (auto& v : vec) {
-                    v += ds.shift_d;
-                }
-            }
-        }
-
-        if (ds.scale) {
-            for (auto& vec : samples) {
-                for (auto& v : vec) {
-                    v *= ds.scale_d;
-                }
-            }
-        }
-
-        if (ds.normal_noise) {
-            mnist::normalize_each(samples);
-
-            std::random_device rd;
-            std::default_random_engine rand_engine(rd());
-            std::normal_distribution<float> normal_distribution(0.0, ds.normal_noise_d);
-            auto noise = std::bind(normal_distribution, rand_engine);
-
-            for (auto& vec : samples) {
-                for (auto& noisy_x : vec) {
-                    noisy_x += noise();
-                }
-            }
-
-            mnist::normalize_each(samples);
-        }
-
-        return !samples.empty();
+    } else if(ds.reader == "text"){
+        dll::text::read_images_direct<std::vector, Sample, Three>(samples, ds.source_file, limit);
     } else {
         std::cout << "dllp: error: unknown samples reader: " << ds.reader << std::endl;
         return false;
     }
+
+    if (ds.binarize) {
+        mnist::binarize_each(samples);
+    }
+
+    if (ds.normalize) {
+        mnist::normalize_each(samples);
+    }
+
+    if (ds.shift) {
+        for (auto& vec : samples) {
+            for (auto& v : vec) {
+                v += ds.shift_d;
+            }
+        }
+    }
+
+    if (ds.scale) {
+        for (auto& vec : samples) {
+            for (auto& v : vec) {
+                v *= ds.scale_d;
+            }
+        }
+    }
+
+    if (ds.normal_noise) {
+        mnist::normalize_each(samples);
+
+        std::random_device rd;
+        std::default_random_engine rand_engine(rd());
+        std::normal_distribution<float> normal_distribution(0.0, ds.normal_noise_d);
+        auto noise = std::bind(normal_distribution, rand_engine);
+
+        for (auto& vec : samples) {
+            for (auto& noisy_x : vec) {
+                noisy_x += noise();
+            }
+        }
+
+        mnist::normalize_each(samples);
+    }
+
+    return !samples.empty();
 }
 
 template <typename Label>
 bool read_labels(const datasource& ds, std::vector<Label>& labels) {
+    std::size_t limit = 0;
+
+    if (ds.limit > 0) {
+        limit = ds.limit;
+    }
+
     if (ds.reader == "mnist") {
-        std::size_t limit = 0;
-
-        if (ds.limit > 0) {
-            limit = ds.limit;
-        }
-
         mnist::read_mnist_label_file<std::vector, Label>(labels, ds.source_file, limit);
-
-        return !labels.empty();
+    } else if (ds.reader == "text") {
+        dll::text::read_labels<std::vector, Label>(labels, ds.source_file, limit);
     } else {
         std::cout << "dllp: error: unknown labels reader: " << ds.reader << std::endl;
         return false;
     }
+
+    return !labels.empty();
 }
 
 inline void print_title(const std::string& value) {
@@ -208,7 +213,7 @@ inline void print_title(const std::string& value) {
     std::cout << std::string(25, ' ') << std::endl;
 }
 
-template <typename Container, typename DBN>
+template <typename Container, bool Three, typename DBN>
 void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
     print_title("Network");
     dbn.display();
@@ -228,7 +233,7 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
             std::vector<Container> pt_samples;
 
             //Try to read the samples
-            if (!read_samples(task.pretraining.samples, pt_samples)) {
+            if (!read_samples<Three>(task.pretraining.samples, pt_samples)) {
                 std::cout << "dllp: error: failed to read the pretraining samples" << std::endl;
                 return;
             }
@@ -237,7 +242,7 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
                 std::vector<Container> clean_samples;
 
                 //Try to read the samples
-                if (!read_samples(task.pretraining_clean.samples, clean_samples)) {
+                if (!read_samples<Three>(task.pretraining_clean.samples, clean_samples)) {
                     std::cout << "dllp: error: failed to read the clean samples" << std::endl;
                     return;
                 }
@@ -262,7 +267,7 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
             std::vector<std::size_t> ft_labels;
 
             //Try to read the samples
-            if (!read_samples(task.training.samples, ft_samples)) {
+            if (!read_samples<Three>(task.training.samples, ft_samples)) {
                 std::cout << "dllp: error: failed to read the training samples" << std::endl;
                 return;
             }
@@ -293,14 +298,14 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
             std::vector<std::size_t> test_labels;
 
             //Try to read the samples
-            if (!read_samples(task.testing.samples, test_samples)) {
-                std::cout << "dllp: error: failed to read the training samples" << std::endl;
+            if (!read_samples<Three>(task.testing.samples, test_samples)) {
+                std::cout << "dllp: error: failed to read the test samples" << std::endl;
                 return;
             }
 
             //Try to read the labels
             if (!read_labels(task.testing.labels, test_labels)) {
-                std::cout << "dllp: error: failed to read the training labels" << std::endl;
+                std::cout << "dllp: error: failed to read the test labels" << std::endl;
                 return;
             }
 

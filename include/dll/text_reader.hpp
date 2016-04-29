@@ -37,18 +37,15 @@ void read_images(Container<Image>& images, const std::string& path, std::size_t 
 
         int id = std::atoi(std::string(file_name.begin(), file_name.begin() + file_name.size() - 4).c_str());
 
-        if(id - 1 < (int) limit){
-            if((int) images.size() < id){
-                images.resize(id);
-            }
-
-            images[id - 1] = func();
+        if(!limit || id - 1 < (int) limit){
+            std::vector<double> temp;
 
             std::string full_path(path + "/" + file_name);
 
             std::ifstream file(full_path);
 
-            std::size_t i = 0;
+            std::size_t lines = 0;
+            std::size_t columns = 0;
 
             std::string line;
             while (std::getline(file, line)) {
@@ -57,8 +54,25 @@ void read_images(Container<Image>& images, const std::string& path, std::size_t 
 
                 while (std::getline(ss, value, ';')) {
                     auto v = std::atof(value.c_str());
-                    images[id - 1][i++] = static_cast<typename Image::value_type>(v);
+                    temp.push_back(v);
+
+                    if(lines == 0){
+                        ++columns;
+                    }
                 }
+
+                ++lines;
+            }
+
+            if((int) images.size() < id){
+                images.resize(id);
+            }
+
+            images[id - 1] = func(1, lines, columns);
+
+            std::size_t i = 0;
+            for (auto& value : temp) {
+                images[id - 1][i++] = static_cast<typename Image::value_type>(value);
             }
         }
     }
@@ -78,7 +92,7 @@ void read_labels(Container<Label>& labels, const std::string& path, std::size_t 
 
         int id = std::atoi(std::string(file_name.begin(), file_name.begin() + file_name.size() - 4).c_str());
 
-        if(id - 1 < (int) limit){
+        if(!limit || id - 1 < (int) limit){
             if((int) labels.size() < id){
                 labels.resize(id);
             }
@@ -93,10 +107,20 @@ void read_labels(Container<Label>& labels, const std::string& path, std::size_t 
     }
 }
 
-template<template<typename...> class Container = std::vector, typename Image, typename Functor>
-Container<Image> read_images(const std::string& path, std::size_t limit, Functor func){
+template<template<typename...> class Container, typename Image, bool Three, cpp_enable_if(Three)>
+void read_images_direct(Container<Image>& images, const std::string& path, std::size_t limit){
+    read_images<Container, Image>(images, path, limit, [](std::size_t c, std::size_t h, std::size_t w){ return Image(c, h, w);});
+}
+
+template<template<typename...> class Container, typename Image, bool Three, cpp_disable_if(Three)>
+void read_images_direct(Container<Image>& images, const std::string& path, std::size_t limit){
+    read_images<Container, Image>(images, path, limit, [](std::size_t c, std::size_t h, std::size_t w){ return Image(c * h * w);});
+}
+
+template<template<typename...> class Container, typename Image, bool Three>
+Container<Image> read_images(const std::string& path, std::size_t limit){
     Container<Image> images;
-    read_images<Container, Image>(images, path, limit, func);
+    read_images_direct<Container, Image, Three>(images, path, limit);
     return images;
 }
 
