@@ -89,6 +89,11 @@ struct datasource_pack {
     datasource labels;
 };
 
+struct general_desc {
+    bool batch_mode       = false;
+    std::size_t big_batch = 1;
+};
+
 struct pretraining_desc {
     std::size_t epochs = 25;
     bool denoising     = false;
@@ -122,6 +127,7 @@ struct task {
     dll::processor::pretraining_desc pt_desc;
     dll::processor::training_desc ft_desc;
     dll::processor::weights_desc w_desc;
+    dll::processor::general_desc general_desc;
 };
 
 template <bool Three, typename Sample>

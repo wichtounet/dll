@@ -253,6 +253,20 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
                             break;
                         }
                     }
+                } else if (lines[i] == "general:") {
+                    ++i;
+
+                    while (i < lines.size()) {
+                        if (dllp::starts_with(lines[i], "batch_mode: ")) {
+                            t.general_desc.batch_mode = dllp::extract_value(lines[i], "batch_mode: ") == "true";
+                            ++i;
+                        } else if (dllp::starts_with(lines[i], "big_batch: ")) {
+                            t.general_desc.big_batch = std::stol(dllp::extract_value(lines[i], "big_batch: "));
+                            ++i;
+                        } else {
+                            break;
+                        }
+                    }
                 } else if (lines[i] == "training:") {
                     ++i;
 
@@ -496,6 +510,14 @@ void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll
 
     if (t.ft_desc.batch_size > 0) {
         out_stream << ", dll::batch_size<" << t.ft_desc.batch_size << ">\n";
+    }
+
+    if (t.general_desc.batch_mode) {
+        out_stream << ", dll::batch_mode\n";
+
+        if (t.general_desc.big_batch > 0) {
+            out_stream << ", dll::big_batch_size<" << t.general_desc.big_batch << ">\n";
+        }
     }
 
     out_stream << ", dll::weight_decay<dll::decay_type::" << decay_to_str(t.ft_desc.decay) << ">\n";
