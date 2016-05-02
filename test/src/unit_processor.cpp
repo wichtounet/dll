@@ -90,6 +90,25 @@ bool get_last_sparsity(std::string epoch, const std::vector<std::string>& lines,
     return found;
 }
 
+bool get_sparsity(std::string epoch, std::size_t index, const std::vector<std::string>& lines, double& error) {
+    bool found = false;
+    auto begin = epoch + " - Reconstruction error: ";
+
+    std::size_t i = 0;
+
+    for (auto& line : lines) {
+        if (starts_with(line, begin)) {
+            if (i++ == index) {
+                auto sub = std::string(line.begin() + line.find(" - Sparsity: ") + 13, line.end());
+                error    = std::stod(sub);
+                found    = true;
+            }
+        }
+    }
+
+    return found;
+}
+
 std::vector<std::string> get_result(const dll::processor::options& opt, const std::vector<std::string>& actions, const std::string& source_file) {
     auto result = dll::processor::process_file_result(opt, actions, "test/processor/" + source_file);
 
@@ -154,15 +173,26 @@ dll::processor::options default_options() {
 
 // Simulate macro overloading
 #define GET_MACRO(_1,_2,_3,NAME,...) NAME
+
 #define REC_ERROR_BELOW(...) GET_MACRO(__VA_ARGS__, REC_ERROR_BELOW3, REC_ERROR_BELOW2, FAKE)(__VA_ARGS__)
 
-#define SPARSITY_BELOW(epoch, min)                          \
+#define SPARSITY_BELOW2(epoch, min)                         \
     {                                                       \
         double sparsity = 1.0;                              \
         REQUIRE(get_last_sparsity(epoch, lines, sparsity)); \
         std::cout << "sparsity:" << sparsity << std::endl;  \
         REQUIRE(sparsity < (min));                          \
     }
+
+#define SPARSITY_BELOW3(epoch, min, index)                    \
+    {                                                         \
+        double sparsity = 1.0;                                \
+        REQUIRE(get_sparsity(epoch, index, lines, sparsity)); \
+        std::cout << "sparsity:" << sparsity << std::endl;    \
+        REQUIRE(sparsity < (min));                            \
+    }
+
+#define SPARSITY_BELOW(...) GET_MACRO(__VA_ARGS__, SPARSITY_BELOW3, SPARSITY_BELOW2, FAKE)(__VA_ARGS__)
 
 // Dense (SGD)
 
@@ -369,4 +399,15 @@ TEST_CASE("unit/processor/cdbn/1", "[unit][dbn][mnist][conv][proc]") {
 
     REC_ERROR_BELOW("epoch 24", 0.01, 0);
     REC_ERROR_BELOW("epoch 24", 0.02, 1);
+}
+
+TEST_CASE("unit/processor/cdbn/2", "[unit][dbn][mnist][conv][proc]") {
+    auto lines = get_result(default_options(), {"pretrain"}, "cdbn_2.conf");
+    REQUIRE(!lines.empty());
+
+    REC_ERROR_BELOW("epoch 24", 0.025, 0);
+    REC_ERROR_BELOW("epoch 24", 0.05, 1);
+
+    SPARSITY_BELOW("epoch 24", 0.11, 0);
+    SPARSITY_BELOW("epoch 24", 0.11, 1);
 }
