@@ -62,6 +62,8 @@ struct base_rbm_layer : layer {
 
     std::string sparsity   = "none";
     double sparsity_target = dll::processor::stupid_default;
+    double pbias_lambda    = dll::processor::stupid_default;
+    double pbias           = dll::processor::stupid_default;
 
     std::string trainer = "cd";
 

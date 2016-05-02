@@ -51,6 +51,12 @@ dllp::parse_result dllp::base_rbm_layer::base_parse(const std::vector<std::strin
     } else if (dllp::extract_value(lines[i], "l2_weight_cost: ", value)) {
         l2_weight_cost = std::stod(value);
         return parse_result::PARSED;
+    } else if (dllp::extract_value(lines[i], "pbias: ", value)) {
+        pbias = std::stod(value);
+        return parse_result::PARSED;
+    } else if (dllp::extract_value(lines[i], "pbias_lambda: ", value)) {
+        pbias_lambda = std::stod(value);
+        return parse_result::PARSED;
     } else if (dllp::extract_value(lines[i], "hidden_unit: ", hidden_unit)) {
         if (!dllp::valid_unit(hidden_unit)) {
             std::cout << "dllp: error: invalid hidden unit type must be one of [binary, softmax, gaussian]" << std::endl;
@@ -90,6 +96,14 @@ void dllp::base_rbm_layer::set(std::ostream& out, const std::string& lhs) const 
 
     if (sparsity_target != dll::processor::stupid_default) {
         out << lhs << ".sparsity_target = " << sparsity_target << ";\n";
+    }
+
+    if (pbias != dll::processor::stupid_default) {
+        out << lhs << ".pbias = " << pbias << ";\n";
+    }
+
+    if (pbias_lambda != dll::processor::stupid_default) {
+        out << lhs << ".pbias_lambda = " << pbias_lambda << ";\n";
     }
 }
 
