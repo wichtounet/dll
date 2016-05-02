@@ -107,12 +107,17 @@ void read_labels(Container<Label>& labels, const std::string& path, std::size_t 
     }
 }
 
-template<template<typename...> class Container, typename Image, bool Three, cpp_enable_if(Three)>
+template<template<typename...> class Container, typename Image, bool Three, cpp_enable_if(etl::all_fast<Image>::value)>
+void read_images_direct(Container<Image>& images, const std::string& path, std::size_t limit){
+    read_images<Container, Image>(images, path, limit, [](std::size_t /*c*/, std::size_t /*h*/, std::size_t /*w*/){ return Image();});
+}
+
+template<template<typename...> class Container, typename Image, bool Three, cpp_enable_if(Three && !etl::all_fast<Image>::value)>
 void read_images_direct(Container<Image>& images, const std::string& path, std::size_t limit){
     read_images<Container, Image>(images, path, limit, [](std::size_t c, std::size_t h, std::size_t w){ return Image(c, h, w);});
 }
 
-template<template<typename...> class Container, typename Image, bool Three, cpp_disable_if(Three)>
+template<template<typename...> class Container, typename Image, bool Three, cpp_enable_if(!Three && !etl::all_fast<Image>::value)>
 void read_images_direct(Container<Image>& images, const std::string& path, std::size_t limit){
     read_images<Container, Image>(images, path, limit, [](std::size_t c, std::size_t h, std::size_t w){ return Image(c * h * w);});
 }
