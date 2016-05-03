@@ -762,13 +762,13 @@ struct base_cd_trainer : base_trainer<RBM> {
 
     template <bool M = layer_traits<rbm_t>::has_momentum(), cpp_disable_if(M)>
     base_cd_trainer(rbm_t& rbm)
-            : rbm(rbm), q_global_t(0.0), q_local_t(0.0) {
+            : rbm(rbm), q_global_t(0.0), q_local_t(0.0), pool(etl::threads) {
         static_assert(!layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
     template <bool M = layer_traits<rbm_t>::has_momentum(), cpp_enable_if(M)>
     base_cd_trainer(rbm_t& rbm)
-            : rbm(rbm), w_inc(0.0), b_inc(0.0), c_inc(0.0), q_global_t(0.0), q_local_t(0.0) {
+            : rbm(rbm), w_inc(0.0), b_inc(0.0), c_inc(0.0), q_global_t(0.0), q_local_t(0.0), pool(etl::threads) {
         static_assert(layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
@@ -870,7 +870,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
               q_local_batch(rbm.num_hidden),
               q_local_t(rbm.num_hidden, static_cast<weight>(0.0)),
               p_h_a(get_batch_size(rbm), rbm.num_hidden),
-              p_h_s(get_batch_size(rbm), rbm.num_hidden) {
+              p_h_s(get_batch_size(rbm), rbm.num_hidden), pool(etl::threads) {
         static_assert(!layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
@@ -898,7 +898,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
               q_local_batch(rbm.num_hidden),
               q_local_t(rbm.num_hidden, static_cast<weight>(0.0)),
               p_h_a(get_batch_size(rbm), rbm.num_hidden),
-              p_h_s(get_batch_size(rbm), rbm.num_hidden) {
+              p_h_s(get_batch_size(rbm), rbm.num_hidden), pool(etl::threads) {
         static_assert(layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
@@ -1006,7 +1006,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
               q_local_t(0.0),
               w_bias(0.0),
               b_bias(0.0),
-              c_bias(0.0) {
+              c_bias(0.0), pool(etl::threads) {
         static_assert(!layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
@@ -1020,7 +1020,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
               q_local_t(0.0),
               w_bias(0.0),
               b_bias(0.0),
-              c_bias(0.0) {
+              c_bias(0.0), pool(etl::threads) {
         static_assert(layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 

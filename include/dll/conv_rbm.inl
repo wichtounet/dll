@@ -96,7 +96,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     mutable cpp::thread_pool<!layer_traits<this_type>::is_serial()> pool;
 
     conv_rbm()
-            : base_type() {
+            : base_type(), pool(etl::threads) {
         if (is_relu(hidden_unit)) {
             w = etl::normal_generator(0.0, 0.01);
             b = 0.0;

@@ -98,7 +98,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
     mutable cpp::thread_pool<!layer_traits<this_type>::is_serial()> pool;
 
     conv_rbm_mp()
-            : base_type() {
+            : base_type(), pool(etl::threads) {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
         w = 0.01 * etl::normal_generator();
         b = -0.1;

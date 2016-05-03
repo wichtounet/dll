@@ -116,7 +116,7 @@ public:
      *
      * This is the only way to create a DBN.
      */
-    dbn() {
+    dbn() : pool(etl::threads) {
         //Nothing else to init
     }
 
