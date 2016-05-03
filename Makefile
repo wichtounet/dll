@@ -20,10 +20,15 @@ TEST_LD_FLAGS=$(LIBSVM_LD_FLAGS)
 
 CXX_FLAGS += -DETL_VECTORIZE_FULL
 
-# Activate NaN Debugging
+# Activate NaN Debugging (if not in perf mode)
 ifeq (,$(DLL_PERF))
 DEBUG_FLAGS += -DNAN_DEBUG
 endif
+
+ifneq (,$(DLL_PERF_FLAGS))
+CXX_FLAGS += $(DLL_PERF_FLAGS)
+endif
+
 
 DLL_BLAS_PKG ?= mkl
 
