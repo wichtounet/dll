@@ -498,24 +498,15 @@ void compute_gradients_conv(RBM& /*rbm*/, Trainer& t, std::size_t i) {
 
     using rbm_t = RBM;
 
-    constexpr const auto K = rbm_t::K;
     constexpr const auto NC = rbm_t::NC;
-
-    auto w_f_1 = force_temporary(t.h1_a(i));
-    auto w_f_2 = force_temporary(t.h2_a(i));
-
-    for(std::size_t k = 0; k < K; ++k){
-        w_f_1(k).fflip_inplace();
-        w_f_2(k).fflip_inplace();
-    }
 
     for(std::size_t channel = 0; channel < NC; ++channel){
         if(Denoising){
-            conv_2d_valid_multi(t.vf(i)(channel), w_f_1, t.w_pos(i)(channel));
-            conv_2d_valid_multi(t.v2_a(i)(channel), w_f_2, t.w_neg(i)(channel));
+            conv_2d_valid_multi_flipped(t.vf(i)(channel), t.h1_a(i), t.w_pos(i)(channel));
+            conv_2d_valid_multi_flipped(t.v2_a(i)(channel), t.h2_a(i), t.w_neg(i)(channel));
         } else {
-            conv_2d_valid_multi(t.v1(i)(channel), w_f_1, t.w_pos(i)(channel));
-            conv_2d_valid_multi(t.v2_a(i)(channel), w_f_2, t.w_neg(i)(channel));
+            conv_2d_valid_multi_flipped(t.v1(i)(channel), t.h1_a(i), t.w_pos(i)(channel));
+            conv_2d_valid_multi_flipped(t.v2_a(i)(channel), t.h2_a(i), t.w_neg(i)(channel));
         }
     }
 }
