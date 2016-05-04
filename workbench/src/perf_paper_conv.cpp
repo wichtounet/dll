@@ -126,5 +126,29 @@ int main(int argc, char* argv []) {
         MEASURE(crbm_4, "crbm_100x12x12_par", data_4);
     }
 
+    if(number.empty() || number == "3"){
+#define BATCH_MEASURE(batch)                                                                                        \
+    {                                                                                                               \
+        dll::conv_rbm_desc_square<1, 28, 40, 20, dll::batch_size<batch>, dll::weight_type<float>>::layer_t crbm_1;  \
+        dll::conv_rbm_desc_square<40, 20, 40, 16, dll::batch_size<batch>, dll::weight_type<float>>::layer_t crbm_2; \
+        dll::conv_rbm_desc_square<40, 16, 96, 12, dll::batch_size<batch>, dll::weight_type<float>>::layer_t crbm_3; \
+        dll::conv_rbm_desc_square<96, 12, 8, 8, dll::batch_size<batch>, dll::weight_type<float>>::layer_t crbm_4;   \
+        MEASURE(crbm_1, "crbm_1x28x28_batch_" #batch, data_1);                                                       \
+        MEASURE(crbm_2, "crbm_40x20x20_batch_" #batch, data_2);                                                      \
+        MEASURE(crbm_3, "crbm_40x16x16batch_" #batch, data_3);                                                       \
+        MEASURE(crbm_4, "crbm_100x12x12_batch_" #batch, data_4);                                                     \
+    }
+
+        //BATCH_MEASURE(8);
+        //BATCH_MEASURE(16);
+        //BATCH_MEASURE(24);
+        //BATCH_MEASURE(32);
+        BATCH_MEASURE(64);
+        //BATCH_MEASURE(128);
+        //BATCH_MEASURE(256);
+        //BATCH_MEASURE(512);
+
+    }
+
     return 0;
 }
