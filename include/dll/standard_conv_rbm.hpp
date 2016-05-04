@@ -128,7 +128,7 @@ protected:
             h_cv(1) = 0.0;
 
             for (std::size_t k = 0; k < K; ++k) {
-                h_cv(0) = etl::fast_conv_2d_full(h_s(k), w(channel)(k));
+                h_cv(0) = etl::conv_2d_full(h_s(k), w(channel)(k));
                 h_cv(1) += h_cv(0);
             }
 
@@ -210,7 +210,7 @@ protected:
                 h_cv(batch)(1) = 0.0;
 
                 for (std::size_t k = 0; k < K; ++k) {
-                    h_cv(batch)(0) = etl::fast_conv_2d_full(h_s(batch)(k), w(channel)(k));
+                    h_cv(batch)(0) = etl::conv_2d_full(h_s(batch)(k), w(channel)(k));
                     h_cv(batch)(1) += h_cv(batch)(0);
                 }
 
