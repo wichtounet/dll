@@ -96,9 +96,11 @@ $(eval $(call add_executable_set,dll_view_crbm_mp,dll_view_crbm_mp))
 $(eval $(call add_executable_set,dll_view,dll_view_rbm, dll_view_crbm, dll_view_crbm_mp))
 
 # Generate executables for performance analysis
-$(eval $(call add_executable,dll_perf,workbench/src/perf_paper.cpp))
-$(eval $(call add_executable,dll_perf_conv,workbench/src/perf_paper_conv.cpp))
-$(eval $(call add_executable_set,dll_perf,dll_perf))
+$(eval $(call add_executable,dll_perf_paper,workbench/src/perf_paper.cpp))
+$(eval $(call add_executable,dll_perf_paper_conv,workbench/src/perf_paper_conv.cpp))
+$(eval $(call add_executable,dll_perf_conv,workbench/src/perf_conv.cpp))
+$(eval $(call add_executable_set,dll_perf_paper,dll_perf_paper))
+$(eval $(call add_executable_set,dll_perf_paper_conv,dll_perf_paper_conv))
 $(eval $(call add_executable_set,dll_perf_conv,dll_perf_conv))
 
 release: release_dllp release_dll_test release_dll_view
