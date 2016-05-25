@@ -491,8 +491,8 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
 }
 
 template <bool Denoising, typename Trainer, typename RBM>
-void compute_gradients_conv(RBM& /*rbm*/, Trainer& t, std::size_t i) {
-    dll::auto_timer timer("cd:compute_gradients_conv");
+void normal_compute_gradients_conv(RBM& /*rbm*/, Trainer& t, std::size_t i) {
+    dll::auto_timer timer("cd:normal_compute_gradients_conv");
 
     using namespace etl;
 
@@ -550,7 +550,7 @@ void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T
         }
 
         //Compute gradients
-        compute_gradients_conv<Denoising>(rbm, t, i);
+        normal_compute_gradients_conv<Denoising>(rbm, t, i);
     });
     // clang-format on
 }
