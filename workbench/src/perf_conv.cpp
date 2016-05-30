@@ -21,24 +21,6 @@ using clock      = std::chrono::steady_clock;
 using time_point = std::chrono::time_point<clock>;
 using resolution = std::chrono::milliseconds;
 
-struct perf_timer {
-    std::string name;
-    std::size_t repeat;
-
-    time_point start;
-
-    perf_timer(std::string name, std::size_t repeat) : name(name), repeat(repeat) {
-        start = clock::now();
-    }
-
-    ~perf_timer(){
-        auto end      = clock::now();
-        auto duration = std::chrono::duration_cast<resolution>(end - start).count();
-
-        std::cout << name << ": " << duration / double(repeat) << "ms" << std::endl;
-    }
-};
-
 #define MEASURE(rbm, name, data)                                                           \
     {                                                                                      \
         std::size_t d_min = std::numeric_limits<std::size_t>::max();                       \
