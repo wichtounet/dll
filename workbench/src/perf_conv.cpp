@@ -41,9 +41,9 @@ using resolution = std::chrono::milliseconds;
 int main(int argc, char* argv []) {
     auto dataset = mnist::read_dataset<std::vector, std::vector, float>(5000);
 
-    std::string number;
+    std::string sub;
     if(argc > 1){
-        number = argv[1];
+        sub = argv[1];
     }
 
     auto n = dataset.training_images.size();
@@ -61,12 +61,18 @@ int main(int argc, char* argv []) {
     std::cout << n << " images used for training" << std::endl;
     std::cout << etl::threads << " maximum threads" << std::endl;
 
-    if(number.empty() || number == "1"){
+    if(sub.empty() || sub == "batch"){
         dll::conv_rbm_desc_square<2, 28, 40, 12, dll::batch_size<64>, dll::weight_type<float>>::layer_t crbm_1;
-        dll::conv_rbm_desc_square<2, 28, 40, 12, dll::batch_size<64>, dll::parallel_mode, dll::weight_type<float>>::layer_t crbm_2;
-
         MEASURE(crbm_1, "batch", dataset.training_images);
+    }
+
+    if(sub.empty() || sub == "parallel"){
+        dll::conv_rbm_desc_square<2, 28, 40, 12, dll::batch_size<64>, dll::parallel_mode, dll::weight_type<float>>::layer_t crbm_2;
         MEASURE(crbm_2, "parallel", dataset.training_images);
+    }
+
+    if(!sub.empty()){
+        dll::dump_timers();
     }
 
     return 0;
