@@ -29,7 +29,6 @@ ifneq (,$(DLL_PERF_FLAGS))
 CXX_FLAGS += $(DLL_PERF_FLAGS)
 endif
 
-
 DLL_BLAS_PKG ?= mkl
 
 # Activate BLAS mode on demand
@@ -52,6 +51,59 @@ ifneq (,$(findstring clang,$(CXX)))
 CXX_FLAGS += -Wno-tautological-compare
 endif
 
+endif
+endif
+
+# Activate BLAS mode on demand
+ifneq (,$(ETL_MKL))
+CXX_FLAGS += -DETL_MKL_MODE $(shell pkg-config --cflags $(DLL_BLAS_PKG))
+LD_FLAGS += $(shell pkg-config --libs $(DLL_BLAS_PKG))
+
+# Disable warning for MKL
+ifneq (,$(findstring clang,$(CXX)))
+CXX_FLAGS += -Wno-tautological-compare
+endif
+
+else
+ifneq (,$(ETL_BLAS))
+CXX_FLAGS += -DETL_BLAS_MODE $(shell pkg-config --cflags cblas)
+LD_FLAGS += $(shell pkg-config --libs cblas)
+
+# Disable warning for MKL
+ifneq (,$(findstring clang,$(CXX)))
+CXX_FLAGS += -Wno-tautological-compare
+endif
+
+endif
+endif
+
+# On demand activation of cublas support
+ifneq (,$(ETL_CUBLAS))
+CXX_FLAGS += -DETL_CUBLAS_MODE $(shell pkg-config --cflags cublas)
+LD_FLAGS += $(shell pkg-config --libs cublas)
+
+ifneq (,$(findstring clang,$(CXX)))
+CXX_FLAGS += -Wno-documentation
+endif
+endif
+
+# On demand activation of cufft support
+ifneq (,$(ETL_CUFFT))
+CXX_FLAGS += -DETL_CUFFT_MODE $(shell pkg-config --cflags cufft)
+LD_FLAGS += $(shell pkg-config --libs cufft)
+
+ifneq (,$(findstring clang,$(CXX)))
+CXX_FLAGS += -Wno-documentation
+endif
+endif
+
+# On demand activation of cudnn support
+ifneq (,$(ETL_CUDNN))
+CXX_FLAGS += -DETL_CUDNN_MODE $(shell pkg-config --cflags cudnn)
+LD_FLAGS += $(shell pkg-config --libs cudnn)
+
+ifneq (,$(findstring clang,$(CXX)))
+CXX_FLAGS += -Wno-documentation
 endif
 endif
 
