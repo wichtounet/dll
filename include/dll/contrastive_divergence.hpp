@@ -122,6 +122,7 @@ void update_normal(RBM& rbm, Trainer& t) {
         }
     });
 
+    //TODO the batch is not necessary full!
     const auto n_samples = double(etl::dim<0>(t.w_grad_b));
     auto eps             = rbm.learning_rate / n_samples;
 
@@ -179,10 +180,6 @@ void update_convolutional(RBM& rbm, Trainer& t) {
 
     //Local sparsity method
     cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f) {
-        constexpr const auto NC  = rbm_t::NC;
-        constexpr const auto NW1 = rbm_t::NW1;
-        constexpr const auto NW2 = rbm_t::NW2;
-
         auto decay_rate = rbm.decay_rate;
         auto p          = rbm.sparsity_target;
         auto cost       = rbm.sparsity_cost;
@@ -193,10 +190,23 @@ void update_convolutional(RBM& rbm, Trainer& t) {
 
         f(t).b_grad -= sum_r(q_local_penalty);
 
+#ifdef ETL_CUDNN_MODE
+        constexpr const auto K   = rbm_t::K;
+
+        auto k_penalty = sum_r(q_local_penalty);
+        for (std::size_t k = 0; k < K; ++k) {
+            f(t).w_grad(k) = t.w_grad(k) - k_penalty(k);
+        }
+#else
+        constexpr const auto NC  = rbm_t::NC;
+        constexpr const auto NW1 = rbm_t::NW1;
+        constexpr const auto NW2 = rbm_t::NW2;
+
         auto k_penalty = etl::rep<NW1, NW2>(sum_r(q_local_penalty));
         for (std::size_t channel = 0; channel < NC; ++channel) {
             f(t).w_grad(channel) = t.w_grad(channel) - k_penalty;
         }
+#endif
     });
 
     //Honglak Lee's sparsity method
@@ -206,7 +216,7 @@ void update_convolutional(RBM& rbm, Trainer& t) {
         f(t).c_grad -= rbm.pbias_lambda * t.c_bias;
     });
 
-    const auto n_samples = double(etl::dim<0>(t.w_pos));
+    const auto n_samples = double(t.batch_size);
     auto eps             = rbm.learning_rate / n_samples;
 
     //Apply momentum and learning rate
@@ -492,6 +502,7 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
 
 template <bool Denoising, typename Trainer, typename RBM>
 void normal_compute_gradients_conv(RBM& /*rbm*/, Trainer& t, std::size_t i) {
+#ifndef ETL_CUDNN_MODE
     dll::auto_timer timer("cd:normal_compute_gradients_conv");
 
     using namespace etl;
@@ -509,6 +520,11 @@ void normal_compute_gradients_conv(RBM& /*rbm*/, Trainer& t, std::size_t i) {
             conv_2d_valid_multi_flipped(t.v2_a(i)(channel), t.h2_a(i), t.w_neg(i)(channel));
         }
     }
+#else
+    std::cerr << "You must use batch mode if you want to use CUDNN" << std::endl;
+    cpp_unused(t);
+    cpp_unused(i);
+#endif
 }
 
 template <bool Persistent, bool Denoising, std::size_t N, typename Trainer, typename T, typename RBM, cpp_enable_if(layer_traits<RBM>::is_parallel_mode())>
@@ -561,6 +577,17 @@ void batch_compute_gradients_conv(RBM& rbm, Trainer& t) {
 
     using namespace etl;
 
+#ifdef ETL_CUDNN_MODE
+    if (Denoising) {
+        t.w_pos = etl::conv_4d_valid_filter_flipped(t.vf, t.h1_a);
+        t.w_neg = etl::conv_4d_valid_filter_flipped(t.v2_a, t.h2_a);
+    } else {
+        t.w_pos = etl::conv_4d_valid_filter_flipped(t.v1, t.h1_a);
+        t.w_neg = etl::conv_4d_valid_filter_flipped(t.v2_a, t.h2_a);
+    }
+
+    cpp_unused(rbm);
+#else
     using rbm_t = RBM;
 
     const auto B            = get_batch_size(rbm);
@@ -577,6 +604,7 @@ void batch_compute_gradients_conv(RBM& rbm, Trainer& t) {
             }
         }
     });
+#endif
 }
 
 template <bool Persistent, bool Denoising, std::size_t N, typename Trainer, typename T, typename RBM, cpp_disable_if(layer_traits<RBM>::is_parallel_mode())>
@@ -648,7 +676,12 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
     }
 
     //Compute the gradients
+#ifdef ETL_CUDNN_MODE
+    t.w_grad = t.w_pos - t.w_neg;
+#else
     t.w_grad = sum_l(t.w_pos - t.w_neg);
+#endif
+
     t.b_grad = mean_r(sum_l(t.h1_a - t.h2_a));
 
     cpp::static_if<Denoising>([&](auto f) {
@@ -933,14 +966,20 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
 
     rbm_t& rbm;
 
+#ifdef ETL_CUDNN_MODE
+#define W_DIMS K, NC, NW1, NW2
+#else
+#define W_DIMS NC, K, NW1, NW2
+#endif
+
     //Gradients
-    etl::fast_matrix<weight, NC, K, NW1, NW2> w_grad; //Gradients of shared weights
+    etl::fast_matrix<weight, W_DIMS> w_grad; //Gradients of shared weights
     etl::fast_vector<weight, K> b_grad;               //Gradients of hidden biases bk
     etl::fast_vector<weight, NC> c_grad;              //Visible gradient
 
     //{{{ Momentum
 
-    etl::fast_matrix<weight, NC, K, NW1, NW2> w_inc;
+    etl::fast_matrix<weight, W_DIMS> w_inc;
     etl::fast_vector<weight, K> b_inc;
     etl::fast_vector<weight, NC> c_inc;
 
@@ -958,7 +997,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
 
     //{{{ Sparsity biases
 
-    conditional_fast_matrix_t<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE, weight, NC, K, NW1, NW2> w_bias;
+    conditional_fast_matrix_t<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE, weight, W_DIMS> w_bias;
     conditional_fast_matrix_t<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE, weight, K> b_bias;
     conditional_fast_matrix_t<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE, weight, NC> c_bias;
 
@@ -973,8 +1012,13 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
     conditional_fast_matrix_t<Persistent, weight, batch_size, K, NH1, NH2> p_h_a;
     conditional_fast_matrix_t<Persistent, weight, batch_size, K, NH1, NH2> p_h_s;
 
-    etl::fast_matrix<weight, batch_size, NC, K, NW1, NW2> w_pos;
-    etl::fast_matrix<weight, batch_size, NC, K, NW1, NW2> w_neg;
+#ifdef ETL_CUDNN_MODE
+    etl::fast_matrix<weight, W_DIMS> w_pos;
+    etl::fast_matrix<weight, W_DIMS> w_neg;
+#else
+    etl::fast_matrix<weight, batch_size, W_DIMS> w_pos;
+    etl::fast_matrix<weight, batch_size, W_DIMS> w_neg;
+#endif
 
     etl::fast_matrix<weight, batch_size, NC, NV1, NV2> v1;                     //Input
     conditional_fast_matrix_t<Denoising, weight, batch_size, NC, NV1, NV2> vf; //Expected
