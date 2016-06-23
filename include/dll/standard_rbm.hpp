@@ -306,18 +306,18 @@ protected:
         H_PROBS(unit_type::SOFTMAX, f(h_a) = stable_softmax(b + (t = v_a * w)));
 
         //Sample values from input
-        H_SAMPLE_INPUT(unit_type::BINARY, f(h_s) = bernoulli(h_a));
-        H_SAMPLE_INPUT(unit_type::RELU, f(h_s) = max(logistic_noise(b + (t = v_a * w)), 0.0));
-        H_SAMPLE_INPUT(unit_type::RELU6, f(h_s) = ranged_noise(h_a, 6.0));
-        H_SAMPLE_INPUT(unit_type::RELU1, f(h_s) = ranged_noise(h_a, 1.0));
-        H_SAMPLE_INPUT(unit_type::SOFTMAX, f(h_s) = one_if_max(h_a));
+        H_SAMPLE_PROBS(unit_type::BINARY, f(h_s) = bernoulli(h_a));
+        H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = max(logistic_noise(b + (t = v_a * w)), 0.0));
+        H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = ranged_noise(h_a, 6.0));
+        H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = ranged_noise(h_a, 1.0));
+        H_SAMPLE_PROBS(unit_type::SOFTMAX, f(h_s) = one_if_max(h_a));
 
         //Sample values from probs
-        H_SAMPLE_PROBS(unit_type::BINARY, f(h_s) = bernoulli(sigmoid(b + (t = v_a * w))));
-        H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = bernoulli(max(b + (t = v_a * w), 0.0)));
-        H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = bernoulli(min(max(b + (t = v_a * w), 0.0), 6.0)));
-        H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = bernoulli(min(max(b + (t = v_a * w), 0.0), 1.0)));
-        H_SAMPLE_PROBS(unit_type::SOFTMAX, f(h_s) = bernoulli(stable_softmax(b + (t = v_a * w))));
+        H_SAMPLE_INPUT(unit_type::BINARY, f(h_s) = bernoulli(sigmoid(b + (t = v_a * w))));
+        H_SAMPLE_INPUT(unit_type::RELU, f(h_s) = max(logistic_noise(b + (t = v_a * w)), 0.0));
+        H_SAMPLE_INPUT(unit_type::RELU6, f(h_s) = ranged_noise(min(max(b + (t = v_a * w), 0.0), 6.0), 6.0));
+        H_SAMPLE_INPUT(unit_type::RELU1, f(h_s) = ranged_noise(min(max(b + (t = v_a * w), 0.0), 6.0), 1.0));
+        H_SAMPLE_INPUT(unit_type::SOFTMAX, f(h_s) = one_if_max(stable_softmax(b + (t = v_a * w))));
 
         if (P) {
             nan_check_deep(h_a);
