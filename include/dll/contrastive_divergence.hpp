@@ -40,7 +40,7 @@ template <typename RBM>
 struct base_trainer {
     typedef RBM rbm_t;
 
-    bool init = false;
+    bool init = true;
 
     template <decay_type decay, typename V, typename G>
     void update_grad(G& grad, const V& value, const RBM& rbm, double penalty) {
