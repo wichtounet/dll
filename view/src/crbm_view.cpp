@@ -18,6 +18,7 @@ int main(int /*argc*/, char* /*argv*/ []) {
         1, 28, 40, 12,
         dll::momentum,
         dll::batch_size<50>,
+        dll::sparsity<dll::sparsity_method::LEE>,
         dll::watcher<dll::opencv_rbm_visualizer>>::layer_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
@@ -25,7 +26,7 @@ int main(int /*argc*/, char* /*argv*/ []) {
     dataset.training_images.resize(500);
     dataset.training_labels.resize(500);
 
-    mnist::normalize_dataset(dataset);
+    mnist::binarize_dataset(dataset);
 
     rbm.train(dataset.training_images, 500);
 
