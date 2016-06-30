@@ -231,12 +231,12 @@ void update_convolutional(RBM& rbm, Trainer& t) {
         f(rbm.b) += t.b_inc;
         f(rbm.c) += t.c_inc;
     })
-        //Apply learning rate only
-        .else_([&](auto f) {
-            f(rbm.w) += eps * t.w_grad;
-            f(rbm.b) += eps * t.b_grad;
-            f(rbm.c) += eps * t.c_grad;
-        });
+    //Apply learning rate only
+    .else_([&](auto f) {
+        f(rbm.w) += eps * t.w_grad;
+        f(rbm.b) += eps * t.b_grad;
+        f(rbm.c) += eps * t.c_grad;
+    });
 
     //Check for NaN
     nan_check_deep(rbm.w);
