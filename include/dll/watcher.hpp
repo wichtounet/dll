@@ -161,6 +161,29 @@ struct silent_dbn_watcher : default_dbn_watcher<DBN> {
     static constexpr const bool replace_sub = false;
 };
 
+template <typename DBN>
+struct mute_dbn_watcher {
+    static constexpr const bool ignore_sub  = true;
+    static constexpr const bool replace_sub = false;
+
+    void pretraining_begin(const DBN& /*dbn*/, std::size_t /*max_epochs*/) {}
+
+    template <typename RBM>
+    void pretrain_layer(const DBN& /*dbn*/, std::size_t /*I*/, std::size_t /*input_size*/) {}
+
+    void pretraining_end(const DBN& /*dbn*/) {}
+
+    void pretraining_batch(const DBN& /*dbn*/, std::size_t /*batch*/) {}
+
+    void fine_tuning_begin(const DBN& /*dbn*/) {}
+
+    void ft_epoch_end(std::size_t /*epoch*/, double /*error*/, const DBN& /*dbn*/) {}
+
+    void lr_adapt(const DBN& /*dbn*/) {}
+
+    void fine_tuning_end(const DBN& /*dbn*/) {}
+};
+
 //TODO This is currently useless
 
 template <typename R>
