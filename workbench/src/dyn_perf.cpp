@@ -86,6 +86,9 @@ int main(int, char**) {
     size_t dyn_duration = 0;
     MEASURE(dyn_dbn, "dyn_dbn_pretrain", data_1, dyn_duration);
 
+    dll::dump_timers();
+    dll::reset_timers();
+
     using dbn_t = dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 250, dll::momentum, dll::batch_size<50>>::layer_t,
@@ -97,6 +100,8 @@ int main(int, char**) {
 
     size_t static_duration = 0;
     MEASURE(dbn, "dbn_pretrain", data_1, static_duration);
+
+    dll::dump_timers();
 
     std::cout << "Ratio:" << 100.0 * (double(static_duration) / double(dyn_duration)) << std::endl;
 
