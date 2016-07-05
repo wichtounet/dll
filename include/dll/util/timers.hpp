@@ -72,6 +72,17 @@ struct timer_t {
 struct timers_t {
     std::array<timer_t, max_timers> timers;
     std::mutex lock;
+
+    void reset(){
+        std::lock_guard<std::mutex> l(lock);
+
+        for(auto& timer : timers){
+            timer.name = nullptr;
+            timer.duration = 0;
+            timer.count = 0;
+        }
+
+    }
 };
 
 inline timers_t& get_timers() {
@@ -95,6 +106,11 @@ inline std::string duration_str(double duration, int precision = 6) {
     } else {
         return to_string_precision(duration, precision) + "ns";
     }
+}
+
+inline void reset_timers() {
+    decltype(auto) timers = get_timers();
+    timers.reset();
 }
 
 inline void dump_timers() {
