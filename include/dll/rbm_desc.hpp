@@ -47,6 +47,9 @@ struct rbm_desc {
     /*! The layer type */
     using layer_t = rbm<rbm_desc<visibles, hiddens, Parameters...>>;
 
+    /*! The layer type */
+    using dyn_layer_t = dyn_rbm<dyn_rbm_desc<Parameters...>>;
+
     /*! The RBM type */
     using rbm_t[[deprecated("use layer_t instead")]] = layer_t;
 
