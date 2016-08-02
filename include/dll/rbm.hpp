@@ -8,6 +8,9 @@
 #ifndef DLL_RBM_HPP
 #define DLL_RBM_HPP
 
+// Include the dyn version
+#include "dll/dyn_rbm.hpp"
+
 #include "dll/rbm.inl"
 #include "dll/trainer/rbm_training_context.hpp"
 #include "dll/rbm_desc.hpp"

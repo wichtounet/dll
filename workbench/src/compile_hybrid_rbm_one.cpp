@@ -8,7 +8,6 @@
 #include <iostream>
 #include <chrono>
 
-#include "dll/dyn_rbm.hpp"
 #include "dll/rbm.hpp"
 #include "dll/dbn.hpp"
 
