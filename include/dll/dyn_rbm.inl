@@ -127,12 +127,16 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         return num_visible * num_hidden;
     }
 
-    static std::string to_short_string() noexcept {
-        return "RBM(dyn)";
+    std::string to_short_string() const {
+        char buffer[1024];
+        snprintf(
+            buffer, 1024, "RBM(dyn)(%s): %lu -> %lu",
+            to_string(hidden_unit).c_str(), num_visible, num_hidden);
+        return {buffer};
     }
 
     void display() const {
-        std::cout << "RBM(dyn): " << num_visible << " -> " << num_hidden << std::endl;
+        std::cout << to_short_string() << std::endl;
     }
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V>

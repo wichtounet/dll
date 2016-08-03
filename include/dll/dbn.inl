@@ -881,7 +881,7 @@ private:
         using input_t = etl::value_t<Iterator>;
         using next_input_t = std::decay_t<decltype(layer.template prepare_one_output<input_t>())>;
 
-        watcher.template pretrain_layer<std::decay_t<decltype(next_layer)>>(*this, I+1, dbn_detail::fast_distance(first, last));
+        watcher.pretrain_layer(*this, I+1, next_layer, dbn_detail::fast_distance(first, last));
 
         auto next_a = next_layer.template prepare_output<next_input_t>(std::distance(first, last));
 
@@ -903,7 +903,7 @@ private:
 
         decltype(auto) layer = layer_get<I>();
 
-        watcher.template pretrain_layer<layer_t>(*this, I, dbn_detail::fast_distance(first, last));
+        watcher.pretrain_layer(*this, I, layer, dbn_detail::fast_distance(first, last));
 
         cpp::static_if<layer_traits<layer_t>::is_pretrained()>([&](auto f) {
             f(layer).template train<!watcher_t::ignore_sub,               //Enable the RBM Watcher or not
@@ -953,7 +953,7 @@ private:
 
         decltype(auto) layer = layer_get<I>();
 
-        watcher.template pretrain_layer<layer_t>(*this, I, dbn_detail::fast_distance(nit, nend));
+        watcher.pretrain_layer(*this, I, layer, dbn_detail::fast_distance(nit, nend));
 
         cpp::static_if<layer_traits<layer_t>::is_pretrained()>([&](auto f) {
             f(layer).template train_denoising<NIterator, CIterator,
@@ -1034,7 +1034,7 @@ private:
 
         decltype(auto) rbm = layer_get<I>();
 
-        watcher.template pretrain_layer<layer_t>(*this, I, 0);
+        watcher.pretrain_layer(*this, I, rbm, 0);
 
         using rbm_trainer_t = dll::rbm_trainer<layer_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>, false>;
 
@@ -1119,7 +1119,7 @@ private:
 
         decltype(auto) rbm = layer_get<I>();
 
-        watcher.template pretrain_layer<layer_t>(*this, I, 0);
+        watcher.pretrain_layer(*this, I, rbm, 0);
 
         using rbm_trainer_t = dll::rbm_trainer<layer_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>>;
 
@@ -1216,7 +1216,7 @@ private:
 
         decltype(auto) rbm = layer_get<I>();
 
-        watcher.template pretrain_layer<layer_t>(*this, I, 0);
+        watcher.pretrain_layer(*this, I, rbm, 0);
 
         using rbm_trainer_t = dll::rbm_trainer<layer_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>>;
 
@@ -1311,7 +1311,7 @@ private:
 
         auto input_size = std::distance(first, last);
 
-        watcher.template pretrain_layer<layer_t>(*this, I, input_size);
+        watcher.pretrain_layer(*this, I, layer, input_size);
 
         cpp::static_if<layer_traits<layer_t>::is_trained()>([&](auto f) {
             f(layer).template train<!watcher_t::ignore_sub,               //Enable the RBM Watcher or not

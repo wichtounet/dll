@@ -44,8 +44,8 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
     static constexpr const bool dbn_only = layer_traits<this_type>::is_dbn_only();
 
     //TODO CHECK
-    //template <std::size_t B>
-    //using input_batch_t = etl::fast_dyn_matrix<weight, B, NC, NV1, NV2>;
+    template <std::size_t B>
+    using input_batch_t = etl::fast_dyn_matrix<weight, B, 1>;
 
     //template <std::size_t B>
     //using output_batch_t = etl::fast_dyn_matrix<weight, B, K, NH1, NH2>;
@@ -454,13 +454,18 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
     using output_t      = std::vector<output_one_t>;
 
     template <typename Input>
-    static output_t prepare_output(std::size_t samples) {
-        return output_t{samples};
+    output_t prepare_output(std::size_t samples) const {
+        output_t output;
+        output.reserve(samples);
+        for(size_t i = 0; i < samples; ++i){
+            output.emplace_back(k, nh1, nh2);
+        }
+        return output;
     }
 
     template <typename Input>
-    static output_one_t prepare_one_output() {
-        return output_one_t{};
+    output_one_t prepare_one_output() const {
+        return output_one_t(k, nh1, nh2);
     }
 
     void activate_hidden(output_one_t& h_a, const input_one_t& input) const {

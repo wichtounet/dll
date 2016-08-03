@@ -32,3 +32,20 @@ TEST_CASE("dyn_crbm/mnist_1", "dyn_crbm::simple") {
 
     REQUIRE(error < 2e-2);
 }
+
+TEST_CASE("dyn_crbm/mnist_2", "crbm::momentum") {
+    dll::dyn_conv_rbm_desc<dll::momentum>::layer_t rbm;
+
+    rbm.init_rbm(1, 28, 28, 40, 12, 12);
+    rbm.batch_size = 25;
+
+    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(250);
+
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto error = rbm.train(dataset.training_images, 100);
+
+    REQUIRE(error < 1e-2);
+}

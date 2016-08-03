@@ -93,13 +93,11 @@ struct default_dbn_watcher {
     }
 
     template <typename RBM>
-    void pretrain_layer(const DBN& /*dbn*/, std::size_t I, std::size_t input_size) {
-        using rbm_t = RBM;
-
-        if (input_size > 0) {
-            std::cout << "DBN: Pretrain layer " << I << " (" << rbm_t::to_short_string() << ") with " << input_size << " entries" << std::endl;
+    void pretrain_layer(const DBN& /*dbn*/, std::size_t I, const RBM& rbm, std::size_t input_size) {
+        if (input_size) {
+            std::cout << "DBN: Pretrain layer " << I << " (" << rbm.to_short_string() << ") with " << input_size << " entries" << std::endl;
         } else {
-            std::cout << "DBN: Pretrain layer " << I << " (" << rbm_t::to_short_string() << ")" << std::endl;
+            std::cout << "DBN: Pretrain layer " << I << " (" << rbm.to_short_string() << ")" << std::endl;
         }
     }
 
@@ -168,7 +166,7 @@ struct mute_dbn_watcher {
     void pretraining_begin(const DBN& /*dbn*/, std::size_t /*max_epochs*/) {}
 
     template <typename RBM>
-    void pretrain_layer(const DBN& /*dbn*/, std::size_t /*I*/, std::size_t /*input_size*/) {}
+    void pretrain_layer(const DBN& /*dbn*/, std::size_t /*I*/, const RBM& /*rbm*/, std::size_t /*input_size*/) {}
 
     void pretraining_end(const DBN& /*dbn*/) {}
 
