@@ -190,18 +190,18 @@ void update_convolutional(RBM& rbm, Trainer& t) {
         f(t).b_grad -= sum_r(q_local_penalty);
 
 #ifdef ETL_CUDNN_MODE
-        constexpr const auto K   = rbm_t::K;
+        constexpr const auto K   = get_k(rbm);
 
         auto k_penalty = sum_r(q_local_penalty);
         for (std::size_t k = 0; k < K; ++k) {
             f(t).w_grad(k) = t.w_grad(k) - k_penalty(k);
         }
 #else
-        constexpr const auto NC  = rbm_t::NC;
-        constexpr const auto NW1 = rbm_t::NW1;
-        constexpr const auto NW2 = rbm_t::NW2;
+        constexpr const auto NC  = get_nc(rbm);
+        constexpr const auto NW1 = get_nw1(rbm);
+        constexpr const auto NW2 = get_nw2(rbm);
 
-        auto k_penalty = etl::rep<NW1, NW2>(sum_r(q_local_penalty));
+        auto k_penalty = etl::rep(sum_r(q_local_penalty), NW1, NW2);
         for (std::size_t channel = 0; channel < NC; ++channel) {
             f(t).w_grad(channel) = t.w_grad(channel) - k_penalty;
         }
@@ -215,7 +215,7 @@ void update_convolutional(RBM& rbm, Trainer& t) {
         f(t).c_grad -= rbm.pbias_lambda * t.c_bias;
     });
 
-    const auto n_samples = double(t.batch_size);
+    const auto n_samples = get_batch_size(rbm);
     auto eps             = rbm.learning_rate / n_samples;
 
     //Apply momentum and learning rate
@@ -587,10 +587,8 @@ void batch_compute_gradients_conv(RBM& rbm, Trainer& t) {
 
     cpp_unused(rbm);
 #else
-    using rbm_t = RBM;
-
-    const auto B            = get_batch_size(rbm);
-    constexpr const auto NC = rbm_t::NC;
+    const auto B  = get_batch_size(rbm);
+    const auto NC = get_nc(rbm);
 
     maybe_parallel_foreach_n(t.pool, 0, B, [&](std::size_t batch) {
         for (std::size_t channel = 0; channel < NC; ++channel) {
@@ -815,7 +813,7 @@ struct base_cd_trainer : base_trainer<RBM> {
  * This class provides update which applies the gradients to the RBM.
  */
 template <std::size_t N, typename RBM, bool Persistent, bool Denoising>
-struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_traits<RBM>::is_dynamic()>> : base_trainer<RBM> {
+struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_traits<RBM>::is_dynamic() && !layer_traits<RBM>::is_convolutional_rbm_layer()>> : base_trainer<RBM> {
     static_assert(N > 0, "(P)CD-0 is not a valid training method");
 
     typedef RBM rbm_t;
@@ -945,7 +943,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
  * This class provides update which applies the gradients to the RBM.
  */
 template <std::size_t N, typename RBM, bool Persistent, bool Denoising>
-struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_traits<RBM>::is_convolutional_rbm_layer()>> : base_trainer<RBM> {
+struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<!layer_traits<RBM>::is_dynamic() && layer_traits<RBM>::is_convolutional_rbm_layer()>> : base_trainer<RBM> {
     static_assert(N > 0, "(P)CD-0 is not a valid training method");
 
     using rbm_t = RBM;
@@ -1069,6 +1067,140 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
 
     static std::string name() {
         return std::string("") + (Persistent ? "Persistent " : "") + (Denoising ? "Denoising " : "") + "Contrastive Divergence (convolutional)";
+    }
+};
+
+/*!
+ * \brief Specialization of base_cd_trainer for dynamic Convolutional RBM.
+ *
+ * This class provides update which applies the gradients to the RBM.
+ */
+template <std::size_t N, typename RBM, bool Persistent, bool Denoising>
+struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_traits<RBM>::is_dynamic() && layer_traits<RBM>::is_convolutional_rbm_layer()>> : base_trainer<RBM> {
+    static_assert(N > 0, "(P)CD-0 is not a valid training method");
+
+    using rbm_t = RBM;
+
+    typedef typename rbm_t::weight weight;
+
+    rbm_t& rbm;
+
+#ifdef ETL_CUDNN_MODE
+#define DYN_W_DIMS rbm.k, rbm.nc, rbm.nw1, rbm.nw2
+#else
+#define DYN_W_DIMS rbm.nc, rbm.k, rbm.nw1, rbm.nw2
+#endif
+
+    //Gradients
+    etl::dyn_matrix<weight, 4> w_grad; //Gradients of shared weights
+    etl::dyn_matrix<weight, 1> b_grad;               //Gradients of hidden biases bk
+    etl::dyn_matrix<weight, 1> c_grad;              //Visible gradient
+
+    //{{{ Momentum
+
+    etl::dyn_matrix<weight, 4> w_inc;
+    etl::dyn_matrix<weight, 1> b_inc;
+    etl::dyn_matrix<weight, 1> c_inc;
+
+    //}}} Momentum end
+
+    //{{{ Sparsity
+
+    weight q_global_batch;
+    weight q_global_t;
+
+    etl::dyn_matrix<weight, 3> q_local_batch;
+    etl::dyn_matrix<weight, 3> q_local_t;
+
+    //}}} Sparsity end
+
+    //{{{ Sparsity biases
+
+    etl::dyn_matrix<weight, 4> w_bias;
+    etl::dyn_matrix<weight, 1> b_bias;
+    etl::dyn_matrix<weight, 1> c_bias;
+
+    //}}} Sparsity biases end
+
+    static constexpr const std::size_t V_CV_CHANNELS = 2;
+    static constexpr const std::size_t H_CV_CHANNELS = 2;
+
+    etl::dyn_matrix<weight, 5> v_cv;
+    etl::dyn_matrix<weight, 4> h_cv;
+
+    etl::dyn_matrix<weight, 4> p_h_a;
+    etl::dyn_matrix<weight, 4> p_h_s;
+
+#ifdef ETL_CUDNN_MODE
+    etl::dyn_matrix<weight, 4> w_pos;
+    etl::dyn_matrix<weight, 4> w_neg;
+#else
+    etl::dyn_matrix<weight, 5> w_pos;
+    etl::dyn_matrix<weight, 5> w_neg;
+#endif
+
+    etl::dyn_matrix<weight, 4> v1;                     //Input
+    etl::dyn_matrix<weight, 4> vf; //Expected
+
+    etl::dyn_matrix<weight, 4> h1_a;
+    etl::dyn_matrix<weight, 4> h1_s;
+
+    etl::dyn_matrix<weight, 4> v2_a;
+    etl::dyn_matrix<weight, 4> v2_s;
+
+    etl::dyn_matrix<weight, 4> h2_a;
+    etl::dyn_matrix<weight, 4> h2_s;
+
+    cpp::thread_pool<!layer_traits<rbm_t>::is_serial()> pool;
+
+    base_cd_trainer(rbm_t& rbm)
+            : rbm(rbm),
+             w_grad(DYN_W_DIMS, 0.0),
+             b_grad(rbm.k, 0.0),
+             c_grad(rbm.nc, 0.0),
+             w_inc(DYN_W_DIMS, 0.0),
+             b_inc(rbm.k, 0.0),
+             c_inc(rbm.nc, 0.0),
+             q_global_t(0.0),
+             q_local_batch(rbm.k, rbm.nh1, rbm.nh2),
+             q_local_t(rbm.k, rbm.nh1, rbm.nh2, 0.0),
+             w_bias(DYN_W_DIMS, 0.0),
+             b_bias(rbm.k, 0.0),
+             c_bias(rbm.nc, 0.0),
+             v_cv(get_batch_size(rbm), V_CV_CHANNELS, rbm.k, rbm.nh1, rbm.nh2),
+             h_cv(get_batch_size(rbm), H_CV_CHANNELS, rbm.nv1, rbm.nv2),
+             p_h_a(get_batch_size(rbm), rbm.k, rbm.nh1, rbm.nh2),
+             p_h_s(get_batch_size(rbm), rbm.k, rbm.nh1, rbm.nh2),
+#ifdef ETL_CUDNN_MODE
+             w_pos(DYN_W_DIMS),
+             w_neg(DYN_W_DIMS),
+#else
+             w_pos(get_batch_size(rbm), DYN_W_DIMS),
+             w_neg(get_batch_size(rbm), DYN_W_DIMS),
+#endif
+             v1(get_batch_size(rbm), rbm.nc, rbm.nv1, rbm.nv2),
+             vf(get_batch_size(rbm), rbm.nc, rbm.nv1, rbm.nv2),
+             h1_a(get_batch_size(rbm), rbm.k, rbm.nh1, rbm.nh2),
+             h1_s(get_batch_size(rbm), rbm.k, rbm.nh1, rbm.nh2),
+             v2_a(get_batch_size(rbm), rbm.nc, rbm.nv1, rbm.nv2),
+             v2_s(get_batch_size(rbm), rbm.nc, rbm.nv1, rbm.nv2),
+             h2_a(get_batch_size(rbm), rbm.k, rbm.nh1, rbm.nh2),
+             h2_s(get_batch_size(rbm), rbm.k, rbm.nh1, rbm.nh2),
+             pool(etl::threads) {
+        //Nothign else to init
+    }
+
+    void update(RBM& rbm) {
+        update_convolutional(rbm, *this);
+    }
+
+    template <typename T>
+    void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context) {
+        train_convolutional<Persistent, Denoising, N>(input_batch, expected_batch, context, rbm, *this);
+    }
+
+    static std::string name() {
+        return std::string("") + (Persistent ? "Persistent " : "") + (Denoising ? "Denoising " : "") + "Contrastive Divergence (dynamic convolutional)";
     }
 };
 

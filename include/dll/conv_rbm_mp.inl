@@ -159,7 +159,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit), "Invalid hidden unit type");
         static_assert(P, "Computing S without P is not implemented");
 
-        base_type::template compute_vcv<this_type>(v_a, v_cv, w);
+        base_type::template compute_vcv(*this, v_a, v_cv, w);
 
         H_PROBS2(unit_type::BINARY, unit_type::BINARY, f(h_a) = etl::p_max_pool_h<C, C>(etl::rep<NH1, NH2>(b) + v_cv(1)));
         H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, f(h_a) = etl::p_max_pool_h<C, C>((1.0 / (0.1 * 0.1)) >> (etl::rep<NH1, NH2>(b) + v_cv(1))));
@@ -188,7 +188,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
         using namespace etl;
 
-        base_type::template compute_hcv<this_type>(h_s, h_cv, w, [&](std::size_t channel) {
+        base_type::template compute_hcv(*this, h_s, h_cv, w, [&](std::size_t channel) {
             V_PROBS(unit_type::BINARY, f(v_a)(channel) = sigmoid(c(channel) + h_cv(1)));
             V_PROBS(unit_type::GAUSSIAN, f(v_a)(channel) = c(channel) + h_cv(1));
         });
@@ -212,7 +212,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
         etl::fast_dyn_matrix<weight, 2, K, NH1, NH2> v_cv; //Temporary convolution
 
-        base_type::template compute_vcv<this_type>(v_a, v_cv, w);
+        base_type::template compute_vcv(*this, v_a, v_cv, w);
 
         if (pooling_unit == unit_type::BINARY) {
             p_a = etl::p_max_pool_p<C, C>(etl::rep<NH1, NH2>(b) + v_cv(1));
@@ -243,7 +243,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         cpp_assert(etl::dim<0>(v_cv) == Batch, "The number of batch must be consistent");
         cpp_unused(Batch);
 
-        base_type::template batch_compute_vcv<this_type>(pool, v_a, v_cv, w, [&](std::size_t batch) {
+        base_type::template batch_compute_vcv(*this, pool, v_a, v_cv, w, [&](std::size_t batch) {
             H_PROBS2(unit_type::BINARY, unit_type::BINARY, f(h_a)(batch) = etl::p_max_pool_h<C, C>(etl::rep<NH1, NH2>(b) + v_cv(batch)(1)));
             H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, f(h_a)(batch) = etl::p_max_pool_h<C, C>((1.0 / (0.1 * 0.1)) >> (etl::rep<NH1, NH2>(b) + v_cv(batch)(1))));
             H_PROBS(unit_type::RELU, f(h_a)(batch) = max(etl::rep<NH1, NH2>(b) + v_cv(batch)(1), 0.0));
@@ -279,7 +279,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         cpp_assert(etl::dim<0>(h_cv) == Batch, "The number of batch must be consistent");
         cpp_unused(Batch);
 
-        base_type::template batch_compute_hcv<this_type>(pool, h_s, h_cv, w, [&](std::size_t batch, std::size_t channel) {
+        base_type::template batch_compute_hcv(*this, pool, h_s, h_cv, w, [&](std::size_t batch, std::size_t channel) {
             V_PROBS(unit_type::BINARY, f(v_a)(batch)(channel) = etl::sigmoid(c(channel) + h_cv(batch)(1)));
             V_PROBS(unit_type::GAUSSIAN, f(v_a)(batch)(channel) = c(channel) + h_cv(batch)(1));
         });
@@ -302,14 +302,14 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
             //Definition according to Honglak Lee
             //E(v,h) = - sum_k (hk (Wk*v) + bk hk) - c sum_v v
 
-            base_type::template compute_vcv<this_type>(v, v_cv, w);
+            base_type::template compute_vcv(*this, v, v_cv, w);
 
             return -etl::sum(c >> etl::sum_r(v)) - etl::sum((h >> v_cv(1)) + (etl::rep<NH1, NH2>(b) >> h));
         } else if (desc::visible_unit == unit_type::GAUSSIAN && desc::hidden_unit == unit_type::BINARY) {
             //Definition according to Honglak Lee / Mixed with Gaussian
             //E(v,h) = - sum_k (hk (Wk*v) + bk hk) - sum_v ((v - c) ^ 2 / 2)
 
-            base_type::template compute_vcv<this_type>(v, v_cv, w);
+            base_type::template compute_vcv(*this, v, v_cv, w);
 
             return -sum(etl::pow(v - etl::rep<NV1, NV2>(c), 2) / 2.0) - etl::sum((h >> v_cv(1)) + (etl::rep<NH1, NH2>(b) >> h));
         } else {
@@ -332,7 +332,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         if (desc::visible_unit == unit_type::BINARY && desc::hidden_unit == unit_type::BINARY) {
             //Definition computed from E(v,h)
 
-            base_type::template compute_vcv<this_type>(v, v_cv, w);
+            base_type::template compute_vcv(*this, v, v_cv, w);
 
             auto x = etl::rep<NH1, NH2>(b) + v_cv(1);
 
@@ -340,7 +340,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         } else if (desc::visible_unit == unit_type::GAUSSIAN && desc::hidden_unit == unit_type::BINARY) {
             //Definition computed from E(v,h)
 
-            base_type::template compute_vcv<this_type>(v, v_cv, w);
+            base_type::template compute_vcv(*this, v, v_cv, w);
 
             auto x = etl::rep<NH1, NH2>(b) + v_cv(1);
 

@@ -32,41 +32,27 @@ namespace dll {
  * This follows the definition of a CRBM by Honglak Lee.
  */
 template <typename Desc>
-struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
+struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
     using desc      = Desc;
     using weight    = typename desc::weight;
-    using this_type = conv_rbm<desc>;
+    using this_type = dyn_conv_rbm<desc>;
     using base_type = standard_conv_rbm<this_type, desc>;
 
     static constexpr const unit_type visible_unit = desc::visible_unit;
     static constexpr const unit_type hidden_unit  = desc::hidden_unit;
 
-    static constexpr const std::size_t NV1 = desc::NV1;
-    static constexpr const std::size_t NV2 = desc::NV2;
-    static constexpr const std::size_t NH1 = desc::NH1;
-    static constexpr const std::size_t NH2 = desc::NH2;
-    static constexpr const std::size_t NC  = desc::NC;
-    static constexpr const std::size_t K   = desc::K;
-
-    static constexpr const std::size_t NW1 = NV1 - NH1 + 1; //By definition
-    static constexpr const std::size_t NW2 = NV2 - NH2 + 1; //By definition
-
     static constexpr const bool dbn_only = layer_traits<this_type>::is_dbn_only();
 
-    template <std::size_t B>
-    using input_batch_t = etl::fast_dyn_matrix<weight, B, NC, NV1, NV2>;
+    //TODO CHECK
+    //template <std::size_t B>
+    //using input_batch_t = etl::fast_dyn_matrix<weight, B, NC, NV1, NV2>;
 
-    template <std::size_t B>
-    using output_batch_t = etl::fast_dyn_matrix<weight, B, K, NH1, NH2>;
+    //template <std::size_t B>
+    //using output_batch_t = etl::fast_dyn_matrix<weight, B, K, NH1, NH2>;
 
-#ifdef ETL_CUDNN_MODE
-    using w_type = etl::fast_matrix<weight, K, NC, NW1, NW2>;
-#else
-    using w_type = etl::fast_matrix<weight, NC, K, NW1, NW2>;
-#endif
-
-    using b_type = etl::fast_vector<weight, K>;
-    using c_type = etl::fast_vector<weight, NC>;
+    using w_type = etl::dyn_matrix<weight, 4>;
+    using b_type = etl::dyn_vector<weight>;
+    using c_type = etl::dyn_vector<weight>;
 
     w_type w; //!< shared weights
     b_type b; //!< hidden biases bk
@@ -76,31 +62,77 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     std::unique_ptr<b_type> bak_b; //!< backup hidden biases bk
     std::unique_ptr<c_type> bak_c; //!< backup visible single bias c
 
-    etl::fast_matrix<weight, NC, NV1, NV2> v1; //visible units
+    etl::dyn_matrix<weight, 3> v1; //visible units
 
-    conditional_fast_matrix_t<!dbn_only, weight, K, NH1, NH2> h1_a; //Activation probabilities of reconstructed hidden units
-    conditional_fast_matrix_t<!dbn_only, weight, K, NH1, NH2> h1_s; //Sampled values of reconstructed hidden units
+    etl::dyn_matrix<weight, 3> h1_a; //Activation probabilities of reconstructed hidden units
+    etl::dyn_matrix<weight, 3> h1_s; //Sampled values of reconstructed hidden units
 
-    conditional_fast_matrix_t<!dbn_only, weight, NC, NV1, NV2> v2_a; //Activation probabilities of reconstructed visible units
-    conditional_fast_matrix_t<!dbn_only, weight, NC, NV1, NV2> v2_s; //Sampled values of reconstructed visible units
+    etl::dyn_matrix<weight, 3> v2_a; //Activation probabilities of reconstructed visible units
+    etl::dyn_matrix<weight, 3> v2_s; //Sampled values of reconstructed visible units
 
-    conditional_fast_matrix_t<!dbn_only, weight, K, NH1, NH2> h2_a; //Activation probabilities of reconstructed hidden units
-    conditional_fast_matrix_t<!dbn_only, weight, K, NH1, NH2> h2_s; //Sampled values of reconstructed hidden units
+    etl::dyn_matrix<weight, 3> h2_a; //Activation probabilities of reconstructed hidden units
+    etl::dyn_matrix<weight, 3> h2_s; //Sampled values of reconstructed hidden units
 
     //Convolution data
 
     static constexpr const std::size_t V_CV_CHANNELS = 2;
     static constexpr const std::size_t H_CV_CHANNELS = 2;
 
-    //Note: These are used by activation functions and therefore are
-    //needed in dbn_only mode as well
-    etl::fast_matrix<weight, V_CV_CHANNELS, K, NH1, NH2> v_cv; //Temporary convolution
-    etl::fast_matrix<weight, H_CV_CHANNELS, NV1, NV2> h_cv;    //Temporary convolution
+    etl::dyn_matrix<weight, 4> v_cv; //Temporary convolution
+    etl::dyn_matrix<weight, 3> h_cv; //Temporary convolution
+
+    size_t nv1;
+    size_t nv2;
+    size_t nh1;
+    size_t nh2;
+    size_t nc;
+    size_t k;
+
+    size_t nw1;
+    size_t nw2;
+
+    size_t batch_size = 25;
 
     mutable cpp::thread_pool<!layer_traits<this_type>::is_serial()> pool;
 
-    conv_rbm()
-            : base_type(), pool(etl::threads) {
+    dyn_conv_rbm() : base_type(), pool(etl::threads) {
+        // Nothing else to init
+    }
+
+    void init_rbm(size_t nc, size_t nv1, size_t nv2, size_t k, size_t nh1, size_t nh2){
+        this->nv1 = nv1;
+        this->nv2 = nv2;
+        this->nh1 = nh1;
+        this->nh2 = nh2;
+        this->nc = nc;
+        this->k = k;
+
+        this->nw1 = nv1 - nh1 + 1;
+        this->nw2 = nv2 - nh2 + 1;
+
+#ifdef ETL_CUDNN_MODE
+        w = etl::dyn_matrix<weight, 4>(k, nc, nw1, nw2);
+#else
+        w = etl::dyn_matrix<weight, 4>(nc, k, nw1, nw2);
+#endif
+
+        b = etl::dyn_vector<weight>(k);
+        c = etl::dyn_vector<weight>(nc);
+
+        v1 = etl::dyn_matrix<weight, 3>(nc, nv1, nv2);
+
+        h1_a = etl::dyn_matrix<weight, 3>(k, nh1, nh2);
+        h1_s = etl::dyn_matrix<weight, 3>(k, nh1, nh2);
+
+        v2_a = etl::dyn_matrix<weight, 3>(nc, nv1, nv2);
+        v2_s = etl::dyn_matrix<weight, 3>(nc, nv1, nv2);
+
+        h2_a = etl::dyn_matrix<weight, 3>(k, nh1, nh2);
+        h2_s = etl::dyn_matrix<weight, 3>(k, nh1, nh2);
+
+        v_cv = etl::dyn_matrix<weight, 4>(V_CV_CHANNELS, k, nh1, nh2);
+        h_cv = etl::dyn_matrix<weight, 3>(H_CV_CHANNELS, nv1, nv2);
+
         if (is_relu(hidden_unit)) {
             w = etl::normal_generator(0.0, 0.01);
             b = 0.0;
@@ -112,23 +144,23 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         }
     }
 
-    static constexpr std::size_t input_size() noexcept {
-        return NV1 * NV2 * NC;
+    std::size_t input_size() const noexcept {
+        return nv1 * nv2 * nc;
     }
 
-    static constexpr std::size_t output_size() noexcept {
-        return NH1 * NH2 * K;
+    std::size_t output_size() const noexcept {
+        return nh1 * nh2 * k;
     }
 
-    static constexpr std::size_t parameters() noexcept {
-        return NC * K * NW1 * NW2;
+    std::size_t parameters() const noexcept {
+        return nc * k * nw1 * nw2;
     }
 
-    static std::string to_short_string() {
+    std::string to_short_string() const {
         char buffer[1024];
         snprintf(
-            buffer, 1024, "CRBM(%s): %lux%lux%lu -> (%lux%lu) -> %lux%lux%lu",
-            to_string(hidden_unit).c_str(), NV1, NV2, NC, NW1, NW2, NH1, NH2, K);
+            buffer, 1024, "CRBM(dyn)(%s): %lux%lux%lu -> (%lux%lu) -> %lux%lux%lu",
+            to_string(hidden_unit).c_str(), nv1, nv2, nc, nw1, nw2, nh1, nh2, k);
         return {buffer};
     }
 
@@ -150,32 +182,29 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2>
     void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& v_s) const {
-        etl::fast_dyn_matrix<weight, V_CV_CHANNELS, K, NH1, NH2> v_cv; //Temporary convolution
+        etl::dyn_matrix<weight, 4> v_cv(V_CV_CHANNELS, k, nh1, nh2); //Temporary convolution
         activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, v_cv);
     }
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2>
     void activate_visible(const H1& h_a, const H2& h_s, V1&& v_a, V2&& v_s) const {
-        etl::fast_dyn_matrix<weight, H_CV_CHANNELS, NV2, NV2> h_cv; //Temporary convolution
+        etl::dyn_matrix<weight, 3> h_cv(H_CV_CHANNELS, nv2, nv2); //Temporary convolution
         activate_visible<P, S>(h_a, h_s, std::forward<V1>(v_a), std::forward<V2>(v_s), h_cv);
     }
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename VCV>
     void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& /*v_s*/, VCV&& v_cv) const {
-        dll::auto_timer timer("crbm:activate_hidden");
+        dll::auto_timer timer("dyn_crbm:activate_hidden");
 
         static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit), "Invalid hidden unit type");
         static_assert(P, "Computing S without P is not implemented");
 
-        validate_inputs<V1, V2>();
-        validate_outputs<H1, H2>();
-
         using namespace etl;
 
-        auto b_rep = etl::force_temporary(etl::rep<NH1, NH2>(b));
+        auto b_rep = etl::force_temporary(etl::rep(b, nh1, nh2));
 
 #ifdef ETL_CUDNN_MODE
-        etl::reshape<1, K, NH1, NH2>(h_a) = etl::conv_4d_valid_flipped(etl::reshape<1, NC, NV1, NV2>(v_a), w);
+        etl::reshape(h_a, 1, k, nh1, nh2) = etl::conv_4d_valid_flipped(etl::reshape(v_a, 1, nc, nv1, nv2), w);
 
         H_PROBS2(unit_type::BINARY, unit_type::BINARY, f(h_a) = sigmoid(b_rep + h_a));
         H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, f(h_a) = sigmoid((1.0 / (0.1 * 0.1)) >> (b_rep + h_a)));
@@ -212,20 +241,17 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename HCV>
     void activate_visible(const H1& /*h_a*/, const H2& h_s, V1&& v_a, V2&& v_s, HCV&& h_cv) const {
-        dll::auto_timer timer("crbm:activate_visible");
+        dll::auto_timer timer("dyn_crbm:activate_visible");
 
         static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN, "Invalid visible unit type");
         static_assert(P, "Computing S without P is not implemented");
 
-        validate_inputs<V1, V2>();
-        validate_outputs<H1, H2>();
-
         using namespace etl;
 
 #ifdef ETL_CUDNN_MODE
-        etl::reshape<1, NC, NV1, NV2>(v_a) = etl::conv_4d_full(etl::reshape<1, K, NH1, NH2>(h_s), w);
+        etl::reshape(v_a, 1, nc, nv1, nv2) = etl::conv_4d_full(etl::reshape(h_s, 1, k, nh1, nh2), w);
 
-        auto c_rep = etl::force_temporary(etl::rep<NV1, NV2>(c));
+        auto c_rep = etl::force_temporary(etl::rep(c, nv1, nv2));
 
         V_PROBS(unit_type::BINARY, f(v_a) = sigmoid(c_rep + v_a));
         V_PROBS(unit_type::GAUSSIAN, f(v_a) = c_rep + v_a);
@@ -250,18 +276,10 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename VCV>
     void batch_activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& /*v_s*/, VCV&& v_cv) const {
-        dll::auto_timer timer("crbm:batch_activate_hidden");
+        dll::auto_timer timer("dyn_crbm:batch_activate_hidden");
 
         static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit), "Invalid hidden unit type");
         static_assert(P, "Computing S without P is not implemented");
-
-        static_assert(etl::decay_traits<H1>::template dim<0>() == etl::decay_traits<H2>::template dim<0>(), "Inconsistent number of batches");
-        static_assert(etl::decay_traits<H1>::template dim<0>() == etl::decay_traits<V1>::template dim<0>(), "Inconsistent number of batches");
-        static_assert(etl::decay_traits<H1>::template dim<0>() == etl::decay_traits<V2>::template dim<0>(), "Inconsistent number of batches");
-        static_assert(etl::decay_traits<H1>::template dim<0>() == etl::decay_traits<VCV>::template dim<0>(), "Inconsistent number of batches");
-
-        validate_inputs<V1, V2, 1>();
-        validate_outputs<H1, H2, 1>();
 
         using namespace etl;
 
@@ -270,7 +288,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
         h_a = etl::conv_4d_valid_flipped(v_a, w);
 
-        auto b_rep = etl::force_temporary(etl::rep_l<batch_size>(etl::rep<NH1, NH2>(b)));
+        auto b_rep = etl::force_temporary(etl::rep_l(etl::rep(b, nh1, nh2), batch_size));
 
         H_PROBS2(unit_type::BINARY, unit_type::BINARY, f(h_a) = sigmoid(b_rep + h_a));
         H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, f(h_a) = sigmoid((1.0 / (0.1 * 0.1)) >> (b_rep + h_a)));
@@ -282,7 +300,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
         cpp_unused(v_cv);
 #else
-        auto b_rep = etl::force_temporary(etl::rep<NH1, NH2>(b));
+        auto b_rep = etl::force_temporary(etl::rep(b, nh1, nh2));
 
         base_type::template batch_compute_vcv(*this, pool, v_a, v_cv, w, [&](std::size_t batch) {
             H_PROBS2(unit_type::BINARY, unit_type::BINARY, f(h_a)(batch) = sigmoid(b_rep + v_cv(batch)(1)));
@@ -308,25 +326,17 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename HCV>
     void batch_activate_visible(const H1& /*h_a*/, const H2& h_s, V1&& v_a, V2&& v_s, HCV&& h_cv) const {
-        dll::auto_timer timer("crbm:batch_activate_visible");
+        dll::auto_timer timer("dyn_crbm:batch_activate_visible");
 
         static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN, "Invalid visible unit type");
         static_assert(P, "Computing S without P is not implemented");
-
-        static_assert(etl::decay_traits<H1>::template dim<0>() == etl::decay_traits<H2>::template dim<0>(), "Inconsistent number of batches");
-        static_assert(etl::decay_traits<H1>::template dim<0>() == etl::decay_traits<V1>::template dim<0>(), "Inconsistent number of batches");
-        static_assert(etl::decay_traits<H1>::template dim<0>() == etl::decay_traits<V2>::template dim<0>(), "Inconsistent number of batches");
-        static_assert(etl::decay_traits<H1>::template dim<0>() == etl::decay_traits<HCV>::template dim<0>(), "Inconsistent number of batches");
-
-        validate_inputs<V1, V2, 1>();
-        validate_outputs<H1, H2, 1>();
 
 #ifdef ETL_CUDNN_MODE
         v_a = etl::conv_4d_full(h_s, w);
 
         static constexpr const auto batch_size = etl::decay_traits<H1>::template dim<0>();
 
-        auto c_rep = etl::force_temporary(etl::rep_l<batch_size>(etl::rep<NV1, NV2>(c)));
+        auto c_rep = etl::force_temporary(etl::rep_l(etl::rep(c, nv1, nv2), batch_size));
 
         V_PROBS(unit_type::BINARY, f(v_a) = etl::sigmoid(c_rep + v_a));
         V_PROBS(unit_type::GAUSSIAN, f(v_a) = c_rep + v_a);
@@ -357,7 +367,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         std::cerr << "Energy is not supported in CUDNN mode" << std::endl;
         return 0.0;
 #else
-        etl::fast_dyn_matrix<weight, V_CV_CHANNELS, K, NH1, NH2> v_cv; //Temporary convolution
+        etl::dyn_matrix<weight> v_cv(V_CV_CHANNELS, k, nh1, nh2); //Temporary convolution
 
         if (desc::visible_unit == unit_type::BINARY && desc::hidden_unit == unit_type::BINARY) {
             //Definition according to Honglak Lee
@@ -372,7 +382,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
             base_type::template compute_vcv(*this, v, v_cv, w);
 
-            return -sum(etl::pow(v - etl::rep<NV1, NV2>(c), 2) / 2.0) - etl::sum(b >> etl::sum_r(h)) - etl::sum(h >> v_cv(1));
+            return -sum(etl::pow(v - etl::rep(c, nv1, nv2), 2) / 2.0) - etl::sum(b >> etl::sum_r(h)) - etl::sum(h >> v_cv(1));
         } else {
             return 0.0;
         }
@@ -381,8 +391,8 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
     template <typename V, typename H, cpp_disable_if(etl::is_etl_expr<V>::value)>
     weight energy(const V& v, const H& h) const {
-        etl::fast_dyn_matrix<weight, NC, NV1, NV2> ev;
-        etl::fast_dyn_matrix<weight, K, NH1, NH2> eh;
+        etl::dyn_matrix<weight, 3> ev(nc, nv1, nv2);
+        etl::dyn_matrix<weight, 3> eh(k, nh1, nh2);
 
         ev = v;
         eh = h;
@@ -400,14 +410,14 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         //TODO This function takes ages to compile, must be improved
         //     At least 5 seconds to be compiled on GCC-4.9
 
-        etl::fast_dyn_matrix<weight, V_CV_CHANNELS, K, NH1, NH2> v_cv; //Temporary convolution
+        etl::dyn_matrix<weight, 4> v_cv(V_CV_CHANNELS, k, nh1, nh2); //Temporary convolution
 
         if (desc::visible_unit == unit_type::BINARY && desc::hidden_unit == unit_type::BINARY) {
             //Definition computed from E(v,h)
 
             base_type::template compute_vcv(*this, v, v_cv, w);
 
-            auto x = etl::rep<NH1, NH2>(b) + v_cv(1);
+            auto x = etl::rep(b, nh1, nh2) + v_cv(1);
 
             return -etl::sum(c >> etl::sum_r(v)) - etl::sum(etl::log(1.0 + etl::exp(x)));
         } else if (desc::visible_unit == unit_type::GAUSSIAN && desc::hidden_unit == unit_type::BINARY) {
@@ -415,9 +425,9 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
             base_type::template compute_vcv(*this, v, v_cv, w);
 
-            auto x = etl::rep<NH1, NH2>(b) + v_cv(1);
+            auto x = etl::rep(b, nh1, nh2) + v_cv(1);
 
-            return -sum(etl::pow(v - etl::rep<NV1, NV2>(c), 2) / 2.0) - etl::sum(etl::log(1.0 + etl::exp(x)));
+            return -sum(etl::pow(v - etl::rep(c, nv1, nv2), 2) / 2.0) - etl::sum(etl::log(1.0 + etl::exp(x)));
         } else {
             return 0.0;
         }
@@ -426,7 +436,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
     template <typename V>
     weight free_energy(const V& v) const {
-        etl::fast_dyn_matrix<weight, NC, NV1, NV2> ev;
+        etl::dyn_matrix<weight, 3> ev(nc, nv1, nv2);
         ev = v;
         return free_energy_impl(ev);
     }
@@ -438,8 +448,8 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     //Utilities for DBNs
 
     //TODO These should really all be renamed...
-    using input_one_t   = etl::fast_dyn_matrix<weight, NC, NV1, NV2>;
-    using output_one_t  = etl::fast_dyn_matrix<weight, K, NH1, NH2>;
+    using input_one_t   = etl::dyn_matrix<weight, 3>;
+    using output_one_t  = etl::dyn_matrix<weight, 3>;
     using input_t       = std::vector<input_one_t>;
     using output_t      = std::vector<output_one_t>;
 
@@ -459,7 +469,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
     template <typename V, typename H>
     void batch_activate_hidden(H& h_a, const V& input) const {
-        etl::fast_dyn_matrix<weight, etl::decay_traits<H>::template dim<0>(), V_CV_CHANNELS, K, NH1, NH2> v_cv; //Temporary convolution
+        etl::dyn_matrix<weight, 5> v_cv(etl::decay_traits<H>::template dim<0>(), V_CV_CHANNELS, k, nh1, nh2); //Temporary convolution
         batch_activate_hidden<true, false>(h_a, h_a, input, input, v_cv);
     }
 
@@ -474,61 +484,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
             activate_one(input[i], h_a[i]);
         }
     }
-
-private:
-    template <typename V1, typename V2, std::size_t Off = 0>
-    static void validate_inputs() {
-        static_assert(etl::decay_traits<V1>::dimensions() == 3 + Off, "Inputs must be 3D");
-        static_assert(etl::decay_traits<V2>::dimensions() == 3 + Off, "Inputs must be 3D");
-
-        static_assert(etl::decay_traits<V1>::template dim<0 + Off>() == NC, "Invalid number of input channels");
-        static_assert(etl::decay_traits<V1>::template dim<1 + Off>() == NV1, "Invalid input dimensions");
-        static_assert(etl::decay_traits<V1>::template dim<2 + Off>() == NV2, "Invalid input dimensions");
-
-        static_assert(etl::decay_traits<V2>::template dim<0 + Off>() == NC, "Invalid number of input channels");
-        static_assert(etl::decay_traits<V2>::template dim<1 + Off>() == NV1, "Invalid input dimensions");
-        static_assert(etl::decay_traits<V2>::template dim<2 + Off>() == NV2, "Invalid input dimensions");
-    }
-
-    template <typename H1, typename H2, std::size_t Off = 0>
-    static void validate_outputs() {
-        static_assert(etl::decay_traits<H1>::dimensions() == 3 + Off, "Outputs must be 3D");
-        static_assert(etl::decay_traits<H2>::dimensions() == 3 + Off, "Outputs must be 3D");
-
-        static_assert(etl::decay_traits<H1>::template dim<0 + Off>() == K, "Invalid number of output channels");
-        static_assert(etl::decay_traits<H1>::template dim<1 + Off>() == NH1, "Invalid output dimensions");
-        static_assert(etl::decay_traits<H1>::template dim<2 + Off>() == NH2, "Invalid output dimensions");
-
-        static_assert(etl::decay_traits<H2>::template dim<0 + Off>() == K, "Invalid number of output channels");
-        static_assert(etl::decay_traits<H2>::template dim<1 + Off>() == NH1, "Invalid output dimensions");
-        static_assert(etl::decay_traits<H2>::template dim<2 + Off>() == NH2, "Invalid output dimensions");
-    }
 };
-
-//Allow odr-use of the constexpr static members
-
-template <typename Desc>
-const std::size_t conv_rbm<Desc>::NV1;
-
-template <typename Desc>
-const std::size_t conv_rbm<Desc>::NV2;
-
-template <typename Desc>
-const std::size_t conv_rbm<Desc>::NH1;
-
-template <typename Desc>
-const std::size_t conv_rbm<Desc>::NH2;
-
-template <typename Desc>
-const std::size_t conv_rbm<Desc>::NC;
-
-template <typename Desc>
-const std::size_t conv_rbm<Desc>::NW1;
-
-template <typename Desc>
-const std::size_t conv_rbm<Desc>::NW2;
-
-template <typename Desc>
-const std::size_t conv_rbm<Desc>::K;
 
 } //end of dll namespace

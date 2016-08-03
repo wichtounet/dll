@@ -96,10 +96,10 @@ protected:
     }
 
     template <typename L, typename V1, typename VCV, typename W>
-    static void compute_vcv(const V1& v_a, VCV&& v_cv, W&& w) {
+    static void compute_vcv(L& rbm, const V1& v_a, VCV&& v_cv, W&& w) {
         dll::auto_timer timer("crbm:compute_vcv");
 
-        static constexpr const auto NC = L::NC;
+        const auto NC = get_nc(rbm);
 
         auto w_f = etl::force_temporary(w);
 
@@ -117,11 +117,11 @@ protected:
     }
 
     template <typename L, typename H2, typename HCV, typename W, typename Functor>
-    static void compute_hcv(const H2& h_s, HCV&& h_cv, W&& w, Functor activate) {
+    static void compute_hcv(L& rbm, const H2& h_s, HCV&& h_cv, W&& w, Functor activate) {
         dll::auto_timer timer("crbm:compute_hcv");
 
-        static constexpr const auto K  = L::K;
-        static constexpr const auto NC = L::NC;
+        const auto K  = get_k(rbm);
+        const auto NC = get_nc(rbm);
 
         for (std::size_t channel = 0; channel < NC; ++channel) {
             h_cv(1) = 0.0;
@@ -154,19 +154,19 @@ protected:
     }
 
     template <typename L, typename TP, typename H2, typename HCV, typename W, typename Functor>
-    static void batch_compute_hcv(TP& pool, const H2& h_s, HCV&& h_cv, W&& w, Functor activate) {
+    static void batch_compute_hcv(L& rbm, TP& pool, const H2& h_s, HCV&& h_cv, W&& w, Functor activate) {
         dll::auto_timer timer("crbm:batch_compute_hcv:mkl");
 
-        static constexpr const auto Batch = layer_traits<L>::batch_size();
+        const auto Batch = get_batch_size(rbm);
 
-        static constexpr const auto K   = L::K;
-        static constexpr const auto NC  = L::NC;
-        static constexpr const auto NV1 = L::NV1;
-        static constexpr const auto NV2 = L::NV2;
+        const auto K   = get_k(rbm);
+        const auto NC  = get_nc(rbm);
+        const auto NV1 = get_nv1(rbm);
+        const auto NV2 = get_nv2(rbm);
 
-        etl::fast_dyn_matrix<std::complex<weight>, Batch, K, NV1, NV2> h_s_padded;
-        etl::fast_dyn_matrix<std::complex<weight>, NC, K, NV1, NV2> w_padded;
-        etl::fast_dyn_matrix<std::complex<weight>, Batch, K, NV1, NV2> tmp_result;
+        etl::dyn_matrix<std::complex<weight>, 4> h_s_padded(Batch, K, NV1, NV2);
+        etl::dyn_matrix<std::complex<weight>, 4> w_padded(NC, K, NV1, NV2);
+        etl::dyn_matrix<std::complex<weight>, 4> tmp_result(Batch, K, NV1, NV2);
 
         deep_pad(h_s, h_s_padded);
         deep_pad(w, w_padded);
@@ -196,13 +196,13 @@ protected:
 #else
 
     template <typename L, typename TP, typename H2, typename HCV, typename W, typename Functor>
-    static void batch_compute_hcv(TP& pool, const H2& h_s, HCV&& h_cv, W&& w, Functor activate) {
+    static void batch_compute_hcv(L& rbm, TP& pool, const H2& h_s, HCV&& h_cv, W&& w, Functor activate) {
         dll::auto_timer timer("crbm:batch_compute_hcv:std");
 
-        static constexpr const auto Batch = layer_traits<L>::batch_size();
+        const auto Batch = get_batch_size(rbm);
 
-        static constexpr const auto K  = L::K;
-        static constexpr const auto NC = L::NC;
+        const auto K  = get_k(rbm);
+        const auto NC = get_nc(rbm);
 
         maybe_parallel_foreach_n(pool, 0, Batch, [&](std::size_t batch) {
             for (std::size_t channel = 0; channel < NC; ++channel) {
@@ -221,12 +221,12 @@ protected:
 #endif
 
     template <typename L, typename TP, typename V1, typename VCV, typename W, typename Functor>
-    static void batch_compute_vcv(TP& pool, const V1& v_a, VCV&& v_cv, W&& w, Functor activate) {
+    static void batch_compute_vcv(L& rbm, TP& pool, const V1& v_a, VCV&& v_cv, W&& w, Functor activate) {
         dll::auto_timer timer("crbm:batch_compute_vcv");
 
-        static constexpr const auto Batch = layer_traits<L>::batch_size();
+        const auto Batch = get_batch_size(rbm);
 
-        static constexpr const auto NC = L::NC;
+        const auto NC = get_nc(rbm);
 
         maybe_parallel_foreach_n(pool, 0, Batch, [&](std::size_t batch) {
             etl::conv_2d_valid_multi_flipped(v_a(batch)(0), w(0), v_cv(batch)(1));
@@ -267,8 +267,8 @@ private:
         for (std::size_t channel = 0; channel < parent_t::NC; ++channel) {
             std::cout << "Channel " << channel << std::endl;
 
-            for (size_t i = 0; i < parent_t::NV1; ++i) {
-                for (size_t j = 0; j < parent_t::NV2; ++j) {
+            for (size_t i = 0; i < get_nv1(rbm); ++i) {
+                for (size_t j = 0; j < get_nv2(rbm); ++j) {
                     std::cout << rbm.v2_a(channel, i, j) << " ";
                 }
                 std::cout << std::endl;
@@ -280,8 +280,8 @@ private:
         for (std::size_t channel = 0; channel < parent_t::NC; ++channel) {
             std::cout << "Channel " << channel << std::endl;
 
-            for (size_t i = 0; i < parent_t::NV1; ++i) {
-                for (size_t j = 0; j < parent_t::NV2; ++j) {
+            for (size_t i = 0; i < get_nv1(rbm); ++i) {
+                for (size_t j = 0; j < get_nv2(rbm); ++j) {
                     std::cout << rbm.v2_s(channel, i, j) << " ";
                 }
                 std::cout << std::endl;
@@ -290,9 +290,9 @@ private:
     }
 
     static void display_hidden_unit_activations(const parent_t& rbm) {
-        for (size_t k = 0; k < parent_t::K; ++k) {
-            for (size_t i = 0; i < parent_t::NV1; ++i) {
-                for (size_t j = 0; j < parent_t::NV2; ++j) {
+        for (size_t k = 0; k < get_k(rbm); ++k) {
+            for (size_t i = 0; i < get_nv1(rbm); ++i) {
+                for (size_t j = 0; j < get_nv2(rbm); ++j) {
                     std::cout << rbm.h2_a(k)(i, j) << " ";
                 }
                 std::cout << std::endl;
@@ -303,9 +303,9 @@ private:
     }
 
     static void display_hidden_unit_samples(const parent_t& rbm) {
-        for (size_t k = 0; k < parent_t::K; ++k) {
-            for (size_t i = 0; i < parent_t::NV1; ++i) {
-                for (size_t j = 0; j < parent_t::NV2; ++j) {
+        for (size_t k = 0; k < get_k(rbm); ++k) {
+            for (size_t i = 0; i < get_nv1(rbm); ++i) {
+                for (size_t j = 0; j < get_nv2(rbm); ++j) {
                     std::cout << rbm.h2_s(k)(i, j) << " ";
                 }
                 std::cout << std::endl;

@@ -21,6 +21,9 @@ template <typename Desc>
 struct conv_rbm;
 
 template <typename Desc>
+struct dyn_conv_rbm;
+
+template <typename Desc>
 struct conv_rbm_mp;
 
 template <typename Desc>

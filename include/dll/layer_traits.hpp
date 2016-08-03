@@ -62,7 +62,9 @@ struct layer_traits {
      * \brief Indicates if the layer is convolutional
      */
     static constexpr bool is_convolutional_rbm_layer() {
-        return cpp::is_specialization_of<conv_rbm, layer_t>::value || cpp::is_specialization_of<conv_rbm_mp, layer_t>::value;
+        return cpp::is_specialization_of<conv_rbm, layer_t>::value
+            || cpp::is_specialization_of<conv_rbm_mp, layer_t>::value
+            || cpp::is_specialization_of<dyn_conv_rbm, layer_t>::value;
     }
 
     /*!
@@ -139,7 +141,7 @@ struct layer_traits {
      * \brief Indicates if the layer is dynamic
      */
     static constexpr bool is_dynamic() {
-        return cpp::is_specialization_of<dyn_rbm, layer_t>::value;
+        return cpp::is_specialization_of<dyn_rbm, layer_t>::value || cpp::is_specialization_of<dyn_conv_rbm, layer_t>::value;
     }
 
     /*!
@@ -241,6 +243,66 @@ constexpr std::size_t get_batch_size(const RBM&) {
 }
 
 template <typename RBM, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
+std::size_t get_nc(const RBM& rbm) {
+    return rbm.nc;
+}
+
+template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
+constexpr std::size_t get_nc(const RBM&) {
+    return RBM::NC;
+}
+
+template <typename RBM, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
+std::size_t get_k(const RBM& rbm) {
+    return rbm.k;
+}
+
+template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
+constexpr std::size_t get_k(const RBM&) {
+    return RBM::K;
+}
+
+template <typename RBM, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
+std::size_t get_nv1(const RBM& rbm) {
+    return rbm.nv1;
+}
+
+template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
+constexpr std::size_t get_nv1(const RBM&) {
+    return RBM::NV1;
+}
+
+template <typename RBM, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
+std::size_t get_nv2(const RBM& rbm) {
+    return rbm.nv2;
+}
+
+template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
+constexpr std::size_t get_nv2(const RBM&) {
+    return RBM::NV2;
+}
+
+template <typename RBM, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
+std::size_t get_nw1(const RBM& rbm) {
+    return rbm.nw1;
+}
+
+template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
+constexpr std::size_t get_nw1(const RBM&) {
+    return RBM::NW1;
+}
+
+template <typename RBM, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
+std::size_t get_nw2(const RBM& rbm) {
+    return rbm.nw2;
+}
+
+template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
+constexpr std::size_t get_nw2(const RBM&) {
+    return RBM::NW2;
+}
+
+template <typename RBM, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
 std::size_t num_visible(const RBM& rbm) {
     return rbm.num_visible;
 }
@@ -272,7 +334,7 @@ std::size_t output_size(const RBM& rbm) {
 
 template <typename RBM, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
 std::size_t input_size(const RBM& rbm) {
-    return rbm.num_visible;
+    return rbm.input_size();
 }
 
 template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
