@@ -50,28 +50,6 @@ struct base_trainer {
     }
 };
 
-/* Some utilities */
-
-template <typename RBM, typename C, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
-auto reshape_nv1(RBM& rbm, C&& container) {
-    return etl::reshape(container, rbm.num_visible, 1);
-}
-
-template <typename RBM, typename C, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
-auto reshape_nv1(RBM&, C&& container) {
-    return etl::reshape<RBM::num_visible, 1>(container);
-}
-
-template <typename RBM, typename C, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
-auto reshape_1nh(RBM& rbm, C&& container) {
-    return etl::reshape(container, 1, rbm.num_hidden);
-}
-
-template <typename RBM, typename C, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
-auto reshape_1nh(RBM&, C&& container) {
-    return etl::reshape<1, RBM::num_hidden>(container);
-}
-
 /* The update weights procedure */
 
 template <typename RBM, typename Trainer>
