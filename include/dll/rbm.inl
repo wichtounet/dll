@@ -197,6 +197,12 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
     void batch_activate_hidden(H&& h_a, const V& v_a) const {
         batch_activate_hidden(h_a, etl::reshape<etl::decay_traits<H>::template dim<0>(), num_visible>(v_a));
     }
+
+    template<typename DRBM>
+    static void dyn_init(DRBM& dyn){
+        dyn.init_rbm(num_visible, num_hidden);
+        dyn.batch_size  = layer_traits<this_type>::batch_size();
+    }
 };
 
 //Allow odr-use of the constexpr static members

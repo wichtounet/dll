@@ -25,7 +25,8 @@ using default_dbn_trainer_t = cg_trainer<DBN, false>;
  */
 template <template <typename> class DBN_T, typename Layers, typename... Parameters>
 struct generic_dbn_desc {
-    using layers     = Layers;
+    using layers      = Layers;
+    using base_layers = Layers;
     using parameters = cpp::type_list<Parameters...>;
 
     static constexpr const std::size_t BatchSize    = detail::get_value<batch_size<1>, Parameters...>::value;

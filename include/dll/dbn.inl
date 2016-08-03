@@ -110,6 +110,20 @@ private:
 
     mutable int fake_resource; ///< Simple field to get a reference from for resource management
 
+    template<std::size_t I, cpp_disable_if(I == layers)>
+    void dyn_init(){
+        using fast_t = detail::layer_type_t<I, typename desc::base_layers>;
+
+        decltype(auto) dyn_rbm = layer_get<I>();
+
+        fast_t::dyn_init(dyn_rbm);
+
+        dyn_init<I+1>();
+    }
+
+    template<std::size_t I, cpp_enable_if(I == layers)>
+    void dyn_init(){}
+
 public:
     /*!
      * Constructs a DBN and initializes all its members.
@@ -118,6 +132,10 @@ public:
      */
     dbn() : pool(etl::threads) {
         //Nothing else to init
+
+        cpp::static_if<!std::is_same<typename desc::base_layers, typename desc::layers>::value>([&](auto f){
+            f(this)->dyn_init<0>();
+        });
     }
 
     //No copying
