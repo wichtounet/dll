@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_LR_DRIVER_TYPE_HPP
-#define DLL_LR_DRIVER_TYPE_HPP
+#pragma once
 
 namespace dll {
 
@@ -20,5 +19,3 @@ enum class lr_driver_type {
 };
 
 } //end of dll namespace
-
-#endif

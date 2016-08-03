@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_CONV_UTILS_HPP
-#define DLL_CONV_UTILS_HPP
+#pragma once
 
 #include "base_conf.hpp" //The configuration helpers
 #include "rbm_base.hpp"  //The base class
@@ -57,5 +56,3 @@ static void conv_2d_multi(V&& v, K&& kernels, C&& features) {
 }
 
 } //end of dll namespace
-
-#endif

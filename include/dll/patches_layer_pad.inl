@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_PATCHES_LAYER_PAD_INL
-#define DLL_PATCHES_LAYER_PAD_INL
+#pragma once
 
 #include "neural_base.hpp"
 
@@ -115,5 +114,3 @@ template <typename Desc>
 const std::size_t patches_layer_padh<Desc>::filler;
 
 } //end of dll namespace
-
-#endif

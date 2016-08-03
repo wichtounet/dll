@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_OPENCV_RBM_VISUALIZER_HPP
-#define DLL_OPENCV_RBM_VISUALIZER_HPP
+#pragma once
 
 #include "cpp_utils/stop_watch.hpp"
 
@@ -879,5 +878,3 @@ void visualize_rbm(const RBM& rbm) {
 #endif
 
 } //end of dll namespace
-
-#endif

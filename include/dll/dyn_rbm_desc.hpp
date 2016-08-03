@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_DYN_RBM_DESC_HPP
-#define DLL_DYN_RBM_DESC_HPP
+#pragma once
 
 #include "base_conf.hpp"
 #include "contrastive_divergence.hpp"
@@ -58,5 +57,3 @@ struct dyn_rbm_desc {
 };
 
 } //end of dll namespace
-
-#endif

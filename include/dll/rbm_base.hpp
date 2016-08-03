@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_RBM_BASE_HPP
-#define DLL_RBM_BASE_HPP
+#pragma once
 
 #include <iosfwd>
 #include <fstream>
@@ -144,5 +143,3 @@ private:
 };
 
 } //end of dll namespace
-
-#endif

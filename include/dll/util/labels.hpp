@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_LABELS_HPP
-#define DLL_LABELS_HPP
+#pragma once
 
 #include <iterator>
 #include <vector>
@@ -45,5 +44,3 @@ std::vector<fake_label_array<typename std::iterator_traits<Iterator>::value_type
 }
 
 } //end of dll namespace
-
-#endif

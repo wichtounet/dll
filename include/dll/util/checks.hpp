@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_CHECKS_HPP
-#define DLL_CHECKS_HPP
+#pragma once
 
 #ifndef NAN_DEBUG
 
@@ -40,5 +39,3 @@
     nan_check_deep(l3);
 
 #endif //NDEBUG
-
-#endif //DLL_CHECKS_HPP

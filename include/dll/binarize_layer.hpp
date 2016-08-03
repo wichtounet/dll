@@ -5,10 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_BINARIZE_LAYER_HPP
-#define DLL_BINARIZE_LAYER_HPP
+#pragma once
 
 #include "dll/binarize_layer.inl"
 #include "dll/binarize_layer_desc.hpp"
-
-#endif

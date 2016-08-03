@@ -5,10 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_PATCHES_LAYER_HPP
-#define DLL_PATCHES_LAYER_HPP
+#pragma once
 
 #include "dll/patches_layer.inl"
 #include "dll/patches_layer_desc.hpp"
-
-#endif

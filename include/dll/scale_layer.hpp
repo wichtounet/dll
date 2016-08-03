@@ -5,10 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_SCALE_LAYER_HPP
-#define DLL_SCALE_LAYER_HPP
+#pragma once
 
 #include "dll/scale_layer.inl"
 #include "dll/scale_layer_desc.hpp"
-
-#endif

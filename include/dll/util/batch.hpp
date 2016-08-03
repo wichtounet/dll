@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_BATCH_HPP
-#define DLL_BATCH_HPP
+#pragma once
 
 #include <iterator>
 
@@ -47,5 +46,3 @@ batch<Iterator> make_batch(Iterator&& first, Iterator&& last) {
 }
 
 } //end of dll namespace
-
-#endif

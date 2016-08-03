@@ -5,12 +5,9 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_CONV_RBM_MP_HPP
-#define DLL_CONV_RBM_MP_HPP
+#pragma once
 
 #include "dll/conv_rbm_mp.inl"
 #include "dll/trainer/rbm_training_context.hpp"
 #include "dll/conv_rbm_mp_desc.hpp"
 #include "dll/trainer/rbm_trainer.hpp"
-
-#endif

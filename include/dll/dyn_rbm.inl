@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_DYN_RBM_INL
-#define DLL_DYN_RBM_INL
+#pragma once
 
 #include "etl/etl.hpp"
 
@@ -204,5 +203,3 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
 };
 
 } //end of dll namespace
-
-#endif

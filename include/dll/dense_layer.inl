@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_DENSE_LAYER_INL
-#define DLL_DENSE_LAYER_INL
+#pragma once
 
 #include "cpp_utils/assert.hpp" //Assertions
 
@@ -174,5 +173,3 @@ template <typename Desc>
 const std::size_t dense_layer<Desc>::num_hidden;
 
 } //end of dll namespace
-
-#endif

@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_BINARIZE_LAYER_DESC_HPP
-#define DLL_BINARIZE_LAYER_DESC_HPP
+#pragma once
 
 namespace dll {
 
@@ -21,5 +20,3 @@ struct binarize_layer_desc {
 };
 
 } //end of dll namespace
-
-#endif

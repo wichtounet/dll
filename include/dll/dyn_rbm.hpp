@@ -5,12 +5,9 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_DYN_RBM_HPP
-#define DLL_DYN_RBM_HPP
+#pragma once
 
 #include "dll/dyn_rbm.inl"
 #include "dll/trainer/rbm_training_context.hpp"
 #include "dll/dyn_rbm_desc.hpp"
 #include "dll/trainer/rbm_trainer.hpp"
-
-#endif

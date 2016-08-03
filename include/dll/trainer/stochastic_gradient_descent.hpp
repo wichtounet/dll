@@ -13,8 +13,7 @@
  * RBM layers, CRBM layers, transform layers and pooling layers.
  */
 
-#ifndef DLL_STOCHASTIC_GRADIENT_DESCENT
-#define DLL_STOCHASTIC_GRADIENT_DESCENT
+#pragma once
 
 #include "cpp_utils/static_if.hpp"
 
@@ -415,5 +414,3 @@ struct sgd_trainer {
 };
 
 } //end of dll namespace
-
-#endif

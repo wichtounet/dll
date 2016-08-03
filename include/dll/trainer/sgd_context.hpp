@@ -10,8 +10,7 @@
  * \brief Stochastic Gradient Descent (SGD) context Implementation.
  */
 
-#ifndef DLL_STOCHASTIC_GRADIENT_DESCENT_CONTEXT_HPP
-#define DLL_STOCHASTIC_GRADIENT_DESCENT_CONTEXT_HPP
+#pragma once
 
 #include "dll/layer_traits.hpp"
 
@@ -108,5 +107,3 @@ struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_transfor
 };
 
 } //end of dll namespace
-
-#endif

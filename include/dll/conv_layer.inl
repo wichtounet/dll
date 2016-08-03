@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_CONV_LAYER_INL
-#define DLL_CONV_LAYER_INL
+#pragma once
 
 #include "cpp_utils/assert.hpp" //Assertions
 
@@ -211,5 +210,3 @@ template <typename Desc>
 const std::size_t conv_layer<Desc>::K;
 
 } //end of dll namespace
-
-#endif

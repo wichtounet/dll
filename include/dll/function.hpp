@@ -10,8 +10,7 @@
  * \brief Activation functions for neural networks
  */
 
-#ifndef DLL_FUNCTION_HPP
-#define DLL_FUNCTION_HPP
+#pragma once
 
 namespace dll {
 
@@ -96,5 +95,3 @@ decltype(auto) f_derivative(E&& expr) {
 }
 
 } //end of dll namespace
-
-#endif

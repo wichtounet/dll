@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_CONV_RBM_MP_DESC_HPP
-#define DLL_CONV_RBM_MP_DESC_HPP
+#pragma once
 
 #include "base_conf.hpp"
 #include "contrastive_divergence.hpp"
@@ -97,5 +96,3 @@ template <std::size_t NC_T, std::size_t NV_T, std::size_t K_T, std::size_t NH_T,
 using conv_rbm_mp_desc_square = conv_rbm_mp_desc<NC_T, NV_T, NV_T, K_T, NH_T, NH_T, C_T, Parameters...>;
 
 } //end of dll namespace
-
-#endif

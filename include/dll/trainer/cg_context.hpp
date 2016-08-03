@@ -10,8 +10,7 @@
  * \brief Conjugate Gradient (CG) descent context implementation.
  */
 
-#ifndef DLL_CONJUGATE_GRADIENT_CONTEXT_HPP
-#define DLL_CONJUGATE_GRADIENT_CONTEXT_HPP
+#pragma once
 
 namespace dll {
 
@@ -97,5 +96,3 @@ struct cg_context<binarize_layer<Desc>> {
 };
 
 } //end of dll namespace
-
-#endif

@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_PATCHES_LAYER_DESC_HPP
-#define DLL_PATCHES_LAYER_DESC_HPP
+#pragma once
 
 namespace dll {
 
@@ -36,5 +35,3 @@ struct patches_layer_desc {
 };
 
 } //end of dll namespace
-
-#endif

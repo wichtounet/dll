@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_BINARIZE_LAYER_INL
-#define DLL_BINARIZE_LAYER_INL
+#pragma once
 
 #include "neural_base.hpp"
 
@@ -73,5 +72,3 @@ template <typename Desc>
 const std::size_t binarize_layer<Desc>::Threshold;
 
 } //end of dll namespace
-
-#endif

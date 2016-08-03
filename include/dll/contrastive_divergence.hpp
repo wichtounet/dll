@@ -14,8 +14,7 @@
  * contribution to overfitting
  */
 
-#ifndef DLL_CONTRASTIVE_DIVERGENCE_HPP
-#define DLL_CONTRASTIVE_DIVERGENCE_HPP
+#pragma once
 
 #include "cpp_utils/assert.hpp"         //Assertions
 #include "cpp_utils/maybe_parallel.hpp" //conditional parallel loops
@@ -1098,5 +1097,3 @@ template <typename RBM, bool Denoising>
 using pcd1_trainer_t = persistent_cd_trainer<1, RBM, Denoising>;
 
 } //end of dll namespace
-
-#endif

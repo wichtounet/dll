@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_FLATTEN_HPP
-#define DLL_FLATTEN_HPP
+#pragma once
 
 #include <vector>
 
@@ -51,5 +50,3 @@ static std::vector<One> flatten(std::vector<std::vector<One>>& deep) {
 }
 
 } //end of dll namespace
-
-#endif

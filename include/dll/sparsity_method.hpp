@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_SPARSITY_METHOD_HPP
-#define DLL_SPARSITY_METHOD_HPP
+#pragma once
 
 namespace dll {
 
@@ -21,5 +20,3 @@ enum class sparsity_method {
 };
 
 } //end of dll namespace
-
-#endif

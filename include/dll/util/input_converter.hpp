@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_INPUT_CONVERTER_HPP
-#define DLL_INPUT_CONVERTER_HPP
+#pragma once
 
 namespace dll {
 
@@ -159,5 +158,3 @@ struct sample_converter<DBN, I, Sample, std::enable_if_t<layer_traits<typename D
 };
 
 } //end of namespace dll
-
-#endif

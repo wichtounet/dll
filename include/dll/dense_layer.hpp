@@ -5,10 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_DENSE_LAYER_HPP
-#define DLL_DENSE_LAYER_HPP
+#pragma once
 
 #include "dll/dense_layer.inl"
 #include "dll/dense_desc.hpp"
-
-#endif

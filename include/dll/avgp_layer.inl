@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_AVGP_LAYER_INL
-#define DLL_AVGP_LAYER_INL
+#pragma once
 
 #include "pooling_layer.hpp"
 
@@ -64,5 +63,3 @@ struct avgp_layer_3d final : pooling_layer_3d<avgp_layer_3d<Desc>, Desc> {
 };
 
 } //end of dll namespace
-
-#endif

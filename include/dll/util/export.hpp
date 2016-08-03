@@ -10,8 +10,7 @@
  * \brief Export functions to save features
  */
 
-#ifndef DLL_EXPORT_HPP
-#define DLL_EXPORT_HPP
+#pragma once
 
 #include <string>
 
@@ -34,5 +33,3 @@ void export_features_dll(const Features& features, const std::string& file) {
 }
 
 } //end of dll namespace
-
-#endif

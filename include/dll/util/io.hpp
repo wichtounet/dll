@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_IO_HPP
-#define DLL_IO_HPP
+#pragma once
 
 #include <fstream>
 
@@ -39,5 +38,3 @@ void binary_load_all(std::istream& is, Container& c) {
 }
 
 } //end of dll namespace
-
-#endif

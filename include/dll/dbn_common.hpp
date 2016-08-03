@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_DBN_COMMON_HPP
-#define DLL_DBN_COMMON_HPP
+#pragma once
 
 namespace dll {
 
@@ -28,5 +27,3 @@ using rbm_watcher_t = typename rbm_watcher_type<W>::type;
 } //end of namespace dbn_detail
 
 } //end of namespace dll
-
-#endif

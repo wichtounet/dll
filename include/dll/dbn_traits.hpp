@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_DBN_TRAITS_HPP
-#define DLL_DBN_TRAITS_HPP
+#pragma once
 
 #include "util/tmp.hpp"
 #include "decay_type.hpp"
@@ -126,5 +125,3 @@ std::size_t dbn_full_input_size(const DBN& dbn) {
 }
 
 } //end of dll namespace
-
-#endif

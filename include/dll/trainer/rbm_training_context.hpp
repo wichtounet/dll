@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_RBM_TRAINING_CONTEXT_HPP
-#define DLL_RBM_TRAINING_CONTEXT_HPP
+#pragma once
 
 namespace dll {
 
@@ -27,5 +26,3 @@ struct rbm_training_context {
 };
 
 } //end of dll namespace
-
-#endif

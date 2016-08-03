@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_TEST_HPP
-#define DLL_TEST_HPP
+#pragma once
 
 #include "cpp_utils/stop_watch.hpp"
 
@@ -103,5 +102,3 @@ double test_set_ae(DBN& dbn, Iterator first, Iterator last) {
 }
 
 } //end of dll namespace
-
-#endif

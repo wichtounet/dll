@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_NEURAL_BASE_HPP
-#define DLL_NEURAL_BASE_HPP
+#pragma once
 
 #include <memory>
 
@@ -152,5 +151,3 @@ struct neural_base {
 };
 
 } //end of dll namespace
-
-#endif

@@ -14,8 +14,7 @@
 //be completed and support for pooling layers should be added as
 //well
 
-#ifndef DLL_CONJUGATE_GRADIENT_HPP
-#define DLL_CONJUGATE_GRADIENT_HPP
+#pragma once
 
 #include <utility>
 
@@ -566,5 +565,3 @@ template <typename DBN>
 using cg_trainer_debug = cg_trainer<DBN, true>;
 
 } //end of dll namespace
-
-#endif

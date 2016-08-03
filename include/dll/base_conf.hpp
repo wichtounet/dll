@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_BASE_CONF_HPP
-#define DLL_BASE_CONF_HPP
+#pragma once
 
 #include <cstddef>
 
@@ -156,5 +155,3 @@ template <bool Cond>
 using shuffle_cond = std::conditional_t<Cond, shuffle, nop>;
 
 } //end of dll namespace
-
-#endif

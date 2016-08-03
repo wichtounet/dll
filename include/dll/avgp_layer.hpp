@@ -5,10 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_AVGP_LAYER_HPP
-#define DLL_AVGP_LAYER_HPP
+#pragma once
 
 #include "dll/avgp_layer.inl"
 #include "dll/avgp_layer_desc.hpp"
-
-#endif

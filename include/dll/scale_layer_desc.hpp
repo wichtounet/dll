@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_SCALE_LAYER_DESC_HPP
-#define DLL_SCALE_LAYER_DESC_HPP
+#pragma once
 
 namespace dll {
 
@@ -22,5 +21,3 @@ struct scale_layer_desc {
 };
 
 } //end of dll namespace
-
-#endif

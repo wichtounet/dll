@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_NORMALIZE_LAYER_DESC_HPP
-#define DLL_NORMALIZE_LAYER_DESC_HPP
+#pragma once
 
 namespace dll {
 
@@ -18,5 +17,3 @@ struct normalize_layer_desc {
 };
 
 } //end of dll namespace
-
-#endif

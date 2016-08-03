@@ -5,10 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_NORMALIZE_LAYER_HPP
-#define DLL_NORMALIZE_LAYER_HPP
+#pragma once
 
 #include "dll/normalize_layer.inl"
 #include "dll/normalize_layer_desc.hpp"
-
-#endif

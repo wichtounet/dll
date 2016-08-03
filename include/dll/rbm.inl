@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_RBM_INL
-#define DLL_RBM_INL
+#pragma once
 
 #include "cpp_utils/assert.hpp"     //Assertions
 #include "cpp_utils/stop_watch.hpp" //Performance counter
@@ -214,5 +213,3 @@ template <typename Desc>
 const std::size_t rbm<Desc>::num_hidden;
 
 } //end of dll namespace
-
-#endif

@@ -5,12 +5,9 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_DBN_HPP
-#define DLL_DBN_HPP
+#pragma once
 
 #include "rbm.hpp"
 #include "dbn_layers.hpp"
 #include "dbn.inl"
 #include "dbn_desc.hpp"
-
-#endif

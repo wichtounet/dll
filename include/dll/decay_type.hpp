@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_DECAY_TYPE_HPP
-#define DLL_DECAY_TYPE_HPP
+#pragma once
 
 namespace dll {
 
@@ -42,5 +41,3 @@ constexpr decay_type b_decay(decay_type t) {
 }
 
 } //end of dll namespace
-
-#endif

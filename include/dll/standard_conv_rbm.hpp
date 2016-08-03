@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_STANDARD_CONV_RBM_HPP
-#define DLL_STANDARD_CONV_RBM_HPP
+#pragma once
 
 #include "base_conf.hpp"    //The configuration helpers
 #include "rbm_base.hpp"     //The base class
@@ -318,5 +317,3 @@ private:
 };
 
 } //end of dll namespace
-
-#endif

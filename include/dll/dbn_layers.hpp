@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_DBN_LAYERS_HPP
-#define DLL_DBN_LAYERS_HPP
+#pragma once
 
 #include "util/tmp.hpp"
 
@@ -184,5 +183,3 @@ template <typename... Layers>
 using dbn_label_layers = detail::layers<false, Layers...>;
 
 } //end of namespace dll
-
-#endif

@@ -5,10 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_MP_LAYER_HPP
-#define DLL_MP_LAYER_HPP
+#pragma once
 
 #include "dll/mp_layer.inl"
 #include "dll/mp_layer_desc.hpp"
-
-#endif

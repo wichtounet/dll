@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_SCALE_LAYER_INL
-#define DLL_SCALE_LAYER_INL
+#pragma once
 
 #include "neural_base.hpp"
 
@@ -66,5 +65,3 @@ struct scale_layer : neural_base<scale_layer<Desc>> {
 };
 
 } //end of dll namespace
-
-#endif

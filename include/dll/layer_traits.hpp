@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_LAYER_TRAITS_HPP
-#define DLL_LAYER_TRAITS_HPP
+#pragma once
 
 #include "util/tmp.hpp"
 #include "layer_fwd.hpp"
@@ -293,5 +292,3 @@ template <typename Layer>
 struct is_neural : cpp::or_c<is_dense<Layer>, is_conv<Layer>> {};
 
 } //end of dll namespace
-
-#endif

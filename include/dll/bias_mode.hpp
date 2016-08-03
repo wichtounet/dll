@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_BIAS_MODE_HPP
-#define DLL_BIAS_MODE_HPP
+#pragma once
 
 namespace dll {
 
@@ -19,5 +18,3 @@ enum class bias_mode {
 };
 
 } //end of dll namespace
-
-#endif

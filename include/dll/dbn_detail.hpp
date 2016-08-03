@@ -10,8 +10,7 @@
  * \brief DBN implementation details
  */
 
-#ifndef DLL_DETAILS_HPP
-#define DLL_DETAILS_HPP
+#pragma once
 
 namespace dll {
 
@@ -127,5 +126,3 @@ struct for_each_impl<D, std::index_sequence<I...>> {
 } //end of namespace dbn_detail
 
 } //end of namespace dll
-
-#endif

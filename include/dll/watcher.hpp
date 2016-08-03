@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_WATCHER_HPP
-#define DLL_WATCHER_HPP
+#pragma once
 
 #include <fstream>
 
@@ -266,5 +265,3 @@ struct histogram_watcher {
 };
 
 } //end of dll namespace
-
-#endif

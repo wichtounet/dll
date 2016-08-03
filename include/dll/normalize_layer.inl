@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_NORMALIZE_LAYER_INL
-#define DLL_NORMALIZE_LAYER_INL
+#pragma once
 
 #include "cpp_utils/data.hpp"
 
@@ -62,5 +61,3 @@ struct normalize_layer : neural_base<normalize_layer<Desc>> {
 };
 
 } //end of dll namespace
-
-#endif

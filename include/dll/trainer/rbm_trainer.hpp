@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_RBM_TRAINER_HPP
-#define DLL_RBM_TRAINER_HPP
+#pragma once
 
 #include <memory>
 
@@ -294,5 +293,3 @@ struct rbm_trainer {
 };
 
 } //end of dll namespace
-
-#endif

@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_UNIT_TYPE_HPP
-#define DLL_UNIT_TYPE_HPP
+#pragma once
 
 namespace dll {
 
@@ -48,5 +47,3 @@ inline std::string to_string(unit_type type) {
 }
 
 } //end of dll namespace
-
-#endif

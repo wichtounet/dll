@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_TMP_HPP
-#define DLL_TMP_HPP
+#pragma once
 
 #include "cpp_utils/tmp.hpp"
 
@@ -131,5 +130,3 @@ template <bool C, typename W, std::size_t... Dims>
 using conditional_fast_matrix_t = typename conditional_fast_matrix<C, W, Dims...>::type;
 
 } //end of dll namespace
-
-#endif

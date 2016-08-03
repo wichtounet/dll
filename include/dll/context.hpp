@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_CONTEXT_HPP
-#define DLL_CONTEXT_HPP
+#pragma once
 
 namespace dll {
 
@@ -40,5 +39,3 @@ struct dbn_context_builder_i {
 };
 
 } //end of dll namespace
-
-#endif

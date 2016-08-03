@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_CONV_RBM_INL
-#define DLL_CONV_RBM_INL
+#pragma once
 
 #include <cstddef>
 #include <ctime>
@@ -533,5 +532,3 @@ template <typename Desc>
 const std::size_t conv_rbm<Desc>::K;
 
 } //end of dll namespace
-
-#endif

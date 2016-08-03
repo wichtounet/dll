@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_DBN_TRAINER_HPP
-#define DLL_DBN_TRAINER_HPP
+#pragma once
 
 #include "etl/etl.hpp"
 
@@ -245,5 +244,3 @@ struct dbn_trainer {
 };
 
 } //end of dll namespace
-
-#endif

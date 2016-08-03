@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_DENSE_DESC_HPP
-#define DLL_DENSE_DESC_HPP
+#pragma once
 
 #include "base_conf.hpp"
 #include "util/tmp.hpp"
@@ -41,5 +40,3 @@ struct dense_desc {
 };
 
 } //end of dll namespace
-
-#endif

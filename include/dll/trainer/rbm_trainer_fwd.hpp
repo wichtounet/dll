@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_RBM_TRAINER_FWD_HPP
-#define DLL_RBM_TRAINER_FWD_HPP
+#pragma once
 
 namespace dll {
 
@@ -14,5 +13,3 @@ template <typename RBM, bool EnableWatcher = true, typename RW = void, bool Deno
 struct rbm_trainer;
 
 } //end of dll namespace
-
-#endif

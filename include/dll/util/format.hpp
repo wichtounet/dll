@@ -10,8 +10,7 @@
  * \brief Enumeration for the supported input/output formats of the library.
  */
 
-#ifndef DLL_FORMAT_HPP
-#define DLL_FORMAT_HPP
+#pragma once
 
 namespace dll {
 
@@ -23,5 +22,3 @@ enum class format {
 };
 
 } //end of dll namespace
-
-#endif

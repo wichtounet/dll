@@ -5,8 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#ifndef DLL_POOLING_LAYER_INL
-#define DLL_POOLING_LAYER_INL
+#pragma once
 
 #include "etl/etl.hpp"
 
@@ -72,5 +71,3 @@ struct pooling_layer_3d : neural_base<Parent> {
 };
 
 } //end of dll namespace
-
-#endif
