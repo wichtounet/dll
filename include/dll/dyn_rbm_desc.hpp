@@ -42,9 +42,6 @@ struct dyn_rbm_desc {
     /*! The layer type */
     using layer_t = dyn_rbm<dyn_rbm_desc<Parameters...>>;
 
-    /*! The RBM type */
-    using rbm_t[[deprecated("use layer_t instead")]] = layer_t;
-
     //Make sure only valid types are passed to the configuration list
     static_assert(
         detail::is_valid<cpp::type_list<momentum_id, visible_id, hidden_id, weight_decay_id, parallel_mode_id, serial_id, verbose_id,

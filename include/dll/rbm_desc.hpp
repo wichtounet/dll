@@ -49,9 +49,6 @@ struct rbm_desc {
     /*! The layer type */
     using dyn_layer_t = dyn_rbm<dyn_rbm_desc<Parameters...>>;
 
-    /*! The RBM type */
-    using rbm_t[[deprecated("use layer_t instead")]] = layer_t;
-
     static_assert(num_visible > 0, "There must be at least 1 visible unit");
     static_assert(num_hidden > 0, "There must be at least 1 hidden unit");
 

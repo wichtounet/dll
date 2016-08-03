@@ -49,9 +49,6 @@ struct conv_rbm_desc {
     /*! The layer type */
     using layer_t = conv_rbm<conv_rbm_desc<NC_T, NV1, NV2, K_T, NH1, NH2, Parameters...>>;
 
-    /*! The RBM type */
-    using rbm_t[[deprecated("use layer_t instead")]] = layer_t;
-
     //Validate all parameters
 
     static_assert(NV1 > 0, "A matrix of at least 1x1 is necessary for the visible units");
