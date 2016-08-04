@@ -181,6 +181,16 @@ struct conv_layer final : neural_base<conv_layer<Desc>> {
     static output_t prepare_output(std::size_t samples) {
         return output_t{samples};
     }
+
+    template <std::size_t B>
+    auto prepare_input_batch(){
+        return etl::fast_dyn_matrix<weight, B, NC, NV1, NV2>();
+    }
+
+    template <std::size_t B>
+    auto prepare_output_batch(){
+        return etl::fast_dyn_matrix<weight, B, K, NH1, NH2>();
+    }
 };
 
 //Allow odr-use of the constexpr static members

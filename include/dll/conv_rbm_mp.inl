@@ -398,6 +398,16 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
             activate_one(input[i], h_a[i]);
         }
     }
+
+    template <std::size_t B>
+    auto prepare_input_batch(){
+        return etl::fast_dyn_matrix<weight, B, NC, NV1, NV2>();
+    }
+
+    template <std::size_t B>
+    auto prepare_output_batch(){
+        return etl::fast_dyn_matrix<weight, B, K, NP1, NP2>();
+    }
 };
 
 //Allow odr-use of the constexpr static members

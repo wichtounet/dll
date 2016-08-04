@@ -202,6 +202,16 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
         dyn.init_rbm(num_visible, num_hidden);
         dyn.batch_size  = layer_traits<this_type>::batch_size();
     }
+
+    template <std::size_t B>
+    auto prepare_input_batch(){
+        return etl::fast_dyn_matrix<weight, B, num_visible>();
+    }
+
+    template <std::size_t B>
+    auto prepare_output_batch(){
+        return etl::fast_dyn_matrix<weight, B, num_hidden>();
+    }
 };
 
 //Allow odr-use of the constexpr static members

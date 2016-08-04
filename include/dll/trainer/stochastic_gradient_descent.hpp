@@ -270,21 +270,6 @@ struct sgd_trainer {
         }
     }
 
-    template <std::size_t Layer, typename Enable = void>
-    struct input_batch_t {
-        using type = typename std::decay_t<typename dbn_t::template layer_type<Layer>>::template input_batch_t<batch_size>;
-    };
-
-    template <std::size_t Layer>
-    struct input_batch_t<Layer, std::enable_if_t<decay_layer_traits<typename dbn_t::template layer_type<Layer>>::is_transform_layer()>> {
-        using type = typename std::decay_t<typename dbn_t::template layer_type<Layer + 1>>::template input_batch_t<batch_size>;
-    };
-
-    template <std::size_t Layer>
-    struct output_batch_t {
-        using type = typename std::decay_t<typename dbn_t::template layer_type<Layer>>::template output_batch_t<batch_size>;
-    };
-
     template <typename Layer, typename Context, typename Labels, cpp_enable_if(decay_layer_traits<Layer>::is_dense_layer())>
     void compute_last_errors(Layer& /*layer*/, Context& context, Labels& labels) {
         constexpr const auto last_a_f = extract_function<Layer>::activation_function;
@@ -305,11 +290,23 @@ struct sgd_trainer {
         nan_check_deep(context.errors);
     }
 
+    template<std::size_t Layer, typename Enable = void>
+    struct input_layer_t {
+        static constexpr const std::size_t L = Layer;
+    };
+
+    template<std::size_t Layer>
+    struct input_layer_t<Layer, std::enable_if_t< decay_layer_traits<typename dbn_t::template layer_type<Layer>>::is_transform_layer() >> {
+        static constexpr const std::size_t L = input_layer_t<Layer + 1>::L;
+    };
+
     template <typename T, typename L>
     void train_batch(std::size_t /*epoch*/, const dll::batch<T>& data_batch, const dll::batch<L>& label_batch) {
         cpp_assert(data_batch.size() == label_batch.size(), "Invalid sizes");
 
         auto n = label_batch.size();
+
+        decltype(auto) input_layer = dbn.template layer_get<input_layer_t<0>::L>();
 
         decltype(auto) first_layer = dbn.template layer_get<0>();
         decltype(auto) first_ctx = first_layer.template get_sgd_context<dbn_t>();
@@ -317,11 +314,10 @@ struct sgd_trainer {
         decltype(auto) last_layer = dbn.template layer_get<layers - 1>();
         decltype(auto) last_ctx = last_layer.template get_sgd_context<dbn_t>();
 
-        using inputs_t  = typename input_batch_t<0>::type;
-        using outputs_t = typename output_batch_t<layers - 1>::type;
+        // Prepare initial inputs and final outputs (labels)
 
-        inputs_t inputs;
-        outputs_t labels;
+        auto inputs = input_layer.template prepare_input_batch<batch_size>();
+        auto labels = last_layer.template prepare_output_batch<batch_size>();
 
         //Copy inputs and labels into suitable data structure
 

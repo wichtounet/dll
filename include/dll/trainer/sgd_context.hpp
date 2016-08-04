@@ -20,7 +20,7 @@ template <typename DBN, typename Layer, typename Enable = void>
 struct sgd_context;
 
 template <typename DBN, typename Layer>
-struct sgd_context<DBN, Layer, std::enable_if_t<is_dense<Layer>::value>> {
+struct sgd_context<DBN, Layer, std::enable_if_t<is_dense<Layer>::value && !layer_traits<Layer>::is_dynamic()>> {
     using layer_t = Layer;
     using weight  = typename layer_t::weight;
 
@@ -40,6 +40,28 @@ struct sgd_context<DBN, Layer, std::enable_if_t<is_dense<Layer>::value>> {
 
     sgd_context()
             : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
+};
+
+template <typename DBN, typename Layer>
+struct sgd_context<DBN, Layer, std::enable_if_t<is_dense<Layer>::value && layer_traits<Layer>::is_dynamic()>> {
+    using layer_t = Layer;
+    using weight  = typename layer_t::weight;
+
+    static constexpr const auto batch_size = DBN::batch_size;
+
+    etl::dyn_matrix<weight, 2> w_grad;
+    etl::dyn_matrix<weight, 1> b_grad;
+
+    etl::dyn_matrix<weight, 2> w_inc;
+    etl::dyn_matrix<weight, 1> b_inc;
+
+    etl::dyn_matrix<weight, 2> output;
+    etl::dyn_matrix<weight, 2> errors;
+
+    sgd_context(std::size_t num_visible, std::size_t num_hidden)
+            : w_grad(num_visible, num_hidden), b_grad(num_hidden),
+              w_inc(num_visible, num_hidden, 0.0), b_inc(num_hidden, 0.0),
+              output(batch_size, num_hidden, 0.0), errors(batch_size, num_hidden, 0.0) {}
 };
 
 template <typename DBN, typename Layer>

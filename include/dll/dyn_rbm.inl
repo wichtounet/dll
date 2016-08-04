@@ -22,7 +22,8 @@ template <typename Desc>
 struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
     using desc      = Desc;
     using weight    = typename desc::weight;
-    using base_type = standard_rbm<dyn_rbm<Desc>, Desc>;
+    using this_type = dyn_rbm<Desc>;
+    using base_type = standard_rbm<this_type, Desc>;
 
     static constexpr const unit_type visible_unit = desc::visible_unit;
     static constexpr const unit_type hidden_unit  = desc::hidden_unit;
@@ -54,7 +55,7 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
     etl::dyn_vector<weight> h2_s; //!< Sampled value of hidden units after last CD-step
 
     template <std::size_t B>
-    using input_batch_t = etl::fast_dyn_matrix<weight, B, 1>; //This is fake, should never be used
+    using input_batch_t = etl::fast_dyn_matrix<weight, B, 1>; //TODO Check how to handle this
 
     size_t num_visible;
     size_t num_hidden;
@@ -70,7 +71,7 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
     dyn_rbm& operator=(dyn_rbm&& rbm) = delete;
 
     dyn_rbm()
-            : standard_rbm<dyn_rbm<Desc>, Desc>() {}
+            : base_type() {}
 
     /*!
      * \brief Initialize a RBM with basic weights.
@@ -79,7 +80,7 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
      * zero-mean and 0.1 variance.
      */
     dyn_rbm(size_t num_visible, size_t num_hidden)
-            : standard_rbm<dyn_rbm<Desc>, Desc>(),
+            : base_type(),
               w(num_visible, num_hidden),
               b(num_hidden, static_cast<weight>(0.0)),
               c(num_visible, static_cast<weight>(0.0)),
@@ -113,6 +114,18 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
 
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
         w = etl::normal_generator<weight>() * 0.1;
+    }
+
+    void backup_weights() {
+        unique_safe_get(bak_w) = w;
+        unique_safe_get(bak_b) = b;
+        unique_safe_get(bak_c) = c;
+    }
+
+    void restore_weights() {
+        w = *bak_w;
+        b = *bak_b;
+        c = *bak_c;
     }
 
     std::size_t input_size() const noexcept {
@@ -203,6 +216,21 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
     template <typename H, typename V>
     void batch_activate_hidden(H&& h_a, const V& v_a) const {
         base_type::template batch_std_activate_hidden<true, false>(std::forward<H>(h_a), std::forward<H>(h_a), v_a, v_a, b, w);
+    }
+
+    template <typename DBN>
+    void init_sgd_context() {
+        this->sgd_context_ptr = std::make_shared<sgd_context<DBN, this_type>>(num_visible, num_hidden);
+    }
+
+    template <std::size_t B>
+    auto prepare_input_batch(){
+        return etl::dyn_matrix<weight, 2>(B, num_visible);
+    }
+
+    template <std::size_t B>
+    auto prepare_output_batch(){
+        return etl::dyn_matrix<weight, 2>(B, num_hidden);
     }
 };
 

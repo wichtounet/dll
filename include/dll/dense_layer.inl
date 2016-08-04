@@ -162,6 +162,16 @@ struct dense_layer final : neural_base<dense_layer<Desc>> {
     static output_t prepare_output(std::size_t samples) {
         return output_t{samples};
     }
+
+    template <std::size_t B>
+    static auto prepare_input_batch(){
+        return etl::fast_dyn_matrix<weight, B, num_visible>();
+    }
+
+    template <std::size_t B>
+    static auto prepare_output_batch(){
+        return etl::fast_dyn_matrix<weight, B, num_hidden>();
+    }
 };
 
 //Allow odr-use of the constexpr static members

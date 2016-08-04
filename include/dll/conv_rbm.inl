@@ -475,6 +475,16 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         }
     }
 
+    template <std::size_t B>
+    auto prepare_input_batch(){
+        return etl::fast_dyn_matrix<weight, B, NC, NV1, NV2>();
+    }
+
+    template <std::size_t B>
+    auto prepare_output_batch(){
+        return etl::fast_dyn_matrix<weight, B, K, NH1, NH2>();
+    }
+
 private:
     template <typename V1, typename V2, std::size_t Off = 0>
     static void validate_inputs() {
