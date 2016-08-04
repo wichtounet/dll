@@ -64,7 +64,8 @@ struct layer_traits {
     static constexpr bool is_convolutional_rbm_layer() {
         return cpp::is_specialization_of<conv_rbm, layer_t>::value
             || cpp::is_specialization_of<conv_rbm_mp, layer_t>::value
-            || cpp::is_specialization_of<dyn_conv_rbm, layer_t>::value;
+            || cpp::is_specialization_of<dyn_conv_rbm, layer_t>::value
+            || cpp::is_specialization_of<dyn_conv_rbm_mp, layer_t>::value;
     }
 
     /*!
@@ -141,7 +142,9 @@ struct layer_traits {
      * \brief Indicates if the layer is dynamic
      */
     static constexpr bool is_dynamic() {
-        return cpp::is_specialization_of<dyn_rbm, layer_t>::value || cpp::is_specialization_of<dyn_conv_rbm, layer_t>::value;
+        return cpp::is_specialization_of<dyn_rbm, layer_t>::value
+            || cpp::is_specialization_of<dyn_conv_rbm, layer_t>::value
+            || cpp::is_specialization_of<dyn_conv_rbm_mp, layer_t>::value;
     }
 
     /*!

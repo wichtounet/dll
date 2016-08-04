@@ -27,6 +27,9 @@ template <typename Desc>
 struct conv_rbm_mp;
 
 template <typename Desc>
+struct dyn_conv_rbm_mp;
+
+template <typename Desc>
 struct mp_layer_3d;
 
 template <typename Desc>
