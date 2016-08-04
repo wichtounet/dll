@@ -223,6 +223,12 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         this->sgd_context_ptr = std::make_shared<sgd_context<DBN, this_type>>(num_visible, num_hidden);
     }
 
+    void init_cg_context() {
+        if (!this->cg_context_ptr) {
+            this->cg_context_ptr = std::make_shared<cg_context<this_type>>(num_visible, num_hidden);
+        }
+    }
+
     template <std::size_t B>
     auto prepare_input_batch(){
         return etl::dyn_matrix<weight, 2>(B, num_visible);

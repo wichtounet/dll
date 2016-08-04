@@ -65,12 +65,11 @@ struct cg_trainer {
             auto& ctx = rbm.get_cg_context();
 
             if (ctx.is_trained) {
-                typedef typename std::remove_reference<decltype(ctx)>::type ctx_t;
-                constexpr const auto num_hidden = ctx_t::num_hidden;
+                const auto n_hidden = num_hidden(rbm);
 
                 for (std::size_t i = 0; i < batch_size; ++i) {
-                    ctx.gr_probs_a.emplace_back(num_hidden);
-                    ctx.gr_probs_s.emplace_back(num_hidden);
+                    ctx.gr_probs_a.emplace_back(n_hidden);
+                    ctx.gr_probs_s.emplace_back(n_hidden);
                 }
             }
         });
@@ -87,8 +86,8 @@ struct cg_trainer {
 
     template <bool Temp, typename R1, typename R2, typename C1, typename C2, typename D>
     static void update_diffs(R1&, R2& r2, C1& c1, C2& c2, std::vector<D>& diffs, std::size_t n_samples) {
-        constexpr auto n_visible = C2::num_visible;
-        constexpr auto n_hidden  = C2::num_hidden;
+        auto n_visible = num_visible(r2);
+        auto n_hidden  = num_hidden(r2);
 
         for (std::size_t sample = 0; sample < n_samples; ++sample) {
             D diff(n_visible);
@@ -110,10 +109,12 @@ struct cg_trainer {
         }
     }
 
-    template <bool Temp, typename C, typename D, typename V>
-    static void update_incs(C& ctx, std::vector<D>& diffs, const V& visibles) {
-        constexpr auto n_visible = C::num_visible;
-        constexpr auto n_hidden  = C::num_hidden;
+    template <bool Temp, typename R, typename D, typename V>
+    static void update_incs(R& r, std::vector<D>& diffs, const V& visibles) {
+        auto& ctx = r.get_cg_context();
+
+        auto n_visible = num_visible(r);
+        auto n_hidden  = num_hidden(r);
 
         auto it            = visibles.begin();
         auto end           = visibles.end();
@@ -140,8 +141,8 @@ struct cg_trainer {
 
     template <bool Temp, typename Sample, typename Target>
     void gradient(const gradient_context<Sample, Target>& context, weight& cost) {
-        constexpr const auto n_hidden = dbn_t::template layer_output_size<layers - 1>();
-        auto n_samples                = context.inputs.size();
+        const auto n_hidden = output_size(dbn.template layer_get<layers - 1>());
+        auto n_samples      = context.inputs.size();
 
         static std::vector<std::vector<weight>> diffs;
         diffs.resize(n_samples);
@@ -206,7 +207,7 @@ struct cg_trainer {
             probs_refs[I] = &rbm.get_cg_context().gr_probs_a;
         });
 
-        update_incs<Temp>(dbn.template layer_get<layers - 1>().get_cg_context(), diffs, dbn.template layer_get<layers - 2>().get_cg_context().gr_probs_a);
+        update_incs<Temp>(dbn.template layer_get<layers - 1>(), diffs, dbn.template layer_get<layers - 2>().get_cg_context().gr_probs_a);
 
         std::vector<std::vector<weight>>& diffs_p = diffs;
 
@@ -217,11 +218,11 @@ struct cg_trainer {
             this_type::update_diffs<Temp>(r1, r2, c1, c2, diffs_p, n_samples);
 
             if (I > 0) {
-                this_type::update_incs<Temp>(c1, diffs_p, *probs_refs[I - 1]);
+                this_type::update_incs<Temp>(r1, diffs_p, *probs_refs[I - 1]);
             }
         });
 
-        update_incs<Temp>(dbn.template layer_get<0>().get_cg_context(), diffs, context.inputs);
+        update_incs<Temp>(dbn.template layer_get<0>(), diffs, context.inputs);
 
         if (Debug) {
             std::cout << "evaluating(" << Temp << "): cost:" << cost << " error: " << (error / n_samples) << std::endl;

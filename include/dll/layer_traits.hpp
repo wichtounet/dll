@@ -332,7 +332,7 @@ constexpr std::size_t output_size(const RBM&) {
 
 template <typename RBM, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
 std::size_t output_size(const RBM& rbm) {
-    return rbm.num_hidden;
+    return rbm.output_size();
 }
 
 template <typename RBM, cpp_enable_if(layer_traits<RBM>::is_dynamic())>

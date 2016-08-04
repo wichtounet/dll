@@ -56,6 +56,54 @@ struct cg_context<rbm<Desc>> {
     std::vector<etl::dyn_vector<weight>> gr_probs_s;
 };
 
+//Foward
+template <typename Desc>
+struct dyn_rbm;
+
+template <typename Desc>
+struct cg_context<dyn_rbm<Desc>> {
+    using rbm_t  = dyn_rbm<Desc>;
+    using weight = typename rbm_t::weight;
+
+    static constexpr const bool is_trained = true;
+
+    etl::dyn_matrix<weight, 2> gr_w_incs;
+    etl::dyn_matrix<weight, 1> gr_b_incs;
+
+    etl::dyn_matrix<weight, 2> gr_w_best;
+    etl::dyn_matrix<weight, 1> gr_b_best;
+
+    etl::dyn_matrix<weight, 2> gr_w_best_incs;
+    etl::dyn_matrix<weight, 1> gr_b_best_incs;
+
+    etl::dyn_matrix<weight, 2> gr_w_df0;
+    etl::dyn_matrix<weight, 1> gr_b_df0;
+
+    etl::dyn_matrix<weight, 2> gr_w_df3;
+    etl::dyn_matrix<weight, 1> gr_b_df3;
+
+    etl::dyn_matrix<weight, 2> gr_w_s;
+    etl::dyn_matrix<weight, 1> gr_b_s;
+
+    etl::dyn_matrix<weight, 2> gr_w_tmp;
+    etl::dyn_matrix<weight, 1> gr_b_tmp;
+
+    std::vector<etl::dyn_vector<weight>> gr_probs_a;
+    std::vector<etl::dyn_vector<weight>> gr_probs_s;
+
+    cg_context(std::size_t num_visible, std::size_t num_hidden) :
+        gr_w_incs(num_visible, num_hidden), gr_b_incs(num_hidden),
+        gr_w_best(num_visible, num_hidden), gr_b_best(num_hidden),
+        gr_w_best_incs(num_visible, num_hidden), gr_b_best_incs(num_hidden),
+        gr_w_df0(num_visible, num_hidden), gr_b_df0(num_hidden),
+        gr_w_df3(num_visible, num_hidden), gr_b_df3(num_hidden),
+        gr_w_s(num_visible, num_hidden), gr_b_s(num_hidden),
+        gr_w_tmp(num_visible, num_hidden), gr_b_tmp(num_hidden)
+    {
+        //Nothing else to init
+    }
+};
+
 //Forward
 template <typename Desc>
 struct binarize_layer;
