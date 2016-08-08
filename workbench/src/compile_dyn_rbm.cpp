@@ -28,9 +28,9 @@ int main(int, char**) {
 
 #define decl_dbn3(NAME, F) \
     auto NAME = std::make_unique<dbn3_t>(); \
-    NAME->template layer_get<0>().init_rbm(28 * 28, 100 + F);\
-    NAME->template layer_get<1>().init_rbm(100 + F, 200 + F);\
-    NAME->template layer_get<2>().init_rbm(200 + F, 10);\
+    NAME->template layer_get<0>().init_layer(28 * 28, 100 + F);\
+    NAME->template layer_get<1>().init_layer(100 + F, 200 + F);\
+    NAME->template layer_get<2>().init_layer(200 + F, 10);\
     NAME->pretrain(dataset.training_images, 20);
 
     decl_dbn3(dbn1,1)

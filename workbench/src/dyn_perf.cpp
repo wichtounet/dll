@@ -75,9 +75,9 @@ int main(int, char**) {
 
     auto dyn_dbn = std::make_unique<dyn_dbn_t>();
 
-    dyn_dbn->template layer_get<0>().init_rbm(28 * 28, 250);
-    dyn_dbn->template layer_get<1>().init_rbm(250, 500);
-    dyn_dbn->template layer_get<2>().init_rbm(500, 10);
+    dyn_dbn->template layer_get<0>().init_layer(28 * 28, 250);
+    dyn_dbn->template layer_get<1>().init_layer(250, 500);
+    dyn_dbn->template layer_get<2>().init_layer(500, 10);
 
     dyn_dbn->template layer_get<0>().batch_size = 50;
     dyn_dbn->template layer_get<1>().batch_size = 50;

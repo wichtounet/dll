@@ -99,7 +99,7 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
         // Nothing else to init
     }
 
-    void init_rbm(size_t nc, size_t nv1, size_t nv2, size_t k, size_t nh1, size_t nh2){
+    void init_layer(size_t nc, size_t nv1, size_t nv2, size_t k, size_t nh1, size_t nh2){
         this->nv1 = nv1;
         this->nv2 = nv2;
         this->nh1 = nh1;

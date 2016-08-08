@@ -199,7 +199,7 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
 
     template<typename DRBM>
     static void dyn_init(DRBM& dyn){
-        dyn.init_rbm(num_visible, num_hidden);
+        dyn.init_layer(num_visible, num_hidden);
         dyn.batch_size  = layer_traits<this_type>::batch_size();
     }
 
