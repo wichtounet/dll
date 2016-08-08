@@ -32,21 +32,31 @@ struct rbm_desc {
     static constexpr const unit_type hidden_unit    = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
     static constexpr const sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;
 
-    /*! The type used to store the weights */
+    /*!
+     * The type used to store the weights
+     */
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
 
-    /*! The type of the trainer to use to train the RBM */
+    /*!
+     * The type of the trainer to use to train the RBM
+     */
     template <typename RBM, bool Denoising>
     using trainer_t = typename detail::get_template_type_tb<trainer_rbm<cd1_trainer_t>, Parameters...>::template value<RBM, Denoising>;
 
-    /*! The type of the watched to use during training */
+    /*!
+     * The type of the watched to use during training
+     */
     template <typename RBM>
     using watcher_t = typename detail::get_template_type<watcher<default_rbm_watcher>, Parameters...>::template value<RBM>;
 
-    /*! The layer type */
+    /*!
+     * The layer type
+     */
     using layer_t = rbm<rbm_desc<visibles, hiddens, Parameters...>>;
 
-    /*! The layer type */
+    /*!
+     * The layer type
+     */
     using dyn_layer_t = dyn_rbm<dyn_rbm_desc<Parameters...>>;
 
     static_assert(num_visible > 0, "There must be at least 1 visible unit");
