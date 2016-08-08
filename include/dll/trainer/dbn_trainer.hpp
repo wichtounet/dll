@@ -145,7 +145,7 @@ struct dbn_trainer {
                 watcher.ft_epoch_end(epoch, error, dbn);
 
                 //Once the goal is reached, stop training
-                if (error == 0.0) {
+                if (error <= dbn.goal) {
                     break;
                 }
 
@@ -231,7 +231,7 @@ struct dbn_trainer {
                 watcher.ft_epoch_end(epoch, error, dbn);
 
                 //Once the goal is reached, stop training
-                if (error == 0.0) {
+                if (error <= dbn.goal) {
                     break;
                 }
             }

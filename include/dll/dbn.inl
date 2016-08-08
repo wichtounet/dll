@@ -98,6 +98,8 @@ public:
 
     bool batch_mode_run = false;
 
+    weight goal = 0.0; //< The learning goal
+
 #ifdef DLL_SVM_SUPPORT
     //TODO Ideally these fields should be private
     svm::model svm_model;    ///< The learned model
