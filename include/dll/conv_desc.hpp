@@ -13,17 +13,20 @@
 namespace dll {
 
 /*!
- * \brief Describe a convolutional layer.
+ * \brief Describe a standard convolutional layer.
  */
 template <std::size_t NC_T, std::size_t NV_1, std::size_t NV_2, std::size_t K_T, std::size_t NH_1, std::size_t NH_2, typename... Parameters>
 struct conv_desc {
-    static constexpr const std::size_t NV1 = NV_1;
-    static constexpr const std::size_t NV2 = NV_2;
-    static constexpr const std::size_t NH1 = NH_1;
-    static constexpr const std::size_t NH2 = NH_2;
-    static constexpr const std::size_t NC  = NC_T;
-    static constexpr const std::size_t K   = K_T;
+    static constexpr const std::size_t NV1 = NV_1; ///< The first dimension of the input
+    static constexpr const std::size_t NV2 = NV_2; ///< The second dimension of the input
+    static constexpr const std::size_t NH1 = NH_1; ///< The first dimension of the output
+    static constexpr const std::size_t NH2 = NH_2; ///< The second dimension of the output
+    static constexpr const std::size_t NC  = NC_T; ///< The number of input channels
+    static constexpr const std::size_t K   = K_T;  ///< The number of filters
 
+    /*!
+     * \brief A list of all the parameters of the descriptor
+     */
     using parameters = cpp::type_list<Parameters...>;
 
     static constexpr const function activation_function = detail::get_value<activation<function::SIGMOID>, Parameters...>::value;
