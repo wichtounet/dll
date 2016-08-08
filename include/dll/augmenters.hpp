@@ -50,7 +50,7 @@ struct augmenter <elastic<C, K>> {
 
         for (std::size_t i = 0; i < kernel_size; ++i) {
             for (std::size_t j = 0; j < kernel_size; ++j) {
-                kernel(i, j) = gaussian(double(i) - mid, double(j) - mid, sigma);;
+                kernel(i, j) = gaussian(double(i) - mid, double(j) - mid, sigma);
             }
         }
 
@@ -141,7 +141,7 @@ struct augmenter <elastic<C, K>> {
 
                         auto value = e * (1.0 - (py - std::floor(py))) + f * (py - std::floor(py));
 
-                        result(channel, x, y) = value;;
+                        result(channel, x, y) = value;
                     }
                 }
             }
