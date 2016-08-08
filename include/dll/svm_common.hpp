@@ -12,7 +12,7 @@
 
 #ifdef DLL_SVM_SUPPORT
 
-#include "util/io.hpp"
+#include "cpp_utils/io.hpp"
 #include "nice_svm.hpp"
 
 namespace dll {
@@ -32,7 +32,7 @@ inline svm_parameter default_svm_parameters() {
 template <typename DBN>
 void svm_store(const DBN& dbn, std::ostream& os) {
     if (dbn.svm_loaded) {
-        binary_write(os, true);
+        cpp::binary_write(os, true);
 
         svm::save(dbn.svm_model, "..tmp.svm");
 
@@ -50,7 +50,7 @@ void svm_store(const DBN& dbn, std::ostream& os) {
             os.write(buffer, svm_is.gcount());
         }
     } else {
-        binary_write(os, false);
+        cpp::binary_write(os, false);
     }
 }
 
@@ -60,7 +60,7 @@ void svm_load(DBN& dbn, std::istream& is) {
 
     if (is.good()) {
         bool svm;
-        binary_load(is, svm);
+        cpp::binary_load(is, svm);
 
         if (svm) {
             std::ofstream svm_os("..tmp.svm", std::ios::binary);

@@ -19,7 +19,6 @@
 
 #include "etl/etl.hpp"
 
-#include "util/io.hpp"     //Input/Output
 #include "util/checks.hpp" //NaN checks
 #include "util/timers.hpp" //auto_timer
 #include "rbm_base.hpp"    //The base class

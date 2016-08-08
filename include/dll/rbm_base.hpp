@@ -10,8 +10,8 @@
 #include <iosfwd>
 #include <fstream>
 
+#include "cpp_utils/io.hpp"
 #include "neural_base.hpp"
-#include "util/io.hpp"
 #include "trainer/rbm_trainer_fwd.hpp"
 
 namespace dll {
@@ -120,15 +120,15 @@ struct rbm_base : neural_base<Parent> {
 
 private:
     static void store(std::ostream& os, const parent_t& rbm) {
-        binary_write_all(os, rbm.w);
-        binary_write_all(os, rbm.b);
-        binary_write_all(os, rbm.c);
+        cpp::binary_write_all(os, rbm.w);
+        cpp::binary_write_all(os, rbm.b);
+        cpp::binary_write_all(os, rbm.c);
     }
 
     static void load(std::istream& is, parent_t& rbm) {
-        binary_load_all(is, rbm.w);
-        binary_load_all(is, rbm.b);
-        binary_load_all(is, rbm.c);
+        cpp::binary_load_all(is, rbm.w);
+        cpp::binary_load_all(is, rbm.b);
+        cpp::binary_load_all(is, rbm.c);
     }
 
     static void store(const std::string& file, const parent_t& rbm) {
