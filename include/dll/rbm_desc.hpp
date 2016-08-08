@@ -22,8 +22,8 @@ namespace dll {
  */
 template <std::size_t visibles, std::size_t hiddens, typename... Parameters>
 struct rbm_desc {
-    static constexpr const std::size_t num_visible = visibles;
-    static constexpr const std::size_t num_hidden  = hiddens;
+    static constexpr const std::size_t num_visible = visibles; ///< The number of visible units
+    static constexpr const std::size_t num_hidden  = hiddens;  ///< The number of hidden units
 
     using parameters = cpp::type_list<Parameters...>;
 

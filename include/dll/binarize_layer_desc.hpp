@@ -11,8 +11,9 @@ namespace dll {
 
 template <std::size_t T_T = 30>
 struct binarize_layer_desc {
-    static constexpr const std::size_t T = T_T;
+    static constexpr const std::size_t T = T_T; ///< The binary threshold
 
+    /*! A list of all the parameters of the descriptor */
     using parameters = cpp::type_list<>;
 
     /*! The layer type */

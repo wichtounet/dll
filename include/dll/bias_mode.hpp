@@ -13,8 +13,8 @@ namespace dll {
  * \brief Several modes for biases computation in convolutional RBM
  */
 enum class bias_mode {
-    NONE,
-    SIMPLE
+    NONE,  ///< The sparsity bias is not computed
+    SIMPLE ///< The sparsity bias is computed on the visible biases
 };
 
 } //end of dll namespace
