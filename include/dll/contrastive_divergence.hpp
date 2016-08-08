@@ -228,23 +228,25 @@ void batch_compute_gradients(Trainer& t) {
     dll::auto_timer timer("cd:batch_compute_gradients:std");
 
     const auto B = etl::dim<0>(t.w_grad_b);
+    const auto NV = etl::dim<1>(t.w_grad_b);
+    const auto NH = etl::dim<2>(t.w_grad_b);
 
     for (std::size_t b = 0; b < B; b++) {
-        for (std::size_t i = 0; i < etl::dim<1>(t.w_grad_b); i++) {
-            for (std::size_t j = 0; j < etl::dim<2>(t.w_grad_b); j++) {
+        for (std::size_t i = 0; i < NV; i++) {
+            for (std::size_t j = 0; j < NH; j++) {
                 t.w_grad(i, j) += t.vf(b, i) * t.h1_a(b, j) - t.v2_a(b, i) * t.h2_a(b, j);
             }
         }
     }
 
     for (std::size_t b = 0; b < B; b++) {
-        for (std::size_t i = 0; i < etl::dim<1>(t.h1_a); i++) {
+        for (std::size_t i = 0; i < NH; i++) {
             t.b_grad(i) += t.h1_a(b, i) - t.h2_a(b, i);
         }
     }
 
     for (std::size_t b = 0; b < B; b++) {
-        for (std::size_t i = 0; i < etl::dim<1>(t.vf); i++) {
+        for (std::size_t i = 0; i < NV; i++) {
             t.c_grad(i) += t.vf(b, i) - t.v2_a(b, i);
         }
     }
