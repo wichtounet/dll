@@ -17,7 +17,9 @@ template <typename... Layers>
 struct is_dynamic : cpp::or_u<layer_traits<Layers>::is_dynamic()...> {};
 
 template <typename... Layers>
-struct is_convolutional : cpp::or_u<layer_traits<Layers>::is_convolutional_rbm_layer()...> {};
+struct is_convolutional : cpp::or_u<
+                          cpp::or_u<layer_traits<Layers>::is_convolutional_layer()...>::value,
+                          cpp::or_u<layer_traits<Layers>::is_convolutional_rbm_layer()...>::value> {};
 
 template <typename... Layers>
 struct is_multiplex : cpp::or_u<layer_traits<Layers>::is_multiplex_layer()...> {};

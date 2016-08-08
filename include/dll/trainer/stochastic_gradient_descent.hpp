@@ -62,11 +62,41 @@ struct sgd_trainer {
 
     dbn_t& dbn;
 
-    explicit sgd_trainer(dbn_t& dbn)
-            : dbn(dbn) {
+    template<std::size_t Layer, typename Enable = void>
+    struct input_layer_t {
+        static constexpr const std::size_t L = Layer;
+    };
+
+    template<std::size_t Layer>
+    struct input_layer_t<Layer, std::enable_if_t< decay_layer_traits<typename dbn_t::template layer_type<Layer>>::is_transform_layer() >> {
+        static constexpr const std::size_t L = input_layer_t<Layer + 1>::L;
+    };
+
+    template<std::size_t L, std::size_t S, typename Layer, cpp_enable_if((L != S && dbn_traits<dbn_t>::is_dynamic()))>
+    void back_init(const Layer& input_layer){
+        decltype(auto) layer = dbn.template layer_get<L>();
+
+        layer.template get_sgd_context<dbn_t>().output = input_layer.template prepare_input_batch<batch_size>();
+        layer.template get_sgd_context<dbn_t>().errors = input_layer.template prepare_input_batch<batch_size>();
+
+        this->template back_init<L+1, S>(input_layer);
+    }
+
+    template<std::size_t L, std::size_t S, typename Layer, cpp_enable_if((L != S && !dbn_traits<dbn_t>::is_dynamic()))>
+    void back_init(const Layer& input_layer){
+        this->template back_init<L+1, S>(input_layer);
+    }
+
+    template<std::size_t L, std::size_t S, typename Layer, cpp_enable_if(L == S)>
+    void back_init(const Layer& /*input_layer*/){}
+
+    explicit sgd_trainer(dbn_t& dbn) : dbn(dbn) {
         dbn.for_each_layer([](auto& layer) {
             layer.template init_sgd_context<dbn_t>();
         });
+
+        decltype(auto) input_layer = dbn.template layer_get<input_layer_t<0>::L>();
+        this->template back_init<0, input_layer_t<0>::L>(input_layer);
     }
 
     void init_training(std::size_t) {}
@@ -289,16 +319,6 @@ struct sgd_trainer {
 
         nan_check_deep(context.errors);
     }
-
-    template<std::size_t Layer, typename Enable = void>
-    struct input_layer_t {
-        static constexpr const std::size_t L = Layer;
-    };
-
-    template<std::size_t Layer>
-    struct input_layer_t<Layer, std::enable_if_t< decay_layer_traits<typename dbn_t::template layer_type<Layer>>::is_transform_layer() >> {
-        static constexpr const std::size_t L = input_layer_t<Layer + 1>::L;
-    };
 
     template <typename T, typename L>
     void train_batch(std::size_t /*epoch*/, const dll::batch<T>& data_batch, const dll::batch<L>& label_batch) {

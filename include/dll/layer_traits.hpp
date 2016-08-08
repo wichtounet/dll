@@ -34,7 +34,8 @@ struct layer_traits {
      * \brief Indicates if the layer is a standard dense layer.
      */
     static constexpr bool is_dense_layer() {
-        return cpp::is_specialization_of<dense_layer, layer_t>::value;
+        return cpp::is_specialization_of<dense_layer, layer_t>::value
+            || cpp::is_specialization_of<dyn_dense_layer, layer_t>::value;
     }
 
     /*!
@@ -55,7 +56,8 @@ struct layer_traits {
      * \brief Indicates if this layer is a standard (non-convolutional) RBM layer.
      */
     static constexpr bool is_standard_rbm_layer() {
-        return cpp::is_specialization_of<dyn_rbm, layer_t>::value || cpp::is_specialization_of<rbm, layer_t>::value;
+        return cpp::is_specialization_of<dyn_rbm, layer_t>::value
+            || cpp::is_specialization_of<rbm, layer_t>::value;
     }
 
     /*!
@@ -72,7 +74,8 @@ struct layer_traits {
      * \brief Indicates if this layer is a pooling layer.
      */
     static constexpr bool is_pooling_layer() {
-        return cpp::is_specialization_of<mp_layer_3d, layer_t>::value || cpp::is_specialization_of<avgp_layer_3d, layer_t>::value;
+        return cpp::is_specialization_of<mp_layer_3d, layer_t>::value
+            || cpp::is_specialization_of<avgp_layer_3d, layer_t>::value;
     }
 
     /*!
@@ -93,7 +96,12 @@ struct layer_traits {
      * \brief Indicates if this layer is a transformation layer.
      */
     static constexpr bool is_transform_layer() {
-        return cpp::is_specialization_of<binarize_layer, layer_t>::value || cpp::is_specialization_of<normalize_layer, layer_t>::value || cpp::is_specialization_of<scale_layer, layer_t>::value || cpp::is_specialization_of<rectifier_layer, layer_t>::value || cpp::is_specialization_of<random_layer, layer_t>::value || cpp::is_specialization_of<lcn_layer, layer_t>::value;
+        return cpp::is_specialization_of<binarize_layer, layer_t>::value
+            || cpp::is_specialization_of<normalize_layer, layer_t>::value
+            || cpp::is_specialization_of<scale_layer, layer_t>::value
+            || cpp::is_specialization_of<rectifier_layer, layer_t>::value
+            || cpp::is_specialization_of<random_layer, layer_t>::value
+            || cpp::is_specialization_of<lcn_layer, layer_t>::value;
     }
 
     /*!
@@ -144,7 +152,9 @@ struct layer_traits {
     static constexpr bool is_dynamic() {
         return cpp::is_specialization_of<dyn_rbm, layer_t>::value
             || cpp::is_specialization_of<dyn_conv_rbm, layer_t>::value
-            || cpp::is_specialization_of<dyn_conv_rbm_mp, layer_t>::value;
+            || cpp::is_specialization_of<dyn_conv_rbm_mp, layer_t>::value
+            || cpp::is_specialization_of<dyn_dense_layer, layer_t>::value
+            ;
     }
 
     /*!
