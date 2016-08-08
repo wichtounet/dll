@@ -47,9 +47,6 @@ struct dyn_conv_rbm_mp final : public standard_conv_rbm<dyn_conv_rbm_mp<Desc>, D
     template <std::size_t B>
     using input_batch_t = etl::fast_dyn_matrix<weight, B, 1>;
 
-    //template <std::size_t B>
-    //using output_batch_t = etl::fast_dyn_matrix<weight, B, K, NH1, NH2>;
-
     using w_type = etl::dyn_matrix<weight, 4>;
     using b_type = etl::dyn_vector<weight>;
     using c_type = etl::dyn_vector<weight>;
@@ -453,12 +450,6 @@ struct dyn_conv_rbm_mp final : public standard_conv_rbm<dyn_conv_rbm_mp<Desc>, D
     void activate_hidden(output_one_t& h_a, const input_one_t& input) const {
         activate_pooling<true, false>(h_a, h_a, input, input);
     }
-
-    //template <typename V, typename H>
-    //void batch_activate_hidden(H& h_a, const V& input) const {
-        //etl::dyn_matrix<weight, 5> v_cv(etl::decay_traits<H>::template dim<0>(), V_CV_CHANNELS, k, nh1, nh2); //Temporary convolution
-        //batch_activate_hidden<true, false>(h_a, h_a, input, input, v_cv);
-    //}
 
     void activate_many(const input_t& input, output_t& h_a, output_t& h_s) const {
         for (std::size_t i = 0; i < input.size(); ++i) {

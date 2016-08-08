@@ -46,9 +46,6 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
     template <std::size_t B>
     using input_batch_t = etl::fast_dyn_matrix<weight, B, 1>;
 
-    //template <std::size_t B>
-    //using output_batch_t = etl::fast_dyn_matrix<weight, B, K, NH1, NH2>;
-
     using w_type = etl::dyn_matrix<weight, 4>;
     using b_type = etl::dyn_vector<weight>;
     using c_type = etl::dyn_vector<weight>;
