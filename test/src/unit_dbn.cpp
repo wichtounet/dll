@@ -233,6 +233,7 @@ TEST_CASE("unit/dbn/mnist/7", "[dbn][svm][unit]") {
     REQUIRE(test_error < 0.2);
 }
 
+// Pretrain with binarize layer
 TEST_CASE("unit/dbn/mnist/8", "[dbn][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
@@ -249,6 +250,7 @@ TEST_CASE("unit/dbn/mnist/8", "[dbn][unit]") {
     dbn->pretrain(dataset.training_images, 20);
 }
 
+// Pretrain in denoising mode
 TEST_CASE("unit/dbn/mnist/9", "[dbn][denoising][unit]") {
     using dbn_t =
         dll::dbn_desc<
@@ -333,7 +335,7 @@ TEST_CASE("unit/dbn/mnist/10", "[dbn][denoising][unit]") {
     dbn->pretrain_denoising(noisy, dataset.training_images, 50);
 }
 
-//Batch mode and shuffle
+// Batch mode and shuffle (pretrain/finetune)
 TEST_CASE("unit/dbn/mnist/11", "[dbn][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
