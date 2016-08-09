@@ -19,7 +19,7 @@ struct patches_layer_padh_desc {
 
     using parameters = cpp::type_list<Parameters...>;
 
-    using weight = typename detail::get_type<weight_type<double>, Parameters...>::value;
+    using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
 
     static_assert(width > 0, "A patch must be at least 1 pixel wide");
     static_assert(height > 0, "A patch must be at least 1 pixel high");
