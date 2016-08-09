@@ -151,6 +151,7 @@ $(eval $(call add_executable_set,dll_view,dll_view_rbm, dll_view_crbm, dll_view_
 $(eval $(call add_executable,dll_perf_paper,workbench/src/perf_paper.cpp))
 $(eval $(call add_executable,dll_perf_paper_conv,workbench/src/perf_paper_conv.cpp))
 $(eval $(call add_executable,dll_perf_conv,workbench/src/perf_conv.cpp))
+$(eval $(call add_executable,dll_conv_types,workbench/src/conv_types.cpp))
 $(eval $(call add_executable,dll_compile_rbm_one,workbench/src/compile_rbm_one.cpp))
 $(eval $(call add_executable,dll_compile_dyn_rbm_one,workbench/src/compile_dyn_rbm_one.cpp))
 $(eval $(call add_executable,dll_compile_rbm,workbench/src/compile_rbm.cpp))
@@ -162,6 +163,7 @@ $(eval $(call add_executable,dll_dyn_perf,workbench/src/dyn_perf.cpp))
 $(eval $(call add_executable_set,dll_perf_paper,dll_perf_paper))
 $(eval $(call add_executable_set,dll_perf_paper_conv,dll_perf_paper_conv))
 $(eval $(call add_executable_set,dll_perf_conv,dll_perf_conv))
+$(eval $(call add_executable_set,dll_conv_types,dll_conv_types))
 
 release: release_dllp release_dll_test release_dll_view
 release_debug: release_debug_dllp release_debug_dll_test release_debug_dll_view
