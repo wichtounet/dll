@@ -16,7 +16,7 @@ node {
 
    stage 'build'
    sh 'make clean'
-   sh 'make -j4 release'
+   sh 'make -j6 release'
 
    stage 'test'
    sh './release/bin/dll_test -r junit -d yes -o catch_report.xml "[unit]" || true'
