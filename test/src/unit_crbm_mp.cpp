@@ -19,12 +19,13 @@
 TEST_CASE("unit/crbm_mp/mnist/1", "[crbm_mp][unit]") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 20, 12, 2,
+        dll::weight_type<float>,
         dll::batch_size<25>,
         dll::momentum,
         dll::serial,
         dll::parallel_mode>::layer_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
+    auto dataset = mnist::read_dataset<std::vector, std::vector, float>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -46,6 +47,7 @@ TEST_CASE("unit/crbm_mp/mnist/1", "[crbm_mp][unit]") {
 TEST_CASE("unit/crbm_mp/mnist/2", "[crbm_mp][gaussian][unit]") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 40, 24, 2,
+        dll::weight_type<double>,
         dll::batch_size<25>,
         dll::momentum,
         dll::weight_decay<>,
@@ -162,6 +164,7 @@ TEST_CASE("unit/crbm_mp/mnist/6", "[crbm_mp][lee][unit]") {
 TEST_CASE("unit/crbm_mp/mnist/7", "[crbm_mp][lee][gaussian][unit]") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 40, 20, 2,
+        dll::weight_type<double>,
         dll::batch_size<10>,
         dll::momentum,
         dll::visible<dll::unit_type::GAUSSIAN>,
