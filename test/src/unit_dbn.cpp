@@ -338,6 +338,8 @@ TEST_CASE("unit/dbn/mnist/10", "[dbn][denoising][unit]") {
 
 // Batch mode and shuffle (pretrain/finetune)
 TEST_CASE("unit/dbn/mnist/11", "[dbn][unit]") {
+    dll::reset_timers();
+
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 150, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
@@ -372,4 +374,6 @@ TEST_CASE("unit/dbn/mnist/11", "[dbn][unit]") {
     //Mostly here to ensure compilation
     auto out = dbn->prepare_one_output<etl::dyn_matrix<float, 1>>();
     REQUIRE(out.size() > 0);
+
+    dll::dump_timers();
 }
