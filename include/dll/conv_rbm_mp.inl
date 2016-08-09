@@ -42,6 +42,9 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
     static constexpr const unit_type hidden_unit  = desc::hidden_unit;
     static constexpr const unit_type pooling_unit = desc::pooling_unit;
 
+    static_assert(!(std::is_same<float, weight>::value && visible_unit == unit_type::GAUSSIAN),
+                  "Gaussian visible units should use double-precision");
+
     static constexpr const std::size_t NV1 = desc::NV1;
     static constexpr const std::size_t NV2 = desc::NV2;
     static constexpr const std::size_t NH1 = desc::NH1;
