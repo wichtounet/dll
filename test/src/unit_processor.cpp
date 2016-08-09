@@ -393,7 +393,8 @@ TEST_CASE("unit/processor/dbn/cg/1", "[unit][dense][dbn][mnist][sgd][proc]") {
 
 // Conv DBN
 
-TEST_CASE("unit/processor/cdbn/1", "[unit][dbn][mnist][conv][proc]") {
+// Disable for time reasons (unit/processor/cdbn/2 is testing more anyway)
+TEST_CASE("unit/processor/cdbn/1", "[unit_full][dbn][mnist][conv][proc]") {
     auto lines = get_result(default_options(), {"pretrain"}, "cdbn_1.conf");
     REQUIRE(!lines.empty());
 
