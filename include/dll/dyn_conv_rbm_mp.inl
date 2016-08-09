@@ -222,7 +222,7 @@ struct dyn_conv_rbm_mp final : public standard_conv_rbm<dyn_conv_rbm_mp<Desc>, D
         base_type::template compute_vcv(*this, v_a, v_cv, w);
 
         H_PROBS2(unit_type::BINARY, unit_type::BINARY, f(h_a) = etl::p_max_pool_h(b_rep + v_cv(1), p_c, p_c));
-        H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, f(h_a) = etl::p_max_pool_h((1.0 / (0.1 * 0.1), p_c, p_c) >> (b_rep + v_cv(1))));
+        H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, f(h_a) = etl::p_max_pool_h((1.0 / (0.1 * 0.1)) >> (b_rep + v_cv(1)), p_c, p_c));
         H_PROBS(unit_type::RELU, f(h_a) = f(h_a) = max(b_rep + v_cv(1), 0.0));
         H_PROBS(unit_type::RELU6, f(h_a) = f(h_a) = min(max(b_rep + v_cv(1), 0.0), 6.0));
         H_PROBS(unit_type::RELU1, f(h_a) = f(h_a) = min(max(b_rep + v_cv(1), 0.0), 1.0));
@@ -307,7 +307,7 @@ struct dyn_conv_rbm_mp final : public standard_conv_rbm<dyn_conv_rbm_mp<Desc>, D
 
         base_type::template batch_compute_vcv(*this, pool, v_a, v_cv, w, [&](std::size_t batch) {
             H_PROBS2(unit_type::BINARY, unit_type::BINARY, f(h_a)(batch) = etl::p_max_pool_h(etl::rep(b, nh1, nh2) + v_cv(batch)(1), p_c, p_c));
-            H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, f(h_a)(batch) = etl::p_max_pool_h((1.0 / (0.1 * 0.1), p_c, p_c) >> (etl::rep(b, nh1, nh2) + v_cv(batch)(1))));
+            H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, f(h_a)(batch) = etl::p_max_pool_h((1.0 / (0.1 * 0.1)) >> (etl::rep(b, nh1, nh2) + v_cv(batch)(1)), p_c, p_c));
             H_PROBS(unit_type::RELU, f(h_a)(batch) = max(etl::rep(b, nh1, nh2) + v_cv(batch)(1), 0.0));
             H_PROBS(unit_type::RELU6, f(h_a)(batch) = min(max(etl::rep(b, nh1, nh2) + v_cv(batch)(1), 0.0), 6.0));
             H_PROBS(unit_type::RELU1, f(h_a)(batch) = min(max(etl::rep(b, nh1, nh2) + v_cv(batch)(1), 0.0), 1.0));
@@ -358,7 +358,7 @@ struct dyn_conv_rbm_mp final : public standard_conv_rbm<dyn_conv_rbm_mp<Desc>, D
 
     template <typename V, typename H, cpp_enable_if(etl::is_etl_expr<V>::value)>
     weight energy(const V& v, const H& h) const {
-        etl::dyn_matrix<weight> v_cv(V_CV_CHANNELS, k, nh1, nh2); //Temporary convolution
+        etl::dyn_matrix<weight, 4> v_cv(V_CV_CHANNELS, k, nh1, nh2); //Temporary convolution
 
         if (desc::visible_unit == unit_type::BINARY && desc::hidden_unit == unit_type::BINARY) {
             //Definition according to Honglak Lee
@@ -392,6 +392,8 @@ struct dyn_conv_rbm_mp final : public standard_conv_rbm<dyn_conv_rbm_mp<Desc>, D
 
     template <typename V>
     weight free_energy_impl(const V& v) const {
+        etl::dyn_matrix<weight, 4> v_cv(V_CV_CHANNELS, k, nh1, nh2); //Temporary convolution
+
         if (desc::visible_unit == unit_type::BINARY && desc::hidden_unit == unit_type::BINARY) {
             //Definition computed from E(v,h)
 
