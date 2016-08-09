@@ -238,7 +238,8 @@ TEST_CASE("unit/processor/conv/sgd/3", "[unit][conv][dense][dbn][mnist][sgd][pro
     TEST_ERROR_BELOW(0.3);
 }
 
-TEST_CASE("unit/processor/conv/sgd/4", "[unit][conv][dense][dbn][mnist][sgd][proc]") {
+// Not include in standard unit tests (covered by unit/processor/conv/sgd/5)
+TEST_CASE("unit/processor/conv/sgd/4", "[unit_full][conv][dense][dbn][mnist][sgd][proc]") {
     auto lines = get_result(default_options(), {"train", "test"}, "conv_sgd_4.conf");
     REQUIRE(!lines.empty());
 

@@ -251,7 +251,8 @@ TEST_CASE("unit/dbn/mnist/8", "[dbn][unit]") {
 }
 
 // Pretrain in denoising mode
-TEST_CASE("unit/dbn/mnist/9", "[dbn][denoising][unit]") {
+// Not include in standard test suite (covered by unit/dbn/mnist/10)
+TEST_CASE("unit/dbn/mnist/9", "[dbn][denoising][unit_full]") {
     using dbn_t =
         dll::dbn_desc<
             dll::dbn_layers<
