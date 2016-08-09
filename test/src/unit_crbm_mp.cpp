@@ -51,14 +51,14 @@ TEST_CASE("unit/crbm_mp/mnist/2", "[crbm_mp][gaussian][unit]") {
         dll::weight_decay<>,
         dll::visible<dll::unit_type::GAUSSIAN>>::layer_t rbm;
 
-    rbm.learning_rate *= 2.0;
+    rbm.learning_rate *= 3.0;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::normalize_dataset(dataset);
 
-    auto error = rbm.train(dataset.training_images, 50);
+    auto error = rbm.train(dataset.training_images, 30);
     REQUIRE(error < 1e-1);
 }
 
@@ -177,6 +177,6 @@ TEST_CASE("unit/crbm_mp/mnist/7", "[crbm_mp][lee][gaussian][unit]") {
 
     mnist::normalize_dataset(dataset);
 
-    auto error = rbm.train(dataset.training_images, 50);
+    auto error = rbm.train(dataset.training_images, 30);
     REQUIRE(error < 9e-2);
 }
