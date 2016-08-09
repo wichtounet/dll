@@ -480,15 +480,13 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
 }
 
 template <bool Denoising, typename Trainer, typename RBM>
-void normal_compute_gradients_conv(RBM& /*rbm*/, Trainer& t, std::size_t i) {
+void normal_compute_gradients_conv(RBM& rbm, Trainer& t, std::size_t i) {
 #ifndef ETL_CUDNN_MODE
     dll::auto_timer timer("cd:normal_compute_gradients_conv");
 
     using namespace etl;
 
-    using rbm_t = RBM;
-
-    constexpr const auto NC = rbm_t::NC;
+    const auto NC = get_nc(rbm);
 
     for(std::size_t channel = 0; channel < NC; ++channel){
         if(Denoising){

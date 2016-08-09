@@ -363,7 +363,7 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
         std::cerr << "Energy is not supported in CUDNN mode" << std::endl;
         return 0.0;
 #else
-        etl::dyn_matrix<weight> v_cv(V_CV_CHANNELS, k, nh1, nh2); //Temporary convolution
+        etl::dyn_matrix<weight, 4> v_cv(V_CV_CHANNELS, k, nh1, nh2); //Temporary convolution
 
         if (desc::visible_unit == unit_type::BINARY && desc::hidden_unit == unit_type::BINARY) {
             //Definition according to Honglak Lee
