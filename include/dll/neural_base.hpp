@@ -41,7 +41,10 @@ struct neural_base {
     neural_base& operator=(neural_base&& rbm) = delete;
 
     neural_base() {
-        //Nothing to do
+#ifndef DLL_DENORMALS
+        // Disable denormals for performance reason
+        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+#endif
     }
 
     //CRTP Deduction
