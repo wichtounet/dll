@@ -68,7 +68,7 @@ TEST_CASE("unit/cdbn/lcn/mnist/2", "[cdbn][lcn][svm][unit]") {
     dbn->template layer_get<3>().initial_momentum = 0.9;
     dbn->template layer_get<3>().momentum = 0.9;
 
-    dbn->pretrain(dataset.training_images, 50);
+    dbn->pretrain(dataset.training_images, 30);
 
     auto result = dbn->svm_train(dataset.training_images, dataset.training_labels);
     REQUIRE(result);
