@@ -218,6 +218,8 @@ TEST_CASE("dyn_dense/sgd/7", "[dense][dbn][mnist][sgd]") {
     dbn->template layer_get<0>().init_layer(28 * 28, 100);
     dbn->template layer_get<1>().init_layer(100, 10);
 
+    dbn->display();
+
     auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
     std::cout << "ft_error:" << ft_error << std::endl;
 

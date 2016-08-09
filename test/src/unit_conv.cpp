@@ -183,6 +183,8 @@ TEST_CASE("unit/conv/sgd/8", "[unit][conv][dbn][mnist][sgd]") {
 
     auto dbn = std::make_unique<dbn_t>();
 
+    dbn->display();
+
     dbn->learning_rate = 0.12;
 
     FT_CHECK(25, 6e-2);
