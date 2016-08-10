@@ -236,9 +236,6 @@ struct nop : basic_conf_elt<nop_id> {};
  */
 struct batch_mode : basic_conf_elt<batch_mode_id> {};
 
-struct memory_impl : basic_conf_elt<memory_id> {};
-using memory[[deprecated("use batch_mode instead")]] = memory_impl;
-
 /*
  * !\brief Conditional shuffle (shuffle if Cond = true)
  */

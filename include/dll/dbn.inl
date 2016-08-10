@@ -298,17 +298,6 @@ public:
      *
      * \return true if the training should save memory, false otherwise.
      */
-    [[deprecated("use batch_mode instead")]] bool save_memory() const noexcept {
-        return batch_mode();
-    }
-
-    /*!
-     * \brief Indicates if training should save memory (true) or run as efficiently as possible (false).
-     *
-     * This can be configured in the dbn type or using the batch_mode_run field.
-     *
-     * \return true if the training should save memory, false otherwise.
-     */
     bool batch_mode() const noexcept {
         return dbn_traits<this_type>::batch_mode() || batch_mode_run;
     }

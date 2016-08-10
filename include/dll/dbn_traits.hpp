@@ -45,12 +45,8 @@ struct dbn_traits {
         return desc::parameters::template contains<momentum>();
     }
 
-    [[deprecated("use batch_mode instead")]] static constexpr bool save_memory() noexcept {
-        return batch_mode();
-    }
-
     static constexpr bool batch_mode() noexcept {
-        return desc::parameters::template contains<dll::batch_mode>() || desc::parameters::template contains<memory_impl>();
+        return desc::parameters::template contains<dll::batch_mode>();
     }
 
     static constexpr bool shuffle() noexcept {
