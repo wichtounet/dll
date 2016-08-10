@@ -13,7 +13,7 @@ perf.data.old
 *.svg
 
 # Ignore weights file
-*.dat
+/*.dat
 
 # Ignore Doxygen file
 html
