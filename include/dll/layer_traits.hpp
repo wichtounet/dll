@@ -21,27 +21,48 @@ namespace dll {
  */
 template <typename Layer>
 struct layer_traits {
-    using layer_t = Layer;
+    using layer_t = Layer; ///< The layer type being inspected
 
     /*!
-     * \brief Indicates if the layer is a standard layer.
+     * \brief Indicates if the layer is neural (dense or conv)
      */
-    static constexpr bool is_standard_layer() {
+    static constexpr bool is_neural_layer() {
         return is_dense_layer() || is_convolutional_layer();
     }
 
     /*!
-     * \brief Indicates if the layer is a standard dense layer.
+     * \brief Indicates if the layer is dense
      */
     static constexpr bool is_dense_layer() {
+        return is_standard_dense_layer() || is_dense_rbm_layer();
+    }
+
+    /*!
+     * \brief Indicates if the layer is convolutional
+     */
+    static constexpr bool is_convolutional_layer() {
+        return is_standard_convolutional_layer() || is_convolutional_rbm_layer();
+    }
+
+    /*!
+     * \brief Indicates if the layer is a standard (non-rbm) layer.
+     */
+    static constexpr bool is_standard_layer() {
+        return is_standard_dense_layer() || is_standard_convolutional_layer();
+    }
+
+    /*!
+     * \brief Indicates if the layer is a standard (non-rbm) dense layer.
+     */
+    static constexpr bool is_standard_dense_layer() {
         return cpp::is_specialization_of<dense_layer, layer_t>::value
             || cpp::is_specialization_of<dyn_dense_layer, layer_t>::value;
     }
 
     /*!
-     * \brief Indicates if the layer is a standard convolutionl layer.
+     * \brief Indicates if the layer is a standard (non-rbm) convolutionl layer.
      */
-    static constexpr bool is_convolutional_layer() {
+    static constexpr bool is_standard_convolutional_layer() {
         return cpp::is_specialization_of<conv_layer, layer_t>::value;
     }
 
@@ -49,13 +70,13 @@ struct layer_traits {
      * \brief Indicates if this layer is a RBM layer.
      */
     static constexpr bool is_rbm_layer() {
-        return is_standard_rbm_layer() || is_convolutional_rbm_layer();
+        return is_dense_rbm_layer() || is_convolutional_rbm_layer();
     }
 
     /*!
-     * \brief Indicates if this layer is a standard (non-convolutional) RBM layer.
+     * \brief Indicates if this layer is a dense RBM layer.
      */
-    static constexpr bool is_standard_rbm_layer() {
+    static constexpr bool is_dense_rbm_layer() {
         return cpp::is_specialization_of<dyn_rbm, layer_t>::value
             || cpp::is_specialization_of<rbm, layer_t>::value;
     }
@@ -354,16 +375,5 @@ template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
 constexpr std::size_t input_size(const RBM&) {
     return layer_traits<RBM>::input_size();
 }
-
-//TODO This should probably be moved into the traits class
-
-template <typename Layer>
-struct is_dense : cpp::bool_constant<decay_layer_traits<Layer>::is_dense_layer() || decay_layer_traits<Layer>::is_standard_rbm_layer()> {};
-
-template <typename Layer>
-struct is_conv : cpp::bool_constant<decay_layer_traits<Layer>::is_convolutional_layer() || decay_layer_traits<Layer>::is_convolutional_rbm_layer()> {};
-
-template <typename Layer>
-struct is_neural : cpp::or_c<is_dense<Layer>, is_conv<Layer>> {};
 
 } //end of dll namespace

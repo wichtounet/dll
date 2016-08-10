@@ -17,15 +17,13 @@ template <typename... Layers>
 struct is_dynamic : cpp::or_u<layer_traits<Layers>::is_dynamic()...> {};
 
 template <typename... Layers>
-struct is_convolutional : cpp::or_u<
-                          cpp::or_u<layer_traits<Layers>::is_convolutional_layer()...>::value,
-                          cpp::or_u<layer_traits<Layers>::is_convolutional_rbm_layer()...>::value> {};
+struct is_convolutional : cpp::or_u<layer_traits<Layers>::is_convolutional_layer()...> {};
 
 template <typename... Layers>
 struct is_multiplex : cpp::or_u<layer_traits<Layers>::is_multiplex_layer()...> {};
 
 template <typename... Layers>
-struct is_denoising : cpp::and_u<layer_traits<Layers>::is_standard_rbm_layer()...> {};
+struct is_denoising : cpp::and_u<layer_traits<Layers>::is_dense_rbm_layer()...> {};
 
 template <typename... Layers>
 struct has_shuffle_layer : cpp::or_u<layer_traits<Layers>::has_shuffle()...> {};

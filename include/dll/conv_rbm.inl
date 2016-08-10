@@ -5,6 +5,11 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+/*!
+ * \file
+ * \brief Implementation of a Convolutional Restricted Boltzmann Machine
+ */
+
 #pragma once
 
 #include <cstddef>

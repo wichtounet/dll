@@ -45,12 +45,12 @@ struct sgd_possible {
 };
 
 template <typename LastLayer>
-struct sgd_possible<LastLayer, std::enable_if_t<decay_layer_traits<LastLayer>::is_dense_layer()>> {
+struct sgd_possible<LastLayer, std::enable_if_t<decay_layer_traits<LastLayer>::is_standard_dense_layer()>> {
     static constexpr bool value = true;
 };
 
 template <typename LastLayer>
-struct sgd_possible<LastLayer, std::enable_if_t<decay_layer_traits<LastLayer>::is_standard_rbm_layer()>> {
+struct sgd_possible<LastLayer, std::enable_if_t<decay_layer_traits<LastLayer>::is_dense_rbm_layer()>> {
     static constexpr bool value = std::decay_t<LastLayer>::hidden_unit == unit_type::SOFTMAX;
 };
 
