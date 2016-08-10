@@ -17,9 +17,17 @@
 
 namespace dll {
 
+/*!
+ * \brief The context of a layer during SGD training
+ * \tparam DBN The containing DBN
+ * \tparam Layer The layer
+ */
 template <typename DBN, typename Layer, typename Enable = void>
 struct sgd_context;
 
+/*!
+ * \copydoc sgd_context
+ */
 template <typename DBN, typename Layer>
 struct sgd_context<DBN, Layer, std::enable_if_t<is_dense<Layer>::value && !layer_traits<Layer>::is_dynamic()>> {
     using layer_t = Layer;
@@ -43,6 +51,9 @@ struct sgd_context<DBN, Layer, std::enable_if_t<is_dense<Layer>::value && !layer
             : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
 };
 
+/*!
+ * \copydoc sgd_context
+ */
 template <typename DBN, typename Layer>
 struct sgd_context<DBN, Layer, std::enable_if_t<is_dense<Layer>::value && layer_traits<Layer>::is_dynamic()>> {
     using layer_t = Layer;
@@ -65,6 +76,9 @@ struct sgd_context<DBN, Layer, std::enable_if_t<is_dense<Layer>::value && layer_
               output(batch_size, num_hidden, 0.0), errors(batch_size, num_hidden, 0.0) {}
 };
 
+/*!
+ * \copydoc sgd_context
+ */
 template <typename DBN, typename Layer>
 struct sgd_context<DBN, Layer, std::enable_if_t<is_conv<Layer>::value>> {
     using layer_t = Layer;
@@ -96,6 +110,9 @@ struct sgd_context<DBN, Layer, std::enable_if_t<is_conv<Layer>::value>> {
             : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
 };
 
+/*!
+ * \copydoc sgd_context
+ */
 template <typename DBN, typename Layer>
 struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_pooling_layer()>> {
     using layer_t = Layer;
@@ -142,6 +159,9 @@ struct transform_output_type <DBN, Layer, std::enable_if_t<!dbn_traits<DBN>::is_
 template <typename DBN, typename Layer>
 using transform_output_type_t = typename transform_output_type<DBN, Layer>::type;
 
+/*!
+ * \copydoc sgd_context
+ */
 template <typename DBN, typename Layer>
 struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_transform_layer()>> {
     using layer_t = Layer;

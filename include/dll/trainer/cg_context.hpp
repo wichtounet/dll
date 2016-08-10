@@ -14,6 +14,10 @@
 
 namespace dll {
 
+/*!
+ * \brief The context of a RBM during CG training
+ * \tparam RBM The RBM.
+ */
 template <typename RBM>
 struct cg_context {};
 
@@ -21,6 +25,9 @@ struct cg_context {};
 template <typename Desc>
 struct rbm;
 
+/*!
+ * \copydoc cg_context
+ */
 template <typename Desc>
 struct cg_context<rbm<Desc>> {
     using rbm_t  = rbm<Desc>;
@@ -60,6 +67,9 @@ struct cg_context<rbm<Desc>> {
 template <typename Desc>
 struct dyn_rbm;
 
+/*!
+ * \copydoc cg_context
+ */
 template <typename Desc>
 struct cg_context<dyn_rbm<Desc>> {
     using rbm_t  = dyn_rbm<Desc>;
@@ -108,6 +118,9 @@ struct cg_context<dyn_rbm<Desc>> {
 template <typename Desc>
 struct binarize_layer;
 
+/*!
+ * \copydoc cg_context
+ */
 template <typename Desc>
 struct cg_context<binarize_layer<Desc>> {
     using rbm_t  = binarize_layer<Desc>;
