@@ -81,24 +81,55 @@ struct batch_mode_id;
 struct dbn_only_id;
 struct nop_id;
 
+/*!
+ * \brief Sets the minibatch size
+ * \tparam B The minibatch size
+ */
 template <std::size_t B>
 struct batch_size : value_conf_elt<batch_size_id, std::size_t, B> {};
 
+/*!
+ * \brief Sets the big batch size.
+ *
+ * This is the number of minibatch that the DBN will load at once.
+ *
+ * \tparam B The big batch size
+ */
 template <std::size_t B>
 struct big_batch_size : value_conf_elt<big_batch_size_id, std::size_t, B> {};
 
+/*!
+ * \brief Sets the visible unit type
+ * \tparam VT The visible unit type
+ */
 template <unit_type VT>
 struct visible : value_conf_elt<visible_id, unit_type, VT> {};
 
+/*!
+ * \brief Sets the hidden unit type
+ * \tparam HT The hidden unit type
+ */
 template <unit_type HT>
 struct hidden : value_conf_elt<hidden_id, unit_type, HT> {};
 
+/*!
+ * \brief Sets the pooling unit type
+ * \tparam PT The pooling unit type
+ */
 template <unit_type PT>
 struct pooling : value_conf_elt<pooling_id, unit_type, PT> {};
 
+/*!
+ * \brief Sets the activation function
+ * \tparam FT The activation function type
+ */
 template <function FT>
 struct activation : value_conf_elt<activation_id, function, FT> {};
 
+/*!
+ * \brief Enable and select weight decay
+ * \tparam T The type of weight decay
+ */
 template <decay_type T = decay_type::L2>
 struct weight_decay : value_conf_elt<weight_decay_id, decay_type, T> {};
 
@@ -123,34 +154,94 @@ struct sparsity : value_conf_elt<sparsity_id, sparsity_method, M> {};
 template <bias_mode M = bias_mode::SIMPLE>
 struct bias : value_conf_elt<bias_id, bias_mode, M> {};
 
+/*
+ * !\brief Sets the type to use to store (and compute) the weights
+ * \tparam The weight type
+ */
 template <typename T>
 struct weight_type : type_conf_elt<weight_type_id, T> {};
 
+/*
+ * !\brief sets the trainer for DBN
+ * \tparam The trainer type
+ */
 template <template <typename...> class T>
 struct trainer : template_type_conf_elt<trainer_id, T> {};
 
+/*
+ * !\brief sets the trainer for RBM
+ * \tparam The trainer type
+ */
 template <template <typename, bool> class T>
 struct trainer_rbm : template_type_tb_conf_elt<trainer_rbm_id, T> {};
 
+/*
+ * !\brief sets the watcher
+ * \tparam The watcher type
+ */
 template <template <typename...> class T>
 struct watcher : template_type_conf_elt<watcher_id, T> {};
 
+/*
+ * !\brief Enable momentum learning
+ */
 struct momentum : basic_conf_elt<momentum_id> {};
+
+/*
+ * !\brief Use parallel mode instead of batch mode
+ */
 struct parallel_mode : basic_conf_elt<parallel_mode_id> {};
+
+/*
+ * !\brief Disable threading
+ */
 struct serial : basic_conf_elt<serial_id> {};
+
+/*
+ * !\brief Make execution as verbose as possible
+ */
 struct verbose : basic_conf_elt<verbose_id> {};
 struct svm_concatenate : basic_conf_elt<svm_concatenate_id> {};
 struct svm_scale : basic_conf_elt<svm_scale_id> {};
+
+/*
+ * !\brief Initialize the weights of an RBM given the inputs
+ */
 struct init_weights : basic_conf_elt<init_weights_id> {};
+
+/*
+ * !\brief Shuffle the inputs before each epoch.
+ */
 struct shuffle : basic_conf_elt<shuffle_id> {};
+
+/*
+ * !\brief Enable free energy computation
+ */
 struct free_energy : basic_conf_elt<free_energy_id> {};
+
+/*!
+ * \brief Indicates that the layer is only made to be used in a DBN.
+ *
+ * This will disable a few fields and save some memory
+ */
 struct dbn_only : basic_conf_elt<dbn_only_id> {};
+
+/*
+ * !\brief Do nothing (for TMP)
+ */
 struct nop : basic_conf_elt<nop_id> {};
+
+/*
+ * !\brief Use batch mode in DBN (Do not process the complete dataset at once)
+ */
 struct batch_mode : basic_conf_elt<batch_mode_id> {};
 
 struct memory_impl : basic_conf_elt<memory_id> {};
 using memory[[deprecated("use batch_mode instead")]] = memory_impl;
 
+/*
+ * !\brief Conditional shuffle (shuffle if Cond = true)
+ */
 template <bool Cond>
 using shuffle_cond = std::conditional_t<Cond, shuffle, nop>;
 
