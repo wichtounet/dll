@@ -5,6 +5,11 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+/*!
+ * \file
+ * \brief Implementation of a Restricted Boltzmann Machine
+ */
+
 #pragma once
 
 #include "cpp_utils/assert.hpp"     //Assertions

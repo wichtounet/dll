@@ -5,6 +5,11 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+/*!
+ * \file
+ * \brief Implementation of a Convolutional Restricted Boltzmann Machine with Probabilistic Max Pooling
+ */
+
 #pragma once
 
 #include <cstddef>

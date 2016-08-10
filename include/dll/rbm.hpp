@@ -5,6 +5,11 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+/*!
+ * \file
+ * \brief The base include file for a Restricted Boltzmann Machine
+ */
+
 #pragma once
 
 // Include the dyn version

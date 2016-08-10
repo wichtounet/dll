@@ -108,11 +108,17 @@ inline std::string duration_str(double duration, int precision = 6) {
     }
 }
 
+/*!
+ * \brief Reset all timers
+ */
 inline void reset_timers() {
     decltype(auto) timers = get_timers();
     timers.reset();
 }
 
+/*!
+ * \brief Dump all timers values to the console.
+ */
 inline void dump_timers() {
     decltype(auto) timers = get_timers().timers;
 
