@@ -13,9 +13,6 @@
 
 namespace dll {
 
-//TODO Maybe the traits should be reworked using the same model as
-//etl
-
 /*!
  * \brief Type Traits to get information on layer type
  */
