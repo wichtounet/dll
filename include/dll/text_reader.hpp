@@ -20,6 +20,9 @@
 
 #include <dirent.h>
 
+#include "cpp_utils/tmp.hpp"
+#include "etl/etl_light.hpp"
+
 namespace dll {
 namespace text {
 
@@ -92,32 +95,34 @@ void read_labels(Container<Label>& labels, const std::string& path, std::size_t 
 
         int id = std::atoi(std::string(file_name.begin(), file_name.begin() + file_name.size() - 4).c_str());
 
-        if(!limit || id - 1 < (int) limit){
-            if((int) labels.size() < id){
-                labels.resize(id);
-            }
-
-            std::string full_path(path + "/" + file_name);
-
-            std::ifstream file(full_path);
-            int value;
-            file >> value;
-            labels[id - 1] = static_cast<Label>(value);
+        if((int) labels.size() < id){
+            labels.resize(id);
         }
+
+        std::string full_path(path + "/" + file_name);
+
+        std::ifstream file(full_path);
+        int value;
+        file >> value;
+        labels[id - 1] = static_cast<Label>(value);
+    }
+
+    if(limit && labels.size() > limit){
+        labels.resize(limit);
     }
 }
 
-template<template<typename...> class Container, typename Image, bool Three, cpp_enable_if(etl::all_fast<Image>::value)>
+template<bool Three, template<typename...> class Container, typename Image, cpp_enable_if(etl::all_fast<Image>::value)>
 void read_images_direct(Container<Image>& images, const std::string& path, std::size_t limit){
     read_images<Container, Image>(images, path, limit, [](std::size_t /*c*/, std::size_t /*h*/, std::size_t /*w*/){ return Image();});
 }
 
-template<template<typename...> class Container, typename Image, bool Three, cpp_enable_if(Three && !etl::all_fast<Image>::value)>
+template<bool Three, template<typename...> class Container, typename Image, cpp_enable_if(Three && !etl::all_fast<Image>::value)>
 void read_images_direct(Container<Image>& images, const std::string& path, std::size_t limit){
     read_images<Container, Image>(images, path, limit, [](std::size_t c, std::size_t h, std::size_t w){ return Image(c, h, w);});
 }
 
-template<template<typename...> class Container, typename Image, bool Three, cpp_enable_if(!Three && !etl::all_fast<Image>::value)>
+template<bool Three, template<typename...> class Container, typename Image, cpp_enable_if(!Three && !etl::all_fast<Image>::value)>
 void read_images_direct(Container<Image>& images, const std::string& path, std::size_t limit){
     read_images<Container, Image>(images, path, limit, [](std::size_t c, std::size_t h, std::size_t w){ return Image(c * h * w);});
 }
@@ -125,7 +130,7 @@ void read_images_direct(Container<Image>& images, const std::string& path, std::
 template<template<typename...> class Container, typename Image, bool Three>
 Container<Image> read_images(const std::string& path, std::size_t limit){
     Container<Image> images;
-    read_images_direct<Container, Image, Three>(images, path, limit);
+    read_images_direct<Three>(images, path, limit);
     return images;
 }
 
