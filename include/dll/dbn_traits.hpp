@@ -41,26 +41,44 @@ struct dbn_traits {
         return desc::layers::is_dynamic;
     }
 
+    /*!
+     * \brief Indicates if the DBN uses momentum training
+     */
     static constexpr bool has_momentum() noexcept {
         return desc::parameters::template contains<momentum>();
     }
 
+    /*!
+     * \brief Indicates if the DBN runs in batch mode
+     */
     static constexpr bool batch_mode() noexcept {
         return desc::parameters::template contains<dll::batch_mode>();
     }
 
+    /*!
+     * \brief Indicates if the DBN shuffles the inputs
+     */
     static constexpr bool shuffle() noexcept {
         return desc::parameters::template contains<dll::shuffle>();
     }
 
+    /*!
+     * \brief Indicates if the DBN features are concatenated from all levels
+     */
     static constexpr bool concatenate() noexcept {
         return desc::parameters::template contains<svm_concatenate>();
     }
 
+    /*!
+     * \brief Indicates if the DBN cannot use threading
+     */
     static constexpr bool is_serial() noexcept {
         return desc::parameters::template contains<serial>();
     }
 
+    /*!
+     * \brief Indicates if the DBN is verbose
+     */
     static constexpr bool is_verbose() noexcept {
         return desc::parameters::template contains<verbose>();
     }
@@ -73,6 +91,9 @@ struct dbn_traits {
         return detail::get_value_l<dll::lr_driver<lr_driver_type::FIXED>, typename desc::parameters>::value;
     }
 
+    /*!
+     * \brief Returns the type of weight decay used during training
+     */
     static constexpr decay_type decay() noexcept {
         return detail::get_value_l<weight_decay<decay_type::NONE>, typename desc::parameters>::value;
     }
