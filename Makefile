@@ -54,29 +54,6 @@ endif
 endif
 endif
 
-# Activate BLAS mode on demand
-ifneq (,$(ETL_MKL))
-CXX_FLAGS += -DETL_MKL_MODE $(shell pkg-config --cflags $(DLL_BLAS_PKG))
-LD_FLAGS += $(shell pkg-config --libs $(DLL_BLAS_PKG))
-
-# Disable warning for MKL
-ifneq (,$(findstring clang,$(CXX)))
-CXX_FLAGS += -Wno-tautological-compare
-endif
-
-else
-ifneq (,$(ETL_BLAS))
-CXX_FLAGS += -DETL_BLAS_MODE $(shell pkg-config --cflags cblas)
-LD_FLAGS += $(shell pkg-config --libs cblas)
-
-# Disable warning for MKL
-ifneq (,$(findstring clang,$(CXX)))
-CXX_FLAGS += -Wno-tautological-compare
-endif
-
-endif
-endif
-
 # On demand activation of cublas support
 ifneq (,$(ETL_CUBLAS))
 CXX_FLAGS += -DETL_CUBLAS_MODE $(shell pkg-config --cflags cublas)
