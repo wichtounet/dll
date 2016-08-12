@@ -51,6 +51,11 @@ struct dyn_conv_rbm_mp final : public standard_conv_rbm<dyn_conv_rbm_mp<Desc>, D
     using b_type = etl::dyn_vector<weight>;
     using c_type = etl::dyn_vector<weight>;
 
+    using input_t      = typename rbm_base_traits<this_type>::input_t;
+    using output_t     = typename rbm_base_traits<this_type>::output_t;
+    using input_one_t  = typename rbm_base_traits<this_type>::input_one_t;
+    using output_one_t = typename rbm_base_traits<this_type>::output_one_t;
+
     w_type w; //!< shared weights
     b_type b; //!< hidden biases bk
     c_type c; //!< visible single bias c
@@ -103,6 +108,10 @@ struct dyn_conv_rbm_mp final : public standard_conv_rbm<dyn_conv_rbm_mp<Desc>, D
 
     dyn_conv_rbm_mp() : base_type(), pool(etl::threads) {
         // Nothing else to init
+    }
+
+    void prepare_input(input_one_t& input) const {
+        input = input_one_t(nc, nv1, nv2);
     }
 
     void init_layer(size_t nc, size_t nv1, size_t nv2, size_t k, size_t nh1, size_t nh2, size_t p_c){
@@ -428,12 +437,6 @@ struct dyn_conv_rbm_mp final : public standard_conv_rbm<dyn_conv_rbm_mp<Desc>, D
 
     //Utilities for DBNs
 
-    //TODO These should really all be renamed...
-    using input_one_t   = etl::dyn_matrix<weight, 3>;
-    using output_one_t  = etl::dyn_matrix<weight, 3>;
-    using input_t       = std::vector<input_one_t>;
-    using output_t      = std::vector<output_one_t>;
-
     template <typename Input>
     output_t prepare_output(std::size_t samples) const {
         output_t output;
@@ -464,6 +467,21 @@ struct dyn_conv_rbm_mp final : public standard_conv_rbm<dyn_conv_rbm_mp<Desc>, D
             activate_one(input[i], h_a[i]);
         }
     }
+};
+
+/*!
+ * \brief Simple traits to pass information around from the real
+ * class to the CRTP class.
+ */
+template <typename Desc>
+struct rbm_base_traits<dyn_conv_rbm_mp<Desc>> {
+    using desc      = Desc;
+    using weight    = typename desc::weight;
+
+    using input_one_t   = etl::dyn_matrix<weight, 3>;
+    using output_one_t  = etl::dyn_matrix<weight, 3>;
+    using input_t       = std::vector<input_one_t>;
+    using output_t      = std::vector<output_one_t>;
 };
 
 } //end of dll namespace

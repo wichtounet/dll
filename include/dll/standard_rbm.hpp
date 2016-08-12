@@ -19,11 +19,12 @@
 
 #include "etl/etl.hpp"
 
-#include "util/checks.hpp" //NaN checks
-#include "util/timers.hpp" //auto_timer
-#include "rbm_base.hpp"    //The base class
-#include "base_conf.hpp"   //Descriptor configuration
-#include "rbm_tmp.hpp"     // static_if macros
+#include "util/checks.hpp"    //NaN checks
+#include "util/timers.hpp"    //auto_timer
+#include "util/converter.hpp" //converter
+#include "rbm_base.hpp"       //The base class
+#include "base_conf.hpp"      //Descriptor configuration
+#include "rbm_tmp.hpp"        // static_if macros
 
 namespace dll {
 
@@ -41,11 +42,10 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
     using base_type = rbm_base<parent_t, desc>;
     using weight    = typename desc::weight;
 
-    //These should probably be specialized in the parent
-    using input_one_t  = etl::dyn_vector<weight>;
-    using output_one_t = etl::dyn_vector<weight>;
-    using input_t      = std::vector<input_one_t>;
-    using output_t     = std::vector<output_one_t>;
+    using input_one_t  = typename rbm_base_traits<parent_t>::input_one_t;
+    using output_one_t = typename rbm_base_traits<parent_t>::output_one_t;
+    using input_t      = typename rbm_base_traits<parent_t>::input_t;
+    using output_t     = typename rbm_base_traits<parent_t>::output_t;
 
     static constexpr const unit_type visible_unit = desc::visible_unit;
     static constexpr const unit_type hidden_unit  = desc::hidden_unit;
@@ -71,18 +71,24 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
 
     //Energy functions
 
-    template <typename V, typename H>
-    weight energy(const V& v, const H& h) const {
-        return free_energy(as_derived(), v, h);
+    weight energy(const input_one_t& v, const output_one_t& h) const {
+        return energy(as_derived(), v, h);
+    }
+
+    template<typename Input>
+    weight energy(const Input& v, const output_one_t& h) const {
+        decltype(auto) converted = converter_one<Input, input_one_t>::convert(as_derived(), v);
+        return energy(as_derived(), converted, h);
     }
 
     weight free_energy(const input_one_t& v) const {
         return free_energy(as_derived(), v);
     }
 
-    template <typename T, cpp_enable_if((etl::decay_traits<T>::dimensions() != 1))>
-    weight free_energy(const T& v) const {
-        return free_energy(as_derived(), etl::reshape(v, as_derived().input_size()));
+    template<typename Input>
+    weight free_energy(const Input& v) const {
+        decltype(auto) converted = converter_one<Input, input_one_t>::convert(as_derived(), v);
+        return free_energy(as_derived(), converted);
     }
 
     weight free_energy() const {
@@ -103,6 +109,12 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
 
     double reconstruction_error(const input_one_t& item) {
         return reconstruction_error(item, as_derived());
+    }
+
+    template<typename Input>
+    double reconstruction_error(const Input& item) {
+        decltype(auto) converted_item = converter_one<Input, input_one_t>::convert(as_derived(), item);
+        return reconstruction_error(converted_item, as_derived());
     }
 
     //Display functions
@@ -229,7 +241,7 @@ protected:
     //Note: Considering that energy and free energy are not critical, their implementations
     //are not highly optimized.
 
-    template <typename V, typename H, cpp_enable_if(etl::is_etl_expr<V>::value)>
+    template <typename V, typename H>
     static weight energy(const parent_t& rbm, const V& v, const H& h) {
         if (visible_unit == unit_type::BINARY && hidden_unit == unit_type::BINARY) {
             //Definition according to G. Hinton
@@ -248,13 +260,6 @@ protected:
         } else {
             return 0.0;
         }
-    }
-
-    template <typename V, typename H, cpp_disable_if(etl::is_etl_expr<V>::value)>
-    static weight energy(const parent_t& rbm, const V& v, const H& h) {
-        etl::dyn_vector<typename V::value_type> ev(v);
-        etl::dyn_vector<typename H::value_type> eh(h);
-        return energy(rbm, ev, eh);
     }
 
     //Free energy are computed from the E(v,h) formulas

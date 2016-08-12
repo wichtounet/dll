@@ -72,6 +72,11 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     using b_type = etl::fast_vector<weight, K>;
     using c_type = etl::fast_vector<weight, NC>;
 
+    using input_t      = typename rbm_base_traits<this_type>::input_t;
+    using output_t     = typename rbm_base_traits<this_type>::output_t;
+    using input_one_t  = typename rbm_base_traits<this_type>::input_one_t;
+    using output_one_t = typename rbm_base_traits<this_type>::output_one_t;
+
     w_type w; //!< shared weights
     b_type b; //!< hidden biases bk
     c_type c; //!< visible single bias c
@@ -441,12 +446,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
     //Utilities for DBNs
 
-    //TODO These should really all be renamed...
-    using input_one_t   = etl::fast_dyn_matrix<weight, NC, NV1, NV2>;
-    using output_one_t  = etl::fast_dyn_matrix<weight, K, NH1, NH2>;
-    using input_t       = std::vector<input_one_t>;
-    using output_t      = std::vector<output_one_t>;
-
     template <typename Input>
     static output_t prepare_output(std::size_t samples) {
         return output_t{samples};
@@ -517,6 +516,21 @@ private:
         static_assert(etl::decay_traits<H2>::template dim<1 + Off>() == NH1, "Invalid output dimensions");
         static_assert(etl::decay_traits<H2>::template dim<2 + Off>() == NH2, "Invalid output dimensions");
     }
+};
+
+/*!
+ * \brief Simple traits to pass information around from the real
+ * class to the CRTP class.
+ */
+template <typename Desc>
+struct rbm_base_traits<conv_rbm<Desc>> {
+    using desc      = Desc;
+    using weight    = typename desc::weight;
+
+    using input_one_t   = etl::fast_dyn_matrix<weight, desc::NC, desc::NV1, desc::NV2>;
+    using output_one_t  = etl::fast_dyn_matrix<weight, desc::K, desc::NH1, desc::NH2>;
+    using input_t       = std::vector<input_one_t>;
+    using output_t      = std::vector<output_one_t>;
 };
 
 //Allow odr-use of the constexpr static members

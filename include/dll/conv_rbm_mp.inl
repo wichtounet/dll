@@ -69,6 +69,11 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
     using b_type = etl::fast_vector<weight, K>;
     using c_type = etl::fast_vector<weight, NC>;
 
+    using input_t      = typename rbm_base_traits<this_type>::input_t;
+    using output_t     = typename rbm_base_traits<this_type>::output_t;
+    using input_one_t  = typename rbm_base_traits<this_type>::input_one_t;
+    using output_one_t = typename rbm_base_traits<this_type>::output_one_t;
+
     w_type w; //!< shared weights
     b_type b; //!< hidden biases bk
     c_type c; //!< visible single bias c
@@ -369,11 +374,6 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
     //Utilities for DBNs
 
-    using input_one_t   = etl::fast_dyn_matrix<weight, NC, NV1, NV2>;
-    using output_one_t  = etl::fast_dyn_matrix<weight, K, NP1, NP2>;
-    using input_t       = std::vector<input_one_t>;
-    using output_t      = std::vector<output_one_t>;
-
     template <std::size_t B>
     using input_batch_t = etl::fast_dyn_matrix<weight, B, NC, NV1, NV2>;
 
@@ -415,6 +415,21 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
     auto prepare_output_batch(){
         return etl::fast_dyn_matrix<weight, B, K, NP1, NP2>();
     }
+};
+
+/*!
+ * \brief Simple traits to pass information around from the real
+ * class to the CRTP class.
+ */
+template <typename Desc>
+struct rbm_base_traits<conv_rbm_mp<Desc>> {
+    using desc      = Desc;
+    using weight    = typename desc::weight;
+
+    using input_one_t   = etl::fast_dyn_matrix<weight, desc::NC, desc::NV1, desc::NV2>;
+    using output_one_t  = etl::fast_dyn_matrix<weight, desc::K, desc::NH1 / desc::C, desc::NH2 / desc::C>;
+    using input_t       = std::vector<input_one_t>;
+    using output_t      = std::vector<output_one_t>;
 };
 
 //Allow odr-use of the constexpr static members

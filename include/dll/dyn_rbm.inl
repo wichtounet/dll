@@ -240,4 +240,19 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
     }
 };
 
+/*!
+ * \brief Simple traits to pass information around from the real
+ * class to the CRTP class.
+ */
+template <typename Desc>
+struct rbm_base_traits<dyn_rbm<Desc>> {
+    using desc      = Desc;
+    using weight    = typename desc::weight;
+
+    using input_one_t  = etl::dyn_vector<weight>;
+    using output_one_t = etl::dyn_vector<weight>;
+    using input_t      = std::vector<input_one_t>;
+    using output_t     = std::vector<output_one_t>;
+};
+
 } //end of dll namespace

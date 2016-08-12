@@ -126,6 +126,9 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
         c = *bak_c;
     }
 
+    // Make base class them participate in overload resolution
+    using base_type::activate_hidden;
+
     template <bool P = true, bool S = true, typename H1, typename H2, typename V>
     void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s) const {
         etl::fast_dyn_matrix<weight, num_hidden> t;
@@ -217,6 +220,21 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
     auto prepare_output_batch(){
         return etl::fast_dyn_matrix<weight, B, num_hidden>();
     }
+};
+
+/*!
+ * \brief Simple traits to pass information around from the real
+ * class to the CRTP class.
+ */
+template <typename Desc>
+struct rbm_base_traits<rbm<Desc>> {
+    using desc      = Desc;
+    using weight    = typename desc::weight;
+
+    using input_one_t  = etl::dyn_vector<weight>;
+    using output_one_t = etl::dyn_vector<weight>;
+    using input_t      = std::vector<input_one_t>;
+    using output_t     = std::vector<output_one_t>;
 };
 
 //Allow odr-use of the constexpr static members
