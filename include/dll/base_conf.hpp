@@ -71,6 +71,7 @@ struct parallel_mode_id;
 struct serial_id;
 struct verbose_id;
 struct shuffle_id;
+struct shuffle_pre_id;
 struct svm_concatenate_id;
 struct svm_scale_id;
 struct init_weights_id;
@@ -213,6 +214,12 @@ struct init_weights : basic_conf_elt<init_weights_id> {};
  * !\brief Shuffle the inputs before each epoch.
  */
 struct shuffle : basic_conf_elt<shuffle_id> {};
+
+/*
+ * !\brief dbn: Shuffle the inputs before each pretraining epoch.
+ * This implies that the inputs will be copied in memory!
+ */
+struct shuffle_pre : basic_conf_elt<shuffle_pre_id> {};
 
 /*
  * !\brief Enable free energy computation

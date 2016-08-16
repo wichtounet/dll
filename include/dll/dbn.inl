@@ -40,8 +40,10 @@ struct dbn final {
 
     using layers_t = typename desc::layers; ///< The layers container type
 
-    static_assert(!(dbn_traits<this_type>::batch_mode() && layers_t::has_shuffle_layer), "batch_mode dbn does not support shuffle in layers");
-    static_assert(!dbn_traits<this_type>::shuffle() || dbn_traits<this_type>::batch_mode(), "shufle is only compatible with batch mode, for normal mode, use shuffle in layers");
+    static_assert(!(dbn_traits<this_type>::batch_mode() && layers_t::has_shuffle_layer),
+        "batch_mode dbn does not support shuffle in layers");
+    static_assert(!dbn_traits<this_type>::shuffle_pretrain() || dbn_traits<this_type>::batch_mode(),
+        "shuffle_pre is only compatible with batch mode, for normal mode, use shuffle in layers");
 
     template <std::size_t N>
     using layer_type = detail::layer_type_t<N, layers_t>; ///< The type of the layer at index Nth
@@ -990,13 +992,13 @@ private:
     template <std::size_t I>
     struct batch_layer_ignore<I, std::enable_if_t<(I < layers)>> : cpp::or_u<layer_traits<layer_type<I>>::is_pooling_layer(), layer_traits<layer_type<I>>::is_transform_layer(), layer_traits<layer_type<I>>::is_standard_layer(), !layer_traits<layer_type<I>>::pretrain_last()> {};
 
-    template <bool Bypass, typename Iterator, typename Container, typename T = this_type, cpp_enable_if(Bypass && dbn_traits<T>::shuffle())>
+    template <bool Bypass, typename Iterator, typename Container, typename T = this_type, cpp_enable_if(Bypass && dbn_traits<T>::shuffle_pretrain())>
     auto prepare_it(Iterator it, Iterator end, Container& container){
         std::copy(it, end, std::back_inserter(container));
         return std::make_tuple(container.begin(), container.end());
     }
 
-    template <bool Bypass, typename Iterator, typename Container, typename T = this_type, cpp_disable_if(Bypass && dbn_traits<T>::shuffle())>
+    template <bool Bypass, typename Iterator, typename Container, typename T = this_type, cpp_disable_if(Bypass && dbn_traits<T>::shuffle_pretrain())>
     auto prepare_it(Iterator it, Iterator end, Container& container){
         cpp_unused(container);
         return std::make_tuple(it, end);
