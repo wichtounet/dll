@@ -129,7 +129,7 @@ struct dbn_trainer {
                     static std::random_device rd;
                     static std::mt19937_64 g(rd());
 
-                    std::shuffle(data.begin(), data.end(), g);
+                    cpp::parallel_shuffle(data.begin(), data.end(), fake_labels.begin(), fake_labels.end(), g);
                 }
 
                 //Train one mini-batch at a time
