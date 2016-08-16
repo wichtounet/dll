@@ -123,6 +123,14 @@ struct dbn_trainer {
 
             //Train for max_epochs epoch
             for (std::size_t epoch = 0; epoch < max_epochs; ++epoch) {
+                // Shuffle before the epoch if necessary
+                if(dbn_traits<dbn_t>::shuffle()){
+                    static std::random_device rd;
+                    static std::mt19937_64 g(rd());
+
+                    std::shuffle(data.begin(), data.end(), g);
+                }
+
                 //Train one mini-batch at a time
                 for (std::size_t i = 0; i < batches; ++i) {
                     auto start = i * batch_size;

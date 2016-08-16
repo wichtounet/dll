@@ -56,8 +56,16 @@ struct dbn_traits {
     }
 
     /*!
+     * \brief Indicates if the DBN shuffles the inputs before each
+     * fine-tuning epoch.
+     */
+    static constexpr bool shuffle() noexcept {
+        return desc::parameters::template contains<dll::shuffle>();
+    }
+
+    /*!
      * \brief Indicates if the DBN shuffles the inputs before
-     * pretrainin in batch mode.
+     * each pretraining epoch in batch mode.
      */
     static constexpr bool shuffle_pretrain() noexcept {
         return desc::parameters::template contains<dll::shuffle_pre>();
