@@ -41,6 +41,7 @@ struct watcher_type<RBM, RW, std::enable_if_t<cpp::not_u<std::is_void<RW>::value
 template <typename RBM, bool EnableWatcher, typename RW, bool Denoising>
 struct rbm_trainer {
     using rbm_t = RBM;
+    using error_type = typename rbm_t::weight;
 
     template <typename R>
     using trainer_t = typename rbm_t::desc::template trainer_t<R, Denoising>;
@@ -114,7 +115,7 @@ struct rbm_trainer {
 
     std::size_t batch_size            = 0;
     std::size_t total_batches         = 0;
-    typename rbm_t::weight last_error = 0.0;
+    error_type last_error = 0.0;
 
     //Note: input_first/input_last only relevant for its size, not
     //values since they can point to the input of the first level
@@ -152,7 +153,7 @@ struct rbm_trainer {
     }
 
     template <typename Iterator>
-    typename rbm_t::weight train(RBM& rbm, Iterator first, Iterator last, std::size_t max_epochs) {
+    error_type train(RBM& rbm, Iterator first, Iterator last, std::size_t max_epochs) {
         return train(rbm, first, last, first, last, max_epochs);
     }
 
@@ -161,7 +162,7 @@ struct rbm_trainer {
         return std::make_unique<trainer_t<rbm_t>>(rbm);
     }
 
-    typename rbm_t::weight finalize_training(RBM& rbm) {
+    error_type finalize_training(RBM& rbm) {
         if (EnableWatcher) {
             watcher.training_end(rbm);
         }
@@ -170,7 +171,7 @@ struct rbm_trainer {
     }
 
     template <typename IIterator, typename EIterator>
-    typename rbm_t::weight train(RBM& rbm, IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast, std::size_t max_epochs) {
+    error_type train(RBM& rbm, IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast, std::size_t max_epochs) {
         dll::auto_timer timer("rbm_trainer:train");
 
         //In case of shuffle, we don't want to shuffle the input, therefore create a copy and shuffle it

@@ -48,6 +48,7 @@ range<Iterator> make_range(Iterator first, Iterator last) {
 template <typename DBN>
 struct dbn_trainer {
     using dbn_t = DBN;
+    using error_type = typename dbn_t::weight;
 
     template <typename R>
     using trainer_t = typename dbn_t::desc::template trainer_t<R>;
@@ -56,7 +57,7 @@ struct dbn_trainer {
     using watcher_t = typename dbn_t::desc::template watcher_t<R>;
 
     template <typename Iterator, typename LIterator>
-    typename dbn_t::weight train(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator llast, std::size_t max_epochs) const {
+    error_type train(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator llast, std::size_t max_epochs) const {
         auto error_function = [&dbn, first, last, lfirst, llast]() {
             return test_set(dbn, first, last, lfirst, llast,
                             [](dbn_t& dbn, auto& image) { return dbn.predict(image); });
@@ -70,7 +71,7 @@ struct dbn_trainer {
     }
 
     template <typename Iterator>
-    typename dbn_t::weight train_ae(DBN& dbn, Iterator first, Iterator last, std::size_t max_epochs) const {
+    error_type train_ae(DBN& dbn, Iterator first, Iterator last, std::size_t max_epochs) const {
         auto error_function = [&dbn, first, last]() {
             return test_set_ae(dbn, first, last);
         };
@@ -83,7 +84,7 @@ struct dbn_trainer {
     }
 
     template <typename Iterator, typename LIterator, typename Error, typename LabelTransformer>
-    typename dbn_t::weight train_impl(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator llast, std::size_t max_epochs, Error error_function, LabelTransformer label_transformer) const {
+    error_type train_impl(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator llast, std::size_t max_epochs, Error error_function, LabelTransformer label_transformer) const {
         constexpr const auto batch_size     = std::decay_t<DBN>::batch_size;
         constexpr const auto big_batch_size = std::decay_t<DBN>::big_batch_size;
 
@@ -104,7 +105,7 @@ struct dbn_trainer {
         //Initialize the trainer if necessary
         trainer->init_training(batch_size);
 
-        typename dbn_t::weight error = 0.0;
+        error_type error = 0.0;
 
         if (!dbn.batch_mode()) {
             //Convert labels to an useful form
