@@ -172,3 +172,87 @@ TEST_CASE("rbm/types/6", "[types]") {
     REQUIRE(rbm.energy(sample, a) > 0.0);
     REQUIRE(rbm.energy(sample, b) > 0.0);
 }
+
+// fast_rbm<float> <- etl::dyn_matrix<float, 1>
+TEST_CASE("rbm/types/7", "[types]") {
+    rbm_float rbm;
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(100);
+    mnist::binarize_dataset(dataset);
+
+    auto& sample = dataset.training_images[1];
+
+    REQUIRE(rbm.train(dataset.training_images, 20) < 0.1);
+    REQUIRE(rbm.reconstruction_error(sample) < 0.1);
+    REQUIRE(rbm.train_denoising(dataset.training_images, dataset.training_images, 20) < 1.0);
+
+    auto a = rbm.activate_hidden(sample);
+    auto b = rbm.features(sample);
+
+    REQUIRE(rbm.free_energy(sample) < 0.0);
+    REQUIRE(rbm.energy(sample, a) > 0.0);
+    REQUIRE(rbm.energy(sample, b) > 0.0);
+}
+
+// fast_rbm<float> <- etl::fast_dyn_matrix<float, 1>
+TEST_CASE("rbm/types/8", "[types]") {
+    rbm_float rbm;
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(100);
+    mnist::binarize_dataset(dataset);
+
+    auto& sample = dataset.training_images[1];
+
+    REQUIRE(rbm.train(dataset.training_images, 20) < 0.1);
+    REQUIRE(rbm.reconstruction_error(sample) < 0.1);
+    REQUIRE(rbm.train_denoising(dataset.training_images, dataset.training_images, 20) < 1.0);
+
+    auto a = rbm.activate_hidden(sample);
+    auto b = rbm.features(sample);
+
+    REQUIRE(rbm.free_energy(sample) < 0.0);
+    REQUIRE(rbm.energy(sample, a) > 0.0);
+    REQUIRE(rbm.energy(sample, b) > 0.0);
+}
+
+// fast_rbm<float> <- etl::dyn_matrix<double, 1>
+TEST_CASE("rbm/types/9", "[types]") {
+    rbm_float rbm;
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<double, 1>>(100);
+    mnist::binarize_dataset(dataset);
+
+    auto& sample = dataset.training_images[1];
+
+    REQUIRE(rbm.train(dataset.training_images, 20) < 0.1);
+    REQUIRE(rbm.reconstruction_error(sample) < 0.1);
+    REQUIRE(rbm.train_denoising(dataset.training_images, dataset.training_images, 20) < 1.0);
+
+    auto a = rbm.activate_hidden(sample);
+    auto b = rbm.features(sample);
+
+    REQUIRE(rbm.free_energy(sample) < 0.0);
+    REQUIRE(rbm.energy(sample, a) > 0.0);
+    REQUIRE(rbm.energy(sample, b) > 0.0);
+}
+
+// fast_rbm<float> <- etl::fast_dyn_matrix<double, 1>
+TEST_CASE("rbm/types/10", "[types]") {
+    rbm_float rbm;
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 28 * 28>>(100);
+    mnist::binarize_dataset(dataset);
+
+    auto& sample = dataset.training_images[1];
+
+    REQUIRE(rbm.train(dataset.training_images, 20) < 0.1);
+    REQUIRE(rbm.reconstruction_error(sample) < 0.1);
+    REQUIRE(rbm.train_denoising(dataset.training_images, dataset.training_images, 20) < 1.0);
+
+    auto a = rbm.activate_hidden(sample);
+    auto b = rbm.features(sample);
+
+    REQUIRE(rbm.free_energy(sample) < 0.0);
+    REQUIRE(rbm.energy(sample, a) > 0.0);
+    REQUIRE(rbm.energy(sample, b) > 0.0);
+}
