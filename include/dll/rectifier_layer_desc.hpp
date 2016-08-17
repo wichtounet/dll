@@ -9,14 +9,16 @@
 
 namespace dll {
 
+/*!
+ * \brief Descriptor for a rectifier layer (abs)
+ */
 template <rectifier_method M = rectifier_method::ABS>
 struct rectifier_layer_desc {
-    static constexpr const rectifier_method method = M;
+    static constexpr const rectifier_method method = M; ///< The rectifier method to use
 
-    using parameters = cpp::type_list<>;
+    using parameters = cpp::type_list<>; ///< The parameters of the layer
 
-    /*! The layer type */
-    using layer_t = rectifier_layer<rectifier_layer_desc<M>>;
+    using layer_t = rectifier_layer<rectifier_layer_desc<M>>; ///< The constructed layer type
 };
 
 } //end of dll namespace
