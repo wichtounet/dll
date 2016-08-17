@@ -11,6 +11,9 @@
 
 namespace dll_test {
 
+/*!
+ * \brief Scale all values of a MNIST dataset into [0,1]
+ */
 template <typename Dataset>
 void mnist_scale(Dataset& dataset) {
     for (auto& image : dataset.training_images) {
