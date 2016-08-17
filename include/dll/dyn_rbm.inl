@@ -195,7 +195,7 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         cpp_assert(etl::size(h_s) == num_hidden, "Invalid h_s size");
         cpp_assert(etl::size(v_a) == num_visible, "Invalid v_a size");
         cpp_assert(etl::size(v_s) == num_visible, "Invalid v_s size");
-        cpp_assert(etl::size(t) == num_hidden, "Invalid t size");
+        cpp_assert(etl::size(t) == num_visible, "Invalid t size");
 
         base_type::template std_activate_visible(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), c, w, std::forward<T>(t));
     }
