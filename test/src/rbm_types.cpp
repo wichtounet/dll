@@ -21,27 +21,60 @@
 #include "cpp_utils/data.hpp"
 
 #include "dll/rbm.hpp"
+#include "dll/dyn_rbm.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
 namespace {
 
-using rbm_float = dll::rbm_desc<
-        28 * 28, 100,
-        dll::weight_type<float>,
-        dll::batch_size<25>>::layer_t;
+struct rbm_double {
+    using rbm_t = dll::rbm_desc<
+            28 * 28, 100,
+            dll::weight_type<double>,
+            dll::batch_size<25>>::layer_t;
 
-using rbm_double = dll::rbm_desc<
-        28 * 28, 100,
-        dll::weight_type<double>,
-        dll::batch_size<25>>::layer_t;
+    static void init(rbm_t&){}
+};
+
+struct rbm_float {
+    using rbm_t = dll::rbm_desc<
+            28 * 28, 100,
+            dll::weight_type<float>,
+            dll::batch_size<25>>::layer_t;
+
+    static void init(rbm_t&){}
+};
+
+struct dyn_rbm_float {
+    using rbm_t = dll::dyn_rbm_desc<
+            dll::weight_type<float>
+            >::layer_t;
+
+    static void init(rbm_t& rbm){
+        rbm.init_layer(28 * 28, 100);
+        rbm.batch_size = 25;
+    }
+};
+
+struct dyn_rbm_double {
+    using rbm_t = dll::dyn_rbm_desc<
+            dll::weight_type<double>
+            >::layer_t;
+
+    static void init(rbm_t& rbm){
+        rbm.init_layer(28 * 28, 100);
+        rbm.batch_size = 25;
+    }
+};
 
 } // end of anonymous namespace
 
 // fast_rbm<float> <- std::vector<float>
-TEMPLATE_TEST_CASE_2("rbm/types/1", "[types]", RBM, rbm_float, rbm_double) {
-    RBM rbm;
+TEMPLATE_TEST_CASE_4("rbm/types/1", "[types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
+    typename RBM::rbm_t rbm;
+
+    RBM::init(rbm);
 
     auto dataset = mnist::read_dataset_direct<std::vector, std::vector<float>>(100);
     mnist::binarize_dataset(dataset);
@@ -61,8 +94,10 @@ TEMPLATE_TEST_CASE_2("rbm/types/1", "[types]", RBM, rbm_float, rbm_double) {
 }
 
 // fast_rbm<float> <- std::list<float>
-TEMPLATE_TEST_CASE_2("rbm/types/2", "[types]", RBM, rbm_float, rbm_double) {
-    RBM rbm;
+TEMPLATE_TEST_CASE_4("rbm/types/2", "[types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
+    typename RBM::rbm_t rbm;
+
+    RBM::init(rbm);
 
     auto dataset = mnist::read_dataset_direct<std::vector, std::vector<float>>(100);
     mnist::binarize_dataset(dataset);
@@ -89,8 +124,10 @@ TEMPLATE_TEST_CASE_2("rbm/types/2", "[types]", RBM, rbm_float, rbm_double) {
 }
 
 // fast_rbm<float> <- std::deque<float>
-TEMPLATE_TEST_CASE_2("rbm/types/3", "[types]", RBM, rbm_float, rbm_double) {
-    RBM rbm;
+TEMPLATE_TEST_CASE_4("rbm/types/3", "[types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
+    typename RBM::rbm_t rbm;
+
+    RBM::init(rbm);
 
     auto dataset = mnist::read_dataset_direct<std::vector, std::deque<float>>(100);
     mnist::binarize_dataset(dataset);
@@ -110,8 +147,10 @@ TEMPLATE_TEST_CASE_2("rbm/types/3", "[types]", RBM, rbm_float, rbm_double) {
 }
 
 // fast_rbm<float> <- std::vector<double>
-TEMPLATE_TEST_CASE_2("rbm/types/4", "[types]", RBM, rbm_float, rbm_double) {
-    RBM rbm;
+TEMPLATE_TEST_CASE_4("rbm/types/4", "[types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
+    typename RBM::rbm_t rbm;
+
+    RBM::init(rbm);
 
     auto dataset = mnist::read_dataset_direct<std::vector, std::vector<double>>(100);
     mnist::binarize_dataset(dataset);
@@ -131,8 +170,10 @@ TEMPLATE_TEST_CASE_2("rbm/types/4", "[types]", RBM, rbm_float, rbm_double) {
 }
 
 // fast_rbm<float> <- std::list<double>
-TEMPLATE_TEST_CASE_2("rbm/types/5", "[types]", RBM, rbm_float, rbm_double) {
-    RBM rbm;
+TEMPLATE_TEST_CASE_4("rbm/types/5", "[types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
+    typename RBM::rbm_t rbm;
+
+    RBM::init(rbm);
 
     auto dataset = mnist::read_dataset_direct<std::vector, std::vector<double>>(100);
     mnist::binarize_dataset(dataset);
@@ -159,8 +200,10 @@ TEMPLATE_TEST_CASE_2("rbm/types/5", "[types]", RBM, rbm_float, rbm_double) {
 }
 
 // fast_rbm<float> <- std::deque<double>
-TEMPLATE_TEST_CASE_2("rbm/types/6", "[types]", RBM, rbm_float, rbm_double) {
-    RBM rbm;
+TEMPLATE_TEST_CASE_4("rbm/types/6", "[types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
+    typename RBM::rbm_t rbm;
+
+    RBM::init(rbm);
 
     auto dataset = mnist::read_dataset_direct<std::vector, std::deque<double>>(100);
     mnist::binarize_dataset(dataset);
@@ -180,8 +223,10 @@ TEMPLATE_TEST_CASE_2("rbm/types/6", "[types]", RBM, rbm_float, rbm_double) {
 }
 
 // fast_rbm<float> <- etl::dyn_matrix<float, 1>
-TEMPLATE_TEST_CASE_2("rbm/types/7", "[types]", RBM, rbm_float, rbm_double) {
-    RBM rbm;
+TEMPLATE_TEST_CASE_4("rbm/types/7", "[types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
+    typename RBM::rbm_t rbm;
+
+    RBM::init(rbm);
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(100);
     mnist::binarize_dataset(dataset);
@@ -201,8 +246,10 @@ TEMPLATE_TEST_CASE_2("rbm/types/7", "[types]", RBM, rbm_float, rbm_double) {
 }
 
 // fast_rbm<float> <- etl::fast_dyn_matrix<float, 1>
-TEMPLATE_TEST_CASE_2("rbm/types/8", "[types]", RBM, rbm_float, rbm_double) {
-    RBM rbm;
+TEMPLATE_TEST_CASE_4("rbm/types/8", "[types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
+    typename RBM::rbm_t rbm;
+
+    RBM::init(rbm);
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(100);
     mnist::binarize_dataset(dataset);
@@ -222,8 +269,10 @@ TEMPLATE_TEST_CASE_2("rbm/types/8", "[types]", RBM, rbm_float, rbm_double) {
 }
 
 // fast_rbm<float> <- etl::dyn_matrix<double, 1>
-TEMPLATE_TEST_CASE_2("rbm/types/9", "[types]", RBM, rbm_float, rbm_double) {
-    RBM rbm;
+TEMPLATE_TEST_CASE_4("rbm/types/9", "[types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
+    typename RBM::rbm_t rbm;
+
+    RBM::init(rbm);
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<double, 1>>(100);
     mnist::binarize_dataset(dataset);
@@ -243,8 +292,10 @@ TEMPLATE_TEST_CASE_2("rbm/types/9", "[types]", RBM, rbm_float, rbm_double) {
 }
 
 // fast_rbm<float> <- etl::fast_dyn_matrix<double, 1>
-TEMPLATE_TEST_CASE_2("rbm/types/10", "[types]", RBM, rbm_float, rbm_double) {
-    RBM rbm;
+TEMPLATE_TEST_CASE_4("rbm/types/10", "[types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
+    typename RBM::rbm_t rbm;
+
+    RBM::init(rbm);
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 28 * 28>>(100);
     mnist::binarize_dataset(dataset);
