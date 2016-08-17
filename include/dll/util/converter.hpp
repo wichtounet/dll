@@ -159,6 +159,32 @@ struct converter_one<std::deque<T_F, A>, etl::fast_dyn_matrix<T_T, Dims...>> {
     }
 };
 
+// Convert a fast_matrix<T_F, Dims...> to a dyn_matrix<T_T, sizeof(Dims)>
+template<typename T_F, typename T_T, size_t... Dims>
+struct converter_one<etl::fast_dyn_matrix<T_F, Dims...>, etl::dyn_matrix<T_T, sizeof...(Dims)>> {
+    static_assert(std::is_convertible<T_F, T_T>::value, "DLL cannot convert your value type to the weight type (one)");
+
+    template<typename L>
+    static etl::dyn_matrix<T_T, sizeof...(Dims)> convert(const L&, const etl::fast_dyn_matrix<T_F, Dims...>& from){
+        debug_convert("convert_one");
+        etl::dyn_matrix<T_T, sizeof...(Dims)> result(Dims...);
+        result = from;
+        return result;
+    }
+};
+
+// Convert a dyn_matrix<T_F, D> to a dyn_matrix<T_T, D>
+template<typename T_F, typename T_T, size_t D>
+struct converter_one<etl::dyn_matrix<T_F, D>, etl::dyn_matrix<T_T, D>> {
+    static_assert(std::is_convertible<T_F, T_T>::value, "DLL cannot convert your value type to the weight type (one)");
+
+    template<typename L>
+    static etl::dyn_matrix<T_T, D> convert(const L&, const etl::dyn_matrix<T_F, D>& from){
+        debug_convert("convert_one");
+        return etl::dyn_matrix<T_T, D>(from);
+    }
+};
+
 template<typename From, typename To>
 struct converter_many {
     static_assert(cannot_convert<From, To>::value, "DLL does not know how to convert your input type (many)");
