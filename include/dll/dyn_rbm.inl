@@ -152,6 +152,9 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         std::cout << to_short_string() << std::endl;
     }
 
+    // Make base class them participate in overload resolution
+    using base_type::activate_hidden;
+
     template <bool P = true, bool S = true, typename H1, typename H2, typename V>
     void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s) const {
         etl::dyn_vector<weight> t(num_hidden);
