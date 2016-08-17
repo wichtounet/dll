@@ -89,8 +89,8 @@ struct dbn_trainer {
         constexpr const auto big_batch_size = std::decay_t<DBN>::big_batch_size;
 
         //Get types for the batch
-        using samples_t = std::vector<typename std::iterator_traits<Iterator>::value_type>;
-        using labels_t  = std::vector<typename std::iterator_traits<LIterator>::value_type>;
+        using samples_t = std::vector<std::remove_cv_t<typename std::iterator_traits<Iterator>::value_type>>;
+        using labels_t  = std::vector<std::remove_cv_t<typename std::iterator_traits<LIterator>::value_type>>;
 
         //Initialize the momentum
         dbn.momentum = dbn.initial_momentum;
@@ -108,15 +108,23 @@ struct dbn_trainer {
         error_type error = 0.0;
 
         if (!dbn.batch_mode()) {
-            //Convert labels to an useful form
-            auto fake_labels = label_transformer(lfirst, llast);
-
             //Make sure data is contiguous
             samples_t data;
             data.reserve(std::distance(first, last));
 
             std::for_each(first, last, [&data](auto& sample) {
                 data.emplace_back(sample);
+            });
+
+            //Convert labels to an useful form
+            auto fake_labels = label_transformer(lfirst, llast);
+
+            //Make sure labels are contiguous
+            std::vector<std::decay_t<decltype(*fake_labels.begin())>> labels;
+            labels.reserve(std::distance(fake_labels.begin(), fake_labels.end()));
+
+            std::for_each(fake_labels.begin(), fake_labels.end(), [&labels](auto& label) {
+                labels.emplace_back(label);
             });
 
             //Compute the number of batches
@@ -129,7 +137,7 @@ struct dbn_trainer {
                     static std::random_device rd;
                     static std::mt19937_64 g(rd());
 
-                    cpp::parallel_shuffle(data.begin(), data.end(), fake_labels.begin(), fake_labels.end(), g);
+                    cpp::parallel_shuffle(data.begin(), data.end(), labels.begin(), labels.end(), g);
                 }
 
                 //Train one mini-batch at a time
@@ -138,7 +146,7 @@ struct dbn_trainer {
                     auto end   = std::min(start + batch_size, data.size());
 
                     auto data_batch  = make_batch(data.begin() + start, data.begin() + end);
-                    auto label_batch = make_batch(fake_labels.begin() + start, fake_labels.begin() + end);
+                    auto label_batch = make_batch(labels.begin() + start, labels.begin() + end);
 
                     trainer->train_batch(epoch, data_batch, label_batch);
                 }

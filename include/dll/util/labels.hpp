@@ -32,8 +32,8 @@ struct fake_label_array {
 };
 
 template <typename Iterator>
-std::vector<fake_label_array<typename std::iterator_traits<Iterator>::value_type>> make_fake(Iterator first, Iterator last) {
-    std::vector<fake_label_array<typename std::iterator_traits<Iterator>::value_type>> fake;
+std::vector<fake_label_array<std::remove_cv_t<typename std::iterator_traits<Iterator>::value_type>>> make_fake(Iterator first, Iterator last) {
+    std::vector<fake_label_array<std::remove_cv_t<typename std::iterator_traits<Iterator>::value_type>>> fake;
     fake.reserve(std::distance(first, last));
 
     std::for_each(first, last, [&fake](auto v) {
