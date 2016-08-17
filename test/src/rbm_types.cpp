@@ -71,7 +71,7 @@ struct dyn_rbm_double {
 } // end of anonymous namespace
 
 // fast_rbm<float> <- std::vector<float>
-TEMPLATE_TEST_CASE_4("rbm/types/1", "[types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
+TEMPLATE_TEST_CASE_4("rbm/types/1", "[unit][types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
     typename RBM::rbm_t rbm;
 
     RBM::init(rbm);
@@ -94,7 +94,7 @@ TEMPLATE_TEST_CASE_4("rbm/types/1", "[types]", RBM, rbm_float, rbm_double, dyn_r
 }
 
 // fast_rbm<float> <- std::list<float>
-TEMPLATE_TEST_CASE_4("rbm/types/2", "[types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
+TEMPLATE_TEST_CASE_4("rbm/types/2", "[unit][types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
     typename RBM::rbm_t rbm;
 
     RBM::init(rbm);
@@ -124,7 +124,7 @@ TEMPLATE_TEST_CASE_4("rbm/types/2", "[types]", RBM, rbm_float, rbm_double, dyn_r
 }
 
 // fast_rbm<float> <- std::deque<float>
-TEMPLATE_TEST_CASE_4("rbm/types/3", "[types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
+TEMPLATE_TEST_CASE_4("rbm/types/3", "[unit][types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
     typename RBM::rbm_t rbm;
 
     RBM::init(rbm);
@@ -147,7 +147,7 @@ TEMPLATE_TEST_CASE_4("rbm/types/3", "[types]", RBM, rbm_float, rbm_double, dyn_r
 }
 
 // fast_rbm<float> <- std::vector<double>
-TEMPLATE_TEST_CASE_4("rbm/types/4", "[types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
+TEMPLATE_TEST_CASE_4("rbm/types/4", "[unit][types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
     typename RBM::rbm_t rbm;
 
     RBM::init(rbm);
@@ -170,7 +170,7 @@ TEMPLATE_TEST_CASE_4("rbm/types/4", "[types]", RBM, rbm_float, rbm_double, dyn_r
 }
 
 // fast_rbm<float> <- std::list<double>
-TEMPLATE_TEST_CASE_4("rbm/types/5", "[types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
+TEMPLATE_TEST_CASE_4("rbm/types/5", "[unit][types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
     typename RBM::rbm_t rbm;
 
     RBM::init(rbm);
@@ -200,7 +200,7 @@ TEMPLATE_TEST_CASE_4("rbm/types/5", "[types]", RBM, rbm_float, rbm_double, dyn_r
 }
 
 // fast_rbm<float> <- std::deque<double>
-TEMPLATE_TEST_CASE_4("rbm/types/6", "[types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
+TEMPLATE_TEST_CASE_4("rbm/types/6", "[unit][types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
     typename RBM::rbm_t rbm;
 
     RBM::init(rbm);
@@ -223,7 +223,7 @@ TEMPLATE_TEST_CASE_4("rbm/types/6", "[types]", RBM, rbm_float, rbm_double, dyn_r
 }
 
 // fast_rbm<float> <- etl::dyn_matrix<float, 1>
-TEMPLATE_TEST_CASE_4("rbm/types/7", "[types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
+TEMPLATE_TEST_CASE_4("rbm/types/7", "[unit][types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
     typename RBM::rbm_t rbm;
 
     RBM::init(rbm);
@@ -246,7 +246,7 @@ TEMPLATE_TEST_CASE_4("rbm/types/7", "[types]", RBM, rbm_float, rbm_double, dyn_r
 }
 
 // fast_rbm<float> <- etl::fast_dyn_matrix<float, 1>
-TEMPLATE_TEST_CASE_4("rbm/types/8", "[types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
+TEMPLATE_TEST_CASE_4("rbm/types/8", "[unit][types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
     typename RBM::rbm_t rbm;
 
     RBM::init(rbm);
@@ -269,7 +269,7 @@ TEMPLATE_TEST_CASE_4("rbm/types/8", "[types]", RBM, rbm_float, rbm_double, dyn_r
 }
 
 // fast_rbm<float> <- etl::dyn_matrix<double, 1>
-TEMPLATE_TEST_CASE_4("rbm/types/9", "[types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
+TEMPLATE_TEST_CASE_4("rbm/types/9", "[unit][types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
     typename RBM::rbm_t rbm;
 
     RBM::init(rbm);
@@ -292,7 +292,7 @@ TEMPLATE_TEST_CASE_4("rbm/types/9", "[types]", RBM, rbm_float, rbm_double, dyn_r
 }
 
 // fast_rbm<float> <- etl::fast_dyn_matrix<double, 1>
-TEMPLATE_TEST_CASE_4("rbm/types/10", "[types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
+TEMPLATE_TEST_CASE_4("rbm/types/10", "[unit][types]", RBM, rbm_float, rbm_double, dyn_rbm_float, dyn_rbm_double) {
     typename RBM::rbm_t rbm;
 
     RBM::init(rbm);
