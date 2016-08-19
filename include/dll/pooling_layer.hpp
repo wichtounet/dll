@@ -32,7 +32,7 @@ struct pooling_layer_3d : neural_base<Parent> {
     static constexpr const std::size_t O2 = I2 / C2; ///< The second dimension of the output
     static constexpr const std::size_t O3 = I3 / C3; ///< The third dimension of the output
 
-    static constexpr const bool is_nop = C1 + C2 + C3 == 1; ///< Indicate if the operation has no effect
+    static constexpr const bool is_nop = C1 * C2 * C3 == 1; ///< Indicate if the operation has no effect
 
     using input_one_t  = etl::fast_dyn_matrix<weight, I1, I2, I3>;
     using output_one_t = etl::fast_dyn_matrix<weight, O1, O2, O3>;
