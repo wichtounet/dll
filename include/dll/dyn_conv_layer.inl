@@ -22,18 +22,18 @@ namespace dll {
  */
 template <typename Desc>
 struct dyn_conv_layer final : neural_base<dyn_conv_layer<Desc>> {
-    using desc      = Desc;
-    using weight    = typename desc::weight;
-    using this_type = dyn_conv_layer<desc>;
+    using desc      = Desc;                  ///< The descriptor type
+    using weight    = typename desc::weight; ///< The weight type
+    using this_type = dyn_conv_layer<desc>;  ///< This type
 
     static constexpr const bool dbn_only = layer_traits<this_type>::is_dbn_only();
 
     static constexpr const function activation_function = desc::activation_function;
 
-    using input_one_t  = etl::dyn_matrix<weight, 3>;
-    using output_one_t = etl::dyn_matrix<weight, 3>;
-    using input_t      = std::vector<input_one_t>;
-    using output_t     = std::vector<output_one_t>;
+    using input_one_t  = etl::dyn_matrix<weight, 3>; ///< The type for one input
+    using output_one_t = etl::dyn_matrix<weight, 3>; ///< The type for one output
+    using input_t      = std::vector<input_one_t>;   ///< The type for many input
+    using output_t     = std::vector<output_one_t>;  ///< The type for many output
 
     //TODO CHECK
     template <std::size_t B>
@@ -58,15 +58,15 @@ struct dyn_conv_layer final : neural_base<dyn_conv_layer<Desc>> {
     dyn_conv_layer(dyn_conv_layer&& layer) = delete;
     dyn_conv_layer& operator=(dyn_conv_layer&& layer) = delete;
 
-    size_t nv1;
-    size_t nv2;
-    size_t nh1;
-    size_t nh2;
-    size_t nc;
-    size_t k;
+    size_t nv1; ///< The first visible dimension
+    size_t nv2; ///< The second visible dimension
+    size_t nh1; ///< The first output dimension
+    size_t nh2; ///< The second output dimension
+    size_t nc;  ///< The number of input channels
+    size_t k;   ///< The number of filters
 
-    size_t nw1;
-    size_t nw2;
+    size_t nw1; ///< The first dimension of the filters
+    size_t nw2; ///< The second dimension of the filters
 
     size_t batch_size = 25;
 

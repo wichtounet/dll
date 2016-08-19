@@ -714,8 +714,8 @@ struct base_cd_trainer : base_trainer<RBM> {
 
     rbm_t& rbm;
 
-    etl::fast_matrix<weight, batch_size, num_visible> v1; //Input
-    etl::fast_matrix<weight, batch_size, num_visible> vf; //Expected
+    etl::fast_matrix<weight, batch_size, num_visible> v1; ///< Input
+    etl::fast_matrix<weight, batch_size, num_visible> vf; ///< Expected
 
     etl::fast_matrix<weight, batch_size, num_hidden> h1_a;
     etl::fast_matrix<weight, batch_size, num_hidden> h1_s;
@@ -800,8 +800,8 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
 
     rbm_t& rbm;
 
-    etl::dyn_matrix<weight> v1; //Input
-    etl::dyn_matrix<weight> vf; //Expected
+    etl::dyn_matrix<weight> v1; ///< Input
+    etl::dyn_matrix<weight> vf; ///< Expected
 
     etl::dyn_matrix<weight> h1_a;
     etl::dyn_matrix<weight> h1_s;

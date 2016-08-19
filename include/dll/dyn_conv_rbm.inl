@@ -63,34 +63,34 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
     std::unique_ptr<b_type> bak_b; //!< backup hidden biases bk
     std::unique_ptr<c_type> bak_c; //!< backup visible single bias c
 
-    etl::dyn_matrix<weight, 3> v1; //visible units
+    etl::dyn_matrix<weight, 3> v1; ///< visible units
 
-    etl::dyn_matrix<weight, 3> h1_a; //Activation probabilities of reconstructed hidden units
-    etl::dyn_matrix<weight, 3> h1_s; //Sampled values of reconstructed hidden units
+    etl::dyn_matrix<weight, 3> h1_a; ///< Activation probabilities of reconstructed hidden units
+    etl::dyn_matrix<weight, 3> h1_s; ///< Sampled values of reconstructed hidden units
 
-    etl::dyn_matrix<weight, 3> v2_a; //Activation probabilities of reconstructed visible units
-    etl::dyn_matrix<weight, 3> v2_s; //Sampled values of reconstructed visible units
+    etl::dyn_matrix<weight, 3> v2_a; ///< Activation probabilities of reconstructed visible units
+    etl::dyn_matrix<weight, 3> v2_s; ///< Sampled values of reconstructed visible units
 
-    etl::dyn_matrix<weight, 3> h2_a; //Activation probabilities of reconstructed hidden units
-    etl::dyn_matrix<weight, 3> h2_s; //Sampled values of reconstructed hidden units
+    etl::dyn_matrix<weight, 3> h2_a; ///< Activation probabilities of reconstructed hidden units
+    etl::dyn_matrix<weight, 3> h2_s; ///< Sampled values of reconstructed hidden units
 
     //Convolution data
 
     static constexpr const std::size_t V_CV_CHANNELS = 2;
     static constexpr const std::size_t H_CV_CHANNELS = 2;
 
-    etl::dyn_matrix<weight, 4> v_cv; //Temporary convolution
-    etl::dyn_matrix<weight, 3> h_cv; //Temporary convolution
+    etl::dyn_matrix<weight, 4> v_cv; ///< Temporary convolution
+    etl::dyn_matrix<weight, 3> h_cv; ///< Temporary convolution
 
-    size_t nv1;
-    size_t nv2;
-    size_t nh1;
-    size_t nh2;
-    size_t nc;
-    size_t k;
+    size_t nv1; ///< The first visible dimension
+    size_t nv2; ///< The second visible dimension
+    size_t nh1; ///< The first output dimension
+    size_t nh2; ///< The second output dimension
+    size_t nc;  ///< The number of input channels
+    size_t k;   ///< The number of filters
 
-    size_t nw1;
-    size_t nw2;
+    size_t nw1; ///< The first dimension of the filters
+    size_t nw2; ///< The second dimension of the filters
 
     size_t batch_size = 25;
 

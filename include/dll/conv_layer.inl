@@ -26,12 +26,12 @@ struct conv_layer final : neural_base<conv_layer<Desc>> {
     using weight    = typename desc::weight;
     using this_type = conv_layer<desc>;
 
-    static constexpr const std::size_t NV1 = desc::NV1;
-    static constexpr const std::size_t NV2 = desc::NV2;
-    static constexpr const std::size_t NH1 = desc::NH1;
-    static constexpr const std::size_t NH2 = desc::NH2;
-    static constexpr const std::size_t NC  = desc::NC;
-    static constexpr const std::size_t K   = desc::K;
+    static constexpr const std::size_t NV1 = desc::NV1; ///< The first dimension of the visible units
+    static constexpr const std::size_t NV2 = desc::NV2; ///< The second dimension of the visible units
+    static constexpr const std::size_t NH1 = desc::NH1; ///< The first dimension of the hidden units
+    static constexpr const std::size_t NH2 = desc::NH2; ///< The second dimension of the hidden units
+    static constexpr const std::size_t NC  = desc::NC;  ///< The number of input channels
+    static constexpr const std::size_t K   = desc::K;   ///< The number of filters
 
     static constexpr const std::size_t NW1 = NV1 - NH1 + 1; //By definition
     static constexpr const std::size_t NW2 = NV2 - NH2 + 1; //By definition

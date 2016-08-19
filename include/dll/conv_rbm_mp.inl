@@ -50,12 +50,12 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
     static_assert(!(std::is_same<float, weight>::value && visible_unit == unit_type::GAUSSIAN),
                   "Gaussian visible units should use double-precision");
 
-    static constexpr const std::size_t NV1 = desc::NV1;
-    static constexpr const std::size_t NV2 = desc::NV2;
-    static constexpr const std::size_t NH1 = desc::NH1;
-    static constexpr const std::size_t NH2 = desc::NH2;
-    static constexpr const std::size_t NC  = desc::NC;
-    static constexpr const std::size_t K   = desc::K;
+    static constexpr const std::size_t NV1 = desc::NV1; ///< The first dimension of the visible units
+    static constexpr const std::size_t NV2 = desc::NV2; ///< The second dimension of the visible units
+    static constexpr const std::size_t NH1 = desc::NH1; ///< The first dimension of the hidden units
+    static constexpr const std::size_t NH2 = desc::NH2; ///< The second dimension of the hidden units
+    static constexpr const std::size_t NC  = desc::NC;  ///< The number of input channels
+    static constexpr const std::size_t K   = desc::K;   ///< The number of filters
     static constexpr const std::size_t C   = desc::C;
 
     static constexpr const std::size_t NW1 = NV1 - NH1 + 1; //By definition
@@ -82,29 +82,29 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
     std::unique_ptr<b_type> bak_b; //!< backup hidden biases bk
     std::unique_ptr<c_type> bak_c; //!< backup visible single bias c
 
-    etl::fast_matrix<weight, NC, NV1, NV2> v1; //visible units
+    etl::fast_matrix<weight, NC, NV1, NV2> v1; ///< visible units
 
-    conditional_fast_matrix_t<!dbn_only, weight, K, NH1, NH2> h1_a; //Activation probabilities of reconstructed hidden units
-    conditional_fast_matrix_t<!dbn_only, weight, K, NH1, NH2> h1_s; //Sampled values of reconstructed hidden units
+    conditional_fast_matrix_t<!dbn_only, weight, K, NH1, NH2> h1_a; ///< Activation probabilities of reconstructed hidden units
+    conditional_fast_matrix_t<!dbn_only, weight, K, NH1, NH2> h1_s; ///< Sampled values of reconstructed hidden units
 
-    conditional_fast_matrix_t<!dbn_only, weight, K, NP1, NP2> p1_a; //Activation probabilities of reconstructed hidden units
-    conditional_fast_matrix_t<!dbn_only, weight, K, NP1, NP2> p1_s; //Sampled values of reconstructed hidden units
+    conditional_fast_matrix_t<!dbn_only, weight, K, NP1, NP2> p1_a; ///< Activation probabilities of reconstructed hidden units
+    conditional_fast_matrix_t<!dbn_only, weight, K, NP1, NP2> p1_s; ///< Sampled values of reconstructed hidden units
 
-    conditional_fast_matrix_t<!dbn_only, weight, NC, NV1, NV2> v2_a; //Activation probabilities of reconstructed visible units
-    conditional_fast_matrix_t<!dbn_only, weight, NC, NV1, NV2> v2_s; //Sampled values of reconstructed visible units
+    conditional_fast_matrix_t<!dbn_only, weight, NC, NV1, NV2> v2_a; ///< Activation probabilities of reconstructed visible units
+    conditional_fast_matrix_t<!dbn_only, weight, NC, NV1, NV2> v2_s; ///< Sampled values of reconstructed visible units
 
-    conditional_fast_matrix_t<!dbn_only, weight, K, NH1, NH2> h2_a; //Activation probabilities of reconstructed hidden units
-    conditional_fast_matrix_t<!dbn_only, weight, K, NH1, NH2> h2_s; //Sampled values of reconstructed hidden units
+    conditional_fast_matrix_t<!dbn_only, weight, K, NH1, NH2> h2_a; ///< Activation probabilities of reconstructed hidden units
+    conditional_fast_matrix_t<!dbn_only, weight, K, NH1, NH2> h2_s; ///< Sampled values of reconstructed hidden units
 
-    conditional_fast_matrix_t<!dbn_only, weight, K, NP1, NP2> p2_a; //Activation probabilities of reconstructed hidden units
-    conditional_fast_matrix_t<!dbn_only, weight, K, NP1, NP2> p2_s; //Sampled values of reconstructed hidden units
+    conditional_fast_matrix_t<!dbn_only, weight, K, NP1, NP2> p2_a; ///< Activation probabilities of reconstructed hidden units
+    conditional_fast_matrix_t<!dbn_only, weight, K, NP1, NP2> p2_s; ///< Sampled values of reconstructed hidden units
 
     //Convolution data
 
     //Note: These are used by activation functions and therefore are
     //needed in dbn_only mode as well
-    etl::fast_matrix<weight, 2, K, NH1, NH2> v_cv; //Temporary convolution
-    etl::fast_matrix<weight, 2, NV1, NV2> h_cv;    //Temporary convolution
+    etl::fast_matrix<weight, 2, K, NH1, NH2> v_cv; ///< Temporary convolution
+    etl::fast_matrix<weight, 2, NV1, NV2> h_cv;    ///< Temporary convolution
 
     mutable cpp::thread_pool<!layer_traits<this_type>::is_serial()> pool;
 
