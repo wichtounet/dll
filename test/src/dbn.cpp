@@ -244,3 +244,30 @@ TEST_CASE("dbn/mnist/text/1", "dbn::simple") {
 
     REQUIRE(test_error < 0.2);
 }
+
+TEST_CASE("mnist_original", "dbn::simple") {
+    typedef dll::dbn_desc<
+        dll::dbn_layers<
+            dll::rbm_desc<28 * 28, 500, dll::momentum, dll::batch_size<64>, dll::init_weights>::layer_t,
+            dll::rbm_desc<500, 500, dll::momentum, dll::batch_size<64>>::layer_t,
+            dll::rbm_desc<500, 2000, dll::momentum, dll::batch_size<64>>::layer_t,
+            dll::rbm_desc<2000, 10, dll::momentum, dll::batch_size<64>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
+        dll::batch_size<300>>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>();
+
+    REQUIRE(!dataset.training_images.empty());
+    mnist::binarize_dataset(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->pretrain(dataset.training_images, 10);
+
+    auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 10);
+    std::cout << "ft_error:" << ft_error << std::endl;
+    REQUIRE(ft_error < 5e-2);
+
+    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
+    std::cout << "test_error:" << test_error << std::endl;
+    REQUIRE(test_error < 0.2);
+}
