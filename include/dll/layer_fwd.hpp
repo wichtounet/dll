@@ -69,6 +69,9 @@ template <typename Desc>
 struct conv_layer;
 
 template <typename Desc>
+struct dyn_conv_layer;
+
+template <typename Desc>
 struct augment_layer;
 
 } //end of dll namespace

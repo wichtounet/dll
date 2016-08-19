@@ -60,7 +60,8 @@ struct layer_traits {
      * \brief Indicates if the layer is a standard (non-rbm) convolutionl layer.
      */
     static constexpr bool is_standard_convolutional_layer() {
-        return cpp::is_specialization_of<conv_layer, layer_t>::value;
+        return cpp::is_specialization_of<conv_layer, layer_t>::value
+            || cpp::is_specialization_of<dyn_conv_layer, layer_t>::value;
     }
 
     /*!
@@ -126,7 +127,8 @@ struct layer_traits {
      * \brief Indicates if this layer is a patches layer.
      */
     static constexpr bool is_patches_layer() {
-        return cpp::is_specialization_of<patches_layer, layer_t>::value || cpp::is_specialization_of<patches_layer_padh, layer_t>::value;
+        return cpp::is_specialization_of<patches_layer, layer_t>::value
+            || cpp::is_specialization_of<patches_layer_padh, layer_t>::value;
     }
 
     /*!
@@ -172,6 +174,7 @@ struct layer_traits {
             || cpp::is_specialization_of<dyn_conv_rbm, layer_t>::value
             || cpp::is_specialization_of<dyn_conv_rbm_mp, layer_t>::value
             || cpp::is_specialization_of<dyn_dense_layer, layer_t>::value
+            || cpp::is_specialization_of<dyn_conv_layer, layer_t>::value
             ;
     }
 

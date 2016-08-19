@@ -122,14 +122,14 @@ struct sgd_trainer {
 
     template <typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors,
              cpp_enable_if(decay_layer_traits<Layer>::is_dense_layer() && etl::decay_traits<Inputs>::dimensions() == 2)>
-    static void compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors) {
+    static void compute_weight_gradients(Layer&, Grad& grad, Inputs& inputs, Errors& errors) {
         dense_compute_weight_gradients<Weight>(grad, inputs, errors);
     }
 
     template <typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors,
              cpp_enable_if(decay_layer_traits<Layer>::is_dense_layer() && etl::decay_traits<Inputs>::dimensions() != 2)>
-    static void compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors) {
-        dense_compute_weight_gradients<Weight>(grad, etl::reshape<batch_size, Layer::num_visible>(inputs), errors);
+    static void compute_weight_gradients(Layer& layer, Grad& grad, Inputs& inputs, Errors& errors) {
+        dense_compute_weight_gradients<Weight>(grad, etl::reshape(inputs, batch_size, num_visible(layer)), errors);
     }
 
 #ifndef ETL_BLAS_MODE
@@ -157,13 +157,13 @@ struct sgd_trainer {
 
     template <typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors,
              cpp_enable_if(decay_layer_traits<Layer>::is_convolutional_layer())>
-    static void compute_weight_gradients(Grad& grad, Inputs& inputs, Errors& errors) {
-        constexpr const auto K   = Layer::K;
-        constexpr const auto NC  = Layer::NC;
-        constexpr const auto NW1 = Layer::NW1;
-        constexpr const auto NW2 = Layer::NW2;
+    static void compute_weight_gradients(Layer& layer, Grad& grad, Inputs& inputs, Errors& errors) {
+        const auto K   = get_k(layer);
+        const auto NC  = get_nc(layer);
+        const auto NW1 = get_nw1(layer);
+        const auto NW2 = get_nw2(layer);
 
-        etl::fast_dyn_matrix<Weight, K, NW1, NW2> tmp;
+        etl::dyn_matrix<Weight, 3> tmp(K, NW1, NW2);
 
         auto errors_f = force_temporary(errors);
 
@@ -185,10 +185,10 @@ struct sgd_trainer {
 
     template <typename Layer, typename Context, typename Inputs,
              cpp_enable_if((decay_layer_traits<Layer>::is_neural_layer()))>
-    static void compute_gradients(Layer&, Context& ctx, Inputs& inputs) {
+    static void compute_gradients(Layer& layer, Context& ctx, Inputs& inputs) {
         ctx.w_grad = 0;
 
-        compute_weight_gradients<Layer, weight>(ctx.w_grad, inputs, ctx.errors);
+        compute_weight_gradients<Layer, weight>(layer, ctx.w_grad, inputs, ctx.errors);
 
         cpp::static_if<decay_layer_traits<Layer>::is_dense_layer()>([&](auto f) {
             f(ctx.b_grad) = etl::sum_l(ctx.errors);

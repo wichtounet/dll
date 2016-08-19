@@ -80,7 +80,7 @@ struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_dense_la
  * \copydoc sgd_context
  */
 template <typename DBN, typename Layer>
-struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_convolutional_layer()>> {
+struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_convolutional_layer() && !layer_traits<Layer>::is_dynamic()>> {
     using layer_t = Layer;
     using weight  = typename layer_t::weight;
 
@@ -108,6 +108,33 @@ struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_convolut
 
     sgd_context()
             : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
+};
+
+/*!
+ * \copydoc sgd_context
+ */
+template <typename DBN, typename Layer>
+struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_convolutional_layer() && layer_traits<Layer>::is_dynamic()>> {
+    using layer_t = Layer;
+    using weight  = typename layer_t::weight;
+
+    static_assert(!layer_traits<layer_t>::has_probabilistic_max_pooling(), "Probabilistic Max Pooling is not supported in backpropagation");
+
+    static constexpr const auto batch_size = DBN::batch_size;
+
+    etl::dyn_matrix<weight, 4> w_grad;
+    etl::dyn_matrix<weight, 1> b_grad;
+
+    etl::dyn_matrix<weight, 4> w_inc;
+    etl::dyn_matrix<weight, 1> b_inc;
+
+    etl::dyn_matrix<weight, 4> output;
+    etl::dyn_matrix<weight, 4> errors;
+
+    sgd_context(size_t nc, size_t nv1, size_t nv2, size_t k, size_t nh1, size_t nh2)
+            : w_grad(nc, k, nv1 - nh1 + 1, nv2 - nh2 + 1), b_grad(k),
+              w_inc(nc, k, nv1 - nh1 + 1, nv2 - nh2 + 1), b_inc(k),
+              output(batch_size, k, nh1, nh2), errors(batch_size, k, nh1, nh2) {}
 };
 
 /*!
