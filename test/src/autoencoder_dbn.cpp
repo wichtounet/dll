@@ -17,7 +17,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("dbn/ae/1", "[rbm][dbn][mnist][sgd][ae]") {
+TEST_CASE("dbn/ae/1", "[unit][rbm][dbn][mnist][sgd][ae]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 200, dll::momentum, dll::batch_size<25>>::layer_t,
