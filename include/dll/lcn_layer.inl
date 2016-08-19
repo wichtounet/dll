@@ -7,13 +7,16 @@
 
 #pragma once
 
-#include "neural_base.hpp"
+#include "transform_layer.hpp"
 
 namespace dll {
 
+/*!
+ * \brief Local Contrast Normalization layer
+ */
 template <typename Desc>
-struct lcn_layer : neural_base<lcn_layer<Desc>> {
-    using desc = Desc;
+struct lcn_layer : transform_layer<lcn_layer<Desc>> {
+    using desc = Desc; ///< The descriptor type
 
     static constexpr const std::size_t K = desc::K;
     static constexpr const std::size_t Mid = K / 2;
@@ -23,16 +26,13 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
     static_assert(K > 1, "The kernel size must be greater than 1");
     static_assert(K % 2 == 1, "The kernel size must be odd");
 
-    lcn_layer() = default;
-
+    /*!
+     * \brief Returns a string representation of the layer
+     */
     static std::string to_short_string() {
         std::string desc("LCN: ");
         desc += std::to_string(K) + 'x' + std::to_string(K);
         return desc;
-    }
-
-    static void display() {
-        std::cout << to_short_string() << std::endl;
     }
 
     static cpp14_constexpr double gaussian(double x, double y, double sigma) {
@@ -55,6 +55,11 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
         return w;
     }
 
+    /*!
+     * \brief Apply the layer to the input
+     * \param output The output
+     * \param input The input to apply the layer to
+     */
     template <typename Input, typename Output>
     void activate_hidden(Output& y, const Input& x) const {
         using weight_t = etl::value_t<Input>;
@@ -109,28 +114,16 @@ struct lcn_layer : neural_base<lcn_layer<Desc>> {
         }
     }
 
+    /*!
+     * \brief Apply the layer to the batch of input
+     * \param output The batch of output
+     * \param input The batch of input to apply the layer to
+     */
     template <typename Input, typename Output>
     void batch_activate_hidden(Output& output, const Input& input) const {
         for (std::size_t b = 0; b < etl::dim<0>(input); ++b) {
             activate_hidden(output(b), input(b));
         }
-    }
-
-    template <typename I, typename O_A>
-    void activate_many(const I& input, O_A& h_a) const {
-        for (std::size_t i = 0; i < input.size(); ++i) {
-            activate_one(input[i], h_a[i]);
-        }
-    }
-
-    template <typename Input>
-    static std::vector<Input> prepare_output(std::size_t samples) {
-        return std::vector<Input>(samples);
-    }
-
-    template <typename Input>
-    static Input prepare_one_output() {
-        return {};
     }
 };
 

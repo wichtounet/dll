@@ -7,49 +7,42 @@
 
 #pragma once
 
-#include "neural_base.hpp"
+#include "transform_layer.hpp"
 
 namespace dll {
 
+/*!
+ * \brief Test layer that generate random outputs
+ */
 template <typename Desc>
-struct random_layer : neural_base<random_layer<Desc>> {
-    using desc = Desc;
+struct random_layer : transform_layer<random_layer<Desc>> {
+    using desc = Desc; ///< The descriptor type
 
-    random_layer() = default;
-
+    /*!
+     * \brief Returns a string representation of the layer
+     */
     static std::string to_short_string() {
         return "Random";
     }
 
-    static void display() {
-        std::cout << to_short_string() << std::endl;
-    }
-
+    /*!
+     * \brief Apply the layer to the input
+     * \param output The output
+     * \param input The input to apply the layer to
+     */
     template <typename Input, typename Output>
     static void activate_hidden(Output& output, const Input&) {
         output = etl::normal_generator<etl::value_t<Input>>();
     }
 
+    /*!
+     * \brief Apply the layer to the batch of input
+     * \param output The batch of output
+     * \param input The batch of input to apply the layer to
+     */
     template <typename Input, typename Output>
     static void batch_activate_hidden(Output& output, const Input&) {
         output = etl::normal_generator<etl::value_t<Input>>();
-    }
-
-    template <typename I, typename O_A>
-    static void activate_many(const I& input, O_A& h_a) {
-        for (std::size_t i = 0; i < input.size(); ++i) {
-            activate_one(input[i], h_a[i]);
-        }
-    }
-
-    template <typename Input>
-    static std::vector<Input> prepare_output(std::size_t samples) {
-        return std::vector<Input>(samples);
-    }
-
-    template <typename Input>
-    static Input prepare_one_output() {
-        return {};
     }
 };
 
