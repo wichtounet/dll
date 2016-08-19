@@ -16,14 +16,14 @@ namespace dll {
  */
 template <typename Desc>
 struct avgp_layer_3d final : pooling_layer_3d<avgp_layer_3d<Desc>, Desc> {
-    using desc   = Desc;
-    using weight = typename desc::weight;
-    using base   = pooling_layer_3d<avgp_layer_3d<Desc>, desc>;
+    using desc   = Desc;                                        ///< The layer descriptor
+    using weight = typename desc::weight;                       ///< The layer weight type
+    using base   = pooling_layer_3d<avgp_layer_3d<Desc>, desc>; ///< The layer base type
 
-    using input_one_t  = typename base::input_one_t;
-    using output_one_t = typename base::output_one_t;
-    using input_t      = typename base::input_t;
-    using output_t     = typename base::output_t;
+    using input_one_t  = typename base::input_one_t;  ///< The type of one input
+    using output_one_t = typename base::output_one_t; ///< The type of one output
+    using input_t      = typename base::input_t;      ///< The type of many input
+    using output_t     = typename base::output_t;     ///< The type of many output
 
     template <std::size_t B>
     using input_batch_t = typename base::template input_batch_t<B>;
@@ -33,6 +33,9 @@ struct avgp_layer_3d final : pooling_layer_3d<avgp_layer_3d<Desc>, Desc> {
 
     avgp_layer_3d() = default;
 
+    /*!
+     * \brief Get a string representation of the layer
+     */
     static std::string to_short_string() {
         char buffer[1024];
         snprintf(buffer, 1024, "MP(3D): %lux%lux%lu -> (%lux%lux%lu) -> %lux%lux%lu",
@@ -40,6 +43,9 @@ struct avgp_layer_3d final : pooling_layer_3d<avgp_layer_3d<Desc>, Desc> {
         return {buffer};
     }
 
+    /*!
+     * \brief Display the layer to the console
+     */
     static void display() {
         std::cout << to_short_string() << std::endl;
     }
