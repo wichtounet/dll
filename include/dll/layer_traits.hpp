@@ -95,7 +95,8 @@ struct layer_traits {
     static constexpr bool is_pooling_layer() {
         return cpp::is_specialization_of<mp_layer_3d, layer_t>::value
             || cpp::is_specialization_of<dyn_mp_layer_3d, layer_t>::value
-            || cpp::is_specialization_of<avgp_layer_3d, layer_t>::value;
+            || cpp::is_specialization_of<avgp_layer_3d, layer_t>::value
+            || cpp::is_specialization_of<dyn_avgp_layer_3d, layer_t>::value;
     }
 
     /*!
@@ -110,7 +111,8 @@ struct layer_traits {
      * \brief Indicates if this layer is a avg pooling layer.
      */
     static constexpr bool is_avg_pooling_layer() {
-        return cpp::is_specialization_of<avgp_layer_3d, layer_t>::value;
+        return cpp::is_specialization_of<avgp_layer_3d, layer_t>::value
+            || cpp::is_specialization_of<dyn_avgp_layer_3d, layer_t>::value;
     }
 
     /*!
@@ -178,6 +180,7 @@ struct layer_traits {
             || cpp::is_specialization_of<dyn_dense_layer, layer_t>::value
             || cpp::is_specialization_of<dyn_conv_layer, layer_t>::value
             || cpp::is_specialization_of<dyn_mp_layer_3d, layer_t>::value
+            || cpp::is_specialization_of<dyn_avgp_layer_3d, layer_t>::value
             ;
     }
 

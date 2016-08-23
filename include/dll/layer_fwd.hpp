@@ -39,6 +39,9 @@ template <typename Desc>
 struct avgp_layer_3d;
 
 template <typename Desc>
+struct dyn_avgp_layer_3d;
+
+template <typename Desc>
 struct binarize_layer;
 
 template <typename Desc>

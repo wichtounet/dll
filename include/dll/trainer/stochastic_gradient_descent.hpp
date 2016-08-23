@@ -55,9 +55,18 @@ auto upsample(Input&& input, Output&& output, Errors&& errors) {
     return etl::max_pool_derivative_3d(input, output, c1, c2, c3) >> etl::upsample_3d(errors, c1, c2, c3);
 }
 
-template <typename Layer, typename Input, typename Output, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_avg_pooling_layer())>
+template <typename Layer, typename Input, typename Output, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_avg_pooling_layer() && !decay_layer_traits<Layer>::is_dynamic())>
 auto upsample(Input&& input, Output&& output, Errors&& errors) {
     return etl::avg_pool_derivative_3d<Layer::C1, Layer::C2, Layer::C3>(input, output) >> etl::upsample_3d<Layer::C1, Layer::C2, Layer::C3>(errors);
+}
+
+template <typename Layer, typename Input, typename Output, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_avg_pooling_layer() && decay_layer_traits<Layer>::is_dynamic())>
+auto upsample(Input&& input, Output&& output, Errors&& errors) {
+    auto c1 = etl::dim(input, 0) / etl::dim(output, 0);
+    auto c2 = etl::dim(input, 1) / etl::dim(output, 1);
+    auto c3 = etl::dim(input, 2) / etl::dim(output, 2);
+
+    return etl::avg_pool_derivative_3d(input, output, c1, c2, c3) >> etl::upsample_3d(errors, c1, c2, c3);
 }
 
 template <typename DBN>
