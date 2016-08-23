@@ -68,8 +68,6 @@ struct dyn_conv_layer final : neural_base<dyn_conv_layer<Desc>> {
     size_t nw1; ///< The first dimension of the filters
     size_t nw2; ///< The second dimension of the filters
 
-    size_t batch_size = 25;
-
     dyn_conv_layer(){
         // Nothing else to init
     }
