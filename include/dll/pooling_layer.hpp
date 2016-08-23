@@ -59,6 +59,18 @@ struct pooling_layer_3d : neural_base<Parent> {
         return 0;
     }
 
+    /*!
+     * \brief Apply the layer to many inputs
+     * \param output The set of output
+     * \param input The set of input to apply the layer to
+     */
+    template <typename I, typename O_A>
+    void activate_many(const I& input, O_A& output) const {
+        for (std::size_t i = 0; i < input.size(); ++i) {
+            as_derived().activate_hidden(input[i], output[i]);
+        }
+    }
+
     template <typename Input>
     static output_t prepare_output(std::size_t samples) {
         return output_t{samples};
@@ -67,6 +79,10 @@ struct pooling_layer_3d : neural_base<Parent> {
     template <typename Input>
     static output_one_t prepare_one_output() {
         return output_one_t();
+    }
+
+    const Parent& as_derived() const {
+        return *static_cast<const Parent*>(this);
     }
 };
 
@@ -125,6 +141,18 @@ struct dyn_pooling_layer_3d : neural_base<Parent> {
         return 0;
     }
 
+    /*!
+     * \brief Apply the layer to many inputs
+     * \param output The set of output
+     * \param input The set of input to apply the layer to
+     */
+    template <typename I, typename O_A>
+    void activate_many(const I& input, O_A& output) const {
+        for (std::size_t i = 0; i < input.size(); ++i) {
+            as_derived().activate_hidden(input[i], output[i]);
+        }
+    }
+
     template <typename Input>
     output_t prepare_output(std::size_t samples) const {
         output_t output;
@@ -138,6 +166,10 @@ struct dyn_pooling_layer_3d : neural_base<Parent> {
     template <typename Input>
     output_one_t prepare_one_output() const {
         return output_one_t(o1, o2, o3);
+    }
+
+    const Parent& as_derived() const {
+        return *static_cast<const Parent*>(this);
     }
 };
 
