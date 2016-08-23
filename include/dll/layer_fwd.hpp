@@ -33,6 +33,9 @@ template <typename Desc>
 struct mp_layer_3d;
 
 template <typename Desc>
+struct dyn_mp_layer_3d;
+
+template <typename Desc>
 struct avgp_layer_3d;
 
 template <typename Desc>

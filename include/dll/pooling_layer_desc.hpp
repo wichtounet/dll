@@ -34,4 +34,15 @@ struct pooling_layer_3d_desc {
         "Invalid parameters type for pooling_layer");
 };
 
+template <typename... Parameters>
+struct dyn_pooling_layer_3d_desc {
+    /*! The type used to store the weights */
+    using weight = typename detail::get_type<weight_type<double>, Parameters...>::value;
+
+    //Make sure only valid types are passed to the configuration list
+    static_assert(
+        detail::is_valid<cpp::type_list<weight_type_id>, Parameters...>::value,
+        "Invalid parameters type for pooling_layer");
+};
+
 } //end of dll namespace

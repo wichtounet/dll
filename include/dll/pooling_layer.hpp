@@ -70,4 +70,75 @@ struct pooling_layer_3d : neural_base<Parent> {
     }
 };
 
+/*!
+ * \brief Standard dynamic pooling layer
+ */
+template <typename Parent, typename Desc>
+struct dyn_pooling_layer_3d : neural_base<Parent> {
+    using desc   = Desc;
+    using weight = typename desc::weight;
+
+    static constexpr const bool is_nop = false; ///< Indicate if the operation has no effect
+
+    using input_one_t  = etl::dyn_matrix<weight, 3>;
+    using output_one_t = etl::dyn_matrix<weight, 3>;
+    using input_t      = std::vector<input_one_t>;
+    using output_t     = std::vector<output_one_t>;
+
+    template <std::size_t B>
+    using input_batch_t = etl::fast_dyn_matrix<weight, B, 1>;
+
+    std::size_t i1; ///< The first dimension of the input
+    std::size_t i2; ///< The second dimension of the input
+    std::size_t i3; ///< The third dimension of the input
+    std::size_t c1; ///< The first dimension pooling ratio
+    std::size_t c2; ///< The second dimension pooling ratio
+    std::size_t c3; ///< The third dimension pooling ratio
+
+    std::size_t o1; ///< The first dimension of the output
+    std::size_t o2; ///< The second dimension of the output
+    std::size_t o3; ///< The third dimension of the output
+
+    dyn_pooling_layer_3d() = default;
+
+    void init_layer(size_t i1, size_t i2, size_t i3, size_t c1, size_t c2, size_t c3){
+        this->i1 = i1;
+        this->i2 = i2;
+        this->i3 = i3;
+        this->c1 = c1;
+        this->c2 = c2;
+        this->c3 = c3;
+        this->o1 = i1 / c1;
+        this->o2 = i2 / c2;
+        this->o3 = i3 / c3;
+    }
+
+    std::size_t input_size() const noexcept {
+        return i1 * i2 * i3;
+    }
+
+    std::size_t output_size() const noexcept {
+        return o1 * o2 * o3;
+    }
+
+    std::size_t parameters() const noexcept {
+        return 0;
+    }
+
+    template <typename Input>
+    output_t prepare_output(std::size_t samples) const {
+        output_t output;
+        output.reserve(samples);
+        for(size_t i = 0; i < samples; ++i){
+            output.emplace_back(o1, o2, o3);
+        }
+        return output;
+    }
+
+    template <typename Input>
+    output_one_t prepare_one_output() const {
+        return output_one_t(o1, o2, o3);
+    }
+};
+
 } //end of dll namespace

@@ -141,7 +141,7 @@ struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_convolut
  * \copydoc sgd_context
  */
 template <typename DBN, typename Layer>
-struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_pooling_layer()>> {
+struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_pooling_layer() && !layer_traits<Layer>::is_dynamic()>> {
     using layer_t = Layer;
     using weight  = typename layer_t::weight;
 
@@ -158,6 +158,26 @@ struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_pooling_
     etl::fast_matrix<weight, batch_size, I1, I2, I3> input;
     etl::fast_matrix<weight, batch_size, O1, O2, O3> output;
     etl::fast_matrix<weight, batch_size, O1, O2, O3> errors;
+};
+
+/*!
+ * \copydoc sgd_context
+ */
+template <typename DBN, typename Layer>
+struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_pooling_layer() && layer_traits<Layer>::is_dynamic()>> {
+    using layer_t = Layer;
+    using weight  = typename layer_t::weight;
+
+    static constexpr const auto batch_size = DBN::batch_size;
+
+    etl::dyn_matrix<weight, 4> input;
+    etl::dyn_matrix<weight, 4> output;
+    etl::dyn_matrix<weight, 4> errors;
+
+    sgd_context(size_t i1, size_t i2, size_t i3, size_t c1, size_t c2, size_t c3)
+            : input(batch_size, i1, i2, i3),
+              output(batch_size, i1 / c1, i2 / c2, i3 / c3),
+              errors(batch_size, i1 / c1, i2 / c2, i3 / c3) {}
 };
 
 // This selector is used to compute the output types of transform layers

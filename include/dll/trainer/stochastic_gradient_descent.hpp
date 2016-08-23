@@ -41,9 +41,18 @@ struct extract_function<L, std::enable_if_t<decay_layer_traits<L>::is_rbm_layer(
             : (std::decay_t<L>::hidden_unit == unit_type::SOFTMAX ? function::SOFTMAX : function::RELU);
 };
 
-template <typename Layer, typename Input, typename Output, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_max_pooling_layer())>
+template <typename Layer, typename Input, typename Output, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_max_pooling_layer() && !decay_layer_traits<Layer>::is_dynamic())>
 auto upsample(Input&& input, Output&& output, Errors&& errors) {
     return etl::max_pool_derivative_3d<Layer::C1, Layer::C2, Layer::C3>(input, output) >> etl::upsample_3d<Layer::C1, Layer::C2, Layer::C3>(errors);
+}
+
+template <typename Layer, typename Input, typename Output, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_max_pooling_layer() && decay_layer_traits<Layer>::is_dynamic())>
+auto upsample(Input&& input, Output&& output, Errors&& errors) {
+    auto c1 = etl::dim(input, 0) / etl::dim(output, 0);
+    auto c2 = etl::dim(input, 1) / etl::dim(output, 1);
+    auto c3 = etl::dim(input, 2) / etl::dim(output, 2);
+
+    return etl::max_pool_derivative_3d(input, output, c1, c2, c3) >> etl::upsample_3d(errors, c1, c2, c3);
 }
 
 template <typename Layer, typename Input, typename Output, typename Errors, cpp_enable_if(decay_layer_traits<Layer>::is_avg_pooling_layer())>
@@ -226,10 +235,10 @@ struct sgd_trainer {
 
     template <typename Layer1, typename Context1, typename Layer2, typename Context2, typename DF>
     static void compute_errors_from_conv(Layer1&, Context1& ctx1, Layer2& r2, Context2& ctx2, DF derivative) {
-        constexpr const auto K   = Layer2::K;
-        constexpr const auto NC  = Layer2::NC;
-        constexpr const auto NV1 = Layer2::NV1;
-        constexpr const auto NV2 = Layer2::NV2;
+        auto K   = get_k(r2);
+        auto NC  = get_nc(r2);
+        auto NV1 = get_nv1(r2);
+        auto NV2 = get_nv2(r2);
 
         auto w_f = force_temporary(r2.w);
 
@@ -239,7 +248,7 @@ struct sgd_trainer {
             }
         }
 
-        etl::fast_dyn_matrix<weight, NV1, NV2> tmp;
+        etl::dyn_matrix<weight, 2> tmp(NV1, NV2);
 
         ctx1.errors = 0;
 
