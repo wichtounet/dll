@@ -22,6 +22,9 @@ namespace dll {
  */
 template <typename... Parameters>
 struct dyn_rbm_desc {
+    /*!
+     * A list of all the parameters of the descriptor
+     */
     using parameters = cpp::type_list<Parameters...>;
 
     static constexpr const unit_type visible_unit   = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;

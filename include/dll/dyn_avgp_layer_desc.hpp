@@ -13,6 +13,9 @@ namespace dll {
 
 template <typename... Parameters>
 struct dyn_avgp_layer_3d_desc : dyn_pooling_layer_3d_desc<Parameters...> {
+    /*!
+     * A list of all the parameters of the descriptor
+     */
     using parameters = cpp::type_list<Parameters...>;
 
     /*! The layer type */

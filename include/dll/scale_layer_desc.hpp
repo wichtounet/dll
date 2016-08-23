@@ -14,6 +14,9 @@ struct scale_layer_desc {
     static constexpr const int A = A_T;
     static constexpr const int B = B_T;
 
+    /*!
+     * A list of all the parameters of the descriptor
+     */
     using parameters = cpp::type_list<>;
 
     /*! The layer type */

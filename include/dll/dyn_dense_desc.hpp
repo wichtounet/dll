@@ -17,6 +17,9 @@ namespace dll {
  */
 template <typename... Parameters>
 struct dyn_dense_desc {
+    /*!
+     * A list of all the parameters of the descriptor
+     */
     using parameters = cpp::type_list<Parameters...>;
 
     static constexpr const function activation_function = detail::get_value<activation<function::SIGMOID>, Parameters...>::value;

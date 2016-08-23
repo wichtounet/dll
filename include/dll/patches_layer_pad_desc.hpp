@@ -17,6 +17,9 @@ struct patches_layer_padh_desc {
     static constexpr const std::size_t h_stride = HS_T;
     static constexpr const std::size_t filler   = Filler_T;
 
+    /*!
+     * A list of all the parameters of the descriptor
+     */
     using parameters = cpp::type_list<Parameters...>;
 
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;

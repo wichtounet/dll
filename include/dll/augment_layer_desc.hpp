@@ -11,7 +11,10 @@ namespace dll {
 
 template <typename... Parameters>
 struct augment_layer_desc {
-    using parameters = cpp::type_list<Parameters...>; ///< The parameter list
+    /*!
+     * A list of all the parameters of the descriptor
+     */
+    using parameters = cpp::type_list<Parameters...>;
 
     using layer_t = augment_layer<augment_layer_desc<Parameters...>>; ///< The layer type
 

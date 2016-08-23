@@ -16,7 +16,10 @@ template <rectifier_method M = rectifier_method::ABS>
 struct rectifier_layer_desc {
     static constexpr const rectifier_method method = M; ///< The rectifier method to use
 
-    using parameters = cpp::type_list<>; ///< The parameters of the layer
+    /*!
+     * A list of all the parameters of the descriptor
+     */
+    using parameters = cpp::type_list<>;
 
     using layer_t = rectifier_layer<rectifier_layer_desc<M>>; ///< The constructed layer type
 };

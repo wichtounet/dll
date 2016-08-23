@@ -10,6 +10,9 @@
 namespace dll {
 
 struct random_layer_desc {
+    /*!
+     * A list of all the parameters of the descriptor
+     */
     using parameters = cpp::type_list<>;
 
     /*! The layer type */

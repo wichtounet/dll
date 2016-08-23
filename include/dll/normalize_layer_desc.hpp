@@ -9,7 +9,14 @@
 
 namespace dll {
 
+/*!
+ * \brief Descriptor for layer that normalizes the input data to
+ * zero-mean and unit-variance
+ */
 struct normalize_layer_desc {
+    /*!
+     * A list of all the parameters of the descriptor
+     */
     using parameters = cpp::type_list<>;
 
     /*! The layer type */
