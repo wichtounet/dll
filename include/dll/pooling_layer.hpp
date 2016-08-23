@@ -42,9 +42,6 @@ struct pooling_layer_3d : neural_base<Parent> {
     template <std::size_t B>
     using input_batch_t = etl::fast_dyn_matrix<weight, B, I1, I2, I3>;
 
-    template <std::size_t B>
-    using output_batch_t = etl::fast_dyn_matrix<weight, B, O1, O2, O3>;
-
     pooling_layer_3d() = default;
 
     static constexpr std::size_t input_size() noexcept {

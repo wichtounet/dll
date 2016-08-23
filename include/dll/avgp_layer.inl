@@ -28,9 +28,6 @@ struct avgp_layer_3d final : pooling_layer_3d<avgp_layer_3d<Desc>, Desc> {
     template <std::size_t B>
     using input_batch_t = typename base::template input_batch_t<B>;
 
-    template <std::size_t B>
-    using output_batch_t = typename base::template output_batch_t<B>;
-
     avgp_layer_3d() = default;
 
     /*!

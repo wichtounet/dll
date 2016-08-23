@@ -45,9 +45,6 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
     template <std::size_t B>
     using input_batch_t = etl::fast_dyn_matrix<weight, B, num_visible>;
 
-    template <std::size_t B>
-    using output_batch_t = etl::fast_dyn_matrix<weight, B, num_hidden>;
-
     using w_type = etl::fast_matrix<weight, num_visible, num_hidden>; ///< The type used to store weights
     using b_type = etl::fast_vector<weight, num_hidden>;              ///< The type used to store hidden biases
     using c_type = etl::fast_vector<weight, num_visible>;             ///< The type used to store visible biases

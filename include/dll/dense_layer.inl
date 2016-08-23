@@ -41,9 +41,6 @@ struct dense_layer final : neural_base<dense_layer<Desc>> {
     template <std::size_t B>
     using input_batch_t = etl::fast_dyn_matrix<weight, B, num_visible>;
 
-    template <std::size_t B>
-    using output_batch_t = etl::fast_dyn_matrix<weight, B, num_hidden>;
-
     using w_type = etl::fast_matrix<weight, num_visible, num_hidden>;
     using b_type = etl::fast_matrix<weight, num_hidden>;
 
