@@ -17,16 +17,19 @@
 #pragma once
 
 #include "cpp_utils/static_if.hpp"
+#include "cpp_utils/maybe_parallel.hpp"
 
 #include "unit_type.hpp"
 #include "trainer/dbn_trainer.hpp"
+#include "trainer/rbm_trainer_fwd.hpp"
+#include "dll/trainer/rbm_training_context.hpp"
 #include "trainer/conjugate_gradient.hpp"
 #include "dbn_common.hpp"
 #include "svm_common.hpp"
 #include "util/flatten.hpp"
 #include "util/export.hpp"
 #include "util/timers.hpp"
-#include "dbn_detail.hpp" //dbn_detail namespace
+#include "dbn_detail.hpp" // dbn_detail namespace
 
 namespace dll {
 

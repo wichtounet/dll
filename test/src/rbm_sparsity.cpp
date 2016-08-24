@@ -5,11 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include <numeric>
-
 #include "catch.hpp"
-
-#include "cpp_utils/data.hpp"
 
 #include "dll/rbm.hpp"
 

@@ -18,6 +18,8 @@
 #include "cpp_utils/static_if.hpp"
 
 #include "dll/util/blas.hpp"
+#include "dll/util/checks.hpp" // For NaN checks
+#include "dll/trainer/sgd_context.hpp" //Context for SGD
 
 namespace dll {
 

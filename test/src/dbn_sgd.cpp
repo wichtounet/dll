@@ -9,6 +9,7 @@
 
 #include "catch.hpp"
 
+#include "dll/rbm.hpp"
 #include "dll/dbn.hpp"
 #include "dll/trainer/stochastic_gradient_descent.hpp"
 

@@ -7,13 +7,11 @@
 
 #include "catch.hpp"
 
-#include "dll/conv_layer.hpp"
-#include "dll/dense_layer.hpp"
+#include "dll/rbm.hpp"
 #include "dll/conv_rbm.hpp"
 #include "dll/dbn.hpp"
 #include "dll/scale_layer.hpp"
 #include "dll/mp_layer.hpp"
-#include "dll/avgp_layer.hpp"
 #include "dll/trainer/stochastic_gradient_descent.hpp"
 
 #include "mnist/mnist_reader.hpp"

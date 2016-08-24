@@ -19,6 +19,7 @@
 #include <utility>
 
 #include "dll/util/batch.hpp"
+#include "dll/trainer/cg_context.hpp"  //Context for CG
 
 namespace dll {
 

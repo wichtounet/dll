@@ -7,7 +7,6 @@
 
 #pragma once
 
-#include "rbm.hpp"
 #include "dbn_layers.hpp"
 #include "dbn.inl"
 #include "dbn_desc.hpp"

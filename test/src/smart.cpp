@@ -5,10 +5,9 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include <deque>
-
 #include "catch.hpp"
 
+#include "dll/rbm.hpp"
 #include "dll/conv_rbm.hpp"
 #include "dll/augment_layer.hpp"
 #include "dll/scale_layer.hpp"

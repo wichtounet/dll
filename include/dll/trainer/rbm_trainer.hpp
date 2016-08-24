@@ -16,6 +16,8 @@
 #include "dll/util/batch.hpp"
 #include "dll/util/timers.hpp"
 #include "dll/layer_traits.hpp"
+#include "dll/trainer/rbm_trainer_fwd.hpp"
+#include "dll/trainer/rbm_training_context.hpp"
 
 namespace dll {
 

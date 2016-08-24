@@ -11,10 +11,10 @@
 
 #include "catch.hpp"
 
-#include "dll/dbn.hpp"
-
 #include "dll/binarize_layer.hpp"
 #include "dll/normalize_layer.hpp"
+#include "dll/rbm.hpp"
+#include "dll/dbn.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"

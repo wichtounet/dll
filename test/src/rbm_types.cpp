@@ -10,15 +10,12 @@
  * enough input types
  */
 
-#include <numeric>
 #include <vector>
 #include <list>
 #include <deque>
 
 #include "catch.hpp"
 #include "template_test.hpp"
-
-#include "cpp_utils/data.hpp"
 
 #include "dll/rbm.hpp"
 #include "dll/dyn_rbm.hpp"

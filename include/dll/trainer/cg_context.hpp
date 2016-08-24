@@ -12,14 +12,9 @@
 
 #pragma once
 
-namespace dll {
+#include "etl/etl.hpp"
 
-/*!
- * \brief The context of a RBM during CG training
- * \tparam RBM The RBM.
- */
-template <typename RBM>
-struct cg_context {};
+namespace dll {
 
 //Foward
 template <typename Desc>

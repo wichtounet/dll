@@ -11,6 +11,7 @@
 
 #define DLL_SVM_SUPPORT
 
+#include "dll/rbm.hpp"
 #include "dll/dyn_rbm.hpp"
 #include "dll/dbn.hpp"
 #include "dll/binarize_layer.hpp"

@@ -9,8 +9,11 @@
 
 #include <memory>
 
-#include "trainer/cg_context.hpp"  //Context for CG
-#include "trainer/sgd_context.hpp" //Context for SGD
+#include "etl/etl.hpp" // Every layer needs ETL
+
+#include "dll/base_conf.hpp"           // Every layer description used the conf utility
+#include "dll/util/tmp.hpp"            // Every layer description needs TMP
+#include "dll/trainer/context_fwd.hpp" // Forward declaration of the context classes
 
 namespace dll {
 

@@ -7,9 +7,12 @@
 
 #pragma once
 
+#include "cpp_utils/algorithm.hpp" // For parallel_shuffle
+
 #include "etl/etl.hpp"
 
 #include "dll/util/labels.hpp"
+#include "dll/util/batch.hpp" // For make_batch
 #include "dll/test.hpp"
 #include "dll/dbn_traits.hpp"
 

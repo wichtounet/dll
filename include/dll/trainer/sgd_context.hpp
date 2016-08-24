@@ -12,18 +12,12 @@
 
 #pragma once
 
+#include "etl/etl.hpp"
+
 #include "dll/layer_traits.hpp"
 #include "dll/dbn_traits.hpp"
 
 namespace dll {
-
-/*!
- * \brief The context of a layer during SGD training
- * \tparam DBN The containing DBN
- * \tparam Layer The layer
- */
-template <typename DBN, typename Layer, typename Enable = void>
-struct sgd_context;
 
 /*!
  * \copydoc sgd_context

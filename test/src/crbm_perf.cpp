@@ -9,8 +9,6 @@
 
 #include "catch.hpp"
 
-#include "cpp_utils/data.hpp"
-
 #include "dll/conv_rbm.hpp"
 
 #include "mnist/mnist_reader.hpp"
