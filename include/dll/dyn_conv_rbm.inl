@@ -488,6 +488,16 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
             activate_one(input[i], h_a[i]);
         }
     }
+
+    template <std::size_t B>
+    auto prepare_input_batch() const {
+        return etl::dyn_matrix<weight, 4>(B, nc, nv1, nv2);
+    }
+
+    template <std::size_t B>
+    auto prepare_output_batch() const {
+        return etl::dyn_matrix<weight, 4>(B, k, nh1, nh2);
+    }
 };
 
 /*!
