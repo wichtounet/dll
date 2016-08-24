@@ -473,7 +473,7 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
 
     template <typename V, typename H>
     void batch_activate_hidden(H& h_a, const V& input) const {
-        etl::dyn_matrix<weight, 5> v_cv(etl::decay_traits<H>::template dim<0>(), V_CV_CHANNELS, k, nh1, nh2); //Temporary convolution
+        etl::dyn_matrix<weight, 5> v_cv(etl::dim<0>(h_a), V_CV_CHANNELS, k, nh1, nh2); //Temporary convolution
         batch_activate_hidden<true, false>(h_a, h_a, input, input, v_cv);
     }
 
@@ -497,6 +497,11 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
     template <std::size_t B>
     auto prepare_output_batch() const {
         return etl::dyn_matrix<weight, 4>(B, k, nh1, nh2);
+    }
+
+    template <typename DBN>
+    void init_sgd_context() {
+        this->sgd_context_ptr = std::make_shared<sgd_context<DBN, this_type>>(nc, nv1, nv2, k, nh1, nh2);
     }
 };
 
