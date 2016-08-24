@@ -229,3 +229,31 @@ TEST_CASE("dyn_dense/sgd/7", "[dense][dbn][mnist][sgd]") {
     std::cout << "test_error:" << test_error << std::endl;
     REQUIRE(test_error < 0.2);
 }
+
+TEST_CASE("dyn_dense/sgd/8", "[dense][dbn][mnist][sgd]") {
+    typedef dll::dbn_desc<
+        dll::dbn_layers<
+            dll::scale_layer_desc<1, 256>::layer_t,
+            dll::dyn_dense_desc<dll::activation<dll::function::TANH>>::layer_t,
+            dll::dyn_dense_desc<dll::activation<dll::function::TANH>>::layer_t>,
+        dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(1000);
+    REQUIRE(!dataset.training_images.empty());
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->learning_rate = 0.05;
+
+    dbn->template layer_get<1>().init_layer(28 * 28, 100);
+    dbn->template layer_get<2>().init_layer(100, 10);
+
+    auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
+    std::cout << "ft_error:" << ft_error << std::endl;
+
+    CHECK(ft_error < 5e-2);
+
+    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
+    std::cout << "test_error:" << test_error << std::endl;
+    REQUIRE(test_error < 0.2);
+}
