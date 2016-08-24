@@ -233,12 +233,12 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
     }
 
     template <std::size_t B>
-    auto prepare_input_batch(){
+    auto prepare_input_batch() const {
         return etl::dyn_matrix<weight, 2>(B, num_visible);
     }
 
     template <std::size_t B>
-    auto prepare_output_batch(){
+    auto prepare_output_batch() const {
         return etl::dyn_matrix<weight, 2>(B, num_hidden);
     }
 };
