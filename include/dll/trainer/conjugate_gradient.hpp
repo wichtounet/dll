@@ -37,7 +37,7 @@ struct gradient_context {
     }
 };
 
-template <typename DBN, bool Debug = false>
+template <typename DBN, bool Debug>
 struct cg_trainer {
     using dbn_t  = DBN;
     using weight = typename dbn_t::weight;

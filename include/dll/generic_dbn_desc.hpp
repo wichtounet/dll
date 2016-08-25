@@ -8,11 +8,13 @@
 #pragma once
 
 #include "base_conf.hpp"
-#include "trainer/conjugate_gradient.hpp"
 #include "watcher.hpp"
 #include "util/tmp.hpp"
 
 namespace dll {
+
+template <typename DBN, bool Debug = false>
+struct cg_trainer;
 
 template <typename DBN>
 using default_dbn_trainer_t = cg_trainer<DBN, false>;

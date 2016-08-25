@@ -23,7 +23,6 @@
 #include "trainer/dbn_trainer.hpp"
 #include "trainer/rbm_trainer_fwd.hpp"
 #include "dll/trainer/rbm_training_context.hpp"
-#include "trainer/conjugate_gradient.hpp"
 #include "dbn_common.hpp"
 #include "svm_common.hpp"
 #include "util/flatten.hpp"

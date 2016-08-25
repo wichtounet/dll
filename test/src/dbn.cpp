@@ -12,6 +12,7 @@
 #include "dll/rbm.hpp"
 #include "dll/dbn.hpp"
 #include "dll/text_reader.hpp"
+#include "dll/trainer/conjugate_gradient.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
