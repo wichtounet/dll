@@ -62,6 +62,8 @@ struct lcn_layer : transform_layer<lcn_layer<Desc>> {
      */
     template <typename Input, typename Output>
     void activate_hidden(Output& y, const Input& x) const {
+        inherit_dim(y, x);
+
         using weight_t = etl::value_t<Input>;
 
         auto w = filter<weight_t>(sigma);
@@ -121,6 +123,8 @@ struct lcn_layer : transform_layer<lcn_layer<Desc>> {
      */
     template <typename Input, typename Output>
     void batch_activate_hidden(Output& output, const Input& input) const {
+        inherit_dim(output, input);
+
         for (std::size_t b = 0; b < etl::dim<0>(input); ++b) {
             activate_hidden(output(b), input(b));
         }

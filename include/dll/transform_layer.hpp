@@ -57,4 +57,28 @@ struct transform_layer : neural_base<Derived> {
     }
 };
 
+/*!
+ * \brief Make the output inherit the dimensions of the input, if
+ * necessary
+ * \param output The output
+ * \param input The input
+ */
+template <typename Input, typename Output, cpp_enable_if(etl::all_fast<Output>::value)>
+void inherit_dim(Output& output, const Input& input) {
+    cpp_unused(output);
+    cpp_unused(input);
+    //Nothing to do, the output is fast (fixed dimensions)
+}
+
+/*!
+ * \brief Make the output inherit the dimensions of the input, if
+ * necessary
+ * \param output The output
+ * \param input The input
+ */
+template <typename Input, typename Output, cpp_disable_if(etl::all_fast<Output>::value)>
+void inherit_dim(Output& output, const Input& input) {
+    output.inherit_if_null(input);
+}
+
 } //end of dll namespace

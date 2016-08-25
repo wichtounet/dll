@@ -30,19 +30,9 @@ struct random_layer : transform_layer<random_layer<Desc>> {
      * \param output The output
      * \param input The input to apply the layer to
      */
-    template <typename Input, typename Output, cpp_enable_if(etl::all_fast<Output>::value)>
-    static void activate_hidden(Output& output, const Input&) {
-        output = etl::normal_generator<etl::value_t<Input>>();
-    }
-
-    /*!
-     * \brief Apply the layer to the input
-     * \param output The output
-     * \param input The input to apply the layer to
-     */
-    template <typename Input, typename Output, cpp_disable_if(etl::all_fast<Output>::value)>
+    template <typename Input, typename Output>
     static void activate_hidden(Output& output, const Input& input) {
-        output.inherit_if_null(input);
+        inherit_dim(output, input);
         output = etl::normal_generator<etl::value_t<Input>>();
     }
 
@@ -51,19 +41,9 @@ struct random_layer : transform_layer<random_layer<Desc>> {
      * \param output The batch of output
      * \param input The batch of input to apply the layer to
      */
-    template <typename Input, typename Output, cpp_enable_if(etl::all_fast<Output>::value)>
-    static void batch_activate_hidden(Output& output, const Input&) {
-        output = etl::normal_generator<etl::value_t<Input>>();
-    }
-
-    /*!
-     * \brief Apply the layer to the batch of input
-     * \param output The batch of output
-     * \param input The batch of input to apply the layer to
-     */
-    template <typename Input, typename Output, cpp_disable_if(etl::all_fast<Output>::value)>
+    template <typename Input, typename Output>
     static void batch_activate_hidden(Output& output, const Input& input) {
-        output.inherit_if_null(input);
+        inherit_dim(output, input);
         output = etl::normal_generator<etl::value_t<Input>>();
     }
 };
