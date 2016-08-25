@@ -269,6 +269,17 @@ public:
         return detail::layer_get<N>(tuples);
     }
 
+    /*!
+     * \brief Initialize the Nth layer  with the given args. The Nth layer must
+     * be a dynamic layer.
+     * \tparam N The index of the layer to return (from 0)
+     * \param args The arguments for initialization of the layer.
+     */
+    template <std::size_t N, typename... Args>
+    void init_layer(Args&&... args){
+        layer_get<N>().init_layer(std::forward<Args>(args)...);
+    }
+
     template <std::size_t N>
     static constexpr std::size_t layer_input_size() noexcept {
         return layer_traits<layer_type<N>>::input_size();
