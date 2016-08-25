@@ -124,7 +124,9 @@ struct layer_traits {
             || cpp::is_specialization_of<scale_layer, layer_t>::value
             || cpp::is_specialization_of<rectifier_layer, layer_t>::value
             || cpp::is_specialization_of<random_layer, layer_t>::value
-            || cpp::is_specialization_of<lcn_layer, layer_t>::value;
+            || cpp::is_specialization_of<lcn_layer, layer_t>::value
+            || cpp::is_specialization_of<dyn_lcn_layer, layer_t>::value
+            ;
     }
 
     /*!
@@ -181,6 +183,7 @@ struct layer_traits {
             || cpp::is_specialization_of<dyn_conv_layer, layer_t>::value
             || cpp::is_specialization_of<dyn_mp_layer_3d, layer_t>::value
             || cpp::is_specialization_of<dyn_avgp_layer_3d, layer_t>::value
+            || cpp::is_specialization_of<dyn_lcn_layer, layer_t>::value
             ;
     }
 

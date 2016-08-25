@@ -9,13 +9,14 @@
 
 #define DLL_SVM_SUPPORT
 
-#include "dll/dyn_conv_rbm.hpp"
 #include "dll/conv_rbm.hpp"
-#include "dll/dbn.hpp"
+#include "dll/dyn_conv_rbm.hpp"
 #include "dll/rectifier_layer.hpp"
 #include "dll/lcn_layer.hpp"
+#include "dll/dyn_lcn_layer.hpp"
 #include "dll/mp_layer.hpp"
 #include "dll/avgp_layer.hpp"
+#include "dll/dbn.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -216,6 +217,37 @@ TEST_CASE("unit/cdbn/lcn/mnist/7", "[cdbn][lcn][svm][unit]") {
 
     dbn->template init_layer<0>(1, 28, 28, 20, 12, 12);
     dbn->template init_layer<1>(20, 12, 12, 20, 10, 10);
+
+    dbn->display();
+
+    dbn->pretrain(dataset.training_images, 20);
+
+    auto result = dbn->svm_train(dataset.training_images, dataset.training_labels);
+    REQUIRE(result);
+
+    auto test_error = dll::test_set(dbn, dataset.training_images, dataset.training_labels, dll::svm_predictor());
+    std::cout << "test_error:" << test_error << std::endl;
+    REQUIRE(test_error < 0.1);
+}
+
+TEST_CASE("unit/cdbn/lcn/mnist/8", "[cdbn][lcn][svm][unit]") {
+    using dbn_t =
+        dll::dbn_desc<dll::dbn_layers<
+              dll::dyn_conv_rbm_desc<dll::parallel_mode, dll::momentum>::layer_t
+            , dll::dyn_conv_rbm_desc<dll::parallel_mode, dll::momentum>::layer_t
+            , dll::dyn_lcn_layer_desc::layer_t
+        >>::dbn_t;
+
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(100);
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->template init_layer<0>(1, 28, 28, 20, 12, 12);
+    dbn->template init_layer<1>(20, 12, 12, 20, 10, 10);
+    dbn->template init_layer<2>(9);
 
     dbn->display();
 

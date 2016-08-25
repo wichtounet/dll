@@ -16,29 +16,33 @@ namespace dll {
  * \brief Local Contrast Normalization layer
  */
 template <typename Desc>
-struct lcn_layer : transform_layer<lcn_layer<Desc>> {
-    using desc = Desc; ///< The descriptor type
+struct dyn_lcn_layer : transform_layer<dyn_lcn_layer<Desc>> {
+    using desc = Desc;
 
-    static constexpr const std::size_t K = desc::K;
-    static constexpr const std::size_t Mid = K / 2;
-
+    size_t K;
+    size_t Mid;
     double sigma = 2.0;
 
-    static_assert(K > 1, "The kernel size must be greater than 1");
-    static_assert(K % 2 == 1, "The kernel size must be odd");
+    void init_layer(size_t K){
+        cpp_assert(K > 1, "The LCN kernel size must be greater than 1");
+        cpp_assert(K % 2 == 1, "The LCN kernel size must be odd");
+
+        this->K = K;
+        this->Mid = K / 2;
+    }
 
     /*!
      * \brief Returns a string representation of the layer
      */
-    static std::string to_short_string() {
-        std::string desc("LCN: ");
+    std::string to_short_string() const {
+        std::string desc("LCN(dyn): ");
         desc += std::to_string(K) + 'x' + std::to_string(K);
         return desc;
     }
 
     template <typename W>
-    static etl::fast_dyn_matrix<W, K, K> filter(double sigma) {
-        etl::fast_dyn_matrix<W, K, K> w;
+    etl::dyn_matrix<W, 2> filter(double sigma) const {
+        etl::dyn_matrix<W, 2> w(K, K);
 
         lcn_filter(w, K, Mid, sigma);
 

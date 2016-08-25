@@ -57,6 +57,9 @@ template <typename Desc>
 struct lcn_layer;
 
 template <typename Desc>
+struct dyn_lcn_layer;
+
+template <typename Desc>
 struct scale_layer;
 
 template <typename Desc>

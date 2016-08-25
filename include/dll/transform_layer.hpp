@@ -23,8 +23,8 @@ struct transform_layer : neural_base<Derived> {
     /*!
      * \brief Prints the layer to the console
      */
-    static void display() {
-        std::cout << derived_t::to_short_string() << std::endl;
+    void display() const {
+        std::cout << as_derived().to_short_string() << std::endl;
     }
 
     /*!
@@ -33,9 +33,9 @@ struct transform_layer : neural_base<Derived> {
      * \param input The set of input to apply the layer to
      */
     template <typename I, typename O_A>
-    static void activate_many(const I& input, O_A& output) {
+    void activate_many(const I& input, O_A& output) const {
         for (std::size_t i = 0; i < input.size(); ++i) {
-            derived_t::activate_hidden(input[i], output[i]);
+            as_derived().activate_hidden(input[i], output[i]);
         }
     }
 
@@ -54,6 +54,11 @@ struct transform_layer : neural_base<Derived> {
     template <typename Input>
     static Input prepare_one_output() {
         return {};
+    }
+
+private:
+    const derived_t& as_derived() const {
+        return *static_cast<const derived_t*>(this);
     }
 };
 
