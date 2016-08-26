@@ -63,6 +63,11 @@ struct dyn_avgp_layer_3d final : dyn_pooling_layer_3d<dyn_avgp_layer_3d<Desc>, D
     void init_sgd_context() {
         this->sgd_context_ptr = std::make_shared<sgd_context<DBN, this_type>>(base::i1, base::i2, base::i3, base::c1, base::c2, base::c3);
     }
+
+    template<typename DRBM>
+    static void dyn_init(DRBM&){
+        //Nothing to change
+    }
 };
 
 } //end of dll namespace

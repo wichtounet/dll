@@ -251,6 +251,11 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
     auto prepare_output_batch() const {
         return etl::dyn_matrix<weight, 2>(B, num_hidden);
     }
+
+    template<typename DRBM>
+    static void dyn_init(DRBM&){
+        //Nothing to change
+    }
 };
 
 /*!

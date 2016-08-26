@@ -221,6 +221,11 @@ struct dyn_conv_layer final : neural_base<dyn_conv_layer<Desc>> {
     void init_sgd_context() {
         this->sgd_context_ptr = std::make_shared<sgd_context<DBN, this_type>>(nc, nv1, nv2, k, nh1, nh2);
     }
+
+    template<typename DRBM>
+    static void dyn_init(DRBM&){
+        //Nothing to change
+    }
 };
 
 } //end of dll namespace

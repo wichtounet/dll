@@ -20,6 +20,9 @@ struct dyn_mp_layer_3d_desc : dyn_pooling_layer_3d_desc<Parameters...> {
 
     /*! The RBM type */
     using layer_t = dyn_mp_layer_3d<dyn_mp_layer_3d_desc<Parameters...>>;
+
+    /*! The RBM type */
+    using dyn_layer_t = dyn_mp_layer_3d<dyn_mp_layer_3d_desc<Parameters...>>;
 };
 
 } //end of dll namespace

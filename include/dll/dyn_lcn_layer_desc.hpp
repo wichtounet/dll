@@ -17,6 +17,9 @@ struct dyn_lcn_layer_desc {
 
     /*! The layer type */
     using layer_t = dyn_lcn_layer<dyn_lcn_layer_desc>;
+
+    /*! The layer type */
+    using dyn_layer_t = dyn_lcn_layer<dyn_lcn_layer_desc>;
 };
 
 } //end of dll namespace

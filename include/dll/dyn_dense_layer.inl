@@ -181,6 +181,11 @@ struct dyn_dense_layer final : neural_base<dyn_dense_layer<Desc>> {
     auto prepare_output_batch() const {
         return etl::dyn_matrix<weight>(B, num_hidden);
     }
+
+    template<typename DRBM>
+    static void dyn_init(DRBM&){
+        //Nothing to change
+    }
 };
 
 } //end of dll namespace

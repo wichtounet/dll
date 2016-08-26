@@ -30,6 +30,9 @@ struct dyn_dense_desc {
     /*! The dense type */
     using layer_t = dyn_dense_layer<dyn_dense_desc<Parameters...>>;
 
+    /*! The dense type */
+    using dyn_layer_t = dyn_dense_layer<dyn_dense_desc<Parameters...>>;
+
     //Make sure only valid types are passed to the configuration list
     static_assert(
         detail::is_valid<cpp::type_list<weight_type_id, dbn_only_id, activation_id>, Parameters...>::value,

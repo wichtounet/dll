@@ -104,6 +104,11 @@ struct dyn_patches_layer_padh : neural_base<dyn_patches_layer_padh<Desc>> {
     static output_one_t prepare_one_output() {
         return output_one_t();
     }
+
+    template<typename DRBM>
+    static void dyn_init(DRBM&){
+        //Nothing to change
+    }
 };
 
 } //end of dll namespace

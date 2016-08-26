@@ -467,6 +467,11 @@ struct dyn_conv_rbm_mp final : public standard_conv_rbm<dyn_conv_rbm_mp<Desc>, D
             activate_one(input[i], h_a[i]);
         }
     }
+
+    template<typename DRBM>
+    static void dyn_init(DRBM&){
+        //Nothing to change
+    }
 };
 
 /*!

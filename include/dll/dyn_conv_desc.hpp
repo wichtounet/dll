@@ -30,6 +30,9 @@ struct dyn_conv_desc {
     /*! The conv type */
     using layer_t = dyn_conv_layer<dyn_conv_desc<Parameters...>>;
 
+    /*! The conv type */
+    using dyn_layer_t = dyn_conv_layer<dyn_conv_desc<Parameters...>>;
+
     //Make sure only valid types are passed to the configuration list
     static_assert(
         detail::is_valid<cpp::type_list<weight_type_id, dbn_only_id, activation_id>, Parameters...>::value,

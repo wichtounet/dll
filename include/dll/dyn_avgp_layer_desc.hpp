@@ -20,6 +20,9 @@ struct dyn_avgp_layer_3d_desc : dyn_pooling_layer_3d_desc<Parameters...> {
 
     /*! The layer type */
     using layer_t = dyn_avgp_layer_3d<dyn_avgp_layer_3d_desc<Parameters...>>;
+
+    /*! The layer type */
+    using dyn_layer_t = dyn_avgp_layer_3d<dyn_avgp_layer_3d_desc<Parameters...>>;
 };
 
 } //end of dll namespace
