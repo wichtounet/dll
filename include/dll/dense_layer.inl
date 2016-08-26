@@ -169,6 +169,11 @@ struct dense_layer final : neural_base<dense_layer<Desc>> {
     static auto prepare_output_batch(){
         return etl::fast_dyn_matrix<weight, B, num_hidden>();
     }
+
+    template<typename DLayer>
+    static void dyn_init(DLayer& dyn){
+        dyn.init_layer(num_visible, num_hidden);
+    }
 };
 
 //Allow odr-use of the constexpr static members
