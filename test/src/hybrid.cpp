@@ -18,6 +18,7 @@
 #include "dll/random_layer.hpp"
 #include "dll/binarize_layer.hpp"
 #include "dll/normalize_layer.hpp"
+#include "dll/lcn_layer.hpp"
 #include "dll/rbm.hpp"
 #include "dll/conv_rbm.hpp"
 #include "dll/conv_rbm_mp.hpp"
@@ -205,4 +206,21 @@ TEST_CASE("hybrid/mnist/9", "[cdbn][augment][unit]") {
     dbn->pretrain(dataset.training_images, 20);
 
     REQUIRE(dbn->activation_probabilities(dataset.training_images[0]).size() > 0);
+}
+
+TEST_CASE("hybrid/mnist/10", "") {
+    using dbn_t =
+        dll::dyn_dbn_desc<dll::dbn_layers<
+              dll::conv_rbm_desc_square<1, 28, 20, 12, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
+            , dll::conv_rbm_desc_square<20, 12, 20, 10, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
+            , dll::lcn_layer_desc<9>::layer_t
+        >>::dbn_t;
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+    dbn->display();
 }

@@ -7,5 +7,8 @@
 
 #pragma once
 
+// Include the dyn version (for dyn_dbn)
+#include "dll/dyn_lcn_layer.hpp"
+
 #include "dll/lcn_layer.inl"
 #include "dll/lcn_layer_desc.hpp"
