@@ -66,6 +66,9 @@ template <typename Desc>
 struct patches_layer;
 
 template <typename Desc>
+struct dyn_patches_layer;
+
+template <typename Desc>
 struct patches_layer_padh;
 
 template <typename Desc>
