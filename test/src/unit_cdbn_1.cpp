@@ -153,14 +153,14 @@ TEST_CASE("unit/cdbn/mnist/6", "[cdbn][mp][svm][unit]") {
             dll::conv_rbm_desc<10, 10, 7, 20, 8, 5, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::mp_layer_3d_desc<20, 8, 5, 2, 1, 1>::layer_t>>::dbn_t dbn_t;
 
-    REQUIRE(dbn_t::output_size() == 400);
-
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(250);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
+
+    REQUIRE(dbn->output_size() == 400);
 
     dbn->pretrain(dataset.training_images, 20);
 

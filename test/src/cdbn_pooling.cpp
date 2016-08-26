@@ -26,8 +26,6 @@ TEST_CASE("conv_dbn/mnist_9", "max_pooling") {
             dll::conv_rbm_desc<40, 14, 12, 40, 8, 10, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::mp_layer_3d_desc<40, 8, 10, 2, 2, 1>::layer_t>>::dbn_t dbn_t;
 
-    REQUIRE(dbn_t::output_size() == 800);
-
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
 
     REQUIRE(!dataset.training_images.empty());
@@ -40,6 +38,7 @@ TEST_CASE("conv_dbn/mnist_9", "max_pooling") {
 
     auto output = dbn->activation_probabilities(dataset.training_images.front());
 
+    REQUIRE(dbn->output_size() == 800);
     REQUIRE(output.size() == 800);
 
     auto result = dbn->svm_train(dataset.training_images, dataset.training_labels);
@@ -59,8 +58,6 @@ TEST_CASE("conv_dbn/mnist_10", "max_pooling") {
             dll::conv_rbm_desc<20, 10, 7, 40, 8, 5, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::mp_layer_3d_desc<40, 8, 5, 2, 1, 1>::layer_t>>::dbn_t dbn_t;
 
-    REQUIRE(dbn_t::output_size() == 800);
-
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
 
     REQUIRE(!dataset.training_images.empty());
@@ -70,6 +67,8 @@ TEST_CASE("conv_dbn/mnist_10", "max_pooling") {
     auto dbn = std::make_unique<dbn_t>();
 
     dbn->pretrain(dataset.training_images, 20);
+
+    REQUIRE(dbn->output_size() == 800);
 
     auto output = dbn->activation_probabilities(dataset.training_images.front());
 
@@ -91,8 +90,6 @@ TEST_CASE("conv_dbn/mnist_11", "avg_pooling") {
             dll::conv_rbm_desc<40, 14, 12, 40, 8, 10, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::avgp_layer_3d_desc<40, 8, 10, 2, 2, 1>::layer_t>>::dbn_t dbn_t;
 
-    REQUIRE(dbn_t::output_size() == 800);
-
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
 
     REQUIRE(!dataset.training_images.empty());
@@ -100,6 +97,8 @@ TEST_CASE("conv_dbn/mnist_11", "avg_pooling") {
     mnist::binarize_dataset(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
+
+    REQUIRE(dbn->output_size() == 800);
 
     dbn->pretrain(dataset.training_images, 20);
 
@@ -124,8 +123,6 @@ TEST_CASE("conv_dbn/mnist_12", "avgp_pooling") {
             dll::conv_rbm_desc<20, 10, 7, 40, 8, 5, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::avgp_layer_3d_desc<40, 8, 5, 2, 1, 1>::layer_t>>::dbn_t dbn_t;
 
-    REQUIRE(dbn_t::output_size() == 800);
-
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
 
     REQUIRE(!dataset.training_images.empty());
@@ -133,6 +130,8 @@ TEST_CASE("conv_dbn/mnist_12", "avgp_pooling") {
     mnist::binarize_dataset(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
+
+    REQUIRE(dbn->output_size() == 800);
 
     dbn->pretrain(dataset.training_images, 20);
 
@@ -154,8 +153,6 @@ TEST_CASE("conv_dbn/mnist_13", "nop_layers") {
         dll::dbn_layers<
             dll::conv_rbm_desc<1, 28, 28, 40, 14, 12, dll::momentum, dll::batch_size<25>>::layer_t, dll::conv_rbm_desc<40, 14, 12, 40, 8, 10, dll::momentum, dll::batch_size<25>>::layer_t, dll::mp_layer_3d_desc<40, 8, 10, 1, 1, 1>::layer_t, dll::avgp_layer_3d_desc<40, 8, 10, 1, 1, 1>::layer_t>>::dbn_t dbn_t;
 
-    REQUIRE(dbn_t::output_size() == 3200);
-
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
 
     REQUIRE(!dataset.training_images.empty());
@@ -163,6 +160,8 @@ TEST_CASE("conv_dbn/mnist_13", "nop_layers") {
     mnist::binarize_dataset(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
+
+    REQUIRE(dbn->output_size() == 3200);
 
     dbn->pretrain(dataset.training_images, 2);
 

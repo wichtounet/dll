@@ -281,21 +281,21 @@ public:
     }
 
     template <std::size_t N>
-    static constexpr std::size_t layer_input_size() noexcept {
-        return layer_traits<layer_type<N>>::input_size();
+    std::size_t layer_input_size() const noexcept {
+        return dll::input_size(layer_get<N>());
     }
 
     template <std::size_t N>
-    static constexpr std::size_t layer_output_size() noexcept {
-        return layer_traits<layer_type<N>>::output_size();
+    std::size_t layer_output_size() const noexcept {
+        return dll::output_size(layer_get<N>());
     }
 
-    static constexpr std::size_t input_size() noexcept {
-        return layer_traits<layer_type<0>>::input_size();
+    std::size_t input_size() const noexcept {
+        return dll::input_size(layer_get<layers - 1>());
     }
 
-    static constexpr std::size_t output_size() noexcept {
-        return layer_traits<layer_type<layers - 1>>::output_size();
+    std::size_t output_size() const noexcept {
+        return dll::output_size(layer_get<layers - 1>());
     }
 
     static std::size_t full_output_size() noexcept {
