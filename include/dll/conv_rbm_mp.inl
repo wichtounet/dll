@@ -309,7 +309,8 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         }
     }
 
-    weight energy(const input_one_t& v, const output_one_t& h) const {
+    template <typename Output>
+    weight energy(const input_one_t& v, const Output& h) const {
         etl::fast_dyn_matrix<weight, 2, K, NH1, NH2> v_cv; //Temporary convolution
 
         if (desc::visible_unit == unit_type::BINARY && desc::hidden_unit == unit_type::BINARY) {
@@ -331,8 +332,8 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         }
     }
 
-    template<typename Input>
-    weight energy(const Input& v, const output_one_t& h) const {
+    template<typename Input, typename Output>
+    weight energy(const Input& v, const Output& h) const {
         decltype(auto) converted = converter_one<Input, input_one_t>::convert(*this, v);
         return energy(converted, h);
     }
