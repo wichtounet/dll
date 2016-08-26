@@ -129,4 +129,42 @@ struct conditional_fast_matrix {
 template <bool C, typename W, std::size_t... Dims>
 using conditional_fast_matrix_t = typename conditional_fast_matrix<C, W, Dims...>::type;
 
+/* Utilities to build dyn layer types from normal layer types */
+
+template <template <typename> class Layer, template<typename...> class Desc, typename Index, typename... Args>
+struct build_dyn_layer_t ;
+
+template <template <typename> class Layer, template<typename...> class Desc, size_t... I, typename... Args>
+struct build_dyn_layer_t <Layer, Desc, std::index_sequence<I...>, Args...> {
+    using type = Layer<Desc<cpp::nth_type_t<I, Args...>...>>;
+};
+
+template <typename Index, size_t N>
+struct sequence_add;
+
+template <size_t... I, size_t N>
+struct sequence_add <std::index_sequence<I...>, N> {
+    using type = std::index_sequence<I..., N>;
+};
+
+template <typename T, size_t F, size_t L, typename Acc, typename... Args>
+struct remove_type_id_impl {
+    using new_acc = std::conditional_t<
+        std::is_same<typename cpp::nth_type_t<F, Args...>::type_id, T>::value,
+        Acc,
+        typename sequence_add<Acc, F>::type
+        >;
+
+    using type = typename remove_type_id_impl<T, F+1, L, new_acc, Args...>::type;
+};
+
+template <typename T, size_t F, typename Acc, typename... Args>
+struct remove_type_id_impl <T, F, F, Acc, Args...> {
+    using type = Acc;
+};
+
+// TODO For now, this cannot be chained
+template <typename T, typename... Args>
+using remove_type_id = typename remove_type_id_impl<T, 0, sizeof...(Args), std::index_sequence<>, Args...>::type;
+
 } //end of dll namespace

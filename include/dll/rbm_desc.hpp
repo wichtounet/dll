@@ -52,16 +52,6 @@ struct rbm_desc {
     template <typename RBM>
     using watcher_t = typename detail::get_template_type<watcher<default_rbm_watcher>, Parameters...>::template value<RBM>;
 
-    /*!
-     * The layer type
-     */
-    using layer_t = rbm<rbm_desc<visibles, hiddens, Parameters...>>;
-
-    /*!
-     * The layer type
-     */
-    using dyn_layer_t = dyn_rbm<dyn_rbm_desc<Parameters...>>;
-
     static_assert(num_visible > 0, "There must be at least 1 visible unit");
     static_assert(num_hidden > 0, "There must be at least 1 hidden unit");
 
@@ -76,6 +66,25 @@ struct rbm_desc {
 
     static_assert(Sparsity == sparsity_method::NONE || hidden_unit == unit_type::BINARY,
                   "Sparsity only works with binary hidden units");
+
+    /*!
+     * The layer type
+     */
+    using layer_t = rbm<rbm_desc<visibles, hiddens, Parameters...>>;
+
+private:
+    template <typename... Args>
+    struct dyn_layer_t_impl {
+        using sequence = remove_type_id<batch_size_id, Args...>;
+
+        using type = typename build_dyn_layer_t<dyn_rbm, dyn_rbm_desc, sequence, Args...>::type;
+    };
+
+public:
+    /*!
+     * The layer type
+     */
+    using dyn_layer_t = typename dyn_layer_t_impl<Parameters...>::type;
 };
 
 } //end of dll namespace
