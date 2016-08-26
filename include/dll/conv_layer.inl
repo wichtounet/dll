@@ -188,6 +188,11 @@ struct conv_layer final : neural_base<conv_layer<Desc>> {
     auto prepare_output_batch(){
         return etl::fast_dyn_matrix<weight, B, K, NH1, NH2>();
     }
+
+    template<typename DRBM>
+    static void dyn_init(DRBM& dyn){
+        dyn.init_layer(NC, NV1, NV2, K, NH1, NH2);
+    }
 };
 
 //Allow odr-use of the constexpr static members

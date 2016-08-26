@@ -37,6 +37,9 @@ struct conv_desc {
     /*! The conv type */
     using layer_t = conv_layer<conv_desc<NC_T, NV_1, NV_2, K_T, NH_1, NH_2, Parameters...>>;
 
+    /*! The conv type */
+    using dyn_layer_t = dyn_conv_layer<dyn_conv_desc<Parameters...>>;
+
     static_assert(NV1 > 0, "A matrix of at least 1x1 is necessary for the visible units");
     static_assert(NV2 > 0, "A matrix of at least 1x1 is necessary for the visible units");
     static_assert(NH1 > 0, "A matrix of at least 1x1 is necessary for the hidden units");
