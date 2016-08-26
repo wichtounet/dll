@@ -21,6 +21,9 @@ struct scale_layer_desc {
 
     /*! The layer type */
     using layer_t = scale_layer<scale_layer_desc<A, B>>;
+
+    /*! The dynamic layer type */
+    using dyn_layer_t = scale_layer<scale_layer_desc<A, B>>;
 };
 
 } //end of dll namespace

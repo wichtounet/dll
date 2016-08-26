@@ -8,6 +8,9 @@
 #include "catch.hpp"
 #include "dll_test.hpp"
 
+#include "dll/augment_layer.hpp"
+#include "dll/rectifier_layer.hpp"
+#include "dll/scale_layer.hpp"
 #include "dll/mp_layer.hpp"
 #include "dll/avgp_layer.hpp"
 #include "dll/dense_layer.hpp"
@@ -122,6 +125,7 @@ TEST_CASE("hybrid/mnist/5", "[cdbn][rectifier][svm][unit]") {
         dll::dyn_dbn_desc<dll::dbn_layers<
               dll::conv_rbm_desc_square<1, 28, 20, 12, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
             , dll::random_layer_desc::layer_t
+            , dll::rectifier_layer_desc<>::layer_t
             , dll::conv_rbm_desc_square<20, 12, 20, 10, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
         >>::dbn_t;
 
@@ -159,4 +163,46 @@ TEST_CASE("hybrid/mnist/7", "") {
     auto dbn = std::make_unique<dbn_t>();
 
     dbn->pretrain(dataset.training_images, 20);
+}
+
+TEST_CASE("hybrid/mnist/8", "[dense][dbn][mnist][sgd]") {
+    typedef dll::dyn_dbn_desc<
+        dll::dbn_layers<
+            dll::scale_layer_desc<1, 256>::layer_t,
+            dll::dense_desc<28 * 28, 100, dll::activation<dll::function::SIGMOID>>::layer_t,
+            dll::dense_desc<100, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
+        dll::momentum, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(350);
+    REQUIRE(!dataset.training_images.empty());
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->initial_momentum = 0.9;
+    dbn->final_momentum   = 0.9;
+    dbn->learning_rate    = 0.01;
+
+    FT_CHECK(50, 5e-2);
+    TEST_CHECK(0.2);
+}
+
+TEST_CASE("hybrid/mnist/9", "[cdbn][augment][unit]") {
+    using dbn_t =
+        dll::dyn_dbn_desc<dll::dbn_layers<
+            dll::augment_layer_desc<dll::copy<2>, dll::copy<3>>::layer_t,
+            dll::conv_rbm_desc_square<1, 28, 20, 8, dll::momentum, dll::batch_size<10>>::layer_t
+        >>::dbn_t;
+
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(100);
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->display();
+
+    dbn->pretrain(dataset.training_images, 20);
+
+    REQUIRE(dbn->activation_probabilities(dataset.training_images[0]).size() > 0);
 }

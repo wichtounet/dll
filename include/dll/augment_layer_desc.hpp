@@ -16,7 +16,11 @@ struct augment_layer_desc {
      */
     using parameters = cpp::type_list<Parameters...>;
 
-    using layer_t = augment_layer<augment_layer_desc<Parameters...>>; ///< The layer type
+    /*! The layer type */
+    using layer_t = augment_layer<augment_layer_desc<Parameters...>>;
+
+    /*! The dynamic layer type */
+    using dyn_layer_t = augment_layer<augment_layer_desc<Parameters...>>;
 
     //Make sure only valid types are passed to the configuration list
     static_assert(

@@ -88,6 +88,11 @@ struct augment_layer : neural_base<augment_layer<Desc>> {
     static Input prepare_one_test_output() {
         return {};
     }
+
+    template<typename DRBM>
+    static void dyn_init(DRBM&){
+        //Nothing to change
+    }
 };
 
 } //end of dll namespace
