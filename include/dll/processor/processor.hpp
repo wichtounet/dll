@@ -315,7 +315,7 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
                 return;
             }
 
-            auto classes = dbn_t::output_size();
+            auto classes = dbn.output_size();
 
             etl::dyn_matrix<std::size_t, 2> conf(classes, classes, 0.0);
 
