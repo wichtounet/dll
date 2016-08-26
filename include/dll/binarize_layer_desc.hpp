@@ -22,6 +22,11 @@ struct binarize_layer_desc {
      * The layer type
      */
     using layer_t = binarize_layer<binarize_layer_desc<T_T>>;
+
+    /*!
+     * The dynamic layer type
+     */
+    using dyn_layer_t = binarize_layer<binarize_layer_desc<T_T>>;
 };
 
 } //end of dll namespace

@@ -12,6 +12,9 @@
 #include "dll/avgp_layer.hpp"
 #include "dll/dense_layer.hpp"
 #include "dll/conv_layer.hpp"
+#include "dll/random_layer.hpp"
+#include "dll/binarize_layer.hpp"
+#include "dll/normalize_layer.hpp"
 #include "dll/rbm.hpp"
 #include "dll/conv_rbm.hpp"
 #include "dll/conv_rbm_mp.hpp"
@@ -112,4 +115,48 @@ TEST_CASE("hybrid/mnist/4", "") {
     auto dbn = std::make_unique<dbn_t>();
 
     dbn->pretrain(dataset.training_images, 5);
+}
+
+TEST_CASE("hybrid/mnist/5", "[cdbn][rectifier][svm][unit]") {
+    using dbn_t =
+        dll::dyn_dbn_desc<dll::dbn_layers<
+              dll::conv_rbm_desc_square<1, 28, 20, 12, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
+            , dll::random_layer_desc::layer_t
+            , dll::conv_rbm_desc_square<20, 12, 20, 10, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
+        >>::dbn_t;
+
+    auto dbn = std::make_unique<dbn_t>();
+    dbn->display();
+}
+
+TEST_CASE("hybrid/mnist/6", "") {
+    typedef dll::dyn_dbn_desc<
+        dll::dbn_layers<
+            dll::binarize_layer_desc<30>::layer_t,
+            dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
+            dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(100);
+    REQUIRE(!dataset.training_images.empty());
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->pretrain(dataset.training_images, 20);
+}
+
+TEST_CASE("hybrid/mnist/7", "") {
+    typedef dll::dyn_dbn_desc<
+        dll::dbn_layers<
+            dll::normalize_layer_desc::layer_t,
+            dll::rbm_desc<28 * 28, 200, dll::momentum, dll::batch_size<25>, dll::visible<dll::unit_type::GAUSSIAN>>::layer_t,
+            dll::rbm_desc<200, 500, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::rbm_desc<500, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(100);
+    REQUIRE(!dataset.training_images.empty());
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->pretrain(dataset.training_images, 20);
 }

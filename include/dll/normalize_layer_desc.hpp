@@ -21,6 +21,9 @@ struct normalize_layer_desc {
 
     /*! The layer type */
     using layer_t = normalize_layer<normalize_layer_desc>;
+
+    /*! The dynamic layer type */
+    using dyn_layer_t = normalize_layer<normalize_layer_desc>;
 };
 
 } //end of dll namespace
