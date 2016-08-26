@@ -7,6 +7,7 @@
 
 #include "catch.hpp"
 
+#include "dll/dyn_conv_rbm.hpp"
 #include "dll/conv_rbm.hpp"
 #include "dll/augment_layer.hpp"
 #include "dll/patches_layer.hpp"
@@ -177,6 +178,29 @@ TEST_CASE("unit/augment/mnist/8", "[cdbn][augment][unit]") {
     mnist::binarize_dataset(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
+
+    dbn->display();
+
+    dbn->pretrain(dataset.training_images, 20);
+}
+
+TEST_CASE("unit/augment/mnist/9", "[cdbn][augment][unit]") {
+    using dbn_t =
+        dll::dbn_desc<dll::dbn_layers<
+              dll::augment_layer_desc<dll::elastic<3>>::layer_t
+            , dll::dyn_conv_rbm_desc<dll::momentum>::layer_t
+            , dll::dyn_conv_rbm_desc<dll::momentum>::layer_t
+        >, dll::batch_mode>::dbn_t;
+
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(100);
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->template init_layer<1>(1, 28, 28, 10, 20, 20);
+    dbn->template init_layer<2>(10, 20, 20, 10, 16, 16);
 
     dbn->display();
 
