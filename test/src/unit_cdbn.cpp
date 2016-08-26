@@ -10,12 +10,14 @@
 #define DLL_SVM_SUPPORT
 
 #include "dll/conv_rbm.hpp"
+#include "dll/dyn_conv_rbm.hpp"
 #include "dll/conv_rbm_mp.hpp"
-#include "dll/dbn.hpp"
 #include "dll/mp_layer.hpp"
 #include "dll/avgp_layer.hpp"
 #include "dll/patches_layer.hpp"
 #include "dll/patches_layer_pad.hpp"
+#include "dll/dyn_patches_layer_pad.hpp"
+#include "dll/dbn.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -293,6 +295,30 @@ TEST_CASE("unit/cdbn/mnist/11", "[dbn][conv][mnist][patches][unit]") {
     mnist::binarize_dataset(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
+
+    dbn->pretrain(dataset.training_images, 10);
+
+    auto probs = dbn->activation_probabilities(dataset.training_images[0]);
+    REQUIRE(probs.size() == 4);
+}
+
+TEST_CASE("unit/cdbn/mnist/12", "[dbn][conv][mnist][patches][unit]") {
+    typedef dll::dbn_desc<
+        dll::dbn_layers<
+            dll::dyn_patches_layer_padh_desc<>::layer_t,
+            dll::dyn_conv_rbm_desc<dll::momentum>::layer_t,
+            dll::dyn_conv_rbm_desc<dll::momentum>::layer_t>>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(50);
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->template init_layer<0>(14, 14, 14, 14, 1);
+    dbn->template init_layer<1>(1, 14, 14, 20, 10, 10);
+    dbn->template init_layer<2>(20, 10, 10, 20, 6, 6);
 
     dbn->pretrain(dataset.training_images, 10);
 
