@@ -12,7 +12,7 @@
 
 #pragma once
 
-// Include the dyn version
+// Include the dyn version (for dyn_dbn)
 #include "dll/dyn_rbm.hpp"
 
 #include "dll/rbm.inl"
