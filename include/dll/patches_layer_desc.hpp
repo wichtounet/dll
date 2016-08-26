@@ -31,6 +31,9 @@ struct patches_layer_desc {
     /*! The layer type */
     using layer_t = patches_layer<patches_layer_desc<W_T, H_T, VS_T, HS_T, Parameters...>>;
 
+    /*! The dynamic layer type */
+    using dyn_layer_t = dyn_patches_layer<dyn_patches_layer_desc<Parameters...>>;
+
     //Make sure only valid types are passed to the configuration list
     static_assert(
         detail::is_valid<cpp::type_list<weight_type_id>, Parameters...>::value,

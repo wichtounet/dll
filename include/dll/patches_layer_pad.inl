@@ -94,6 +94,11 @@ struct patches_layer_padh : neural_base<patches_layer_padh<Desc>> {
     static output_one_t prepare_one_output() {
         return output_one_t();
     }
+
+    template<typename DRBM>
+    static void dyn_init(DRBM& dyn){
+        dyn.init_layer(width, height, v_stride, h_stride, filler);
+    }
 };
 
 //Allow odr-use of the constexpr static members

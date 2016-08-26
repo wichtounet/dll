@@ -9,6 +9,8 @@
 #include "dll_test.hpp"
 
 #include "dll/augment_layer.hpp"
+#include "dll/patches_layer.hpp"
+#include "dll/patches_layer_pad.hpp"
 #include "dll/rectifier_layer.hpp"
 #include "dll/scale_layer.hpp"
 #include "dll/mp_layer.hpp"
@@ -223,4 +225,45 @@ TEST_CASE("hybrid/mnist/10", "") {
 
     auto dbn = std::make_unique<dbn_t>();
     dbn->display();
+}
+
+TEST_CASE("hybrid/mnist/11", "[dbn][conv][mnist][patches][memory]") {
+    typedef dll::dyn_dbn_desc<
+        dll::dbn_layers<
+            dll::patches_layer_desc<14, 14, 14, 14>::layer_t,
+            dll::conv_rbm_desc_square<1, 14, 20, 10, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::conv_rbm_desc_square<20, 10, 20, 6, dll::momentum, dll::batch_size<25>>::layer_t>,
+        dll::batch_mode>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(500);
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->pretrain(dataset.training_images, 20);
+
+    auto probs = dbn->activation_probabilities(dataset.training_images[0]);
+    REQUIRE(probs.size() == 4);
+}
+
+TEST_CASE("hybrid/mnist/12", "[dbn][conv][mnist][patches]") {
+    typedef dll::dyn_dbn_desc<
+        dll::dbn_layers<
+            dll::patches_layer_padh_desc<14, 14, 14, 14, 1>::layer_t,
+            dll::conv_rbm_desc_square<1, 14, 20, 10, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::conv_rbm_desc_square<20, 10, 20, 6, dll::momentum, dll::batch_size<25>>::layer_t>>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(500);
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->pretrain(dataset.training_images, 20);
+
+    auto probs = dbn->activation_probabilities(dataset.training_images[0]);
+    REQUIRE(probs.size() == 4);
 }
