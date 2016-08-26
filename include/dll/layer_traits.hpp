@@ -136,6 +136,7 @@ struct layer_traits {
         return cpp::is_specialization_of<patches_layer, layer_t>::value
             || cpp::is_specialization_of<dyn_patches_layer, layer_t>::value
             || cpp::is_specialization_of<patches_layer_padh, layer_t>::value
+            || cpp::is_specialization_of<dyn_patches_layer_padh, layer_t>::value
             ;
     }
 
@@ -187,6 +188,7 @@ struct layer_traits {
             || cpp::is_specialization_of<dyn_avgp_layer_3d, layer_t>::value
             || cpp::is_specialization_of<dyn_lcn_layer, layer_t>::value
             || cpp::is_specialization_of<dyn_patches_layer, layer_t>::value
+            || cpp::is_specialization_of<dyn_patches_layer_padh, layer_t>::value
             ;
     }
 
