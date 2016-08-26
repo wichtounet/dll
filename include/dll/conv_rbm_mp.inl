@@ -412,6 +412,12 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
     auto prepare_output_batch(){
         return etl::fast_dyn_matrix<weight, B, K, NP1, NP2>();
     }
+
+    template<typename DRBM>
+    static void dyn_init(DRBM& dyn){
+        dyn.init_layer(NC, NV1, NV2, K, NH1, NH2, C);
+        dyn.batch_size  = layer_traits<this_type>::batch_size();
+    }
 };
 
 /*!

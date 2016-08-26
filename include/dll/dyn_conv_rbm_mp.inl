@@ -279,7 +279,7 @@ struct dyn_conv_rbm_mp final : public standard_conv_rbm<dyn_conv_rbm_mp<Desc>, D
         static_assert(pooling_unit == unit_type::BINARY, "Invalid pooling unit type");
         static_assert(P, "Computing S without P is not implemented");
 
-        etl::dyn_matrix<weight, 4> v_cv(2, k, nh1, nh2); //Temporary convolution
+        etl::dyn_matrix<weight, 4> v_cv(2UL, k, nh1, nh2); //Temporary convolution
 
         base_type::template compute_vcv(*this, v_a, v_cv, w);
 

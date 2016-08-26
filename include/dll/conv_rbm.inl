@@ -485,6 +485,12 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         return etl::fast_dyn_matrix<weight, B, K, NH1, NH2>();
     }
 
+    template<typename DRBM>
+    static void dyn_init(DRBM& dyn){
+        dyn.init_layer(NC, NV1, NV2, K, NH1, NH2);
+        dyn.batch_size  = layer_traits<this_type>::batch_size();
+    }
+
 private:
     template <typename V1, typename V2, std::size_t Off = 0>
     static void validate_inputs() {

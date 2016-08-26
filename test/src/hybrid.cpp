@@ -13,6 +13,8 @@
 #include "dll/dense_layer.hpp"
 #include "dll/conv_layer.hpp"
 #include "dll/rbm.hpp"
+#include "dll/conv_rbm.hpp"
+#include "dll/conv_rbm_mp.hpp"
 #include "dll/dbn.hpp"
 #include "dll/trainer/conjugate_gradient.hpp"
 #include "dll/trainer/stochastic_gradient_descent.hpp"
@@ -48,7 +50,7 @@ TEST_CASE("hybrid/mnist/1", "[hybrid]") {
     REQUIRE(test_error < 0.2);
 }
 
-TEST_CASE("hybrid/mnist/2", "[dense][dbn][mnist][sgd]") {
+TEST_CASE("hybrid/mnist/2", "") {
     typedef dll::dyn_dbn_desc<
         dll::dbn_layers<
             dll::conv_desc<1, 28, 28, 10, 24, 24, dll::activation<dll::function::RELU>>::layer_t,
@@ -76,4 +78,38 @@ TEST_CASE("hybrid/mnist/2", "[dense][dbn][mnist][sgd]") {
     auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
     std::cout << "test_error:" << test_error << std::endl;
     REQUIRE(test_error < 0.2);
+}
+
+TEST_CASE("hybrid/mnist/3", "") {
+    typedef dll::dyn_dbn_desc<
+        dll::dbn_layers<
+            dll::conv_rbm_mp_desc_square<1, 28, 40, 12, 2, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::conv_rbm_mp_desc_square<40, 6, 20, 4, 2, dll::momentum, dll::batch_size<25>>::layer_t>>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(100);
+
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->pretrain(dataset.training_images, 5);
+}
+
+TEST_CASE("hybrid/mnist/4", "") {
+    typedef dll::dyn_dbn_desc<
+        dll::dbn_layers<
+            dll::conv_rbm_desc_square<1, 28, 40, 12, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::conv_rbm_desc_square<40, 12, 20, 10, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::conv_rbm_desc_square<20, 10, 50, 6, dll::momentum, dll::batch_size<25>>::layer_t>>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(100);
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->pretrain(dataset.training_images, 5);
 }

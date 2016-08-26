@@ -52,6 +52,20 @@ struct conv_rbm_desc {
     /*! The layer type */
     using layer_t = conv_rbm<conv_rbm_desc<NC_T, NV1, NV2, K_T, NH1, NH2, Parameters...>>;
 
+private:
+    template <typename... Args>
+    struct dyn_layer_t_impl {
+        using sequence = remove_type_id<batch_size_id, Args...>;
+
+        using type = typename build_dyn_layer_t<dyn_conv_rbm, dyn_conv_rbm_desc, sequence, Args...>::type;
+    };
+
+public:
+    /*!
+     * The dynamic layer type
+     */
+    using dyn_layer_t = typename dyn_layer_t_impl<Parameters...>::type;
+
     //Validate all parameters
 
     static_assert(NV1 > 0, "A matrix of at least 1x1 is necessary for the visible units");
