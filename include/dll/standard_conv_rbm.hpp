@@ -29,6 +29,11 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
     using base_type = rbm_base<parent_t, Desc>;
     using weight    = typename desc::weight;
 
+    using input_one_t  = typename rbm_base_traits<parent_t>::input_one_t;
+    using output_one_t = typename rbm_base_traits<parent_t>::output_one_t;
+    using input_t      = typename rbm_base_traits<parent_t>::input_t;
+    using output_t     = typename rbm_base_traits<parent_t>::output_t;
+
     static constexpr const unit_type visible_unit = desc::visible_unit;
     static constexpr const unit_type hidden_unit  = desc::hidden_unit;
 
@@ -81,6 +86,18 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
 
     void display_hidden_unit_samples() const {
         display_hidden_unit_samples(as_derived());
+    }
+
+    //Various functions
+
+    double reconstruction_error(const input_one_t& item) {
+        return reconstruction_error(item, as_derived());
+    }
+
+    template<typename Input>
+    double reconstruction_error(const Input& item) {
+        decltype(auto) converted_item = converter_one<Input, input_one_t>::convert(as_derived(), item);
+        return reconstruction_error(converted_item, as_derived());
     }
 
 protected:
@@ -313,6 +330,18 @@ private:
             std::cout << std::endl
                       << std::endl;
         }
+    }
+
+    static double reconstruction_error(const input_one_t& items, parent_t& rbm) {
+        cpp_assert(items.size() == input_size(rbm), "The size of the training sample must match visible units");
+
+        //Set the state of the visible units
+        rbm.v1 = items;
+
+        rbm.activate_hidden(rbm.h1_a, rbm.h1_s, rbm.v1, rbm.v1);
+        rbm.activate_visible(rbm.h1_a, rbm.h1_s, rbm.v2_a, rbm.v2_s);
+
+        return etl::mean((rbm.v1 - rbm.v2_a) >> (rbm.v1 - rbm.v2_a));
     }
 };
 

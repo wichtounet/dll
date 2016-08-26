@@ -154,6 +154,9 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         c = *bak_c;
     }
 
+    // Make base class them participate in overload resolution
+    using base_type::activate_hidden;
+
     template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2>
     void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& v_s) const {
         etl::fast_dyn_matrix<weight, V_CV_CHANNELS, K, NH1, NH2> v_cv; //Temporary convolution
@@ -355,8 +358,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         }
     }
 
-    template <typename V, typename H, cpp_enable_if(etl::is_etl_expr<V>::value)>
-    weight energy(const V& v, const H& h) const {
+    weight energy(const input_one_t& v, const output_one_t& h) const {
 #ifdef ETL_CUDNN_MODE
         cpp_unused(v);
         cpp_unused(h);
@@ -385,15 +387,10 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 #endif
     }
 
-    template <typename V, typename H, cpp_disable_if(etl::is_etl_expr<V>::value)>
-    weight energy(const V& v, const H& h) const {
-        etl::fast_dyn_matrix<weight, NC, NV1, NV2> ev;
-        etl::fast_dyn_matrix<weight, K, NH1, NH2> eh;
-
-        ev = v;
-        eh = h;
-
-        return energy(ev, eh);
+    template<typename Input>
+    weight energy(const Input& v, const output_one_t& h) const {
+        decltype(auto) converted = converter_one<Input, input_one_t>::convert(*this, v);
+        return energy(converted, h);
     }
 
     template <typename V>
