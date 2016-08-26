@@ -63,6 +63,11 @@ struct avgp_layer_3d final : pooling_layer_3d<avgp_layer_3d<Desc>, Desc> {
             activate_one(input[i], h_a[i]);
         }
     }
+
+    template<typename DLayer>
+    static void dyn_init(DLayer& dyn){
+        dyn.init_layer(base::I1, base::I2, base::I3, base::C1, base::C2, base::C3);
+    }
 };
 
 } //end of dll namespace

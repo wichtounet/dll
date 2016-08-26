@@ -20,6 +20,9 @@ struct mp_layer_3d_desc : pooling_layer_3d_desc<T_I1, T_I2, T_I3, T_C1, T_C2, T_
 
     /*! The RBM type */
     using layer_t = mp_layer_3d<mp_layer_3d_desc<T_I1, T_I2, T_I3, T_C1, T_C2, T_C3, Parameters...>>;
+
+    /*! The RBM type */
+    using dyn_layer_t = dyn_mp_layer_3d<dyn_mp_layer_3d_desc<Parameters...>>;
 };
 
 } //end of dll namespace
