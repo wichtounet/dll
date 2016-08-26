@@ -8,7 +8,7 @@ include make-utils/cpp-utils.mk
 CXX_FLAGS += -pedantic -Werror -ftemplate-backtrace-limit=0
 
 # If asked, use libcxx (optional)
-ifeq (,$(DLL_LIBCXX))
+ifneq (,$(DLL_LIBCXX))
 $(eval $(call use_libcxx))
 endif
 
