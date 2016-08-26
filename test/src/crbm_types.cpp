@@ -6,8 +6,8 @@
 //=======================================================================
 
 /*
- * This is mostly a compilation test to ensure that RBM is accepting
- * enough input types
+ * This is mostly a compilation test to ensure that Convolutional
+ * RBMs are accepting enough input types
  */
 
 #include <vector>
@@ -17,60 +17,60 @@
 #include "catch.hpp"
 #include "template_test.hpp"
 
-#include "dll/rbm.hpp"
-#include "dll/dyn_rbm.hpp"
+#include "dll/conv_rbm_mp.hpp"
+#include "dll/conv_rbm.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
 namespace {
 
-struct rbm_double {
-    using rbm_t = dll::rbm_desc<
-            28 * 28, 100,
+struct crbm_double {
+    using rbm_t = dll::conv_rbm_desc<
+            1, 28, 28, 10, 20, 20,
             dll::weight_type<double>,
             dll::batch_size<25>>::layer_t;
 
     static void init(rbm_t&){}
 };
 
-struct rbm_float {
-    using rbm_t = dll::rbm_desc<
-            28 * 28, 100,
+struct crbm_float {
+    using rbm_t = dll::conv_rbm_desc<
+            1, 28, 28, 10, 20, 20,
             dll::weight_type<float>,
             dll::batch_size<25>>::layer_t;
 
     static void init(rbm_t&){}
 };
 
-struct dyn_rbm_float {
-    using rbm_t = dll::dyn_rbm_desc<
+struct dyn_crbm_float {
+    using rbm_t = dll::dyn_conv_rbm_desc<
             dll::weight_type<float>
             >::layer_t;
 
     static void init(rbm_t& rbm){
-        rbm.init_layer(28 * 28, 100);
+        rbm.init_layer(1, 28, 28, 10, 20, 20);
         rbm.batch_size = 25;
     }
 };
 
-struct dyn_rbm_double {
-    using rbm_t = dll::dyn_rbm_desc<
+struct dyn_crbm_double {
+    using rbm_t = dll::dyn_conv_rbm_desc<
             dll::weight_type<double>
             >::layer_t;
 
     static void init(rbm_t& rbm){
-        rbm.init_layer(28 * 28, 100);
+        rbm.init_layer(1, 28, 28, 10, 20, 20);
         rbm.batch_size = 25;
     }
 };
 
 } // end of anonymous namespace
 
-#define TYPES_TEST_PREFIX "rbm"
-#define TYPES_TEST_T1 rbm_float
-#define TYPES_TEST_T2 rbm_double
-#define TYPES_TEST_T3 dyn_rbm_float
-#define TYPES_TEST_T4 dyn_rbm_double
+#define TYPES_TEST_PREFIX "crbm"
+#define TYPES_TEST_T1 crbm_float
+#define TYPES_TEST_T2 crbm_double
+#define TYPES_TEST_T3 dyn_crbm_float
+#define TYPES_TEST_T4 dyn_crbm_double
 
 #include "types_test.inl"
