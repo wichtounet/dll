@@ -25,6 +25,11 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
     using this_type = dyn_rbm<Desc>;
     using base_type = standard_rbm<this_type, Desc>;
 
+    using input_t      = typename rbm_base_traits<this_type>::input_t;
+    using output_t     = typename rbm_base_traits<this_type>::output_t;
+    using input_one_t  = typename rbm_base_traits<this_type>::input_one_t;
+    using output_one_t = typename rbm_base_traits<this_type>::output_one_t;
+
     static constexpr const unit_type visible_unit = desc::visible_unit;
     static constexpr const unit_type hidden_unit  = desc::hidden_unit;
 
@@ -240,6 +245,10 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         if (!this->cg_context_ptr) {
             this->cg_context_ptr = std::make_shared<cg_context<this_type>>(num_visible, num_hidden);
         }
+    }
+
+    void prepare_input(input_one_t& input) const {
+        input = input_one_t(num_visible);
     }
 
     template <std::size_t B>
