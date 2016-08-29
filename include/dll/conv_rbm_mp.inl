@@ -69,10 +69,11 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
     using b_type = etl::fast_vector<weight, K>;
     using c_type = etl::fast_vector<weight, NC>;
 
-    using input_t      = typename rbm_base_traits<this_type>::input_t;
-    using output_t     = typename rbm_base_traits<this_type>::output_t;
-    using input_one_t  = typename rbm_base_traits<this_type>::input_one_t;
-    using output_one_t = typename rbm_base_traits<this_type>::output_one_t;
+    using input_t             = typename rbm_base_traits<this_type>::input_t;
+    using output_t            = typename rbm_base_traits<this_type>::output_t;
+    using input_one_t         = typename rbm_base_traits<this_type>::input_one_t;
+    using output_one_t        = typename rbm_base_traits<this_type>::output_one_t;
+    using hidden_output_one_t = typename rbm_base_traits<this_type>::hidden_output_one_t;
 
     w_type w; //!< shared weights
     b_type b; //!< hidden biases bk
@@ -309,8 +310,7 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         }
     }
 
-    template <typename Output>
-    weight energy(const input_one_t& v, const Output& h) const {
+    weight energy(const input_one_t& v, const hidden_output_one_t& h) const {
         etl::fast_dyn_matrix<weight, 2, K, NH1, NH2> v_cv; //Temporary convolution
 
         if (desc::visible_unit == unit_type::BINARY && desc::hidden_unit == unit_type::BINARY) {
@@ -332,8 +332,8 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         }
     }
 
-    template<typename Input, typename Output>
-    weight energy(const Input& v, const Output& h) const {
+    template<typename Input>
+    weight energy(const Input& v, const hidden_output_one_t& h) const {
         decltype(auto) converted = converter_one<Input, input_one_t>::convert(*this, v);
         return energy(converted, h);
     }
@@ -388,6 +388,23 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         return {};
     }
 
+    template <typename Input>
+    static hidden_output_one_t prepare_one_hidden_output() {
+        return {};
+    }
+
+    hidden_output_one_t hidden_features(const input_one_t& input){
+        auto out = prepare_one_hidden_output<input_one_t>();
+        activate_hidden<true, false>(out, out, input, input);
+        return out;
+    }
+
+    template<typename Input>
+    hidden_output_one_t hidden_features(const Input& input){
+        decltype(auto) converted = converter_one<Input, input_one_t>::convert(*this, input);
+        return hidden_features(converted);
+    }
+
     void activate_hidden(output_one_t& h_a, const input_one_t& input) const {
         activate_pooling<true, false>(h_a, h_a, input, input);
     }
@@ -430,10 +447,11 @@ struct rbm_base_traits<conv_rbm_mp<Desc>> {
     using desc      = Desc;
     using weight    = typename desc::weight;
 
-    using input_one_t   = etl::fast_dyn_matrix<weight, desc::NC, desc::NV1, desc::NV2>;
-    using output_one_t  = etl::fast_dyn_matrix<weight, desc::K, desc::NH1 / desc::C, desc::NH2 / desc::C>;
-    using input_t       = std::vector<input_one_t>;
-    using output_t      = std::vector<output_one_t>;
+    using input_one_t         = etl::fast_dyn_matrix<weight, desc::NC, desc::NV1, desc::NV2>;
+    using hidden_output_one_t = etl::fast_dyn_matrix<weight, desc::K, desc::NH1, desc::NH2>;
+    using output_one_t        = etl::fast_dyn_matrix<weight, desc::K, desc::NH1 / desc::C, desc::NH2 / desc::C>;
+    using input_t             = std::vector<input_one_t>;
+    using output_t            = std::vector<output_one_t>;
 };
 
 //Allow odr-use of the constexpr static members
