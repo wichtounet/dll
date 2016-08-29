@@ -286,7 +286,10 @@ struct sgd_trainer {
         auto& ctx1 = r1.template get_sgd_context<dbn_t>();
         auto& ctx2 = r2.template get_sgd_context<dbn_t>();
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
         compute_errors_from_dense(r1, ctx1, r2, ctx2, [&](std::size_t i) { return f_derivative<a_f>(ctx1.output(i)); });
+#pragma GCC diagnostic pop
     }
 
     //Backpropagate errors from conv to (dense or conv)
