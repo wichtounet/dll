@@ -172,6 +172,10 @@ struct dyn_dense_layer final : neural_base<dyn_dense_layer<Desc>> {
         return output;
     }
 
+    void prepare_input(input_one_t& input) const {
+        input = input_one_t(num_visible);
+    }
+
     template <std::size_t B>
     auto prepare_input_batch() const {
         return etl::dyn_matrix<weight>(B, num_visible);

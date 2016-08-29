@@ -26,11 +26,28 @@
 #include "dbn_common.hpp"
 #include "svm_common.hpp"
 #include "util/flatten.hpp"
+#include "util/converter.hpp" // Input type conversion
 #include "util/export.hpp"
 #include "util/timers.hpp"
 #include "dbn_detail.hpp" // dbn_detail namespace
 
 namespace dll {
+
+template<typename Layer>
+struct is_input_layer {
+    using traits = decay_layer_traits<Layer>;
+    static constexpr const bool value = !traits::is_transform_layer() && !traits::is_augment_layer();
+};
+
+template<std::size_t Layer, typename DBN, typename Enable = void>
+struct find_input_layer {
+    static constexpr const std::size_t L = Layer;
+};
+
+template<std::size_t Layer, typename DBN>
+struct find_input_layer<Layer, DBN, std::enable_if_t<!is_input_layer<typename DBN::template layer_type<Layer>>::value>> {
+    static constexpr const std::size_t L = find_input_layer<Layer + 1, DBN>::L;
+};
 
 /*!
  * \brief A Deep Belief Network implementation
@@ -53,6 +70,13 @@ struct dbn final {
     using weight = typename dbn_detail::extract_weight_t<0, this_type>::type; ///< The tpyeof the weights
 
     using watcher_t = typename desc::template watcher_t<this_type>; ///< The watcher type
+
+    static constexpr const size_t input_layer_n = find_input_layer<0, this_type>::L; ///< The index of the input layer
+
+    using input_layer_t = layer_type<input_layer_n>; ///< The type of the input layer
+
+    using input_one_t = typename input_layer_t::input_one_t; ///< The type of one input
+    using input_t     = typename input_layer_t::input_t;     ///< The type of a set of input
 
 private:
     template <std::size_t I, typename Input>
@@ -140,7 +164,7 @@ public:
         //Nothing else to init
 
         cpp::static_if<!std::is_same<typename desc::base_layers, typename desc::layers>::value>([&](auto f){
-            f(this)->dyn_init<0>();
+            f(this)->template dyn_init<0>();
         });
     }
 
@@ -298,10 +322,10 @@ public:
         return dll::output_size(layer_get<layers - 1>());
     }
 
-    static std::size_t full_output_size() noexcept {
+    std::size_t full_output_size() const noexcept {
         std::size_t output = 0;
-        detail::for_each_layer_type<this_type>([&output](auto* layer) {
-            output += std::decay_t<std::remove_pointer_t<decltype(layer)>>::output_size();
+        for_each_layer([&output](auto& layer) {
+            output += layer.output_size();
         });
         return output;
     }
@@ -354,9 +378,18 @@ public:
      * \brief Pretrain the network by training all layers in an unsupervised
      * manner.
      */
-    template <typename Samples>
-    void pretrain(const Samples& training_data, std::size_t max_epochs) {
+    void pretrain(const input_t& training_data, std::size_t max_epochs) {
         pretrain(training_data.begin(), training_data.end(), max_epochs);
+    }
+
+    /*!
+     * \brief Pretrain the network by training all layers in an unsupervised
+     * manner.
+     */
+    template <typename Input>
+    void pretrain(const Input& training_data, std::size_t max_epochs) {
+        decltype(auto) converted = converter_many<Input, input_t>::convert(layer_get<input_layer_n>(), training_data);
+        pretrain(converted.begin(), converted.end(), max_epochs);
     }
 
     /*!
@@ -383,9 +416,19 @@ public:
      * \brief Pretrain the network by training all layers in an unsupervised
      * manner, the network will learn to reconstruct noisy input.
      */
+    void pretrain_denoising(const input_t& noisy, const input_t& clean, std::size_t max_epochs) {
+        pretrain_denoising(noisy.begin(), noisy.end(), clean.begin(), clean.end(), max_epochs);
+    }
+
+    /*!
+     * \brief Pretrain the network by training all layers in an unsupervised
+     * manner, the network will learn to reconstruct noisy input.
+     */
     template <typename Noisy, typename Clean>
     void pretrain_denoising(const Noisy& noisy, const Clean& clean, std::size_t max_epochs) {
-        pretrain_denoising(noisy.begin(), noisy.end(), clean.begin(), clean.end(), max_epochs);
+        decltype(auto) converted_noisy = converter_many<Noisy, input_t>::convert(layer_get<input_layer_n>(), noisy);
+        decltype(auto) converted_clean = converter_many<Clean, input_t>::convert(layer_get<input_layer_n>(), clean);
+        pretrain_denoising(converted_noisy.begin(), converted_noisy.end(), converted_clean.begin(), converted_clean.end(), max_epochs);
     }
 
     template <typename Iterator, typename LabelIterator>
@@ -458,8 +501,8 @@ public:
      * \param result The container where to save the features
      * \return result
      */
-    template <typename Input, typename Output>
-    auto features(const Input& sample, Output& result) const {
+    template <typename Output>
+    auto features(const input_one_t& sample, Output& result) const {
         return activation_probabilities(sample, result);
     }
 
@@ -468,9 +511,19 @@ public:
      * \param sample The sample to get features from
      * \return the output features of the last layer of the network
      */
-    template <typename Input>
-    auto features(const Input& sample) const {
+    auto features(const input_one_t& sample) const {
         return activation_probabilities(sample);
+    }
+
+    /*!
+     * \brief Returns the output features for the given sample
+     * \param sample The sample to get features from
+     * \return the output features of the last layer of the network
+     */
+    template<typename Input>
+    auto features(const Input& sample) const {
+        decltype(auto) converted = converter_one<Input, input_one_t>::convert(layer_get<input_layer_n>(), sample);
+        return activation_probabilities(converted);
     }
 
     /*!
@@ -479,8 +532,7 @@ public:
      * \param file The output file
      * \param f The format of the exported features
      */
-    template <typename Input>
-    void save_features(const Input& sample, const std::string& file, format f = format::DLL) const {
+    void save_features(const input_one_t& sample, const std::string& file, format f = format::DLL) const {
         cpp_assert(f == format::DLL, "Only DLL format is supported for now");
 
         decltype(auto) probs = features(sample);
@@ -490,14 +542,16 @@ public:
         }
     }
 
-    template <typename Input, typename DBN = this_type, cpp_enable_if(dbn_traits<DBN>::concatenate())>
-    auto get_final_activation_probabilities(const Input& sample) const {
-        return full_activation_probabilities(sample);
-    }
-
-    template <typename Input, typename DBN = this_type, cpp_disable_if(dbn_traits<DBN>::concatenate())>
-    auto get_final_activation_probabilities(const Input& sample) const {
-        return activation_probabilities(sample);
+    /*!
+     * \brief Save the features generated for the given sample in the given file.
+     * \param sample The sample to get features from
+     * \param file The output file
+     * \param f The format of the exported features
+     */
+    template<typename Input>
+    void save_features(const Input& sample, const std::string& file, format f = format::DLL) const {
+        decltype(auto) converted = converter_one<Input, input_one_t>::convert(layer_get<input_layer_n>(), sample);
+        save_features(converted, file, f);
     }
 
     template <typename Output>
@@ -518,9 +572,22 @@ public:
      * \param max_epochs The maximum number of epochs to train the network for.
      * \return The final classification error
      */
-    template <typename Samples, typename Labels>
-    weight fine_tune(const Samples& training_data, Labels& labels, size_t max_epochs) {
+    template <typename Labels>
+    weight fine_tune(const input_t& training_data, Labels& labels, size_t max_epochs) {
         return fine_tune(training_data.begin(), training_data.end(), labels.begin(), labels.end(), max_epochs);
+    }
+
+    /*!
+     * \brief Fine tune the network for classifcation.
+     * \param training_data A container containing all the samples
+     * \param labels A container containing all the labels
+     * \param max_epochs The maximum number of epochs to train the network for.
+     * \return The final classification error
+     */
+    template <typename Input, typename Labels>
+    weight fine_tune(const Input& training_data, Labels& labels, size_t max_epochs) {
+        decltype(auto) converted = converter_many<Input, input_t>::convert(layer_get<input_layer_n>(), training_data);
+        return fine_tune(converted.begin(), converted.end(), labels.begin(), labels.end(), max_epochs);
     }
 
     /*!
@@ -586,6 +653,7 @@ public:
         return prepare_output<layers - 1, Input>();
     }
 
+private:
     template<typename T>
     using is_multi_t = etl::matrix_detail::is_vector<std::decay_t<T>>;
 
@@ -629,34 +697,68 @@ public:
         return activation_probabilities_impl<Train, I+1, S>(previous_output);
     }
 
-    template <std::size_t I, typename Input>
-    auto train_activation_probabilities_sub(const Input& input) const {
+public:
+    template <std::size_t I>
+    auto train_activation_probabilities_sub(const input_one_t& input) const {
         return activation_probabilities_impl<true, 0, I>(input);
     }
 
     template <std::size_t I, typename Input>
-    auto test_activation_probabilities_sub(const Input& input) const {
+    auto train_activation_probabilities_sub(const Input& input) const {
+        decltype(auto) converted = converter_one<Input, input_one_t>::convert(layer_get<input_layer_n>(), input);
+        return activation_probabilities_impl<true, 0, I>(converted);
+    }
+
+    template <std::size_t I>
+    auto test_activation_probabilities_sub(const input_one_t& input) const {
         return activation_probabilities_impl<false, 0, I>(input);
     }
 
     template <std::size_t I, typename Input>
-    auto activation_probabilities_sub(const Input& input) const {
+    auto test_activation_probabilities_sub(const Input& input) const {
+        decltype(auto) converted = converter_one<Input, input_one_t>::convert(layer_get<input_layer_n>(), input);
+        return activation_probabilities_impl<false, 0, I>(converted);
+    }
+
+    template <std::size_t I>
+    auto activation_probabilities_sub(const input_one_t& input) const {
         return train_activation_probabilities_sub<I>(input);
     }
 
-    template <typename Input>
-    auto train_activation_probabilities(const Input& input) const {
+    template <std::size_t I, typename Input>
+    auto activation_probabilities_sub(const Input& input) const {
+        decltype(auto) converted = converter_one<Input, input_one_t>::convert(layer_get<input_layer_n>(), input);
+        return train_activation_probabilities_sub<I>(converted);
+    }
+
+    auto train_activation_probabilities(const input_one_t& input) const {
         return activation_probabilities_impl<true, 0, layers - 1>(input);
     }
 
     template <typename Input>
-    auto test_activation_probabilities(const Input& input) const {
+    auto train_activation_probabilities(const Input& input) const {
+        decltype(auto) converted = converter_one<Input, input_one_t>::convert(layer_get<input_layer_n>(), input);
+        return activation_probabilities_impl<true, 0, layers - 1>(converted);
+    }
+
+    auto test_activation_probabilities(const input_one_t& input) const {
         return activation_probabilities_impl<false, 0, layers - 1>(input);
     }
 
     template <typename Input>
-    auto activation_probabilities(const Input& input) const {
+    auto test_activation_probabilities(const Input& input) const {
+        decltype(auto) converted = converter_one<Input, input_one_t>::convert(layer_get<input_layer_n>(), input);
+        return activation_probabilities_impl<false, 0, layers - 1>(converted);
+    }
+
+    auto activation_probabilities(const input_one_t& input) const {
         return train_activation_probabilities(input);
+    }
+
+    template <typename Input>
+    auto activation_probabilities(const Input& input) const {
+        decltype(auto) converted = converter_one<Input, input_one_t>::convert(layer_get<input_layer_n>(), input);
+        return train_activation_probabilities(converted);
     }
 
     template <std::size_t I, std::size_t S, typename Input, cpp_enable_if(I != S)>
@@ -684,13 +786,18 @@ public:
         full_activation_probabilities<0, layers - 1>(input, result, i);
     }
 
-    template <typename Input>
-    auto full_activation_probabilities(const Input& input) const {
+    auto full_activation_probabilities(const input_one_t& input) const {
         static_assert(!dbn_traits<this_type>::is_multiplex(), "Multiplex DBN does not support full_activation_probabilities");
 
         full_output_t result(full_output_size());
         full_activation_probabilities(input, result);
         return result;
+    }
+
+    template <typename Input>
+    auto full_activation_probabilities(const Input& input) const {
+        decltype(auto) converted = converter_one<Input, input_one_t>::convert(layer_get<input_layer_n>(), input);
+        return full_activation_probabilities(converted);
     }
 
     template <typename Functor>
@@ -755,6 +862,18 @@ public:
 
 #ifdef DLL_SVM_SUPPORT
 
+private:
+    template <typename DBN = this_type, cpp_enable_if(dbn_traits<DBN>::concatenate())>
+    auto get_final_activation_probabilities(const input_one_t& sample) const {
+        return full_activation_probabilities(sample);
+    }
+
+    template <typename DBN = this_type, cpp_disable_if(dbn_traits<DBN>::concatenate())>
+    auto get_final_activation_probabilities(const input_one_t& sample) const {
+        return activation_probabilities(sample);
+    }
+
+public:
     template <typename Samples, typename Labels>
     bool svm_train(const Samples& training_data, const Labels& labels, const svm_parameter& parameters = default_svm_parameters()) {
         cpp::stop_watch<std::chrono::seconds> watch;
