@@ -224,9 +224,12 @@ struct sgd_trainer {
     }
 
     //Backpropagate errors from pooling
-    template <typename Layer1, typename Context1, typename Layer2, typename Context2, cpp_enable_if(decay_layer_traits<Layer2>::is_pooling_layer())>
-    static void compute_errors(Layer1&, Context1& ctx1, Layer2&, Context2& ctx2) {
+    template <typename Layer1, typename Layer2, cpp_enable_if(decay_layer_traits<Layer2>::is_pooling_layer())>
+    static void compute_errors(Layer1& r1, Layer2& r2) {
         constexpr const auto a_f = extract_function<Layer1>::activation_function;
+
+        auto& ctx1 = r1.template get_sgd_context<dbn_t>();
+        auto& ctx2 = r2.template get_sgd_context<dbn_t>();
 
         for (std::size_t i = 0; i < batch_size; ++i) {
             ctx1.errors(i) = f_derivative<a_f>(ctx1.output(i)) >> upsample<Layer2>(ctx2.input(i), ctx2.output(i), ctx2.errors(i));
@@ -275,34 +278,46 @@ struct sgd_trainer {
     }
 
     //Backpropagate errors from dense to (dense or conv)
-    template <typename Layer1, typename Context1, typename Layer2, typename Context2,
+    template <typename Layer1, typename Layer2,
              cpp_enable_if(decay_layer_traits<Layer1>::is_neural_layer() && decay_layer_traits<Layer2>::is_dense_layer())>
-    static void compute_errors(Layer1& r1, Context1& ctx1, Layer2& r2, Context2& ctx2) {
+    static void compute_errors(Layer1& r1, Layer2& r2) {
         constexpr const auto a_f = extract_function<Layer1>::activation_function;
+
+        auto& ctx1 = r1.template get_sgd_context<dbn_t>();
+        auto& ctx2 = r2.template get_sgd_context<dbn_t>();
 
         compute_errors_from_dense(r1, ctx1, r2, ctx2, [&](std::size_t i) { return f_derivative<a_f>(ctx1.output(i)); });
     }
 
     //Backpropagate errors from conv to (dense or conv)
-    template <typename Layer1, typename Context1, typename Layer2, typename Context2,
+    template <typename Layer1, typename Layer2,
              cpp_enable_if(decay_layer_traits<Layer1>::is_neural_layer() && decay_layer_traits<Layer2>::is_convolutional_layer())>
-    static void compute_errors(Layer1& r1, Context1& ctx1, Layer2& r2, Context2& ctx2) {
+    static void compute_errors(Layer1& r1, Layer2& r2) {
         constexpr const auto a_f = extract_function<Layer1>::activation_function;
+
+        auto& ctx1 = r1.template get_sgd_context<dbn_t>();
+        auto& ctx2 = r2.template get_sgd_context<dbn_t>();
 
         compute_errors_from_conv(r1, ctx1, r2, ctx2, [&](std::size_t i, std::size_t c) { return f_derivative<a_f>(ctx1.output(i)(c)); });
     }
 
     //Backpropagate errors from dense to pooling
-    template <typename Layer1, typename Context1, typename Layer2, typename Context2,
+    template <typename Layer1, typename Layer2,
              cpp_enable_if(!decay_layer_traits<Layer1>::is_neural_layer() && decay_layer_traits<Layer2>::is_dense_layer())>
-    static void compute_errors(Layer1& r1, Context1& ctx1, Layer2& r2, Context2& ctx2) {
+    static void compute_errors(Layer1& r1, Layer2& r2) {
+        auto& ctx1 = r1.template get_sgd_context<dbn_t>();
+        auto& ctx2 = r2.template get_sgd_context<dbn_t>();
+
         compute_errors_from_dense(r1, ctx1, r2, ctx2, [](std::size_t) { return 1.0; });
     }
 
     //Backpropagate errors from conv to pooling
-    template <typename Layer1, typename Context1, typename Layer2, typename Context2,
+    template <typename Layer1, typename Layer2,
              cpp_enable_if(!decay_layer_traits<Layer1>::is_neural_layer() && decay_layer_traits<Layer2>::is_convolutional_layer())>
-    static void compute_errors(Layer1& r1, Context1& ctx1, Layer2& r2, Context2& ctx2) {
+    static void compute_errors(Layer1& r1, Layer2& r2) {
+        auto& ctx1 = r1.template get_sgd_context<dbn_t>();
+        auto& ctx2 = r2.template get_sgd_context<dbn_t>();
+
         compute_errors_from_conv(r1, ctx1, r2, ctx2, [](std::size_t, std::size_t) { return 1.0; });
     }
 
@@ -392,7 +407,7 @@ struct sgd_trainer {
 
             this_type::compute_gradients(r2, ctx2, ctx1.output);
 
-            this_type::compute_errors(r1, ctx1, r2, ctx2);
+            this_type::compute_errors(r1, r2);
         });
 
         compute_gradients(first_layer, first_ctx, inputs);
