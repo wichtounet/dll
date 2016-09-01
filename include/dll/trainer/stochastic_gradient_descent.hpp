@@ -421,7 +421,7 @@ struct sgd_trainer {
             this->apply_gradients(layer, n);
         });
 
-        return std::abs(etl::mean(labels - last_ctx.output));
+        return etl::mean(etl::abs(labels - last_ctx.output));
     }
 
     template <typename L, cpp_enable_if(decay_layer_traits<L>::is_neural_layer())>
