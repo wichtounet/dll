@@ -318,3 +318,29 @@ TEST_CASE("dense/sgd/11", "[dense][dbn][mnist][sgd]") {
     std::cout << "test_error:" << test_error << std::endl;
     REQUIRE(test_error < 0.2);
 }
+
+TEST_CASE("dense/sgd/12", "[dense][dbn][mnist][sgd]") {
+    using dbn_t = dll::dbn_desc<
+        dll::dbn_layers<
+            dll::dense_desc<28 * 28, 100>::layer_t,
+            dll::dense_desc<100, 10>::layer_t>,
+        dll::trainer<dll::sgd_trainer>,
+        dll::batch_size<20>,
+        dll::verbose>::dbn_t;
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(1000);
+    REQUIRE(!dataset.training_images.empty());
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->learning_rate = 0.05;
+
+    auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
+    std::cout << "ft_error:" << ft_error << std::endl;
+
+    CHECK(ft_error < 5e-2);
+
+    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
+    std::cout << "test_error:" << test_error << std::endl;
+    REQUIRE(test_error < 0.2);
+}
