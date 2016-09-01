@@ -141,6 +141,18 @@ struct default_dbn_watcher {
         std::cout << formatted << std::endl;
     }
 
+    void ft_batch_end(size_t epoch, size_t batch, size_t batches, double batch_error, double error, const DBN&) {
+        char formatted[1024];
+        snprintf(formatted, 1024, "epoch %ld:%ld/%ld- Batch: %.5f Set: %.5f", epoch, batch, batches, batch_error, error);
+        std::cout << formatted << std::endl;
+    }
+
+    void ft_batch_end(size_t epoch, double batch_error, double error, const DBN&) {
+        char formatted[1024];
+        snprintf(formatted, 1024, "epoch %ld - Batch: %.5f Set: %.5f", epoch, batch_error, error);
+        std::cout << formatted << std::endl;
+    }
+
     void lr_adapt(const DBN& dbn) {
         char formatted[1024];
         snprintf(formatted, 1024, "driver: learning rate adapted to %.5f", dbn.learning_rate);
@@ -175,6 +187,9 @@ struct mute_dbn_watcher {
     void fine_tuning_begin(const DBN& /*dbn*/) {}
 
     void ft_epoch_end(std::size_t /*epoch*/, double /*error*/, const DBN& /*dbn*/) {}
+
+    void ft_batch_end(size_t /*epoch*/, size_t /*batch*/, size_t /*batches*/, double /*batch_error*/, double /*error*/, const DBN& /*dbn*/) {}
+    void ft_batch_end(size_t /*epoch*/, double /*batch_error*/, double /*error*/, const DBN& /*dbn*/) {}
 
     void lr_adapt(const DBN& /*dbn*/) {}
 

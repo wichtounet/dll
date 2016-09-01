@@ -367,7 +367,7 @@ struct sgd_trainer {
     }
 
     template <typename T, typename L>
-    void train_batch(std::size_t /*epoch*/, const dll::batch<T>& data_batch, const dll::batch<L>& label_batch) {
+    double train_batch(std::size_t /*epoch*/, const dll::batch<T>& data_batch, const dll::batch<L>& label_batch) {
         cpp_assert(data_batch.size() == label_batch.size(), "Invalid sizes");
 
         auto n = label_batch.size();
@@ -420,6 +420,8 @@ struct sgd_trainer {
         dbn.for_each_layer([this, n](auto& layer) {
             this->apply_gradients(layer, n);
         });
+
+        return std::abs(etl::mean(labels - last_ctx.output));
     }
 
     template <typename L, cpp_enable_if(decay_layer_traits<L>::is_neural_layer())>

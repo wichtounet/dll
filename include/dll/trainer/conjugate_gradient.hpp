@@ -77,10 +77,13 @@ struct cg_trainer {
     }
 
     template <typename T, typename L>
-    void train_batch(std::size_t epoch, const dll::batch<T>& data_batch, const dll::batch<L>& label_batch) {
+    double train_batch(std::size_t epoch, const dll::batch<T>& data_batch, const dll::batch<L>& label_batch) {
         gradient_context<T, L> context(data_batch, label_batch, epoch);
 
         minimize(context);
+
+        //TODO Compute the mini-batch error
+        return 0.0;
     }
 
     /* Gradient */

@@ -151,7 +151,11 @@ struct dbn_trainer {
                     auto data_batch  = make_batch(data.begin() + start, data.begin() + end);
                     auto label_batch = make_batch(labels.begin() + start, labels.begin() + end);
 
-                    trainer->train_batch(epoch, data_batch, label_batch);
+                    auto batch_error = trainer->train_batch(epoch, data_batch, label_batch);
+
+                    if(dbn_traits<dbn_t>::is_verbose()){
+                        watcher.ft_batch_end(epoch, i, batches, batch_error, error_function(), dbn);
+                    }
                 }
 
                 auto last_error = error;
@@ -229,7 +233,11 @@ struct dbn_trainer {
                         auto data_batch  = make_batch(input_cache.begin() + b * batch_size, input_cache.begin() + (b + 1) * batch_size);
                         auto label_batch = make_batch(fake_labels.begin() + b * batch_size, fake_labels.begin() + (b + 1) * batch_size);
 
-                        trainer->train_batch(epoch, data_batch, label_batch);
+                        auto batch_error = trainer->train_batch(epoch, data_batch, label_batch);
+
+                        if(dbn_traits<dbn_t>::is_verbose()){
+                            watcher.ft_batch_end(epoch, batch_error, error_function(), dbn);
+                        }
                     }
 
                     //Train the last incomplete batch, if any
@@ -237,7 +245,11 @@ struct dbn_trainer {
                         auto data_batch  = make_batch(input_cache.begin() + full_batches * batch_size, input_cache.begin() + i);
                         auto label_batch = make_batch(fake_labels.begin() + full_batches * batch_size, fake_labels.begin() + i);
 
-                        trainer->train_batch(epoch, data_batch, label_batch);
+                        auto batch_error = trainer->train_batch(epoch, data_batch, label_batch);
+
+                        if(dbn_traits<dbn_t>::is_verbose()){
+                            watcher.ft_batch_end(epoch, batch_error, error_function(), dbn);
+                        }
                     }
                 }
 
