@@ -135,8 +135,6 @@ struct dyn_conv_layer final : neural_base<dyn_conv_layer<Desc>> {
     void activate_hidden(output_one_t& output, const V& v) const {
         etl::dyn_matrix<weight, 4> v_cv(2UL, k, nh1, nh2); //Temporary convolution
 
-        const auto K = k;
-
         auto w_f = etl::force_temporary(w);
 
         //flip all the kernels horizontally and vertically
@@ -159,7 +157,6 @@ struct dyn_conv_layer final : neural_base<dyn_conv_layer<Desc>> {
         etl::dyn_matrix<weight, 4> v_cv(2UL, k, nh1, nh2); //Temporary convolution
 
         const auto Batch = etl::dim<0>(v);
-        const auto K = k;
 
         auto w_f = force_temporary(w);
 
