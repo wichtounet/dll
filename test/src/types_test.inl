@@ -48,14 +48,14 @@ TEMPLATE_TEST_CASE_4(TYPES_TEST_PREFIX "/types/2", "[unit][types]", RBM, TYPES_T
     auto dataset = mnist::read_dataset_direct<std::vector, std::vector<float>>(100);
     mnist::binarize_dataset(dataset);
 
-    auto& sample = dataset.training_images[1];
-
     // mnist reader does not support std::list (with reason)
     std::vector<std::list<float>> training_images;
     training_images.reserve(dataset.training_images.size());
     for(auto& image : dataset.training_images){
         training_images.emplace_back(image.begin(), image.end());
     }
+
+    auto& sample = training_images[1];
 
     REQUIRE(rbm.train(training_images, 20) < 0.2);
     REQUIRE(rbm.reconstruction_error(sample) < 0.2);
@@ -157,14 +157,14 @@ TEMPLATE_TEST_CASE_4(TYPES_TEST_PREFIX "/types/5", "[unit][types]", RBM, TYPES_T
     auto dataset = mnist::read_dataset_direct<std::vector, std::vector<double>>(100);
     mnist::binarize_dataset(dataset);
 
-    auto& sample = dataset.training_images[1];
-
     // mnist reader does not support std::list (with reason)
     std::vector<std::list<double>> training_images;
     training_images.reserve(dataset.training_images.size());
     for(auto& image : dataset.training_images){
         training_images.emplace_back(image.begin(), image.end());
     }
+
+    auto& sample = training_images[1];
 
     REQUIRE(rbm.train(training_images, 20) < 0.2);
     REQUIRE(rbm.reconstruction_error(sample) < 0.2);
