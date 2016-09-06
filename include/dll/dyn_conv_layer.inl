@@ -141,11 +141,7 @@ struct dyn_conv_layer final : neural_base<dyn_conv_layer<Desc>> {
 
         //flip all the kernels horizontally and vertically
 
-        for (std::size_t channel = 0; channel < nc; ++channel) {
-            for (size_t k = 0; k < K; ++k) {
-                w_f(channel)(k).fflip_inplace();
-            }
-        }
+        w_f.deep_fflip_inplace();
 
         v_cv(1) = 0;
 
@@ -169,11 +165,7 @@ struct dyn_conv_layer final : neural_base<dyn_conv_layer<Desc>> {
 
         //flip all the kernels horizontally and vertically
 
-        for (std::size_t channel = 0; channel < nc; ++channel) {
-            for (size_t k = 0; k < K; ++k) {
-                w_f(channel)(k).fflip_inplace();
-            }
-        }
+        w_f.deep_fflip_inplace();
 
         for (std::size_t batch = 0; batch < Batch; ++batch) {
             v_cv(1) = 0;

@@ -189,11 +189,7 @@ struct sgd_trainer {
 
         //flip all the kernels horizontally and vertically
 
-        for (std::size_t b = 0; b < batch_size; ++b) {
-            for (size_t k = 0; k < K; ++k) {
-                errors_f(b)(k).fflip_inplace();
-            }
-        }
+        errors_f.deep_fflip_inplace();
 
         for (std::size_t b = 0; b < batch_size; ++b) {
             for (std::size_t c = 0; c < NC; ++c) {
@@ -256,11 +252,7 @@ struct sgd_trainer {
 
         auto w_f = force_temporary(r2.w);
 
-        for (size_t c = 0; c < NC; ++c) {
-            for (size_t k = 0; k < K; ++k) {
-                w_f(c)(k).fflip_inplace();
-            }
-        }
+        w_f.deep_fflip_inplace();
 
         etl::dyn_matrix<weight, 2> tmp(NV1, NV2);
 

@@ -101,17 +101,6 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
     }
 
 protected:
-    template <typename W>
-    static void deep_fflip(W&& w_f) {
-        //flip all the kernels horizontally and vertically
-
-        for (std::size_t channel = 0; channel < etl::dim<0>(w_f); ++channel) {
-            for (size_t k = 0; k < etl::dim<1>(w_f); ++k) {
-                w_f(channel)(k).fflip_inplace();
-            }
-        }
-    }
-
     template <typename L, typename V1, typename VCV, typename W>
     static void compute_vcv(L& rbm, const V1& v_a, VCV&& v_cv, W&& w) {
         dll::auto_timer timer("crbm:compute_vcv");
@@ -120,7 +109,7 @@ protected:
 
         auto w_f = etl::force_temporary(w);
 
-        deep_fflip(w_f);
+        w_f.deep_fflip_inplace();
 
         v_cv(1) = 0;
 
