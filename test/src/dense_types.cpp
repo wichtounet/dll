@@ -17,9 +17,7 @@
 #include "catch.hpp"
 #include "template_test.hpp"
 
-#include "dll/rbm.hpp"
 #include "dll/dense_layer.hpp"
-#include "dll/dyn_rbm.hpp"
 #include "dll/dbn.hpp"
 #include "dll/trainer/stochastic_gradient_descent.hpp"
 
