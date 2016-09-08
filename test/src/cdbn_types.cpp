@@ -106,7 +106,7 @@ struct dyn_dbn_double {
 
 } // end of anonymous namespace
 
-#define TYPES_TEST_PREFIX "dbn"
+#define TYPES_TEST_PREFIX "cdbn"
 #define TYPES_TEST_T1 dbn_float
 #define TYPES_TEST_T2 dbn_double
 #define TYPES_TEST_T3 dyn_dbn_float
