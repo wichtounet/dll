@@ -12,8 +12,10 @@
 #include "etl/etl.hpp"
 
 #include "neural_base.hpp"
-#include "util/tmp.hpp"
 #include "layer_traits.hpp"
+
+#include "util/tmp.hpp"
+#include "util/converter.hpp"
 
 namespace dll {
 
@@ -131,8 +133,7 @@ struct dyn_conv_layer final : neural_base<dyn_conv_layer<Desc>> {
         b = *bak_b;
     }
 
-    template <typename V>
-    void activate_hidden(output_one_t& output, const V& v) const {
+    void activate_hidden(output_one_t& output, const input_one_t& v) const {
         etl::dyn_matrix<weight, 4> v_cv(2UL, k, nh1, nh2); //Temporary convolution
 
         auto w_f = etl::force_temporary(w);
@@ -150,6 +151,12 @@ struct dyn_conv_layer final : neural_base<dyn_conv_layer<Desc>> {
         }
 
         output = f_activate<activation_function>(etl::rep(b, nh1, nh2) + v_cv(1));
+    }
+
+    template <typename V>
+    void activate_hidden(output_one_t& output, const V& v) const {
+        decltype(auto) converted = converter_one<V, input_one_t>::convert(*this, v);
+        activate_hidden(output, converted);
     }
 
     template <typename H1, typename V>
