@@ -22,6 +22,7 @@ TEMPLATE_TEST_CASE_4(TYPES_TEST_PREFIX "/types/1", "[unit][types]", DBN, TYPES_T
 
 #ifndef TYPES_TEST_NO_PRE
     dbn.pretrain(dataset.training_images, 10);
+    dbn.pretrain(dataset.training_images.begin(), dataset.training_images.end(), 10);
 #endif
     REQUIRE(dbn.fine_tune(dataset.training_images, dataset.training_labels, 50) < 0.9);
 
@@ -63,6 +64,7 @@ TEMPLATE_TEST_CASE_4(TYPES_TEST_PREFIX "/types/2", "[unit][types]", DBN, TYPES_T
 
 #ifndef TYPES_TEST_NO_PRE
     dbn.pretrain(training_images, 10);
+    dbn.pretrain(dataset.training_images.begin(), dataset.training_images.end(), 10);
 #endif
     REQUIRE(dbn.fine_tune(training_images, dataset.training_labels, 50) < 0.9);
 
@@ -97,6 +99,7 @@ TEMPLATE_TEST_CASE_4(TYPES_TEST_PREFIX "/types/3", "[unit][types]", DBN, TYPES_T
 
 #ifndef TYPES_TEST_NO_PRE
     dbn.pretrain(dataset.training_images, 10);
+    dbn.pretrain(dataset.training_images.begin(), dataset.training_images.end(), 10);
 #endif
     REQUIRE(dbn.fine_tune(dataset.training_images, dataset.training_labels, 50) < 0.9);
 
@@ -131,6 +134,7 @@ TEMPLATE_TEST_CASE_4(TYPES_TEST_PREFIX "/types/4", "[unit][types]", DBN, TYPES_T
 
 #ifndef TYPES_TEST_NO_PRE
     dbn.pretrain(dataset.training_images, 10);
+    dbn.pretrain(dataset.training_images.begin(), dataset.training_images.end(), 10);
 #endif
     REQUIRE(dbn.fine_tune(dataset.training_images, dataset.training_labels, 50) < 0.9);
 
@@ -172,6 +176,7 @@ TEMPLATE_TEST_CASE_4(TYPES_TEST_PREFIX "/types/5", "[unit][types]", DBN, TYPES_T
 
 #ifndef TYPES_TEST_NO_PRE
     dbn.pretrain(training_images, 10);
+    dbn.pretrain(dataset.training_images.begin(), dataset.training_images.end(), 10);
 #endif
     REQUIRE(dbn.fine_tune(training_images, dataset.training_labels, 50) < 0.9);
 
@@ -206,6 +211,7 @@ TEMPLATE_TEST_CASE_4(TYPES_TEST_PREFIX "/types/6", "[unit][types]", DBN, TYPES_T
 
 #ifndef TYPES_TEST_NO_PRE
     dbn.pretrain(dataset.training_images, 10);
+    dbn.pretrain(dataset.training_images.begin(), dataset.training_images.end(), 10);
 #endif
     REQUIRE(dbn.fine_tune(dataset.training_images, dataset.training_labels, 50) < 0.9);
 
@@ -240,6 +246,7 @@ TEMPLATE_TEST_CASE_4(TYPES_TEST_PREFIX "/types/7", "[unit][types]", DBN, TYPES_T
 
 #ifndef TYPES_TEST_NO_PRE
     dbn.pretrain(dataset.training_images, 10);
+    dbn.pretrain(dataset.training_images.begin(), dataset.training_images.end(), 10);
 #endif
     REQUIRE(dbn.fine_tune(dataset.training_images, dataset.training_labels, 50) < 0.9);
 
@@ -274,6 +281,7 @@ TEMPLATE_TEST_CASE_4(TYPES_TEST_PREFIX "/types/8", "[unit][types]", DBN, TYPES_T
 
 #ifndef TYPES_TEST_NO_PRE
     dbn.pretrain(dataset.training_images, 10);
+    dbn.pretrain(dataset.training_images.begin(), dataset.training_images.end(), 10);
 #endif
     REQUIRE(dbn.fine_tune(dataset.training_images, dataset.training_labels, 50) < 0.9);
 
@@ -308,6 +316,7 @@ TEMPLATE_TEST_CASE_4(TYPES_TEST_PREFIX "/types/9", "[unit][types]", DBN, TYPES_T
 
 #ifndef TYPES_TEST_NO_PRE
     dbn.pretrain(dataset.training_images, 10);
+    dbn.pretrain(dataset.training_images.begin(), dataset.training_images.end(), 10);
 #endif
     REQUIRE(dbn.fine_tune(dataset.training_images, dataset.training_labels, 50) < 0.9);
 
@@ -342,6 +351,7 @@ TEMPLATE_TEST_CASE_4(TYPES_TEST_PREFIX "/types/10", "[unit][types]", DBN, TYPES_
 
 #ifndef TYPES_TEST_NO_PRE
     dbn.pretrain(dataset.training_images, 10);
+    dbn.pretrain(dataset.training_images.begin(), dataset.training_images.end(), 10);
 #endif
     REQUIRE(dbn.fine_tune(dataset.training_images, dataset.training_labels, 50) < 0.9);
 
@@ -376,6 +386,7 @@ TEMPLATE_TEST_CASE_4(TYPES_TEST_PREFIX "/types/11", "[unit][types]", DBN, TYPES_
 
 #ifndef TYPES_TEST_NO_PRE
     dbn.pretrain(dataset.training_images, 10);
+    dbn.pretrain(dataset.training_images.begin(), dataset.training_images.end(), 10);
 #endif
     REQUIRE(dbn.fine_tune(dataset.training_images, dataset.training_labels, 50) < 0.9);
 
@@ -410,6 +421,7 @@ TEMPLATE_TEST_CASE_4(TYPES_TEST_PREFIX "/types/12", "[unit][types]", DBN, TYPES_
 
 #ifndef TYPES_TEST_NO_PRE
     dbn.pretrain(dataset.training_images, 10);
+    dbn.pretrain(dataset.training_images.begin(), dataset.training_images.end(), 10);
 #endif
     REQUIRE(dbn.fine_tune(dataset.training_images, dataset.training_labels, 50) < 0.9);
 
@@ -444,6 +456,7 @@ TEMPLATE_TEST_CASE_4(TYPES_TEST_PREFIX "/types/13", "[unit][types]", DBN, TYPES_
 
 #ifndef TYPES_TEST_NO_PRE
     dbn.pretrain(dataset.training_images, 10);
+    dbn.pretrain(dataset.training_images.begin(), dataset.training_images.end(), 10);
 #endif
     REQUIRE(dbn.fine_tune(dataset.training_images, dataset.training_labels, 50) < 0.9);
 
@@ -478,6 +491,7 @@ TEMPLATE_TEST_CASE_4(TYPES_TEST_PREFIX "/types/14", "[unit][types]", DBN, TYPES_
 
 #ifndef TYPES_TEST_NO_PRE
     dbn.pretrain(dataset.training_images, 10);
+    dbn.pretrain(dataset.training_images.begin(), dataset.training_images.end(), 10);
 #endif
     REQUIRE(dbn.fine_tune(dataset.training_images, dataset.training_labels, 50) < 0.9);
 
