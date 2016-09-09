@@ -468,6 +468,12 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
         activate_hidden<true, false>(h_a, h_a, input, input);
     }
 
+    template<typename Input>
+    void activate_hidden(output_one_t& output, const Input& input) const {
+        decltype(auto) converted = converter_one<Input, input_one_t>::convert(*this, input);
+        activate_hidden(output, converted);
+    }
+
     template <typename V, typename H>
     void batch_activate_hidden(H& h_a, const V& input) const {
         etl::dyn_matrix<weight, 5> v_cv(etl::dim<0>(h_a), V_CV_CHANNELS, k, nh1, nh2); //Temporary convolution

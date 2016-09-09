@@ -393,8 +393,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         return energy(converted, h);
     }
 
-    template <typename V>
-    weight free_energy_impl(const V& v) const {
+    weight free_energy(const input_one_t& v) const {
 #ifdef ETL_CUDNN_MODE
         cpp_unused(v);
         std::cerr << "Free energy is not supported in CUDNN mode" << std::endl;
@@ -429,13 +428,12 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
     template <typename V>
     weight free_energy(const V& v) const {
-        etl::fast_dyn_matrix<weight, NC, NV1, NV2> ev;
-        ev = v;
-        return free_energy_impl(ev);
+        decltype(auto) converted = converter_one<V, input_one_t>::convert(*this, v);
+        return free_energy(converted);
     }
 
     weight free_energy() const {
-        return free_energy_impl(v1);
+        return free_energy(v1);
     }
 
     //Utilities for DBNs
@@ -452,6 +450,12 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
     void activate_hidden(output_one_t& h_a, const input_one_t& input) const {
         activate_hidden<true, false>(h_a, h_a, input, input);
+    }
+
+    template<typename Input>
+    void activate_hidden(output_one_t& output, const Input& input) const {
+        decltype(auto) converted = converter_one<Input, input_one_t>::convert(*this, input);
+        activate_hidden(output, converted);
     }
 
     template <typename V, typename H>
