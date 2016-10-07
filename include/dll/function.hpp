@@ -89,7 +89,7 @@ decltype(auto) f_activate(E&& expr) {
  */
 template <function F, typename E, cpp_enable_if(F == function::SOFTMAX)>
 decltype(auto) f_activate(E&& expr) {
-    return etl::softmax(std::forward<E>(expr));
+    return etl::stable_softmax(std::forward<E>(expr));
 }
 
 /*!
