@@ -20,6 +20,8 @@
 #include "standard_rbm.hpp"
 #include "layer_traits.hpp"
 
+#include "util/converter.hpp" //converter
+
 namespace dll {
 
 /*!
@@ -188,20 +190,15 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
 
     // activate_hidden(Output, Input)
 
-    template <typename H, typename V, cpp_enable_if(etl::is_etl_expr<V>::value && etl::decay_traits<V>::dimensions() == 1)>
-    void activate_hidden(H&& h_a, const V& v_a) const {
+    template <typename H, typename V>
+    void activate_hidden(H&& h_a, const input_one_t& v_a) const {
         etl::fast_dyn_matrix<weight, num_hidden> t;
         base_type::template std_activate_hidden<true, false>(std::forward<H>(h_a), std::forward<H>(h_a), v_a, v_a, b, w, t);
     }
 
-    template <typename H, typename V, cpp_enable_if(etl::is_etl_expr<V>::value && etl::decay_traits<V>::dimensions() != 1)>
-    void activate_hidden(H&& h_a, const V& v_a) const {
-        activate_hidden(h_a, etl::reshape<num_visible>(v_a));
-    }
-
-    template <typename H, typename V, cpp_enable_if(!etl::is_etl_expr<V>::value)>
-    void activate_hidden(H&& h_a, const V& v_a) const {
-        decltype(auto) converted = converter_one<V, input_one_t>::convert(*this, v_a);
+    template <typename H, typename Input>
+    void activate_hidden(H&& h_a, const Input& v_a) const {
+        decltype(auto) converted = converter_one<Input, input_one_t>::convert(*this, v_a);
         activate_hidden(h_a, converted);
     }
 
