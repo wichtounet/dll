@@ -726,9 +726,6 @@ struct base_cd_trainer : base_trainer<RBM> {
     etl::fast_matrix<weight, batch_size, num_hidden> h2_a;
     etl::fast_matrix<weight, batch_size, num_hidden> h2_s;
 
-    etl::fast_matrix<weight, batch_size, num_hidden> ht;
-    etl::fast_matrix<weight, batch_size, num_visible> vt;
-
     etl::fast_matrix<weight, batch_size, num_visible, num_hidden> w_grad_b;
 
     //Gradients
@@ -812,9 +809,6 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
     etl::dyn_matrix<weight> h2_a;
     etl::dyn_matrix<weight> h2_s;
 
-    etl::dyn_matrix<weight, 2> ht;
-    etl::dyn_matrix<weight, 2> vt;
-
     etl::dyn_matrix<weight, 3> w_grad_b;
 
     //Gradients
@@ -856,8 +850,6 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
               v2_s(get_batch_size(rbm), rbm.num_visible),
               h2_a(get_batch_size(rbm), rbm.num_hidden),
               h2_s(get_batch_size(rbm), rbm.num_hidden),
-              ht(get_batch_size(rbm), rbm.num_hidden),
-              vt(get_batch_size(rbm), rbm.num_visible),
               w_grad_b(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden),
               w_grad(rbm.num_visible, rbm.num_hidden),
               b_grad(rbm.num_hidden),
@@ -884,8 +876,6 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
               v2_s(get_batch_size(rbm), rbm.num_visible),
               h2_a(get_batch_size(rbm), rbm.num_hidden),
               h2_s(get_batch_size(rbm), rbm.num_hidden),
-              ht(get_batch_size(rbm), rbm.num_hidden),
-              vt(get_batch_size(rbm), rbm.num_visible),
               w_grad_b(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden),
               w_grad(rbm.num_visible, rbm.num_hidden),
               b_grad(rbm.num_hidden),
