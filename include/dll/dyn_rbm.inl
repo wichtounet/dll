@@ -153,10 +153,6 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         return {buffer};
     }
 
-    void display() const {
-        std::cout << to_short_string() << std::endl;
-    }
-
     // Make base class them participate in overload resolution
     using base_type::activate_hidden;
 

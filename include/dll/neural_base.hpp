@@ -50,14 +50,8 @@ struct neural_base {
 #endif
     }
 
-    //CRTP Deduction
-
-    Parent& as_derived(){
-        return *static_cast<Parent*>(this);
-    }
-
-    const Parent& as_derived() const {
-        return *static_cast<const Parent*>(this);
+    void display() const {
+        std::cout << as_derived().to_short_string() << std::endl;
     }
 
     // Default function
@@ -153,6 +147,17 @@ struct neural_base {
     template <typename DBN>
     const sgd_context<DBN, parent_t>& get_sgd_context() const {
         return *static_cast<const sgd_context<DBN, parent_t>*>(sgd_context_ptr.get());
+    }
+
+private:
+    //CRTP Deduction
+
+    Parent& as_derived(){
+        return *static_cast<Parent*>(this);
+    }
+
+    const Parent& as_derived() const {
+        return *static_cast<const Parent*>(this);
     }
 };
 

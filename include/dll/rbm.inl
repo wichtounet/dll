@@ -114,10 +114,6 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
         return "RBM: " + std::to_string(num_visible) + "(" + to_string(visible_unit) + ") -> " + std::to_string(num_hidden) + "(" + to_string(hidden_unit) + ")";
     }
 
-    void display() const {
-        std::cout << to_short_string() << std::endl;
-    }
-
     void backup_weights() {
         unique_safe_get(bak_w) = w;
         unique_safe_get(bak_b) = b;
