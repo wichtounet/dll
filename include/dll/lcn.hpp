@@ -9,7 +9,7 @@
 
 namespace dll {
 
-inline cpp14_constexpr double gaussian(double x, double y, double sigma) {
+inline double gaussian(double x, double y, double sigma) {
     auto Z = 2.0 * M_PI * sigma * sigma;
     return (1.0 / Z) * std::exp(-((x * x + y * y) / (2.0 * sigma * sigma)));
 }
