@@ -163,7 +163,7 @@ protected:
     static void batch_compute_hcv(L& rbm, TP& pool, const H2& h_s, HCV&& h_cv, W&& w, Functor activate) {
         dll::auto_timer timer("crbm:batch_compute_hcv:mkl");
 
-        const auto Batch = get_batch_size(rbm);
+        const auto Batch = etl::dim<0>(h_cv);
 
         const auto K   = get_k(rbm);
         const auto NC  = get_nc(rbm);
@@ -205,7 +205,7 @@ protected:
     static void batch_compute_hcv(L& rbm, TP& pool, const H2& h_s, HCV&& h_cv, W&& w, Functor activate) {
         dll::auto_timer timer("crbm:batch_compute_hcv:std");
 
-        const auto Batch = get_batch_size(rbm);
+        const auto Batch = etl::dim<0>(h_cv);
 
         const auto K  = get_k(rbm);
         const auto NC = get_nc(rbm);
@@ -230,7 +230,7 @@ protected:
     static void batch_compute_vcv(L& rbm, TP& pool, const V1& v_a, VCV&& v_cv, W&& w, Functor activate) {
         dll::auto_timer timer("crbm:batch_compute_vcv");
 
-        const auto Batch = get_batch_size(rbm);
+        const auto Batch = etl::dim<0>(v_cv);
 
         const auto NC = get_nc(rbm);
 
