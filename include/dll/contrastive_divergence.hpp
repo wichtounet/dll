@@ -168,16 +168,16 @@ void update_convolutional(RBM& rbm, Trainer& t) {
         f(t).b_grad -= sum_r(q_local_penalty);
 
 #ifdef ETL_CUDNN_MODE
-        constexpr const auto K   = get_k(rbm);
+        const auto K   = get_k(rbm);
 
         auto k_penalty = sum_r(q_local_penalty);
         for (std::size_t k = 0; k < K; ++k) {
             f(t).w_grad(k) = t.w_grad(k) - k_penalty(k);
         }
 #else
-        constexpr const auto NC  = get_nc(rbm);
-        constexpr const auto NW1 = get_nw1(rbm);
-        constexpr const auto NW2 = get_nw2(rbm);
+        const auto NC  = get_nc(rbm);
+        const auto NW1 = get_nw1(rbm);
+        const auto NW2 = get_nw2(rbm);
 
         auto k_penalty = etl::rep(sum_r(q_local_penalty), NW1, NW2);
         for (std::size_t channel = 0; channel < NC; ++channel) {
