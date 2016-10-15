@@ -161,6 +161,7 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w);
     }
 
+    // Note: This function is used by CG
     template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W>
     void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, const B& b, const W& w) const {
         cpp_assert(etl::size(h_a) == num_hidden, "Invalid h_a size");

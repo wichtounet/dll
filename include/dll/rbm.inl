@@ -134,6 +134,7 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
         base_type::template std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w);
     }
 
+    // Note: This function is used by CG
     template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W>
     static void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, const B& b, const W& w) {
         base_type::template std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w);
