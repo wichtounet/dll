@@ -136,7 +136,7 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
         std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, as_derived().b, as_derived().w);
     }
 
-    template <typename H, typename V>
+    template <typename H>
     void activate_hidden(H&& h_a, const input_one_t& v_a) const {
         std_activate_hidden<true, false>(std::forward<H>(h_a), std::forward<H>(h_a), v_a, v_a, as_derived().b, as_derived().w);
     }
