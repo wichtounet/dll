@@ -46,15 +46,15 @@ TEST_CASE("unit/text_reader/images/1", "[unit][reader]") {
         REQUIRE(sample.size() == 28 * 28);
     }
 
-    CHECK(samples[0][17 * 28 + 16] == 254);
-    CHECK(samples[1][15 * 28 + 12] == 189);
-    CHECK(samples[2][16 * 28 + 13] == 232);
-    CHECK(samples[3][ 9 * 28 + 13] == 253);
-    CHECK(samples[4][17 * 28 + 16] == 251);
-    CHECK(samples[5][16 * 28 + 13] == 254);
-    CHECK(samples[6][17 * 28 + 15] == 254);
-    CHECK(samples[7][17 * 28 + 16] == 9);
-    CHECK(samples[8][17 * 28 + 15] == 253);
+    REQUIRE(samples[0][17 * 28 + 16] == 254);
+    REQUIRE(samples[1][15 * 28 + 12] == 189);
+    REQUIRE(samples[2][16 * 28 + 13] == 232);
+    REQUIRE(samples[3][ 9 * 28 + 13] == 253);
+    REQUIRE(samples[4][17 * 28 + 16] == 251);
+    REQUIRE(samples[5][16 * 28 + 13] == 254);
+    REQUIRE(samples[6][17 * 28 + 15] == 254);
+    REQUIRE(samples[7][17 * 28 + 16] == 9);
+    REQUIRE(samples[8][17 * 28 + 15] == 253);
 }
 
 TEST_CASE("unit/text_reader/images/2", "[unit][reader]") {
@@ -73,15 +73,15 @@ TEST_CASE("unit/text_reader/images/3", "[unit][reader]") {
         REQUIRE(sample.size() == 28 * 28);
     }
 
-    CHECK(samples[0][17 * 28 + 16] == 254);
-    CHECK(samples[1][15 * 28 + 12] == 189);
-    CHECK(samples[2][16 * 28 + 13] == 232);
-    CHECK(samples[3][ 9 * 28 + 13] == 253);
-    CHECK(samples[4][17 * 28 + 16] == 251);
-    CHECK(samples[5][16 * 28 + 13] == 254);
-    CHECK(samples[6][17 * 28 + 15] == 254);
-    CHECK(samples[7][17 * 28 + 16] == 9);
-    CHECK(samples[8][17 * 28 + 15] == 253);
+    REQUIRE(samples[0][17 * 28 + 16] == 254);
+    REQUIRE(samples[1][15 * 28 + 12] == 189);
+    REQUIRE(samples[2][16 * 28 + 13] == 232);
+    REQUIRE(samples[3][ 9 * 28 + 13] == 253);
+    REQUIRE(samples[4][17 * 28 + 16] == 251);
+    REQUIRE(samples[5][16 * 28 + 13] == 254);
+    REQUIRE(samples[6][17 * 28 + 15] == 254);
+    REQUIRE(samples[7][17 * 28 + 16] == 9);
+    REQUIRE(samples[8][17 * 28 + 15] == 253);
 }
 
 TEST_CASE("unit/text_reader/images/4", "[unit][reader]") {
@@ -97,15 +97,15 @@ TEST_CASE("unit/text_reader/images/4", "[unit][reader]") {
         REQUIRE(sample.dim(2) == 28);
     }
 
-    CHECK(samples[0](0, 17, 16) == 254);
-    CHECK(samples[1](0, 15, 12) == 189);
-    CHECK(samples[2](0, 16, 13) == 232);
-    CHECK(samples[3](0,  9, 13) == 253);
-    CHECK(samples[4](0, 17, 16) == 251);
-    CHECK(samples[5](0, 16, 13) == 254);
-    CHECK(samples[6](0, 17, 15) == 254);
-    CHECK(samples[7](0, 17, 16) == 9);
-    CHECK(samples[8](0, 17, 15) == 253);
+    REQUIRE(samples[0](0, 17, 16) == 254);
+    REQUIRE(samples[1](0, 15, 12) == 189);
+    REQUIRE(samples[2](0, 16, 13) == 232);
+    REQUIRE(samples[3](0,  9, 13) == 253);
+    REQUIRE(samples[4](0, 17, 16) == 251);
+    REQUIRE(samples[5](0, 16, 13) == 254);
+    REQUIRE(samples[6](0, 17, 15) == 254);
+    REQUIRE(samples[7](0, 17, 16) == 9);
+    REQUIRE(samples[8](0, 17, 15) == 253);
 }
 
 TEST_CASE("unit/text_reader/images/5", "[unit][reader]") {
@@ -114,13 +114,13 @@ TEST_CASE("unit/text_reader/images/5", "[unit][reader]") {
 
     REQUIRE(samples.size() == 9);
 
-    CHECK(samples[0](0, 17, 16) == 254);
-    CHECK(samples[1](0, 15, 12) == 189);
-    CHECK(samples[2](0, 16, 13) == 232);
-    CHECK(samples[3](0,  9, 13) == 253);
-    CHECK(samples[4](0, 17, 16) == 251);
-    CHECK(samples[5](0, 16, 13) == 254);
-    CHECK(samples[6](0, 17, 15) == 254);
-    CHECK(samples[7](0, 17, 16) == 9);
-    CHECK(samples[8](0, 17, 15) == 253);
+    REQUIRE(samples[0](0, 17, 16) == 254);
+    REQUIRE(samples[1](0, 15, 12) == 189);
+    REQUIRE(samples[2](0, 16, 13) == 232);
+    REQUIRE(samples[3](0,  9, 13) == 253);
+    REQUIRE(samples[4](0, 17, 16) == 251);
+    REQUIRE(samples[5](0, 16, 13) == 254);
+    REQUIRE(samples[6](0, 17, 15) == 254);
+    REQUIRE(samples[7](0, 17, 16) == 9);
+    REQUIRE(samples[8](0, 17, 15) == 253);
 }
