@@ -75,8 +75,7 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
     dyn_rbm(dyn_rbm&& rbm) = delete;
     dyn_rbm& operator=(dyn_rbm&& rbm) = delete;
 
-    dyn_rbm()
-            : base_type() {}
+    dyn_rbm() : base_type() {}
 
     /*!
      * \brief Initialize a RBM with basic weights.
@@ -121,18 +120,6 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         w = etl::normal_generator<weight>() * 0.1;
     }
 
-    void backup_weights() {
-        unique_safe_get(bak_w) = w;
-        unique_safe_get(bak_b) = b;
-        unique_safe_get(bak_c) = c;
-    }
-
-    void restore_weights() {
-        w = *bak_w;
-        b = *bak_b;
-        c = *bak_c;
-    }
-
     std::size_t input_size() const noexcept {
         return num_visible;
     }
@@ -153,75 +140,13 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         return {buffer};
     }
 
-    // Make base class them participate in overload resolution
-    using base_type::activate_hidden;
-
-    template <bool P = true, bool S = true, typename H1, typename H2, typename V>
-    void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s) const {
-        activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w);
-    }
-
-    // Note: This function is used by CG
-    template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W>
-    void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, const B& b, const W& w) const {
-        cpp_assert(etl::size(h_a) == num_hidden, "Invalid h_a size");
-        cpp_assert(etl::size(h_s) == num_hidden, "Invalid h_s size");
-        cpp_assert(etl::size(v_a) == num_visible, "Invalid v_a size");
-        cpp_assert(etl::size(v_s) == num_visible, "Invalid v_s size");
-
-        activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w);
-    }
-
-    template <bool P = true, bool S = true, typename H, typename V>
-    void activate_visible(const H& h_a, const H& h_s, V&& v_a, V&& v_s) const {
-        cpp_assert(etl::size(h_a) == num_hidden, "Invalid h_a size");
-        cpp_assert(etl::size(h_s) == num_hidden, "Invalid h_s size");
-        cpp_assert(etl::size(v_a) == num_visible, "Invalid v_a size");
-        cpp_assert(etl::size(v_s) == num_visible, "Invalid v_s size");
-
-        activate_visible(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s));
-    }
-
-    template <bool P = true, bool S = true, typename H1, typename H2, typename V>
-    void batch_activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s) const {
-        base_type::template batch_std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w);
-    }
-
-    template <bool P = true, bool S = true, typename H, typename V>
-    void batch_activate_visible(const H& h_a, const H& h_s, V&& v_a, V&& v_s) const {
-        base_type::template batch_std_activate_visible<P, S>(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), c, w);
-    }
-
-    // activate_hidden(Output, Input)
-
-    template <typename H, typename V>
-    void activate_hidden(H&& h_a, const input_one_t& v_a) const {
-        base_type::template std_activate_hidden<true, false>(std::forward<H>(h_a), std::forward<H>(h_a), v_a, v_a, b, w);
-    }
-
-    template <typename H, typename Input>
-    void activate_hidden(H&& h_a, const Input& v_a) const {
-        decltype(auto) converted = converter_one<Input, input_one_t>::convert(*this, v_a);
-        activate_hidden(h_a, converted);
-    }
-
-    // batch_activate_hidden(Output, Input)
-
-    template <typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 2)>
-    void batch_activate_hidden(H&& h_a, const V& v_a) const {
-        base_type::template batch_std_activate_hidden<true, false>(std::forward<H>(h_a), std::forward<H>(h_a), v_a, v_a, b, w);
-    }
-
-    template <typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 2)>
-    void batch_activate_hidden(H&& h_a, const V& v_a) const {
-        batch_activate_hidden(h_a, etl::reshape(v_a, etl::dim<0>(h_a), num_visible));
-    }
-
+    // This is specific to dyn because of the nv/nh
     template <typename DBN>
     void init_sgd_context() {
         this->sgd_context_ptr = std::make_shared<sgd_context<DBN, this_type>>(num_visible, num_hidden);
     }
 
+    // This is specific to dyn because of the nv/nh
     void init_cg_context() {
         if (!this->cg_context_ptr) {
             this->cg_context_ptr = std::make_shared<cg_context<this_type>>(num_visible, num_hidden);

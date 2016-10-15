@@ -61,12 +61,16 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
                                                                                                                                       : /* Only ReLU and Gaussian Units needs lower rate */ 1e-1;
     }
 
-    parent_t& as_derived() {
-        return *static_cast<parent_t*>(this);
+    void backup_weights() {
+        unique_safe_get(as_derived().bak_w) = as_derived().w;
+        unique_safe_get(as_derived().bak_b) = as_derived().b;
+        unique_safe_get(as_derived().bak_c) = as_derived().c;
     }
 
-    const parent_t& as_derived() const {
-        return *static_cast<const parent_t*>(this);
+    void restore_weights() {
+        as_derived().w = *as_derived().bak_w;
+        as_derived().b = *as_derived().bak_b;
+        as_derived().c = *as_derived().bak_c;
     }
 
     //Energy functions
@@ -115,6 +119,84 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
     double reconstruction_error(const Input& item) {
         decltype(auto) converted_item = converter_one<Input, input_one_t>::convert(as_derived(), item);
         return reconstruction_error(converted_item, as_derived());
+    }
+
+    // activate_hidden
+
+    using base_type::activate_hidden;
+
+    // Note: This function is only used by CG
+    template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W>
+    void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, const B& b, const W& w) const {
+        std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w);
+    }
+
+    template <bool P = true, bool S = true, typename H1, typename H2, typename V>
+    void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s) const {
+        std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, as_derived().b, as_derived().w);
+    }
+
+    template <typename H, typename V>
+    void activate_hidden(H&& h_a, const input_one_t& v_a) const {
+        std_activate_hidden<true, false>(std::forward<H>(h_a), std::forward<H>(h_a), v_a, v_a, as_derived().b, as_derived().w);
+    }
+
+    template <typename H, typename Input>
+    void activate_hidden(H&& h_a, const Input& v_a) const {
+        decltype(auto) converted = converter_one<Input, input_one_t>::convert(as_derived(), v_a);
+        activate_hidden(h_a, converted);
+    }
+
+    // activate_visible
+
+    template <bool P = true, bool S = true, typename H, typename V>
+    void activate_visible(const H& h_a, const H& h_s, V&& v_a, V&& v_s) const {
+        std_activate_visible<P, S>(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), as_derived().c, as_derived().w);
+    }
+
+    // batch_activate_visible
+
+    template <bool P = true, bool S = true, typename H, typename V>
+    void batch_activate_visible(const H& h_a, const H& h_s, V&& v_a, V&& v_s) const {
+        batch_std_activate_visible<P, S>(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), as_derived().c, as_derived().w);
+    }
+
+    // batch_activate_hidden
+
+    template <bool P = true, bool S = true, typename H1, typename H2, typename V>
+    void batch_activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s) const {
+        batch_std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, as_derived().b, as_derived().w);
+    }
+
+    template <typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 2)>
+    void batch_activate_hidden(H&& h_a, const V& v_a) const {
+        batch_std_activate_hidden<true, false>(std::forward<H>(h_a), std::forward<H>(h_a), v_a, v_a, as_derived().b, as_derived().w);
+    }
+
+    template <typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 2)>
+    void batch_activate_hidden(H&& h_a, const V& v_a) const {
+        batch_activate_hidden(h_a, etl::reshape(v_a, etl::dim(h_a, 0), as_derived().input_size()));
+    }
+
+    // activation_probabilities
+
+    template <typename Sample, typename Output>
+    void activation_probabilities(const Sample& item_data, Output& result) const {
+        auto item = as_derived().prepare_one_input();
+        auto next_s = as_derived().prepare_one_output();
+
+        item = item_data;
+
+        activate_hidden(result, next_s, item, item);
+    }
+
+    template <typename Sample>
+    etl::dyn_vector<weight> activation_probabilities(const Sample& item_data) const {
+        auto result = as_derived().prepare_one_output();
+
+        activation_probabilities(item_data, result);
+
+        return result;
     }
 
     //Display functions
@@ -464,6 +546,16 @@ public:
         for (std::size_t i = 0; i < input.size(); ++i) {
             activate_one(input[i], h_a[i]);
         }
+    }
+
+private:
+
+    parent_t& as_derived() {
+        return *static_cast<parent_t*>(this);
+    }
+
+    const parent_t& as_derived() const {
+        return *static_cast<const parent_t*>(this);
     }
 };
 
