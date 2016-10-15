@@ -137,22 +137,6 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
         return {buffer};
     }
 
-    void display() const {
-        std::cout << to_short_string() << std::endl;
-    }
-
-    void backup_weights() {
-        unique_safe_get(bak_w) = w;
-        unique_safe_get(bak_b) = b;
-        unique_safe_get(bak_c) = c;
-    }
-
-    void restore_weights() {
-        w = *bak_w;
-        b = *bak_b;
-        c = *bak_c;
-    }
-
     // Make base class them participate in overload resolution
     using base_type::activate_hidden;
 
@@ -407,18 +391,6 @@ struct conv_rbm_mp final : public standard_conv_rbm<conv_rbm_mp<Desc>, Desc> {
 
     void activate_hidden(output_one_t& h_a, const input_one_t& input) const {
         activate_pooling<true, false>(h_a, h_a, input, input);
-    }
-
-    void activate_many(const input_t& input, output_t& h_a, output_t& h_s) const {
-        for (std::size_t i = 0; i < input.size(); ++i) {
-            activate_one(input[i], h_a[i], h_s[i]);
-        }
-    }
-
-    void activate_many(const input_t& input, output_t& h_a) const {
-        for (std::size_t i = 0; i < input.size(); ++i) {
-            activate_one(input[i], h_a[i]);
-        }
     }
 
     template <std::size_t B>

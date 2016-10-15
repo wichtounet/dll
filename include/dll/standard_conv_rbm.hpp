@@ -65,6 +65,18 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
         return *static_cast<const parent_t*>(this);
     }
 
+    void backup_weights() {
+        unique_safe_get(as_derived().bak_w) = as_derived().w;
+        unique_safe_get(as_derived().bak_b) = as_derived().b;
+        unique_safe_get(as_derived().bak_c) = as_derived().c;
+    }
+
+    void restore_weights() {
+        as_derived().w = *as_derived().bak_w;
+        as_derived().b = *as_derived().bak_b;
+        as_derived().c = *as_derived().bak_c;
+    }
+
     //Utility functions
 
     template <typename Sample>
@@ -98,6 +110,18 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
     double reconstruction_error(const Input& item) {
         decltype(auto) converted_item = converter_one<Input, input_one_t>::convert(as_derived(), item);
         return reconstruction_error(converted_item, as_derived());
+    }
+
+    void activate_many(const input_t& input, output_t& h_a, output_t& h_s) const {
+        for (std::size_t i = 0; i < input.size(); ++i) {
+            as_derived().activate_one(input[i], h_a[i], h_s[i]);
+        }
+    }
+
+    void activate_many(const input_t& input, output_t& h_a) const {
+        for (std::size_t i = 0; i < input.size(); ++i) {
+            as_derived().activate_one(input[i], h_a[i]);
+        }
     }
 
 protected:

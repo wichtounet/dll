@@ -169,22 +169,6 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
         return {buffer};
     }
 
-    void display() const {
-        std::cout << to_short_string() << std::endl;
-    }
-
-    void backup_weights() {
-        unique_safe_get(bak_w) = w;
-        unique_safe_get(bak_b) = b;
-        unique_safe_get(bak_c) = c;
-    }
-
-    void restore_weights() {
-        w = *bak_w;
-        b = *bak_b;
-        c = *bak_c;
-    }
-
     // Make base class them participate in overload resolution
     using base_type::activate_hidden;
 
@@ -478,18 +462,6 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
     void batch_activate_hidden(H& h_a, const V& input) const {
         etl::dyn_matrix<weight, 5> v_cv(etl::dim<0>(h_a), V_CV_CHANNELS, k, nh1, nh2); //Temporary convolution
         batch_activate_hidden<true, false>(h_a, h_a, input, input, v_cv);
-    }
-
-    void activate_many(const input_t& input, output_t& h_a, output_t& h_s) const {
-        for (std::size_t i = 0; i < input.size(); ++i) {
-            activate_one(input[i], h_a[i], h_s[i]);
-        }
-    }
-
-    void activate_many(const input_t& input, output_t& h_a) const {
-        for (std::size_t i = 0; i < input.size(); ++i) {
-            activate_one(input[i], h_a[i]);
-        }
     }
 
     template <std::size_t B>
