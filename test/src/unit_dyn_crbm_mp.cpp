@@ -105,7 +105,7 @@ TEST_CASE("unit/dyn_crbm_mp/mnist/3", "[dyn_crbm_mp][denoising][unit]") {
 TEST_CASE("unit/dyn_crbm_mp/mnist/4", "[dyn_crbm_mp][relu][unit]") {
     dll::dyn_conv_rbm_mp_desc<dll::hidden<dll::unit_type::RELU>>::layer_t rbm;
 
-    rbm.init_layer(2, 28, 28, 20, 12, 12, 2);
+    rbm.init_layer(1, 28, 28, 20, 12, 12, 2);
     rbm.learning_rate *= 2;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
