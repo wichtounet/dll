@@ -120,8 +120,9 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
         dyn.batch_size  = layer_traits<this_type>::batch_size();
     }
 
-    void prepare_input(input_one_t&) const {
-        // Nothing to do
+    void prepare_input(input_one_t& input) const {
+        // Need to initialize the dimensions of the matrix
+        input = input_one_t(num_visible);
     }
 
     template <std::size_t B>
