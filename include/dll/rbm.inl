@@ -131,30 +131,17 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V>
     void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s) const {
-        etl::fast_dyn_matrix<weight, num_hidden> t;
-        base_type::template std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, t);
-    }
-
-    template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename T>
-    void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, T&& t) const {
-        base_type::template std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, std::forward<T>(t));
+        base_type::template std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w);
     }
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W>
     static void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, const B& b, const W& w) {
-        etl::fast_dyn_matrix<weight, num_hidden> t;
-        base_type::template std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, t);
+        base_type::template std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w);
     }
 
     template <bool P = true, bool S = true, typename H, typename V>
     void activate_visible(const H& h_a, const H& h_s, V&& v_a, V&& v_s) const {
-        etl::fast_dyn_matrix<weight, num_visible> t;
-        base_type::template std_activate_visible<P, S>(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), c, w, t);
-    }
-
-    template <bool P = true, bool S = true, typename H, typename V, typename T>
-    void activate_visible(const H& h_a, const H& h_s, V&& v_a, V&& v_s, T&& t) const {
-        base_type::template std_activate_visible<P, S>(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), c, w, std::forward<T>(t));
+        base_type::template std_activate_visible<P, S>(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), c, w);
     }
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V>

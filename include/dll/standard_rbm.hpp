@@ -295,32 +295,32 @@ protected:
         return free_energy(rbm, ev);
     }
 
-    template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W, typename T>
-    static void std_activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V&, const B& b, const W& w, T&& t) {
+    template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W>
+    static void std_activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V&, const B& b, const W& w) {
         dll::auto_timer timer("rbm:std:activate_hidden");
 
         using namespace etl;
 
         //Compute activation probabilities
-        H_PROBS(unit_type::BINARY, f(h_a) = sigmoid(b + (t = v_a * w)));
-        H_PROBS(unit_type::RELU, f(h_a) = max(b + (t = v_a * w), 0.0));
-        H_PROBS(unit_type::RELU6, f(h_a) = min(max(b + (t = v_a * w), 0.0), 6.0));
-        H_PROBS(unit_type::RELU1, f(h_a) = min(max(b + (t = v_a * w), 0.0), 1.0));
-        H_PROBS(unit_type::SOFTMAX, f(h_a) = stable_softmax(b + (t = v_a * w)));
+        H_PROBS(unit_type::BINARY, f(h_a) = sigmoid(b + (v_a * w)));
+        H_PROBS(unit_type::RELU, f(h_a) = max(b + (v_a * w), 0.0));
+        H_PROBS(unit_type::RELU6, f(h_a) = min(max(b + (v_a * w), 0.0), 6.0));
+        H_PROBS(unit_type::RELU1, f(h_a) = min(max(b + (v_a * w), 0.0), 1.0));
+        H_PROBS(unit_type::SOFTMAX, f(h_a) = stable_softmax(b + (v_a * w)));
 
         //Sample values from input
         H_SAMPLE_PROBS(unit_type::BINARY, f(h_s) = bernoulli(h_a));
-        H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = max(logistic_noise(b + (t = v_a * w)), 0.0));
+        H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = max(logistic_noise(b + (v_a * w)), 0.0));
         H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = ranged_noise(h_a, 6.0));
         H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = ranged_noise(h_a, 1.0));
         H_SAMPLE_PROBS(unit_type::SOFTMAX, f(h_s) = one_if_max(h_a));
 
         //Sample values from probs
-        H_SAMPLE_INPUT(unit_type::BINARY, f(h_s) = bernoulli(sigmoid(b + (t = v_a * w))));
-        H_SAMPLE_INPUT(unit_type::RELU, f(h_s) = max(logistic_noise(b + (t = v_a * w)), 0.0));
-        H_SAMPLE_INPUT(unit_type::RELU6, f(h_s) = ranged_noise(min(max(b + (t = v_a * w), 0.0), 6.0), 6.0));
-        H_SAMPLE_INPUT(unit_type::RELU1, f(h_s) = ranged_noise(min(max(b + (t = v_a * w), 0.0), 6.0), 1.0));
-        H_SAMPLE_INPUT(unit_type::SOFTMAX, f(h_s) = one_if_max(stable_softmax(b + (t = v_a * w))));
+        H_SAMPLE_INPUT(unit_type::BINARY, f(h_s) = bernoulli(sigmoid(b + (v_a * w))));
+        H_SAMPLE_INPUT(unit_type::RELU, f(h_s) = max(logistic_noise(b + (v_a * w)), 0.0));
+        H_SAMPLE_INPUT(unit_type::RELU6, f(h_s) = ranged_noise(min(max(b + (v_a * w), 0.0), 6.0), 6.0));
+        H_SAMPLE_INPUT(unit_type::RELU1, f(h_s) = ranged_noise(min(max(b + (v_a * w), 0.0), 6.0), 1.0));
+        H_SAMPLE_INPUT(unit_type::SOFTMAX, f(h_s) = one_if_max(stable_softmax(b + (v_a * w))));
 
         if (P) {
             nan_check_deep(h_a);
@@ -331,19 +331,19 @@ protected:
         }
     }
 
-    template <bool P = true, bool S = true, typename H, typename V, typename C, typename W, typename T>
-    static void std_activate_visible(const H&, const H& h_s, V&& v_a, V&& v_s, const C& c, const W& w, T&& t) {
+    template <bool P = true, bool S = true, typename H, typename V, typename C, typename W>
+    static void std_activate_visible(const H&, const H& h_s, V&& v_a, V&& v_s, const C& c, const W& w) {
         dll::auto_timer timer("rbm:std:activate_visible");
 
         using namespace etl;
 
-        V_PROBS(unit_type::BINARY, f(v_a) = sigmoid(c + (t = w * h_s)));
-        V_PROBS(unit_type::GAUSSIAN, f(v_a) = c + (t = w * h_s));
-        V_PROBS(unit_type::RELU, f(v_a) = max(c + (t = w * h_s), 0.0));
+        V_PROBS(unit_type::BINARY, f(v_a) = sigmoid(c + (w * h_s)));
+        V_PROBS(unit_type::GAUSSIAN, f(v_a) = c + (w * h_s));
+        V_PROBS(unit_type::RELU, f(v_a) = max(c + (w * h_s), 0.0));
 
-        V_SAMPLE_INPUT(unit_type::BINARY, f(v_s) = bernoulli(sigmoid(c + (t = w * h_s))));
-        V_SAMPLE_INPUT(unit_type::GAUSSIAN, f(v_s) = normal_noise(c + (t = w * h_s)));
-        V_SAMPLE_INPUT(unit_type::RELU, f(v_s) = logistic_noise(max(c + (t = w * h_s), 0.0)));
+        V_SAMPLE_INPUT(unit_type::BINARY, f(v_s) = bernoulli(sigmoid(c + (w * h_s))));
+        V_SAMPLE_INPUT(unit_type::GAUSSIAN, f(v_s) = normal_noise(c + (w * h_s)));
+        V_SAMPLE_INPUT(unit_type::RELU, f(v_s) = logistic_noise(max(c + (w * h_s), 0.0)));
 
         if (P) {
             nan_check_deep(v_a);

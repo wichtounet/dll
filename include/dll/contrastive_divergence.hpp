@@ -351,7 +351,7 @@ void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch
         t.vf(i) = expected;
 
         //First step
-        rbm.template activate_hidden<true, true>(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i), t.ht(i));
+        rbm.template activate_hidden<true, true>(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i));
 
         if(Persistent && t.init){
             t.p_h_a(i) = t.h1_a(i);
@@ -360,17 +360,17 @@ void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch
 
         //CD-1
         cpp::static_if<Persistent>([&](auto f){
-            f(rbm).template activate_visible<true, false>(t.p_h_a(i), t.p_h_s(i), t.v2_a(i), t.v2_s(i), t.vt(i));
-            f(rbm).template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.ht(i));
+            f(rbm).template activate_visible<true, false>(t.p_h_a(i), t.p_h_s(i), t.v2_a(i), t.v2_s(i));
+            f(rbm).template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
         }).else_([&](auto f){
-            f(rbm).template activate_visible<true, false>(t.h1_a(i), t.h1_s(i), t.v2_a(i), t.v2_s(i), t.vt(i));
-            f(rbm).template activate_hidden<true, (K > 1)>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.ht(i));
+            f(rbm).template activate_visible<true, false>(t.h1_a(i), t.h1_s(i), t.v2_a(i), t.v2_s(i));
+            f(rbm).template activate_hidden<true, (K > 1)>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
         });
 
         //CD-k
         for(std::size_t k = 1; k < K; ++k){
-            rbm.template activate_visible<true, false>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.vt(i));
-            rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.ht(i));
+            rbm.template activate_visible<true, false>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
+            rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
         }
 
         if(n > 1){

@@ -158,47 +158,27 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V>
     void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s) const {
-        etl::dyn_vector<weight> t(num_hidden);
-        activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, t);
-    }
-
-    template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename T>
-    void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, T&& t) const {
-        activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, std::forward<T>(t));
+        activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w);
     }
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W>
     void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, const B& b, const W& w) const {
-        etl::dyn_vector<weight> t(num_hidden);
-        activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, t);
-    }
-
-    template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W, typename T>
-    void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, const B& b, const W& w, T&& t) const {
         cpp_assert(etl::size(h_a) == num_hidden, "Invalid h_a size");
         cpp_assert(etl::size(h_s) == num_hidden, "Invalid h_s size");
         cpp_assert(etl::size(v_a) == num_visible, "Invalid v_a size");
         cpp_assert(etl::size(v_s) == num_visible, "Invalid v_s size");
-        cpp_assert(etl::size(t) == num_hidden, "Invalid t size");
 
-        base_type::template std_activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w, std::forward<T>(t));
+        activate_hidden(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w);
     }
 
     template <bool P = true, bool S = true, typename H, typename V>
     void activate_visible(const H& h_a, const H& h_s, V&& v_a, V&& v_s) const {
-        etl::dyn_vector<weight> t(num_visible);
-        activate_visible(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), t);
-    }
-
-    template <bool P = true, bool S = true, typename H, typename V, typename T>
-    void activate_visible(const H& h_a, const H& h_s, V&& v_a, V&& v_s, T&& t) const {
         cpp_assert(etl::size(h_a) == num_hidden, "Invalid h_a size");
         cpp_assert(etl::size(h_s) == num_hidden, "Invalid h_s size");
         cpp_assert(etl::size(v_a) == num_visible, "Invalid v_a size");
         cpp_assert(etl::size(v_s) == num_visible, "Invalid v_s size");
-        cpp_assert(etl::size(t) == num_visible, "Invalid t size");
 
-        base_type::template std_activate_visible(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s), c, w, std::forward<T>(t));
+        activate_visible(h_a, h_s, std::forward<V>(v_a), std::forward<V>(v_s));
     }
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V>
@@ -215,8 +195,7 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
 
     template <typename H, typename V>
     void activate_hidden(H&& h_a, const input_one_t& v_a) const {
-        etl::dyn_matrix<weight, 1> t(num_hidden);
-        base_type::template std_activate_hidden<true, false>(std::forward<H>(h_a), std::forward<H>(h_a), v_a, v_a, b, w, t);
+        base_type::template std_activate_hidden<true, false>(std::forward<H>(h_a), std::forward<H>(h_a), v_a, v_a, b, w);
     }
 
     template <typename H, typename Input>
