@@ -50,7 +50,7 @@ struct conv_layer final : neural_base<conv_layer<Desc>> {
     template <std::size_t B>
     using input_batch_t = etl::fast_dyn_matrix<weight, B, NC, NV1, NV2>;
 
-    using w_type = etl::fast_matrix<weight, NC, K, NW1, NW2>;
+    using w_type = etl::fast_matrix<weight, K, NC, NW1, NW2>;
     using b_type = etl::fast_matrix<weight, K>;
 
     //Weights and biases
@@ -118,23 +118,11 @@ struct conv_layer final : neural_base<conv_layer<Desc>> {
     }
 
     void activate_hidden(output_one_t& output, const input_one_t& v) const {
-        etl::fast_dyn_matrix<weight, 2, K, NH1, NH2> v_cv; //Temporary convolution
+        auto b_rep = etl::force_temporary(etl::rep<NH1, NH2>(b));
 
-        auto w_f = etl::force_temporary(w);
+        etl::reshape<1, K, NH1, NH2>(output) = etl::conv_4d_valid_flipped(etl::reshape<1, NC, NV1, NV2>(v), w);
 
-        //flip all the kernels horizontally and vertically
-
-        w_f.deep_fflip_inplace();
-
-        v_cv(1) = 0;
-
-        for (std::size_t channel = 0; channel < NC; ++channel) {
-            etl::conv_2d_valid_multi(v(channel), w_f(channel), v_cv(0));
-
-            v_cv(1) += v_cv(0);
-        }
-
-        output = f_activate<activation_function>(etl::rep<NH1, NH2>(b) + v_cv(1));
+        output = f_activate<activation_function>(b_rep + output);
     }
 
     template <typename V>
@@ -145,27 +133,13 @@ struct conv_layer final : neural_base<conv_layer<Desc>> {
 
     template <typename H1, typename V>
     void batch_activate_hidden(H1&& output, const V& v) const {
-        etl::fast_dyn_matrix<weight, 2, K, NH1, NH2> v_cv; //Temporary convolution
+        output = etl::conv_4d_valid_flipped(v, w);
 
-        const auto Batch = etl::dim<0>(v);
+        static constexpr const auto batch_size = etl::decay_traits<H1>::template dim<0>();
 
-        auto w_f = force_temporary(w);
+        auto b_rep = etl::force_temporary(etl::rep_l<batch_size>(etl::rep<NH1, NH2>(b)));
 
-        //flip all the kernels horizontally and vertically
-
-        w_f.deep_fflip_inplace();
-
-        for (std::size_t batch = 0; batch < Batch; ++batch) {
-            v_cv(1) = 0;
-
-            for (std::size_t channel = 0; channel < NC; ++channel) {
-                etl::conv_2d_valid_multi(v(batch)(channel), w_f(channel), v_cv(0));
-
-                v_cv(1) += v_cv(0);
-            }
-
-            output(batch) = f_activate<activation_function>(etl::rep<NH1, NH2>(b) + v_cv(1));
-        }
+        output = f_activate<activation_function>(b_rep + output);
     }
 
     template <typename Input>

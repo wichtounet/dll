@@ -60,12 +60,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     template <std::size_t B>
     using input_batch_t = etl::fast_dyn_matrix<weight, B, NC, NV1, NV2>;
 
-#ifdef ETL_CUDNN_MODE
     using w_type = etl::fast_matrix<weight, K, NC, NW1, NW2>;
-#else
-    using w_type = etl::fast_matrix<weight, NC, K, NW1, NW2>;
-#endif
-
     using b_type = etl::fast_vector<weight, K>;
     using c_type = etl::fast_vector<weight, NC>;
 
@@ -167,7 +162,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
         auto b_rep = etl::force_temporary(etl::rep<NH1, NH2>(b));
 
-#ifdef ETL_CUDNN_MODE
         etl::reshape<1, K, NH1, NH2>(h_a) = etl::conv_4d_valid_flipped(etl::reshape<1, NC, NV1, NV2>(v_a), w);
 
         H_PROBS2(unit_type::BINARY, unit_type::BINARY, f(h_a) = sigmoid(b_rep + h_a));
@@ -180,17 +174,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = max(logistic_noise(h_a), 0.0));
 
         cpp_unused(v_cv);
-#else
-        base_type::template compute_vcv(*this, v_a, v_cv, w);
-
-        H_PROBS2(unit_type::BINARY, unit_type::BINARY, f(h_a) = sigmoid(b_rep + v_cv(1)));
-        H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, f(h_a) = sigmoid((1.0 / (0.1 * 0.1)) >> (b_rep + v_cv(1))));
-        H_PROBS(unit_type::RELU, f(h_a) = max(b_rep + v_cv(1), 0.0));
-        H_PROBS(unit_type::RELU6, f(h_a) = min(max(b_rep + v_cv(1), 0.0), 6.0));
-        H_PROBS(unit_type::RELU1, f(h_a) = min(max(b_rep + v_cv(1), 0.0), 1.0));
-
-        H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = max(logistic_noise(b_rep + v_cv(1)), 0.0));
-#endif
 
         H_SAMPLE_PROBS(unit_type::BINARY, f(h_s) = bernoulli(h_a));
         H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = ranged_noise(h_a, 6.0));
@@ -215,7 +198,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
         using namespace etl;
 
-#ifdef ETL_CUDNN_MODE
         etl::reshape<1, NC, NV1, NV2>(v_a) = etl::conv_4d_full(etl::reshape<1, K, NH1, NH2>(h_s), w);
 
         auto c_rep = etl::force_temporary(etl::rep<NV1, NV2>(c));
@@ -224,12 +206,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         V_PROBS(unit_type::GAUSSIAN, f(v_a) = c_rep + v_a);
 
         cpp_unused(h_cv);
-#else
-        base_type::template compute_hcv(*this, h_s, h_cv, w, [&](std::size_t channel) {
-            V_PROBS(unit_type::BINARY, f(v_a)(channel) = sigmoid(c(channel) + h_cv(1)));
-            V_PROBS(unit_type::GAUSSIAN, f(v_a)(channel) = c(channel) + h_cv(1));
-        });
-#endif
 
         nan_check_deep(v_a);
 
@@ -258,7 +234,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
         using namespace etl;
 
-#ifdef ETL_CUDNN_MODE
         static constexpr const auto batch_size = etl::decay_traits<H1>::template dim<0>();
 
         h_a = etl::conv_4d_valid_flipped(v_a, w);
@@ -274,19 +249,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = max(logistic_noise(b_rep + h_a), 0.0));
 
         cpp_unused(v_cv);
-#else
-        auto b_rep = etl::force_temporary(etl::rep<NH1, NH2>(b));
-
-        base_type::template batch_compute_vcv(*this, pool, v_a, v_cv, w, [&](std::size_t batch) {
-            H_PROBS2(unit_type::BINARY, unit_type::BINARY, f(h_a)(batch) = sigmoid(b_rep + v_cv(batch)(1)));
-            H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, f(h_a)(batch) = sigmoid((1.0 / (0.1 * 0.1)) >> (b_rep + v_cv(batch)(1))));
-            H_PROBS(unit_type::RELU, f(h_a)(batch) = max(b_rep + v_cv(batch)(1), 0.0));
-            H_PROBS(unit_type::RELU6, f(h_a)(batch) = min(max(b_rep + v_cv(batch)(1), 0.0), 6.0));
-            H_PROBS(unit_type::RELU1, f(h_a)(batch) = min(max(b_rep + v_cv(batch)(1), 0.0), 1.0));
-
-            H_SAMPLE_PROBS(unit_type::RELU, f(h_s)(batch) = max(logistic_noise(b_rep + v_cv(batch)(1)), 0.0));
-        });
-#endif
 
         nan_check_deep(h_a);
 
@@ -314,7 +276,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         validate_inputs<V1, V2, 1>();
         validate_outputs<H1, H2, 1>();
 
-#ifdef ETL_CUDNN_MODE
         v_a = etl::conv_4d_full(h_s, w);
 
         static constexpr const auto batch_size = etl::decay_traits<H1>::template dim<0>();
@@ -325,12 +286,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         V_PROBS(unit_type::GAUSSIAN, f(v_a) = c_rep + v_a);
 
         cpp_unused(h_cv);
-#else
-        base_type::template batch_compute_hcv(*this, pool, h_s, h_cv, w, [&](std::size_t batch, std::size_t channel) {
-            V_PROBS(unit_type::BINARY, f(v_a)(batch)(channel) = etl::sigmoid(c(channel) + h_cv(batch)(1)));
-            V_PROBS(unit_type::GAUSSIAN, f(v_a)(batch)(channel) = c(channel) + h_cv(batch)(1));
-        });
-#endif
 
         nan_check_deep(v_a);
 
@@ -343,32 +298,10 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     }
 
     weight energy(const input_one_t& v, const output_one_t& h) const {
-#ifdef ETL_CUDNN_MODE
         cpp_unused(v);
         cpp_unused(h);
-        std::cerr << "Energy is not supported in CUDNN mode" << std::endl;
+        std::cerr << "Energy needs to be reimplemented" << std::endl;
         return 0.0;
-#else
-        etl::fast_dyn_matrix<weight, V_CV_CHANNELS, K, NH1, NH2> v_cv; //Temporary convolution
-
-        if (desc::visible_unit == unit_type::BINARY && desc::hidden_unit == unit_type::BINARY) {
-            //Definition according to Honglak Lee
-            //E(v,h) = - sum_k hk . (Wk*v) - sum_k bk sum_h hk - c sum_v v
-
-            base_type::template compute_vcv(*this, v, v_cv, w);
-
-            return -etl::sum(c >> etl::sum_r(v)) - etl::sum(b >> etl::sum_r(h)) - etl::sum(h >> v_cv(1));
-        } else if (desc::visible_unit == unit_type::GAUSSIAN && desc::hidden_unit == unit_type::BINARY) {
-            //Definition according to Honglak Lee / Mixed with Gaussian
-            //E(v,h) = - sum_k hk . (Wk*v) - sum_k bk sum_h hk - sum_v ((v - c) ^ 2 / 2)
-
-            base_type::template compute_vcv(*this, v, v_cv, w);
-
-            return -sum(etl::pow(v - etl::rep<NV1, NV2>(c), 2) / 2.0) - etl::sum(b >> etl::sum_r(h)) - etl::sum(h >> v_cv(1));
-        } else {
-            return 0.0;
-        }
-#endif
     }
 
     template<typename Input>
@@ -378,36 +311,9 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     }
 
     weight free_energy(const input_one_t& v) const {
-#ifdef ETL_CUDNN_MODE
         cpp_unused(v);
-        std::cerr << "Free energy is not supported in CUDNN mode" << std::endl;
+        std::cerr << "Free energy needs to be reimplemented" << std::endl;
         return 0.0;
-#else
-        //TODO This function takes ages to compile, must be improved
-        //     At least 5 seconds to be compiled on GCC-4.9
-
-        etl::fast_dyn_matrix<weight, V_CV_CHANNELS, K, NH1, NH2> v_cv; //Temporary convolution
-
-        if (desc::visible_unit == unit_type::BINARY && desc::hidden_unit == unit_type::BINARY) {
-            //Definition computed from E(v,h)
-
-            base_type::template compute_vcv(*this, v, v_cv, w);
-
-            auto x = etl::rep<NH1, NH2>(b) + v_cv(1);
-
-            return -etl::sum(c >> etl::sum_r(v)) - etl::sum(etl::log(1.0 + etl::exp(x)));
-        } else if (desc::visible_unit == unit_type::GAUSSIAN && desc::hidden_unit == unit_type::BINARY) {
-            //Definition computed from E(v,h)
-
-            base_type::template compute_vcv(*this, v, v_cv, w);
-
-            auto x = etl::rep<NH1, NH2>(b) + v_cv(1);
-
-            return -sum(etl::pow(v - etl::rep<NV1, NV2>(c), 2) / 2.0) - etl::sum(etl::log(1.0 + etl::exp(x)));
-        } else {
-            return 0.0;
-        }
-#endif
     }
 
     template <typename V>
