@@ -465,7 +465,7 @@ struct sgd_trainer {
     }
 
     static std::string name() {
-        return "Stochastic Gradient Descent (Dense)";
+        return "Stochastic Gradient Descent";
     }
 };
 
