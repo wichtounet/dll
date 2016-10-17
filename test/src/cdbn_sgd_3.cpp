@@ -31,6 +31,8 @@ TEST_CASE("cdbn/sgd/3", "[dbn][mnist][sgd]") {
 
     auto dbn = std::make_unique<dbn_t>();
 
+    dbn->learning_rate = 0.05;
+
     dbn->pretrain(dataset.training_images, 20);
 
     auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 50);
