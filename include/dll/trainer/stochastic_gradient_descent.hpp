@@ -232,10 +232,6 @@ struct sgd_trainer {
         auto NV1 = get_nv1(r2);
         auto NV2 = get_nv2(r2);
 
-        auto w_f = force_temporary(r2.w);
-
-        w_f.deep_fflip_inplace();
-
         etl::dyn_matrix<weight, 2> tmp(NV1, NV2);
 
         ctx1.errors = 0;
@@ -243,7 +239,7 @@ struct sgd_trainer {
         for (std::size_t i = 0; i < batch_size; ++i) {
             for (size_t c = 0; c < NC; ++c) {
                 for (size_t k = 0; k < K; ++k) {
-                    ctx1.errors(i)(c) += derivative(i, c) >> etl::conv_2d_full(ctx2.errors(i)(k), w_f(k)(c), tmp);
+                    ctx1.errors(i)(c) += derivative(i, c) >> etl::conv_2d_full_flipped(ctx2.errors(i)(k), r2.w(k)(c), tmp);
                 }
             }
         }
