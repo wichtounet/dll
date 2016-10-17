@@ -91,10 +91,10 @@ struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_convolut
 
     static constexpr const auto batch_size = DBN::batch_size;
 
-    etl::fast_matrix<weight, NC, K, NW1, NW2> w_grad;
+    etl::fast_matrix<weight, K, NC, NW1, NW2> w_grad;
     etl::fast_matrix<weight, K> b_grad;
 
-    etl::fast_matrix<weight, NC, K, NW1, NW2> w_inc;
+    etl::fast_matrix<weight, K, NC, NW1, NW2> w_inc;
     etl::fast_matrix<weight, K> b_inc;
 
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> output;
@@ -126,8 +126,8 @@ struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_convolut
     etl::dyn_matrix<weight, 4> errors;
 
     sgd_context(size_t nc, size_t nv1, size_t nv2, size_t k, size_t nh1, size_t nh2)
-            : w_grad(nc, k, nv1 - nh1 + 1, nv2 - nh2 + 1), b_grad(k),
-              w_inc(nc, k, nv1 - nh1 + 1, nv2 - nh2 + 1), b_inc(k),
+            : w_grad(k, nc, nv1 - nh1 + 1, nv2 - nh2 + 1), b_grad(k),
+              w_inc(k, nc, nv1 - nh1 + 1, nv2 - nh2 + 1), b_inc(k),
               output(batch_size, k, nh1, nh2), errors(batch_size, k, nh1, nh2) {}
 };
 

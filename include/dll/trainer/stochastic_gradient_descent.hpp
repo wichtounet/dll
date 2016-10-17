@@ -194,7 +194,9 @@ struct sgd_trainer {
         for (std::size_t b = 0; b < batch_size; ++b) {
             for (std::size_t c = 0; c < NC; ++c) {
                 etl::conv_2d_valid_multi(inputs(b)(c), errors_f(b), tmp);
-                grad(c) += tmp;
+                for(size_t k = 0; k < K; ++k){
+                    grad(k)(c) += tmp(k);
+                }
             }
         }
     }
@@ -261,7 +263,7 @@ struct sgd_trainer {
         for (std::size_t i = 0; i < batch_size; ++i) {
             for (size_t c = 0; c < NC; ++c) {
                 for (size_t k = 0; k < K; ++k) {
-                    ctx1.errors(i)(c) += derivative(i, c) >> etl::conv_2d_full(ctx2.errors(i)(k), w_f(c)(k), tmp);
+                    ctx1.errors(i)(c) += derivative(i, c) >> etl::conv_2d_full(ctx2.errors(i)(k), w_f(k)(c), tmp);
                 }
             }
         }
