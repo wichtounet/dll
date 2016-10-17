@@ -177,28 +177,8 @@ struct sgd_trainer {
 
     template <typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors,
              cpp_enable_if(decay_layer_traits<Layer>::is_convolutional_layer())>
-    static void compute_weight_gradients(Layer& layer, Grad& grad, Inputs& inputs, Errors& errors) {
-        const auto K   = get_k(layer);
-        const auto NC  = get_nc(layer);
-        const auto NW1 = get_nw1(layer);
-        const auto NW2 = get_nw2(layer);
-
-        etl::dyn_matrix<Weight, 3> tmp(K, NW1, NW2);
-
-        auto errors_f = force_temporary(errors);
-
-        //flip all the kernels horizontally and vertically
-
-        errors_f.deep_fflip_inplace();
-
-        for (std::size_t b = 0; b < batch_size; ++b) {
-            for (std::size_t c = 0; c < NC; ++c) {
-                etl::conv_2d_valid_multi(inputs(b)(c), errors_f(b), tmp);
-                for(size_t k = 0; k < K; ++k){
-                    grad(k)(c) += tmp(k);
-                }
-            }
-        }
+    static void compute_weight_gradients(Layer& /*layer*/, Grad& grad, Inputs& inputs, Errors& errors) {
+        grad = conv_4d_valid_filter_flipped(inputs, errors);
     }
 
     template <typename Layer, typename Context, typename Inputs,
