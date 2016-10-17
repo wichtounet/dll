@@ -474,20 +474,6 @@ void normal_compute_gradients_conv(RBM& /*rbm*/, Trainer& t) {
 
     using namespace etl;
 
-    //const auto B = etl::dim<0>(t.vf);
-    //const auto NC = get_nc(rbm);
-
-    //for (std::size_t i = 0; i < B; ++i) {
-        //for (std::size_t channel = 0; channel < NC; ++channel) {
-            //if (Denoising) {
-                //t.w_pos(channel) += conv_2d_valid_multi_flipped(t.vf(i)(channel), t.h1_a(i));
-                //t.w_neg(channel) += conv_2d_valid_multi_flipped(t.v2_a(i)(channel), t.h2_a(i));
-            //} else {
-                //t.w_pos(channel) += conv_2d_valid_multi_flipped(t.v1(i)(channel), t.h1_a(i));
-                //t.w_neg(channel) += conv_2d_valid_multi_flipped(t.v2_a(i)(channel), t.h2_a(i));
-            //}
-        //}
-    //}
     if (Denoising) {
         t.w_pos = etl::conv_4d_valid_filter_flipped(t.vf, t.h1_a);
         t.w_neg = etl::conv_4d_valid_filter_flipped(t.v2_a, t.h2_a);
