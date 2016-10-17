@@ -74,14 +74,6 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
     etl::dyn_matrix<weight, 3> h2_a; ///< Activation probabilities of reconstructed hidden units
     etl::dyn_matrix<weight, 3> h2_s; ///< Sampled values of reconstructed hidden units
 
-    //Convolution data
-
-    static constexpr const std::size_t V_CV_CHANNELS = 2;
-    static constexpr const std::size_t H_CV_CHANNELS = 2;
-
-    etl::dyn_matrix<weight, 4> v_cv; ///< Temporary convolution
-    etl::dyn_matrix<weight, 3> h_cv; ///< Temporary convolution
-
     size_t nv1; ///< The first visible dimension
     size_t nv2; ///< The second visible dimension
     size_t nh1; ///< The first output dimension
@@ -131,9 +123,6 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
         h2_a = etl::dyn_matrix<weight, 3>(k, nh1, nh2);
         h2_s = etl::dyn_matrix<weight, 3>(k, nh1, nh2);
 
-        v_cv = etl::dyn_matrix<weight, 4>(V_CV_CHANNELS, k, nh1, nh2);
-        h_cv = etl::dyn_matrix<weight, 3>(H_CV_CHANNELS, nv1, nv2);
-
         if (is_relu(hidden_unit)) {
             w = etl::normal_generator(0.0, 0.01);
             b = 0.0;
@@ -169,19 +158,7 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
     using base_type::activate_hidden;
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2>
-    void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& v_s) const {
-        etl::dyn_matrix<weight, 4> v_cv(V_CV_CHANNELS, k, nh1, nh2); //Temporary convolution
-        activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, v_cv);
-    }
-
-    template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2>
-    void activate_visible(const H1& h_a, const H2& h_s, V1&& v_a, V2&& v_s) const {
-        etl::dyn_matrix<weight, 3> h_cv(H_CV_CHANNELS, nv2, nv2); //Temporary convolution
-        activate_visible<P, S>(h_a, h_s, std::forward<V1>(v_a), std::forward<V2>(v_s), h_cv);
-    }
-
-    template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename VCV>
-    void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& /*v_s*/, VCV&& v_cv) const {
+    void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& /*v_s*/) const {
         dll::auto_timer timer("dyn_crbm:activate_hidden");
 
         static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit), "Invalid hidden unit type");
@@ -202,8 +179,6 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
         //TODO This is not correct since h_a is already maxed here
         H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = max(logistic_noise(h_a), 0.0));
 
-        cpp_unused(v_cv);
-
         H_SAMPLE_PROBS(unit_type::BINARY, f(h_s) = bernoulli(h_a));
         H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = ranged_noise(h_a, 6.0));
         H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = ranged_noise(h_a, 1.0));
@@ -215,8 +190,8 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
         }
     }
 
-    template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename HCV>
-    void activate_visible(const H1& /*h_a*/, const H2& h_s, V1&& v_a, V2&& v_s, HCV&& h_cv) const {
+    template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2>
+    void activate_visible(const H1& /*h_a*/, const H2& h_s, V1&& v_a, V2&& v_s) const {
         dll::auto_timer timer("dyn_crbm:activate_visible");
 
         static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN, "Invalid visible unit type");
@@ -231,8 +206,6 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
         V_PROBS(unit_type::BINARY, f(v_a) = sigmoid(c_rep + v_a));
         V_PROBS(unit_type::GAUSSIAN, f(v_a) = c_rep + v_a);
 
-        cpp_unused(h_cv);
-
         nan_check_deep(v_a);
 
         V_SAMPLE_PROBS(unit_type::BINARY, f(v_s) = bernoulli(v_a));
@@ -243,8 +216,8 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
         }
     }
 
-    template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename VCV>
-    void batch_activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& /*v_s*/, VCV&& v_cv) const {
+    template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2>
+    void batch_activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& /*v_s*/) const {
         dll::auto_timer timer("dyn_crbm:batch_activate_hidden");
 
         static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit), "Invalid hidden unit type");
@@ -266,8 +239,6 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
 
         H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = max(logistic_noise(b_rep + h_a), 0.0));
 
-        cpp_unused(v_cv);
-
         nan_check_deep(h_a);
 
         H_SAMPLE_PROBS(unit_type::BINARY, f(h_s) = bernoulli(h_a));
@@ -279,8 +250,8 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
         }
     }
 
-    template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename HCV>
-    void batch_activate_visible(const H1& /*h_a*/, const H2& h_s, V1&& v_a, V2&& v_s, HCV&& h_cv) const {
+    template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2>
+    void batch_activate_visible(const H1& /*h_a*/, const H2& h_s, V1&& v_a, V2&& v_s) const {
         dll::auto_timer timer("dyn_crbm:batch_activate_visible");
 
         static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN, "Invalid visible unit type");
@@ -295,8 +266,6 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
         V_PROBS(unit_type::BINARY, f(v_a) = etl::sigmoid(c_rep + v_a));
         V_PROBS(unit_type::GAUSSIAN, f(v_a) = c_rep + v_a);
 
-        cpp_unused(h_cv);
-
         nan_check_deep(v_a);
 
         V_SAMPLE_PROBS(unit_type::BINARY, f(v_s) = bernoulli(v_a));
@@ -308,10 +277,22 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
     }
 
     weight energy(const input_one_t& v, const output_one_t& h) const {
-        cpp_unused(v);
-        cpp_unused(h);
-        std::cerr << "Energy needs to be reimplemented" << std::endl;
-        return 0.0;
+        etl::dyn_matrix<weight, 4> tmp(1UL, k, nh1, nh2);
+        etl::reshape(tmp, 1, k, nh1, nh2) = etl::conv_4d_valid_flipped(etl::reshape(v, 1, nc, nv1, nv2), w);
+
+        if (desc::visible_unit == unit_type::BINARY && desc::hidden_unit == unit_type::BINARY) {
+            //Definition according to Honglak Lee
+            //E(v,h) = - sum_k hk . (Wk*v) - sum_k bk sum_h hk - c sum_v v
+
+            return -etl::sum(c >> etl::sum_r(v)) - etl::sum(b >> etl::sum_r(h)) - etl::sum(h >> tmp(0));
+        } else if (desc::visible_unit == unit_type::GAUSSIAN && desc::hidden_unit == unit_type::BINARY) {
+            //Definition according to Honglak Lee / Mixed with Gaussian
+            //E(v,h) = - sum_k hk . (Wk*v) - sum_k bk sum_h hk - sum_v ((v - c) ^ 2 / 2)
+
+            return -sum(etl::pow(v - etl::rep(c, nv1, nv2), 2) / 2.0) - etl::sum(b >> etl::sum_r(h)) - etl::sum(h >> tmp(0));
+        } else {
+            return 0.0;
+        }
     }
 
     template<typename Input>
@@ -322,9 +303,22 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
 
     template <typename V>
     weight free_energy_impl(const V& v) const {
-        cpp_unused(v);
-        std::cerr << "Free energy needs to be reimplemented" << std::endl;
-        return 0.0;
+        etl::dyn_matrix<weight, 4> tmp(1UL, k, nh1, nh2);
+        etl::reshape(tmp, 1, k, nh1, nh2) = etl::conv_4d_valid_flipped(etl::reshape(v, 1, nc, nv1, nv2), w);
+
+        if (desc::visible_unit == unit_type::BINARY && desc::hidden_unit == unit_type::BINARY) {
+            //Definition computed from E(v,h)
+
+            auto x = etl::rep(b, nh1, nh2) + tmp(0);
+            return -etl::sum(c >> etl::sum_r(v)) - etl::sum(etl::log(1.0 + etl::exp(x)));
+        } else if (desc::visible_unit == unit_type::GAUSSIAN && desc::hidden_unit == unit_type::BINARY) {
+            //Definition computed from E(v,h)
+
+            auto x = etl::rep(b, nh1, nh2) + tmp(0);
+            return -sum(etl::pow(v - etl::rep(c, nv1, nv2), 2) / 2.0) - etl::sum(etl::log(1.0 + etl::exp(x)));
+        } else {
+            return 0.0;
+        }
     }
 
     template <typename V>
@@ -367,8 +361,7 @@ struct dyn_conv_rbm final : public standard_conv_rbm<dyn_conv_rbm<Desc>, Desc> {
 
     template <typename V, typename H>
     void batch_activate_hidden(H& h_a, const V& input) const {
-        etl::dyn_matrix<weight, 5> v_cv(etl::dim<0>(h_a), V_CV_CHANNELS, k, nh1, nh2); //Temporary convolution
-        batch_activate_hidden<true, false>(h_a, h_a, input, input, v_cv);
+        batch_activate_hidden<true, false>(h_a, h_a, input, input);
     }
 
     template <std::size_t B>

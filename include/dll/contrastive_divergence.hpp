@@ -499,7 +499,7 @@ void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T
         }
 
         //First step
-        rbm.template activate_hidden<true, true>(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i), t.v_cv(i));
+        rbm.template activate_hidden<true, true>(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i));
 
         if(Persistent && t.init){
             t.p_h_a(i) = t.h1_a(i);
@@ -508,17 +508,17 @@ void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T
 
         //CD-1
         if(Persistent){
-            rbm.template activate_visible<true, false>(t.p_h_a(i), t.p_h_s(i), t.v2_a(i), t.v2_s(i), t.h_cv(i));
-            rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.v_cv(i));
+            rbm.template activate_visible<true, false>(t.p_h_a(i), t.p_h_s(i), t.v2_a(i), t.v2_s(i));
+            rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
         } else {
-            rbm.template activate_visible<true, false>(t.h1_a(i), t.h1_s(i), t.v2_a(i), t.v2_s(i), t.h_cv(i));
-            rbm.template activate_hidden<true, (N > 1)>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.v_cv(i));
+            rbm.template activate_visible<true, false>(t.h1_a(i), t.h1_s(i), t.v2_a(i), t.v2_s(i));
+            rbm.template activate_hidden<true, (N > 1)>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
         }
 
         //CD-k
         for(std::size_t k = 1; k < N; ++k){
-            rbm.template activate_visible<true, false>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.h_cv(i));
-            rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i), t.v_cv(i));
+            rbm.template activate_visible<true, false>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
+            rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
         }
     });
     // clang-format on
@@ -566,7 +566,7 @@ void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T
     }
 
     //First step
-    rbm.template batch_activate_hidden<true, true>(t.h1_a, t.h1_s, t.v1, t.v1, t.v_cv);
+    rbm.template batch_activate_hidden<true, true>(t.h1_a, t.h1_s, t.v1, t.v1);
 
     if (Persistent && t.init) {
         t.p_h_a = t.h1_a;
@@ -575,17 +575,17 @@ void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T
 
     //CD-1
     if (Persistent) {
-        rbm.template batch_activate_visible<true, false>(t.p_h_a, t.p_h_s, t.v2_a, t.v2_s, t.h_cv);
-        rbm.template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s, t.v_cv);
+        rbm.template batch_activate_visible<true, false>(t.p_h_a, t.p_h_s, t.v2_a, t.v2_s);
+        rbm.template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
     } else {
-        rbm.template batch_activate_visible<true, false>(t.h1_a, t.h1_s, t.v2_a, t.v2_s, t.h_cv);
-        rbm.template batch_activate_hidden<true, (N > 1)>(t.h2_a, t.h2_s, t.v2_a, t.v2_s, t.v_cv);
+        rbm.template batch_activate_visible<true, false>(t.h1_a, t.h1_s, t.v2_a, t.v2_s);
+        rbm.template batch_activate_hidden<true, (N > 1)>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
     }
 
     //CD-k
     for (std::size_t k = 1; k < N; ++k) {
-        rbm.template batch_activate_visible<true, false>(t.h2_a, t.h2_s, t.v2_a, t.v2_s, t.h_cv);
-        rbm.template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s, t.v_cv);
+        rbm.template batch_activate_visible<true, false>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
+        rbm.template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
     }
 
     //Compute gradients
@@ -922,12 +922,6 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<!layer_tr
 
     //}}} Sparsity biases end
 
-    static constexpr const std::size_t V_CV_CHANNELS = 2;
-    static constexpr const std::size_t H_CV_CHANNELS = 2;
-
-    etl::fast_matrix<weight, batch_size, V_CV_CHANNELS, K, NH1, NH2> v_cv;
-    etl::fast_matrix<weight, batch_size, H_CV_CHANNELS, NV1, NV2> h_cv;
-
     conditional_fast_matrix_t<Persistent, weight, batch_size, K, NH1, NH2> p_h_a;
     conditional_fast_matrix_t<Persistent, weight, batch_size, K, NH1, NH2> p_h_s;
 
@@ -1035,12 +1029,6 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
 
     //}}} Sparsity biases end
 
-    static constexpr const std::size_t V_CV_CHANNELS = 2;
-    static constexpr const std::size_t H_CV_CHANNELS = 2;
-
-    etl::dyn_matrix<weight, 5> v_cv;
-    etl::dyn_matrix<weight, 4> h_cv;
-
     etl::dyn_matrix<weight, 4> p_h_a;
     etl::dyn_matrix<weight, 4> p_h_s;
 
@@ -1075,8 +1063,6 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
              w_bias(DYN_W_DIMS, 0.0),
              b_bias(rbm.k, 0.0),
              c_bias(rbm.nc, 0.0),
-             v_cv(get_batch_size(rbm), V_CV_CHANNELS, rbm.k, rbm.nh1, rbm.nh2),
-             h_cv(get_batch_size(rbm), H_CV_CHANNELS, rbm.nv1, rbm.nv2),
              p_h_a(get_batch_size(rbm), rbm.k, rbm.nh1, rbm.nh2),
              p_h_s(get_batch_size(rbm), rbm.k, rbm.nh1, rbm.nh2),
              w_pos(DYN_W_DIMS),

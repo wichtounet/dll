@@ -88,16 +88,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     conditional_fast_matrix_t<!dbn_only, weight, K, NH1, NH2> h2_a; ///< Activation probabilities of reconstructed hidden units
     conditional_fast_matrix_t<!dbn_only, weight, K, NH1, NH2> h2_s; ///< Sampled values of reconstructed hidden units
 
-    //Convolution data
-
-    static constexpr const std::size_t V_CV_CHANNELS = 2;
-    static constexpr const std::size_t H_CV_CHANNELS = 2;
-
-    //Note: These are used by activation functions and therefore are
-    //needed in dbn_only mode as well
-    etl::fast_matrix<weight, V_CV_CHANNELS, K, NH1, NH2> v_cv; ///< Temporary convolution
-    etl::fast_matrix<weight, H_CV_CHANNELS, NV1, NV2> h_cv;    ///< Temporary convolution
-
     mutable cpp::thread_pool<!layer_traits<this_type>::is_serial()> pool;
 
     conv_rbm()
@@ -137,19 +127,7 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     using base_type::activate_hidden;
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2>
-    void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& v_s) const {
-        etl::fast_dyn_matrix<weight, V_CV_CHANNELS, K, NH1, NH2> v_cv; //Temporary convolution
-        activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, v_cv);
-    }
-
-    template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2>
-    void activate_visible(const H1& h_a, const H2& h_s, V1&& v_a, V2&& v_s) const {
-        etl::fast_dyn_matrix<weight, H_CV_CHANNELS, NV2, NV2> h_cv; //Temporary convolution
-        activate_visible<P, S>(h_a, h_s, std::forward<V1>(v_a), std::forward<V2>(v_s), h_cv);
-    }
-
-    template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename VCV>
-    void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& /*v_s*/, VCV&& v_cv) const {
+    void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& /*v_s*/) const {
         dll::auto_timer timer("crbm:activate_hidden");
 
         static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit), "Invalid hidden unit type");
@@ -173,8 +151,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         //TODO This is not correct since h_a is already maxed here
         H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = max(logistic_noise(h_a), 0.0));
 
-        cpp_unused(v_cv);
-
         H_SAMPLE_PROBS(unit_type::BINARY, f(h_s) = bernoulli(h_a));
         H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = ranged_noise(h_a, 6.0));
         H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = ranged_noise(h_a, 1.0));
@@ -186,8 +162,8 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         }
     }
 
-    template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename HCV>
-    void activate_visible(const H1& /*h_a*/, const H2& h_s, V1&& v_a, V2&& v_s, HCV&& h_cv) const {
+    template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2>
+    void activate_visible(const H1& /*h_a*/, const H2& h_s, V1&& v_a, V2&& v_s) const {
         dll::auto_timer timer("crbm:activate_visible");
 
         static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN, "Invalid visible unit type");
@@ -205,8 +181,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         V_PROBS(unit_type::BINARY, f(v_a) = sigmoid(c_rep + v_a));
         V_PROBS(unit_type::GAUSSIAN, f(v_a) = c_rep + v_a);
 
-        cpp_unused(h_cv);
-
         nan_check_deep(v_a);
 
         V_SAMPLE_PROBS(unit_type::BINARY, f(v_s) = bernoulli(v_a));
@@ -217,8 +191,13 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         }
     }
 
-    template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename VCV>
-    void batch_activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& /*v_s*/, VCV&& v_cv) const {
+    template <typename V, typename H>
+    void batch_activate_hidden(H& h_a, const V& input) const {
+        batch_activate_hidden<true, false>(h_a, h_a, input, input);
+    }
+
+    template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2>
+    void batch_activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& /*v_s*/) const {
         dll::auto_timer timer("crbm:batch_activate_hidden");
 
         static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit), "Invalid hidden unit type");
@@ -227,7 +206,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         static_assert(etl::decay_traits<H1>::template dim<0>() == etl::decay_traits<H2>::template dim<0>(), "Inconsistent number of batches");
         static_assert(etl::decay_traits<H1>::template dim<0>() == etl::decay_traits<V1>::template dim<0>(), "Inconsistent number of batches");
         static_assert(etl::decay_traits<H1>::template dim<0>() == etl::decay_traits<V2>::template dim<0>(), "Inconsistent number of batches");
-        static_assert(etl::decay_traits<H1>::template dim<0>() == etl::decay_traits<VCV>::template dim<0>(), "Inconsistent number of batches");
 
         validate_inputs<V1, V2, 1>();
         validate_outputs<H1, H2, 1>();
@@ -248,8 +226,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
 
         H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = max(logistic_noise(b_rep + h_a), 0.0));
 
-        cpp_unused(v_cv);
-
         nan_check_deep(h_a);
 
         H_SAMPLE_PROBS(unit_type::BINARY, f(h_s) = bernoulli(h_a));
@@ -261,8 +237,8 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         }
     }
 
-    template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2, typename HCV>
-    void batch_activate_visible(const H1& /*h_a*/, const H2& h_s, V1&& v_a, V2&& v_s, HCV&& h_cv) const {
+    template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2>
+    void batch_activate_visible(const H1& /*h_a*/, const H2& h_s, V1&& v_a, V2&& v_s) const {
         dll::auto_timer timer("crbm:batch_activate_visible");
 
         static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN, "Invalid visible unit type");
@@ -271,7 +247,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         static_assert(etl::decay_traits<H1>::template dim<0>() == etl::decay_traits<H2>::template dim<0>(), "Inconsistent number of batches");
         static_assert(etl::decay_traits<H1>::template dim<0>() == etl::decay_traits<V1>::template dim<0>(), "Inconsistent number of batches");
         static_assert(etl::decay_traits<H1>::template dim<0>() == etl::decay_traits<V2>::template dim<0>(), "Inconsistent number of batches");
-        static_assert(etl::decay_traits<H1>::template dim<0>() == etl::decay_traits<HCV>::template dim<0>(), "Inconsistent number of batches");
 
         validate_inputs<V1, V2, 1>();
         validate_outputs<H1, H2, 1>();
@@ -285,8 +260,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
         V_PROBS(unit_type::BINARY, f(v_a) = etl::sigmoid(c_rep + v_a));
         V_PROBS(unit_type::GAUSSIAN, f(v_a) = c_rep + v_a);
 
-        cpp_unused(h_cv);
-
         nan_check_deep(v_a);
 
         V_SAMPLE_PROBS(unit_type::BINARY, f(v_s) = bernoulli(v_a));
@@ -298,10 +271,22 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     }
 
     weight energy(const input_one_t& v, const output_one_t& h) const {
-        cpp_unused(v);
-        cpp_unused(h);
-        std::cerr << "Energy needs to be reimplemented" << std::endl;
-        return 0.0;
+        etl::fast_dyn_matrix<weight, 1, K, NH1, NH2> tmp; //Temporary convolution
+        tmp = etl::conv_4d_valid_flipped(etl::reshape<1, NC, NV1, NV2>(v), w);
+
+        if (desc::visible_unit == unit_type::BINARY && desc::hidden_unit == unit_type::BINARY) {
+            //Definition according to Honglak Lee
+            //E(v,h) = - sum_k hk . (Wk*v) - sum_k bk sum_h hk - c sum_v v
+
+            return -etl::sum(c >> etl::sum_r(v)) - etl::sum(b >> etl::sum_r(h)) - etl::sum(h >> tmp(0));
+        } else if (desc::visible_unit == unit_type::GAUSSIAN && desc::hidden_unit == unit_type::BINARY) {
+            //Definition according to Honglak Lee / Mixed with Gaussian
+            //E(v,h) = - sum_k hk . (Wk*v) - sum_k bk sum_h hk - sum_v ((v - c) ^ 2 / 2)
+
+            return -sum(etl::pow(v - etl::rep<NV1, NV2>(c), 2) / 2.0) - etl::sum(b >> etl::sum_r(h)) - etl::sum(h >> tmp(0));
+        } else {
+            return 0.0;
+        }
     }
 
     template<typename Input>
@@ -311,9 +296,22 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     }
 
     weight free_energy(const input_one_t& v) const {
-        cpp_unused(v);
-        std::cerr << "Free energy needs to be reimplemented" << std::endl;
-        return 0.0;
+        etl::fast_dyn_matrix<weight, 1, K, NH1, NH2> tmp; //Temporary convolution
+        tmp = etl::conv_4d_valid_flipped(etl::reshape<1, NC, NV1, NV2>(v), w);
+
+        if (desc::visible_unit == unit_type::BINARY && desc::hidden_unit == unit_type::BINARY) {
+            //Definition computed from E(v,h)
+
+            auto x = etl::rep<NH1, NH2>(b) + tmp(0);
+            return -etl::sum(c >> etl::sum_r(v)) - etl::sum(etl::log(1.0 + etl::exp(x)));
+        } else if (desc::visible_unit == unit_type::GAUSSIAN && desc::hidden_unit == unit_type::BINARY) {
+            //Definition computed from E(v,h)
+
+            auto x = etl::rep<NH1, NH2>(b) + tmp(0);
+            return -sum(etl::pow(v - etl::rep<NV1, NV2>(c), 2) / 2.0) - etl::sum(etl::log(1.0 + etl::exp(x)));
+        } else {
+            return 0.0;
+        }
     }
 
     template <typename V>
@@ -346,12 +344,6 @@ struct conv_rbm final : public standard_conv_rbm<conv_rbm<Desc>, Desc> {
     void activate_hidden(output_one_t& output, const Input& input) const {
         decltype(auto) converted = converter_one<Input, input_one_t>::convert(*this, input);
         activate_hidden(output, converted);
-    }
-
-    template <typename V, typename H>
-    void batch_activate_hidden(H& h_a, const V& input) const {
-        etl::fast_dyn_matrix<weight, etl::decay_traits<H>::template dim<0>(), V_CV_CHANNELS, K, NH1, NH2> v_cv; //Temporary convolution
-        batch_activate_hidden<true, false>(h_a, h_a, input, input, v_cv);
     }
 
     template <std::size_t B>
