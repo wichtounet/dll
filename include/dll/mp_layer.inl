@@ -32,13 +32,6 @@ struct mp_layer_3d final : pooling_layer_3d<mp_layer_3d<Desc>, Desc> {
         return {buffer};
     }
 
-    /*!
-     * \brief Display the layer to the console
-     */
-    static void display() {
-        std::cout << to_short_string() << std::endl;
-    }
-
     using input_one_t  = typename base::input_one_t;  ///< The type of one input
     using output_one_t = typename base::output_one_t; ///< The type of one output
     using input_t      = typename base::input_t;      ///< The type of many input

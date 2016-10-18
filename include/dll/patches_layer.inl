@@ -42,10 +42,6 @@ struct patches_layer : neural_base<patches_layer<Desc>> {
         return {buffer};
     }
 
-    static void display() {
-        std::cout << to_short_string() << std::endl;
-    }
-
     static constexpr std::size_t output_size() noexcept {
         return width * height;
     }

@@ -119,10 +119,6 @@ struct dyn_conv_layer final : neural_base<dyn_conv_layer<Desc>> {
         return {buffer};
     }
 
-    void display() const {
-        std::cout << to_short_string() << std::endl;
-    }
-
     void backup_weights() {
         unique_safe_get(bak_w) = w;
         unique_safe_get(bak_b) = b;

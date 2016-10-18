@@ -33,13 +33,6 @@ struct dyn_mp_layer_3d final : dyn_pooling_layer_3d<dyn_mp_layer_3d<Desc>, Desc>
         return {buffer};
     }
 
-    /*!
-     * \brief Display the layer to the console
-     */
-    void display() const {
-        std::cout << to_short_string() << std::endl;
-    }
-
     using input_one_t  = typename base::input_one_t;  ///< The type of one input
     using output_one_t = typename base::output_one_t; ///< The type of one output
     using input_t      = typename base::input_t;      ///< The type of many input

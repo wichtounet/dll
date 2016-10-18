@@ -21,13 +21,6 @@ struct transform_layer : neural_base<Derived> {
     using derived_t = Derived; ///< The derived type
 
     /*!
-     * \brief Prints the layer to the console
-     */
-    void display() const {
-        std::cout << as_derived().to_short_string() << std::endl;
-    }
-
-    /*!
      * \brief Apply the layer to many inputs
      * \param output The set of output
      * \param input The set of input to apply the layer to

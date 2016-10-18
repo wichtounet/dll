@@ -40,13 +40,6 @@ struct avgp_layer_3d final : pooling_layer_3d<avgp_layer_3d<Desc>, Desc> {
         return {buffer};
     }
 
-    /*!
-     * \brief Display the layer to the console
-     */
-    static void display() {
-        std::cout << to_short_string() << std::endl;
-    }
-
     static void activate_hidden(output_one_t& h, const input_one_t& v) {
         h = etl::avg_pool_3d<base::C1, base::C2, base::C3>(v);
     }

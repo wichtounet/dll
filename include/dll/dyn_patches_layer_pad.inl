@@ -53,10 +53,6 @@ struct dyn_patches_layer_padh : neural_base<dyn_patches_layer_padh<Desc>> {
         return {buffer};
     }
 
-    void display() const {
-        std::cout << to_short_string() << std::endl;
-    }
-
     std::size_t output_size() const noexcept {
         return width * height;
     }

@@ -37,10 +37,6 @@ struct augment_layer : neural_base<augment_layer<Desc>> {
         return name;
     }
 
-    static void display() {
-        std::cout << to_short_string() << std::endl;
-    }
-
     template <typename... Augmenter, typename Input, typename Output>
     static void apply_all(const cpp::type_list<Augmenter...>&, Output& h_a, const Input& input) {
         int wormhole[] = {(augmenter<Augmenter>::apply(h_a, input), 0)...};
