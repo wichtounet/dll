@@ -58,18 +58,6 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
                                                                        : /* Only Gaussian Units needs lower rate */ 1e-3;
     }
 
-    void backup_weights() {
-        unique_safe_get(as_derived().bak_w) = as_derived().w;
-        unique_safe_get(as_derived().bak_b) = as_derived().b;
-        unique_safe_get(as_derived().bak_c) = as_derived().c;
-    }
-
-    void restore_weights() {
-        as_derived().w = *as_derived().bak_w;
-        as_derived().b = *as_derived().bak_b;
-        as_derived().c = *as_derived().bak_c;
-    }
-
     //Utility functions
 
     template <typename Sample>
@@ -94,16 +82,6 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
     }
 
     //Various functions
-
-    double reconstruction_error(const input_one_t& item) {
-        return reconstruction_error(item, as_derived());
-    }
-
-    template<typename Input>
-    double reconstruction_error(const Input& item) {
-        decltype(auto) converted_item = converter_one<Input, input_one_t>::convert(as_derived(), item);
-        return reconstruction_error(converted_item, as_derived());
-    }
 
     void activate_many(const input_t& input, output_t& h_a, output_t& h_s) const {
         for (std::size_t i = 0; i < input.size(); ++i) {
@@ -144,6 +122,18 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
 
     weight free_energy() const {
         return as_derived().free_energy_impl(as_derived().v1);
+    }
+
+    static double reconstruction_error_impl(const input_one_t& items, parent_t& rbm) {
+        cpp_assert(items.size() == input_size(rbm), "The size of the training sample must match visible units");
+
+        //Set the state of the visible units
+        rbm.v1 = items;
+
+        rbm.activate_hidden(rbm.h1_a, rbm.h1_s, rbm.v1, rbm.v1);
+        rbm.activate_visible(rbm.h1_a, rbm.h1_s, rbm.v2_a, rbm.v2_s);
+
+        return etl::mean((rbm.v1 - rbm.v2_a) >> (rbm.v1 - rbm.v2_a));
     }
 
 private:
@@ -218,18 +208,6 @@ private:
             std::cout << std::endl
                       << std::endl;
         }
-    }
-
-    static double reconstruction_error(const input_one_t& items, parent_t& rbm) {
-        cpp_assert(items.size() == input_size(rbm), "The size of the training sample must match visible units");
-
-        //Set the state of the visible units
-        rbm.v1 = items;
-
-        rbm.activate_hidden(rbm.h1_a, rbm.h1_s, rbm.v1, rbm.v1);
-        rbm.activate_visible(rbm.h1_a, rbm.h1_s, rbm.v2_a, rbm.v2_s);
-
-        return etl::mean((rbm.v1 - rbm.v2_a) >> (rbm.v1 - rbm.v2_a));
     }
 
     parent_t& as_derived() {

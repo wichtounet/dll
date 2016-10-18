@@ -74,6 +74,28 @@ struct rbm_base : neural_base<Parent> {
         //Nothing to do
     }
 
+    void backup_weights() {
+        unique_safe_get(as_derived().bak_w) = as_derived().w;
+        unique_safe_get(as_derived().bak_b) = as_derived().b;
+        unique_safe_get(as_derived().bak_c) = as_derived().c;
+    }
+
+    void restore_weights() {
+        as_derived().w = *as_derived().bak_w;
+        as_derived().b = *as_derived().bak_b;
+        as_derived().c = *as_derived().bak_c;
+    }
+
+    double reconstruction_error(const input_one_t& item) {
+        return parent_t::reconstruction_error_impl(item, as_derived());
+    }
+
+    template<typename Input>
+    double reconstruction_error(const Input& item) {
+        decltype(auto) converted_item = converter_one<Input, input_one_t>::convert(as_derived(), item);
+        return parent_t::reconstruction_error_impl(converted_item, as_derived());
+    }
+
     //Normal Train functions
 
     template <bool EnableWatcher = true, typename RW = void, typename... Args>

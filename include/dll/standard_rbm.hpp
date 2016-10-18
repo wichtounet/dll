@@ -61,18 +61,6 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
                                                                                                                                       : /* Only ReLU and Gaussian Units needs lower rate */ 1e-1;
     }
 
-    void backup_weights() {
-        unique_safe_get(as_derived().bak_w) = as_derived().w;
-        unique_safe_get(as_derived().bak_b) = as_derived().b;
-        unique_safe_get(as_derived().bak_c) = as_derived().c;
-    }
-
-    void restore_weights() {
-        as_derived().w = *as_derived().bak_w;
-        as_derived().b = *as_derived().bak_b;
-        as_derived().c = *as_derived().bak_c;
-    }
-
     //Energy functions
 
     weight energy(const input_one_t& v, const output_one_t& h) const {
@@ -109,16 +97,6 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
 
     void reconstruct(const input_one_t& items) {
         reconstruct(items, as_derived());
-    }
-
-    double reconstruction_error(const input_one_t& item) {
-        return reconstruction_error(item, as_derived());
-    }
-
-    template<typename Input>
-    double reconstruction_error(const Input& item) {
-        decltype(auto) converted_item = converter_one<Input, input_one_t>::convert(as_derived(), item);
-        return reconstruction_error(converted_item, as_derived());
     }
 
     // activate_hidden
@@ -226,6 +204,18 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
         display_weights(matrix, as_derived());
     }
 
+    static double reconstruction_error_impl(const input_one_t& items, parent_t& rbm) {
+        cpp_assert(items.size() == num_visible(rbm), "The size of the training sample must match visible units");
+
+        //Set the state of the visible units
+        rbm.v1 = items;
+
+        rbm.activate_hidden(rbm.h1_a, rbm.h1_s, rbm.v1, rbm.v1);
+        rbm.activate_visible(rbm.h1_a, rbm.h1_s, rbm.v2_a, rbm.v2_s);
+
+        return etl::mean((rbm.v1 - rbm.v2_a) >> (rbm.v1 - rbm.v2_a));
+    }
+
 protected:
     //Since the sub classes does not have the same fields, it is not possible
     //to put the fields in standard_rbm, therefore, it is necessary to use template
@@ -261,18 +251,6 @@ protected:
         rbm.activate_hidden(rbm.h2_a, rbm.h2_s, rbm.v2_a, rbm.v2_s);
 
         std::cout << "Reconstruction took " << watch.elapsed() << "ms" << std::endl;
-    }
-
-    static double reconstruction_error(const input_one_t& items, parent_t& rbm) {
-        cpp_assert(items.size() == num_visible(rbm), "The size of the training sample must match visible units");
-
-        //Set the state of the visible units
-        rbm.v1 = items;
-
-        rbm.activate_hidden(rbm.h1_a, rbm.h1_s, rbm.v1, rbm.v1);
-        rbm.activate_visible(rbm.h1_a, rbm.h1_s, rbm.v2_a, rbm.v2_s);
-
-        return etl::mean((rbm.v1 - rbm.v2_a) >> (rbm.v1 - rbm.v2_a));
     }
 
     static void display_weights(const parent_t& rbm) {
