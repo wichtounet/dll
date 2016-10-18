@@ -210,8 +210,6 @@ void update_convolutional(RBM& rbm, Trainer& t) {
     nan_check_deep(rbm.c);
 }
 
-#ifndef ETL_BLAS_MODE
-
 template <typename Trainer>
 void batch_compute_gradients(Trainer& t) {
     dll::auto_timer timer("cd:batch_compute_gradients:std");
@@ -256,72 +254,6 @@ void compute_gradients_one(Trainer& t) {
     t.b_grad = t.h1_a(0) - t.h2_a(0);
     t.c_grad = t.vf(0) - t.v2_a(0);
 }
-
-#else
-
-template <typename Trainer>
-void batch_compute_gradients(Trainer& t) {
-    dll::auto_timer timer("cd:batch_compute_gradients:blas");
-
-    const auto B = etl::dim<0>(t.w_grad_b);
-
-    for (std::size_t b = 0; b < B; b++) {
-        blas_ger(
-            etl::dim<1>(t.vf), etl::dim<1>(t.h1_a),
-            1.0,
-            t.vf(b).memory_start(),
-            t.h1_a(b).memory_start(),
-            t.w_grad.memory_start());
-
-        blas_ger(
-            etl::dim<1>(t.v2_a), etl::dim<1>(t.h2_a),
-            -1.0,
-            t.v2_a(b).memory_start(),
-            t.h2_a(b).memory_start(),
-            t.w_grad.memory_start());
-    }
-
-    for (std::size_t b = 0; b < B; b++) {
-        blas_axpy(etl::dim<1>(t.h1_a), 1.0, t.h1_a(b).memory_start(), t.b_grad.memory_start());
-        blas_axpy(etl::dim<1>(t.h2_a), -1.0, t.h2_a(b).memory_start(), t.b_grad.memory_start());
-    }
-
-    for (std::size_t b = 0; b < B; b++) {
-        blas_axpy(etl::dim<1>(t.vf), 1.0, t.vf(b).memory_start(), t.c_grad.memory_start());
-        blas_axpy(etl::dim<1>(t.v2_a), -1.0, t.v2_a(b).memory_start(), t.c_grad.memory_start());
-    }
-}
-
-template <typename Trainer>
-void compute_gradients_one(Trainer& t) {
-    dll::auto_timer timer("cd:compute_gradients_one:blas");
-
-    t.w_grad = 0;
-    t.b_grad = 0;
-    t.c_grad = 0;
-
-    blas_ger(
-        etl::dim<1>(t.vf), etl::dim<1>(t.h1_a),
-        1.0,
-        t.vf(0).memory_start(),
-        t.h1_a(0).memory_start(),
-        t.w_grad.memory_start());
-
-    blas_ger(
-        etl::dim<1>(t.v2_a), etl::dim<1>(t.h2_a),
-        -1.0,
-        t.v2_a(0).memory_start(),
-        t.h2_a(0).memory_start(),
-        t.w_grad.memory_start());
-
-    blas_axpy(etl::dim<1>(t.h1_a), 1.0, t.h1_a(0).memory_start(), t.b_grad.memory_start());
-    blas_axpy(etl::dim<1>(t.h2_a), -1.0, t.h2_a(0).memory_start(), t.b_grad.memory_start());
-
-    blas_axpy(etl::dim<1>(t.vf), 1.0, t.vf(0).memory_start(), t.c_grad.memory_start());
-    blas_axpy(etl::dim<1>(t.v2_a), -1.0, t.v2_a(0).memory_start(), t.c_grad.memory_start());
-}
-
-#endif
 
 /* The training procedures */
 
