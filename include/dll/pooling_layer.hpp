@@ -9,7 +9,7 @@
 
 #include "etl/etl.hpp"
 
-#include "neural_base.hpp"
+#include "layer.hpp"
 
 namespace dll {
 

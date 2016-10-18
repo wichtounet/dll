@@ -11,7 +11,7 @@
 #include <fstream>
 
 #include "cpp_utils/io.hpp"
-#include "neural_base.hpp"
+#include "layer.hpp"
 #include "trainer/rbm_trainer_fwd.hpp"
 #include "util/converter.hpp" //converter
 

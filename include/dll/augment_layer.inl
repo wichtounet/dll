@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "neural_base.hpp"
+#include "layer.hpp"
 #include "augmenters.hpp"
 
 namespace dll {

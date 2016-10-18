@@ -11,7 +11,7 @@
 
 #include "etl/etl.hpp"
 
-#include "neural_base.hpp"
+#include "layer.hpp"
 #include "util/tmp.hpp"
 #include "layer_traits.hpp"
 
