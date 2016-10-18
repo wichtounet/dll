@@ -174,27 +174,12 @@ struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_pooling_
               errors(batch_size, i1 / c1, i2 / c2, i3 / c3) {}
 };
 
-// This selector is used to compute the output types of transform layers
-// Ideally, it should always be set to dyn_matrix, unfortunately this is not
-// supported by the different rbm implementations who are waiting for fast
-// matrix
-
-template <typename DBN, typename Layer, typename Enable = void>
-struct transform_output_type;
-
 template <typename DBN, typename Layer>
-struct transform_output_type <DBN, Layer, std::enable_if_t<dbn_traits<DBN>::is_dynamic()>> {
+struct transform_output_type {
     static constexpr const auto dimensions = dbn_traits<DBN>::is_convolutional() ? 4 : 2;
 
     using weight  = typename DBN::weight;
     using type = etl::dyn_matrix<weight, dimensions>;
-};
-
-template <typename DBN, typename Layer>
-struct transform_output_type <DBN, Layer, std::enable_if_t<!dbn_traits<DBN>::is_dynamic()>> {
-    static constexpr const auto batch_size = DBN::batch_size;
-
-    using type = typename DBN::template input_batch_t<batch_size>;
 };
 
 template <typename DBN, typename Layer>
