@@ -183,6 +183,40 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
         display_weights(matrix, as_derived());
     }
 
+    template <typename Input>
+    output_t prepare_output(std::size_t samples, bool is_last = false, std::size_t labels = 0) const {
+        output_t output;
+        output.reserve(samples);
+
+        for (std::size_t i = 0; i < samples; ++i) {
+            output.emplace_back(as_derived().output_size() + (is_last ? labels : 0));
+        }
+
+        return output;
+    }
+
+    template <typename Input>
+    output_one_t prepare_one_output(bool is_last = false, std::size_t labels = 0) const {
+        return output_one_t(as_derived().output_size() + (is_last ? labels : 0));
+    }
+
+    input_one_t prepare_one_input() const {
+        return input_one_t(as_derived().input_size());
+    }
+
+    void activate_many(const input_t& input, output_t& h_a) const {
+        for (std::size_t i = 0; i < input.size(); ++i) {
+            activate_one(input[i], h_a[i]);
+        }
+    }
+
+    friend base_type;
+
+private:
+    //Since the sub classes does not have the same fields, it is not possible
+    //to put the fields in standard_rbm, therefore, it is necessary to use template
+    //functions to implement the details
+
     static double reconstruction_error_impl(const input_one_t& items, parent_t& rbm) {
         cpp_assert(items.size() == num_visible(rbm), "The size of the training sample must match visible units");
 
@@ -194,11 +228,6 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
 
         return etl::mean((rbm.v1 - rbm.v2_a) >> (rbm.v1 - rbm.v2_a));
     }
-
-protected:
-    //Since the sub classes does not have the same fields, it is not possible
-    //to put the fields in standard_rbm, therefore, it is necessary to use template
-    //functions to implement the details
 
     template <typename Iterator>
     static void init_weights(Iterator first, Iterator last, parent_t& rbm) {
@@ -476,36 +505,6 @@ protected:
             nan_check_deep(v_s);
         }
     }
-
-public:
-    template <typename Input>
-    output_t prepare_output(std::size_t samples, bool is_last = false, std::size_t labels = 0) const {
-        output_t output;
-        output.reserve(samples);
-
-        for (std::size_t i = 0; i < samples; ++i) {
-            output.emplace_back(as_derived().output_size() + (is_last ? labels : 0));
-        }
-
-        return output;
-    }
-
-    template <typename Input>
-    output_one_t prepare_one_output(bool is_last = false, std::size_t labels = 0) const {
-        return output_one_t(as_derived().output_size() + (is_last ? labels : 0));
-    }
-
-    input_one_t prepare_one_input() const {
-        return input_one_t(as_derived().input_size());
-    }
-
-    void activate_many(const input_t& input, output_t& h_a) const {
-        for (std::size_t i = 0; i < input.size(); ++i) {
-            activate_one(input[i], h_a[i]);
-        }
-    }
-
-private:
 
     parent_t& as_derived() {
         return *static_cast<parent_t*>(this);

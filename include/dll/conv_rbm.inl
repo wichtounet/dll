@@ -106,6 +106,35 @@ struct conv_rbm final : public standard_crbm<conv_rbm<Desc>, Desc> {
         return {buffer};
     }
 
+    template <typename Input>
+    static output_t prepare_output(std::size_t samples) {
+        return output_t{samples};
+    }
+
+    template <typename Input>
+    static output_one_t prepare_one_output() {
+        return output_one_t{};
+    }
+
+    template <std::size_t B>
+    auto prepare_input_batch(){
+        return etl::fast_dyn_matrix<weight, B, NC, NV1, NV2>();
+    }
+
+    template <std::size_t B>
+    auto prepare_output_batch(){
+        return etl::fast_dyn_matrix<weight, B, K, NH1, NH2>();
+    }
+
+    template<typename DRBM>
+    static void dyn_init(DRBM& dyn){
+        dyn.init_layer(NC, NV1, NV2, K, NH1, NH2);
+        dyn.batch_size  = layer_traits<this_type>::batch_size();
+    }
+
+    friend base_type;
+
+private:
     auto get_b_rep() const {
         return etl::force_temporary(etl::rep<NH1, NH2>(b));
     }
@@ -138,32 +167,6 @@ struct conv_rbm final : public standard_crbm<conv_rbm<Desc>, Desc> {
 
     auto energy_tmp() const {
         return etl::fast_dyn_matrix<weight, 1, K, NH1, NH2>();
-    }
-
-    template <typename Input>
-    static output_t prepare_output(std::size_t samples) {
-        return output_t{samples};
-    }
-
-    template <typename Input>
-    static output_one_t prepare_one_output() {
-        return output_one_t{};
-    }
-
-    template <std::size_t B>
-    auto prepare_input_batch(){
-        return etl::fast_dyn_matrix<weight, B, NC, NV1, NV2>();
-    }
-
-    template <std::size_t B>
-    auto prepare_output_batch(){
-        return etl::fast_dyn_matrix<weight, B, K, NH1, NH2>();
-    }
-
-    template<typename DRBM>
-    static void dyn_init(DRBM& dyn){
-        dyn.init_layer(NC, NV1, NV2, K, NH1, NH2);
-        dyn.batch_size  = layer_traits<this_type>::batch_size();
     }
 
     template <typename V1, typename V2, std::size_t Off = 0>

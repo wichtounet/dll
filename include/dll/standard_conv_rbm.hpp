@@ -124,6 +124,13 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
         return as_derived().free_energy_impl(as_derived().v1);
     }
 
+    friend base_type;
+
+private:
+    //Since the sub classes do not have the same fields, it is not possible
+    //to put the fields in standard_rbm, therefore, it is necessary to use template
+    //functions to implement the details
+
     static double reconstruction_error_impl(const input_one_t& items, parent_t& rbm) {
         cpp_assert(items.size() == input_size(rbm), "The size of the training sample must match visible units");
 
@@ -135,11 +142,6 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
 
         return etl::mean((rbm.v1 - rbm.v2_a) >> (rbm.v1 - rbm.v2_a));
     }
-
-private:
-    //Since the sub classes do not have the same fields, it is not possible
-    //to put the fields in standard_rbm, therefore, it is necessary to use template
-    //functions to implement the details
 
     template <typename Sample>
     static void reconstruct(const Sample& items, parent_t& rbm) {

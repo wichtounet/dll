@@ -52,17 +52,11 @@ struct standard_crbm_mp : public standard_conv_rbm<Derived, Desc> {
     static constexpr const unit_type hidden_unit  = desc::hidden_unit;
     static constexpr const unit_type pooling_unit = desc::pooling_unit;
 
-    standard_crbm_mp() : base_type() {
-        // Nothing to init
-    }
+    standard_crbm_mp() = default;
 
     // Make base class them participate in overload resolution
     using base_type::activate_hidden;
     using base_type::batch_activate_hidden;
-
-    size_t C() const {
-        return as_derived().pool_C();
-    }
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2>
     void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2&) const {
@@ -231,6 +225,13 @@ struct standard_crbm_mp : public standard_conv_rbm<Derived, Desc> {
         return hidden_features(converted);
     }
 
+    friend base_type;
+
+private:
+    size_t C() const {
+        return as_derived().pool_C();
+    }
+
     weight energy_impl(const input_one_t& v, const hidden_output_one_t& h) const {
         auto tmp = as_derived().energy_tmp();
         tmp = etl::conv_4d_valid_flipped(as_derived().reshape_v_a(v), as_derived().w);
@@ -275,7 +276,6 @@ struct standard_crbm_mp : public standard_conv_rbm<Derived, Desc> {
         }
     }
 
-private:
     derived_t& as_derived() {
         return *static_cast<derived_t*>(this);
     }

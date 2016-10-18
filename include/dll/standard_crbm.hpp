@@ -49,9 +49,7 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
     static constexpr const unit_type visible_unit = desc::visible_unit;
     static constexpr const unit_type hidden_unit  = desc::hidden_unit;
 
-    standard_crbm() : base_type() {
-        // Nothing to init
-    }
+    standard_crbm() = default;
 
     // Make base class them participate in overload resolution
     using base_type::activate_hidden;
@@ -194,6 +192,10 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
         }
     }
 
+    friend base_type;
+
+private:
+
     weight energy_impl(const input_one_t& v, const output_one_t& h) const {
         auto tmp = as_derived().energy_tmp();
         tmp = etl::conv_4d_valid_flipped(as_derived().reshape_v_a(v), as_derived().w);
@@ -236,7 +238,6 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
         }
     }
 
-private:
     derived_t& as_derived() {
         return *static_cast<derived_t*>(this);
     }

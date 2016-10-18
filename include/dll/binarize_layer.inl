@@ -20,6 +20,8 @@ struct binarize_layer : transform_layer<binarize_layer<Desc>> {
 
     static constexpr const std::size_t Threshold = desc::T;
 
+    binarize_layer() = default;
+
     /*!
      * \brief Returns a string representation of the layer
      */

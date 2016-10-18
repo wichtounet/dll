@@ -138,40 +138,6 @@ struct dyn_conv_rbm final : public standard_crbm<dyn_conv_rbm<Desc>, Desc> {
         return {buffer};
     }
 
-    auto get_b_rep() const {
-        return etl::force_temporary(etl::rep(b, nh1, nh2));
-    }
-
-    auto get_c_rep() const {
-        return etl::force_temporary(etl::rep(c, nv1, nv2));
-    }
-
-    template<typename V>
-    auto get_batch_b_rep(V&& v) const {
-        const auto batch_size = etl::dim<0>(v);
-        return etl::force_temporary(etl::rep_l(etl::rep(b, nh1, nh2), batch_size));
-    }
-
-    template<typename H>
-    auto get_batch_c_rep(H&& h) const {
-        const auto batch_size = etl::dim<0>(h);
-        return etl::force_temporary(etl::rep_l(etl::rep(c, nv1, nv2), batch_size));
-    }
-
-    template<typename H>
-    auto reshape_h_a(H&& h_a) const {
-        return etl::reshape(h_a, 1, k, nh1, nh2);
-    }
-
-    template<typename V>
-    auto reshape_v_a(V&& v_a) const {
-        return etl::reshape(v_a, 1, nc, nv1, nv2);
-    }
-
-    auto energy_tmp() const {
-        return etl::dyn_matrix<weight, 4>(1UL, k, nh1, nh2);
-    }
-
     template <typename Input>
     output_t prepare_output(std::size_t samples) const {
         output_t output;
@@ -205,6 +171,43 @@ struct dyn_conv_rbm final : public standard_crbm<dyn_conv_rbm<Desc>, Desc> {
     template<typename DRBM>
     static void dyn_init(DRBM&){
         //Nothing to change
+    }
+
+    friend base_type;
+
+private:
+    auto get_b_rep() const {
+        return etl::force_temporary(etl::rep(b, nh1, nh2));
+    }
+
+    auto get_c_rep() const {
+        return etl::force_temporary(etl::rep(c, nv1, nv2));
+    }
+
+    template<typename V>
+    auto get_batch_b_rep(V&& v) const {
+        const auto batch_size = etl::dim<0>(v);
+        return etl::force_temporary(etl::rep_l(etl::rep(b, nh1, nh2), batch_size));
+    }
+
+    template<typename H>
+    auto get_batch_c_rep(H&& h) const {
+        const auto batch_size = etl::dim<0>(h);
+        return etl::force_temporary(etl::rep_l(etl::rep(c, nv1, nv2), batch_size));
+    }
+
+    template<typename H>
+    auto reshape_h_a(H&& h_a) const {
+        return etl::reshape(h_a, 1, k, nh1, nh2);
+    }
+
+    template<typename V>
+    auto reshape_v_a(V&& v_a) const {
+        return etl::reshape(v_a, 1, nc, nv1, nv2);
+    }
+
+    auto energy_tmp() const {
+        return etl::dyn_matrix<weight, 4>(1UL, k, nh1, nh2);
     }
 
     template <typename V1, typename V2, std::size_t Off = 0>

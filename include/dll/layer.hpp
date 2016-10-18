@@ -30,12 +30,6 @@ template <typename Parent>
 struct layer {
     using parent_t = Parent;
 
-    //Needs to be shared because of dyn_rbm
-    mutable std::shared_ptr<cg_context<parent_t>> cg_context_ptr;
-
-    //Needs to be shared because of dyn_rbm
-    mutable std::shared_ptr<void> sgd_context_ptr;
-
     layer(const layer& rbm) = delete;
     layer& operator=(const layer& rbm) = delete;
 
@@ -159,6 +153,13 @@ private:
     const Parent& as_derived() const {
         return *static_cast<const Parent*>(this);
     }
+
+protected:
+    //Needs to be shared because of dyn_rbm
+    mutable std::shared_ptr<cg_context<parent_t>> cg_context_ptr;
+
+    //Needs to be shared because of dyn_rbm
+    mutable std::shared_ptr<void> sgd_context_ptr;
 };
 
 } //end of dll namespace

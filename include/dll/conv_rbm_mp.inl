@@ -113,6 +113,43 @@ struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
         return {buffer};
     }
 
+    template <std::size_t B>
+    using input_batch_t = etl::fast_dyn_matrix<weight, B, NC, NV1, NV2>;
+
+    template <typename Input>
+    static output_t prepare_output(std::size_t samples) {
+        return output_t(samples);
+    }
+
+    template <typename Input>
+    static output_one_t prepare_one_output() {
+        return {};
+    }
+
+    template <typename Input>
+    static hidden_output_one_t prepare_one_hidden_output() {
+        return {};
+    }
+
+    template <std::size_t B>
+    auto prepare_input_batch(){
+        return etl::fast_dyn_matrix<weight, B, NC, NV1, NV2>();
+    }
+
+    template <std::size_t B>
+    auto prepare_output_batch(){
+        return etl::fast_dyn_matrix<weight, B, K, NP1, NP2>();
+    }
+
+    template<typename DRBM>
+    static void dyn_init(DRBM& dyn){
+        dyn.init_layer(NC, NV1, NV2, K, NH1, NH2, C);
+        dyn.batch_size  = layer_traits<this_type>::batch_size();
+    }
+
+    friend base_type;
+
+private:
     size_t pool_C() const {
         return C;
     }
@@ -148,40 +185,6 @@ struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
 
     auto energy_tmp() const {
         return etl::fast_dyn_matrix<weight, 1, K, NH1, NH2>();
-    }
-
-    template <std::size_t B>
-    using input_batch_t = etl::fast_dyn_matrix<weight, B, NC, NV1, NV2>;
-
-    template <typename Input>
-    static output_t prepare_output(std::size_t samples) {
-        return output_t(samples);
-    }
-
-    template <typename Input>
-    static output_one_t prepare_one_output() {
-        return {};
-    }
-
-    template <typename Input>
-    static hidden_output_one_t prepare_one_hidden_output() {
-        return {};
-    }
-
-    template <std::size_t B>
-    auto prepare_input_batch(){
-        return etl::fast_dyn_matrix<weight, B, NC, NV1, NV2>();
-    }
-
-    template <std::size_t B>
-    auto prepare_output_batch(){
-        return etl::fast_dyn_matrix<weight, B, K, NP1, NP2>();
-    }
-
-    template<typename DRBM>
-    static void dyn_init(DRBM& dyn){
-        dyn.init_layer(NC, NV1, NV2, K, NH1, NH2, C);
-        dyn.batch_size  = layer_traits<this_type>::batch_size();
     }
 };
 

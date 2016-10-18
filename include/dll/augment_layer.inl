@@ -21,12 +21,6 @@ struct augment_layer : layer<augment_layer<Desc>> {
 
     augment_layer() = default;
 
-    template <typename... Augmenter>
-    static void concat_all_names(const cpp::type_list<Augmenter...>&, std::string& name) {
-        int wormhole[] = {(augmenter<Augmenter>::concat_name(name), 0)...};
-        cpp_unused(wormhole);
-    }
-
     static std::string to_short_string() {
         std::string name = "Augment<";
 
@@ -35,12 +29,6 @@ struct augment_layer : layer<augment_layer<Desc>> {
         name += " >";
 
         return name;
-    }
-
-    template <typename... Augmenter, typename Input, typename Output>
-    static void apply_all(const cpp::type_list<Augmenter...>&, Output& h_a, const Input& input) {
-        int wormhole[] = {(augmenter<Augmenter>::apply(h_a, input), 0)...};
-        cpp_unused(wormhole);
     }
 
     template <typename Input, typename Output>
@@ -88,6 +76,19 @@ struct augment_layer : layer<augment_layer<Desc>> {
     template<typename DRBM>
     static void dyn_init(DRBM&){
         //Nothing to change
+    }
+
+private:
+    template <typename... Augmenter>
+    static void concat_all_names(const cpp::type_list<Augmenter...>&, std::string& name) {
+        int wormhole[] = {(augmenter<Augmenter>::concat_name(name), 0)...};
+        cpp_unused(wormhole);
+    }
+
+    template <typename... Augmenter, typename Input, typename Output>
+    static void apply_all(const cpp::type_list<Augmenter...>&, Output& h_a, const Input& input) {
+        int wormhole[] = {(augmenter<Augmenter>::apply(h_a, input), 0)...};
+        cpp_unused(wormhole);
     }
 };
 

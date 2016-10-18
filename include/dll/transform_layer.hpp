@@ -20,6 +20,8 @@ template <typename Derived>
 struct transform_layer : layer<Derived> {
     using derived_t = Derived; ///< The derived type
 
+    transform_layer() = default;
+
     /*!
      * \brief Apply the layer to many inputs
      * \param output The set of output

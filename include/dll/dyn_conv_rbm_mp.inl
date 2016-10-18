@@ -158,6 +158,36 @@ struct dyn_conv_rbm_mp final : public standard_crbm_mp<dyn_conv_rbm_mp<Desc>, De
         return {buffer};
     }
 
+    //Utilities for DBNs
+
+    template <typename Input>
+    output_t prepare_output(std::size_t samples) const {
+        output_t output;
+        output.reserve(samples);
+        for(size_t i = 0; i < samples; ++i){
+            output.emplace_back(k, np1, np2);
+        }
+        return output;
+    }
+
+    template <typename Input>
+    output_one_t prepare_one_output() const {
+        return output_one_t(k, np1, np2);
+    }
+
+    template <typename Input>
+    output_one_t prepare_one_hidden_output() const {
+        return output_one_t(k, nh1, nh2);
+    }
+
+    template<typename DRBM>
+    static void dyn_init(DRBM&){
+        //Nothing to change
+    }
+
+    friend base_type;
+
+private:
     size_t pool_C() const {
         return p_c;
     }
@@ -195,32 +225,6 @@ struct dyn_conv_rbm_mp final : public standard_crbm_mp<dyn_conv_rbm_mp<Desc>, De
         return etl::dyn_matrix<weight, 4>(1UL, k, nh1, nh2);
     }
 
-    //Utilities for DBNs
-
-    template <typename Input>
-    output_t prepare_output(std::size_t samples) const {
-        output_t output;
-        output.reserve(samples);
-        for(size_t i = 0; i < samples; ++i){
-            output.emplace_back(k, np1, np2);
-        }
-        return output;
-    }
-
-    template <typename Input>
-    output_one_t prepare_one_output() const {
-        return output_one_t(k, np1, np2);
-    }
-
-    template <typename Input>
-    output_one_t prepare_one_hidden_output() const {
-        return output_one_t(k, nh1, nh2);
-    }
-
-    template<typename DRBM>
-    static void dyn_init(DRBM&){
-        //Nothing to change
-    }
 };
 
 /*!
