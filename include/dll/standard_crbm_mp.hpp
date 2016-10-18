@@ -187,7 +187,7 @@ struct standard_crbm_mp : public standard_conv_rbm<Derived, Desc> {
     }
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2>
-    void batch_activate_visible(const H1&, const H2& h_s, V1&& v_a, V2&& v_s) const {
+    void batch_activate_visible(const H1& h_a, const H2& h_s, V1&& v_a, V2&& v_s) const {
         dll::auto_timer timer("crbm:mp:batch_activate_visible");
 
         static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN, "Invalid visible unit type");
@@ -195,10 +195,9 @@ struct standard_crbm_mp : public standard_conv_rbm<Derived, Desc> {
 
         v_a = etl::conv_4d_full(h_s, as_derived().w);
 
-        static constexpr const auto Batch = etl::decay_traits<H1>::template dim<0>();
-
         auto c_rep = as_derived().get_batch_c_rep(h_s);
 
+        const auto Batch = etl::dim<0>(h_a);
         cpp_assert(etl::dim<0>(h_s) == Batch, "The number of batch must be consistent");
         cpp_assert(etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
         cpp_assert(etl::dim<0>(v_s) == Batch, "The number of batch must be consistent");
@@ -229,7 +228,7 @@ struct standard_crbm_mp : public standard_conv_rbm<Derived, Desc> {
 
     template<typename Input>
     hidden_output_one_t hidden_features(const Input& input){
-        decltype(auto) converted = converter_one<Input, input_one_t>::convert(*this, input);
+        decltype(auto) converted = converter_one<Input, input_one_t>::convert(as_derived(), input);
         return hidden_features(converted);
     }
 
@@ -255,7 +254,7 @@ struct standard_crbm_mp : public standard_conv_rbm<Derived, Desc> {
 
     template<typename Input>
     weight energy(const Input& v, const hidden_output_one_t& h) const {
-        decltype(auto) converted = converter_one<Input, input_one_t>::convert(*this, v);
+        decltype(auto) converted = converter_one<Input, input_one_t>::convert(as_derived(), v);
         return energy(converted, h);
     }
 
