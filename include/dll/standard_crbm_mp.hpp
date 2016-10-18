@@ -24,8 +24,6 @@
 
 #include "standard_conv_rbm.hpp" //The base class
 #include "base_conf.hpp"         //The configuration helpers
-#include "util/timers.hpp"       //auto_timer
-#include "util/checks.hpp"       //nan_check
 #include "rbm_tmp.hpp"           // static_if macros
 
 namespace dll {
