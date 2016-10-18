@@ -229,10 +229,11 @@ struct rbm_base_traits<dyn_conv_rbm<Desc>> {
     using desc      = Desc;
     using weight    = typename desc::weight;
 
-    using input_one_t   = etl::dyn_matrix<weight, 3>;
-    using output_one_t  = etl::dyn_matrix<weight, 3>;
-    using input_t       = std::vector<input_one_t>;
-    using output_t      = std::vector<output_one_t>;
+    using input_one_t         = etl::dyn_matrix<weight, 3>;
+    using output_one_t        = etl::dyn_matrix<weight, 3>;
+    using hidden_output_one_t = output_one_t;
+    using input_t             = std::vector<input_one_t>;
+    using output_t            = std::vector<output_one_t>;
 };
 
 } //end of dll namespace

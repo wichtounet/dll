@@ -204,10 +204,11 @@ struct rbm_base_traits<conv_rbm<Desc>> {
     using desc      = Desc;
     using weight    = typename desc::weight;
 
-    using input_one_t   = etl::fast_dyn_matrix<weight, desc::NC, desc::NV1, desc::NV2>;
-    using output_one_t  = etl::fast_dyn_matrix<weight, desc::K, desc::NH1, desc::NH2>;
-    using input_t       = std::vector<input_one_t>;
-    using output_t      = std::vector<output_one_t>;
+    using input_one_t         = etl::fast_dyn_matrix<weight, desc::NC, desc::NV1, desc::NV2>;
+    using output_one_t        = etl::fast_dyn_matrix<weight, desc::K, desc::NH1, desc::NH2>;
+    using hidden_output_one_t = output_one_t;
+    using input_t             = std::vector<input_one_t>;
+    using output_t            = std::vector<output_one_t>;
 };
 
 //Allow odr-use of the constexpr static members

@@ -55,6 +55,7 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
 
     // Make base class them participate in overload resolution
     using base_type::activate_hidden;
+    using base_type::batch_activate_hidden;
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2>
     void activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& /*v_s*/) const {
@@ -131,11 +132,6 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
         }
     }
 
-    template <typename V, typename H>
-    void batch_activate_hidden(H& h_a, const V& input) const {
-        batch_activate_hidden<true, false>(h_a, h_a, input, input);
-    }
-
     template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2>
     void batch_activate_hidden(H1&& h_a, H2&& h_s, const V1& v_a, const V2& /*v_s*/) const {
         dll::auto_timer timer("crbm:batch_activate_hidden");
@@ -198,7 +194,7 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
         }
     }
 
-    weight energy(const input_one_t& v, const output_one_t& h) const {
+    weight energy_impl(const input_one_t& v, const output_one_t& h) const {
         auto tmp = as_derived().energy_tmp();
         tmp = etl::conv_4d_valid_flipped(as_derived().reshape_v_a(v), as_derived().w);
 
@@ -218,13 +214,7 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
         }
     }
 
-    template<typename Input>
-    weight energy(const Input& v, const output_one_t& h) const {
-        decltype(auto) converted = converter_one<Input, input_one_t>::convert(as_derived(), v);
-        return energy(converted, h);
-    }
-
-    weight free_energy(const input_one_t& v) const {
+    weight free_energy_impl(const input_one_t& v) const {
         auto tmp = as_derived().energy_tmp();
         tmp = etl::conv_4d_valid_flipped(as_derived().reshape_v_a(v), as_derived().w);
 
@@ -244,16 +234,6 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
         } else {
             return 0.0;
         }
-    }
-
-    template <typename V>
-    weight free_energy(const V& v) const {
-        decltype(auto) converted = converter_one<V, input_one_t>::convert(as_derived(), v);
-        return free_energy(converted);
-    }
-
-    weight free_energy() const {
-        return free_energy(as_derived().v1);
     }
 
 private:

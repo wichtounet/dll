@@ -29,10 +29,11 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
     using base_type = rbm_base<parent_t, Desc>;
     using weight    = typename desc::weight;
 
-    using input_one_t  = typename rbm_base_traits<parent_t>::input_one_t;
-    using output_one_t = typename rbm_base_traits<parent_t>::output_one_t;
-    using input_t      = typename rbm_base_traits<parent_t>::input_t;
-    using output_t     = typename rbm_base_traits<parent_t>::output_t;
+    using input_one_t         = typename rbm_base_traits<parent_t>::input_one_t;
+    using output_one_t        = typename rbm_base_traits<parent_t>::output_one_t;
+    using hidden_output_one_t = typename rbm_base_traits<parent_t>::hidden_output_one_t;
+    using input_t             = typename rbm_base_traits<parent_t>::input_t;
+    using output_t            = typename rbm_base_traits<parent_t>::output_t;
 
     static constexpr const unit_type visible_unit = desc::visible_unit;
     static constexpr const unit_type hidden_unit  = desc::hidden_unit;
@@ -114,6 +115,35 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
         for (std::size_t i = 0; i < input.size(); ++i) {
             as_derived().activate_one(input[i], h_a[i]);
         }
+    }
+
+    template <typename V, typename H>
+    void batch_activate_hidden(H& h_a, const V& input) const {
+        as_derived().template batch_activate_hidden<true, false>(h_a, h_a, input, input);
+    }
+
+    weight energy(const input_one_t& v, const hidden_output_one_t& h) const {
+        return as_derived().energy_impl(v, h);
+    }
+
+    template<typename Input>
+    weight energy(const Input& v, const hidden_output_one_t& h) const {
+        decltype(auto) converted = converter_one<Input, input_one_t>::convert(as_derived(), v);
+        return as_derived().energy_impl(converted, h);
+    }
+
+    weight free_energy(const input_one_t& v) const {
+        return as_derived().free_energy_impl(v);
+    }
+
+    template <typename V>
+    weight free_energy(const V& v) const {
+        decltype(auto) converted = converter_one<V, input_one_t>::convert(as_derived(), v);
+        return as_derived().free_energy_impl(converted);
+    }
+
+    weight free_energy() const {
+        return as_derived().free_energy_impl(as_derived().v1);
     }
 
 private:

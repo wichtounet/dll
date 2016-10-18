@@ -58,6 +58,7 @@ struct standard_crbm_mp : public standard_conv_rbm<Derived, Desc> {
 
     // Make base class them participate in overload resolution
     using base_type::activate_hidden;
+    using base_type::batch_activate_hidden;
 
     size_t C() const {
         return as_derived().pool_C();
@@ -230,7 +231,7 @@ struct standard_crbm_mp : public standard_conv_rbm<Derived, Desc> {
         return hidden_features(converted);
     }
 
-    weight energy(const input_one_t& v, const hidden_output_one_t& h) const {
+    weight energy_impl(const input_one_t& v, const hidden_output_one_t& h) const {
         auto tmp = as_derived().energy_tmp();
         tmp = etl::conv_4d_valid_flipped(as_derived().reshape_v_a(v), as_derived().w);
 
@@ -250,13 +251,7 @@ struct standard_crbm_mp : public standard_conv_rbm<Derived, Desc> {
         }
     }
 
-    template<typename Input>
-    weight energy(const Input& v, const hidden_output_one_t& h) const {
-        decltype(auto) converted = converter_one<Input, input_one_t>::convert(as_derived(), v);
-        return energy(converted, h);
-    }
-
-    weight free_energy(const input_one_t& v) const {
+    weight free_energy_impl(const input_one_t& v) const {
         auto tmp = as_derived().energy_tmp();
         tmp = etl::conv_4d_valid_flipped(as_derived().reshape_v_a(v), as_derived().w);
 
@@ -278,16 +273,6 @@ struct standard_crbm_mp : public standard_conv_rbm<Derived, Desc> {
         } else {
             return 0.0;
         }
-    }
-
-    template <typename V>
-    weight free_energy(const V& v) const {
-        decltype(auto) converted = converter_one<V, input_one_t>::convert(as_derived(), v);
-        return free_energy(converted);
-    }
-
-    weight free_energy() const {
-        return free_energy(as_derived().v1);
     }
 
 private:
