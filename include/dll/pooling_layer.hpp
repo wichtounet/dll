@@ -78,6 +78,7 @@ struct pooling_layer_3d : layer<Parent> {
         return output_one_t();
     }
 
+private:
     const Parent& as_derived() const {
         return *static_cast<const Parent*>(this);
     }
@@ -165,6 +166,7 @@ struct dyn_pooling_layer_3d : layer<Parent> {
         return output_one_t(o1, o2, o3);
     }
 
+private:
     const Parent& as_derived() const {
         return *static_cast<const Parent*>(this);
     }

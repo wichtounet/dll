@@ -51,12 +51,6 @@ struct mp_layer_3d final : pooling_layer_3d<mp_layer_3d<Desc>, Desc> {
         }
     }
 
-    static void activate_many(output_t& h_a, const input_t& input) {
-        for (std::size_t i = 0; i < input.size(); ++i) {
-            activate_one(input[i], h_a[i]);
-        }
-    }
-
     template<typename DLayer>
     static void dyn_init(DLayer& dyn){
         dyn.init_layer(base::I1, base::I2, base::I3, base::C1, base::C2, base::C3);
