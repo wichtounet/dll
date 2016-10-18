@@ -57,14 +57,6 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
                                                                        : /* Only Gaussian Units needs lower rate */ 1e-3;
     }
 
-    parent_t& as_derived() {
-        return *static_cast<parent_t*>(this);
-    }
-
-    const parent_t& as_derived() const {
-        return *static_cast<const parent_t*>(this);
-    }
-
     void backup_weights() {
         unique_safe_get(as_derived().bak_w) = as_derived().w;
         unique_safe_get(as_derived().bak_b) = as_derived().b;
@@ -208,6 +200,14 @@ private:
         rbm.activate_visible(rbm.h1_a, rbm.h1_s, rbm.v2_a, rbm.v2_s);
 
         return etl::mean((rbm.v1 - rbm.v2_a) >> (rbm.v1 - rbm.v2_a));
+    }
+
+    parent_t& as_derived() {
+        return *static_cast<parent_t*>(this);
+    }
+
+    const parent_t& as_derived() const {
+        return *static_cast<const parent_t*>(this);
     }
 };
 
