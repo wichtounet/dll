@@ -218,10 +218,14 @@ void batch_compute_gradients(Trainer& t) {
     const auto NV = etl::dim<1>(t.w_grad_b);
     const auto NH = etl::dim<2>(t.w_grad_b);
 
+    // TODO This is too slow!
     for (std::size_t b = 0; b < B; b++) {
         for (std::size_t i = 0; i < NV; i++) {
+            auto f1 = t.vf(b, i);
+            auto f2 = t.v2_a(b, i);
+
             for (std::size_t j = 0; j < NH; j++) {
-                t.w_grad(i, j) += t.vf(b, i) * t.h1_a(b, j) - t.v2_a(b, i) * t.h2_a(b, j);
+                t.w_grad(i, j) +=  f1 * t.h1_a(b, j) - f2 * t.h2_a(b, j);
             }
         }
     }
