@@ -61,21 +61,6 @@ void safe_advance(Iterator& it, const Iterator& end, std::size_t distance) {
     }
 }
 
-template <typename DBN, std::size_t I, typename Enable = void>
-struct layer_input_batch;
-
-template <typename DBN, std::size_t I>
-struct layer_input_batch<DBN, I, std::enable_if_t<!layer_traits<typename DBN::template layer_type<I>>::has_same_type()>> {
-    template <std::size_t B>
-    using type = typename DBN::template layer_type<I>::template input_batch_t<B>;
-};
-
-template <typename DBN, std::size_t I>
-struct layer_input_batch<DBN, I, std::enable_if_t<layer_traits<typename DBN::template layer_type<I>>::has_same_type()>> {
-    template <std::size_t B>
-    using type = typename layer_input_batch<DBN, I + 1>::template type<B>;
-};
-
 template <typename D, typename T>
 struct for_each_impl;
 

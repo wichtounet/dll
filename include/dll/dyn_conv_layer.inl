@@ -30,10 +30,6 @@ struct dyn_conv_layer final : neural_layer<dyn_conv_layer<Desc>, Desc> {
     using input_t      = std::vector<input_one_t>;   ///< The type for many input
     using output_t     = std::vector<output_one_t>;  ///< The type for many output
 
-    //TODO CHECK
-    template <std::size_t B>
-    using input_batch_t = etl::fast_dyn_matrix<weight, B, 1>;
-
     using w_type = etl::dyn_matrix<weight, 4>;
     using b_type = etl::dyn_matrix<weight, 1>;
 

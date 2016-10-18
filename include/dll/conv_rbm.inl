@@ -43,9 +43,6 @@ struct conv_rbm final : public standard_crbm<conv_rbm<Desc>, Desc> {
 
     static constexpr const bool dbn_only = layer_traits<this_type>::is_dbn_only();
 
-    template <std::size_t B>
-    using input_batch_t = etl::fast_dyn_matrix<weight, B, NC, NV1, NV2>;
-
     using w_type = etl::fast_matrix<weight, K, NC, NW1, NW2>;
     using b_type = etl::fast_vector<weight, K>;
     using c_type = etl::fast_vector<weight, NC>;

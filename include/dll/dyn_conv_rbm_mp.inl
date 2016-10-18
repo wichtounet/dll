@@ -29,10 +29,6 @@ struct dyn_conv_rbm_mp final : public standard_crbm_mp<dyn_conv_rbm_mp<Desc>, De
 
     static constexpr const bool dbn_only = layer_traits<this_type>::is_dbn_only();
 
-    //TODO CHECK
-    template <std::size_t B>
-    using input_batch_t = etl::fast_dyn_matrix<weight, B, 1>;
-
     using w_type = etl::dyn_matrix<weight, 4>;
     using b_type = etl::dyn_vector<weight>;
     using c_type = etl::dyn_vector<weight>;

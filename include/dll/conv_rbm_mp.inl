@@ -113,9 +113,6 @@ struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
         return {buffer};
     }
 
-    template <std::size_t B>
-    using input_batch_t = etl::fast_dyn_matrix<weight, B, NC, NV1, NV2>;
-
     template <typename Input>
     static output_t prepare_output(std::size_t samples) {
         return output_t(samples);

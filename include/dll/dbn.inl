@@ -92,9 +92,6 @@ private:
     };
 
 public:
-    template <std::size_t B>
-    using input_batch_t = typename dbn_detail::layer_input_batch<this_type, 0>::template type<B>; ///< The input batch type of the network for a batch size of B
-
     using full_output_t = etl::dyn_vector<weight>; ///< The type of output for concatenated activation probabilities
 
     using for_each_impl_t      = dbn_detail::for_each_impl<this_type, std::make_index_sequence<layers_t::size>>;

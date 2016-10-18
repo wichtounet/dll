@@ -38,9 +38,6 @@ struct dyn_avgp_layer_3d final : dyn_pooling_layer_3d<dyn_avgp_layer_3d<Desc>, D
     using input_t      = typename base::input_t;      ///< The type of many input
     using output_t     = typename base::output_t;     ///< The type of many output
 
-    template <std::size_t B>
-    using input_batch_t = typename base::template input_batch_t<B>;
-
     void activate_hidden(output_one_t& h, const input_one_t& v) const {
         h = etl::avg_pool_3d(v, base::c1, base::c2, base::c3);
     }

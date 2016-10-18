@@ -33,9 +33,6 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
     using input_t      = std::vector<input_one_t>;
     using output_t     = std::vector<output_one_t>;
 
-    template <std::size_t B>
-    using input_batch_t = etl::fast_dyn_matrix<weight, B, num_visible>;
-
     using w_type = etl::fast_matrix<weight, num_visible, num_hidden>;
     using b_type = etl::fast_matrix<weight, num_hidden>;
 

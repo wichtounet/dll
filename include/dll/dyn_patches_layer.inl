@@ -26,9 +26,6 @@ struct dyn_patches_layer : layer<dyn_patches_layer<Desc>> {
     using output_one_t = std::vector<etl::dyn_matrix<weight, 3>>;
     using output_t     = std::vector<output_one_t>;
 
-    template <std::size_t B>
-    using input_batch_t = etl::fast_dyn_matrix<weight, 1, 1, 1, 1>; //This is fake, should never be used
-
     std::size_t width;
     std::size_t height;
     std::size_t v_stride;

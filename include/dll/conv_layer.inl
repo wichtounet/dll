@@ -40,9 +40,6 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
     using input_t      = std::vector<input_one_t>;
     using output_t     = std::vector<output_one_t>;
 
-    template <std::size_t B>
-    using input_batch_t = etl::fast_dyn_matrix<weight, B, NC, NV1, NV2>;
-
     using w_type = etl::fast_matrix<weight, K, NC, NW1, NW2>;
     using b_type = etl::fast_matrix<weight, K>;
 

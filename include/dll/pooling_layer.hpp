@@ -39,9 +39,6 @@ struct pooling_layer_3d : layer<Parent> {
     using input_t      = std::vector<input_one_t>;
     using output_t     = std::vector<output_one_t>;
 
-    template <std::size_t B>
-    using input_batch_t = etl::fast_dyn_matrix<weight, B, I1, I2, I3>;
-
     pooling_layer_3d() = default;
 
     static constexpr std::size_t input_size() noexcept {
@@ -98,9 +95,6 @@ struct dyn_pooling_layer_3d : layer<Parent> {
     using output_one_t = etl::dyn_matrix<weight, 3>;
     using input_t      = std::vector<input_one_t>;
     using output_t     = std::vector<output_one_t>;
-
-    template <std::size_t B>
-    using input_batch_t = etl::fast_dyn_matrix<weight, B, 1>;
 
     std::size_t i1; ///< The first dimension of the input
     std::size_t i2; ///< The second dimension of the input
