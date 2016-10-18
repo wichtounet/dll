@@ -7,13 +7,7 @@
 
 #pragma once
 
-#include "cpp_utils/assert.hpp" //Assertions
-
-#include "etl/etl.hpp"
-
-#include "layer.hpp"
-#include "util/tmp.hpp"
-#include "layer_traits.hpp"
+#include "neural_layer.hpp"
 
 namespace dll {
 
@@ -21,10 +15,11 @@ namespace dll {
  * \brief Standard dense layer of neural network.
  */
 template <typename Desc>
-struct dense_layer final : layer<dense_layer<Desc>> {
+struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
     using desc      = Desc;
     using weight    = typename desc::weight;
     using this_type = dense_layer<desc>;
+    using base_type = neural_layer<this_type, desc>;
 
     static constexpr const std::size_t num_visible = desc::num_visible;
     static constexpr const std::size_t num_hidden  = desc::num_hidden;
@@ -52,21 +47,13 @@ struct dense_layer final : layer<dense_layer<Desc>> {
     std::unique_ptr<w_type> bak_w; //!< Backup Weights
     std::unique_ptr<b_type> bak_b; //!< Backup Hidden biases
 
-    //No copying
-    dense_layer(const dense_layer& layer) = delete;
-    dense_layer& operator=(const dense_layer& layer) = delete;
-
-    //No moving
-    dense_layer(dense_layer&& layer) = delete;
-    dense_layer& operator=(dense_layer&& layer) = delete;
-
     /*!
      * \brief Initialize a dense layer with basic weights.
      *
      * The weights are initialized from a normal distribution of
      * zero-mean and unit variance.
      */
-    dense_layer() {
+    dense_layer() : base_type() {
         //Initialize the weights and biases following Lecun approach
         //to initialization [lecun-98b]
 
@@ -90,16 +77,6 @@ struct dense_layer final : layer<dense_layer<Desc>> {
         char buffer[1024];
         snprintf(buffer, 1024, "Dense: %lu -> %s -> %lu", num_visible, to_string(activation_function).c_str(), num_hidden);
         return {buffer};
-    }
-
-    void backup_weights() {
-        unique_safe_get(bak_w) = w;
-        unique_safe_get(bak_b) = b;
-    }
-
-    void restore_weights() {
-        w = *bak_w;
-        b = *bak_b;
     }
 
     template <typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 1)>

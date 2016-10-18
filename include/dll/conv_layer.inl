@@ -7,15 +7,7 @@
 
 #pragma once
 
-#include "cpp_utils/assert.hpp" //Assertions
-
-#include "etl/etl.hpp"
-
-#include "layer.hpp"
-#include "layer_traits.hpp"
-
-#include "util/tmp.hpp"
-#include "util/converter.hpp"
+#include "neural_layer.hpp"
 
 namespace dll {
 
@@ -23,10 +15,11 @@ namespace dll {
  * \brief Standard convolutional layer of neural network.
  */
 template <typename Desc>
-struct conv_layer final : layer<conv_layer<Desc>> {
+struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
     using desc      = Desc;
     using weight    = typename desc::weight;
     using this_type = conv_layer<desc>;
+    using base_type = neural_layer<this_type, desc>;
 
     static constexpr const std::size_t NV1 = desc::NV1; ///< The first dimension of the visible units
     static constexpr const std::size_t NV2 = desc::NV2; ///< The second dimension of the visible units
@@ -61,18 +54,10 @@ struct conv_layer final : layer<conv_layer<Desc>> {
     std::unique_ptr<w_type> bak_w; //!< Backup Weights
     std::unique_ptr<b_type> bak_b; //!< Backup Hidden biases
 
-    //No copying
-    conv_layer(const conv_layer& layer) = delete;
-    conv_layer& operator=(const conv_layer& layer) = delete;
-
-    //No moving
-    conv_layer(conv_layer&& layer) = delete;
-    conv_layer& operator=(conv_layer&& layer) = delete;
-
     /*!
      * \brief Initialize a conv layer with basic weights.
      */
-    conv_layer() {
+    conv_layer() : base_type() {
         //Initialize the weights and biases following Lecun approach
         //to initialization [lecun-98b]
 
@@ -101,16 +86,6 @@ struct conv_layer final : layer<conv_layer<Desc>> {
         char buffer[1024];
         snprintf(buffer, 1024, "Conv: %lux%lux%lu -> (%lux%lux%lu) -> %s -> %lux%lux%lu", NC, NV1, NV2, K, NW1, NW2, to_string(activation_function).c_str(), K, NH1, NH2);
         return {buffer};
-    }
-
-    void backup_weights() {
-        unique_safe_get(bak_w) = w;
-        unique_safe_get(bak_b) = b;
-    }
-
-    void restore_weights() {
-        w = *bak_w;
-        b = *bak_b;
     }
 
     void activate_hidden(output_one_t& output, const input_one_t& v) const {

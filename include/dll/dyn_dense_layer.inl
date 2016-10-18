@@ -7,13 +7,7 @@
 
 #pragma once
 
-#include "cpp_utils/assert.hpp" //Assertions
-
-#include "etl/etl.hpp"
-
-#include "layer.hpp"
-#include "util/tmp.hpp"
-#include "layer_traits.hpp"
+#include "neural_layer.hpp"
 
 namespace dll {
 
@@ -21,10 +15,11 @@ namespace dll {
  * \brief Standard dense layer of neural network.
  */
 template <typename Desc>
-struct dyn_dense_layer final : layer<dyn_dense_layer<Desc>> {
+struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
     using desc      = Desc;
     using weight    = typename desc::weight;
     using this_type = dyn_dense_layer<desc>;
+    using base_type = neural_layer<this_type, desc>;
 
     static constexpr const bool dbn_only = layer_traits<this_type>::is_dbn_only();
 
@@ -49,18 +44,10 @@ struct dyn_dense_layer final : layer<dyn_dense_layer<Desc>> {
     std::unique_ptr<w_type> bak_w; //!< Backup Weights
     std::unique_ptr<b_type> bak_b; //!< Backup Hidden biases
 
-    //No copying
-    dyn_dense_layer(const dyn_dense_layer& layer) = delete;
-    dyn_dense_layer& operator=(const dyn_dense_layer& layer) = delete;
-
-    //No moving
-    dyn_dense_layer(dyn_dense_layer&& layer) = delete;
-    dyn_dense_layer& operator=(dyn_dense_layer&& layer) = delete;
-
     std::size_t num_visible;
     std::size_t num_hidden;
 
-    dyn_dense_layer() {}
+    dyn_dense_layer() : base_type() {}
 
     void init_layer(size_t nv, size_t nh) {
         num_visible = nv;
@@ -92,16 +79,6 @@ struct dyn_dense_layer final : layer<dyn_dense_layer<Desc>> {
         char buffer[1024];
         snprintf(buffer, 1024, "Dense: %lu -> %s -> %lu", num_visible, to_string(activation_function).c_str(), num_hidden);
         return {buffer};
-    }
-
-    void backup_weights() {
-        unique_safe_get(bak_w) = w;
-        unique_safe_get(bak_b) = b;
-    }
-
-    void restore_weights() {
-        w = *bak_w;
-        b = *bak_b;
     }
 
     template <typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 1)>

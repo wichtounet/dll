@@ -7,15 +7,7 @@
 
 #pragma once
 
-#include "cpp_utils/assert.hpp" //Assertions
-
-#include "etl/etl.hpp"
-
-#include "layer.hpp"
-#include "layer_traits.hpp"
-
-#include "util/tmp.hpp"
-#include "util/converter.hpp"
+#include "neural_layer.hpp"
 
 namespace dll {
 
@@ -23,10 +15,11 @@ namespace dll {
  * \brief Standard dynamic convolutional layer of neural network.
  */
 template <typename Desc>
-struct dyn_conv_layer final : layer<dyn_conv_layer<Desc>> {
+struct dyn_conv_layer final : neural_layer<dyn_conv_layer<Desc>, Desc> {
     using desc      = Desc;                  ///< The descriptor type
     using weight    = typename desc::weight; ///< The weight type
     using this_type = dyn_conv_layer<desc>;  ///< This type
+    using base_type = neural_layer<this_type, desc>;
 
     static constexpr const bool dbn_only = layer_traits<this_type>::is_dbn_only();
 
@@ -52,14 +45,6 @@ struct dyn_conv_layer final : layer<dyn_conv_layer<Desc>> {
     std::unique_ptr<w_type> bak_w; //!< Backup Weights
     std::unique_ptr<b_type> bak_b; //!< Backup Hidden biases
 
-    //No copying
-    dyn_conv_layer(const dyn_conv_layer& layer) = delete;
-    dyn_conv_layer& operator=(const dyn_conv_layer& layer) = delete;
-
-    //No moving
-    dyn_conv_layer(dyn_conv_layer&& layer) = delete;
-    dyn_conv_layer& operator=(dyn_conv_layer&& layer) = delete;
-
     size_t nv1; ///< The first visible dimension
     size_t nv2; ///< The second visible dimension
     size_t nh1; ///< The first output dimension
@@ -70,7 +55,7 @@ struct dyn_conv_layer final : layer<dyn_conv_layer<Desc>> {
     size_t nw1; ///< The first dimension of the filters
     size_t nw2; ///< The second dimension of the filters
 
-    dyn_conv_layer(){
+    dyn_conv_layer(): base_type() {
         // Nothing else to init
     }
 
@@ -117,16 +102,6 @@ struct dyn_conv_layer final : layer<dyn_conv_layer<Desc>> {
         char buffer[1024];
         snprintf(buffer, 1024, "Conv(dyn): %lux%lux%lu -> (%lux%lux%lu) -> %s -> %lux%lux%lu", nc, nv1, nv2, k, nw1, nw2, to_string(activation_function).c_str(), k, nh1, nh2);
         return {buffer};
-    }
-
-    void backup_weights() {
-        unique_safe_get(bak_w) = w;
-        unique_safe_get(bak_b) = b;
-    }
-
-    void restore_weights() {
-        w = *bak_w;
-        b = *bak_b;
     }
 
     void activate_hidden(output_one_t& output, const input_one_t& v) const {
