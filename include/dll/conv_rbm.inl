@@ -74,10 +74,7 @@ struct conv_rbm final : public standard_crbm<conv_rbm<Desc>, Desc> {
     conditional_fast_matrix_t<!dbn_only, weight, K, NH1, NH2> h2_a; ///< Activation probabilities of reconstructed hidden units
     conditional_fast_matrix_t<!dbn_only, weight, K, NH1, NH2> h2_s; ///< Sampled values of reconstructed hidden units
 
-    mutable cpp::thread_pool<!layer_traits<this_type>::is_serial()> pool;
-
-    conv_rbm()
-            : base_type(), pool(etl::threads) {
+    conv_rbm() : base_type() {
         if (is_relu(hidden_unit)) {
             w = etl::normal_generator(0.0, 0.01);
             b = 0.0;

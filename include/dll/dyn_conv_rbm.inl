@@ -72,9 +72,7 @@ struct dyn_conv_rbm final : public standard_crbm<dyn_conv_rbm<Desc>, Desc> {
 
     size_t batch_size = 25;
 
-    mutable cpp::thread_pool<!layer_traits<this_type>::is_serial()> pool;
-
-    dyn_conv_rbm() : base_type(), pool(etl::threads) {
+    dyn_conv_rbm() : base_type() {
         // Nothing else to init
     }
 

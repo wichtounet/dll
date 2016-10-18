@@ -86,10 +86,7 @@ struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
     conditional_fast_matrix_t<!dbn_only, weight, K, NP1, NP2> p2_a; ///< Activation probabilities of reconstructed hidden units
     conditional_fast_matrix_t<!dbn_only, weight, K, NP1, NP2> p2_s; ///< Sampled values of reconstructed hidden units
 
-    mutable cpp::thread_pool<!layer_traits<this_type>::is_serial()> pool;
-
-    conv_rbm_mp()
-            : base_type(), pool(etl::threads) {
+    conv_rbm_mp() : base_type() {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
         w = 0.01 * etl::normal_generator();
         b = -0.1;
