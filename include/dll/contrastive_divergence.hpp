@@ -219,8 +219,9 @@ void batch_compute_gradients(Trainer& t) {
     const auto NH = etl::dim<2>(t.w_grad_b);
 
     // TODO This is too slow!
-    for (std::size_t b = 0; b < B; b++) {
-        for (std::size_t i = 0; i < NV; i++) {
+
+    maybe_parallel_foreach_n(t.pool, 0, NV, [&](const size_t i){
+        for (std::size_t b = 0; b < B; b++) {
             auto f1 = t.vf(b, i);
             auto f2 = t.v2_a(b, i);
 
@@ -228,7 +229,7 @@ void batch_compute_gradients(Trainer& t) {
                 t.w_grad(i, j) +=  f1 * t.h1_a(b, j) - f2 * t.h2_a(b, j);
             }
         }
-    }
+    });
 
     for (std::size_t b = 0; b < B; b++) {
         for (std::size_t i = 0; i < NH; i++) {
