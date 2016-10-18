@@ -156,27 +156,6 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
         batch_activate_hidden(h_a, etl::reshape(v_a, etl::dim(h_a, 0), as_derived().input_size()));
     }
 
-    // activation_probabilities
-
-    template <typename Sample, typename Output>
-    void activation_probabilities(const Sample& item_data, Output& result) const {
-        auto item = as_derived().prepare_one_input();
-        auto next_s = as_derived().prepare_one_output();
-
-        item = item_data;
-
-        activate_hidden(result, next_s, item, item);
-    }
-
-    template <typename Sample>
-    etl::dyn_vector<weight> activation_probabilities(const Sample& item_data) const {
-        auto result = as_derived().prepare_one_output();
-
-        activation_probabilities(item_data, result);
-
-        return result;
-    }
-
     //Display functions
 
     void display_units() const {
