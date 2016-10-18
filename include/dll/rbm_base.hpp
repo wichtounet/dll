@@ -74,14 +74,6 @@ struct rbm_base : neural_base<Parent> {
         //Nothing to do
     }
 
-    parent_t& as_derived() {
-        return *static_cast<parent_t*>(this);
-    }
-
-    const parent_t& as_derived() const {
-        return *static_cast<const parent_t*>(this);
-    }
-
     //Normal Train functions
 
     template <bool EnableWatcher = true, typename RW = void, typename... Args>
@@ -196,6 +188,14 @@ private:
     static void load(const std::string& file, parent_t& rbm) {
         std::ifstream is(file, std::ifstream::binary);
         load(is, rbm);
+    }
+
+    parent_t& as_derived() {
+        return *static_cast<parent_t*>(this);
+    }
+
+    const parent_t& as_derived() const {
+        return *static_cast<const parent_t*>(this);
     }
 };
 
