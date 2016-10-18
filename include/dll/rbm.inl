@@ -78,14 +78,6 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
     conditional_fast_matrix_t<!dbn_only, weight, num_hidden> h2_a; //!< Activation probabilities of hidden units after last CD-step
     conditional_fast_matrix_t<!dbn_only, weight, num_hidden> h2_s; //!< Sampled value of hidden units after last CD-step
 
-    //No copying
-    rbm(const rbm& rbm) = delete;
-    rbm& operator=(const rbm& rbm) = delete;
-
-    //No moving
-    rbm(rbm&& rbm) = delete;
-    rbm& operator=(rbm&& rbm) = delete;
-
     /*!
      * \brief Initialize a RBM with basic weights.
      *

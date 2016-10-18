@@ -61,15 +61,6 @@ struct rbm_base : layer<Parent> {
     weight pbias        = 0.002;
     weight pbias_lambda = 5;
 
-    //No copying
-
-    rbm_base(const rbm_base& rbm) = delete;
-    rbm_base& operator=(const rbm_base& rbm) = delete;
-
-    //No moving
-    rbm_base(rbm_base&& rbm) = delete;
-    rbm_base& operator=(rbm_base&& rbm) = delete;
-
     rbm_base() {
         //Nothing to do
     }
