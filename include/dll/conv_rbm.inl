@@ -143,16 +143,28 @@ private:
         return etl::force_temporary(etl::rep<NV1, NV2>(c));
     }
 
-    template<typename V>
+    template<typename V, cpp_enable_if(etl::all_fast<V>::value)>
     auto get_batch_b_rep(V&& /*h*/) const {
         static constexpr const auto batch_size = etl::decay_traits<V>::template dim<0>();
         return etl::force_temporary(etl::rep_l<batch_size>(etl::rep<NH1, NH2>(b)));
     }
 
-    template<typename H>
+    template<typename V, cpp_disable_if(etl::all_fast<V>::value)>
+    auto get_batch_b_rep(V&& v) const {
+        const auto batch_size = etl::dim<0>(v);
+        return etl::force_temporary(etl::rep_l(etl::rep<NH1, NH2>(b), batch_size));
+    }
+
+    template<typename H, cpp_enable_if(etl::all_fast<H>::value)>
     auto get_batch_c_rep(H&& /*h*/) const {
         static constexpr const auto batch_size = etl::decay_traits<H>::template dim<0>();
         return etl::force_temporary(etl::rep_l<batch_size>(etl::rep<NV1, NV2>(c)));
+    }
+
+    template<typename H, cpp_disable_if(etl::all_fast<H>::value)>
+    auto get_batch_c_rep(H&& h) const {
+        const auto batch_size = etl::dim<0>(h);
+        return etl::force_temporary(etl::rep_l(etl::rep<NV1, NV2>(c), batch_size));
     }
 
     template<typename H>
@@ -169,7 +181,7 @@ private:
         return etl::fast_dyn_matrix<weight, 1, K, NH1, NH2>();
     }
 
-    template <typename V1, typename V2, std::size_t Off = 0>
+    template <typename V1, typename V2, std::size_t Off = 0, cpp_enable_if(etl::all_fast<V1, V2>::value)>
     static void validate_inputs() {
         static_assert(etl::decay_traits<V1>::dimensions() == 3 + Off, "Inputs must be 3D");
         static_assert(etl::decay_traits<V2>::dimensions() == 3 + Off, "Inputs must be 3D");
@@ -183,7 +195,7 @@ private:
         static_assert(etl::decay_traits<V2>::template dim<2 + Off>() == NV2, "Invalid input dimensions");
     }
 
-    template <typename H1, typename H2, std::size_t Off = 0>
+    template <typename H1, typename H2, std::size_t Off = 0, cpp_enable_if(etl::all_fast<H1, H2>::value)>
     static void validate_outputs() {
         static_assert(etl::decay_traits<H1>::dimensions() == 3 + Off, "Outputs must be 3D");
         static_assert(etl::decay_traits<H2>::dimensions() == 3 + Off, "Outputs must be 3D");
@@ -195,6 +207,18 @@ private:
         static_assert(etl::decay_traits<H2>::template dim<0 + Off>() == K, "Invalid number of output channels");
         static_assert(etl::decay_traits<H2>::template dim<1 + Off>() == NH1, "Invalid output dimensions");
         static_assert(etl::decay_traits<H2>::template dim<2 + Off>() == NH2, "Invalid output dimensions");
+    }
+
+    template <typename V1, typename V2, std::size_t Off = 0, cpp_disable_if(etl::all_fast<V1, V2>::value)>
+    static void validate_inputs() {
+        static_assert(etl::decay_traits<V1>::dimensions() == 3 + Off, "Inputs must be 3D");
+        static_assert(etl::decay_traits<V2>::dimensions() == 3 + Off, "Inputs must be 3D");
+    }
+
+    template <typename H1, typename H2, std::size_t Off = 0, cpp_disable_if(etl::all_fast<H1, H2>::value)>
+    static void validate_outputs() {
+        static_assert(etl::decay_traits<H1>::dimensions() == 3 + Off, "Outputs must be 3D");
+        static_assert(etl::decay_traits<H2>::dimensions() == 3 + Off, "Outputs must be 3D");
     }
 };
 
