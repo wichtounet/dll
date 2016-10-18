@@ -15,7 +15,7 @@ namespace dll {
  * \brief Layer to cut images into patches.
  */
 template <typename Desc>
-struct patches_layer_padh : neural_base<patches_layer_padh<Desc>> {
+struct patches_layer_padh : layer<patches_layer_padh<Desc>> {
     using desc = Desc;
 
     static constexpr const std::size_t width    = desc::width;

@@ -16,7 +16,7 @@ namespace dll {
  * \brief Layer to perform data augmentation
  */
 template <typename Desc>
-struct augment_layer : neural_base<augment_layer<Desc>> {
+struct augment_layer : layer<augment_layer<Desc>> {
     using desc = Desc;
 
     augment_layer() = default;

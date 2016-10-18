@@ -17,7 +17,7 @@ namespace dll {
  * \brief Standard pooling layer
  */
 template <typename Parent, typename Desc>
-struct pooling_layer_3d : neural_base<Parent> {
+struct pooling_layer_3d : layer<Parent> {
     using desc   = Desc;
     using weight = typename desc::weight;
 
@@ -87,7 +87,7 @@ struct pooling_layer_3d : neural_base<Parent> {
  * \brief Standard dynamic pooling layer
  */
 template <typename Parent, typename Desc>
-struct dyn_pooling_layer_3d : neural_base<Parent> {
+struct dyn_pooling_layer_3d : layer<Parent> {
     using desc   = Desc;
     using weight = typename desc::weight;
 

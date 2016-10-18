@@ -23,7 +23,7 @@ namespace dll {
  * \brief Standard dynamic convolutional layer of neural network.
  */
 template <typename Desc>
-struct dyn_conv_layer final : neural_base<dyn_conv_layer<Desc>> {
+struct dyn_conv_layer final : layer<dyn_conv_layer<Desc>> {
     using desc      = Desc;                  ///< The descriptor type
     using weight    = typename desc::weight; ///< The weight type
     using this_type = dyn_conv_layer<desc>;  ///< This type

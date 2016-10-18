@@ -17,7 +17,7 @@ namespace dll {
  * Provide the base features for transform layer implementations.
  */
 template <typename Derived>
-struct transform_layer : neural_base<Derived> {
+struct transform_layer : layer<Derived> {
     using derived_t = Derived; ///< The derived type
 
     /*!

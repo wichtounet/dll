@@ -15,7 +15,7 @@ namespace dll {
  * \brief Layer to cut images into patches.
  */
 template <typename Desc>
-struct dyn_patches_layer : neural_base<dyn_patches_layer<Desc>> {
+struct dyn_patches_layer : layer<dyn_patches_layer<Desc>> {
     using desc = Desc;
 
     using weight = typename desc::weight;

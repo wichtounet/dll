@@ -27,7 +27,7 @@ T& unique_safe_get(std::unique_ptr<T>& ptr) {
 }
 
 template <typename Parent>
-struct neural_base {
+struct layer {
     using parent_t = Parent;
 
     //Needs to be shared because of dyn_rbm
@@ -36,14 +36,14 @@ struct neural_base {
     //Needs to be shared because of dyn_rbm
     mutable std::shared_ptr<void> sgd_context_ptr;
 
-    neural_base(const neural_base& rbm) = delete;
-    neural_base& operator=(const neural_base& rbm) = delete;
+    layer(const layer& rbm) = delete;
+    layer& operator=(const layer& rbm) = delete;
 
     //No moving
-    neural_base(neural_base&& rbm) = delete;
-    neural_base& operator=(neural_base&& rbm) = delete;
+    layer(layer&& rbm) = delete;
+    layer& operator=(layer&& rbm) = delete;
 
-    neural_base() {
+    layer() {
 #ifndef DLL_DENORMALS
         // Disable denormals for performance reason
         _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);

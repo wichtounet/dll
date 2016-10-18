@@ -32,7 +32,7 @@ struct rbm_base_traits;
  * injected using CRTP technique.
  */
 template <typename Parent, typename Desc>
-struct rbm_base : neural_base<Parent> {
+struct rbm_base : layer<Parent> {
     using conf     = Desc;
     using parent_t = Parent;
     using weight   = typename conf::weight;
