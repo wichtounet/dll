@@ -54,11 +54,6 @@ struct rectifier_layer : transform_layer<rectifier_layer<Desc>> {
             output = etl::abs(input);
         }
     }
-
-    template<typename DRBM>
-    static void dyn_init(DRBM&){
-        //Nothing to change
-    }
 };
 
 //Allow odr-use of the constexpr static members

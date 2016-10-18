@@ -52,11 +52,6 @@ struct scale_layer : transform_layer<scale_layer<Desc>> {
     static void batch_activate_hidden(Output& output, const Input& input) {
         output = input * (double(A) / double(B));
     }
-
-    template<typename DRBM>
-    static void dyn_init(DRBM&){
-        //Nothing to change
-    }
 };
 
 } //end of dll namespace

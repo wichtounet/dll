@@ -49,6 +49,11 @@ struct transform_layer : neural_base<Derived> {
         return {};
     }
 
+    template<typename DRBM>
+    static void dyn_init(DRBM&){
+        //Nothing to change
+    }
+
 private:
     const derived_t& as_derived() const {
         return *static_cast<const derived_t*>(this);

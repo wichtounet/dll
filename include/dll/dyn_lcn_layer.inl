@@ -78,11 +78,6 @@ struct dyn_lcn_layer : transform_layer<dyn_lcn_layer<Desc>> {
             activate_hidden(output(b), input(b));
         }
     }
-
-    template<typename DRBM>
-    static void dyn_init(DRBM&){
-        //Nothing to change
-    }
 };
 
 } //end of dll namespace

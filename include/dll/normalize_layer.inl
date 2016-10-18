@@ -48,11 +48,6 @@ struct normalize_layer : transform_layer<normalize_layer<Desc>> {
         output = input;
         cpp::normalize(output);
     }
-
-    template<typename DRBM>
-    static void dyn_init(DRBM&){
-        //Nothing to change
-    }
 };
 
 } //end of dll namespace

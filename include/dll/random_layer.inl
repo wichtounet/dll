@@ -46,11 +46,6 @@ struct random_layer : transform_layer<random_layer<Desc>> {
         inherit_dim(output, input);
         output = etl::normal_generator<etl::value_t<Input>>();
     }
-
-    template<typename DRBM>
-    static void dyn_init(DRBM&){
-        //Nothing to change
-    }
 };
 
 } //end of dll namespace

@@ -54,11 +54,6 @@ struct binarize_layer : transform_layer<binarize_layer<Desc>> {
             value = value > Threshold ? 1 : 0;
         }
     }
-
-    template<typename DRBM>
-    static void dyn_init(DRBM&){
-        //Nothing to change
-    }
 };
 
 //Allow odr-use of the constexpr static members
