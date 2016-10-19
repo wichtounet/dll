@@ -110,9 +110,65 @@ struct sgd_trainer {
     template<std::size_t L, std::size_t S, typename Layer, cpp_enable_if(L == S)>
     void back_init(const Layer& /*input_layer*/){}
 
+    // Some Transform layers need to inherit dimensions from back
+
+    template<typename L1, typename L2, cpp_enable_if(decay_layer_traits<L1>::is_transform_layer())>
+    static void inherit_from_back(L1& l1, L2& l2){
+        auto& ctx1 = l1.template get_sgd_context<dbn_t>();
+        auto& ctx2 = l2.template get_sgd_context<dbn_t>();
+
+        if (ctx1.errors.size() == 0) {
+            ctx1.output = ctx2.input;
+            ctx1.errors = ctx2.input;
+            ctx1.input  = ctx2.input;
+        }
+    }
+
+    template<typename L1, typename L2, cpp_disable_if(decay_layer_traits<L1>::is_transform_layer())>
+    static void inherit_from_back(L1& /*l1*/, L2& /*l2*/){ }
+
+    // Some Transform layers need to inherit dimensions from back
+
+    template<typename L1, typename L2, cpp_enable_if(decay_layer_traits<L2>::is_transform_layer())>
+    static void inherit_from_front(L1& l1, L2& l2){
+        auto& ctx1 = l1.template get_sgd_context<dbn_t>();
+        auto& ctx2 = l2.template get_sgd_context<dbn_t>();
+
+        if (ctx2.errors.size() == 0) {
+            ctx2.output = ctx1.output;
+            ctx2.errors = ctx1.output;
+            ctx2.input  = ctx1.output;
+        }
+    }
+
+    template<typename L1, typename L2, cpp_disable_if(decay_layer_traits<L2>::is_transform_layer())>
+    static void inherit_from_front(L1& /*l1*/, L2& /*l2*/){ }
+
     explicit sgd_trainer(dbn_t& dbn) : dbn(dbn) {
+        // Initialize all the SGD contexts
         dbn.for_each_layer([](auto& layer) {
             layer.template init_sgd_context<dbn_t>();
+        });
+
+        // Inherit dimensions from back
+
+        dbn.for_each_layer_rpair([](auto& l1, auto& l2) {
+            constexpr bool l1_transform = decay_layer_traits<decltype(l1)>::is_transform_layer();
+            constexpr bool l2_transform = decay_layer_traits<decltype(l2)>::is_transform_layer();
+
+            if (l1_transform && (!l2_transform || l2.template get_sgd_context<dbn_t>().errors.size())) {
+                this_type::inherit_from_back(l1, l2);
+            }
+        });
+
+        // Inherit dimensions from front
+
+        dbn.for_each_layer_pair([](auto& l1, auto& l2) {
+            constexpr bool l2_transform = decay_layer_traits<decltype(l2)>::is_transform_layer();
+
+            if (l2_transform) {
+                this_type::inherit_from_front(l1, l2);
+            }
         });
 
         decltype(auto) input_layer = dbn.template layer_get<input_layer_t<0>::L>();
