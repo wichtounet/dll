@@ -9,7 +9,7 @@
 
 #include "dll_test.hpp"
 
-#include "dll/dyn_dense_layer.hpp"
+#include "dll/neural/dyn_dense_layer.hpp"
 #include "dll/transform/scale_layer.hpp"
 #include "dll/dbn.hpp"
 #include "dll/trainer/stochastic_gradient_descent.hpp"

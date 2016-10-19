@@ -7,19 +7,16 @@
 
 #pragma once
 
-#include "base_conf.hpp"
-#include "util/tmp.hpp"
+#include "dll/base_conf.hpp"
+#include "dll/util/tmp.hpp"
 
 namespace dll {
 
 /*!
  * \brief Describe a dense layer.
  */
-template <std::size_t visibles, std::size_t hiddens, typename... Parameters>
-struct dense_desc {
-    static constexpr const std::size_t num_visible = visibles;
-    static constexpr const std::size_t num_hidden  = hiddens;
-
+template <typename... Parameters>
+struct dyn_dense_desc {
     /*!
      * A list of all the parameters of the descriptor
      */
@@ -31,13 +28,10 @@ struct dense_desc {
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
 
     /*! The dense type */
-    using layer_t = dense_layer<dense_desc<visibles, hiddens, Parameters...>>;
+    using layer_t = dyn_dense_layer<dyn_dense_desc<Parameters...>>;
 
     /*! The dense type */
     using dyn_layer_t = dyn_dense_layer<dyn_dense_desc<Parameters...>>;
-
-    static_assert(num_visible > 0, "There must be at least 1 visible unit");
-    static_assert(num_hidden > 0, "There must be at least 1 hidden unit");
 
     //Make sure only valid types are passed to the configuration list
     static_assert(

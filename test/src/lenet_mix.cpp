@@ -7,8 +7,8 @@
 
 #include "catch.hpp"
 
-#include "dll/conv_layer.hpp"
-#include "dll/dense_layer.hpp"
+#include "dll/neural/conv_layer.hpp"
+#include "dll/neural/dense_layer.hpp"
 #include "dll/rbm/conv_rbm.hpp"
 #include "dll/rbm/rbm.hpp"
 #include "dll/dbn.hpp"

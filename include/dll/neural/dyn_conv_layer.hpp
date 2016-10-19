@@ -7,8 +7,5 @@
 
 #pragma once
 
-// Include the dyn version (for dyn_dbn)
-#include "dll/dyn_conv_layer.hpp"
-
-#include "dll/conv_layer.inl"
-#include "dll/conv_desc.hpp"
+#include "dll/neural/dyn_conv_layer.inl"
+#include "dll/neural/dyn_conv_desc.hpp"

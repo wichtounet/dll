@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "neural_layer.hpp"
+#include "dll/neural_layer.hpp"
 
 namespace dll {
 

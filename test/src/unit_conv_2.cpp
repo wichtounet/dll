@@ -9,8 +9,8 @@
 
 #include "dll_test.hpp"
 
-#include "dll/conv_layer.hpp"
-#include "dll/dense_layer.hpp"
+#include "dll/neural/conv_layer.hpp"
+#include "dll/neural/dense_layer.hpp"
 #include "dll/dbn.hpp"
 #include "dll/pooling/mp_layer.hpp"
 #include "dll/pooling/avgp_layer.hpp"
