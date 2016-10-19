@@ -11,8 +11,8 @@
 
 #include "catch.hpp"
 
-#include "dll/patches_layer.hpp"
-#include "dll/patches_layer_pad.hpp"
+#include "dll/patches/patches_layer.hpp"
+#include "dll/patches/patches_layer_pad.hpp"
 #include "dll/rbm/conv_rbm.hpp"
 #include "dll/dbn.hpp"
 

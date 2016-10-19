@@ -9,8 +9,8 @@
 #include "dll_test.hpp"
 
 #include "dll/augment/augment_layer.hpp"
-#include "dll/patches_layer.hpp"
-#include "dll/patches_layer_pad.hpp"
+#include "dll/patches/patches_layer.hpp"
+#include "dll/patches/patches_layer_pad.hpp"
 #include "dll/pooling/mp_layer.hpp"
 #include "dll/pooling/avgp_layer.hpp"
 #include "dll/neural/dense_layer.hpp"

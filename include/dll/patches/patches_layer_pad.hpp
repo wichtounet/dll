@@ -7,5 +7,8 @@
 
 #pragma once
 
-#include "dll/dyn_patches_layer_pad.inl"
-#include "dll/dyn_patches_layer_pad_desc.hpp"
+// Include the dyn version (for dyn_dbn)
+#include "dll/patches/dyn_patches_layer_pad.hpp"
+
+#include "dll/patches/patches_layer_pad.inl"
+#include "dll/patches/patches_layer_pad_desc.hpp"

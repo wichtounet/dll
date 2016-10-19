@@ -11,7 +11,7 @@
 #include "dll/rbm/conv_rbm.hpp"
 #include "dll/augment/augment_layer.hpp"
 #include "dll/transform/scale_layer.hpp"
-#include "dll/patches_layer.hpp"
+#include "dll/patches/patches_layer.hpp"
 #include "dll/dbn.hpp"
 
 #include "mnist/mnist_reader.hpp"

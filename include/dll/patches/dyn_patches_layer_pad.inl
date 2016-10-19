@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "layer.hpp"
+#include "dll/layer.hpp"
 
 namespace dll {
 
@@ -15,34 +15,38 @@ namespace dll {
  * \brief Layer to cut images into patches.
  */
 template <typename Desc>
-struct dyn_patches_layer : layer<dyn_patches_layer<Desc>> {
+struct dyn_patches_layer_padh : layer<dyn_patches_layer_padh<Desc>> {
     using desc = Desc;
 
     using weight = typename desc::weight;
 
-    using input_one_t = etl::dyn_matrix<weight, 3>;
-    using input_t     = std::vector<input_one_t>;
+    using input_one_t  = etl::dyn_matrix<weight, 3>;
+    using input_t      = std::vector<input_one_t>;
 
-    using output_one_t = std::vector<etl::dyn_matrix<weight, 3>>;
-    using output_t     = std::vector<output_one_t>;
+    using output_one_t  = std::vector<etl::dyn_matrix<weight, 3>>;
+    using output_t      = std::vector<output_one_t>;
 
     std::size_t width;
     std::size_t height;
     std::size_t v_stride;
     std::size_t h_stride;
+    std::size_t filler;
+    std::size_t h_context;
 
-    dyn_patches_layer() = default;
+    dyn_patches_layer_padh() = default;
 
-    void init_layer(std::size_t width, std::size_t height, std::size_t v_stride, std::size_t h_stride){
-        this->width    = width;
-        this->height   = height;
-        this->v_stride = v_stride;
-        this->h_stride = h_stride;
+    void init_layer(std::size_t width, std::size_t height, std::size_t v_stride, std::size_t h_stride, std::size_t filler) {
+        this->width     = width;
+        this->height    = height;
+        this->v_stride  = v_stride;
+        this->h_stride  = h_stride;
+        this->filler    = filler;
+        this->h_context = width / 2;
     }
 
     std::string to_short_string() const {
         char buffer[1024];
-        snprintf(buffer, 1024, "Patches(dyn) -> (%lu:%lux%lu:%lu)", height, v_stride, width, h_stride);
+        snprintf(buffer, 1024, "Patches(padh,dyn) -> (%lu:%lux%lu:%lu)", height, v_stride, width, h_stride);
         return {buffer};
     }
 
@@ -56,7 +60,7 @@ struct dyn_patches_layer : layer<dyn_patches_layer<Desc>> {
         h_a.clear();
 
         for (std::size_t y = 0; y + height <= etl::dim<1>(input); y += v_stride) {
-            for (std::size_t x = 0; x + width <= etl::dim<2>(input); x += h_stride) {
+            for (std::size_t x = 0; x < etl::dim<2>(input); x += h_stride) {
                 h_a.emplace_back();
 
                 auto& patch = h_a.back();
@@ -64,8 +68,14 @@ struct dyn_patches_layer : layer<dyn_patches_layer<Desc>> {
                 patch.inherit_if_null(etl::dyn_matrix<weight,3>(1UL, height, width));
 
                 for (std::size_t yy = 0; yy < height; ++yy) {
-                    for (std::size_t xx = 0; xx < width; ++xx) {
-                        patch(0, yy, xx) = input(0, y + yy, x + xx);
+                    for (int xx = x - h_context; xx < int(x + h_context); ++xx) {
+                        double value(filler);
+
+                        if (xx >= 0 && xx < int(etl::dim<2>(input))) {
+                            value = input(0, y + yy, xx);
+                        }
+
+                        patch(0, yy, xx - x + h_context) = value;
                     }
                 }
             }
@@ -79,14 +89,12 @@ struct dyn_patches_layer : layer<dyn_patches_layer<Desc>> {
     }
 
     template <typename Input>
-    output_t prepare_output(std::size_t samples) const {
-        output_t output;
-        output.resize(samples);
-        return output;
+    static output_t prepare_output(std::size_t samples) {
+        return output_t(samples);
     }
 
     template <typename Input>
-    output_one_t prepare_one_output() const {
+    static output_one_t prepare_one_output() {
         return output_one_t();
     }
 
