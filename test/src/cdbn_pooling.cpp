@@ -11,7 +11,7 @@
 
 #define DLL_SVM_SUPPORT
 
-#include "dll/conv_rbm.hpp"
+#include "dll/rbm/conv_rbm.hpp"
 #include "dll/dbn.hpp"
 #include "dll/mp_layer.hpp"
 #include "dll/avgp_layer.hpp"

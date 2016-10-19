@@ -5,12 +5,17 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+/*!
+ * \file
+ * \brief The base include file for a Restricted Boltzmann Machine
+ */
+
 #pragma once
 
 // Include the dyn version (for dyn_dbn)
-#include "dll/dyn_conv_rbm_mp.hpp"
+#include "dll/rbm/dyn_rbm.hpp"
 
-#include "dll/conv_rbm_mp.inl"
+#include "dll/rbm/rbm.inl"
 #include "dll/trainer/rbm_training_context.hpp"
-#include "dll/conv_rbm_mp_desc.hpp"
+#include "dll/rbm/rbm_desc.hpp"
 #include "dll/trainer/rbm_trainer.hpp"

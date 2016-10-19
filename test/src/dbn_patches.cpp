@@ -13,7 +13,7 @@
 
 #include "dll/patches_layer.hpp"
 #include "dll/patches_layer_pad.hpp"
-#include "dll/conv_rbm.hpp"
+#include "dll/rbm/conv_rbm.hpp"
 #include "dll/dbn.hpp"
 
 #include "mnist/mnist_reader.hpp"

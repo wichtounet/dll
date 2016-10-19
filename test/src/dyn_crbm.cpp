@@ -9,7 +9,7 @@
 
 #include "catch.hpp"
 
-#include "dll/dyn_conv_rbm.hpp"
+#include "dll/rbm/dyn_conv_rbm.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"

@@ -22,9 +22,9 @@
 
 #include "etl/etl.hpp"
 
-#include "standard_conv_rbm.hpp" //The base class
-#include "base_conf.hpp"         //The configuration helpers
-#include "rbm_tmp.hpp"           // static_if macros
+#include "dll/rbm/standard_conv_rbm.hpp" //The base class
+#include "dll/base_conf.hpp"             //The configuration helpers
+#include "dll/rbm/rbm_tmp.hpp"           // static_if macros
 
 namespace dll {
 

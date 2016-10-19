@@ -17,8 +17,8 @@
 #include <iostream>
 #include <iomanip>
 
-#include "dll/rbm.hpp"
-#include "dll/conv_rbm.hpp"
+#include "dll/rbm/rbm.hpp"
+#include "dll/rbm/conv_rbm.hpp"
 #include "dll/dense_layer.hpp"
 #include "dll/conv_layer.hpp"
 #include "dll/dbn.hpp"

@@ -7,11 +7,11 @@
 
 #pragma once
 
-#include "base_conf.hpp"    //The configuration helpers
-#include "rbm_base.hpp"     //The base class
-#include "layer_traits.hpp" //layer_traits
-#include "util/checks.hpp"  //nan_check
-#include "util/timers.hpp"  //auto_timer
+#include "dll/base_conf.hpp"    //The configuration helpers
+#include "dll/rbm/rbm_base.hpp"     //The base class
+#include "dll/layer_traits.hpp" //layer_traits
+#include "dll/util/checks.hpp"  //nan_check
+#include "dll/util/timers.hpp"  //auto_timer
 
 namespace dll {
 

@@ -11,7 +11,7 @@
 
 #include "cpp_utils/data.hpp"
 
-#include "dll/conv_rbm.hpp"
+#include "dll/rbm/conv_rbm.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"

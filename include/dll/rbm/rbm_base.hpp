@@ -11,9 +11,10 @@
 #include <fstream>
 
 #include "cpp_utils/io.hpp"
-#include "layer.hpp"
-#include "trainer/rbm_trainer_fwd.hpp"
-#include "util/converter.hpp" //converter
+
+#include "dll/layer.hpp"
+#include "dll/trainer/rbm_trainer_fwd.hpp"
+#include "dll/util/converter.hpp" //converter
 
 namespace dll {
 

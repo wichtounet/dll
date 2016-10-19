@@ -17,10 +17,10 @@
 
 #include "etl/etl.hpp"
 
-#include "standard_rbm.hpp"
-#include "layer_traits.hpp"
+#include "dll/rbm/standard_rbm.hpp"
+#include "dll/layer_traits.hpp"
 
-#include "util/converter.hpp" //converter
+#include "dll/util/converter.hpp" //converter
 
 namespace dll {
 

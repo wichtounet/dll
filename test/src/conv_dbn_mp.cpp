@@ -11,7 +11,7 @@
 
 #define DLL_SVM_SUPPORT
 
-#include "dll/conv_rbm_mp.hpp"
+#include "dll/rbm/conv_rbm_mp.hpp"
 #include "dll/dbn.hpp"
 
 #include "mnist/mnist_reader.hpp"

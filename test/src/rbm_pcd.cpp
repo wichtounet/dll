@@ -7,7 +7,7 @@
 
 #include "catch.hpp"
 
-#include "dll/rbm.hpp"
+#include "dll/rbm/rbm.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"

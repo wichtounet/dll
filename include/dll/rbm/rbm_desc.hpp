@@ -7,10 +7,10 @@
 
 #pragma once
 
-#include "base_conf.hpp"
-#include "contrastive_divergence.hpp"
-#include "watcher.hpp"
-#include "util/tmp.hpp"
+#include "dll/base_conf.hpp"
+#include "dll/contrastive_divergence.hpp"
+#include "dll/watcher.hpp"
+#include "dll/util/tmp.hpp"
 
 namespace dll {
 

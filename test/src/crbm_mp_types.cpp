@@ -17,8 +17,8 @@
 #include "catch.hpp"
 #include "template_test.hpp"
 
-#include "dll/conv_rbm_mp.hpp"
-#include "dll/conv_rbm.hpp"
+#include "dll/rbm/conv_rbm_mp.hpp"
+#include "dll/rbm/conv_rbm.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"

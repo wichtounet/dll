@@ -9,7 +9,7 @@
 
 #define DLL_DETAIL_ONLY
 
-#include "dll/rbm.hpp"
+#include "dll/rbm/rbm.hpp"
 #include "dll/ocv_visualizer.hpp"
 
 TEST_CASE("unit/unit_1", "[unit]") {

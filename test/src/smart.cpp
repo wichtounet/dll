@@ -7,8 +7,8 @@
 
 #include "catch.hpp"
 
-#include "dll/rbm.hpp"
-#include "dll/conv_rbm.hpp"
+#include "dll/rbm/rbm.hpp"
+#include "dll/rbm/conv_rbm.hpp"
 #include "dll/augment_layer.hpp"
 #include "dll/transform/scale_layer.hpp"
 #include "dll/patches_layer.hpp"

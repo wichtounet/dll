@@ -7,7 +7,10 @@
 
 #pragma once
 
-#include "dll/dyn_rbm.inl"
+// Include the dyn version (for dyn_dbn)
+#include "dll/rbm/dyn_conv_rbm_mp.hpp"
+
+#include "dll/rbm/conv_rbm_mp.inl"
 #include "dll/trainer/rbm_training_context.hpp"
-#include "dll/dyn_rbm_desc.hpp"
+#include "dll/rbm/conv_rbm_mp_desc.hpp"
 #include "dll/trainer/rbm_trainer.hpp"

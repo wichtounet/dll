@@ -19,12 +19,12 @@
 
 #include "etl/etl.hpp"
 
-#include "util/checks.hpp"    //NaN checks
-#include "util/timers.hpp"    //auto_timer
-#include "util/converter.hpp" //converter
-#include "rbm_base.hpp"       //The base class
-#include "base_conf.hpp"      //Descriptor configuration
-#include "rbm_tmp.hpp"        // static_if macros
+#include "dll/util/checks.hpp"    //NaN checks
+#include "dll/util/timers.hpp"    //auto_timer
+#include "dll/util/converter.hpp" //converter
+#include "dll/rbm/rbm_base.hpp"       //The base class
+#include "dll/base_conf.hpp"      //Descriptor configuration
+#include "dll/rbm/rbm_tmp.hpp"        // static_if macros
 
 namespace dll {
 

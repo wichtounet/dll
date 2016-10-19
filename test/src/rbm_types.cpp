@@ -17,8 +17,8 @@
 #include "catch.hpp"
 #include "template_test.hpp"
 
-#include "dll/rbm.hpp"
-#include "dll/dyn_rbm.hpp"
+#include "dll/rbm/rbm.hpp"
+#include "dll/rbm/dyn_rbm.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"

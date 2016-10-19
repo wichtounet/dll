@@ -9,9 +9,9 @@
 
 #define DLL_SVM_SUPPORT
 
-#include "dll/conv_rbm.hpp"
-#include "dll/dyn_conv_rbm.hpp"
-#include "dll/conv_rbm_mp.hpp"
+#include "dll/rbm/conv_rbm.hpp"
+#include "dll/rbm/dyn_conv_rbm.hpp"
+#include "dll/rbm/conv_rbm_mp.hpp"
 #include "dll/mp_layer.hpp"
 #include "dll/avgp_layer.hpp"
 #include "dll/patches_layer.hpp"

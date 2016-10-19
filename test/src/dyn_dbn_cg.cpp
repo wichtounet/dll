@@ -11,7 +11,7 @@
 
 #define DLL_SVM_SUPPORT
 
-#include "dll/dyn_rbm.hpp"
+#include "dll/rbm/dyn_rbm.hpp"
 #include "dll/dbn.hpp"
 #include "dll/trainer/conjugate_gradient.hpp"
 
