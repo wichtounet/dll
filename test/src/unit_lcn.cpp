@@ -11,9 +11,9 @@
 
 #include "dll/conv_rbm.hpp"
 #include "dll/dyn_conv_rbm.hpp"
-#include "dll/rectifier_layer.hpp"
-#include "dll/lcn_layer.hpp"
-#include "dll/dyn_lcn_layer.hpp"
+#include "dll/transform/rectifier_layer.hpp"
+#include "dll/transform/lcn_layer.hpp"
+#include "dll/transform/dyn_lcn_layer.hpp"
 #include "dll/mp_layer.hpp"
 #include "dll/avgp_layer.hpp"
 #include "dll/dbn.hpp"

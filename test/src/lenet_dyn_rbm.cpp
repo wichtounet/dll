@@ -9,7 +9,7 @@
 
 #include "dll/dyn_rbm.hpp"
 #include "dll/dyn_conv_rbm.hpp"
-#include "dll/scale_layer.hpp"
+#include "dll/transform/scale_layer.hpp"
 #include "dll/dyn_mp_layer.hpp"
 #include "dll/dbn.hpp"
 #include "dll/trainer/stochastic_gradient_descent.hpp"

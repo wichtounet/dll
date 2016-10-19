@@ -11,7 +11,7 @@
 
 #include "dll/conv_layer.hpp"
 #include "dll/dense_layer.hpp"
-#include "dll/scale_layer.hpp"
+#include "dll/transform/scale_layer.hpp"
 #include "dll/mp_layer.hpp"
 #include "dll/avgp_layer.hpp"
 #include "dll/dbn.hpp"

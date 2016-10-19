@@ -13,7 +13,7 @@
 
 #include "dll/dyn_rbm.hpp"
 #include "dll/dbn.hpp"
-#include "dll/binarize_layer.hpp"
+#include "dll/transform/binarize_layer.hpp"
 #include "dll/trainer/stochastic_gradient_descent.hpp"
 #include "dll/trainer/conjugate_gradient.hpp"
 

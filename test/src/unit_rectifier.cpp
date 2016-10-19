@@ -11,7 +11,7 @@
 
 #include "dll/dyn_conv_rbm.hpp"
 #include "dll/conv_rbm.hpp"
-#include "dll/rectifier_layer.hpp"
+#include "dll/transform/rectifier_layer.hpp"
 #include "dll/dbn.hpp"
 
 #include "mnist/mnist_reader.hpp"

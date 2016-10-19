@@ -11,8 +11,8 @@
 
 #include "dll/dyn_conv_rbm.hpp"
 #include "dll/conv_rbm.hpp"
-#include "dll/random_layer.hpp"
 #include "dll/dbn.hpp"
+#include "dll/transform/random_layer.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
