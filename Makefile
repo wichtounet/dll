@@ -201,6 +201,12 @@ install: release_debug/bin/dllp
 	cp -r etl/lib/include/cpp_utils $(incdir)/
 	cp -r mnist/include/mnist $(incdir)/
 
+install_headers:
+	cp -r include/dll $(incdir)/
+	cp -r etl/include/etl $(incdir)/
+	cp -r etl/lib/include/cpp_utils $(incdir)/
+	cp -r mnist/include/mnist $(incdir)/
+
 update_tests: release_dll_test
 	bash tools/generate_tests.sh
 
