@@ -38,6 +38,7 @@ struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_dense_la
     etl::fast_matrix<weight, num_visible, num_hidden> w_inc;
     etl::fast_matrix<weight, num_hidden> b_inc;
 
+    etl::fast_matrix<weight, batch_size, num_visible> input;
     etl::fast_matrix<weight, batch_size, num_hidden> output;
     etl::fast_matrix<weight, batch_size, num_hidden> errors;
 
@@ -61,13 +62,14 @@ struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_dense_la
     etl::dyn_matrix<weight, 2> w_inc;
     etl::dyn_matrix<weight, 1> b_inc;
 
+    etl::dyn_matrix<weight, 2> input;
     etl::dyn_matrix<weight, 2> output;
     etl::dyn_matrix<weight, 2> errors;
 
     sgd_context(std::size_t num_visible, std::size_t num_hidden)
             : w_grad(num_visible, num_hidden), b_grad(num_hidden),
               w_inc(num_visible, num_hidden, 0.0), b_inc(num_hidden, 0.0),
-              output(batch_size, num_hidden, 0.0), errors(batch_size, num_hidden, 0.0) {}
+              input(batch_size, num_visible, 0.0), output(batch_size, num_hidden, 0.0), errors(batch_size, num_hidden, 0.0) {}
 };
 
 /*!
@@ -97,6 +99,7 @@ struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_convolut
     etl::fast_matrix<weight, K, NC, NW1, NW2> w_inc;
     etl::fast_matrix<weight, K> b_inc;
 
+    etl::fast_matrix<weight, batch_size, NC, NV1, NV2> input;
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> output;
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> errors;
 
@@ -122,12 +125,14 @@ struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_convolut
     etl::dyn_matrix<weight, 4> w_inc;
     etl::dyn_matrix<weight, 1> b_inc;
 
+    etl::dyn_matrix<weight, 4> input;
     etl::dyn_matrix<weight, 4> output;
     etl::dyn_matrix<weight, 4> errors;
 
     sgd_context(size_t nc, size_t nv1, size_t nv2, size_t k, size_t nh1, size_t nh2)
             : w_grad(k, nc, nv1 - nh1 + 1, nv2 - nh2 + 1), b_grad(k),
               w_inc(k, nc, nv1 - nh1 + 1, nv2 - nh2 + 1), b_inc(k),
+              input(batch_size, nc, nv1, nv2),
               output(batch_size, k, nh1, nh2), errors(batch_size, k, nh1, nh2) {}
 };
 
@@ -195,6 +200,7 @@ struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_transfor
 
     using inputs_t = transform_output_type_t<DBN, Layer>;
 
+    inputs_t input;
     inputs_t output;
     inputs_t errors;
 };
