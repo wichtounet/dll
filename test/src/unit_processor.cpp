@@ -374,7 +374,9 @@ TEST_CASE("unit/processor/dbn/sgd/2", "[dense][dbn][mnist][sgd][proc]") {
     TEST_ERROR_BELOW(0.3);
 }
 
-TEST_CASE("unit/processor/dbn/sgd/3", "[unit][dense][dbn][mnist][sgd][proc]") {
+// TODO This test should be part of the unit test
+// However, it relies on absolute path to the mnist_text dataset...
+TEST_CASE("unit/processor/dbn/sgd/3", "[dense][dbn][mnist][sgd][proc]") {
     auto lines = get_result(default_options(), {"pretrain", "train", "test"}, "dbn_sgd_3.conf");
     REQUIRE(!lines.empty());
 
