@@ -128,16 +128,6 @@ struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
         return {};
     }
 
-    template <std::size_t B>
-    auto prepare_input_batch(){
-        return etl::fast_dyn_matrix<weight, B, NC, NV1, NV2>();
-    }
-
-    template <std::size_t B>
-    auto prepare_output_batch(){
-        return etl::fast_dyn_matrix<weight, B, K, NP1, NP2>();
-    }
-
     template<typename DRBM>
     static void dyn_init(DRBM& dyn){
         dyn.init_layer(NC, NV1, NV2, K, NH1, NH2, C);

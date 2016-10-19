@@ -146,16 +146,6 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
         input = input_one_t(num_visible);
     }
 
-    template <std::size_t B>
-    auto prepare_input_batch() const {
-        return etl::dyn_matrix<weight>(B, num_visible);
-    }
-
-    template <std::size_t B>
-    auto prepare_output_batch() const {
-        return etl::dyn_matrix<weight>(B, num_hidden);
-    }
-
     template<typename DRBM>
     static void dyn_init(DRBM&){
         //Nothing to change

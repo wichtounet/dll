@@ -142,16 +142,6 @@ struct dyn_conv_layer final : neural_layer<dyn_conv_layer<Desc>, Desc> {
         return output_one_t(k, nh1, nh2);
     }
 
-    template <std::size_t B>
-    auto prepare_input_batch(){
-        return etl::dyn_matrix<weight, 4>(B, nc, nv1, nv2);
-    }
-
-    template <std::size_t B>
-    auto prepare_output_batch(){
-        return etl::dyn_matrix<weight, 4>(B, k, nh1, nh2);
-    }
-
     template <typename DBN>
     void init_sgd_context() {
         this->sgd_context_ptr = std::make_shared<sgd_context<DBN, this_type>>(nc, nv1, nv2, k, nh1, nh2);

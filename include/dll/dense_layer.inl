@@ -130,16 +130,6 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
         return output_t{samples};
     }
 
-    template <std::size_t B>
-    static auto prepare_input_batch(){
-        return etl::fast_dyn_matrix<weight, B, num_visible>();
-    }
-
-    template <std::size_t B>
-    static auto prepare_output_batch(){
-        return etl::fast_dyn_matrix<weight, B, num_hidden>();
-    }
-
     template<typename DLayer>
     static void dyn_init(DLayer& dyn){
         dyn.init_layer(num_visible, num_hidden);

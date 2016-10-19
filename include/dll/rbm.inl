@@ -113,16 +113,6 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
         // Need to initialize the dimensions of the matrix
         input = input_one_t(num_visible);
     }
-
-    template <std::size_t B>
-    auto prepare_input_batch(){
-        return etl::fast_dyn_matrix<weight, B, num_visible>();
-    }
-
-    template <std::size_t B>
-    auto prepare_output_batch(){
-        return etl::fast_dyn_matrix<weight, B, num_hidden>();
-    }
 };
 
 /*!
