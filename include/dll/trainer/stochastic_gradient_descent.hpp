@@ -92,24 +92,6 @@ struct sgd_trainer {
         static constexpr const std::size_t L = input_layer_t<Layer + 1>::L;
     };
 
-    template<std::size_t L, std::size_t S, typename Layer, cpp_enable_if((L != S && dbn_traits<dbn_t>::is_dynamic()))>
-    void back_init(const Layer& input_layer){
-        decltype(auto) layer = dbn.template layer_get<L>();
-
-        layer.template get_sgd_context<dbn_t>().output = input_layer.template prepare_input_batch<batch_size>();
-        layer.template get_sgd_context<dbn_t>().errors = input_layer.template prepare_input_batch<batch_size>();
-
-        this->template back_init<L+1, S>(input_layer);
-    }
-
-    template<std::size_t L, std::size_t S, typename Layer, cpp_enable_if((L != S && !dbn_traits<dbn_t>::is_dynamic()))>
-    void back_init(const Layer& input_layer){
-        this->template back_init<L+1, S>(input_layer);
-    }
-
-    template<std::size_t L, std::size_t S, typename Layer, cpp_enable_if(L == S)>
-    void back_init(const Layer& /*input_layer*/){}
-
     // Some Transform layers need to inherit dimensions from back
 
     template<typename L1, typename L2, cpp_enable_if(decay_layer_traits<L1>::is_transform_layer())>
@@ -170,9 +152,6 @@ struct sgd_trainer {
                 this_type::inherit_from_front(l1, l2);
             }
         });
-
-        decltype(auto) input_layer = dbn.template layer_get<input_layer_t<0>::L>();
-        this->template back_init<0, input_layer_t<0>::L>(input_layer);
     }
 
     void init_training(std::size_t) {}
