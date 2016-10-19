@@ -12,8 +12,8 @@
 #include "dll/conv_layer.hpp"
 #include "dll/dense_layer.hpp"
 #include "dll/transform/scale_layer.hpp"
-#include "dll/mp_layer.hpp"
-#include "dll/avgp_layer.hpp"
+#include "dll/pooling/mp_layer.hpp"
+#include "dll/pooling/avgp_layer.hpp"
 #include "dll/dbn.hpp"
 #include "dll/trainer/stochastic_gradient_descent.hpp"
 

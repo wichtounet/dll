@@ -7,5 +7,8 @@
 
 #pragma once
 
-#include "dll/dyn_avgp_layer.inl"
-#include "dll/dyn_avgp_layer_desc.hpp"
+// Include the dyn version (for dyn_dbn)
+#include "dll/pooling/dyn_mp_layer.hpp"
+
+#include "dll/pooling/mp_layer.inl"
+#include "dll/pooling/mp_layer_desc.hpp"

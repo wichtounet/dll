@@ -14,8 +14,8 @@
 #include "dll/transform/rectifier_layer.hpp"
 #include "dll/transform/lcn_layer.hpp"
 #include "dll/transform/dyn_lcn_layer.hpp"
-#include "dll/mp_layer.hpp"
-#include "dll/avgp_layer.hpp"
+#include "dll/pooling/mp_layer.hpp"
+#include "dll/pooling/avgp_layer.hpp"
 #include "dll/dbn.hpp"
 
 #include "mnist/mnist_reader.hpp"

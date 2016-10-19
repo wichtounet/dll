@@ -12,7 +12,7 @@
 #include "cpp_utils/data.hpp"
 
 #include "dll/rbm/conv_rbm.hpp"
-#include "dll/mp_layer.hpp"
+#include "dll/pooling/mp_layer.hpp"
 #include "dll/dbn.hpp"
 
 #include "mnist/mnist_reader.hpp"

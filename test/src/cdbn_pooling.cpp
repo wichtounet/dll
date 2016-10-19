@@ -13,8 +13,8 @@
 
 #include "dll/rbm/conv_rbm.hpp"
 #include "dll/dbn.hpp"
-#include "dll/mp_layer.hpp"
-#include "dll/avgp_layer.hpp"
+#include "dll/pooling/mp_layer.hpp"
+#include "dll/pooling/avgp_layer.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
