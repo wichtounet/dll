@@ -363,6 +363,7 @@ struct sgd_trainer {
         auto n = label_batch.size();
 
         decltype(auto) input_layer = dbn.template layer_get<input_layer_t<0>::L>();
+        decltype(auto) input_ctx = input_layer.template get_sgd_context<dbn_t>();
 
         decltype(auto) first_layer = dbn.template layer_get<0>();
         decltype(auto) first_ctx = first_layer.template get_sgd_context<dbn_t>();
@@ -372,8 +373,8 @@ struct sgd_trainer {
 
         // Prepare initial inputs and final outputs (labels)
 
-        auto inputs = input_layer.template prepare_input_batch<batch_size>();
-        auto labels = last_layer.template prepare_output_batch<batch_size>();
+        auto inputs = input_ctx.input;
+        auto labels = last_ctx.output;
 
         //Copy inputs and labels into suitable data structure
 
