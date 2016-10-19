@@ -9,7 +9,7 @@
 
 #include "dll/rbm/dyn_conv_rbm.hpp"
 #include "dll/rbm/conv_rbm.hpp"
-#include "dll/augment_layer.hpp"
+#include "dll/augment/augment_layer.hpp"
 #include "dll/patches_layer.hpp"
 #include "dll/dyn_patches_layer.hpp"
 #include "dll/dbn.hpp"

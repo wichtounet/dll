@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "layer.hpp"
-#include "augmenters.hpp"
+#include "dll/layer.hpp"
+#include "dll/augment/augmenters.hpp"
 
 namespace dll {
 

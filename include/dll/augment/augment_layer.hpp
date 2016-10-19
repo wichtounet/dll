@@ -7,5 +7,5 @@
 
 #pragma once
 
-#include "dll/augment_layer.inl"
-#include "dll/augment_layer_desc.hpp"
+#include "dll/augment/augment_layer.inl"
+#include "dll/augment/augment_layer_desc.hpp"

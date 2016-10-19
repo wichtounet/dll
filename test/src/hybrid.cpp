@@ -8,7 +8,7 @@
 #include "catch.hpp"
 #include "dll_test.hpp"
 
-#include "dll/augment_layer.hpp"
+#include "dll/augment/augment_layer.hpp"
 #include "dll/patches_layer.hpp"
 #include "dll/patches_layer_pad.hpp"
 #include "dll/pooling/mp_layer.hpp"
