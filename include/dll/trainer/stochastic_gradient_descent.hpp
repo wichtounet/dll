@@ -187,28 +187,12 @@ struct sgd_trainer {
         dense_compute_weight_gradients<Weight>(grad, etl::reshape(inputs, batch_size, num_visible(layer)), errors);
     }
 
-#ifndef ETL_BLAS_MODE
-
     template <typename Weight, typename Grad, typename Inputs, typename Errors>
     static void dense_compute_weight_gradients(Grad& grad, Inputs&& inputs, Errors& errors) {
         for (std::size_t i = 0; i < batch_size; ++i) {
             grad += etl::outer(inputs(i), errors(i));
         }
     }
-
-#else
-
-    template <typename Weight, typename Grad, typename Inputs, typename Errors>
-    static void dense_compute_weight_gradients(Grad& grad, Inputs&& inputs, Errors& errors) {
-        for (std::size_t i = 0; i < batch_size; ++i) {
-            blas_ger(
-                etl::dim<1>(inputs), etl::dim<1>(errors),
-                1.0,
-                inputs(i).memory_start(), errors(i).memory_start(), grad.memory_start());
-        }
-    }
-
-#endif
 
     template <typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors,
              cpp_enable_if(decay_layer_traits<Layer>::is_convolutional_layer())>
