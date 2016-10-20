@@ -17,7 +17,7 @@
 
 #include "cpp_utils/static_if.hpp"
 
-#include "dll/util/blas.hpp"
+#include "dll/util/batch.hpp"
 #include "dll/util/checks.hpp" // For NaN checks
 #include "dll/trainer/sgd_context.hpp" //Context for SGD
 
@@ -189,8 +189,13 @@ struct sgd_trainer {
 
     template <typename Weight, typename Grad, typename Inputs, typename Errors>
     static void dense_compute_weight_gradients(Grad& grad, Inputs&& inputs, Errors& errors) {
-        for (std::size_t i = 0; i < batch_size; ++i) {
-            grad += etl::outer(inputs(i), errors(i));
+        for (std::size_t b = 0; b < batch_size; ++b) {
+            for (std::size_t i = 0; i < etl::dim<1>(inputs); ++i) {
+                auto f1 = inputs(b, i);
+                for (std::size_t j = 0; j < etl::dim<1>(errors); ++j) {
+                    grad(i, j) += f1 * errors(b, j);
+                }
+            }
         }
     }
 
