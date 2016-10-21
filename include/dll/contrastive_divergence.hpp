@@ -26,7 +26,6 @@
 #include "util/timers.hpp"
 #include "decay_type.hpp"
 #include "layer_traits.hpp"
-#include "util/blas.hpp"
 
 namespace dll {
 
