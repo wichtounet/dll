@@ -175,6 +175,8 @@ struct dbn_trainer {
                     cpp::parallel_shuffle(data.begin(), data.end(), labels.begin(), labels.end(), g);
                 }
 
+                double loss = 0;
+
                 //Train one mini-batch at a time
                 for (std::size_t i = 0; i < batches; ++i) {
                     auto start = i * batch_size;
@@ -183,12 +185,18 @@ struct dbn_trainer {
                     auto data_batch  = make_batch(data.begin() + start, data.begin() + end);
                     auto label_batch = make_batch(labels.begin() + start, labels.begin() + end);
 
-                    auto batch_error = trainer->train_batch(epoch, data_batch, label_batch, input_transformer);
+                    double batch_error;
+                    double batch_loss;
+                    std::tie(batch_error, batch_loss) = trainer->train_batch(epoch, data_batch, label_batch, input_transformer);
 
                     if(dbn_traits<dbn_t>::is_verbose()){
-                        watcher.ft_batch_end(epoch, i, batches, batch_error, error_function(), dbn);
+                        watcher.ft_batch_end(epoch, i, batches, batch_error, batch_loss, error_function(), dbn);
                     }
+
+                    loss += batch_loss;
                 }
+
+                loss /= batches;
 
                 auto last_error = error;
                 error           = error_function();
@@ -198,7 +206,7 @@ struct dbn_trainer {
                     dbn.momentum = dbn.final_momentum;
                 }
 
-                watcher.ft_epoch_end(epoch, error, dbn);
+                watcher.ft_epoch_end(epoch, error, loss, dbn);
 
                 //Once the goal is reached, stop training
                 if (error <= dbn.goal) {
@@ -245,6 +253,10 @@ struct dbn_trainer {
                 auto it = first;
                 auto lit = lfirst;
 
+                double loss = 0.0;
+
+                std::size_t n = 0;
+
                 //Train all mini-batches
                 while (it != last) {
                     //Fill the input caches
@@ -253,6 +265,7 @@ struct dbn_trainer {
                         input_cache[i] = *it++;
                         label_cache[i] = *lit++;
                         ++i;
+                        ++n;
                     }
 
                     //Convert labels to an useful form
@@ -265,11 +278,15 @@ struct dbn_trainer {
                         auto data_batch  = make_batch(input_cache.begin() + b * batch_size, input_cache.begin() + (b + 1) * batch_size);
                         auto label_batch = make_batch(fake_labels.begin() + b * batch_size, fake_labels.begin() + (b + 1) * batch_size);
 
-                        auto batch_error = trainer->train_batch(epoch, data_batch, label_batch, input_transformer);
+                        double batch_error;
+                        double batch_loss;
+                        std::tie(batch_error, batch_loss) = trainer->train_batch(epoch, data_batch, label_batch, input_transformer);
 
                         if(dbn_traits<dbn_t>::is_verbose()){
-                            watcher.ft_batch_end(epoch, batch_error, error_function(), dbn);
+                            watcher.ft_batch_end(epoch, batch_error, batch_loss, error_function(), dbn);
                         }
+
+                        loss += batch_loss;
                     }
 
                     //Train the last incomplete batch, if any
@@ -277,22 +294,27 @@ struct dbn_trainer {
                         auto data_batch  = make_batch(input_cache.begin() + full_batches * batch_size, input_cache.begin() + i);
                         auto label_batch = make_batch(fake_labels.begin() + full_batches * batch_size, fake_labels.begin() + i);
 
-                        auto batch_error = trainer->train_batch(epoch, data_batch, label_batch, input_transformer);
+                        double batch_error;
+                        double batch_loss;
+                        std::tie(batch_error, batch_loss) = trainer->train_batch(epoch, data_batch, label_batch, input_transformer);
 
                         if(dbn_traits<dbn_t>::is_verbose()){
-                            watcher.ft_batch_end(epoch, batch_error, error_function(), dbn);
+                            watcher.ft_batch_end(epoch, batch_error, batch_loss, error_function(), dbn);
                         }
+
+                        loss += batch_loss;
                     }
                 }
 
                 error = error_function();
+                loss /= n;
 
                 //After some time increase the momentum
                 if (dbn_traits<dbn_t>::has_momentum() && epoch == dbn.final_momentum_epoch) {
                     dbn.momentum = dbn.final_momentum;
                 }
 
-                watcher.ft_epoch_end(epoch, error, dbn);
+                watcher.ft_epoch_end(epoch, error, loss, dbn);
 
                 //Once the goal is reached, stop training
                 if (error <= dbn.goal) {

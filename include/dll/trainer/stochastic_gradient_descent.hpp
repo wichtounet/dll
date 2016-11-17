@@ -346,7 +346,7 @@ struct sgd_trainer {
     }
 
     template <typename T, typename L, typename InputTransformer>
-    double train_batch(std::size_t /*epoch*/, const dll::batch<T>& data_batch, const dll::batch<L>& label_batch, InputTransformer input_transformer) {
+    std::pair<double, double> train_batch(std::size_t /*epoch*/, const dll::batch<T>& data_batch, const dll::batch<L>& label_batch, InputTransformer input_transformer) {
         cpp_assert(data_batch.size() == label_batch.size(), "Invalid sizes");
 
         auto n = label_batch.size();
@@ -406,7 +406,10 @@ struct sgd_trainer {
             this->apply_gradients(layer, n);
         });
 
-        return etl::mean(etl::abs(labels - last_ctx.output));
+        double error = etl::mean(etl::abs(labels - last_ctx.output));
+        double loss = -etl::sum(etl::log(last_ctx.output) >> labels);
+
+        return std::make_pair(error, loss);
     }
 
     template <typename L, cpp_enable_if(decay_layer_traits<L>::is_neural_layer())>
