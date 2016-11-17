@@ -70,7 +70,11 @@ struct dbn_trainer {
             return dll::make_fake(first, last);
         };
 
-        return train_impl(dbn, first, last, lfirst, llast, max_epochs, error_function, label_transformer);
+        auto input_transformer = [](auto&& value){
+            return std::forward<decltype(value)>(value);
+        };
+
+        return train_impl(dbn, first, last, lfirst, llast, max_epochs, error_function, input_transformer, label_transformer);
     }
 
     template <typename Iterator>
@@ -83,11 +87,15 @@ struct dbn_trainer {
             return make_range(first, last);
         };
 
-        return train_impl(dbn, first, last, first, last, max_epochs, error_function, label_transformer);
+        auto input_transformer = [](auto&& value){
+            return std::forward<decltype(value)>(value);
+        };
+
+        return train_impl(dbn, first, last, first, last, max_epochs, error_function, input_transformer, label_transformer);
     }
 
-    template <typename Iterator, typename LIterator, typename Error, typename LabelTransformer>
-    error_type train_impl(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator llast, std::size_t max_epochs, Error error_function, LabelTransformer label_transformer) const {
+    template <typename Iterator, typename LIterator, typename Error, typename InputTransformer, typename LabelTransformer>
+    error_type train_impl(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator llast, std::size_t max_epochs, Error error_function, InputTransformer input_transformer, LabelTransformer label_transformer) const {
         constexpr const auto batch_size     = std::decay_t<DBN>::batch_size;
         constexpr const auto big_batch_size = std::decay_t<DBN>::big_batch_size;
 
@@ -115,8 +123,8 @@ struct dbn_trainer {
             samples_t data;
             data.reserve(std::distance(first, last));
 
-            std::for_each(first, last, [&data](auto& sample) {
-                data.emplace_back(sample);
+            std::for_each(first, last, [&data,&input_transformer](auto& sample) {
+                data.emplace_back(input_transformer(sample));
             });
 
             //Convert labels to an useful form
@@ -218,7 +226,7 @@ struct dbn_trainer {
                     //Fill the input caches
                     std::size_t i = 0;
                     while (it != last && i < total_batch_size) {
-                        input_cache[i] = *it++;
+                        input_cache[i] = input_transformer(*it++);
                         label_cache[i] = *lit++;
                         ++i;
                     }
