@@ -345,8 +345,8 @@ struct sgd_trainer {
         nan_check_deep(context.errors);
     }
 
-    template <typename T, typename L>
-    double train_batch(std::size_t /*epoch*/, const dll::batch<T>& data_batch, const dll::batch<L>& label_batch) {
+    template <typename T, typename L, typename InputTransformer>
+    double train_batch(std::size_t /*epoch*/, const dll::batch<T>& data_batch, const dll::batch<L>& label_batch, InputTransformer input_transformer) {
         cpp_assert(data_batch.size() == label_batch.size(), "Invalid sizes");
 
         auto n = label_batch.size();
@@ -370,9 +370,14 @@ struct sgd_trainer {
         copy_inputs(inputs, data_batch.begin(), data_batch.end());
         copy_labels(labels, label_batch.begin(), label_batch.end());
 
+        auto tilde_inputs = inputs;
+        for(size_t i = 0; i < etl::dim<0>(tilde_inputs); ++i){
+            input_transformer(tilde_inputs(i));
+        }
+
         //Feedforward pass
 
-        compute_outputs(inputs);
+        compute_outputs(tilde_inputs);
 
         static_assert(
             decay_layer_traits<decltype(last_layer)>::is_dense_layer(),

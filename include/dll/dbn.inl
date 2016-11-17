@@ -639,6 +639,40 @@ public:
                                 max_epochs);
     }
 
+    /*!
+     * \brief Fine tune the network for autoencoder.
+     * \param training_data A container containing all the samples
+     * \param max_epochs The maximum number of epochs to train the network for.
+     * \return The final classification error
+     */
+    template <typename Samples>
+    weight fine_tune_dae(const Samples& training_data, size_t max_epochs, double corrupt) {
+        return fine_tune_dae(
+            training_data.begin(), training_data.end(),
+            max_epochs, corrupt);
+    }
+
+    /*!
+     * \brief Fine tune the network for autoencoder.
+     * \param first Iterator to the first sample
+     * \param last Iterator to the last sample
+     * \param max_epochs The maximum number of epochs to train the network for.
+     * \return The final classification error
+     */
+    template <typename Iterator>
+    weight fine_tune_dae(Iterator&& first, Iterator&& last, size_t max_epochs, double corrupt) {
+        dll::auto_timer timer("dbn:train:ft:ae");
+
+        cpp_assert(dll::input_size(layer_get<0>()) == dll::output_size(layer_get<layers - 1>()), "The network is not build as an autoencoder");
+
+        cpp_assert(!batch_mode_run, "DAE does not support batch mode for now");
+
+        dll::dbn_trainer<this_type> trainer;
+        return trainer.train_dae(*this,
+                                first, last,
+                                max_epochs, corrupt);
+    }
+
     template <std::size_t I, typename Input>
     auto prepare_output() const {
         using layer_input_t = typename types_helper<I, Input>::input_t;

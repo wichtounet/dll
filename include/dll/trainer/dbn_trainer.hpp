@@ -70,8 +70,8 @@ struct dbn_trainer {
             return dll::make_fake(first, last);
         };
 
-        auto input_transformer = [](auto&& value){
-            return std::forward<decltype(value)>(value);
+        auto input_transformer = [](const auto& /*value*/){
+            // NOP
         };
 
         return train_impl(dbn, first, last, lfirst, llast, max_epochs, error_function, input_transformer, label_transformer);
@@ -87,8 +87,32 @@ struct dbn_trainer {
             return make_range(first, last);
         };
 
-        auto input_transformer = [](auto&& value){
-            return std::forward<decltype(value)>(value);
+        auto input_transformer = [](const auto& /*value*/){
+            // NOP
+        };
+
+        return train_impl(dbn, first, last, first, last, max_epochs, error_function, input_transformer, label_transformer);
+    }
+
+    template <typename Iterator>
+    error_type train_dae(DBN& dbn, Iterator first, Iterator last, std::size_t max_epochs, double corrupt) const {
+        auto error_function = [&dbn, first, last]() {
+            return test_set_ae(dbn, first, last);
+        };
+
+        auto label_transformer = [](auto first, auto last) {
+            return make_range(first, last);
+        };
+
+        auto input_transformer = [corrupt](auto&& value){
+            static std::random_device rd;
+            static std::default_random_engine g(rd());
+
+            std::uniform_real_distribution<double> dist(0.0, 1000.0);
+
+            for(auto& v :  value){
+                v *= dist(g) < corrupt * 1000.0 ? 0.0 : 1.0;
+            }
         };
 
         return train_impl(dbn, first, last, first, last, max_epochs, error_function, input_transformer, label_transformer);
@@ -123,8 +147,8 @@ struct dbn_trainer {
             samples_t data;
             data.reserve(std::distance(first, last));
 
-            std::for_each(first, last, [&data,&input_transformer](auto& sample) {
-                data.emplace_back(input_transformer(sample));
+            std::for_each(first, last, [&data](auto& sample) {
+                data.emplace_back(sample);
             });
 
             //Convert labels to an useful form
@@ -159,7 +183,7 @@ struct dbn_trainer {
                     auto data_batch  = make_batch(data.begin() + start, data.begin() + end);
                     auto label_batch = make_batch(labels.begin() + start, labels.begin() + end);
 
-                    auto batch_error = trainer->train_batch(epoch, data_batch, label_batch);
+                    auto batch_error = trainer->train_batch(epoch, data_batch, label_batch, input_transformer);
 
                     if(dbn_traits<dbn_t>::is_verbose()){
                         watcher.ft_batch_end(epoch, i, batches, batch_error, error_function(), dbn);
@@ -226,7 +250,7 @@ struct dbn_trainer {
                     //Fill the input caches
                     std::size_t i = 0;
                     while (it != last && i < total_batch_size) {
-                        input_cache[i] = input_transformer(*it++);
+                        input_cache[i] = *it++;
                         label_cache[i] = *lit++;
                         ++i;
                     }
@@ -241,7 +265,7 @@ struct dbn_trainer {
                         auto data_batch  = make_batch(input_cache.begin() + b * batch_size, input_cache.begin() + (b + 1) * batch_size);
                         auto label_batch = make_batch(fake_labels.begin() + b * batch_size, fake_labels.begin() + (b + 1) * batch_size);
 
-                        auto batch_error = trainer->train_batch(epoch, data_batch, label_batch);
+                        auto batch_error = trainer->train_batch(epoch, data_batch, label_batch, input_transformer);
 
                         if(dbn_traits<dbn_t>::is_verbose()){
                             watcher.ft_batch_end(epoch, batch_error, error_function(), dbn);
@@ -253,7 +277,7 @@ struct dbn_trainer {
                         auto data_batch  = make_batch(input_cache.begin() + full_batches * batch_size, input_cache.begin() + i);
                         auto label_batch = make_batch(fake_labels.begin() + full_batches * batch_size, fake_labels.begin() + i);
 
-                        auto batch_error = trainer->train_batch(epoch, data_batch, label_batch);
+                        auto batch_error = trainer->train_batch(epoch, data_batch, label_batch, input_transformer);
 
                         if(dbn_traits<dbn_t>::is_verbose()){
                             watcher.ft_batch_end(epoch, batch_error, error_function(), dbn);
