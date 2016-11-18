@@ -407,7 +407,7 @@ struct sgd_trainer {
         });
 
         double error = etl::mean(etl::abs(labels - last_ctx.output));
-        double loss = -etl::sum(etl::log(last_ctx.output) >> labels);
+        double loss = -etl::sum(etl::log(last_ctx.output) >> labels) / (double) n;
 
         return std::make_pair(error, loss);
     }
