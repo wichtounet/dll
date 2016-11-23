@@ -29,7 +29,7 @@ TEST_CASE("unit/cdbn/lcn/mnist/1", "[cdbn][lcn][svm][unit]") {
             , dll::lcn_layer_desc<9>::layer_t
         >>::dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -57,7 +57,7 @@ TEST_CASE("unit/cdbn/lcn/mnist/2", "[cdbn][lcn][svm][unit]") {
             , dll::conv_rbm_desc_square<20, 12, 20, 10, dll::visible<dll::unit_type::GAUSSIAN>, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
         >>::dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(200);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -90,7 +90,7 @@ TEST_CASE("unit/cdbn/lcn/mnist/3", "[cdbn][lcn][svm][unit]") {
             , dll::mp_layer_3d_desc<20, 10, 10, 2, 2, 1>::layer_t
         >>::dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -119,7 +119,7 @@ TEST_CASE("unit/cdbn/lcn/mnist/4", "[cdbn][lcn][svm][unit]") {
             , dll::avgp_layer_3d_desc<20, 10, 10, 2, 2, 1>::layer_t
         >>::dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -148,7 +148,7 @@ TEST_CASE("unit/cdbn/lcn/mnist/5", "[cdbn][lcn][svm][unit]") {
             , dll::avgp_layer_3d_desc<20, 10, 10, 2, 2, 1>::layer_t
         >>::dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(150);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(150);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -185,7 +185,7 @@ TEST_CASE("unit/cdbn/lcn/mnist/6", "[cdbn][lcn][unit]") {
     REQUIRE(!dll::layer_traits<dbn_t::layer_type<2>>::is_pretrained());
     REQUIRE(!dll::layer_traits<dbn_t::layer_type<2>>::is_trained());
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(150);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(150);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -208,7 +208,7 @@ TEST_CASE("unit/cdbn/lcn/mnist/7", "[cdbn][lcn][svm][unit]") {
             , dll::lcn_layer_desc<9>::layer_t
         >>::dbn_t;
 
-    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(100);
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -238,7 +238,7 @@ TEST_CASE("unit/cdbn/lcn/mnist/8", "[cdbn][lcn][svm][unit]") {
             , dll::dyn_lcn_layer_desc::layer_t
         >>::dbn_t;
 
-    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(100);
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
