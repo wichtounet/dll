@@ -25,11 +25,22 @@ struct default_rbm_watcher {
 
     template <typename RBM = R>
     void training_begin(const RBM& rbm) {
+        using rbm_t = std::decay_t<RBM>;
+
         std::cout << "Train RBM with \"" << RBM::desc::template trainer_t<RBM, false>::name() << "\"" << std::endl;
 
         rbm.display();
 
         std::cout << "With parameters:" << std::endl;
+
+        if(std::is_same<typename rbm_t::weight, float>::value){
+            std::cout << "   single-precision" << std::endl;
+        } else if(std::is_same<typename rbm_t::weight, double>::value){
+            std::cout << "   double-precision" << std::endl;
+        } else {
+            std::cout << "   unknown-precision (something is wrong...)" << std::endl;
+        }
+
         std::cout << "   learning_rate=" << rbm.learning_rate << std::endl;
         std::cout << "   batch_size=" << get_batch_size(rbm) << std::endl;
 
