@@ -19,7 +19,7 @@
 TEST_CASE("crbm_mp/mnist_140", "crbm::slow") {
     dll::conv_rbm_mp_desc_square<
         2, 28, 40, 12, 2,
-        dll::batch_size<25>,
+        dll::batch_size<50>,
         dll::momentum, dll::weight_type<float>>::layer_t rbm;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, float>(500);
@@ -39,6 +39,8 @@ TEST_CASE("crbm_mp/mnist_140", "crbm::slow") {
     auto error = rbm.train(dataset.training_images, 25);
 
     REQUIRE(error < 1e-1);
+
+    dll::dump_timers();
 }
 
 TEST_CASE("crbm_mp/mnist_141", "crbm::slow_parallel") {

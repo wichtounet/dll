@@ -37,6 +37,8 @@ TEST_CASE("crbm/mnist_140", "crbm::slow") {
     auto error = rbm.train(dataset.training_images, 25);
 
     REQUIRE(error < 1e-1);
+
+    dll::dump_timers();
 }
 
 TEST_CASE("crbm/mnist_141", "crbm::slow_parallel") {
