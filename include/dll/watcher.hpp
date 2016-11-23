@@ -135,21 +135,21 @@ struct default_dbn_watcher {
         }
     }
 
-    void ft_epoch_end(std::size_t epoch, double error, const DBN&) {
+    void ft_epoch_end(std::size_t epoch, double error, double loss, const DBN&) {
         char formatted[1024];
-        snprintf(formatted, 1024, "epoch %ld - Classification error: %.5f", epoch, error);
+        snprintf(formatted, 1024, "epoch %ld - Classification error: %.5f Loss: %.5f", epoch, error, loss);
         std::cout << formatted << std::endl;
     }
 
-    void ft_batch_end(size_t epoch, size_t batch, size_t batches, double batch_error, double error, const DBN&) {
+    void ft_batch_end(size_t epoch, size_t batch, size_t batches, double batch_error, double batch_loss, double error, const DBN&) {
         char formatted[1024];
-        snprintf(formatted, 1024, "epoch %ld:%ld/%ld- Batch: %.5f Set: %.5f", epoch, batch, batches, batch_error, error);
+        snprintf(formatted, 1024, "epoch %ld:%ld/%ld- B. Error: %.5f B. Loss: %.5f Set: %.5f", epoch, batch, batches, batch_error, batch_loss, error);
         std::cout << formatted << std::endl;
     }
 
-    void ft_batch_end(size_t epoch, double batch_error, double error, const DBN&) {
+    void ft_batch_end(size_t epoch, double batch_error, double batch_loss, double error, const DBN&) {
         char formatted[1024];
-        snprintf(formatted, 1024, "epoch %ld - Batch: %.5f Set: %.5f", epoch, batch_error, error);
+        snprintf(formatted, 1024, "epoch %ld - B.Error: %.5f B.Loss: %.5f Set: %.5f", epoch, batch_error, batch_loss, error);
         std::cout << formatted << std::endl;
     }
 
