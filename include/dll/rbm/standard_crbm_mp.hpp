@@ -157,17 +157,13 @@ struct standard_crbm_mp : public standard_conv_rbm<Derived, Desc> {
 
         auto b_rep = as_derived().get_batch_b_rep(v_a);
 
-        // The loop is necessary because p_max_pool only handles 2/3D
-        for (size_t i = 0; i < Batch; ++i) {
-            H_PROBS2(unit_type::BINARY, unit_type::BINARY, f(h_a)(i) = etl::p_max_pool_h(b_rep + h_a(i), this->C(), this->C()));
-            H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, f(h_a)(i) = etl::p_max_pool_h((1.0 / (0.1 * 0.1)) >> (b_rep + h_a(i)), this->C(), this->C()));
-            H_PROBS(unit_type::RELU, f(h_a)(i) = max(b_rep + h_a(i), 0.0));
-            H_PROBS(unit_type::RELU6, f(h_a)(i) = min(max(b_rep + h_a(i), 0.0), 6.0));
-            H_PROBS(unit_type::RELU1, f(h_a)(i) = min(max(b_rep + h_a(i), 0.0), 1.0));
+        H_PROBS2(unit_type::BINARY, unit_type::BINARY, f(h_a) = etl::p_max_pool_h(b_rep + h_a, this->C(), this->C()));
+        H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, f(h_a) = etl::p_max_pool_h((1.0 / (0.1 * 0.1)) >> (b_rep + h_a), this->C(), this->C()));
+        H_PROBS(unit_type::RELU, f(h_a) = max(b_rep + h_a, 0.0));
+        H_PROBS(unit_type::RELU6, f(h_a) = min(max(b_rep + h_a, 0.0), 6.0));
+        H_PROBS(unit_type::RELU1, f(h_a) = min(max(b_rep + h_a, 0.0), 1.0));
 
-            H_SAMPLE_PROBS(unit_type::RELU, f(h_s)(i) = max(logistic_noise(b_rep + h_a(i)), 0.0));
-        }
-
+        H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = max(logistic_noise(b_rep + h_a), 0.0));
         H_SAMPLE_PROBS(unit_type::BINARY, f(h_s) = bernoulli(h_a));
         H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = ranged_noise(h_a, 6.0));
         H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = ranged_noise(h_a, 1.0));

@@ -197,8 +197,9 @@ private:
     }
 
     template<typename V>
-    auto get_batch_b_rep(V&& /*v*/) const {
-        return etl::force_temporary(etl::rep(b, nh1, nh2));
+    auto get_batch_b_rep(V&& v) const {
+        const auto batch_size = etl::dim<0>(v);
+        return etl::force_temporary(etl::rep_l(etl::rep(b, nh1, nh2), batch_size));
     }
 
     template<typename H>
