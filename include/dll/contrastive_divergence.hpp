@@ -50,6 +50,15 @@ struct base_trainer {
     }
 };
 
+template<typename Grad, typename T>
+void apply_clip_gradients(Grad& grad, T t, size_t n){
+    auto grad_l2_norm = std::sqrt(etl::sum(grad >> grad) / (n * n));
+
+    if(grad_l2_norm > t){
+        grad = grad >> (t / grad_l2_norm);
+    }
+}
+
 /* The update weights procedure */
 
 template <typename RBM, typename Trainer>
@@ -101,7 +110,18 @@ void update_normal(RBM& rbm, Trainer& t) {
 
     //TODO the batch is not necessary full!
     const auto n_samples = double(etl::dim<0>(t.w_grad_b));
-    auto eps             = rbm.learning_rate / n_samples;
+
+    // Gradients clipping
+    if(layer_traits<rbm_t>::has_clip_gradients()){
+        auto grad_t = rbm.gradient_clip;
+
+        apply_clip_gradients(t.w_grad, grad_t, n_samples);
+        apply_clip_gradients(t.b_grad, grad_t, n_samples);
+        apply_clip_gradients(t.c_grad, grad_t, n_samples);
+    }
+
+    // Scale the learning rate with the size of the batch
+    auto eps = rbm.learning_rate / n_samples;
 
     //Apply momentum and learning rate
     cpp::static_if<layer_traits<rbm_t>::has_momentum()>([&](auto f) {
