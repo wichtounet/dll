@@ -48,6 +48,10 @@ struct default_rbm_watcher {
             std::cout << "   momentum=" << rbm.momentum << std::endl;
         }
 
+        if (layer_traits<RBM>::has_clip_gradients()) {
+            std::cout << "   gradient clip=" << rbm.gradient_clip << std::endl;
+        }
+
         if (w_decay(layer_traits<RBM>::decay()) == decay_type::L1 || w_decay(layer_traits<RBM>::decay()) == decay_type::L1L2) {
             std::cout << "   weight_cost(L1)=" << rbm.l1_weight_cost << std::endl;
         }
