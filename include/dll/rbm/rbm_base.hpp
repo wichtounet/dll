@@ -62,6 +62,8 @@ struct rbm_base : layer<Parent> {
     weight pbias        = 0.002;
     weight pbias_lambda = 5;
 
+    weight gradient_clip = 5.0; ///< The default gradient clipping value
+
     rbm_base() {
         //Nothing to do
     }

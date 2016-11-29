@@ -75,6 +75,7 @@ struct shuffle_pre_id;
 struct svm_concatenate_id;
 struct svm_scale_id;
 struct init_weights_id;
+struct clip_gradients_id;
 struct weight_type_id;
 struct free_energy_id;
 struct memory_id;
@@ -225,6 +226,11 @@ struct shuffle_pre : basic_conf_elt<shuffle_pre_id> {};
  * !\brief Enable free energy computation
  */
 struct free_energy : basic_conf_elt<free_energy_id> {};
+
+/*
+ * !\brief Enable gradient clipping.
+ */
+struct clip_gradients : basic_conf_elt<clip_gradients_id> {};
 
 /*!
  * \brief Indicates that the layer is only made to be used in a DBN.

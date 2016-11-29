@@ -232,6 +232,10 @@ struct layer_traits {
         return layer_t::desc::parameters::template contains<momentum>();
     }
 
+    static constexpr bool has_clip_gradients() {
+        return layer_t::desc::parameters::template contains<clip_gradients>();
+    }
+
     static constexpr bool is_parallel_mode() {
         return layer_t::desc::parameters::template contains<parallel_mode>();
     }
