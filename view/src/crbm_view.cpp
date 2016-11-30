@@ -7,7 +7,7 @@
 
 #include <iostream>
 
-#include "dll/conv_rbm.hpp"
+#include "dll/rbm/conv_rbm.hpp"
 #include "dll/ocv_visualizer.hpp"
 
 #include "mnist/mnist_reader.hpp"
