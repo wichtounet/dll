@@ -255,4 +255,10 @@ struct batch_mode : basic_conf_elt<batch_mode_id> {};
 template <bool Cond>
 using shuffle_cond = std::conditional_t<Cond, shuffle, nop>;
 
+/*
+ * !\brief Conditional gradient clipping (clip gradients if Cond = true)
+ */
+template <bool Cond>
+using clipping_cond = std::conditional_t<Cond, clip_gradients, nop>;
+
 } //end of dll namespace
