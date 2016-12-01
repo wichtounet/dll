@@ -71,18 +71,18 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
 
         as_derived().reshape_h_a(h_a) = etl::conv_4d_valid_flipped(as_derived().reshape_v_a(v_a), as_derived().w);
 
+        // Need to be done before h_a is computed!
+        H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = max(logistic_noise(b_rep + h_a), 0.0));
+        H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = min(max(ranged_noise(b_rep + h_a, 6.0), 0.0), 6.0));
+        H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = min(max(ranged_noise(b_rep + h_a, 1.0), 0.0), 1.0));
+
         H_PROBS2(unit_type::BINARY, unit_type::BINARY, f(h_a) = sigmoid(b_rep + h_a));
         H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, f(h_a) = sigmoid((1.0 / (0.1 * 0.1)) >> (b_rep + h_a)));
         H_PROBS(unit_type::RELU, f(h_a) = max(b_rep + h_a, 0.0));
         H_PROBS(unit_type::RELU6, f(h_a) = min(max(b_rep + h_a, 0.0), 6.0));
         H_PROBS(unit_type::RELU1, f(h_a) = min(max(b_rep + h_a, 0.0), 1.0));
 
-        //TODO This is not correct since h_a is already maxed here
-        H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = max(logistic_noise(h_a), 0.0));
-
         H_SAMPLE_PROBS(unit_type::BINARY, f(h_s) = bernoulli(h_a));
-        H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = ranged_noise(h_a, 6.0));
-        H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = ranged_noise(h_a, 1.0));
 
         nan_check_deep(h_a);
 
@@ -146,19 +146,20 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
 
         auto b_rep = as_derived().get_batch_b_rep(v_a);
 
+        // Need to be done before h_a is computed!
+        H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = max(logistic_noise(b_rep + h_a), 0.0));
+        H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = min(max(ranged_noise(b_rep + h_a, 6.0), 0.0), 6.0));
+        H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = min(max(ranged_noise(b_rep + h_a, 1.0), 0.0), 1.0));
+
         H_PROBS2(unit_type::BINARY, unit_type::BINARY, f(h_a) = sigmoid(b_rep + h_a));
         H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, f(h_a) = sigmoid((1.0 / (0.1 * 0.1)) >> (b_rep + h_a)));
         H_PROBS(unit_type::RELU, f(h_a) = max(b_rep + h_a, 0.0));
         H_PROBS(unit_type::RELU6, f(h_a) = min(max(b_rep + h_a, 0.0), 6.0));
         H_PROBS(unit_type::RELU1, f(h_a) = min(max(b_rep + h_a, 0.0), 1.0));
 
-        H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = max(logistic_noise(b_rep + h_a), 0.0));
-
         nan_check_deep(h_a);
 
         H_SAMPLE_PROBS(unit_type::BINARY, f(h_s) = bernoulli(h_a));
-        H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = ranged_noise(h_a, 6.0));
-        H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = ranged_noise(h_a, 1.0));
 
         if (S) {
             nan_check_deep(h_s);

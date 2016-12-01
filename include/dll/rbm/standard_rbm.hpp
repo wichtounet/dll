@@ -372,22 +372,22 @@ private:
         //Compute activation probabilities
         H_PROBS(unit_type::BINARY, f(h_a) = sigmoid(b + (v_a * w)));
         H_PROBS(unit_type::RELU, f(h_a) = max(b + (v_a * w), 0.0));
-        H_PROBS(unit_type::RELU6, f(h_a) = min(max(b + (v_a * w), 0.0), 6.0));
         H_PROBS(unit_type::RELU1, f(h_a) = min(max(b + (v_a * w), 0.0), 1.0));
+        H_PROBS(unit_type::RELU6, f(h_a) = min(max(b + (v_a * w), 0.0), 6.0));
         H_PROBS(unit_type::SOFTMAX, f(h_a) = stable_softmax(b + (v_a * w)));
 
         //Sample values from input
         H_SAMPLE_PROBS(unit_type::BINARY, f(h_s) = bernoulli(h_a));
         H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = max(logistic_noise(b + (v_a * w)), 0.0));
-        H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = ranged_noise(h_a, 6.0));
-        H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = ranged_noise(h_a, 1.0));
+        H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = min(max(ranged_noise(b + (v_a * w), 1.0), 0.0), 1.0));
+        H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = min(max(ranged_noise(b + (v_a * w), 6.0), 0.0), 6.0));
         H_SAMPLE_PROBS(unit_type::SOFTMAX, f(h_s) = one_if_max(h_a));
 
         //Sample values from probs
         H_SAMPLE_INPUT(unit_type::BINARY, f(h_s) = bernoulli(sigmoid(b + (v_a * w))));
         H_SAMPLE_INPUT(unit_type::RELU, f(h_s) = max(logistic_noise(b + (v_a * w)), 0.0));
-        H_SAMPLE_INPUT(unit_type::RELU6, f(h_s) = ranged_noise(min(max(b + (v_a * w), 0.0), 6.0), 6.0));
-        H_SAMPLE_INPUT(unit_type::RELU1, f(h_s) = ranged_noise(min(max(b + (v_a * w), 0.0), 6.0), 1.0));
+        H_SAMPLE_INPUT(unit_type::RELU1, f(h_s) = min(max(ranged_noise(b + (v_a * w), 1.0), 0.0), 1.0));
+        H_SAMPLE_INPUT(unit_type::RELU6, f(h_s) = min(max(ranged_noise(b + (v_a * w), 6.0), 0.0), 6.0));
         H_SAMPLE_INPUT(unit_type::SOFTMAX, f(h_s) = one_if_max(stable_softmax(b + (v_a * w))));
 
         if (P) {
@@ -434,8 +434,8 @@ private:
 
         H_PROBS(unit_type::BINARY, f(h_a) = sigmoid(rep_l(b, Batch) + v_a * w));
         H_PROBS(unit_type::RELU, f(h_a) = max(rep_l(b, Batch) + v_a * w, 0.0));
-        H_PROBS(unit_type::RELU6, f(h_a) = min(max(rep_l(b, Batch) + v_a * w, 0.0), 6.0));
         H_PROBS(unit_type::RELU1, f(h_a) = min(max(rep_l(b, Batch) + v_a * w, 0.0), 1.0));
+        H_PROBS(unit_type::RELU6, f(h_a) = min(max(rep_l(b, Batch) + v_a * w, 0.0), 6.0));
 
         H_PROBS_MULTI(unit_type::SOFTMAX)
         ([&](auto f) {
@@ -448,8 +448,8 @@ private:
 
         H_SAMPLE_PROBS(unit_type::BINARY, f(h_s) = bernoulli(h_a));
         H_SAMPLE_PROBS(unit_type::RELU, f(h_s) = max(logistic_noise(rep_l(b, Batch) + v_a * w), 0.0));
-        H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = ranged_noise(h_a, 6.0));
-        H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = ranged_noise(h_a, 1.0));
+        H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = min(max(ranged_noise(rep_l(b, Batch) + v_a * w, 1.0), 0.0), 1.0));
+        H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = min(max(ranged_noise(rep_l(b, Batch) + v_a * w, 6.0), 0.0), 6.0));
         H_SAMPLE_PROBS_MULTI(unit_type::SOFTMAX)
         ([&](auto f) {
             for (std::size_t b = 0; b < Batch; ++b) {
@@ -458,9 +458,9 @@ private:
         });
 
         H_SAMPLE_INPUT(unit_type::BINARY, f(h_s) = bernoulli(sigmoid(rep_l(b, Batch) + v_a * w)));
-        H_SAMPLE_INPUT(unit_type::RELU, f(h_s) = max(normal_noise(rep_l(b, Batch) + v_a * w), 0.0));
-        H_SAMPLE_INPUT(unit_type::RELU6, f(h_s) = ranged_noise(min(max(rep_l(b, Batch) + v_a * w, 0.0), 6.0), 6.0));
-        H_SAMPLE_INPUT(unit_type::RELU1, f(h_s) = ranged_noise(min(max(rep_l(b, Batch) + v_a * w, 0.0), 1.0), 1.0));
+        H_SAMPLE_INPUT(unit_type::RELU, f(h_s) = max(logistic_noise(rep_l(b, Batch) + v_a * w), 0.0));
+        H_SAMPLE_INPUT(unit_type::RELU1, f(h_s) = min(max(ranged_noise(rep_l(b, Batch) + v_a * w, 1.0), 0.0), 1.0));
+        H_SAMPLE_INPUT(unit_type::RELU6, f(h_s) = min(max(ranged_noise(rep_l(b, Batch) + v_a * w, 6.0), 0.0), 6.0));
         H_SAMPLE_INPUT_MULTI(unit_type::RELU1)
         ([&](auto f) {
             auto x = f(etl::force_temporary(rep_l(b, Batch) + v_a * w));
