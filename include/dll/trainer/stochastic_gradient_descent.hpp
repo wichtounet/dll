@@ -214,7 +214,9 @@ struct sgd_trainer {
 
         cpp::static_if<decay_layer_traits<Layer>::is_dense_layer()>([&](auto f) {
             f(ctx.b_grad) = etl::sum_l(ctx.errors);
-        }).else_([&](auto f) { f(ctx.b_grad) = etl::mean_r(etl::sum_l(f(ctx.errors))); });
+        }).else_([&](auto f) {
+            f(ctx.b_grad) = etl::mean_r(etl::sum_l(f(ctx.errors)));
+        });
 
         nan_check_deep(ctx.w_grad);
         nan_check_deep(ctx.b_grad);
