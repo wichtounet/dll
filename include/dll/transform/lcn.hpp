@@ -27,8 +27,8 @@ void lcn_filter(W& w, size_t K, size_t Mid, double sigma){
 
 /*!
  * \brief Apply the layer to the input
- * \param output The output
- * \param input The input to apply the layer to
+ * \param y The output
+ * \param x The input to apply the layer to
  */
 template <typename Input, typename Output, typename W>
 void lcn_compute(Output& y, const Input& x, const W& w, size_t K, size_t Mid){

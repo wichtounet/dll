@@ -47,8 +47,8 @@ struct lcn_layer : transform_layer<lcn_layer<Desc>> {
 
     /*!
      * \brief Apply the layer to the input
-     * \param output The output
-     * \param input The input to apply the layer to
+     * \param y The output
+     * \param x The input to apply the layer to
      */
     template <typename Input, typename Output>
     void activate_hidden(Output& y, const Input& x) const {
