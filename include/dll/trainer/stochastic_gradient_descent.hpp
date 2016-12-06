@@ -189,14 +189,8 @@ struct sgd_trainer {
 
     template <typename Weight, typename Grad, typename Inputs, typename Errors>
     static void dense_compute_weight_gradients(Grad& grad, Inputs&& inputs, Errors& errors) {
-        for (std::size_t b = 0; b < batch_size; ++b) {
-            for (std::size_t i = 0; i < etl::dim<1>(inputs); ++i) {
-                auto f1 = inputs(b, i);
-                for (std::size_t j = 0; j < etl::dim<1>(errors); ++j) {
-                    grad(i, j) += f1 * errors(b, j);
-                }
-            }
-        }
+        // Note: This is the point that takes the more in SGD training
+        grad = batch_outer(inputs, errors);
     }
 
     template <typename Layer, typename Weight, typename Grad, typename Inputs, typename Errors,
