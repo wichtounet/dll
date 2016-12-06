@@ -12,6 +12,10 @@ ifneq (,$(DLL_LIBCXX))
 $(eval $(call use_libcxx))
 endif
 
+ifneq (,$(findstring clang,$(CXX)))
+CXX_FLAGS += -Wno-error=documentation
+endif
+
 RELEASE_FLAGS += -fno-rtti
 
 CXX_FLAGS += -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include
@@ -128,6 +132,7 @@ $(eval $(call add_executable_set,dll_view_crbm_mp,dll_view_crbm_mp))
 $(eval $(call add_executable_set,dll_view,dll_view_rbm, dll_view_crbm, dll_view_crbm_mp))
 
 # Generate executables for performance analysis
+$(eval $(call add_executable,dll_sgd_perf,workbench/src/sgd_perf.cpp))
 $(eval $(call add_executable,dll_dae,workbench/src/dae.cpp))
 $(eval $(call add_executable,dll_perf_paper,workbench/src/perf_paper.cpp))
 $(eval $(call add_executable,dll_perf_paper_conv,workbench/src/perf_paper_conv.cpp))
