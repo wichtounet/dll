@@ -238,9 +238,7 @@ struct sgd_trainer {
 
     template <typename Layer1, typename Context1, typename Layer2, typename Context2, typename DF>
     static void compute_errors_from_dense(Layer1&, Context1& ctx1, Layer2& r2, Context2& ctx2, DF derivative) {
-        for (std::size_t i = 0; i < batch_size; ++i) {
-            ctx1.errors(i) = derivative(i) >> (r2.w * ctx2.errors(i));
-        }
+        ctx1.errors = derivative() >> ctx2.errors * etl::transpose(r2.w);
 
         nan_check_deep(ctx1.errors);
     }
@@ -263,7 +261,7 @@ struct sgd_trainer {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wuninitialized"
-        compute_errors_from_dense(r1, ctx1, r2, ctx2, [&](std::size_t i) { return f_derivative<a_f>(ctx1.output(i)); });
+        compute_errors_from_dense(r1, ctx1, r2, ctx2, [&] { return f_derivative<a_f>(ctx1.output); });
 #pragma GCC diagnostic pop
     }
 
@@ -286,7 +284,7 @@ struct sgd_trainer {
         auto& ctx1 = r1.template get_sgd_context<dbn_t>();
         auto& ctx2 = r2.template get_sgd_context<dbn_t>();
 
-        compute_errors_from_dense(r1, ctx1, r2, ctx2, [](std::size_t) { return 1.0; });
+        compute_errors_from_dense(r1, ctx1, r2, ctx2, [] { return 1.0; });
     }
 
     //Backpropagate errors from conv to pooling
