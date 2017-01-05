@@ -83,28 +83,52 @@ struct for_each_impl<D, std::index_sequence<I...>> {
         cpp_unused(wormhole);
     }
 
-    template <typename Functor>
+    template <typename Functor, cpp_enable_if_cst((sizeof...(I) > 1))>
     void for_each_layer_pair(Functor&& functor) {
         int wormhole[] = {(functor(dbn.template layer_get<I>(), dbn.template layer_get<I + 1>()), 0)...};
         cpp_unused(wormhole);
     }
 
-    template <typename Functor>
+    template <typename Functor, cpp_enable_if_cst((sizeof...(I) <= 1))>
+    void for_each_layer_pair(Functor&& functor) {
+        cpp_unused(functor);
+        // Nothing to do here
+    }
+
+    template <typename Functor, cpp_enable_if_cst((sizeof...(I) > 1))>
     void for_each_layer_pair_i(Functor&& functor) {
         int wormhole[] = {(functor(I, dbn.template layer_get<I>(), dbn.template layer_get<I + 1>()), 0)...};
         cpp_unused(wormhole);
     }
 
-    template <typename Functor>
+    template <typename Functor, cpp_enable_if_cst((sizeof...(I) <= 1))>
+    void for_each_layer_pair_i(Functor&& functor) {
+        cpp_unused(functor);
+        // Nothing to do here
+    }
+
+    template <typename Functor, cpp_enable_if_cst((sizeof...(I) > 1))>
     void for_each_layer_rpair(Functor&& functor) {
         int wormhole[] = {(functor(dbn.template layer_get<D::layers - I - 2>(), dbn.template layer_get<D::layers - I - 1>()), 0)...};
         cpp_unused(wormhole);
     }
 
-    template <typename Functor>
+    template <typename Functor, cpp_enable_if_cst((sizeof...(I) <= 1))>
+    void for_each_layer_rpair(Functor&& functor) {
+        cpp_unused(functor);
+        // Nothing to do here
+    }
+
+    template <typename Functor, cpp_enable_if_cst((sizeof...(I) > 1))>
     void for_each_layer_rpair_i(Functor&& functor) {
         int wormhole[] = {(functor(D::layers - I - 2, dbn.template layer_get<D::layers - I - 2>(), dbn.template layer_get<D::layers - I - 1>()), 0)...};
         cpp_unused(wormhole);
+    }
+
+    template <typename Functor, cpp_enable_if_cst((sizeof...(I) <= 1))>
+    void for_each_layer_rpair_i(Functor&& functor) {
+        cpp_unused(functor);
+        // Nothing to do here
     }
 };
 
