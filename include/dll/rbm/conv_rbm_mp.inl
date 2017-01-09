@@ -93,18 +93,30 @@ struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
         c = 0.0;
     }
 
+    /*!
+     * \brief Return the input size of the layer
+     */
     static constexpr std::size_t input_size() noexcept {
         return NV1 * NV2 * NC;
     }
 
+    /*!
+     * \brief Return the output size of the layer
+     */
     static constexpr std::size_t output_size() noexcept {
         return NP1 * NP2 * K;
     }
 
+    /*!
+     * \brief Return the number of parameters of the layer
+     */
     static constexpr std::size_t parameters() noexcept {
         return NC * K * NW1 * NW2;
     }
 
+    /*!
+     * \brief Return a textual representation of the layer
+     */
     static std::string to_short_string() {
         char buffer[1024];
         snprintf(
