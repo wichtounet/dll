@@ -94,11 +94,11 @@ private:
 public:
     using full_output_t = etl::dyn_vector<weight>; ///< The type of output for concatenated activation probabilities
 
-    using for_each_impl_t      = dbn_detail::for_each_impl<this_type, std::make_index_sequence<layers_t::size>>;
-    using for_each_pair_impl_t = dbn_detail::for_each_impl<this_type, std::make_index_sequence<layers_t::size - 1>>;
+    using for_each_impl_t      = dbn_detail::for_each_impl<this_type, layers_t::size, std::make_index_sequence<layers_t::size>>;
+    using for_each_pair_impl_t = dbn_detail::for_each_impl<this_type, layers_t::size, std::make_index_sequence<layers_t::size - 1>>;
 
-    using const_for_each_impl_t      = dbn_detail::for_each_impl<const this_type, std::make_index_sequence<layers_t::size>>;
-    using const_for_each_pair_impl_t = dbn_detail::for_each_impl<const this_type, std::make_index_sequence<layers_t::size - 1>>;
+    using const_for_each_impl_t      = dbn_detail::for_each_impl<const this_type, layers_t::size, std::make_index_sequence<layers_t::size>>;
+    using const_for_each_pair_impl_t = dbn_detail::for_each_impl<const this_type, layers_t::size, std::make_index_sequence<layers_t::size - 1>>;
 
     static constexpr const std::size_t layers         = layers_t::size;     ///< The number of layers
     static constexpr const std::size_t batch_size     = desc::BatchSize;    ///< The batch size (for finetuning)
