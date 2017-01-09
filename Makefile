@@ -133,6 +133,7 @@ $(eval $(call add_executable_set,dll_view,dll_view_rbm, dll_view_crbm, dll_view_
 
 # Generate executables for performance analysis
 $(eval $(call add_executable,dll_sgd_perf,workbench/src/sgd_perf.cpp))
+$(eval $(call add_executable,dll_sgd_debug,workbench/src/sgd_debug.cpp))
 $(eval $(call add_executable,dll_dae,workbench/src/dae.cpp))
 $(eval $(call add_executable,dll_perf_paper,workbench/src/perf_paper.cpp))
 $(eval $(call add_executable,dll_perf_paper_conv,workbench/src/perf_paper_conv.cpp))
