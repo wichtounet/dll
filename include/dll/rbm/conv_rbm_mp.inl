@@ -29,9 +29,9 @@ struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
     using this_type = conv_rbm_mp<desc>;
     using base_type = standard_crbm_mp<this_type, desc>;
 
-    static constexpr const unit_type visible_unit = desc::visible_unit;
-    static constexpr const unit_type hidden_unit  = desc::hidden_unit;
-    static constexpr const unit_type pooling_unit = desc::pooling_unit;
+    static constexpr const unit_type visible_unit = desc::visible_unit; ///< The type of visible unit
+    static constexpr const unit_type hidden_unit  = desc::hidden_unit;  ///< The type of hidden unit
+    static constexpr const unit_type pooling_unit = desc::pooling_unit; ///< The type of pooling unit
 
     static_assert(!(std::is_same<float, weight>::value && visible_unit == unit_type::GAUSSIAN),
                   "Gaussian visible units should use double-precision");

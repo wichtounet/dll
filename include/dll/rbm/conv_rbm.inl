@@ -28,8 +28,8 @@ struct conv_rbm final : public standard_crbm<conv_rbm<Desc>, Desc> {
     using this_type = conv_rbm<desc>;
     using base_type = standard_crbm<this_type, desc>;
 
-    static constexpr const unit_type visible_unit = desc::visible_unit;
-    static constexpr const unit_type hidden_unit  = desc::hidden_unit;
+    static constexpr const unit_type visible_unit = desc::visible_unit; ///< The type of visible unit
+    static constexpr const unit_type hidden_unit  = desc::hidden_unit;  ///< The type of hidden unit
 
     static constexpr const std::size_t NV1 = desc::NV1; ///< The first dimension of the visible units
     static constexpr const std::size_t NV2 = desc::NV2; ///< The second dimension of the visible units
