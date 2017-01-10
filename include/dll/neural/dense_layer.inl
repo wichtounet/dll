@@ -143,7 +143,7 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
         // The reshape has no overhead, so better than SFINAE for nothing
-        constexpr const auto Batch = etl::decay_traits<H>::template dim<0>();
+        constexpr const auto Batch = etl::decay_traits<decltype(context.errors)>::template dim<0>();
         etl::reshape<Batch, num_visible>(output) = context.errors * etl::transpose(w);
     }
 
