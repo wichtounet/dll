@@ -58,6 +58,30 @@ struct dyn_avgp_layer_3d final : dyn_pooling_layer_3d<dyn_avgp_layer_3d<Desc>, D
     static void dyn_init(DRBM&){
         //Nothing to change
     }
+
+    template<typename C>
+    void adapt_errors(C& context) const {
+        cpp_unused(context);
+    }
+
+    template<typename H, typename C>
+    void backward_batch(H&& output, C& context) const {
+        size_t c1 = base::c1;
+        size_t c2 = base::c2;
+        size_t c3 = base::c3;
+
+        const auto batch_size = etl::dim<0>(context.input);
+
+        // TODO The derivative should handle batch
+        for (std::size_t i = 0; i < batch_size; ++i) {
+            output(i) = etl::avg_pool_derivative_3d(context.input(i), context.output(i), c1, c2, c3) >> etl::upsample_3d(context.errors(i), c1, c2, c3);
+        }
+    }
+
+    template<typename C>
+    void compute_gradients(C& context) const {
+        cpp_unused(context);
+    }
 };
 
 } //end of dll namespace
