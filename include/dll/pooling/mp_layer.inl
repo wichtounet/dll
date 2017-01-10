@@ -52,6 +52,30 @@ struct mp_layer_3d final : pooling_layer_3d<mp_layer_3d<Desc>, Desc> {
     static void dyn_init(DLayer& dyn){
         dyn.init_layer(base::I1, base::I2, base::I3, base::C1, base::C2, base::C3);
     }
+
+    template<typename C>
+    void adapt_errors(C& context) const {
+        cpp_unused(context);
+    }
+
+    template<typename H, typename C>
+    void backward_batch(H&& output, C& context) const {
+        static constexpr size_t C1 = base::C1;
+        static constexpr size_t C2 = base::C2;
+        static constexpr size_t C3 = base::C3;
+
+        constexpr const auto batch_size = etl::decay_traits<H>::template dim<0>();
+
+        // TODO The derivative should handle batch
+        for (std::size_t i = 0; i < batch_size; ++i) {
+            output(i) = etl::max_pool_derivative_3d<C1, C2, C3>(context.input(i), context.output(i)) >> etl::upsample_3d<C1, C2, C3>(context.errors(i));
+        }
+    }
+
+    template<typename C>
+    void compute_gradients(C& context) const {
+        cpp_unused(context);
+    }
 };
 
 } //end of dll namespace
