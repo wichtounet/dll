@@ -131,6 +131,31 @@ struct conv_rbm final : public standard_crbm<conv_rbm<Desc>, Desc> {
         dyn.batch_size  = layer_traits<this_type>::batch_size();
     }
 
+    template<typename C>
+    void adapt_errors(C& context) const {
+        static_assert(
+            hidden_unit == unit_type::BINARY || hidden_unit == unit_type::RELU || hidden_unit == unit_type::SOFTMAX,
+            "Only (C)RBM with binary, softmax or RELU hidden unit are supported");
+
+        static constexpr const function activation_function =
+            hidden_unit == unit_type::BINARY
+                ? function::SIGMOID
+                : (hidden_unit == unit_type::SOFTMAX ? function::SOFTMAX : function::RELU);
+
+        context.errors = f_derivative<activation_function>(context.output) >> context.errors;
+    }
+
+    template<typename H, typename C>
+    void backward_batch(H&& output, C& context) const {
+        output = etl::conv_4d_full_flipped(context.errors, w);
+    }
+
+    template<typename C>
+    void compute_gradients(C& context) const {
+        context.w_grad = conv_4d_valid_filter_flipped(context.input, context.errors);
+        context.b_grad = etl::mean_r(etl::sum_l(context.errors));
+    }
+
     friend base_type;
 
 private:

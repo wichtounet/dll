@@ -113,6 +113,33 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
         // Need to initialize the dimensions of the matrix
         input = input_one_t(num_visible);
     }
+
+    template<typename C>
+    void adapt_errors(C& context) const {
+        static_assert(
+            hidden_unit == unit_type::BINARY || hidden_unit == unit_type::RELU || hidden_unit == unit_type::SOFTMAX,
+            "Only (C)RBM with binary, softmax or RELU hidden unit are supported");
+
+        static constexpr const function activation_function =
+            hidden_unit == unit_type::BINARY
+                ? function::SIGMOID
+                : (hidden_unit == unit_type::SOFTMAX ? function::SOFTMAX : function::RELU);
+
+        context.errors = f_derivative<activation_function>(context.output) >> context.errors;
+    }
+
+    template<typename H, typename C>
+    void backward_batch(H&& output, C& context) const {
+        // The reshape has no overhead, so better than SFINAE for nothing
+        constexpr const auto Batch = etl::decay_traits<H>::template dim<0>();
+        etl::reshape<Batch, num_visible>(output) = context.errors * etl::transpose(w);
+    }
+
+    template<typename C>
+    void compute_gradients(C& context) const {
+        context.w_grad = batch_outer(context.input, context.errors);
+        context.b_grad = etl::sum_l(context.errors);
+    }
 };
 
 /*!

@@ -150,6 +150,33 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
     static void dyn_init(DRBM&){
         //Nothing to change
     }
+
+    template<typename C>
+    void adapt_errors(C& context) const {
+        static_assert(
+            hidden_unit == unit_type::BINARY || hidden_unit == unit_type::RELU || hidden_unit == unit_type::SOFTMAX,
+            "Only (C)RBM with binary, softmax or RELU hidden unit are supported");
+
+        static constexpr const function activation_function =
+            hidden_unit == unit_type::BINARY
+                ? function::SIGMOID
+                : (hidden_unit == unit_type::SOFTMAX ? function::SOFTMAX : function::RELU);
+
+        context.errors = f_derivative<activation_function>(context.output) >> context.errors;
+    }
+
+    template<typename H, typename C>
+    void backward_batch(H&& output, C& context) const {
+        // The reshape has no overhead, so better than SFINAE for nothing
+        const auto Batch = etl::dim<0>(output);
+        etl::reshape(output, Batch, num_visible) = context.errors * etl::transpose(w);
+    }
+
+    template<typename C>
+    void compute_gradients(C& context) const {
+        context.w_grad = batch_outer(context.input, context.errors);
+        context.b_grad = etl::sum_l(context.errors);
+    }
 };
 
 /*!
