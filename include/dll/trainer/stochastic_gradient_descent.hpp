@@ -23,26 +23,6 @@
 
 namespace dll {
 
-template <typename L, typename Enable = void>
-struct extract_function;
-
-template <typename L>
-struct extract_function<L, std::enable_if_t<decay_layer_traits<L>::is_standard_layer()>> {
-    static constexpr const function activation_function = std::decay_t<L>::activation_function;
-};
-
-template <typename L>
-struct extract_function<L, std::enable_if_t<decay_layer_traits<L>::is_rbm_layer()>> {
-    static_assert(
-        std::decay_t<L>::hidden_unit == unit_type::BINARY || std::decay_t<L>::hidden_unit == unit_type::RELU || std::decay_t<L>::hidden_unit == unit_type::SOFTMAX,
-        "Only (C)RBM with binary, softmax or RELU hidden unit are supported");
-
-    static constexpr const function activation_function =
-        std::decay_t<L>::hidden_unit == unit_type::BINARY
-            ? function::SIGMOID
-            : (std::decay_t<L>::hidden_unit == unit_type::SOFTMAX ? function::SOFTMAX : function::RELU);
-};
-
 template <typename DBN>
 struct sgd_trainer {
     using dbn_t     = DBN;
