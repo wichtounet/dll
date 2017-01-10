@@ -150,6 +150,24 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
     static void dyn_init(DRBM&){
         //Nothing to change
     }
+
+    template<typename C>
+    void adapt_errors(C& context) const {
+        context.errors = f_derivative<activation_function>(context.output) >> context.errors;
+    }
+
+    template<typename H, typename C>
+    void backward_batch(H&& output, C& context) const {
+        // The reshape has no overhead, so better than SFINAE for nothing
+        auto batch_size = etl::dim<0>(output);
+        etl::reshape(output, batch_size, num_visible) = context.errors * etl::transpose(w);
+    }
+
+    template<typename C>
+    void compute_gradients(C& context) const {
+        context.w_grad = batch_outer(context.input, context.errors);
+        context.b_grad = etl::sum_l(context.errors);
+    }
 };
 
 } //end of dll namespace
