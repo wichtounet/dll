@@ -13,6 +13,9 @@ namespace dll {
 
 /*!
  * \brief Simple thresholding binarize layer
+ *
+ * Note: This is only supported at the beginning of the network, no
+ * backpropagation is possible for now.
  */
 template <typename Desc>
 struct binarize_layer : transform_layer<binarize_layer<Desc>> {
@@ -55,6 +58,22 @@ struct binarize_layer : transform_layer<binarize_layer<Desc>> {
         for (auto& value : output) {
             value = value > Threshold ? 1 : 0;
         }
+    }
+
+    template<typename C>
+    void adapt_errors(C& context) const {
+        cpp_unused(context);
+    }
+
+    template<typename H, typename C>
+    void backward_batch(H&& output, C& context) const {
+        cpp_unused(output);
+        cpp_unused(context);
+    }
+
+    template<typename C>
+    void compute_gradients(C& context) const {
+        cpp_unused(context);
     }
 };
 
