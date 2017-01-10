@@ -134,6 +134,24 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
     static void dyn_init(DLayer& dyn){
         dyn.init_layer(num_visible, num_hidden);
     }
+
+    template<typename C>
+    void adapt_errors(C& context) const {
+        context.errors = f_derivative<activation_function>(context.output) >> context.errors;
+    }
+
+    template<typename H, typename C>
+    void backward_batch(H&& output, C& context) const {
+        // The reshape has no overhead, so better than SFINAE for nothing
+        constexpr const auto Batch = etl::decay_traits<H>::template dim<0>();
+        etl::reshape<Batch, num_visible>(output) = context.errors * etl::transpose(w);
+    }
+
+    template<typename C>
+    void compute_gradients(C& context) const {
+        context.w_grad = batch_outer(context.input, context.errors);
+        context.b_grad = etl::sum_l(context.errors);
+    }
 };
 
 //Allow odr-use of the constexpr static members

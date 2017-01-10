@@ -124,6 +124,22 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
     static void dyn_init(DRBM& dyn){
         dyn.init_layer(NC, NV1, NV2, K, NH1, NH2);
     }
+
+    template<typename C>
+    void adapt_errors(C& context) const {
+        context.errors = f_derivative<activation_function>(context.output) >> context.errors;
+    }
+
+    template<typename H, typename C>
+    void backward_batch(H&& output, C& context) const {
+        output = etl::conv_4d_full_flipped(context.errors, w);
+    }
+
+    template<typename C>
+    void compute_gradients(C& context) const {
+        context.w_grad = conv_4d_valid_filter_flipped(context.input, context.errors);
+        context.b_grad = etl::mean_r(etl::sum_l(context.errors));
+    }
 };
 
 //Allow odr-use of the constexpr static members
