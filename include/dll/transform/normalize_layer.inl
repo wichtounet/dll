@@ -15,6 +15,9 @@ namespace dll {
 
 /*!
  * \brief Simple thresholding normalize layer
+ *
+ * Note: This is only supported at the beginning of the network, no
+ * backpropagation is possible for now.
  */
 template <typename Desc>
 struct normalize_layer : transform_layer<normalize_layer<Desc>> {
@@ -47,6 +50,22 @@ struct normalize_layer : transform_layer<normalize_layer<Desc>> {
     static void batch_activate_hidden(Output& output, const Input& input) {
         output = input;
         cpp::normalize(output);
+    }
+
+    template<typename C>
+    void adapt_errors(C& context) const {
+        cpp_unused(context);
+    }
+
+    template<typename H, typename C>
+    void backward_batch(H&& output, C& context) const {
+        cpp_unused(output);
+        cpp_unused(context);
+    }
+
+    template<typename C>
+    void compute_gradients(C& context) const {
+        cpp_unused(context);
     }
 };
 
