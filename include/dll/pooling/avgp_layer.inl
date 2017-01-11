@@ -32,7 +32,7 @@ struct avgp_layer_3d final : pooling_layer_3d<avgp_layer_3d<Desc>, Desc> {
      */
     static std::string to_short_string() {
         char buffer[1024];
-        snprintf(buffer, 1024, "MP(3D): %lux%lux%lu -> (%lux%lux%lu) -> %lux%lux%lu",
+        snprintf(buffer, 1024, "AVGP(3D): %lux%lux%lu -> (%lux%lux%lu) -> %lux%lux%lu",
                  base::I1, base::I2, base::I3, base::C1, base::C2, base::C3, base::O1, base::O2, base::O3);
         return {buffer};
     }
