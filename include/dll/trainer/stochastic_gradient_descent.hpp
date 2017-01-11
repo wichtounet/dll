@@ -146,8 +146,9 @@ struct sgd_trainer {
         decltype(auto) last_ctx = last_layer.template get_sgd_context<dbn_t>();
 
         static_assert(
-            decay_layer_traits<decltype(last_layer)>::is_dense_layer(),
-            "The last layer must be dense for SGD trainining");
+                decay_layer_traits<decltype(last_layer)>::is_dense_layer()
+            ||  decay_layer_traits<decltype(last_layer)>::is_activation_layer(),
+            "The last layer must be dense or activation for SGD trainining");
 
         // Prepare initial inputs and final outputs (labels)
 

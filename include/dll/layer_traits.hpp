@@ -126,6 +126,7 @@ struct layer_traits {
             || cpp::is_specialization_of<random_layer, layer_t>::value
             || cpp::is_specialization_of<lcn_layer, layer_t>::value
             || cpp::is_specialization_of<dyn_lcn_layer, layer_t>::value
+            || is_activation_layer()
             ;
     }
 
@@ -145,6 +146,13 @@ struct layer_traits {
      */
     static constexpr bool is_augment_layer() {
         return cpp::is_specialization_of<augment_layer, layer_t>::value;
+    }
+
+    /*!
+     * \brief Indicates if this layer is an activation layer.
+     */
+    static constexpr bool is_activation_layer() {
+        return cpp::is_specialization_of<activation_layer, layer_t>::value;
     }
 
     /*!
