@@ -127,7 +127,9 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
 
     template<typename C>
     void adapt_errors(C& context) const {
-        context.errors = f_derivative<activation_function>(context.output) >> context.errors;
+        if(activation_function != function::IDENTITY){
+            context.errors = f_derivative<activation_function>(context.output) >> context.errors;
+        }
     }
 
     template<typename H, typename C>
