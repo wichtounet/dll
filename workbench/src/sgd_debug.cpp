@@ -9,6 +9,7 @@
 
 #include "dll/neural/conv_layer.hpp"
 #include "dll/neural/dense_layer.hpp"
+#include "dll/neural/activation_layer.hpp"
 #include "dll/pooling/mp_layer.hpp"
 #include "dll/pooling/avgp_layer.hpp"
 #include "dll/test.hpp"
@@ -52,6 +53,29 @@ void dense_sgd(Dataset& dataset){
     net->display();
 
     auto ft_error = net->fine_tune(dataset.training_images, dataset.training_labels, 10);
+    std::cout << "ft_error:" << ft_error << std::endl;
+}
+
+template<typename Dataset>
+void dense_sgd_split(Dataset& dataset){
+    using dense_net = dll::dbn_desc<
+        dll::dbn_layers<
+            dll::dense_desc<28 * 28, 200, dll::activation<dll::function::IDENTITY>>::layer_t,
+            dll::activation_layer_desc<dll::activation<dll::function::SIGMOID>>::layer_t,
+            dll::dense_desc<200, 10, dll::activation<dll::function::IDENTITY>>::layer_t,
+            dll::activation_layer_desc<dll::activation<dll::function::SOFTMAX>>::layer_t
+        >,
+        dll::momentum, dll::batch_size<50>, dll::trainer<dll::sgd_trainer>>::dbn_t;
+
+    auto net = std::make_unique<dense_net>();
+
+    net->learning_rate = 0.1;
+    net->momentum = 0.9;
+    net->initial_momentum = 0.9;
+
+    net->display();
+
+    auto ft_error = net->fine_tune(dataset.training_images, dataset.training_labels, 20);
     std::cout << "ft_error:" << ft_error << std::endl;
 }
 
@@ -138,6 +162,7 @@ int main(int /*argc*/, char* /*argv*/ []) {
     mnist_scale(dataset);
 
     dense_sgd(dataset);
+    dense_sgd_split(dataset);
     conv_sgd(dataset);
     conv_mp_sgd(dataset);
     conv_avgp_sgd(dataset);
