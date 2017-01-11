@@ -11,6 +11,7 @@
 
 #include "dll/neural/dense_layer.hpp"
 #include "dll/transform/scale_layer.hpp"
+#include "dll/neural/activation_layer.hpp"
 #include "dll/dbn.hpp"
 #include "dll/trainer/stochastic_gradient_descent.hpp"
 
@@ -304,4 +305,30 @@ TEST_CASE("unit/dense/sgd/13", "[unit][dense][dbn][mnist][sgd]") {
 
     FT_CHECK(200, 1e-1);
     TEST_CHECK(0.3);
+}
+
+// Test Dense -> Sigmoid -> Dense -> Softmax network
+TEST_CASE("unit/dense/sgd/14", "[unit][dense][dbn][mnist][sgd]") {
+    typedef dll::dbn_desc<
+        dll::dbn_layers<
+            dll::dense_desc<28 * 28, 100, dll::activation<dll::function::IDENTITY>>::layer_t,
+            dll::activation_layer_desc<dll::activation<dll::function::SIGMOID>>::layer_t,
+            dll::dense_desc<100, 10, dll::activation<dll::function::IDENTITY>>::layer_t,
+            dll::activation_layer_desc<dll::activation<dll::function::SOFTMAX>>::layer_t
+        >,
+        dll::momentum, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(350);
+    REQUIRE(!dataset.training_images.empty());
+
+    dll_test::mnist_scale(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->initial_momentum = 0.9;
+    dbn->final_momentum   = 0.9;
+    dbn->learning_rate    = 0.01;
+
+    FT_CHECK(50, 5e-2);
+    TEST_CHECK(0.2);
 }
