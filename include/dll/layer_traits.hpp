@@ -24,7 +24,7 @@ struct layer_traits {
      * \brief Indicates if the layer is neural (dense or conv)
      */
     static constexpr bool is_neural_layer() {
-        return is_dense_layer() || is_convolutional_layer();
+        return is_dense_layer() || is_convolutional_layer() || is_deconvolutional_layer();
     }
 
     /*!
@@ -39,6 +39,13 @@ struct layer_traits {
      */
     static constexpr bool is_convolutional_layer() {
         return is_standard_convolutional_layer() || is_convolutional_rbm_layer();
+    }
+
+    /*!
+     * \brief Indicates if the layer is convolutional
+     */
+    static constexpr bool is_deconvolutional_layer() {
+        return is_standard_deconvolutional_layer();
     }
 
     /*!
@@ -62,6 +69,14 @@ struct layer_traits {
     static constexpr bool is_standard_convolutional_layer() {
         return cpp::is_specialization_of<conv_layer, layer_t>::value
             || cpp::is_specialization_of<dyn_conv_layer, layer_t>::value;
+    }
+
+    /*!
+     * \brief Indicates if the layer is a standard (non-rbm) deconvolutionl layer.
+     */
+    static constexpr bool is_standard_deconvolutional_layer() {
+        return cpp::is_specialization_of<deconv_layer, layer_t>::value
+            ; //TODO || cpp::is_specialization_of<dyn_deconv_layer, layer_t>::value;
     }
 
     /*!

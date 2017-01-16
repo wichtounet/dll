@@ -87,6 +87,12 @@ template <typename Desc>
 struct dyn_conv_layer;
 
 template <typename Desc>
+struct deconv_layer;
+
+template <typename Desc>
+struct dyn_deconv_layer;
+
+template <typename Desc>
 struct augment_layer;
 
 template <typename Desc>
