@@ -76,7 +76,7 @@ struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_dense_la
  * \copydoc sgd_context
  */
 template <typename DBN, typename Layer>
-struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_convolutional_layer() && !layer_traits<Layer>::is_dynamic()>> {
+struct sgd_context<DBN, Layer, std::enable_if_t<(layer_traits<Layer>::is_convolutional_layer() || layer_traits<Layer>::is_deconvolutional_layer()) && !layer_traits<Layer>::is_dynamic()>> {
     using layer_t = Layer;
     using weight  = typename layer_t::weight;
 
@@ -111,7 +111,7 @@ struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_convolut
  * \copydoc sgd_context
  */
 template <typename DBN, typename Layer>
-struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_convolutional_layer() && layer_traits<Layer>::is_dynamic()>> {
+struct sgd_context<DBN, Layer, std::enable_if_t<(layer_traits<Layer>::is_convolutional_layer() || layer_traits<Layer>::is_deconvolutional_layer()) && layer_traits<Layer>::is_dynamic()>> {
     using layer_t = Layer;
     using weight  = typename layer_t::weight;
 
