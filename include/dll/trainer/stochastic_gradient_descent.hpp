@@ -117,8 +117,10 @@ struct sgd_trainer {
         }
     }
 
-    template <typename D, typename It>
+    template <typename D, typename It, cpp_enable_if(etl::decay_traits<D>::dimensions() == 2)>
     void copy_labels(D& dest, It first, It last) {
+        //TODO How does that work in auto encoder mode ?
+
         std::size_t i = 0;
 
         while (first != last) {
@@ -127,6 +129,17 @@ struct sgd_trainer {
             }
             ++i;
             ++first;
+        }
+    }
+
+    template <typename D, typename It, cpp_enable_if(etl::decay_traits<D>::dimensions() == 4)>
+    void copy_labels(D& dest, It first, It last) {
+        //TODO How does that work in auto encoder mode ?
+
+        std::size_t i = 0;
+
+        while (first != last) {
+            dest(i++) = *first++;
         }
     }
 
@@ -144,11 +157,6 @@ struct sgd_trainer {
 
         decltype(auto) last_layer = dbn.template layer_get<layers - 1>();
         decltype(auto) last_ctx = last_layer.template get_sgd_context<dbn_t>();
-
-        static_assert(
-                decay_layer_traits<decltype(last_layer)>::is_dense_layer()
-            ||  decay_layer_traits<decltype(last_layer)>::is_activation_layer(),
-            "The last layer must be dense or activation for SGD trainining");
 
         // Prepare initial inputs and final outputs (labels)
 
