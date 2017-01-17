@@ -17,7 +17,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("dense/ae/1", "[dense][dbn][mnist][sgd][ae]") {
+TEST_CASE("conv/ae/1", "[dense][dbn][mnist][sgd][ae]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_desc<1, 28, 28, 10, 24, 24, dll::activation<dll::function::SIGMOID>>::layer_t,
