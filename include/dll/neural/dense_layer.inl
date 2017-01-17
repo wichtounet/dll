@@ -58,14 +58,23 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
         w = etl::normal_generator<weight>(0.0, 1.0 / std::sqrt(double(num_visible)));
     }
 
+    /*!
+     * \brief Returns the input size of this layer
+     */
     static constexpr std::size_t input_size() noexcept {
         return num_visible;
     }
 
+    /*!
+     * \brief Returns the output size of this layer
+     */
     static constexpr std::size_t output_size() noexcept {
         return num_hidden;
     }
 
+    /*!
+     * \brief Returns the number of parameters of this layer
+     */
     static constexpr std::size_t parameters() noexcept {
         return num_visible * num_hidden;
     }

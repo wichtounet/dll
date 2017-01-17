@@ -60,14 +60,23 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
         b = etl::normal_generator<weight>(0.0, 1.0 / std::sqrt(double(num_visible)));
     }
 
+    /*!
+     * \brief Returns the input size of this layer
+     */
     std::size_t input_size() const noexcept {
         return num_visible;
     }
 
+    /*!
+     * \brief Returns the output size of this layer
+     */
     std::size_t output_size() const noexcept {
         return num_hidden;
     }
 
+    /*!
+     * \brief Returns the number of parameters of this layer
+     */
     std::size_t parameters() const noexcept {
         return num_visible * num_hidden;
     }
