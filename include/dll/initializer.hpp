@@ -21,15 +21,8 @@ struct initializer_function;
 template<>
 struct initializer_function<initializer_type::NONE> {
     template<typename B>
-    void initialize_bias(B& b, size_t nin, size_t nout){
+    static void initialize(B& b, size_t nin, size_t nout){
         cpp_unused(b);
-        cpp_unused(nin);
-        cpp_unused(nout);
-    }
-
-    template<typename W>
-    void initialize_weights(W& w, size_t nin, size_t nout){
-        cpp_unused(w);
         cpp_unused(nin);
         cpp_unused(nout);
     }
@@ -38,19 +31,63 @@ struct initializer_function<initializer_type::NONE> {
 template<>
 struct initializer_function<initializer_type::ZERO> {
     template<typename B>
-    void initialize_bias(B& b, size_t nin, size_t nout){
+    static void initialize(B& b, size_t nin, size_t nout){
         cpp_unused(nin);
         cpp_unused(nout);
 
-        b = 0.0;
+        b = etl::value_t<B>(0.0);
     }
+};
 
-    template<typename W>
-    void initialize_weights(W& w, size_t nin, size_t nout){
+template<>
+struct initializer_function<initializer_type::GAUSSIAN> {
+    template<typename B>
+    static void initialize(B& b, size_t nin, size_t nout){
         cpp_unused(nin);
         cpp_unused(nout);
 
-        w = 0.0;
+        b = etl::normal_generator<etl::value_t<B>>(0.0, 0.01);
+    }
+};
+
+template<>
+struct initializer_function<initializer_type::UNIFORM> {
+    template<typename B>
+    static void initialize(B& b, size_t nin, size_t nout){
+        cpp_unused(nin);
+        cpp_unused(nout);
+
+        b = etl::uniform_generator<etl::value_t<B>>(-0.05, 0.05);
+    }
+};
+
+template<>
+struct initializer_function<initializer_type::LECUN> {
+    template<typename B>
+    static void initialize(B& b, size_t nin, size_t nout){
+        cpp_unused(nout);
+
+        b = etl::normal_generator<etl::value_t<B>>(0.0, 1.0 / std::sqrt(double(nin)));
+    }
+};
+
+template<>
+struct initializer_function<initializer_type::XAVIER> {
+    template<typename B>
+    static void initialize(B& b, size_t nin, size_t nout){
+        cpp_unused(nout);
+
+        b = etl::normal_generator<etl::value_t<B>>(0.0, 1.0 / double(nin));
+    }
+};
+
+template<>
+struct initializer_function<initializer_type::XAVIER_FULL> {
+    template<typename B>
+    static void initialize(B& b, size_t nin, size_t nout){
+        cpp_unused(nin);
+
+        b = etl::normal_generator<etl::value_t<B>>(0.0, 2.0 / double(nin + nout));
     }
 };
 

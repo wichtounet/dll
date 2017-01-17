@@ -61,6 +61,7 @@ struct hidden_id;
 struct pooling_id;
 struct activation_id;
 struct initializer_id;
+struct initializer_bias_id;
 struct weight_decay_id;
 struct lr_driver_id;
 struct trainer_id;
@@ -136,6 +137,13 @@ struct activation : value_conf_elt<activation_id, function, FT> {};
  */
 template <initializer_type IT>
 struct initializer : value_conf_elt<initializer_id, initializer_type, IT> {};
+
+/*!
+ * \brief Sets the initializer
+ * \tparam FT The initializer type
+ */
+template <initializer_type IT>
+struct initializer_bias : value_conf_elt<initializer_bias_id, initializer_type, IT> {};
 
 /*!
  * \brief Enable and select weight decay
