@@ -133,16 +133,13 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
 
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
-        cpp_unused(output);
-        cpp_unused(context);
-        //output = etl::conv_4d_full_flipped(context.errors, w);
+        output = etl::conv_4d_valid_flipped(context.errors, w);
     }
 
     template<typename C>
     void compute_gradients(C& context) const {
-        cpp_unused(context);
-        //context.w_grad = conv_4d_valid_filter_flipped(context.input, context.errors);
-        //context.b_grad = etl::mean_r(etl::sum_l(context.errors));
+        //context.w_grad = conv_4d_valid_filter(context.errors, context.input);
+        context.b_grad = etl::mean_r(etl::sum_l(context.errors));
     }
 };
 
