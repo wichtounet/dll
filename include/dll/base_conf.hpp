@@ -15,6 +15,7 @@
 #include "lr_driver_type.hpp"
 #include "sparsity_method.hpp"
 #include "bias_mode.hpp"
+#include "initializer.hpp"
 
 namespace dll {
 
@@ -59,6 +60,7 @@ struct visible_id;
 struct hidden_id;
 struct pooling_id;
 struct activation_id;
+struct initializer_id;
 struct weight_decay_id;
 struct lr_driver_id;
 struct trainer_id;
@@ -127,6 +129,13 @@ struct pooling : value_conf_elt<pooling_id, unit_type, PT> {};
  */
 template <function FT>
 struct activation : value_conf_elt<activation_id, function, FT> {};
+
+/*!
+ * \brief Sets the initializer
+ * \tparam FT The initializer type
+ */
+template <initializer_type IT>
+struct initializer : value_conf_elt<initializer_id, initializer_type, IT> {};
 
 /*!
  * \brief Enable and select weight decay
