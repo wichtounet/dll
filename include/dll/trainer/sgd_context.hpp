@@ -76,7 +76,7 @@ struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_dense_la
  * \copydoc sgd_context
  */
 template <typename DBN, typename Layer>
-struct sgd_context<DBN, Layer, std::enable_if_t<(layer_traits<Layer>::is_convolutional_layer() || layer_traits<Layer>::is_deconvolutional_layer()) && !layer_traits<Layer>::is_dynamic()>> {
+struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_convolutional_layer() && !layer_traits<Layer>::is_dynamic()>> {
     using layer_t = Layer;
     using weight  = typename layer_t::weight;
 
@@ -111,7 +111,7 @@ struct sgd_context<DBN, Layer, std::enable_if_t<(layer_traits<Layer>::is_convolu
  * \copydoc sgd_context
  */
 template <typename DBN, typename Layer>
-struct sgd_context<DBN, Layer, std::enable_if_t<(layer_traits<Layer>::is_convolutional_layer() || layer_traits<Layer>::is_deconvolutional_layer()) && layer_traits<Layer>::is_dynamic()>> {
+struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_convolutional_layer() && layer_traits<Layer>::is_dynamic()>> {
     using layer_t = Layer;
     using weight  = typename layer_t::weight;
 
@@ -134,6 +134,39 @@ struct sgd_context<DBN, Layer, std::enable_if_t<(layer_traits<Layer>::is_convolu
               w_inc(k, nc, nv1 - nh1 + 1, nv2 - nh2 + 1), b_inc(k),
               input(batch_size, nc, nv1, nv2),
               output(batch_size, k, nh1, nh2), errors(batch_size, k, nh1, nh2) {}
+};
+
+/*!
+ * \copydoc sgd_context
+ */
+template <typename DBN, typename Layer>
+struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_deconvolutional_layer() && !layer_traits<Layer>::is_dynamic()>> {
+    using layer_t = Layer;
+    using weight  = typename layer_t::weight;
+
+    static constexpr const std::size_t NV1 = layer_t::NV1;
+    static constexpr const std::size_t NV2 = layer_t::NV2;
+    static constexpr const std::size_t NH1 = layer_t::NH1;
+    static constexpr const std::size_t NH2 = layer_t::NH2;
+    static constexpr const std::size_t NW1 = layer_t::NW1;
+    static constexpr const std::size_t NW2 = layer_t::NW2;
+    static constexpr const std::size_t NC  = layer_t::NC;
+    static constexpr const std::size_t K   = layer_t::K;
+
+    static constexpr const auto batch_size = DBN::batch_size;
+
+    etl::fast_matrix<weight, NC, K, NW1, NW2> w_grad;
+    etl::fast_matrix<weight, K> b_grad;
+
+    etl::fast_matrix<weight, NC, K, NW1, NW2> w_inc;
+    etl::fast_matrix<weight, K> b_inc;
+
+    etl::fast_matrix<weight, batch_size, NC, NV1, NV2> input;
+    etl::fast_matrix<weight, batch_size, K, NH1, NH2> output;
+    etl::fast_matrix<weight, batch_size, K, NH1, NH2> errors;
+
+    sgd_context()
+            : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
 };
 
 /*!
