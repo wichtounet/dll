@@ -26,7 +26,8 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
 
     static constexpr const bool dbn_only = layer_traits<this_type>::is_dbn_only();
 
-    static constexpr const function activation_function = desc::activation_function;
+    static constexpr auto activation_function = desc::activation_function;
+    static constexpr auto initializer_t         = desc::initializer_t;
 
     using input_one_t  = etl::fast_dyn_matrix<weight, num_visible>;
     using output_one_t = etl::fast_dyn_matrix<weight, num_hidden>;
@@ -51,11 +52,8 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
      * zero-mean and unit variance.
      */
     dense_layer() : base_type() {
-        //Initialize the weights and biases following Lecun approach
-        //to initialization [lecun-98b]
-
-        b = etl::normal_generator<weight>(0.0, 1.0 / std::sqrt(double(num_visible)));
-        w = etl::normal_generator<weight>(0.0, 1.0 / std::sqrt(double(num_visible)));
+        initializer_function<initializer_t>::initialize_bias(input_size(), output_size());
+        initializer_function<initializer_t>::initialize_weights(input_size(), output_size());
     }
 
     /*!
