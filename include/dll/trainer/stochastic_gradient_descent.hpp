@@ -214,6 +214,7 @@ struct sgd_trainer {
 
         // Compute error and loss
 
+        // TODO The loss is not necessaryily good for autoencoders
         double error = etl::mean(etl::abs(labels - last_ctx.output));
         double loss = -etl::sum(etl::log(last_ctx.output) >> labels) / (double) n;
 
