@@ -22,7 +22,9 @@ struct dyn_conv_desc {
      */
     using parameters = cpp::type_list<Parameters...>;
 
-    static constexpr const function activation_function = detail::get_value<activation<function::SIGMOID>, Parameters...>::value;
+    static constexpr auto activation_function = detail::get_value<activation<function::SIGMOID>, Parameters...>::value;
+    static constexpr auto w_initializer       = detail::get_value<initializer<initializer_type::LECUN>, Parameters...>::value;
+    static constexpr auto b_initializer       = detail::get_value<initializer_bias<initializer_type::LECUN>, Parameters...>::value;
 
     /*! The type used to store the weights */
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
@@ -35,7 +37,7 @@ struct dyn_conv_desc {
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid<cpp::type_list<weight_type_id, dbn_only_id, activation_id>, Parameters...>::value,
+        detail::is_valid<cpp::type_list<weight_type_id, dbn_only_id, activation_id, initializer_id, initializer_bias_id>, Parameters...>::value,
         "Invalid parameters type for dyn_conv_desc");
 };
 

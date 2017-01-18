@@ -23,7 +23,9 @@ struct dyn_conv_layer final : neural_layer<dyn_conv_layer<Desc>, Desc> {
 
     static constexpr const bool dbn_only = layer_traits<this_type>::is_dbn_only();
 
-    static constexpr const function activation_function = desc::activation_function;
+    static constexpr auto activation_function = desc::activation_function;
+    static constexpr auto w_initializer       = desc::w_initializer;
+    static constexpr auto b_initializer       = desc::b_initializer;
 
     using input_one_t  = etl::dyn_matrix<weight, 3>; ///< The type for one input
     using output_one_t = etl::dyn_matrix<weight, 3>; ///< The type for one output
@@ -70,16 +72,8 @@ struct dyn_conv_layer final : neural_layer<dyn_conv_layer<Desc>, Desc> {
 
         b = etl::dyn_vector<weight>(k);
 
-        //Initialize the weights and biases following Lecun approach
-        //to initialization [lecun-98b]
-
-        w = etl::normal_generator<weight>() * std::sqrt(2.0 / double(nc * nv1 * nv2));
-
-        if (activation_function == function::RELU) {
-            b = 0.01;
-        } else {
-            b = etl::normal_generator<weight>() * std::sqrt(2.0 / double(nc * nv1 * nv2));
-        }
+        initializer_function<w_initializer>::initialize(w, input_size(), output_size());
+        initializer_function<b_initializer>::initialize(b, input_size(), output_size());
     }
 
     std::size_t input_size() const noexcept {
