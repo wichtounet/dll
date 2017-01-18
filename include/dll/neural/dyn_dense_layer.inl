@@ -23,7 +23,9 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
 
     static constexpr const bool dbn_only = layer_traits<this_type>::is_dbn_only();
 
-    static constexpr const function activation_function = desc::activation_function;
+    static constexpr auto activation_function = desc::activation_function;
+    static constexpr auto w_initializer       = desc::w_initializer;
+    static constexpr auto b_initializer       = desc::b_initializer;
 
     using input_one_t  = etl::dyn_matrix<weight, 1>;
     using output_one_t = etl::dyn_matrix<weight, 1>;
@@ -53,11 +55,8 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
         w = etl::dyn_matrix<weight, 2>(num_visible, num_hidden);
         b = etl::dyn_matrix<weight, 1>(num_hidden);
 
-        //Initialize the weights and biases following Lecun approach
-        //to initialization [lecun-98b]
-
-        w = etl::normal_generator<weight>(0.0, 1.0 / std::sqrt(double(num_visible)));
-        b = etl::normal_generator<weight>(0.0, 1.0 / std::sqrt(double(num_visible)));
+        initializer_function<w_initializer>::initialize(w, input_size(), output_size());
+        initializer_function<b_initializer>::initialize(b, input_size(), output_size());
     }
 
     /*!
