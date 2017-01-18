@@ -27,8 +27,8 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
     static constexpr const bool dbn_only = layer_traits<this_type>::is_dbn_only();
 
     static constexpr auto activation_function = desc::activation_function;
-    static constexpr auto w_initializer         = desc::w_initializer;
-    static constexpr auto b_initializer         = desc::b_initializer;
+    static constexpr auto w_initializer       = desc::w_initializer;
+    static constexpr auto b_initializer       = desc::b_initializer;
 
     using input_one_t  = etl::fast_dyn_matrix<weight, num_visible>;
     using output_one_t = etl::fast_dyn_matrix<weight, num_hidden>;
