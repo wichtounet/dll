@@ -250,7 +250,7 @@ struct sgd_trainer {
         nan_check_deep(layer.b);
     }
 
-    template <typename L, cpp_enable_if(decay_layer_traits<L>::is_pooling_layer() || decay_layer_traits<L>::is_transform_layer())>
+    template <typename L, cpp_disable_if(decay_layer_traits<L>::is_neural_layer())>
     void apply_gradients(L&, std::size_t) {
         //Pooling and transform layers have no weights, therefore no
         //gradients

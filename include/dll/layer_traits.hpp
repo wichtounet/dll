@@ -131,6 +131,21 @@ struct layer_traits {
     }
 
     /*!
+     * \brief Indicates if this layer is a pooling layer.
+     */
+    static constexpr bool is_unpooling_layer() {
+        return is_upsample_layer();
+    }
+
+    /*!
+     * \brief Indicates if this layer is a max pooling layer.
+     */
+    static constexpr bool is_upsample_layer() {
+        return cpp::is_specialization_of<upsample_layer_3d, layer_t>::value
+            || cpp::is_specialization_of<dyn_upsample_layer_3d, layer_t>::value;
+    }
+
+    /*!
      * \brief Indicates if this layer is a transformation layer.
      */
     static constexpr bool is_transform_layer() {
@@ -188,7 +203,8 @@ struct layer_traits {
      * \brief Indicates if this layer is trained or not.
      */
     static constexpr bool is_trained() {
-        return !is_transform_layer() && !is_multiplex_layer() && !is_augment_layer() && !is_pooling_layer();
+        // TODO Isn't that is_neural_layer() ?
+        return !is_transform_layer() && !is_multiplex_layer() && !is_augment_layer() && !is_pooling_layer() && !is_unpooling_layer();
     }
 
     /*!

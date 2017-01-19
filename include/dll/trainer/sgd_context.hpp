@@ -212,6 +212,49 @@ struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_pooling_
               errors(batch_size, i1 / c1, i2 / c2, i3 / c3) {}
 };
 
+/*!
+ * \copydoc sgd_context
+ */
+template <typename DBN, typename Layer>
+struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_unpooling_layer() && !layer_traits<Layer>::is_dynamic()>> {
+    using layer_t = Layer;
+    using weight  = typename layer_t::weight;
+
+    static constexpr const std::size_t I1 = layer_t::I1;
+    static constexpr const std::size_t I2 = layer_t::I2;
+    static constexpr const std::size_t I3 = layer_t::I3;
+
+    static constexpr const std::size_t O1 = layer_t::O1;
+    static constexpr const std::size_t O2 = layer_t::O2;
+    static constexpr const std::size_t O3 = layer_t::O3;
+
+    static constexpr const auto batch_size = DBN::batch_size;
+
+    etl::fast_matrix<weight, batch_size, I1, I2, I3> input;
+    etl::fast_matrix<weight, batch_size, O1, O2, O3> output;
+    etl::fast_matrix<weight, batch_size, O1, O2, O3> errors;
+};
+
+/*!
+ * \copydoc sgd_context
+ */
+template <typename DBN, typename Layer>
+struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_unpooling_layer() && layer_traits<Layer>::is_dynamic()>> {
+    using layer_t = Layer;
+    using weight  = typename layer_t::weight;
+
+    static constexpr const auto batch_size = DBN::batch_size;
+
+    etl::dyn_matrix<weight, 4> input;
+    etl::dyn_matrix<weight, 4> output;
+    etl::dyn_matrix<weight, 4> errors;
+
+    sgd_context(size_t i1, size_t i2, size_t i3, size_t c1, size_t c2, size_t c3)
+            : input(batch_size, i1, i2, i3),
+              output(batch_size, i1 * c1, i2 * c2, i3 * c3),
+              errors(batch_size, i1 * c1, i2 * c2, i3 * c3) {}
+};
+
 template <typename DBN, typename Layer>
 struct transform_output_type {
     static constexpr const auto dimensions = dbn_traits<DBN>::is_convolutional() ? 4 : 2;
