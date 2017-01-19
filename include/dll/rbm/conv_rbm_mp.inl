@@ -49,6 +49,8 @@ struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
     static constexpr const std::size_t NP1 = NH1 / C;       //By definition
     static constexpr const std::size_t NP2 = NH2 / C;       //By definition
 
+    static constexpr const std::size_t batch_size  = desc::BatchSize;  ///< The mini-batch size
+
     static constexpr bool dbn_only = layer_traits<this_type>::is_dbn_only();
 
     using w_type = etl::fast_matrix<weight, K, NC, NW1, NW2>;
@@ -143,7 +145,7 @@ struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
     template<typename DRBM>
     static void dyn_init(DRBM& dyn){
         dyn.init_layer(NC, NV1, NV2, K, NH1, NH2, C);
-        dyn.batch_size  = layer_traits<this_type>::batch_size();
+        dyn.batch_size  = batch_size;
     }
 
     friend base_type;

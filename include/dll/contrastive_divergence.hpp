@@ -625,7 +625,7 @@ struct base_cd_trainer : base_trainer<RBM> {
     static constexpr const auto num_hidden  = rbm_t::num_hidden;
     static constexpr const auto num_visible = rbm_t::num_visible;
 
-    static constexpr const auto batch_size = layer_traits<rbm_t>::batch_size();
+    static constexpr const auto batch_size = rbm_t::batch_size;
 
     rbm_t& rbm;
 
@@ -840,7 +840,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<!layer_tr
     static constexpr const auto NW1 = rbm_t::NW1;
     static constexpr const auto NW2 = rbm_t::NW2;
 
-    static constexpr const auto batch_size = layer_traits<rbm_t>::batch_size();
+    static constexpr const auto batch_size = rbm_t::batch_size;
 
     typedef typename rbm_t::weight weight;
 

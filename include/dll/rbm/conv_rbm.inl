@@ -38,6 +38,8 @@ struct conv_rbm final : public standard_crbm<conv_rbm<Desc>, Desc> {
     static constexpr const std::size_t NC  = desc::NC;  ///< The number of input channels
     static constexpr const std::size_t K   = desc::K;   ///< The number of filters
 
+    static constexpr const std::size_t batch_size  = desc::BatchSize;  ///< The mini-batch size
+
     static constexpr const std::size_t NW1 = NV1 - NH1 + 1; //By definition
     static constexpr const std::size_t NW2 = NV2 - NH2 + 1; //By definition
 
@@ -128,7 +130,7 @@ struct conv_rbm final : public standard_crbm<conv_rbm<Desc>, Desc> {
     template<typename DRBM>
     static void dyn_init(DRBM& dyn){
         dyn.init_layer(NC, NV1, NV2, K, NH1, NH2);
-        dyn.batch_size  = layer_traits<this_type>::batch_size();
+        dyn.batch_size  = batch_size;
     }
 
     template<typename C>

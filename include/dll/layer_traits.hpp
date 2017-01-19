@@ -231,10 +231,6 @@ struct layer_traits {
         return false;
     }
 
-    static constexpr std::size_t batch_size() {
-        return detail::get_value_l<dll::batch_size<1>, typename layer_t::desc::parameters>::value;
-    }
-
     static constexpr bool has_momentum() {
         return layer_t::desc::parameters::template contains<momentum>();
     }
@@ -298,7 +294,7 @@ std::size_t get_batch_size(const RBM& rbm) {
 
 template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
 constexpr std::size_t get_batch_size(const RBM&) {
-    return layer_traits<RBM>::batch_size();
+    return RBM::batch_size;
 }
 
 template <typename RBM, cpp_enable_if(layer_traits<RBM>::is_dynamic())>

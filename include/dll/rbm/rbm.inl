@@ -43,6 +43,7 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
 
     static constexpr const std::size_t num_visible = desc::num_visible; ///< The number of visible units
     static constexpr const std::size_t num_hidden  = desc::num_hidden;  ///< The number of hidden units
+    static constexpr const std::size_t batch_size  = desc::BatchSize;  ///< The mini-batch size
 
     static constexpr const unit_type visible_unit = desc::visible_unit; ///< The type of visible units
     static constexpr const unit_type hidden_unit  = desc::hidden_unit;  ///< The type of hidden units
@@ -106,7 +107,7 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
     template<typename DRBM>
     static void dyn_init(DRBM& dyn){
         dyn.init_layer(num_visible, num_hidden);
-        dyn.batch_size  = layer_traits<this_type>::batch_size();
+        dyn.batch_size  = batch_size;
     }
 
     void prepare_input(input_one_t& input) const {
