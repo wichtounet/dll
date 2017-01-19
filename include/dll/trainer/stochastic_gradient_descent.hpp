@@ -32,7 +32,16 @@ struct sgd_trainer {
     static constexpr const auto layers     = dbn_t::layers;
     static constexpr const auto batch_size = dbn_t::batch_size;
 
+    bool ae_training = false;
+
     dbn_t& dbn;
+
+    /*!
+     * \brief Indicates if the model is being trained as an auto-encoder (true) or not (false)
+     */
+    void set_autoencoder(bool ae){
+        this->ae_training = ae;;
+    }
 
     template<std::size_t Layer, typename Enable = void>
     struct input_layer_t {
@@ -214,9 +223,16 @@ struct sgd_trainer {
 
         // Compute error and loss
 
-        // TODO The loss is not necessaryily good for autoencoders
         double error = etl::mean(etl::abs(labels - last_ctx.output));
-        double loss = -etl::sum(etl::log(last_ctx.output) >> labels) / (double) n;
+
+        double loss = 0.0;
+        if(ae_training){
+            // Reconstruction Cross-Entropy Loss
+            loss = -etl::sum((labels >> etl::log(last_ctx.output)) + ((1.0 - labels) >> etl::log(1 - last_ctx.output))) / (double) n;
+        } else {
+            // Cross-Entropy Loss
+            loss = -etl::sum(etl::log(last_ctx.output) >> labels) / (double) n;
+        }
 
         return std::make_pair(error, loss);
     }

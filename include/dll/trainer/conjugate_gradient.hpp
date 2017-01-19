@@ -47,6 +47,7 @@ struct cg_trainer {
     static constexpr const std::size_t layers = dbn_t::layers;
 
     dbn_t& dbn;
+    bool ae_training = false;
 
     explicit cg_trainer(dbn_t& dbn)
             : dbn(dbn) {
@@ -59,6 +60,13 @@ struct cg_trainer {
                 std::cerr << "Warning: CG is not tuned for RELU units" << std::endl;
             }
         });
+    }
+
+    /*!
+     * \brief Indicates if the model is being trained as an auto-encoder (true) or not (false)
+     */
+    void set_autoencoder(bool ae){
+        this->ae_training = ae;;
     }
 
     void init_training(std::size_t batch_size) {

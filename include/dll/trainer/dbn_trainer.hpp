@@ -74,7 +74,7 @@ struct dbn_trainer {
             // NOP
         };
 
-        return train_impl(dbn, first, last, lfirst, llast, max_epochs, error_function, input_transformer, label_transformer);
+        return train_impl(dbn, false, first, last, lfirst, llast, max_epochs, error_function, input_transformer, label_transformer);
     }
 
     template <typename Iterator>
@@ -91,7 +91,7 @@ struct dbn_trainer {
             // NOP
         };
 
-        return train_impl(dbn, first, last, first, last, max_epochs, error_function, input_transformer, label_transformer);
+        return train_impl(dbn, true, first, last, first, last, max_epochs, error_function, input_transformer, label_transformer);
     }
 
     template <typename Iterator>
@@ -115,11 +115,11 @@ struct dbn_trainer {
             }
         };
 
-        return train_impl(dbn, first, last, first, last, max_epochs, error_function, input_transformer, label_transformer);
+        return train_impl(dbn, true, first, last, first, last, max_epochs, error_function, input_transformer, label_transformer);
     }
 
     template <typename Iterator, typename LIterator, typename Error, typename InputTransformer, typename LabelTransformer>
-    error_type train_impl(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator llast, std::size_t max_epochs, Error error_function, InputTransformer input_transformer, LabelTransformer label_transformer) const {
+    error_type train_impl(DBN& dbn, bool ae, Iterator first, Iterator last, LIterator lfirst, LIterator llast, std::size_t max_epochs, Error error_function, InputTransformer input_transformer, LabelTransformer label_transformer) const {
         constexpr const auto batch_size     = std::decay_t<DBN>::batch_size;
         constexpr const auto big_batch_size = std::decay_t<DBN>::big_batch_size;
 
@@ -136,6 +136,8 @@ struct dbn_trainer {
         watcher.fine_tuning_begin(dbn);
 
         auto trainer = std::make_unique<trainer_t<dbn_t>>(dbn);
+
+        trainer->set_autoencoder(ae);
 
         //Initialize the trainer if necessary
         trainer->init_training(batch_size);
