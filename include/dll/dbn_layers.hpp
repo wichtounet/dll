@@ -39,7 +39,7 @@ struct validate_layer_pair<L1, L2, std::enable_if_t<layer_traits<L1>::is_transfo
     : std::true_type {};
 
 template <typename L1, typename L2>
-struct validate_layer_pair<L1, L2, cpp::disable_if_t<layer_traits<L1>::is_transform_layer() || layer_traits<L2>::is_transform_layer()>> : cpp::bool_constant<layer_traits<L1>::output_size() == layer_traits<L2>::input_size()> {};
+struct validate_layer_pair<L1, L2, cpp::disable_if_t<layer_traits<L1>::is_transform_layer() || layer_traits<L2>::is_transform_layer()>> : cpp::bool_constant<L1::output_size() == L2::input_size()> {};
 
 template <typename... Layers>
 struct validate_layers_impl;

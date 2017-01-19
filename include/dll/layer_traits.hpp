@@ -231,14 +231,6 @@ struct layer_traits {
         return false;
     }
 
-    static constexpr std::size_t input_size() {
-        return layer_t::input_size();
-    }
-
-    static constexpr std::size_t output_size() {
-        return layer_t::output_size();
-    }
-
     static constexpr std::size_t batch_size() {
         return detail::get_value_l<dll::batch_size<1>, typename layer_t::desc::parameters>::value;
     }
@@ -391,7 +383,7 @@ constexpr std::size_t num_hidden(const RBM&) {
 
 template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
 constexpr std::size_t output_size(const RBM&) {
-    return layer_traits<RBM>::output_size();
+    return RBM::output_size();
 }
 
 template <typename RBM, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
@@ -406,7 +398,7 @@ std::size_t input_size(const RBM& rbm) {
 
 template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
 constexpr std::size_t input_size(const RBM&) {
-    return layer_traits<RBM>::input_size();
+    return RBM::input_size();
 }
 
 } //end of dll namespace
