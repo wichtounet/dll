@@ -115,32 +115,9 @@ struct layer_traits {
     }
 
     /*!
-     * \brief Indicates if this layer is a max pooling layer.
-     */
-    static constexpr bool is_max_pooling_layer() {
-        return cpp::is_specialization_of<mp_layer_3d, layer_t>::value
-            || cpp::is_specialization_of<dyn_mp_layer_3d, layer_t>::value;
-    }
-
-    /*!
-     * \brief Indicates if this layer is a avg pooling layer.
-     */
-    static constexpr bool is_avg_pooling_layer() {
-        return cpp::is_specialization_of<avgp_layer_3d, layer_t>::value
-            || cpp::is_specialization_of<dyn_avgp_layer_3d, layer_t>::value;
-    }
-
-    /*!
      * \brief Indicates if this layer is a pooling layer.
      */
     static constexpr bool is_unpooling_layer() {
-        return is_upsample_layer();
-    }
-
-    /*!
-     * \brief Indicates if this layer is a max pooling layer.
-     */
-    static constexpr bool is_upsample_layer() {
         return cpp::is_specialization_of<upsample_layer_3d, layer_t>::value
             || cpp::is_specialization_of<dyn_upsample_layer_3d, layer_t>::value;
     }
