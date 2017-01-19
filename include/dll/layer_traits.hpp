@@ -203,8 +203,7 @@ struct layer_traits {
      * \brief Indicates if this layer is trained or not.
      */
     static constexpr bool is_trained() {
-        // TODO Isn't that is_neural_layer() ?
-        return !is_transform_layer() && !is_multiplex_layer() && !is_augment_layer() && !is_pooling_layer() && !is_unpooling_layer();
+        return is_neural_layer();
     }
 
     /*!
