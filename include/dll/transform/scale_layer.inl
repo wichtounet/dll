@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "dll/base_traits.hpp"
 #include "transform_layer.hpp"
 
 namespace dll {
@@ -71,6 +72,27 @@ struct scale_layer : transform_layer<scale_layer<Desc>> {
     void compute_gradients(C& context) const {
         cpp_unused(context);
     }
+};
+
+// Declare the traits for the layer
+
+template<typename Desc>
+struct neural_layer_base_traits<scale_layer<Desc>> {
+    static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
+    static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
+    static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
+    static constexpr bool is_deconv     = false; ///< Indicates if the layer is deconvolutional
+    static constexpr bool is_standard   = false; ///< Indicates if the layer is standard
+    static constexpr bool is_rbm        = false; ///< Indicates if the layer is RBM
+    static constexpr bool is_pooling    = false; ///< Indicates if the layer is a pooling layer
+    static constexpr bool is_unpooling  = false; ///< Indicates if the layer is an unpooling laye
+    static constexpr bool is_transform  = true;  ///< Indicates if the layer is a transform layer
+    static constexpr bool is_patches    = false; ///< Indicates if the layer is a patches layer
+    static constexpr bool is_augment    = false; ///< Indicates if the layer is an augment layer
+    static constexpr bool is_activation = false; ///< Indicates if the layer is an activation-only layer
+    static constexpr bool is_dynamic    = false; ///< Indicates if the layer is dynamic
+    static constexpr bool pretrain_last = false; ///< Indicates if the layer is dynamic
+    static constexpr bool sgd_supported = true;  ///< Indicates if the layer is supported by SGD
 };
 
 } //end of dll namespace

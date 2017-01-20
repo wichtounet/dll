@@ -25,8 +25,21 @@ struct is_multiplex : cpp::or_u<layer_traits<Layers>::is_multiplex_layer()...> {
 template <typename... Layers>
 struct is_denoising : cpp::and_u<layer_traits<Layers>::is_dense_rbm_layer()...> {};
 
+template <typename Layer, typename Enable = void>
+struct has_shuffle_helper;
+
+template <typename Layer>
+struct has_shuffle_helper <Layer, std::enable_if_t<layer_traits<Layer>::is_rbm_layer()>> {
+    static constexpr bool value = rbm_layer_traits<Layer>::has_shuffle();
+};
+
+template <typename Layer>
+struct has_shuffle_helper <Layer, std::enable_if_t<!layer_traits<Layer>::is_rbm_layer()>> {
+    static constexpr bool value = false;
+};
+
 template <typename... Layers>
-struct has_shuffle_layer : cpp::or_u<rbm_layer_traits<Layers>::has_shuffle()...> {};
+struct has_shuffle_layer : cpp::or_u<has_shuffle_helper<Layers>::value...> {};
 
 // TODO validate_layer_pair should be made more robust when
 // transform layer are present between layers

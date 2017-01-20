@@ -163,4 +163,25 @@ const std::size_t deconv_layer<Desc>::NW2;
 template <typename Desc>
 const std::size_t deconv_layer<Desc>::K;
 
+// Declare the traits for the Layer
+
+template<typename Desc>
+struct neural_layer_base_traits<deconv_layer<Desc>> {
+    static constexpr bool is_neural     = true;  ///< Indicates if the layer is a neural layer
+    static constexpr bool is_dense      = false;  ///< Indicates if the layer is dense
+    static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
+    static constexpr bool is_deconv     = true; ///< Indicates if the layer is deconvolutional
+    static constexpr bool is_standard   = true;  ///< Indicates if the layer is standard
+    static constexpr bool is_rbm        = false;  ///< Indicates if the layer is RBM
+    static constexpr bool is_pooling    = false; ///< Indicates if the layer is a pooling layer
+    static constexpr bool is_unpooling  = false; ///< Indicates if the layer is an unpooling laye
+    static constexpr bool is_transform  = false; ///< Indicates if the layer is a transform layer
+    static constexpr bool is_patches    = false; ///< Indicates if the layer is a patches layer
+    static constexpr bool is_augment    = false; ///< Indicates if the layer is an augment layer
+    static constexpr bool is_activation = false; ///< Indicates if the layer is an activation-only layer
+    static constexpr bool is_dynamic    = false; ///< Indicates if the layer is dynamic
+    static constexpr bool pretrain_last = false; ///< Indicates if the layer is dynamic
+    static constexpr bool sgd_supported = true;  ///< Indicates if the layer is supported by SGD
+};
+
 } //end of dll namespace

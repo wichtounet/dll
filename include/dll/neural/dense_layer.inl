@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "dll/base_traits.hpp"
 #include "dll/neural_layer.hpp"
 
 namespace dll {
@@ -171,5 +172,26 @@ const std::size_t dense_layer<Desc>::num_visible;
 
 template <typename Desc>
 const std::size_t dense_layer<Desc>::num_hidden;
+
+// Declare the traits for the Layer
+
+template<typename Desc>
+struct neural_layer_base_traits<dense_layer<Desc>> {
+    static constexpr bool is_neural     = true;  ///< Indicates if the layer is a neural layer
+    static constexpr bool is_dense      = true;  ///< Indicates if the layer is dense
+    static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
+    static constexpr bool is_deconv     = false; ///< Indicates if the layer is deconvolutional
+    static constexpr bool is_standard   = true;  ///< Indicates if the layer is standard
+    static constexpr bool is_rbm        = false;  ///< Indicates if the layer is RBM
+    static constexpr bool is_pooling    = false; ///< Indicates if the layer is a pooling layer
+    static constexpr bool is_unpooling  = false; ///< Indicates if the layer is an unpooling laye
+    static constexpr bool is_transform  = false; ///< Indicates if the layer is a transform layer
+    static constexpr bool is_patches    = false; ///< Indicates if the layer is a patches layer
+    static constexpr bool is_augment    = false; ///< Indicates if the layer is an augment layer
+    static constexpr bool is_activation = false; ///< Indicates if the layer is an activation-only layer
+    static constexpr bool is_dynamic    = false; ///< Indicates if the layer is dynamic
+    static constexpr bool pretrain_last = false; ///< Indicates if the layer is dynamic
+    static constexpr bool sgd_supported = true;  ///< Indicates if the layer is supported by SGD
+};
 
 } //end of dll namespace

@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "dll/base_traits.hpp"
 #include "standard_crbm_mp.hpp" //The base class
 
 namespace dll {
@@ -238,6 +239,46 @@ struct rbm_base_traits<dyn_conv_rbm_mp<Desc>> {
     using hidden_output_one_t = etl::dyn_matrix<weight, 3>;
     using input_t             = std::vector<input_one_t>;
     using output_t            = std::vector<output_one_t>;
+};
+
+// Declare the traits for the RBM
+
+template<typename Desc>
+struct neural_layer_base_traits<dyn_conv_rbm_mp<Desc>> {
+    static constexpr bool is_neural     = true;  ///< Indicates if the layer is a neural layer
+    static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
+    static constexpr bool is_conv       = true;  ///< Indicates if the layer is convolutional
+    static constexpr bool is_deconv     = false; ///< Indicates if the layer is deconvolutional
+    static constexpr bool is_standard   = false; ///< Indicates if the layer is standard
+    static constexpr bool is_rbm        = true;  ///< Indicates if the layer is RBM
+    static constexpr bool is_pooling    = false; ///< Indicates if the layer is a pooling layer
+    static constexpr bool is_unpooling  = false; ///< Indicates if the layer is an unpooling laye
+    static constexpr bool is_transform  = false; ///< Indicates if the layer is a transform layer
+    static constexpr bool is_patches    = false; ///< Indicates if the layer is a patches layer
+    static constexpr bool is_augment    = false; ///< Indicates if the layer is an augment layer
+    static constexpr bool is_activation = false; ///< Indicates if the layer is an activation-only layer
+    static constexpr bool is_dynamic    = true;  ///< Indicates if the layer is dynamic
+    static constexpr bool pretrain_last = false; ///< Indicates if the layer is dynamic
+    static constexpr bool sgd_supported = false;  ///< Indicates if the layer is supported by SGD
+};
+
+template<typename Desc>
+struct rbm_layer_base_traits<dyn_conv_rbm_mp<Desc>> {
+    using param = typename Desc::parameters;
+
+    static constexpr bool has_momentum       = param::template contains<momentum>();                            ///< Does the RBM has momentum
+    static constexpr bool has_clip_gradients = param::template contains<clip_gradients>();                      ///< Does the RBM has gradient clipping
+    static constexpr bool is_parallel_mode   = param::template contains<parallel_mode>();                       ///< Does the RBM is in parallel
+    static constexpr bool is_serial          = param::template contains<serial>();                              ///< Does the RBM is in serial mode
+    static constexpr bool is_verbose         = param::template contains<verbose>();                             ///< Does the RBM is verbose
+    static constexpr bool has_shuffle        = param::template contains<shuffle>();                             ///< Does the RBM has shuffle
+    static constexpr bool is_dbn_only        = param::template contains<dbn_only>();                            ///< Does the RBM is only used inside a DBN
+    static constexpr bool has_init_weights   = param::template contains<init_weights>();                        ///< Does the RBM use weights initialization
+    static constexpr bool has_free_energy    = param::template contains<free_energy>();                         ///< Does the RBM displays the free energy
+    static constexpr auto sparsity_method    = get_value_l<sparsity<dll::sparsity_method::NONE>, param>::value; ///< The RBM's sparsity method
+    static constexpr auto bias_mode          = get_value_l<bias<dll::bias_mode::NONE>, param>::value;           ///< The RBM's sparsity bias mode
+    static constexpr auto decay              = get_value_l<weight_decay<dll::decay_type::NONE>, param>::value;  ///< The RMB's sparsity decay type
+    static constexpr bool has_sparsity       = sparsity_method != dll::sparsity_method::NONE;                   ///< Does the RBM has sparsity
 };
 
 } //end of dll namespace

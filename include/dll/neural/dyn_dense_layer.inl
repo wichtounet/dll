@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "dll/base_traits.hpp"
 #include "dll/neural_layer.hpp"
 
 namespace dll {
@@ -176,6 +177,27 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
         context.w_grad = batch_outer(context.input, context.errors);
         context.b_grad = etl::sum_l(context.errors);
     }
+};
+
+// Declare the traits for the Layer
+
+template<typename Desc>
+struct neural_layer_base_traits<dyn_dense_layer<Desc>> {
+    static constexpr bool is_neural     = true;  ///< Indicates if the layer is a neural layer
+    static constexpr bool is_dense      = true;  ///< Indicates if the layer is dense
+    static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
+    static constexpr bool is_deconv     = false; ///< Indicates if the layer is deconvolutional
+    static constexpr bool is_standard   = true;  ///< Indicates if the layer is standard
+    static constexpr bool is_rbm        = false; ///< Indicates if the layer is RBM
+    static constexpr bool is_pooling    = false; ///< Indicates if the layer is a pooling layer
+    static constexpr bool is_unpooling  = false; ///< Indicates if the layer is an unpooling laye
+    static constexpr bool is_transform  = false; ///< Indicates if the layer is a transform layer
+    static constexpr bool is_patches    = false; ///< Indicates if the layer is a patches layer
+    static constexpr bool is_augment    = false; ///< Indicates if the layer is an augment layer
+    static constexpr bool is_activation = false; ///< Indicates if the layer is an activation-only layer
+    static constexpr bool is_dynamic    = true;  ///< Indicates if the layer is dynamic
+    static constexpr bool pretrain_last = false; ///< Indicates if the layer is dynamic
+    static constexpr bool sgd_supported = true;  ///< Indicates if the layer is supported by SGD
 };
 
 } //end of dll namespace

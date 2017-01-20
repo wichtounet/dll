@@ -19,147 +19,125 @@ namespace dll {
 template <typename Layer>
 struct layer_traits {
     using layer_t = Layer; ///< The layer type being inspected
+    using base_traits = neural_layer_base_traits<layer_t>;
 
     /*!
      * \brief Indicates if the layer is neural (dense or conv)
      */
     static constexpr bool is_neural_layer() {
-        return is_dense_layer() || is_convolutional_layer() || is_deconvolutional_layer();
+        return base_traits::is_neural;
     }
 
     /*!
      * \brief Indicates if the layer is dense
      */
     static constexpr bool is_dense_layer() {
-        return is_standard_dense_layer() || is_dense_rbm_layer();
+        return base_traits::is_dense;
     }
 
     /*!
      * \brief Indicates if the layer is convolutional
      */
     static constexpr bool is_convolutional_layer() {
-        return is_standard_convolutional_layer() || is_convolutional_rbm_layer();
+        return base_traits::is_conv;
     }
 
     /*!
      * \brief Indicates if the layer is convolutional
      */
     static constexpr bool is_deconvolutional_layer() {
-        return is_standard_deconvolutional_layer();
+        return base_traits::is_deconv;
     }
 
     /*!
      * \brief Indicates if the layer is a standard (non-rbm) layer.
      */
     static constexpr bool is_standard_layer() {
-        return is_standard_dense_layer() || is_standard_convolutional_layer();
+        return base_traits::is_standard;
     }
 
     /*!
      * \brief Indicates if the layer is a standard (non-rbm) dense layer.
      */
     static constexpr bool is_standard_dense_layer() {
-        return cpp::is_specialization_of<dense_layer, layer_t>::value
-            || cpp::is_specialization_of<dyn_dense_layer, layer_t>::value;
+        return is_standard_layer() && is_dense_layer();
     }
 
     /*!
      * \brief Indicates if the layer is a standard (non-rbm) convolutionl layer.
      */
     static constexpr bool is_standard_convolutional_layer() {
-        return cpp::is_specialization_of<conv_layer, layer_t>::value
-            || cpp::is_specialization_of<dyn_conv_layer, layer_t>::value;
+        return is_standard_layer() && is_convolutional_layer();
     }
 
     /*!
      * \brief Indicates if the layer is a standard (non-rbm) deconvolutionl layer.
      */
     static constexpr bool is_standard_deconvolutional_layer() {
-        return cpp::is_specialization_of<deconv_layer, layer_t>::value
-            ; //TODO || cpp::is_specialization_of<dyn_deconv_layer, layer_t>::value;
+        return is_standard_layer() && is_deconvolutional_layer();
     }
 
     /*!
      * \brief Indicates if this layer is a RBM layer.
      */
     static constexpr bool is_rbm_layer() {
-        return is_dense_rbm_layer() || is_convolutional_rbm_layer();
+        return base_traits::is_rbm;
     }
 
     /*!
      * \brief Indicates if this layer is a dense RBM layer.
      */
     static constexpr bool is_dense_rbm_layer() {
-        return cpp::is_specialization_of<dyn_rbm, layer_t>::value
-            || cpp::is_specialization_of<rbm, layer_t>::value;
+        return is_rbm_layer() && is_dense_layer();
     }
 
     /*!
      * \brief Indicates if the layer is convolutional
      */
     static constexpr bool is_convolutional_rbm_layer() {
-        return cpp::is_specialization_of<conv_rbm, layer_t>::value
-            || cpp::is_specialization_of<conv_rbm_mp, layer_t>::value
-            || cpp::is_specialization_of<dyn_conv_rbm, layer_t>::value
-            || cpp::is_specialization_of<dyn_conv_rbm_mp, layer_t>::value;
+        return is_rbm_layer() && is_convolutional_layer();
     }
 
     /*!
      * \brief Indicates if this layer is a pooling layer.
      */
     static constexpr bool is_pooling_layer() {
-        return cpp::is_specialization_of<mp_layer_3d, layer_t>::value
-            || cpp::is_specialization_of<dyn_mp_layer_3d, layer_t>::value
-            || cpp::is_specialization_of<avgp_layer_3d, layer_t>::value
-            || cpp::is_specialization_of<dyn_avgp_layer_3d, layer_t>::value;
+        return base_traits::is_pooling;
     }
 
     /*!
      * \brief Indicates if this layer is a pooling layer.
      */
     static constexpr bool is_unpooling_layer() {
-        return cpp::is_specialization_of<upsample_layer_3d, layer_t>::value
-            || cpp::is_specialization_of<dyn_upsample_layer_3d, layer_t>::value;
+        return base_traits::is_unpooling;
     }
 
     /*!
      * \brief Indicates if this layer is a transformation layer.
      */
     static constexpr bool is_transform_layer() {
-        return cpp::is_specialization_of<binarize_layer, layer_t>::value
-            || cpp::is_specialization_of<normalize_layer, layer_t>::value
-            || cpp::is_specialization_of<scale_layer, layer_t>::value
-            || cpp::is_specialization_of<rectifier_layer, layer_t>::value
-            || cpp::is_specialization_of<random_layer, layer_t>::value
-            || cpp::is_specialization_of<lcn_layer, layer_t>::value
-            || cpp::is_specialization_of<dyn_lcn_layer, layer_t>::value
-            || is_activation_layer()
-            ;
+        return base_traits::is_transform;
     }
 
     /*!
      * \brief Indicates if this layer is a patches layer.
      */
     static constexpr bool is_patches_layer() {
-        return cpp::is_specialization_of<patches_layer, layer_t>::value
-            || cpp::is_specialization_of<dyn_patches_layer, layer_t>::value
-            || cpp::is_specialization_of<patches_layer_padh, layer_t>::value
-            || cpp::is_specialization_of<dyn_patches_layer_padh, layer_t>::value
-            ;
+        return base_traits::is_patches;
     }
 
     /*!
      * \brief Indicates if this layer is an augmentation layer.
      */
     static constexpr bool is_augment_layer() {
-        return cpp::is_specialization_of<augment_layer, layer_t>::value;
+        return base_traits::is_augment;
     }
 
     /*!
      * \brief Indicates if this layer is an activation layer.
      */
     static constexpr bool is_activation_layer() {
-        return cpp::is_specialization_of<activation_layer, layer_t>::value;
+        return base_traits::is_activation;
     }
 
     /*!
@@ -194,17 +172,7 @@ struct layer_traits {
      * \brief Indicates if the layer is dynamic
      */
     static constexpr bool is_dynamic() {
-        return cpp::is_specialization_of<dyn_rbm, layer_t>::value
-            || cpp::is_specialization_of<dyn_conv_rbm, layer_t>::value
-            || cpp::is_specialization_of<dyn_conv_rbm_mp, layer_t>::value
-            || cpp::is_specialization_of<dyn_dense_layer, layer_t>::value
-            || cpp::is_specialization_of<dyn_conv_layer, layer_t>::value
-            || cpp::is_specialization_of<dyn_mp_layer_3d, layer_t>::value
-            || cpp::is_specialization_of<dyn_avgp_layer_3d, layer_t>::value
-            || cpp::is_specialization_of<dyn_lcn_layer, layer_t>::value
-            || cpp::is_specialization_of<dyn_patches_layer, layer_t>::value
-            || cpp::is_specialization_of<dyn_patches_layer_padh, layer_t>::value
-            ;
+        return base_traits::is_dynamic;
     }
 
     /*!
@@ -230,57 +198,58 @@ struct layer_traits {
 template <typename Layer>
 struct rbm_layer_traits {
     using layer_t = Layer; ///< The layer type being inspected
+    using base_traits = rbm_layer_base_traits<layer_t>;
 
     static constexpr bool has_momentum() {
-        return layer_t::desc::parameters::template contains<momentum>();
+        return base_traits::has_momentum;
     }
 
     static constexpr bool has_clip_gradients() {
-        return layer_t::desc::parameters::template contains<clip_gradients>();
+        return base_traits::has_clip_gradients;
     }
 
     static constexpr bool is_parallel_mode() {
-        return layer_t::desc::parameters::template contains<parallel_mode>();
+        return base_traits::is_parallel_mode;
     }
 
     static constexpr bool is_serial() {
-        return layer_t::desc::parameters::template contains<serial>();
+        return base_traits::is_serial;
     }
 
     static constexpr bool is_verbose() {
-        return layer_t::desc::parameters::template contains<verbose>();
+        return base_traits::is_verbose;
     }
 
     static constexpr bool has_shuffle() {
-        return layer_t::desc::parameters::template contains<shuffle>();
+        return base_traits::has_shuffle;
     }
 
     static constexpr bool is_dbn_only() {
-        return layer_t::desc::parameters::template contains<dbn_only>();
+        return base_traits::is_dbn_only;
     }
 
     static constexpr bool has_sparsity() {
-        return sparsity_method() != dll::sparsity_method::NONE;
+        return base_traits::has_sparsity;
     }
 
     static constexpr dll::sparsity_method sparsity_method() {
-        return detail::get_value_l<sparsity<dll::sparsity_method::NONE>, typename layer_t::desc::parameters>::value;
+        return base_traits::sparsity_method;
     }
 
     static constexpr enum dll::bias_mode bias_mode() {
-        return detail::get_value_l<bias<dll::bias_mode::SIMPLE>, typename layer_t::desc::parameters>::value;
+        return base_traits::bias_mode;
     }
 
     static constexpr decay_type decay() {
-        return detail::get_value_l<weight_decay<decay_type::NONE>, typename layer_t::desc::parameters>::value;
+        return base_traits::decay;
     }
 
     static constexpr bool init_weights() {
-        return layer_t::desc::parameters::template contains<dll::init_weights>();
+        return base_traits::has_init_weights;
     }
 
     static constexpr bool free_energy() {
-        return layer_t::desc::parameters::template contains<dll::free_energy>();
+        return base_traits::has_free_energy;
     }
 };
 
