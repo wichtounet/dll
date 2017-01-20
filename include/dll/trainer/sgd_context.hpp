@@ -80,8 +80,6 @@ struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_convolut
     using layer_t = Layer;
     using weight  = typename layer_t::weight;
 
-    static_assert(!layer_traits<layer_t>::has_probabilistic_max_pooling(), "Probabilistic Max Pooling is not supported in backpropagation");
-
     static constexpr const std::size_t NV1 = layer_t::NV1;
     static constexpr const std::size_t NV2 = layer_t::NV2;
     static constexpr const std::size_t NH1 = layer_t::NH1;
@@ -114,8 +112,6 @@ template <typename DBN, typename Layer>
 struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_convolutional_layer() && layer_traits<Layer>::is_dynamic()>> {
     using layer_t = Layer;
     using weight  = typename layer_t::weight;
-
-    static_assert(!layer_traits<layer_t>::has_probabilistic_max_pooling(), "Probabilistic Max Pooling is not supported in backpropagation");
 
     static constexpr const auto batch_size = DBN::batch_size;
 

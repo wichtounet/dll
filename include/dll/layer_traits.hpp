@@ -208,14 +208,6 @@ struct layer_traits {
     }
 
     /*!
-     * \brief Indicates if the layer is convolutional and has probabilistic max
-     * pooling
-     */
-    static constexpr bool has_probabilistic_max_pooling() {
-        return cpp::is_specialization_of<conv_rbm_mp, layer_t>::value;
-    }
-
-    /*!
      * \brief Indicates if this layer should be trained if it is the last layer.
      */
     template <cpp_enable_if_cst(layer_traits<layer_t>::is_rbm_layer())>
