@@ -257,7 +257,7 @@ struct layer_base_traits<dyn_conv_rbm_mp<Desc>> {
     static constexpr bool is_patches    = false; ///< Indicates if the layer is a patches layer
     static constexpr bool is_augment    = false; ///< Indicates if the layer is an augment layer
     static constexpr bool is_dynamic    = true;  ///< Indicates if the layer is dynamic
-    static constexpr bool pretrain_last = false; ///< Indicates if the layer is dynamic
+    static constexpr bool pretrain_last = Desc::hidden_unit != dll::unit_type::SOFTMAX; ///< Indicates if the layer is dynamic
     static constexpr bool sgd_supported = false;  ///< Indicates if the layer is supported by SGD
 };
 

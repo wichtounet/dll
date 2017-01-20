@@ -168,20 +168,8 @@ struct layer_traits {
         return base_traits::is_dynamic;
     }
 
-    /*!
-     * \brief Indicates if this layer should be trained if it is the last layer.
-     */
-    template <cpp_enable_if_cst(layer_traits<layer_t>::is_rbm_layer())>
     static constexpr bool pretrain_last() {
-        //Softmax unit should not be pretrained
-        return layer_t::hidden_unit != unit_type::SOFTMAX;
-    }
-
-    template <cpp_disable_if_cst(layer_traits<layer_t>::is_rbm_layer())>
-    static constexpr bool pretrain_last() {
-        //if the pooling layer is the last, we spare the time to activate the previous layer by not training it
-        //since training pooling layer is a nop, that doesn't change anything
-        return false;
+        return base_traits::pretrain_last;
     }
 };
 
