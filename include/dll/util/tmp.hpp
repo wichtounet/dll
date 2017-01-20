@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "cpp_utils/tmp.hpp"
+#include "etl/etl.hpp"
 
 namespace dll {
 
@@ -166,5 +166,7 @@ struct remove_type_id_impl <T, F, F, Acc, Args...> {
 // TODO For now, this cannot be chained
 template <typename T, typename... Args>
 using remove_type_id = typename remove_type_id_impl<T, 0, sizeof...(Args), std::index_sequence<>, Args...>::type;
+
+using detail::get_value_l;
 
 } //end of dll namespace
