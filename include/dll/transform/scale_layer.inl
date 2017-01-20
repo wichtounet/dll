@@ -89,7 +89,6 @@ struct layer_base_traits<scale_layer<Desc>> {
     static constexpr bool is_transform  = true;  ///< Indicates if the layer is a transform layer
     static constexpr bool is_patches    = false; ///< Indicates if the layer is a patches layer
     static constexpr bool is_augment    = false; ///< Indicates if the layer is an augment layer
-    static constexpr bool is_activation = false; ///< Indicates if the layer is an activation-only layer
     static constexpr bool is_dynamic    = false; ///< Indicates if the layer is dynamic
     static constexpr bool pretrain_last = false; ///< Indicates if the layer is dynamic
     static constexpr bool sgd_supported = true;  ///< Indicates if the layer is supported by SGD

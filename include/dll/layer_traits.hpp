@@ -134,13 +134,6 @@ struct layer_traits {
     }
 
     /*!
-     * \brief Indicates if this layer is an activation layer.
-     */
-    static constexpr bool is_activation_layer() {
-        return base_traits::is_activation;
-    }
-
-    /*!
      * \brief Indicates if this layer is a multipley layer.
      */
     static constexpr bool is_multiplex_layer() {
