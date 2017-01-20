@@ -19,7 +19,7 @@ namespace dll {
 template <typename Layer>
 struct layer_traits {
     using layer_t = Layer; ///< The layer type being inspected
-    using base_traits = neural_layer_base_traits<layer_t>;
+    using base_traits = layer_base_traits<layer_t>;
 
     /*!
      * \brief Indicates if the layer is neural (dense or conv)

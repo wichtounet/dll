@@ -166,7 +166,7 @@ const std::size_t deconv_layer<Desc>::K;
 // Declare the traits for the Layer
 
 template<typename Desc>
-struct neural_layer_base_traits<deconv_layer<Desc>> {
+struct layer_base_traits<deconv_layer<Desc>> {
     static constexpr bool is_neural     = true;  ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false;  ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional

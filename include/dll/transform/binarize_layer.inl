@@ -86,7 +86,7 @@ const std::size_t binarize_layer<Desc>::Threshold;
 // Declare the traits for the layer
 
 template<typename Desc>
-struct neural_layer_base_traits<binarize_layer<Desc>> {
+struct layer_base_traits<binarize_layer<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional

@@ -198,7 +198,7 @@ struct rbm_base_traits<dyn_rbm<Desc>> {
 // Declare the traits for the RBM
 
 template<typename Desc>
-struct neural_layer_base_traits<dyn_rbm<Desc>> {
+struct layer_base_traits<dyn_rbm<Desc>> {
     static constexpr bool is_neural     = true;  ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = true;  ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional

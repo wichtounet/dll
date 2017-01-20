@@ -83,7 +83,7 @@ struct upsample_layer_3d final : unpooling_layer_3d<upsample_layer_3d<Desc>, Des
 // Declare the traits for the Layer
 
 template<typename Desc>
-struct neural_layer_base_traits<upsample_layer_3d<Desc>> {
+struct layer_base_traits<upsample_layer_3d<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional

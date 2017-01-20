@@ -87,7 +87,7 @@ struct dyn_mp_layer_3d final : dyn_pooling_layer_3d<dyn_mp_layer_3d<Desc>, Desc>
 // Declare the traits for the Layer
 
 template<typename Desc>
-struct neural_layer_base_traits<dyn_mp_layer_3d<Desc>> {
+struct layer_base_traits<dyn_mp_layer_3d<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional

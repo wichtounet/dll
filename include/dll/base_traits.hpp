@@ -10,7 +10,7 @@
 namespace dll {
 
 template <typename Layer>
-struct neural_layer_base_traits;
+struct layer_base_traits;
 
 template <typename Layer>
 struct rbm_layer_base_traits;

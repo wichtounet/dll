@@ -85,7 +85,7 @@ struct lcn_layer : transform_layer<lcn_layer<Desc>> {
 // Declare the traits for the layer
 
 template<typename Desc>
-struct neural_layer_base_traits<lcn_layer<Desc>> {
+struct layer_base_traits<lcn_layer<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
