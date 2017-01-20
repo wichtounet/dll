@@ -15,12 +15,4 @@ struct neural_layer_base_traits;
 template <typename Layer>
 struct rbm_layer_base_traits;
 
-// Helper is standard dense
-// Helper is dense rbm
-// Helper is conv rbm
-// Helper has same_type
-// Helper is_trained
-// Helper is_pretrained
-// Helper is_multiplex
-
 } //end of dll namespace
