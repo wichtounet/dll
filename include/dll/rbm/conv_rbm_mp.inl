@@ -51,7 +51,7 @@ struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
 
     static constexpr const std::size_t batch_size  = desc::BatchSize;  ///< The mini-batch size
 
-    static constexpr bool dbn_only = layer_traits<this_type>::is_dbn_only();
+    static constexpr bool dbn_only = rbm_layer_traits<this_type>::is_dbn_only();
 
     using w_type = etl::fast_matrix<weight, K, NC, NW1, NW2>;
     using b_type = etl::fast_vector<weight, K>;

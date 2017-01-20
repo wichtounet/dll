@@ -26,7 +26,7 @@ struct dyn_conv_rbm final : public standard_crbm<dyn_conv_rbm<Desc>, Desc> {
     static constexpr const unit_type visible_unit = desc::visible_unit;
     static constexpr const unit_type hidden_unit  = desc::hidden_unit;
 
-    static constexpr const bool dbn_only = layer_traits<this_type>::is_dbn_only();
+    static constexpr const bool dbn_only = rbm_layer_traits<this_type>::is_dbn_only();
 
     using w_type = etl::dyn_matrix<weight, 4>;
     using b_type = etl::dyn_vector<weight>;

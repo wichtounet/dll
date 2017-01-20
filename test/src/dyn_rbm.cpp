@@ -87,7 +87,7 @@ TEST_CASE("dyn_rbm/mnist_60", "rbm::global_sparsity") {
 
     layer_type rbm(28 * 28, 100);
 
-    REQUIRE(dll::layer_traits<layer_type>::sparsity_method() == dll::sparsity_method::GLOBAL_TARGET);
+    REQUIRE(dll::rbm_layer_traits<layer_type>::sparsity_method() == dll::sparsity_method::GLOBAL_TARGET);
 
     //0.01 (default) is way too low for 100 hidden units
     rbm.sparsity_target = 0.1;

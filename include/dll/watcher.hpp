@@ -44,28 +44,28 @@ struct default_rbm_watcher {
         std::cout << "   learning_rate=" << rbm.learning_rate << std::endl;
         std::cout << "   batch_size=" << get_batch_size(rbm) << std::endl;
 
-        if (layer_traits<RBM>::has_momentum()) {
+        if (rbm_layer_traits<RBM>::has_momentum()) {
             std::cout << "   momentum=" << rbm.momentum << std::endl;
         }
 
-        if (layer_traits<RBM>::has_clip_gradients()) {
+        if (rbm_layer_traits<RBM>::has_clip_gradients()) {
             std::cout << "   gradient clip=" << rbm.gradient_clip << std::endl;
         }
 
-        if (w_decay(layer_traits<RBM>::decay()) == decay_type::L1 || w_decay(layer_traits<RBM>::decay()) == decay_type::L1L2) {
+        if (w_decay(rbm_layer_traits<RBM>::decay()) == decay_type::L1 || w_decay(rbm_layer_traits<RBM>::decay()) == decay_type::L1L2) {
             std::cout << "   weight_cost(L1)=" << rbm.l1_weight_cost << std::endl;
         }
 
-        if (w_decay(layer_traits<RBM>::decay()) == decay_type::L2 || w_decay(layer_traits<RBM>::decay()) == decay_type::L1L2) {
+        if (w_decay(rbm_layer_traits<RBM>::decay()) == decay_type::L2 || w_decay(rbm_layer_traits<RBM>::decay()) == decay_type::L1L2) {
             std::cout << "   weight_cost(L2)=" << rbm.l2_weight_cost << std::endl;
         }
 
-        if (layer_traits<RBM>::sparsity_method() == sparsity_method::LEE) {
+        if (rbm_layer_traits<RBM>::sparsity_method() == sparsity_method::LEE) {
             std::cout << "   Sparsity (Lee): pbias=" << rbm.pbias << std::endl;
             std::cout << "   Sparsity (Lee): pbias_lambda=" << rbm.pbias_lambda << std::endl;
-        } else if (layer_traits<RBM>::sparsity_method() == sparsity_method::GLOBAL_TARGET) {
+        } else if (rbm_layer_traits<RBM>::sparsity_method() == sparsity_method::GLOBAL_TARGET) {
             std::cout << "   sparsity_target(Global)=" << rbm.sparsity_target << std::endl;
-        } else if (layer_traits<RBM>::sparsity_method() == sparsity_method::LOCAL_TARGET) {
+        } else if (rbm_layer_traits<RBM>::sparsity_method() == sparsity_method::LOCAL_TARGET) {
             std::cout << "   sparsity_target(Local)=" << rbm.sparsity_target << std::endl;
         }
     }
@@ -73,7 +73,7 @@ struct default_rbm_watcher {
     template <typename RBM = R>
     void epoch_end(std::size_t epoch, const rbm_training_context& context, const RBM& /*rbm*/) {
         char formatted[1024];
-        if (layer_traits<RBM>::free_energy()) {
+        if (rbm_layer_traits<RBM>::free_energy()) {
             snprintf(formatted, 1024, "epoch %ld - Reconstruction error: %.5f - Free energy: %.3f - Sparsity: %.5f", epoch,
                      context.reconstruction_error, context.free_energy, context.sparsity);
         } else {

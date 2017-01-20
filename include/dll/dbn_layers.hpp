@@ -26,7 +26,7 @@ template <typename... Layers>
 struct is_denoising : cpp::and_u<layer_traits<Layers>::is_dense_rbm_layer()...> {};
 
 template <typename... Layers>
-struct has_shuffle_layer : cpp::or_u<layer_traits<Layers>::has_shuffle()...> {};
+struct has_shuffle_layer : cpp::or_u<rbm_layer_traits<Layers>::has_shuffle()...> {};
 
 // TODO validate_layer_pair should be made more robust when
 // transform layer are present between layers

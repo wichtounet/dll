@@ -61,17 +61,17 @@ struct rbm_trainer {
     rbm_trainer(init_watcher_t /*init*/, Arg... args)
             : watcher(args...) {}
 
-    template <typename Iterator, cpp_enable_if_cst(layer_traits<rbm_t>::init_weights())>
+    template <typename Iterator, cpp_enable_if_cst(rbm_layer_traits<rbm_t>::init_weights())>
     static void init_weights(RBM& rbm, Iterator first, Iterator last) {
         rbm.init_weights(first, last);
     }
 
-    template <typename Iterator, cpp_disable_if_cst(layer_traits<rbm_t>::init_weights())>
+    template <typename Iterator, cpp_disable_if_cst(rbm_layer_traits<rbm_t>::init_weights())>
     static void init_weights(RBM&, Iterator, Iterator) {
         //NOP
     }
 
-    template <typename IIterator, typename EIterator, cpp_enable_if_cst(layer_traits<rbm_t>::has_shuffle())>
+    template <typename IIterator, typename EIterator, cpp_enable_if_cst(rbm_layer_traits<rbm_t>::has_shuffle())>
     static void shuffle(IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast) {
         static std::random_device rd;
         static std::mt19937_64 g(rd());
@@ -83,10 +83,10 @@ struct rbm_trainer {
         }
     }
 
-    template <typename IIterator, typename EIterator, cpp_disable_if_cst(layer_traits<rbm_t>::has_shuffle())>
+    template <typename IIterator, typename EIterator, cpp_disable_if_cst(rbm_layer_traits<rbm_t>::has_shuffle())>
     static void shuffle(IIterator, IIterator, EIterator, EIterator) {}
 
-    template <typename IIterator, typename EIterator, typename IVector, typename EVector, cpp_enable_if_cst(layer_traits<rbm_t>::has_shuffle())>
+    template <typename IIterator, typename EIterator, typename IVector, typename EVector, cpp_enable_if_cst(rbm_layer_traits<rbm_t>::has_shuffle())>
     static auto prepare_it(IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast, IVector& ivec, EVector& evec) {
         std::copy(ifirst, ilast, std::back_inserter(ivec));
 
@@ -104,14 +104,14 @@ struct rbm_trainer {
         }
     }
 
-    template <typename IIterator, typename EIterator, typename IVector, typename EVector, cpp_disable_if_cst(layer_traits<rbm_t>::has_shuffle())>
+    template <typename IIterator, typename EIterator, typename IVector, typename EVector, cpp_disable_if_cst(rbm_layer_traits<rbm_t>::has_shuffle())>
     static auto prepare_it(IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast, IVector&, EVector&) {
         return std::make_tuple(ifirst, ilast, efirst, elast);
     }
 
     template <typename rbm_t, typename Iterator>
     using fix_iterator_t = std::conditional_t<
-        layer_traits<rbm_t>::has_shuffle(),
+        rbm_layer_traits<rbm_t>::has_shuffle(),
         typename std::vector<typename std::iterator_traits<Iterator>::value_type>::iterator,
         Iterator>;
 
@@ -263,13 +263,13 @@ struct rbm_trainer {
         context.reconstruction_error += context.batch_error;
         context.sparsity += context.batch_sparsity;
 
-        cpp::static_if<EnableWatcher && layer_traits<rbm_t>::free_energy()>([&](auto f) {
+        cpp::static_if<EnableWatcher && rbm_layer_traits<rbm_t>::free_energy()>([&](auto f) {
             for (auto& v : input_batch) {
                 context.free_energy += f(rbm).free_energy(v);
             }
         });
 
-        if (EnableWatcher && layer_traits<rbm_t>::is_verbose()) {
+        if (EnableWatcher && rbm_layer_traits<rbm_t>::is_verbose()) {
             watcher.batch_end(rbm, context, batches, total_batches);
         }
     }
@@ -281,7 +281,7 @@ struct rbm_trainer {
         context.free_energy /= samples;
 
         //After some time increase the momentum
-        if (layer_traits<rbm_t>::has_momentum() && epoch == rbm.final_momentum_epoch) {
+        if (rbm_layer_traits<rbm_t>::has_momentum() && epoch == rbm.final_momentum_epoch) {
             rbm.momentum = rbm.final_momentum;
         }
 

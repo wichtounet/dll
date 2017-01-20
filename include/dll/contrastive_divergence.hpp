@@ -73,7 +73,7 @@ void update_normal(RBM& rbm, Trainer& t) {
     typename rbm_t::weight v_penalty = 0.0;
 
     //Global sparsity method
-    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET>([&](auto f) {
+    cpp::static_if<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET>([&](auto f) {
         auto decay_rate = rbm.decay_rate;
         auto p          = rbm.sparsity_target;
         auto cost       = rbm.sparsity_cost;
@@ -85,12 +85,12 @@ void update_normal(RBM& rbm, Trainer& t) {
 
     //Apply L1/L2 regularization and penalties to the biases
 
-    t.template update_grad<w_decay(layer_traits<rbm_t>::decay())>(t.w_grad, rbm.w, rbm, w_penalty);
-    t.template update_grad<b_decay(layer_traits<rbm_t>::decay())>(t.b_grad, rbm.b, rbm, h_penalty);
-    t.template update_grad<b_decay(layer_traits<rbm_t>::decay())>(t.c_grad, rbm.c, rbm, v_penalty);
+    t.template update_grad<w_decay(rbm_layer_traits<rbm_t>::decay())>(t.w_grad, rbm.w, rbm, w_penalty);
+    t.template update_grad<b_decay(rbm_layer_traits<rbm_t>::decay())>(t.b_grad, rbm.b, rbm, h_penalty);
+    t.template update_grad<b_decay(rbm_layer_traits<rbm_t>::decay())>(t.c_grad, rbm.c, rbm, v_penalty);
 
     //Local sparsity method
-    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f) {
+    cpp::static_if<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f) {
         auto decay_rate = rbm.decay_rate;
         auto p          = rbm.sparsity_target;
         auto cost       = rbm.sparsity_cost;
@@ -112,7 +112,7 @@ void update_normal(RBM& rbm, Trainer& t) {
     const auto n_samples = double(etl::dim<0>(t.w_grad_b));
 
     // Gradients clipping
-    if(layer_traits<rbm_t>::has_clip_gradients()){
+    if(rbm_layer_traits<rbm_t>::has_clip_gradients()){
         auto grad_t = rbm.gradient_clip;
 
         apply_clip_gradients(t.w_grad, grad_t, n_samples);
@@ -124,7 +124,7 @@ void update_normal(RBM& rbm, Trainer& t) {
     auto eps = rbm.learning_rate / n_samples;
 
     //Apply momentum and learning rate
-    cpp::static_if<layer_traits<rbm_t>::has_momentum()>([&](auto f) {
+    cpp::static_if<rbm_layer_traits<rbm_t>::has_momentum()>([&](auto f) {
         auto momentum = rbm.momentum;
 
         f(t).w_inc = momentum * t.w_inc + eps * t.w_grad;
@@ -159,7 +159,7 @@ void update_convolutional(RBM& rbm, Trainer& t) {
     weight v_penalty = 0.0;
 
     //Global sparsity method
-    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET>([&](auto f) {
+    cpp::static_if<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET>([&](auto f) {
         auto decay_rate = rbm.decay_rate;
         auto p          = rbm.sparsity_target;
         auto cost       = rbm.sparsity_cost;
@@ -171,12 +171,12 @@ void update_convolutional(RBM& rbm, Trainer& t) {
 
     //Apply L1/L2 regularization and penalties to the biases
 
-    t.template update_grad<w_decay(layer_traits<rbm_t>::decay())>(t.w_grad, rbm.w, rbm, w_penalty);
-    t.template update_grad<b_decay(layer_traits<rbm_t>::decay())>(t.b_grad, rbm.b, rbm, h_penalty);
-    t.template update_grad<b_decay(layer_traits<rbm_t>::decay())>(t.c_grad, rbm.c, rbm, v_penalty);
+    t.template update_grad<w_decay(rbm_layer_traits<rbm_t>::decay())>(t.w_grad, rbm.w, rbm, w_penalty);
+    t.template update_grad<b_decay(rbm_layer_traits<rbm_t>::decay())>(t.b_grad, rbm.b, rbm, h_penalty);
+    t.template update_grad<b_decay(rbm_layer_traits<rbm_t>::decay())>(t.c_grad, rbm.c, rbm, v_penalty);
 
     //Local sparsity method
-    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f) {
+    cpp::static_if<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f) {
         auto decay_rate = rbm.decay_rate;
         auto p          = rbm.sparsity_target;
         auto cost       = rbm.sparsity_cost;
@@ -196,7 +196,7 @@ void update_convolutional(RBM& rbm, Trainer& t) {
     });
 
     //Honglak Lee's sparsity method
-    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE>([&](auto f) {
+    cpp::static_if<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE>([&](auto f) {
         f(t).w_grad -= rbm.pbias_lambda * t.w_bias;
         f(t).b_grad -= rbm.pbias_lambda * t.b_bias;
         f(t).c_grad -= rbm.pbias_lambda * t.c_bias;
@@ -206,7 +206,7 @@ void update_convolutional(RBM& rbm, Trainer& t) {
     auto eps             = rbm.learning_rate / n_samples;
 
     //Apply momentum and learning rate
-    cpp::static_if<layer_traits<rbm_t>::has_momentum()>([&](auto f) {
+    cpp::static_if<rbm_layer_traits<rbm_t>::has_momentum()>([&](auto f) {
         auto momentum = rbm.momentum;
 
         f(t).w_inc = momentum * t.w_inc + eps * t.w_grad;
@@ -282,7 +282,7 @@ void compute_gradients_one(Trainer& t) {
 
 /* The training procedures */
 
-template <bool Persistent, std::size_t K, typename T, typename RBM, typename Trainer, cpp_enable_if(layer_traits<RBM>::is_parallel_mode())>
+template <bool Persistent, std::size_t K, typename T, typename RBM, typename Trainer, cpp_enable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
 void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:gradients:normal:par");
 
@@ -342,7 +342,7 @@ void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch
     }
 }
 
-template <bool Persistent, std::size_t K, typename T, typename RBM, typename Trainer, cpp_disable_if(layer_traits<RBM>::is_parallel_mode())>
+template <bool Persistent, std::size_t K, typename T, typename RBM, typename Trainer, cpp_disable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
 void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:gradients:normal:batch");
 
@@ -415,7 +415,7 @@ void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expecte
     //Compute the mean activation probabilities
     t.q_global_batch = mean(t.h2_a);
 
-    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f) {
+    cpp::static_if<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f) {
         f(t).q_local_batch = mean_l(t.h2_a);
     });
 
@@ -440,7 +440,7 @@ void normal_compute_gradients_conv(RBM& /*rbm*/, Trainer& t) {
     }
 }
 
-template <bool Persistent, bool Denoising, std::size_t N, typename Trainer, typename T, typename RBM, cpp_enable_if(layer_traits<RBM>::is_parallel_mode())>
+template <bool Persistent, bool Denoising, std::size_t N, typename Trainer, typename T, typename RBM, cpp_enable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
 void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:gradients:conv:par");
 
@@ -501,7 +501,7 @@ void batch_compute_gradients_conv(RBM& rbm, Trainer& t) {
     cpp_unused(rbm);
 }
 
-template <bool Persistent, bool Denoising, std::size_t N, typename Trainer, typename T, typename RBM, cpp_disable_if(layer_traits<RBM>::is_parallel_mode())>
+template <bool Persistent, bool Denoising, std::size_t N, typename Trainer, typename T, typename RBM, cpp_disable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
 void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:gradients:conv:batch");
 
@@ -585,14 +585,14 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
     //Compute the mean activation probabilities
     t.q_global_batch = mean(t.h2_a);
 
-    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f) {
+    cpp::static_if<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f) {
         f(t).q_local_batch = mean_l(t.h2_a);
     });
 
     //Compute the biases for sparsity
 
     //Only b_bias are supported for now
-    cpp::static_if<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE && layer_traits<rbm_t>::bias_mode() == bias_mode::SIMPLE>([&](auto f) {
+    cpp::static_if<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE && rbm_layer_traits<rbm_t>::bias_mode() == bias_mode::SIMPLE>([&](auto f) {
         f(t).b_bias = mean_r(mean_l(t.h2_a)) - rbm.pbias;
     });
 
@@ -669,18 +669,18 @@ struct base_cd_trainer : base_trainer<RBM> {
     etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_a;
     etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_s;
 
-    cpp::thread_pool<!layer_traits<rbm_t>::is_serial()> pool;
+    cpp::thread_pool<!rbm_layer_traits<rbm_t>::is_serial()> pool;
 
-    template <bool M = layer_traits<rbm_t>::has_momentum(), cpp_disable_if(M)>
+    template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_disable_if(M)>
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm), q_global_t(0.0), q_local_t(0.0), pool(etl::threads) {
-        static_assert(!layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
+        static_assert(!rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
-    template <bool M = layer_traits<rbm_t>::has_momentum(), cpp_enable_if(M)>
+    template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_enable_if(M)>
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm), w_inc(0.0), b_inc(0.0), c_inc(0.0), q_global_t(0.0), q_local_t(0.0), pool(etl::threads) {
-        static_assert(layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
+        static_assert(rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
     void update(RBM& rbm) {
@@ -752,9 +752,9 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
     etl::dyn_matrix<weight> p_h_a;
     etl::dyn_matrix<weight> p_h_s;
 
-    cpp::thread_pool<!layer_traits<rbm_t>::is_serial()> pool;
+    cpp::thread_pool<!rbm_layer_traits<rbm_t>::is_serial()> pool;
 
-    template <bool M = layer_traits<rbm_t>::has_momentum(), cpp_disable_if(M)>
+    template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_disable_if(M)>
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm),
               v1(get_batch_size(rbm), rbm.num_visible),
@@ -777,10 +777,10 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
               q_local_t(rbm.num_hidden, static_cast<weight>(0.0)),
               p_h_a(get_batch_size(rbm), rbm.num_hidden),
               p_h_s(get_batch_size(rbm), rbm.num_hidden), pool(etl::threads) {
-        static_assert(!layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
+        static_assert(!rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
-    template <bool M = layer_traits<rbm_t>::has_momentum(), cpp_enable_if(M)>
+    template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_enable_if(M)>
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm),
               v1(get_batch_size(rbm), rbm.num_visible),
@@ -803,7 +803,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
               q_local_t(rbm.num_hidden, static_cast<weight>(0.0)),
               p_h_a(get_batch_size(rbm), rbm.num_hidden),
               p_h_s(get_batch_size(rbm), rbm.num_hidden), pool(etl::threads) {
-        static_assert(layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
+        static_assert(rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
     void update(RBM& rbm) {
@@ -866,16 +866,16 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<!layer_tr
     weight q_global_batch;
     weight q_global_t;
 
-    conditional_fast_matrix_t<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET, weight, K, NH1, NH2> q_local_batch;
-    conditional_fast_matrix_t<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET, weight, K, NH1, NH2> q_local_t;
+    conditional_fast_matrix_t<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET, weight, K, NH1, NH2> q_local_batch;
+    conditional_fast_matrix_t<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET, weight, K, NH1, NH2> q_local_t;
 
     //}}} Sparsity end
 
     //{{{ Sparsity biases
 
-    conditional_fast_matrix_t<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE, weight, W_DIMS> w_bias;
-    conditional_fast_matrix_t<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE, weight, K> b_bias;
-    conditional_fast_matrix_t<layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE, weight, NC> c_bias;
+    conditional_fast_matrix_t<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE, weight, W_DIMS> w_bias;
+    conditional_fast_matrix_t<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE, weight, K> b_bias;
+    conditional_fast_matrix_t<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE, weight, NC> c_bias;
 
     //}}} Sparsity biases end
 
@@ -897,9 +897,9 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<!layer_tr
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> h2_a;
     conditional_fast_matrix_t<(N > 1), weight, batch_size, K, NH1, NH2> h2_s;
 
-    cpp::thread_pool<!layer_traits<rbm_t>::is_serial()> pool;
+    cpp::thread_pool<!rbm_layer_traits<rbm_t>::is_serial()> pool;
 
-    template <bool M = layer_traits<rbm_t>::has_momentum(), cpp_disable_if(M)>
+    template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_disable_if(M)>
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm),
               q_global_t(0.0),
@@ -907,10 +907,10 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<!layer_tr
               w_bias(0.0),
               b_bias(0.0),
               c_bias(0.0), pool(etl::threads) {
-        static_assert(!layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
+        static_assert(!rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
-    template <bool M = layer_traits<rbm_t>::has_momentum(), cpp_enable_if(M)>
+    template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_enable_if(M)>
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm),
               w_inc(0.0),
@@ -921,7 +921,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<!layer_tr
               w_bias(0.0),
               b_bias(0.0),
               c_bias(0.0), pool(etl::threads) {
-        static_assert(layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
+        static_assert(rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
     void update(RBM& rbm) {
@@ -1004,7 +1004,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
     etl::dyn_matrix<weight, 4> h2_a;
     etl::dyn_matrix<weight, 4> h2_s;
 
-    cpp::thread_pool<!layer_traits<rbm_t>::is_serial()> pool;
+    cpp::thread_pool<!rbm_layer_traits<rbm_t>::is_serial()> pool;
 
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm),

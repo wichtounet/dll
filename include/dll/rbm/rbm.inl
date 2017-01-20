@@ -48,7 +48,7 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
     static constexpr const unit_type visible_unit = desc::visible_unit; ///< The type of visible units
     static constexpr const unit_type hidden_unit  = desc::hidden_unit;  ///< The type of hidden units
 
-    static constexpr bool dbn_only = layer_traits<this_type>::is_dbn_only();
+    static constexpr bool dbn_only = rbm_layer_traits<this_type>::is_dbn_only();
 
     using w_type = etl::fast_matrix<weight, num_visible, num_hidden>; ///< The type used to store weights
     using b_type = etl::fast_vector<weight, num_hidden>;              ///< The type used to store hidden biases

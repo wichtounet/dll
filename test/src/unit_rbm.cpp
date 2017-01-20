@@ -170,7 +170,7 @@ TEST_CASE("unit/rbm/mnist/8", "[rbm][sparse][unit]") {
     rbm_type rbm;
 
     //Ensure that the default is correct
-    REQUIRE(dll::layer_traits<rbm_type>::sparsity_method() == dll::sparsity_method::GLOBAL_TARGET);
+    REQUIRE(dll::rbm_layer_traits<rbm_type>::sparsity_method() == dll::sparsity_method::GLOBAL_TARGET);
 
     rbm.learning_rate *= 2;
 

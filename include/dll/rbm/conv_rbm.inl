@@ -43,7 +43,7 @@ struct conv_rbm final : public standard_crbm<conv_rbm<Desc>, Desc> {
     static constexpr const std::size_t NW1 = NV1 - NH1 + 1; //By definition
     static constexpr const std::size_t NW2 = NV2 - NH2 + 1; //By definition
 
-    static constexpr const bool dbn_only = layer_traits<this_type>::is_dbn_only();
+    static constexpr const bool dbn_only = rbm_layer_traits<this_type>::is_dbn_only();
 
     using w_type = etl::fast_matrix<weight, K, NC, NW1, NW2>;
     using b_type = etl::fast_vector<weight, K>;

@@ -222,6 +222,14 @@ struct layer_traits {
         //since training pooling layer is a nop, that doesn't change anything
         return false;
     }
+};
+
+/*!
+ * \brief Type Traits to get information on layer type
+ */
+template <typename Layer>
+struct rbm_layer_traits {
+    using layer_t = Layer; ///< The layer type being inspected
 
     static constexpr bool has_momentum() {
         return layer_t::desc::parameters::template contains<momentum>();

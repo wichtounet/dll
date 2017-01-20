@@ -146,7 +146,7 @@ TEST_CASE("unit/crbm/mnist/6", "[crbm][unit]") {
         dll::batch_size<25>,
         dll::sparsity<>>::layer_t;
 
-    REQUIRE(dll::layer_traits<layer_type>::sparsity_method() == dll::sparsity_method::GLOBAL_TARGET);
+    REQUIRE(dll::rbm_layer_traits<layer_type>::sparsity_method() == dll::sparsity_method::GLOBAL_TARGET);
 
     layer_type rbm;
 
