@@ -118,6 +118,13 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
         //dyn.init_layer(NC, NV1, NV2, K, NH1, NH2);
     }
 
+    /*!
+     * \brief Adapt the errors, called before backpropagation of the errors.
+     *
+     * This must be used by layers that have both an activation fnction and a non-linearity.
+     *
+     * \param context the training context
+     */
     template<typename C>
     void adapt_errors(C& context) const {
         if(activation_function != function::IDENTITY){
@@ -125,11 +132,20 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
         }
     }
 
+    /*!
+     * \brief Backpropagate the errors to the previous layers
+     * \param output The ETL expression into which write the output
+     * \param context The training context
+     */
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
         output = etl::conv_4d_valid_flipped(context.errors, w);
     }
 
+    /*!
+     * \brief Compute the gradients for this layer, if any
+     * \param context The trainng context
+     */
     template<typename C>
     void compute_gradients(C& context) const {
         //context.w_grad = conv_4d_valid_filter(context.errors, context.input);

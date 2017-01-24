@@ -52,17 +52,33 @@ struct normalize_layer : transform_layer<normalize_layer<Desc>> {
         cpp::normalize(output);
     }
 
+    /*!
+     * \brief Adapt the errors, called before backpropagation of the errors.
+     *
+     * This must be used by layers that have both an activation fnction and a non-linearity.
+     *
+     * \param context the training context
+     */
     template<typename C>
     void adapt_errors(C& context) const {
         cpp_unused(context);
     }
 
+    /*!
+     * \brief Backpropagate the errors to the previous layers
+     * \param output The ETL expression into which write the output
+     * \param context The training context
+     */
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
         cpp_unused(output);
         cpp_unused(context);
     }
 
+    /*!
+     * \brief Compute the gradients for this layer, if any
+     * \param context The trainng context
+     */
     template<typename C>
     void compute_gradients(C& context) const {
         cpp_unused(context);

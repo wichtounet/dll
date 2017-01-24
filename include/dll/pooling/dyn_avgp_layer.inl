@@ -59,11 +59,23 @@ struct dyn_avgp_layer_3d final : dyn_pooling_layer_3d<dyn_avgp_layer_3d<Desc>, D
         //Nothing to change
     }
 
+    /*!
+     * \brief Adapt the errors, called before backpropagation of the errors.
+     *
+     * This must be used by layers that have both an activation fnction and a non-linearity.
+     *
+     * \param context the training context
+     */
     template<typename C>
     void adapt_errors(C& context) const {
         cpp_unused(context);
     }
 
+    /*!
+     * \brief Backpropagate the errors to the previous layers
+     * \param output The ETL expression into which write the output
+     * \param context The training context
+     */
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
         size_t c1 = base::c1;
@@ -78,6 +90,10 @@ struct dyn_avgp_layer_3d final : dyn_pooling_layer_3d<dyn_avgp_layer_3d<Desc>, D
         }
     }
 
+    /*!
+     * \brief Compute the gradients for this layer, if any
+     * \param context The trainng context
+     */
     template<typename C>
     void compute_gradients(C& context) const {
         cpp_unused(context);

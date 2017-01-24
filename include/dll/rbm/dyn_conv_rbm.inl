@@ -160,6 +160,13 @@ struct dyn_conv_rbm final : public standard_crbm<dyn_conv_rbm<Desc>, Desc> {
         //Nothing to change
     }
 
+    /*!
+     * \brief Adapt the errors, called before backpropagation of the errors.
+     *
+     * This must be used by layers that have both an activation fnction and a non-linearity.
+     *
+     * \param context the training context
+     */
     template<typename C>
     void adapt_errors(C& context) const {
         static_assert(
@@ -174,11 +181,20 @@ struct dyn_conv_rbm final : public standard_crbm<dyn_conv_rbm<Desc>, Desc> {
         context.errors = f_derivative<activation_function>(context.output) >> context.errors;
     }
 
+    /*!
+     * \brief Backpropagate the errors to the previous layers
+     * \param output The ETL expression into which write the output
+     * \param context The training context
+     */
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
         output = etl::conv_4d_full_flipped(context.errors, w);
     }
 
+    /*!
+     * \brief Compute the gradients for this layer, if any
+     * \param context The trainng context
+     */
     template<typename C>
     void compute_gradients(C& context) const {
         context.w_grad = conv_4d_valid_filter_flipped(context.input, context.errors);

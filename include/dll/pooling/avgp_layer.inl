@@ -53,11 +53,23 @@ struct avgp_layer_3d final : pooling_layer_3d<avgp_layer_3d<Desc>, Desc> {
         dyn.init_layer(base::I1, base::I2, base::I3, base::C1, base::C2, base::C3);
     }
 
+    /*!
+     * \brief Adapt the errors, called before backpropagation of the errors.
+     *
+     * This must be used by layers that have both an activation fnction and a non-linearity.
+     *
+     * \param context the training context
+     */
     template<typename C>
     void adapt_errors(C& context) const {
         cpp_unused(context);
     }
 
+    /*!
+     * \brief Backpropagate the errors to the previous layers
+     * \param output The ETL expression into which write the output
+     * \param context The training context
+     */
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
         static constexpr size_t C1 = base::C1;
@@ -72,6 +84,10 @@ struct avgp_layer_3d final : pooling_layer_3d<avgp_layer_3d<Desc>, Desc> {
         }
     }
 
+    /*!
+     * \brief Compute the gradients for this layer, if any
+     * \param context The trainng context
+     */
     template<typename C>
     void compute_gradients(C& context) const {
         cpp_unused(context);

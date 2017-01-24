@@ -160,11 +160,23 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
         //Nothing to change
     }
 
+    /*!
+     * \brief Adapt the errors, called before backpropagation of the errors.
+     *
+     * This must be used by layers that have both an activation fnction and a non-linearity.
+     *
+     * \param context the training context
+     */
     template<typename C>
     void adapt_errors(C& context) const {
         context.errors = f_derivative<activation_function>(context.output) >> context.errors;
     }
 
+    /*!
+     * \brief Backpropagate the errors to the previous layers
+     * \param output The ETL expression into which write the output
+     * \param context The training context
+     */
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
         // The reshape has no overhead, so better than SFINAE for nothing
@@ -172,6 +184,10 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
         etl::reshape(output, batch_size, num_visible) = context.errors * etl::transpose(w);
     }
 
+    /*!
+     * \brief Compute the gradients for this layer, if any
+     * \param context The trainng context
+     */
     template<typename C>
     void compute_gradients(C& context) const {
         context.w_grad = batch_outer(context.input, context.errors);
