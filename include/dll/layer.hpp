@@ -112,32 +112,54 @@ struct layer {
 
     //CG context
 
+    /*
+     * \brief Initialize the CG context
+     */
     void init_cg_context() {
         if (!cg_context_ptr) {
             cg_context_ptr = std::make_shared<cg_context<parent_t>>();
         }
     }
 
+    /*!
+     * \brief Returns the context for CG training.
+     * \return A reference to the CG context training.
+     */
     cg_context<parent_t>& get_cg_context() {
         return *cg_context_ptr;
     }
 
+    /*!
+     * \brief Returns the context for CG training.
+     * \return A reference to the CG context training.
+     */
     const cg_context<parent_t>& get_cg_context() const {
         return *cg_context_ptr;
     }
 
     //SGD context
 
+    /*
+     * \brief Initialize the SGD context
+     */
     template <typename DBN>
     void init_sgd_context() {
         sgd_context_ptr = std::make_shared<sgd_context<DBN, parent_t>>();
     }
 
+    /*!
+     * \brief Returns the context for SGD training.
+     * \return A reference to the SGD context training.
+     */
     template <typename DBN>
     sgd_context<DBN, parent_t>& get_sgd_context() {
         return *static_cast<sgd_context<DBN, parent_t>*>(sgd_context_ptr.get());
     }
 
+    /*!
+     * \brief Returns the context for SGD training.
+     * \return A reference to the SGD context training.
+     */
     template <typename DBN>
     const sgd_context<DBN, parent_t>& get_sgd_context() const {
         return *static_cast<const sgd_context<DBN, parent_t>*>(sgd_context_ptr.get());
