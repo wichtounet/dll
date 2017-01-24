@@ -37,10 +37,20 @@ struct avgp_layer_3d final : pooling_layer_3d<avgp_layer_3d<Desc>, Desc> {
         return {buffer};
     }
 
+    /*!
+     * \brief Forward activation of the layer for one sample
+     * \param h The output matrix
+     * \param v The input matrix
+     */
     static void activate_hidden(output_one_t& h, const input_one_t& v) {
         h = etl::avg_pool_3d<base::C1, base::C2, base::C3>(v);
     }
 
+    /*!
+     * \brief Forward activation of the layer for one batch of sample
+     * \param h The output matrix
+     * \param v The input matrix
+     */
     template <typename Input, typename Output>
     static void batch_activate_hidden(Output& output, const Input& input) {
         for (std::size_t b = 0; b < etl::dim<0>(input); ++b) {

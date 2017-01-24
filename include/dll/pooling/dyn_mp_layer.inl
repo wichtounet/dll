@@ -38,10 +38,20 @@ struct dyn_mp_layer_3d final : dyn_pooling_layer_3d<dyn_mp_layer_3d<Desc>, Desc>
     using input_t      = typename base::input_t;      ///< The type of many input
     using output_t     = typename base::output_t;     ///< The type of many output
 
+    /*!
+     * \brief Forward activation of the layer for one sample
+     * \param h The output matrix
+     * \param v The input matrix
+     */
     void activate_hidden(output_one_t& h, const input_one_t& v) const {
         h = etl::max_pool_3d(v, base::c1, base::c2, base::c3);
     }
 
+    /*!
+     * \brief Forward activation of the layer for one batch of sample
+     * \param h The output matrix
+     * \param v The input matrix
+     */
     template <typename Input, typename Output>
     void batch_activate_hidden(Output& output, const Input& input) const {
         for (std::size_t b = 0; b < etl::dim<0>(input); ++b) {
