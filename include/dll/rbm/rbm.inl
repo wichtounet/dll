@@ -89,14 +89,26 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
         w = etl::normal_generator<weight>() * 0.1;
     }
 
+    /*!
+     * \brief Return the size of the input of this layer
+     * \return the number of elements input into this layer
+     */
     static constexpr std::size_t input_size() noexcept {
         return num_visible;
     }
 
+    /*!
+     * \brief Return the size of the output of this layer
+     * \return the number of elements output from this layer
+     */
     static constexpr std::size_t output_size() noexcept {
         return num_hidden;
     }
 
+    /*!
+     * \brief Return the number of parameters of this layer
+     * \return the number of parameters of this layer
+     */
     static constexpr std::size_t parameters() noexcept {
         return num_visible * num_hidden;
     }
