@@ -183,7 +183,7 @@ public:
 
         for_each_layer([&parameters](auto& layer) {
             std::cout << "    ";
-            cpp::static_if<decay_layer_traits<decltype(layer)>::is_rbm_layer()>([&](auto f) {
+            cpp::static_if<decay_layer_traits<decltype(layer)>::is_neural_layer()>([&](auto f) {
                 parameters += f(layer).parameters();
             });
             layer.display();
