@@ -7,12 +7,12 @@
 
 #pragma once
 
-#include "pooling_layer_desc.hpp"
+#include "unpooling_layer_desc.hpp"
 
 namespace dll {
 
 template <std::size_t T_I1, std::size_t T_I2, std::size_t T_I3, std::size_t T_C1, std::size_t T_C2, std::size_t T_C3, typename... Parameters>
-struct upsample_layer_3d_desc : pooling_layer_3d_desc<T_I1, T_I2, T_I3, T_C1, T_C2, T_C3, Parameters...> {
+struct upsample_layer_3d_desc : unpooling_layer_3d_desc<T_I1, T_I2, T_I3, T_C1, T_C2, T_C3, Parameters...> {
     /*!
      * A list of all the parameters of the descriptor
      */
