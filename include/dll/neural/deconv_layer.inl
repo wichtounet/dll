@@ -137,9 +137,20 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
      * \param output The ETL expression into which write the output
      * \param context The training context
      */
-    template<typename H, typename C>
+    template<typename H, typename C, cpp_enable_if(etl::decay_traits<H>::dimensions() == 4)>
     void backward_batch(H&& output, C& context) const {
         output = etl::conv_4d_valid_flipped(context.errors, w);
+    }
+
+    /*!
+     * \brief Backpropagate the errors to the previous layers
+     * \param output The ETL expression into which write the output
+     * \param context The training context
+     */
+    template<typename H, typename C, cpp_enable_if(etl::decay_traits<H>::dimensions() != 4)>
+    void backward_batch(H&& output, C& context) const {
+        static constexpr auto B = etl::decay_traits<H>::template dim<0>();
+        etl::reshape<B, NC, NV1, NV2>(output) = etl::conv_4d_valid_flipped(context.errors, w);
     }
 
     /*!
