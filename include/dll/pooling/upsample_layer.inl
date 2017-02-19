@@ -72,17 +72,38 @@ struct upsample_layer_3d final : unpooling_layer_3d<upsample_layer_3d<Desc>, Des
      * \param output The ETL expression into which write the output
      * \param context The training context
      */
-    template<typename H, typename C>
+    template<typename H, typename C, cpp_enable_if(etl::decay_traits<H>::dimensions() == 4)>
     void backward_batch(H&& output, C& context) const {
         static constexpr size_t C1 = base::C1;
         static constexpr size_t C2 = base::C2;
         static constexpr size_t C3 = base::C3;
 
-        constexpr const auto batch_size = etl::decay_traits<H>::template dim<0>();
+        constexpr const auto B = etl::decay_traits<H>::template dim<0>();
 
         // TODO The derivative should handle batch
-        for (std::size_t i = 0; i < batch_size; ++i) {
+        for (std::size_t i = 0; i < B; ++i) {
             output(i) = etl::max_pool_3d<C1, C2, C3>(context.errors(i));
+        }
+    }
+
+    /*!
+     * \brief Backpropagate the errors to the previous layers
+     * \param output The ETL expression into which write the output
+     * \param context The training context
+     */
+    template<typename H, typename C, cpp_enable_if(etl::decay_traits<H>::dimensions() != 4)>
+    void backward_batch(H&& output, C& context) const {
+        static constexpr size_t C1 = base::C1;
+        static constexpr size_t C2 = base::C2;
+        static constexpr size_t C3 = base::C3;
+
+        constexpr const auto B = etl::decay_traits<H>::template dim<0>();
+
+        auto reshaped_output = etl::reshape<B, base::I1, base::I2, base::I3>(output);
+
+        // TODO The derivative should handle batch
+        for (std::size_t i = 0; i < B; ++i) {
+            reshaped_output(i) = etl::max_pool_3d<C1, C2, C3>(context.errors(i));
         }
     }
 
