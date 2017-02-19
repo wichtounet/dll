@@ -33,6 +33,19 @@
 
 namespace dll {
 
+template<typename O, typename Enable = void>
+struct safe_value_type {
+    using type = typename std::decay_t<O>::value_type;
+};
+
+template<typename O>
+struct safe_value_type <O, std::enable_if_t<etl::is_etl_expr<O>::value>> {
+    using type = etl::value_t<O>;
+};
+
+template<typename O>
+using safe_value_t = typename safe_value_type<O>::type;
+
 template<typename Layer>
 struct is_input_layer {
     using traits = decay_layer_traits<Layer>;
@@ -688,9 +701,9 @@ private:
     template<typename T>
     using is_multi_t = etl::matrix_detail::is_vector<std::decay_t<T>>;
 
-    template <typename Output, cpp_enable_if(is_multi_t<Output>::value && is_multi_t<etl::value_t<Output>>::value)>
-    etl::value_t<Output> flatten(const Output& output) const {
-        etl::value_t<Output> flat;
+    template <typename Output, cpp_enable_if(is_multi_t<Output>::value && is_multi_t<safe_value_t<Output>>::value)>
+    safe_value_t<Output> flatten(const Output& output) const {
+        safe_value_t<Output> flat;
         flat.reserve(output.size() * output[0].size());
         for(auto& sub : output){
             std::move(sub.begin(), sub.end(), std::back_inserter(flat));
@@ -698,7 +711,7 @@ private:
         return flat;
     }
 
-    template <typename Output, cpp_enable_if(!(is_multi_t<Output>::value && is_multi_t<etl::value_t<Output>>::value))>
+    template <typename Output, cpp_enable_if(!(is_multi_t<Output>::value && is_multi_t<safe_value_t<Output>>::value))>
     Output&& flatten(Output&& output) const {
         return std::forward<Output>(output);
     }
@@ -715,7 +728,7 @@ private:
     auto activation_probabilities_impl(const Input& input) const {
         auto n_inputs = input.size();
         decltype(auto) layer = layer_get<I>();
-        auto output = layer.template select_prepare_output<Train, etl::value_t<Input>>(n_inputs);
+        auto output = layer.template select_prepare_output<Train, safe_value_t<Input>>(n_inputs);
         for(std::size_t i = 0; i < n_inputs; ++i){
             layer.template select_activate_hidden<Train>(output[i], input[i]);
         }
@@ -1034,7 +1047,7 @@ private:
         decltype(auto) layer = layer_get<I>();
         decltype(auto) next_layer = layer_get<I + 1>();
 
-        using input_t = etl::value_t<Iterator>;
+        using input_t = safe_value_t<Iterator>;
         using next_input_t = std::decay_t<decltype(layer.template prepare_one_output<input_t>())>;
 
         watcher.pretrain_layer(*this, I+1, next_layer, dbn_detail::fast_distance(first, last));
@@ -1074,7 +1087,7 @@ private:
         });
 
         if (train_next<I + 1>::value && !inline_next<I + 1>::value) {
-            auto next_a = layer.template prepare_output<etl::value_t<Iterator>>(std::distance(first, last));
+            auto next_a = layer.template prepare_output<safe_value_t<Iterator>>(std::distance(first, last));
 
             maybe_parallel_foreach_i(pool, first, last, [&layer, &next_a](auto& v, std::size_t i) {
                 layer.activate_hidden(next_a[i], v);
@@ -1119,8 +1132,8 @@ private:
         });
 
         if (train_next<I + 1>::value) {
-            auto next_n = layer.template prepare_output<etl::value_t<NIterator>>(std::distance(nit, nend));
-            auto next_c = layer.template prepare_output<etl::value_t<CIterator>>(std::distance(nit, nend));
+            auto next_n = layer.template prepare_output<safe_value_t<NIterator>>(std::distance(nit, nend));
+            auto next_c = layer.template prepare_output<safe_value_t<CIterator>>(std::distance(nit, nend));
 
             maybe_parallel_foreach_i(pool, nit, nend, [&layer, &next_n](auto& v, std::size_t i) {
                 layer.activate_hidden(next_n[i], v);
@@ -1290,9 +1303,9 @@ private:
 
         auto total_batch_size = big_batch_size * get_batch_size(rbm);
 
-        std::vector<etl::value_t<Iterator>> input_cache(total_batch_size);
+        std::vector<safe_value_t<Iterator>> input_cache(total_batch_size);
 
-        using input_t = typename types_helper<I - 1, etl::value_t<Iterator>>::input_t;
+        using input_t = typename types_helper<I - 1, safe_value_t<Iterator>>::input_t;
         auto next_input = layer_get<I - 1>().template prepare_output<input_t>(total_batch_size);
 
         //Train for max_epochs epoch
@@ -1350,7 +1363,7 @@ private:
 
     template <std::size_t I, typename Input>
     struct output_deep_t<I, Input, std::enable_if_t<layer_traits<layer_type<I>>::is_multiplex_layer()>> {
-        using type = etl::value_t<typename types_helper<I, Input>::output_t>;
+        using type = safe_value_t<typename types_helper<I, Input>::output_t>;
     };
 
     template <std::size_t I, typename Input>
@@ -1595,7 +1608,7 @@ private:
 
     template <typename Samples, typename Labels>
     void make_problem(const Samples& training_data, const Labels& labels, bool scale = false) {
-        svm_samples_t<etl::value_t<Samples>> svm_samples;
+        svm_samples_t<safe_value_t<Samples>> svm_samples;
 
         //Get all the activation probabilities
         for (auto& sample : training_data) {
@@ -1603,7 +1616,7 @@ private:
         }
 
         //static_cast ensure using the correct overload
-        problem = svm::make_problem(labels, static_cast<const svm_samples_t<etl::value_t<Samples>>&>(svm_samples), scale);
+        problem = svm::make_problem(labels, static_cast<const svm_samples_t<safe_value_t<Samples>>&>(svm_samples), scale);
     }
 
     /*!
@@ -1611,7 +1624,7 @@ private:
      */
     template <typename Iterator, typename LIterator>
     void make_problem(Iterator first, Iterator last, LIterator&& lfirst, LIterator&& llast, bool scale = false) {
-        svm_samples_t<etl::value_t<Iterator>> svm_samples;
+        svm_samples_t<safe_value_t<Iterator>> svm_samples;
 
         //Get all the activation probabilities
         std::for_each(first, last, [this, &svm_samples](auto& sample) {
