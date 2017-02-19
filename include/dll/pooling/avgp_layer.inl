@@ -53,9 +53,7 @@ struct avgp_layer_3d final : pooling_layer_3d<avgp_layer_3d<Desc>, Desc> {
      */
     template <typename Input, typename Output>
     static void batch_activate_hidden(Output& output, const Input& input) {
-        for (std::size_t b = 0; b < etl::dim<0>(input); ++b) {
-            output(b) = etl::avg_pool_3d<base::C1, base::C2, base::C3>(input(b));
-        }
+        output = etl::avg_pool_3d<base::C1, base::C2, base::C3>(input);
     }
 
     template<typename DLayer>
@@ -86,12 +84,7 @@ struct avgp_layer_3d final : pooling_layer_3d<avgp_layer_3d<Desc>, Desc> {
         static constexpr size_t C2 = base::C2;
         static constexpr size_t C3 = base::C3;
 
-        constexpr const auto batch_size = etl::decay_traits<H>::template dim<0>();
-
-        // TODO The derivative should handle batch
-        for (std::size_t i = 0; i < batch_size; ++i) {
-            output(i) = etl::avg_pool_derivative_3d<C1, C2, C3>(context.input(i), context.output(i)) >> etl::upsample_3d<C1, C2, C3>(context.errors(i));
-        }
+        output = etl::avg_pool_derivative_3d<C1, C2, C3>(context.input, context.output) >> etl::upsample_3d<C1, C2, C3>(context.errors);
     }
 
     /*!

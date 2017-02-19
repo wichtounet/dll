@@ -54,9 +54,7 @@ struct dyn_avgp_layer_3d final : dyn_pooling_layer_3d<dyn_avgp_layer_3d<Desc>, D
      */
     template <typename Input, typename Output>
     void batch_activate_hidden(Output& output, const Input& input) const {
-        for (std::size_t b = 0; b < etl::dim<0>(input); ++b) {
-            output(b) = etl::avg_pool_3d(input(b), base::c1, base::c2, base::c3);
-        }
+        output = etl::avg_pool_3d(input, base::c1, base::c2, base::c3);
     }
 
     template <typename DBN>
@@ -92,12 +90,7 @@ struct dyn_avgp_layer_3d final : dyn_pooling_layer_3d<dyn_avgp_layer_3d<Desc>, D
         size_t c2 = base::c2;
         size_t c3 = base::c3;
 
-        const auto batch_size = etl::dim<0>(context.input);
-
-        // TODO The derivative should handle batch
-        for (std::size_t i = 0; i < batch_size; ++i) {
-            output(i) = etl::avg_pool_derivative_3d(context.input(i), context.output(i), c1, c2, c3) >> etl::upsample_3d(context.errors(i), c1, c2, c3);
-        }
+        output = etl::avg_pool_derivative_3d(context.input, context.output, c1, c2, c3) >> etl::upsample_3d(context.errors, c1, c2, c3);
     }
 
     /*!

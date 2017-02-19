@@ -44,9 +44,7 @@ struct upsample_layer_3d final : unpooling_layer_3d<upsample_layer_3d<Desc>, Des
 
     template <typename Input, typename Output>
     static void batch_activate_hidden(Output& output, const Input& input) {
-        for (std::size_t b = 0; b < etl::dim<0>(input); ++b) {
-            output(b) = etl::upsample_3d<base::C1, base::C2, base::C3>(input(b));
-        }
+        output = etl::upsample_3d<base::C1, base::C2, base::C3>(input);
     }
 
     template<typename DLayer>
@@ -78,12 +76,7 @@ struct upsample_layer_3d final : unpooling_layer_3d<upsample_layer_3d<Desc>, Des
         static constexpr size_t C2 = base::C2;
         static constexpr size_t C3 = base::C3;
 
-        constexpr const auto B = etl::decay_traits<H>::template dim<0>();
-
-        // TODO The derivative should handle batch
-        for (std::size_t i = 0; i < B; ++i) {
-            output(i) = etl::max_pool_3d<C1, C2, C3>(context.errors(i));
-        }
+        output = etl::max_pool_3d<C1, C2, C3>(context.errors);
     }
 
     /*!
@@ -99,12 +92,7 @@ struct upsample_layer_3d final : unpooling_layer_3d<upsample_layer_3d<Desc>, Des
 
         constexpr const auto B = etl::decay_traits<H>::template dim<0>();
 
-        auto reshaped_output = etl::reshape<B, base::I1, base::I2, base::I3>(output);
-
-        // TODO The derivative should handle batch
-        for (std::size_t i = 0; i < B; ++i) {
-            reshaped_output(i) = etl::max_pool_3d<C1, C2, C3>(context.errors(i));
-        }
+        etl::reshape<B, base::I1, base::I2, base::I3>(output) = etl::max_pool_3d<C1, C2, C3>(context.errors);
     }
 
     /*!
