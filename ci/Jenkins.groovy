@@ -8,8 +8,8 @@ node {
        sh 'sloccount --duplicates --wide --details include/dll/*.hpp test/src/*.cpp test_compile/*.cpp  > sloccount.sc'
        sh 'cccc include/dll/*.hpp test/*.cpp test_compile/*.cpp || true'
 
-       env.CXX="g++-4.9.3"
-       env.LD="g++-4.9.3"
+       env.CXX="g++-4.9.4"
+       env.LD="g++-4.9.4"
        env.ETL_MKL='true'
        env.DLL_COVERAGE='true'
        env.LD_LIBRARY_PATH="${env.LD_LIBRARY_PATH}:/opt/intel/mkl/lib/intel64"
