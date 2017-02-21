@@ -148,10 +148,10 @@ TEST_CASE("unit/cdbn/mnist/5", "[cdbn][crbm_mp][svm][unit]") {
 TEST_CASE("unit/cdbn/mnist/6", "[cdbn][mp][svm][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_rbm_desc<1, 28, 28, 20, 20, 21, dll::momentum, dll::batch_size<25>>::layer_t,
-            dll::mp_layer_3d_desc<20, 20, 21, 2, 2, 3>::layer_t,
-            dll::conv_rbm_desc<10, 10, 7, 20, 8, 5, dll::momentum, dll::batch_size<25>>::layer_t,
-            dll::mp_layer_3d_desc<20, 8, 5, 2, 1, 1>::layer_t>>::dbn_t dbn_t;
+            dll::conv_rbm_desc<1, 28, 28, 10, 20, 21, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::mp_layer_3d_desc<10, 20, 21, 2, 2, 3>::layer_t,
+            dll::conv_rbm_desc<5, 10, 7, 10, 8, 5, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::mp_layer_3d_desc<10, 8, 5, 2, 1, 1>::layer_t>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(250);
     REQUIRE(!dataset.training_images.empty());
@@ -160,12 +160,12 @@ TEST_CASE("unit/cdbn/mnist/6", "[cdbn][mp][svm][unit]") {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    REQUIRE(dbn->output_size() == 400);
+    REQUIRE(dbn->output_size() == 200);
 
     dbn->pretrain(dataset.training_images, 20);
 
     auto output = dbn->activation_probabilities(dataset.training_images.front());
-    REQUIRE(output.size() == 400);
+    REQUIRE(output.size() == 200);
 
     auto result = dbn->svm_train(dataset.training_images, dataset.training_labels);
     REQUIRE(result);
