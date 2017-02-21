@@ -100,8 +100,8 @@ TEST_CASE("unit/conv/sgd/4", "[unit][conv][dbn][mnist][sgd]") {
 TEST_CASE("unit/conv/sgd/5", "[conv][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_desc<1, 28, 28, 10, 24, 24, dll::activation<dll::function::RELU>>::layer_t,
-            dll::conv_desc<10, 24, 24, 6, 20, 20, dll::activation<dll::function::RELU>>::layer_t,
+            dll::conv_desc<1, 28, 28, 8, 24, 24, dll::activation<dll::function::RELU>>::layer_t,
+            dll::conv_desc<8, 24, 24, 6, 20, 20, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<6 * 20 * 20, 200, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<200, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
