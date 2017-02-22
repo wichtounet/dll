@@ -122,7 +122,7 @@ TEST_CASE("unit/crbm/mnist/4", "[crbm][unit]") {
 
 TEST_CASE("unit/crbm/mnist/5", "[crbm][unit]") {
     dll::conv_rbm_desc_square<
-        1, 28, 40, 20,
+        1, 28, 20, 20,
         dll::batch_size<20>,
         dll::momentum,
         dll::weight_decay<dll::decay_type::L2>,

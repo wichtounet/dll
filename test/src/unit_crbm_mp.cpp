@@ -46,7 +46,7 @@ TEST_CASE("unit/crbm_mp/mnist/1", "[crbm_mp][unit]") {
 
 TEST_CASE("unit/crbm_mp/mnist/2", "[crbm_mp][gaussian][unit]") {
     dll::conv_rbm_mp_desc_square<
-        1, 28, 40, 24, 2,
+        1, 28, 20, 24, 2,
         dll::weight_type<double>,
         dll::batch_size<25>,
         dll::momentum,
@@ -163,7 +163,7 @@ TEST_CASE("unit/crbm_mp/mnist/6", "[crbm_mp][lee][unit]") {
 
 TEST_CASE("unit/crbm_mp/mnist/7", "[crbm_mp][lee][gaussian][unit]") {
     dll::conv_rbm_mp_desc_square<
-        1, 28, 40, 20, 2,
+        1, 28, 20, 20, 2,
         dll::weight_type<double>,
         dll::batch_size<10>,
         dll::momentum,
