@@ -27,9 +27,9 @@ TEST_CASE("unit/dbn/mnist/1", "[dbn][unit]") {
             dll::rbm_desc<28 * 28, 150, dll::momentum, dll::batch_size<10>, dll::init_weights>::layer_t,
             dll::rbm_desc<150, 250, dll::momentum, dll::batch_size<10>>::layer_t,
             dll::rbm_desc<250, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
-        dll::batch_size<10>>::dbn_t dbn_t;
+        dll::batch_size<25>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(400);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(300);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -44,7 +44,7 @@ TEST_CASE("unit/dbn/mnist/1", "[dbn][unit]") {
 
     auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
     std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    REQUIRE(test_error < 0.3);
 
     dbn->save_features(dataset.training_images[0], ".tmp.features");
 
