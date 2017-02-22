@@ -351,6 +351,8 @@ public:
         return dbn_traits<this_type>::batch_mode() || batch_mode_run;
     }
 
+    /* pretrain */
+
     /*!
      * \brief Pretrain the network by training all layers in an unsupervised manner.
      *
@@ -401,6 +403,8 @@ public:
         decltype(auto) converted = converter_many<Input, input_t>::convert(layer_get<input_layer_n>(), training_data);
         pretrain(converted.begin(), converted.end(), max_epochs);
     }
+
+    /* pretrain_denoising */
 
     /*!
      * \brief Pretrain the network by training all layers in an unsupervised
@@ -455,10 +459,22 @@ public:
 
         watcher.pretraining_begin(*this, max_epochs);
 
-        cpp_assert(!batch_mode(), "pretrain_denoising_auto has not yet been implemented in memory");
-
         //Pretrain each layer one-by-one
-        pretrain_layer_denoising_auto<0>(cit, cend, watcher, max_epochs, noise, fake_resource);
+        if (batch_mode()) {
+            std::cout << "DBN: Denoising Pretraining done in batch mode" << std::endl;
+
+            if (layers_t::has_shuffle_layer) {
+                std::cout << "warning: batch_mode dbn does not support shuffle in layers (will be ignored)";
+            }
+
+            //Pretrain each layer one-by-one
+            pretrain_layer_denoising_auto_batch<0>(cit, cend, watcher, max_epochs, noise);
+        } else {
+            std::cout << "DBN: Denoising Pretraining" << std::endl;
+
+            //Pretrain each layer one-by-one
+            pretrain_layer_denoising_auto<0>(cit, cend, watcher, max_epochs, noise, fake_resource);
+        }
 
         watcher.pretraining_end(*this);
     }
@@ -1549,6 +1565,203 @@ private:
     //Stop template recursion
     template <std::size_t I, typename Iterator, cpp_enable_if(I == layers)>
     void pretrain_layer_batch(Iterator, Iterator, watcher_t&, std::size_t) {}
+
+    /* pretrain_layer_denoising_auto_batch */
+
+    template<typename T>
+    inline void noise_transform(T&& value, double noise){
+        static std::random_device rd;
+        static std::default_random_engine g(rd());
+
+        std::uniform_real_distribution<double> dist(0.0, 1000.0);
+
+        for(auto& v :  value){
+            v *= dist(g) < noise * 1000.0 ? 0.0 : 1.0;
+        }
+    }
+
+    //Special handling for the layer 0
+    //data is coming from iterators not from input
+    template <std::size_t I, typename Iterator, cpp_enable_if((I == 0 && !batch_layer_ignore<I>::value))>
+    void pretrain_layer_denoising_auto_batch(Iterator orig_first, Iterator orig_last, watcher_t& watcher, std::size_t max_epochs, double noise) {
+        std::vector<std::remove_cv_t<typename std::iterator_traits<Iterator>::value_type>> input_copy;
+
+        auto iterators = prepare_it<false>(orig_first, orig_last, input_copy);
+
+        decltype(auto) first = std::get<0>(iterators);
+        decltype(auto) last = std::get<1>(iterators);
+
+        using layer_t = layer_type<I>;
+
+        decltype(auto) rbm = layer_get<I>();
+
+        watcher.pretrain_layer(*this, I, rbm, 0);
+
+        using rbm_trainer_t = dll::rbm_trainer<layer_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>, false>;
+
+        //Initialize the RBM trainer
+        rbm_trainer_t r_trainer;
+
+        //Init the RBM and training parameters
+        r_trainer.init_training(rbm, first, last); //TODO This may be highly slow...
+
+        //Get the specific trainer (CD)
+        auto trainer = rbm_trainer_t::get_trainer(rbm);
+
+        //Several RBM batches are propagated at once
+        const auto total_batch_size = big_batch_size * get_batch_size(rbm);
+
+        std::vector<typename layer_t::input_one_t> clean_cache(total_batch_size);
+        std::vector<typename layer_t::input_one_t> noisy_cache(total_batch_size);
+
+        //Train for max_epochs epoch
+        for (std::size_t epoch = 0; epoch < max_epochs; ++epoch) {
+            std::size_t big_batch = 0;
+
+            // Sort before training
+            shuffle(input_copy);
+
+            //Create a new context for this epoch
+            rbm_training_context context;
+
+            r_trainer.init_epoch();
+
+            auto it  = first;
+            auto end = last;
+
+            while (it != end) {
+                //Fill the input cache
+                std::size_t i = 0;
+                while (it != end && i < total_batch_size) {
+                    auto index = i++;
+                    clean_cache[index] = *it++;
+                    noisy_cache[index] = clean_cache[index];
+                    noise_transform(noisy_cache[index], noise);
+                }
+
+                if (big_batch_size == 1) {
+                    //Train the RBM on this batch
+                    r_trainer.train_batch(noisy_cache.begin(), noisy_cache.end(), clean_cache.begin(), clean_cache.end(), trainer, context, rbm);
+                } else {
+                    //Train the RBM on this big batch
+                    r_trainer.train_sub(noisy_cache.begin(), noisy_cache.begin() + i, clean_cache.begin(), trainer, context, rbm);
+                }
+
+                if (dbn_traits<this_type>::is_verbose()) {
+                    watcher.pretraining_batch(*this, big_batch);
+                }
+
+                ++big_batch;
+            }
+
+            r_trainer.finalize_epoch(epoch, context, rbm);
+        }
+
+        r_trainer.finalize_training(rbm);
+
+        //Train the next layer
+        pretrain_layer_denoising_auto_batch<I + 1>(first, last, watcher, max_epochs, noise);
+    }
+
+    //Special handling for untrained layers
+    template <std::size_t I, typename Iterator, cpp_enable_if(batch_layer_ignore<I>::value)>
+    void pretrain_layer_denoising_auto_batch(Iterator first, Iterator last, watcher_t& watcher, std::size_t max_epochs, double noise) {
+        //We simply go up one layer on pooling layers
+        pretrain_layer_denoising_auto_batch<I + 1>(first, last, watcher, max_epochs);
+    }
+
+    //Normal version
+    template <std::size_t I, typename Iterator, cpp_enable_if((I > 0 && I < layers && !batch_layer_ignore<I>::value))>
+    void pretrain_layer_denoising_auto_batch(Iterator orig_first, Iterator orig_last, watcher_t& watcher, std::size_t max_epochs, double noise) {
+        std::vector<typename std::iterator_traits<Iterator>::value_type> input_copy;
+
+        auto iterators = prepare_it<!batch_layer_ignore<0>::value>(orig_first, orig_last, input_copy);
+
+        decltype(auto) first = std::get<0>(iterators);
+        decltype(auto) last = std::get<1>(iterators);
+
+        using layer_t = layer_type<I>;
+
+        decltype(auto) rbm = layer_get<I>();
+
+        watcher.pretrain_layer(*this, I, rbm, 0);
+
+        using rbm_trainer_t = dll::rbm_trainer<layer_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>>;
+
+        //Initialize the RBM trainer
+        rbm_trainer_t r_trainer;
+
+        //Init the RBM and training parameters
+        r_trainer.init_training(rbm, first, last);
+
+        //Get the specific trainer (CD)
+        auto trainer = rbm_trainer_t::get_trainer(rbm);
+
+        auto total_batch_size = big_batch_size * get_batch_size(rbm);
+
+        std::vector<safe_value_t<Iterator>> clean_cache(total_batch_size);
+
+        using input_t = typename types_helper<I - 1, safe_value_t<Iterator>>::input_t;
+        auto next_clean = layer_get<I - 1>().template prepare_output<input_t>(total_batch_size);
+        auto next_noisy = layer_get<I - 1>().template prepare_output<input_t>(total_batch_size);
+
+        //Train for max_epochs epoch
+        for (std::size_t epoch = 0; epoch < max_epochs; ++epoch) {
+            std::size_t big_batch = 0;
+
+            // Sort before training
+            shuffle(input_copy);
+
+            //Create a new context for this epoch
+            rbm_training_context context;
+
+            r_trainer.init_epoch();
+
+            auto it  = first;
+            auto end = last;
+
+            while (it != end) {
+                //Fill the input cache
+                std::size_t i = 0;
+                while (it != end && i < total_batch_size) {
+                    auto index = i++;
+                    clean_cache[index] = *it++;
+                }
+
+                multi_activation_probabilities<I - 1>(clean_cache.begin(), clean_cache.begin() + i, next_clean);
+
+                next_noisy = next_clean;
+                for(auto& noisy : next_noisy){
+                    noise_transform(noisy, noise);
+                }
+
+                if (big_batch_size == 1) {
+                    //Train the RBM on this batch
+                    r_trainer.train_batch(next_noisy.begin(), next_noisy.end(), next_clean.begin(), next_clean.end(), trainer, context, rbm);
+                } else {
+                    //Train the RBM on this big batch
+                    r_trainer.train_sub(next_noisy.begin(), next_noisy.end(), next_clean.begin(), trainer, context, rbm);
+                }
+
+                if (dbn_traits<this_type>::is_verbose()) {
+                    watcher.pretraining_batch(*this, big_batch);
+                }
+
+                ++big_batch;
+            }
+
+            r_trainer.finalize_epoch(epoch, context, rbm);
+        }
+
+        r_trainer.finalize_training(rbm);
+
+        //train the next layer, if any
+        pretrain_layer_denoising_auto_batch<I + 1>(first, last, watcher, max_epochs, noise);
+    }
+
+    //Stop template recursion
+    template <std::size_t I, typename Iterator, cpp_enable_if(I == layers)>
+    void pretrain_layer_denoising_auto_batch(Iterator, Iterator, watcher_t&, std::size_t, double) {}
 
     /* Train with labels */
 
