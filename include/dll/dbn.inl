@@ -1667,7 +1667,7 @@ private:
     template <std::size_t I, typename Iterator, cpp_enable_if(batch_layer_ignore<I>::value)>
     void pretrain_layer_denoising_auto_batch(Iterator first, Iterator last, watcher_t& watcher, std::size_t max_epochs, double noise) {
         //We simply go up one layer on pooling layers
-        pretrain_layer_denoising_auto_batch<I + 1>(first, last, watcher, max_epochs);
+        pretrain_layer_denoising_auto_batch<I + 1>(first, last, watcher, max_epochs, noise);
     }
 
     //Normal version
