@@ -61,7 +61,7 @@ TEST_CASE("unit/crbm_mp/mnist/2", "[crbm_mp][gaussian][unit]") {
     mnist::normalize_dataset(dataset);
 
     auto error = rbm.train(dataset.training_images, 30);
-    REQUIRE(error < 1e-1);
+    REQUIRE(error < 0.15);
 }
 
 TEST_CASE("unit/crbm_mp/mnist/3", "[crbm_mp][multic][unit]") {
@@ -181,5 +181,5 @@ TEST_CASE("unit/crbm_mp/mnist/7", "[crbm_mp][lee][gaussian][unit]") {
     mnist::normalize_dataset(dataset);
 
     auto error = rbm.train(dataset.training_images, 30);
-    REQUIRE(error < 9e-2);
+    REQUIRE(error < 0.1);
 }
