@@ -170,7 +170,7 @@ TEST_CASE("unit/dense/sgd/7", "[unit][dense][dbn][mnist][sgd]") {
     dbn->learning_rate    = 0.01;
 
     FT_CHECK(50, 5e-2);
-    TEST_CHECK(0.2);
+    TEST_CHECK(0.25);
 }
 
 // Test Sigmoid -> Softmax network
