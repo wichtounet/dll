@@ -94,8 +94,8 @@ TEST_CASE("unit/dbn/mnist/3", "[dbn][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 200, dll::momentum, dll::batch_size<20>, dll::visible<dll::unit_type::GAUSSIAN>>::layer_t,
-            dll::rbm_desc<200, 350, dll::momentum, dll::batch_size<20>>::layer_t,
-            dll::rbm_desc<350, 10, dll::momentum, dll::batch_size<20>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
+            dll::rbm_desc<200, 300, dll::momentum, dll::batch_size<20>>::layer_t,
+            dll::rbm_desc<300, 10, dll::momentum, dll::batch_size<20>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
         dll::batch_size<10>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(250);

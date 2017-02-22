@@ -26,9 +26,9 @@ TEST_CASE("unit/dyn_dbn/mnist/1", "[dyn_dbn][unit]") {
             dll::dyn_rbm_desc<dll::momentum, dll::init_weights>::layer_t,
             dll::dyn_rbm_desc<dll::momentum>::layer_t,
             dll::dyn_rbm_desc<dll::momentum, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
-        dll::batch_size<10>>::dbn_t dbn_t;
+        dll::batch_size<25>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(400);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(300);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
