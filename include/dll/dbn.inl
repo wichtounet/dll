@@ -481,6 +481,8 @@ public:
         pretrain_denoising_auto(converted_clean.begin(), converted_clean.end(), max_epochs, noise);
     }
 
+    /* train with labels */
+
     template <typename Iterator, typename LabelIterator>
     void train_with_labels(Iterator&& first, Iterator&& last, LabelIterator&& lfirst, LabelIterator&& llast, std::size_t labels, std::size_t max_epochs) {
         dll::auto_timer timer("dbn:train:labels");
