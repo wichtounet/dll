@@ -71,6 +71,17 @@ struct rbm_trainer {
         //NOP
     }
 
+    template <typename IIterator, cpp_enable_if_cst(rbm_layer_traits<rbm_t>::has_shuffle())>
+    static void shuffle_direct(IIterator ifirst, IIterator ilast) {
+        static std::random_device rd;
+        static std::mt19937_64 g(rd());
+
+        std::shuffle(ifirst, ilast, g);
+    }
+
+    template <typename IIterator, cpp_disable_if_cst(rbm_layer_traits<rbm_t>::has_shuffle())>
+    static void shuffle_direct(IIterator, IIterator) {}
+
     template <typename IIterator, typename EIterator, cpp_enable_if_cst(rbm_layer_traits<rbm_t>::has_shuffle())>
     static void shuffle(IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast) {
         static std::random_device rd;
@@ -213,6 +224,71 @@ struct rbm_trainer {
 
             //Train on all the data
             train_sub(input_first, input_last, expected_first, trainer, context, rbm);
+
+            //Finalize the current epoch
+            finalize_epoch(epoch, context, rbm);
+        }
+
+        return finalize_training(rbm);
+    }
+
+    template <typename IIterator>
+    error_type train_denoising_auto(RBM& rbm, IIterator ifirst, IIterator ilast, std::size_t max_epochs, double noise) {
+        dll::auto_timer timer("rbm_trainer:train:auto");
+
+        cpp_assert(!Denoising, "train_denoising_auto should not set Denoising");
+
+        //In case of shuffle, we don't want to shuffle the input, therefore create a copy and shuffle it
+
+        auto n = std::distance(ifirst, ilast);
+        std::vector<typename std::iterator_traits<IIterator>::value_type> input_clean(n);
+        std::vector<typename std::iterator_traits<IIterator>::value_type> input_copy(n);
+
+        std::copy(ifirst, ilast, input_clean.begin());
+
+        //Initialize RBM and trainign parameters
+        init_training(rbm, input_clean.begin(), input_clean.end());
+
+        //Some RBM may init weights based on the training data
+        //Note: This can't be done in init_training, since it will
+        //sometimes be called with the wrong input values
+        init_weights(rbm, input_clean.begin(), input_clean.end());
+
+        //Allocate the trainer
+        auto trainer = get_trainer(rbm);
+
+        auto input_transformer = [noise](auto&& value){
+            static std::random_device rd;
+            static std::default_random_engine g(rd());
+
+            std::uniform_real_distribution<double> dist(0.0, 1000.0);
+
+            for(auto& v :  value){
+                v *= dist(g) < noise * 1000.0 ? 0.0 : 1.0;
+            }
+        };
+
+        //Train for max_epochs epoch
+        for (std::size_t epoch = 0; epoch < max_epochs; ++epoch) {
+            // Copy the input
+            std::copy(input_clean.begin(), input_clean.end(), input_copy.begin());
+
+            // Corrupt the input
+            for(auto& input : input_copy){
+                input_transformer(input);
+            }
+
+            //Shuffle if necessary
+            shuffle_direct(input_copy.begin(), input_copy.end());
+
+            //Create a new context for this epoch
+            rbm_training_context context;
+
+            //Start a new epoch
+            init_epoch();
+
+            //Train on all the data
+            train_sub(input_copy.begin(), input_copy.end(), input_clean.begin(), trainer, context, rbm);
 
             //Finalize the current epoch
             finalize_epoch(epoch, context, rbm);

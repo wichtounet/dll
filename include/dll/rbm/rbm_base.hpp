@@ -139,6 +139,27 @@ struct rbm_base : layer<Parent> {
                              max_epochs);
     }
 
+    //Train denoising autoencoder (auto)
+
+    template <bool EnableWatcher = true, typename RW = void, typename... Args>
+    double train_denoising_auto(const input_t& clean, std::size_t max_epochs, double noise, Args... args) {
+        dll::rbm_trainer<parent_t, EnableWatcher, RW, false> trainer(args...);
+        return trainer.train_denoising_auto(as_derived(), clean.begin(), clean.end(), max_epochs, noise);
+    }
+
+    template <bool EnableWatcher = true, typename RW = void, typename Clean, typename... Args>
+    double train_denoising_auto(const Clean& clean, std::size_t max_epochs, double noise, Args... args) {
+        decltype(auto) converted_clean = converter_many<Clean, input_t>::convert(as_derived(), clean);
+        dll::rbm_trainer<parent_t, EnableWatcher, RW, false> trainer(args...);
+        return trainer.train_denoising_auto(as_derived(), converted_clean.begin(), converted_clean.end(), max_epochs, noise);
+    }
+
+    template <typename CIterator, bool EnableWatcher = true, typename RW = void, typename... Args>
+    double train_denoising_auto(CIterator clean_it, CIterator clean_end, std::size_t max_epochs, double noise, Args... args) {
+        dll::rbm_trainer<parent_t, EnableWatcher, RW, false> trainer(args...);
+        return trainer.train_denoising_auto(as_derived(), clean_it, clean_end, max_epochs, noise);
+    }
+
     // Features
 
     output_one_t features(const input_one_t& input){

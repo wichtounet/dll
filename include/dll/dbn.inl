@@ -441,6 +441,46 @@ public:
         pretrain_denoising(converted_noisy.begin(), converted_noisy.end(), converted_clean.begin(), converted_clean.end(), max_epochs);
     }
 
+    /* pretrain_denoising_auto */
+
+    /*!
+     * \brief Pretrain the network by training all layers in an unsupervised
+     * manner, the network will learn to reconstruct noisy input.
+     */
+    template <typename CIterator>
+    void pretrain_denoising_auto(CIterator cit, CIterator cend, std::size_t max_epochs, double noise) {
+        dll::auto_timer timer("dbn:pretrain:denoising:auto");
+
+        watcher_t watcher;
+
+        watcher.pretraining_begin(*this, max_epochs);
+
+        cpp_assert(!batch_mode(), "pretrain_denoising_auto has not yet been implemented in memory");
+
+        //Pretrain each layer one-by-one
+        pretrain_layer_denoising_auto<0>(cit, cend, watcher, max_epochs, noise, fake_resource);
+
+        watcher.pretraining_end(*this);
+    }
+
+    /*!
+     * \brief Pretrain the network by training all layers in an unsupervised
+     * manner, the network will learn to reconstruct noisy input.
+     */
+    void pretrain_denoising_auto(const input_t& clean, std::size_t max_epochs, double noise) {
+        pretrain_denoising_auto(clean.begin(), clean.end(), max_epochs, noise);
+    }
+
+    /*!
+     * \brief Pretrain the network by training all layers in an unsupervised
+     * manner, the network will learn to reconstruct noisy input.
+     */
+    template <typename Clean>
+    void pretrain_denoising_auto(const Clean& clean, std::size_t max_epochs, double noise) {
+        decltype(auto) converted_clean = converter_many<Clean, input_t>::convert(layer_get<input_layer_n>(), clean);
+        pretrain_denoising_auto(converted_clean.begin(), converted_clean.end(), max_epochs, noise);
+    }
+
     template <typename Iterator, typename LabelIterator>
     void train_with_labels(Iterator&& first, Iterator&& last, LabelIterator&& lfirst, LabelIterator&& llast, std::size_t labels, std::size_t max_epochs) {
         dll::auto_timer timer("dbn:train:labels");
@@ -1157,6 +1197,44 @@ private:
     //Stop template recursion
     template <std::size_t I, typename NIterator, typename CIterator, typename NContainer, typename CContainer, cpp_enable_if((I == layers))>
     void pretrain_layer_denoising(NIterator, NIterator, CIterator, CIterator, watcher_t&, std::size_t, NContainer&, CContainer&) {}
+
+    /* Pretrain with denoising (auto) */
+
+    template <std::size_t I, typename CIterator, typename CContainer, cpp_enable_if((I < layers))>
+    void pretrain_layer_denoising_auto(CIterator cit, CIterator cend, watcher_t& watcher, std::size_t max_epochs, double noise, CContainer& previous_c) {
+        using layer_t = layer_type<I>;
+
+        decltype(auto) layer = layer_get<I>();
+
+        watcher.pretrain_layer(*this, I, layer, dbn_detail::fast_distance(cit, cend));
+
+        cpp::static_if<layer_traits<layer_t>::is_pretrained()>([&](auto f) {
+            f(layer).template train_denoising_auto<CIterator,
+                                              !watcher_t::ignore_sub,               //Enable the RBM Watcher or not
+                                              dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
+                (cit, cend, max_epochs, noise);
+        });
+
+        if (train_next<I + 1>::value) {
+            auto next_c = layer.template prepare_output<safe_value_t<CIterator>>(std::distance(cit, cend));
+
+            maybe_parallel_foreach_i(pool, cit, cend, [&layer, &next_c](auto& v, std::size_t i) {
+                layer.activate_hidden(next_c[i], v);
+            });
+
+            //At this point we don't need the storage of the previous layer
+            release(previous_c);
+
+            //In the standard case, pass the output to the next layer
+            pretrain_layer_denoising_auto<I + 1>(next_c.begin(), next_c.end(), watcher, max_epochs, noise, next_c);
+
+            static_assert(!layer_traits<layer_t>::is_multiplex_layer(), "Denoising pretraining does not support multiplex layer");
+        }
+    }
+
+    //Stop template recursion
+    template <std::size_t I, typename CIterator, typename CContainer, cpp_enable_if((I == layers))>
+    void pretrain_layer_denoising_auto(CIterator, CIterator, watcher_t&, std::size_t, double, CContainer&) {}
 
     /* Pretrain in batch mode */
 
