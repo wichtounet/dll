@@ -270,6 +270,9 @@ struct rbm_trainer {
 
         //Train for max_epochs epoch
         for (std::size_t epoch = 0; epoch < max_epochs; ++epoch) {
+            //Shuffle if necessary
+            shuffle_direct(input_clean.begin(), input_clean.end());
+
             // Copy the input
             std::copy(input_clean.begin(), input_clean.end(), input_copy.begin());
 
@@ -277,9 +280,6 @@ struct rbm_trainer {
             for(auto& input : input_copy){
                 input_transformer(input);
             }
-
-            //Shuffle if necessary
-            shuffle_direct(input_copy.begin(), input_copy.end());
 
             //Create a new context for this epoch
             rbm_training_context context;
