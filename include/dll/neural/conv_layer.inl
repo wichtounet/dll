@@ -31,8 +31,6 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
     static constexpr const std::size_t NW1 = NV1 - NH1 + 1; //By definition
     static constexpr const std::size_t NW2 = NV2 - NH2 + 1; //By definition
 
-    static constexpr const bool dbn_only = layer_traits<this_type>::is_dbn_only();
-
     static constexpr auto activation_function = desc::activation_function;
     static constexpr auto w_initializer       = desc::w_initializer;
     static constexpr auto b_initializer       = desc::b_initializer;

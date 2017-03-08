@@ -25,8 +25,6 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
     static constexpr const std::size_t num_visible = desc::num_visible;
     static constexpr const std::size_t num_hidden  = desc::num_hidden;
 
-    static constexpr const bool dbn_only = layer_traits<this_type>::is_dbn_only();
-
     static constexpr auto activation_function = desc::activation_function;
     static constexpr auto w_initializer       = desc::w_initializer;
     static constexpr auto b_initializer       = desc::b_initializer;

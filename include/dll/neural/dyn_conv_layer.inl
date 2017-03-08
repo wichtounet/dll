@@ -22,8 +22,6 @@ struct dyn_conv_layer final : neural_layer<dyn_conv_layer<Desc>, Desc> {
     using this_type = dyn_conv_layer<desc>;  ///< This type
     using base_type = neural_layer<this_type, desc>;
 
-    static constexpr const bool dbn_only = layer_traits<this_type>::is_dbn_only();
-
     static constexpr auto activation_function = desc::activation_function;
     static constexpr auto w_initializer       = desc::w_initializer;
     static constexpr auto b_initializer       = desc::b_initializer;
