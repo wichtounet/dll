@@ -1,6 +1,13 @@
 Deep Learning Library (DLL)
 ===========================
 
+|logo|    |coverage| |jenkins| |license| |doc|
+
+.. |logo| image:: logo_small.png
+.. |coverage| image:: https://img.shields.io/sonar/https/sonar.baptiste-wicht.ch/dll/coverage.svg
+.. |jenkins| image:: https://img.shields.io/jenkins/s/https/jenkins.baptiste-wicht.ch/dll.svg 
+.. |license| image:: https://img.shields.io/github/license/mashape/apistatus.svg
+
 DLL is a library that aims to provide a C++ implementation of Restricted
 Boltzmann Machine (RBM) and Deep Belief Network (DBN) and their convolution
 versions as well. It also has support for some more standard neural networks.
