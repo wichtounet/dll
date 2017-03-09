@@ -970,9 +970,21 @@ private:
         return full_activation_probabilities(sample);
     }
 
+    template <typename Input, typename DBN = this_type, cpp_enable_if(dbn_traits<DBN>::concatenate())>
+    auto get_final_activation_probabilities(const Input& sample) const {
+        decltype(auto) converted = converter_one<Input, input_one_t>::convert(layer_get<input_layer_n>(), sample);
+        return full_activation_probabilities(converted);
+    }
+
     template <typename DBN = this_type, cpp_disable_if(dbn_traits<DBN>::concatenate())>
     auto get_final_activation_probabilities(const input_one_t& sample) const {
         return activation_probabilities(sample);
+    }
+
+    template <typename Input, typename DBN = this_type, cpp_disable_if(dbn_traits<DBN>::concatenate())>
+    auto get_final_activation_probabilities(const Input& sample) const {
+        decltype(auto) converted = converter_one<Input, input_one_t>::convert(layer_get<input_layer_n>(), sample);
+        return activation_probabilities(converted);
     }
 
 public:
