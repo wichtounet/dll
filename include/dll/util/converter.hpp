@@ -50,7 +50,9 @@ struct converter_one<std::vector<T_F, A>, etl::dyn_matrix<T_T, 1>> {
     template<typename L>
     static etl::dyn_matrix<T_T, 1> convert(const L&, const std::vector<T_F, A>& from){
         debug_convert("convert_one");
-        return etl::dyn_matrix<T_T, 1>(from);
+        etl::dyn_matrix<T_T, 1> c;
+        c = from;
+        return c;
     }
 };
 
@@ -62,7 +64,9 @@ struct converter_one<std::list<T_F, A>, etl::dyn_matrix<T_T, 1>> {
     template<typename L>
     static etl::dyn_matrix<T_T, 1> convert(const L&, const std::list<T_F, A>& from){
         debug_convert("convert_one");
-        return etl::dyn_matrix<T_T, 1>(from);
+        etl::dyn_matrix<T_T, 1> c;
+        c = from;
+        return c;
     }
 };
 
@@ -74,7 +78,9 @@ struct converter_one<std::deque<T_F, A>, etl::dyn_matrix<T_T, 1>> {
     template<typename L>
     static etl::dyn_matrix<T_T, 1> convert(const L&, const std::deque<T_F, A>& from){
         debug_convert("convert_one");
-        return etl::dyn_matrix<T_T, 1>(from);
+        etl::dyn_matrix<T_T, 1> c;
+        c = from;
+        return c;
     }
 };
 
@@ -131,7 +137,9 @@ struct converter_one<std::vector<T_F, A>, etl::fast_dyn_matrix<T_T, Dims...>> {
     template<typename L>
     static etl::fast_dyn_matrix<T_T, Dims...> convert(const L&, const std::vector<T_F, A>& from){
         debug_convert("convert_one");
-        return etl::fast_dyn_matrix<T_T, Dims...>(from);
+        etl::fast_dyn_matrix<T_T, Dims...> c;
+        c = from;
+        return c;
     }
 };
 
@@ -143,7 +151,9 @@ struct converter_one<std::list<T_F, A>, etl::fast_dyn_matrix<T_T, Dims...>> {
     template<typename L>
     static etl::fast_dyn_matrix<T_T, Dims...> convert(const L&, const std::list<T_F, A>& from){
         debug_convert("convert_one");
-        return etl::fast_dyn_matrix<T_T, Dims...>(from);
+        etl::fast_dyn_matrix<T_T, Dims...> c;
+        c = from;
+        return c;
     }
 };
 
@@ -155,7 +165,9 @@ struct converter_one<std::deque<T_F, A>, etl::fast_dyn_matrix<T_T, Dims...>> {
     template<typename L>
     static etl::fast_dyn_matrix<T_T, Dims...> convert(const L&, const std::deque<T_F, A>& from){
         debug_convert("convert_one");
-        return etl::fast_dyn_matrix<T_T, Dims...>(from);
+        etl::fast_dyn_matrix<T_T, Dims...> c;
+        c = from;
+        return c;
     }
 };
 
@@ -167,7 +179,9 @@ struct converter_one<etl::fast_dyn_matrix<T_F, Dims...>, etl::fast_dyn_matrix<T_
     template<typename L>
     static etl::fast_dyn_matrix<T_T, Dims2...> convert(const L&, const etl::fast_dyn_matrix<T_F, Dims...>& from){
         debug_convert("convert_one");
-        return etl::fast_dyn_matrix<T_T, Dims2...>(from);
+        etl::fast_dyn_matrix<T_T, Dims2...> c;
+        c = from;
+        return c;
     }
 };
 
@@ -179,7 +193,9 @@ struct converter_one<etl::fast_matrix<T_F, Dims...>, etl::fast_dyn_matrix<T_T, D
     template<typename L>
     static etl::fast_dyn_matrix<T_T, Dims2...> convert(const L&, const etl::fast_matrix<T_F, Dims...>& from){
         debug_convert("convert_one");
-        return etl::fast_dyn_matrix<T_T, Dims2...>(from);
+        etl::fast_dyn_matrix<T_T, Dims2...> c;
+        c = from;
+        return c;
     }
 };
 
@@ -221,7 +237,9 @@ struct converter_one<etl::dyn_matrix<T_F, D>, etl::fast_dyn_matrix<T_T, Dims...>
     template<typename L>
     static etl::fast_dyn_matrix<T_T, Dims...> convert(const L&, const etl::dyn_matrix<T_F, D>& from){
         debug_convert("convert_one");
-        return etl::fast_dyn_matrix<T_T, Dims...>(from);
+        etl::fast_dyn_matrix<T_T, Dims...> c;
+        c = from;
+        return c;
     }
 };
 
@@ -233,7 +251,9 @@ struct converter_one<etl::dyn_matrix<T_F, D>, etl::dyn_matrix<T_T, D>, std::enab
     template<typename L>
     static etl::dyn_matrix<T_T, D> convert(const L&, const etl::dyn_matrix<T_F, D>& from){
         debug_convert("convert_one");
-        return etl::dyn_matrix<T_T, D>(from);
+        etl::dyn_matrix<T_T, D> c;
+        c = from;
+        return c;
     }
 };
 
