@@ -236,7 +236,10 @@ private:
         return as_derived().pool_C();
     }
 
-    weight energy_impl(const input_one_t& v, const hidden_output_one_t& h) const {
+    template<typename Out>
+    weight energy_impl(const input_one_t& v, const Out& h) const {
+        static_assert(etl::is_etl_expr<Out>::value, "energy_impl works with ETL expressions only");
+
         auto tmp = as_derived().energy_tmp();
         tmp = etl::conv_4d_valid_flipped(as_derived().reshape_v_a(v), as_derived().w);
 

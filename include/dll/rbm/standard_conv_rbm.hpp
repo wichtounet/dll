@@ -122,7 +122,7 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
     }
 
     weight free_energy() const {
-        return as_derived().free_energy_impl(as_derived().v1);
+        return free_energy(as_derived().v1);
     }
 
     friend base_type;
