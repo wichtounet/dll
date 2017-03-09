@@ -221,6 +221,7 @@ struct cg_trainer {
 
         update_incs<Temp>(dbn.template layer_get<layers - 1>(), diffs, dbn.template layer_get<layers - 2>().get_cg_context().gr_probs_a);
 
+#ifdef __clang__
         dbn.for_each_layer_rpair_i([n_samples, &probs_refs](std::size_t I, auto& r1, auto& r2) {
             auto& c1 = r1.get_cg_context();
             auto& c2 = r2.get_cg_context();
@@ -231,6 +232,21 @@ struct cg_trainer {
                 this_type::update_incs<Temp>(r1, diffs, *probs_refs[I - 1]);
             }
         });
+
+#else
+        std::vector<std::vector<weight>>& diffs_p = diffs;
+
+        dbn.for_each_layer_rpair_i([&diffs_p, n_samples, &probs_refs](std::size_t I, auto& r1, auto& r2) {
+            auto& c1 = r1.get_cg_context();
+            auto& c2 = r2.get_cg_context();
+
+            this_type::update_diffs<Temp>(r1, r2, c1, c2, diffs_p, n_samples);
+
+            if (I > 0) {
+                this_type::update_incs<Temp>(r1, diffs_p, *probs_refs[I - 1]);
+            }
+        });
+#endif
 
         update_incs<Temp>(dbn.template layer_get<0>(), diffs, context.inputs);
 
