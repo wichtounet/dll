@@ -9,6 +9,9 @@
 
 #define DLL_SVM_SUPPORT
 
+#include "dll/augment/augment_layer.hpp"
+#include "dll/transform/rectifier_layer.hpp"
+#include "dll/transform/random_layer.hpp"
 #include "dll/rbm/conv_rbm.hpp"
 #include "dll/rbm/dyn_conv_rbm.hpp"
 #include "dll/rbm/conv_rbm_mp.hpp"
