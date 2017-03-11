@@ -207,20 +207,6 @@ TEST_CASE("dyn_rbm/mnist_12", "rbm::init_weights") {
     REQUIRE(error < 1e-3);
 }
 
-//Only here for benchmarking purposes
-TEST_CASE("dyn_rbm/mnist_14", "rbm::slow") {
-    dll::dyn_rbm_desc<>::layer_t rbm(28 * 28, 400);
-
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
-    REQUIRE(!dataset.training_images.empty());
-
-    mnist::binarize_dataset(dataset);
-
-    auto error = rbm.train(dataset.training_images, 10);
-
-    REQUIRE(error < 5e-2);
-}
-
 //Only here for debugging purposes
 TEST_CASE("dyn_rbm/mnist_15", "rbm::fast") {
     dll::dyn_rbm_desc<>::layer_t rbm(28 * 28, 100);
