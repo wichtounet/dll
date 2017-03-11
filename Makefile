@@ -103,14 +103,21 @@ endif
 
 CPP_FILES=$(wildcard view/*.cpp)
 PROCESSOR_CPP_FILES=$(wildcard processor/src/*.cpp)
-TEST_CPP_FILES=$(wildcard test/src/*.cpp)
 PROCESSOR_TEST_CPP_FILES := $(filter-out processor/src/main.cpp,$(PROCESSOR_CPP_FILES))
 
-TEST_FILES=$(TEST_CPP_FILES) $(PROCESSOR_TEST_CPP_FILES)
+UNIT_TEST_CPP_FILES=$(wildcard test/src/unit/*.cpp)
+PERF_TEST_CPP_FILES=$(wildcard test/src/perf/*.cpp)
+MISC_TEST_CPP_FILES=$(wildcard test/src/misc/*.cpp)
+
+UNIT_TEST_FILES=$(UNIT_TEST_CPP_FILES) $(PROCESSOR_TEST_CPP_FILES)
+PERF_TEST_FILES=$(PERF_TEST_CPP_FILES) $(PROCESSOR_TEST_CPP_FILES)
+MISC_TEST_FILES=$(MISC_TEST_CPP_FILES) $(PROCESSOR_TEST_CPP_FILES)
 
 # Compile all the sources
 $(eval $(call auto_folder_compile,processor/src,-Iprocessor/include))
-$(eval $(call auto_folder_compile,test/src,-Itest/include))
+$(eval $(call auto_folder_compile,test/src/unit,-Itest/include))
+$(eval $(call auto_folder_compile,test/src/perf,-Itest/include))
+$(eval $(call auto_folder_compile,test/src/misc,-Itest/include))
 $(eval $(call auto_folder_compile,view/src))
 $(eval $(call auto_folder_compile,workbench/src,-DDLL_SILENT))
 
@@ -118,9 +125,13 @@ $(eval $(call auto_folder_compile,workbench/src,-DDLL_SILENT))
 $(eval $(call add_executable,dllp,$(PROCESSOR_CPP_FILES)))
 $(eval $(call add_executable_set,dllp,dllp))
 
-# Generate executable for the test executable
-$(eval $(call add_executable,dll_test,$(TEST_FILES),$(TEST_LD_FLAGS)))
-$(eval $(call add_executable_set,dll_test,dll_test))
+# Generate executable for the test executables
+$(eval $(call add_executable,dll_test_unit,$(UNIT_TEST_FILES),$(TEST_LD_FLAGS)))
+$(eval $(call add_executable,dll_test_perf,$(PERF_TEST_FILES),$(TEST_LD_FLAGS)))
+$(eval $(call add_executable,dll_test_misc,$(MISC_TEST_FILES),$(TEST_LD_FLAGS)))
+$(eval $(call add_executable_set,dll_test_unit,dll_test_unit))
+$(eval $(call add_executable_set,dll_test_perf,dll_test_perf))
+$(eval $(call add_executable_set,dll_test_misc,dll_test_misc))
 
 # Generate executables for visualization
 $(eval $(call add_executable,dll_view_rbm,view/src/rbm_view.cpp,$(OPENCV_LD_FLAGS)))

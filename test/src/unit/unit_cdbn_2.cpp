@@ -172,3 +172,37 @@ TEST_CASE("unit/cdbn/mnist/12", "[dbn][conv][mnist][patches][unit]") {
     auto probs = dbn->activation_probabilities(dataset.training_images[0]);
     REQUIRE(probs.size() == 4);
 }
+
+TEST_CASE("hybrid/mnist/9", "[cdbn][augment][unit]") {
+    using dbn_t =
+        dll::dyn_dbn_desc<dll::dbn_layers<
+            dll::augment_layer_desc<dll::copy<2>, dll::copy<3>>::layer_t,
+            dll::conv_rbm_desc_square<1, 28, 20, 8, dll::momentum, dll::batch_size<10>>::layer_t
+        >>::dbn_t;
+
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(100);
+    REQUIRE(!dataset.training_images.empty());
+
+    mnist::binarize_dataset(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->display();
+
+    dbn->pretrain(dataset.training_images, 20);
+
+    REQUIRE(dbn->activation_probabilities(dataset.training_images[0]).size() > 0);
+}
+
+TEST_CASE("hybrid/mnist/5", "[cdbn][rectifier][svm][unit]") {
+    using dbn_t =
+        dll::dyn_dbn_desc<dll::dbn_layers<
+              dll::conv_rbm_desc_square<1, 28, 20, 12, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
+            , dll::random_layer_desc::layer_t
+            , dll::rectifier_layer_desc<>::layer_t
+            , dll::conv_rbm_desc_square<20, 12, 20, 10, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
+        >>::dbn_t;
+
+    auto dbn = std::make_unique<dbn_t>();
+    dbn->display();
+}
