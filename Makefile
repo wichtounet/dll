@@ -164,25 +164,25 @@ $(eval $(call add_executable_set,dll_perf_paper_conv,dll_perf_paper_conv))
 $(eval $(call add_executable_set,dll_perf_conv,dll_perf_conv))
 $(eval $(call add_executable_set,dll_conv_types,dll_conv_types))
 
-release: release_dllp release_dll_test release_dll_view
-release_debug: release_debug_dllp release_debug_dll_test release_debug_dll_view
-debug: debug_dllp debug_dll_test debug_dll_view
+release: release_dllp release_dll_test_unit release_dll_test_perf release_dll_test_misc release_dll_view
+release_debug: release_debug_dllp release_debug_dll_test_unit release_debug_dll_test_perf release_debug_dll_test_misc release_debug_dll_view
+debug: debug_dllp debug_dll_test_unit debug_dll_test_perf debug_dll_test_misc debug_dll_view
 
 all: release debug release_debug
 
-debug_test: debug_dll_test
-	./debug/bin/dll_test [unit]
+debug_test: debug_dll_test_unit
+	./debug/bin/dll_test_unit
 
-release_test: release_dll_test
-	./release/bin/dll_test [unit]
+release_test: release_dll_test_unit
+	./release/bin/dll_test_unit
 
-release_debug_test: release_debug_dll_test
-	./release_debug/bin/dll_test [unit]
+release_debug_test: release_debug_dll_test_unit
+	./release_debug/bin/dll_test_unit
 
 test: all
-	./debug/bin/dll_test
-	./release/bin/dll_test
-	./release_debug/bin/dll_test
+	./debug/bin/dll_test_unit
+	./release/bin/dll_test_unit
+	./release_debug/bin/dll_test_unit
 
 CLANG_FORMAT ?= clang-format-3.7
 CLANG_MODERNIZE ?= clang-modernize-3.7
