@@ -7,41 +7,32 @@
 
 #pragma once
 
+#include "dll/base_traits.hpp"
 #include "dll/neural_layer.hpp"
 
 namespace dll {
 
 /*!
- * \brief Standard convolutional layer of neural network.
+ * \brief Standard dynamic deconvolutional layer of neural network.
  */
 template <typename Desc>
-struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
-    using desc      = Desc;
-    using weight    = typename desc::weight;
-    using this_type = deconv_layer<desc>;
+struct dyn_deconv_layer final : neural_layer<dyn_deconv_layer<Desc>, Desc> {
+    using desc      = Desc;                  ///< The descriptor type
+    using weight    = typename desc::weight; ///< The weight type
+    using this_type = dyn_deconv_layer<desc>;  ///< This type
     using base_type = neural_layer<this_type, desc>;
-
-    static constexpr const std::size_t NV1 = desc::NV1; ///< The first dimension of the visible units
-    static constexpr const std::size_t NV2 = desc::NV2; ///< The second dimension of the visible units
-    static constexpr const std::size_t NW1 = desc::NW1; ///< The first dimension of the hidden units
-    static constexpr const std::size_t NW2 = desc::NW2; ///< The second dimension of the hidden units
-    static constexpr const std::size_t NC  = desc::NC;  ///< The number of input channels
-    static constexpr const std::size_t K   = desc::K;   ///< The number of filters
-
-    static constexpr const std::size_t NH1 = NV1 + NW1 - 1; //By definition
-    static constexpr const std::size_t NH2 = NV2 + NW2 - 1; //By definition
 
     static constexpr auto activation_function = desc::activation_function;
     static constexpr auto w_initializer       = desc::w_initializer;
     static constexpr auto b_initializer       = desc::b_initializer;
 
-    using input_one_t  = etl::fast_dyn_matrix<weight, NC, NV1, NV2>;
-    using output_one_t = etl::fast_dyn_matrix<weight, K, NH1, NH2>;
-    using input_t      = std::vector<input_one_t>;
-    using output_t     = std::vector<output_one_t>;
+    using input_one_t  = etl::dyn_matrix<weight, 3>; ///< The type for one input
+    using output_one_t = etl::dyn_matrix<weight, 3>; ///< The type for one output
+    using input_t      = std::vector<input_one_t>;   ///< The type for many input
+    using output_t     = std::vector<output_one_t>;  ///< The type for many output
 
-    using w_type = etl::fast_matrix<weight, NC, K, NW1, NW2>;
-    using b_type = etl::fast_matrix<weight, K>;
+    using w_type = etl::dyn_matrix<weight, 4>;
+    using b_type = etl::dyn_matrix<weight, 1>;
 
     //Weights and biases
     w_type w; //!< Weights
@@ -51,36 +42,61 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
     std::unique_ptr<w_type> bak_w; //!< Backup Weights
     std::unique_ptr<b_type> bak_b; //!< Backup Hidden biases
 
-    /*!
-     * \brief Initialize a conv layer with basic weights.
-     */
-    deconv_layer() : base_type() {
+    size_t nv1; ///< The first visible dimension
+    size_t nv2; ///< The second visible dimension
+    size_t nh1; ///< The first output dimension
+    size_t nh2; ///< The second output dimension
+    size_t nc;  ///< The number of input channels
+    size_t k;   ///< The number of filters
+
+    size_t nw1; ///< The first dimension of the filters
+    size_t nw2; ///< The second dimension of the filters
+
+    dyn_deconv_layer(): base_type() {
+        // Nothing else to init
+    }
+
+    void init_layer(size_t nc, size_t nv1, size_t nv2, size_t k, size_t nh1, size_t nh2){
+        this->nv1 = nv1;
+        this->nv2 = nv2;
+        this->nh1 = nh1;
+        this->nh2 = nh2;
+        this->nc = nc;
+        this->k = k;
+
+        this->nw1 = nv1 - nh1 + 1;
+        this->nw2 = nv2 - nh2 + 1;
+
+        w = etl::dyn_matrix<weight, 4>(k, nc, nw1, nw2);
+
+        b = etl::dyn_vector<weight>(k);
+
         initializer_function<w_initializer>::initialize(w, input_size(), output_size());
         initializer_function<b_initializer>::initialize(b, input_size(), output_size());
     }
 
-    static constexpr std::size_t input_size() noexcept {
-        return NC * NV1 * NV2;
+    std::size_t input_size() const noexcept {
+        return nc * nv1 * nv2;
     }
 
-    static constexpr std::size_t output_size() noexcept {
-        return K * NH1 * NH2;
+    std::size_t output_size() const noexcept {
+        return k * nh1 * nh2;
     }
 
-    static constexpr std::size_t parameters() noexcept {
-        return K * NW1 * NW2;
+    std::size_t parameters() const noexcept {
+        return k * nw1 * nw2;
     }
 
-    static std::string to_short_string() {
+    std::string to_short_string() const {
         char buffer[1024];
-        snprintf(buffer, 1024, "Deconv: %lux%lux%lu -> (%lux%lux%lu) -> %s -> %lux%lux%lu", NC, NV1, NV2, K, NW1, NW2, to_string(activation_function).c_str(), K, NH1, NH2);
+        snprintf(buffer, 1024, "Deconv(dyn): %lux%lux%lu -> (%lux%lux%lu) -> %s -> %lux%lux%lu", nc, nv1, nv2, k, nw1, nw2, to_string(activation_function).c_str(), k, nh1, nh2);
         return {buffer};
     }
 
     void activate_hidden(output_one_t& output, const input_one_t& v) const {
-        auto b_rep = etl::force_temporary(etl::rep<NH1, NH2>(b));
+        auto b_rep = etl::force_temporary(etl::rep(b, nh1, nh2));
 
-        etl::reshape<1, K, NH1, NH2>(output) = etl::conv_4d_full_flipped(etl::reshape<1, NC, NV1, NV2>(v), w);
+        etl::reshape(output, 1, k, nh1, nh2) = etl::conv_4d_full_flipped(etl::reshape(v, 1, nc, nv1, nv2), w);
 
         output = f_activate<activation_function>(b_rep + output);
     }
@@ -95,26 +111,40 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
     void batch_activate_hidden(H1&& output, const V& v) const {
         output = etl::conv_4d_full_flipped(v, w);
 
-        static constexpr const auto batch_size = etl::decay_traits<H1>::template dim<0>();
+        const auto batch_size = etl::dim<0>(output);
 
-        auto b_rep = etl::force_temporary(etl::rep_l<batch_size>(etl::rep<NH1, NH2>(b)));
+        auto b_rep = etl::force_temporary(etl::rep_l(etl::rep(b, nh1, nh2), batch_size));
 
         output = f_activate<activation_function>(b_rep + output);
     }
 
-    template <typename Input>
-    output_one_t prepare_one_output() const {
-        return {};
+    void prepare_input(input_one_t& input) const {
+        input = input_one_t(nc, nv1, nv2);
     }
 
     template <typename Input>
-    static output_t prepare_output(std::size_t samples) {
-        return output_t{samples};
+    output_t prepare_output(std::size_t samples) const {
+        output_t output;
+        output.reserve(samples);
+        for(size_t i = 0; i < samples; ++i){
+            output.emplace_back(k, nh1, nh2);
+        }
+        return output;
+    }
+
+    template <typename Input>
+    output_one_t prepare_one_output() const {
+        return output_one_t(k, nh1, nh2);
+    }
+
+    template <typename DBN>
+    void init_sgd_context() {
+        this->sgd_context_ptr = std::make_shared<sgd_context<DBN, this_type>>(nc, nv1, nv2, k, nh1, nh2);
     }
 
     template<typename DRBM>
-    static void dyn_init(DRBM& dyn){
-        dyn.init_layer(NC, NV1, NV2, K, NH1, NH2);
+    static void dyn_init(DRBM&){
+        //Nothing to change
     }
 
     /*!
@@ -148,8 +178,8 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
      */
     template<typename H, typename C, cpp_enable_if(etl::decay_traits<H>::dimensions() != 4)>
     void backward_batch(H&& output, C& context) const {
-        static constexpr auto B = etl::decay_traits<H>::template dim<0>();
-        etl::reshape<B, NC, NV1, NV2>(output) = etl::conv_4d_valid_flipped(context.errors, w);
+        const auto B = etl::dim<0>(output);
+        etl::reshape(output, nc, nv1, nv2) = etl::conv_4d_valid_flipped(context.errors, w);
     }
 
     /*!
@@ -163,36 +193,10 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
     }
 };
 
-//Allow odr-use of the constexpr static members
-
-template <typename Desc>
-const std::size_t deconv_layer<Desc>::NV1;
-
-template <typename Desc>
-const std::size_t deconv_layer<Desc>::NV2;
-
-template <typename Desc>
-const std::size_t deconv_layer<Desc>::NH1;
-
-template <typename Desc>
-const std::size_t deconv_layer<Desc>::NH2;
-
-template <typename Desc>
-const std::size_t deconv_layer<Desc>::NC;
-
-template <typename Desc>
-const std::size_t deconv_layer<Desc>::NW1;
-
-template <typename Desc>
-const std::size_t deconv_layer<Desc>::NW2;
-
-template <typename Desc>
-const std::size_t deconv_layer<Desc>::K;
-
 // Declare the traits for the Layer
 
 template<typename Desc>
-struct layer_base_traits<deconv_layer<Desc>> {
+struct layer_base_traits<dyn_deconv_layer<Desc>> {
     static constexpr bool is_neural     = true;  ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false;  ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -204,7 +208,7 @@ struct layer_base_traits<deconv_layer<Desc>> {
     static constexpr bool is_transform  = false; ///< Indicates if the layer is a transform layer
     static constexpr bool is_patches    = false; ///< Indicates if the layer is a patches layer
     static constexpr bool is_augment    = false; ///< Indicates if the layer is an augment layer
-    static constexpr bool is_dynamic    = false; ///< Indicates if the layer is dynamic
+    static constexpr bool is_dynamic    = true; ///< Indicates if the layer is dynamic
     static constexpr bool pretrain_last = false; ///< Indicates if the layer is dynamic
     static constexpr bool sgd_supported = true;  ///< Indicates if the layer is supported by SGD
 };
