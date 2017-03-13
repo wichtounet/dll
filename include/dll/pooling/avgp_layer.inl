@@ -48,8 +48,8 @@ struct avgp_layer_3d final : pooling_layer_3d<avgp_layer_3d<Desc>, Desc> {
 
     /*!
      * \brief Forward activation of the layer for one batch of sample
-     * \param h The output matrix
-     * \param v The input matrix
+     * \param output The output matrix
+     * \param input The input matrix
      */
     template <typename Input, typename Output>
     static void batch_activate_hidden(Output& output, const Input& input) {

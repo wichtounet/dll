@@ -133,14 +133,14 @@ struct activation : value_conf_elt<activation_id, function, FT> {};
 
 /*!
  * \brief Sets the initializer
- * \tparam FT The initializer type
+ * \tparam IT The initializer type
  */
 template <initializer_type IT>
 struct initializer : value_conf_elt<initializer_id, initializer_type, IT> {};
 
 /*!
  * \brief Sets the initializer
- * \tparam FT The initializer type
+ * \tparam IT The initializer type
  */
 template <initializer_type IT>
 struct initializer_bias : value_conf_elt<initializer_bias_id, initializer_type, IT> {};

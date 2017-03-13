@@ -49,8 +49,8 @@ struct dyn_avgp_layer_3d final : dyn_pooling_layer_3d<dyn_avgp_layer_3d<Desc>, D
 
     /*!
      * \brief Forward activation of the layer for one batch of sample
-     * \param h The output matrix
-     * \param v The input matrix
+     * \param output The output matrix
+     * \param input The input matrix
      */
     template <typename Input, typename Output>
     void batch_activate_hidden(Output& output, const Input& input) const {
