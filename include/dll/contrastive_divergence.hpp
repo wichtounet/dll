@@ -235,32 +235,18 @@ void batch_compute_gradients(Trainer& t) {
     dll::auto_timer timer("cd:batch_compute_gradients:std");
 
     const auto B = etl::dim<0>(t.w_grad_b);
-    const auto NV = etl::dim<1>(t.w_grad_b);
-    const auto NH = etl::dim<2>(t.w_grad_b);
 
-    // TODO This is too slow!
+    t.w_grad = batch_outer(t.vf, t.h1_a);
+    t.w_grad -= batch_outer(t.v2_a, t.h2_a);
 
-    maybe_parallel_foreach_n(t.pool, 0, NV, [&](const size_t i){
-        for (std::size_t b = 0; b < B; b++) {
-            auto f1 = t.vf(b, i);
-            auto f2 = t.v2_a(b, i);
-
-            for (std::size_t j = 0; j < NH; j++) {
-                t.w_grad(i, j) +=  f1 * t.h1_a(b, j) - f2 * t.h2_a(b, j);
-            }
-        }
-    });
-
-    for (std::size_t b = 0; b < B; b++) {
-        for (std::size_t i = 0; i < NH; i++) {
-            t.b_grad(i) += t.h1_a(b, i) - t.h2_a(b, i);
-        }
+    t.b_grad = t.h1_a(0) - t.h2_a(0);
+    for (std::size_t b = 1; b < B; b++) {
+        t.b_grad += t.h1_a(b) - t.h2_a(b);
     }
 
-    for (std::size_t b = 0; b < B; b++) {
-        for (std::size_t i = 0; i < NV; i++) {
-            t.c_grad(i) += t.vf(b, i) - t.v2_a(b, i);
-        }
+    t.c_grad = t.vf(0) - t.v2_a(0);
+    for (std::size_t b = 1; b < B; b++) {
+        t.c_grad += t.vf(b) - t.v2_a(b);
     }
 }
 
@@ -380,10 +366,6 @@ void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch
     }
 
     //Compute the gradients
-
-    t.w_grad = 0;
-    t.b_grad = 0;
-    t.c_grad = 0;
 
     batch_compute_gradients(t);
 }
