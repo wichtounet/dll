@@ -91,6 +91,11 @@ CXX_FLAGS += -Wno-documentation
 endif
 endif
 
+# Activate hybrid compilation by default
+ifneq (,$(DLL_QUICK))
+CXX_FLAGS += -DDLL_QUICK
+endif
+
 # Disable timers on demand
 ifneq (,$(DLL_NO_TIMERS))
 CXX_FLAGS += -DDLL_NO_TIMERS
