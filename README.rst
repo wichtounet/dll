@@ -1,7 +1,7 @@
 Deep Learning Library (DLL)
 ===========================
 
-|logo|    |coverage| |jenkins| |license| |doc|
+|logo|    |coverage| |jenkins| |license|
 
 .. |logo| image:: logo_small.png
 .. |coverage| image:: https://img.shields.io/sonar/https/sonar.baptiste-wicht.ch/dll/coverage.svg
