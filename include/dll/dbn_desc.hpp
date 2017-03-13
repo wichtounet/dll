@@ -11,9 +11,6 @@
 
 namespace dll {
 
-template <typename Layers, typename... Parameters>
-using dbn_desc = generic_dbn_desc<dbn, Layers, Parameters...>;
-
 template <typename Layers>
 struct dyn_layers_t;
 
@@ -34,5 +31,22 @@ struct generic_dyn_dbn_desc : generic_dbn_desc<DBN_T, Layers, Parameters...> {
 
 template <typename Layers, typename... Parameters>
 using dyn_dbn_desc = generic_dyn_dbn_desc<dbn, Layers, Parameters...>;
+
+// By default dbn_desc use directly the layers that it is provided
+// if DLL_QUICK is set, it is set to hybrid mode by default
+
+#ifndef DLL_QUICK
+template <typename Layers, typename... Parameters>
+using dbn_desc = generic_dbn_desc<dbn, Layers, Parameters...>;
+#else
+template <typename Layers, typename... Parameters>
+using dbn_desc = generic_dyn_dbn_desc<dbn, Layers, Parameters...>;
+#endif
+
+// fast_dbn_desc is always forced to direct mode, will not respect
+// DLL_QUICK
+
+template <typename Layers, typename... Parameters>
+using fast_dbn_desc = generic_dbn_desc<dbn, Layers, Parameters...>;
 
 } //end of dll namespace
