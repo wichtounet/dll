@@ -46,7 +46,7 @@ struct dyn_conv_rbm_desc {
     using layer_t = dyn_conv_rbm<dyn_conv_rbm_desc<Parameters...>>;
 
     /*! The layer type */
-    using dyn_layer_t = dyn_conv_rbm<dyn_conv_rbm_desc<Parameters...>>;
+    using dyn_layer_t = layer_t;
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
