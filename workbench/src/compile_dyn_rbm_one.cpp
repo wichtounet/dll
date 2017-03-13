@@ -8,7 +8,7 @@
 #include <iostream>
 #include <chrono>
 
-#include "dll/dyn_rbm.hpp"
+#include "dll/rbm/dyn_rbm.hpp"
 #include "dll/dbn.hpp"
 
 #include "mnist/mnist_reader.hpp"
