@@ -198,7 +198,7 @@ bool dllp::conv_rbm_layer::is_conv() const {
 }
 
 void dllp::conv_rbm_layer::print(std::ostream& out) const {
-    out << "dll::conv_rbm_desc<" << c << ", " << v1 << ", " << v2 << ", " << k << ", " << (v1 - w1 + 1) << ", " << (v2 - w2 + 1);
+    out << "dll::conv_rbm_desc<" << c << ", " << v1 << ", " << v2 << ", " << k << ", " << w1 << ", " << w2;
 
     base_rbm_layer::print(out);
 

@@ -200,8 +200,8 @@ TEST_CASE("unit/augment/mnist/9", "[cdbn][augment][unit]") {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->template init_layer<1>(1, 28, 28, 10, 20, 20);
-    dbn->template init_layer<2>(10, 20, 20, 10, 16, 16);
+    dbn->template init_layer<1>(1, 28, 28, 10, 9, 9);
+    dbn->template init_layer<2>(10, 20, 20, 10, 5, 5);
 
     dbn->display();
 
@@ -223,7 +223,7 @@ TEST_CASE("unit/augment/mnist/10", "[cdbn][augment][unit]") {
     auto dbn = std::make_unique<dbn_t>();
 
     dbn->template init_layer<0>(14, 14, 14, 14);
-    dbn->template init_layer<1>(1, 14, 14, 10, 8, 8);
+    dbn->template init_layer<1>(1, 14, 14, 10, 7, 7);
 
     dbn->display();
 

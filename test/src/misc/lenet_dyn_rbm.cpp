@@ -34,9 +34,9 @@ TEST_CASE("dyn_lenet_rbm", "[dbn][mnist][sgd]") {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->template layer_get<1>().init_layer(1, 28, 28, 20, 24, 24);
+    dbn->template layer_get<1>().init_layer(1, 28, 28, 20, 5, 5);
     dbn->template layer_get<2>().init_layer(20, 24, 24, 1, 2, 2);
-    dbn->template layer_get<3>().init_layer(20, 12, 12, 50, 8, 8);
+    dbn->template layer_get<3>().init_layer(20, 12, 12, 50, 5, 5);
     dbn->template layer_get<4>().init_layer(50, 8, 8, 1, 2, 2);
     dbn->template layer_get<5>().init_layer(50 * 4 * 4, 500);
     dbn->template layer_get<6>().init_layer(500, 10);

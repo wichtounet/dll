@@ -88,8 +88,8 @@ TEST_CASE("unit/cdbn/rectifier/mnist/3", "[cdbn][rectifier][svm][unit]") {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->template layer_get<0>().init_layer(1, 28, 28, 20, 12, 12);
-    dbn->template layer_get<2>().init_layer(20, 12, 12, 20, 10, 10);
+    dbn->template layer_get<0>().init_layer(1, 28, 28, 20, 17, 17);
+    dbn->template layer_get<2>().init_layer(20, 12, 12, 20, 3, 3);
 
     dbn->display();
 

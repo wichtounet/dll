@@ -92,8 +92,8 @@ TEST_CASE("conv_dbn/mnist_7", "conv_dbn::svm_scale") {
 TEST_CASE("conv_dbn/mnist_8", "conv_dbn::unsquare_svm") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_rbm_desc<1, 28, 28, 40, 14, 12, dll::momentum, dll::batch_size<25>>::layer_t,
-            dll::conv_rbm_desc<40, 14, 12, 40, 8, 10, dll::momentum, dll::batch_size<25>>::layer_t>>::dbn_t dbn_t;
+            dll::conv_rbm_desc<1, 28, 28, 40, 15, 17, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::conv_rbm_desc<40, 14, 12, 40, 7, 3, dll::momentum, dll::batch_size<25>>::layer_t>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
     REQUIRE(!dataset.training_images.empty());

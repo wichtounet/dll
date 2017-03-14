@@ -29,9 +29,9 @@ TEST_CASE("dyn_conv_dbn/mnist_1", "conv_dbn::simple") {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->template layer_get<0>().init_layer(1, 28, 28, 40, 12, 12);
-    dbn->template layer_get<1>().init_layer(40, 12, 12, 20, 10, 10);
-    dbn->template layer_get<2>().init_layer(20, 10, 10, 50, 6, 6);
+    dbn->template layer_get<0>().init_layer(1, 28, 28, 40, 17, 17);
+    dbn->template layer_get<1>().init_layer(40, 12, 12, 20, 3, 3);
+    dbn->template layer_get<2>().init_layer(20, 10, 10, 50, 5, 5);
 
     dbn->template layer_get<0>().batch_size = 25;
     dbn->template layer_get<1>().batch_size = 25;

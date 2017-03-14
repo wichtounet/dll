@@ -18,25 +18,25 @@ namespace dll {
  * This struct should be used to define a RBM either as standalone or for a DBN.
  * Once configured, the ::layer_t member returns the type of the configured RBM.
  */
-template <std::size_t NC_T, std::size_t NV_1, std::size_t NV_2, std::size_t K_T, std::size_t NH_1, std::size_t NH_2, typename... Parameters>
+template <size_t NC_T, size_t NV_1, size_t NV_2, size_t K_T, size_t NW_1, size_t NW_2, typename... Parameters>
 struct conv_rbm_desc {
-    static constexpr const std::size_t NV1 = NV_1; ///< The first dimension of the input
-    static constexpr const std::size_t NV2 = NV_2; ///< The second dimension of the input
-    static constexpr const std::size_t NH1 = NH_1; ///< The first dimension of the output
-    static constexpr const std::size_t NH2 = NH_2; ///< The second dimension of the output
-    static constexpr const std::size_t NC  = NC_T; ///< The number of input channels
-    static constexpr const std::size_t K   = K_T;  ///< The number of filters
+    static constexpr size_t NV1 = NV_1; ///< The first dimension of the input
+    static constexpr size_t NV2 = NV_2; ///< The second dimension of the input
+    static constexpr size_t NW1 = NW_1; ///< The first dimension of the output
+    static constexpr size_t NW2 = NW_2; ///< The second dimension of the output
+    static constexpr size_t NC  = NC_T; ///< The number of input channels
+    static constexpr size_t K   = K_T;  ///< The number of filters
 
     /*!
      * \brief A list of all the parameters of the descriptor
      */
     using parameters = cpp::type_list<Parameters...>;
 
-    static constexpr const std::size_t BatchSize    = detail::get_value<batch_size<1>, Parameters...>::value;
-    static constexpr const unit_type visible_unit   = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;
-    static constexpr const unit_type hidden_unit    = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
-    static constexpr const sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;
-    static constexpr const bias_mode Bias           = detail::get_value<bias<bias_mode::SIMPLE>, Parameters...>::value;
+    static constexpr size_t BatchSize         = detail::get_value<batch_size<1>, Parameters...>::value;
+    static constexpr unit_type visible_unit   = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;
+    static constexpr unit_type hidden_unit    = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
+    static constexpr sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;
+    static constexpr bias_mode Bias           = detail::get_value<bias<bias_mode::SIMPLE>, Parameters...>::value;
 
     /*! The type used to store the weights */
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
@@ -50,7 +50,7 @@ struct conv_rbm_desc {
     using watcher_t = typename detail::get_template_type<watcher<default_rbm_watcher>, Parameters...>::template value<RBM>;
 
     /*! The layer type */
-    using layer_t = conv_rbm<conv_rbm_desc<NC_T, NV1, NV2, K_T, NH1, NH2, Parameters...>>;
+    using layer_t = conv_rbm<conv_rbm_desc<NC_T, NV1, NV2, K_T, NW1, NW2, Parameters...>>;
 
 private:
     template <typename... Args>
@@ -70,14 +70,11 @@ public:
 
     static_assert(NV1 > 0, "A matrix of at least 1x1 is necessary for the visible units");
     static_assert(NV2 > 0, "A matrix of at least 1x1 is necessary for the visible units");
-    static_assert(NH1 > 0, "A matrix of at least 1x1 is necessary for the hidden units");
-    static_assert(NH2 > 0, "A matrix of at least 1x1 is necessary for the hidden units");
+    static_assert(NW1 > 0, "A matrix of at least 1x1 is necessary for the kernel");
+    static_assert(NW2 > 0, "A matrix of at least 1x1 is necessary for the kernel");
     static_assert(NC > 0, "At least one channel is necessary");
     static_assert(K > 0, "At least one group is necessary");
     static_assert(BatchSize > 0, "Batch size must be at least 1");
-
-    static_assert(NV1 >= NH1, "The convolutional filter must be of at least size 1");
-    static_assert(NV2 >= NH2, "The convolutional filter must be of at least size 1");
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
@@ -98,7 +95,7 @@ public:
  * This struct should be used to define a RBM either as standalone or for a DBN.
  * Once configured, the ::rbm_t member returns the type of the configured RBM.
  */
-template <std::size_t NC_T, std::size_t NV_T, std::size_t K_T, std::size_t NH_T, typename... Parameters>
-using conv_rbm_desc_square = conv_rbm_desc<NC_T, NV_T, NV_T, K_T, NH_T, NH_T, Parameters...>;
+template <size_t NC_T, size_t NV_T, size_t K_T, size_t NW_T, typename... Parameters>
+using conv_rbm_desc_square = conv_rbm_desc<NC_T, NV_T, NV_T, K_T, NW_T, NW_T, Parameters...>;
 
 } //end of dll namespace

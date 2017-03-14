@@ -28,9 +28,9 @@
 TEST_CASE("unit/cdbn/mnist/7", "[cdbn][ap][svm][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_rbm_desc<1, 28, 28, 20, 20, 21, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::conv_rbm_desc<1, 28, 28, 20, 9, 8, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::avgp_layer_3d_desc<20, 20, 21, 2, 2, 3>::layer_t,
-            dll::conv_rbm_desc<10, 10, 7, 20, 8, 5, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::conv_rbm_desc<10, 10, 7, 20, 3, 3, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::avgp_layer_3d_desc<20, 8, 5, 2, 1, 1>::layer_t>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
@@ -59,8 +59,8 @@ TEST_CASE("unit/cdbn/mnist/7", "[cdbn][ap][svm][unit]") {
 TEST_CASE("unit/cdbn/mnist/8", "[cdbn][ap][svm][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_rbm_desc<1, 28, 28, 20, 14, 12, dll::momentum, dll::batch_size<25>>::layer_t,
-            dll::conv_rbm_desc<20, 14, 12, 20, 8, 10, dll::momentum, dll::batch_size<25>>::layer_t, dll::mp_layer_3d_desc<20, 8, 10, 1, 1, 1>::layer_t, dll::avgp_layer_3d_desc<20, 8, 10, 1, 1, 1>::layer_t>>::dbn_t dbn_t;
+            dll::conv_rbm_desc<1, 28, 28, 20, 15, 17, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::conv_rbm_desc<20, 14, 12, 20, 7, 3, dll::momentum, dll::batch_size<25>>::layer_t, dll::mp_layer_3d_desc<20, 8, 10, 1, 1, 1>::layer_t, dll::avgp_layer_3d_desc<20, 8, 10, 1, 1, 1>::layer_t>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -167,8 +167,8 @@ TEST_CASE("unit/cdbn/mnist/12", "[dbn][conv][mnist][patches][unit]") {
     auto dbn = std::make_unique<dbn_t>();
 
     dbn->template init_layer<0>(14, 14, 14, 14, 1);
-    dbn->template init_layer<1>(1, 14, 14, 20, 10, 10);
-    dbn->template init_layer<2>(20, 10, 10, 20, 6, 6);
+    dbn->template init_layer<1>(1, 14, 14, 20, 5, 5);
+    dbn->template init_layer<2>(20, 10, 10, 20, 5, 5);
 
     dbn->pretrain(dataset.training_images, 10);
 

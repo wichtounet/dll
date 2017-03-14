@@ -29,22 +29,22 @@ struct conv_rbm final : public standard_crbm<conv_rbm<Desc>, Desc> {
     using this_type = conv_rbm<desc>;
     using base_type = standard_crbm<this_type, desc>;
 
-    static constexpr const unit_type visible_unit = desc::visible_unit; ///< The type of visible unit
-    static constexpr const unit_type hidden_unit  = desc::hidden_unit;  ///< The type of hidden unit
+    static constexpr unit_type visible_unit = desc::visible_unit; ///< The type of visible unit
+    static constexpr unit_type hidden_unit  = desc::hidden_unit;  ///< The type of hidden unit
 
-    static constexpr const std::size_t NV1 = desc::NV1; ///< The first dimension of the visible units
-    static constexpr const std::size_t NV2 = desc::NV2; ///< The second dimension of the visible units
-    static constexpr const std::size_t NH1 = desc::NH1; ///< The first dimension of the hidden units
-    static constexpr const std::size_t NH2 = desc::NH2; ///< The second dimension of the hidden units
-    static constexpr const std::size_t NC  = desc::NC;  ///< The number of input channels
-    static constexpr const std::size_t K   = desc::K;   ///< The number of filters
+    static constexpr size_t NV1 = desc::NV1; ///< The first dimension of the visible units
+    static constexpr size_t NV2 = desc::NV2; ///< The second dimension of the visible units
+    static constexpr size_t NW1 = desc::NW1; ///< The first dimension of the hidden units
+    static constexpr size_t NW2 = desc::NW2; ///< The second dimension of the hidden units
+    static constexpr size_t NC  = desc::NC;  ///< The number of input channels
+    static constexpr size_t K   = desc::K;   ///< The number of filters
 
-    static constexpr const std::size_t batch_size  = desc::BatchSize;  ///< The mini-batch size
+    static constexpr size_t batch_size  = desc::BatchSize;  ///< The mini-batch size
 
-    static constexpr const std::size_t NW1 = NV1 - NH1 + 1; //By definition
-    static constexpr const std::size_t NW2 = NV2 - NH2 + 1; //By definition
+    static constexpr size_t NH1 = NV1 - NW1 + 1; //By definition
+    static constexpr size_t NH2 = NV2 - NW2 + 1; //By definition
 
-    static constexpr const bool dbn_only = rbm_layer_traits<this_type>::is_dbn_only();
+    static constexpr bool dbn_only = rbm_layer_traits<this_type>::is_dbn_only();
 
     using w_type = etl::fast_matrix<weight, K, NC, NW1, NW2>;
     using b_type = etl::fast_vector<weight, K>;
@@ -89,21 +89,21 @@ struct conv_rbm final : public standard_crbm<conv_rbm<Desc>, Desc> {
     /*!
      * \brief Return the input size of the layer
      */
-    static constexpr std::size_t input_size() noexcept {
+    static constexpr size_t input_size() noexcept {
         return NV1 * NV2 * NC;
     }
 
     /*!
      * \brief Return the output size of the layer
      */
-    static constexpr std::size_t output_size() noexcept {
+    static constexpr size_t output_size() noexcept {
         return NH1 * NH2 * K;
     }
 
     /*!
      * \brief Return the number of parameters of the layer
      */
-    static constexpr std::size_t parameters() noexcept {
+    static constexpr size_t parameters() noexcept {
         return NC * K * NW1 * NW2;
     }
 
@@ -119,7 +119,7 @@ struct conv_rbm final : public standard_crbm<conv_rbm<Desc>, Desc> {
     }
 
     template <typename Input>
-    static output_t prepare_output(std::size_t samples) {
+    static output_t prepare_output(size_t samples) {
         return output_t{samples};
     }
 
@@ -130,7 +130,7 @@ struct conv_rbm final : public standard_crbm<conv_rbm<Desc>, Desc> {
 
     template<typename DRBM>
     static void dyn_init(DRBM& dyn){
-        dyn.init_layer(NC, NV1, NV2, K, NH1, NH2);
+        dyn.init_layer(NC, NV1, NV2, K, NW1, NW2);
         dyn.batch_size  = batch_size;
     }
 
@@ -147,7 +147,7 @@ struct conv_rbm final : public standard_crbm<conv_rbm<Desc>, Desc> {
             hidden_unit == unit_type::BINARY || hidden_unit == unit_type::RELU || hidden_unit == unit_type::SOFTMAX,
             "Only (C)RBM with binary, softmax or RELU hidden unit are supported");
 
-        static constexpr const function activation_function =
+        static constexpr function activation_function =
             hidden_unit == unit_type::BINARY
                 ? function::SIGMOID
                 : (hidden_unit == unit_type::SOFTMAX ? function::SOFTMAX : function::RELU);
@@ -188,7 +188,7 @@ private:
 
     template<typename V, cpp_enable_if(etl::all_fast<V>::value)>
     auto get_batch_b_rep(V&& /*h*/) const {
-        static constexpr const auto batch_size = etl::decay_traits<V>::template dim<0>();
+        static constexpr auto batch_size = etl::decay_traits<V>::template dim<0>();
         return etl::force_temporary(etl::rep_l<batch_size>(etl::rep<NH1, NH2>(b)));
     }
 
@@ -200,7 +200,7 @@ private:
 
     template<typename H, cpp_enable_if(etl::all_fast<H>::value)>
     auto get_batch_c_rep(H&& /*h*/) const {
-        static constexpr const auto batch_size = etl::decay_traits<H>::template dim<0>();
+        static constexpr auto batch_size = etl::decay_traits<H>::template dim<0>();
         return etl::force_temporary(etl::rep_l<batch_size>(etl::rep<NV1, NV2>(c)));
     }
 
@@ -224,7 +224,7 @@ private:
         return etl::fast_dyn_matrix<weight, 1, K, NH1, NH2>();
     }
 
-    template <typename V1, typename V2, std::size_t Off = 0, cpp_enable_if(etl::all_fast<V1, V2>::value)>
+    template <typename V1, typename V2, size_t Off = 0, cpp_enable_if(etl::all_fast<V1, V2>::value)>
     static void validate_inputs() {
         static_assert(etl::decay_traits<V1>::dimensions() == 3 + Off, "Inputs must be 3D");
         static_assert(etl::decay_traits<V2>::dimensions() == 3 + Off, "Inputs must be 3D");
@@ -238,7 +238,7 @@ private:
         static_assert(etl::decay_traits<V2>::template dim<2 + Off>() == NV2, "Invalid input dimensions");
     }
 
-    template <typename H1, typename H2, std::size_t Off = 0, cpp_enable_if(etl::all_fast<H1, H2>::value)>
+    template <typename H1, typename H2, size_t Off = 0, cpp_enable_if(etl::all_fast<H1, H2>::value)>
     static void validate_outputs() {
         static_assert(etl::decay_traits<H1>::dimensions() == 3 + Off, "Outputs must be 3D");
         static_assert(etl::decay_traits<H2>::dimensions() == 3 + Off, "Outputs must be 3D");
@@ -252,13 +252,13 @@ private:
         static_assert(etl::decay_traits<H2>::template dim<2 + Off>() == NH2, "Invalid output dimensions");
     }
 
-    template <typename V1, typename V2, std::size_t Off = 0, cpp_disable_if(etl::all_fast<V1, V2>::value)>
+    template <typename V1, typename V2, size_t Off = 0, cpp_disable_if(etl::all_fast<V1, V2>::value)>
     static void validate_inputs() {
         static_assert(etl::decay_traits<V1>::dimensions() == 3 + Off, "Inputs must be 3D");
         static_assert(etl::decay_traits<V2>::dimensions() == 3 + Off, "Inputs must be 3D");
     }
 
-    template <typename H1, typename H2, std::size_t Off = 0, cpp_disable_if(etl::all_fast<H1, H2>::value)>
+    template <typename H1, typename H2, size_t Off = 0, cpp_disable_if(etl::all_fast<H1, H2>::value)>
     static void validate_outputs() {
         static_assert(etl::decay_traits<H1>::dimensions() == 3 + Off, "Outputs must be 3D");
         static_assert(etl::decay_traits<H2>::dimensions() == 3 + Off, "Outputs must be 3D");
@@ -275,7 +275,7 @@ struct rbm_base_traits<conv_rbm<Desc>> {
     using weight    = typename desc::weight;
 
     using input_one_t         = etl::fast_dyn_matrix<weight, desc::NC, desc::NV1, desc::NV2>;
-    using output_one_t        = etl::fast_dyn_matrix<weight, desc::K, desc::NH1, desc::NH2>;
+    using output_one_t        = etl::fast_dyn_matrix<weight, desc::K, desc::NV1 - desc::NW1 + 1, desc::NV2 - desc::NW2 + 1>;
     using hidden_output_one_t = output_one_t;
     using input_t             = std::vector<input_one_t>;
     using output_t            = std::vector<output_one_t>;
@@ -284,28 +284,28 @@ struct rbm_base_traits<conv_rbm<Desc>> {
 //Allow odr-use of the constexpr static members
 
 template <typename Desc>
-const std::size_t conv_rbm<Desc>::NV1;
+const size_t conv_rbm<Desc>::NV1;
 
 template <typename Desc>
-const std::size_t conv_rbm<Desc>::NV2;
+const size_t conv_rbm<Desc>::NV2;
 
 template <typename Desc>
-const std::size_t conv_rbm<Desc>::NH1;
+const size_t conv_rbm<Desc>::NH1;
 
 template <typename Desc>
-const std::size_t conv_rbm<Desc>::NH2;
+const size_t conv_rbm<Desc>::NH2;
 
 template <typename Desc>
-const std::size_t conv_rbm<Desc>::NC;
+const size_t conv_rbm<Desc>::NC;
 
 template <typename Desc>
-const std::size_t conv_rbm<Desc>::NW1;
+const size_t conv_rbm<Desc>::NW1;
 
 template <typename Desc>
-const std::size_t conv_rbm<Desc>::NW2;
+const size_t conv_rbm<Desc>::NW2;
 
 template <typename Desc>
-const std::size_t conv_rbm<Desc>::K;
+const size_t conv_rbm<Desc>::K;
 
 // Declare the traits for the RBM
 

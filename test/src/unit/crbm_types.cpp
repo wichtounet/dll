@@ -27,7 +27,7 @@ namespace {
 
 struct crbm_double {
     using rbm_t = dll::conv_rbm_desc<
-            1, 28, 28, 10, 20, 20,
+            1, 28, 28, 10, 9, 9,
             dll::weight_type<double>,
             dll::batch_size<25>>::layer_t;
 
@@ -36,7 +36,7 @@ struct crbm_double {
 
 struct crbm_float {
     using rbm_t = dll::conv_rbm_desc<
-            1, 28, 28, 10, 20, 20,
+            1, 28, 28, 10, 9, 9,
             dll::weight_type<float>,
             dll::batch_size<25>>::layer_t;
 
@@ -49,7 +49,7 @@ struct dyn_crbm_float {
             >::layer_t;
 
     static void init(rbm_t& rbm){
-        rbm.init_layer(1, 28, 28, 10, 20, 20);
+        rbm.init_layer(1, 28, 28, 10, 9, 9);
         rbm.batch_size = 25;
     }
 };
@@ -60,7 +60,7 @@ struct dyn_crbm_double {
             >::layer_t;
 
     static void init(rbm_t& rbm){
-        rbm.init_layer(1, 28, 28, 10, 20, 20);
+        rbm.init_layer(1, 28, 28, 10, 9, 9);
         rbm.batch_size = 25;
     }
 };
