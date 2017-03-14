@@ -7,29 +7,29 @@
 
 #pragma once
 
-#include "dll/base_traits.hpp"
 #include "unpooling_layer.hpp"
 
 namespace dll {
 
 /*!
- * \brief Standard max pooling layer
+ * \brief Standard dyn upsample layer
  */
 template <typename Desc>
-struct upsample_layer_3d final : unpooling_layer_3d<upsample_layer_3d<Desc>, Desc> {
-    using desc   = Desc;                                      ///< The layer descriptor
-    using weight = typename desc::weight;                     ///< The layer weight type
-    using base   = unpooling_layer_3d<upsample_layer_3d<Desc>, desc>; ///< The layer base type
+struct dyn_upsample_layer_3d final : dyn_unpooling_layer_3d<dyn_upsample_layer_3d<Desc>, Desc> {
+    using desc      = Desc;                                    ///< The layer descriptor
+    using weight    = typename desc::weight;                   ///< The layer weight type
+    using this_type = dyn_upsample_layer_3d<Desc>;                   ///< This layer's type
+    using base      = dyn_unpooling_layer_3d<this_type, desc>; ///< The layer base type
 
-    upsample_layer_3d() = default;
+    dyn_upsample_layer_3d() = default;
 
     /*!
      * \brief Get a string representation of the layer
      */
-    static std::string to_short_string() {
+    std::string to_short_string() const {
         char buffer[512];
         snprintf(buffer, 512, "upsample(3D): %lux%lux%lu -> (%lux%lux%lu) -> %lux%lux%lu",
-                 base::I1, base::I2, base::I3, base::C1, base::C2, base::C3, base::O1, base::O2, base::O3);
+                 base::i1, base::i2, base::i3, base::c1, base::c2, base::c3, base::o1, base::o2, base::o3);
         return {buffer};
     }
 
@@ -38,18 +38,33 @@ struct upsample_layer_3d final : unpooling_layer_3d<upsample_layer_3d<Desc>, Des
     using input_t      = typename base::input_t;      ///< The type of many input
     using output_t     = typename base::output_t;     ///< The type of many output
 
-    static void activate_hidden(output_one_t& h, const input_one_t& v) {
-        h = etl::upsample_3d<base::C1, base::C2, base::C3>(v);
+    /*!
+     * \brief Forward activation of the layer for one sample
+     * \param h The output matrix
+     * \param v The input matrix
+     */
+    void activate_hidden(output_one_t& h, const input_one_t& v) const {
+        h = etl::upsample_3d(v, base::c1, base::c2, base::c3);
     }
 
+    /*!
+     * \brief Forward activation of the layer for one batch of sample
+     * \param output The output matrix
+     * \param input The input matrix
+     */
     template <typename Input, typename Output>
-    static void batch_activate_hidden(Output& output, const Input& input) {
-        output = etl::upsample_3d<base::C1, base::C2, base::C3>(input);
+    void batch_activate_hidden(Output& output, const Input& input) const {
+        output = etl::upsample_3d(input, base::c1, base::c2, base::c3);
     }
 
-    template<typename DLayer>
-    static void dyn_init(DLayer& dyn){
-        dyn.init_layer(base::I1, base::I2, base::I3, base::C1, base::C2, base::C3);
+    template <typename DBN>
+    void init_sgd_context() {
+        this->sgd_context_ptr = std::make_shared<sgd_context<DBN, this_type>>(base::i1, base::i2, base::i3, base::c1, base::c2, base::c3);
+    }
+
+    template<typename DRBM>
+    static void dyn_init(DRBM&){
+        //Nothing to change
     }
 
     /*!
@@ -71,11 +86,11 @@ struct upsample_layer_3d final : unpooling_layer_3d<upsample_layer_3d<Desc>, Des
      */
     template<typename H, typename C, cpp_enable_if(etl::decay_traits<H>::dimensions() == 4)>
     void backward_batch(H&& output, C& context) const {
-        static constexpr size_t C1 = base::C1;
-        static constexpr size_t C2 = base::C2;
-        static constexpr size_t C3 = base::C3;
+        const size_t c1 = base::c1;
+        const size_t c2 = base::c2;
+        const size_t c3 = base::c3;
 
-        output = etl::max_pool_3d<C1, C2, C3>(context.errors);
+        output = etl::max_pool_3d(context.errors, c1, c2, c3);
     }
 
     /*!
@@ -85,13 +100,12 @@ struct upsample_layer_3d final : unpooling_layer_3d<upsample_layer_3d<Desc>, Des
      */
     template<typename H, typename C, cpp_enable_if(etl::decay_traits<H>::dimensions() != 4)>
     void backward_batch(H&& output, C& context) const {
-        static constexpr size_t C1 = base::C1;
-        static constexpr size_t C2 = base::C2;
-        static constexpr size_t C3 = base::C3;
+        const size_t c1 = base::c1;
+        const size_t c2 = base::c2;
+        const size_t c3 = base::c3;
+        const size_t B = etl::dim<0>(output);
 
-        constexpr const auto B = etl::decay_traits<H>::template dim<0>();
-
-        etl::reshape<B, base::I1, base::I2, base::I3>(output) = etl::max_pool_3d<C1, C2, C3>(context.errors);
+        etl::reshape(output, B, base::i1, base::i2, base::i3) = etl::max_pool_3d(context.errors, c1, c2, c3);
     }
 
     /*!
@@ -107,7 +121,7 @@ struct upsample_layer_3d final : unpooling_layer_3d<upsample_layer_3d<Desc>, Des
 // Declare the traits for the Layer
 
 template<typename Desc>
-struct layer_base_traits<upsample_layer_3d<Desc>> {
+struct layer_base_traits<dyn_upsample_layer_3d<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -119,7 +133,7 @@ struct layer_base_traits<upsample_layer_3d<Desc>> {
     static constexpr bool is_transform  = false; ///< Indicates if the layer is a transform layer
     static constexpr bool is_patches    = false; ///< Indicates if the layer is a patches layer
     static constexpr bool is_augment    = false; ///< Indicates if the layer is an augment layer
-    static constexpr bool is_dynamic    = false; ///< Indicates if the layer is dynamic
+    static constexpr bool is_dynamic    = true;  ///< Indicates if the layer is dynamic
     static constexpr bool pretrain_last = false; ///< Indicates if the layer is dynamic
     static constexpr bool sgd_supported = true;  ///< Indicates if the layer is supported by SGD
 };

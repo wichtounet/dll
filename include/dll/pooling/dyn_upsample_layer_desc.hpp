@@ -11,18 +11,18 @@
 
 namespace dll {
 
-template <std::size_t T_I1, std::size_t T_I2, std::size_t T_I3, std::size_t T_C1, std::size_t T_C2, std::size_t T_C3, typename... Parameters>
-struct upsample_layer_3d_desc : unpooling_layer_3d_desc<T_I1, T_I2, T_I3, T_C1, T_C2, T_C3, Parameters...> {
+template <typename... Parameters>
+struct dyn_upsample_layer_3d_desc : dyn_unpooling_layer_3d_desc<Parameters...> {
     /*!
      * A list of all the parameters of the descriptor
      */
     using parameters = cpp::type_list<Parameters...>;
 
-    /*! The layer type */
-    using layer_t = upsample_layer_3d<upsample_layer_3d_desc<T_I1, T_I2, T_I3, T_C1, T_C2, T_C3, Parameters...>>;
+    /*! The RBM type */
+    using layer_t = dyn_upsample_layer_3d<dyn_upsample_layer_3d_desc<Parameters...>>;
 
     /*! The RBM type */
-    using dyn_layer_t = dyn_upsample_layer_3d<dyn_upsample_layer_3d_desc<Parameters...>>;
+    using dyn_layer_t = layer_t;
 };
 
 } //end of dll namespace

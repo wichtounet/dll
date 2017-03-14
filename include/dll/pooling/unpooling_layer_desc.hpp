@@ -39,7 +39,7 @@ struct dyn_unpooling_layer_3d_desc {
     //Make sure only valid types are passed to the configuration list
     static_assert(
         detail::is_valid<cpp::type_list<weight_type_id>, Parameters...>::value,
-        "Invalid parameters type for unpooling_layer");
+        "Invalid parameters type for dyn_unpooling_layer");
 };
 
 } //end of dll namespace

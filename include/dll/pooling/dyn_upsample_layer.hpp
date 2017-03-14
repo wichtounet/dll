@@ -7,8 +7,5 @@
 
 #pragma once
 
-// Include the dyn version (for dyn_dbn)
-#include "dll/pooling/dyn_upsample_layer.hpp"
-
-#include "dll/pooling/upsample_layer.inl"
-#include "dll/pooling/upsample_layer_desc.hpp"
+#include "dll/pooling/dyn_upsample_layer.inl"
+#include "dll/pooling/dyn_upsample_layer_desc.hpp"

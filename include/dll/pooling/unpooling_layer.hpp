@@ -82,7 +82,7 @@ private:
 };
 
 /*!
- * \brief Standard dynamic pooling layer
+ * \brief Standard dynamic unpooling layer
  */
 template <typename Parent, typename Desc>
 struct dyn_unpooling_layer_3d : layer<Parent> {
