@@ -136,67 +136,6 @@ struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_convolut
  * \copydoc sgd_context
  */
 template <typename DBN, typename Layer>
-struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_deconvolutional_layer() && !layer_traits<Layer>::is_dynamic()>> {
-    using layer_t = Layer;
-    using weight  = typename layer_t::weight;
-
-    static constexpr const std::size_t NV1 = layer_t::NV1;
-    static constexpr const std::size_t NV2 = layer_t::NV2;
-    static constexpr const std::size_t NH1 = layer_t::NH1;
-    static constexpr const std::size_t NH2 = layer_t::NH2;
-    static constexpr const std::size_t NW1 = layer_t::NW1;
-    static constexpr const std::size_t NW2 = layer_t::NW2;
-    static constexpr const std::size_t NC  = layer_t::NC;
-    static constexpr const std::size_t K   = layer_t::K;
-
-    static constexpr const auto batch_size = DBN::batch_size;
-
-    etl::fast_matrix<weight, NC, K, NW1, NW2> w_grad;
-    etl::fast_matrix<weight, K> b_grad;
-
-    etl::fast_matrix<weight, NC, K, NW1, NW2> w_inc;
-    etl::fast_matrix<weight, K> b_inc;
-
-    etl::fast_matrix<weight, batch_size, NC, NV1, NV2> input;
-    etl::fast_matrix<weight, batch_size, K, NH1, NH2> output;
-    etl::fast_matrix<weight, batch_size, K, NH1, NH2> errors;
-
-    sgd_context()
-            : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
-};
-
-/*!
- * \copydoc sgd_context
- */
-template <typename DBN, typename Layer>
-struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_deconvolutional_layer() && layer_traits<Layer>::is_dynamic()>> {
-    using layer_t = Layer;
-    using weight  = typename layer_t::weight;
-
-    static constexpr const auto batch_size = DBN::batch_size;
-
-    etl::dyn_matrix<weight, 4> w_grad;
-    etl::dyn_matrix<weight, 1> b_grad;
-
-    etl::dyn_matrix<weight, 4> w_inc;
-    etl::dyn_matrix<weight, 1> b_inc;
-
-    etl::dyn_matrix<weight, 4> input;
-    etl::dyn_matrix<weight, 4> output;
-    etl::dyn_matrix<weight, 4> errors;
-
-    sgd_context(size_t nc, size_t nv1, size_t nv2, size_t k, size_t nh1, size_t nh2, size_t nw1, size_t nw2)
-            : w_grad(nc, k, nw1, nw2), b_grad(k),
-              w_inc(nc, k, nw1, nw2), b_inc(k),
-              input(batch_size, nc, nv1, nv2),
-              output(batch_size, k, nh1, nh2),
-              errors(batch_size, k, nh1, nh2) {}
-};
-
-/*!
- * \copydoc sgd_context
- */
-template <typename DBN, typename Layer>
 struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_pooling_layer() && !layer_traits<Layer>::is_dynamic()>> {
     using layer_t = Layer;
     using weight  = typename layer_t::weight;
