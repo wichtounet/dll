@@ -31,7 +31,7 @@ struct dbn_double {
     using dbn_t =
         dll::dbn_desc<
             dll::dbn_layers<
-                dll::conv_desc<1, 28, 28, 5, 18, 18, dll::weight_type<double>>::layer_t,
+                dll::conv_desc<1, 28, 28, 5, 11, 11, dll::weight_type<double>>::layer_t,
                 dll::dense_desc<5 * 18 * 18, 10, dll::weight_type<double>>::layer_t
             >
             , dll::trainer<dll::sgd_trainer>
@@ -49,7 +49,7 @@ struct dbn_float {
     using dbn_t =
         dll::dbn_desc<
             dll::dbn_layers<
-                dll::conv_desc<1, 28, 28, 5, 18, 18, dll::weight_type<float>>::layer_t,
+                dll::conv_desc<1, 28, 28, 5, 11, 11, dll::weight_type<float>>::layer_t,
                 dll::dense_desc<5 * 18 * 18, 10, dll::weight_type<float>>::layer_t
             >
             , dll::trainer<dll::sgd_trainer>
@@ -78,7 +78,7 @@ struct dyn_dbn_float {
     static void init(dbn_t& net){
         net.initial_momentum = 0.9;
         net.learning_rate = 0.05;
-        net.template init_layer<0>(1, 28, 28, 5, 18, 18);
+        net.template init_layer<0>(1, 28, 28, 5, 11, 11);
         net.template init_layer<1>(5 * 18 * 18, 10);
     }
 };

@@ -56,16 +56,16 @@ struct dyn_conv_layer final : neural_layer<dyn_conv_layer<Desc>, Desc> {
         // Nothing else to init
     }
 
-    void init_layer(size_t nc, size_t nv1, size_t nv2, size_t k, size_t nh1, size_t nh2){
+    void init_layer(size_t nc, size_t nv1, size_t nv2, size_t k, size_t nw1, size_t nw2){
         this->nv1 = nv1;
         this->nv2 = nv2;
-        this->nh1 = nh1;
-        this->nh2 = nh2;
+        this->nw1 = nw1;
+        this->nw2 = nw2;
         this->nc = nc;
         this->k = k;
 
-        this->nw1 = nv1 - nh1 + 1;
-        this->nw2 = nv2 - nh2 + 1;
+        this->nh1 = nv1 - nw1 + 1;
+        this->nh2 = nv2 - nw2 + 1;
 
         w = etl::dyn_matrix<weight, 4>(k, nc, nw1, nw2);
 

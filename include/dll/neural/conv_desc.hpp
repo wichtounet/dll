@@ -15,12 +15,12 @@ namespace dll {
 /*!
  * \brief Describe a standard convolutional layer.
  */
-template <std::size_t NC_T, std::size_t NV_1, std::size_t NV_2, std::size_t K_T, std::size_t NH_1, std::size_t NH_2, typename... Parameters>
+template <std::size_t NC_T, std::size_t NV_1, std::size_t NV_2, std::size_t K_T, std::size_t NW_1, std::size_t NW_2, typename... Parameters>
 struct conv_desc {
     static constexpr const std::size_t NV1 = NV_1; ///< The first dimension of the input
     static constexpr const std::size_t NV2 = NV_2; ///< The second dimension of the input
-    static constexpr const std::size_t NH1 = NH_1; ///< The first dimension of the output
-    static constexpr const std::size_t NH2 = NH_2; ///< The second dimension of the output
+    static constexpr const std::size_t NW1 = NW_1; ///< The first dimension of the output
+    static constexpr const std::size_t NW2 = NW_2; ///< The second dimension of the output
     static constexpr const std::size_t NC  = NC_T; ///< The number of input channels
     static constexpr const std::size_t K   = K_T;  ///< The number of filters
 
@@ -37,20 +37,17 @@ struct conv_desc {
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
 
     /*! The conv type */
-    using layer_t = conv_layer<conv_desc<NC_T, NV_1, NV_2, K_T, NH_1, NH_2, Parameters...>>;
+    using layer_t = conv_layer<conv_desc<NC_T, NV_1, NV_2, K_T, NW_1, NW_2, Parameters...>>;
 
     /*! The conv type */
     using dyn_layer_t = dyn_conv_layer<dyn_conv_desc<Parameters...>>;
 
     static_assert(NV1 > 0, "A matrix of at least 1x1 is necessary for the visible units");
     static_assert(NV2 > 0, "A matrix of at least 1x1 is necessary for the visible units");
-    static_assert(NH1 > 0, "A matrix of at least 1x1 is necessary for the hidden units");
-    static_assert(NH2 > 0, "A matrix of at least 1x1 is necessary for the hidden units");
+    static_assert(NW1 > 0, "A matrix of at least 1x1 is necessary for the weights");
+    static_assert(NW2 > 0, "A matrix of at least 1x1 is necessary for the weights");
     static_assert(NC > 0, "At least one channel is necessary");
     static_assert(K > 0, "At least one group is necessary");
-
-    static_assert(NV1 >= NH1, "The convolutional filter must be of at least size 1");
-    static_assert(NV2 >= NH2, "The convolutional filter must be of at least size 1");
 
     //Make sure only valid types are passed to the configuration list
     static_assert(

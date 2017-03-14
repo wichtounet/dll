@@ -21,15 +21,15 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
     using this_type = conv_layer<desc>;
     using base_type = neural_layer<this_type, desc>;
 
-    static constexpr const std::size_t NV1 = desc::NV1; ///< The first dimension of the visible units
-    static constexpr const std::size_t NV2 = desc::NV2; ///< The second dimension of the visible units
-    static constexpr const std::size_t NH1 = desc::NH1; ///< The first dimension of the hidden units
-    static constexpr const std::size_t NH2 = desc::NH2; ///< The second dimension of the hidden units
-    static constexpr const std::size_t NC  = desc::NC;  ///< The number of input channels
-    static constexpr const std::size_t K   = desc::K;   ///< The number of filters
+    static constexpr size_t NV1 = desc::NV1; ///< The first dimension of the visible units
+    static constexpr size_t NV2 = desc::NV2; ///< The second dimension of the visible units
+    static constexpr size_t NW1 = desc::NW1; ///< The first dimension of the filter
+    static constexpr size_t NW2 = desc::NW2; ///< The second dimension of the filter
+    static constexpr size_t NC  = desc::NC;  ///< The number of input channels
+    static constexpr size_t K   = desc::K;   ///< The number of filters
 
-    static constexpr const std::size_t NW1 = NV1 - NH1 + 1; //By definition
-    static constexpr const std::size_t NW2 = NV2 - NH2 + 1; //By definition
+    static constexpr size_t NH1 = NV1 - NW1 + 1; //By definition
+    static constexpr size_t NH2 = NV2 - NW2 + 1; //By definition
 
     static constexpr auto activation_function = desc::activation_function;
     static constexpr auto w_initializer       = desc::w_initializer;
@@ -114,7 +114,7 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
 
     template<typename DRBM>
     static void dyn_init(DRBM& dyn){
-        dyn.init_layer(NC, NV1, NV2, K, NH1, NH2);
+        dyn.init_layer(NC, NV1, NV2, K, NW1, NW2);
     }
 
     /*!

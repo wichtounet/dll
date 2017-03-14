@@ -31,7 +31,7 @@ TEST_CASE("dyn/conv/sgd/1", "[dense][dbn][mnist][sgd]") {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->template layer_get<0>().init_layer(1, 28, 28, 10, 24, 24);
+    dbn->template layer_get<0>().init_layer(1, 28, 28, 10, 5, 5);
     dbn->template layer_get<1>().init_layer(10 * 24 * 24, 10);
 
     dbn->learning_rate = 0.05;
@@ -64,8 +64,8 @@ TEST_CASE("dyn/conv/sgd/2", "[dense][dbn][mnist][sgd]") {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->template layer_get<0>().init_layer(1, 28, 28, 10, 24, 24);
-    dbn->template layer_get<1>().init_layer(10, 24, 24, 6, 20, 20);
+    dbn->template layer_get<0>().init_layer(1, 28, 28, 10, 5, 5);
+    dbn->template layer_get<1>().init_layer(10, 24, 24, 6, 5, 5);
     dbn->template layer_get<2>().init_layer(6 * 20 * 20, 200);
     dbn->template layer_get<3>().init_layer(200, 10);
 
@@ -100,9 +100,9 @@ TEST_CASE("dyn/conv/sgd/3", "[dense][dbn][mnist][sgd]") {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->template layer_get<0>().init_layer(1, 28, 28, 10, 24, 24);
+    dbn->template layer_get<0>().init_layer(1, 28, 28, 10, 5, 5);
     dbn->template layer_get<1>().init_layer(10, 24, 24, 1, 2, 2 );
-    dbn->template layer_get<2>().init_layer(10, 12, 12, 6, 8, 8);
+    dbn->template layer_get<2>().init_layer(10, 12, 12, 6, 5, 5);
     dbn->template layer_get<3>().init_layer(6 * 8 * 8, 100);
     dbn->template layer_get<4>().init_layer(100, 10);
 
@@ -137,9 +137,9 @@ TEST_CASE("dyn/conv/sgd/4", "[dense][dbn][mnist][sgd]") {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->template layer_get<0>().init_layer(1, 28, 28, 10, 24, 24);
+    dbn->template layer_get<0>().init_layer(1, 28, 28, 10, 5, 5);
     dbn->template layer_get<1>().init_layer(10, 24, 24, 1, 2, 2 );
-    dbn->template layer_get<2>().init_layer(10, 12, 12, 6, 8, 8);
+    dbn->template layer_get<2>().init_layer(10, 12, 12, 6, 5, 5);
     dbn->template layer_get<3>().init_layer(6 * 8 * 8, 100);
     dbn->template layer_get<4>().init_layer(100, 10);
 

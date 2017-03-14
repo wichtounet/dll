@@ -83,8 +83,8 @@ template<typename Dataset>
 void conv_sgd(Dataset& dataset){
     using dense_net = dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_desc<1, 28, 28, 4, 24, 24, dll::activation<dll::function::RELU>>::layer_t,
-            dll::conv_desc<4, 24, 24, 4, 20, 20, dll::activation<dll::function::RELU>>::layer_t,
+            dll::conv_desc<1, 28, 28, 4, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
+            dll::conv_desc<4, 24, 24, 4, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<4 * 20 * 20, 200, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<200, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
         dll::momentum, dll::batch_size<50>, dll::trainer<dll::sgd_trainer>>::dbn_t;
@@ -105,9 +105,9 @@ template<typename Dataset>
 void conv_mp_sgd(Dataset& dataset){
     using dense_net = dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_desc<1, 28, 28, 5, 24, 24, dll::activation<dll::function::RELU>>::layer_t,
+            dll::conv_desc<1, 28, 28, 5, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
             dll::mp_layer_3d_desc<5, 24, 24, 1, 2, 2, dll::weight_type<float>>::layer_t,
-            dll::conv_desc<5, 12, 12, 5, 8, 8, dll::activation<dll::function::RELU>>::layer_t,
+            dll::conv_desc<5, 12, 12, 5, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
             dll::mp_layer_3d_desc<5, 8, 8, 1, 2, 2, dll::weight_type<float>>::layer_t,
             dll::dense_desc<5 * 4 * 4, 200, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<200, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
@@ -129,9 +129,9 @@ template<typename Dataset>
 void conv_avgp_sgd(Dataset& dataset){
     using dense_net = dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_desc<1, 28, 28, 5, 24, 24, dll::activation<dll::function::RELU>>::layer_t,
+            dll::conv_desc<1, 28, 28, 5, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
             dll::avgp_layer_3d_desc<5, 24, 24, 1, 2, 2, dll::weight_type<float>>::layer_t,
-            dll::conv_desc<5, 12, 12, 5, 8, 8, dll::activation<dll::function::RELU>>::layer_t,
+            dll::conv_desc<5, 12, 12, 5, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
             dll::avgp_layer_3d_desc<5, 8, 8, 1, 2, 2, dll::weight_type<float>>::layer_t,
             dll::dense_desc<5 * 4 * 4, 200, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<200, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
