@@ -18,7 +18,7 @@
 
 TEST_CASE("crbm_mp/mnist_140", "crbm::slow") {
     dll::conv_rbm_mp_desc_square<
-        2, 28, 40, 12, 2,
+        2, 28, 40, 17, 2,
         dll::batch_size<50>,
         dll::momentum, dll::weight_type<float>>::layer_t rbm;
 
@@ -45,7 +45,7 @@ TEST_CASE("crbm_mp/mnist_140", "crbm::slow") {
 
 TEST_CASE("crbm_mp/mnist_141", "crbm::slow_parallel") {
     dll::conv_rbm_mp_desc_square<
-        2, 28, 40, 12, 2,
+        2, 28, 40, 17, 2,
         dll::batch_size<25>,
         dll::momentum,
         dll::parallel_mode, dll::weight_type<float>>::layer_t rbm;
@@ -71,7 +71,7 @@ TEST_CASE("crbm_mp/mnist_141", "crbm::slow_parallel") {
 
 TEST_CASE("crbm_mp/mnist_142", "crbm::slow_second") {
     dll::conv_rbm_mp_desc_square<
-        40, 12, 40, 6, 2,
+        40, 12, 40, 7, 2,
         dll::batch_size<25>,
         dll::momentum, dll::weight_type<float>>::layer_t rbm;
 
@@ -97,7 +97,7 @@ TEST_CASE("crbm_mp/mnist_142", "crbm::slow_second") {
 
 TEST_CASE("crbm_mp/mnist_143", "crbm::slow_parallel_second") {
     dll::conv_rbm_mp_desc_square<
-        40, 12, 40, 6, 2,
+        40, 12, 40, 7, 2,
         dll::batch_size<25>,
         dll::momentum,
         dll::parallel_mode, dll::weight_type<float>>::layer_t rbm;
@@ -124,7 +124,7 @@ TEST_CASE("crbm_mp/mnist_143", "crbm::slow_parallel_second") {
 
 TEST_CASE("crbm_mp/mnist_144", "crbm::slow") {
     dll::conv_rbm_mp_desc_square<
-        1, 28, 40, 24, 2,
+        1, 28, 40, 5, 2,
         dll::batch_size<25>,
         dll::momentum, dll::weight_type<float>>::layer_t rbm;
 
@@ -141,7 +141,7 @@ TEST_CASE("crbm_mp/mnist_144", "crbm::slow") {
 
 TEST_CASE("crbm_mp/mnist_145", "crbm::slow") {
     dll::conv_rbm_mp_desc_square<
-        1, 28, 40, 24, 2,
+        1, 28, 40, 5, 2,
         dll::batch_size<25>,
         dll::momentum, dll::parallel_mode, dll::weight_type<float>>::layer_t rbm;
 

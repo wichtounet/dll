@@ -21,9 +21,9 @@ TEST_CASE("lenet_rbm", "[dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::scale_layer_desc<1, 256>::layer_t,
-            dll::conv_rbm_desc_square<1, 28, 20, 24, dll::hidden<dll::unit_type::RELU>, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::layer_t,
+            dll::conv_rbm_desc_square<1, 28, 20, 5, dll::hidden<dll::unit_type::RELU>, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::layer_t,
             dll::mp_layer_3d_desc<20, 24, 24, 1, 2, 2, dll::weight_type<float>>::layer_t,
-            dll::conv_rbm_desc_square<20, 12, 50, 8, dll::hidden<dll::unit_type::RELU>, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::layer_t,
+            dll::conv_rbm_desc_square<20, 12, 50, 5, dll::hidden<dll::unit_type::RELU>, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::layer_t,
             dll::mp_layer_3d_desc<50, 8, 8, 1, 2, 2, dll::weight_type<float>>::layer_t,
             dll::rbm_desc<50 * 4 * 4, 500, dll::hidden<dll::unit_type::BINARY>, dll::momentum, dll::batch_size<10>>::layer_t,
             dll::rbm_desc<500, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,

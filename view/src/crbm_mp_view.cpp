@@ -15,7 +15,7 @@
 
 int main(int /*argc*/, char* /*argv*/ []) {
     dll::conv_rbm_mp_desc_square<
-        1, 28, 40, 12, 2,
+        1, 28, 40, 17, 2,
         dll::momentum,
         dll::batch_size<50>,
         dll::watcher<dll::opencv_rbm_visualizer>>::layer_t rbm;

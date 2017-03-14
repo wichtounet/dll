@@ -23,7 +23,7 @@ TEST_CASE("unit/dyn_crbm_mp/mnist/1", "[dyn_crbm_mp][unit]") {
         dll::serial,
         dll::parallel_mode>::layer_t rbm;
 
-    rbm.init_layer(1, 28, 28, 20, 12, 12, 2);
+    rbm.init_layer(1, 28, 28, 20, 17, 17, 2);
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, float>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -47,7 +47,7 @@ TEST_CASE("unit/dyn_crbm_mp/mnist/1", "[dyn_crbm_mp][unit]") {
 TEST_CASE("unit/dyn_crbm_mp/mnist/2", "[dyn_crbm_mp][multic][unit]") {
     dll::dyn_conv_rbm_mp_desc<dll::momentum>::layer_t rbm;
 
-    rbm.init_layer(2, 28, 28, 20, 12, 12, 2);
+    rbm.init_layer(2, 28, 28, 20, 17, 17, 2);
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -74,7 +74,7 @@ TEST_CASE("unit/dyn_crbm_mp/mnist/3", "[dyn_crbm_mp][denoising][unit]") {
         dll::visible<dll::unit_type::GAUSSIAN>,
         dll::shuffle>::layer_t rbm;
 
-    rbm.init_layer(1, 28, 28, 30, 12, 12, 2);
+    rbm.init_layer(1, 28, 28, 30, 17, 17, 2);
 
     rbm.learning_rate *= 4;
 
@@ -105,7 +105,7 @@ TEST_CASE("unit/dyn_crbm_mp/mnist/3", "[dyn_crbm_mp][denoising][unit]") {
 TEST_CASE("unit/dyn_crbm_mp/mnist/4", "[dyn_crbm_mp][relu][unit]") {
     dll::dyn_conv_rbm_mp_desc<dll::hidden<dll::unit_type::RELU>>::layer_t rbm;
 
-    rbm.init_layer(1, 28, 28, 20, 12, 12, 2);
+    rbm.init_layer(1, 28, 28, 20, 17, 17, 2);
     rbm.learning_rate *= 2;
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);

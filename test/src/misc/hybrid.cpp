@@ -93,8 +93,8 @@ TEST_CASE("hybrid/mnist/2", "") {
 TEST_CASE("hybrid/mnist/3", "") {
     typedef dll::dyn_dbn_desc<
         dll::dbn_layers<
-            dll::conv_rbm_mp_desc_square<1, 28, 40, 12, 2, dll::momentum, dll::batch_size<25>>::layer_t,
-            dll::conv_rbm_mp_desc_square<40, 6, 20, 4, 2, dll::momentum, dll::batch_size<25>>::layer_t>>::dbn_t dbn_t;
+            dll::conv_rbm_mp_desc_square<1, 28, 40, 17, 2, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::conv_rbm_mp_desc_square<40, 6, 20, 3, 2, dll::momentum, dll::batch_size<25>>::layer_t>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(100);
 
@@ -110,9 +110,9 @@ TEST_CASE("hybrid/mnist/3", "") {
 TEST_CASE("hybrid/mnist/4", "") {
     typedef dll::dyn_dbn_desc<
         dll::dbn_layers<
-            dll::conv_rbm_desc_square<1, 28, 40, 12, dll::momentum, dll::batch_size<25>>::layer_t,
-            dll::conv_rbm_desc_square<40, 12, 20, 10, dll::momentum, dll::batch_size<25>>::layer_t,
-            dll::conv_rbm_desc_square<20, 10, 50, 6, dll::momentum, dll::batch_size<25>>::layer_t>>::dbn_t dbn_t;
+            dll::conv_rbm_desc_square<1, 28, 40, 17, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::conv_rbm_desc_square<40, 12, 20, 3, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::conv_rbm_desc_square<20, 10, 50, 5, dll::momentum, dll::batch_size<25>>::layer_t>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -180,8 +180,8 @@ TEST_CASE("hybrid/mnist/8", "[dense][dbn][mnist][sgd]") {
 TEST_CASE("hybrid/mnist/10", "") {
     using dbn_t =
         dll::dyn_dbn_desc<dll::dbn_layers<
-              dll::conv_rbm_desc_square<1, 28, 20, 12, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
-            , dll::conv_rbm_desc_square<20, 12, 20, 10, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
+              dll::conv_rbm_desc_square<1, 28, 20, 17, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
+            , dll::conv_rbm_desc_square<20, 12, 20, 3, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
             , dll::lcn_layer_desc<9>::layer_t
         >>::dbn_t;
 
@@ -198,8 +198,8 @@ TEST_CASE("hybrid/mnist/11", "[dbn][conv][mnist][patches][memory]") {
     typedef dll::dyn_dbn_desc<
         dll::dbn_layers<
             dll::patches_layer_desc<14, 14, 14, 14>::layer_t,
-            dll::conv_rbm_desc_square<1, 14, 20, 10, dll::momentum, dll::batch_size<25>>::layer_t,
-            dll::conv_rbm_desc_square<20, 10, 20, 6, dll::momentum, dll::batch_size<25>>::layer_t>,
+            dll::conv_rbm_desc_square<1, 14, 20, 5, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::conv_rbm_desc_square<20, 10, 20, 5, dll::momentum, dll::batch_size<25>>::layer_t>,
         dll::batch_mode>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(500);
@@ -219,8 +219,8 @@ TEST_CASE("hybrid/mnist/12", "[dbn][conv][mnist][patches]") {
     typedef dll::dyn_dbn_desc<
         dll::dbn_layers<
             dll::patches_layer_padh_desc<14, 14, 14, 14, 1>::layer_t,
-            dll::conv_rbm_desc_square<1, 14, 20, 10, dll::momentum, dll::batch_size<25>>::layer_t,
-            dll::conv_rbm_desc_square<20, 10, 20, 6, dll::momentum, dll::batch_size<25>>::layer_t>>::dbn_t dbn_t;
+            dll::conv_rbm_desc_square<1, 14, 20, 5, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::conv_rbm_desc_square<20, 10, 20, 5, dll::momentum, dll::batch_size<25>>::layer_t>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(500);
     REQUIRE(!dataset.training_images.empty());

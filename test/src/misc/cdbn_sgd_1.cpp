@@ -18,7 +18,7 @@
 TEST_CASE("cdbn/sgd/1", "[dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_rbm_desc_square<1, 28, 10, 12, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::layer_t,
+            dll::conv_rbm_desc_square<1, 28, 10, 17, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::layer_t,
             dll::rbm_desc<12 * 12 * 10, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 

@@ -62,12 +62,12 @@ int main(int argc, char* argv []) {
     std::cout << etl::threads << " maximum threads" << std::endl;
 
     if(sub.empty() || sub == "batch"){
-        dll::conv_rbm_desc_square<2, 28, 40, 12, dll::batch_size<64>, dll::weight_type<float>>::layer_t crbm_1;
+        dll::conv_rbm_desc_square<2, 28, 40, 17, dll::batch_size<64>, dll::weight_type<float>>::layer_t crbm_1;
         MEASURE(crbm_1, "batch", dataset.training_images);
     }
 
     if(sub.empty() || sub == "parallel"){
-        dll::conv_rbm_desc_square<2, 28, 40, 12, dll::batch_size<64>, dll::parallel_mode, dll::weight_type<float>>::layer_t crbm_2;
+        dll::conv_rbm_desc_square<2, 28, 40, 17, dll::batch_size<64>, dll::parallel_mode, dll::weight_type<float>>::layer_t crbm_2;
         MEASURE(crbm_2, "parallel", dataset.training_images);
     }
 

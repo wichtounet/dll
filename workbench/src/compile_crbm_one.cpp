@@ -28,9 +28,9 @@ int main(int, char**) {
     using NAME_T =                                                                                                              \
         dll::dbn_desc<                                                                                                          \
             dll::dbn_layers<                                                                                                    \
-                dll::conv_rbm_desc_square<1, 28, 10 + F, 24, dll::momentum, dll::batch_size<64>>::layer_t,                      \
+                dll::conv_rbm_desc_square<1, 28, 10 + F, 5, dll::momentum, dll::batch_size<64>>::layer_t,                      \
                 dll::mp_layer_3d_desc<10 + F, 24, 24, 1, 2, 2>::layer_t,                                                        \
-                dll::conv_rbm_desc_square<10 + F, 12, 12 + F, 8, dll::momentum, dll::batch_size<64>>::layer_t,                  \
+                dll::conv_rbm_desc_square<10 + F, 12, 12 + F, 5, dll::momentum, dll::batch_size<64>>::layer_t,                  \
                 dll::mp_layer_3d_desc<12 + F, 8, 8, 1, 2, 2>::layer_t,                                                          \
                 dll::rbm_desc<(12 + F) * 4 * 4, 500 + F, dll::momentum, dll::batch_size<64>>::layer_t,                          \
                 dll::rbm_desc<500 + F, 10, dll::momentum, dll::batch_size<64>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>, \

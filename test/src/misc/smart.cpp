@@ -68,7 +68,7 @@ TEST_CASE("smart/mnist/3", "[smart][cdbn][augment]") {
     using dbn_t =
         dll::dbn_desc<dll::dbn_layers<
             dll::augment_layer_desc<dll::copy<2>, dll::copy<3>>::layer_t,
-            dll::conv_rbm_desc_square<1, 28, 8, 20, dll::momentum, dll::batch_size<10>>::layer_t
+            dll::conv_rbm_desc_square<1, 28, 8, 9, dll::momentum, dll::batch_size<10>>::layer_t
         >>::dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
@@ -91,7 +91,7 @@ TEST_CASE("smart/mnist/4", "[smart][cdbn][augment]") {
             dll::scale_layer_desc<1, 256>::layer_t,
             dll::augment_layer_desc<dll::copy<2>, dll::copy<3>>::layer_t,
             dll::scale_layer_desc<1, 256>::layer_t,
-            dll::conv_rbm_desc_square<1, 28, 8, 20, dll::momentum, dll::batch_size<10>>::layer_t
+            dll::conv_rbm_desc_square<1, 28, 8, 9, dll::momentum, dll::batch_size<10>>::layer_t
         >>::dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
@@ -114,8 +114,8 @@ TEST_CASE("smart/mnist/5", "[smart][cdbn][augment]") {
             dll::augment_layer_desc<dll::copy<2>, dll::copy<3>>::layer_t,
             dll::patches_layer_desc<14, 14, 14, 14>::layer_t,
             dll::augment_layer_desc<dll::elastic<4>>::layer_t,
-            dll::conv_rbm_desc_square<1, 14, 10, 8, dll::momentum, dll::batch_size<10>>::layer_t,
-            dll::conv_rbm_desc_square<10, 8, 10, 6, dll::momentum, dll::batch_size<10>>::layer_t
+            dll::conv_rbm_desc_square<1, 14, 10, 7, dll::momentum, dll::batch_size<10>>::layer_t,
+            dll::conv_rbm_desc_square<10, 8, 10, 3, dll::momentum, dll::batch_size<10>>::layer_t
         >>::dbn_t;
 
     auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(100);

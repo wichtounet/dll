@@ -88,17 +88,17 @@ struct dyn_conv_rbm_mp final : public standard_crbm_mp<dyn_conv_rbm_mp<Desc>, De
         input = input_one_t(nc, nv1, nv2);
     }
 
-    void init_layer(size_t nc, size_t nv1, size_t nv2, size_t k, size_t nh1, size_t nh2, size_t p_c){
+    void init_layer(size_t nc, size_t nv1, size_t nv2, size_t k, size_t nw1, size_t nw2, size_t p_c){
         this->nv1 = nv1;
         this->nv2 = nv2;
-        this->nh1 = nh1;
-        this->nh2 = nh2;
+        this->nw1 = nw1;
+        this->nw2 = nw2;
         this->nc = nc;
         this->k = k;
         this->p_c = p_c;
 
-        this->nw1 = nv1 - nh1 + 1;
-        this->nw2 = nv2 - nh2 + 1;
+        this->nh1 = nv1 - nw1 + 1;
+        this->nh2 = nv2 - nw2 + 1;
 
         this->np1 = nh1 / p_c;
         this->np2 = nh2 / p_c;

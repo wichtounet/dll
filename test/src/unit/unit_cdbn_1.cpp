@@ -25,8 +25,8 @@
 TEST_CASE("unit/cdbn/mnist/1", "[cdbn][svm][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_rbm_desc_square<1, 28, 20, 12, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t,
-            dll::conv_rbm_desc_square<20, 12, 20, 10, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t>>::dbn_t dbn_t;
+            dll::conv_rbm_desc_square<1, 28, 20, 17, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t,
+            dll::conv_rbm_desc_square<20, 12, 20, 3, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -48,8 +48,8 @@ TEST_CASE("unit/cdbn/mnist/1", "[cdbn][svm][unit]") {
 TEST_CASE("unit/cdbn/mnist/2", "[cdbn][svm][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_rbm_desc_square<1, 28, 10, 12, dll::momentum, dll::batch_size<25>>::layer_t,
-            dll::conv_rbm_desc_square<10, 12, 10, 10, dll::momentum, dll::batch_size<25>>::layer_t>,
+            dll::conv_rbm_desc_square<1, 28, 10, 17, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::conv_rbm_desc_square<10, 12, 10, 3, dll::momentum, dll::batch_size<25>>::layer_t>,
         dll::svm_concatenate>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
@@ -78,8 +78,8 @@ TEST_CASE("unit/cdbn/mnist/2", "[cdbn][svm][unit]") {
 TEST_CASE("unit/cdbn/mnist/3", "[cdbn][gaussian][svm][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_rbm_desc_square<1, 28, 20, 12, dll::visible<dll::unit_type::GAUSSIAN>, dll::momentum, dll::batch_size<20>>::layer_t,
-            dll::conv_rbm_desc_square<20, 12, 20, 10, dll::momentum, dll::batch_size<20>>::layer_t>>::dbn_t dbn_t;
+            dll::conv_rbm_desc_square<1, 28, 20, 17, dll::visible<dll::unit_type::GAUSSIAN>, dll::momentum, dll::batch_size<20>>::layer_t,
+            dll::conv_rbm_desc_square<20, 12, 20, 3, dll::momentum, dll::batch_size<20>>::layer_t>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -101,8 +101,8 @@ TEST_CASE("unit/cdbn/mnist/3", "[cdbn][gaussian][svm][unit]") {
 TEST_CASE("unit/cdbn/mnist/4", "[cdbn][gaussian][svm][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_rbm_desc_square<1, 28, 20, 12, dll::visible<dll::unit_type::GAUSSIAN>, dll::momentum, dll::batch_size<25>>::layer_t,
-            dll::conv_rbm_desc_square<20, 12, 20, 10, dll::momentum, dll::batch_size<25>>::layer_t>,
+            dll::conv_rbm_desc_square<1, 28, 20, 17, dll::visible<dll::unit_type::GAUSSIAN>, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::conv_rbm_desc_square<20, 12, 20, 3, dll::momentum, dll::batch_size<25>>::layer_t>,
         dll::svm_scale>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
@@ -125,8 +125,8 @@ TEST_CASE("unit/cdbn/mnist/4", "[cdbn][gaussian][svm][unit]") {
 TEST_CASE("unit/cdbn/mnist/5", "[cdbn][crbm_mp][svm][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_rbm_mp_desc_square<1, 28, 20, 18, 2, dll::momentum, dll::batch_size<8>>::layer_t,
-            dll::conv_rbm_mp_desc_square<20, 9, 20, 6, 2, dll::momentum, dll::batch_size<8>>::layer_t>>::dbn_t dbn_t;
+            dll::conv_rbm_mp_desc_square<1, 28, 20, 11, 2, dll::momentum, dll::batch_size<8>>::layer_t,
+            dll::conv_rbm_mp_desc_square<20, 9, 20, 4, 2, dll::momentum, dll::batch_size<8>>::layer_t>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
     REQUIRE(!dataset.training_images.empty());

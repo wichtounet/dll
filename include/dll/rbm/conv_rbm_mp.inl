@@ -39,14 +39,14 @@ struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
 
     static constexpr const std::size_t NV1 = desc::NV1; ///< The first dimension of the visible units
     static constexpr const std::size_t NV2 = desc::NV2; ///< The second dimension of the visible units
-    static constexpr const std::size_t NH1 = desc::NH1; ///< The first dimension of the hidden units
-    static constexpr const std::size_t NH2 = desc::NH2; ///< The second dimension of the hidden units
+    static constexpr const std::size_t NW1 = desc::NW1; ///< The first dimension of the hidden units
+    static constexpr const std::size_t NW2 = desc::NW2; ///< The second dimension of the hidden units
     static constexpr const std::size_t NC  = desc::NC;  ///< The number of input channels
     static constexpr const std::size_t K   = desc::K;   ///< The number of filters
     static constexpr const std::size_t C   = desc::C;
 
-    static constexpr const std::size_t NW1 = NV1 - NH1 + 1; //By definition
-    static constexpr const std::size_t NW2 = NV2 - NH2 + 1; //By definition
+    static constexpr const std::size_t NH1 = NV1 - NW1 + 1; //By definition
+    static constexpr const std::size_t NH2 = NV2 - NW2 + 1; //By definition
     static constexpr const std::size_t NP1 = NH1 / C;       //By definition
     static constexpr const std::size_t NP2 = NH2 / C;       //By definition
 
@@ -145,7 +145,7 @@ struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
 
     template<typename DRBM>
     static void dyn_init(DRBM& dyn){
-        dyn.init_layer(NC, NV1, NV2, K, NH1, NH2, C);
+        dyn.init_layer(NC, NV1, NV2, K, NW1, NW2, C);
         dyn.batch_size  = batch_size;
     }
 
@@ -207,8 +207,8 @@ struct rbm_base_traits<conv_rbm_mp<Desc>> {
     using weight    = typename desc::weight;
 
     using input_one_t         = etl::fast_dyn_matrix<weight, desc::NC, desc::NV1, desc::NV2>;
-    using hidden_output_one_t = etl::fast_dyn_matrix<weight, desc::K, desc::NH1, desc::NH2>;
-    using output_one_t        = etl::fast_dyn_matrix<weight, desc::K, desc::NH1 / desc::C, desc::NH2 / desc::C>;
+    using hidden_output_one_t = etl::fast_dyn_matrix<weight, desc::K, desc::NV1 - desc::NW1 + 1, desc::NV2 - desc::NW2 + 1>;
+    using output_one_t        = etl::fast_dyn_matrix<weight, desc::K, (desc::NV1 - desc::NW1 + 1) / desc::C, (desc::NV2 - desc::NW2 + 1) / desc::C>;
     using input_t             = std::vector<input_one_t>;
     using output_t            = std::vector<output_one_t>;
 };
