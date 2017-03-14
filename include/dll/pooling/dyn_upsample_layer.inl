@@ -18,7 +18,7 @@ template <typename Desc>
 struct dyn_upsample_layer_3d final : dyn_unpooling_layer_3d<dyn_upsample_layer_3d<Desc>, Desc> {
     using desc      = Desc;                                    ///< The layer descriptor
     using weight    = typename desc::weight;                   ///< The layer weight type
-    using this_type = dyn_upsample_layer_3d<Desc>;                   ///< This layer's type
+    using this_type = dyn_upsample_layer_3d<Desc>;             ///< This layer's type
     using base      = dyn_unpooling_layer_3d<this_type, desc>; ///< The layer base type
 
     dyn_upsample_layer_3d() = default;
