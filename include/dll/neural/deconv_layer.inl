@@ -21,15 +21,15 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
     using this_type = deconv_layer<desc>;
     using base_type = neural_layer<this_type, desc>;
 
-    static constexpr const std::size_t NC  = desc::NC;  ///< The number of input channels
-    static constexpr const std::size_t NV1 = desc::NV1; ///< The first dimension of the visible units
-    static constexpr const std::size_t NV2 = desc::NV2; ///< The second dimension of the visible units
-    static constexpr const std::size_t K   = desc::K;   ///< The number of filters
-    static constexpr const std::size_t NW1 = desc::NW1; ///< The first dimension of the hidden units
-    static constexpr const std::size_t NW2 = desc::NW2; ///< The second dimension of the hidden units
+    static constexpr size_t NC  = desc::NC;  ///< The number of input channels
+    static constexpr size_t NV1 = desc::NV1; ///< The first dimension of the visible units
+    static constexpr size_t NV2 = desc::NV2; ///< The second dimension of the visible units
+    static constexpr size_t K   = desc::K;   ///< The number of filters
+    static constexpr size_t NW1 = desc::NW1; ///< The first dimension of the hidden units
+    static constexpr size_t NW2 = desc::NW2; ///< The second dimension of the hidden units
 
-    static constexpr const std::size_t NH1 = NV1 + NW1 - 1; //By definition
-    static constexpr const std::size_t NH2 = NV2 + NW2 - 1; //By definition
+    static constexpr size_t NH1 = NV1 + NW1 - 1; //By definition
+    static constexpr size_t NH2 = NV2 + NW2 - 1; //By definition
 
     static constexpr auto activation_function = desc::activation_function;
     static constexpr auto w_initializer       = desc::w_initializer;
@@ -59,15 +59,15 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
         initializer_function<b_initializer>::initialize(b, input_size(), output_size());
     }
 
-    static constexpr std::size_t input_size() noexcept {
+    static constexpr size_t input_size() noexcept {
         return NC * NV1 * NV2;
     }
 
-    static constexpr std::size_t output_size() noexcept {
+    static constexpr size_t output_size() noexcept {
         return K * NH1 * NH2;
     }
 
-    static constexpr std::size_t parameters() noexcept {
+    static constexpr size_t parameters() noexcept {
         return K * NW1 * NW2;
     }
 
@@ -95,7 +95,7 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
     void batch_activate_hidden(H1&& output, const V& v) const {
         output = etl::conv_4d_full_flipped(v, w);
 
-        static constexpr const auto batch_size = etl::decay_traits<H1>::template dim<0>();
+        static constexpr auto batch_size = etl::decay_traits<H1>::template dim<0>();
 
         auto b_rep = etl::force_temporary(etl::rep_l<batch_size>(etl::rep<NH1, NH2>(b)));
 
@@ -108,7 +108,7 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
     }
 
     template <typename Input>
-    static output_t prepare_output(std::size_t samples) {
+    static output_t prepare_output(size_t samples) {
         return output_t{samples};
     }
 
@@ -166,39 +166,39 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
 //Allow odr-use of the constexpr static members
 
 template <typename Desc>
-const std::size_t deconv_layer<Desc>::NV1;
+const size_t deconv_layer<Desc>::NV1;
 
 template <typename Desc>
-const std::size_t deconv_layer<Desc>::NV2;
+const size_t deconv_layer<Desc>::NV2;
 
 template <typename Desc>
-const std::size_t deconv_layer<Desc>::NH1;
+const size_t deconv_layer<Desc>::NH1;
 
 template <typename Desc>
-const std::size_t deconv_layer<Desc>::NH2;
+const size_t deconv_layer<Desc>::NH2;
 
 template <typename Desc>
-const std::size_t deconv_layer<Desc>::NC;
+const size_t deconv_layer<Desc>::NC;
 
 template <typename Desc>
-const std::size_t deconv_layer<Desc>::NW1;
+const size_t deconv_layer<Desc>::NW1;
 
 template <typename Desc>
-const std::size_t deconv_layer<Desc>::NW2;
+const size_t deconv_layer<Desc>::NW2;
 
 template <typename Desc>
-const std::size_t deconv_layer<Desc>::K;
+const size_t deconv_layer<Desc>::K;
 
 // Declare the traits for the Layer
 
 template<typename Desc>
 struct layer_base_traits<deconv_layer<Desc>> {
     static constexpr bool is_neural     = true;  ///< Indicates if the layer is a neural layer
-    static constexpr bool is_dense      = false;  ///< Indicates if the layer is dense
+    static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
-    static constexpr bool is_deconv     = true; ///< Indicates if the layer is deconvolutional
+    static constexpr bool is_deconv     = true;  ///< Indicates if the layer is deconvolutional
     static constexpr bool is_standard   = true;  ///< Indicates if the layer is standard
-    static constexpr bool is_rbm        = false;  ///< Indicates if the layer is RBM
+    static constexpr bool is_rbm        = false; ///< Indicates if the layer is RBM
     static constexpr bool is_pooling    = false; ///< Indicates if the layer is a pooling layer
     static constexpr bool is_unpooling  = false; ///< Indicates if the layer is an unpooling laye
     static constexpr bool is_transform  = false; ///< Indicates if the layer is a transform layer
@@ -217,16 +217,16 @@ struct sgd_context<DBN, deconv_layer<Desc>> {
     using layer_t = deconv_layer<Desc>;
     using weight  = typename layer_t::weight;
 
-    static constexpr const std::size_t NV1 = layer_t::NV1;
-    static constexpr const std::size_t NV2 = layer_t::NV2;
-    static constexpr const std::size_t NH1 = layer_t::NH1;
-    static constexpr const std::size_t NH2 = layer_t::NH2;
-    static constexpr const std::size_t NW1 = layer_t::NW1;
-    static constexpr const std::size_t NW2 = layer_t::NW2;
-    static constexpr const std::size_t NC  = layer_t::NC;
-    static constexpr const std::size_t K   = layer_t::K;
+    static constexpr size_t NV1 = layer_t::NV1;
+    static constexpr size_t NV2 = layer_t::NV2;
+    static constexpr size_t NH1 = layer_t::NH1;
+    static constexpr size_t NH2 = layer_t::NH2;
+    static constexpr size_t NW1 = layer_t::NW1;
+    static constexpr size_t NW2 = layer_t::NW2;
+    static constexpr size_t NC  = layer_t::NC;
+    static constexpr size_t K   = layer_t::K;
 
-    static constexpr const auto batch_size = DBN::batch_size;
+    static constexpr auto batch_size = DBN::batch_size;
 
     etl::fast_matrix<weight, NC, K, NW1, NW2> w_grad;
     etl::fast_matrix<weight, K> b_grad;

@@ -75,15 +75,15 @@ struct dyn_deconv_layer final : neural_layer<dyn_deconv_layer<Desc>, Desc> {
         initializer_function<b_initializer>::initialize(b, input_size(), output_size());
     }
 
-    std::size_t input_size() const noexcept {
+    size_t input_size() const noexcept {
         return nc * nv1 * nv2;
     }
 
-    std::size_t output_size() const noexcept {
+    size_t output_size() const noexcept {
         return k * nh1 * nh2;
     }
 
-    std::size_t parameters() const noexcept {
+    size_t parameters() const noexcept {
         return k * nw1 * nw2;
     }
 
@@ -123,7 +123,7 @@ struct dyn_deconv_layer final : neural_layer<dyn_deconv_layer<Desc>, Desc> {
     }
 
     template <typename Input>
-    output_t prepare_output(std::size_t samples) const {
+    output_t prepare_output(size_t samples) const {
         output_t output;
         output.reserve(samples);
         for(size_t i = 0; i < samples; ++i){
@@ -221,7 +221,7 @@ struct sgd_context<DBN, dyn_deconv_layer<Desc>> {
     using layer_t = dyn_deconv_layer<Desc>;
     using weight  = typename layer_t::weight;
 
-    static constexpr const auto batch_size = DBN::batch_size;
+    static constexpr auto batch_size = DBN::batch_size;
 
     etl::dyn_matrix<weight, 4> w_grad;
     etl::dyn_matrix<weight, 1> b_grad;
