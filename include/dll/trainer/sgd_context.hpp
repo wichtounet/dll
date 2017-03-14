@@ -185,11 +185,12 @@ struct sgd_context<DBN, Layer, std::enable_if_t<layer_traits<Layer>::is_deconvol
     etl::dyn_matrix<weight, 4> output;
     etl::dyn_matrix<weight, 4> errors;
 
-    sgd_context(size_t nc, size_t nv1, size_t nv2, size_t k, size_t nh1, size_t nh2)
-            : w_grad(k, nc, nv1 - nh1 + 1, nv2 - nh2 + 1), b_grad(k),
-              w_inc(k, nc, nv1 - nh1 + 1, nv2 - nh2 + 1), b_inc(k),
+    sgd_context(size_t nc, size_t nv1, size_t nv2, size_t k, size_t nh1, size_t nh2, size_t nw1, size_t nw2)
+            : w_grad(nc, k, nw1, nw2), b_grad(k),
+              w_inc(nc, k, nw1, nw2), b_inc(k),
               input(batch_size, nc, nv1, nv2),
-              output(batch_size, k, nh1, nh2), errors(batch_size, k, nh1, nh2) {}
+              output(batch_size, k, nh1, nh2),
+              errors(batch_size, k, nh1, nh2) {}
 };
 
 /*!

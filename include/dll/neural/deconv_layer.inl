@@ -21,12 +21,12 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
     using this_type = deconv_layer<desc>;
     using base_type = neural_layer<this_type, desc>;
 
+    static constexpr const std::size_t NC  = desc::NC;  ///< The number of input channels
     static constexpr const std::size_t NV1 = desc::NV1; ///< The first dimension of the visible units
     static constexpr const std::size_t NV2 = desc::NV2; ///< The second dimension of the visible units
+    static constexpr const std::size_t K   = desc::K;   ///< The number of filters
     static constexpr const std::size_t NW1 = desc::NW1; ///< The first dimension of the hidden units
     static constexpr const std::size_t NW2 = desc::NW2; ///< The second dimension of the hidden units
-    static constexpr const std::size_t NC  = desc::NC;  ///< The number of input channels
-    static constexpr const std::size_t K   = desc::K;   ///< The number of filters
 
     static constexpr const std::size_t NH1 = NV1 + NW1 - 1; //By definition
     static constexpr const std::size_t NH2 = NV2 + NW2 - 1; //By definition
@@ -114,7 +114,7 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
 
     template<typename DRBM>
     static void dyn_init(DRBM& dyn){
-        dyn.init_layer(NC, NV1, NV2, K, NH1, NH2);
+        dyn.init_layer(NC, NV1, NV2, K, NW1, NW2);
     }
 
     /*!

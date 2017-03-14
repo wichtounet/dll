@@ -57,17 +57,17 @@ struct dyn_deconv_layer final : neural_layer<dyn_deconv_layer<Desc>, Desc> {
     }
 
     void init_layer(size_t nc, size_t nv1, size_t nv2, size_t k, size_t nh1, size_t nh2){
+        this->nc = nc;
         this->nv1 = nv1;
         this->nv2 = nv2;
-        this->nh1 = nh1;
-        this->nh2 = nh2;
-        this->nc = nc;
         this->k = k;
+        this->nw1 = nh1;
+        this->nw2 = nh2;
 
-        this->nw1 = nv1 - nh1 + 1;
-        this->nw2 = nv2 - nh2 + 1;
+        this->nh1 = nv1 + nw1 - 1;
+        this->nh2 = nv2 + nw2 - 1;
 
-        w = etl::dyn_matrix<weight, 4>(k, nc, nw1, nw2);
+        w = etl::dyn_matrix<weight, 4>(nc, k, nw1, nw2);
 
         b = etl::dyn_vector<weight>(k);
 
@@ -139,7 +139,7 @@ struct dyn_deconv_layer final : neural_layer<dyn_deconv_layer<Desc>, Desc> {
 
     template <typename DBN>
     void init_sgd_context() {
-        this->sgd_context_ptr = std::make_shared<sgd_context<DBN, this_type>>(nc, nv1, nv2, k, nh1, nh2);
+        this->sgd_context_ptr = std::make_shared<sgd_context<DBN, this_type>>(nc, nv1, nv2, k, nh1, nh2, nw1, nw2);
     }
 
     template<typename DRBM>
@@ -179,7 +179,7 @@ struct dyn_deconv_layer final : neural_layer<dyn_deconv_layer<Desc>, Desc> {
     template<typename H, typename C, cpp_enable_if(etl::decay_traits<H>::dimensions() != 4)>
     void backward_batch(H&& output, C& context) const {
         const auto B = etl::dim<0>(output);
-        etl::reshape(output, nc, nv1, nv2) = etl::conv_4d_valid_flipped(context.errors, w);
+        etl::reshape(output, B, nc, nv1, nv2) = etl::conv_4d_valid_flipped(context.errors, w);
     }
 
     /*!
