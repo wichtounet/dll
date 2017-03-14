@@ -138,4 +138,24 @@ struct layer_base_traits<dyn_upsample_layer_3d<Desc>> {
     static constexpr bool sgd_supported = true;  ///< Indicates if the layer is supported by SGD
 };
 
+/*!
+ * \brief Specialization of sgd_context for dyn_upsample_layer
+ */
+template <typename DBN, typename Desc>
+struct sgd_context<DBN, dyn_upsample_layer_3d<Desc>> {
+    using layer_t = dyn_upsample_layer_3d<Desc>;
+    using weight  = typename layer_t::weight;
+
+    static constexpr auto batch_size = DBN::batch_size;
+
+    etl::dyn_matrix<weight, 4> input;
+    etl::dyn_matrix<weight, 4> output;
+    etl::dyn_matrix<weight, 4> errors;
+
+    sgd_context(size_t i1, size_t i2, size_t i3, size_t c1, size_t c2, size_t c3)
+            : input(batch_size, i1, i2, i3),
+              output(batch_size, i1 * c1, i2 * c2, i3 * c3),
+              errors(batch_size, i1 * c1, i2 * c2, i3 * c3) {}
+};
+
 } //end of dll namespace
