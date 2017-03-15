@@ -61,6 +61,23 @@ endif
 endif
 endif
 
+# On demand activation of full GPU support
+ifneq (,$(ETL_GPU))
+CXX_FLAGS += -DETL_GPU
+
+CXX_FLAGS += $(shell pkg-config --cflags cublas)
+CXX_FLAGS += $(shell pkg-config --cflags cufft)
+CXX_FLAGS += $(shell pkg-config --cflags cudnn)
+
+LD_FLAGS += $(shell pkg-config --libs cublas)
+LD_FLAGS += $(shell pkg-config --libs cufft)
+LD_FLAGS += $(shell pkg-config --libs cudnn)
+
+ifneq (,$(findstring clang,$(CXX)))
+CXX_FLAGS += -Wno-documentation
+endif
+else
+
 # On demand activation of cublas support
 ifneq (,$(ETL_CUBLAS))
 CXX_FLAGS += -DETL_CUBLAS_MODE $(shell pkg-config --cflags cublas)
@@ -89,6 +106,14 @@ LD_FLAGS += $(shell pkg-config --libs cudnn)
 ifneq (,$(findstring clang,$(CXX)))
 CXX_FLAGS += -Wno-documentation
 endif
+endif
+
+endif
+
+# On demand activation of egblas support
+ifneq (,$(ETL_EGBLAS))
+CXX_FLAGS += -DETL_EGBLAS_MODE $(shell pkg-config --cflags egblas)
+LD_FLAGS += $(shell pkg-config --libs egblas)
 endif
 
 # Activate hybrid compilation by default
