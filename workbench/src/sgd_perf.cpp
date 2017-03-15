@@ -58,5 +58,7 @@ int main(int /*argc*/, char* /*argv*/ []) {
     auto ft_error = net->fine_tune(dataset.training_images, dataset.training_labels, 20);
     std::cout << "ft_error:" << ft_error << std::endl;
 
+    dll::dump_timers();
+
     return 0;
 }
