@@ -125,7 +125,7 @@ public:
     weight lr_step_gamma     = 0.5;  ///< The multiplicative decrease of learning rate for the step driver
     std::size_t lr_step_size = 10;   ///< The number of steps after which the step driver decreases the learning rate
 
-    weight initial_momentum     = 0.5; ///< The initial momentum
+    weight initial_momentum     = 0.9; ///< The initial momentum
     weight final_momentum       = 0.9; ///< The final momentum applied after *final_momentum_epoch* epoch
     weight final_momentum_epoch = 6;   ///< The epoch at which momentum change
 
