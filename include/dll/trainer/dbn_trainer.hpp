@@ -12,6 +12,7 @@
 #include "etl/etl.hpp"
 
 #include "dll/util/labels.hpp"
+#include "dll/util/timers.hpp"
 #include "dll/util/batch.hpp" // For make_batch
 #include "dll/test.hpp"
 #include "dll/dbn_traits.hpp"
@@ -120,6 +121,8 @@ struct dbn_trainer {
 
     template <typename Iterator, typename LIterator, typename Error, typename InputTransformer, typename LabelTransformer>
     error_type train_impl(DBN& dbn, bool ae, Iterator first, Iterator last, LIterator lfirst, LIterator llast, std::size_t max_epochs, Error error_function, InputTransformer input_transformer, LabelTransformer label_transformer) const {
+        dll::auto_timer timer("dbn::trainer::train_impl");
+
         constexpr const auto batch_size     = std::decay_t<DBN>::batch_size;
         constexpr const auto big_batch_size = std::decay_t<DBN>::big_batch_size;
 
@@ -145,6 +148,8 @@ struct dbn_trainer {
         error_type error = 0.0;
 
         if (!dbn.batch_mode()) {
+            dll::auto_timer timer("dbn::trainer::train_impl::fast");
+
             //Make sure data is contiguous
             samples_t data;
             data.reserve(std::distance(first, last));
@@ -169,6 +174,8 @@ struct dbn_trainer {
 
             //Train for max_epochs epoch
             for (std::size_t epoch = 0; epoch < max_epochs; ++epoch) {
+                dll::auto_timer timer("dbn::trainer::train_impl::epoch");
+
                 // Shuffle before the epoch if necessary
                 if(dbn_traits<dbn_t>::shuffle()){
                     static std::random_device rd;
@@ -181,6 +188,8 @@ struct dbn_trainer {
 
                 //Train one mini-batch at a time
                 for (std::size_t i = 0; i < batches; ++i) {
+                    dll::auto_timer timer("dbn::trainer::train_impl::epoch::batch");
+
                     auto start = i * batch_size;
                     auto end   = std::min(start + batch_size, data.size());
 
@@ -200,8 +209,16 @@ struct dbn_trainer {
 
                 loss /= batches;
 
+                // Save the last error
                 auto last_error = error;
-                error           = error_function();
+
+                // Compute the error at this epoch
+
+                {
+                    dll::auto_timer timer("dbn::trainer::train_impl::epoch::error");
+
+                    error = error_function();
+                }
 
                 //After some time increase the momentum
                 if (dbn_traits<dbn_t>::has_momentum() && epoch == dbn.final_momentum_epoch) {
