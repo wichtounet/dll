@@ -61,7 +61,7 @@ struct dbn_trainer {
     using watcher_t = typename dbn_t::desc::template watcher_t<R>;
 
     template <typename Iterator, typename LIterator>
-    error_type train(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator llast, std::size_t max_epochs) const {
+    error_type train(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t max_epochs) const {
         auto error_function = [&dbn, first, last, lfirst, llast]() {
             return test_set(dbn, first, last, lfirst, llast,
                             [](dbn_t& dbn, auto& image) { return dbn.predict(image); });
@@ -79,7 +79,7 @@ struct dbn_trainer {
     }
 
     template <typename Iterator>
-    error_type train_ae(DBN& dbn, Iterator first, Iterator last, std::size_t max_epochs) const {
+    error_type train_ae(DBN& dbn, Iterator first, Iterator last, size_t max_epochs) const {
         auto error_function = [&dbn, first, last]() {
             return test_set_ae(dbn, first, last);
         };
@@ -96,7 +96,7 @@ struct dbn_trainer {
     }
 
     template <typename Iterator>
-    error_type train_dae(DBN& dbn, Iterator first, Iterator last, std::size_t max_epochs, double corrupt) const {
+    error_type train_dae(DBN& dbn, Iterator first, Iterator last, size_t max_epochs, double corrupt) const {
         auto error_function = [&dbn, first, last]() {
             return test_set_ae(dbn, first, last);
         };
@@ -121,7 +121,7 @@ struct dbn_trainer {
 
     template <typename D, typename It>
     static void copy_inputs(D& dest, It first, It last) {
-        std::size_t i = 0;
+        size_t i = 0;
 
         while (first != last) {
             dest(i++) = *first++;
@@ -129,8 +129,10 @@ struct dbn_trainer {
     }
 
     template <typename Iterator, typename LIterator, typename Error, typename InputTransformer, typename LabelTransformer>
-    error_type train_impl(DBN& dbn, bool ae, Iterator first, Iterator last, LIterator lfirst, LIterator llast, std::size_t max_epochs, Error error_function, InputTransformer input_transformer, LabelTransformer label_transformer) const {
+    error_type train_impl(DBN& dbn, bool ae, Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t max_epochs, Error error_function, InputTransformer input_transformer, LabelTransformer label_transformer) const {
         dll::auto_timer timer("dbn::trainer::train_impl");
+
+        decltype(auto) input_layer = dbn.template layer_get<dbn_t::input_layer_n>();
 
         constexpr const auto batch_size     = std::decay_t<DBN>::batch_size;
         constexpr const auto big_batch_size = std::decay_t<DBN>::big_batch_size;
@@ -159,9 +161,12 @@ struct dbn_trainer {
         if (!dbn.batch_mode()) {
             dll::auto_timer timer("dbn::trainer::train_impl::fast");
 
+            // The number of elements on which to train
+            const size_t n = std::distance(first, last);
+
             //Make sure data is contiguous
             samples_t data;
-            data.reserve(std::distance(first, last));
+            data.reserve(n);
 
             std::for_each(first, last, [&data](auto& sample) {
                 data.emplace_back(sample);
@@ -179,7 +184,7 @@ struct dbn_trainer {
             });
 
             //Compute the number of batches
-            auto batches = data.size() / batch_size + (data.size() % batch_size == 0 ? 0 : 1);
+            auto batches = n / batch_size + (n % batch_size == 0 ? 0 : 1);
 
             // Prepare a fast error function using the contiguous memory
 
@@ -189,7 +194,6 @@ struct dbn_trainer {
                 } else {
                     //TODO Ideally, this should be done without
                     //acessing the sgd context and probably in dbn.inl
-                    decltype(auto) input_layer = dbn.template layer_get<dbn_t::input_layer_n>();
                     decltype(auto) input_ctx = input_layer.template get_sgd_context<dbn_t>();
 
                     decltype(auto) first_layer = dbn.template layer_get<0>();
@@ -201,9 +205,9 @@ struct dbn_trainer {
                     size_t succ = 0;
 
                     //Train one mini-batch at a time
-                    for (std::size_t i = 0; i < batches; ++i) {
+                    for (size_t i = 0; i < batches; ++i) {
                         auto start = i * batch_size;
-                        auto end   = std::min(start + batch_size, data.size());
+                        auto end   = std::min(start + batch_size, n);
 
                         copy_inputs(input_ctx.input, data.begin() + start, data.begin() + end);
 
@@ -217,7 +221,7 @@ struct dbn_trainer {
                             layer_2.batch_activate_hidden(ctx2.output, ctx2.input);
                         });
 
-                        for(std::size_t b = 0; b < end - start; ++b){
+                        for(size_t b = 0; b < end - start; ++b){
                             auto v = last_ctx.output(b);
 
                             auto label = std::distance(v.begin(), std::max_element(v.begin(), v.end()));
@@ -228,12 +232,12 @@ struct dbn_trainer {
                         }
                     }
 
-                    return (data.size() - succ) / double(data.size());
+                    return (n - succ) / double(n);
                 }
             };
 
             //Train for max_epochs epoch
-            for (std::size_t epoch = 0; epoch < max_epochs; ++epoch) {
+            for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
                 dll::auto_timer timer("dbn::trainer::train_impl::epoch");
 
                 // Shuffle before the epoch if necessary
@@ -247,11 +251,11 @@ struct dbn_trainer {
                 double loss = 0;
 
                 //Train one mini-batch at a time
-                for (std::size_t i = 0; i < batches; ++i) {
+                for (size_t i = 0; i < batches; ++i) {
                     dll::auto_timer timer("dbn::trainer::train_impl::epoch::batch");
 
                     auto start = i * batch_size;
-                    auto end   = std::min(start + batch_size, data.size());
+                    auto end   = std::min(start + batch_size, n);
 
                     auto data_batch  = make_batch(data.begin() + start, data.begin() + end);
                     auto label_batch = make_batch(labels.begin() + start, labels.begin() + end);
@@ -328,18 +332,18 @@ struct dbn_trainer {
             labels_t label_cache(total_batch_size);
 
             //Train for max_epochs epoch
-            for (std::size_t epoch = 0; epoch < max_epochs; ++epoch) {
+            for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
                 auto it = first;
                 auto lit = lfirst;
 
                 double loss = 0.0;
 
-                std::size_t n = 0;
+                size_t n = 0;
 
                 //Train all mini-batches
                 while (it != last) {
                     //Fill the input caches
-                    std::size_t i = 0;
+                    size_t i = 0;
                     while (it != last && i < total_batch_size) {
                         input_cache[i] = *it++;
                         label_cache[i] = *lit++;
@@ -353,7 +357,7 @@ struct dbn_trainer {
                     auto full_batches = i / batch_size;
 
                     //Train all the full batches
-                    for (std::size_t b = 0; b < full_batches; ++b) {
+                    for (size_t b = 0; b < full_batches; ++b) {
                         auto data_batch  = make_batch(input_cache.begin() + b * batch_size, input_cache.begin() + (b + 1) * batch_size);
                         auto label_batch = make_batch(fake_labels.begin() + b * batch_size, fake_labels.begin() + (b + 1) * batch_size);
 
