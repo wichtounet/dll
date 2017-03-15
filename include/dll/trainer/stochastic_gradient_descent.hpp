@@ -152,6 +152,8 @@ struct sgd_trainer {
         }
     }
 
+    // TODO: There are way too many copies going in this function
+
     template <typename T, typename L, typename InputTransformer>
     std::pair<double, double> train_batch(std::size_t /*epoch*/, const dll::batch<T>& data_batch, const dll::batch<L>& label_batch, InputTransformer input_transformer) {
         dll::auto_timer timer("sgd::train_batch");
