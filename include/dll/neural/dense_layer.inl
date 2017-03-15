@@ -10,6 +10,8 @@
 #include "dll/base_traits.hpp"
 #include "dll/neural_layer.hpp"
 
+#include "dll/util/timers.hpp" // for auto_timer
+
 namespace dll {
 
 /*!
@@ -85,16 +87,22 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
 
     template <typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 1)>
     void activate_hidden(output_one_t& output, const V& v) const {
+        dll::auto_timer timer("dense:activate_hidden");
+
         output = f_activate<activation_function>(b + v * w);
     }
 
     template <typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 1)>
     void activate_hidden(output_one_t& output, const V& v) const {
+        dll::auto_timer timer("dense:activate_hidden");
+
         output = f_activate<activation_function>(b + etl::reshape<num_visible>(v) * w);
     }
 
     template <typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 2)>
     void batch_activate_hidden(H&& output, const V& v) const {
+        dll::auto_timer timer("dense:batch_activate_hidden");
+
         const auto Batch = etl::dim<0>(v);
 
         cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
@@ -112,6 +120,8 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
 
     template <typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 2)>
     void batch_activate_hidden(H&& output, const V& input) const {
+        dll::auto_timer timer("dense:batch_activate_hidden");
+
         constexpr const auto Batch = etl::decay_traits<V>::template dim<0>();
 
         cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
@@ -151,6 +161,8 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
      */
     template<typename C>
     void adapt_errors(C& context) const {
+        dll::auto_timer timer("dense:adapt_errors");
+
         if(activation_function != function::IDENTITY){
             context.errors = f_derivative<activation_function>(context.output) >> context.errors;
         }
@@ -163,6 +175,8 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
      */
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
+        dll::auto_timer timer("dense:backward_batch");
+
         // The reshape has no overhead, so better than SFINAE for nothing
         constexpr const auto Batch = etl::decay_traits<decltype(context.errors)>::template dim<0>();
         etl::reshape<Batch, num_visible>(output) = context.errors * etl::transpose(w);
@@ -174,6 +188,8 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
      */
     template<typename C>
     void compute_gradients(C& context) const {
+        dll::auto_timer timer("dense:compute_gradients");
+
         context.w_grad = batch_outer(context.input, context.errors);
         context.b_grad = etl::sum_l(context.errors);
     }
