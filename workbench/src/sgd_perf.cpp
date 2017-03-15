@@ -7,6 +7,8 @@
 
 #include <deque>
 
+#define ETL_COUNTERS
+
 #include "dll/neural/dense_layer.hpp"
 #include "dll/test.hpp"
 #include "dll/dbn.hpp"
@@ -53,12 +55,15 @@ int main(int /*argc*/, char* /*argv*/ []) {
 
     auto net = std::make_unique<dbn_t>();
 
+    // Train the network for performance sake
     net->display();
+    net->fine_tune(dataset.training_images, dataset.training_labels, 20);
 
-    auto ft_error = net->fine_tune(dataset.training_images, dataset.training_labels, 20);
-    std::cout << "ft_error:" << ft_error << std::endl;
-
+    std::cout << "DLL Timers" << std::endl;
     dll::dump_timers();
+
+    std::cout << "ETL Counters" << std::endl;
+    etl::dump_counters();
 
     return 0;
 }
