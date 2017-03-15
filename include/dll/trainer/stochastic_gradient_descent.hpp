@@ -262,6 +262,8 @@ struct sgd_trainer {
 
     template <typename L, cpp_enable_if(decay_layer_traits<L>::is_neural_layer())>
     void apply_gradients(L& layer, std::size_t n) {
+        dll::auto_timer timer("sgd::apply_grad");
+
         auto& context = layer.template get_sgd_context<dbn_t>();
 
         //Update the gradients
