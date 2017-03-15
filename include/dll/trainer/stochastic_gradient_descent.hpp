@@ -154,6 +154,9 @@ struct sgd_trainer {
 
     template <typename T, typename L, typename InputTransformer>
     std::pair<double, double> train_batch(std::size_t /*epoch*/, const dll::batch<T>& data_batch, const dll::batch<L>& label_batch, InputTransformer input_transformer) {
+        dll::auto_timer timer("sgd::train_batch");
+
+        // Ensure that the data batch and the label batch are of the same size
         cpp_assert(data_batch.size() == label_batch.size(), "Invalid sizes");
 
         auto n = label_batch.size();
@@ -184,16 +187,20 @@ struct sgd_trainer {
 
         //Feedforward pass
 
-        first_ctx.input = tilde_inputs;
-        first_layer.batch_activate_hidden(first_ctx.output, first_ctx.input);
+        {
+            dll::auto_timer timer("sgd::forward");
 
-        dbn.for_each_layer_pair([](auto& layer_1, auto& layer_2) {
-            auto& ctx1 = layer_1.template get_sgd_context<dbn_t>();
-            auto& ctx2 = layer_2.template get_sgd_context<dbn_t>();
+            first_ctx.input = tilde_inputs;
+            first_layer.batch_activate_hidden(first_ctx.output, first_ctx.input);
 
-            ctx2.input = ctx1.output;
-            layer_2.batch_activate_hidden(ctx2.output, ctx2.input);
-        });
+            dbn.for_each_layer_pair([](auto& layer_1, auto& layer_2) {
+                auto& ctx1 = layer_1.template get_sgd_context<dbn_t>();
+                auto& ctx2 = layer_2.template get_sgd_context<dbn_t>();
+
+                ctx2.input = ctx1.output;
+                layer_2.batch_activate_hidden(ctx2.output, ctx2.input);
+            });
+        }
 
         //Compute the errors of the last layer
 
@@ -201,37 +208,51 @@ struct sgd_trainer {
 
         // Backpropagate the error
 
-        dbn.for_each_layer_rpair([](auto& r1, auto& r2) {
-            auto& ctx1 = r1.template get_sgd_context<dbn_t>();
-            auto& ctx2 = r2.template get_sgd_context<dbn_t>();
+        {
+            dll::auto_timer timer("sgd::backward");
 
-            r2.adapt_errors(ctx2);
-            r2.backward_batch(ctx1.errors, ctx2);
-        });
+            dbn.for_each_layer_rpair([](auto& r1, auto& r2) {
+                auto& ctx1 = r1.template get_sgd_context<dbn_t>();
+                auto& ctx2 = r2.template get_sgd_context<dbn_t>();
 
-        first_layer.adapt_errors(first_ctx);
+                r2.adapt_errors(ctx2);
+                r2.backward_batch(ctx1.errors, ctx2);
+                });
+
+            first_layer.adapt_errors(first_ctx);
+        }
 
         // Compute and apply the gradients
 
-        dbn.for_each_layer([this, n](auto& layer) {
-            // Compute the gradients
-            layer.compute_gradients(layer.template get_sgd_context<dbn_t>());
+        {
+            dll::auto_timer timer("sgd::grad");
 
-            // Apply the gradients
-            this->apply_gradients(layer, n);
-        });
+            dbn.for_each_layer([this, n](auto& layer) {
+                // Compute the gradients
+                layer.compute_gradients(layer.template get_sgd_context<dbn_t>());
+
+                // Apply the gradients
+                this->apply_gradients(layer, n);
+            });
+        }
 
         // Compute error and loss
 
-        double error = etl::mean(etl::abs(labels - last_ctx.output));
-
+        double error = 0.0;
         double loss = 0.0;
-        if(ae_training){
-            // Reconstruction Cross-Entropy Loss
-            loss = -etl::sum((labels >> etl::log(last_ctx.output)) + ((1.0 - labels) >> etl::log(1 - last_ctx.output))) / (double) n;
-        } else {
-            // Cross-Entropy Loss
-            loss = -etl::sum(etl::log(last_ctx.output) >> labels) / (double) n;
+
+        {
+            dll::auto_timer timer("sgd::error");
+
+            error = etl::mean(etl::abs(labels - last_ctx.output));
+
+            if (ae_training) {
+                // Reconstruction Cross-Entropy Loss
+                loss = -etl::sum((labels >> etl::log(last_ctx.output)) + ((1.0 - labels) >> etl::log(1 - last_ctx.output))) / (double)n;
+            } else {
+                // Cross-Entropy Loss
+                loss = -etl::sum(etl::log(last_ctx.output) >> labels) / (double)n;
+            }
         }
 
         return std::make_pair(error, loss);
