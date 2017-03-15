@@ -119,6 +119,15 @@ struct dbn_trainer {
         return train_impl(dbn, true, first, last, first, last, max_epochs, error_function, input_transformer, label_transformer);
     }
 
+    template <typename D, typename It>
+    static void copy_inputs(D& dest, It first, It last) {
+        std::size_t i = 0;
+
+        while (first != last) {
+            dest(i++) = *first++;
+        }
+    }
+
     template <typename Iterator, typename LIterator, typename Error, typename InputTransformer, typename LabelTransformer>
     error_type train_impl(DBN& dbn, bool ae, Iterator first, Iterator last, LIterator lfirst, LIterator llast, std::size_t max_epochs, Error error_function, InputTransformer input_transformer, LabelTransformer label_transformer) const {
         dll::auto_timer timer("dbn::trainer::train_impl");
@@ -172,6 +181,57 @@ struct dbn_trainer {
             //Compute the number of batches
             auto batches = data.size() / batch_size + (data.size() % batch_size == 0 ? 0 : 1);
 
+            // Prepare a fast error function using the contiguous memory
+
+            auto error_function_batch = [&] () {
+                if(ae){
+                    return error_function();
+                } else {
+                    //TODO Ideally, this should be done without
+                    //acessing the sgd context and probably in dbn.inl
+                    decltype(auto) input_layer = dbn.template layer_get<dbn_t::input_layer_n>();
+                    decltype(auto) input_ctx = input_layer.template get_sgd_context<dbn_t>();
+
+                    decltype(auto) first_layer = dbn.template layer_get<0>();
+                    decltype(auto) first_ctx = first_layer.template get_sgd_context<dbn_t>();
+
+                    decltype(auto) last_layer = dbn.template layer_get<dbn_t::layers - 1>();
+                    decltype(auto) last_ctx = last_layer.template get_sgd_context<dbn_t>();
+
+                    size_t succ = 0;
+
+                    //Train one mini-batch at a time
+                    for (std::size_t i = 0; i < batches; ++i) {
+                        auto start = i * batch_size;
+                        auto end   = std::min(start + batch_size, data.size());
+
+                        copy_inputs(input_ctx.input, data.begin() + start, data.begin() + end);
+
+                        first_layer.batch_activate_hidden(first_ctx.output, first_ctx.input);
+
+                        dbn.for_each_layer_pair([](auto& layer_1, auto& layer_2) {
+                            auto& ctx1 = layer_1.template get_sgd_context<dbn_t>();
+                            auto& ctx2 = layer_2.template get_sgd_context<dbn_t>();
+
+                            ctx2.input = ctx1.output;
+                            layer_2.batch_activate_hidden(ctx2.output, ctx2.input);
+                        });
+
+                        for(std::size_t b = 0; b < end - start; ++b){
+                            auto v = last_ctx.output(b);
+
+                            auto label = std::distance(v.begin(), std::max_element(v.begin(), v.end()));
+
+                            if (label == labels[start + b].value){
+                                ++succ;
+                            }
+                        }
+                    }
+
+                    return (data.size() - succ) / double(data.size());
+                }
+            };
+
             //Train for max_epochs epoch
             for (std::size_t epoch = 0; epoch < max_epochs; ++epoch) {
                 dll::auto_timer timer("dbn::trainer::train_impl::epoch");
@@ -201,7 +261,7 @@ struct dbn_trainer {
                     std::tie(batch_error, batch_loss) = trainer->train_batch(epoch, data_batch, label_batch, input_transformer);
 
                     if(dbn_traits<dbn_t>::is_verbose()){
-                        watcher.ft_batch_end(epoch, i, batches, batch_error, batch_loss, error_function(), dbn);
+                        watcher.ft_batch_end(epoch, i, batches, batch_error, batch_loss, error_function_batch(), dbn);
                     }
 
                     loss += batch_loss;
@@ -217,7 +277,7 @@ struct dbn_trainer {
                 {
                     dll::auto_timer timer("dbn::trainer::train_impl::epoch::error");
 
-                    error = error_function();
+                    error = error_function_batch();
                 }
 
                 //After some time increase the momentum
