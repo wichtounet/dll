@@ -51,7 +51,7 @@ TEST_CASE("unit/cdbn/lcn/mnist/1", "[cdbn][lcn][svm][unit]") {
 TEST_CASE("unit/cdbn/lcn/mnist/2", "[cdbn][lcn][svm][unit]") {
     using dbn_t =
         dll::dbn_desc<dll::dbn_layers<
-              dll::conv_rbm_desc_square<1, 28, 20, 3, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
+              dll::conv_rbm_desc_square<1, 28, 20, 17, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
             , dll::rectifier_layer_desc<>::layer_t
             , dll::lcn_layer_desc<7>::layer_t
             , dll::conv_rbm_desc_square<20, 12, 20, 3, dll::visible<dll::unit_type::GAUSSIAN>, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
