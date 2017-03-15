@@ -118,7 +118,7 @@ TEST_CASE("conv_dbn/mnist_11", "avg_pooling") {
 TEST_CASE("conv_dbn/mnist_12", "avgp_pooling") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_rbm_desc<1, 28, 28, 40, 9, 11, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::conv_rbm_desc<1, 28, 28, 40, 9, 8, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::avgp_layer_3d_desc<40, 20, 21, 2, 2, 3>::layer_t,
             dll::conv_rbm_desc<20, 10, 7, 40, 3, 3, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::avgp_layer_3d_desc<40, 8, 5, 2, 1, 1>::layer_t>>::dbn_t dbn_t;
