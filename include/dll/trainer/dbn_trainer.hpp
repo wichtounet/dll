@@ -17,6 +17,8 @@
 #include "dll/test.hpp"
 #include "dll/dbn_traits.hpp"
 
+#include "dll/trainer/sgd_context.hpp" // TODO Remove later
+
 namespace dll {
 
 template <typename Iterator>
@@ -67,8 +69,8 @@ struct dbn_trainer {
                             [](dbn_t& dbn, auto& image) { return dbn.predict(image); });
         };
 
-        auto label_transformer = [](auto first, auto last) {
-            return dll::make_fake(first, last);
+        auto label_transformer = [](const auto& value, size_t n) {
+            return dll::make_fake_etl(value, n);
         };
 
         auto input_transformer = [](const auto& /*value*/){
@@ -84,8 +86,8 @@ struct dbn_trainer {
             return test_set_ae(dbn, first, last);
         };
 
-        auto label_transformer = [](auto first, auto last) {
-            return make_range(first, last);
+        auto label_transformer = [](const auto& value, size_t /*n*/) {
+            return value;
         };
 
         auto input_transformer = [](const auto& /*value*/){
@@ -101,8 +103,8 @@ struct dbn_trainer {
             return test_set_ae(dbn, first, last);
         };
 
-        auto label_transformer = [](auto first, auto last) {
-            return make_range(first, last);
+        auto label_transformer = [](const auto& value, size_t /*n*/) {
+            return value;
         };
 
         auto input_transformer = [corrupt](auto&& value){
@@ -129,17 +131,20 @@ struct dbn_trainer {
     }
 
     template <typename Iterator, typename LIterator, typename Error, typename InputTransformer, typename LabelTransformer>
-    error_type train_impl(DBN& dbn, bool ae, Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t max_epochs, Error error_function, InputTransformer input_transformer, LabelTransformer label_transformer) const {
+    error_type train_impl(DBN& dbn, bool ae, Iterator first, Iterator last, LIterator lfirst, LIterator /*llast*/, size_t max_epochs, Error error_function, InputTransformer input_transformer, LabelTransformer label_transformer) const {
         dll::auto_timer timer("dbn::trainer::train_impl");
 
         decltype(auto) input_layer = dbn.template layer_get<dbn_t::input_layer_n>();
+        decltype(auto) output_layer = dbn.template layer_get<dbn_t::output_layer_n>();
+
+        decltype(auto) first_layer = dbn.template layer_get<0>();
+        decltype(auto) last_layer  = dbn.template layer_get<dbn_t::layers - 1>();
+
+        using input_layer_t  = typename dbn_t::template layer_type<dbn_t::input_layer_n>;
+        using output_layer_t = typename dbn_t::template layer_type<dbn_t::output_layer_n>;
 
         constexpr const auto batch_size     = std::decay_t<DBN>::batch_size;
         constexpr const auto big_batch_size = std::decay_t<DBN>::big_batch_size;
-
-        //Get types for the batch
-        using samples_t = std::vector<std::remove_cv_t<typename std::iterator_traits<Iterator>::value_type>>;
-        using labels_t  = std::vector<std::remove_cv_t<typename std::iterator_traits<LIterator>::value_type>>;
 
         //Initialize the momentum
         dbn.momentum = dbn.initial_momentum;
@@ -164,24 +169,22 @@ struct dbn_trainer {
             // The number of elements on which to train
             const size_t n = std::distance(first, last);
 
-            //Make sure data is contiguous
-            samples_t data;
-            data.reserve(n);
+            // Prepare the data
 
-            std::for_each(first, last, [&data](auto& sample) {
-                data.emplace_back(sample);
-            });
+            // TODO Create correctly the type for conv
+            etl::dyn_matrix<typename input_layer_t::weight, 2> data(n, input_layer.input_size());
 
-            //Convert labels to an useful form
-            auto fake_labels = label_transformer(lfirst, llast);
+            for(size_t l = 0; l < n; ++l){
+                data(l) = *first++;
+            }
 
-            //Make sure labels are contiguous
-            std::vector<std::decay_t<decltype(*fake_labels.begin())>> labels;
-            labels.reserve(std::distance(fake_labels.begin(), fake_labels.end()));
+            // Prepare the labels
 
-            std::for_each(fake_labels.begin(), fake_labels.end(), [&labels](auto& label) {
-                labels.emplace_back(label);
-            });
+            etl::dyn_matrix<typename output_layer_t::weight, 2> labels(n, output_layer.output_size(), typename output_layer_t::weight(0.0));
+
+            for(size_t l = 0; l < n; ++l){
+                labels(l) = label_transformer(*lfirst++, output_layer.output_size());
+            }
 
             //Compute the number of batches
             auto batches = n / batch_size + (n % batch_size == 0 ? 0 : 1);
@@ -195,21 +198,17 @@ struct dbn_trainer {
                     //TODO Ideally, this should be done without
                     //acessing the sgd context and probably in dbn.inl
                     decltype(auto) input_ctx = input_layer.template get_sgd_context<dbn_t>();
-
-                    decltype(auto) first_layer = dbn.template layer_get<0>();
                     decltype(auto) first_ctx = first_layer.template get_sgd_context<dbn_t>();
+                    decltype(auto) last_ctx  = last_layer.template get_sgd_context<dbn_t>();
 
-                    decltype(auto) last_layer = dbn.template layer_get<dbn_t::layers - 1>();
-                    decltype(auto) last_ctx = last_layer.template get_sgd_context<dbn_t>();
-
-                    size_t succ = 0;
+                    double error = 0.0;
 
                     //Train one mini-batch at a time
                     for (size_t i = 0; i < batches; ++i) {
                         auto start = i * batch_size;
                         auto end   = std::min(start + batch_size, n);
 
-                        copy_inputs(input_ctx.input, data.begin() + start, data.begin() + end);
+                        input_ctx.input = slice(data, start, end);
 
                         first_layer.batch_activate_hidden(first_ctx.output, first_ctx.input);
 
@@ -221,18 +220,16 @@ struct dbn_trainer {
                             layer_2.batch_activate_hidden(ctx2.output, ctx2.input);
                         });
 
+                        // TODO Review this calculation
+                        // The result is correct, but can probably be done in a more clean way
+
+                        // TODO This is not correct for ae!
                         for(size_t b = 0; b < end - start; ++b){
-                            auto v = last_ctx.output(b);
-
-                            auto label = std::distance(v.begin(), std::max_element(v.begin(), v.end()));
-
-                            if (label == labels[start + b].value){
-                                ++succ;
-                            }
+                            error += std::min(1.0, (double) etl::sum(abs(labels(start + b) - one_if_max(last_ctx.output(b)))));
                         }
                     }
 
-                    return (n - succ) / double(n);
+                    return error / n;
                 }
             };
 
@@ -245,7 +242,7 @@ struct dbn_trainer {
                     static std::random_device rd;
                     static std::mt19937_64 g(rd());
 
-                    cpp::parallel_shuffle(data.begin(), data.end(), labels.begin(), labels.end(), g);
+                    etl::parallel_shuffle(data, labels);
                 }
 
                 double loss = 0;
@@ -254,15 +251,16 @@ struct dbn_trainer {
                 for (size_t i = 0; i < batches; ++i) {
                     dll::auto_timer timer("dbn::trainer::train_impl::epoch::batch");
 
-                    auto start = i * batch_size;
-                    auto end   = std::min(start + batch_size, n);
-
-                    auto data_batch  = make_batch(data.begin() + start, data.begin() + end);
-                    auto label_batch = make_batch(labels.begin() + start, labels.begin() + end);
+                    const auto start = i * batch_size;
+                    const auto end   = std::min(start + batch_size, n);
 
                     double batch_error;
                     double batch_loss;
-                    std::tie(batch_error, batch_loss) = trainer->train_batch(epoch, data_batch, label_batch, input_transformer);
+                    std::tie(batch_error, batch_loss) = trainer->train_batch(
+                        epoch,
+                        slice(data, start, end),
+                        slice(labels, start, end),
+                        input_transformer);
 
                     if(dbn_traits<dbn_t>::is_verbose()){
                         watcher.ft_batch_end(epoch, i, batches, batch_error, batch_loss, error_function_batch(), dbn);
@@ -328,8 +326,8 @@ struct dbn_trainer {
             auto total_batch_size = big_batch_size * batch_size;
 
             //Prepare some space for converted data
-            samples_t input_cache(total_batch_size);
-            labels_t label_cache(total_batch_size);
+            etl::dyn_matrix<typename input_layer_t::weight, 2> input_cache(total_batch_size, input_layer.input_size());
+            etl::dyn_matrix<typename output_layer_t::weight, 2> label_cache(total_batch_size, output_layer.output_size());
 
             //Train for max_epochs epoch
             for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
@@ -342,28 +340,32 @@ struct dbn_trainer {
 
                 //Train all mini-batches
                 while (it != last) {
+                    label_cache = 0.0;
+
                     //Fill the input caches
                     size_t i = 0;
                     while (it != last && i < total_batch_size) {
-                        input_cache[i] = *it++;
-                        label_cache[i] = *lit++;
+                        input_cache(i) = *it++;
+                        label_cache(i) = label_transformer(*lit++, output_layer.output_size());
+
                         ++i;
                         ++n;
                     }
-
-                    //Convert labels to an useful form
-                    auto fake_labels = label_transformer(label_cache.begin(), label_cache.end());
 
                     auto full_batches = i / batch_size;
 
                     //Train all the full batches
                     for (size_t b = 0; b < full_batches; ++b) {
-                        auto data_batch  = make_batch(input_cache.begin() + b * batch_size, input_cache.begin() + (b + 1) * batch_size);
-                        auto label_batch = make_batch(fake_labels.begin() + b * batch_size, fake_labels.begin() + (b + 1) * batch_size);
+                        const auto start       = b * batch_size;
+                        const auto end         = (b + 1) * batch_size;
 
                         double batch_error;
                         double batch_loss;
-                        std::tie(batch_error, batch_loss) = trainer->train_batch(epoch, data_batch, label_batch, input_transformer);
+                        std::tie(batch_error, batch_loss) = trainer->train_batch(
+                            epoch,
+                            slice(input_cache, start, end),
+                            slice(label_cache, start, end),
+                            input_transformer);
 
                         if(dbn_traits<dbn_t>::is_verbose()){
                             watcher.ft_batch_end(epoch, batch_error, batch_loss, error_function(), dbn);
@@ -374,12 +376,16 @@ struct dbn_trainer {
 
                     //Train the last incomplete batch, if any
                     if (i % batch_size > 0) {
-                        auto data_batch  = make_batch(input_cache.begin() + full_batches * batch_size, input_cache.begin() + i);
-                        auto label_batch = make_batch(fake_labels.begin() + full_batches * batch_size, fake_labels.begin() + i);
+                        const auto start       = full_batches * batch_size;
+                        const auto end         = i;
 
                         double batch_error;
                         double batch_loss;
-                        std::tie(batch_error, batch_loss) = trainer->train_batch(epoch, data_batch, label_batch, input_transformer);
+                        std::tie(batch_error, batch_loss) = trainer->train_batch(
+                            epoch,
+                            slice(input_cache, start, end),
+                            slice(label_cache, start, end),
+                            input_transformer);
 
                         if(dbn_traits<dbn_t>::is_verbose()){
                             watcher.ft_batch_end(epoch, batch_error, batch_loss, error_function(), dbn);

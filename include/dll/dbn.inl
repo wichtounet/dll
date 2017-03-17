@@ -62,6 +62,22 @@ struct find_input_layer<Layer, DBN, std::enable_if_t<!is_input_layer<typename DB
     static constexpr const std::size_t L = find_input_layer<Layer + 1, DBN>::L;
 };
 
+template<typename Layer>
+struct is_output_layer {
+    using traits = decay_layer_traits<Layer>;
+    static constexpr const bool value = !traits::is_transform_layer();
+};
+
+template<std::size_t Layer, typename DBN, typename Enable = void>
+struct find_output_layer {
+    static constexpr const std::size_t L = Layer;
+};
+
+template<std::size_t Layer, typename DBN>
+struct find_output_layer<Layer, DBN, std::enable_if_t<!is_output_layer<typename DBN::template layer_type<Layer>>::value>> {
+    static constexpr const std::size_t L = find_output_layer<Layer - 1, DBN>::L;
+};
+
 /*!
  * \brief A Deep Belief Network implementation
  */
@@ -84,7 +100,8 @@ struct dbn final {
 
     using watcher_t = typename desc::template watcher_t<this_type>; ///< The watcher type
 
-    static constexpr const size_t input_layer_n = find_input_layer<0, this_type>::L; ///< The index of the input layer
+    static constexpr const size_t input_layer_n  = find_input_layer<0, this_type>::L;  ///< The index of the input layer
+    static constexpr const size_t output_layer_n = find_output_layer<layers_t::size - 1, this_type>::L; ///< The index of the output layer
 
     using input_layer_t = layer_type<input_layer_n>; ///< The type of the input layer
 

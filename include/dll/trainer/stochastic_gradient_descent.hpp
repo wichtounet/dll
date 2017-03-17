@@ -17,9 +17,10 @@
 
 #include "cpp_utils/static_if.hpp"
 
-#include "dll/util/batch.hpp"
-#include "dll/util/checks.hpp" // For NaN checks
 #include "dll/trainer/sgd_context.hpp" //Context for SGD
+#include "dll/util/batch.hpp"          // Create batches
+#include "dll/util/checks.hpp"         // For NaN checks
+#include "dll/util/timers.hpp"         // For auto_timer
 
 namespace dll {
 
@@ -154,17 +155,14 @@ struct sgd_trainer {
 
     // TODO: There are way too many copies going in this function
 
-    template <typename T, typename L, typename InputTransformer>
-    std::pair<double, double> train_batch(std::size_t /*epoch*/, const dll::batch<T>& data_batch, const dll::batch<L>& label_batch, InputTransformer input_transformer) {
+    template <typename Inputs, typename Labels, typename InputTransformer>
+    std::pair<double, double> train_batch(std::size_t /*epoch*/, const Inputs& inputs, const Labels& labels, InputTransformer input_transformer) {
         dll::auto_timer timer("sgd::train_batch");
 
         // Ensure that the data batch and the label batch are of the same size
-        cpp_assert(data_batch.size() == label_batch.size(), "Invalid sizes");
+        cpp_assert(etl::dim<0>(inputs) == etl::dim<0>(labels), "Invalid sizes");
 
-        auto n = label_batch.size();
-
-        decltype(auto) input_layer = dbn.template layer_get<input_layer_t<0>::L>();
-        decltype(auto) input_ctx = input_layer.template get_sgd_context<dbn_t>();
+        const auto n = etl::dim<0>(inputs);
 
         decltype(auto) first_layer = dbn.template layer_get<0>();
         decltype(auto) first_ctx = first_layer.template get_sgd_context<dbn_t>();
@@ -172,15 +170,7 @@ struct sgd_trainer {
         decltype(auto) last_layer = dbn.template layer_get<layers - 1>();
         decltype(auto) last_ctx = last_layer.template get_sgd_context<dbn_t>();
 
-        // Prepare initial inputs and final outputs (labels)
-
-        auto inputs = input_ctx.input;
-        auto labels = last_ctx.output;
-
-        //Copy inputs and labels into suitable data structure
-
-        copy_inputs(inputs, data_batch.begin(), data_batch.end());
-        copy_labels(labels, label_batch.begin(), label_batch.end());
+        //Copy inputs into suitable data structure
 
         auto tilde_inputs = inputs;
         for(size_t i = 0; i < etl::dim<0>(tilde_inputs); ++i){

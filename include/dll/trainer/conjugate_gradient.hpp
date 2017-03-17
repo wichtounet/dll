@@ -84,9 +84,23 @@ struct cg_trainer {
         });
     }
 
-    template <typename T, typename L, typename InputTransformer>
-    std::pair<double, double> train_batch(std::size_t epoch, const dll::batch<T>& data_batch, const dll::batch<L>& label_batch, InputTransformer /*input_transformer*/) {
-        gradient_context<T, L> context(data_batch, label_batch, epoch);
+    template <typename Inputs, typename Labels, typename InputTransformer>
+    std::pair<double, double> train_batch(std::size_t epoch, const Inputs& inputs, const Labels& labels, InputTransformer /*input_transformer*/) {
+        using T = etl::dyn_matrix<etl::value_t<Inputs>>;
+        using L = etl::dyn_matrix<etl::value_t<Labels>>;
+
+        std::vector<T> inputs_cache(etl::dim<0>(inputs));
+        std::vector<L> labels_cache(etl::dim<0>(labels));
+
+        for(size_t i = 0; i < etl::dim<0>(inputs); ++i){
+            inputs_cache[i] = inputs(i);
+            labels_cache[i] = labels(i);
+        }
+
+        gradient_context<decltype(inputs_cache.begin()), decltype(labels_cache.begin())> context(
+            make_batch(inputs_cache.begin(), inputs_cache.end()),
+            make_batch(labels_cache.begin(), labels_cache.end()),
+            epoch);
 
         minimize(context);
 

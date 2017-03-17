@@ -43,4 +43,13 @@ std::vector<fake_label_array<std::remove_cv_t<typename std::iterator_traits<Iter
     return fake;
 }
 
+template <typename Label>
+etl::dyn_vector<float> make_fake_etl(Label& value, size_t n) {
+    etl::dyn_vector<float> label(n, 0.0);
+
+    label(value) = 1.0;
+
+    return label;
+}
+
 } //end of dll namespace
