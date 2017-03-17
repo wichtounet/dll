@@ -195,8 +195,10 @@ struct dbn_trainer {
                 if(ae){
                     return error_function();
                 } else {
-                    //TODO Ideally, this should be done without
-                    //acessing the sgd context and probably in dbn.inl
+                    //Note: Ideally, this should be done without
+                    //using the SGD context, but this would mean
+                    //a complete overhault of creation of batches...
+
                     decltype(auto) input_ctx = input_layer.template get_sgd_context<dbn_t>();
                     decltype(auto) first_ctx = first_layer.template get_sgd_context<dbn_t>();
                     decltype(auto) last_ctx  = last_layer.template get_sgd_context<dbn_t>();
