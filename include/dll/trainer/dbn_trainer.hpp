@@ -137,9 +137,6 @@ struct dbn_trainer {
         decltype(auto) input_layer = dbn.template layer_get<dbn_t::input_layer_n>();
         decltype(auto) output_layer = dbn.template layer_get<dbn_t::output_layer_n>();
 
-        decltype(auto) first_layer = dbn.template layer_get<0>();
-        decltype(auto) last_layer  = dbn.template layer_get<dbn_t::layers - 1>();
-
         using input_layer_t  = typename dbn_t::template layer_type<dbn_t::input_layer_n>;
         using output_layer_t = typename dbn_t::template layer_type<dbn_t::output_layer_n>;
 
@@ -192,47 +189,30 @@ struct dbn_trainer {
             // Prepare a fast error function using the contiguous memory
 
             auto error_function_batch = [&] () {
-                if(ae){
-                    return error_function();
-                } else {
-                    //Note: Ideally, this should be done without
-                    //using the SGD context, but this would mean
-                    //a complete overhault of creation of batches...
+                double error = 0.0;
 
-                    decltype(auto) input_ctx = input_layer.template get_sgd_context<dbn_t>();
-                    decltype(auto) first_ctx = first_layer.template get_sgd_context<dbn_t>();
-                    decltype(auto) last_ctx  = last_layer.template get_sgd_context<dbn_t>();
+                //Train one mini-batch at a time
+                for (size_t i = 0; i < batches; ++i) {
+                    auto start = i * batch_size;
+                    auto end   = std::min(start + batch_size, n);
 
-                    double error = 0.0;
+                    decltype(auto) output = dbn.forward_batch(slice(data, start, end));
 
-                    //Train one mini-batch at a time
-                    for (size_t i = 0; i < batches; ++i) {
-                        auto start = i * batch_size;
-                        auto end   = std::min(start + batch_size, n);
-
-                        input_ctx.input = slice(data, start, end);
-
-                        first_layer.batch_activate_hidden(first_ctx.output, first_ctx.input);
-
-                        dbn.for_each_layer_pair([](auto& layer_1, auto& layer_2) {
-                            auto& ctx1 = layer_1.template get_sgd_context<dbn_t>();
-                            auto& ctx2 = layer_2.template get_sgd_context<dbn_t>();
-
-                            ctx2.input = ctx1.output;
-                            layer_2.batch_activate_hidden(ctx2.output, ctx2.input);
-                        });
-
+                    if(ae){
+                        for(size_t b = 0; b < end - start; ++b){
+                            error += mean(abs(labels(start + b) - output(b)));
+                        }
+                    } else {
                         // TODO Review this calculation
                         // The result is correct, but can probably be done in a more clean way
 
-                        // TODO This is not correct for ae!
                         for(size_t b = 0; b < end - start; ++b){
-                            error += std::min(1.0, (double) etl::sum(abs(labels(start + b) - one_if_max(last_ctx.output(b)))));
+                            error += std::min(1.0, (double) etl::sum(abs(labels(start + b) - one_if_max(output(b)))));
                         }
                     }
-
-                    return error / n;
                 }
+
+                return error / n;
             };
 
             //Train for max_epochs epoch
