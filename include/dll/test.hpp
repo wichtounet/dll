@@ -92,7 +92,7 @@ double test_set_ae(DBN& dbn, Iterator first, Iterator last) {
         decltype(auto) image = *first;
         decltype(auto) rec_image = dbn.features(image);
 
-        rate += etl::mean(image - rec_image);
+        rate += etl::mean(abs(image - rec_image));
 
         ++images;
         ++first;
