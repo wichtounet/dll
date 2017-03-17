@@ -17,10 +17,10 @@ node {
 
        stage 'build'
        sh 'make clean'
-       sh 'make -j6 release'
+       sh 'make -j6 release_debug'
 
        stage 'test'
-       sh './release/bin/dll_test_unit -r junit -d yes -o catch_report.xml || true'
+       sh './release_debug/bin/dll_test_unit -r junit -d yes -o catch_report.xml || true'
        sh 'gcovr -x -b -r . --object-directory=release/test > coverage_report.xml'
 
        stage 'sonar'
