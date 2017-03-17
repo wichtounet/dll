@@ -611,6 +611,50 @@ public:
         return activation_probabilities(converted);
     }
 
+    // Forward one batch at a time
+
+    //Note: Ideally, this should be done without using the SGD
+    //context, but this would mean a complete overhaul of creation
+    //of batches...
+
+    // TODO: Transform layers should be applied inline
+
+    template <size_t L, typename Input, cpp_enable_if((L == 0 && L != layers - 1))>
+    decltype(auto) forward_batch_impl(Input&& sample) {
+        decltype(auto) layer = layer_get<L>();
+        decltype(auto) context = layer.template get_sgd_context<this_type>();
+
+        context.input = sample;
+        layer.batch_activate_hidden(context.output, context.input);
+
+        return context.output;
+    }
+
+    template <size_t L, typename Input, cpp_enable_if((L == layers - 1))>
+    decltype(auto) forward_batch_impl(Input&& sample) {
+        decltype(auto) layer = layer_get<L>();
+        decltype(auto) context = layer.template get_sgd_context<this_type>();
+
+        layer.batch_activate_hidden(context.output, sample);
+
+        return context.output;
+    }
+
+    template <size_t L, typename Input, cpp_enable_if((L != 0 && L != layers - 1))>
+    decltype(auto) forward_batch_impl(Input&& sample) {
+        decltype(auto) layer = layer_get<L>();
+        decltype(auto) context = layer.template get_sgd_context<this_type>();
+
+        layer.batch_activate_hidden(context.output, sample);
+
+        return forward_batch_impl<L+1>(context.output);
+    }
+
+    template <typename Input>
+    decltype(auto) forward_batch(Input&& sample) {
+        return forward_batch_impl<0>(sample);
+    }
+
     /*!
      * \brief Save the features generated for the given sample in the given file.
      * \param sample The sample to get features from
