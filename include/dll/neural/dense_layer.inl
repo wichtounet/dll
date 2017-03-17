@@ -135,6 +135,7 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
                 output(i) = f_activate<activation_function>(expr(i));
             }
         } else {
+            // The temporary allows vectorization of the activation function -> speedups
             auto expr = etl::force_temporary(etl::rep_l(b, Batch) + etl::reshape<Batch, num_visible>(input) * w);
             output = f_activate<activation_function>(expr);
         }
