@@ -627,17 +627,7 @@ public:
         context.input = sample;
         layer.batch_activate_hidden(context.output, context.input);
 
-        return context.output;
-    }
-
-    template <size_t L, typename Input, cpp_enable_if((L == layers - 1))>
-    decltype(auto) forward_batch_impl(Input&& sample) {
-        decltype(auto) layer = layer_get<L>();
-        decltype(auto) context = layer.template get_sgd_context<this_type>();
-
-        layer.batch_activate_hidden(context.output, sample);
-
-        return context.output;
+        return forward_batch_impl<L+1>(context.output);
     }
 
     template <size_t L, typename Input, cpp_enable_if((L != 0 && L != layers - 1))>
@@ -648,6 +638,16 @@ public:
         layer.batch_activate_hidden(context.output, sample);
 
         return forward_batch_impl<L+1>(context.output);
+    }
+
+    template <size_t L, typename Input, cpp_enable_if((L == layers - 1))>
+    decltype(auto) forward_batch_impl(Input&& sample) {
+        decltype(auto) layer = layer_get<L>();
+        decltype(auto) context = layer.template get_sgd_context<this_type>();
+
+        layer.batch_activate_hidden(context.output, sample);
+
+        return context.output;
     }
 
     template <typename Input>
