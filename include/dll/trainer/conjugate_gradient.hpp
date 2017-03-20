@@ -49,9 +49,11 @@ struct cg_trainer {
     dbn_t& dbn;
     bool ae_training = false;
 
-    explicit cg_trainer(dbn_t& dbn)
-            : dbn(dbn) {
+    explicit cg_trainer(dbn_t& dbn) : dbn(dbn) {
         dbn.for_each_layer([](auto& r1) {
+            // This is necessary because by dbn_trainer
+            r1.template init_sgd_context<dbn_t>();
+
             r1.init_cg_context();
 
             using rbm_t = std::decay_t<decltype(r1)>;
@@ -86,8 +88,8 @@ struct cg_trainer {
 
     template <typename Inputs, typename Labels, typename InputTransformer>
     std::pair<double, double> train_batch(std::size_t epoch, const Inputs& inputs, const Labels& labels, InputTransformer /*input_transformer*/) {
-        using T = etl::dyn_matrix<etl::value_t<Inputs>>;
-        using L = etl::dyn_matrix<etl::value_t<Labels>>;
+        using T = etl::dyn_matrix<etl::value_t<Inputs>, etl::decay_traits<Inputs>::dimensions() - 1>;
+        using L = etl::dyn_matrix<etl::value_t<Labels>, etl::decay_traits<Labels>::dimensions() - 1>;
 
         std::vector<T> inputs_cache(etl::dim<0>(inputs));
         std::vector<L> labels_cache(etl::dim<0>(labels));
