@@ -655,6 +655,46 @@ public:
         return forward_batch_impl<0>(sample);
     }
 
+    // Forward one sample at a time
+
+    // TODO: Transform layers should be applied inline
+
+    template <size_t L, typename Input, cpp_enable_if((L == 0 && L != layers - 1))>
+    decltype(auto) forward_impl(Input&& sample) {
+        decltype(auto) layer = layer_get<L>();
+        decltype(auto) context = layer.template get_sgd_context<this_type>();
+
+        context.input(0) = sample;
+        layer.activate_hidden(context.output(0), context.input(0));
+
+        return forward_impl<L+1>(context.output(0));
+    }
+
+    template <size_t L, typename Input, cpp_enable_if((L != 0 && L != layers - 1))>
+    decltype(auto) forward_impl(Input&& sample) {
+        decltype(auto) layer = layer_get<L>();
+        decltype(auto) context = layer.template get_sgd_context<this_type>();
+
+        layer.activate_hidden(context.output(0), sample);
+
+        return forward_impl<L+1>(context.output(0));
+    }
+
+    template <size_t L, typename Input, cpp_enable_if((L == layers - 1))>
+    decltype(auto) forward_impl(Input&& sample) {
+        decltype(auto) layer = layer_get<L>();
+        decltype(auto) context = layer.template get_sgd_context<this_type>();
+
+        layer.activate_hidden(context.output(0), sample);
+
+        return context.output(0);
+    }
+
+    template <typename Input>
+    decltype(auto) forward(Input&& sample) {
+        return forward_impl<0>(sample);
+    }
+
     /*!
      * \brief Save the features generated for the given sample in the given file.
      * \param sample The sample to get features from
