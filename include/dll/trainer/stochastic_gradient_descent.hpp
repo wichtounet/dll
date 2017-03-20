@@ -185,7 +185,8 @@ struct sgd_trainer {
             dll::auto_timer timer("sgd::forward");
 
             if(cpp_unlikely(!full_batch)){
-                first_ctx.input = 0;
+                first_ctx.input  = 0;
+                first_ctx.output = 0;
 
                 for (size_t i = 0; i < etl::dim<0>(inputs); ++i) {
                     first_ctx.input(i) = tilde_inputs(i);
@@ -209,6 +210,7 @@ struct sgd_trainer {
 
         if (cpp_unlikely(!full_batch)) {
             first_ctx.input = 0;
+            last_ctx.errors = 0;
 
             for (size_t i = 0; i < etl::dim<0>(inputs); ++i) {
                 last_ctx.errors(i) = labels(i) - last_ctx.output(i);
