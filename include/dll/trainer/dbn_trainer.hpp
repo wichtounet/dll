@@ -184,17 +184,17 @@ struct dbn_trainer {
             }
 
             //Compute the number of batches
-            auto batches = n / batch_size + (n % batch_size == 0 ? 0 : 1);
+            const auto batches = n / batch_size + (n % batch_size == 0 ? 0 : 1);
 
             // Prepare a fast error function using the contiguous memory
 
             auto error_function_batch = [&] () {
                 double error = 0.0;
 
-                //Train one mini-batch at a time
-                for (size_t i = 0; i < batches; ++i) {
-                    auto start = i * batch_size;
-                    auto end   = std::min(start + batch_size, n);
+                // Compute the error on one mini-batch at a time
+                for (size_t i = 0; i < n / batch_size; ++i) {
+                    const size_t start = i * batch_size;
+                    const size_t end   = start + batch_size;
 
                     decltype(auto) output = dbn.forward_batch(slice(data, start, end));
 
@@ -208,6 +208,25 @@ struct dbn_trainer {
 
                         for(size_t b = 0; b < end - start; ++b){
                             error += std::min(1.0, (double) etl::sum(abs(labels(start + b) - one_if_max(output(b)))));
+                        }
+                    }
+                }
+
+                // Complete the computation for incomplete batches
+                if (n % batch_size > 0) {
+                    const auto start = n - n % batch_size;
+                    const auto end   = n;
+
+                    for(size_t i = start; i < end; ++i){
+                        decltype(auto) output = dbn.forward(data(i));
+
+                        if(ae){
+                            error += mean(abs(labels(i) - output));
+                        } else {
+                            // TODO Review this calculation
+                            // The result is correct, but can probably be done in a more clean way
+
+                            error += std::min(1.0, (double) etl::sum(abs(labels(i) - one_if_max(output))));
                         }
                     }
                 }
