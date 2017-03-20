@@ -49,7 +49,7 @@ TEST_CASE("unit/dyn_crbm/mnist/2", "[dyn_crbm][parallel][unit]") {
         dll::weight_decay<dll::decay_type::L2>,
         dll::visible<dll::unit_type::GAUSSIAN>>::layer_t rbm;
 
-    rbm.init_layer(1, 28, 28, 20, 5, 5);
+    rbm.init_layer(1, 28, 28, 5, 5, 5);
 
     auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
     REQUIRE(!dataset.training_images.empty());
