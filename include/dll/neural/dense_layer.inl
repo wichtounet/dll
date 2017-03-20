@@ -85,15 +85,15 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
         return {buffer};
     }
 
-    template <typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 1)>
-    void activate_hidden(output_one_t& output, const V& v) const {
+    template <typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 1)>
+    void activate_hidden(H&& output, const V& v) const {
         dll::auto_timer timer("dense:activate_hidden");
 
         output = f_activate<activation_function>(b + v * w);
     }
 
-    template <typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 1)>
-    void activate_hidden(output_one_t& output, const V& v) const {
+    template <typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 1)>
+    void activate_hidden(H&& output, const V& v) const {
         dll::auto_timer timer("dense:activate_hidden");
 
         output = f_activate<activation_function>(b + etl::reshape<num_visible>(v) * w);
