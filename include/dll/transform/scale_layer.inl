@@ -43,7 +43,7 @@ struct scale_layer : transform_layer<scale_layer<Desc>> {
      * \param input The input to apply the layer to
      */
     template <typename Input, typename Output>
-    static void activate_hidden(Output& output, const Input& input) {
+    static void activate_hidden(Output&& output, const Input& input) {
         output = input * (double(A) / double(B));
     }
 
@@ -53,7 +53,7 @@ struct scale_layer : transform_layer<scale_layer<Desc>> {
      * \param input The batch of input to apply the layer to
      */
     template <typename Input, typename Output>
-    static void batch_activate_hidden(Output& output, const Input& input) {
+    static void batch_activate_hidden(Output&& output, const Input& input) {
         output = input * (double(A) / double(B));
     }
 
