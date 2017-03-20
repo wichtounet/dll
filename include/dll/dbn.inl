@@ -656,6 +656,9 @@ public:
     }
 
     // Forward one sample at a time
+    // This is not as fast as it could be, far from it, but supports
+    // larger range of input. The rationale being that time should
+    // be spent in forward_batch
 
     // TODO: Transform layers should be applied inline
 
@@ -664,10 +667,13 @@ public:
         decltype(auto) layer = layer_get<L>();
         decltype(auto) context = layer.template get_sgd_context<this_type>();
 
-        context.input(0) = sample;
-        layer.activate_hidden(context.output(0), context.input(0));
+        auto input = force_temporary(context.input(0));
+        auto output = force_temporary(context.output(0));
 
-        return forward_impl<L+1>(context.output(0));
+        input = sample;
+        layer.activate_hidden(output, input);
+
+        return forward_impl<L+1>(output);
     }
 
     template <size_t L, typename Input, cpp_enable_if((L != 0 && L != layers - 1))>
@@ -675,9 +681,11 @@ public:
         decltype(auto) layer = layer_get<L>();
         decltype(auto) context = layer.template get_sgd_context<this_type>();
 
-        layer.activate_hidden(context.output(0), sample);
+        auto output = force_temporary(context.output(0));
 
-        return forward_impl<L+1>(context.output(0));
+        layer.activate_hidden(output, sample);
+
+        return forward_impl<L+1>(output);
     }
 
     template <size_t L, typename Input, cpp_enable_if((L == layers - 1))>
@@ -685,9 +693,10 @@ public:
         decltype(auto) layer = layer_get<L>();
         decltype(auto) context = layer.template get_sgd_context<this_type>();
 
-        layer.activate_hidden(context.output(0), sample);
+        auto output = force_temporary(context.output(0));
+        layer.activate_hidden(output, sample);
 
-        return context.output(0);
+        return output;
     }
 
     template <typename Input>
