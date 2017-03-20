@@ -170,6 +170,8 @@ struct sgd_trainer {
         decltype(auto) last_layer = dbn.template layer_get<layers - 1>();
         decltype(auto) last_ctx = last_layer.template get_sgd_context<dbn_t>();
 
+        const bool full_batch = etl::dim<0>(inputs) == etl::dim<0>(first_ctx.input);
+
         //Copy inputs into suitable data structure
 
         auto tilde_inputs = inputs;
@@ -182,7 +184,16 @@ struct sgd_trainer {
         {
             dll::auto_timer timer("sgd::forward");
 
-            first_ctx.input = tilde_inputs;
+            if(cpp_unlikely(!full_batch)){
+                first_ctx.input = 0;
+
+                for (size_t i = 0; i < etl::dim<0>(inputs); ++i) {
+                    first_ctx.input(i) = tilde_inputs(i);
+                }
+            } else {
+                first_ctx.input = tilde_inputs;
+            }
+
             first_layer.batch_activate_hidden(first_ctx.output, first_ctx.input);
 
             dbn.for_each_layer_pair([](auto& layer_1, auto& layer_2) {
@@ -196,7 +207,15 @@ struct sgd_trainer {
 
         //Compute the errors of the last layer
 
-        last_ctx.errors = labels - last_ctx.output;
+        if (cpp_unlikely(!full_batch)) {
+            first_ctx.input = 0;
+
+            for (size_t i = 0; i < etl::dim<0>(inputs); ++i) {
+                last_ctx.errors(i) = labels(i) - last_ctx.output(i);
+            }
+        } else {
+            last_ctx.errors = labels - last_ctx.output;
+        }
 
         // Backpropagate the error
 
@@ -236,14 +255,28 @@ struct sgd_trainer {
         {
             dll::auto_timer timer("sgd::error");
 
-            error = etl::mean(etl::abs(labels - last_ctx.output));
+            auto& out = last_ctx.output;
 
-            if (ae_training) {
-                // Reconstruction Cross-Entropy Loss
-                loss = -etl::sum((labels >> etl::log(last_ctx.output)) + ((1.0 - labels) >> etl::log(1 - last_ctx.output))) / (double)n;
+            if (cpp_unlikely(!full_batch)) {
+                error = etl::mean(etl::abs(labels - slice(out, 0, etl::dim<0>(inputs))));
+
+                if (ae_training) {
+                    // Reconstruction Cross-Entropy Loss
+                    loss = -sum((labels >> log(slice(out, 0, etl::dim<0>(inputs)))) + ((1.0 - labels) >> log(1 - slice(out, 0, etl::dim<0>(inputs))))) / double(n);
+                } else {
+                    // Cross-Entropy Loss
+                    loss = -sum(log(slice(out, 0, etl::dim<0>(inputs))) >> labels) / double(n);
+                }
             } else {
-                // Cross-Entropy Loss
-                loss = -etl::sum(etl::log(last_ctx.output) >> labels) / (double)n;
+                error = etl::mean(etl::abs(labels - out));
+
+                if (ae_training) {
+                    // Reconstruction Cross-Entropy Loss
+                    loss = -sum((labels >> log(out)) + ((1.0 - labels) >> log(1 - out))) / double(n);
+                } else {
+                    // Cross-Entropy Loss
+                    loss = -sum(log(out) >> labels) / double(n);
+                }
             }
         }
 
