@@ -57,7 +57,7 @@ TEST_CASE("unit/dyn_crbm/mnist/2", "[dyn_crbm][parallel][unit]") {
     mnist::normalize_dataset(dataset);
 
     auto error = rbm.train(dataset.training_images, 25);
-    REQUIRE(error < 0.1);
+    REQUIRE(error < 0.25);
 }
 
 TEST_CASE("unit/dyn_crbm/mnist/3", "[dyn_crbm][unit]") {

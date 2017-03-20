@@ -18,7 +18,7 @@
 
 TEST_CASE("unit/crbm_mp/mnist/1", "[crbm_mp][unit]") {
     dll::conv_rbm_mp_desc_square<
-        1, 28, 20, 17, 2,
+        1, 28, 5, 17, 2,
         dll::weight_type<float>,
         dll::batch_size<25>,
         dll::momentum,
@@ -31,7 +31,7 @@ TEST_CASE("unit/crbm_mp/mnist/1", "[crbm_mp][unit]") {
     mnist::binarize_dataset(dataset);
 
     auto error = rbm.train(dataset.training_images, 40);
-    REQUIRE(error < 5e-2);
+    REQUIRE(error < 9e-2);
 
     rbm.v1 = dataset.training_images[1];
 
