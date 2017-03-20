@@ -126,6 +126,8 @@ struct layer {
      * \return A reference to the CG context training.
      */
     cg_context<parent_t>& get_cg_context() {
+        cpp_assert(sgd_context_ptr, "Use of empty cg_context");
+
         return *cg_context_ptr;
     }
 
@@ -134,6 +136,8 @@ struct layer {
      * \return A reference to the CG context training.
      */
     const cg_context<parent_t>& get_cg_context() const {
+        cpp_assert(sgd_context_ptr, "Use of empty cg_context");
+
         return *cg_context_ptr;
     }
 
@@ -153,6 +157,8 @@ struct layer {
      */
     template <typename DBN>
     sgd_context<DBN, parent_t>& get_sgd_context() {
+        cpp_assert(sgd_context_ptr, "Use of empty sgd_context");
+
         return *static_cast<sgd_context<DBN, parent_t>*>(sgd_context_ptr.get());
     }
 
@@ -162,6 +168,8 @@ struct layer {
      */
     template <typename DBN>
     const sgd_context<DBN, parent_t>& get_sgd_context() const {
+        cpp_assert(sgd_context_ptr, "Use of empty sgd_context");
+
         return *static_cast<const sgd_context<DBN, parent_t>*>(sgd_context_ptr.get());
     }
 
