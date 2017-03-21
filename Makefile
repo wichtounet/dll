@@ -39,7 +39,7 @@ endif
 DLL_BLAS_PKG ?= mkl
 
 # Try to detect parallel mkl
-ifeq ("mkl-threads",$(DLL_BLAS_PKG))
+ifneq (,$(findstring threads,$(DLL_BLAS_PKG)))
 CXX_FLAGS += -DETL_BLAS_THREADS
 endif
 
