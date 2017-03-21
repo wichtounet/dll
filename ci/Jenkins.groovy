@@ -21,7 +21,7 @@ node {
 
        stage 'test'
        sh './release_debug/bin/dll_test_unit -r junit -d yes -o catch_report.xml || true'
-       sh 'gcovr -x -b -r . --object-directory=release/test > coverage_report.xml'
+       sh 'gcovr -x -b -r . --object-directory=release_debug/test > coverage_report.xml'
 
        stage 'sonar'
        sh '/opt/sonar-runner/bin/sonar-runner'
