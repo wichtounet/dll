@@ -121,6 +121,17 @@ CXX_FLAGS += -DETL_EGBLAS_MODE $(shell pkg-config --cflags egblas)
 LD_FLAGS += $(shell pkg-config --libs egblas)
 endif
 
+# Enable Clang sanitizers in debug mode
+ifneq (,$(findstring clang,$(CXX)))
+ifeq (,$(ETL_CUBLAS))
+ifneq (,$(DLL_SAN_THREAD))
+DEBUG_FLAGS += -fsanitize=undefined,thread
+else
+DEBUG_FLAGS += -fsanitize=address,undefined
+endif
+endif
+endif
+
 # Activate hybrid compilation by default
 ifneq (,$(DLL_QUICK))
 CXX_FLAGS += -DDLL_QUICK
