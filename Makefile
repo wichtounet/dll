@@ -38,6 +38,11 @@ endif
 
 DLL_BLAS_PKG ?= mkl
 
+# Try to detect parallel mkl
+ifeq ("mkl-threads",$(DLL_BLAS_PKG))
+CXX_FLAGS += -DETL_BLAS_THREADS
+endif
+
 # Activate BLAS mode on demand
 ifneq (,$(ETL_MKL))
 CXX_FLAGS += -DETL_MKL_MODE $(shell pkg-config --cflags $(DLL_BLAS_PKG))
