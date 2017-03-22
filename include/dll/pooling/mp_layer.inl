@@ -9,6 +9,8 @@
 
 #include "pooling_layer.hpp"
 
+#include "dll/util/timers.hpp" // for auto_timer
+
 namespace dll {
 
 /*!
@@ -43,6 +45,8 @@ struct mp_layer_3d final : pooling_layer_3d<mp_layer_3d<Desc>, Desc> {
      * \param v The input matrix
      */
     static void activate_hidden(output_one_t& h, const input_one_t& v) {
+        dll::auto_timer timer("mp:activate_hidden");
+
         h = etl::max_pool_3d<base::C1, base::C2, base::C3>(v);
     }
 
@@ -53,6 +57,8 @@ struct mp_layer_3d final : pooling_layer_3d<mp_layer_3d<Desc>, Desc> {
      */
     template <typename Input, typename Output>
     static void batch_activate_hidden(Output& output, const Input& input) {
+        dll::auto_timer timer("mp:batch_activate_hidden");
+
         output = etl::max_pool_3d<base::C1, base::C2, base::C3>(input);
     }
 
@@ -80,6 +86,8 @@ struct mp_layer_3d final : pooling_layer_3d<mp_layer_3d<Desc>, Desc> {
      */
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
+        dll::auto_timer timer("mp:backward_batch");
+
         static constexpr size_t C1 = base::C1;
         static constexpr size_t C2 = base::C2;
         static constexpr size_t C3 = base::C3;
