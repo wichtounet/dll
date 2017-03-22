@@ -17,25 +17,6 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-namespace {
-
-template <typename Dataset>
-void mnist_scale(Dataset& dataset) {
-    for (auto& image : dataset.training_images) {
-        for (auto& pixel : image) {
-            pixel *= (1.0 / 256.0);
-        }
-    }
-
-    for (auto& image : dataset.test_images) {
-        for (auto& pixel : image) {
-            pixel *= (1.0 / 256.0);
-        }
-    }
-}
-
-} //end of anonymous namespace
-
 int main(int /*argc*/, char* /*argv*/ []) {
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>();
     dataset.training_images.resize(10000);
