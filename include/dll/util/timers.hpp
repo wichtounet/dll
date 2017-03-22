@@ -130,7 +130,11 @@ inline void dump_timers() {
     // Print all the used timers
     for (decltype(auto) timer : timers) {
         if (timer.name) {
-            std::cout << timer.name << "(" << timer.count << ") : " << duration_str(timer.duration) << std::endl;
+            size_t count = timer.count;
+            size_t duration = timer.duration;
+            std::cout << timer.name << "(" << count << ") : "
+                      << duration_str(duration)
+                      << " (" << duration_str(duration / count) << ")" << std::endl;
         }
     }
 }
