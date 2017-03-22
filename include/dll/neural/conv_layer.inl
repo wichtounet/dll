@@ -9,6 +9,8 @@
 
 #include "dll/neural_layer.hpp"
 
+#include "dll/util/timers.hpp" // for auto_timer
+
 namespace dll {
 
 /*!
@@ -79,6 +81,8 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
 
     template<typename H>
     void activate_hidden(H&& output, const input_one_t& v) const {
+        dll::auto_timer timer("conv:activate_hidden");
+
         auto b_rep = etl::force_temporary(etl::rep<NH1, NH2>(b));
 
         etl::reshape<1, K, NH1, NH2>(output) = etl::conv_4d_valid_flipped(etl::reshape<1, NC, NV1, NV2>(v), w);
@@ -88,12 +92,15 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
 
     template <typename H, typename V>
     void activate_hidden(H&& output, const V& v) const {
+        dll::auto_timer timer("conv:activate_hidden");
+
         decltype(auto) converted = converter_one<V, input_one_t>::convert(*this, v);
         activate_hidden(output, converted);
     }
 
     template <typename H1, typename V>
     void batch_activate_hidden(H1&& output, const V& v) const {
+        dll::auto_timer timer("conv:batch_activate_hidden");
         output = etl::conv_4d_valid_flipped(v, w);
 
         static constexpr const auto batch_size = etl::decay_traits<H1>::template dim<0>();
@@ -127,6 +134,8 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
      */
     template<typename C>
     void adapt_errors(C& context) const {
+        dll::auto_timer timer("conv:adapt_errors");
+
         if(activation_function != function::IDENTITY){
             context.errors = f_derivative<activation_function>(context.output) >> context.errors;
         }
@@ -139,6 +148,8 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
      */
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
+        dll::auto_timer timer("conv:backward_batch");
+
         output = etl::conv_4d_full_flipped(context.errors, w);
     }
 
@@ -148,6 +159,8 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
      */
     template<typename C>
     void compute_gradients(C& context) const {
+        dll::auto_timer timer("conv:compute_gradients");
+
         context.w_grad = conv_4d_valid_filter_flipped(context.input, context.errors);
         context.b_grad = etl::mean_r(etl::sum_l(context.errors));
     }
