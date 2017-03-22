@@ -300,10 +300,13 @@ struct sgd_trainer {
             auto momentum = dbn.momentum;
             auto eps      = dbn.learning_rate;
 
-            context.w_inc = momentum * context.w_inc + (eps / n) * context.w_grad;
-            context.b_inc = momentum * context.b_inc + (eps / n) * context.b_grad;
+            // Note: Some performance could be gained here by doing the pair of
+            // operations on w in a loop to improve data locality
 
+            context.w_inc = momentum * context.w_inc + (eps / n) * context.w_grad;
             layer.w += context.w_inc;
+
+            context.b_inc = momentum * context.b_inc + (eps / n) * context.b_grad;
             layer.b += context.b_inc;
         } else {
             auto eps = dbn.learning_rate;
