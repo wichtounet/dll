@@ -230,7 +230,7 @@ struct sgd_trainer {
 
                 r2.adapt_errors(ctx2);
                 r2.backward_batch(ctx1.errors, ctx2);
-                });
+            });
 
             first_layer.adapt_errors(first_ctx);
         }
