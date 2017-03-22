@@ -331,7 +331,9 @@ struct sgd_trainer {
         } else if (decay == decay_type::L1L2) {
             grad = grad - dbn.l1_weight_cost * abs(value) - dbn.l2_weight_cost * value - penalty;
         } else {
-            grad = grad - penalty;
+            if(penalty != 0.0){
+                grad = grad - penalty;
+            }
         }
     }
 
