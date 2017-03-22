@@ -200,14 +200,14 @@ struct dbn_trainer {
 
                     if(ae){
                         for(size_t b = 0; b < end - start; ++b){
-                            error += mean(abs(labels(start + b) - output(b)));
+                            error += amean(labels(start + b) - output(b));
                         }
                     } else {
                         // TODO Review this calculation
                         // The result is correct, but can probably be done in a more clean way
 
                         for(size_t b = 0; b < end - start; ++b){
-                            error += std::min(1.0, (double) etl::sum(abs(labels(start + b) - one_if_max(output(b)))));
+                            error += std::min(1.0, (double) asum(labels(start + b) - one_if_max(output(b))));
                         }
                     }
                 }
@@ -221,12 +221,12 @@ struct dbn_trainer {
                         decltype(auto) output = dbn.forward(data(i));
 
                         if(ae){
-                            error += mean(abs(labels(i) - output));
+                            error += amean(labels(i) - output);
                         } else {
                             // TODO Review this calculation
                             // The result is correct, but can probably be done in a more clean way
 
-                            error += std::min(1.0, (double) etl::sum(abs(labels(i) - one_if_max(output))));
+                            error += std::min(1.0, (double) asum(labels(i) - one_if_max(output)));
                         }
                     }
                 }

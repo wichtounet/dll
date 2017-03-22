@@ -260,7 +260,7 @@ struct sgd_trainer {
             auto& out = last_ctx.output;
 
             if (cpp_unlikely(!full_batch)) {
-                error = etl::mean(etl::abs(labels - slice(out, 0, etl::dim<0>(inputs))));
+                error = amean(labels - slice(out, 0, etl::dim<0>(inputs)));
 
                 if (ae_training) {
                     // Reconstruction Cross-Entropy Loss
@@ -270,7 +270,7 @@ struct sgd_trainer {
                     loss = -sum(log(slice(out, 0, etl::dim<0>(inputs))) >> labels) / double(n);
                 }
             } else {
-                error = etl::mean(etl::abs(labels - out));
+                error = amean(labels - out);
 
                 if (ae_training) {
                     // Reconstruction Cross-Entropy Loss
