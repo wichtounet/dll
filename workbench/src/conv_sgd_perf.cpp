@@ -69,7 +69,7 @@ void first_ex(){
     net->fine_tune(dataset.training_images, dataset.training_labels, 20);
 
     std::cout << "DLL Timers" << std::endl;
-    dll::dump_timers();
+    dll::dump_timers_one();
 
     std::cout << "ETL Counters" << std::endl;
     etl::dump_counters();
@@ -106,7 +106,7 @@ void second_ex(){
     net->fine_tune(dataset.training_images, dataset.training_labels, 20);
 
     std::cout << "DLL Timers" << std::endl;
-    dll::dump_timers();
+    dll::dump_timers_one();
 
     std::cout << "ETL Counters" << std::endl;
     etl::dump_counters();
@@ -146,7 +146,7 @@ void third_ex(){
     net->fine_tune(dataset.training_images, dataset.training_labels, 20);
 
     std::cout << "DLL Timers" << std::endl;
-    dll::dump_timers();
+    dll::dump_timers_one();
 
     std::cout << "ETL Counters" << std::endl;
     etl::dump_counters();
