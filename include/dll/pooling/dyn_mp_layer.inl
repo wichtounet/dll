@@ -90,7 +90,7 @@ struct dyn_mp_layer_3d final : dyn_pooling_layer_3d<dyn_mp_layer_3d<Desc>, Desc>
         size_t c2 = base::c2;
         size_t c3 = base::c3;
 
-        output = etl::max_pool_derivative_3d(context.input, context.output, c1, c2, c3) >> etl::upsample_3d(context.errors, c1, c2, c3);
+        output = etl::max_pool_upsample_3d(context.input, context.output, context.errors, c1, c2, c3);
     }
 
     /*!
