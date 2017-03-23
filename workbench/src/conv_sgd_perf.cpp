@@ -114,7 +114,7 @@ void second_ex(){
 
 void third_ex(){
     // Third experiment : Conv -> Pooling -> Conv -> Pooling -> Dense -> Dense
-    // Current speed on frigg: 30-33 seconds
+    // Current speed on frigg: 31-32 seconds
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(6000);
 
@@ -133,8 +133,8 @@ void third_ex(){
             dll::mp_layer_3d_desc<10, 24, 24, 1, 2, 2>::layer_t,
             dll::conv_desc<10, 12, 12, 10, 5, 5>::layer_t,
             dll::mp_layer_3d_desc<10, 8, 8, 1, 2, 2>::layer_t,
-            dll::dense_desc<10 * 4 * 4, 200>::layer_t,
-            dll::dense_desc<200, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
+            dll::dense_desc<10 * 4 * 4, 300>::layer_t,
+            dll::dense_desc<300, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
         dll::momentum, dll::batch_size<100>, dll::trainer<dll::sgd_trainer>>::dbn_t;
 
     auto net = std::make_unique<dbn_t>();
