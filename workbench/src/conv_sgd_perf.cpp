@@ -21,6 +21,24 @@
 
 namespace {
 
+/*!
+ * \brief Scale all values of a MNIST dataset into [0,1]
+ */
+template <typename Dataset>
+void mnist_scale(Dataset& dataset) {
+    for (auto& image : dataset.training_images) {
+        for (auto& pixel : image) {
+            pixel *= (1.0 / 256.0);
+        }
+    }
+
+    for (auto& image : dataset.test_images) {
+        for (auto& pixel : image) {
+            pixel *= (1.0 / 256.0);
+        }
+    }
+}
+
 void first_ex(){
     // First experiment : Conv -> Conv -> Dense -> Dense
     // Current speed on frigg: 22-26 seconds (faster with mkl-threads and not "prefer conv4 blas")
@@ -96,14 +114,14 @@ void second_ex(){
 
 void third_ex(){
     // Third experiment : Conv -> Pooling -> Conv -> Pooling -> Dense -> Dense
-    // Current speed on frigg: 15-17 seconds
+    // Current speed on frigg: 30-33 seconds
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(3000);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(6000);
 
     auto n = dataset.training_images.size();
     std::cout << n << " samples to test" << std::endl;
 
-    mnist::binarize_dataset(dataset);
+    mnist_scale(dataset);
 
     // Clean slate
     etl::reset_counters();
@@ -120,6 +138,8 @@ void third_ex(){
         dll::momentum, dll::batch_size<100>, dll::trainer<dll::sgd_trainer>>::dbn_t;
 
     auto net = std::make_unique<dbn_t>();
+
+    net->learning_rate = 0.05;
 
     // Train the network for performance sake
     net->display();
