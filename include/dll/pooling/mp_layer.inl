@@ -92,7 +92,7 @@ struct mp_layer_3d final : pooling_layer_3d<mp_layer_3d<Desc>, Desc> {
         static constexpr size_t C2 = base::C2;
         static constexpr size_t C3 = base::C3;
 
-        output = etl::max_pool_derivative_3d<C1, C2, C3>(context.input, context.output) >> etl::upsample_3d<C1, C2, C3>(context.errors);
+        output = etl::max_pool_upsample_3d<C1, C2, C3>(context.input, context.output, context.errors);
     }
 
     /*!
