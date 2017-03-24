@@ -307,7 +307,7 @@ struct rbm_layer_base_traits<dyn_conv_rbm<Desc>> {
 };
 
 /*!
- * \brief Specialization of sgd_context for dync_conv_layer
+ * \brief Specialization of sgd_context for dyn_conv_rbm
  */
 template <typename DBN, typename Desc>
 struct sgd_context<DBN, dyn_conv_rbm<Desc>> {
