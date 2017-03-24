@@ -261,4 +261,42 @@ struct sgd_context<DBN, rbm<Desc>> {
             : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
 };
 
+/*!
+ * \brief specialization of cg_context for rbm
+ */
+template <typename Desc>
+struct cg_context<rbm<Desc>> {
+    using rbm_t  = rbm<Desc>;
+    using weight = typename rbm_t::weight;
+
+    static constexpr const bool is_trained = true;
+
+    static constexpr const std::size_t num_visible = rbm_t::num_visible;
+    static constexpr const std::size_t num_hidden  = rbm_t::num_hidden;
+
+    etl::fast_matrix<weight, num_visible, num_hidden> gr_w_incs;
+    etl::fast_vector<weight, num_hidden> gr_b_incs;
+
+    etl::fast_matrix<weight, num_visible, num_hidden> gr_w_best;
+    etl::fast_vector<weight, num_hidden> gr_b_best;
+
+    etl::fast_matrix<weight, num_visible, num_hidden> gr_w_best_incs;
+    etl::fast_vector<weight, num_hidden> gr_b_best_incs;
+
+    etl::fast_matrix<weight, num_visible, num_hidden> gr_w_df0;
+    etl::fast_vector<weight, num_hidden> gr_b_df0;
+
+    etl::fast_matrix<weight, num_visible, num_hidden> gr_w_df3;
+    etl::fast_vector<weight, num_hidden> gr_b_df3;
+
+    etl::fast_matrix<weight, num_visible, num_hidden> gr_w_s;
+    etl::fast_vector<weight, num_hidden> gr_b_s;
+
+    etl::fast_matrix<weight, num_visible, num_hidden> gr_w_tmp;
+    etl::fast_vector<weight, num_hidden> gr_b_tmp;
+
+    std::vector<etl::dyn_vector<weight>> gr_probs_a;
+    std::vector<etl::dyn_vector<weight>> gr_probs_s;
+};
+
 } //end of dll namespace
