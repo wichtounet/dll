@@ -19,6 +19,7 @@
 
 #include "dll/util/checks.hpp"         // For NaN checks
 #include "dll/util/timers.hpp"         // For auto_timer
+#include "dll/dbn_traits.hpp"
 
 namespace dll {
 
