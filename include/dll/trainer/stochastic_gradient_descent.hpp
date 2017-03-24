@@ -17,8 +17,6 @@
 
 #include "cpp_utils/static_if.hpp"
 
-#include "dll/trainer/sgd_context.hpp" //Context for SGD
-#include "dll/util/batch.hpp"          // Create batches
 #include "dll/util/checks.hpp"         // For NaN checks
 #include "dll/util/timers.hpp"         // For auto_timer
 

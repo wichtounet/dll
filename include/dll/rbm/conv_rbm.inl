@@ -346,4 +346,37 @@ struct rbm_layer_base_traits<conv_rbm<Desc>> {
     static constexpr bool has_sparsity       = sparsity_method != dll::sparsity_method::NONE;                   ///< Does the RBM has sparsity
 };
 
+/*!
+ * \brief Specialization of the sgd_context for conv_rbm
+ */
+template <typename DBN, typename Desc>
+struct sgd_context<DBN, conv_rbm<Desc>> {
+    using layer_t = conv_layer<Desc>;
+    using weight  = typename layer_t::weight;
+
+    static constexpr size_t NV1 = layer_t::NV1;
+    static constexpr size_t NV2 = layer_t::NV2;
+    static constexpr size_t NH1 = layer_t::NH1;
+    static constexpr size_t NH2 = layer_t::NH2;
+    static constexpr size_t NW1 = layer_t::NW1;
+    static constexpr size_t NW2 = layer_t::NW2;
+    static constexpr size_t NC  = layer_t::NC;
+    static constexpr size_t K   = layer_t::K;
+
+    static constexpr auto batch_size = DBN::batch_size;
+
+    etl::fast_matrix<weight, K, NC, NW1, NW2> w_grad;
+    etl::fast_matrix<weight, K> b_grad;
+
+    etl::fast_matrix<weight, K, NC, NW1, NW2> w_inc;
+    etl::fast_matrix<weight, K> b_inc;
+
+    etl::fast_matrix<weight, batch_size, NC, NV1, NV2> input;
+    etl::fast_matrix<weight, batch_size, K, NH1, NH2> output;
+    etl::fast_matrix<weight, batch_size, K, NH1, NH2> errors;
+
+    sgd_context()
+            : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
+};
+
 } //end of dll namespace

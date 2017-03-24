@@ -101,4 +101,19 @@ struct layer_base_traits<dyn_lcn_layer<Desc>> {
     static constexpr bool sgd_supported = true;  ///< Indicates if the layer is supported by SGD
 };
 
+/*!
+ * \brief Specialization of sgd_context for dyn_lcn_layer
+ */
+template <typename DBN, typename Desc>
+struct sgd_context<DBN, dyn_lcn_layer<Desc>> {
+    using layer_t = dyn_lcn_layer<Desc>;
+    using weight  = typename DBN::weight;
+
+    using inputs_t = transform_output_type_t<DBN, layer_t>;
+
+    inputs_t input;
+    inputs_t output;
+    inputs_t errors;
+};
+
 } //end of dll namespace

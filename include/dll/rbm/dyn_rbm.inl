@@ -250,4 +250,30 @@ struct rbm_layer_base_traits<dyn_rbm<Desc>> {
     static constexpr bool has_sparsity       = sparsity_method != dll::sparsity_method::NONE;                   ///< Does the RBM has sparsity
 };
 
+/*!
+ * \brief Specialization of sgd_context for dyn_rbm
+ */
+template <typename DBN, typename Desc>
+struct sgd_context<DBN, dyn_rbm<Desc>> {
+    using layer_t = dyn_rbm<Desc>;
+    using weight  = typename layer_t::weight;
+
+    static constexpr auto batch_size = DBN::batch_size;
+
+    etl::dyn_matrix<weight, 2> w_grad;
+    etl::dyn_matrix<weight, 1> b_grad;
+
+    etl::dyn_matrix<weight, 2> w_inc;
+    etl::dyn_matrix<weight, 1> b_inc;
+
+    etl::dyn_matrix<weight, 2> input;
+    etl::dyn_matrix<weight, 2> output;
+    etl::dyn_matrix<weight, 2> errors;
+
+    sgd_context(size_t num_visible, size_t num_hidden)
+            : w_grad(num_visible, num_hidden), b_grad(num_hidden),
+              w_inc(num_visible, num_hidden, 0.0), b_inc(num_hidden, 0.0),
+              input(batch_size, num_visible, 0.0), output(batch_size, num_hidden, 0.0), errors(batch_size, num_hidden, 0.0) {}
+};
+
 } //end of dll namespace

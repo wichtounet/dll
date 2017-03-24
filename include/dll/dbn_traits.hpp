@@ -150,4 +150,15 @@ std::size_t dbn_full_input_size(const DBN& dbn) {
     return dbn.full_input_size();
 }
 
+template <typename DBN, typename Layer>
+struct transform_output_type {
+    static constexpr auto dimensions = dbn_traits<DBN>::is_convolutional() ? 4 : 2;
+
+    using weight  = typename DBN::weight;
+    using type = etl::dyn_matrix<weight, dimensions>;
+};
+
+template <typename DBN, typename Layer>
+using transform_output_type_t = typename transform_output_type<DBN, Layer>::type;
+
 } //end of dll namespace

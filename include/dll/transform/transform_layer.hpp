@@ -8,6 +8,8 @@
 #pragma once
 
 #include "dll/layer.hpp"
+#include "dll/layer_traits.hpp"
+#include "dll/dbn_traits.hpp"
 
 namespace dll {
 

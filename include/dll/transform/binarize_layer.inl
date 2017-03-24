@@ -119,4 +119,19 @@ struct layer_base_traits<binarize_layer<Desc>> {
     static constexpr bool sgd_supported = true;  ///< Indicates if the layer is supported by SGD
 };
 
+/*!
+ * \brief Specialization of sgd_context for lcn_layer
+ */
+template <typename DBN, typename Desc>
+struct sgd_context<DBN, binarize_layer<Desc>> {
+    using layer_t = binarize_layer<Desc>;
+    using weight  = typename DBN::weight;
+
+    using inputs_t = transform_output_type_t<DBN, layer_t>;
+
+    inputs_t input;
+    inputs_t output;
+    inputs_t errors;
+};
+
 } //end of dll namespace

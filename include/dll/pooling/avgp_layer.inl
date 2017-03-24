@@ -117,4 +117,27 @@ struct layer_base_traits<avgp_layer_3d<Desc>> {
     static constexpr bool sgd_supported = true;  ///< Indicates if the layer is supported by SGD
 };
 
+/*!
+ * \brief Specialization of sgd_context for mp_layer_3d
+ */
+template <typename DBN, typename Desc>
+struct sgd_context<DBN, avgp_layer_3d<Desc>> {
+    using layer_t = avgp_layer_3d<Desc>;
+    using weight  = typename layer_t::weight;
+
+    static constexpr size_t I1 = layer_t::I1;
+    static constexpr size_t I2 = layer_t::I2;
+    static constexpr size_t I3 = layer_t::I3;
+
+    static constexpr size_t O1 = layer_t::O1;
+    static constexpr size_t O2 = layer_t::O2;
+    static constexpr size_t O3 = layer_t::O3;
+
+    static constexpr auto batch_size = DBN::batch_size;
+
+    etl::fast_matrix<weight, batch_size, I1, I2, I3> input;
+    etl::fast_matrix<weight, batch_size, O1, O2, O3> output;
+    etl::fast_matrix<weight, batch_size, O1, O2, O3> errors;
+};
+
 } //end of dll namespace

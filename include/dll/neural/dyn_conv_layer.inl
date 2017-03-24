@@ -198,4 +198,31 @@ struct layer_base_traits<dyn_conv_layer<Desc>> {
     static constexpr bool sgd_supported = true;  ///< Indicates if the layer is supported by SGD
 };
 
+/*!
+ * \brief Specialization of sgd_context for dync_conv_layer
+ */
+template <typename DBN, typename Desc>
+struct sgd_context<DBN, dyn_conv_layer<Desc>> {
+    using layer_t = dyn_conv_layer<Desc>;
+    using weight  = typename layer_t::weight;
+
+    static constexpr auto batch_size = DBN::batch_size;
+
+    etl::dyn_matrix<weight, 4> w_grad;
+    etl::dyn_matrix<weight, 1> b_grad;
+
+    etl::dyn_matrix<weight, 4> w_inc;
+    etl::dyn_matrix<weight, 1> b_inc;
+
+    etl::dyn_matrix<weight, 4> input;
+    etl::dyn_matrix<weight, 4> output;
+    etl::dyn_matrix<weight, 4> errors;
+
+    sgd_context(size_t nc, size_t nv1, size_t nv2, size_t k, size_t nh1, size_t nh2)
+            : w_grad(k, nc, nv1 - nh1 + 1, nv2 - nh2 + 1), b_grad(k),
+              w_inc(k, nc, nv1 - nh1 + 1, nv2 - nh2 + 1), b_inc(k),
+              input(batch_size, nc, nv1, nv2),
+              output(batch_size, k, nh1, nh2), errors(batch_size, k, nh1, nh2) {}
+};
+
 } //end of dll namespace

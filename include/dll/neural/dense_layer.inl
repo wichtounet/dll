@@ -227,4 +227,31 @@ struct layer_base_traits<dense_layer<Desc>> {
     static constexpr bool sgd_supported = true;  ///< Indicates if the layer is supported by SGD
 };
 
+/*!
+ * \brief specialization of sgd_context for dense_layer
+ */
+template <typename DBN, typename Desc>
+struct sgd_context<DBN, dense_layer<Desc>> {
+    using layer_t = dense_layer<Desc>;
+    using weight  = typename layer_t::weight;
+
+    static constexpr auto num_visible = layer_t::num_visible;
+    static constexpr auto num_hidden  = layer_t::num_hidden;
+
+    static constexpr auto batch_size = DBN::batch_size;
+
+    etl::fast_matrix<weight, num_visible, num_hidden> w_grad;
+    etl::fast_matrix<weight, num_hidden> b_grad;
+
+    etl::fast_matrix<weight, num_visible, num_hidden> w_inc;
+    etl::fast_matrix<weight, num_hidden> b_inc;
+
+    etl::fast_matrix<weight, batch_size, num_visible> input;
+    etl::fast_matrix<weight, batch_size, num_hidden> output;
+    etl::fast_matrix<weight, batch_size, num_hidden> errors;
+
+    sgd_context()
+            : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
+};
+
 } //end of dll namespace

@@ -17,8 +17,6 @@
 #include "dll/test.hpp"
 #include "dll/dbn_traits.hpp"
 
-#include "dll/trainer/sgd_context.hpp" // TODO Remove later
-
 namespace dll {
 
 template <typename Iterator>
