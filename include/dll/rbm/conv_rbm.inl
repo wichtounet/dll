@@ -351,7 +351,7 @@ struct rbm_layer_base_traits<conv_rbm<Desc>> {
  */
 template <typename DBN, typename Desc>
 struct sgd_context<DBN, conv_rbm<Desc>> {
-    using layer_t = conv_layer<Desc>;
+    using layer_t = conv_rbm<Desc>;
     using weight  = typename layer_t::weight;
 
     static constexpr size_t NV1 = layer_t::NV1;
