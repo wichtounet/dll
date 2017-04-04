@@ -17,3 +17,6 @@
 [submodule "nice_svm"]
 	path = nice_svm
 	url = https://github.com/wichtounet/nice_svm.git
+[submodule "cifar-10"]
+	path = cifar-10
+	url = https://github.com/wichtounet/cifar-10.git
