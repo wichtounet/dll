@@ -18,7 +18,7 @@ endif
 
 RELEASE_FLAGS += -fno-rtti
 
-CXX_FLAGS += -Ietl/lib/include -Ietl/include/ -Imnist/include/ -ICatch/include -Inice_svm/include
+CXX_FLAGS += -Ietl/lib/include -Ietl/include/ -Imnist/include/ -Icifar-10/include/ -ICatch/include -Inice_svm/include
 LD_FLAGS += -lpthread
 
 OPENCV_LD_FLAGS=-lopencv_core -lopencv_imgproc -lopencv_highgui
@@ -274,12 +274,14 @@ install: release_debug/bin/dllp
 	cp -r etl/include/etl $(incdir)/
 	cp -r etl/lib/include/cpp_utils $(incdir)/
 	cp -r mnist/include/mnist $(incdir)/
+	cp -r cifar-10/include/cifar $(incdir)/
 
 install_headers:
 	cp -r include/dll $(incdir)/
 	cp -r etl/include/etl $(incdir)/
 	cp -r etl/lib/include/cpp_utils $(incdir)/
 	cp -r mnist/include/mnist $(incdir)/
+	cp -r cifar-10/include/cifar $(incdir)/
 
 update_tests: release_dll_test
 	bash tools/generate_tests.sh
