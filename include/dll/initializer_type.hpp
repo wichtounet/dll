@@ -17,13 +17,15 @@ namespace dll {
  * \brief Define how weight decay is applied.
  */
 enum class initializer_type {
-    NONE,       ///< Not initialized (undefined values)
-    ZERO,       ///< All initialized to zero
-    GAUSSIAN,   ///< Initialization to N(0, 0.01)
-    UNIFORM,    ///< Initialization to U(-0.05, 0.05)
-    LECUN,      ///< Initialization to N(0, 1/sqrt(Nin))
-    XAVIER,     ///< Initialization to N(0, 1/Nin)
-    XAVIER_FULL ///< Initialization to N(0, 2/(Nin + Nout))
+    NONE,           ///< Not initialized (undefined values)
+    ZERO,           ///< All initialized to zero
+    SMALL_GAUSSIAN, ///< Initialization to N(0, 0.01)
+    GAUSSIAN,       ///< Initialization to N(0, 1.0)
+    UNIFORM,        ///< Initialization to U(-0.05, 0.05)
+    LECUN,          ///< Initialization to N(0, 1) * (1.0/sqrt(Nin))
+    XAVIER,         ///< Initialization to N(0, 1) * (1.0/Nin))
+    XAVIER_FULL,    ///< Initialization to N(0, 1) * (2.0/(Nin + Nout))
+    HE              ///< Initialization to N(0, 1) * (2.0/sqrt(Nin))
 };
 
 } //end of dll namespace

@@ -46,6 +46,17 @@ struct initializer_function<initializer_type::GAUSSIAN> {
         cpp_unused(nin);
         cpp_unused(nout);
 
+        b = etl::normal_generator<etl::value_t<B>>(0.0, 1.0);
+    }
+};
+
+template<>
+struct initializer_function<initializer_type::SMALL_GAUSSIAN> {
+    template<typename B>
+    static void initialize(B& b, size_t nin, size_t nout){
+        cpp_unused(nin);
+        cpp_unused(nout);
+
         b = etl::normal_generator<etl::value_t<B>>(0.0, 0.01);
     }
 };
@@ -67,7 +78,7 @@ struct initializer_function<initializer_type::LECUN> {
     static void initialize(B& b, size_t nin, size_t nout){
         cpp_unused(nout);
 
-        b = etl::normal_generator<etl::value_t<B>>(0.0, 1.0 / std::sqrt(double(nin)));
+        b = etl::normal_generator<etl::value_t<B>>(0.0, 1.0) / sqrt(double(nin));
     }
 };
 
@@ -77,7 +88,7 @@ struct initializer_function<initializer_type::XAVIER> {
     static void initialize(B& b, size_t nin, size_t nout){
         cpp_unused(nout);
 
-        b = etl::normal_generator<etl::value_t<B>>(0.0, 1.0 / double(nin));
+        b = etl::normal_generator<etl::value_t<B>>(0.0, 1.0) * sqrt(1.0 / nin);
     }
 };
 
@@ -85,9 +96,17 @@ template<>
 struct initializer_function<initializer_type::XAVIER_FULL> {
     template<typename B>
     static void initialize(B& b, size_t nin, size_t nout){
-        cpp_unused(nin);
+        b = etl::normal_generator<etl::value_t<B>>(0.0, 1.0) * sqrt(2.0 / (nin + nout));
+    }
+};
 
-        b = etl::normal_generator<etl::value_t<B>>(0.0, 2.0 / double(nin + nout));
+template<>
+struct initializer_function<initializer_type::HE> {
+    template<typename B>
+    static void initialize(B& b, size_t nin, size_t nout){
+        cpp_unused(nout);
+
+        b = etl::normal_generator<etl::value_t<B>>(0.0, 1.0) * sqrt(2.0 / nin);
     }
 };
 
