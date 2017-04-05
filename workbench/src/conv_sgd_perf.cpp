@@ -18,6 +18,7 @@
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
+#include "cifar/cifar10_reader.hpp"
 
 namespace {
 
@@ -152,11 +153,51 @@ void third_ex(){
     etl::dump_counters();
 }
 
+void fourth_ex(){
+    // Third experiment (CIFAR) : Conv -> Pooling -> Conv -> Pooling -> Dense -> Dense
+    // This also uses momentum and RELU, more realistic
+    // Current speed on frigg: 170s
+
+    auto dataset = cifar::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 3, 32, 32>>();
+
+    // Clean slate
+    etl::reset_counters();
+    dll::reset_timers();
+
+    using dbn_t = dll::dbn_desc<
+        dll::dbn_layers<
+            dll::conv_desc<3, 32, 32, 12, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
+            dll::mp_layer_3d_desc<12, 28, 28, 1, 2, 2>::layer_t,
+            dll::conv_desc<12, 14, 14, 24, 3, 3, dll::activation<dll::function::RELU>>::layer_t,
+            dll::mp_layer_3d_desc<24, 12, 12, 1, 2, 2>::layer_t,
+            dll::dense_desc<24 * 6 * 6, 64>::layer_t,
+            dll::dense_desc<64, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
+        dll::momentum, dll::batch_size<100>, dll::trainer<dll::sgd_trainer>>::dbn_t;
+
+    auto net = std::make_unique<dbn_t>();
+
+    net->learning_rate = 0.001;
+    net->initial_momentum = 0.9;
+    net->momentum = 0.9;
+    net->goal = -1.0;
+
+    // Train the network for performance sake
+    net->display();
+    net->fine_tune(dataset.training_images, dataset.training_labels, 5);
+
+    std::cout << "DLL Timers" << std::endl;
+    dll::dump_timers_one();
+
+    std::cout << "ETL Counters" << std::endl;
+    etl::dump_counters();
+}
+
 } // end of anonymous namespace
 
 int main(int argc, char* argv []) {
     if(argc == 1){
         first_ex();
+        return 0;
     }
 
     std::string select(argv[1]);
@@ -166,6 +207,8 @@ int main(int argc, char* argv []) {
         second_ex();
     } else if(select == "C"){
         third_ex();
+    } else if(select == "D"){
+        fourth_ex();
     }
 
     return 0;
