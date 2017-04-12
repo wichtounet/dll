@@ -147,7 +147,7 @@ struct dbn_trainer {
         //Initialize the watcher
         watcher_t<dbn_t> watcher;
 
-        watcher.fine_tuning_begin(dbn);
+        watcher.fine_tuning_begin(dbn, max_epochs);
 
         auto trainer = std::make_unique<trainer_t<dbn_t>>(dbn);
 

@@ -101,6 +101,8 @@ struct default_dbn_watcher {
     static constexpr const bool ignore_sub  = false;
     static constexpr const bool replace_sub = false;
 
+    size_t ft_max_epochs = 0;
+
     cpp::stop_watch<std::chrono::seconds> watch;
 
     void pretraining_begin(const DBN& /*dbn*/, std::size_t max_epochs) {
@@ -124,9 +126,15 @@ struct default_dbn_watcher {
         std::cout << "DBN: Pretraining batch " << batch << std::endl;
     }
 
-    void fine_tuning_begin(const DBN& dbn) {
-        std::cout << "Train DBN with \"" << DBN::desc::template trainer_t<DBN>::name() << "\"" << std::endl;
+    /*!
+     * \brief Fine-tuning of the given network just started
+     * \param dbn The DBN that is being trained
+     * \param max_epochs The maximum number of epochs to train the network
+     */
+    void fine_tuning_begin(const DBN& dbn, size_t max_epochs) {
+        std::cout << "Train the network with \"" << DBN::desc::template trainer_t<DBN>::name() << "\"" << std::endl;
         std::cout << "With parameters:" << std::endl;
+        std::cout << "          epochs=" << max_epochs << std::endl;
         std::cout << "      batch_size=" << DBN::batch_size << std::endl;
         std::cout << "   learning_rate=" << dbn.learning_rate << std::endl;
 
@@ -149,30 +157,36 @@ struct default_dbn_watcher {
         if (dbn_traits<DBN>::lr_driver() == lr_driver_type::STEP) {
             std::cout << "   lr_driver(STEP)=" << dbn.lr_step_size << ":" << dbn.lr_step_gamma << std::endl;
         }
+
+        ft_max_epochs = max_epochs;
     }
 
-    void ft_epoch_end(std::size_t epoch, double error, double loss, const DBN&) {
-        char formatted[1024];
-        snprintf(formatted, 1024, "epoch %ld - Classification error: %.5f Loss: %.5f", epoch, error, loss);
-        std::cout << formatted << std::endl;
+    /*!
+     * \brief One fine-tuning epoch is over
+     * \param epoch The current epoch
+     * \param error The current error
+     * \param loss The current loss
+     * \param dbn The network being trained
+     */
+    void ft_epoch_end(std::size_t epoch, double error, double loss, const DBN& dbn) {
+        cpp_unused(dbn);
+        printf("Epoch %3ld/%ld - Classification error: %.5f Loss: %.5f \n", epoch, ft_max_epochs, error, loss);
+        std::cout.flush();
     }
 
     void ft_batch_end(size_t epoch, size_t batch, size_t batches, double batch_error, double batch_loss, double error, const DBN&) {
-        char formatted[1024];
-        snprintf(formatted, 1024, "epoch %ld:%ld/%ld- B. Error: %.5f B. Loss: %.5f Set: %.5f", epoch, batch, batches, batch_error, batch_loss, error);
-        std::cout << formatted << std::endl;
+        printf("Epoch %3ld:%ld/%ld- B. Error: %.5f B. Loss: %.5f Set: %.5f \n", epoch, batch, batches, batch_error, batch_loss, error);
+        std::cout.flush();
     }
 
     void ft_batch_end(size_t epoch, double batch_error, double batch_loss, double error, const DBN&) {
-        char formatted[1024];
-        snprintf(formatted, 1024, "epoch %ld - B.Error: %.5f B.Loss: %.5f Set: %.5f", epoch, batch_error, batch_loss, error);
-        std::cout << formatted << std::endl;
+        printf("Epoch %3ld - B.Error: %.5f B.Loss: %.5f Set: %.5f \n", epoch, batch_error, batch_loss, error);
+        std::cout.flush();
     }
 
     void lr_adapt(const DBN& dbn) {
-        char formatted[1024];
-        snprintf(formatted, 1024, "driver: learning rate adapted to %.5f", dbn.learning_rate);
-        std::cout << formatted << std::endl;
+        printf("driver: learning rate adapted to %.5f \n", dbn.learning_rate);
+        std::cout.flush();
     }
 
     void fine_tuning_end(const DBN&) {
@@ -200,7 +214,7 @@ struct mute_dbn_watcher {
 
     void pretraining_batch(const DBN& /*dbn*/, std::size_t /*batch*/) {}
 
-    void fine_tuning_begin(const DBN& /*dbn*/) {}
+    void fine_tuning_begin(const DBN& /*dbn*/, size_t /*max_epochs*/) {}
 
     void ft_epoch_end(std::size_t /*epoch*/, double /*error*/, const DBN& /*dbn*/) {}
 
