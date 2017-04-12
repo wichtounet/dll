@@ -171,6 +171,21 @@ inline void dump_timers_one() {
     }
 }
 
+struct stop_timer {
+    chrono::time_point<chrono::steady_clock> start_time;
+
+    stop_timer() = default;
+
+    void start() {
+        start_time = chrono::steady_clock::now();
+    }
+
+    std::size_t stop() const {
+        auto end = chrono::steady_clock::now();
+        return chrono::duration_cast<chrono::milliseconds>(end - start_time).count();
+    }
+};
+
 struct auto_timer {
     const char* name;
     chrono::time_point<chrono::steady_clock> start;

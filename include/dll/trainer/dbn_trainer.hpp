@@ -236,6 +236,8 @@ struct dbn_trainer {
             for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
                 dll::auto_timer timer("dbn::trainer::train_impl::epoch");
 
+                watcher.ft_epoch_start(epoch, dbn);
+
                 // Shuffle before the epoch if necessary
                 if(dbn_traits<dbn_t>::shuffle()){
                     static std::random_device rd;

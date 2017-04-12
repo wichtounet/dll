@@ -102,6 +102,7 @@ struct default_dbn_watcher {
     static constexpr const bool replace_sub = false;
 
     size_t ft_max_epochs = 0;
+    dll::stop_timer ft_epoch_timer;
 
     cpp::stop_watch<std::chrono::seconds> watch;
 
@@ -162,6 +163,17 @@ struct default_dbn_watcher {
     }
 
     /*!
+     * \brief One fine-tuning epoch is starting
+     * \param epoch The current epoch
+     * \param dbn The network being trained
+     */
+    void ft_epoch_start(std::size_t epoch, const DBN& dbn) {
+        cpp_unused(epoch);
+        cpp_unused(dbn);
+        ft_epoch_timer.start();
+    }
+
+    /*!
      * \brief One fine-tuning epoch is over
      * \param epoch The current epoch
      * \param error The current error
@@ -170,7 +182,8 @@ struct default_dbn_watcher {
      */
     void ft_epoch_end(std::size_t epoch, double error, double loss, const DBN& dbn) {
         cpp_unused(dbn);
-        printf("Epoch %3ld/%ld - Classification error: %.5f Loss: %.5f \n", epoch, ft_max_epochs, error, loss);
+        auto duration = ft_epoch_timer.stop();
+        printf("Epoch %3ld/%ld - Classification error: %.5f Loss: %.5f Time %ldms \n", epoch, ft_max_epochs, error, loss, duration);
         std::cout.flush();
     }
 
@@ -215,6 +228,8 @@ struct mute_dbn_watcher {
     void pretraining_batch(const DBN& /*dbn*/, std::size_t /*batch*/) {}
 
     void fine_tuning_begin(const DBN& /*dbn*/, size_t /*max_epochs*/) {}
+
+    void ft_epoch_start(std::size_t /*epoch*/, const DBN& /*dbn*/) {}
 
     void ft_epoch_end(std::size_t /*epoch*/, double /*error*/, const DBN& /*dbn*/) {}
 
