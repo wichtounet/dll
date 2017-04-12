@@ -127,6 +127,7 @@ struct default_dbn_watcher {
     void fine_tuning_begin(const DBN& dbn) {
         std::cout << "Train DBN with \"" << DBN::desc::template trainer_t<DBN>::name() << "\"" << std::endl;
         std::cout << "With parameters:" << std::endl;
+        std::cout << "      batch_size=" << DBN::batch_size << std::endl;
         std::cout << "   learning_rate=" << dbn.learning_rate << std::endl;
 
         if (dbn_traits<DBN>::has_momentum()) {
