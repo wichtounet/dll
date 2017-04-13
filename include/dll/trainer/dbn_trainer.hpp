@@ -342,9 +342,6 @@ private:
 
             // Shuffle before the epoch if necessary
             if(dbn_traits<dbn_t>::shuffle()){
-                static std::random_device rd;
-                static std::mt19937_64 g(rd());
-
                 etl::parallel_shuffle(data, labels);
             }
 
