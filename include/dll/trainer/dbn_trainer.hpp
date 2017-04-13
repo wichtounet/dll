@@ -51,7 +51,8 @@ range<Iterator> make_range(Iterator first, Iterator last) {
  */
 template <typename DBN>
 struct dbn_trainer {
-    using dbn_t = DBN;
+    using dbn_t      = DBN;
+    using weight     = typename dbn_t::weight;
     using error_type = typename dbn_t::weight;
 
     template <typename R>
@@ -167,237 +168,259 @@ struct dbn_trainer {
 private:
 
     template <typename Iterator, typename LIterator, typename Error, typename InputTransformer, typename LabelTransformer>
-    error_type train_impl(DBN& dbn, bool ae, Iterator first, Iterator last, LIterator lfirst, LIterator /*llast*/, size_t max_epochs, Error error_function, InputTransformer input_transformer, LabelTransformer label_transformer) {
+    error_type train_impl(DBN& dbn, bool ae, Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t max_epochs, Error error_function, InputTransformer input_transformer, LabelTransformer label_transformer) {
         dll::auto_timer timer("dbn::trainer::train_impl");
 
-        decltype(auto) input_layer  = dbn.template layer_get<dbn_t::input_layer_n>();
-        decltype(auto) output_layer = dbn.template layer_get<dbn_t::output_layer_n>();
-
-        using weight         = typename dbn_t::weight;
-
-        constexpr const auto batch_size     = std::decay_t<DBN>::batch_size;
-        constexpr const auto big_batch_size = std::decay_t<DBN>::big_batch_size;
+        cpp_unused(llast);
 
         // Initialization steps
         start_training(dbn, ae, max_epochs);
 
+        // Train the model
+
         if (!dbn.batch_mode()) {
-            dll::auto_timer timer("dbn::trainer::train_impl::fast");
+            train_fast_full(dbn, ae, first, last, lfirst, max_epochs, input_transformer, label_transformer);
+        } else {
+            train_batch_full(dbn, first, last, lfirst, max_epochs, error_function, input_transformer, label_transformer);
+        }
 
-            // The number of elements on which to train
-            const size_t n = std::distance(first, last);
+        // Finalization
 
-            // Prepare the data
+        return stop_training(dbn);
+    }
 
-            // TODO Create correctly the type for conv
-            etl::dyn_matrix<weight, 2> data(n, input_layer.input_size());
+    template<typename Iterator>
+    etl::dyn_matrix<weight, 2> prepare_data(dbn_t& dbn, Iterator first, size_t n){
+        decltype(auto) input_layer  = dbn.template layer_get<dbn_t::input_layer_n>();
 
-            for(size_t l = 0; l < n; ++l){
-                data(l) = *first++;
+        // TODO Create correctly the type for conv
+        etl::dyn_matrix<weight, 2> data(n, input_layer.input_size());
+
+        for(size_t l = 0; l < n; ++l){
+            data(l) = *first++;
+        }
+
+        return data;
+    }
+
+    template<typename Iterator, typename Transformer>
+    etl::dyn_matrix<weight, 2> prepare_labels(dbn_t& dbn, Iterator lfirst, size_t n, Transformer label_transformer){
+        decltype(auto) output_layer = dbn.template layer_get<dbn_t::output_layer_n>();
+
+        etl::dyn_matrix<weight, 2> labels(n, output_layer.output_size(), weight(0.0));
+
+        for(size_t l = 0; l < n; ++l){
+            labels(l) = label_transformer(*lfirst++, output_layer.output_size());
+        }
+
+        return labels;
+    }
+
+    template <typename Iterator, typename LIterator, typename InputTransformer, typename LabelTransformer>
+    void train_fast_full(DBN& dbn, bool ae, Iterator first, Iterator last, LIterator lfirst, size_t max_epochs, InputTransformer input_transformer, LabelTransformer label_transformer) {
+        dll::auto_timer timer("dbn::trainer::train_impl::fast");
+
+        // The number of elements on which to train
+        const size_t n = std::distance(first, last);
+
+        //Compute the number of batches
+        constexpr const auto batch_size = std::decay_t<DBN>::batch_size;
+        const auto batches = n / batch_size + (n % batch_size == 0 ? 0 : 1);
+
+        // Prepare the data
+
+        auto data   = prepare_data(dbn, first, n);
+        auto labels = prepare_labels(dbn, lfirst, n, label_transformer);
+
+        //Train for max_epochs epoch
+        for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
+            dll::auto_timer timer("dbn::trainer::train_impl::epoch");
+
+            watcher.ft_epoch_start(epoch, dbn);
+
+            // Shuffle before the epoch if necessary
+            if(dbn_traits<dbn_t>::shuffle()){
+                static std::random_device rd;
+                static std::mt19937_64 g(rd());
+
+                etl::parallel_shuffle(data, labels);
             }
 
-            // Prepare the labels
+            double loss = 0;
 
-            etl::dyn_matrix<weight, 2> labels(n, output_layer.output_size(), weight(0.0));
+            //Train one mini-batch at a time
+            for (size_t i = 0; i < batches; ++i) {
+                dll::auto_timer timer("dbn::trainer::train_impl::epoch::batch");
 
-            for(size_t l = 0; l < n; ++l){
-                labels(l) = label_transformer(*lfirst++, output_layer.output_size());
-            }
+                const auto start = i * batch_size;
+                const auto end   = std::min(start + batch_size, n);
 
-            //Compute the number of batches
-            const auto batches = n / batch_size + (n % batch_size == 0 ? 0 : 1);
+                double batch_error;
+                double batch_loss;
+                std::tie(batch_error, batch_loss) = trainer->train_batch(
+                    epoch,
+                    slice(data, start, end),
+                    slice(labels, start, end),
+                    input_transformer);
 
-            //Train for max_epochs epoch
-            for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
-                dll::auto_timer timer("dbn::trainer::train_impl::epoch");
-
-                watcher.ft_epoch_start(epoch, dbn);
-
-                // Shuffle before the epoch if necessary
-                if(dbn_traits<dbn_t>::shuffle()){
-                    static std::random_device rd;
-                    static std::mt19937_64 g(rd());
-
-                    etl::parallel_shuffle(data, labels);
+                if(dbn_traits<dbn_t>::is_verbose()){
+                    auto full_batch_error = batch_error_function(dbn, ae, data, labels);
+                    watcher.ft_batch_end(epoch, i, batches, batch_error, batch_loss, full_batch_error, dbn);
                 }
 
-                double loss = 0;
+                loss += batch_loss;
+            }
 
-                //Train one mini-batch at a time
-                for (size_t i = 0; i < batches; ++i) {
-                    dll::auto_timer timer("dbn::trainer::train_impl::epoch::batch");
+            loss /= batches;
 
-                    const auto start = i * batch_size;
-                    const auto end   = std::min(start + batch_size, n);
+            // Save the last error
+            auto last_error = error;
+
+            // Compute the error at this epoch
+
+            {
+                dll::auto_timer timer("dbn::trainer::train_impl::epoch::error");
+
+                error = batch_error_function(dbn, ae, data, labels);
+            }
+
+            //After some time increase the momentum
+            if (dbn_traits<dbn_t>::has_momentum() && epoch == dbn.final_momentum_epoch) {
+                dbn.momentum = dbn.final_momentum;
+            }
+
+            watcher.ft_epoch_end(epoch, error, loss, dbn);
+
+            //Once the goal is reached, stop training
+            if (error <= dbn.goal) {
+                break;
+            }
+
+            if (dbn_traits<dbn_t>::lr_driver() == lr_driver_type::BOLD) {
+                if (epoch) {
+                    if (error > last_error + 1e-8) {
+                        //Error increased
+                        dbn.learning_rate *= dbn.lr_bold_dec;
+                        watcher.lr_adapt(dbn);
+                        dbn.restore_weights();
+                    } else if (error < last_error - 1e-10) {
+                        //Error decreased
+                        dbn.learning_rate *= dbn.lr_bold_inc;
+                        watcher.lr_adapt(dbn);
+                        dbn.backup_weights();
+                    } else {
+                        //Error didn't change enough
+                        dbn.backup_weights();
+                    }
+                } else {
+                    dbn.backup_weights();
+                }
+            }
+
+            if (dbn_traits<dbn_t>::lr_driver() == lr_driver_type::STEP) {
+                if (epoch && epoch % dbn.lr_step_size == 0) {
+                    dbn.learning_rate *= dbn.lr_step_gamma;
+                    watcher.lr_adapt(dbn);
+                }
+            }
+        }
+    }
+
+    template <typename Iterator, typename LIterator, typename Error, typename InputTransformer, typename LabelTransformer>
+    void train_batch_full(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, size_t max_epochs, Error error_function, InputTransformer input_transformer, LabelTransformer label_transformer) {
+
+        decltype(auto) input_layer  = dbn.template layer_get<dbn_t::input_layer_n>();
+        decltype(auto) output_layer = dbn.template layer_get<dbn_t::output_layer_n>();
+
+        constexpr const auto batch_size     = std::decay_t<DBN>::batch_size;
+        constexpr const auto big_batch_size = std::decay_t<DBN>::big_batch_size;
+
+        constexpr const auto total_batch_size = big_batch_size * batch_size;
+
+        //Prepare some space for converted data
+        etl::dyn_matrix<weight, 2> input_cache(total_batch_size, input_layer.input_size());
+        etl::dyn_matrix<weight, 2> label_cache(total_batch_size, output_layer.output_size());
+
+        //Train for max_epochs epoch
+        for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
+            auto it = first;
+            auto lit = lfirst;
+
+            double loss = 0.0;
+
+            size_t n = 0;
+
+            //Train all mini-batches
+            while (it != last) {
+                label_cache = 0.0;
+
+                //Fill the input caches
+                size_t i = 0;
+                while (it != last && i < total_batch_size) {
+                    input_cache(i) = *it++;
+                    label_cache(i) = label_transformer(*lit++, output_layer.output_size());
+
+                    ++i;
+                    ++n;
+                }
+
+                auto full_batches = i / batch_size;
+
+                //Train all the full batches
+                for (size_t b = 0; b < full_batches; ++b) {
+                    const auto start       = b * batch_size;
+                    const auto end         = (b + 1) * batch_size;
 
                     double batch_error;
                     double batch_loss;
                     std::tie(batch_error, batch_loss) = trainer->train_batch(
                         epoch,
-                        slice(data, start, end),
-                        slice(labels, start, end),
+                        slice(input_cache, start, end),
+                        slice(label_cache, start, end),
                         input_transformer);
 
                     if(dbn_traits<dbn_t>::is_verbose()){
-                        auto full_batch_error = batch_error_function(dbn, ae, data, labels);
-                        watcher.ft_batch_end(epoch, i, batches, batch_error, batch_loss, full_batch_error, dbn);
+                        watcher.ft_batch_end(epoch, batch_error, batch_loss, error_function(), dbn);
                     }
 
                     loss += batch_loss;
                 }
 
-                loss /= batches;
+                //Train the last incomplete batch, if any
+                if (i % batch_size > 0) {
+                    const auto start       = full_batches * batch_size;
+                    const auto end         = i;
 
-                // Save the last error
-                auto last_error = error;
+                    double batch_error;
+                    double batch_loss;
+                    std::tie(batch_error, batch_loss) = trainer->train_batch(
+                        epoch,
+                        slice(input_cache, start, end),
+                        slice(label_cache, start, end),
+                        input_transformer);
 
-                // Compute the error at this epoch
-
-                {
-                    dll::auto_timer timer("dbn::trainer::train_impl::epoch::error");
-
-                    error = batch_error_function(dbn, ae, data, labels);
-                }
-
-                //After some time increase the momentum
-                if (dbn_traits<dbn_t>::has_momentum() && epoch == dbn.final_momentum_epoch) {
-                    dbn.momentum = dbn.final_momentum;
-                }
-
-                watcher.ft_epoch_end(epoch, error, loss, dbn);
-
-                //Once the goal is reached, stop training
-                if (error <= dbn.goal) {
-                    break;
-                }
-
-                if (dbn_traits<dbn_t>::lr_driver() == lr_driver_type::BOLD) {
-                    if (epoch) {
-                        if (error > last_error + 1e-8) {
-                            //Error increased
-                            dbn.learning_rate *= dbn.lr_bold_dec;
-                            watcher.lr_adapt(dbn);
-                            dbn.restore_weights();
-                        } else if (error < last_error - 1e-10) {
-                            //Error decreased
-                            dbn.learning_rate *= dbn.lr_bold_inc;
-                            watcher.lr_adapt(dbn);
-                            dbn.backup_weights();
-                        } else {
-                            //Error didn't change enough
-                            dbn.backup_weights();
-                        }
-                    } else {
-                        dbn.backup_weights();
+                    if(dbn_traits<dbn_t>::is_verbose()){
+                        watcher.ft_batch_end(epoch, batch_error, batch_loss, error_function(), dbn);
                     }
-                }
 
-                if (dbn_traits<dbn_t>::lr_driver() == lr_driver_type::STEP) {
-                    if (epoch && epoch % dbn.lr_step_size == 0) {
-                        dbn.learning_rate *= dbn.lr_step_gamma;
-                        watcher.lr_adapt(dbn);
-                    }
+                    loss += batch_loss;
                 }
             }
-        } else {
-            auto total_batch_size = big_batch_size * batch_size;
 
-            //Prepare some space for converted data
-            etl::dyn_matrix<weight, 2> input_cache(total_batch_size, input_layer.input_size());
-            etl::dyn_matrix<weight, 2> label_cache(total_batch_size, output_layer.output_size());
+            error = error_function();
+            loss /= n;
 
-            //Train for max_epochs epoch
-            for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
-                auto it = first;
-                auto lit = lfirst;
-
-                double loss = 0.0;
-
-                size_t n = 0;
-
-                //Train all mini-batches
-                while (it != last) {
-                    label_cache = 0.0;
-
-                    //Fill the input caches
-                    size_t i = 0;
-                    while (it != last && i < total_batch_size) {
-                        input_cache(i) = *it++;
-                        label_cache(i) = label_transformer(*lit++, output_layer.output_size());
-
-                        ++i;
-                        ++n;
-                    }
-
-                    auto full_batches = i / batch_size;
-
-                    //Train all the full batches
-                    for (size_t b = 0; b < full_batches; ++b) {
-                        const auto start       = b * batch_size;
-                        const auto end         = (b + 1) * batch_size;
-
-                        double batch_error;
-                        double batch_loss;
-                        std::tie(batch_error, batch_loss) = trainer->train_batch(
-                            epoch,
-                            slice(input_cache, start, end),
-                            slice(label_cache, start, end),
-                            input_transformer);
-
-                        if(dbn_traits<dbn_t>::is_verbose()){
-                            watcher.ft_batch_end(epoch, batch_error, batch_loss, error_function(), dbn);
-                        }
-
-                        loss += batch_loss;
-                    }
-
-                    //Train the last incomplete batch, if any
-                    if (i % batch_size > 0) {
-                        const auto start       = full_batches * batch_size;
-                        const auto end         = i;
-
-                        double batch_error;
-                        double batch_loss;
-                        std::tie(batch_error, batch_loss) = trainer->train_batch(
-                            epoch,
-                            slice(input_cache, start, end),
-                            slice(label_cache, start, end),
-                            input_transformer);
-
-                        if(dbn_traits<dbn_t>::is_verbose()){
-                            watcher.ft_batch_end(epoch, batch_error, batch_loss, error_function(), dbn);
-                        }
-
-                        loss += batch_loss;
-                    }
-                }
-
-                error = error_function();
-                loss /= n;
-
-                //After some time increase the momentum
-                if (dbn_traits<dbn_t>::has_momentum() && epoch == dbn.final_momentum_epoch) {
-                    dbn.momentum = dbn.final_momentum;
-                }
-
-                watcher.ft_epoch_end(epoch, error, loss, dbn);
-
-                //Once the goal is reached, stop training
-                if (error <= dbn.goal) {
-                    break;
-                }
+            //After some time increase the momentum
+            if (dbn_traits<dbn_t>::has_momentum() && epoch == dbn.final_momentum_epoch) {
+                dbn.momentum = dbn.final_momentum;
             }
-        }
 
-        return stop_training(dbn);
-    }
+            watcher.ft_epoch_end(epoch, error, loss, dbn);
 
-    template <typename D, typename It>
-    static void copy_inputs(D& dest, It first, It last) {
-        size_t i = 0;
-
-        while (first != last) {
-            dest(i++) = *first++;
+            //Once the goal is reached, stop training
+            if (error <= dbn.goal) {
+                break;
+            }
         }
     }
 
