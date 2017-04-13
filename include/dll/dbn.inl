@@ -29,6 +29,7 @@
 #include "util/converter.hpp" // Input type conversion
 #include "util/export.hpp"
 #include "util/timers.hpp"
+#include "util/random.hpp"
 #include "dbn_detail.hpp" // dbn_detail namespace
 
 namespace dll {
@@ -1412,9 +1413,7 @@ private:
 
     template <typename Container>
     void shuffle(Container& container){
-        static std::random_device rd;
-        static std::mt19937_64 g(rd());
-
+        decltype(auto) g = dll::rand_engine();
         std::shuffle(container.begin(), container.end(), g);
     }
 
@@ -1704,8 +1703,7 @@ private:
 
     template<typename T>
     inline void noise_transform(T&& value, double noise){
-        static std::random_device rd;
-        static std::default_random_engine g(rd());
+        decltype(auto) g = dll::rand_engine();
 
         std::uniform_real_distribution<double> dist(0.0, 1000.0);
 

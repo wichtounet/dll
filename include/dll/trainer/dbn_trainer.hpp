@@ -13,6 +13,7 @@
 
 #include "dll/util/labels.hpp"
 #include "dll/util/timers.hpp"
+#include "dll/util/random.hpp"
 #include "dll/util/batch.hpp" // For make_batch
 #include "dll/test.hpp"
 #include "dll/dbn_traits.hpp"
@@ -114,8 +115,7 @@ struct dbn_trainer {
         };
 
         auto input_transformer = [corrupt](auto&& value){
-            static std::random_device rd;
-            static std::default_random_engine g(rd());
+            decltype(auto) g = dll::rand_engine();
 
             std::uniform_real_distribution<double> dist(0.0, 1000.0);
 

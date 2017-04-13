@@ -15,6 +15,7 @@
 #include "dll/decay_type.hpp"
 #include "dll/util/batch.hpp"
 #include "dll/util/timers.hpp"
+#include "dll/util/random.hpp"
 #include "dll/layer_traits.hpp"
 #include "dll/trainer/rbm_trainer_fwd.hpp"
 #include "dll/trainer/rbm_training_context.hpp"
@@ -73,9 +74,7 @@ struct rbm_trainer {
 
     template <typename IIterator, cpp_enable_if_cst(rbm_layer_traits<rbm_t>::has_shuffle())>
     static void shuffle_direct(IIterator ifirst, IIterator ilast) {
-        static std::random_device rd;
-        static std::mt19937_64 g(rd());
-
+        decltype(auto) g = dll::rand_engine();
         std::shuffle(ifirst, ilast, g);
     }
 
@@ -84,9 +83,7 @@ struct rbm_trainer {
 
     template <typename IIterator, typename EIterator, cpp_enable_if_cst(rbm_layer_traits<rbm_t>::has_shuffle())>
     static void shuffle(IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast) {
-        static std::random_device rd;
-        static std::mt19937_64 g(rd());
-
+        decltype(auto) g = dll::rand_engine();
         if (Denoising) {
             cpp::parallel_shuffle(ifirst, ilast, efirst, elast, g);
         } else {
@@ -258,8 +255,7 @@ struct rbm_trainer {
         auto trainer = get_trainer(rbm);
 
         auto input_transformer = [noise](auto&& value){
-            static std::random_device rd;
-            static std::default_random_engine g(rd());
+            decltype(auto) g = dll::rand_engine();
 
             std::uniform_real_distribution<double> dist(0.0, 1000.0);
 
