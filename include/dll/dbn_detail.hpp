@@ -16,7 +16,7 @@ namespace dll {
 
 namespace dbn_detail {
 
-//TODO Could be good to ensure that either a) all layer have the same weight b) use the correct type for each layer
+// extract_weight
 
 template <std::size_t I, typename DBN, typename Enable = void>
 struct extract_weight_t;
@@ -30,6 +30,44 @@ template <std::size_t I, typename DBN>
 struct extract_weight_t<I, DBN, cpp::disable_if_t<layer_traits<typename DBN::template layer_type<I>>::has_same_type()>> {
     using type = typename DBN::template layer_type<I>::weight;
 };
+
+// test that a layer has the correct weight type
+
+template <std::size_t I, typename DBN, typename T, typename Enable = void>
+struct weight_type_same;
+
+template <std::size_t I, typename DBN, typename T>
+struct weight_type_same<I, DBN, T, std::enable_if_t<layer_traits<typename DBN::template layer_type<I>>::has_same_type()>> {
+    static constexpr bool value = true;
+};
+
+template <std::size_t I, typename DBN, typename T>
+struct weight_type_same<I, DBN, T, cpp::disable_if_t<layer_traits<typename DBN::template layer_type<I>>::has_same_type()>> {
+    using type = typename DBN::template layer_type<I>::weight;
+    static constexpr bool value = std::is_same<T, type>::value;
+};
+
+// validate the weight type of the layers
+
+template <size_t I, typename DBN, typename T, typename Enable = void>
+struct validate_weight_type_impl;
+
+template <size_t I, typename DBN, typename T>
+struct validate_weight_type_impl< I, DBN, T, std::enable_if_t<(I == DBN::layers_t::size - 1)> > {
+    static constexpr bool value = weight_type_same<I, DBN, T>::value;
+};
+
+template <size_t I, typename DBN, typename T>
+struct validate_weight_type_impl< I, DBN, T, std::enable_if_t<(I < DBN::layers_t::size - 1)> > {
+    static constexpr bool value = weight_type_same<I, DBN, T>::value && validate_weight_type_impl<I + 1, DBN, T>::value;
+};
+
+template <typename DBN, typename T>
+struct validate_weight_type {
+    static constexpr bool value = validate_weight_type_impl<0, DBN, T>::value;
+};
+
+// Compute the distance between two iterators, only if random_access
 
 template <typename Iterator>
 std::size_t fast_distance(Iterator& first, Iterator& last) {

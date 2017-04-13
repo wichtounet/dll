@@ -96,7 +96,10 @@ struct dbn final {
     template <std::size_t N>
     using layer_type = detail::layer_type_t<N, layers_t>; ///< The type of the layer at index Nth
 
-    using weight = typename dbn_detail::extract_weight_t<0, this_type>::type; ///< The tpyeof the weights
+    // The weight is is extracted from the first layer, since all layers have the same type
+    using weight = typename dbn_detail::extract_weight_t<0, this_type>::type; ///< The type of the weights
+
+    static_assert(dbn_detail::validate_weight_type<this_type, weight>::value, "Every layer must have consistent weight type");
 
     using watcher_t = typename desc::template watcher_t<this_type>; ///< The watcher type
 
