@@ -135,8 +135,7 @@ struct dbn_trainer {
         decltype(auto) input_layer = dbn.template layer_get<dbn_t::input_layer_n>();
         decltype(auto) output_layer = dbn.template layer_get<dbn_t::output_layer_n>();
 
-        using input_layer_t  = typename dbn_t::template layer_type<dbn_t::input_layer_n>;
-        using output_layer_t = typename dbn_t::template layer_type<dbn_t::output_layer_n>;
+        using weight         = typename dbn_t::weight;
 
         constexpr const auto batch_size     = std::decay_t<DBN>::batch_size;
         constexpr const auto big_batch_size = std::decay_t<DBN>::big_batch_size;
@@ -167,7 +166,7 @@ struct dbn_trainer {
             // Prepare the data
 
             // TODO Create correctly the type for conv
-            etl::dyn_matrix<typename input_layer_t::weight, 2> data(n, input_layer.input_size());
+            etl::dyn_matrix<weight, 2> data(n, input_layer.input_size());
 
             for(size_t l = 0; l < n; ++l){
                 data(l) = *first++;
@@ -175,7 +174,7 @@ struct dbn_trainer {
 
             // Prepare the labels
 
-            etl::dyn_matrix<typename output_layer_t::weight, 2> labels(n, output_layer.output_size(), typename output_layer_t::weight(0.0));
+            etl::dyn_matrix<weight, 2> labels(n, output_layer.output_size(), weight(0.0));
 
             for(size_t l = 0; l < n; ++l){
                 labels(l) = label_transformer(*lfirst++, output_layer.output_size());
@@ -327,8 +326,8 @@ struct dbn_trainer {
             auto total_batch_size = big_batch_size * batch_size;
 
             //Prepare some space for converted data
-            etl::dyn_matrix<typename input_layer_t::weight, 2> input_cache(total_batch_size, input_layer.input_size());
-            etl::dyn_matrix<typename output_layer_t::weight, 2> label_cache(total_batch_size, output_layer.output_size());
+            etl::dyn_matrix<weight, 2> input_cache(total_batch_size, input_layer.input_size());
+            etl::dyn_matrix<weight, 2> label_cache(total_batch_size, output_layer.output_size());
 
             //Train for max_epochs epoch
             for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
