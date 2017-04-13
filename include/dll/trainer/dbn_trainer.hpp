@@ -67,7 +67,6 @@ struct dbn_trainer {
     std::unique_ptr<trainer_t<dbn_t>> trainer; ///< The concrete trainer
 
     error_type error      = 0.0; ///< The current error
-    error_type last_error = 0.0; ///< The last error
 
     template <typename Iterator, typename LIterator>
     error_type train(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t max_epochs) {
@@ -151,7 +150,6 @@ struct dbn_trainer {
 
         // Set the initial error
         error = 0.0;
-        last_error = 0.0;
     }
 
     /*!
