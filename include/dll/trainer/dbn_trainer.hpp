@@ -60,8 +60,16 @@ struct dbn_trainer {
     template <typename R>
     using watcher_t = typename dbn_t::desc::template watcher_t<R>;
 
+    //Initialize the watcher
+    watcher_t<dbn_t> watcher;
+
+    std::unique_ptr<trainer_t<dbn_t>> trainer; ///< The concrete trainer
+
+    error_type error      = 0.0; ///< The current error
+    error_type last_error = 0.0; ///< The last error
+
     template <typename Iterator, typename LIterator>
-    error_type train(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t max_epochs) const {
+    error_type train(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t max_epochs) {
         auto error_function = [&dbn, first, last, lfirst, llast]() {
             return test_set(dbn, first, last, lfirst, llast,
                             [](dbn_t& dbn, auto& image) { return dbn.predict(image); });
@@ -79,7 +87,7 @@ struct dbn_trainer {
     }
 
     template <typename Iterator>
-    error_type train_ae(DBN& dbn, Iterator first, Iterator last, size_t max_epochs) const {
+    error_type train_ae(DBN& dbn, Iterator first, Iterator last, size_t max_epochs) {
         auto error_function = [&dbn, first, last]() {
             return test_set_ae(dbn, first, last);
         };
@@ -96,7 +104,7 @@ struct dbn_trainer {
     }
 
     template <typename Iterator>
-    error_type train_dae(DBN& dbn, Iterator first, Iterator last, size_t max_epochs, double corrupt) const {
+    error_type train_dae(DBN& dbn, Iterator first, Iterator last, size_t max_epochs, double corrupt) {
         auto error_function = [&dbn, first, last]() {
             return test_set_ae(dbn, first, last);
         };
@@ -128,11 +136,48 @@ struct dbn_trainer {
         }
     }
 
+    /*!
+     * \brief Initialize the training
+     * \param dbn The network to train
+     * \param ae Indicates if trained as auto-encoder or not
+     * \param max_epochs How many epochs will be used
+     */
+    void start_training(dbn_t& dbn, bool ae, size_t max_epochs){
+        constexpr const auto batch_size = std::decay_t<dbn_t>::batch_size;
+
+        //Initialize the momentum
+        dbn.momentum = dbn.initial_momentum;
+
+        watcher.fine_tuning_begin(dbn, max_epochs);
+
+        trainer = std::make_unique<trainer_t<dbn_t>>(dbn);
+
+        trainer->set_autoencoder(ae);
+
+        //Initialize the trainer if necessary
+        trainer->init_training(batch_size);
+
+        // Set the initial error
+        error = 0.0;
+        last_error = 0.0;
+    }
+
+    /*!
+     * \brief Finalize the training
+     * \param dbn The network that was trained
+     */
+    error_type stop_training(dbn_t& dbn){
+
+        watcher.fine_tuning_end(dbn);
+
+        return error;
+    }
+
     template <typename Iterator, typename LIterator, typename Error, typename InputTransformer, typename LabelTransformer>
-    error_type train_impl(DBN& dbn, bool ae, Iterator first, Iterator last, LIterator lfirst, LIterator /*llast*/, size_t max_epochs, Error error_function, InputTransformer input_transformer, LabelTransformer label_transformer) const {
+    error_type train_impl(DBN& dbn, bool ae, Iterator first, Iterator last, LIterator lfirst, LIterator /*llast*/, size_t max_epochs, Error error_function, InputTransformer input_transformer, LabelTransformer label_transformer) {
         dll::auto_timer timer("dbn::trainer::train_impl");
 
-        decltype(auto) input_layer = dbn.template layer_get<dbn_t::input_layer_n>();
+        decltype(auto) input_layer  = dbn.template layer_get<dbn_t::input_layer_n>();
         decltype(auto) output_layer = dbn.template layer_get<dbn_t::output_layer_n>();
 
         using weight         = typename dbn_t::weight;
@@ -140,22 +185,8 @@ struct dbn_trainer {
         constexpr const auto batch_size     = std::decay_t<DBN>::batch_size;
         constexpr const auto big_batch_size = std::decay_t<DBN>::big_batch_size;
 
-        //Initialize the momentum
-        dbn.momentum = dbn.initial_momentum;
-
-        //Initialize the watcher
-        watcher_t<dbn_t> watcher;
-
-        watcher.fine_tuning_begin(dbn, max_epochs);
-
-        auto trainer = std::make_unique<trainer_t<dbn_t>>(dbn);
-
-        trainer->set_autoencoder(ae);
-
-        //Initialize the trainer if necessary
-        trainer->init_training(batch_size);
-
-        error_type error = 0.0;
+        // Initialization steps
+        start_training(dbn, ae, max_epochs);
 
         if (!dbn.batch_mode()) {
             dll::auto_timer timer("dbn::trainer::train_impl::fast");
@@ -412,9 +443,7 @@ struct dbn_trainer {
             }
         }
 
-        watcher.fine_tuning_end(dbn);
-
-        return error;
+        return stop_training(dbn);
     }
 };
 
