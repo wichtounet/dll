@@ -219,6 +219,36 @@ public:
         watcher.ft_epoch_start(epoch, dbn);
     }
 
+    template <typename Iterator, typename LIterator>
+    std::pair<double, double> train_partial(DBN& dbn, bool ae, Iterator first, Iterator last, LIterator lfirst, size_t epoch) {
+        dll::auto_timer timer("dbn::trainer::train:partial::fast");
+
+        // Prepare the transformers
+
+        auto label_transformer = [](const auto& value, size_t n) {
+            return dll::make_fake_etl(value, n);
+        };
+
+        auto input_transformer = [](const auto& /*value*/){
+            // NOP
+        };
+
+        // The number of elements on which to train
+        const size_t n = std::distance(first, last);
+
+        //Compute the number of batches
+        constexpr const auto batch_size = std::decay_t<dbn_t>::batch_size;
+        const auto batches = n / batch_size + (n % batch_size == 0 ? 0 : 1);
+
+        // Prepare the data
+
+        auto data   = prepare_data(dbn, first, n);
+        auto labels = prepare_labels(dbn, lfirst, n, label_transformer);
+
+        return train_fast_partial_direct(dbn, ae, data, labels, batches, epoch, input_transformer);
+    }
+
+
     bool stop_epoch(dbn_t& dbn, size_t epoch, double new_error, double loss){
         auto last_error = new_error;
 
@@ -269,6 +299,46 @@ public:
 
 private:
 
+    template <typename Iterator, typename LIterator, typename InputTransformer, typename LabelTransformer>
+    void train_fast_full(DBN& dbn, bool ae, Iterator first, Iterator last, LIterator lfirst, size_t max_epochs, InputTransformer input_transformer, LabelTransformer label_transformer) {
+        dll::auto_timer timer("dbn::trainer::train_impl::fast");
+
+        // The number of elements on which to train
+        const size_t n = std::distance(first, last);
+
+        //Compute the number of batches
+        constexpr const auto batch_size = std::decay_t<DBN>::batch_size;
+        const auto batches = n / batch_size + (n % batch_size == 0 ? 0 : 1);
+
+        // Prepare the data
+
+        auto data   = prepare_data(dbn, first, n);
+        auto labels = prepare_labels(dbn, lfirst, n, label_transformer);
+
+        //Train for max_epochs epoch
+        for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
+            dll::auto_timer timer("dbn::trainer::train_impl::epoch");
+
+            start_epoch(dbn, epoch);
+
+            // Shuffle before the epoch if necessary
+            if(dbn_traits<dbn_t>::shuffle()){
+                static std::random_device rd;
+                static std::mt19937_64 g(rd());
+
+                etl::parallel_shuffle(data, labels);
+            }
+
+            double new_error;
+            double loss;
+            std::tie(loss, new_error) = train_fast_partial_direct(dbn, ae, data, labels, batches, epoch, input_transformer);
+
+            if(stop_epoch(dbn, epoch, new_error, loss)){
+                break;
+            }
+        }
+    }
+
     template<typename Data, typename Labels, typename Transformer>
     std::pair<double, double> train_fast_partial_direct(dbn_t& dbn, bool ae, Data& data, Labels& labels, size_t batches, size_t epoch, Transformer input_transformer){
         constexpr const auto batch_size = std::decay_t<DBN>::batch_size;
@@ -312,46 +382,6 @@ private:
         }
 
         return {loss, new_error};
-    }
-
-    template <typename Iterator, typename LIterator, typename InputTransformer, typename LabelTransformer>
-    void train_fast_full(DBN& dbn, bool ae, Iterator first, Iterator last, LIterator lfirst, size_t max_epochs, InputTransformer input_transformer, LabelTransformer label_transformer) {
-        dll::auto_timer timer("dbn::trainer::train_impl::fast");
-
-        // The number of elements on which to train
-        const size_t n = std::distance(first, last);
-
-        //Compute the number of batches
-        constexpr const auto batch_size = std::decay_t<DBN>::batch_size;
-        const auto batches = n / batch_size + (n % batch_size == 0 ? 0 : 1);
-
-        // Prepare the data
-
-        auto data   = prepare_data(dbn, first, n);
-        auto labels = prepare_labels(dbn, lfirst, n, label_transformer);
-
-        //Train for max_epochs epoch
-        for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
-            dll::auto_timer timer("dbn::trainer::train_impl::epoch");
-
-            start_epoch(dbn, epoch);
-
-            // Shuffle before the epoch if necessary
-            if(dbn_traits<dbn_t>::shuffle()){
-                static std::random_device rd;
-                static std::mt19937_64 g(rd());
-
-                etl::parallel_shuffle(data, labels);
-            }
-
-            double new_error;
-            double loss;
-            std::tie(loss, new_error) = train_fast_partial_direct(dbn, ae, data, labels, batches, epoch, input_transformer);
-
-            if(stop_epoch(dbn, epoch, new_error, loss)){
-                break;
-            }
-        }
     }
 
     template <typename Iterator, typename LIterator, typename Error, typename InputTransformer, typename LabelTransformer>
