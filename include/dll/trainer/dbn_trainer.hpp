@@ -214,6 +214,60 @@ private:
         return labels;
     }
 
+public:
+    void start_epoch(dbn_t& dbn, size_t epoch){
+        watcher.ft_epoch_start(epoch, dbn);
+    }
+
+    bool stop_epoch(dbn_t& dbn, size_t epoch, double new_error, double loss){
+        auto last_error = new_error;
+
+        error = new_error;
+
+        //After some time increase the momentum
+        if (dbn_traits<dbn_t>::has_momentum() && epoch == dbn.final_momentum_epoch) {
+            dbn.momentum = dbn.final_momentum;
+        }
+
+        watcher.ft_epoch_end(epoch, new_error, loss, dbn);
+
+        //Once the goal is reached, stop training
+        if (new_error <= dbn.goal) {
+            return true;
+        }
+
+        if (dbn_traits<dbn_t>::lr_driver() == lr_driver_type::BOLD) {
+            if (epoch) {
+                if (new_error > last_error + 1e-8) {
+                    //Error increased
+                    dbn.learning_rate *= dbn.lr_bold_dec;
+                    watcher.lr_adapt(dbn);
+                    dbn.restore_weights();
+                } else if (new_error < last_error - 1e-10) {
+                    //Error decreased
+                    dbn.learning_rate *= dbn.lr_bold_inc;
+                    watcher.lr_adapt(dbn);
+                    dbn.backup_weights();
+                } else {
+                    //Error didn't change enough
+                    dbn.backup_weights();
+                }
+            } else {
+                dbn.backup_weights();
+            }
+        }
+
+        if (dbn_traits<dbn_t>::lr_driver() == lr_driver_type::STEP) {
+            if (epoch && epoch % dbn.lr_step_size == 0) {
+                dbn.learning_rate *= dbn.lr_step_gamma;
+                watcher.lr_adapt(dbn);
+            }
+        }
+
+        return false;
+    }
+
+private:
     template <typename Iterator, typename LIterator, typename InputTransformer, typename LabelTransformer>
     void train_fast_full(DBN& dbn, bool ae, Iterator first, Iterator last, LIterator lfirst, size_t max_epochs, InputTransformer input_transformer, LabelTransformer label_transformer) {
         dll::auto_timer timer("dbn::trainer::train_impl::fast");
@@ -234,7 +288,7 @@ private:
         for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
             dll::auto_timer timer("dbn::trainer::train_impl::epoch");
 
-            watcher.ft_epoch_start(epoch, dbn);
+            start_epoch(dbn, epoch);
 
             // Shuffle before the epoch if necessary
             if(dbn_traits<dbn_t>::shuffle()){
@@ -271,55 +325,17 @@ private:
 
             loss /= batches;
 
-            // Save the last error
-            auto last_error = error;
-
             // Compute the error at this epoch
+            double new_error;
 
             {
                 dll::auto_timer timer("dbn::trainer::train_impl::epoch::error");
 
-                error = batch_error_function(dbn, ae, data, labels);
+                new_error = batch_error_function(dbn, ae, data, labels);
             }
 
-            //After some time increase the momentum
-            if (dbn_traits<dbn_t>::has_momentum() && epoch == dbn.final_momentum_epoch) {
-                dbn.momentum = dbn.final_momentum;
-            }
-
-            watcher.ft_epoch_end(epoch, error, loss, dbn);
-
-            //Once the goal is reached, stop training
-            if (error <= dbn.goal) {
+            if(stop_epoch(dbn, epoch, new_error, loss)){
                 break;
-            }
-
-            if (dbn_traits<dbn_t>::lr_driver() == lr_driver_type::BOLD) {
-                if (epoch) {
-                    if (error > last_error + 1e-8) {
-                        //Error increased
-                        dbn.learning_rate *= dbn.lr_bold_dec;
-                        watcher.lr_adapt(dbn);
-                        dbn.restore_weights();
-                    } else if (error < last_error - 1e-10) {
-                        //Error decreased
-                        dbn.learning_rate *= dbn.lr_bold_inc;
-                        watcher.lr_adapt(dbn);
-                        dbn.backup_weights();
-                    } else {
-                        //Error didn't change enough
-                        dbn.backup_weights();
-                    }
-                } else {
-                    dbn.backup_weights();
-                }
-            }
-
-            if (dbn_traits<dbn_t>::lr_driver() == lr_driver_type::STEP) {
-                if (epoch && epoch % dbn.lr_step_size == 0) {
-                    dbn.learning_rate *= dbn.lr_step_gamma;
-                    watcher.lr_adapt(dbn);
-                }
             }
         }
     }
