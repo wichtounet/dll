@@ -747,6 +747,15 @@ public:
     }
 
     /*!
+     * \brief Create a trainer for custom training of the network
+     * \return The trainer for this network
+     */
+    dll::dbn_trainer<this_type> get_trainer() {
+        dll::dbn_trainer<this_type> trainer;
+        return trainer;
+    }
+
+    /*!
      * \brief Fine tune the network for classifcation.
      * \param training_data A container containing all the samples
      * \param labels A container containing all the labels
