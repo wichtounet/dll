@@ -268,6 +268,52 @@ public:
     }
 
 private:
+
+    template<typename Data, typename Labels, typename Transformer>
+    std::pair<double, double> train_fast_partial_direct(dbn_t& dbn, bool ae, Data& data, Labels& labels, size_t batches, size_t epoch, Transformer input_transformer){
+        constexpr const auto batch_size = std::decay_t<DBN>::batch_size;
+
+        const size_t n = etl::dim<0>(data);
+
+        double loss = 0;
+
+        //Train one mini-batch at a time
+        for (size_t i = 0; i < batches; ++i) {
+            dll::auto_timer timer("dbn::trainer::train_impl::epoch::batch");
+
+            const auto start = i * batch_size;
+            const auto end   = std::min(start + batch_size, n);
+
+            double batch_error;
+            double batch_loss;
+            std::tie(batch_error, batch_loss) = trainer->train_batch(
+                epoch,
+                slice(data, start, end),
+                slice(labels, start, end),
+                input_transformer);
+
+            if(dbn_traits<dbn_t>::is_verbose()){
+                auto full_batch_error = batch_error_function(dbn, ae, data, labels);
+                watcher.ft_batch_end(epoch, i, batches, batch_error, batch_loss, full_batch_error, dbn);
+            }
+
+            loss += batch_loss;
+        }
+
+        loss /= batches;
+
+        // Compute the error at this epoch
+        double new_error;
+
+        {
+            dll::auto_timer timer("dbn::trainer::train_impl::epoch::error");
+
+            new_error = batch_error_function(dbn, ae, data, labels);
+        }
+
+        return {loss, new_error};
+    }
+
     template <typename Iterator, typename LIterator, typename InputTransformer, typename LabelTransformer>
     void train_fast_full(DBN& dbn, bool ae, Iterator first, Iterator last, LIterator lfirst, size_t max_epochs, InputTransformer input_transformer, LabelTransformer label_transformer) {
         dll::auto_timer timer("dbn::trainer::train_impl::fast");
@@ -298,41 +344,9 @@ private:
                 etl::parallel_shuffle(data, labels);
             }
 
-            double loss = 0;
-
-            //Train one mini-batch at a time
-            for (size_t i = 0; i < batches; ++i) {
-                dll::auto_timer timer("dbn::trainer::train_impl::epoch::batch");
-
-                const auto start = i * batch_size;
-                const auto end   = std::min(start + batch_size, n);
-
-                double batch_error;
-                double batch_loss;
-                std::tie(batch_error, batch_loss) = trainer->train_batch(
-                    epoch,
-                    slice(data, start, end),
-                    slice(labels, start, end),
-                    input_transformer);
-
-                if(dbn_traits<dbn_t>::is_verbose()){
-                    auto full_batch_error = batch_error_function(dbn, ae, data, labels);
-                    watcher.ft_batch_end(epoch, i, batches, batch_error, batch_loss, full_batch_error, dbn);
-                }
-
-                loss += batch_loss;
-            }
-
-            loss /= batches;
-
-            // Compute the error at this epoch
             double new_error;
-
-            {
-                dll::auto_timer timer("dbn::trainer::train_impl::epoch::error");
-
-                new_error = batch_error_function(dbn, ae, data, labels);
-            }
+            double loss;
+            std::tie(loss, new_error) = train_fast_partial_direct(dbn, ae, data, labels, batches, epoch, input_transformer);
 
             if(stop_epoch(dbn, epoch, new_error, loss)){
                 break;
