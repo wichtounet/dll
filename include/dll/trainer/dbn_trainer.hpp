@@ -127,75 +127,6 @@ struct dbn_trainer {
         return train_impl(dbn, true, first, last, first, last, max_epochs, error_function, input_transformer, label_transformer);
     }
 
-    template <typename D, typename It>
-    static void copy_inputs(D& dest, It first, It last) {
-        size_t i = 0;
-
-        while (first != last) {
-            dest(i++) = *first++;
-        }
-    }
-
-    /*!
-     * \brief Compute the error on a set of data using batch
-     * activation of the network.
-     * \param dbn The network to test
-     * \param ae Indicates if trained as auto-encoder or not
-     * \param data The current set of data
-     * \param labels The current set of labels
-     * \return The error on this set of data
-     */
-    template<typename Data, typename Labels>
-    error_type batch_error_function(dbn_t& dbn, bool ae, const Data& data, const Labels& labels) const {
-        constexpr const auto batch_size = std::decay_t<dbn_t>::batch_size;
-
-        const size_t n = etl::dim<0>(data);
-
-        error_type error = 0.0;
-
-        // Compute the error on one mini-batch at a time
-        for (size_t i = 0; i < n / batch_size; ++i) {
-            const size_t start = i * batch_size;
-            const size_t end   = start + batch_size;
-
-            decltype(auto) output = dbn.forward_batch(slice(data, start, end));
-
-            if(ae){
-                for(size_t b = 0; b < end - start; ++b){
-                    error += amean(labels(start + b) - output(b));
-                }
-            } else {
-                // TODO Review this calculation
-                // The result is correct, but can probably be done in a more clean way
-
-                for(size_t b = 0; b < end - start; ++b){
-                    error += std::min(1.0, (double) asum(labels(start + b) - one_if_max(output(b))));
-                }
-            }
-        }
-
-        // Complete the computation for incomplete batches
-        if (n % batch_size > 0) {
-            const auto start = n - n % batch_size;
-            const auto end   = n;
-
-            for(size_t i = start; i < end; ++i){
-                decltype(auto) output = dbn.forward(data(i));
-
-                if(ae){
-                    error += amean(labels(i) - output);
-                } else {
-                    // TODO Review this calculation
-                    // The result is correct, but can probably be done in a more clean way
-
-                    error += std::min(1.0, (double) asum(labels(i) - one_if_max(output)));
-                }
-            }
-        }
-
-        return error / n;
-    }
-
     /*!
      * \brief Initialize the training
      * \param dbn The network to train
@@ -232,6 +163,8 @@ struct dbn_trainer {
 
         return error;
     }
+
+private:
 
     template <typename Iterator, typename LIterator, typename Error, typename InputTransformer, typename LabelTransformer>
     error_type train_impl(DBN& dbn, bool ae, Iterator first, Iterator last, LIterator lfirst, LIterator /*llast*/, size_t max_epochs, Error error_function, InputTransformer input_transformer, LabelTransformer label_transformer) {
@@ -457,6 +390,75 @@ struct dbn_trainer {
         }
 
         return stop_training(dbn);
+    }
+
+    template <typename D, typename It>
+    static void copy_inputs(D& dest, It first, It last) {
+        size_t i = 0;
+
+        while (first != last) {
+            dest(i++) = *first++;
+        }
+    }
+
+    /*!
+     * \brief Compute the error on a set of data using batch
+     * activation of the network.
+     * \param dbn The network to test
+     * \param ae Indicates if trained as auto-encoder or not
+     * \param data The current set of data
+     * \param labels The current set of labels
+     * \return The error on this set of data
+     */
+    template<typename Data, typename Labels>
+    error_type batch_error_function(dbn_t& dbn, bool ae, const Data& data, const Labels& labels) const {
+        constexpr const auto batch_size = std::decay_t<dbn_t>::batch_size;
+
+        const size_t n = etl::dim<0>(data);
+
+        error_type error = 0.0;
+
+        // Compute the error on one mini-batch at a time
+        for (size_t i = 0; i < n / batch_size; ++i) {
+            const size_t start = i * batch_size;
+            const size_t end   = start + batch_size;
+
+            decltype(auto) output = dbn.forward_batch(slice(data, start, end));
+
+            if(ae){
+                for(size_t b = 0; b < end - start; ++b){
+                    error += amean(labels(start + b) - output(b));
+                }
+            } else {
+                // TODO Review this calculation
+                // The result is correct, but can probably be done in a more clean way
+
+                for(size_t b = 0; b < end - start; ++b){
+                    error += std::min(1.0, (double) asum(labels(start + b) - one_if_max(output(b))));
+                }
+            }
+        }
+
+        // Complete the computation for incomplete batches
+        if (n % batch_size > 0) {
+            const auto start = n - n % batch_size;
+            const auto end   = n;
+
+            for(size_t i = start; i < end; ++i){
+                decltype(auto) output = dbn.forward(data(i));
+
+                if(ae){
+                    error += amean(labels(i) - output);
+                } else {
+                    // TODO Review this calculation
+                    // The result is correct, but can probably be done in a more clean way
+
+                    error += std::min(1.0, (double) asum(labels(i) - one_if_max(output)));
+                }
+            }
+        }
+
+        return error / n;
     }
 };
 
