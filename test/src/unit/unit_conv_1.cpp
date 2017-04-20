@@ -14,8 +14,6 @@
 #include "dll/transform/scale_layer.hpp"
 #include "dll/dbn.hpp"
 #include "dll/trainer/stochastic_gradient_descent.hpp"
-#include "dll/pooling/mp_layer.hpp"
-#include "dll/pooling/avgp_layer.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
