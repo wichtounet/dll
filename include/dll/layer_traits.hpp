@@ -8,6 +8,7 @@
 #pragma once
 
 #include "util/tmp.hpp"
+#include "base_traits.hpp"
 #include "layer_fwd.hpp"
 #include "base_conf.hpp"
 
