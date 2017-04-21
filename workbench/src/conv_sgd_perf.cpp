@@ -10,6 +10,7 @@
 #define ETL_COUNTERS
 
 #include "dll/neural/conv_layer.hpp"
+#include "dll/neural/conv_same_layer.hpp"
 #include "dll/neural/dense_layer.hpp"
 #include "dll/pooling/mp_layer.hpp"
 #include "dll/test.hpp"
@@ -42,7 +43,9 @@ void mnist_scale(Dataset& dataset) {
 
 void first_ex(){
     // First experiment : Conv -> Conv -> Dense -> Dense
-    // Current speed on frigg: 22-26 seconds (faster with mkl-threads and not "prefer conv4 blas")
+    // Current speed on frigg:
+    //   21 seconds (mkl-threads, default options)
+    //   27-29 seconds (mkl, default options)
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(3000);
 
@@ -78,7 +81,9 @@ void first_ex(){
 
 void second_ex(){
     // Second experiment : Conv -> Pooling -> Conv -> Dense -> Dense
-    // Current speed on frigg: 15-17 seconds
+    // Current speed on frigg:
+    //   12-13 seconds (mkl-threads, default-options)
+    //   12-13 seconds (mkl, default-options)
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(3000);
 
@@ -115,7 +120,9 @@ void second_ex(){
 
 void third_ex(){
     // Third experiment : Conv -> Pooling -> Conv -> Pooling -> Dense -> Dense
-    // Current speed on frigg: 31-32 seconds
+    // Current speed on frigg:
+    //   24 seconds (mkl-threads, default-options)
+    //   21 seconds (mkl, default-options)
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(6000);
 
@@ -156,7 +163,9 @@ void third_ex(){
 void fourth_ex(){
     // Third experiment (CIFAR) : Conv -> Pooling -> Conv -> Pooling -> Dense -> Dense
     // This also uses momentum and RELU, more realistic
-    // Current speed on frigg: 170s
+    // Current speed on frigg:
+    //   146 seconds (mkl-threads, default-options)
+    //   109 seconds (mkl, default-options)
 
     auto dataset = cifar::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 3, 32, 32>>();
 
@@ -171,6 +180,53 @@ void fourth_ex(){
             dll::conv_desc<12, 14, 14, 24, 3, 3, dll::activation<dll::function::RELU>>::layer_t,
             dll::mp_layer_3d_desc<24, 12, 12, 1, 2, 2>::layer_t,
             dll::dense_desc<24 * 6 * 6, 64>::layer_t,
+            dll::dense_desc<64, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
+        dll::momentum, dll::batch_size<100>, dll::trainer<dll::sgd_trainer>>::dbn_t;
+
+    auto net = std::make_unique<dbn_t>();
+
+    net->learning_rate = 0.001;
+    net->initial_momentum = 0.9;
+    net->momentum = 0.9;
+    net->goal = -1.0;
+
+    // Train the network for performance sake
+    net->display();
+    net->fine_tune(dataset.training_images, dataset.training_labels, 5);
+
+    std::cout << "DLL Timers" << std::endl;
+    dll::dump_timers_one();
+
+    std::cout << "ETL Counters" << std::endl;
+    etl::dump_counters();
+}
+
+void fifth_ex(){
+    // Third experiment (MNIST) : Conv -> Conv -> Pooling -> Conv -> Conv -> Pooling -> Dense -> Dense
+    // This also uses momentum and RELU, more realistic
+    // Current speed on frigg:
+    //   50 seconds (mkl-threads, default-options)
+    //   30-34 seconds (mkl, default-options)
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(3000);
+
+    mnist::binarize_dataset(dataset);
+
+    // Clean slate
+    etl::reset_counters();
+    dll::reset_timers();
+
+    using dbn_t = dll::dbn_desc<
+        dll::dbn_layers<
+            dll::conv_same_desc<1, 28, 28, 12, 3, 3, dll::activation<dll::function::RELU>>::layer_t,
+            dll::conv_same_desc<12, 28, 28, 12, 3, 3, dll::activation<dll::function::RELU>>::layer_t,
+            dll::mp_layer_3d_desc<12, 28, 28, 1, 2, 2>::layer_t,
+
+            dll::conv_same_desc<12, 14, 14, 12, 3, 3, dll::activation<dll::function::RELU>>::layer_t,
+            dll::conv_same_desc<12, 14, 14, 12, 3, 3, dll::activation<dll::function::RELU>>::layer_t,
+            dll::mp_layer_3d_desc<12, 14, 14, 1, 2, 2>::layer_t,
+
+            dll::dense_desc<12 * 7 * 7, 64, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<64, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
         dll::momentum, dll::batch_size<100>, dll::trainer<dll::sgd_trainer>>::dbn_t;
 
@@ -209,6 +265,8 @@ int main(int argc, char* argv []) {
         third_ex();
     } else if(select == "D"){
         fourth_ex();
+    } else if(select == "E"){
+        fifth_ex();
     }
 
     return 0;
