@@ -156,9 +156,6 @@ struct conv_same_layer final : neural_layer<conv_same_layer<Desc>, Desc> {
     void backward_batch(H&& output, C& context) const {
         dll::auto_timer timer("conv_same:backward_batch");
 
-        cpp_unused(output);
-        cpp_unused(context);
-
         output = etl::conv_4d_valid_back_flipped<1, 1, P1, P2>(context.errors, w);
     }
 
