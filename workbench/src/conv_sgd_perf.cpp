@@ -46,6 +46,8 @@ void first_ex(){
     // Current speed on frigg:
     //   21 seconds (mkl-threads, default options)
     //   27-29 seconds (mkl, default options)
+    //   40 seconds (mkl, conv4_prefer_blas)
+    //   36 seconds (mkl-threads, conv4_prefer_blas)
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(3000);
 
@@ -84,6 +86,8 @@ void second_ex(){
     // Current speed on frigg:
     //   12-13 seconds (mkl-threads, default-options)
     //   12-13 seconds (mkl, default-options)
+    //   14 seconds (mkl, conv4_prefer_blas)
+    //   19 seconds (mkl-threads, conv4_prefer_blas)
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(3000);
 
@@ -123,6 +127,8 @@ void third_ex(){
     // Current speed on frigg:
     //   24 seconds (mkl-threads, default-options)
     //   21 seconds (mkl, default-options)
+    //   25 seconds (mkl, conv4_prefer_blas)
+    //   38 seconds (mkl-threads, conv4_prefer_blas)
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(6000);
 
@@ -166,6 +172,8 @@ void fourth_ex(){
     // Current speed on frigg:
     //   146 seconds (mkl-threads, default-options)
     //   109 seconds (mkl, default-options)
+    //   109 seconds (mkl, conv4_prefer_blas)
+    //   177 seconds (mkl-threads, conv4_prefer_blas)
 
     auto dataset = cifar::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 3, 32, 32>>();
 
@@ -207,6 +215,8 @@ void fifth_ex(){
     // Current speed on frigg:
     //   50 seconds (mkl-threads, default-options)
     //   30-34 seconds (mkl, default-options)
+    //   12-13 seconds (mkl, conv4_prefer_blas)
+    //   27 seconds (mkl-threads, conv4_prefer_blas)
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(3000);
 
