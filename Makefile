@@ -27,6 +27,9 @@ TEST_LD_FLAGS=$(LIBSVM_LD_FLAGS)
 
 CXX_FLAGS += -DETL_PARALLEL -DETL_VECTORIZE_FULL
 
+# Sometimes more performance
+#CXX_FLAGS += -DETL_CONV4_PREFER_BLAS
+
 # Activate NaN Debugging (if not in perf mode)
 ifeq (,$(DLL_PERF))
 DEBUG_FLAGS += -DNAN_DEBUG
