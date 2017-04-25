@@ -83,7 +83,7 @@ bool dllp::valid_ft_trainer(const std::string& trainer) {
 }
 
 bool dllp::valid_activation(const std::string& function) {
-    return function == "sigmoid" || function == "softmax" || function == "tanh" || function == "relu";
+    return function == "sigmoid" || function == "softmax" || function == "tanh" || function == "relu" || function == "identity";
 }
 
 bool dllp::valid_sparsity(const std::string& sparsity) {
