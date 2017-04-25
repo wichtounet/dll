@@ -162,8 +162,8 @@ struct dense_layer : layer {
 
 struct conv_layer : layer {
     std::size_t c  = 0; ///< The number of channels
-    std::size_t v1 = 0; ///< The first dimension of the output
-    std::size_t v2 = 0; ///< The second dimension of the output
+    std::size_t v1 = 0; ///< The first dimension of the input
+    std::size_t v2 = 0; ///< The second dimension of the input
     std::size_t k  = 0; ///< The number of filters
     std::size_t w1 = 0; ///< The first dimension of the filters
     std::size_t w2 = 0; ///< The second dimension of the filters
@@ -178,6 +178,34 @@ struct conv_layer : layer {
     std::size_t hidden_get_1() const override;
     std::size_t hidden_get_2() const override;
     std::size_t hidden_get_3() const override;
+};
+
+struct pooling_layer : layer {
+    std::size_t c  = 0; ///< The number of channels
+    std::size_t v1 = 0; ///< The first dimension of the input
+    std::size_t v2 = 0; ///< The second dimension of the input
+    std::size_t c1 = 0; ///< The pooling factor of the first dimension
+    std::size_t c2 = 0; ///< The pooling factor of the first dimension
+    std::size_t c3 = 0; ///< The pooling factor of the first dimension
+
+    void print(std::ostream& out) const override;
+    bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override;
+
+    bool is_conv() const override;
+    std::size_t hidden_get() const override;
+    std::size_t hidden_get_1() const override;
+    std::size_t hidden_get_2() const override;
+    std::size_t hidden_get_3() const override;
+};
+
+struct mp_layer : pooling_layer {
+    void print(std::ostream& out) const override;
+    bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override;
+};
+
+struct avgp_layer : pooling_layer {
+    void print(std::ostream& out) const override;
+    bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override;
 };
 
 } //end of namespace dllp

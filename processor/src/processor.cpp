@@ -230,6 +230,26 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
                     }
 
                     layers.push_back(std::move(conv));
+                } else if (lines[i] == "mp:") {
+                    ++i;
+
+                    auto mp = std::make_unique<dllp::mp_layer>();
+
+                    if (!mp->parse(layers, lines, i)) {
+                        return false;
+                    }
+
+                    layers.push_back(std::move(mp));
+                } else if (lines[i] == "avgp:") {
+                    ++i;
+
+                    auto avgp = std::make_unique<dllp::avgp_layer>();
+
+                    if (!avgp->parse(layers, lines, i)) {
+                        return false;
+                    }
+
+                    layers.push_back(std::move(avgp));
                 } else {
                     break;
                 }

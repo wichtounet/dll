@@ -501,3 +501,90 @@ std::size_t dllp::conv_layer::hidden_get_2() const {
 std::size_t dllp::conv_layer::hidden_get_3() const {
     return v2 - w2 + 1;
 }
+
+bool dllp::pooling_layer::is_conv() const {
+    return true;
+}
+
+void dllp::pooling_layer::print(std::ostream& out) const {
+    out << "<" << c << ", " << v1 << ", " << v2 << ", " << c1 << ", " << c2 << ", " << c3;
+    out << ">::layer_t";
+}
+
+bool dllp::pooling_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) {
+    std::string value;
+
+    while (i < lines.size()) {
+        if (dllp::extract_value(lines[i], "channels: ", value)) {
+            c = std::stol(value);
+            ++i;
+        } else if (dllp::extract_value(lines[i], "v1: ", value)) {
+            v1 = std::stol(value);
+            ++i;
+        } else if (dllp::extract_value(lines[i], "v2: ", value)) {
+            v2 = std::stol(value);
+            ++i;
+        } else if (dllp::extract_value(lines[i], "c1: ", value)) {
+            c1 = std::stol(value);
+            ++i;
+        } else if (dllp::extract_value(lines[i], "c2: ", value)) {
+            c2 = std::stol(value);
+            ++i;
+        } else if (dllp::extract_value(lines[i], "c3: ", value)) {
+            c3 = std::stol(value);
+            ++i;
+        } else {
+            break;
+        }
+    }
+
+    if (layers.empty() && (!c || !v1 || !v2 || !c1 || !c2 || !c3)) {
+        std::cout << "dllp: error: The first layer needs input and output sizes" << std::endl;
+        return false;
+    } else if (!layers.empty() && (!c1 || !c2 || !c3)) {
+        std::cout << "dllp: error: The factors of the pooling is mandatory" << std::endl;
+        return false;
+    }
+
+    if (!layers.empty()) {
+        c  = layers.back()->hidden_get_1();
+        v1 = layers.back()->hidden_get_2();
+        v2 = layers.back()->hidden_get_3();
+    }
+
+    return true;
+}
+
+std::size_t dllp::pooling_layer::hidden_get() const {
+    return hidden_get_1() * hidden_get_2() * hidden_get_3();
+}
+
+std::size_t dllp::pooling_layer::hidden_get_1() const {
+    return c / c1;
+}
+
+std::size_t dllp::pooling_layer::hidden_get_2() const {
+    return v1 / c2;
+}
+
+std::size_t dllp::pooling_layer::hidden_get_3() const {
+    return v2 / c3;
+}
+
+void dllp::mp_layer::print(std::ostream& out) const {
+    out << "dll::mp_layer_3d_desc";
+    pooling_layer::print(out);
+}
+
+bool dllp::mp_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) {
+    return pooling_layer::parse(layers, lines, i);
+}
+
+void dllp::avgp_layer::print(std::ostream& out) const {
+    out << "dll::avgp_layer_3d_desc";
+    pooling_layer::print(out);
+}
+
+bool dllp::avgp_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) {
+    return pooling_layer::parse(layers, lines, i);
+}
