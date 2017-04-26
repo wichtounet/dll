@@ -263,6 +263,16 @@ TEST_CASE("unit/processor/conv/sgd/6", "[unit][conv][dense][dbn][mnist][sgd][pro
     TEST_ERROR_BELOW(0.2);
 }
 
+// Conv + Pool + Dense
+
+TEST_CASE("unit/processor/conv/pool/sgd/1", "[unit][conv][dense][dbn][mnist][sgd][proc]") {
+    auto lines = get_result(default_options(), {"train", "test"}, "conv_pool_sgd_1.conf");
+    REQUIRE(!lines.empty());
+
+    FT_ERROR_BELOW(1e-3);
+    TEST_ERROR_BELOW(0.2);
+}
+
 // RBM
 
 TEST_CASE("unit/processor/rbm/1", "[unit][rbm][dbn][mnist][proc]") {
