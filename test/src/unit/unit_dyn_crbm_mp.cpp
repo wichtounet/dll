@@ -44,29 +44,6 @@ TEST_CASE("unit/dyn_crbm_mp/mnist/1", "[dyn_crbm_mp][unit]") {
     REQUIRE(free_energy < 0.0);
 }
 
-TEST_CASE("unit/dyn_crbm_mp/mnist/2", "[dyn_crbm_mp][multic][unit]") {
-    dll::dyn_conv_rbm_mp_desc<dll::momentum>::layer_t rbm;
-
-    rbm.init_layer(2, 28, 28, 20, 17, 17, 2);
-
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-    REQUIRE(!dataset.training_images.empty());
-
-    mnist::binarize_dataset(dataset);
-
-    for (auto& image : dataset.training_images) {
-        image.reserve(image.size() * 2);
-        auto end = image.size();
-        for (std::size_t i = 0; i < end; ++i) {
-            image.push_back(image[i]);
-        }
-    }
-
-    auto error = rbm.train(dataset.training_images, 50);
-
-    REQUIRE(error < 5e-2);
-}
-
 TEST_CASE("unit/dyn_crbm_mp/mnist/3", "[dyn_crbm_mp][denoising][unit]") {
     dll::dyn_conv_rbm_mp_desc<
         dll::momentum,
