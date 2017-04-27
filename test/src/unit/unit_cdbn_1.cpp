@@ -28,7 +28,7 @@ TEST_CASE("unit/cdbn/mnist/1", "[cdbn][svm][unit]") {
             dll::conv_rbm_desc_square<1, 28, 20, 17, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t,
             dll::conv_rbm_desc_square<20, 12, 20, 3, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -52,7 +52,7 @@ TEST_CASE("unit/cdbn/mnist/2", "[cdbn][svm][unit]") {
             dll::conv_rbm_desc_square<10, 12, 10, 3, dll::momentum, dll::batch_size<25>>::layer_t>,
         dll::svm_concatenate>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -81,7 +81,7 @@ TEST_CASE("unit/cdbn/mnist/3", "[cdbn][gaussian][svm][unit]") {
             dll::conv_rbm_desc_square<1, 28, 20, 17, dll::visible<dll::unit_type::GAUSSIAN>, dll::momentum, dll::batch_size<20>>::layer_t,
             dll::conv_rbm_desc_square<20, 12, 20, 3, dll::momentum, dll::batch_size<20>>::layer_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::normalize_dataset(dataset);
@@ -105,7 +105,7 @@ TEST_CASE("unit/cdbn/mnist/4", "[cdbn][gaussian][svm][unit]") {
             dll::conv_rbm_desc_square<20, 12, 20, 3, dll::momentum, dll::batch_size<25>>::layer_t>,
         dll::svm_scale>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::normalize_dataset(dataset);
@@ -128,7 +128,7 @@ TEST_CASE("unit/cdbn/mnist/5", "[cdbn][crbm_mp][svm][unit]") {
             dll::conv_rbm_mp_desc_square<1, 28, 20, 11, 2, dll::momentum, dll::batch_size<8>>::layer_t,
             dll::conv_rbm_mp_desc_square<20, 9, 20, 4, 2, dll::momentum, dll::batch_size<8>>::layer_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(200);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -153,7 +153,7 @@ TEST_CASE("unit/cdbn/mnist/6", "[cdbn][mp][svm][unit]") {
             dll::conv_rbm_desc<5, 10, 7, 10, 3, 3, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::mp_layer_3d_desc<10, 8, 5, 2, 1, 1>::layer_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(250);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(250);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);

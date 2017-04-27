@@ -23,7 +23,7 @@ TEST_CASE("conv_dbn_mp/mnist_slow", "[cdbn][slow][benchmark]") {
             dll::conv_rbm_mp_desc_square<1, 28, 40, 13, 2, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::conv_rbm_mp_desc_square<40, 8, 40, 5, 2, dll::momentum, dll::batch_size<25>>::layer_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(250);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(250);
 
     mnist::binarize_dataset(dataset);
 
