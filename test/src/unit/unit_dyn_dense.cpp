@@ -10,6 +10,7 @@
 #include "dll_test.hpp"
 
 #include "dll/neural/dyn_dense_layer.hpp"
+#include "dll/transform/shape_layer_1d.hpp"
 #include "dll/transform/scale_layer.hpp"
 #include "dll/dbn.hpp"
 #include "dll/trainer/stochastic_gradient_descent.hpp"
@@ -119,6 +120,7 @@ TEST_CASE("unit/dyn_dense/sgd/4", "[unit][dyn_dense][dbn][mnist][sgd]") {
 TEST_CASE("unit/dyn_dense/sgd/5", "[unit][dyn_dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
+            dll::shape_layer_1d_desc<28 * 28>::layer_t,
             dll::scale_layer_desc<1, 256>::layer_t,
             dll::dyn_dense_desc<dll::activation<dll::function::SIGMOID>>::layer_t,
             dll::dyn_dense_desc<dll::activation<dll::function::SOFTMAX>>::layer_t>,
@@ -129,8 +131,8 @@ TEST_CASE("unit/dyn_dense/sgd/5", "[unit][dyn_dense][dbn][mnist][sgd]") {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->template layer_get<1>().init_layer(28 * 28, 100);
-    dbn->template layer_get<2>().init_layer(100, 10);
+    dbn->template layer_get<2>().init_layer(28 * 28, 100);
+    dbn->template layer_get<3>().init_layer(100, 10);
 
     dbn->initial_momentum = 0.9;
     dbn->final_momentum   = 0.9;

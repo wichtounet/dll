@@ -13,6 +13,7 @@
 
 #include "dll/rbm/dyn_rbm.hpp"
 #include "dll/dbn.hpp"
+#include "dll/transform/shape_layer_1d.hpp"
 #include "dll/transform/binarize_layer.hpp"
 #include "dll/trainer/stochastic_gradient_descent.hpp"
 #include "dll/trainer/conjugate_gradient.hpp"
@@ -53,6 +54,7 @@ TEST_CASE("unit/dyn_dbn/mnist/1", "[dyn_dbn][unit]") {
 TEST_CASE("unit/dyn_dbn/mnist/2", "[dyn_dbn][sgd][unit]") {
     using dbn_t = dll::dbn_desc<
         dll::dbn_layers<
+            dll::shape_layer_1d_desc<28 * 28>::layer_t,
             dll::binarize_layer_desc<30>::layer_t,
             dll::dyn_rbm_desc<dll::momentum, dll::init_weights>::layer_t,
             dll::dyn_rbm_desc<dll::momentum>::layer_t,
@@ -65,9 +67,9 @@ TEST_CASE("unit/dyn_dbn/mnist/2", "[dyn_dbn][sgd][unit]") {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->template layer_get<1>().init_layer(28 * 28, 150);
-    dbn->template layer_get<2>().init_layer(150, 200);
-    dbn->template layer_get<3>().init_layer(200, 10);
+    dbn->template layer_get<2>().init_layer(28 * 28, 150);
+    dbn->template layer_get<3>().init_layer(150, 200);
+    dbn->template layer_get<4>().init_layer(200, 10);
 
     dbn->learning_rate = 0.05;
 

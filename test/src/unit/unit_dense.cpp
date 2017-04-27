@@ -10,6 +10,7 @@
 #include "dll_test.hpp"
 
 #include "dll/neural/dense_layer.hpp"
+#include "dll/transform/shape_layer_1d.hpp"
 #include "dll/transform/scale_layer.hpp"
 #include "dll/neural/activation_layer.hpp"
 #include "dll/dbn.hpp"
@@ -200,6 +201,7 @@ TEST_CASE("unit/dense/sgd/8", "[unit][dense][dbn][mnist][sgd]") {
 TEST_CASE("unit/dense/sgd/9", "[unit][dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
+            dll::shape_layer_1d_desc<28 * 28>::layer_t,
             dll::scale_layer_desc<1, 256>::layer_t,
             dll::dense_desc<28 * 28, 100, dll::activation<dll::function::SIGMOID>>::layer_t,
             dll::dense_desc<100, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
