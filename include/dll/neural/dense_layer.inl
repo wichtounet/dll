@@ -120,11 +120,14 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
         }
     }
 
-    template <typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 2)>
+    //TODO Find a way to reduce this duplication without too much
+    //overhead
+
+    template <typename H, typename V, cpp_enable_if((etl::decay_traits<V>::dimensions() != 2 && etl::decay_traits<V>::is_fast))>
     void batch_activate_hidden(H&& output, const V& input) const {
         dll::auto_timer timer("dense:batch_activate_hidden");
 
-        constexpr const auto Batch = etl::decay_traits<V>::template dim<0>();
+        static constexpr auto Batch = etl::decay_traits<V>::template dim<0>();
 
         cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
 
@@ -137,6 +140,27 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
         } else {
             // The temporary allows vectorization of the activation function -> speedups
             auto expr = etl::force_temporary(etl::rep_l(b, Batch) + etl::reshape<Batch, num_visible>(input) * w);
+            output = f_activate<activation_function>(expr);
+        }
+    }
+
+    template <typename H, typename V, cpp_enable_if((etl::decay_traits<V>::dimensions() != 2 && !etl::decay_traits<V>::is_fast))>
+    void batch_activate_hidden(H&& output, const V& input) const {
+        dll::auto_timer timer("dense:batch_activate_hidden");
+
+        const auto Batch = etl::dim<0>(input);
+
+        cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
+
+        if (activation_function == function::SOFTMAX) {
+            auto expr = etl::force_temporary(etl::rep_l(b, Batch) + etl::reshape(input, Batch, num_visible) * w);
+
+            for (std::size_t i = 0; i < Batch; ++i) {
+                output(i) = f_activate<activation_function>(expr(i));
+            }
+        } else {
+            // The temporary allows vectorization of the activation function -> speedups
+            auto expr = etl::force_temporary(etl::rep_l(b, Batch) + etl::reshape(input, Batch, num_visible) * w);
             output = f_activate<activation_function>(expr);
         }
     }
