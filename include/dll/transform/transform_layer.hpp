@@ -25,6 +25,17 @@ struct transform_layer : layer<Derived> {
     transform_layer() = default;
 
     /*!
+     * \brief Apply the layer to the input
+     * \param input The input to apply the layer to
+     */
+    template <typename Input>
+    auto activate_hidden(const Input& input) const {
+        auto output = etl::force_temporary_dim_only(input);
+        as_derived().activate_hidden(output, input);
+        return output;
+    }
+
+    /*!
      * \brief Apply the layer to many inputs
      * \param output The set of output
      * \param input The set of input to apply the layer to

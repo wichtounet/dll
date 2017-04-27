@@ -85,6 +85,8 @@ struct conv_same_layer final : neural_layer<conv_same_layer<Desc>, Desc> {
         return {buffer};
     }
 
+    using base_type::activate_hidden;
+
     template<typename H>
     void activate_hidden(H&& output, const input_one_t& v) const {
         dll::auto_timer timer("conv_same:forward");

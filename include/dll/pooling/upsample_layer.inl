@@ -38,6 +38,8 @@ struct upsample_layer_3d final : unpooling_layer_3d<upsample_layer_3d<Desc>, Des
     using input_t      = typename base::input_t;      ///< The type of many input
     using output_t     = typename base::output_t;     ///< The type of many output
 
+    using base::activate_hidden;
+
     static void activate_hidden(output_one_t& h, const input_one_t& v) {
         h = etl::upsample_3d<base::C1, base::C2, base::C3>(v);
     }

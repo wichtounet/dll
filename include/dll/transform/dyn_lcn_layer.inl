@@ -19,6 +19,7 @@ namespace dll {
 template <typename Desc>
 struct dyn_lcn_layer : transform_layer<dyn_lcn_layer<Desc>> {
     using desc = Desc;
+    using base_type = transform_layer<dyn_lcn_layer<Desc>>; ///< The base type
 
     size_t K;
     size_t Mid;
@@ -49,6 +50,8 @@ struct dyn_lcn_layer : transform_layer<dyn_lcn_layer<Desc>> {
 
         return w;
     }
+
+    using base_type::activate_hidden;
 
     /*!
      * \brief Apply the layer to the input

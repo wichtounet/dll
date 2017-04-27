@@ -93,6 +93,8 @@ struct dyn_conv_layer final : neural_layer<dyn_conv_layer<Desc>, Desc> {
         return {buffer};
     }
 
+    using base_type::activate_hidden;
+
     void activate_hidden(output_one_t& output, const input_one_t& v) const {
         auto b_rep = etl::force_temporary(etl::rep(b, nh1, nh2));
 

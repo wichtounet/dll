@@ -21,7 +21,8 @@ namespace dll {
  */
 template <typename Desc>
 struct normalize_layer : transform_layer<normalize_layer<Desc>> {
-    using desc = Desc; ///< The descriptor type
+    using desc      = Desc;                                   ///< The descriptor type
+    using base_type = transform_layer<normalize_layer<Desc>>; ///< The base type
 
     /*!
      * \brief Returns a string representation of the layer
@@ -29,6 +30,8 @@ struct normalize_layer : transform_layer<normalize_layer<Desc>> {
     static std::string to_short_string() {
         return "Normalize";
     }
+
+    using base_type::activate_hidden;
 
     /*!
      * \brief Apply the layer to the input

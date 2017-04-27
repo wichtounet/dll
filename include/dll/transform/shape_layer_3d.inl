@@ -17,7 +17,8 @@ namespace dll {
  */
 template <typename Desc>
 struct shape_layer_3d : transform_layer<shape_layer_3d<Desc>> {
-    using desc = Desc; ///< The descriptor type
+    using desc      = Desc;                                  ///< The descriptor type
+    using base_type = transform_layer<shape_layer_3d<Desc>>; ///< The base type
 
     static constexpr const size_t C = desc::C;
     static constexpr const size_t H = desc::H;
@@ -31,6 +32,8 @@ struct shape_layer_3d : transform_layer<shape_layer_3d<Desc>> {
     static std::string to_short_string() {
         return "Shape3d";
     }
+
+    using base_type::activate_hidden;
 
     /*!
      * \brief Apply the layer to the input

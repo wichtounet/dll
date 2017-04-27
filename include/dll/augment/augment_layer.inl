@@ -19,6 +19,7 @@ namespace dll {
 template <typename Desc>
 struct augment_layer : layer<augment_layer<Desc>> {
     using desc = Desc;
+    using base_type = layer<augment_layer<Desc>>; ///< The base type
 
     augment_layer() = default;
 
@@ -31,6 +32,8 @@ struct augment_layer : layer<augment_layer<Desc>> {
 
         return name;
     }
+
+    using base_type::activate_hidden;
 
     template <typename Input, typename Output>
     static void activate_hidden(Output& h_a, const Input& input) {

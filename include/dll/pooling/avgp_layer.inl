@@ -37,6 +37,8 @@ struct avgp_layer_3d final : pooling_layer_3d<avgp_layer_3d<Desc>, Desc> {
         return {buffer};
     }
 
+    using base::activate_hidden;
+
     /*!
      * \brief Forward activation of the layer for one sample
      * \param h The output matrix

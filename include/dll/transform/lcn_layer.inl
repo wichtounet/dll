@@ -19,6 +19,7 @@ namespace dll {
 template <typename Desc>
 struct lcn_layer : transform_layer<lcn_layer<Desc>> {
     using desc = Desc; ///< The descriptor type
+    using base_type = transform_layer<lcn_layer<Desc>>; ///< The base type
 
     static constexpr const std::size_t K = desc::K;
     static constexpr const std::size_t Mid = K / 2;
@@ -45,6 +46,8 @@ struct lcn_layer : transform_layer<lcn_layer<Desc>> {
 
         return w;
     }
+
+    using base_type::activate_hidden;
 
     /*!
      * \brief Apply the layer to the input

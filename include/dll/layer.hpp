@@ -50,6 +50,13 @@ struct layer {
 
     // Default function
 
+    template <typename Input>
+    auto activate_hidden(const Input& input) const {
+        auto output = as_derived().template prepare_one_output<Input>();
+        as_derived().activate_hidden(output, input);
+        return output;
+    }
+
     template <typename Input, typename Output>
     void test_activate_hidden(Output& output, const Input& input) const {
         as_derived().activate_hidden(output, input);

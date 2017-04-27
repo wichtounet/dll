@@ -77,6 +77,8 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
         return {buffer};
     }
 
+    using base_type::activate_hidden;
+
     void activate_hidden(output_one_t& output, const input_one_t& v) const {
         auto b_rep = etl::force_temporary(etl::rep<NH1, NH2>(b));
 

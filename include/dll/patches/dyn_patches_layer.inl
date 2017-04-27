@@ -18,6 +18,7 @@ namespace dll {
 template <typename Desc>
 struct dyn_patches_layer : layer<dyn_patches_layer<Desc>> {
     using desc = Desc;
+    using base_type = layer<dyn_patches_layer<Desc>>; ///< The base type
 
     using weight = typename desc::weight;
 
@@ -50,6 +51,8 @@ struct dyn_patches_layer : layer<dyn_patches_layer<Desc>> {
     std::size_t output_size() const noexcept {
         return width * height;
     }
+
+    using base_type::activate_hidden;
 
     void activate_hidden(output_one_t& h_a, const input_one_t& input) const {
         cpp_assert(etl::dim<0>(input) == 1, "Only one channel is supported for now");

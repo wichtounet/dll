@@ -20,6 +20,7 @@ namespace dll {
 template <typename Desc>
 struct rectifier_layer : transform_layer<rectifier_layer<Desc>> {
     using desc = Desc; ///< The descriptor type
+    using base_type = transform_layer<rectifier_layer<Desc>>; ///< The base type
 
     static constexpr const rectifier_method method = desc::method; ///< The rectifier method
 
@@ -31,6 +32,8 @@ struct rectifier_layer : transform_layer<rectifier_layer<Desc>> {
     static std::string to_short_string() {
         return "Rectifier";
     }
+
+    using base_type::activate_hidden;
 
     /*!
      * \brief Apply the layer to the input

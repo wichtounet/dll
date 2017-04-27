@@ -18,7 +18,8 @@ namespace dll {
  */
 template <typename Desc>
 struct activation_layer : transform_layer<activation_layer<Desc>> {
-    using desc = Desc; ///< The descriptor type
+    using desc      = Desc;                                    ///< The descriptor type
+    using base_type = transform_layer<activation_layer<Desc>>; ///< The base type
 
     static constexpr const function activation_function = desc::activation_function;
 
@@ -32,6 +33,8 @@ struct activation_layer : transform_layer<activation_layer<Desc>> {
         snprintf(buffer, 128, "Activation(%s)", to_string(activation_function).c_str());
         return {buffer};
     }
+
+    using base_type::activate_hidden;
 
     /*!
      * \brief Apply the layer to the input

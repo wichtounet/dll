@@ -25,7 +25,8 @@ namespace dll {
  */
 template <typename Desc>
 struct scale_layer : transform_layer<scale_layer<Desc>> {
-    using desc = Desc; ///< The descriptor type
+    using desc      = Desc;                               ///< The descriptor type
+    using base_type = transform_layer<scale_layer<Desc>>; ///< The base type
 
     static constexpr const int A = desc::A; ///< The scale multiplier
     static constexpr const int B = desc::B; ///< The scale divisor
@@ -36,6 +37,8 @@ struct scale_layer : transform_layer<scale_layer<Desc>> {
     static std::string to_short_string() {
         return "scale";
     }
+
+    using base_type::activate_hidden;
 
     /*!
      * \brief Apply the layer to the input

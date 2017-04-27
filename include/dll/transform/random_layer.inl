@@ -17,7 +17,8 @@ namespace dll {
  */
 template <typename Desc>
 struct random_layer : transform_layer<random_layer<Desc>> {
-    using desc = Desc; ///< The descriptor type
+    using desc      = Desc;                                ///< The descriptor type
+    using base_type = transform_layer<random_layer<Desc>>; ///< The base type
 
     /*!
      * \brief Returns a string representation of the layer
@@ -25,6 +26,8 @@ struct random_layer : transform_layer<random_layer<Desc>> {
     static std::string to_short_string() {
         return "Random";
     }
+
+    using base_type::activate_hidden;
 
     /*!
      * \brief Apply the layer to the input

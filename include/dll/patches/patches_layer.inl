@@ -18,6 +18,7 @@ namespace dll {
 template <typename Desc>
 struct patches_layer : layer<patches_layer<Desc>> {
     using desc = Desc;
+    using base_type = layer<patches_layer<Desc>>; ///< The base type
 
     static constexpr const std::size_t width    = desc::width;
     static constexpr const std::size_t height   = desc::height;
@@ -43,6 +44,8 @@ struct patches_layer : layer<patches_layer<Desc>> {
     static constexpr std::size_t output_size() noexcept {
         return width * height;
     }
+
+    using base_type::activate_hidden;
 
     static void activate_hidden(output_one_t& h_a, const input_one_t& input) {
         cpp_assert(etl::dim<0>(input) == 1, "Only one channel is supported for now");
