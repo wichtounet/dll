@@ -149,6 +149,26 @@ struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
         dyn.batch_size  = batch_size;
     }
 
+    using base_type::batch_activate_hidden;
+
+    template <typename V, cpp_enable_if((etl::decay_traits<V>::is_fast))>
+    auto batch_activate_hidden(const V& v) const {
+        static constexpr auto Batch = etl::decay_traits<V>::template dim<0>();
+
+        etl::fast_dyn_matrix<weight, Batch, K, NP1, NP2> output;
+        base_type::batch_activate_pooling(output, v);
+        return output;
+    }
+
+    template <typename V, cpp_disable_if((etl::decay_traits<V>::is_fast))>
+    auto batch_activate_hidden(const V& v) const {
+        const auto Batch = etl::dim<0>(v);
+
+        etl::dyn_matrix<weight, 4> output(Batch, K, NP1, NP2);
+        batch_activate_pooling(output, v);
+        return output;
+    }
+
     friend base_type;
 
 private:

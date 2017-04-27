@@ -107,6 +107,18 @@ struct dyn_conv_layer final : neural_layer<dyn_conv_layer<Desc>, Desc> {
         activate_hidden(output, converted);
     }
 
+    /*!
+     * \brief Apply the layer to the batch of input
+     * \return A batch of output corresponding to the activated input
+     */
+    template <typename V>
+    auto batch_activate_hidden(const V& v) const {
+        const auto Batch = etl::dim<0>(v);
+        etl::dyn_matrix<weight, 4> output(Batch, k, nh1, nh2);
+        batch_activate_hidden(output, v);
+        return output;
+    }
+
     template <typename H1, typename V>
     void batch_activate_hidden(H1&& output, const V& v) const {
         output = etl::conv_4d_valid_flipped(v, w);

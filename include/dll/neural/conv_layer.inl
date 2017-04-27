@@ -98,7 +98,31 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
         activate_hidden(output, converted);
     }
 
-    template <typename H1, typename V>
+    /*!
+     * \brief Apply the layer to the batch of input
+     * \return A batch of output corresponding to the activated input
+     */
+    template <typename V, cpp_enable_if(etl::decay_traits<V>::is_fast)>
+    auto batch_activate_hidden(const V& v) const {
+        static constexpr auto Batch = etl::decay_traits<V>::template dim<0>();
+        etl::fast_dyn_matrix<weight, Batch, K, NH1, NH2> output;
+        batch_activate_hidden(output, v);
+        return output;
+    }
+
+    /*!
+     * \brief Apply the layer to the batch of input
+     * \return A batch of output corresponding to the activated input
+     */
+    template <typename V, cpp_enable_if(!etl::decay_traits<V>::is_fast)>
+    auto batch_activate_hidden(const V& v) const {
+        const auto Batch = etl::dim<0>(v);
+        etl::dyn_matrix<weight, 4> output(Batch, K, NH1, NH2);
+        batch_activate_hidden(output, v);
+        return output;
+    }
+
+    template <typename H1, typename V, cpp_enable_if(etl::decay_traits<H1>::is_fast)>
     void batch_activate_hidden(H1&& output, const V& v) const {
         dll::auto_timer timer("conv:forward_batch");
         output = etl::conv_4d_valid_flipped(v, w);
@@ -106,6 +130,18 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
         static constexpr const auto batch_size = etl::decay_traits<H1>::template dim<0>();
 
         auto b_rep = etl::force_temporary(etl::rep_l<batch_size>(etl::rep<NH1, NH2>(b)));
+
+        output = f_activate<activation_function>(b_rep + output);
+    }
+
+    template <typename H1, typename V, cpp_disable_if(etl::decay_traits<H1>::is_fast)>
+    void batch_activate_hidden(H1&& output, const V& v) const {
+        dll::auto_timer timer("conv:forward_batch");
+        output = etl::conv_4d_valid_flipped(v, w);
+
+        const auto batch_size = etl::dim<0>(output);
+
+        auto b_rep = etl::force_temporary(etl::rep_l(etl::rep<NH1, NH2>(b), batch_size));
 
         output = f_activate<activation_function>(b_rep + output);
     }

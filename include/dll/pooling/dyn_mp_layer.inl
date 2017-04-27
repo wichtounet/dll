@@ -48,6 +48,18 @@ struct dyn_mp_layer_3d final : dyn_pooling_layer_3d<dyn_mp_layer_3d<Desc>, Desc>
     }
 
     /*!
+     * \brief Apply the layer to the batch of input
+     * \return A batch of output corresponding to the activated input
+     */
+    template <typename V>
+    auto batch_activate_hidden(const V& v) const {
+        const auto Batch = etl::dim<0>(v);
+        etl::dyn_matrix<weight, 4> output(Batch, base::o1, base::o2, base::o3);
+        batch_activate_hidden(output, v);
+        return output;
+    }
+
+    /*!
      * \brief Forward activation of the layer for one batch of sample
      * \param output The output matrix
      * \param input The input matrix

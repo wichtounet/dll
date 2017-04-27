@@ -182,6 +182,17 @@ struct dyn_conv_rbm_mp final : public standard_crbm_mp<dyn_conv_rbm_mp<Desc>, De
         //Nothing to change
     }
 
+    using base_type::batch_activate_hidden;
+
+    template <typename V>
+    auto batch_activate_hidden(const V& v) const {
+        const auto Batch = etl::dim<0>(v);
+
+        etl::dyn_matrix<weight, 4> output(Batch, k, np1, np2);
+        batch_activate_pooling(output, v);
+        return output;
+    }
+
     friend base_type;
 
 private:

@@ -152,6 +152,17 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         //Nothing to change
     }
 
+    using base_type::batch_activate_hidden;
+
+    template <typename V>
+    auto batch_activate_hidden(const V& v) const {
+        const auto Batch = etl::dim<0>(v);
+
+        etl::dyn_matrix<weight, 2> output(Batch, num_hidden);
+        batch_activate_hidden(output, v);
+        return output;
+    }
+
     /*!
      * \brief Adapt the errors, called before backpropagation of the errors.
      *
