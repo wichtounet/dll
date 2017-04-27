@@ -346,11 +346,11 @@ public:
     }
 
     std::size_t input_size() const noexcept {
-        return dll::input_size(layer_get<layers - 1>());
+        return dll::input_size(layer_get<input_layer_n>());
     }
 
     std::size_t output_size() const noexcept {
-        return dll::output_size(layer_get<layers - 1>());
+        return dll::output_size(layer_get<output_layer_n>());
     }
 
     std::size_t full_output_size() const noexcept {
