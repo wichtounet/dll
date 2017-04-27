@@ -42,7 +42,8 @@ struct avgp_layer_3d final : pooling_layer_3d<avgp_layer_3d<Desc>, Desc> {
      * \param h The output matrix
      * \param v The input matrix
      */
-    static void activate_hidden(output_one_t& h, const input_one_t& v) {
+    template <typename Input>
+    static void activate_hidden(output_one_t& h, const Input& v) {
         h = etl::avg_pool_3d<base::C1, base::C2, base::C3>(v);
     }
 
