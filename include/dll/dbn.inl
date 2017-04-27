@@ -654,41 +654,19 @@ public:
 
     // TODO: Transform layers should be applied inline
 
-    template <size_t L, typename Input, cpp_enable_if((L == 0 && L != layers - 1))>
+    template <size_t L, typename Input, cpp_enable_if((L != layers - 1))>
     decltype(auto) forward_impl(Input&& sample) {
         decltype(auto) layer = layer_get<L>();
-        decltype(auto) context = layer.template get_sgd_context<this_type>();
 
-        auto input = force_temporary(context.input(0));
-        auto output = force_temporary(context.output(0));
-
-        input = sample;
-        layer.activate_hidden(output, input);
-
-        return forward_impl<L+1>(output);
-    }
-
-    template <size_t L, typename Input, cpp_enable_if((L != 0 && L != layers - 1))>
-    decltype(auto) forward_impl(Input&& sample) {
-        decltype(auto) layer = layer_get<L>();
-        decltype(auto) context = layer.template get_sgd_context<this_type>();
-
-        auto output = force_temporary(context.output(0));
-
-        layer.activate_hidden(output, sample);
-
-        return forward_impl<L+1>(output);
+        decltype(auto) next = layer.activate_hidden(sample);
+        return forward_impl<L+1>(next);
     }
 
     template <size_t L, typename Input, cpp_enable_if((L == layers - 1))>
     decltype(auto) forward_impl(Input&& sample) {
         decltype(auto) layer = layer_get<L>();
-        decltype(auto) context = layer.template get_sgd_context<this_type>();
 
-        auto output = force_temporary(context.output(0));
-        layer.activate_hidden(output, sample);
-
-        return output;
+        return layer.activate_hidden(sample);
     }
 
     template <typename Input>
