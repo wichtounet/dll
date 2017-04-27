@@ -313,8 +313,6 @@ private:
            !decay_layer_traits<typename D_DBN::template layer_type<D_DBN::input_layer_n>>::base_traits::is_dynamic
         && etl::decay_traits<typename D_DBN::template layer_type<D_DBN::input_layer_n>::input_one_t>::dimensions() == 3)>
     etl::dyn_matrix<weight, 4> prepare_data(dbn_t& dbn, Iterator first, size_t n){
-        decltype(auto) input_layer  = dbn.template layer_get<dbn_t::input_layer_n>();
-
         using type = typename D_DBN::template layer_type<D_DBN::input_layer_n>::input_one_t;
         using data_traits = etl::decay_traits<type>;
 
