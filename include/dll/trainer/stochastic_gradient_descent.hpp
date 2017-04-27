@@ -135,7 +135,7 @@ struct sgd_trainer {
 
         //Copy inputs into suitable data structure
 
-        auto tilde_inputs = inputs;
+        auto tilde_inputs = force_temporary(inputs);
         for(size_t i = 0; i < etl::dim<0>(tilde_inputs); ++i){
             input_transformer(tilde_inputs(i));
         }
