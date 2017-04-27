@@ -232,32 +232,35 @@ private:
         return as_derived().pool_C();
     }
 
-    template<typename Out>
-    weight energy_impl(const input_one_t& v, const Out& h) const {
+    template<typename Input, typename Out>
+    weight energy_impl(const Input& v, const Out& h) const {
         static_assert(etl::is_etl_expr<Out>::value, "energy_impl works with ETL expressions only");
 
+        auto rv = as_derived().reshape_v_a(v);
         auto tmp = as_derived().energy_tmp();
-        tmp = etl::conv_4d_valid_flipped(as_derived().reshape_v_a(v), as_derived().w);
+        tmp = etl::conv_4d_valid_flipped(as_derived().reshape_v_a(rv), as_derived().w);
 
         if (desc::visible_unit == unit_type::BINARY && desc::hidden_unit == unit_type::BINARY) {
             //Definition according to Honglak Lee
             //E(v,h) = - sum_k hk . (Wk*v) - sum_k bk sum_h hk - c sum_v v
 
-            return -etl::sum(as_derived().c >> etl::sum_r(v)) - etl::sum((h >> tmp(0)) + (as_derived().get_b_rep() >> h));
+            return -etl::sum(as_derived().c >> etl::sum_r(rv(0))) - etl::sum((h >> tmp(0)) + (as_derived().get_b_rep() >> h));
         } else if (desc::visible_unit == unit_type::GAUSSIAN && desc::hidden_unit == unit_type::BINARY) {
             //Definition according to Honglak Lee / Mixed with Gaussian
             //E(v,h) = - sum_k hk . (Wk*v) - sum_k bk sum_h hk - sum_v ((v - c) ^ 2 / 2)
 
             auto c_rep = as_derived().get_c_rep();
-            return sum(etl::pow(v - c_rep, 2) / 2.0) - etl::sum((h >> tmp(0)) + (as_derived().get_b_rep() >> h));
+            return sum(etl::pow(rv(0) - c_rep, 2) / 2.0) - etl::sum((h >> tmp(0)) + (as_derived().get_b_rep() >> h));
         } else {
             return 0.0;
         }
     }
 
-    weight free_energy_impl(const input_one_t& v) const {
+    template <typename Input>
+    weight free_energy_impl(const Input& v) const {
+        auto rv = as_derived().reshape_v_a(v);
         auto tmp = as_derived().energy_tmp();
-        tmp = etl::conv_4d_valid_flipped(as_derived().reshape_v_a(v), as_derived().w);
+        tmp = etl::conv_4d_valid_flipped(rv, as_derived().w);
 
         if (desc::visible_unit == unit_type::BINARY && desc::hidden_unit == unit_type::BINARY) {
             //Definition computed from E(v,h)
@@ -265,7 +268,7 @@ private:
             auto b_rep = as_derived().get_b_rep();
             auto x = b_rep + tmp(0);
 
-            return -etl::sum(as_derived().c >> etl::sum_r(v)) - etl::sum(etl::log(1.0 + etl::exp(x)));
+            return -etl::sum(as_derived().c >> etl::sum_r(rv(0))) - etl::sum(etl::log(1.0 + etl::exp(x)));
         } else if (desc::visible_unit == unit_type::GAUSSIAN && desc::hidden_unit == unit_type::BINARY) {
             //Definition computed from E(v,h)
 
@@ -273,7 +276,7 @@ private:
             auto x = b_rep + tmp(0);
             auto c_rep = as_derived().get_c_rep();
 
-            return -sum(etl::pow(v - c_rep, 2) / 2.0) - etl::sum(etl::log(1.0 + etl::exp(x)));
+            return -sum(etl::pow(rv(0) - c_rep, 2) / 2.0) - etl::sum(etl::log(1.0 + etl::exp(x)));
         } else {
             return 0.0;
         }

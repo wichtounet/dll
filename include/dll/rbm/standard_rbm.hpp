@@ -200,7 +200,8 @@ private:
     //to put the fields in standard_rbm, therefore, it is necessary to use template
     //functions to implement the details
 
-    static double reconstruction_error_impl(const input_one_t& items, parent_t& rbm) {
+    template<typename V>
+    static double reconstruction_error_impl(const V& items, parent_t& rbm) {
         cpp_assert(items.size() == num_visible(rbm), "The size of the training sample must match visible units");
 
         //Set the state of the visible units
@@ -294,20 +295,22 @@ private:
 
     template <typename V, typename H>
     static weight energy(const parent_t& rbm, const V& v, const H& h) {
+        auto rv = reshape(v, as_derived().num_visible);
+
         if (visible_unit == unit_type::BINARY && hidden_unit == unit_type::BINARY) {
             //Definition according to G. Hinton
             //E(v,h) = -sum(ai*vi) - sum(bj*hj) -sum(vi*hj*wij)
 
-            auto x = rbm.b + v * rbm.w;
+            auto x = rbm.b + rv * rbm.w;
 
-            return -etl::dot(rbm.c, v) - etl::dot(rbm.b, h) - etl::sum(x);
+            return -etl::dot(rbm.c, rv) - etl::dot(rbm.b, h) - etl::sum(x);
         } else if (visible_unit == unit_type::GAUSSIAN && hidden_unit == unit_type::BINARY) {
             //Definition according to G. Hinton
             //E(v,h) = -sum((vi - ai)^2/(2*var*var)) - sum(bj*hj) -sum((vi/var)*hj*wij)
 
-            auto x = rbm.b + v * rbm.w;
+            auto x = rbm.b + rv * rbm.w;
 
-            return etl::sum(etl::pow(v - rbm.c, 2) / 2.0) - etl::dot(rbm.b, h) - etl::sum(x);
+            return etl::sum(etl::pow(rv - rbm.c, 2) / 2.0) - etl::dot(rbm.b, h) - etl::sum(x);
         } else {
             return 0.0;
         }
@@ -319,34 +322,36 @@ private:
     //3. by considering only binary hidden units, the values are only 0 and 1
     //and therefore the values can be "integrated out" easily.
 
-    template <typename V, cpp_enable_if(etl::is_etl_expr<V>::value)>
+    template <typename V>
     static weight free_energy(const parent_t& rbm, const V& v) {
+        auto rv = reshape(v, as_derived().num_visible);
+
         if (visible_unit == unit_type::BINARY && hidden_unit == unit_type::BINARY) {
             //Definition according to G. Hinton
             //F(v) = -sum(ai*vi) - sum(log(1 + e^(xj)))
 
-            auto x = rbm.b + v * rbm.w;
+            auto x = rbm.b + rv * rbm.w;
 
-            return -etl::dot(rbm.c, v) - etl::sum(etl::log(1.0 + etl::exp(x)));
+            return -etl::dot(rbm.c, rv) - etl::sum(etl::log(1.0 + etl::exp(x)));
         } else if (visible_unit == unit_type::GAUSSIAN && hidden_unit == unit_type::BINARY) {
             //Definition computed from E(v,h)
             //F(v) = sum((vi-ai)^2/2) - sum(log(1 + e^(xj)))
 
-            auto x = rbm.b + v * rbm.w;
+            auto x = rbm.b + rv * rbm.w;
 
-            return etl::sum(etl::pow(v - rbm.c, 2) / 2.0) - etl::sum(etl::log(1.0 + etl::exp(x)));
+            return etl::sum(etl::pow(rv - rbm.c, 2) / 2.0) - etl::sum(etl::log(1.0 + etl::exp(x)));
         } else {
             return 0.0;
         }
     }
 
-    template <typename V, cpp_disable_if(etl::is_etl_expr<V>::value)>
-    static weight free_energy(const parent_t& rbm, const V& v) {
-        etl::dyn_vector<typename V::value_type> ev(v);
-        return free_energy(rbm, ev);
+    template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W, cpp_enable_if((etl::decay_traits<V>::dimensions() != 1))>
+    void std_activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V&, const B& b, const W& w) const {
+        auto r = reshape(v_a, as_derived().num_visible);
+        std_activate_hidden(h_a, h_s, r, r, b, w);
     }
 
-    template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W>
+    template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W, cpp_enable_if((etl::decay_traits<V>::dimensions() == 1))>
     static void std_activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V&, const B& b, const W& w) {
         dll::auto_timer timer("rbm:std:activate_hidden");
 
