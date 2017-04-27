@@ -36,10 +36,7 @@ TEST_CASE("perf/kws_square", "[perf][crbm][mp][cdbn]") {
 
     cdbn->display();
 
-    //TODO Make this possible again
-    //auto dataset = mnist::read_dataset<std::vector, std::vector, float>(8192);
-
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);

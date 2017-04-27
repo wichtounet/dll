@@ -25,7 +25,7 @@ TEST_CASE("unit/crbm_mp/mnist/1", "[crbm_mp][unit]") {
         dll::serial,
         dll::parallel_mode>::layer_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, float>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -55,37 +55,13 @@ TEST_CASE("unit/crbm_mp/mnist/2", "[crbm_mp][gaussian][unit]") {
 
     rbm.learning_rate *= 3.0;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::normalize_dataset(dataset);
 
     auto error = rbm.train(dataset.training_images, 30);
     REQUIRE(error < 0.15);
-}
-
-TEST_CASE("unit/crbm_mp/mnist/3", "[crbm_mp][multic][unit]") {
-    dll::conv_rbm_mp_desc_square<
-        2, 28, 20, 17, 2,
-        dll::batch_size<25>,
-        dll::momentum>::layer_t rbm;
-
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-    REQUIRE(!dataset.training_images.empty());
-
-    mnist::binarize_dataset(dataset);
-
-    for (auto& image : dataset.training_images) {
-        image.reserve(image.size() * 2);
-        auto end = image.size();
-        for (std::size_t i = 0; i < end; ++i) {
-            image.push_back(image[i]);
-        }
-    }
-
-    auto error = rbm.train(dataset.training_images, 50);
-
-    REQUIRE(error < 5e-2);
 }
 
 TEST_CASE("unit/crbm_mp/mnist/4", "[crbm_mp][denoising][unit]") {
@@ -99,7 +75,7 @@ TEST_CASE("unit/crbm_mp/mnist/4", "[crbm_mp][denoising][unit]") {
 
     rbm.learning_rate *= 4;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(200);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::normalize_dataset(dataset);
@@ -107,7 +83,7 @@ TEST_CASE("unit/crbm_mp/mnist/4", "[crbm_mp][denoising][unit]") {
     auto noisy = dataset.training_images;
 
     std::default_random_engine rand_engine(56);
-    std::normal_distribution<double> normal_distribution(0.0, 0.1);
+    std::normal_distribution<float> normal_distribution(0.0, 0.1);
     auto noise = std::bind(normal_distribution, rand_engine);
 
     for (auto& image : noisy) {
@@ -131,7 +107,7 @@ TEST_CASE("unit/crbm_mp/mnist/5", "[crbm_mp][relu][unit]") {
 
     rbm.learning_rate *= 2;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -152,7 +128,7 @@ TEST_CASE("unit/crbm_mp/mnist/6", "[crbm_mp][lee][unit]") {
     rbm.l2_weight_cost = 0.01;
     rbm.learning_rate  = 0.01;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -175,7 +151,7 @@ TEST_CASE("unit/crbm_mp/mnist/7", "[crbm_mp][lee][gaussian][unit]") {
     rbm.pbias        = 0.01;
     rbm.pbias_lambda = 0.1;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::normalize_dataset(dataset);

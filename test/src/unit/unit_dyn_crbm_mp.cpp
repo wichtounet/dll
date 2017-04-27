@@ -25,7 +25,7 @@ TEST_CASE("unit/dyn_crbm_mp/mnist/1", "[dyn_crbm_mp][unit]") {
 
     rbm.init_layer(1, 28, 28, 20, 17, 17, 2);
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, float>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -55,7 +55,7 @@ TEST_CASE("unit/dyn_crbm_mp/mnist/3", "[dyn_crbm_mp][denoising][unit]") {
 
     rbm.learning_rate *= 4;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::normalize_dataset(dataset);
@@ -85,7 +85,7 @@ TEST_CASE("unit/dyn_crbm_mp/mnist/4", "[dyn_crbm_mp][relu][unit]") {
     rbm.init_layer(1, 28, 28, 20, 17, 17, 2);
     rbm.learning_rate *= 2;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
