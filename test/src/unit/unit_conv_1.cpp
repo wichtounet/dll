@@ -11,7 +11,6 @@
 
 #include "dll/neural/conv_layer.hpp"
 #include "dll/neural/dense_layer.hpp"
-#include "dll/transform/scale_layer.hpp"
 #include "dll/dbn.hpp"
 #include "dll/trainer/stochastic_gradient_descent.hpp"
 
