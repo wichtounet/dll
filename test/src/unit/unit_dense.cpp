@@ -325,6 +325,8 @@ TEST_CASE("unit/dense/sgd/14", "[unit][dense][dbn][mnist][sgd]") {
 
     auto dbn = std::make_unique<dbn_t>();
 
+    REQUIRE(dbn->output_size() == 10);
+
     dbn->initial_momentum = 0.9;
     dbn->final_momentum   = 0.9;
     dbn->learning_rate    = 0.01;
