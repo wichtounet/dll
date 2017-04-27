@@ -230,6 +230,16 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
                     }
 
                     layers.push_back(std::move(conv));
+                } else if (lines[i] == "function:") {
+                    ++i;
+
+                    auto function = std::make_unique<dllp::function_layer>();
+
+                    if (!function->parse(layers, lines, i)) {
+                        return false;
+                    }
+
+                    layers.push_back(std::move(function));
                 } else if (lines[i] == "mp:") {
                     ++i;
 
@@ -509,6 +519,7 @@ void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll
     out_stream << "#include \"dll/neural/conv_layer.hpp\"\n";
     out_stream << "#include \"dll/pooling/mp_layer.hpp\"\n";
     out_stream << "#include \"dll/pooling/avgp_layer.hpp\"\n";
+    out_stream << "#include \"dll/neural/activation_layer.hpp\"\n";
     out_stream << "#include \"dll/trainer/stochastic_gradient_descent.hpp\"\n";
     out_stream << "#include \"dll/trainer/conjugate_gradient.hpp\"\n\n";
     out_stream << "#include \"dll/dbn.hpp\"\n";

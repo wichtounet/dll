@@ -32,7 +32,16 @@ struct layer {
     /*!
      * \brief Returns the number of hidden unit
      */
-    virtual std::size_t hidden_get() const = 0;
+    virtual std::size_t hidden_get() const {
+        return 0;
+    }
+
+    /*!
+     * \brief Indicates if the layer is a transform layer
+     */
+    virtual bool is_transform() const {
+        return false;
+    }
 
     /*!
      * \brief Indicates if the layer is convolutional
@@ -71,6 +80,15 @@ enum class parse_result {
     PARSED,
     ERROR,
     NOT_PARSED
+};
+
+struct function_layer : layer {
+    std::string activation;
+
+    void print(std::ostream& out) const override;
+    bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override;
+
+    bool is_transform() const override;
 };
 
 struct base_rbm_layer : layer {

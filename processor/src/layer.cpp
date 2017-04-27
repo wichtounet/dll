@@ -183,7 +183,13 @@ bool dllp::rbm_layer::parse(const layers_t& layers, const std::vector<std::strin
     }
 
     if (!layers.empty()) {
-        visible = layers.back()->hidden_get();
+        size_t i = layers.size() - 1;
+
+        while(layers[i]->is_transform() && i > 0){
+            --i;
+        }
+
+        visible = layers[i]->hidden_get();
     }
 
     return true;
@@ -253,9 +259,15 @@ bool dllp::conv_rbm_layer::parse(const layers_t& layers, const std::vector<std::
     }
 
     if (!layers.empty()) {
-        c  = layers.back()->hidden_get_1();
-        v1 = layers.back()->hidden_get_2();
-        v2 = layers.back()->hidden_get_3();
+        size_t i = layers.size() - 1;
+
+        while(layers[i]->is_transform() && i > 0){
+            --i;
+        }
+
+        c  = layers[i]->hidden_get_1();
+        v1 = layers[i]->hidden_get_2();
+        v2 = layers[i]->hidden_get_3();
     }
 
     return true;
@@ -343,9 +355,15 @@ bool dllp::conv_rbm_mp_layer::parse(const layers_t& layers, const std::vector<st
     }
 
     if (!layers.empty()) {
-        c  = layers.back()->hidden_get_1();
-        v1 = layers.back()->hidden_get_2();
-        v2 = layers.back()->hidden_get_3();
+        size_t i = layers.size() - 1;
+
+        while(layers[i]->is_transform() && i > 0){
+            --i;
+        }
+
+        c  = layers[i]->hidden_get_1();
+        v1 = layers[i]->hidden_get_2();
+        v2 = layers[i]->hidden_get_3();
     }
 
     return true;
@@ -408,7 +426,13 @@ bool dllp::dense_layer::parse(const layers_t& layers, const std::vector<std::str
     }
 
     if (!layers.empty()) {
-        visible = layers.back()->hidden_get();
+        size_t i = layers.size() - 1;
+
+        while(layers[i]->is_transform() && i > 0){
+            --i;
+        }
+
+        visible = layers[i]->hidden_get();
     }
 
     return true;
@@ -478,9 +502,15 @@ bool dllp::conv_layer::parse(const layers_t& layers, const std::vector<std::stri
     }
 
     if (!layers.empty()) {
-        c  = layers.back()->hidden_get_1();
-        v1 = layers.back()->hidden_get_2();
-        v2 = layers.back()->hidden_get_3();
+        size_t i = layers.size() - 1;
+
+        while(layers[i]->is_transform() && i > 0){
+            --i;
+        }
+
+        c  = layers[i]->hidden_get_1();
+        v1 = layers[i]->hidden_get_2();
+        v2 = layers[i]->hidden_get_3();
     }
 
     return true;
@@ -547,9 +577,15 @@ bool dllp::pooling_layer::parse(const layers_t& layers, const std::vector<std::s
     }
 
     if (!layers.empty()) {
-        c  = layers.back()->hidden_get_1();
-        v1 = layers.back()->hidden_get_2();
-        v2 = layers.back()->hidden_get_3();
+        size_t i = layers.size() - 1;
+
+        while(layers[i]->is_transform() && i > 0){
+            --i;
+        }
+
+        c  = layers[i]->hidden_get_1();
+        v1 = layers[i]->hidden_get_2();
+        v2 = layers[i]->hidden_get_3();
     }
 
     return true;
@@ -587,4 +623,33 @@ void dllp::avgp_layer::print(std::ostream& out) const {
 
 bool dllp::avgp_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) {
     return pooling_layer::parse(layers, lines, i);
+}
+
+bool dllp::function_layer::is_transform() const {
+    return true;
+}
+
+void dllp::function_layer::print(std::ostream& out) const {
+    out << "dll::activation_layer_desc<"
+        << "dll::activation<dll::function::" << activation_function(activation) << ">"
+        << ">::layer_t";
+}
+
+bool dllp::function_layer::parse(const layers_t& /*layers*/, const std::vector<std::string>& lines, std::size_t& i) {
+    std::string value;
+
+    while (i < lines.size()) {
+        if (dllp::extract_value(lines[i], "activation: ", activation)) {
+            ++i;
+
+            if (!dllp::valid_activation(activation)) {
+                std::cout << "dllp: error: invalid activation function, must be [sigmoid,tanh,relu,softmax]" << std::endl;
+                return false;
+            }
+        } else {
+            break;
+        }
+    }
+
+    return true;
 }
