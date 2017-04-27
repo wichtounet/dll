@@ -15,6 +15,7 @@
 #include "dll/rbm/rbm.hpp"
 #include "dll/rbm/dyn_rbm.hpp"
 #include "dll/dbn.hpp"
+#include "dll/transform/shape_layer_1d.hpp"
 #include "dll/transform/binarize_layer.hpp"
 #include "dll/trainer/conjugate_gradient.hpp"
 #include "dll/trainer/stochastic_gradient_descent.hpp"
@@ -270,6 +271,7 @@ TEST_CASE("unit/dbn/mnist/7", "[dbn][svm][unit]") {
 TEST_CASE("unit/dbn/mnist/8", "[dbn][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
+            dll::shape_layer_1d_desc<28 * 28>::layer_t,
             dll::binarize_layer_desc<30>::layer_t,
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
             dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::layer_t,

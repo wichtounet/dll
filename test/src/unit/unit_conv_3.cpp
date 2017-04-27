@@ -19,6 +19,7 @@
 #include "dll/trainer/stochastic_gradient_descent.hpp"
 
 #include "dll/transform/scale_layer.hpp"
+#include "dll/transform/shape_layer_3d.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -26,6 +27,7 @@
 TEST_CASE("unit/conv/sgd/9", "[conv][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
+            dll::shape_layer_3d_desc<1, 28, 28>::layer_t,
             dll::scale_layer_desc<1, 256>::layer_t,
             dll::conv_desc<1, 28, 28, 5, 5, 5, dll::activation<dll::function::TANH>>::layer_t,
             dll::dense_desc<5 * 24 * 24, 10, dll::activation<dll::function::TANH>>::layer_t>,
