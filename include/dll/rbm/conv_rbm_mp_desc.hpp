@@ -44,7 +44,7 @@ struct conv_rbm_mp_desc {
     static constexpr bias_mode Bias           = detail::get_value<bias<bias_mode::SIMPLE>, Parameters...>::value;
 
     /*! The type used to store the weights */
-    using weight = typename detail::get_type<weight_type<double>, Parameters...>::value;
+    using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
 
     /*! The type of the trainer to use to train the RBM */
     template <typename RBM, bool Denoising>
