@@ -21,7 +21,6 @@
 
 #include "dll/util/checks.hpp"    //NaN checks
 #include "dll/util/timers.hpp"    //auto_timer
-#include "dll/util/converter.hpp" //converter
 #include "dll/rbm/rbm_base.hpp"       //The base class
 #include "dll/base_conf.hpp"      //Descriptor configuration
 #include "dll/rbm/rbm_tmp.hpp"        // static_if macros
@@ -63,24 +62,14 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
 
     //Energy functions
 
-    weight energy(const input_one_t& v, const output_one_t& h) const {
+    template<typename Input>
+    weight energy(const Input& v, const output_one_t& h) const {
         return energy(as_derived(), v, h);
     }
 
     template<typename Input>
-    weight energy(const Input& v, const output_one_t& h) const {
-        decltype(auto) converted = converter_one<Input, input_one_t>::convert(as_derived(), v);
-        return energy(as_derived(), converted, h);
-    }
-
-    weight free_energy(const input_one_t& v) const {
-        return free_energy(as_derived(), v);
-    }
-
-    template<typename Input>
     weight free_energy(const Input& v) const {
-        decltype(auto) converted = converter_one<Input, input_one_t>::convert(as_derived(), v);
-        return free_energy(as_derived(), converted);
+        return free_energy(as_derived(), v);
     }
 
     weight free_energy() const {
@@ -114,15 +103,9 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
         std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, as_derived().b, as_derived().w);
     }
 
-    template <typename H>
-    void activate_hidden(H&& h_a, const input_one_t& v_a) const {
-        std_activate_hidden<true, false>(std::forward<H>(h_a), std::forward<H>(h_a), v_a, v_a, as_derived().b, as_derived().w);
-    }
-
     template <typename H, typename Input>
     void activate_hidden(H&& h_a, const Input& v_a) const {
-        decltype(auto) converted = converter_one<Input, input_one_t>::convert(as_derived(), v_a);
-        activate_hidden(h_a, converted);
+        std_activate_hidden<true, false>(std::forward<H>(h_a), std::forward<H>(h_a), v_a, v_a, as_derived().b, as_derived().w);
     }
 
     // activate_visible

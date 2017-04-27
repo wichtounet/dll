@@ -213,26 +213,16 @@ struct standard_crbm_mp : public standard_conv_rbm<Derived, Desc> {
         }
     }
 
-    void activate_hidden(output_one_t& h_a, const input_one_t& input) const {
+    template<typename Input>
+    void activate_hidden(output_one_t& h_a, const Input& input) const {
         activate_pooling<true, false>(h_a, h_a, input, input);
     }
 
     template<typename Input>
-    void activate_hidden(output_one_t& h_a, const Input& input) const {
-        decltype(auto) converted = converter_one<Input, input_one_t>::convert(as_derived(), input);
-        activate_pooling<true, false>(h_a, h_a, converted, converted);
-    }
-
-    hidden_output_one_t hidden_features(const input_one_t& input){
+    hidden_output_one_t hidden_features(const Input& input){
         auto out = as_derived().template prepare_one_hidden_output<input_one_t>();
         activate_hidden<true, false>(out, out, input, input);
         return out;
-    }
-
-    template<typename Input>
-    hidden_output_one_t hidden_features(const Input& input){
-        decltype(auto) converted = converter_one<Input, input_one_t>::convert(as_derived(), input);
-        return hidden_features(converted);
     }
 
     friend base_type;
