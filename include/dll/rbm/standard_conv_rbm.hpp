@@ -100,25 +100,14 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
         as_derived().template batch_activate_hidden<true, false>(h_a, h_a, input, input);
     }
 
-    template<typename Out>
-    weight energy(const input_one_t& v, const Out& h) const {
-        return as_derived().energy_impl(v, h);
-    }
-
     template<typename Input, typename Out>
     weight energy(const Input& v, const Out& h) const {
-        decltype(auto) converted = converter_one<Input, input_one_t>::convert(as_derived(), v);
-        return as_derived().energy_impl(converted, h);
-    }
-
-    weight free_energy(const input_one_t& v) const {
-        return as_derived().free_energy_impl(v);
+        return as_derived().energy_impl(v, h);
     }
 
     template <typename V>
     weight free_energy(const V& v) const {
-        decltype(auto) converted = converter_one<V, input_one_t>::convert(as_derived(), v);
-        return as_derived().free_energy_impl(converted);
+        return as_derived().free_energy_impl(v);
     }
 
     weight free_energy() const {

@@ -91,14 +91,9 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
         }
     }
 
-    void activate_hidden(output_one_t& h_a, const input_one_t& input) const {
-        activate_hidden<true, false>(h_a, h_a, input, input);
-    }
-
     template<typename Input>
-    void activate_hidden(output_one_t& output, const Input& input) const {
-        decltype(auto) converted = converter_one<Input, input_one_t>::convert(as_derived(), input);
-        activate_hidden(output, converted);
+    void activate_hidden(output_one_t& h_a, const Input& input) const {
+        activate_hidden<true, false>(h_a, h_a, input, input);
     }
 
     template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2>

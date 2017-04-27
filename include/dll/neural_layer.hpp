@@ -13,7 +13,6 @@
 
 #include "layer.hpp"
 #include "util/tmp.hpp"
-#include "util/converter.hpp"
 #include "layer_traits.hpp"
 
 namespace dll {

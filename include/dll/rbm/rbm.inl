@@ -21,8 +21,6 @@
 #include "dll/base_traits.hpp"
 #include "dll/layer_traits.hpp"
 
-#include "dll/util/converter.hpp" //converter
-
 namespace dll {
 
 /*!

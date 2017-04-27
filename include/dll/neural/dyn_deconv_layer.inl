@@ -93,18 +93,13 @@ struct dyn_deconv_layer final : neural_layer<dyn_deconv_layer<Desc>, Desc> {
         return {buffer};
     }
 
-    void activate_hidden(output_one_t& output, const input_one_t& v) const {
+    template <typename V>
+    void activate_hidden(output_one_t& output, const V& v) const {
         auto b_rep = etl::force_temporary(etl::rep(b, nh1, nh2));
 
         etl::reshape(output, 1, k, nh1, nh2) = etl::conv_4d_full_flipped(etl::reshape(v, 1, nc, nv1, nv2), w);
 
         output = f_activate<activation_function>(b_rep + output);
-    }
-
-    template <typename V>
-    void activate_hidden(output_one_t& output, const V& v) const {
-        decltype(auto) converted = converter_one<V, input_one_t>::convert(*this, v);
-        activate_hidden(output, converted);
     }
 
     /*!
