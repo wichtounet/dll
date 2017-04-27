@@ -45,13 +45,8 @@ struct sgd_possible {
 };
 
 template <typename LastLayer>
-struct sgd_possible<LastLayer, std::enable_if_t<decay_layer_traits<LastLayer>::is_standard_dense_layer()>> {
+struct sgd_possible<LastLayer, std::enable_if_t<decay_layer_traits<LastLayer>::base_traits::sgd_supported>> {
     static constexpr bool value = true;
-};
-
-template <typename LastLayer>
-struct sgd_possible<LastLayer, std::enable_if_t<decay_layer_traits<LastLayer>::is_dense_rbm_layer()>> {
-    static constexpr bool value = std::decay_t<LastLayer>::hidden_unit == unit_type::SOFTMAX;
 };
 
 //These functions are only exposed to be able to unit-test the program
@@ -285,6 +280,11 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
             }
 
             using last_layer = typename dbn_t::template layer_type<dbn_t::layers - 1>;
+
+            if(!sgd_possible<last_layer>::value){
+                std::cout << "dllp: error: The network is not trainable by SGD" << std::endl;
+                return;
+            }
 
             //Train the network
             cpp::static_if<sgd_possible<last_layer>::value>([&](auto f) {
