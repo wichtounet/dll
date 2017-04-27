@@ -68,9 +68,9 @@ struct dyn_crbm_double {
 } // end of anonymous namespace
 
 #define TYPES_TEST_PREFIX "crbm"
-#define TYPES_TEST_T1 crbm_float
-#define TYPES_TEST_T2 crbm_double
-#define TYPES_TEST_T3 dyn_crbm_float
-#define TYPES_TEST_T4 dyn_crbm_double
+#define FLOAT_TYPES_TEST_T1 crbm_float
+#define FLOAT_TYPES_TEST_T2 dyn_crbm_float
+#define DOUBLE_TYPES_TEST_T1 crbm_double
+#define DOUBLE_TYPES_TEST_T2 dyn_crbm_double
 
 #include "types_test.inl"
