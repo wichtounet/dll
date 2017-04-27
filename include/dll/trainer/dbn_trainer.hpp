@@ -291,12 +291,55 @@ private:
         return stop_training(dbn);
     }
 
-    template<typename Iterator>
+    // The four following functions should really not be that complicated :(
+
+    // Version for 2D layer
+    template<typename Iterator, typename D_DBN = dbn_t, cpp_enable_if(
+        etl::decay_traits<typename D_DBN::template layer_type<D_DBN::input_layer_n>::input_one_t>::dimensions() == 1)>
     etl::dyn_matrix<weight, 2> prepare_data(dbn_t& dbn, Iterator first, size_t n){
         decltype(auto) input_layer  = dbn.template layer_get<dbn_t::input_layer_n>();
 
-        // TODO Create correctly the type for conv
         etl::dyn_matrix<weight, 2> data(n, input_layer.input_size());
+
+        for(size_t l = 0; l < n; ++l){
+            data(l) = *first++;
+        }
+
+        return data;
+    }
+
+    // Version for 4D fast layer
+    template<typename Iterator, typename D_DBN = dbn_t, cpp_enable_if(
+           !decay_layer_traits<typename D_DBN::template layer_type<D_DBN::input_layer_n>>::base_traits::is_dynamic
+        && etl::decay_traits<typename D_DBN::template layer_type<D_DBN::input_layer_n>::input_one_t>::dimensions() == 3)>
+    etl::dyn_matrix<weight, 4> prepare_data(dbn_t& dbn, Iterator first, size_t n){
+        decltype(auto) input_layer  = dbn.template layer_get<dbn_t::input_layer_n>();
+
+        using type = typename D_DBN::template layer_type<D_DBN::input_layer_n>::input_one_t;
+        using data_traits = etl::decay_traits<type>;
+
+        etl::dyn_matrix<weight, 4> data(n, data_traits::template dim<0>(), data_traits::template dim<1>(), data_traits::template dim<2>());
+
+        for(size_t l = 0; l < n; ++l){
+            data(l) = *first++;
+        }
+
+        return data;
+    }
+
+    // Version for 4D dynamic layer
+    template<typename Iterator, typename D_DBN = dbn_t, cpp_enable_if(
+           decay_layer_traits<typename D_DBN::template layer_type<D_DBN::input_layer_n>>::base_traits::is_dynamic
+        && etl::decay_traits<typename D_DBN::template layer_type<D_DBN::input_layer_n>::input_one_t>::dimensions() == 3)>
+    etl::dyn_matrix<weight, 4> prepare_data(dbn_t& dbn, Iterator first, size_t n){
+        decltype(auto) input_layer  = dbn.template layer_get<dbn_t::input_layer_n>();
+
+        using type = typename D_DBN::template layer_type<D_DBN::input_layer_n>::input_one_t;
+        type data_one;
+
+        input_layer.prepare_input(data_one);
+
+        etl::dyn_matrix<weight, 4> data(n, etl::dim<0>(data_one), etl::dim<1>(data_one), etl::dim<2>(data_one));
 
         for(size_t l = 0; l < n; ++l){
             data(l) = *first++;
