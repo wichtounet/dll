@@ -138,7 +138,7 @@ struct layer_base_traits<shape_layer_1d<Desc>> {
 };
 
 /*!
- * \brief Specialization of sgd_context for lcn_layer
+ * \brief Specialization of sgd_context for shape_layer
  */
 template <typename DBN, typename Desc, size_t L>
 struct sgd_context<DBN, shape_layer_1d<Desc>, L> {

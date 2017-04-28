@@ -84,20 +84,20 @@ struct layer_base_traits<random_layer<Desc>> {
 };
 
 /*!
- * \brief Specialization of sgd_context for lcn_layer
+ * \brief Specialization of sgd_context for random_layer
  */
 template <typename DBN, typename Desc, size_t L>
 struct sgd_context<DBN, random_layer<Desc>, L> {
-    using layer_t = random_layer<Desc>;
-    using weight  = typename DBN::weight;
+    using layer_t          = random_layer<Desc>;                            ///< The current layer type
+    using previous_layer   = typename DBN::template layer_type<L - 1>;          ///< The previous layer type
+    using previous_context = sgd_context<DBN, previous_layer, L - 1>;           ///< The previous layer's context
+    using inputs_t         = decltype(std::declval<previous_context>().output); ///< The type of inputs
 
-    using inputs_t = transform_output_type_t<DBN, layer_t>;
+    inputs_t input;  ///< A batch of input
+    inputs_t output; ///< A batch of output
+    inputs_t errors; ///< A batch of errors
 
-    inputs_t input;
-    inputs_t output;
-    inputs_t errors;
-
-    sgd_context(layer_t& /* layer */) {}
+    sgd_context(layer_t& /*layer*/){}
 };
 
 } //end of dll namespace
