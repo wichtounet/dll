@@ -26,7 +26,7 @@ TEST_CASE("conv_dbn/mnist_9", "max_pooling") {
             dll::conv_rbm_desc<40, 14, 12, 40, 7, 3, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::mp_layer_3d_desc<40, 8, 10, 2, 2, 1>::layer_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(200);
 
     REQUIRE(!dataset.training_images.empty());
 
@@ -58,7 +58,7 @@ TEST_CASE("conv_dbn/mnist_10", "max_pooling") {
             dll::conv_rbm_desc<20, 10, 7, 40, 3, 3, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::mp_layer_3d_desc<40, 8, 5, 2, 1, 1>::layer_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(200);
 
     REQUIRE(!dataset.training_images.empty());
 
@@ -90,7 +90,7 @@ TEST_CASE("conv_dbn/mnist_11", "avg_pooling") {
             dll::conv_rbm_desc<40, 14, 12, 40, 7, 3, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::avgp_layer_3d_desc<40, 8, 10, 2, 2, 1>::layer_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(200);
 
     REQUIRE(!dataset.training_images.empty());
 
@@ -123,7 +123,7 @@ TEST_CASE("conv_dbn/mnist_12", "avgp_pooling") {
             dll::conv_rbm_desc<20, 10, 7, 40, 3, 3, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::avgp_layer_3d_desc<40, 8, 5, 2, 1, 1>::layer_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(200);
 
     REQUIRE(!dataset.training_images.empty());
 
@@ -157,7 +157,7 @@ TEST_CASE("conv_dbn/mnist_13", "nop_layers") {
             dll::avgp_layer_3d_desc<40, 8, 10, 1, 1, 1>::layer_t
         >>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(200);
 
     REQUIRE(!dataset.training_images.empty());
 
