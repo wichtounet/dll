@@ -472,8 +472,11 @@ private:
                 //Fill the input caches
                 size_t i = 0;
                 while (it != last && i < total_batch_size) {
-                    input_cache(i) = *it++;
-                    label_cache(i) = label_transformer(*lit++, output_layer.output_size());
+                    input_cache(i) = *it;
+                    label_cache(i) = label_transformer(*lit, output_layer.output_size());
+
+                    ++it;
+                    ++lit;
 
                     ++i;
                     ++n;
