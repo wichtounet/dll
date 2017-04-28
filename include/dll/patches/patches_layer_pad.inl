@@ -50,7 +50,8 @@ struct patches_layer_padh : layer<patches_layer_padh<Desc>> {
 
     using base_type::activate_hidden;
 
-    static void activate_hidden(output_one_t& h_a, const input_one_t& input) {
+    template<typename Input>
+    static void activate_hidden(output_one_t& h_a, const Input& input) {
         cpp_assert(etl::dim<0>(input) == 1, "Only one channel is supported for now");
 
         h_a.clear();

@@ -54,7 +54,8 @@ struct dyn_patches_layer : layer<dyn_patches_layer<Desc>> {
 
     using base_type::activate_hidden;
 
-    void activate_hidden(output_one_t& h_a, const input_one_t& input) const {
+    template<typename Input>
+    void activate_hidden(output_one_t& h_a, const Input& input) const {
         cpp_assert(etl::dim<0>(input) == 1, "Only one channel is supported for now");
 
         h_a.clear();
