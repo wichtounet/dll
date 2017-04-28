@@ -23,7 +23,7 @@ TEST_CASE("conv_dbn_mp/mnist_1", "conv_dbn::simple") {
             dll::conv_rbm_mp_desc_square<1, 28, 40, 17, 2, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::conv_rbm_mp_desc_square<40, 6, 20, 3, 2, dll::momentum, dll::batch_size<25>>::layer_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
 
     REQUIRE(!dataset.training_images.empty());
 
@@ -40,7 +40,7 @@ TEST_CASE("conv_dbn_mp/mnist_2", "conv_dbn::svm_simple") {
             dll::conv_rbm_mp_desc_square<1, 28, 40, 11, 2, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::conv_rbm_mp_desc_square<40, 9, 40, 4, 2, dll::momentum, dll::batch_size<25>>::layer_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(200);
 
     REQUIRE(!dataset.training_images.empty());
 
@@ -66,7 +66,7 @@ TEST_CASE("conv_dbn_mp/mnist_3", "conv_dbn::svm_concatenate") {
             dll::conv_rbm_mp_desc_square<40, 9, 40, 4, 2, dll::momentum, dll::batch_size<25>>::layer_t>,
         dll::svm_concatenate>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(200);
 
     REQUIRE(!dataset.training_images.empty());
 

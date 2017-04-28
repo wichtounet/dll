@@ -21,7 +21,7 @@ TEST_CASE("conv_dbn/mnist_5", "conv_dbn::svm_simple") {
             dll::conv_rbm_desc_square<1, 28, 40, 17, dll::momentum, dll::batch_size<25>>::layer_t>,
         dll::svm_concatenate>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(200);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -46,7 +46,7 @@ TEST_CASE("conv_dbn/mnist_6", "conv_dbn::svm_gaussian") {
             dll::conv_rbm_desc_square<20, 20, 20, 5, dll::momentum, dll::batch_size<25>>::layer_t>,
         dll::svm_concatenate>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(200);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::normalize_dataset(dataset);
@@ -71,7 +71,7 @@ TEST_CASE("conv_dbn/mnist_7", "conv_dbn::svm_scale") {
             dll::conv_rbm_desc_square<40, 12, 40, 3, dll::momentum, dll::batch_size<25>>::layer_t>,
         dll::svm_concatenate, dll::svm_scale>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(333);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(333);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::normalize_dataset(dataset);
@@ -95,7 +95,7 @@ TEST_CASE("conv_dbn/mnist_8", "conv_dbn::unsquare_svm") {
             dll::conv_rbm_desc<1, 28, 28, 40, 15, 17, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::conv_rbm_desc<40, 14, 12, 40, 7, 3, dll::momentum, dll::batch_size<25>>::layer_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(200);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);

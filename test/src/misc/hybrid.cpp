@@ -96,7 +96,7 @@ TEST_CASE("hybrid/mnist/3", "") {
             dll::conv_rbm_mp_desc_square<1, 28, 40, 17, 2, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::conv_rbm_mp_desc_square<40, 6, 20, 3, 2, dll::momentum, dll::batch_size<25>>::layer_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(100);
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(100);
 
     REQUIRE(!dataset.training_images.empty());
 
@@ -114,7 +114,7 @@ TEST_CASE("hybrid/mnist/4", "") {
             dll::conv_rbm_desc_square<40, 12, 20, 3, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::conv_rbm_desc_square<20, 10, 50, 5, dll::momentum, dll::batch_size<25>>::layer_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(100);
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -185,7 +185,7 @@ TEST_CASE("hybrid/mnist/10", "") {
             , dll::lcn_layer_desc<9>::layer_t
         >>::dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -202,7 +202,7 @@ TEST_CASE("hybrid/mnist/11", "[dbn][conv][mnist][patches][memory]") {
             dll::conv_rbm_desc_square<20, 10, 20, 5, dll::momentum, dll::batch_size<25>>::layer_t>,
         dll::batch_mode>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(500);
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(500);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -222,7 +222,7 @@ TEST_CASE("hybrid/mnist/12", "[dbn][conv][mnist][patches]") {
             dll::conv_rbm_desc_square<1, 14, 20, 5, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::conv_rbm_desc_square<20, 10, 20, 5, dll::momentum, dll::batch_size<25>>::layer_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(500);
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(500);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);

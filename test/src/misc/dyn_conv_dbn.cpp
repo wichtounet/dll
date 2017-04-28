@@ -22,7 +22,7 @@ TEST_CASE("dyn_conv_dbn/mnist_1", "conv_dbn::simple") {
             dll::dyn_conv_rbm_desc<dll::momentum>::layer_t,
             dll::dyn_conv_rbm_desc<dll::momentum>::layer_t>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(100);
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);

@@ -71,7 +71,7 @@ TEST_CASE("smart/mnist/3", "[smart][cdbn][augment]") {
             dll::conv_rbm_desc_square<1, 28, 8, 9, dll::momentum, dll::batch_size<10>>::layer_t
         >>::dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -94,7 +94,7 @@ TEST_CASE("smart/mnist/4", "[smart][cdbn][augment]") {
             dll::conv_rbm_desc_square<1, 28, 8, 9, dll::momentum, dll::batch_size<10>>::layer_t
         >>::dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<double, 1, 28, 28>>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -118,7 +118,7 @@ TEST_CASE("smart/mnist/5", "[smart][cdbn][augment]") {
             dll::conv_rbm_desc_square<10, 8, 10, 3, dll::momentum, dll::batch_size<10>>::layer_t
         >>::dbn_t;
 
-    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<double, 3>>(100);
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
