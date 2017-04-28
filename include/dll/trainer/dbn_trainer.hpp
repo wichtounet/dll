@@ -427,8 +427,7 @@ private:
                 input_transformer);
 
             if(dbn_traits<dbn_t>::is_verbose()){
-                auto full_batch_error = batch_error_function(dbn, ae, data, labels);
-                watcher.ft_batch_end(epoch, i, batches, batch_error, batch_loss, full_batch_error, dbn);
+                watcher.ft_batch_end(epoch, i, batches, batch_error, batch_loss, dbn);
             }
 
             loss += batch_loss;
@@ -506,7 +505,7 @@ private:
                         input_transformer);
 
                     if(dbn_traits<dbn_t>::is_verbose()){
-                        watcher.ft_batch_end(epoch, batch_error, batch_loss, error_function(), dbn);
+                        watcher.ft_batch_end(epoch, batch_error, batch_loss, dbn);
                     }
 
                     loss += batch_loss;
@@ -526,7 +525,7 @@ private:
                         input_transformer);
 
                     if(dbn_traits<dbn_t>::is_verbose()){
-                        watcher.ft_batch_end(epoch, batch_error, batch_loss, error_function(), dbn);
+                        watcher.ft_batch_end(epoch, batch_error, batch_loss, dbn);
                     }
 
                     loss += batch_loss;

@@ -187,13 +187,13 @@ struct default_dbn_watcher {
         std::cout.flush();
     }
 
-    void ft_batch_end(size_t epoch, size_t batch, size_t batches, double batch_error, double batch_loss, double error, const DBN&) {
-        printf("Epoch %3ld:%ld/%ld- B. Error: %.5f B. Loss: %.5f Set: %.5f \n", epoch, batch, batches, batch_error, batch_loss, error);
+    void ft_batch_end(size_t epoch, size_t batch, size_t batches, double batch_error, double batch_loss, const DBN&) {
+        printf("Epoch %3ld:%ld/%ld- B. Error: %.5f B. Loss: %.5f\n", epoch, batch, batches, batch_error, batch_loss);
         std::cout.flush();
     }
 
-    void ft_batch_end(size_t epoch, double batch_error, double batch_loss, double error, const DBN&) {
-        printf("Epoch %3ld - B.Error: %.5f B.Loss: %.5f Set: %.5f \n", epoch, batch_error, batch_loss, error);
+    void ft_batch_end(size_t epoch, double batch_error, double batch_loss, const DBN&) {
+        printf("Epoch %3ld - B.Error: %.5f B.Loss: %.5f\n", epoch, batch_error, batch_loss);
         std::cout.flush();
     }
 
@@ -233,8 +233,8 @@ struct mute_dbn_watcher {
 
     void ft_epoch_end(std::size_t /*epoch*/, double /*error*/, const DBN& /*dbn*/) {}
 
-    void ft_batch_end(size_t /*epoch*/, size_t /*batch*/, size_t /*batches*/, double /*batch_error*/, double /*error*/, const DBN& /*dbn*/) {}
-    void ft_batch_end(size_t /*epoch*/, double /*batch_error*/, double /*error*/, const DBN& /*dbn*/) {}
+    void ft_batch_end(size_t /*epoch*/, size_t /*batch*/, size_t /*batches*/, double /*batch_error*/, const DBN& /*dbn*/) {}
+    void ft_batch_end(size_t /*epoch*/, double /*batch_error*/, const DBN& /*dbn*/) {}
 
     void lr_adapt(const DBN& /*dbn*/) {}
 
