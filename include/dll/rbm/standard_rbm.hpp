@@ -294,7 +294,7 @@ private:
     //are not highly optimized.
 
     template <typename V, typename H>
-    static weight energy(const parent_t& rbm, const V& v, const H& h) {
+    weight energy(const parent_t& rbm, const V& v, const H& h) const {
         auto rv = reshape(v, as_derived().num_visible);
 
         if (visible_unit == unit_type::BINARY && hidden_unit == unit_type::BINARY) {
@@ -323,7 +323,7 @@ private:
     //and therefore the values can be "integrated out" easily.
 
     template <typename V>
-    static weight free_energy(const parent_t& rbm, const V& v) {
+    weight free_energy(const parent_t& rbm, const V& v) const {
         auto rv = reshape(v, as_derived().num_visible);
 
         if (visible_unit == unit_type::BINARY && hidden_unit == unit_type::BINARY) {
