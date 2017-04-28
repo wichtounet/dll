@@ -51,6 +51,7 @@ struct sgd_trainer {
     bool ae_training = false;
 
     dbn_t& dbn;
+    decltype(build_context<sgd_context>(dbn)) full_context;
 
     /*!
      * \brief Indicates if the model is being trained as an auto-encoder (true) or not (false)
@@ -76,7 +77,16 @@ struct sgd_trainer {
     template<typename L1, typename L2, cpp_disable_if(decay_layer_traits<typename L2::first_type>::is_transform_layer())>
     static void inherit_from_front(L1& /*l1*/, L2& /*l2*/){ }
 
-    explicit sgd_trainer(dbn_t& dbn) : dbn(dbn) {
+    explicit sgd_trainer(dbn_t& dbn) : dbn(dbn), full_context(build_context<sgd_context>(dbn)) {
+        // Inherit dimensions from front to end (for transform layers)
+
+        cpp::for_each_pair(full_context, [](auto& layer_ctx_1, auto& layer_ctx_2) {
+            constexpr bool l2_transform = decay_layer_traits<decltype(layer_ctx_2.first)>::is_transform_layer();
+
+            if (l2_transform) {
+                this_type::inherit_from_front(layer_ctx_1, layer_ctx_2);
+            }
+        });
     }
 
     void init_training(std::size_t) {}
@@ -121,20 +131,6 @@ struct sgd_trainer {
     template <typename Inputs, typename Labels, typename InputTransformer>
     std::pair<double, double> train_batch(std::size_t /*epoch*/, const Inputs& inputs, const Labels& labels, InputTransformer input_transformer) {
         dll::auto_timer timer("sgd::train_batch");
-
-        // Build the contexts
-
-        auto full_context = build_context<sgd_context>(dbn);
-
-        // Inherit dimensions from front to end (for transform layers)
-
-        cpp::for_each_pair(full_context, [](auto& layer_ctx_1, auto& layer_ctx_2) {
-            constexpr bool l2_transform = decay_layer_traits<decltype(layer_ctx_2.first)>::is_transform_layer();
-
-            if (l2_transform) {
-                this_type::inherit_from_front(layer_ctx_1, layer_ctx_2);
-            }
-        });
 
         // Ensure that the data batch and the label batch are of the same size
         cpp_assert(etl::dim<0>(inputs) == etl::dim<0>(labels), "Invalid sizes");
@@ -203,7 +199,7 @@ struct sgd_trainer {
         {
             dll::auto_timer timer("sgd::backward");
 
-            cpp::for_each_pair(full_context, [](auto& layer_ctx_1, auto& layer_ctx_2) {
+            cpp::for_each_rpair(full_context, [](auto& layer_ctx_1, auto& layer_ctx_2) {
                 auto& r2 = layer_ctx_2.first;
 
                 auto& ctx1 = *layer_ctx_1.second;
