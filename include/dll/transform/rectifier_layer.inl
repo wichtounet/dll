@@ -110,7 +110,7 @@ struct sgd_context<DBN, rectifier_layer<Desc>, L> {
     inputs_t output;
     inputs_t errors;
 
-    sgd_context(layer& /*layer*/) {}
+    sgd_context(layer_t& /*layer*/) {}
 };
 
 } //end of dll namespace

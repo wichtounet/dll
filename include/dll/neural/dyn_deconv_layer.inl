@@ -220,8 +220,8 @@ struct layer_base_traits<dyn_deconv_layer<Desc>> {
 /*!
  * \brief Specialization of the SGD Context for the dynamic deconvolutional layer
  */
-template <typename DBN, typename Desc>
-struct sgd_context<DBN, dyn_deconv_layer<Desc>> {
+template <typename DBN, typename Desc, size_t L>
+struct sgd_context<DBN, dyn_deconv_layer<Desc>, L> {
     using layer_t = dyn_deconv_layer<Desc>;
     using weight  = typename layer_t::weight;
 
@@ -237,7 +237,7 @@ struct sgd_context<DBN, dyn_deconv_layer<Desc>> {
     etl::dyn_matrix<weight, 4> output;
     etl::dyn_matrix<weight, 4> errors;
 
-    sgd_context(layer& layer)
+    sgd_context(layer_t& layer)
             : w_grad(layer.nc, layer.k, layer.nw1, layer.nw2), b_grad(layer.k),
               w_inc(layer.nc, layer.k, layer.nw1, layer.nw2), b_inc(layer.k),
               input(batch_size, layer.nc, layer.nv1, layer.nv2),

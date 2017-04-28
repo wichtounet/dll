@@ -161,7 +161,7 @@ struct sgd_context<DBN, dyn_upsample_layer_3d<Desc>, L> {
     etl::dyn_matrix<weight, 4> output;
     etl::dyn_matrix<weight, 4> errors;
 
-    sgd_context(layer_t& laye/)
+    sgd_context(layer_t& layer)
             : input(batch_size, layer.base::i1, layer.base::i2, layer.base::i3),
               output(batch_size, layer.base::i1 * layer.base::c1, layer.base::i2 * layer.base::c2, layer.base::i3 * layer.base::c3),
               errors(batch_size, layer.base::i1 * layer.base::c1, layer.base::i2 * layer.base::c2, layer.base::i3 * layer.base::c3) {}
