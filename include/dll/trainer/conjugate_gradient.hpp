@@ -50,9 +50,6 @@ struct cg_trainer {
 
     explicit cg_trainer(dbn_t& dbn) : dbn(dbn) {
         dbn.for_each_layer([](auto& r1) {
-            // This is necessary because by dbn_trainer
-            r1.template init_sgd_context<dbn_t>();
-
             r1.init_cg_context();
 
             using rbm_t = std::decay_t<decltype(r1)>;
