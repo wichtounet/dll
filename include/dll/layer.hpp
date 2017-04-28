@@ -148,38 +148,6 @@ struct layer {
         return *cg_context_ptr;
     }
 
-    //SGD context
-
-    /*
-     * \brief Initialize the SGD context
-     */
-    template <typename DBN>
-    void init_sgd_context() {
-        sgd_context_ptr = std::make_shared<sgd_context<DBN, parent_t>>();
-    }
-
-    /*!
-     * \brief Returns the context for SGD training.
-     * \return A reference to the SGD context training.
-     */
-    template <typename DBN>
-    sgd_context<DBN, parent_t>& get_sgd_context() {
-        cpp_assert(sgd_context_ptr, "Use of empty sgd_context");
-
-        return *static_cast<sgd_context<DBN, parent_t>*>(sgd_context_ptr.get());
-    }
-
-    /*!
-     * \brief Returns the context for SGD training.
-     * \return A reference to the SGD context training.
-     */
-    template <typename DBN>
-    const sgd_context<DBN, parent_t>& get_sgd_context() const {
-        cpp_assert(sgd_context_ptr, "Use of empty sgd_context");
-
-        return *static_cast<const sgd_context<DBN, parent_t>*>(sgd_context_ptr.get());
-    }
-
 private:
     //CRTP Deduction
 

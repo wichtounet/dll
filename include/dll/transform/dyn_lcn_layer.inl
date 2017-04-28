@@ -118,8 +118,8 @@ struct layer_base_traits<dyn_lcn_layer<Desc>> {
 /*!
  * \brief Specialization of sgd_context for dyn_lcn_layer
  */
-template <typename DBN, typename Desc>
-struct sgd_context<DBN, dyn_lcn_layer<Desc>> {
+template <typename DBN, typename Desc, size_t L>
+struct sgd_context<DBN, dyn_lcn_layer<Desc>, L> {
     using layer_t = dyn_lcn_layer<Desc>;
     using weight  = typename DBN::weight;
 
@@ -128,6 +128,8 @@ struct sgd_context<DBN, dyn_lcn_layer<Desc>> {
     inputs_t input;
     inputs_t output;
     inputs_t errors;
+
+    sgd_context(layer_t& /*layer */){}
 };
 
 } //end of dll namespace

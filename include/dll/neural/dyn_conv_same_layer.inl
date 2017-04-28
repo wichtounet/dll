@@ -150,11 +150,6 @@ struct dyn_conv_same_layer final : neural_layer<dyn_conv_same_layer<Desc>, Desc>
         return output_one_t(k, nh1, nh2);
     }
 
-    template <typename DBN>
-    void init_sgd_context() {
-        this->sgd_context_ptr = std::make_shared<sgd_context<DBN, this_type>>(nc, nv1, nv2, k, nw1, nw2);
-    }
-
     template<typename DRBM>
     static void dyn_init(DRBM&){
         //Nothing to change
@@ -233,11 +228,11 @@ struct sgd_context<DBN, dyn_conv_same_layer<Desc>> {
     etl::dyn_matrix<weight, 4> output;
     etl::dyn_matrix<weight, 4> errors;
 
-    sgd_context(size_t nc, size_t nv1, size_t nv2, size_t k, size_t nw1, size_t nw2)
-            : w_grad(k, nc, nw1, nw2), b_grad(k),
-              w_inc(k, nc, nv1, nv2), b_inc(k),
-              input(batch_size, nc, nv1, nv2),
-              output(batch_size, k, nv1, nv2), errors(batch_size, k, nv1, nv2) {}
+    sgd_context(layer_t& layer)
+            : w_grad(layer.k, layer.nc, layer.nw1, layer.nw2), b_grad(layer.k),
+              w_inc(layer.k, layer.nc, layer.nv1, layer.nv2), b_inc(layer.k),
+              input(batch_size, layer.nc, layer.nv1, layer.nv2),
+              output(batch_size, layer.k, layer.nv1, layer.nv2), errors(batch_size, layer.k, layer.nv1, layer.nv2) {}
 };
 
 } //end of dll namespace

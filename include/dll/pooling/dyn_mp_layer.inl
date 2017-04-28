@@ -71,11 +71,6 @@ struct dyn_mp_layer_3d final : dyn_pooling_layer_3d<dyn_mp_layer_3d<Desc>, Desc>
         output = etl::max_pool_3d(input, base::c1, base::c2, base::c3);
     }
 
-    template <typename DBN>
-    void init_sgd_context() {
-        this->sgd_context_ptr = std::make_shared<sgd_context<DBN, this_type>>(base::i1, base::i2, base::i3, base::c1, base::c2, base::c3);
-    }
-
     template<typename DRBM>
     static void dyn_init(DRBM&){
         //Nothing to change
@@ -140,8 +135,8 @@ struct layer_base_traits<dyn_mp_layer_3d<Desc>> {
 /*!
  * \brief Specialization of sgd_context for dyn_mp_layer
  */
-template <typename DBN, typename Desc>
-struct sgd_context<DBN, dyn_mp_layer_3d<Desc>> {
+template <typename DBN, typename Desc, size_t L>
+struct sgd_context<DBN, dyn_mp_layer_3d<Desc>, L> {
     using layer_t = dyn_mp_layer_3d<Desc>;
     using weight  = typename layer_t::weight;
 
@@ -151,10 +146,10 @@ struct sgd_context<DBN, dyn_mp_layer_3d<Desc>> {
     etl::dyn_matrix<weight, 4> output;
     etl::dyn_matrix<weight, 4> errors;
 
-    sgd_context(size_t i1, size_t i2, size_t i3, size_t c1, size_t c2, size_t c3)
-            : input(batch_size, i1, i2, i3),
-              output(batch_size, i1 / c1, i2 / c2, i3 / c3),
-              errors(batch_size, i1 / c1, i2 / c2, i3 / c3) {}
+    sgd_context(layer_t& layer)
+            : input(batch_size, layer.base::i1, layer.base::i2, layer.base::i3),
+              output(batch_size, layer.base::i1 / layer.base::c1, layer.base::i2 / layer.base::c2, layer.base::i3 / layer.base::c3),
+              errors(batch_size, layer.base::i1 / layer.base::c1, layer.base::i2 / layer.base::c2, layer.base::i3 / layer.base::c3) {}
 };
 
 

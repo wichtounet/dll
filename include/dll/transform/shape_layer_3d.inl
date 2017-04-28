@@ -148,8 +148,8 @@ struct layer_base_traits<shape_layer_3d<Desc>> {
 /*!
  * \brief Specialization of sgd_context for lcn_layer
  */
-template <typename DBN, typename Desc>
-struct sgd_context<DBN, shape_layer_3d<Desc>> {
+template <typename DBN, typename Desc, size_t L>
+struct sgd_context<DBN, shape_layer_3d<Desc>, L> {
     using layer_t = shape_layer_3d<Desc>;
     using weight  = typename DBN::weight;
 
@@ -158,6 +158,8 @@ struct sgd_context<DBN, shape_layer_3d<Desc>> {
     etl::fast_matrix<weight, batch_size, layer_t::C, layer_t::H, layer_t::W> input;
     etl::fast_matrix<weight, batch_size, layer_t::C, layer_t::H, layer_t::W> output;
     etl::fast_matrix<weight, batch_size, layer_t::C, layer_t::H, layer_t::W> errors;
+
+    sgd_context(const shape_layer_3d<Desc>& /* layer */){}
 };
 
 } //end of dll namespace

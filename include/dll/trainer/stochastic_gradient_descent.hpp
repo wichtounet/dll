@@ -16,11 +16,28 @@
 #pragma once
 
 #include "cpp_utils/static_if.hpp"
+#include "cpp_utils/tuple_utils.hpp"
 
 #include "dll/util/checks.hpp"         // For NaN checks
 #include "dll/util/timers.hpp"         // For auto_timer
 
 namespace dll {
+
+template<template<typename, typename, size_t> class Context, typename DBN, size_t... I>
+auto build_context(DBN& dbn, std::index_sequence<I...> /*seq*/){
+    return std::make_tuple
+        (
+            (std::make_pair(
+                std::ref(dbn.template layer_get<I>()),  // Reference to the layer
+                std::make_shared<Context<DBN, typename DBN::template layer_type<I>, I>>(dbn.template layer_get<I>()))
+            )...
+        );
+}
+
+template<template<typename, typename, size_t> class Context, typename DBN>
+auto build_context(DBN& dbn){
+    return build_context<Context>(dbn, std::make_index_sequence<DBN::layers>());
+}
 
 template <typename DBN>
 struct sgd_trainer {
@@ -44,10 +61,10 @@ struct sgd_trainer {
 
     // Transform layers need to inherit dimensions from back
 
-    template<typename L1, typename L2, cpp_enable_if(decay_layer_traits<L2>::is_transform_layer())>
+    template<typename L1, typename L2, cpp_enable_if(decay_layer_traits<typename L2::first_type>::is_transform_layer())>
     static void inherit_from_front(L1& l1, L2& l2){
-        auto& ctx1 = l1.template get_sgd_context<dbn_t>();
-        auto& ctx2 = l2.template get_sgd_context<dbn_t>();
+        auto& ctx1 = *l1.second;
+        auto& ctx2 = *l2.second;
 
         if (ctx2.errors.size() == 0) {
             ctx2.output = ctx1.output;
@@ -56,25 +73,10 @@ struct sgd_trainer {
         }
     }
 
-    template<typename L1, typename L2, cpp_disable_if(decay_layer_traits<L2>::is_transform_layer())>
+    template<typename L1, typename L2, cpp_disable_if(decay_layer_traits<typename L2::first_type>::is_transform_layer())>
     static void inherit_from_front(L1& /*l1*/, L2& /*l2*/){ }
 
     explicit sgd_trainer(dbn_t& dbn) : dbn(dbn) {
-        // Initialize all the SGD contexts
-
-        dbn.for_each_layer([](auto& layer) {
-            layer.template init_sgd_context<dbn_t>();
-        });
-
-        // Inherit dimensions from front to end (for transform layers)
-
-        dbn.for_each_layer_pair([](auto& l1, auto& l2) {
-            constexpr bool l2_transform = decay_layer_traits<decltype(l2)>::is_transform_layer();
-
-            if (l2_transform) {
-                this_type::inherit_from_front(l1, l2);
-            }
-        });
     }
 
     void init_training(std::size_t) {}
@@ -120,16 +122,30 @@ struct sgd_trainer {
     std::pair<double, double> train_batch(std::size_t /*epoch*/, const Inputs& inputs, const Labels& labels, InputTransformer input_transformer) {
         dll::auto_timer timer("sgd::train_batch");
 
+        // Build the contexts
+
+        auto full_context = build_context<sgd_context>(dbn);
+
+        // Inherit dimensions from front to end (for transform layers)
+
+        cpp::for_each_pair(full_context, [](auto& layer_ctx_1, auto& layer_ctx_2) {
+            constexpr bool l2_transform = decay_layer_traits<decltype(layer_ctx_2.first)>::is_transform_layer();
+
+            if (l2_transform) {
+                this_type::inherit_from_front(layer_ctx_1, layer_ctx_2);
+            }
+        });
+
         // Ensure that the data batch and the label batch are of the same size
         cpp_assert(etl::dim<0>(inputs) == etl::dim<0>(labels), "Invalid sizes");
 
         const auto n = etl::dim<0>(inputs);
 
-        decltype(auto) first_layer = dbn.template layer_get<0>();
-        decltype(auto) first_ctx = first_layer.template get_sgd_context<dbn_t>();
+        auto& first_layer = std::get<0>(full_context).first;
+        auto& first_ctx   = *std::get<0>(full_context).second;
 
-        decltype(auto) last_layer = dbn.template layer_get<layers - 1>();
-        decltype(auto) last_ctx = last_layer.template get_sgd_context<dbn_t>();
+        auto& last_layer = std::get<layers - 1>(full_context).first;
+        auto& last_ctx   = *std::get<layers - 1>(full_context).second;
 
         const bool full_batch = etl::dim<0>(inputs) == etl::dim<0>(first_ctx.input);
 
@@ -158,9 +174,11 @@ struct sgd_trainer {
 
             first_layer.batch_activate_hidden(first_ctx.output, first_ctx.input);
 
-            dbn.for_each_layer_pair([](auto& layer_1, auto& layer_2) {
-                auto& ctx1 = layer_1.template get_sgd_context<dbn_t>();
-                auto& ctx2 = layer_2.template get_sgd_context<dbn_t>();
+            cpp::for_each_pair(full_context, [](auto& layer_ctx_1, auto& layer_ctx_2) {
+                auto& layer_2 = layer_ctx_2.first;
+
+                auto& ctx1 = *layer_ctx_1.second;
+                auto& ctx2 = *layer_ctx_2.second;
 
                 ctx2.input = ctx1.output;
                 layer_2.batch_activate_hidden(ctx2.output, ctx2.input);
@@ -185,9 +203,11 @@ struct sgd_trainer {
         {
             dll::auto_timer timer("sgd::backward");
 
-            dbn.for_each_layer_rpair([](auto& r1, auto& r2) {
-                auto& ctx1 = r1.template get_sgd_context<dbn_t>();
-                auto& ctx2 = r2.template get_sgd_context<dbn_t>();
+            cpp::for_each_pair(full_context, [](auto& layer_ctx_1, auto& layer_ctx_2) {
+                auto& r2 = layer_ctx_2.first;
+
+                auto& ctx1 = *layer_ctx_1.second;
+                auto& ctx2 = *layer_ctx_2.second;
 
                 r2.adapt_errors(ctx2);
                 r2.backward_batch(ctx1.errors, ctx2);
@@ -201,12 +221,12 @@ struct sgd_trainer {
         {
             dll::auto_timer timer("sgd::grad");
 
-            dbn.for_each_layer([this, n](auto& layer) {
+            cpp::for_each(full_context, [this, n](auto& layer_ctx) {
                 // Compute the gradients
-                layer.compute_gradients(layer.template get_sgd_context<dbn_t>());
+                layer_ctx.first.compute_gradients(*layer_ctx.second);
 
                 // Apply the gradients
-                this->apply_gradients(layer, n);
+                this->apply_gradients(layer_ctx.first, *layer_ctx.second, n);
             });
         }
 
@@ -246,11 +266,9 @@ struct sgd_trainer {
         return std::make_pair(error, loss);
     }
 
-    template <typename L, cpp_enable_if(decay_layer_traits<L>::is_neural_layer())>
-    void apply_gradients(L& layer, std::size_t n) {
+    template <typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer())>
+    void apply_gradients(L& layer, C& context, std::size_t n) {
         dll::auto_timer timer("sgd::apply_grad");
-
-        auto& context = layer.template get_sgd_context<dbn_t>();
 
         //Update the gradients
         this->update_grad(layer.w, context.w_grad, w_decay(dbn_traits<dbn_t>::decay()), 0.0);
@@ -280,8 +298,8 @@ struct sgd_trainer {
         nan_check_deep(layer.b);
     }
 
-    template <typename L, cpp_disable_if(decay_layer_traits<L>::is_neural_layer())>
-    void apply_gradients(L&, std::size_t) {
+    template <typename L, typename C, cpp_disable_if(decay_layer_traits<L>::is_neural_layer())>
+    void apply_gradients(L& /*layer*/, C& /*context*/, std::size_t /*n*/) {
         //Pooling and transform layers have no weights, therefore no
         //gradients
     }

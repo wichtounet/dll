@@ -255,8 +255,8 @@ struct rbm_layer_base_traits<rbm<Desc>> {
 /*!
  * \brief specialization of sgd_context for rbm
  */
-template <typename DBN, typename Desc>
-struct sgd_context<DBN, rbm<Desc>> {
+template <typename DBN, typename Desc, size_t L>
+struct sgd_context<DBN, rbm<Desc>, L> {
     using layer_t = rbm<Desc>;
     using weight  = typename layer_t::weight;
 
@@ -275,7 +275,7 @@ struct sgd_context<DBN, rbm<Desc>> {
     etl::fast_matrix<weight, batch_size, num_hidden> output;
     etl::fast_matrix<weight, batch_size, num_hidden> errors;
 
-    sgd_context()
+    sgd_context(layer_t& /*layer*/)
             : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
 };
 

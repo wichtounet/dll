@@ -245,8 +245,8 @@ struct layer_base_traits<conv_layer<Desc>> {
 /*!
  * \brief Specialization of the sgd_context for conv_layer
  */
-template <typename DBN, typename Desc>
-struct sgd_context<DBN, conv_layer<Desc>> {
+template <typename DBN, typename Desc, size_t L>
+struct sgd_context<DBN, conv_layer<Desc>, L> {
     using layer_t = conv_layer<Desc>;
     using weight  = typename layer_t::weight;
 
@@ -271,7 +271,7 @@ struct sgd_context<DBN, conv_layer<Desc>> {
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> output;
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> errors;
 
-    sgd_context()
+    sgd_context(conv_layer<Desc>& /* layer */)
             : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
 };
 

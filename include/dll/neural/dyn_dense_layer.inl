@@ -140,11 +140,6 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
         }
     }
 
-    template <typename DBN>
-    void init_sgd_context() {
-        this->sgd_context_ptr = std::make_shared<sgd_context<DBN, this_type>>(num_visible, num_hidden);
-    }
-
     template <typename Input>
     output_one_t prepare_one_output() const {
         return output_one_t(num_hidden);
@@ -227,8 +222,8 @@ struct layer_base_traits<dyn_dense_layer<Desc>> {
 /*!
  * \brief Specialization of sgd_context for dyn_dense_layer
  */
-template <typename DBN, typename Desc>
-struct sgd_context<DBN, dyn_dense_layer<Desc>> {
+template <typename DBN, typename Desc, size_t L>
+struct sgd_context<DBN, dyn_dense_layer<Desc>, L> {
     using layer_t = dyn_dense_layer<Desc>;
     using weight  = typename layer_t::weight;
 
@@ -244,10 +239,10 @@ struct sgd_context<DBN, dyn_dense_layer<Desc>> {
     etl::dyn_matrix<weight, 2> output;
     etl::dyn_matrix<weight, 2> errors;
 
-    sgd_context(size_t num_visible, size_t num_hidden)
-            : w_grad(num_visible, num_hidden), b_grad(num_hidden),
-              w_inc(num_visible, num_hidden, 0.0), b_inc(num_hidden, 0.0),
-              input(batch_size, num_visible, 0.0), output(batch_size, num_hidden, 0.0), errors(batch_size, num_hidden, 0.0) {}
+    sgd_context(layer_t& layer)
+            : w_grad(layer.num_visible, layer.num_hidden), b_grad(layer.num_hidden),
+              w_inc(layer.num_visible, layer.num_hidden, 0.0), b_inc(layer.num_hidden, 0.0),
+              input(batch_size, layer.num_visible, 0.0), output(batch_size, layer.num_hidden, 0.0), errors(batch_size, layer.num_hidden, 0.0) {}
 };
 
 

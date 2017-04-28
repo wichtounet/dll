@@ -19,7 +19,7 @@ namespace dll {
  * \tparam DBN The containing DBN
  * \tparam Layer The layer
  */
-template <typename DBN, typename Layer, typename Enable = void>
+template <typename DBN, typename Layer, size_t L>
 struct sgd_context;
 
 /*!

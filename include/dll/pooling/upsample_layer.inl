@@ -153,8 +153,8 @@ struct layer_base_traits<upsample_layer_3d<Desc>> {
 /*!
  * \brief Specialization of sgd_context for upsample_layer
  */
-template <typename DBN, typename Desc>
-struct sgd_context<DBN, upsample_layer_3d<Desc>> {
+template <typename DBN, typename Desc, size_t L>
+struct sgd_context<DBN, upsample_layer_3d<Desc>, L> {
     using layer_t = upsample_layer_3d<Desc>;
     using weight  = typename layer_t::weight;
 
@@ -171,6 +171,8 @@ struct sgd_context<DBN, upsample_layer_3d<Desc>> {
     etl::fast_matrix<weight, batch_size, I1, I2, I3> input;
     etl::fast_matrix<weight, batch_size, O1, O2, O3> output;
     etl::fast_matrix<weight, batch_size, O1, O2, O3> errors;
+
+    sgd_context(layer_t& /*layer*/) {}
 };
 
 } //end of dll namespace

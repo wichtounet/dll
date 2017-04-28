@@ -99,8 +99,8 @@ struct layer_base_traits<rectifier_layer<Desc>> {
 /*!
  * \brief Specialization of sgd_context for lcn_layer
  */
-template <typename DBN, typename Desc>
-struct sgd_context<DBN, rectifier_layer<Desc>> {
+template <typename DBN, typename Desc, size_t L>
+struct sgd_context<DBN, rectifier_layer<Desc>, L> {
     using layer_t = rectifier_layer<Desc>;
     using weight  = typename DBN::weight;
 
@@ -109,6 +109,8 @@ struct sgd_context<DBN, rectifier_layer<Desc>> {
     inputs_t input;
     inputs_t output;
     inputs_t errors;
+
+    sgd_context(layer& /*layer*/) {}
 };
 
 } //end of dll namespace

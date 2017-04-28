@@ -150,11 +150,6 @@ struct dyn_conv_rbm final : public standard_crbm<dyn_conv_rbm<Desc>, Desc> {
         return output_one_t(k, nh1, nh2);
     }
 
-    template <typename DBN>
-    void init_sgd_context() {
-        this->sgd_context_ptr = std::make_shared<sgd_context<DBN, this_type>>(nc, nv1, nv2, k, nh1, nh2);
-    }
-
     template<typename DRBM>
     static void dyn_init(DRBM&){
         //Nothing to change
@@ -320,8 +315,8 @@ struct rbm_layer_base_traits<dyn_conv_rbm<Desc>> {
 /*!
  * \brief Specialization of sgd_context for dyn_conv_rbm
  */
-template <typename DBN, typename Desc>
-struct sgd_context<DBN, dyn_conv_rbm<Desc>> {
+template <typename DBN, typename Desc, size_t L>
+struct sgd_context<DBN, dyn_conv_rbm<Desc>, L> {
     using layer_t = dyn_conv_rbm<Desc>;
     using weight  = typename layer_t::weight;
 
@@ -337,11 +332,11 @@ struct sgd_context<DBN, dyn_conv_rbm<Desc>> {
     etl::dyn_matrix<weight, 4> output;
     etl::dyn_matrix<weight, 4> errors;
 
-    sgd_context(size_t nc, size_t nv1, size_t nv2, size_t k, size_t nh1, size_t nh2)
-            : w_grad(k, nc, nv1 - nh1 + 1, nv2 - nh2 + 1), b_grad(k),
-              w_inc(k, nc, nv1 - nh1 + 1, nv2 - nh2 + 1), b_inc(k),
-              input(batch_size, nc, nv1, nv2),
-              output(batch_size, k, nh1, nh2), errors(batch_size, k, nh1, nh2) {}
+    sgd_context(layer_t& layer)
+            : w_grad(layer.k, layer.nc, layer.nv1 - layer.nh1 + 1, layer.nv2 - layer.nh2 + 1), b_grad(layer.k),
+              w_inc(layer.k, layer.nc, layer.nv1 - layer.nh1 + 1, layer.nv2 - layer.nh2 + 1), b_inc(layer.k),
+              input(batch_size, layer.nc, layer.nv1, layer.nv2),
+              output(batch_size, layer.k, layer.nh1, layer.nh2), errors(batch_size, layer.k, layer.nh1, layer.nh2) {}
 };
 
 } //end of dll namespace

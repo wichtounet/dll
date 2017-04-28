@@ -129,16 +129,18 @@ struct layer_base_traits<activation_layer<Desc>> {
 /*!
  * \brief Specialization of sgd_context for activation_layer
  */
-template <typename DBN, typename Desc>
-struct sgd_context<DBN, activation_layer<Desc>> {
-    using layer_t = activation_layer<Desc>;
-    using weight  = typename DBN::weight;
+template <typename DBN, typename Desc, size_t L>
+struct sgd_context<DBN, activation_layer<Desc>, L> {
+    using layer_t          = activation_layer<Desc>;                            ///< The current layer type
+    using previous_layer   = typename DBN::template layer_type<L - 1>;          ///< The previous layer type
+    using previous_context = sgd_context<DBN, previous_layer, L - 1>;           ///< The previous layer's context
+    using inputs_t         = decltype(std::declval<previous_context>().output); ///< The type of inputs
 
-    using inputs_t = transform_output_type_t<DBN, layer_t>;
+    inputs_t input;  ///< A batch of input
+    inputs_t output; ///< A batch of output
+    inputs_t errors; ///< A batch of errors
 
-    inputs_t input;
-    inputs_t output;
-    inputs_t errors;
+    sgd_context(layer_t& /*layer*/){}
 };
 
 } //end of dll namespace

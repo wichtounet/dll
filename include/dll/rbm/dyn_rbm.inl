@@ -131,12 +131,6 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
     }
 
     // This is specific to dyn because of the nv/nh
-    template <typename DBN>
-    void init_sgd_context() {
-        this->sgd_context_ptr = std::make_shared<sgd_context<DBN, this_type>>(num_visible, num_hidden);
-    }
-
-    // This is specific to dyn because of the nv/nh
     void init_cg_context() {
         if (!this->cg_context_ptr) {
             this->cg_context_ptr = std::make_shared<cg_context<this_type>>(num_visible, num_hidden);
@@ -264,8 +258,8 @@ struct rbm_layer_base_traits<dyn_rbm<Desc>> {
 /*!
  * \brief Specialization of sgd_context for dyn_rbm
  */
-template <typename DBN, typename Desc>
-struct sgd_context<DBN, dyn_rbm<Desc>> {
+template <typename DBN, typename Desc, size_t L>
+struct sgd_context<DBN, dyn_rbm<Desc>, L> {
     using layer_t = dyn_rbm<Desc>;
     using weight  = typename layer_t::weight;
 
@@ -281,10 +275,10 @@ struct sgd_context<DBN, dyn_rbm<Desc>> {
     etl::dyn_matrix<weight, 2> output;
     etl::dyn_matrix<weight, 2> errors;
 
-    sgd_context(size_t num_visible, size_t num_hidden)
-            : w_grad(num_visible, num_hidden), b_grad(num_hidden),
-              w_inc(num_visible, num_hidden, 0.0), b_inc(num_hidden, 0.0),
-              input(batch_size, num_visible, 0.0), output(batch_size, num_hidden, 0.0), errors(batch_size, num_hidden, 0.0) {}
+    sgd_context(layer_t& layer)
+            : w_grad(layer.num_visible, layer.num_hidden), b_grad(layer.num_hidden),
+              w_inc(layer.num_visible, layer.num_hidden, 0.0), b_inc(layer.num_hidden, 0.0),
+              input(batch_size, layer.num_visible, 0.0), output(batch_size, layer.num_hidden, 0.0), errors(batch_size, layer.num_hidden, 0.0) {}
 };
 
 /*!

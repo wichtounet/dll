@@ -122,8 +122,8 @@ struct layer_base_traits<normalize_layer<Desc>> {
 /*!
  * \brief Specialization of sgd_context for normalize_layer
  */
-template <typename DBN, typename Desc>
-struct sgd_context<DBN, normalize_layer<Desc>> {
+template <typename DBN, typename Desc, size_t L>
+struct sgd_context<DBN, normalize_layer<Desc>, L> {
     using layer_t = normalize_layer<Desc>;
     using weight  = typename DBN::weight;
 

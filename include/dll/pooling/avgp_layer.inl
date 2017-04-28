@@ -147,8 +147,8 @@ struct layer_base_traits<avgp_layer_3d<Desc>> {
 /*!
  * \brief Specialization of sgd_context for mp_layer_3d
  */
-template <typename DBN, typename Desc>
-struct sgd_context<DBN, avgp_layer_3d<Desc>> {
+template <typename DBN, typename Desc, size_t L>
+struct sgd_context<DBN, avgp_layer_3d<Desc>, L> {
     using layer_t = avgp_layer_3d<Desc>;
     using weight  = typename layer_t::weight;
 
@@ -165,6 +165,8 @@ struct sgd_context<DBN, avgp_layer_3d<Desc>> {
     etl::fast_matrix<weight, batch_size, I1, I2, I3> input;
     etl::fast_matrix<weight, batch_size, O1, O2, O3> output;
     etl::fast_matrix<weight, batch_size, O1, O2, O3> errors;
+
+    sgd_context(avgp_layer_3d<Desc>& /*layer*/){}
 };
 
 } //end of dll namespace

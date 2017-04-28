@@ -274,8 +274,8 @@ struct layer_base_traits<dense_layer<Desc>> {
 /*!
  * \brief specialization of sgd_context for dense_layer
  */
-template <typename DBN, typename Desc>
-struct sgd_context<DBN, dense_layer<Desc>> {
+template <typename DBN, typename Desc, size_t L>
+struct sgd_context<DBN, dense_layer<Desc>, L> {
     using layer_t = dense_layer<Desc>;
     using weight  = typename layer_t::weight;
 
@@ -294,7 +294,7 @@ struct sgd_context<DBN, dense_layer<Desc>> {
     etl::fast_matrix<weight, batch_size, num_hidden> output;
     etl::fast_matrix<weight, batch_size, num_hidden> errors;
 
-    sgd_context()
+    sgd_context(const dense_layer<Desc>& /* layer */)
             : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
 };
 
