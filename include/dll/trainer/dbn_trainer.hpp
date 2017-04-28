@@ -70,8 +70,8 @@ struct dbn_trainer {
     error_type error      = 0.0; ///< The current error
 
     template <typename Iterator, typename LIterator>
-    error_type train(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t max_epochs) {
-        auto error_function = [&dbn, first, last, lfirst, llast]() {
+    error_type train(DBN& dbn, Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, size_t max_epochs) {
+        auto error_function = [&dbn, &first, &last, &lfirst, &llast]() {
             return test_set(dbn, first, last, lfirst, llast,
                             [](dbn_t& dbn, auto& image) { return dbn.predict(image); });
         };
@@ -84,7 +84,10 @@ struct dbn_trainer {
             // NOP
         };
 
-        return train_impl(dbn, false, first, last, lfirst, llast, max_epochs, error_function, input_transformer, label_transformer);
+        return train_impl(dbn, false,
+            std::forward<Iterator>(first), std::forward<Iterator>(last),
+            std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
+            max_epochs, error_function, input_transformer, label_transformer);
     }
 
     template <typename Iterator>
@@ -270,7 +273,7 @@ struct dbn_trainer {
 private:
 
     template <typename Iterator, typename LIterator, typename Error, typename InputTransformer, typename LabelTransformer>
-    error_type train_impl(DBN& dbn, bool ae, Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t max_epochs, Error error_function, InputTransformer input_transformer, LabelTransformer label_transformer) {
+    error_type train_impl(DBN& dbn, bool ae, Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, size_t max_epochs, Error error_function, InputTransformer input_transformer, LabelTransformer label_transformer) {
         dll::auto_timer timer("dbn::trainer::train_impl");
 
         cpp_unused(llast);
@@ -281,9 +284,13 @@ private:
         // Train the model
 
         if (!dbn.batch_mode()) {
-            train_fast_full(dbn, ae, first, last, lfirst, max_epochs, input_transformer, label_transformer);
+            train_fast_full(dbn, ae,
+                std::forward<Iterator>(first), std::forward<Iterator>(last),
+                std::forward<LIterator>(lfirst), max_epochs, input_transformer, label_transformer);
         } else {
-            train_batch_full(dbn, first, last, lfirst, max_epochs, error_function, input_transformer, label_transformer);
+            train_batch_full(dbn,
+                std::forward<Iterator>(first), std::forward<Iterator>(last),
+                std::forward<LIterator>(lfirst), max_epochs, error_function, input_transformer, label_transformer);
         }
 
         // Finalization
@@ -442,7 +449,7 @@ private:
     }
 
     template <typename Iterator, typename LIterator, typename Error, typename InputTransformer, typename LabelTransformer>
-    void train_batch_full(DBN& dbn, Iterator first, Iterator last, LIterator lfirst, size_t max_epochs, Error error_function, InputTransformer input_transformer, LabelTransformer label_transformer) {
+    void train_batch_full(DBN& dbn, Iterator&& first, Iterator&& last, LIterator&& lfirst, size_t max_epochs, Error error_function, InputTransformer input_transformer, LabelTransformer label_transformer) {
 
         decltype(auto) input_layer  = dbn.template layer_get<dbn_t::input_layer_n>();
         decltype(auto) output_layer = dbn.template layer_get<dbn_t::output_layer_n>();
@@ -458,6 +465,7 @@ private:
 
         //Train for max_epochs epoch
         for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
+            // Copy the iterators for a new epoch
             auto it = first;
             auto lit = lfirst;
 
