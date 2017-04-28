@@ -11,7 +11,6 @@
 
 #include "dll/neural/conv_layer.hpp"
 #include "dll/neural/dense_layer.hpp"
-#include "dll/neural/activation_layer.hpp"
 #include "dll/dbn.hpp"
 #include "dll/pooling/mp_layer.hpp"
 #include "dll/pooling/avgp_layer.hpp"
