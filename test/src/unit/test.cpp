@@ -6,4 +6,4 @@
 //=======================================================================
 
 #define CATCH_CONFIG_MAIN
-#include "catch.hpp"
+#include "dll_test.hpp"
