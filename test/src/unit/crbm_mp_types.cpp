@@ -14,7 +14,7 @@
 #include <list>
 #include <deque>
 
-#include "catch.hpp"
+#include "dll_test.hpp"
 #include "template_test.hpp"
 
 #include "dll/rbm/conv_rbm_mp.hpp"
