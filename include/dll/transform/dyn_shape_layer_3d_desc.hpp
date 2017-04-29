@@ -9,24 +9,17 @@
 
 namespace dll {
 
-template <size_t S_T = 30>
-struct shape_layer_1d_desc {
-    static constexpr const size_t S = S_T; ///< The size
-
+struct dyn_shape_layer_3d_desc {
     /*!
      * A list of all the parameters of the descriptor
      */
     using parameters = cpp::type_list<>;
 
-    /*!
-     * The layer type
-     */
-    using layer_t = shape_layer_1d<shape_layer_1d_desc<S_T>>;
+    /*! The layer type */
+    using layer_t = dyn_shape_layer_3d<dyn_shape_layer_3d_desc>;
 
-    /*!
-     * The dynamic layer type
-     */
-    using dyn_layer_t = dyn_shape_layer_1d<dyn_shape_layer_1d_desc>;
+    /*! The layer type */
+    using dyn_layer_t = dyn_shape_layer_3d<dyn_shape_layer_3d_desc>;
 };
 
 } //end of dll namespace

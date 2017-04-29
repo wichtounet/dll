@@ -28,7 +28,7 @@ struct shape_layer_3d_desc {
     /*!
      * The dynamic layer type
      */
-    //TODO using dyn_layer_t = binarize_layer<binarize_layer_desc<T_T>>;
+    using dyn_layer_t = dyn_shape_layer_3d<dyn_shape_layer_3d_desc>;
 };
 
 } //end of dll namespace

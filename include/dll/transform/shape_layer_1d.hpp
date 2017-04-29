@@ -7,7 +7,7 @@
 
 #pragma once
 
+#include "dll/transform/dyn_shape_layer_1d.hpp"
+
 #include "dll/transform/shape_layer_1d.inl"
 #include "dll/transform/shape_layer_1d_desc.hpp"
-
-//TODO #include "dll/transform/dyn_shape_layer_1d.inl"
