@@ -26,6 +26,7 @@
 #include "dll/transform/normalize_layer.hpp"
 #include "dll/transform/rectifier_layer.hpp"
 #include "dll/transform/lcn_layer.hpp"
+#include "dll/transform/shape_layer_1d.hpp"
 
 #include "dll/trainer/conjugate_gradient.hpp"
 #include "dll/trainer/stochastic_gradient_descent.hpp"
@@ -127,6 +128,7 @@ TEST_CASE("hybrid/mnist/4", "") {
 TEST_CASE("hybrid/mnist/6", "") {
     typedef dll::dyn_dbn_desc<
         dll::dbn_layers<
+            dll::shape_layer_1d_desc<28 * 28>::layer_t,
             dll::binarize_layer_desc<30>::layer_t,
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
             dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::layer_t,
@@ -143,6 +145,7 @@ TEST_CASE("hybrid/mnist/6", "") {
 TEST_CASE("hybrid/mnist/7", "") {
     typedef dll::dyn_dbn_desc<
         dll::dbn_layers<
+            dll::shape_layer_1d_desc<28 * 28>::layer_t,
             dll::normalize_layer_desc::layer_t,
             dll::rbm_desc<28 * 28, 200, dll::momentum, dll::batch_size<25>, dll::visible<dll::unit_type::GAUSSIAN>>::layer_t,
             dll::rbm_desc<200, 500, dll::momentum, dll::batch_size<25>>::layer_t,
@@ -159,6 +162,7 @@ TEST_CASE("hybrid/mnist/7", "") {
 TEST_CASE("hybrid/mnist/8", "[dense][dbn][mnist][sgd]") {
     typedef dll::dyn_dbn_desc<
         dll::dbn_layers<
+            dll::shape_layer_1d_desc<28 * 28>::layer_t,
             dll::scale_layer_desc<1, 256>::layer_t,
             dll::dense_desc<28 * 28, 100, dll::activation<dll::function::SIGMOID>>::layer_t,
             dll::dense_desc<100, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,

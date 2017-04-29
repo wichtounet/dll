@@ -11,6 +11,7 @@
 
 #include "dll/neural/dyn_dense_layer.hpp"
 #include "dll/transform/scale_layer.hpp"
+#include "dll/transform/shape_layer_1d.hpp"
 #include "dll/dbn.hpp"
 #include "dll/trainer/stochastic_gradient_descent.hpp"
 
@@ -169,6 +170,7 @@ TEST_CASE("dyn_dense/sgd/5", "[dense][dbn][mnist][sgd]") {
 TEST_CASE("dyn_dense/sgd/6", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
+            dll::shape_layer_1d_desc<28 * 28>::layer_t,
             dll::scale_layer_desc<1, 256>::layer_t,
             dll::dyn_dense_desc<dll::activation<dll::function::SIGMOID>>::layer_t,
             dll::dyn_dense_desc<dll::activation<dll::function::SOFTMAX>>::layer_t>,
@@ -183,8 +185,8 @@ TEST_CASE("dyn_dense/sgd/6", "[dense][dbn][mnist][sgd]") {
     dbn->final_momentum   = 0.9;
     dbn->learning_rate    = 0.01;
 
-    dbn->template layer_get<1>().init_layer(28 * 28, 100);
-    dbn->template layer_get<2>().init_layer(100, 10);
+    dbn->template layer_get<2>().init_layer(28 * 28, 100);
+    dbn->template layer_get<3>().init_layer(100, 10);
 
     auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
     std::cout << "ft_error:" << ft_error << std::endl;
@@ -233,6 +235,7 @@ TEST_CASE("dyn_dense/sgd/7", "[dense][dbn][mnist][sgd]") {
 TEST_CASE("dyn_dense/sgd/8", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
+            dll::shape_layer_1d_desc<28 * 28>::layer_t,
             dll::scale_layer_desc<1, 256>::layer_t,
             dll::dyn_dense_desc<dll::activation<dll::function::TANH>>::layer_t,
             dll::dyn_dense_desc<dll::activation<dll::function::TANH>>::layer_t>,
@@ -245,8 +248,8 @@ TEST_CASE("dyn_dense/sgd/8", "[dense][dbn][mnist][sgd]") {
 
     dbn->learning_rate = 0.05;
 
-    dbn->template layer_get<1>().init_layer(28 * 28, 100);
-    dbn->template layer_get<2>().init_layer(100, 10);
+    dbn->template layer_get<2>().init_layer(28 * 28, 100);
+    dbn->template layer_get<3>().init_layer(100, 10);
 
     auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
     std::cout << "ft_error:" << ft_error << std::endl;

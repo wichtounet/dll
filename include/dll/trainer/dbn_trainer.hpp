@@ -415,6 +415,10 @@ private:
         for (size_t i = 0; i < batches; ++i) {
             dll::auto_timer timer("dbn::trainer::train_impl::epoch::batch");
 
+            if /*constexpr*/ (dbn_traits<dbn_t>::is_verbose()){
+                watcher.ft_batch_start(epoch, dbn);
+            }
+
             const auto start = i * batch_size;
             const auto end   = std::min(start + batch_size, n);
 
@@ -426,7 +430,7 @@ private:
                 slice(labels, start, end),
                 input_transformer);
 
-            if(dbn_traits<dbn_t>::is_verbose()){
+            if /*constexpr*/ (dbn_traits<dbn_t>::is_verbose()){
                 watcher.ft_batch_end(epoch, i, batches, batch_error, batch_loss, dbn);
             }
 
@@ -496,6 +500,10 @@ private:
                     const auto start       = b * batch_size;
                     const auto end         = (b + 1) * batch_size;
 
+                    if /*constexpr*/ (dbn_traits<dbn_t>::is_verbose()){
+                        watcher.ft_batch_start(epoch, dbn);
+                    }
+
                     double batch_error;
                     double batch_loss;
                     std::tie(batch_error, batch_loss) = trainer->train_batch(
@@ -504,7 +512,7 @@ private:
                         slice(label_cache, start, end),
                         input_transformer);
 
-                    if(dbn_traits<dbn_t>::is_verbose()){
+                    if /*constexpr*/ (dbn_traits<dbn_t>::is_verbose()){
                         watcher.ft_batch_end(epoch, batch_error, batch_loss, dbn);
                     }
 
@@ -516,6 +524,10 @@ private:
                     const auto start       = full_batches * batch_size;
                     const auto end         = i;
 
+                    if /*constexpr*/ (dbn_traits<dbn_t>::is_verbose()){
+                        watcher.ft_batch_start(epoch, dbn);
+                    }
+
                     double batch_error;
                     double batch_loss;
                     std::tie(batch_error, batch_loss) = trainer->train_batch(
@@ -524,7 +536,7 @@ private:
                         slice(label_cache, start, end),
                         input_transformer);
 
-                    if(dbn_traits<dbn_t>::is_verbose()){
+                    if /*constexpr*/ (dbn_traits<dbn_t>::is_verbose()){
                         watcher.ft_batch_end(epoch, batch_error, batch_loss, dbn);
                     }
 

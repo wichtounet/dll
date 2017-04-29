@@ -13,6 +13,7 @@
 #include "dll/rbm/rbm.hpp"
 #include "dll/dbn.hpp"
 #include "dll/transform/scale_layer.hpp"
+#include "dll/transform/shape_layer_3d.hpp"
 #include "dll/pooling/mp_layer.hpp"
 #include "dll/trainer/stochastic_gradient_descent.hpp"
 
@@ -22,6 +23,7 @@
 TEST_CASE("lenet_mix", "[dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
+            dll::shape_layer_3d_desc<1, 28, 28>::layer_t,
             dll::scale_layer_desc<1, 256>::layer_t,
             dll::conv_rbm_desc_square<1, 28, 20, 5, dll::hidden<dll::unit_type::RELU>, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::layer_t,
             dll::mp_layer_3d_desc<20, 24, 24, 1, 2, 2, dll::weight_type<float>>::layer_t,

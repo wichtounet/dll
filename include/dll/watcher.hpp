@@ -103,6 +103,7 @@ struct default_dbn_watcher {
 
     size_t ft_max_epochs = 0;
     dll::stop_timer ft_epoch_timer;
+    dll::stop_timer ft_batch_timer;
 
     cpp::stop_watch<std::chrono::seconds> watch;
 
@@ -187,13 +188,21 @@ struct default_dbn_watcher {
         std::cout.flush();
     }
 
+    void ft_batch_start(size_t epoch, const DBN& dbn) {
+        cpp_unused(epoch);
+        cpp_unused(dbn);
+        ft_epoch_timer.start();
+    }
+
     void ft_batch_end(size_t epoch, size_t batch, size_t batches, double batch_error, double batch_loss, const DBN&) {
-        printf("Epoch %3ld:%ld/%ld- B. Error: %.5f B. Loss: %.5f\n", epoch, batch, batches, batch_error, batch_loss);
+        auto duration = ft_epoch_timer.stop();
+        printf("Epoch %3ld:%ld/%ld- B. Error: %.5f B. Loss: %.5f Time %ldms\n", epoch, batch, batches, batch_error, batch_loss, duration);
         std::cout.flush();
     }
 
     void ft_batch_end(size_t epoch, double batch_error, double batch_loss, const DBN&) {
-        printf("Epoch %3ld - B.Error: %.5f B.Loss: %.5f\n", epoch, batch_error, batch_loss);
+        auto duration = ft_epoch_timer.stop();
+        printf("Epoch %3ld - B.Error: %.5f B.Loss: %.5f Time %ldms\n", epoch, batch_error, batch_loss, duration);
         std::cout.flush();
     }
 
@@ -233,6 +242,8 @@ struct mute_dbn_watcher {
 
     void ft_epoch_end(std::size_t /*epoch*/, double /*error*/, const DBN& /*dbn*/) {}
 
+
+    void ft_batch_start(size_t /*epoch*/, const DBN&) {}
     void ft_batch_end(size_t /*epoch*/, size_t /*batch*/, size_t /*batches*/, double /*batch_error*/, const DBN& /*dbn*/) {}
     void ft_batch_end(size_t /*epoch*/, double /*batch_error*/, const DBN& /*dbn*/) {}
 
