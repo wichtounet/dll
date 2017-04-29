@@ -147,9 +147,9 @@ struct sgd_context<DBN, dyn_mp_layer_3d<Desc>, L> {
     etl::dyn_matrix<weight, 4> errors;
 
     sgd_context(layer_t& layer)
-            : input(batch_size, layer.base::i1, layer.base::i2, layer.base::i3),
-              output(batch_size, layer.base::i1 / layer.base::c1, layer.base::i2 / layer.base::c2, layer.base::i3 / layer.base::c3),
-              errors(batch_size, layer.base::i1 / layer.base::c1, layer.base::i2 / layer.base::c2, layer.base::i3 / layer.base::c3) {}
+            : input(batch_size, layer.i1, layer.i2, layer.i3),
+              output(batch_size, layer.i1 / layer.c1, layer.i2 / layer.c2, layer.i3 / layer.c3),
+              errors(batch_size, layer.i1 / layer.c1, layer.i2 / layer.c2, layer.i3 / layer.c3) {}
 };
 
 
