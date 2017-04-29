@@ -75,7 +75,7 @@ TEST_CASE("unit/dyn_crbm_mp/mnist/3", "[dyn_crbm_mp][denoising][unit]") {
     cpp::normalize_each(noisy);
 
     auto error = rbm.train_denoising(noisy, dataset.training_images, 50);
-    REQUIRE(error < 1e-1);
+    REQUIRE(error < 0.3);
     cpp_unused(error);
 }
 
