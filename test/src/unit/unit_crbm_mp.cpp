@@ -73,7 +73,7 @@ TEST_CASE("unit/crbm_mp/mnist/4", "[crbm_mp][denoising][unit]") {
         dll::visible<dll::unit_type::GAUSSIAN>,
         dll::shuffle>::layer_t rbm;
 
-    rbm.learning_rate *= 4;
+    rbm.learning_rate *= 2;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(200);
     REQUIRE(!dataset.training_images.empty());
@@ -83,7 +83,7 @@ TEST_CASE("unit/crbm_mp/mnist/4", "[crbm_mp][denoising][unit]") {
     auto noisy = dataset.training_images;
 
     std::default_random_engine rand_engine(56);
-    std::normal_distribution<float> normal_distribution(0.0, 0.1);
+    std::normal_distribution<float> normal_distribution(0.0, 0.05);
     auto noise = std::bind(normal_distribution, rand_engine);
 
     for (auto& image : noisy) {
@@ -95,7 +95,7 @@ TEST_CASE("unit/crbm_mp/mnist/4", "[crbm_mp][denoising][unit]") {
     cpp::normalize_each(noisy);
 
     auto error = rbm.train_denoising(noisy, dataset.training_images, 50);
-    REQUIRE(error < 1e-1);
+    REQUIRE(error < 0.27);
     cpp_unused(error);
 }
 
