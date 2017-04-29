@@ -361,12 +361,12 @@ TEST_CASE("dense/sgd/12", "[dense][dbn][mnist][sgd]") {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->learning_rate = 0.05;
+    dbn->learning_rate = 0.1;
 
     auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
     std::cout << "ft_error:" << ft_error << std::endl;
 
-    CHECK(ft_error < 5e-2);
+    CHECK(ft_error < 0.1);
 
     auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
     std::cout << "test_error:" << test_error << std::endl;
