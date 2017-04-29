@@ -140,7 +140,6 @@ struct sgd_trainer {
         auto& first_layer = std::get<0>(full_context).first;
         auto& first_ctx   = *std::get<0>(full_context).second;
 
-        auto& last_layer = std::get<layers - 1>(full_context).first;
         auto& last_ctx   = *std::get<layers - 1>(full_context).second;
 
         const bool full_batch = etl::dim<0>(inputs) == etl::dim<0>(first_ctx.input);
