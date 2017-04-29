@@ -19,6 +19,24 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
+// Test Sigmoid network
+TEST_CASE("unit/dense/sgd/0", "[unit][dense][dbn][mnist][sgd]") {
+    typedef dll::dbn_desc<
+        dll::dbn_layers<
+            dll::dense_desc<28 * 28, 10>::layer_t>,
+        dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(350);
+    REQUIRE(!dataset.training_images.empty());
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->learning_rate = 0.03;
+
+    FT_CHECK(50, 5e-2);
+    TEST_CHECK(0.3);
+}
+
 // Test Sigmoid -> Sigmoid network
 TEST_CASE("unit/dense/sgd/1", "[unit][dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
