@@ -86,6 +86,34 @@ TEST_CASE("initializer/gaussian", "[dense][unit][mnist][sgd]") {
 
     CHECK(ft_error < 5e-2);
 
+    // Gaussian has very large weights and biases, leading to overfitting
+    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
+    std::cout << "test_error:" << test_error << std::endl;
+    REQUIRE(test_error < 0.4);
+}
+
+TEST_CASE("initializer/small_gaussian", "[dense][unit][mnist][sgd]") {
+    typedef dll::dbn_desc<
+        dll::dbn_layers<
+            dll::dense_desc<28 * 28, 100, dll::initializer<dll::initializer_type::SMALL_GAUSSIAN>, dll::initializer_bias<dll::initializer_type::SMALL_GAUSSIAN>>::layer_t,
+            dll::dense_desc<100, 10, dll::initializer<dll::initializer_type::SMALL_GAUSSIAN>, dll::initializer_bias<dll::initializer_type::SMALL_GAUSSIAN>, dll::activation<dll::function::SOFTMAX>>::layer_t
+        >,
+        dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(500);
+    REQUIRE(!dataset.training_images.empty());
+
+    dll_test::mnist_scale(dataset);
+
+    auto dbn = std::make_unique<dbn_t>();
+
+    dbn->learning_rate = 0.05;
+
+    auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 50);
+    std::cout << "ft_error:" << ft_error << std::endl;
+
+    CHECK(ft_error < 5e-2);
+
     auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
     std::cout << "test_error:" << test_error << std::endl;
     REQUIRE(test_error < 0.2);
