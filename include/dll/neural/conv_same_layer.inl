@@ -198,7 +198,7 @@ struct conv_same_layer final : neural_layer<conv_same_layer<Desc>, Desc> {
         dll::auto_timer timer("conv_same:compute_gradients");
 
         context.w_grad = etl::conv_4d_valid_filter_flipped<1, 1, P1, P2>(context.input, context.errors);
-        context.b_grad = etl::mean_r(etl::sum_l(context.errors));
+        context.b_grad = bias_batch_mean(context.errors);
     }
 };
 

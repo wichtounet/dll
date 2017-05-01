@@ -184,7 +184,7 @@ struct dyn_conv_same_layer final : neural_layer<dyn_conv_same_layer<Desc>, Desc>
     template<typename C>
     void compute_gradients(C& context) const {
         context.w_grad = conv_4d_valid_filter_flipped(context.input, context.errors, 1, 1, p1, p2);
-        context.b_grad = etl::mean_r(etl::sum_l(context.errors));
+        context.b_grad = bias_batch_mean(context.errors);
     }
 };
 
