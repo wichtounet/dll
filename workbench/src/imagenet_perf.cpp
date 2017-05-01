@@ -75,7 +75,7 @@ void first_ex(){
 
     // Train the network for performance sake
     net->display();
-    net->fine_tune(training_images, training_labels, 20);
+    net->fine_tune(training_images, training_labels, 5);
 
     std::cout << "DLL Timers" << std::endl;
     dll::dump_timers_one();
@@ -136,7 +136,7 @@ void second_ex(){
 
     // Train the network for performance sake
     net->display();
-    net->fine_tune(training_images, training_labels, 20);
+    net->fine_tune(training_images, training_labels, 5);
 
     std::cout << "DLL Timers" << std::endl;
     dll::dump_timers_one();
