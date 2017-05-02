@@ -322,6 +322,9 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
                         } else if (dllp::starts_with(lines[i], "l2_weight_cost:")) {
                             t.ft_desc.l2_weight_cost = std::stod(dllp::extract_value(lines[i], "l2_weight_cost: "));
                             ++i;
+                        } else if (dllp::starts_with(lines[i], "verbose:")) {
+                            t.ft_desc.verbose = dllp::extract_value(lines[i], "verbose: ") == "true";
+                            ++i;
                         } else if (dllp::starts_with(lines[i], "trainer: ")) {
                             t.ft_desc.trainer = dllp::extract_value(lines[i], "trainer: ");
 
@@ -544,6 +547,10 @@ void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll
 
     if (t.ft_desc.momentum != dll::processor::stupid_default) {
         out_stream << ", dll::momentum\n";
+    }
+
+    if (t.ft_desc.verbose) {
+        out_stream << ", dll::verbose\n";
     }
 
     if (t.ft_desc.batch_size > 0) {

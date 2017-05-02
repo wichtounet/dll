@@ -105,6 +105,8 @@ struct training_desc {
     double l2_weight_cost = stupid_default;
 
     std::string trainer = "none";
+
+    bool verbose = false;
 };
 
 struct weights_desc {
