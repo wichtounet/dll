@@ -113,23 +113,23 @@ void second_ex(){
 
     using dbn_t = dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_same_desc<3, 256, 256, 10, 3, 3>::layer_t,
-            dll::mp_layer_3d_desc<10, 256, 256, 1, 2, 2>::layer_t,
+            dll::conv_same_desc<3, 256, 256, 16, 3, 3>::layer_t,
+            dll::mp_layer_3d_desc<16, 256, 256, 1, 2, 2>::layer_t,
 
-            dll::conv_same_desc<10, 128, 128, 10, 3, 3>::layer_t,
-            dll::mp_layer_3d_desc<10, 128, 128, 1, 2, 2>::layer_t,
+            dll::conv_same_desc<16, 128, 128, 16, 3, 3>::layer_t,
+            dll::mp_layer_3d_desc<16, 128, 128, 1, 2, 2>::layer_t,
 
-            dll::conv_same_desc<10, 64, 64, 10, 3, 3>::layer_t,
-            dll::mp_layer_3d_desc<10, 64, 64, 1, 2, 2>::layer_t,
+            dll::conv_same_desc<16, 64, 64, 32, 3, 3>::layer_t,
+            dll::mp_layer_3d_desc<32, 64, 64, 1, 2, 2>::layer_t,
 
-            dll::conv_same_desc<10, 32, 32, 10, 3, 3>::layer_t,
-            dll::mp_layer_3d_desc<10, 32, 32, 1, 2, 2>::layer_t,
+            dll::conv_same_desc<32, 32, 32, 32, 3, 3>::layer_t,
+            dll::mp_layer_3d_desc<32, 32, 32, 1, 2, 2>::layer_t,
 
-            dll::conv_same_desc<10, 16, 16, 10, 3, 3>::layer_t,
-            dll::mp_layer_3d_desc<10, 16, 16, 1, 2, 2>::layer_t,
+            dll::conv_same_desc<32, 16, 16, 32, 3, 3>::layer_t,
+            dll::mp_layer_3d_desc<32, 16, 16, 1, 2, 2>::layer_t,
 
-            dll::dense_desc<10 * 8 * 8, 600>::layer_t,
-            dll::dense_desc<600, 1000, dll::activation<dll::function::SOFTMAX>>::layer_t>,
+            dll::dense_desc<32 * 8 * 8, 2048>::layer_t,
+            dll::dense_desc<2048, 1000, dll::activation<dll::function::SOFTMAX>>::layer_t>,
         dll::momentum, dll::verbose, dll::batch_mode, dll::big_batch_size<5>, dll::batch_size<B>, dll::trainer<dll::sgd_trainer>>::dbn_t;
 
     auto net = std::make_unique<dbn_t>();
