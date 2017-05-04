@@ -781,6 +781,76 @@ public:
         return prepare_output<layers - 1, Input>();
     }
 
+    template <typename Samples, typename Labels>
+    void evaluate(const Samples&  samples, const Labels& labels){
+        return evaluate(samples.begin(), samples.end(), labels.begin(), labels.end());
+    }
+
+    template <typename InputIterator, typename LabelIterator>
+    void evaluate(InputIterator&& iit, InputIterator&& iend, LabelIterator&& lit, LabelIterator&& lend){
+        auto metrics = evaluate_metrics(
+            std::forward<InputIterator>(iit), std::forward<InputIterator>(iend),
+            std::forward<LabelIterator>(lit), std::forward<LabelIterator>(lend));
+
+        printf("error: %.5f \n", std::get<0>(metrics));
+    }
+
+    using metrics_t = std::tuple<double>;
+
+    template <typename InputIterator, typename LabelIterator>
+    metrics_t evaluate_metrics(InputIterator iit, InputIterator iend, LabelIterator lit, LabelIterator lend){
+        cpp_unused(lend);
+
+        decltype(auto) input_layer  = this->template layer_get<input_layer_n>();
+        decltype(auto) output_layer = this->template layer_get<output_layer_n>();
+
+        etl::dyn_matrix<weight, 2> input_batch(batch_size, input_layer.input_size());
+        etl::dyn_matrix<weight, 2> label_batch(batch_size, output_layer.output_size());
+
+        double error = 0.0;
+        size_t count = 0;
+
+        while(iit != iend){
+            size_t n = 0;
+
+            while(n < batch_size && iit != iend){
+                input_batch(n) = *iit;
+
+                label_batch(n) = 0.0;
+                label_batch(n)(*lit) = 1.0;
+
+                ++iit;
+                ++lit;
+                ++n;
+            }
+
+            if(cpp_likely(n == batch_size)){
+                // Handle full batch
+
+                decltype(auto) output = this->forward_batch(input_batch);
+
+                for(size_t i = 0; i < batch_size; ++i){
+                    error += std::min<double>(1.0, etl::asum(label_batch(i) - one_if_max(output(i))));
+                }
+            } else {
+                // Handle partial batch
+
+                decltype(auto) output = this->forward_batch(slice(input_batch, 0, n));
+
+                for(size_t i = 0; i < n; ++i){
+                    error += std::min<double>(1.0, etl::asum(label_batch(i) - one_if_max(output(i))));
+                }
+            }
+
+            count += n;
+        }
+
+        // Normalize the error
+        error /= count;
+
+        return std::make_tuple(error);
+    }
+
 private:
     template<typename T>
     using is_multi_t = etl::matrix_detail::is_vector<std::decay_t<T>>;

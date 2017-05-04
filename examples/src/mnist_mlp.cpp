@@ -44,5 +44,7 @@ int main(int /*argc*/, char* /*argv*/ []) {
     auto error = dll::test_set(net, dataset.test_images, dataset.test_labels, dll::predictor());
     std::cout << "Test error: " << error << std::endl;
 
+    net->evaluate(dataset.test_images, dataset.test_labels);
+
     return 0;
 }
