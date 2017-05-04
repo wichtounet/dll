@@ -169,6 +169,7 @@ $(eval $(call auto_folder_compile,test/src/perf,-Itest/include))
 $(eval $(call auto_folder_compile,test/src/misc,-Itest/include))
 $(eval $(call auto_folder_compile,view/src))
 $(eval $(call auto_folder_compile,workbench/src,-DDLL_SILENT))
+$(eval $(call auto_folder_compile,examples/src))
 
 # Generate executable for the prepropcessor
 $(eval $(call add_executable,dllp,$(PROCESSOR_CPP_FILES)))
@@ -218,10 +219,14 @@ $(eval $(call add_executable,dll_compile_dyn_crbm,workbench/src/compile_dyn_crbm
 $(eval $(call add_executable,dll_compile_hybrid_crbm_one,workbench/src/compile_hybrid_crbm_one.cpp))
 $(eval $(call add_executable,dll_compile_hybrid_crbm,workbench/src/compile_hybrid_crbm.cpp))
 
+# Examples
+$(eval $(call add_executable,dll_mnist_mlp,examples/src/mnist_mlp.cpp))
+
 $(eval $(call add_executable_set,dll_perf_paper,dll_perf_paper))
 $(eval $(call add_executable_set,dll_perf_paper_conv,dll_perf_paper_conv))
 $(eval $(call add_executable_set,dll_perf_conv,dll_perf_conv))
 $(eval $(call add_executable_set,dll_conv_types,dll_conv_types))
+$(eval $(call add_executable_set,dll_mnist_mlp,dll_mnist_mlp))
 
 release: release_dllp release_dll_test_unit release_dll_test_perf release_dll_test_misc release_dll_view
 release_debug: release_debug_dllp release_debug_dll_test_unit release_debug_dll_test_perf release_debug_dll_test_misc release_debug_dll_view
