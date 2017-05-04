@@ -5,8 +5,6 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include <deque>
-
 #include "dll/neural/dense_layer.hpp"
 #include "dll/test.hpp"
 #include "dll/dbn.hpp"
