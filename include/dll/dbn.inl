@@ -781,11 +781,29 @@ public:
         return prepare_output<layers - 1, Input>();
     }
 
+    /*!
+     * \brief Evaluate the network on the given classification task.
+     *
+     * The result of the evaluation will be printed on the console.
+     *
+     * \param samples The container containing the samples
+     * \param labels The container containing the labels
+     */
     template <typename Samples, typename Labels>
     void evaluate(const Samples&  samples, const Labels& labels){
         return evaluate(samples.begin(), samples.end(), labels.begin(), labels.end());
     }
 
+    /*!
+     * \brief Evaluate the network on the given classification task.
+     *
+     * The result of the evaluation will be printed on the console.
+     *
+     * \param iit The beginning of the range of the samples
+     * \param iend The end of the range of the samples
+     * \param lit The beginning of the range of the labels
+     * \param lend The end of the range of the labels
+     */
     template <typename InputIterator, typename LabelIterator>
     void evaluate(InputIterator&& iit, InputIterator&& iend, LabelIterator&& lit, LabelIterator&& lend){
         auto metrics = evaluate_metrics(
@@ -795,6 +813,17 @@ public:
         printf("error: %.5f \n", std::get<0>(metrics));
     }
 
+    /*!
+     * \brief Evaluate the network on the given classification task
+     * and return the classification error.
+     *
+     * \param iit The beginning of the range of the samples
+     * \param iend The end of the range of the samples
+     * \param lit The beginning of the range of the labels
+     * \param lend The end of the range of the labels
+     *
+     * \return The classification error
+     */
     template <typename InputIterator, typename LabelIterator>
     double evaluate_error(InputIterator&& iit, InputIterator&& iend, LabelIterator&& lit, LabelIterator&& lend){
         auto metrics = evaluate_metrics(
@@ -804,8 +833,19 @@ public:
         return std::get<0>(metrics);
     }
 
-    using metrics_t = std::tuple<double>;
+    using metrics_t = std::tuple<double>; ///< The metrics returned by evaluate_metrics
 
+    /*!
+     * \brief Evaluate the network on the given classification task
+     * and return the evaluation metrics.
+     *
+     * \param iit The beginning of the range of the samples
+     * \param iend The end of the range of the samples
+     * \param lit The beginning of the range of the labels
+     * \param lend The end of the range of the labels
+     *
+     * \return The evaluation metrics
+     */
     template <typename InputIterator, typename LabelIterator>
     metrics_t evaluate_metrics(InputIterator iit, InputIterator iend, LabelIterator lit, LabelIterator lend){
         cpp_unused(lend);
