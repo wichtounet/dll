@@ -17,7 +17,7 @@
 
 int main(int /*argc*/, char* /*argv*/ []) {
     // Load the dataset
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>();
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>();
 
     // Limit the test
     dataset.training_images.resize(10000);
