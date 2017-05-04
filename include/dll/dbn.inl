@@ -795,17 +795,28 @@ public:
         printf("error: %.5f \n", std::get<0>(metrics));
     }
 
+    template <typename InputIterator, typename LabelIterator>
+    double evaluate_error(InputIterator&& iit, InputIterator&& iend, LabelIterator&& lit, LabelIterator&& lend){
+        auto metrics = evaluate_metrics(
+            std::forward<InputIterator>(iit), std::forward<InputIterator>(iend),
+            std::forward<LabelIterator>(lit), std::forward<LabelIterator>(lend));
+
+        return std::get<0>(metrics);
+    }
+
     using metrics_t = std::tuple<double>;
 
     template <typename InputIterator, typename LabelIterator>
     metrics_t evaluate_metrics(InputIterator iit, InputIterator iend, LabelIterator lit, LabelIterator lend){
         cpp_unused(lend);
 
+        // TODO Detect if labels are categorical already or not
+        // And change the way this is done
+
         decltype(auto) input_layer  = this->template layer_get<input_layer_n>();
-        decltype(auto) output_layer = this->template layer_get<output_layer_n>();
 
         etl::dyn_matrix<weight, 2> input_batch(batch_size, input_layer.input_size());
-        etl::dyn_matrix<weight, 2> label_batch(batch_size, output_layer.output_size());
+        etl::dyn_matrix<weight, 1> label_batch(batch_size);
 
         double error = 0.0;
         size_t count = 0;
@@ -815,9 +826,7 @@ public:
 
             while(n < batch_size && iit != iend){
                 input_batch(n) = *iit;
-
-                label_batch(n) = 0.0;
-                label_batch(n)(*lit) = 1.0;
+                label_batch(n) = *lit;
 
                 ++iit;
                 ++lit;
@@ -829,17 +838,13 @@ public:
 
                 decltype(auto) output = this->forward_batch(input_batch);
 
-                for(size_t i = 0; i < batch_size; ++i){
-                    error += std::min<double>(1.0, etl::asum(label_batch(i) - one_if_max(output(i))));
-                }
+                error += sum(min(abs(label_batch - argmax(output)), 1.0));
             } else {
                 // Handle partial batch
 
                 decltype(auto) output = this->forward_batch(slice(input_batch, 0, n));
 
-                for(size_t i = 0; i < n; ++i){
-                    error += std::min<double>(1.0, etl::asum(label_batch(i) - one_if_max(output(i))));
-                }
+                error += sum(min(abs(slice(label_batch, 0, n) - argmax(slice(output, 0, n))), 1.0));
             }
 
             count += n;
