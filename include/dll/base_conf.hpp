@@ -81,6 +81,7 @@ struct init_weights_id;
 struct clip_gradients_id;
 struct weight_type_id;
 struct free_energy_id;
+struct no_epoch_error_id;
 struct memory_id;
 struct batch_mode_id;
 struct dbn_only_id;
@@ -243,6 +244,11 @@ struct shuffle_pre : basic_conf_elt<shuffle_pre_id> {};
  * !\brief Enable free energy computation
  */
 struct free_energy : basic_conf_elt<free_energy_id> {};
+
+/*
+ * !\brief Disable error calculation on epoch.
+ */
+struct no_epoch_error : basic_conf_elt<no_epoch_error_id> {};
 
 /*
  * !\brief Enable gradient clipping.

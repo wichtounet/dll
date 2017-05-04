@@ -184,7 +184,13 @@ struct default_dbn_watcher {
     void ft_epoch_end(std::size_t epoch, double error, double loss, const DBN& dbn) {
         cpp_unused(dbn);
         auto duration = ft_epoch_timer.stop();
-        printf("Epoch %3ld/%ld - Classification error: %.5f Loss: %.5f Time %ldms \n", epoch, ft_max_epochs, error, loss, duration);
+
+        if /*constexpr*/ (dbn_traits<DBN>::error_on_epoch()){
+            printf("Epoch %3ld/%ld - Classification error: %.5f Loss: %.5f Time %ldms \n", epoch, ft_max_epochs, error, loss, duration);
+        } else {
+            printf("Epoch %3ld/%ld - Loss: %.5f Time %ldms \n", epoch, ft_max_epochs, loss, duration);
+        }
+
         std::cout.flush();
     }
 
@@ -241,7 +247,6 @@ struct mute_dbn_watcher {
     void ft_epoch_start(std::size_t /*epoch*/, const DBN& /*dbn*/) {}
 
     void ft_epoch_end(std::size_t /*epoch*/, double /*error*/, const DBN& /*dbn*/) {}
-
 
     void ft_batch_start(size_t /*epoch*/, const DBN&) {}
     void ft_batch_end(size_t /*epoch*/, size_t /*batch*/, size_t /*batches*/, double /*batch_error*/, const DBN& /*dbn*/) {}

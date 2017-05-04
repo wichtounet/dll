@@ -56,6 +56,13 @@ struct dbn_traits {
     }
 
     /*!
+     * \brief Indicates if the DBN computes error on epoch.
+     */
+    static constexpr bool error_on_epoch() noexcept {
+        return !desc::parameters::template contains<dll::no_epoch_error>();
+    }
+
+    /*!
      * \brief Indicates if the DBN shuffles the inputs before each
      * fine-tuning epoch.
      */

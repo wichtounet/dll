@@ -235,8 +235,10 @@ struct dbn_trainer {
         watcher.ft_epoch_end(epoch, new_error, loss, dbn);
 
         //Once the goal is reached, stop training
-        if (new_error <= dbn.goal) {
-            return true;
+        if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()){
+            if (new_error <= dbn.goal) {
+                return true;
+            }
         }
 
         if (dbn_traits<dbn_t>::lr_driver() == lr_driver_type::BOLD) {
@@ -442,10 +444,12 @@ private:
         // Compute the error at this epoch
         double new_error;
 
-        {
+        if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()){
             dll::auto_timer timer("dbn::trainer::train_impl::epoch::error");
 
             new_error = batch_error_function(dbn, ae, data, labels);
+        } else {
+            new_error = -1.0;
         }
 
         return {loss, new_error};
@@ -453,7 +457,6 @@ private:
 
     template <typename Iterator, typename LIterator, typename Error, typename InputTransformer, typename LabelTransformer>
     void train_batch_full(DBN& dbn, Iterator&& first, Iterator&& last, LIterator&& lfirst, size_t max_epochs, Error error_function, InputTransformer input_transformer, LabelTransformer label_transformer) {
-
         decltype(auto) input_layer  = dbn.template layer_get<dbn_t::input_layer_n>();
         decltype(auto) output_layer = dbn.template layer_get<dbn_t::output_layer_n>();
 
@@ -554,9 +557,11 @@ private:
 
             watcher.ft_epoch_end(epoch, error, loss, dbn);
 
-            //Once the goal is reached, stop training
-            if (error <= dbn.goal) {
-                break;
+            if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()){
+                //Once the goal is reached, stop training
+                if (error <= dbn.goal) {
+                    break;
+                }
             }
         }
     }
