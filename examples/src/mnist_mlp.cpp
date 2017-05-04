@@ -41,9 +41,6 @@ int main(int /*argc*/, char* /*argv*/ []) {
     net->fine_tune(dataset.training_images, dataset.training_labels, 20);
 
     // Test the network on test set
-    auto error = dll::test_set(net, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "Test error: " << error << std::endl;
-
     net->evaluate(dataset.test_images, dataset.test_labels);
 
     return 0;
