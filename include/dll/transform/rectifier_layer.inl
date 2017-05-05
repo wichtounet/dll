@@ -22,7 +22,7 @@ struct rectifier_layer : transform_layer<rectifier_layer<Desc>> {
     using desc = Desc; ///< The descriptor type
     using base_type = transform_layer<rectifier_layer<Desc>>; ///< The base type
 
-    static constexpr const rectifier_method method = desc::method; ///< The rectifier method
+    static constexpr rectifier_method method = desc::method; ///< The rectifier method
 
     static_assert(method == rectifier_method::ABS, "Only ABS rectifier has been implemented");
 

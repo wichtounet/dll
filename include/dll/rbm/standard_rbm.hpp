@@ -46,8 +46,8 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
     using input_t      = typename rbm_base_traits<parent_t>::input_t;
     using output_t     = typename rbm_base_traits<parent_t>::output_t;
 
-    static constexpr const unit_type visible_unit = desc::visible_unit;
-    static constexpr const unit_type hidden_unit  = desc::hidden_unit;
+    static constexpr unit_type visible_unit = desc::visible_unit;
+    static constexpr unit_type hidden_unit  = desc::hidden_unit;
 
     static_assert(visible_unit != unit_type::SOFTMAX, "Softmax Visible units are not support");
     static_assert(hidden_unit != unit_type::GAUSSIAN, "Gaussian hidden units are not supported");

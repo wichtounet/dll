@@ -16,7 +16,7 @@ struct activation_layer_desc {
      */
     using parameters = cpp::type_list<Parameters...>;
 
-    static constexpr const function activation_function = detail::get_value<activation<function::SIGMOID>, Parameters...>::value;
+    static constexpr function activation_function = detail::get_value<activation<function::SIGMOID>, Parameters...>::value;
 
     /*!
      * The layer type

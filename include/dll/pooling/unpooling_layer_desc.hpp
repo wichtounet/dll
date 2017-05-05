@@ -11,12 +11,12 @@ namespace dll {
 
 template <std::size_t T_I1, std::size_t T_I2, std::size_t T_I3, std::size_t T_C1, std::size_t T_C2, std::size_t T_C3, typename... Parameters>
 struct unpooling_layer_3d_desc {
-    static constexpr const std::size_t I1 = T_I1;
-    static constexpr const std::size_t I2 = T_I2;
-    static constexpr const std::size_t I3 = T_I3;
-    static constexpr const std::size_t C1 = T_C1;
-    static constexpr const std::size_t C2 = T_C2;
-    static constexpr const std::size_t C3 = T_C3;
+    static constexpr std::size_t I1 = T_I1;
+    static constexpr std::size_t I2 = T_I2;
+    static constexpr std::size_t I3 = T_I3;
+    static constexpr std::size_t C1 = T_C1;
+    static constexpr std::size_t C2 = T_C2;
+    static constexpr std::size_t C3 = T_C3;
 
     /*! The type used to store the weights */
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;

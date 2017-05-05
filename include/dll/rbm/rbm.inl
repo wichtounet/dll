@@ -40,12 +40,12 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
     using input_one_t  = typename rbm_base_traits<this_type>::input_one_t;
     using output_one_t = typename rbm_base_traits<this_type>::output_one_t;
 
-    static constexpr const std::size_t num_visible = desc::num_visible; ///< The number of visible units
-    static constexpr const std::size_t num_hidden  = desc::num_hidden;  ///< The number of hidden units
-    static constexpr const std::size_t batch_size  = desc::BatchSize;  ///< The mini-batch size
+    static constexpr std::size_t num_visible = desc::num_visible; ///< The number of visible units
+    static constexpr std::size_t num_hidden  = desc::num_hidden;  ///< The number of hidden units
+    static constexpr std::size_t batch_size  = desc::BatchSize;  ///< The mini-batch size
 
-    static constexpr const unit_type visible_unit = desc::visible_unit; ///< The type of visible units
-    static constexpr const unit_type hidden_unit  = desc::hidden_unit;  ///< The type of hidden units
+    static constexpr unit_type visible_unit = desc::visible_unit; ///< The type of visible units
+    static constexpr unit_type hidden_unit  = desc::hidden_unit;  ///< The type of hidden units
 
     static constexpr bool dbn_only = rbm_layer_traits<this_type>::is_dbn_only();
 
@@ -159,7 +159,7 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
             hidden_unit == unit_type::BINARY || hidden_unit == unit_type::RELU || hidden_unit == unit_type::SOFTMAX,
             "Only (C)RBM with binary, softmax or RELU hidden unit are supported");
 
-        static constexpr const function activation_function =
+        static constexpr function activation_function =
             hidden_unit == unit_type::BINARY
                 ? function::SIGMOID
                 : (hidden_unit == unit_type::SOFTMAX ? function::SOFTMAX : function::RELU);
@@ -175,7 +175,7 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
         // The reshape has no overhead, so better than SFINAE for nothing
-        constexpr const auto Batch = etl::decay_traits<H>::template dim<0>();
+        constexpr auto Batch = etl::decay_traits<H>::template dim<0>();
         etl::reshape<Batch, num_visible>(output) = context.errors * etl::transpose(w);
     }
 
@@ -287,10 +287,10 @@ struct cg_context<rbm<Desc>> {
     using rbm_t  = rbm<Desc>;
     using weight = typename rbm_t::weight;
 
-    static constexpr const bool is_trained = true;
+    static constexpr bool is_trained = true;
 
-    static constexpr const std::size_t num_visible = rbm_t::num_visible;
-    static constexpr const std::size_t num_hidden  = rbm_t::num_hidden;
+    static constexpr std::size_t num_visible = rbm_t::num_visible;
+    static constexpr std::size_t num_hidden  = rbm_t::num_hidden;
 
     etl::fast_matrix<weight, num_visible, num_hidden> gr_w_incs;
     etl::fast_vector<weight, num_hidden> gr_b_incs;

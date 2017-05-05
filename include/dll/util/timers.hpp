@@ -32,7 +32,7 @@ namespace chrono = std::chrono;
 
 namespace dll {
 
-constexpr const std::size_t max_timers = 64;
+constexpr std::size_t max_timers = 64;
 
 struct timer_t {
     const char* name;

@@ -27,8 +27,8 @@ void first_ex(){
     // First experiment : Conv -> Conv -> Dense -> Dense
     // Current speed on frigg:
 
-    constexpr const size_t N = 4096;
-    constexpr const size_t B = 128;
+    constexpr size_t N = 4096;
+    constexpr size_t B = 128;
 
     std::vector<etl::fast_dyn_matrix<float, 3, 254, 254>> training_images;
     std::vector<size_t> training_labels;
@@ -88,8 +88,8 @@ void second_ex(){
     // Second experiment : Conv -> Conv -> Dense -> Dense
     // Current speed on frigg:
 
-    constexpr const size_t N = 4096;
-    constexpr const size_t B = 128;
+    constexpr size_t N = 4096;
+    constexpr size_t B = 128;
 
     std::vector<etl::fast_dyn_matrix<float, 3, 256, 256>> training_images;
     std::vector<size_t> training_labels;

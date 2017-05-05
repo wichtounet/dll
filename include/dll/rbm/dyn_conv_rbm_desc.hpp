@@ -26,10 +26,10 @@ struct dyn_conv_rbm_desc {
      */
     using parameters = cpp::type_list<Parameters...>;
 
-    static constexpr const unit_type visible_unit   = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;
-    static constexpr const unit_type hidden_unit    = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
-    static constexpr const sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;
-    static constexpr const bias_mode Bias           = detail::get_value<bias<bias_mode::SIMPLE>, Parameters...>::value;
+    static constexpr unit_type visible_unit   = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;
+    static constexpr unit_type hidden_unit    = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
+    static constexpr sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;
+    static constexpr bias_mode Bias           = detail::get_value<bias<bias_mode::SIMPLE>, Parameters...>::value;
 
     /*! The type used to store the weights */
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;

@@ -19,7 +19,7 @@ namespace dll {
 
 template<typename From, typename To>
 struct cannot_convert {
-    static constexpr const bool value = false;
+    static constexpr bool value = false;
 };
 
 template<typename From, typename To, typename Enable = void>

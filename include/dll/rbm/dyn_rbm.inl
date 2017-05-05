@@ -31,8 +31,8 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
     using input_one_t  = typename rbm_base_traits<this_type>::input_one_t;
     using output_one_t = typename rbm_base_traits<this_type>::output_one_t;
 
-    static constexpr const unit_type visible_unit = desc::visible_unit;
-    static constexpr const unit_type hidden_unit  = desc::hidden_unit;
+    static constexpr unit_type visible_unit = desc::visible_unit;
+    static constexpr unit_type hidden_unit  = desc::hidden_unit;
 
     using w_type = etl::dyn_matrix<weight>;
     using b_type = etl::dyn_vector<weight>;
@@ -170,7 +170,7 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
             hidden_unit == unit_type::BINARY || hidden_unit == unit_type::RELU || hidden_unit == unit_type::SOFTMAX,
             "Only (C)RBM with binary, softmax or RELU hidden unit are supported");
 
-        static constexpr const function activation_function =
+        static constexpr function activation_function =
             hidden_unit == unit_type::BINARY
                 ? function::SIGMOID
                 : (hidden_unit == unit_type::SOFTMAX ? function::SOFTMAX : function::RELU);
@@ -289,7 +289,7 @@ struct cg_context<dyn_rbm<Desc>> {
     using rbm_t  = dyn_rbm<Desc>;
     using weight = typename rbm_t::weight;
 
-    static constexpr const bool is_trained = true;
+    static constexpr bool is_trained = true;
 
     etl::dyn_matrix<weight, 2> gr_w_incs;
     etl::dyn_matrix<weight, 1> gr_b_incs;

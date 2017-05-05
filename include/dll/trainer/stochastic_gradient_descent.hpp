@@ -45,8 +45,8 @@ struct sgd_trainer {
     using weight    = typename dbn_t::weight;
     using this_type = sgd_trainer<dbn_t>;
 
-    static constexpr const auto layers     = dbn_t::layers;
-    static constexpr const auto batch_size = dbn_t::batch_size;
+    static constexpr auto layers     = dbn_t::layers;
+    static constexpr auto batch_size = dbn_t::batch_size;
 
     bool ae_training = false;
 

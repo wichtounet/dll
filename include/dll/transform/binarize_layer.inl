@@ -23,7 +23,7 @@ struct binarize_layer : transform_layer<binarize_layer<Desc>> {
     using desc      = Desc;                                  ///< The descriptor type
     using base_type = transform_layer<binarize_layer<Desc>>; ///< The base type
 
-    static constexpr const std::size_t Threshold = desc::T;
+    static constexpr std::size_t Threshold = desc::T;
 
     binarize_layer() = default;
 
@@ -158,10 +158,10 @@ struct cg_context<binarize_layer<Desc>> {
     using rbm_t  = binarize_layer<Desc>;
     using weight = double;
 
-    static constexpr const bool is_trained = false;
+    static constexpr bool is_trained = false;
 
-    static constexpr const std::size_t num_visible = 1;
-    static constexpr const std::size_t num_hidden  = 1;
+    static constexpr std::size_t num_visible = 1;
+    static constexpr std::size_t num_hidden  = 1;
 
     etl::fast_matrix<weight, 1, 1> gr_w_incs;
     etl::fast_vector<weight, 1> gr_b_incs;

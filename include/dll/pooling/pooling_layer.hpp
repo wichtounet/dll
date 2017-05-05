@@ -21,18 +21,18 @@ struct pooling_layer_3d : layer<Parent> {
     using desc   = Desc;
     using weight = typename desc::weight;
 
-    static constexpr const std::size_t I1 = desc::I1; ///< The first dimension of the input
-    static constexpr const std::size_t I2 = desc::I2; ///< The second dimension of the input
-    static constexpr const std::size_t I3 = desc::I3; ///< The third dimension of the input
-    static constexpr const std::size_t C1 = desc::C1; ///< The first dimension pooling ratio
-    static constexpr const std::size_t C2 = desc::C2; ///< The second dimension pooling ratio
-    static constexpr const std::size_t C3 = desc::C3; ///< The third dimension pooling ratio
+    static constexpr std::size_t I1 = desc::I1; ///< The first dimension of the input
+    static constexpr std::size_t I2 = desc::I2; ///< The second dimension of the input
+    static constexpr std::size_t I3 = desc::I3; ///< The third dimension of the input
+    static constexpr std::size_t C1 = desc::C1; ///< The first dimension pooling ratio
+    static constexpr std::size_t C2 = desc::C2; ///< The second dimension pooling ratio
+    static constexpr std::size_t C3 = desc::C3; ///< The third dimension pooling ratio
 
-    static constexpr const std::size_t O1 = I1 / C1; ///< The first dimension of the output
-    static constexpr const std::size_t O2 = I2 / C2; ///< The second dimension of the output
-    static constexpr const std::size_t O3 = I3 / C3; ///< The third dimension of the output
+    static constexpr std::size_t O1 = I1 / C1; ///< The first dimension of the output
+    static constexpr std::size_t O2 = I2 / C2; ///< The second dimension of the output
+    static constexpr std::size_t O3 = I3 / C3; ///< The third dimension of the output
 
-    static constexpr const bool is_nop = C1 * C2 * C3 == 1; ///< Indicate if the operation has no effect
+    static constexpr bool is_nop = C1 * C2 * C3 == 1; ///< Indicate if the operation has no effect
 
     using input_one_t  = etl::fast_dyn_matrix<weight, I1, I2, I3>;
     using output_one_t = etl::fast_dyn_matrix<weight, O1, O2, O3>;
@@ -89,7 +89,7 @@ struct dyn_pooling_layer_3d : layer<Parent> {
     using desc   = Desc;
     using weight = typename desc::weight;
 
-    static constexpr const bool is_nop = false; ///< Indicate if the operation has no effect
+    static constexpr bool is_nop = false; ///< Indicate if the operation has no effect
 
     using input_one_t  = etl::dyn_matrix<weight, 3>;
     using output_one_t = etl::dyn_matrix<weight, 3>;

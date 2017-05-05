@@ -49,33 +49,33 @@ using safe_value_t = typename safe_value_type<O>::type;
 template<typename Layer>
 struct is_input_layer {
     using traits = decay_layer_traits<Layer>;
-    static constexpr const bool value = !traits::is_transform_layer() && !traits::is_augment_layer();
+    static constexpr bool value = !traits::is_transform_layer() && !traits::is_augment_layer();
 };
 
 template<size_t Layer, typename DBN, typename Enable = void>
 struct find_input_layer {
-    static constexpr const size_t L = Layer;
+    static constexpr size_t L = Layer;
 };
 
 template<size_t Layer, typename DBN>
 struct find_input_layer<Layer, DBN, std::enable_if_t<!is_input_layer<typename DBN::template layer_type<Layer>>::value>> {
-    static constexpr const size_t L = find_input_layer<Layer + 1, DBN>::L;
+    static constexpr size_t L = find_input_layer<Layer + 1, DBN>::L;
 };
 
 template<typename Layer>
 struct is_output_layer {
     using traits = decay_layer_traits<Layer>;
-    static constexpr const bool value = !traits::is_transform_layer();
+    static constexpr bool value = !traits::is_transform_layer();
 };
 
 template<size_t Layer, typename DBN, typename Enable = void>
 struct find_output_layer {
-    static constexpr const size_t L = Layer;
+    static constexpr size_t L = Layer;
 };
 
 template<size_t Layer, typename DBN>
 struct find_output_layer<Layer, DBN, std::enable_if_t<!is_output_layer<typename DBN::template layer_type<Layer>>::value>> {
-    static constexpr const size_t L = find_output_layer<Layer - 1, DBN>::L;
+    static constexpr size_t L = find_output_layer<Layer - 1, DBN>::L;
 };
 
 /*!
@@ -132,9 +132,9 @@ public:
     using const_for_each_impl_t      = dbn_detail::for_each_impl<const this_type, layers_t::size, std::make_index_sequence<layers_t::size>>;
     using const_for_each_pair_impl_t = dbn_detail::for_each_impl<const this_type, layers_t::size, std::make_index_sequence<layers_t::size - 1>>;
 
-    static constexpr const size_t layers         = layers_t::size;     ///< The number of layers
-    static constexpr const size_t batch_size     = desc::BatchSize;    ///< The batch size (for finetuning)
-    static constexpr const size_t big_batch_size = desc::BigBatchSize; ///< The number of pretraining batch to do at once
+    static constexpr size_t layers         = layers_t::size;     ///< The number of layers
+    static constexpr size_t batch_size     = desc::BatchSize;    ///< The batch size (for finetuning)
+    static constexpr size_t big_batch_size = desc::BigBatchSize; ///< The number of pretraining batch to do at once
 
     layers_t tuples; ///< The layers
 
@@ -318,7 +318,7 @@ public:
      * \tparam N The index of the layer to return (from 0)
      */
     template <size_t N>
-    constexpr const layer_type<N>& layer_get() const {
+    constexpr layer_type<N>& layer_get() const {
         return detail::layer_get<N>(tuples);
     }
 

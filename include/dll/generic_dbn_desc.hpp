@@ -35,8 +35,8 @@ struct generic_dbn_desc {
      */
     using parameters = cpp::type_list<Parameters...>;
 
-    static constexpr const std::size_t BatchSize    = detail::get_value<batch_size<1>, Parameters...>::value;
-    static constexpr const std::size_t BigBatchSize = detail::get_value<big_batch_size<1>, Parameters...>::value;
+    static constexpr std::size_t BatchSize    = detail::get_value<batch_size<1>, Parameters...>::value;
+    static constexpr std::size_t BigBatchSize = detail::get_value<big_batch_size<1>, Parameters...>::value;
 
     /*! The type of the trainer to use to train the DBN */
     template <typename DBN>

@@ -20,7 +20,7 @@ struct dyn_shape_layer_3d : transform_layer<dyn_shape_layer_3d<Desc>> {
     using this_type = dyn_shape_layer_3d<desc>;   ///< The type of this layer
     using base_type = transform_layer<this_type>; ///< The base type
 
-    static constexpr const size_t D = 3; ///< The number of dimensions
+    static constexpr size_t D = 3; ///< The number of dimensions
 
     using input_one_t = etl::dyn_matrix<weight, 3>; ///< The preferred type of input
 

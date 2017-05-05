@@ -17,12 +17,12 @@ namespace dll {
  */
 template <std::size_t NC_T, std::size_t NV_1, std::size_t NV_2, std::size_t K_T, std::size_t NW_1, std::size_t NW_2, typename... Parameters>
 struct deconv_desc {
-    static constexpr const std::size_t NV1 = NV_1; ///< The first dimension of the input
-    static constexpr const std::size_t NV2 = NV_2; ///< The second dimension of the input
-    static constexpr const std::size_t NW1 = NW_1; ///< The first dimension of the output
-    static constexpr const std::size_t NW2 = NW_2; ///< The second dimension of the output
-    static constexpr const std::size_t NC  = NC_T; ///< The number of input channels
-    static constexpr const std::size_t K   = K_T;  ///< The number of filters
+    static constexpr std::size_t NV1 = NV_1; ///< The first dimension of the input
+    static constexpr std::size_t NV2 = NV_2; ///< The second dimension of the input
+    static constexpr std::size_t NW1 = NW_1; ///< The first dimension of the output
+    static constexpr std::size_t NW2 = NW_2; ///< The second dimension of the output
+    static constexpr std::size_t NC  = NC_T; ///< The number of input channels
+    static constexpr std::size_t K   = K_T;  ///< The number of filters
 
     /*!
      * \brief A list of all the parameters of the descriptor

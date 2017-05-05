@@ -21,8 +21,8 @@ struct lcn_layer : transform_layer<lcn_layer<Desc>> {
     using desc = Desc; ///< The descriptor type
     using base_type = transform_layer<lcn_layer<Desc>>; ///< The base type
 
-    static constexpr const std::size_t K = desc::K;
-    static constexpr const std::size_t Mid = K / 2;
+    static constexpr std::size_t K = desc::K;
+    static constexpr std::size_t Mid = K / 2;
 
     double sigma = 2.0;
 

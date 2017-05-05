@@ -121,7 +121,7 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
         dll::auto_timer timer("conv:forward_batch");
         output = etl::conv_4d_valid_flipped(v, w);
 
-        static constexpr const auto batch_size = etl::decay_traits<H1>::template dim<0>();
+        static constexpr auto batch_size = etl::decay_traits<H1>::template dim<0>();
 
         auto b_rep = etl::force_temporary(etl::rep_l<batch_size>(etl::rep<NH1, NH2>(b)));
 

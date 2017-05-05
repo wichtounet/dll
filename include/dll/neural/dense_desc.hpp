@@ -17,8 +17,8 @@ namespace dll {
  */
 template <std::size_t visibles, std::size_t hiddens, typename... Parameters>
 struct dense_desc {
-    static constexpr const std::size_t num_visible = visibles;
-    static constexpr const std::size_t num_hidden  = hiddens;
+    static constexpr std::size_t num_visible = visibles;
+    static constexpr std::size_t num_hidden  = hiddens;
 
     /*!
      * A list of all the parameters of the descriptor

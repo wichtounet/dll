@@ -22,10 +22,10 @@ struct shape_layer_3d : transform_layer<shape_layer_3d<Desc>> {
     using this_type = shape_layer_3d<desc>;       ///< The type of this layer
     using base_type = transform_layer<this_type>; ///< The base type
 
-    static constexpr const size_t D = 3;       ///< The number of dimensions
-    static constexpr const size_t C = desc::C; ///< The number of channels
-    static constexpr const size_t W = desc::W; ///< The height of the input
-    static constexpr const size_t H = desc::H; ///< The width of the input
+    static constexpr size_t D = 3;       ///< The number of dimensions
+    static constexpr size_t C = desc::C; ///< The number of channels
+    static constexpr size_t W = desc::W; ///< The height of the input
+    static constexpr size_t H = desc::H; ///< The width of the input
 
     using input_one_t = etl::fast_dyn_matrix<weight, C, W, H>; ///< The preferred type of input
 

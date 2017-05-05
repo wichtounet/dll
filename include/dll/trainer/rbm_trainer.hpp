@@ -23,7 +23,7 @@
 namespace dll {
 
 enum class init_watcher_t { INIT };
-constexpr const init_watcher_t init_watcher = init_watcher_t::INIT;
+constexpr init_watcher_t init_watcher = init_watcher_t::INIT;
 
 template <typename RBM, typename RW, typename Enable = void>
 struct watcher_type {

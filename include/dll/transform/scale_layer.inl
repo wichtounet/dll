@@ -28,8 +28,8 @@ struct scale_layer : transform_layer<scale_layer<Desc>> {
     using desc      = Desc;                               ///< The descriptor type
     using base_type = transform_layer<scale_layer<Desc>>; ///< The base type
 
-    static constexpr const int A = desc::A; ///< The scale multiplier
-    static constexpr const int B = desc::B; ///< The scale divisor
+    static constexpr int A = desc::A; ///< The scale multiplier
+    static constexpr int B = desc::B; ///< The scale divisor
 
     /*!
      * \brief Returns a string representation of the layer

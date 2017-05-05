@@ -119,13 +119,13 @@ struct layers_impl<std::index_sequence<I...>, Layers...> : layers_leaf<I, Layers
 
 template <bool Labels, typename... Layers>
 struct layers {
-    static constexpr const std::size_t size = sizeof...(Layers);
+    static constexpr std::size_t size = sizeof...(Layers);
 
-    static constexpr const bool is_dynamic        = Labels ? false : detail::is_dynamic<Layers...>();
-    static constexpr const bool is_convolutional  = Labels ? false : detail::is_convolutional<Layers...>();
-    static constexpr const bool is_multiplex      = Labels ? false : detail::is_multiplex<Layers...>();
-    static constexpr const bool is_denoising      = Labels ? false : detail::is_denoising<Layers...>();
-    static constexpr const bool has_shuffle_layer = detail::has_shuffle_layer<Layers...>();
+    static constexpr bool is_dynamic        = Labels ? false : detail::is_dynamic<Layers...>();
+    static constexpr bool is_convolutional  = Labels ? false : detail::is_convolutional<Layers...>();
+    static constexpr bool is_multiplex      = Labels ? false : detail::is_multiplex<Layers...>();
+    static constexpr bool is_denoising      = Labels ? false : detail::is_denoising<Layers...>();
+    static constexpr bool has_shuffle_layer = detail::has_shuffle_layer<Layers...>();
 
     static_assert(size > 0, "A network must have at least 1 layer");
     //TODO static_assert(Labels ? detail::validate_label_layers<Layers...>::value : detail::are_layers_valid<Layers...>(), "The inner sizes of RBM must correspond");

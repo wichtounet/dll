@@ -604,10 +604,10 @@ struct base_cd_trainer : base_trainer<RBM> {
     using rbm_t  = RBM;
     using weight = typename rbm_t::weight;
 
-    static constexpr const auto num_hidden  = rbm_t::num_hidden;
-    static constexpr const auto num_visible = rbm_t::num_visible;
+    static constexpr auto num_hidden  = rbm_t::num_hidden;
+    static constexpr auto num_visible = rbm_t::num_visible;
 
-    static constexpr const auto batch_size = rbm_t::batch_size;
+    static constexpr auto batch_size = rbm_t::batch_size;
 
     rbm_t& rbm;
 
@@ -813,16 +813,16 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<!layer_tr
 
     using rbm_t = RBM;
 
-    static constexpr const auto K   = rbm_t::K;
-    static constexpr const auto NC  = rbm_t::NC;
-    static constexpr const auto NV1 = rbm_t::NV1;
-    static constexpr const auto NV2 = rbm_t::NV2;
-    static constexpr const auto NH1 = rbm_t::NH1;
-    static constexpr const auto NH2 = rbm_t::NH2;
-    static constexpr const auto NW1 = rbm_t::NW1;
-    static constexpr const auto NW2 = rbm_t::NW2;
+    static constexpr auto K   = rbm_t::K;
+    static constexpr auto NC  = rbm_t::NC;
+    static constexpr auto NV1 = rbm_t::NV1;
+    static constexpr auto NV2 = rbm_t::NV2;
+    static constexpr auto NH1 = rbm_t::NH1;
+    static constexpr auto NH2 = rbm_t::NH2;
+    static constexpr auto NW1 = rbm_t::NW1;
+    static constexpr auto NW2 = rbm_t::NW2;
 
-    static constexpr const auto batch_size = rbm_t::batch_size;
+    static constexpr auto batch_size = rbm_t::batch_size;
 
     typedef typename rbm_t::weight weight;
 

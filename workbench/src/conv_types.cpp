@@ -17,7 +17,7 @@
 
 namespace {
 
-constexpr const std::size_t EPOCHS = 10;
+constexpr std::size_t EPOCHS = 10;
 
 using clock      = std::chrono::steady_clock;
 using time_point = std::chrono::time_point<clock>;

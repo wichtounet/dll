@@ -137,7 +137,7 @@ struct dbn_trainer {
      * \param max_epochs How many epochs will be used
      */
     void start_training(dbn_t& dbn, bool ae, size_t max_epochs){
-        constexpr const auto batch_size = std::decay_t<dbn_t>::batch_size;
+        constexpr auto batch_size = std::decay_t<dbn_t>::batch_size;
 
         //Initialize the momentum
         dbn.momentum = dbn.initial_momentum;
@@ -203,7 +203,7 @@ struct dbn_trainer {
         const size_t n = std::distance(first, last);
 
         //Compute the number of batches
-        constexpr const auto batch_size = std::decay_t<dbn_t>::batch_size;
+        constexpr auto batch_size = std::decay_t<dbn_t>::batch_size;
         const auto batches = n / batch_size + (n % batch_size == 0 ? 0 : 1);
 
         // Prepare the data
@@ -376,7 +376,7 @@ private:
         const size_t n = std::distance(first, last);
 
         //Compute the number of batches
-        constexpr const auto batch_size = std::decay_t<DBN>::batch_size;
+        constexpr auto batch_size = std::decay_t<DBN>::batch_size;
         const auto batches = n / batch_size + (n % batch_size == 0 ? 0 : 1);
 
         // Prepare the data
@@ -407,7 +407,7 @@ private:
 
     template<typename Data, typename Labels, typename Transformer>
     std::pair<double, double> train_fast_partial_direct(dbn_t& dbn, bool ae, Data& data, Labels& labels, size_t batches, size_t epoch, Transformer input_transformer){
-        constexpr const auto batch_size = std::decay_t<DBN>::batch_size;
+        constexpr auto batch_size = std::decay_t<DBN>::batch_size;
 
         const size_t n = etl::dim<0>(data);
 
@@ -460,10 +460,10 @@ private:
         decltype(auto) input_layer  = dbn.template layer_get<dbn_t::input_layer_n>();
         decltype(auto) output_layer = dbn.template layer_get<dbn_t::output_layer_n>();
 
-        constexpr const auto batch_size     = std::decay_t<DBN>::batch_size;
-        constexpr const auto big_batch_size = std::decay_t<DBN>::big_batch_size;
+        constexpr auto batch_size     = std::decay_t<DBN>::batch_size;
+        constexpr auto big_batch_size = std::decay_t<DBN>::big_batch_size;
 
-        constexpr const auto total_batch_size = big_batch_size * batch_size;
+        constexpr auto total_batch_size = big_batch_size * batch_size;
 
         //Prepare some space for converted data
         etl::dyn_matrix<weight, 2> input_cache(total_batch_size, input_layer.input_size());
@@ -577,7 +577,7 @@ private:
      */
     template<typename Data, typename Labels>
     error_type batch_error_function(dbn_t& dbn, bool ae, const Data& data, const Labels& labels) const {
-        constexpr const auto batch_size = std::decay_t<dbn_t>::batch_size;
+        constexpr auto batch_size = std::decay_t<dbn_t>::batch_size;
 
         const size_t n = etl::dim<0>(data);
 

@@ -21,7 +21,7 @@ struct activation_layer : transform_layer<activation_layer<Desc>> {
     using desc      = Desc;                                    ///< The descriptor type
     using base_type = transform_layer<activation_layer<Desc>>; ///< The base type
 
-    static constexpr const function activation_function = desc::activation_function;
+    static constexpr function activation_function = desc::activation_function;
 
     activation_layer() = default;
 

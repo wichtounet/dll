@@ -48,9 +48,9 @@ struct standard_crbm_mp : public standard_conv_rbm<Derived, Desc> {
     using output_t            = typename rbm_base_traits<derived_t>::output_t;
     using hidden_output_one_t = typename rbm_base_traits<derived_t>::hidden_output_one_t;
 
-    static constexpr const unit_type visible_unit = desc::visible_unit;
-    static constexpr const unit_type hidden_unit  = desc::hidden_unit;
-    static constexpr const unit_type pooling_unit = desc::pooling_unit;
+    static constexpr unit_type visible_unit = desc::visible_unit;
+    static constexpr unit_type hidden_unit  = desc::hidden_unit;
+    static constexpr unit_type pooling_unit = desc::pooling_unit;
 
     standard_crbm_mp() = default;
 

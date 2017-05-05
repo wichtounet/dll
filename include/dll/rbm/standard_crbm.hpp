@@ -46,8 +46,8 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
     using input_t      = typename rbm_base_traits<derived_t>::input_t;
     using output_t     = typename rbm_base_traits<derived_t>::output_t;
 
-    static constexpr const unit_type visible_unit = desc::visible_unit;
-    static constexpr const unit_type hidden_unit  = desc::hidden_unit;
+    static constexpr unit_type visible_unit = desc::visible_unit;
+    static constexpr unit_type hidden_unit  = desc::hidden_unit;
 
     standard_crbm() = default;
 

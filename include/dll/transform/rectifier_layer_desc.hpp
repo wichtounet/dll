@@ -14,7 +14,7 @@ namespace dll {
  */
 template <rectifier_method M = rectifier_method::ABS>
 struct rectifier_layer_desc {
-    static constexpr const rectifier_method method = M; ///< The rectifier method to use
+    static constexpr rectifier_method method = M; ///< The rectifier method to use
 
     /*!
      * A list of all the parameters of the descriptor

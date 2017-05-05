@@ -24,11 +24,11 @@ struct dyn_conv_rbm_mp final : public standard_crbm_mp<dyn_conv_rbm_mp<Desc>, De
     using this_type = dyn_conv_rbm_mp<desc>;
     using base_type = standard_crbm_mp<this_type, desc>;
 
-    static constexpr const unit_type visible_unit = desc::visible_unit;
-    static constexpr const unit_type hidden_unit  = desc::hidden_unit;
-    static constexpr const unit_type pooling_unit = desc::pooling_unit;
+    static constexpr unit_type visible_unit = desc::visible_unit;
+    static constexpr unit_type hidden_unit  = desc::hidden_unit;
+    static constexpr unit_type pooling_unit = desc::pooling_unit;
 
-    static constexpr const bool dbn_only = rbm_layer_traits<this_type>::is_dbn_only();
+    static constexpr bool dbn_only = rbm_layer_traits<this_type>::is_dbn_only();
 
     using w_type = etl::dyn_matrix<weight, 4>;
     using b_type = etl::dyn_vector<weight>;

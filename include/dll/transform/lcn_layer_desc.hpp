@@ -11,7 +11,7 @@ namespace dll {
 
 template <std::size_t K_T>
 struct lcn_layer_desc {
-    static constexpr const std::size_t K = K_T;
+    static constexpr std::size_t K = K_T;
 
     /*!
      * A list of all the parameters of the descriptor

@@ -53,7 +53,7 @@ struct sgd_possible<LastLayer, std::enable_if_t<decay_layer_traits<LastLayer>::b
 int process_file(const options& opt, const std::vector<std::string>& actions, const std::string& source_file);
 std::string process_file_result(const options& opt, const std::vector<std::string>& actions, const std::string& source_file);
 
-constexpr const double stupid_default = -666.0;
+constexpr double stupid_default = -666.0;
 
 struct datasource {
     std::string source_file;

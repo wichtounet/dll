@@ -20,10 +20,10 @@ struct patches_layer : layer<patches_layer<Desc>> {
     using desc = Desc;
     using base_type = layer<patches_layer<Desc>>; ///< The base type
 
-    static constexpr const std::size_t width    = desc::width;
-    static constexpr const std::size_t height   = desc::height;
-    static constexpr const std::size_t v_stride = desc::v_stride;
-    static constexpr const std::size_t h_stride = desc::h_stride;
+    static constexpr std::size_t width    = desc::width;
+    static constexpr std::size_t height   = desc::height;
+    static constexpr std::size_t v_stride = desc::v_stride;
+    static constexpr std::size_t h_stride = desc::h_stride;
 
     using weight = typename desc::weight;
 

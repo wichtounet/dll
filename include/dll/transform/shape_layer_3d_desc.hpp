@@ -16,9 +16,9 @@ struct shape_layer_3d_desc {
      */
     using parameters = cpp::type_list<Parameters...>;
 
-    static constexpr const size_t C = C_T; ///< The size
-    static constexpr const size_t H = H_T; ///< The size
-    static constexpr const size_t W = W_T; ///< The size
+    static constexpr size_t C = C_T; ///< The size
+    static constexpr size_t H = H_T; ///< The size
+    static constexpr size_t W = W_T; ///< The size
 
     /*! The type used to store the weights */
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;

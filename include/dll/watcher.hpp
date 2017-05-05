@@ -98,8 +98,8 @@ struct default_rbm_watcher {
 
 template <typename DBN>
 struct default_dbn_watcher {
-    static constexpr const bool ignore_sub  = false;
-    static constexpr const bool replace_sub = false;
+    static constexpr bool ignore_sub  = false;
+    static constexpr bool replace_sub = false;
 
     size_t ft_max_epochs = 0;
     dll::stop_timer ft_epoch_timer;
@@ -224,14 +224,14 @@ struct default_dbn_watcher {
 
 template <typename DBN>
 struct silent_dbn_watcher : default_dbn_watcher<DBN> {
-    static constexpr const bool ignore_sub  = true;
-    static constexpr const bool replace_sub = false;
+    static constexpr bool ignore_sub  = true;
+    static constexpr bool replace_sub = false;
 };
 
 template <typename DBN>
 struct mute_dbn_watcher {
-    static constexpr const bool ignore_sub  = true;
-    static constexpr const bool replace_sub = false;
+    static constexpr bool ignore_sub  = true;
+    static constexpr bool replace_sub = false;
 
     void pretraining_begin(const DBN& /*dbn*/, std::size_t /*max_epochs*/) {}
 

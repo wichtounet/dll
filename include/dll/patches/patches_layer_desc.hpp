@@ -11,10 +11,10 @@ namespace dll {
 
 template <std::size_t W_T, std::size_t H_T, std::size_t VS_T, std::size_t HS_T, typename... Parameters>
 struct patches_layer_desc {
-    static constexpr const std::size_t width    = W_T;
-    static constexpr const std::size_t height   = H_T;
-    static constexpr const std::size_t v_stride = VS_T;
-    static constexpr const std::size_t h_stride = HS_T;
+    static constexpr std::size_t width    = W_T;
+    static constexpr std::size_t height   = H_T;
+    static constexpr std::size_t v_stride = VS_T;
+    static constexpr std::size_t h_stride = HS_T;
 
     /*!
      * A list of all the parameters of the descriptor

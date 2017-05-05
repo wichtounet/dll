@@ -24,10 +24,10 @@ struct dyn_conv_rbm final : public standard_crbm<dyn_conv_rbm<Desc>, Desc> {
     using this_type = dyn_conv_rbm<desc>;
     using base_type = standard_crbm<this_type, desc>;
 
-    static constexpr const unit_type visible_unit = desc::visible_unit;
-    static constexpr const unit_type hidden_unit  = desc::hidden_unit;
+    static constexpr unit_type visible_unit = desc::visible_unit;
+    static constexpr unit_type hidden_unit  = desc::hidden_unit;
 
-    static constexpr const bool dbn_only = rbm_layer_traits<this_type>::is_dbn_only();
+    static constexpr bool dbn_only = rbm_layer_traits<this_type>::is_dbn_only();
 
     using w_type = etl::dyn_matrix<weight, 4>;
     using b_type = etl::dyn_vector<weight>;
@@ -179,7 +179,7 @@ struct dyn_conv_rbm final : public standard_crbm<dyn_conv_rbm<Desc>, Desc> {
             hidden_unit == unit_type::BINARY || hidden_unit == unit_type::RELU || hidden_unit == unit_type::SOFTMAX,
             "Only (C)RBM with binary, softmax or RELU hidden unit are supported");
 
-        static constexpr const function activation_function =
+        static constexpr function activation_function =
             hidden_unit == unit_type::BINARY
                 ? function::SIGMOID
                 : (hidden_unit == unit_type::SOFTMAX ? function::SOFTMAX : function::RELU);

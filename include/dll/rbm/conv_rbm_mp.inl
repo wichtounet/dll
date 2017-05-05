@@ -30,28 +30,28 @@ struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
     using this_type = conv_rbm_mp<desc>;
     using base_type = standard_crbm_mp<this_type, desc>;
 
-    static constexpr const unit_type visible_unit = desc::visible_unit; ///< The type of visible unit
-    static constexpr const unit_type hidden_unit  = desc::hidden_unit;  ///< The type of hidden unit
-    static constexpr const unit_type pooling_unit = desc::pooling_unit; ///< The type of pooling unit
+    static constexpr unit_type visible_unit = desc::visible_unit; ///< The type of visible unit
+    static constexpr unit_type hidden_unit  = desc::hidden_unit;  ///< The type of hidden unit
+    static constexpr unit_type pooling_unit = desc::pooling_unit; ///< The type of pooling unit
 
     // TODO Find out again if this assert still makes any sense...
     //static_assert(!(std::is_same<float, weight>::value && visible_unit == unit_type::GAUSSIAN),
                   //"Gaussian visible units should use double-precision");
 
-    static constexpr const std::size_t NV1 = desc::NV1; ///< The first dimension of the visible units
-    static constexpr const std::size_t NV2 = desc::NV2; ///< The second dimension of the visible units
-    static constexpr const std::size_t NW1 = desc::NW1; ///< The first dimension of the hidden units
-    static constexpr const std::size_t NW2 = desc::NW2; ///< The second dimension of the hidden units
-    static constexpr const std::size_t NC  = desc::NC;  ///< The number of input channels
-    static constexpr const std::size_t K   = desc::K;   ///< The number of filters
-    static constexpr const std::size_t C   = desc::C;
+    static constexpr std::size_t NV1 = desc::NV1; ///< The first dimension of the visible units
+    static constexpr std::size_t NV2 = desc::NV2; ///< The second dimension of the visible units
+    static constexpr std::size_t NW1 = desc::NW1; ///< The first dimension of the hidden units
+    static constexpr std::size_t NW2 = desc::NW2; ///< The second dimension of the hidden units
+    static constexpr std::size_t NC  = desc::NC;  ///< The number of input channels
+    static constexpr std::size_t K   = desc::K;   ///< The number of filters
+    static constexpr std::size_t C   = desc::C;
 
-    static constexpr const std::size_t NH1 = NV1 - NW1 + 1; //By definition
-    static constexpr const std::size_t NH2 = NV2 - NW2 + 1; //By definition
-    static constexpr const std::size_t NP1 = NH1 / C;       //By definition
-    static constexpr const std::size_t NP2 = NH2 / C;       //By definition
+    static constexpr std::size_t NH1 = NV1 - NW1 + 1; //By definition
+    static constexpr std::size_t NH2 = NV2 - NW2 + 1; //By definition
+    static constexpr std::size_t NP1 = NH1 / C;       //By definition
+    static constexpr std::size_t NP2 = NH2 / C;       //By definition
 
-    static constexpr const std::size_t batch_size  = desc::BatchSize;  ///< The mini-batch size
+    static constexpr std::size_t batch_size  = desc::BatchSize;  ///< The mini-batch size
 
     static constexpr bool dbn_only = rbm_layer_traits<this_type>::is_dbn_only();
 
@@ -187,7 +187,7 @@ private:
 
     template<typename V, cpp_enable_if(etl::all_fast<V>::value)>
     auto get_batch_b_rep(V&& /*h*/) const {
-        static constexpr const auto batch_size = etl::decay_traits<V>::template dim<0>();
+        static constexpr auto batch_size = etl::decay_traits<V>::template dim<0>();
         return etl::force_temporary(etl::rep_l<batch_size>(etl::rep<NH1, NH2>(b)));
     }
 
@@ -199,7 +199,7 @@ private:
 
     template<typename H>
     auto get_batch_c_rep(H&& /*h*/) const {
-        static constexpr const auto batch_size = etl::decay_traits<H>::template dim<0>();
+        static constexpr auto batch_size = etl::decay_traits<H>::template dim<0>();
         return etl::force_temporary(etl::rep_l<batch_size>(etl::rep<NV1, NV2>(c)));
     }
 

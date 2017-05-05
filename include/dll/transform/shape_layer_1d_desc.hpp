@@ -16,7 +16,7 @@ struct shape_layer_1d_desc {
      */
     using parameters = cpp::type_list<Parameters...>;
 
-    static constexpr const size_t S = S_T; ///< The input size
+    static constexpr size_t S = S_T; ///< The input size
 
     /*! The type used to store the weights */
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;

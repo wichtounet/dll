@@ -115,7 +115,7 @@ struct upsample_layer_3d final : unpooling_layer_3d<upsample_layer_3d<Desc>, Des
         static constexpr size_t C2 = base::C2;
         static constexpr size_t C3 = base::C3;
 
-        constexpr const auto B = etl::decay_traits<H>::template dim<0>();
+        constexpr auto B = etl::decay_traits<H>::template dim<0>();
 
         etl::reshape<B, base::I1, base::I2, base::I3>(output) = etl::max_pool_3d<C1, C2, C3>(context.errors);
     }

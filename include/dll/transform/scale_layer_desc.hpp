@@ -11,8 +11,8 @@ namespace dll {
 
 template <int A_T, int B_T>
 struct scale_layer_desc {
-    static constexpr const int A = A_T;
-    static constexpr const int B = B_T;
+    static constexpr int A = A_T;
+    static constexpr int B = B_T;
 
     /*!
      * A list of all the parameters of the descriptor

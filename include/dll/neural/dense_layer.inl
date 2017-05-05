@@ -24,8 +24,8 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
     using this_type = dense_layer<desc>;
     using base_type = neural_layer<this_type, desc>;
 
-    static constexpr const std::size_t num_visible = desc::num_visible;
-    static constexpr const std::size_t num_hidden  = desc::num_hidden;
+    static constexpr std::size_t num_visible = desc::num_visible;
+    static constexpr std::size_t num_hidden  = desc::num_hidden;
 
     static constexpr auto activation_function = desc::activation_function;
     static constexpr auto w_initializer       = desc::w_initializer;
@@ -226,7 +226,7 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
         dll::auto_timer timer("dense:backward_batch");
 
         // The reshape has no overhead, so better than SFINAE for nothing
-        constexpr const auto Batch = etl::decay_traits<decltype(context.errors)>::template dim<0>();
+        constexpr auto Batch = etl::decay_traits<decltype(context.errors)>::template dim<0>();
         etl::reshape<Batch, num_visible>(output) = context.errors * etl::transpose(w);
     }
 
