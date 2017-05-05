@@ -108,7 +108,7 @@ struct dbn final {
 
     using input_layer_t = layer_type<input_layer_n>;           ///< The type of the input layer
     using input_one_t   = typename input_layer_t::input_one_t; ///< The type of one input
-    using input_t       = typename input_layer_t::input_t;     ///< The type of a set of input
+    using input_t       = std::vector<input_one_t>;            ///< The type of a set of input
 
 private:
     template <size_t I, typename Input>
