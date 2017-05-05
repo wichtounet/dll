@@ -17,12 +17,17 @@ namespace dll {
  */
 template <typename Desc>
 struct shape_layer_3d : transform_layer<shape_layer_3d<Desc>> {
-    using desc      = Desc;                                  ///< The descriptor type
-    using base_type = transform_layer<shape_layer_3d<Desc>>; ///< The base type
+    using desc      = Desc;                       ///< The descriptor type
+    using weight    = typename desc::weight;      ///< The data type
+    using this_type = shape_layer_3d<desc>;       ///< The type of this layer
+    using base_type = transform_layer<this_type>; ///< The base type
 
-    static constexpr const size_t C = desc::C;
-    static constexpr const size_t H = desc::H;
-    static constexpr const size_t W = desc::W;
+    static constexpr const size_t D = 3;       ///< The number of dimensions
+    static constexpr const size_t C = desc::C; ///< The number of channels
+    static constexpr const size_t W = desc::W; ///< The height of the input
+    static constexpr const size_t H = desc::H; ///< The width of the input
+
+    using input_one_t = etl::fast_dyn_matrix<weight, C, W, H>; ///< The preferred type of input
 
     shape_layer_3d() = default;
 

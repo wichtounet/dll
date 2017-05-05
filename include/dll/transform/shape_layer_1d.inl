@@ -17,10 +17,15 @@ namespace dll {
  */
 template <typename Desc>
 struct shape_layer_1d : transform_layer<shape_layer_1d<Desc>> {
-    using desc      = Desc;                                  ///< The descriptor type
-    using base_type = transform_layer<shape_layer_1d<Desc>>; ///< The base type
+    using desc      = Desc;                       ///< The descriptor type
+    using weight    = typename desc::weight;      ///< The data type
+    using this_type = shape_layer_1d<desc>;       ///< The type of this layer
+    using base_type = transform_layer<this_type>; ///< The base type
 
-    static constexpr const std::size_t Size = desc::S;
+    static constexpr const size_t Size = desc::S; ///< The input size
+    static constexpr const size_t D    = 1;       ///< The number of dimensions
+
+    using input_one_t = etl::fast_dyn_matrix<weight, Size>; ///< The preferred type of input
 
     shape_layer_1d() = default;
 
@@ -115,7 +120,7 @@ struct shape_layer_1d : transform_layer<shape_layer_1d<Desc>> {
 //Allow odr-use of the constexpr static members
 
 template <typename Desc>
-const std::size_t shape_layer_1d<Desc>::Size;
+const size_t shape_layer_1d<Desc>::Size;
 
 // Declare the traits for the layer
 

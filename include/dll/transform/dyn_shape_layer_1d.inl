@@ -15,8 +15,14 @@ namespace dll {
 
 template <typename Desc>
 struct dyn_shape_layer_1d : transform_layer<dyn_shape_layer_1d<Desc>> {
-    using desc = Desc;
-    using base_type = transform_layer<dyn_shape_layer_1d<Desc>>; ///< The base type
+    using desc      = Desc;                       ///< The descriptor type
+    using weight    = typename desc::weight;      ///< The data type
+    using this_type = dyn_shape_layer_1d<desc>;   ///< The type of this layer
+    using base_type = transform_layer<this_type>; ///< The base type
+
+    static constexpr const size_t D = 1; ///< The number of dimensions
+
+    using input_one_t = etl::dyn_matrix<weight, 1>; ///< The preferred type of input
 
     size_t S;
 

@@ -15,12 +15,18 @@ namespace dll {
 
 template <typename Desc>
 struct dyn_shape_layer_3d : transform_layer<dyn_shape_layer_3d<Desc>> {
-    using desc = Desc;
-    using base_type = transform_layer<dyn_shape_layer_3d<Desc>>; ///< The base type
+    using desc      = Desc;                       ///< The descriptor type
+    using weight    = typename desc::weight;      ///< The data type
+    using this_type = dyn_shape_layer_3d<desc>;   ///< The type of this layer
+    using base_type = transform_layer<this_type>; ///< The base type
 
-    size_t C;
-    size_t W;
-    size_t H;
+    static constexpr const size_t D = 3; ///< The number of dimensions
+
+    using input_one_t = etl::dyn_matrix<weight, 3>; ///< The preferred type of input
+
+    size_t C; ///< The number of input channels
+    size_t W; ///< The width of the input
+    size_t H; ///< The height of the input
 
     void init_layer(size_t C, size_t W, size_t H){
         cpp_assert(C > 1, "The shape must be bigger than 0");
