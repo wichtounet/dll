@@ -221,12 +221,14 @@ $(eval $(call add_executable,dll_compile_hybrid_crbm,workbench/src/compile_hybri
 
 # Examples
 $(eval $(call add_executable,dll_mnist_mlp,examples/src/mnist_mlp.cpp))
+$(eval $(call add_executable_set,dll_mnist_mlp,dll_mnist_mlp))
+$(eval $(call add_executable,dll_mnist_cnn,examples/src/mnist_cnn.cpp))
+$(eval $(call add_executable_set,dll_mnist_cnn,dll_mnist_cnn))
 
 $(eval $(call add_executable_set,dll_perf_paper,dll_perf_paper))
 $(eval $(call add_executable_set,dll_perf_paper_conv,dll_perf_paper_conv))
 $(eval $(call add_executable_set,dll_perf_conv,dll_perf_conv))
 $(eval $(call add_executable_set,dll_conv_types,dll_conv_types))
-$(eval $(call add_executable_set,dll_mnist_mlp,dll_mnist_mlp))
 
 release: release_dllp release_dll_test_unit release_dll_test_perf release_dll_test_misc release_dll_view
 release_debug: release_debug_dllp release_debug_dll_test_unit release_debug_dll_test_perf release_debug_dll_test_misc release_debug_dll_view
