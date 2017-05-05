@@ -103,13 +103,12 @@ struct dbn final {
 
     using watcher_t = typename desc::template watcher_t<this_type>; ///< The watcher type
 
-    static constexpr const size_t input_layer_n  = find_input_layer<0, this_type>::L;  ///< The index of the input layer
-    static constexpr const size_t output_layer_n = find_output_layer<layers_t::size - 1, this_type>::L; ///< The index of the output layer
+    static constexpr size_t input_layer_n  = find_input_layer<0, this_type>::L;                   ///< The index of the input layer
+    static constexpr size_t output_layer_n = find_output_layer<layers_t::size - 1, this_type>::L; ///< The index of the output layer
 
-    using input_layer_t = layer_type<input_layer_n>; ///< The type of the input layer
-
-    using input_one_t = typename input_layer_t::input_one_t; ///< The type of one input
-    using input_t     = typename input_layer_t::input_t;     ///< The type of a set of input
+    using input_layer_t = layer_type<input_layer_n>;           ///< The type of the input layer
+    using input_one_t   = typename input_layer_t::input_one_t; ///< The type of one input
+    using input_t       = typename input_layer_t::input_t;     ///< The type of a set of input
 
 private:
     template <size_t I, typename Input>
