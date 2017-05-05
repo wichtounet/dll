@@ -61,14 +61,26 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
         initializer_function<b_initializer>::initialize(b, input_size(), output_size());
     }
 
+    /*!
+     * \brief Return the size of the input of this layer
+     * \return The size of the input of this layer
+     */
     static constexpr std::size_t input_size() noexcept {
         return NC * NV1 * NV2;
     }
 
+    /*!
+     * \brief Return the size of the output of this layer
+     * \return The size of the output of this layer
+     */
     static constexpr std::size_t output_size() noexcept {
         return K * NH1 * NH2;
     }
 
+    /*!
+     * \brief Return the number of trainable parameters of this network.
+     * \return The the number of trainable parameters of this network.
+     */
     static constexpr std::size_t parameters() noexcept {
         return K * NW1 * NW2;
     }

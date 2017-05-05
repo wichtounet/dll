@@ -135,14 +135,26 @@ struct dyn_conv_rbm_mp final : public standard_crbm_mp<dyn_conv_rbm_mp<Desc>, De
         }
     }
 
+    /*!
+     * \brief Return the size of the input of this layer
+     * \return The size of the input of this layer
+     */
     std::size_t input_size() const noexcept {
         return nv1 * nv2 * nc;
     }
 
+    /*!
+     * \brief Return the size of the output of this layer
+     * \return The size of the output of this layer
+     */
     std::size_t output_size() const noexcept {
         return np1 * np2 * k;
     }
 
+    /*!
+     * \brief Return the number of trainable parameters of this network.
+     * \return The the number of trainable parameters of this network.
+     */
     std::size_t parameters() const noexcept {
         return nc * k * nw1 * nw2;
     }

@@ -75,14 +75,26 @@ struct dyn_deconv_layer final : neural_layer<dyn_deconv_layer<Desc>, Desc> {
         initializer_function<b_initializer>::initialize(b, input_size(), output_size());
     }
 
+    /*!
+     * \brief Return the size of the input of this layer
+     * \return The size of the input of this layer
+     */
     size_t input_size() const noexcept {
         return nc * nv1 * nv2;
     }
 
+    /*!
+     * \brief Return the size of the output of this layer
+     * \return The size of the output of this layer
+     */
     size_t output_size() const noexcept {
         return k * nh1 * nh2;
     }
 
+    /*!
+     * \brief Return the number of trainable parameters of this network.
+     * \return The the number of trainable parameters of this network.
+     */
     size_t parameters() const noexcept {
         return k * nw1 * nw2;
     }

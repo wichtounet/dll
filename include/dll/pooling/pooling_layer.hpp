@@ -41,14 +41,26 @@ struct pooling_layer_3d : layer<Parent> {
 
     pooling_layer_3d() = default;
 
+    /*!
+     * \brief Return the size of the input of this layer
+     * \return The size of the input of this layer
+     */
     static constexpr std::size_t input_size() noexcept {
         return I1 * I2 * I3;
     }
 
+    /*!
+     * \brief Return the size of the output of this layer
+     * \return The size of the output of this layer
+     */
     static constexpr std::size_t output_size() noexcept {
         return O1 * O2 * O3;
     }
 
+    /*!
+     * \brief Return the number of trainable parameters of this network.
+     * \return The the number of trainable parameters of this network.
+     */
     static constexpr std::size_t parameters() noexcept {
         return 0;
     }
@@ -121,14 +133,26 @@ struct dyn_pooling_layer_3d : layer<Parent> {
         this->o3 = i3 / c3;
     }
 
+    /*!
+     * \brief Return the size of the input of this layer
+     * \return The size of the input of this layer
+     */
     std::size_t input_size() const noexcept {
         return i1 * i2 * i3;
     }
 
+    /*!
+     * \brief Return the size of the output of this layer
+     * \return The size of the output of this layer
+     */
     std::size_t output_size() const noexcept {
         return o1 * o2 * o3;
     }
 
+    /*!
+     * \brief Return the number of trainable parameters of this network.
+     * \return The the number of trainable parameters of this network.
+     */
     std::size_t parameters() const noexcept {
         return 0;
     }

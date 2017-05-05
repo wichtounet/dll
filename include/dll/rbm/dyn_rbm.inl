@@ -110,14 +110,26 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         w = etl::normal_generator<weight>() * 0.1;
     }
 
+    /*!
+     * \brief Return the size of the input of this layer
+     * \return The size of the input of this layer
+     */
     std::size_t input_size() const noexcept {
         return num_visible;
     }
 
+    /*!
+     * \brief Return the size of the output of this layer
+     * \return The size of the output of this layer
+     */
     std::size_t output_size() const noexcept {
         return num_hidden;
     }
 
+    /*!
+     * \brief Return the number of trainable parameters of this network.
+     * \return The the number of trainable parameters of this network.
+     */
     std::size_t parameters() const noexcept {
         return num_visible * num_hidden;
     }

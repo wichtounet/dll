@@ -41,6 +41,10 @@ struct patches_layer : layer<patches_layer<Desc>> {
         return {buffer};
     }
 
+    /*!
+     * \brief Return the size of the output of this layer
+     * \return The size of the output of this layer
+     */
     static constexpr std::size_t output_size() noexcept {
         return width * height;
     }

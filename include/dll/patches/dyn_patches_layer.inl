@@ -48,6 +48,10 @@ struct dyn_patches_layer : layer<dyn_patches_layer<Desc>> {
         return {buffer};
     }
 
+    /*!
+     * \brief Return the size of the output of this layer
+     * \return The size of the output of this layer
+     */
     std::size_t output_size() const noexcept {
         return width * height;
     }
