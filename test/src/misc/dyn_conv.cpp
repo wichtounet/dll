@@ -14,7 +14,6 @@
 #include "dll/pooling/dyn_mp_layer.hpp"
 #include "dll/pooling/dyn_avgp_layer.hpp"
 #include "dll/dbn.hpp"
-#include "dll/trainer/stochastic_gradient_descent.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"

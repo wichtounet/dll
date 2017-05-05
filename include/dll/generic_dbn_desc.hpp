@@ -13,11 +13,11 @@
 
 namespace dll {
 
-template <typename DBN, bool Debug = false>
-struct cg_trainer;
+template <typename DBN>
+struct sgd_trainer;
 
 template <typename DBN>
-using default_dbn_trainer_t = cg_trainer<DBN, false>;
+using default_dbn_trainer_t = sgd_trainer<DBN>;
 
 /*!
  * \brief Describe a DBN *
@@ -63,3 +63,7 @@ struct generic_dbn_desc {
 };
 
 } //end of dll namespace
+
+// Include the trainers
+#include "dll/trainer/conjugate_gradient.hpp"
+#include "dll/trainer/stochastic_gradient_descent.hpp"

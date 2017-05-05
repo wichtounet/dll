@@ -30,7 +30,7 @@ TEST_CASE("perf/kws_square", "[perf][crbm][mp][cdbn]") {
                     8, 10, 10, 8, 3, 3, dll::weight_type<float>, dll::batch_size<64>, dll::momentum,
                     dll::weight_decay<dll::decay_type::L2>, dll::sparsity<dll::sparsity_method::LEE>, dll::shuffle_cond<true>, dll::dbn_only>::layer_t,
                 dll::mp_layer_3d_desc<8, 8, 8, 1, 2, 2, dll::weight_type<float>>::layer_t
-            >>::dbn_t;
+            >, dll::trainer<dll::cg_trainer>>::dbn_t;
 
     auto cdbn = std::make_unique<cdbn_t>();
 
@@ -58,7 +58,7 @@ TEST_CASE("perf/kws", "[perf][crbm][mp][cdbn]") {
                     8, 16, 6, 8, 3, 3, dll::weight_type<float>, dll::batch_size<64>, dll::momentum,
                     dll::weight_decay<dll::decay_type::L2>, dll::sparsity<dll::sparsity_method::LEE>, dll::shuffle_cond<true>, dll::dbn_only>::layer_t,
                 dll::mp_layer_3d_desc<8, 14, 4, 1, 2, 2, dll::weight_type<float>>::layer_t
-            >>::dbn_t;
+            >, dll::trainer<dll::cg_trainer>>::dbn_t;
 
     auto cdbn = std::make_unique<cdbn_t>();
 
@@ -94,7 +94,7 @@ TEST_CASE("perf/kws_sub", "[perf][crbm][mp][cdbn]") {
                     1, 40, 20, 8, 9, 9, dll::weight_type<float>, dll::batch_size<64>, dll::momentum,
                     dll::weight_decay<dll::decay_type::L2>, dll::sparsity<dll::sparsity_method::LEE>, dll::shuffle_cond<true>, dll::dbn_only>::layer_t,
                 dll::mp_layer_3d_desc<8, 32, 12, 1, 2, 2, dll::weight_type<float>>::layer_t
-            >>::dbn_t;
+            >, dll::trainer<dll::cg_trainer>>::dbn_t;
 
     auto cdbn = std::make_unique<cdbn_t>();
 

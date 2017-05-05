@@ -523,8 +523,6 @@ void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll
     out_stream << "#include \"dll/pooling/mp_layer.hpp\"\n";
     out_stream << "#include \"dll/pooling/avgp_layer.hpp\"\n";
     out_stream << "#include \"dll/neural/activation_layer.hpp\"\n";
-    out_stream << "#include \"dll/trainer/stochastic_gradient_descent.hpp\"\n";
-    out_stream << "#include \"dll/trainer/conjugate_gradient.hpp\"\n\n";
     out_stream << "#include \"dll/dbn.hpp\"\n";
 
     out_stream << "using dbn_t = dll::dbn_desc<dll::dbn_layers<\n";

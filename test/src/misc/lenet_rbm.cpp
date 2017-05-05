@@ -13,7 +13,6 @@
 #include "dll/transform/shape_layer_3d.hpp"
 #include "dll/transform/scale_layer.hpp"
 #include "dll/pooling/mp_layer.hpp"
-#include "dll/trainer/stochastic_gradient_descent.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"

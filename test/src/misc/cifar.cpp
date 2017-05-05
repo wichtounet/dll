@@ -15,7 +15,6 @@
 #include "dll/neural/activation_layer.hpp"
 #include "dll/transform/scale_layer.hpp"
 #include "dll/dbn.hpp"
-#include "dll/trainer/stochastic_gradient_descent.hpp"
 
 #include "cifar/cifar10_reader.hpp"
 

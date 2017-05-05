@@ -9,7 +9,6 @@
 #include <chrono>
 
 #include "dll/rbm/dyn_rbm.hpp"
-#include "dll/trainer/stochastic_gradient_descent.hpp"
 #include "dll/dbn.hpp"
 
 #include "mnist/mnist_reader.hpp"

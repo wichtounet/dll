@@ -36,19 +36,19 @@ struct gradient_context {
     }
 };
 
-template <typename DBN, bool Debug>
-struct cg_trainer {
+template <typename DBN, bool Debug = false>
+struct cg_trainer_base {
     using dbn_t  = DBN;
     using weight = typename dbn_t::weight;
 
-    using this_type = cg_trainer<DBN, Debug>;
+    using this_type = cg_trainer_base<DBN, Debug>;
 
     static constexpr std::size_t layers = dbn_t::layers;
 
     dbn_t& dbn;
     bool ae_training = false;
 
-    explicit cg_trainer(dbn_t& dbn) : dbn(dbn) {
+    explicit cg_trainer_base(dbn_t& dbn) : dbn(dbn) {
         dbn.for_each_layer([](auto& r1) {
             r1.init_cg_context();
 
@@ -598,9 +598,12 @@ struct cg_trainer {
 };
 
 template <typename DBN>
-using cg_trainer_simple = cg_trainer<DBN, false>;
+using cg_trainer_simple = cg_trainer_base<DBN, false>;
 
 template <typename DBN>
-using cg_trainer_debug = cg_trainer<DBN, true>;
+using cg_trainer = cg_trainer_base<DBN, false>;
+
+template <typename DBN>
+using cg_trainer_debug = cg_trainer_base<DBN, true>;
 
 } //end of dll namespace

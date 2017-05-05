@@ -23,7 +23,7 @@ TEST_CASE("dyn_dbn/mnist_1", "dbn::simple") {
             dll::dbn_layers<
                 dll::dyn_rbm_desc<dll::momentum, dll::init_weights>::layer_t,
                 dll::dyn_rbm_desc<dll::momentum>::layer_t,
-                dll::dyn_rbm_desc<dll::momentum, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>>::dbn_t;
+                dll::dyn_rbm_desc<dll::momentum, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>, dll::trainer<dll::cg_trainer>>::dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(500);
     REQUIRE(!dataset.training_images.empty());
@@ -51,7 +51,7 @@ TEST_CASE("dyn_dbn/mnist_2", "dbn::parallel") {
             dll::dbn_layers<
                 dll::dyn_rbm_desc<dll::momentum, dll::parallel_mode, dll::init_weights>::layer_t,
                 dll::dyn_rbm_desc<dll::momentum, dll::parallel_mode>::layer_t,
-                dll::dyn_rbm_desc<dll::momentum, dll::parallel_mode, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>>::dbn_t;
+                dll::dyn_rbm_desc<dll::momentum, dll::parallel_mode, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>, dll::trainer<dll::cg_trainer>>::dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(500);
     REQUIRE(!dataset.training_images.empty());
@@ -79,7 +79,7 @@ TEST_CASE("dyn_dbn/mnist_3", "dbn::labels") {
             dll::dbn_layers<
                 dll::dyn_rbm_desc<dll::init_weights, dll::momentum>::layer_t,
                 dll::dyn_rbm_desc<dll::momentum>::layer_t,
-                dll::dyn_rbm_desc<dll::momentum>::layer_t>>::dbn_t;
+                dll::dyn_rbm_desc<dll::momentum>::layer_t>, dll::trainer<dll::cg_trainer>>::dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(1000);
     REQUIRE(!dataset.training_images.empty());
@@ -103,7 +103,7 @@ TEST_CASE("dyn_dbn/mnist_4", "dbn::svm_simple") {
         dll::dbn_desc<
             dll::dbn_layers<
                 dll::dyn_rbm_desc<dll::momentum, dll::init_weights>::layer_t,
-                dll::dyn_rbm_desc<dll::momentum>::layer_t>>::dbn_t;
+                dll::dyn_rbm_desc<dll::momentum>::layer_t>, dll::trainer<dll::cg_trainer>>::dbn_t;
 
     auto dbn = std::make_unique<dbn_t>();
 
@@ -132,7 +132,7 @@ TEST_CASE("dyn_dbn/mnist_5", "dbn::simple_single") {
     using dbn_t =
         dll::dbn_desc<
             dll::dbn_layers<
-                dll::dyn_rbm_desc<dll::momentum, dll::init_weights>::layer_t>>::dbn_t;
+                dll::dyn_rbm_desc<dll::momentum, dll::init_weights>::layer_t>, dll::trainer<dll::cg_trainer>>::dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(500);
 
@@ -160,7 +160,7 @@ TEST_CASE("dyn_dbn/mnist_6", "dbn::labels_fast") {
             dll::dbn_layers<
                 dll::dyn_rbm_desc<dll::init_weights, dll::momentum>::layer_t,
                 dll::dyn_rbm_desc<dll::momentum>::layer_t,
-                dll::dyn_rbm_desc<dll::momentum>::layer_t>>::dbn_t;
+                dll::dyn_rbm_desc<dll::momentum>::layer_t>, dll::trainer<dll::cg_trainer>>::dbn_t;
 
     auto dbn = std::make_unique<dbn_t>();
 

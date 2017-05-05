@@ -28,9 +28,6 @@
 #include "dll/transform/lcn_layer.hpp"
 #include "dll/transform/shape_layer_1d.hpp"
 
-#include "dll/trainer/conjugate_gradient.hpp"
-#include "dll/trainer/stochastic_gradient_descent.hpp"
-
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
@@ -40,7 +37,7 @@ TEST_CASE("hybrid/mnist/1", "[hybrid]") {
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
             dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
-        dll::batch_size<50>>::dbn_t dbn_t;
+        dll::batch_size<50>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(500);
 
@@ -95,7 +92,7 @@ TEST_CASE("hybrid/mnist/3", "") {
     typedef dll::dyn_dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_mp_desc_square<1, 28, 40, 17, 2, dll::momentum, dll::batch_size<25>>::layer_t,
-            dll::conv_rbm_mp_desc_square<40, 6, 20, 3, 2, dll::momentum, dll::batch_size<25>>::layer_t>>::dbn_t dbn_t;
+            dll::conv_rbm_mp_desc_square<40, 6, 20, 3, 2, dll::momentum, dll::batch_size<25>>::layer_t>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(100);
 
@@ -113,7 +110,7 @@ TEST_CASE("hybrid/mnist/4", "") {
         dll::dbn_layers<
             dll::conv_rbm_desc_square<1, 28, 40, 17, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::conv_rbm_desc_square<40, 12, 20, 3, dll::momentum, dll::batch_size<25>>::layer_t,
-            dll::conv_rbm_desc_square<20, 10, 50, 5, dll::momentum, dll::batch_size<25>>::layer_t>>::dbn_t dbn_t;
+            dll::conv_rbm_desc_square<20, 10, 50, 5, dll::momentum, dll::batch_size<25>>::layer_t>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -132,7 +129,7 @@ TEST_CASE("hybrid/mnist/6", "") {
             dll::binarize_layer_desc<30>::layer_t,
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
             dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::layer_t,
-            dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>>::dbn_t dbn_t;
+            dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -149,7 +146,7 @@ TEST_CASE("hybrid/mnist/7", "") {
             dll::normalize_layer_desc::layer_t,
             dll::rbm_desc<28 * 28, 200, dll::momentum, dll::batch_size<25>, dll::visible<dll::unit_type::GAUSSIAN>>::layer_t,
             dll::rbm_desc<200, 500, dll::momentum, dll::batch_size<25>>::layer_t,
-            dll::rbm_desc<500, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>>::dbn_t dbn_t;
+            dll::rbm_desc<500, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -166,7 +163,7 @@ TEST_CASE("hybrid/mnist/8", "[dense][dbn][mnist][sgd]") {
             dll::scale_layer_desc<1, 256>::layer_t,
             dll::dense_desc<28 * 28, 100, dll::activation<dll::function::SIGMOID>>::layer_t,
             dll::dense_desc<100, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
+        dll::momentum, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(350);
     REQUIRE(!dataset.training_images.empty());
@@ -187,7 +184,7 @@ TEST_CASE("hybrid/mnist/10", "") {
               dll::conv_rbm_desc_square<1, 28, 20, 17, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
             , dll::conv_rbm_desc_square<20, 12, 20, 3, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
             , dll::lcn_layer_desc<9>::layer_t
-        >>::dbn_t;
+        >, dll::trainer<dll::cg_trainer>>::dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -204,7 +201,7 @@ TEST_CASE("hybrid/mnist/11", "[dbn][conv][mnist][patches][memory]") {
             dll::patches_layer_desc<14, 14, 14, 14>::layer_t,
             dll::conv_rbm_desc_square<1, 14, 20, 5, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::conv_rbm_desc_square<20, 10, 20, 5, dll::momentum, dll::batch_size<25>>::layer_t>,
-        dll::batch_mode>::dbn_t dbn_t;
+        dll::batch_mode, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(500);
     REQUIRE(!dataset.training_images.empty());
@@ -224,7 +221,7 @@ TEST_CASE("hybrid/mnist/12", "[dbn][conv][mnist][patches]") {
         dll::dbn_layers<
             dll::patches_layer_padh_desc<14, 14, 14, 14, 1>::layer_t,
             dll::conv_rbm_desc_square<1, 14, 20, 5, dll::momentum, dll::batch_size<25>>::layer_t,
-            dll::conv_rbm_desc_square<20, 10, 20, 5, dll::momentum, dll::batch_size<25>>::layer_t>>::dbn_t dbn_t;
+            dll::conv_rbm_desc_square<20, 10, 20, 5, dll::momentum, dll::batch_size<25>>::layer_t>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(500);
     REQUIRE(!dataset.training_images.empty());

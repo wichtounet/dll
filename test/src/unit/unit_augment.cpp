@@ -22,7 +22,7 @@ TEST_CASE("unit/augment/mnist/1", "[cdbn][augment][unit]") {
         dll::dbn_desc<dll::dbn_layers<
             dll::augment_layer_desc<dll::copy<2>, dll::copy<3>>::layer_t,
             dll::conv_rbm_desc_square<1, 28, 20, 21, dll::momentum, dll::batch_size<10>>::layer_t
-        >>::dbn_t;
+        >, dll::trainer<dll::cg_trainer>>::dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -43,7 +43,7 @@ TEST_CASE("unit/augment/mnist/2", "[cdbn][augment][unit]") {
         dll::dbn_desc<dll::dbn_layers<
             dll::augment_layer_desc<dll::copy<2>, dll::copy<3>>::layer_t,
             dll::conv_rbm_desc_square<1, 28, 20, 21, dll::momentum, dll::batch_size<10>>::layer_t
-        >, dll::batch_mode>::dbn_t;
+        >, dll::trainer<dll::cg_trainer>, dll::batch_mode>::dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -65,7 +65,7 @@ TEST_CASE("unit/augment/mnist/3", "[cdbn][augment][unit]") {
         dll::dbn_desc<dll::dbn_layers<
               dll::patches_layer_desc<14, 14, 14, 14>::layer_t
             , dll::conv_rbm_desc_square<1, 14, 10, 7, dll::momentum, dll::batch_size<10>>::layer_t
-        >>::dbn_t;
+        >, dll::trainer<dll::cg_trainer>>::dbn_t;
 
     auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(20);
     REQUIRE(!dataset.training_images.empty());
@@ -87,7 +87,7 @@ TEST_CASE("unit/augment/mnist/4", "[cdbn][augment][unit]") {
               dll::augment_layer_desc<dll::copy<2>, dll::copy<3>>::layer_t
             , dll::patches_layer_desc<14, 14, 14, 14>::layer_t
             , dll::conv_rbm_desc_square<1, 14, 10, 7, dll::momentum, dll::batch_size<10>>::layer_t
-        >>::dbn_t;
+        >, dll::trainer<dll::cg_trainer>>::dbn_t;
 
     auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -110,7 +110,7 @@ TEST_CASE("unit/augment/mnist/5", "[cdbn][augment][unit]") {
               dll::augment_layer_desc<dll::copy<2>, dll::copy<3>>::layer_t
             , dll::patches_layer_desc<14, 14, 14, 14>::layer_t
             , dll::conv_rbm_desc_square<1, 14, 10, 7, dll::momentum, dll::batch_size<10>>::layer_t
-        >, dll::batch_mode>::dbn_t;
+        >, dll::trainer<dll::cg_trainer>, dll::batch_mode>::dbn_t;
 
     auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -130,7 +130,7 @@ TEST_CASE("unit/augment/mnist/6", "[cdbn][augment][unit]") {
               dll::augment_layer_desc<dll::elastic<3>>::layer_t
             , dll::patches_layer_desc<14, 14, 14, 14>::layer_t
             , dll::conv_rbm_desc_square<1, 14, 10, 7, dll::momentum, dll::batch_size<10>>::layer_t
-        >>::dbn_t;
+        >, dll::trainer<dll::cg_trainer>>::dbn_t;
 
     auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -150,7 +150,7 @@ TEST_CASE("unit/augment/mnist/7", "[cdbn][augment][unit]") {
               dll::augment_layer_desc<dll::elastic<3>>::layer_t
             , dll::patches_layer_desc<14, 14, 14, 14>::layer_t
             , dll::conv_rbm_desc_square<1, 14, 10, 7, dll::momentum, dll::batch_size<10>>::layer_t
-        >, dll::batch_mode>::dbn_t;
+        >, dll::batch_mode, dll::trainer<dll::cg_trainer>>::dbn_t;
 
     auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -171,7 +171,7 @@ TEST_CASE("unit/augment/mnist/8", "[cdbn][augment][unit]") {
             , dll::patches_layer_desc<14, 14, 14, 14>::layer_t
             , dll::conv_rbm_desc_square<1, 14, 10, 7, dll::momentum, dll::batch_size<10>>::layer_t
             , dll::conv_rbm_desc_square<10, 8, 10, 3, dll::momentum, dll::batch_size<10>>::layer_t
-        >, dll::batch_mode>::dbn_t;
+        >, dll::batch_mode, dll::trainer<dll::cg_trainer>>::dbn_t;
 
     auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -191,7 +191,7 @@ TEST_CASE("unit/augment/mnist/9", "[cdbn][augment][unit]") {
               dll::augment_layer_desc<dll::elastic<3>>::layer_t
             , dll::dyn_conv_rbm_desc<dll::momentum>::layer_t
             , dll::dyn_conv_rbm_desc<dll::momentum>::layer_t
-        >, dll::batch_mode>::dbn_t;
+        >, dll::batch_mode, dll::trainer<dll::cg_trainer>>::dbn_t;
 
     auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -213,7 +213,7 @@ TEST_CASE("unit/augment/mnist/10", "[cdbn][augment][unit]") {
         dll::dbn_desc<dll::dbn_layers<
               dll::dyn_patches_layer_desc<>::layer_t
             , dll::dyn_conv_rbm_desc<dll::momentum>::layer_t
-        >>::dbn_t;
+        >, dll::trainer<dll::cg_trainer>>::dbn_t;
 
     auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -240,7 +240,7 @@ TEST_CASE("unit/augment/mnist/10", "[cdbn][augment][unit]") {
             //, dll::conv_rbm_desc_square<1, 28, 20, 9, dll::momentum, dll::batch_size<10>>::layer_t
             //, dll::augment_layer_desc<dll::copy<2>>::layer_t
             //, dll::conv_rbm_desc_square<20, 20, 10, 7, dll::momentum, dll::batch_size<10>>::layer_t
-        //>>::dbn_t;
+        //>, dll::trainer<dll::cg_trainer>>::dbn_t;
 
     //auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     //REQUIRE(!dataset.training_images.empty());

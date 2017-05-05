@@ -12,7 +12,6 @@
 #include "dll/rbm/rbm.hpp"
 #include "dll/dbn.hpp"
 #include "dll/text_reader.hpp"
-#include "dll/trainer/conjugate_gradient.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -23,7 +22,7 @@ TEST_CASE("dbn/mnist_1", "dbn::simple") {
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
             dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
-        dll::batch_size<50>>::dbn_t dbn_t;
+        dll::batch_size<50>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(500);
 
@@ -50,7 +49,7 @@ TEST_CASE("dbn/mnist_2", "dbn::containers") {
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
             dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
-        dll::batch_size<50>>::dbn_t dbn_t;
+        dll::batch_size<50>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(500);
 
@@ -79,7 +78,7 @@ TEST_CASE("dbn/mnist_3", "dbn::labels") {
             dll::rbm_desc<28 * 28, 200, dll::batch_size<50>, dll::init_weights, dll::momentum>::layer_t,
             dll::rbm_desc<200, 300, dll::batch_size<50>, dll::momentum>::layer_t,
             dll::rbm_desc<310, 500, dll::batch_size<50>, dll::momentum>::layer_t>,
-        dll::batch_size<10>>::dbn_t dbn_t;
+        dll::batch_size<10>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dbn = std::make_unique<dbn_t>();
 
@@ -96,7 +95,7 @@ TEST_CASE("dbn/mnist_6", "dbn::cg_gaussian") {
             dll::rbm_desc<28 * 28, 200, dll::momentum, dll::batch_size<25>, dll::visible<dll::unit_type::GAUSSIAN>>::layer_t,
             dll::rbm_desc<200, 500, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::rbm_desc<500, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
-        dll::batch_size<50>>::dbn_t dbn_t;
+        dll::batch_size<50>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(1000);
 
@@ -125,7 +124,7 @@ TEST_CASE("dbn/mnist_8", "dbn::cg_relu") {
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::RELU>, dll::init_weights>::layer_t,
             dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
-        dll::batch_size<50>>::dbn_t dbn_t;
+        dll::batch_size<50>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(200);
 
@@ -151,7 +150,7 @@ TEST_CASE("dbn/mnist_15", "dbn::parallel") {
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::parallel_mode, dll::batch_size<25>, dll::init_weights>::layer_t,
             dll::rbm_desc<100, 200, dll::momentum, dll::parallel_mode, dll::batch_size<25>>::layer_t,
             dll::rbm_desc<200, 10, dll::momentum, dll::parallel_mode, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
-        dll::batch_size<50>>::dbn_t dbn_t;
+        dll::batch_size<50>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(500);
 
@@ -179,7 +178,7 @@ TEST_CASE("dbn/mnist_17", "dbn::memory") {
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
             dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
-        dll::batch_mode, dll::batch_size<50>, dll::big_batch_size<3>>::dbn_t dbn_t;
+        dll::batch_mode, dll::trainer<dll::cg_trainer>, dll::batch_size<50>, dll::big_batch_size<3>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(1078);
 
@@ -214,7 +213,7 @@ TEST_CASE("dbn/mnist/text/1", "dbn::simple") {
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
             dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
-        dll::batch_size<50>>::dbn_t dbn_t;
+        dll::batch_size<50>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto training_images = dll::text::read_images<std::vector, etl::dyn_matrix<float, 1>, false>(
         "/home/wichtounet/datasets/mnist_text/train/images", 500);
@@ -254,7 +253,7 @@ TEST_CASE("mnist_original", "dbn::simple") {
             dll::rbm_desc<500, 500, dll::momentum, dll::batch_size<64>>::layer_t,
             dll::rbm_desc<500, 2000, dll::momentum, dll::batch_size<64>>::layer_t,
             dll::rbm_desc<2000, 10, dll::momentum, dll::batch_size<64>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
-        dll::batch_size<300>>::dbn_t dbn_t;
+        dll::batch_size<300>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>();
 

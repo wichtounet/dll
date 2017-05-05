@@ -21,7 +21,7 @@ TEST_CASE("dbn/svm/1", "dbn::svm_simple") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
-            dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::layer_t>>::dbn_t dbn_t;
+            dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::layer_t>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(500);
     REQUIRE(!dataset.training_images.empty());
@@ -45,7 +45,7 @@ TEST_CASE("dbn/svm/2", "dbn::svm_concatenate") {
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
             dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::layer_t>,
-        dll::svm_concatenate>::dbn_t dbn_t;
+        dll::svm_concatenate, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(500);
     REQUIRE(!dataset.training_images.empty());
@@ -67,7 +67,7 @@ TEST_CASE("dbn/svm/2", "dbn::svm_concatenate") {
 TEST_CASE("dbn/svm/3", "dbn::svm_simple") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t>>::dbn_t dbn_t;
+            dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(500);
     REQUIRE(!dataset.training_images.empty());

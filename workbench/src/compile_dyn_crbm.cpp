@@ -11,7 +11,6 @@
 #include "dll/rbm/conv_rbm.hpp"
 #include "dll/rbm/rbm.hpp"
 #include "dll/pooling/mp_layer.hpp"
-#include "dll/trainer/stochastic_gradient_descent.hpp"
 #include "dll/dbn.hpp"
 
 #include "mnist/mnist_reader.hpp"

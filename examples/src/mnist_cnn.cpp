@@ -9,7 +9,6 @@
 #include "dll/neural/dense_layer.hpp"
 #include "dll/pooling/mp_layer.hpp"
 #include "dll/dbn.hpp"
-#include "dll/trainer/stochastic_gradient_descent.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -33,7 +32,7 @@ int main(int /*argc*/, char* /*argv*/ []) {
             dll::conv_same_desc<6, 14, 14, 6, 3, 3>::layer_t,
             dll::mp_layer_3d_desc<6, 14, 14, 1, 2, 2>::layer_t,
             dll::dense_desc<6 * 7 * 7, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::batch_size<100>, dll::shuffle, dll::trainer<dll::sgd_trainer>>::dbn_t;
+        dll::momentum, dll::batch_size<100>, dll::shuffle>::dbn_t;
 
     auto net = std::make_unique<network_t>();
 

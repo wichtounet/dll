@@ -20,7 +20,6 @@
 #include "dll/rbm/rbm.hpp"
 #include "dll/rbm/dyn_rbm.hpp"
 #include "dll/dbn.hpp"
-#include "dll/trainer/stochastic_gradient_descent.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"

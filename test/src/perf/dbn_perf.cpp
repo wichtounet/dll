@@ -11,7 +11,6 @@
 
 #include "dll/rbm/rbm.hpp"
 #include "dll/dbn.hpp"
-#include "dll/trainer/conjugate_gradient.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -22,7 +21,7 @@ TEST_CASE("dbn/perf/1", "[dbn][bench][fast]") {
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<5>, dll::init_weights>::layer_t,
             dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<5>>::layer_t,
             dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<5>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
-        dll::batch_size<5>>::dbn_t dbn_t;
+        dll::batch_size<5>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(25);
     REQUIRE(!dataset.training_images.empty());
@@ -48,7 +47,7 @@ TEST_CASE("dbn/perf/2", "[dbn][bench][slow][parallel]") {
             dll::rbm_desc<28 * 28, 300, dll::momentum, dll::parallel_mode, dll::batch_size<24>, dll::init_weights>::layer_t,
             dll::rbm_desc<300, 1000, dll::momentum, dll::parallel_mode, dll::batch_size<24>>::layer_t,
             dll::rbm_desc<1000, 10, dll::momentum, dll::parallel_mode, dll::batch_size<24>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
-        dll::batch_size<5>>::dbn_t dbn_t;
+        dll::batch_size<5>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(2000);
 
@@ -69,7 +68,7 @@ TEST_CASE("dbn/perf/3", "[dbn][bench][slow]") {
             dll::rbm_desc<28 * 28, 300, dll::momentum, dll::batch_size<24>, dll::init_weights>::layer_t,
             dll::rbm_desc<300, 1000, dll::momentum, dll::batch_size<24>>::layer_t,
             dll::rbm_desc<1000, 10, dll::momentum, dll::batch_size<24>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
-        dll::batch_size<5>>::dbn_t dbn_t;
+        dll::batch_size<5>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(2000);
 
