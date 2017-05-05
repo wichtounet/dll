@@ -37,6 +37,22 @@ struct shape_layer_1d : transform_layer<shape_layer_1d<Desc>> {
         return "Shape";
     }
 
+    /*!
+     * \brief Return the size of the input of this layer
+     * \return The size of the input of this layer
+     */
+    static constexpr size_t input_size() {
+        return Size;
+    }
+
+    /*!
+     * \brief Return the size of the output of this layer
+     * \return The size of the output of this layer
+     */
+    static constexpr size_t output_size() {
+        return Size;
+    }
+
     using base_type::activate_hidden;
 
     /*!

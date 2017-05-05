@@ -36,8 +36,24 @@ struct dyn_shape_layer_1d : transform_layer<dyn_shape_layer_1d<Desc>> {
     /*!
      * \brief Returns a string representation of the layer
      */
-    std::string to_short_string() const {
+    static std::string to_short_string() {
         return "Shape1D(dyn)";
+    }
+
+    /*!
+     * \brief Return the size of the input of this layer
+     * \return The size of the input of this layer
+     */
+    size_t input_size() const  {
+        return S;
+    }
+
+    /*!
+     * \brief Return the size of the output of this layer
+     * \return The size of the output of this layer
+     */
+    size_t output_size() const {
+        return S;
     }
 
     using base_type::activate_hidden;
