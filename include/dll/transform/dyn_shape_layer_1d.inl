@@ -22,7 +22,8 @@ struct dyn_shape_layer_1d : transform_layer<dyn_shape_layer_1d<Desc>> {
 
     static constexpr size_t D = 1; ///< The number of dimensions
 
-    using input_one_t = etl::dyn_matrix<weight, 1>; ///< The preferred type of input
+    using input_one_t  = etl::dyn_matrix<weight, 1>; ///< The preferred type of input
+    using output_one_t = etl::dyn_matrix<weight, 1>; ///< The type of output
 
     size_t S;
 

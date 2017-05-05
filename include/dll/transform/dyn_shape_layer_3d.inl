@@ -22,7 +22,8 @@ struct dyn_shape_layer_3d : transform_layer<dyn_shape_layer_3d<Desc>> {
 
     static constexpr size_t D = 3; ///< The number of dimensions
 
-    using input_one_t = etl::dyn_matrix<weight, 3>; ///< The preferred type of input
+    using input_one_t  = etl::dyn_matrix<weight, 3>; ///< The preferred type of input
+    using output_one_t = etl::dyn_matrix<weight, 3>; ///< The type of output
 
     size_t C; ///< The number of input channels
     size_t W; ///< The width of the input

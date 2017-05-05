@@ -25,7 +25,8 @@ struct shape_layer_1d : transform_layer<shape_layer_1d<Desc>> {
     static constexpr size_t Size = desc::S; ///< The input size
     static constexpr size_t D    = 1;       ///< The number of dimensions
 
-    using input_one_t = etl::fast_dyn_matrix<weight, Size>; ///< The preferred type of input
+    using input_one_t  = etl::fast_dyn_matrix<weight, Size>; ///< The preferred type of input
+    using output_one_t = etl::fast_dyn_matrix<weight, Size>; ///< The type of output
 
     shape_layer_1d() = default;
 
