@@ -318,7 +318,7 @@ public:
      * \tparam N The index of the layer to return (from 0)
      */
     template <size_t N>
-    constexpr layer_type<N>& layer_get() const {
+    constexpr const layer_type<N>& layer_get() const {
         return detail::layer_get<N>(tuples);
     }
 
@@ -834,6 +834,23 @@ public:
 
     using metrics_t = std::tuple<double>; ///< The metrics returned by evaluate_metrics
 
+private:
+
+    //Note: if constexpr
+    template <typename InputIterator, cpp_enable_if(etl::decay_traits<decltype(*std::declval<InputIterator>())>::dimensions() == 1)>
+    auto prepare_input_batch(InputIterator& iit){
+        auto first = *iit;
+        return etl::dyn_matrix<weight, 2>(batch_size, etl::size(first));
+    }
+
+    template <typename InputIterator, cpp_enable_if(etl::decay_traits<decltype(*std::declval<InputIterator>())>::dimensions() == 3)>
+    auto prepare_input_batch(InputIterator& iit){
+        auto first = *iit;
+        return etl::dyn_matrix<weight, 4>(batch_size, etl::dim<0>(first), etl::dim<1>(first), etl::dim<2>(first));
+    }
+
+public:
+
     /*!
      * \brief Evaluate the network on the given classification task
      * and return the evaluation metrics.
@@ -852,9 +869,7 @@ public:
         // TODO Detect if labels are categorical already or not
         // And change the way this is done
 
-        decltype(auto) input_layer  = this->template layer_get<input_layer_n>();
-
-        etl::dyn_matrix<weight, 2> input_batch(batch_size, input_layer.input_size());
+        auto input_batch = prepare_input_batch(iit);
         etl::dyn_matrix<weight, 1> label_batch(batch_size);
 
         double error = 0.0;
