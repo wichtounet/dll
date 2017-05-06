@@ -29,7 +29,7 @@ TEST_CASE("crbm/mnist_140", "crbm::slow") {
     for (auto& image : dataset.training_images) {
         image.reserve(image.size() * 2);
         auto end = image.size();
-        for (std::size_t i = 0; i < end; ++i) {
+        for (size_t i = 0; i < end; ++i) {
             image.push_back(image[i]);
         }
     }
@@ -57,7 +57,7 @@ TEST_CASE("crbm/mnist_141", "crbm::slow_parallel") {
     for (auto& image : dataset.training_images) {
         image.reserve(image.size() * 2);
         auto end = image.size();
-        for (std::size_t i = 0; i < end; ++i) {
+        for (size_t i = 0; i < end; ++i) {
             image.push_back(image[i]);
         }
     }
@@ -82,7 +82,7 @@ TEST_CASE("crbm/mnist_142", "crbm::slow_second") {
     for (auto& image : dataset.training_images) {
         image.reserve(image.size() * 40);
         auto end = image.size();
-        for (std::size_t i = 0; i < end; ++i) {
+        for (size_t i = 0; i < end; ++i) {
             image.push_back(image[i]);
         }
         image.resize(12 * 12 * 40);
@@ -109,7 +109,7 @@ TEST_CASE("crbm/mnist_143", "crbm::slow_parallel_second") {
     for (auto& image : dataset.training_images) {
         image.reserve(image.size() * 40);
         auto end = image.size();
-        for (std::size_t i = 0; i < end; ++i) {
+        for (size_t i = 0; i < end; ++i) {
             image.push_back(image[i]);
         }
         image.resize(12 * 12 * 40);

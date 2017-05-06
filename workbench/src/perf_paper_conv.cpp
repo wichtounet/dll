@@ -15,7 +15,7 @@
 
 namespace {
 
-constexpr std::size_t EPOCHS = 5;
+constexpr size_t EPOCHS = 5;
 
 using clock      = std::chrono::steady_clock;
 using time_point = std::chrono::time_point<clock>;
@@ -23,11 +23,11 @@ using resolution = std::chrono::milliseconds;
 
 struct perf_timer {
     std::string name;
-    std::size_t repeat;
+    size_t repeat;
 
     time_point start;
 
-    perf_timer(std::string name, std::size_t repeat) : name(name), repeat(repeat) {
+    perf_timer(std::string name, size_t repeat) : name(name), repeat(repeat) {
         start = clock::now();
     }
 
@@ -41,13 +41,13 @@ struct perf_timer {
 
 #define MEASURE(rbm, name, data)                                                           \
     {                                                                                      \
-        std::size_t d_min = std::numeric_limits<std::size_t>::max();                       \
-        std::size_t d_max = 0;                                                             \
-        for (std::size_t i = 0; i < EPOCHS; ++i) {                                         \
+        size_t d_min = std::numeric_limits<size_t>::max();                       \
+        size_t d_max = 0;                                                             \
+        for (size_t i = 0; i < EPOCHS; ++i) {                                         \
             time_point start = clock::now();                                               \
             rbm.train<false>(data, 1);                                                     \
             time_point end = clock::now();                                                 \
-            std::size_t d  = std::chrono::duration_cast<resolution>(end - start).count();  \
+            size_t d  = std::chrono::duration_cast<resolution>(end - start).count();  \
             d_min          = std::min(d_min, d);                                           \
             d_max          = std::max(d_max, d);                                           \
         }                                                                                  \
@@ -74,7 +74,7 @@ int main(int argc, char* argv []) {
     std::vector<etl::fast_dyn_matrix<float, 40, 16, 16>> data_3(n);
     std::vector<etl::fast_dyn_matrix<float, 96, 12, 12>> data_4(n);
 
-    for(std::size_t i = 0; i < n; ++i){
+    for(size_t i = 0; i < n; ++i){
         data_2[i] = etl::normal_generator() * 255.0;
         data_3[i] = etl::normal_generator() * 255.0;
         data_4[i] = etl::normal_generator() * 255.0;

@@ -15,7 +15,7 @@
 
 namespace {
 
-constexpr std::size_t EPOCHS = 5;
+constexpr size_t EPOCHS = 5;
 
 using clock      = std::chrono::steady_clock;
 using time_point = std::chrono::time_point<clock>;
@@ -23,13 +23,13 @@ using resolution = std::chrono::milliseconds;
 
 #define MEASURE(rbm, name, data)                                                           \
     {                                                                                      \
-        std::size_t d_min = std::numeric_limits<std::size_t>::max();                       \
-        std::size_t d_max = 0;                                                             \
-        for (std::size_t i = 0; i < EPOCHS; ++i) {                                         \
+        size_t d_min = std::numeric_limits<size_t>::max();                       \
+        size_t d_max = 0;                                                             \
+        for (size_t i = 0; i < EPOCHS; ++i) {                                         \
             time_point start = clock::now();                                               \
             rbm.train<false>(data, 1);                                                     \
             time_point end = clock::now();                                                 \
-            std::size_t d  = std::chrono::duration_cast<resolution>(end - start).count();  \
+            size_t d  = std::chrono::duration_cast<resolution>(end - start).count();  \
             d_min          = std::min(d_min, d);                                           \
             d_max          = std::max(d_max, d);                                           \
         }                                                                                  \
@@ -53,7 +53,7 @@ int main(int argc, char* argv []) {
     for (auto& image : dataset.training_images) {
         image.reserve(image.size() * 2);
         auto end = image.size();
-        for (std::size_t i = 0; i < end; ++i) {
+        for (size_t i = 0; i < end; ++i) {
             image.push_back(image[i]);
         }
     }

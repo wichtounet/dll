@@ -54,7 +54,7 @@ std::string command_result(const std::string& command) {
     return out;
 }
 
-dll::processor::datasource parse_datasource(const std::vector<std::string>& lines, std::size_t& i) {
+dll::processor::datasource parse_datasource(const std::vector<std::string>& lines, size_t& i) {
     dll::processor::datasource source;
 
     source.reader = "default";
@@ -96,8 +96,8 @@ dll::processor::datasource parse_datasource(const std::vector<std::string>& line
     return source;
 }
 
-void parse_datasource_pack(dll::processor::datasource_pack& pack, const std::vector<std::string>& lines, std::size_t& i) {
-    std::size_t limit = -1;
+void parse_datasource_pack(dll::processor::datasource_pack& pack, const std::vector<std::string>& lines, size_t& i) {
+    size_t limit = -1;
     while (i < lines.size()) {
         if (starts_with(lines[i], "samples:")) {
             pack.samples = parse_datasource(lines, ++i);
@@ -130,7 +130,7 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
 
     //1. Process includes
 
-    for (std::size_t i = 0; i < lines.size();) {
+    for (size_t i = 0; i < lines.size();) {
         auto& current_line = lines[i];
 
         if (dllp::starts_with(current_line, "include: ")) {
@@ -151,7 +151,7 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
 
     //2. Process the lines
 
-    for (std::size_t i = 0; i < lines.size();) {
+    for (size_t i = 0; i < lines.size();) {
         auto& current_line = lines[i];
 
         if (dllp::starts_with(current_line, "include: ")) {
@@ -587,7 +587,7 @@ void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll
         out_stream << "   dbn->l2_weight_cost = " << t.ft_desc.l2_weight_cost << ";\n";
     }
 
-    for (std::size_t i = 0; i < layers.size(); ++i) {
+    for (size_t i = 0; i < layers.size(); ++i) {
         auto& layer = layers[i];
 
         layer->set(out_stream, "   dbn->layer_get<" + std::to_string(i) + ">()");

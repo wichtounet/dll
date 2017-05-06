@@ -26,7 +26,7 @@ void print_usage() {
 }
 
 void parse_options(int argc, char* argv[], dll::processor::options& opt, std::vector<std::string>& actions, std::string& source_file) {
-    std::size_t i = 1;
+    size_t i = 1;
 
     while (true) {
         if (std::string(argv[i]) == "--mkl") {
@@ -48,7 +48,7 @@ void parse_options(int argc, char* argv[], dll::processor::options& opt, std::ve
 
     source_file = argv[i++];
 
-    for (; i < std::size_t(argc); ++i) {
+    for (; i < size_t(argc); ++i) {
         actions.emplace_back(argv[i]);
     }
 }

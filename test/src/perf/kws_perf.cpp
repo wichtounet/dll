@@ -72,11 +72,11 @@ TEST_CASE("perf/kws", "[perf][crbm][mp][cdbn]") {
 
     std::vector<etl::fast_dyn_matrix<float, 1, 40, 20>> augmented(dataset.training_images.size());
 
-    for(std::size_t i = 0; i < dataset.training_images.size(); ++i){
+    for(size_t i = 0; i < dataset.training_images.size(); ++i){
         auto& source_image = dataset.training_images[i];
         auto& target_image = augmented[i];
 
-        for(std::size_t j = 0; j < source_image.size(); ++j){
+        for(size_t j = 0; j < source_image.size(); ++j){
             target_image[j] = source_image[j];
         }
     }
@@ -108,11 +108,11 @@ TEST_CASE("perf/kws_sub", "[perf][crbm][mp][cdbn]") {
 
     std::vector<etl::fast_dyn_matrix<float, 1, 40, 20>> augmented(dataset.training_images.size());
 
-    for(std::size_t i = 0; i < dataset.training_images.size(); ++i){
+    for(size_t i = 0; i < dataset.training_images.size(); ++i){
         auto& source_image = dataset.training_images[i];
         auto& target_image = augmented[i];
 
-        for(std::size_t j = 0; j < source_image.size(); ++j){
+        for(size_t j = 0; j < source_image.size(); ++j){
             target_image[j] = source_image[j];
         }
     }

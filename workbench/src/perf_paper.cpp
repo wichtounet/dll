@@ -15,7 +15,7 @@
 
 namespace {
 
-constexpr std::size_t EPOCHS = 5;
+constexpr size_t EPOCHS = 5;
 
 using clock      = std::chrono::steady_clock;
 using time_point = std::chrono::time_point<clock>;
@@ -23,11 +23,11 @@ using resolution = std::chrono::milliseconds;
 
 struct perf_timer {
     std::string name;
-    std::size_t repeat;
+    size_t repeat;
 
     time_point start;
 
-    perf_timer(std::string name, std::size_t repeat) : name(name), repeat(repeat) {
+    perf_timer(std::string name, size_t repeat) : name(name), repeat(repeat) {
         start = clock::now();
     }
 
@@ -68,7 +68,7 @@ int main(int argc, char* argv []) {
     std::vector<etl::dyn_vector<float>> data_3(n, etl::dyn_vector<float>(500));
     std::vector<etl::dyn_vector<float>> data_4(n, etl::dyn_vector<float>(2000));
 
-    for(std::size_t i = 0; i < n; ++i){
+    for(size_t i = 0; i < n; ++i){
         data_2[i] = etl::normal_generator() * 255.0;
         data_3[i] = etl::normal_generator() * 255.0;
         data_4[i] = etl::normal_generator() * 255.0;

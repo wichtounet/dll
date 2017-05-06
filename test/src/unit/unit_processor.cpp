@@ -56,11 +56,11 @@ bool get_last_rec_error(std::string epoch, const std::vector<std::string>& lines
     return found;
 }
 
-bool get_rec_error(std::string epoch, std::size_t index, const std::vector<std::string>& lines, double& error) {
+bool get_rec_error(std::string epoch, size_t index, const std::vector<std::string>& lines, double& error) {
     bool found = false;
     auto begin = epoch + " - Reconstruction error: ";
 
-    std::size_t i = 0;
+    size_t i = 0;
 
     for (auto& line : lines) {
         if (starts_with(line, begin)) {
@@ -90,11 +90,11 @@ bool get_last_sparsity(std::string epoch, const std::vector<std::string>& lines,
     return found;
 }
 
-bool get_sparsity(std::string epoch, std::size_t index, const std::vector<std::string>& lines, double& error) {
+bool get_sparsity(std::string epoch, size_t index, const std::vector<std::string>& lines, double& error) {
     bool found = false;
     auto begin = epoch + " - Reconstruction error: ";
 
-    std::size_t i = 0;
+    size_t i = 0;
 
     for (auto& line : lines) {
         if (starts_with(line, begin)) {

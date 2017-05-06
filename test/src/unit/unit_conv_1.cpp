@@ -141,7 +141,7 @@ TEST_CASE("unit/conv/sgd/partial/1", "[conv][dbn][mnist][sgd]") {
         double error = 0.0;
         double loss = 0.0;
 
-        for(std::size_t i = 0; i < 10; ++i){
+        for(size_t i = 0; i < 10; ++i){
             std::tie(loss, error) = trainer.train_partial(
                 *dbn, false,
                 dataset.training_images.begin() + i * 50, dataset.training_images.begin() + (i + 1) * 50,

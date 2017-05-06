@@ -8,7 +8,7 @@
 #include "layer.hpp"
 #include "parse_utils.hpp"
 
-dllp::parse_result dllp::base_rbm_layer::base_parse(const std::vector<std::string>& lines, std::size_t& i) {
+dllp::parse_result dllp::base_rbm_layer::base_parse(const std::vector<std::string>& lines, size_t& i) {
     std::string value;
 
     if (dllp::extract_value(lines[i], "batch: ", value)) {
@@ -148,7 +148,7 @@ void dllp::rbm_layer::print(std::ostream& out) const {
     out << ">::layer_t";
 }
 
-bool dllp::rbm_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) {
+bool dllp::rbm_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, size_t& i) {
     std::string value;
 
     while (i < lines.size()) {
@@ -195,7 +195,7 @@ bool dllp::rbm_layer::parse(const layers_t& layers, const std::vector<std::strin
     return true;
 }
 
-std::size_t dllp::rbm_layer::hidden_get() const {
+size_t dllp::rbm_layer::hidden_get() const {
     return hidden;
 }
 
@@ -211,7 +211,7 @@ void dllp::conv_rbm_layer::print(std::ostream& out) const {
     out << ">::layer_t";
 }
 
-bool dllp::conv_rbm_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) {
+bool dllp::conv_rbm_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, size_t& i) {
     std::string value;
 
     while (i < lines.size()) {
@@ -273,19 +273,19 @@ bool dllp::conv_rbm_layer::parse(const layers_t& layers, const std::vector<std::
     return true;
 }
 
-std::size_t dllp::conv_rbm_layer::hidden_get() const {
+size_t dllp::conv_rbm_layer::hidden_get() const {
     return k * (v1 - w1 + 1) * (v2 - w2 + 1);
 }
 
-std::size_t dllp::conv_rbm_layer::hidden_get_1() const {
+size_t dllp::conv_rbm_layer::hidden_get_1() const {
     return k;
 }
 
-std::size_t dllp::conv_rbm_layer::hidden_get_2() const {
+size_t dllp::conv_rbm_layer::hidden_get_2() const {
     return v1 - w1 + 1;
 }
 
-std::size_t dllp::conv_rbm_layer::hidden_get_3() const {
+size_t dllp::conv_rbm_layer::hidden_get_3() const {
     return v2 - w2 + 1;
 }
 
@@ -301,7 +301,7 @@ void dllp::conv_rbm_mp_layer::print(std::ostream& out) const {
     out << ">::layer_t";
 }
 
-bool dllp::conv_rbm_mp_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) {
+bool dllp::conv_rbm_mp_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, size_t& i) {
     std::string value;
 
     while (i < lines.size()) {
@@ -369,19 +369,19 @@ bool dllp::conv_rbm_mp_layer::parse(const layers_t& layers, const std::vector<st
     return true;
 }
 
-std::size_t dllp::conv_rbm_mp_layer::hidden_get() const {
+size_t dllp::conv_rbm_mp_layer::hidden_get() const {
     return k * ((v1 - w1 + 1) / p) * ((v2 - w2 + 1) / p);
 }
 
-std::size_t dllp::conv_rbm_mp_layer::hidden_get_1() const {
+size_t dllp::conv_rbm_mp_layer::hidden_get_1() const {
     return k;
 }
 
-std::size_t dllp::conv_rbm_mp_layer::hidden_get_2() const {
+size_t dllp::conv_rbm_mp_layer::hidden_get_2() const {
     return (v1 - w1 + 1) / p;
 }
 
-std::size_t dllp::conv_rbm_mp_layer::hidden_get_3() const {
+size_t dllp::conv_rbm_mp_layer::hidden_get_3() const {
     return (v2 - w2 + 1) / p;
 }
 
@@ -395,7 +395,7 @@ void dllp::dense_layer::print(std::ostream& out) const {
     out << ">::layer_t";
 }
 
-bool dllp::dense_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) {
+bool dllp::dense_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, size_t& i) {
     std::string value;
 
     while (i < lines.size()) {
@@ -438,7 +438,7 @@ bool dllp::dense_layer::parse(const layers_t& layers, const std::vector<std::str
     return true;
 }
 
-std::size_t dllp::dense_layer::hidden_get() const {
+size_t dllp::dense_layer::hidden_get() const {
     return hidden;
 }
 
@@ -456,7 +456,7 @@ void dllp::conv_layer::print(std::ostream& out) const {
     out << ">::layer_t";
 }
 
-bool dllp::conv_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) {
+bool dllp::conv_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, size_t& i) {
     std::string value;
 
     while (i < lines.size()) {
@@ -516,19 +516,19 @@ bool dllp::conv_layer::parse(const layers_t& layers, const std::vector<std::stri
     return true;
 }
 
-std::size_t dllp::conv_layer::hidden_get() const {
+size_t dllp::conv_layer::hidden_get() const {
     return k * (v1 - w1 + 1) * (v2 - w2 + 1);
 }
 
-std::size_t dllp::conv_layer::hidden_get_1() const {
+size_t dllp::conv_layer::hidden_get_1() const {
     return k;
 }
 
-std::size_t dllp::conv_layer::hidden_get_2() const {
+size_t dllp::conv_layer::hidden_get_2() const {
     return v1 - w1 + 1;
 }
 
-std::size_t dllp::conv_layer::hidden_get_3() const {
+size_t dllp::conv_layer::hidden_get_3() const {
     return v2 - w2 + 1;
 }
 
@@ -541,7 +541,7 @@ void dllp::pooling_layer::print(std::ostream& out) const {
     out << ">::layer_t";
 }
 
-bool dllp::pooling_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) {
+bool dllp::pooling_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, size_t& i) {
     std::string value;
 
     while (i < lines.size()) {
@@ -591,19 +591,19 @@ bool dllp::pooling_layer::parse(const layers_t& layers, const std::vector<std::s
     return true;
 }
 
-std::size_t dllp::pooling_layer::hidden_get() const {
+size_t dllp::pooling_layer::hidden_get() const {
     return hidden_get_1() * hidden_get_2() * hidden_get_3();
 }
 
-std::size_t dllp::pooling_layer::hidden_get_1() const {
+size_t dllp::pooling_layer::hidden_get_1() const {
     return c / c1;
 }
 
-std::size_t dllp::pooling_layer::hidden_get_2() const {
+size_t dllp::pooling_layer::hidden_get_2() const {
     return v1 / c2;
 }
 
-std::size_t dllp::pooling_layer::hidden_get_3() const {
+size_t dllp::pooling_layer::hidden_get_3() const {
     return v2 / c3;
 }
 
@@ -612,7 +612,7 @@ void dllp::mp_layer::print(std::ostream& out) const {
     pooling_layer::print(out);
 }
 
-bool dllp::mp_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) {
+bool dllp::mp_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, size_t& i) {
     return pooling_layer::parse(layers, lines, i);
 }
 
@@ -621,7 +621,7 @@ void dllp::avgp_layer::print(std::ostream& out) const {
     pooling_layer::print(out);
 }
 
-bool dllp::avgp_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) {
+bool dllp::avgp_layer::parse(const layers_t& layers, const std::vector<std::string>& lines, size_t& i) {
     return pooling_layer::parse(layers, lines, i);
 }
 
@@ -635,7 +635,7 @@ void dllp::function_layer::print(std::ostream& out) const {
         << ">::layer_t";
 }
 
-bool dllp::function_layer::parse(const layers_t& /*layers*/, const std::vector<std::string>& lines, std::size_t& i) {
+bool dllp::function_layer::parse(const layers_t& /*layers*/, const std::vector<std::string>& lines, size_t& i) {
     std::string value;
 
     while (i < lines.size()) {

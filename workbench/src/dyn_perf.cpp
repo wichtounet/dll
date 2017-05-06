@@ -17,7 +17,7 @@
 
 namespace {
 
-constexpr std::size_t EPOCHS = 10;
+constexpr size_t EPOCHS = 10;
 
 using clock      = std::chrono::steady_clock;
 using time_point = std::chrono::time_point<clock>;
@@ -25,11 +25,11 @@ using resolution = std::chrono::milliseconds;
 
 struct perf_timer {
     std::string name;
-    std::size_t repeat;
+    size_t repeat;
 
     time_point start;
 
-    perf_timer(std::string name, std::size_t repeat) : name(name), repeat(repeat) {
+    perf_timer(std::string name, size_t repeat) : name(name), repeat(repeat) {
         start = clock::now();
     }
 

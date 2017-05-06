@@ -77,8 +77,8 @@ TEST_CASE("unit/dbn/mnist/1", "[dbn][unit]") {
 
     std::ifstream is(".tmp.features");
 
-    std::size_t big = 0;
-    for (std::size_t i = 0; i < 10; ++i) {
+    size_t big = 0;
+    for (size_t i = 0; i < 10; ++i) {
         double v;
         char dump;
         is >> v;

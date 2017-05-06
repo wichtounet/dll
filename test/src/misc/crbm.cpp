@@ -143,7 +143,7 @@ TEST_CASE("crbm/mnist_13", "crbm::multi_channel") {
     for (auto& image : dataset.training_images) {
         image.reserve(image.size() * 2);
         auto end = image.size();
-        for (std::size_t i = 0; i < end; ++i) {
+        for (size_t i = 0; i < end; ++i) {
             image.push_back(image[i]);
         }
     }
@@ -168,7 +168,7 @@ TEST_CASE("crbm/mnist_14", "crbm::fast") {
     for (auto& image : dataset.training_images) {
         image.reserve(image.size() * 2);
         auto end = image.size();
-        for (std::size_t i = 0; i < end; ++i) {
+        for (size_t i = 0; i < end; ++i) {
             image.push_back(image[i]);
         }
     }
