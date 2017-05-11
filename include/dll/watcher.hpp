@@ -197,17 +197,17 @@ struct default_dbn_watcher {
     void ft_batch_start(size_t epoch, const DBN& dbn) {
         cpp_unused(epoch);
         cpp_unused(dbn);
-        ft_epoch_timer.start();
+        ft_batch_timer.start();
     }
 
     void ft_batch_end(size_t epoch, size_t batch, size_t batches, double batch_error, double batch_loss, const DBN&) {
-        auto duration = ft_epoch_timer.stop();
+        auto duration = ft_batch_timer.stop();
         printf("Epoch %3ld:%ld/%ld- B. Error: %.5f B. Loss: %.5f Time %ldms\n", epoch, batch, batches, batch_error, batch_loss, duration);
         std::cout.flush();
     }
 
     void ft_batch_end(size_t epoch, double batch_error, double batch_loss, const DBN&) {
-        auto duration = ft_epoch_timer.stop();
+        auto duration = ft_batch_timer.stop();
         printf("Epoch %3ld - B.Error: %.5f B.Loss: %.5f Time %ldms\n", epoch, batch_error, batch_loss, duration);
         std::cout.flush();
     }
