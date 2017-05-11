@@ -24,7 +24,8 @@ namespace {
 
 void first_ex(){
     // First experiment : Conv -> Conv -> Dense -> Dense
-    // Current speed on frigg:
+    // Current training speed on frigg:
+    //  ~100 seconds (mkl, default options)
 
     constexpr size_t N = 4096;
     constexpr size_t B = 128;
@@ -74,7 +75,7 @@ void first_ex(){
 
     // Train the network for performance sake
     net->display();
-    net->fine_tune(training_images, training_labels, 5);
+    net->fine_tune(training_images, training_labels, 1);
 
     std::cout << "DLL Timers" << std::endl;
     dll::dump_timers_one();
@@ -85,7 +86,8 @@ void first_ex(){
 
 void second_ex(){
     // Second experiment : Conv -> Conv -> Dense -> Dense
-    // Current speed on frigg:
+    // Current training speed on frigg:
+    //  ~185 seconds (mkl, default options)
 
     constexpr size_t N = 4096;
     constexpr size_t B = 128;
@@ -135,7 +137,7 @@ void second_ex(){
 
     // Train the network for performance sake
     net->display();
-    net->fine_tune(training_images, training_labels, 5);
+    net->fine_tune(training_images, training_labels, 1);
 
     std::cout << "DLL Timers" << std::endl;
     dll::dump_timers_one();
