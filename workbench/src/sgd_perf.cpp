@@ -17,6 +17,11 @@
 #include "mnist/mnist_utils.hpp"
 
 int main(int /*argc*/, char* /*argv*/ []) {
+    // First experiment : Dense - Dense - Dense
+    // Current speed on frigg:
+    //   ~20 seconds (mkl, default options)
+    //   ~13 seconds (mkl-threads, default options)
+
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>();
     dataset.training_images.resize(10000);
     dataset.training_labels.resize(10000);
