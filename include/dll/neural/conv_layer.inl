@@ -204,7 +204,7 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
         dll::auto_timer timer("conv:compute_gradients");
 
         context.w_grad = conv_4d_valid_filter_flipped(context.input, context.errors);
-        context.b_grad = etl::mean_r(etl::sum_l(context.errors));
+        context.b_grad = bias_batch_mean(context.errors);
     }
 };
 
