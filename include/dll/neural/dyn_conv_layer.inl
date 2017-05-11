@@ -170,7 +170,9 @@ struct dyn_conv_layer final : neural_layer<dyn_conv_layer<Desc>, Desc> {
      */
     template<typename C>
     void adapt_errors(C& context) const {
-        context.errors = f_derivative<activation_function>(context.output) >> context.errors;
+        if(activation_function != function::IDENTITY){
+            context.errors = f_derivative<activation_function>(context.output) >> context.errors;
+        }
     }
 
     /*!
