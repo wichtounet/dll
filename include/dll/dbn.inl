@@ -807,6 +807,20 @@ public:
      *
      * The result of the evaluation will be printed on the console.
      *
+     * \param generator The data generator
+     */
+    template <typename Generator>
+    void evaluate(Generator& generator){
+        auto metrics = evaluate_metrics(generator);
+
+        printf("error: %.5f \n", std::get<0>(metrics));
+    }
+
+    /*!
+     * \brief Evaluate the network on the given classification task.
+     *
+     * The result of the evaluation will be printed on the console.
+     *
      * \param samples The container containing the samples
      * \param labels The container containing the labels
      */
@@ -885,6 +899,40 @@ private:
     }
 
 public:
+
+    /*!
+     * \brief Evaluate the network on the given classification task
+     * and return the evaluation metrics.
+     *
+     * \param generator The data generator
+     *
+     * \return The evaluation metrics
+     */
+    template <typename Generator>
+    metrics_t evaluate_metrics(Generator& generator){
+        // TODO Detect if labels are categorical already or not
+        // And change the way this is done
+
+        generator.reset();
+
+        double error = 0.0;
+
+        while(generator.has_next_batch()){
+            auto input_batch = generator.data_batch();
+            auto label_batch = generator.label_batch();
+
+            decltype(auto) output = this->forward_batch(input_batch);
+
+            error += sum(min(abs(argmax(label_batch) - argmax(output)), 1.0));
+
+            generator.next_batch();
+        }
+
+        // Normalize the error
+        error /= generator.size();
+
+        return std::make_tuple(error);
+    }
 
     /*!
      * \brief Evaluate the network on the given classification task
