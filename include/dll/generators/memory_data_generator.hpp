@@ -111,6 +111,10 @@ struct memory_data_generator {
     auto label_batch() const {
         return etl::slice(labels, current, std::min(current + batch_size, size()));
     }
+
+    static constexpr size_t dimensions() {
+        return etl::dimensions<cache_type>() - 1;
+    }
 };
 
 /*!
