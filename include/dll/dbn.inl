@@ -672,6 +672,22 @@ public:
     }
 
     /*!
+     * \brief Fine tune the network for classifcation with a generator.
+     *
+     * \param generator A generator for data and labels
+     * \param max_epochs The maximum number of epochs to train the network for.
+     *
+     * \return The final classification error
+     */
+    template <typename Generator>
+    weight fine_tune(Generator& generator, size_t max_epochs) {
+        dll::auto_timer timer("dbn:train:ft");
+
+        dll::dbn_trainer<this_type> trainer;
+        return trainer.train(*this, generator, max_epochs);
+    }
+
+    /*!
      * \brief Fine tune the network for classifcation.
      * \param training_data A container containing all the samples
      * \param labels A container containing all the labels
