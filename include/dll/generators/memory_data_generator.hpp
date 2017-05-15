@@ -32,8 +32,16 @@ struct cache_helper<T, Iterator, std::enable_if_t<etl::is_3d<typename Iterator::
     }
 };
 
+template<typename Desc>
+struct is_augmented {
+    static constexpr bool value = Desc::random_crop_x > 0 && Desc::random_crop_y > 0;
+};
+
+template<typename Iterator, typename LIterator, typename Desc, typename Enable = void>
+struct memory_data_generator;
+
 template<typename Iterator, typename LIterator, typename Desc>
-struct memory_data_generator {
+struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_augmented<Desc>::value>> {
     using desc = Desc;
     using weight = typename desc::weight;
 
@@ -92,6 +100,10 @@ struct memory_data_generator {
         return etl::dim<0>(cache);
     }
 
+    size_t augmented_size() const {
+        return etl::dim<0>(cache);
+    }
+
     size_t batches() const {
         return size() / batch_size + (size() % batch_size == 0 ? 0 : 1);
     }
@@ -133,6 +145,21 @@ struct memory_data_generator_desc {
     static constexpr size_t BatchSize = detail::get_value<batch_size<1>, Parameters...>::value;
 
     /*!
+     * \brief The number of batch in cache
+     */
+    static constexpr size_t BigBatchSize = detail::get_value<big_batch_size<1>, Parameters...>::value;
+
+    /*!
+     * \brief The random cropping X
+     */
+    static constexpr size_t random_crop_x = detail::get_value_1<random_crop<0,0>, Parameters...>::value;
+
+    /*!
+     * \brief The random cropping Y
+     */
+    static constexpr size_t random_crop_y = detail::get_value_2<random_crop<0,0>, Parameters...>::value;
+
+    /*!
      * The type used to store the weights
      */
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
@@ -141,7 +168,7 @@ struct memory_data_generator_desc {
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid<cpp::type_list<batch_size_id, nop_id>,
+        detail::is_valid<cpp::type_list<batch_size_id, big_batch_size_id, random_crop_id, nop_id>,
                          Parameters...>::value,
         "Invalid parameters type for rbm_desc");
 
