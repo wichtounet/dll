@@ -31,6 +31,24 @@ struct get_value<D, T2, Args...> : cpp::conditional_constant<std::is_same<typena
 template <typename D>
 struct get_value<D> : cpp::auto_constant<D> {};
 
+template <typename D, typename... Args>
+struct get_value_1;
+
+template <typename D, typename T2, typename... Args>
+struct get_value_1<D, T2, Args...> : cpp::conditional_constant<std::is_same<typename D::type_id, typename T2::type_id>::value, T2, get_value_1<D, Args...>> {};
+
+template <typename D>
+struct get_value_1<D> : std::integral_constant<decltype(D::value_1), D::value_1> {};
+
+template <typename D, typename... Args>
+struct get_value_2;
+
+template <typename D, typename T2, typename... Args>
+struct get_value_2<D, T2, Args...> : cpp::conditional_constant<std::is_same<typename D::type_id, typename T2::type_id>::value, T2, get_value_2<D, Args...>> {};
+
+template <typename D>
+struct get_value_2<D> : std::integral_constant<decltype(D::value_2), D::value_2> {};
+
 template <typename D, typename L>
 struct get_value_l;
 

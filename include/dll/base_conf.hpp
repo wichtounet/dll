@@ -52,6 +52,14 @@ struct value_conf_elt : std::integral_constant<T, value> {
     using type_id = ID;
 };
 
+template <typename ID, typename T, T v1, T v2>
+struct value_pair_conf_elt {
+    using type_id = ID;
+
+    static constexpr T value_1 = v1;
+    static constexpr T value_2 = v2;
+};
+
 struct copy_id;
 struct elastic_id;
 struct batch_size_id;
@@ -82,6 +90,7 @@ struct clip_gradients_id;
 struct weight_type_id;
 struct free_energy_id;
 struct no_epoch_error_id;
+struct random_crop_id;
 struct memory_id;
 struct batch_mode_id;
 struct dbn_only_id;
@@ -158,6 +167,13 @@ struct lr_driver : value_conf_elt<lr_driver_id, lr_driver_type, T> {};
 
 template <size_t C>
 struct copy : value_conf_elt<copy_id, size_t, C> {};
+
+/*!
+ * \brief Sets the random cropping size
+ * \tparam B The minibatch size
+ */
+template <size_t X, size_t Y>
+struct random_crop : value_pair_conf_elt<random_crop_id, size_t, X, Y> {};
 
 template <size_t C, size_t K = 9>
 struct elastic : basic_conf_elt<elastic_id> {};
