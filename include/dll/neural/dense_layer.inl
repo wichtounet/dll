@@ -127,16 +127,16 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
 
         cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
 
+        output = v * w;
+
         if (activation_function == function::SOFTMAX) {
-            auto expr = etl::force_temporary(etl::rep_l(b, Batch) + v * w);
+            output = bias_add_2d(output, b);
 
             for (std::size_t i = 0; i < Batch; ++i) {
-                output(i) = f_activate<activation_function>(expr(i));
+                output(i) = f_activate<activation_function>(output(i));
             }
         } else {
-            // The temporary allows vectorization of the activation function -> speedups
-            auto expr = etl::force_temporary(etl::rep_l(b, Batch) + v * w);
-            output = f_activate<activation_function>(expr);
+            output = f_activate<activation_function>(bias_add_2d(output, b));
         }
     }
 
@@ -151,16 +151,16 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
 
         cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
 
+        output = etl::reshape<Batch, num_visible>(input) * w;
+
         if (activation_function == function::SOFTMAX) {
-            auto expr = etl::force_temporary(etl::rep_l(b, Batch) + etl::reshape<Batch, num_visible>(input) * w);
+            output = bias_add_2d(output, b);
 
             for (std::size_t i = 0; i < Batch; ++i) {
-                output(i) = f_activate<activation_function>(expr(i));
+                output(i) = f_activate<activation_function>(output(i));
             }
         } else {
-            // The temporary allows vectorization of the activation function -> speedups
-            auto expr = etl::force_temporary(etl::rep_l(b, Batch) + etl::reshape<Batch, num_visible>(input) * w);
-            output = f_activate<activation_function>(expr);
+            output = f_activate<activation_function>(bias_add_2d(output, b));
         }
     }
 
@@ -172,16 +172,16 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
 
         cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
 
+        output = etl::reshape(input, Batch, num_visible) * w;
+
         if (activation_function == function::SOFTMAX) {
-            auto expr = etl::force_temporary(etl::rep_l(b, Batch) + etl::reshape(input, Batch, num_visible) * w);
+            output = bias_add_2d(output, b);
 
             for (std::size_t i = 0; i < Batch; ++i) {
-                output(i) = f_activate<activation_function>(expr(i));
+                output(i) = f_activate<activation_function>(output(i));
             }
         } else {
-            // The temporary allows vectorization of the activation function -> speedups
-            auto expr = etl::force_temporary(etl::rep_l(b, Batch) + etl::reshape(input, Batch, num_visible) * w);
-            output = f_activate<activation_function>(expr);
+            output = f_activate<activation_function>(bias_add_2d(output, b));
         }
     }
 
