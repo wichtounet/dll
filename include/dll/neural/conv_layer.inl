@@ -128,28 +128,12 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
         return output;
     }
 
-    template <typename H1, typename V, cpp_enable_if(etl::decay_traits<H1>::is_fast)>
+    template <typename H1, typename V>
     void batch_activate_hidden(H1&& output, const V& v) const {
         dll::auto_timer timer("conv:forward_batch");
+
         output = etl::conv_4d_valid_flipped(v, w);
-
-        static constexpr auto batch_size = etl::decay_traits<H1>::template dim<0>();
-
-        auto b_rep = etl::force_temporary(etl::rep_l<batch_size>(etl::rep<NH1, NH2>(b)));
-
-        output = f_activate<activation_function>(b_rep + output);
-    }
-
-    template <typename H1, typename V, cpp_disable_if(etl::decay_traits<H1>::is_fast)>
-    void batch_activate_hidden(H1&& output, const V& v) const {
-        dll::auto_timer timer("conv:forward_batch");
-        output = etl::conv_4d_valid_flipped(v, w);
-
-        const auto batch_size = etl::dim<0>(output);
-
-        auto b_rep = etl::force_temporary(etl::rep_l(etl::rep<NH1, NH2>(b), batch_size));
-
-        output = f_activate<activation_function>(b_rep + output);
+        output = f_activate<activation_function>(bias_add_4d(output, b));
     }
 
     template <typename Input>

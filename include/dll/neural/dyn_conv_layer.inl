@@ -130,11 +130,10 @@ struct dyn_conv_layer final : neural_layer<dyn_conv_layer<Desc>, Desc> {
 
     template <typename H1, typename V>
     void batch_activate_hidden(H1&& output, const V& v) const {
+        dll::auto_timer timer("conv:forward_batch");
+
         output = etl::conv_4d_valid_flipped(v, w);
-
-        auto b_rep = etl::force_temporary(etl::rep_l(etl::rep(b, nh1, nh2), etl::dim<0>(output)));
-
-        output = f_activate<activation_function>(b_rep + output);
+        output = f_activate<activation_function>(bias_add_4d(output, b));
     }
 
     void prepare_input(input_one_t& input) const {
