@@ -13,6 +13,48 @@ namespace dll {
 
 namespace detail {
 
+/*!
+ * \brief A conditional constant extracting the member value_1 from V1 or value V2 depending on the condition
+ * \tparam C The boolean value
+ * \tparam V1 The first value class
+ * \tparam V2 The second value class
+ */
+template <bool C, typename V1, typename V2>
+struct conditional_constant_v1;
+
+/*!
+ * \copydoc conditional_constant_v1
+ */
+template <typename V1, typename V2>
+struct conditional_constant_v1<true, V1, V2> : std::integral_constant<decltype(V1::value_1), V1::value_1> {};
+
+/*!
+ * \copydoc conditional_constant_v1
+ */
+template <typename V1, typename V2>
+struct conditional_constant_v1<false, V1, V2> : cpp::auto_constant<V2> {};
+
+/*!
+ * \brief A conditional constant extracting the member value_2 from V1 or value V2 depending on the condition
+ * \tparam C The boolean value
+ * \tparam V1 The first value class
+ * \tparam V2 The second value class
+ */
+template <bool C, typename V1, typename V2>
+struct conditional_constant_v2;
+
+/*!
+ * \copydoc conditional_constant_v2
+ */
+template <typename V1, typename V2>
+struct conditional_constant_v2<true, V1, V2> : std::integral_constant<decltype(V1::value_2), V1::value_2> {};
+
+/*!
+ * \copydoc conditional_constant_v2
+ */
+template <typename V1, typename V2>
+struct conditional_constant_v2<false, V1, V2> : cpp::auto_constant<V2> {};
+
 template <typename V, typename... Args>
 struct is_valid;
 
@@ -22,36 +64,77 @@ struct is_valid<V, T1, Args...> : cpp::bool_constant_c<cpp::and_u<V::template co
 template <typename V>
 struct is_valid<V> : std::true_type {};
 
+/*!
+ * \brief Extract the value corresponding to the given configuration element from the parameters.
+ * \tparam D The configuration element type
+ * \tparam Args The arguments to extract the value from
+ */
 template <typename D, typename... Args>
 struct get_value;
 
+/*!
+ * \copydoc get_value
+ */
 template <typename D, typename T2, typename... Args>
 struct get_value<D, T2, Args...> : cpp::conditional_constant<std::is_same<typename D::type_id, typename T2::type_id>::value, T2, get_value<D, Args...>> {};
 
+/*!
+ * \copydoc get_value
+ */
 template <typename D>
 struct get_value<D> : cpp::auto_constant<D> {};
 
+/*!
+ * \brief Extract the first value corresponding to the given configuration element from the parameters.
+ * \tparam D The configuration element type
+ * \tparam Args The arguments to extract the value from
+ */
 template <typename D, typename... Args>
 struct get_value_1;
 
+/*!
+ * \copydoc get_value_1
+ */
 template <typename D, typename T2, typename... Args>
-struct get_value_1<D, T2, Args...> : cpp::conditional_constant<std::is_same<typename D::type_id, typename T2::type_id>::value, T2, get_value_1<D, Args...>> {};
+struct get_value_1<D, T2, Args...> : conditional_constant_v1<std::is_same<typename D::type_id, typename T2::type_id>::value, T2, get_value_1<D, Args...>> {};
 
+/*!
+ * \copydoc get_value_1
+ */
 template <typename D>
 struct get_value_1<D> : std::integral_constant<decltype(D::value_1), D::value_1> {};
 
+/*!
+ * \brief Extract the second value corresponding to the given configuration element from the parameters.
+ * \tparam D The configuration element type
+ * \tparam Args The arguments to extract the value from
+ */
 template <typename D, typename... Args>
 struct get_value_2;
 
+/*!
+ * \copydoc get_value_2
+ */
 template <typename D, typename T2, typename... Args>
-struct get_value_2<D, T2, Args...> : cpp::conditional_constant<std::is_same<typename D::type_id, typename T2::type_id>::value, T2, get_value_2<D, Args...>> {};
+struct get_value_2<D, T2, Args...> : conditional_constant_v2<std::is_same<typename D::type_id, typename T2::type_id>::value, T2, get_value_2<D, Args...>> {};
 
+/*!
+ * \copydoc get_value_2
+ */
 template <typename D>
 struct get_value_2<D> : std::integral_constant<decltype(D::value_2), D::value_2> {};
 
+/*!
+ * \brief Extract the value corresponding to the given configuration element from the list of type of the parameters.
+ * \tparam D The configuration element type
+ * \tparam Args The arguments to extract the value from
+ */
 template <typename D, typename L>
 struct get_value_l;
 
+/*!
+ * \copydoc get_value_l
+ */
 template <typename D, typename... T>
 struct get_value_l<D, cpp::type_list<T...>> : cpp::auto_constant<get_value<D, T...>> {};
 
