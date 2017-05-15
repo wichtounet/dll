@@ -10,6 +10,8 @@
 #include "dll/base_traits.hpp"
 #include "dll/neural_layer.hpp"
 
+#include "dll/util/timers.hpp" // for auto_timer
+
 namespace dll {
 
 /*!
