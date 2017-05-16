@@ -173,12 +173,8 @@ struct random_cropper <Desc, std::enable_if_t<Desc::random_crop_x && Desc::rando
     std::uniform_int_distribution<size_t> dist_x;
     std::uniform_int_distribution<size_t> dist_y;
 
-    random_cropper() : engine(rd()) {
-        // Nothing else to init
-    }
-
     template<typename T>
-    void init(const T& image){
+    random_cropper(const T& image) : engine(rd()) {
         static_assert(etl::dimensions<T>() == 3, "random_cropper can only be used with 3D images");
 
         y = etl::dim<1>(image);
@@ -214,7 +210,7 @@ struct random_cropper <Desc, std::enable_if_t<Desc::random_crop_x && Desc::rando
 template<typename Desc>
 struct random_cropper <Desc, std::enable_if_t<!Desc::random_crop_x || !Desc::random_crop_y>> {
     template<typename T>
-    static void init(const T& image){
+    random_cropper(const T& image){
         cpp_unused(image);
     }
 
@@ -261,15 +257,13 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
     std::thread main_thread;
     bool threaded = false;
 
-    memory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes){
+    memory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes) : cropper(*first) {
         const size_t n = std::distance(first, last);
 
         cache_helper_t::init(n, first, input_cache);
         cache_helper_t::init_big(big_batch_size, batch_size, first, batch_cache);
 
         labels = label_type(n, n_classes);
-
-        cropper.init(*first);
 
         labels = weight(0);
 
