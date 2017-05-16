@@ -38,9 +38,9 @@ void mnist_scale(Dataset& dataset) {
         CHECK(ft_error < ft_max);                                                                    \
     }
 
-#define TEST_CHECK(error_max)                                                                             \
-    {                                                                                                     \
-        auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor()); \
-        std::cout << "test_error:" << test_error << std::endl;                                            \
-        REQUIRE(test_error < error_max);                                                                  \
+#define TEST_CHECK(error_max)                                                            \
+    {                                                                                    \
+        auto test_error = dbn->evaluate_error(dataset.test_images, dataset.test_labels); \
+        std::cout << "test_error:" << test_error << std::endl;                           \
+        REQUIRE(test_error < error_max);                                                 \
     }
