@@ -278,44 +278,46 @@ void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch
     maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(),
             [&](const auto& input, const auto& expected, std::size_t i)
     {
-        //Copy input/expected for computations
-        t.v1(i) = input;
-        t.vf(i) = expected;
+        SERIAL_SECTION {
+            //Copy input/expected for computations
+            t.v1(i) = input;
+            t.vf(i) = expected;
 
-        //First step
-        rbm.template activate_hidden<true, true>(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i));
+            //First step
+            rbm.template activate_hidden<true, true>(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i));
 
-        if(Persistent && t.init){
-            t.p_h_a(i) = t.h1_a(i);
-            t.p_h_s(i) = t.h1_s(i);
-        }
-
-        //CD-1
-        cpp::static_if<Persistent>([&](auto f){
-            f(rbm).template activate_visible<true, false>(t.p_h_a(i), t.p_h_s(i), t.v2_a(i), t.v2_s(i));
-            f(rbm).template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
-        }).else_([&](auto f){
-            f(rbm).template activate_visible<true, false>(t.h1_a(i), t.h1_s(i), t.v2_a(i), t.v2_s(i));
-            f(rbm).template activate_hidden<true, (K > 1)>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
-        });
-
-        //CD-k
-        for(std::size_t k = 1; k < K; ++k){
-            rbm.template activate_visible<true, false>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
-            rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
-        }
-
-        if(n > 1){
-            //Reset the batch gradients
-            t.w_grad_b(i) = 0;
-
-            for(std::size_t i2 = 0; i2 < num_visible(rbm); i2++){
-                for(std::size_t j = 0; j < num_hidden(rbm); j++){
-                    t.w_grad_b(i, i2, j) += t.vf(i, i2) * t.h1_a(i,j) - t.v2_a(i, i2) * t.h2_a(i, j);
-                }
+            if(Persistent && t.init){
+                t.p_h_a(i) = t.h1_a(i);
+                t.p_h_s(i) = t.h1_s(i);
             }
-        } else {
-            compute_gradients_one(t);
+
+            //CD-1
+            cpp::static_if<Persistent>([&](auto f){
+                f(rbm).template activate_visible<true, false>(t.p_h_a(i), t.p_h_s(i), t.v2_a(i), t.v2_s(i));
+                f(rbm).template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
+            }).else_([&](auto f){
+                f(rbm).template activate_visible<true, false>(t.h1_a(i), t.h1_s(i), t.v2_a(i), t.v2_s(i));
+                f(rbm).template activate_hidden<true, (K > 1)>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
+            });
+
+            //CD-k
+            for(std::size_t k = 1; k < K; ++k){
+                rbm.template activate_visible<true, false>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
+                rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
+            }
+
+            if(n > 1){
+                //Reset the batch gradients
+                t.w_grad_b(i) = 0;
+
+                for(std::size_t i2 = 0; i2 < num_visible(rbm); i2++){
+                    for(std::size_t j = 0; j < num_hidden(rbm); j++){
+                        t.w_grad_b(i, i2, j) += t.vf(i, i2) * t.h1_a(i,j) - t.v2_a(i, i2) * t.h2_a(i, j);
+                    }
+                }
+            } else {
+                compute_gradients_one(t);
+            }
         }
     });
     // clang-format on
@@ -430,34 +432,36 @@ void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T
     maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(),
             [&](const auto& input, const auto& expected, std::size_t i)
     {
-        //Copy input/expected for computations
-        t.v1(i) = input;
+        SERIAL_SECTION {
+            //Copy input/expected for computations
+            t.v1(i) = input;
 
-        if(Denoising){
-            t.vf(i) = expected;
-        }
+            if(Denoising){
+                t.vf(i) = expected;
+            }
 
-        //First step
-        rbm.template activate_hidden<true, true>(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i));
+            //First step
+            rbm.template activate_hidden<true, true>(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i));
 
-        if(Persistent && t.init){
-            t.p_h_a(i) = t.h1_a(i);
-            t.p_h_s(i) = t.h1_s(i);
-        }
+            if(Persistent && t.init){
+                t.p_h_a(i) = t.h1_a(i);
+                t.p_h_s(i) = t.h1_s(i);
+            }
 
-        //CD-1
-        if(Persistent){
-            rbm.template activate_visible<true, false>(t.p_h_a(i), t.p_h_s(i), t.v2_a(i), t.v2_s(i));
-            rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
-        } else {
-            rbm.template activate_visible<true, false>(t.h1_a(i), t.h1_s(i), t.v2_a(i), t.v2_s(i));
-            rbm.template activate_hidden<true, (N > 1)>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
-        }
+            //CD-1
+            if(Persistent){
+                rbm.template activate_visible<true, false>(t.p_h_a(i), t.p_h_s(i), t.v2_a(i), t.v2_s(i));
+                rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
+            } else {
+                rbm.template activate_visible<true, false>(t.h1_a(i), t.h1_s(i), t.v2_a(i), t.v2_s(i));
+                rbm.template activate_hidden<true, (N > 1)>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
+            }
 
-        //CD-k
-        for(std::size_t k = 1; k < N; ++k){
-            rbm.template activate_visible<true, false>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
-            rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
+            //CD-k
+            for(std::size_t k = 1; k < N; ++k){
+                rbm.template activate_visible<true, false>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
+                rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
+            }
         }
     });
     // clang-format on

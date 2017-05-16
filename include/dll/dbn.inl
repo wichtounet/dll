@@ -1229,11 +1229,14 @@ private:
 
         auto next_a = next_layer.template prepare_output<next_input_t>(std::distance(first, last));
 
+        // TODO This should be propagated in batch
         maybe_parallel_foreach_i(pool, first, last, [&layer, &next_layer, &next_a](auto& v, size_t i) {
-            auto tmp = layer.template prepare_one_output<input_t>();
+            SERIAL_SECTION {
+                auto tmp = layer.template prepare_one_output<input_t>();
 
-            layer.activate_hidden(tmp, v);
-            next_layer.activate_hidden(next_a[i], tmp);
+                layer.activate_hidden(tmp, v);
+                next_layer.activate_hidden(next_a[i], tmp);
+            }
         });
 
         this_type::release(previous);
@@ -1264,8 +1267,11 @@ private:
         if (train_next<I + 1>::value && !inline_next<I + 1>::value) {
             auto next_a = layer.template prepare_output<safe_value_t<Iterator>>(std::distance(first, last));
 
+            // TODO This should use batch forwarding
             maybe_parallel_foreach_i(pool, first, last, [&layer, &next_a](auto& v, size_t i) {
-                layer.activate_hidden(next_a[i], v);
+                SERIAL_SECTION {
+                    layer.activate_hidden(next_a[i], v);
+                }
             });
 
             //At this point we don't need the storage of the previous layer
@@ -1310,12 +1316,18 @@ private:
             auto next_n = layer.template prepare_output<safe_value_t<NIterator>>(std::distance(nit, nend));
             auto next_c = layer.template prepare_output<safe_value_t<CIterator>>(std::distance(nit, nend));
 
+            //TODO Both these activation should be done with batch
+
             maybe_parallel_foreach_i(pool, nit, nend, [&layer, &next_n](auto& v, size_t i) {
-                layer.activate_hidden(next_n[i], v);
+                SERIAL_SECTION {
+                    layer.activate_hidden(next_n[i], v);
+                }
             });
 
             maybe_parallel_foreach_i(pool, cit, cend, [&layer, &next_c](auto& v, size_t i) {
-                layer.activate_hidden(next_c[i], v);
+                SERIAL_SECTION {
+                    layer.activate_hidden(next_c[i], v);
+                }
             });
 
             //At this point we don't need the storage of the previous layer
@@ -1353,8 +1365,12 @@ private:
         if (train_next<I + 1>::value) {
             auto next_c = layer.template prepare_output<safe_value_t<CIterator>>(std::distance(cit, cend));
 
+            // TODO This should be done with batch activation
+
             maybe_parallel_foreach_i(pool, cit, cend, [&layer, &next_c](auto& v, size_t i) {
-                layer.activate_hidden(next_c[i], v);
+                SERIAL_SECTION {
+                    layer.activate_hidden(next_c[i], v);
+                }
             });
 
             //At this point we don't need the storage of the previous layer
@@ -1987,7 +2003,9 @@ private:
     void multi_activation_probabilities(Iterator first, Iterator last, Output& output) {
         //Collect an entire batch
         maybe_parallel_foreach_i(pool, first, last, [this, &output](auto& v, size_t i) {
-            output[i] = this->activation_probabilities_sub<I>(v);
+            SERIAL_SECTION {
+                output[i] = this->activation_probabilities_sub<I>(v);
+            }
         });
     }
 
