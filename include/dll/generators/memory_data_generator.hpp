@@ -189,7 +189,7 @@ struct random_cropper <Desc, std::enable_if_t<Desc::random_crop_x && Desc::rando
     }
 
     template<typename T>
-    auto crop(const T& image){
+    auto transform(const T& image){
         etl::dyn_matrix<weight, 3> cropped(etl::dim<0>(image), random_crop_y, random_crop_x);
 
         const size_t y_offset = dist_y(engine);
@@ -219,7 +219,104 @@ struct random_cropper <Desc, std::enable_if_t<!Desc::random_crop_x || !Desc::ran
     }
 
     template<typename T>
-    static auto crop(T&& image) {
+    static auto transform(T&& image) {
+        return std::forward<T>(image);
+    }
+};
+
+template<typename Desc, typename Enable = void>
+struct random_mirrorer;
+
+template<typename Desc>
+struct random_mirrorer <Desc, std::enable_if_t<Desc::HorizontalMirroring || Desc::VerticalMirroring>> {
+    static constexpr bool horizontal = Desc::HorizontalMirroring;
+    static constexpr bool vertical = Desc::VerticalMirroring;
+
+    std::random_device rd;
+    std::default_random_engine engine;
+
+    std::uniform_int_distribution<size_t> dist;
+
+    template<typename T>
+    random_mirrorer(const T& image) : engine(rd()) {
+        static_assert(etl::dimensions<T>() == 3, "random_mirrorer can only be used with 3D images");
+
+        if(horizontal && vertical){
+            dist = std::uniform_int_distribution<size_t>{0, 3};
+        } else {
+            dist = std::uniform_int_distribution<size_t>{0, 2};
+        }
+
+        cpp_unused(image);
+    }
+
+    size_t scaling() const {
+        if(horizontal && vertical){
+            return 3;
+        } else {
+            return 2;
+        }
+    }
+
+    template<typename T>
+    auto transform(const T& image){
+        auto choice = dist(engine);
+
+        if(horizontal && vertical && choice == 1){
+            auto copy = image;
+
+            for(size_t c= 0; c < etl::dim<0>(image); ++c){
+                copy(c) = vflip(image(c));
+            }
+
+            return copy;
+        } else if(horizontal && vertical && choice == 2){
+            auto copy = image;
+
+            for(size_t c= 0; c < etl::dim<0>(image); ++c){
+                copy(c) = hflip(image(c));
+            }
+
+            return copy;
+        }
+
+        if(horizontal && choice == 1){
+            auto copy = image;
+
+            for(size_t c= 0; c < etl::dim<0>(image); ++c){
+                copy(c) = hflip(image(c));
+            }
+
+            return copy;
+        }
+
+        if(vertical && choice == 1){
+            auto copy = image;
+
+            for(size_t c= 0; c < etl::dim<0>(image); ++c){
+                copy(c) = vflip(image(c));
+            }
+
+            return copy;
+        }
+
+        return image;
+    }
+};
+
+template<typename Desc>
+struct random_mirrorer <Desc, std::enable_if_t<!Desc::HorizontalMirroring && !Desc::VerticalMirroring>> {
+    template<typename T>
+    random_mirrorer(const T& image){
+        cpp_unused(image);
+    }
+
+    static constexpr size_t scaling() {
+        return 1;
+    }
+
+    template<typename T>
+    static auto transform(T&& image) {
         return std::forward<T>(image);
     }
 };
@@ -242,6 +339,7 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
     label_type labels;
 
     random_cropper<Desc> cropper;
+    random_mirrorer<Desc> mirrorer;
 
     size_t current = 0;
 
@@ -257,7 +355,7 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
     std::thread main_thread;
     bool threaded = false;
 
-    memory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes) : cropper(*first) {
+    memory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes) : cropper(*first), mirrorer(*first) {
         const size_t n = std::distance(first, last);
 
         cache_helper_t::init(n, first, input_cache);
@@ -337,7 +435,11 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
                 const size_t input_n = batch * batch_size;
 
                 for(size_t i = 0; i < batch_size; ++i){
-                    batch_cache(index)(i) = cropper.crop(input_cache(input_n + i));
+                    decltype(auto) cropped = cropper.transform(input_cache(input_n + i));
+
+                    decltype(auto) mirrored = mirrorer.transform(cropped);
+
+                    batch_cache(index)(i) = mirrored;
                 }
 
                 // Notify a waiter that one batch is ready
@@ -404,7 +506,7 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
     }
 
     size_t augmented_size() const {
-        return cropper.scaling() * etl::dim<0>(input_cache);
+        return cropper.scaling() * mirrorer.scaling() * etl::dim<0>(input_cache);
     }
 
     size_t batches() const {
@@ -479,6 +581,16 @@ struct memory_data_generator_desc {
     static constexpr size_t BigBatchSize = detail::get_value<big_batch_size<1>, Parameters...>::value;
 
     /*!
+     * \brief Indicates if horizontal mirroring should be used as augmentation.
+     */
+    static constexpr bool HorizontalMirroring = parameters::template contains<horizontal_mirroring>();
+
+    /*!
+     * \brief Indicates if vertical mirroring should be used as augmentation.
+     */
+    static constexpr bool VerticalMirroring = parameters::template contains<vertical_mirroring>();
+
+    /*!
      * \brief The random cropping X
      */
     static constexpr size_t random_crop_x = detail::get_value_1<random_crop<0,0>, Parameters...>::value;
@@ -497,7 +609,7 @@ struct memory_data_generator_desc {
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid<cpp::type_list<batch_size_id, big_batch_size_id, random_crop_id, nop_id>,
+        detail::is_valid<cpp::type_list<batch_size_id, big_batch_size_id, horizontal_mirroring_id, vertical_mirroring_id,  random_crop_id, nop_id>,
                          Parameters...>::value,
         "Invalid parameters type for rbm_desc");
 

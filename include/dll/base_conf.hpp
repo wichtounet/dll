@@ -81,6 +81,8 @@ struct momentum_id;
 struct parallel_mode_id;
 struct serial_id;
 struct verbose_id;
+struct horizontal_id;
+struct vertical_id;
 struct shuffle_id;
 struct shuffle_pre_id;
 struct svm_concatenate_id;
@@ -94,6 +96,8 @@ struct random_crop_id;
 struct memory_id;
 struct batch_mode_id;
 struct dbn_only_id;
+struct horizontal_mirroring_id;
+struct vertical_mirroring_id;
 struct nop_id;
 
 /*!
@@ -239,6 +243,9 @@ struct serial : basic_conf_elt<serial_id> {};
 struct verbose : basic_conf_elt<verbose_id> {};
 struct svm_concatenate : basic_conf_elt<svm_concatenate_id> {};
 struct svm_scale : basic_conf_elt<svm_scale_id> {};
+
+struct horizontal_mirroring : basic_conf_elt<horizontal_mirroring_id> {};
+struct vertical_mirroring : basic_conf_elt<vertical_mirroring_id> {};
 
 /*
  * !\brief Initialize the weights of an RBM given the inputs
