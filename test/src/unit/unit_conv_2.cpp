@@ -59,9 +59,9 @@ TEST_CASE("unit/conv/sgd/7", "[unit][conv][dbn][mnist][sgd]") {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->learning_rate = 0.05;
+    dbn->learning_rate = 0.01;
 
-    FT_CHECK(30, 6e-2);
+    FT_CHECK(50, 6e-2);
     TEST_CHECK(0.25);
 }
 
