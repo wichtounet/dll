@@ -792,6 +792,19 @@ public:
     void evaluate(const Samples&  samples, const Labels& labels){
         return evaluate(samples.begin(), samples.end(), labels.begin(), labels.end());
     }
+    /*!
+     * \brief Evaluate the network on the given classification task
+     * and return the classification error.
+     *
+     * \param samples The container containing the samples
+     * \param labels The container containing the labels
+     *
+     * \return The classification error
+     */
+    template <typename Samples, typename Labels>
+    void evaluate_error(const Samples&  samples, const Labels& labels){
+        return evaluate_error(samples.begin(), samples.end(), labels.begin(), labels.end());
+    }
 
     /*!
      * \brief Evaluate the network on the given classification task.
