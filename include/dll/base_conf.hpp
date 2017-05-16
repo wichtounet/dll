@@ -99,6 +99,7 @@ struct dbn_only_id;
 struct horizontal_mirroring_id;
 struct vertical_mirroring_id;
 struct nop_id;
+struct elastic_distortion_id;
 
 /*!
  * \brief Sets the minibatch size
@@ -246,6 +247,13 @@ struct svm_scale : basic_conf_elt<svm_scale_id> {};
 
 struct horizontal_mirroring : basic_conf_elt<horizontal_mirroring_id> {};
 struct vertical_mirroring : basic_conf_elt<vertical_mirroring_id> {};
+
+/*!
+ * \brief Sets the elastic distortion kernel
+ * \tparam K The elastic distortion kernel
+ */
+template <size_t K>
+struct elastic_distortion : value_conf_elt<elastic_distortion_id, size_t, K> {};
 
 /*
  * !\brief Initialize the weights of an RBM given the inputs

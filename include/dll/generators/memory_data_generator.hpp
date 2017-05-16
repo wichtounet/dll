@@ -58,7 +58,7 @@ struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_3d<typename Iterato
 
 template<typename Desc>
 struct is_augmented {
-    static constexpr bool value = Desc::random_crop_x > 0 && Desc::random_crop_y > 0;
+    static constexpr bool value = (Desc::random_crop_x > 0 && Desc::random_crop_y > 0) || Desc::HorizontalMirroring || Desc::VerticalMirroring || Desc::ElasticDistortion;
 };
 
 template<typename Iterator, typename LIterator, typename Desc, typename Enable = void>
@@ -188,22 +188,18 @@ struct random_cropper <Desc, std::enable_if_t<Desc::random_crop_x && Desc::rando
         return (x - random_crop_x) * (y - random_crop_y);
     }
 
-    template<typename T>
-    auto transform(const T& image){
-        etl::dyn_matrix<weight, 3> cropped(etl::dim<0>(image), random_crop_y, random_crop_x);
-
+    template<typename O, typename T>
+    void transform_first(O&& target, const T& image){
         const size_t y_offset = dist_y(engine);
         const size_t x_offset = dist_x(engine);
 
         for (size_t c = 0; c < etl::dim<0>(image); ++c) {
             for (size_t y = 0; y < random_crop_y; ++y) {
                 for (size_t x = 0; x < random_crop_x; ++x) {
-                    cropped(c, y, x) = image(c, y_offset + y, x_offset + x);
+                    target(c, y, x) = image(c, y_offset + y, x_offset + x);
                 }
             }
         }
-
-        return cropped;
     }
 };
 
@@ -218,9 +214,9 @@ struct random_cropper <Desc, std::enable_if_t<!Desc::random_crop_x || !Desc::ran
         return 1;
     }
 
-    template<typename T>
-    static auto transform(T&& image) {
-        return std::forward<T>(image);
+    template<typename O, typename T>
+    void transform_first(O&& target, const T& image){
+        target = image;
     }
 };
 
@@ -258,49 +254,31 @@ struct random_mirrorer <Desc, std::enable_if_t<Desc::HorizontalMirroring || Desc
         }
     }
 
-    template<typename T>
-    auto transform(const T& image){
+    template<typename O>
+    void transform(O&& target){
         auto choice = dist(engine);
 
         if(horizontal && vertical && choice == 1){
-            auto copy = image;
-
-            for(size_t c= 0; c < etl::dim<0>(image); ++c){
-                copy(c) = vflip(image(c));
+            for(size_t c= 0; c < etl::dim<0>(target); ++c){
+                target(c) = vflip(target(c));
             }
-
-            return copy;
         } else if(horizontal && vertical && choice == 2){
-            auto copy = image;
-
-            for(size_t c= 0; c < etl::dim<0>(image); ++c){
-                copy(c) = hflip(image(c));
+            for(size_t c= 0; c < etl::dim<0>(target); ++c){
+                target(c) = hflip(target(c));
             }
-
-            return copy;
         }
 
         if(horizontal && choice == 1){
-            auto copy = image;
-
-            for(size_t c= 0; c < etl::dim<0>(image); ++c){
-                copy(c) = hflip(image(c));
+            for(size_t c= 0; c < etl::dim<0>(target); ++c){
+                target(c) = hflip(target(c));
             }
-
-            return copy;
         }
 
         if(vertical && choice == 1){
-            auto copy = image;
-
-            for(size_t c= 0; c < etl::dim<0>(image); ++c){
-                copy(c) = vflip(image(c));
+            for(size_t c= 0; c < etl::dim<0>(target); ++c){
+                target(c) = vflip(target(c));
             }
-
-            return copy;
         }
-
-        return image;
     }
 };
 
@@ -315,9 +293,152 @@ struct random_mirrorer <Desc, std::enable_if_t<!Desc::HorizontalMirroring && !De
         return 1;
     }
 
+    template<typename O>
+    static void transform(O&& target){
+        cpp_unused(target);
+    }
+};
+
+template<typename Desc, typename Enable = void>
+struct elastic_distorter;
+
+// TODO This needs to be made MUCH faster
+
+template<typename Desc>
+struct elastic_distorter <Desc, std::enable_if_t<Desc::ElasticDistortion>> {
+    using weight = typename Desc::weight;
+
+    static constexpr size_t K     = Desc::ElasticDistortion;
+    static constexpr size_t mid   = K / 2;
+    static constexpr double sigma = 0.8 + 0.3 * ((K - 1) * 0.5 - 1);
+
+    etl::fast_dyn_matrix<weight, K, K> kernel;
+
+    static_assert(K % 2 == 1, "The kernel size must be odd");
+
     template<typename T>
-    static auto transform(T&& image) {
-        return std::forward<T>(image);
+    elastic_distorter(const T& image) {
+        static_assert(etl::dimensions<T>() == 3, "elastic_distorter can only be used with 3D images");
+
+        cpp_unused(image);
+
+        // Precompute the gaussian kernel
+
+        auto gaussian = [](double x, double y) {
+            auto Z = 2.0 * M_PI * sigma * sigma;
+            return (1.0 / Z) * std::exp(-((x * x + y * y) / (2.0 * sigma * sigma)));
+        };
+
+        for (size_t i = 0; i < K; ++i) {
+            for (size_t j = 0; j < K; ++j) {
+                kernel(i, j) = gaussian(double(i) - mid, double(j) - mid);
+            }
+        }
+    }
+
+    size_t scaling() const {
+        return 10;
+    }
+
+    template<typename O>
+    void transform(O&& target){
+        const size_t width  = etl::dim<1>(target);
+        const size_t height = etl::dim<2>(target);
+
+        // 0. Generate random displacement fields
+
+        etl::dyn_matrix<weight> d_x(width, height);
+        etl::dyn_matrix<weight> d_y(width, height);
+
+        d_x = etl::uniform_generator(-1.0, 1.0);
+        d_y = etl::uniform_generator(-1.0, 1.0);
+
+        // 1. Gaussian blur the displacement fields
+
+        etl::dyn_matrix<weight> d_x_blur(width, height);
+        etl::dyn_matrix<weight> d_y_blur(width, height);
+
+        gaussian_blur(d_x, d_x_blur);
+        gaussian_blur(d_y, d_y_blur);
+
+        // 2. Normalize and scale the displacement field
+
+        d_x_blur *= (weight(8) / sum(d_x_blur));
+        d_y_blur *= (weight(8) / sum(d_y_blur));
+
+        // 3. Apply the displacement field (using bilinear interpolation)
+
+        auto safe = [&](size_t channel, weight x, weight y) {
+            if (x < 0 || y < 0 || x > width - 1 || y > height - 1) {
+                return target(channel, 0UL, 0UL);
+            } else {
+                return target(channel, size_t(x), size_t(y));
+            }
+        };
+
+        for (size_t channel = 0; channel < etl::dim<0>(target); ++channel) {
+            for (int x = 0; x < int(width); ++x) {
+                for (int y = 0; y < int(height); ++y) {
+                    auto dx = d_x_blur(x, y);
+                    auto dy = d_y_blur(x, y);
+
+                    weight px = x + dx;
+                    weight py = y + dy;
+
+                    weight a = safe(channel, std::floor(px), std::floor(py));
+                    weight b = safe(channel, std::ceil(px), std::floor(py));
+                    weight c = safe(channel, std::ceil(px), std::ceil(py));
+                    weight d = safe(channel, std::floor(px), std::ceil(py));
+
+                    auto e = a * (1.0 - (px - std::floor(px))) + d * (px - std::floor(px));
+                    auto f = b * (1.0 - (px - std::floor(px))) + c * (px - std::floor(px));
+
+                    auto value = e * (1.0 - (py - std::floor(py))) + f * (py - std::floor(py));
+
+                    target(channel, x, y) = value;
+                }
+            }
+        }
+    }
+
+    void gaussian_blur(const etl::dyn_matrix<weight>& d, etl::dyn_matrix<weight>& d_blur){
+        const size_t width = etl::dim<0>(d);
+        const size_t height = etl::dim<1>(d);
+
+        for (size_t j = 0; j < width; ++j) {
+            for (size_t k = 0; k < height; ++k) {
+                weight sum(0.0);
+
+                for (size_t p = 0; p < K; ++p) {
+                    if (long(j) + p - mid >= 0 && long(j) + p - mid < width) {
+                        for (size_t q = 0; q < K; ++q) {
+                            if (long(k) + q - mid >= 0 && long(k) + q - mid < height) {
+                                sum += kernel(p, q) * d(j + p - mid, k + q - mid);
+                            }
+                        }
+                    }
+                }
+
+                d_blur(j, k) = d(j, k) - (sum / (K * K));
+            }
+        }
+    }
+};
+
+template<typename Desc>
+struct elastic_distorter <Desc, std::enable_if_t<!Desc::ElasticDistortion>> {
+    template<typename T>
+    elastic_distorter(const T& image){
+        cpp_unused(image);
+    }
+
+    static constexpr size_t scaling() {
+        return 1;
+    }
+
+    template<typename O>
+    static void transform(O&& target){
+        cpp_unused(target);
     }
 };
 
@@ -340,6 +461,7 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
 
     random_cropper<Desc> cropper;
     random_mirrorer<Desc> mirrorer;
+    elastic_distorter<Desc> distorter;
 
     size_t current = 0;
 
@@ -355,7 +477,7 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
     std::thread main_thread;
     bool threaded = false;
 
-    memory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes) : cropper(*first), mirrorer(*first) {
+    memory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes) : cropper(*first), mirrorer(*first), distorter(*first) {
         const size_t n = std::distance(first, last);
 
         cache_helper_t::init(n, first, input_cache);
@@ -435,11 +557,14 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
                 const size_t input_n = batch * batch_size;
 
                 for(size_t i = 0; i < batch_size; ++i){
-                    decltype(auto) cropped = cropper.transform(input_cache(input_n + i));
+                    // Random crop the image
+                    cropper.transform_first(batch_cache(index)(i), input_cache(input_n + i));
 
-                    decltype(auto) mirrored = mirrorer.transform(cropped);
+                    //// Mirror the image
+                    mirrorer.transform(batch_cache(index)(i));
 
-                    batch_cache(index)(i) = mirrored;
+                    // Distort the image
+                    distorter.transform(batch_cache(index)(i));
                 }
 
                 // Notify a waiter that one batch is ready
@@ -601,6 +726,11 @@ struct memory_data_generator_desc {
     static constexpr size_t random_crop_y = detail::get_value_2<random_crop<0,0>, Parameters...>::value;
 
     /*!
+     * \brief The elastic distortion kernel
+     */
+    static constexpr size_t ElasticDistortion = detail::get_value<elastic_distortion<0>, Parameters...>::value;
+
+    /*!
      * The type used to store the weights
      */
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
@@ -609,7 +739,7 @@ struct memory_data_generator_desc {
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid<cpp::type_list<batch_size_id, big_batch_size_id, horizontal_mirroring_id, vertical_mirroring_id,  random_crop_id, nop_id>,
+        detail::is_valid<cpp::type_list<batch_size_id, big_batch_size_id, horizontal_mirroring_id, vertical_mirroring_id, random_crop_id, elastic_distortion_id, nop_id>,
                          Parameters...>::value,
         "Invalid parameters type for rbm_desc");
 
