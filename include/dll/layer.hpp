@@ -133,7 +133,7 @@ struct layer {
      * \return A reference to the CG context training.
      */
     cg_context<parent_t>& get_cg_context() {
-        cpp_assert(sgd_context_ptr, "Use of empty cg_context");
+        cpp_assert(cg_context_ptr, "Use of empty cg_context");
 
         return *cg_context_ptr;
     }
