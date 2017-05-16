@@ -113,7 +113,7 @@ struct dyn_conv_layer final : neural_layer<dyn_conv_layer<Desc>, Desc> {
     void activate_hidden(output_one_t& output, const V& v) const {
         auto b_rep = etl::force_temporary(etl::rep(b, nh1, nh2));
 
-        etl::reshape(output, 1, k, nh1, nh2) = etl::conv_4d_valid_flipped(etl::reshape(v, 1, nc, nv1, nv2), w);
+        etl::reshape(output, 1, k, nh1, nh2) = etl::ml::convolution_forward(etl::reshape(v, 1, nc, nv1, nv2), w);
 
         output = f_activate<activation_function>(b_rep + output);
     }
@@ -134,7 +134,7 @@ struct dyn_conv_layer final : neural_layer<dyn_conv_layer<Desc>, Desc> {
     void batch_activate_hidden(H1&& output, const V& v) const {
         dll::auto_timer timer("conv:forward_batch");
 
-        output = etl::conv_4d_valid_flipped(v, w);
+        output = etl::ml::convolution_forward(v, w);
         output = f_activate<activation_function>(bias_add_4d(output, b));
     }
 
@@ -171,6 +171,8 @@ struct dyn_conv_layer final : neural_layer<dyn_conv_layer<Desc>, Desc> {
      */
     template<typename C>
     void adapt_errors(C& context) const {
+        dll::auto_timer timer("conv:adapt_errors");
+
         if(activation_function != function::IDENTITY){
             context.errors = f_derivative<activation_function>(context.output) >> context.errors;
         }
@@ -183,7 +185,9 @@ struct dyn_conv_layer final : neural_layer<dyn_conv_layer<Desc>, Desc> {
      */
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
-        output = etl::conv_4d_full_flipped(context.errors, w);
+        dll::auto_timer timer("conv:backward_batch");
+
+        output = etl::ml::convolution_backward(context.errors, w);
     }
 
     /*!
@@ -192,8 +196,10 @@ struct dyn_conv_layer final : neural_layer<dyn_conv_layer<Desc>, Desc> {
      */
     template<typename C>
     void compute_gradients(C& context) const {
-        context.w_grad = conv_4d_valid_filter_flipped(context.input, context.errors);
-        context.b_grad = etl::mean_r(etl::sum_l(context.errors));
+        dll::auto_timer timer("conv:compute_gradients");
+
+        context.w_grad = etl::ml::convolution_backward_filter(context.input, context.errors);
+        context.b_grad = etl::bias_batch_mean(context.errors);
     }
 };
 

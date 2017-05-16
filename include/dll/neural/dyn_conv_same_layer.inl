@@ -119,7 +119,7 @@ struct dyn_conv_same_layer final : neural_layer<dyn_conv_same_layer<Desc>, Desc>
     void activate_hidden(output_one_t& output, const V& v) const {
         auto b_rep = etl::force_temporary(etl::rep(b, nh1, nh2));
 
-        etl::reshape(output, 1, k, nh1, nh2) = etl::conv_4d_valid_flipped(etl::reshape(v, 1, nc, nv1, nv2), w, 1, 1, p1, p2);
+        etl::reshape(output, 1, k, nh1, nh2) = etl::ml::convolution_forward(etl::reshape(v, 1, nc, nv1, nv2), w, 1, 1, p1, p2);
 
         output = f_activate<activation_function>(b_rep + output);
     }
@@ -140,7 +140,7 @@ struct dyn_conv_same_layer final : neural_layer<dyn_conv_same_layer<Desc>, Desc>
     void batch_activate_hidden(H1&& output, const V& v) const {
         dll::auto_timer timer("conv:forward_batch");
 
-        output = etl::conv_4d_valid_flipped(v, w, 1, 1, p1, p2);
+        output = etl::ml::convolution_forward(v, w, 1, 1, p1, p2);
         output = f_activate<activation_function>(bias_add_4d(output, b));
     }
 
@@ -189,7 +189,7 @@ struct dyn_conv_same_layer final : neural_layer<dyn_conv_same_layer<Desc>, Desc>
      */
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
-        output = conv_4d_valid_back_flipped(context.errors, w, 1, 1, p1, p2);
+        output = etl::ml::convolution_backward(context.errors, w, 1, 1, p1, p2);
     }
 
     /*!
@@ -198,7 +198,7 @@ struct dyn_conv_same_layer final : neural_layer<dyn_conv_same_layer<Desc>, Desc>
      */
     template<typename C>
     void compute_gradients(C& context) const {
-        context.w_grad = conv_4d_valid_filter_flipped(context.input, context.errors, 1, 1, p1, p2);
+        context.w_grad = etl::ml::convolution_backward_filter(context.input, context.errors, 1, 1, p1, p2);
         context.b_grad = bias_batch_mean(context.errors);
     }
 };

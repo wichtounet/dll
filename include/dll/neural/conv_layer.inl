@@ -99,7 +99,7 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
 
         auto b_rep = etl::force_temporary(etl::rep<NH1, NH2>(b));
 
-        etl::reshape<1, K, NH1, NH2>(output) = etl::conv_4d_valid_flipped(etl::reshape<1, NC, NV1, NV2>(v), w);
+        etl::reshape<1, K, NH1, NH2>(output) = etl::ml::convolution_forward(etl::reshape<1, NC, NV1, NV2>(v), w);
 
         output = f_activate<activation_function>(b_rep + output);
     }
@@ -132,7 +132,7 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
     void batch_activate_hidden(H1&& output, const V& v) const {
         dll::auto_timer timer("conv:forward_batch");
 
-        output = etl::conv_4d_valid_flipped(v, w);
+        output = etl::ml::convolution_forward(v, w);
         output = f_activate<activation_function>(bias_add_4d(output, b));
     }
 
@@ -176,7 +176,7 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
     void backward_batch(H&& output, C& context) const {
         dll::auto_timer timer("conv:backward_batch");
 
-        output = etl::conv_4d_full_flipped(context.errors, w);
+        output = etl::ml::convolution_backward(context.errors, w);
     }
 
     /*!
@@ -187,8 +187,8 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
     void compute_gradients(C& context) const {
         dll::auto_timer timer("conv:compute_gradients");
 
-        context.w_grad = conv_4d_valid_filter_flipped(context.input, context.errors);
-        context.b_grad = bias_batch_mean(context.errors);
+        context.w_grad = etl::ml::convolution_backward_filter(context.input, context.errors);
+        context.b_grad = etl::bias_batch_mean(context.errors);
     }
 };
 
