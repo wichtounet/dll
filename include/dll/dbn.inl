@@ -802,7 +802,7 @@ public:
      * \return The classification error
      */
     template <typename Samples, typename Labels>
-    void evaluate_error(const Samples&  samples, const Labels& labels){
+    double evaluate_error(const Samples&  samples, const Labels& labels){
         return evaluate_error(samples.begin(), samples.end(), labels.begin(), labels.end());
     }
 
