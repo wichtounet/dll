@@ -293,40 +293,55 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
                 {
                     std::unique_lock<std::mutex> ulock(main_lock);
 
-                    // Wait for the end or for some work
-                    condition.wait(ulock, [this] {
-                        if(stop_flag){
-                            return true;
-                        }
+                    bool found = false;
 
-                        for(size_t b = 0; b < big_batch_size; ++b){
-                            if(!status[b] && indices[b] * batch_size < size()){
-                                return true;
-                            }
-                        }
-
-                        return false;
-                    });
-
-                    // If there is no more thread for the thread, exit
-                    if (stop_flag) {
-                        return;
-                    }
-
-                    // Pick a batch to fill
+                    // Try to find a read batch first
                     for(size_t b = 0; b < big_batch_size; ++b){
                         if(!status[b] && indices[b] * batch_size < size()){
                             index = b;
+                            found = true;
                             break;
+                        }
+                    }
+
+                    // if not found, wait for a ready to compute batch
+
+                    if(!found){
+                        // Wait for the end or for some work
+                        condition.wait(ulock, [this] {
+                            if(stop_flag){
+                                return true;
+                            }
+
+                            for(size_t b = 0; b < big_batch_size; ++b){
+                                if(!status[b] && indices[b] * batch_size < size()){
+                                    return true;
+                                }
+                            }
+
+                            return false;
+                        });
+
+                        // If there is no more thread for the thread, exit
+                        if (stop_flag) {
+                            return;
+                        }
+
+                        // Pick a batch to fill
+                        for(size_t b = 0; b < big_batch_size; ++b){
+                            if(!status[b] && indices[b] * batch_size < size()){
+                                index = b;
+                                break;
+                            }
                         }
                     }
                 }
 
                 // Get the batch that needs to be read
-                const auto batch = indices[index];
+                const size_t batch = indices[index];
 
                 // Get the index from where to read inside the input cache
-                const auto input_n = batch * batch_size;
+                const size_t input_n = batch * batch_size;
 
                 for(size_t i = 0; i < batch_size; ++i){
                     batch_cache(index)(i) = cropper.crop(input_cache(input_n + i));
@@ -425,7 +440,7 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
             std::unique_lock<std::mutex> ulock(main_lock);
 
             status[b] = false;
-            indices[b] += 1;
+            indices[b] += big_batch_size;
 
             condition.notify_one();
         }
