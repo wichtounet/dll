@@ -38,13 +38,13 @@ TEST_CASE("unit/dyn_dbn/mnist/1", "[dyn_dbn][unit]") {
     dbn->template layer_get<1>().init_layer(150, 150);
     dbn->template layer_get<2>().init_layer(150, 10);
 
-    dbn->pretrain(dataset.training_images, 25);
+    dbn->pretrain(dataset.training_images, 35);
 
     auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 5);
     std::cout << "ft_error:" << ft_error << std::endl;
     REQUIRE(ft_error < 5e-2);
 
-    TEST_CHECK(0.2);
+    TEST_CHECK(0.22);
 }
 
 TEST_CASE("unit/dyn_dbn/mnist/2", "[dyn_dbn][sgd][unit]") {
