@@ -374,35 +374,26 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
         main_thread.join();
     }
 
+    void reset_generation(){
+        std::unique_lock<std::mutex> ulock(main_lock);
+
+        for(size_t b = 0; b < big_batch_size; ++b){
+            status[b] = false;
+            indices[b] = b;
+        }
+
+        condition.notify_one();
+    }
+
     void reset(){
         current = 0;
-
-        {
-            std::unique_lock<std::mutex> ulock(main_lock);
-
-            for(size_t b = 0; b < big_batch_size; ++b){
-                status[b] = false;
-                indices[b] = b;
-            }
-
-            condition.notify_one();
-        }
+        reset_generation();
     }
 
     void reset_shuffle(){
         current = 0;
         shuffle();
-
-        {
-            std::unique_lock<std::mutex> ulock(main_lock);
-
-            for(size_t b = 0; b < big_batch_size; ++b){
-                status[b] = false;
-                indices[b] = b;
-            }
-
-            condition.notify_one();
-        }
+        reset_generation();
     }
 
     void shuffle(){
