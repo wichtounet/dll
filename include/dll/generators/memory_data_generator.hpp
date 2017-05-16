@@ -308,13 +308,14 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
 
                     if(!found){
                         // Wait for the end or for some work
-                        condition.wait(ulock, [this] {
+                        condition.wait(ulock, [this, &index] {
                             if(stop_flag){
                                 return true;
                             }
 
                             for(size_t b = 0; b < big_batch_size; ++b){
                                 if(!status[b] && indices[b] * batch_size < size()){
+                                    index = b;
                                     return true;
                                 }
                             }
@@ -325,14 +326,6 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
                         // If there is no more thread for the thread, exit
                         if (stop_flag) {
                             return;
-                        }
-
-                        // Pick a batch to fill
-                        for(size_t b = 0; b < big_batch_size; ++b){
-                            if(!status[b] && indices[b] * batch_size < size()){
-                                index = b;
-                                break;
-                            }
                         }
                     }
                 }
