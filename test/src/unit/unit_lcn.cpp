@@ -119,7 +119,7 @@ TEST_CASE("unit/cdbn/lcn/mnist/4", "[cdbn][lcn][svm][unit]") {
             , dll::avgp_layer_3d_desc<20, 10, 10, 2, 2, 1>::layer_t
         >>::dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(200);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
