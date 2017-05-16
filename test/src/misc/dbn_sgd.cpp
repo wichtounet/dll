@@ -36,9 +36,7 @@ TEST_CASE("dbn/sgd/1", "[dbn][mnist][sgd]") {
     std::cout << "ft_error:" << ft_error << std::endl;
     CHECK(ft_error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 TEST_CASE("dbn/sgd/2", "[dbn][mnist][sgd]") {
@@ -62,9 +60,7 @@ TEST_CASE("dbn/sgd/2", "[dbn][mnist][sgd]") {
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
     REQUIRE(error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 TEST_CASE("dbn/sgd/3", "[dbn][mnist][sgd][gaussian]") {
@@ -87,9 +83,7 @@ TEST_CASE("dbn/sgd/3", "[dbn][mnist][sgd][gaussian]") {
 
     REQUIRE(error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 //This test should not perform well, but should not fail
@@ -178,7 +172,5 @@ TEST_CASE("dbn/sgd/7", "[dbn][mnist][sgd][memory]") {
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
     REQUIRE(error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }

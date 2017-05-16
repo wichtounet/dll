@@ -43,9 +43,7 @@ TEST_CASE("dyn_dbn/cg/mnist/1", "dbn::simple") {
     std::cout << "ft_error:" << ft_error << std::endl;
     CHECK(ft_error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 TEST_CASE("dyn_dbn/cg/mnist/2", "dbn::memory") {
@@ -76,11 +74,7 @@ TEST_CASE("dyn_dbn/cg/mnist/2", "dbn::memory") {
 
     REQUIRE(error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-
-    std::cout << "test_error:" << test_error << std::endl;
-
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 
     //Mostly here to ensure compilation
     auto out = dbn->prepare_one_output<etl::dyn_matrix<float, 1>>();

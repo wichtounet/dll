@@ -38,11 +38,7 @@ TEST_CASE("dyn_dbn/mnist_1", "dbn::simple") {
 
     dbn->pretrain(dataset.training_images, 20);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-
-    std::cout << "test_error:" << test_error << std::endl;
-
-    REQUIRE(test_error < 1.0);
+    TEST_CHECK(1.0);
 }
 
 TEST_CASE("dyn_dbn/mnist_2", "dbn::parallel") {
@@ -66,11 +62,7 @@ TEST_CASE("dyn_dbn/mnist_2", "dbn::parallel") {
 
     dbn->pretrain(dataset.training_images, 20);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-
-    std::cout << "test_error:" << test_error << std::endl;
-
-    REQUIRE(test_error < 1.0);
+    TEST_CHECK(1.0);
 }
 
 TEST_CASE("dyn_dbn/mnist_3", "dbn::labels") {

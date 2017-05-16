@@ -36,9 +36,7 @@ TEST_CASE("dense/sgd/0", "[dense][dbn][mnist][sgd]") {
 
     CHECK(ft_error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 TEST_CASE("dense/sgd/1", "[dense][dbn][mnist][sgd]") {
@@ -60,9 +58,7 @@ TEST_CASE("dense/sgd/1", "[dense][dbn][mnist][sgd]") {
 
     CHECK(ft_error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 TEST_CASE("dense/sgd/2", "[dense][dbn][mnist][sgd]") {
@@ -86,9 +82,7 @@ TEST_CASE("dense/sgd/2", "[dense][dbn][mnist][sgd]") {
 
     CHECK(ft_error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 TEST_CASE("dense/sgd/3", "[dense][dbn][mnist][sgd]") {
@@ -114,9 +108,7 @@ TEST_CASE("dense/sgd/3", "[dense][dbn][mnist][sgd]") {
 
     CHECK(ft_error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 TEST_CASE("dense/sgd/4", "[dense][dbn][mnist][sgd]") {
@@ -142,9 +134,7 @@ TEST_CASE("dense/sgd/4", "[dense][dbn][mnist][sgd]") {
 
     CHECK(ft_error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 TEST_CASE("dense/sgd/5", "[dense][dbn][mnist][sgd]") {
@@ -170,9 +160,7 @@ TEST_CASE("dense/sgd/5", "[dense][dbn][mnist][sgd]") {
 
     CHECK(ft_error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 TEST_CASE("dense/sgd/6", "[dense][dbn][mnist][sgd]") {
@@ -198,9 +186,7 @@ TEST_CASE("dense/sgd/6", "[dense][dbn][mnist][sgd]") {
 
     CHECK(ft_error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.4);
+    TEST_CHECK(0.4);
 }
 
 TEST_CASE("dense/sgd/7", "[dense][dbn][mnist][sgd]") {
@@ -226,9 +212,7 @@ TEST_CASE("dense/sgd/7", "[dense][dbn][mnist][sgd]") {
 
     CHECK(ft_error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.4);
+    TEST_CHECK(0.4);
 }
 
 TEST_CASE("dense/sgd/8", "[dense][dbn][mnist][sgd]") {
@@ -254,9 +238,7 @@ TEST_CASE("dense/sgd/8", "[dense][dbn][mnist][sgd]") {
 
     CHECK(ft_error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 TEST_CASE("dense/sgd/9", "[dense][dbn][mnist][sgd]") {
@@ -282,9 +264,7 @@ TEST_CASE("dense/sgd/9", "[dense][dbn][mnist][sgd]") {
 
     CHECK(ft_error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 TEST_CASE("dense/sgd/10", "[dense][dbn][mnist][sgd]") {
@@ -310,9 +290,7 @@ TEST_CASE("dense/sgd/10", "[dense][dbn][mnist][sgd]") {
 
     CHECK(ft_error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 TEST_CASE("dense/sgd/11", "[dense][dbn][mnist][sgd]") {
@@ -339,9 +317,7 @@ TEST_CASE("dense/sgd/11", "[dense][dbn][mnist][sgd]") {
 
     CHECK(ft_error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 TEST_CASE("dense/sgd/12", "[dense][dbn][mnist][sgd]") {
@@ -367,9 +343,7 @@ TEST_CASE("dense/sgd/12", "[dense][dbn][mnist][sgd]") {
 
     CHECK(ft_error < 0.1);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 TEST_CASE("dense/sgd/13", "[dense][dbn][mnist][sgd]") {
@@ -401,9 +375,7 @@ TEST_CASE("dense/sgd/13", "[dense][dbn][mnist][sgd]") {
 
     CHECK(ft_error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 TEST_CASE("dense/sgd/14", "[dense][dbn][mnist][sgd]") {
@@ -432,7 +404,5 @@ TEST_CASE("dense/sgd/14", "[dense][dbn][mnist][sgd]") {
 
     CHECK(ft_error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }

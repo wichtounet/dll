@@ -35,7 +35,7 @@ TEST_CASE("dbn/perf/1", "[dbn][bench][fast]") {
     auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 2);
     std::cout << "ft_error:" << ft_error << std::endl;
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
+    auto test_error = dbn->evaluate_error(dataset.test_images, dataset.test_labels);
     std::cout << "test_error:" << test_error << std::endl;
 
     dll::dump_timers();

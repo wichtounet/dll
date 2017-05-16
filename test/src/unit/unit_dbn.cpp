@@ -71,9 +71,7 @@ TEST_CASE("unit/dbn/mnist/1", "[dbn][unit]") {
     std::cout << "error:" << error << std::endl;
     REQUIRE(error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.3);
+    TEST_CHECK(0.3);
 
     dbn->save_features(dataset.training_images[0], ".tmp.features");
 
@@ -140,9 +138,7 @@ TEST_CASE("unit/dbn/mnist/3", "[dbn][unit]") {
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 5);
     REQUIRE(error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << error << std::endl;
-    REQUIRE(test_error <= 0.25);
+    TEST_CHECK(0.25);
 }
 
 TEST_CASE("unit/dbn/mnist/4", "[dbn][cg][unit]") {
@@ -172,8 +168,7 @@ TEST_CASE("unit/dbn/mnist/4", "[dbn][cg][unit]") {
 
     REQUIRE(error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    REQUIRE(test_error < 0.25);
+    TEST_CHECK(0.25);
 
     //Mostly here to ensure compilation
     auto out = dbn->prepare_one_output<etl::dyn_matrix<float, 1>>();
@@ -204,9 +199,7 @@ TEST_CASE("unit/dbn/mnist/5", "[dbn][sgd][unit]") {
     std::cout << "ft_error:" << error << std::endl;
     REQUIRE(error < 1e-1);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << error << std::endl;
-    REQUIRE(test_error < 0.3);
+    TEST_CHECK(0.3);
 }
 
 TEST_CASE("unit/dbn/mnist/6", "[dbn][dyn][unit]") {
@@ -232,11 +225,7 @@ TEST_CASE("unit/dbn/mnist/6", "[dbn][dyn][unit]") {
 
     dbn->pretrain(dataset.training_images, 20);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-
-    std::cout << "test_error:" << test_error << std::endl;
-
-    REQUIRE(test_error < 1.0);
+    TEST_CHECK(1.0);
 }
 
 TEST_CASE("unit/dbn/mnist/7", "[dbn][svm][unit]") {
@@ -431,8 +420,7 @@ TEST_CASE("unit/dbn/mnist/12", "[dbn][unit]") {
 
     REQUIRE(error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    REQUIRE(test_error < 0.25);
+    TEST_CHECK(0.25);
 
     //Mostly here to ensure compilation
     auto out = dbn->prepare_one_output<etl::dyn_matrix<float, 1>>();

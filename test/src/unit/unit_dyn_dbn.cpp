@@ -44,9 +44,7 @@ TEST_CASE("unit/dyn_dbn/mnist/1", "[dyn_dbn][unit]") {
     std::cout << "ft_error:" << ft_error << std::endl;
     REQUIRE(ft_error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 TEST_CASE("unit/dyn_dbn/mnist/2", "[dyn_dbn][sgd][unit]") {
@@ -77,7 +75,5 @@ TEST_CASE("unit/dyn_dbn/mnist/2", "[dyn_dbn][sgd][unit]") {
     std::cout << "ft_error:" << ft_error << std::endl;
     REQUIRE(ft_error < 1e-1);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.3);
+    TEST_CHECK(0.3);
 }

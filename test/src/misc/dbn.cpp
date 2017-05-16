@@ -38,9 +38,7 @@ TEST_CASE("dbn/mnist_1", "dbn::simple") {
     std::cout << "ft_error:" << ft_error << std::endl;
     REQUIRE(ft_error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 TEST_CASE("dbn/mnist_2", "dbn::containers") {
@@ -110,11 +108,7 @@ TEST_CASE("dbn/mnist_6", "dbn::cg_gaussian") {
 
     REQUIRE(error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-
-    std::cout << "test_error:" << test_error << std::endl;
-
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 //This test should not perform well, but should not fail
@@ -139,8 +133,7 @@ TEST_CASE("dbn/mnist_8", "dbn::cg_relu") {
 
     REQUIRE(std::isfinite(error));
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-
+    auto test_error = dbn->evaluate_error(dbn, dataset.test_images, dataset.test_labels);
     std::cout << "test_error:" << test_error << std::endl;
 }
 
@@ -165,11 +158,7 @@ TEST_CASE("dbn/mnist_15", "dbn::parallel") {
 
     REQUIRE(error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-
-    std::cout << "test_error:" << test_error << std::endl;
-
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 TEST_CASE("dbn/mnist_17", "dbn::memory") {
@@ -196,11 +185,7 @@ TEST_CASE("dbn/mnist_17", "dbn::memory") {
 
     REQUIRE(error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-
-    std::cout << "test_error:" << test_error << std::endl;
-
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 
     //Mostly here to ensure compilation
     auto out = dbn->prepare_one_output<etl::dyn_matrix<float, 1>>();
@@ -239,11 +224,7 @@ TEST_CASE("dbn/mnist/text/1", "dbn::simple") {
 
     REQUIRE(error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, test_images, test_labels, dll::predictor());
-
-    std::cout << "test_error:" << test_error << std::endl;
-
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 TEST_CASE("mnist_original", "dbn::simple") {
@@ -268,7 +249,5 @@ TEST_CASE("mnist_original", "dbn::simple") {
     std::cout << "ft_error:" << ft_error << std::endl;
     REQUIRE(ft_error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }

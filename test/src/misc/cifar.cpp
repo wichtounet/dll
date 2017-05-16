@@ -43,9 +43,7 @@ TEST_CASE("cifar/dense/sgd/1", "[dense][dbn][mnist][sgd]") {
 
     CHECK(ft_error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 TEST_CASE("cifar/conv/sgd/1", "[unit][conv][dbn][mnist][sgd]") {

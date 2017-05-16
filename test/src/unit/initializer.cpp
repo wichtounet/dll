@@ -86,9 +86,7 @@ TEST_CASE("initializer/gaussian", "[dense][unit][mnist][sgd]") {
     CHECK(ft_error < 5e-2);
 
     // Gaussian has very large weights and biases, leading to overfitting
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.4);
+    TEST_CHECK(0.4);
 }
 
 TEST_CASE("initializer/small_gaussian", "[dense][unit][mnist][sgd]") {
@@ -113,9 +111,7 @@ TEST_CASE("initializer/small_gaussian", "[dense][unit][mnist][sgd]") {
 
     CHECK(ft_error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 TEST_CASE("initializer/lecun", "[dense][unit][mnist][sgd]") {
@@ -140,9 +136,7 @@ TEST_CASE("initializer/lecun", "[dense][unit][mnist][sgd]") {
 
     CHECK(ft_error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 TEST_CASE("initializer/xavier", "[dense][unit][mnist][sgd]") {
@@ -167,9 +161,7 @@ TEST_CASE("initializer/xavier", "[dense][unit][mnist][sgd]") {
 
     CHECK(ft_error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
 
 TEST_CASE("initializer/xavier_full", "[dense][unit][mnist][sgd]") {
@@ -194,7 +186,5 @@ TEST_CASE("initializer/xavier_full", "[dense][unit][mnist][sgd]") {
 
     CHECK(ft_error < 5e-2);
 
-    auto test_error = dll::test_set(dbn, dataset.test_images, dataset.test_labels, dll::predictor());
-    std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.2);
+    TEST_CHECK(0.2);
 }
