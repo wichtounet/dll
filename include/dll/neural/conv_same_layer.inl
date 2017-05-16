@@ -105,7 +105,7 @@ struct conv_same_layer final : neural_layer<conv_same_layer<Desc>, Desc> {
 
         auto b_rep = etl::force_temporary(etl::rep<NH1, NH2>(b));
 
-        etl::reshape<1, K, NH1, NH2>(output) = etl::conv_4d_valid_flipped<1, 1, P1, P2>(etl::reshape<1, NC, NV1, NV2>(v), w);
+        etl::reshape<1, K, NH1, NH2>(output) = etl::ml::convolution_forward<1, 1, P1, P2>(etl::reshape<1, NC, NV1, NV2>(v), w);
 
         output = f_activate<activation_function>(b_rep + output);
     }
