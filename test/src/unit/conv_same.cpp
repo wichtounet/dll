@@ -25,7 +25,7 @@ TEST_CASE("unit/conv/same/1", "[conv][dbn][mnist][sgd]") {
             dll::dense_desc<6 * 28 * 28, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<20>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(500);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(600);
     REQUIRE(!dataset.training_images.empty());
 
     auto dbn = std::make_unique<dbn_t>();
@@ -34,7 +34,7 @@ TEST_CASE("unit/conv/same/1", "[conv][dbn][mnist][sgd]") {
 
     dbn->display();
 
-    FT_CHECK(25, 5e-2);
+    FT_CHECK(50, 5e-2);
     TEST_CHECK(0.2);
 }
 
