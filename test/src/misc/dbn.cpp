@@ -226,7 +226,7 @@ TEST_CASE("dbn/mnist/text/1", "dbn::simple") {
 
     auto test_error = dbn->evaluate_error(test_images, test_labels);
     std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < error_max);
+    REQUIRE(test_error < 0.2);
 }
 
 TEST_CASE("mnist_original", "dbn::simple") {
