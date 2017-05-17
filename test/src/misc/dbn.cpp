@@ -7,7 +7,7 @@
 
 #include <deque>
 
-#include "catch.hpp"
+#include "dll_test.hpp"
 
 #include "dll/rbm/rbm.hpp"
 #include "dll/dbn.hpp"
@@ -133,7 +133,7 @@ TEST_CASE("dbn/mnist_8", "dbn::cg_relu") {
 
     REQUIRE(std::isfinite(error));
 
-    auto test_error = dbn->evaluate_error(dbn, dataset.test_images, dataset.test_labels);
+    auto test_error = dbn->evaluate_error(dataset.test_images, dataset.test_labels);
     std::cout << "test_error:" << test_error << std::endl;
 }
 
@@ -220,11 +220,13 @@ TEST_CASE("dbn/mnist/text/1", "dbn::simple") {
     auto dbn = std::make_unique<dbn_t>();
 
     dbn->pretrain(training_images, 20);
-    auto error = dbn->fine_tune(training_images, training_labels, 10);
 
+    auto error = dbn->fine_tune(training_images, training_labels, 10);
     REQUIRE(error < 5e-2);
 
-    TEST_CHECK(0.2);
+    auto test_error = dbn->evaluate_error(test_images, test_labels);
+    std::cout << "test_error:" << test_error << std::endl;
+    REQUIRE(test_error < error_max);
 }
 
 TEST_CASE("mnist_original", "dbn::simple") {

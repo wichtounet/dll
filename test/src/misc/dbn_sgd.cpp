@@ -7,7 +7,7 @@
 
 #include <deque>
 
-#include "catch.hpp"
+#include "dll_test.hpp"
 
 #include "dll/rbm/rbm.hpp"
 #include "dll/dbn.hpp"

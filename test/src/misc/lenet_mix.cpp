@@ -5,7 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "catch.hpp"
+#include "dll_test.hpp"
 
 #include "dll/neural/conv_layer.hpp"
 #include "dll/neural/dense_layer.hpp"

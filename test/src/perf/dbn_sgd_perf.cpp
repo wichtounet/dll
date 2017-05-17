@@ -7,7 +7,7 @@
 
 #include <deque>
 
-#include "catch.hpp"
+#include "dll_test.hpp"
 
 #include "dll/neural/dense_layer.hpp"
 #include "dll/dbn.hpp"
