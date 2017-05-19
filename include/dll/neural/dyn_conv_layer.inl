@@ -101,6 +101,10 @@ struct dyn_conv_layer final : neural_layer<dyn_conv_layer<Desc>, Desc> {
         return k * nw1 * nw2;
     }
 
+    /*!
+     * \brief Returns a short description of the layer
+     * \return an std::string containing a short description of the layer
+     */
     std::string to_short_string() const {
         char buffer[1024];
         snprintf(buffer, 1024, "Conv(dyn): %lux%lux%lu -> (%lux%lux%lu) -> %s -> %lux%lux%lu", nc, nv1, nv2, k, nw1, nw2, to_string(activation_function).c_str(), k, nh1, nh2);
@@ -142,6 +146,12 @@ struct dyn_conv_layer final : neural_layer<dyn_conv_layer<Desc>, Desc> {
         input = input_one_t(nc, nv1, nv2);
     }
 
+    /*!
+     * \brief Prepare a set of empty outputs for this layer
+     * \param samples The number of samples to prepare the output for
+     * \return a container containing empty ETL matrices suitable to store samples output of this layer
+     * \tparam Input The type of one input
+     */
     template <typename Input>
     output_t prepare_output(std::size_t samples) const {
         output_t output;
@@ -152,11 +162,23 @@ struct dyn_conv_layer final : neural_layer<dyn_conv_layer<Desc>, Desc> {
         return output;
     }
 
+    /*!
+     * \brief Prepare one empty output for this layer
+     * \return an empty ETL matrix suitable to store one output of this layer
+     *
+     * \tparam Input The type of one Input
+     */
     template <typename Input>
     output_one_t prepare_one_output() const {
         return output_one_t(k, nh1, nh2);
     }
 
+    /*!
+     * \brief Initialize the dynamic version of the layer from the
+     * fast version of the layer
+     * \param dyn Reference to the dynamic version of the layer that
+     * needs to be initialized
+     */
     template<typename DRBM>
     static void dyn_init(DRBM&){
         //Nothing to change

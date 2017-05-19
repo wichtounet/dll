@@ -73,6 +73,12 @@ struct upsample_layer_3d final : unpooling_layer_3d<upsample_layer_3d<Desc>, Des
         output = etl::upsample_3d<base::C1, base::C2, base::C3>(input);
     }
 
+    /*!
+     * \brief Initialize the dynamic version of the layer from the
+     * fast version of the layer
+     * \param dyn Reference to the dynamic version of the layer that
+     * needs to be initialized
+     */
     template<typename DLayer>
     static void dyn_init(DLayer& dyn){
         dyn.init_layer(base::I1, base::I2, base::I3, base::C1, base::C2, base::C3);

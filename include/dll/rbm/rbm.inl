@@ -111,10 +111,20 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
         return num_visible * num_hidden;
     }
 
+    /*!
+     * \brief Returns a short description of the layer
+     * \return an std::string containing a short description of the layer
+     */
     static std::string to_short_string() {
         return "RBM: " + std::to_string(num_visible) + "(" + to_string(visible_unit) + ") -> " + std::to_string(num_hidden) + "(" + to_string(hidden_unit) + ")";
     }
 
+    /*!
+     * \brief Initialize the dynamic version of the layer from the
+     * fast version of the layer
+     * \param dyn Reference to the dynamic version of the layer that
+     * needs to be initialized
+     */
     template<typename DRBM>
     static void dyn_init(DRBM& dyn){
         dyn.init_layer(num_visible, num_hidden);

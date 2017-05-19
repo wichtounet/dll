@@ -139,6 +139,10 @@ struct dyn_conv_rbm final : public standard_crbm<dyn_conv_rbm<Desc>, Desc> {
         return nc * k * nw1 * nw2;
     }
 
+    /*!
+     * \brief Returns a short description of the layer
+     * \return an std::string containing a short description of the layer
+     */
     std::string to_short_string() const {
         char buffer[1024];
         snprintf(
@@ -147,6 +151,12 @@ struct dyn_conv_rbm final : public standard_crbm<dyn_conv_rbm<Desc>, Desc> {
         return {buffer};
     }
 
+    /*!
+     * \brief Prepare a set of empty outputs for this layer
+     * \param samples The number of samples to prepare the output for
+     * \return a container containing empty ETL matrices suitable to store samples output of this layer
+     * \tparam Input The type of one input
+     */
     template <typename Input>
     output_t prepare_output(std::size_t samples) const {
         output_t output;
@@ -157,11 +167,23 @@ struct dyn_conv_rbm final : public standard_crbm<dyn_conv_rbm<Desc>, Desc> {
         return output;
     }
 
+    /*!
+     * \brief Prepare one empty output for this layer
+     * \return an empty ETL matrix suitable to store one output of this layer
+     *
+     * \tparam Input The type of one Input
+     */
     template <typename Input>
     output_one_t prepare_one_output() const {
         return output_one_t(k, nh1, nh2);
     }
 
+    /*!
+     * \brief Initialize the dynamic version of the layer from the
+     * fast version of the layer
+     * \param dyn Reference to the dynamic version of the layer that
+     * needs to be initialized
+     */
     template<typename DRBM>
     static void dyn_init(DRBM&){
         //Nothing to change

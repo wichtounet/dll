@@ -166,6 +166,12 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
         display_weights(matrix, as_derived());
     }
 
+    /*!
+     * \brief Prepare a set of empty outputs for this layer
+     * \param samples The number of samples to prepare the output for
+     * \return a container containing empty ETL matrices suitable to store samples output of this layer
+     * \tparam Input The type of one input
+     */
     template <typename Input>
     output_t prepare_output(std::size_t samples, bool is_last = false, std::size_t labels = 0) const {
         output_t output;

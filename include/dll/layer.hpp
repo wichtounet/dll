@@ -44,6 +44,9 @@ struct layer {
 #endif
     }
 
+    /*!
+     * \brief Display a layer on the console
+     */
     void display() const {
         std::cout << as_derived().to_short_string() << std::endl;
     }

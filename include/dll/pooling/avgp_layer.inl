@@ -83,6 +83,12 @@ struct avgp_layer_2d final : pooling_layer_2d<avgp_layer_2d<Desc>, Desc> {
         output = etl::avg_pool_2d<base::C1, base::C2>(input);
     }
 
+    /*!
+     * \brief Initialize the dynamic version of the layer from the
+     * fast version of the layer
+     * \param dyn Reference to the dynamic version of the layer that
+     * needs to be initialized
+     */
     template<typename DLayer>
     static void dyn_init(DLayer& dyn){
         dyn.init_layer(base::I1, base::I2, base::I3, base::C1, base::C2);
@@ -240,6 +246,12 @@ struct avgp_layer_3d final : pooling_layer_3d<avgp_layer_3d<Desc>, Desc> {
         output = etl::avg_pool_3d<base::C1, base::C2, base::C3>(input);
     }
 
+    /*!
+     * \brief Initialize the dynamic version of the layer from the
+     * fast version of the layer
+     * \param dyn Reference to the dynamic version of the layer that
+     * needs to be initialized
+     */
     template<typename DLayer>
     static void dyn_init(DLayer& dyn){
         dyn.init_layer(base::I1, base::I2, base::I3, base::C1, base::C2, base::C3);

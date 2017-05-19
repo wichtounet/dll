@@ -91,6 +91,10 @@ struct conv_same_layer final : neural_layer<conv_same_layer<Desc>, Desc> {
         return K * NW1 * NW2;
     }
 
+    /*!
+     * \brief Returns a short description of the layer
+     * \return an std::string containing a short description of the layer
+     */
     static std::string to_short_string() {
         char buffer[1024];
         snprintf(buffer, 1024, "Conv(same): %lux%lux%lu -> (%lux%lux%lu) -> %s -> %lux%lux%lu", NC, NV1, NV2, K, NW1, NW2, to_string(activation_function).c_str(), K, NH1, NH2);
@@ -147,11 +151,23 @@ struct conv_same_layer final : neural_layer<conv_same_layer<Desc>, Desc> {
         return {};
     }
 
+    /*!
+     * \brief Prepare a set of empty outputs for this layer
+     * \param samples The number of samples to prepare the output for
+     * \return a container containing empty ETL matrices suitable to store samples output of this layer
+     * \tparam Input The type of one input
+     */
     template <typename Input>
     static output_t prepare_output(std::size_t samples) {
         return output_t{samples};
     }
 
+    /*!
+     * \brief Initialize the dynamic version of the layer from the
+     * fast version of the layer
+     * \param dyn Reference to the dynamic version of the layer that
+     * needs to be initialized
+     */
     template<typename DRBM>
     static void dyn_init(DRBM& dyn){
         dyn.init_layer(NC, NV1, NV2, K, NW1, NW2);

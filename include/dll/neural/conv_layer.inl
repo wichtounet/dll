@@ -18,10 +18,10 @@ namespace dll {
  */
 template <typename Desc>
 struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
-    using desc      = Desc;
-    using weight    = typename desc::weight;
-    using this_type = conv_layer<desc>;
-    using base_type = neural_layer<this_type, desc>;
+    using desc      = Desc;                          ///< The descriptor of the layer
+    using weight    = typename desc::weight;         ///< The data type of the layer
+    using this_type = conv_layer<desc>;              ///< The type of this layer
+    using base_type = neural_layer<this_type, desc>; ///< The base type of the layer
 
     static constexpr size_t NV1 = desc::NV1; ///< The first dimension of the visible units
     static constexpr size_t NV2 = desc::NV2; ///< The second dimension of the visible units
@@ -33,9 +33,9 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
     static constexpr size_t NH1 = NV1 - NW1 + 1; //By definition
     static constexpr size_t NH2 = NV2 - NW2 + 1; //By definition
 
-    static constexpr auto activation_function = desc::activation_function;
-    static constexpr auto w_initializer       = desc::w_initializer;
-    static constexpr auto b_initializer       = desc::b_initializer;
+    static constexpr auto activation_function = desc::activation_function; ///< The activation function
+    static constexpr auto w_initializer       = desc::w_initializer;       ///< The initializer for the weights
+    static constexpr auto b_initializer       = desc::b_initializer;       ///< The initializer for the biases
 
     using input_one_t  = etl::fast_dyn_matrix<weight, NC, NV1, NV2>;
     using output_one_t = etl::fast_dyn_matrix<weight, K, NH1, NH2>;
@@ -85,6 +85,10 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
         return K * NW1 * NW2;
     }
 
+    /*!
+     * \brief Returns a short description of the layer
+     * \return an std::string containing a short description of the layer
+     */
     static std::string to_short_string() {
         char buffer[1024];
         snprintf(buffer, 1024, "Conv: %lux%lux%lu -> (%lux%lux%lu) -> %s -> %lux%lux%lu", NC, NV1, NV2, K, NW1, NW2, to_string(activation_function).c_str(), K, NH1, NH2);
@@ -136,16 +140,31 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
         output = f_activate<activation_function>(bias_add_4d(output, b));
     }
 
+    /*!
+     * \brief Prepare one empty output for this layer
+     * \return an empty ETL matrix suitable to store one output of this layer
+     */
     template <typename Input>
     output_one_t prepare_one_output() const {
         return {};
     }
 
+    /*!
+     * \brief Prepare a set of empty outputs for this layer
+     * \param samples The number of samples to prepare the output for
+     * \return a container containing empty ETL matrices suitable to store samples output of this layer
+     */
     template <typename Input>
     static output_t prepare_output(std::size_t samples) {
         return output_t{samples};
     }
 
+    /*!
+     * \brief Initialize the dynamic version of the layer from the
+     * fast version of the layer
+     * \param dyn Reference to the dynamic version of the layer that
+     * needs to be initialized
+     */
     template<typename DRBM>
     static void dyn_init(DRBM& dyn){
         dyn.init_layer(NC, NV1, NV2, K, NW1, NW2);

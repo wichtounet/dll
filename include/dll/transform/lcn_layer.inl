@@ -90,6 +90,12 @@ struct lcn_layer : transform_layer<lcn_layer<Desc>> {
         }
     }
 
+    /*!
+     * \brief Initialize the dynamic version of the layer from the
+     * fast version of the layer
+     * \param dyn Reference to the dynamic version of the layer that
+     * needs to be initialized
+     */
     template<typename DRBM>
     static void dyn_init(DRBM& dyn){
         dyn.init_layer(K);

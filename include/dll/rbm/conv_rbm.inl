@@ -118,16 +118,34 @@ struct conv_rbm final : public standard_crbm<conv_rbm<Desc>, Desc> {
         return {buffer};
     }
 
+    /*!
+     * \brief Prepare a set of empty outputs for this layer
+     * \param samples The number of samples to prepare the output for
+     * \return a container containing empty ETL matrices suitable to store samples output of this layer
+     * \tparam Input The type of one input
+     */
     template <typename Input>
     static output_t prepare_output(size_t samples) {
         return output_t{samples};
     }
 
+    /*!
+     * \brief Prepare one empty output for this layer
+     * \return an empty ETL matrix suitable to store one output of this layer
+     *
+     * \tparam Input The type of one Input
+     */
     template <typename Input>
     static output_one_t prepare_one_output() {
         return output_one_t{};
     }
 
+    /*!
+     * \brief Initialize the dynamic version of the layer from the
+     * fast version of the layer
+     * \param dyn Reference to the dynamic version of the layer that
+     * needs to be initialized
+     */
     template<typename DRBM>
     static void dyn_init(DRBM& dyn){
         dyn.init_layer(NC, NV1, NV2, K, NW1, NW2);

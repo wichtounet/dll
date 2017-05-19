@@ -42,6 +42,10 @@ struct dyn_patches_layer : layer<dyn_patches_layer<Desc>> {
         this->h_stride = h_stride;
     }
 
+    /*!
+     * \brief Returns a short description of the layer
+     * \return an std::string containing a short description of the layer
+     */
     std::string to_short_string() const {
         char buffer[1024];
         snprintf(buffer, 1024, "Patches(dyn) -> (%lu:%lux%lu:%lu)", height, v_stride, width, h_stride);
@@ -87,6 +91,12 @@ struct dyn_patches_layer : layer<dyn_patches_layer<Desc>> {
         }
     }
 
+    /*!
+     * \brief Prepare a set of empty outputs for this layer
+     * \param samples The number of samples to prepare the output for
+     * \return a container containing empty ETL matrices suitable to store samples output of this layer
+     * \tparam Input The type of one input
+     */
     template <typename Input>
     output_t prepare_output(std::size_t samples) const {
         output_t output;
@@ -94,11 +104,23 @@ struct dyn_patches_layer : layer<dyn_patches_layer<Desc>> {
         return output;
     }
 
+    /*!
+     * \brief Prepare one empty output for this layer
+     * \return an empty ETL matrix suitable to store one output of this layer
+     *
+     * \tparam Input The type of one Input
+     */
     template <typename Input>
     output_one_t prepare_one_output() const {
         return output_one_t();
     }
 
+    /*!
+     * \brief Initialize the dynamic version of the layer from the
+     * fast version of the layer
+     * \param dyn Reference to the dynamic version of the layer that
+     * needs to be initialized
+     */
     template<typename DRBM>
     static void dyn_init(DRBM&){
         //Nothing to change

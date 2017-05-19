@@ -134,6 +134,10 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         return num_visible * num_hidden;
     }
 
+    /*!
+     * \brief Returns a short description of the layer
+     * \return an std::string containing a short description of the layer
+     */
     std::string to_short_string() const {
         char buffer[1024];
         snprintf(
@@ -153,6 +157,12 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         input = input_one_t(num_visible);
     }
 
+    /*!
+     * \brief Initialize the dynamic version of the layer from the
+     * fast version of the layer
+     * \param dyn Reference to the dynamic version of the layer that
+     * needs to be initialized
+     */
     template<typename DRBM>
     static void dyn_init(DRBM&){
         //Nothing to change

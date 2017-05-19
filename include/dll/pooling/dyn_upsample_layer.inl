@@ -71,6 +71,12 @@ struct dyn_upsample_layer_3d final : dyn_unpooling_layer_3d<dyn_upsample_layer_3
         output = etl::upsample_3d(input, base::c1, base::c2, base::c3);
     }
 
+    /*!
+     * \brief Initialize the dynamic version of the layer from the
+     * fast version of the layer
+     * \param dyn Reference to the dynamic version of the layer that
+     * needs to be initialized
+     */
     template<typename DRBM>
     static void dyn_init(DRBM&){
         //Nothing to change

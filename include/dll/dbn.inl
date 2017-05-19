@@ -775,6 +775,12 @@ public:
         return layer_get<I>().template prepare_one_output<layer_input_t>();
     }
 
+    /*!
+     * \brief Prepare one empty output for this layer
+     * \return an empty ETL matrix suitable to store one output of this layer
+     *
+     * \tparam Input The type of one Input
+     */
     template <typename Input>
     auto prepare_one_output() const {
         return prepare_output<layers - 1, Input>();

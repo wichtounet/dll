@@ -79,6 +79,10 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
         return num_visible * num_hidden;
     }
 
+    /*!
+     * \brief Returns a short description of the layer
+     * \return an std::string containing a short description of the layer
+     */
     static std::string to_short_string() {
         char buffer[1024];
         snprintf(buffer, 1024, "Dense: %lu -> %s -> %lu", num_visible, to_string(activation_function).c_str(), num_hidden);
@@ -185,16 +189,34 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
         }
     }
 
+    /*!
+     * \brief Prepare one empty output for this layer
+     * \return an empty ETL matrix suitable to store one output of this layer
+     *
+     * \tparam Input The type of one Input
+     */
     template <typename Input>
     output_one_t prepare_one_output() const {
         return {};
     }
 
+    /*!
+     * \brief Prepare a set of empty outputs for this layer
+     * \param samples The number of samples to prepare the output for
+     * \return a container containing empty ETL matrices suitable to store samples output of this layer
+     * \tparam Input The type of one input
+     */
     template <typename Input>
     static output_t prepare_output(std::size_t samples) {
         return output_t{samples};
     }
 
+    /*!
+     * \brief Initialize the dynamic version of the layer from the
+     * fast version of the layer
+     * \param dyn Reference to the dynamic version of the layer that
+     * needs to be initialized
+     */
     template<typename DLayer>
     static void dyn_init(DLayer& dyn){
         dyn.init_layer(num_visible, num_hidden);

@@ -23,6 +23,10 @@ struct augment_layer : layer<augment_layer<Desc>> {
 
     augment_layer() = default;
 
+    /*!
+     * \brief Returns a short description of the layer
+     * \return an std::string containing a short description of the layer
+     */
     static std::string to_short_string() {
         std::string name = "Augment<";
 
@@ -57,11 +61,23 @@ struct augment_layer : layer<augment_layer<Desc>> {
         }
     }
 
+    /*!
+     * \brief Prepare a set of empty outputs for this layer
+     * \param samples The number of samples to prepare the output for
+     * \return a container containing empty ETL matrices suitable to store samples output of this layer
+     * \tparam Input The type of one input
+     */
     template <typename Input>
     static std::vector<std::vector<Input>> prepare_output(std::size_t samples) {
         return std::vector<std::vector<Input>>(samples);
     }
 
+    /*!
+     * \brief Prepare one empty output for this layer
+     * \return an empty ETL matrix suitable to store one output of this layer
+     *
+     * \tparam Input The type of one Input
+     */
     template <typename Input>
     static std::vector<Input> prepare_one_output() {
         return std::vector<Input>();
@@ -77,6 +93,12 @@ struct augment_layer : layer<augment_layer<Desc>> {
         return {};
     }
 
+    /*!
+     * \brief Initialize the dynamic version of the layer from the
+     * fast version of the layer
+     * \param dyn Reference to the dynamic version of the layer that
+     * needs to be initialized
+     */
     template<typename DRBM>
     static void dyn_init(DRBM&){
         //Nothing to change

@@ -71,6 +71,12 @@ struct dyn_mp_layer_2d final : dyn_pooling_layer_2d<dyn_mp_layer_2d<Desc>, Desc>
         output = etl::max_pool_2d(input, base::c1, base::c2);
     }
 
+    /*!
+     * \brief Initialize the dynamic version of the layer from the
+     * fast version of the layer
+     * \param dyn Reference to the dynamic version of the layer that
+     * needs to be initialized
+     */
     template<typename DRBM>
     static void dyn_init(DRBM&){
         //Nothing to change
@@ -211,6 +217,12 @@ struct dyn_mp_layer_3d final : dyn_pooling_layer_3d<dyn_mp_layer_3d<Desc>, Desc>
         output = etl::max_pool_3d(input, base::c1, base::c2, base::c3);
     }
 
+    /*!
+     * \brief Initialize the dynamic version of the layer from the
+     * fast version of the layer
+     * \param dyn Reference to the dynamic version of the layer that
+     * needs to be initialized
+     */
     template<typename DRBM>
     static void dyn_init(DRBM&){
         //Nothing to change

@@ -76,11 +76,23 @@ struct pooling_layer_2d : layer<Parent> {
         }
     }
 
+    /*!
+     * \brief Prepare a set of empty outputs for this layer
+     * \param samples The number of samples to prepare the output for
+     * \return a container containing empty ETL matrices suitable to store samples output of this layer
+     * \tparam Input The type of one input
+     */
     template <typename Input>
     static output_t prepare_output(size_t samples) {
         return output_t{samples};
     }
 
+    /*!
+     * \brief Prepare one empty output for this layer
+     * \return an empty ETL matrix suitable to store one output of this layer
+     *
+     * \tparam Input The type of one Input
+     */
     template <typename Input>
     static output_one_t prepare_one_output() {
         return output_one_t();
@@ -166,6 +178,12 @@ struct dyn_pooling_layer_2d : layer<Parent> {
         }
     }
 
+    /*!
+     * \brief Prepare a set of empty outputs for this layer
+     * \param samples The number of samples to prepare the output for
+     * \return a container containing empty ETL matrices suitable to store samples output of this layer
+     * \tparam Input The type of one input
+     */
     template <typename Input>
     output_t prepare_output(size_t samples) const {
         output_t output;
@@ -176,6 +194,12 @@ struct dyn_pooling_layer_2d : layer<Parent> {
         return output;
     }
 
+    /*!
+     * \brief Prepare one empty output for this layer
+     * \return an empty ETL matrix suitable to store one output of this layer
+     *
+     * \tparam Input The type of one Input
+     */
     template <typename Input>
     output_one_t prepare_one_output() const {
         return output_one_t(o1, o2, o3);
@@ -251,11 +275,23 @@ struct pooling_layer_3d : layer<Parent> {
         }
     }
 
+    /*!
+     * \brief Prepare a set of empty outputs for this layer
+     * \param samples The number of samples to prepare the output for
+     * \return a container containing empty ETL matrices suitable to store samples output of this layer
+     * \tparam Input The type of one input
+     */
     template <typename Input>
     static output_t prepare_output(size_t samples) {
         return output_t{samples};
     }
 
+    /*!
+     * \brief Prepare one empty output for this layer
+     * \return an empty ETL matrix suitable to store one output of this layer
+     *
+     * \tparam Input The type of one Input
+     */
     template <typename Input>
     static output_one_t prepare_one_output() {
         return output_one_t();
@@ -343,6 +379,12 @@ struct dyn_pooling_layer_3d : layer<Parent> {
         }
     }
 
+    /*!
+     * \brief Prepare a set of empty outputs for this layer
+     * \param samples The number of samples to prepare the output for
+     * \return a container containing empty ETL matrices suitable to store samples output of this layer
+     * \tparam Input The type of one input
+     */
     template <typename Input>
     output_t prepare_output(size_t samples) const {
         output_t output;
@@ -353,6 +395,12 @@ struct dyn_pooling_layer_3d : layer<Parent> {
         return output;
     }
 
+    /*!
+     * \brief Prepare one empty output for this layer
+     * \return an empty ETL matrix suitable to store one output of this layer
+     *
+     * \tparam Input The type of one Input
+     */
     template <typename Input>
     output_one_t prepare_one_output() const {
         return output_one_t(o1, o2, o3);
