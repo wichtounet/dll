@@ -98,6 +98,7 @@ struct batch_mode_id;
 struct dbn_only_id;
 struct horizontal_mirroring_id;
 struct vertical_mirroring_id;
+struct categorical_id;
 struct nop_id;
 struct elastic_distortion_id;
 
@@ -247,6 +248,7 @@ struct svm_scale : basic_conf_elt<svm_scale_id> {};
 
 struct horizontal_mirroring : basic_conf_elt<horizontal_mirroring_id> {};
 struct vertical_mirroring : basic_conf_elt<vertical_mirroring_id> {};
+struct categorical : basic_conf_elt<categorical_id> {};
 
 /*!
  * \brief Sets the elastic distortion kernel

@@ -12,6 +12,91 @@
 
 namespace dll {
 
+template<typename Desc, typename LIterator, typename Enable = void>
+struct label_cache_helper;
+
+// Case 1: make the labels categorical
+template<typename Desc, typename LIterator>
+struct label_cache_helper<Desc, LIterator, std::enable_if_t<Desc::Categorical && !etl::is_etl_expr<typename LIterator::value_type>::value>> {
+    using T = typename Desc::weight;
+
+    using cache_type = etl::dyn_matrix<T, 2>;
+
+    static void init(size_t n, size_t n_classes, LIterator& it, cache_type& cache){
+        cache = cache_type(n, n_classes);
+        cache = T(0);
+
+        cpp_unused(it);
+    }
+
+    static void set(size_t i, const LIterator& it, cache_type& cache){
+        cache(i, *it) = T(1);
+    }
+};
+
+// Case 2: Keep the labels as 1D
+// Note: May be useless
+template<typename Desc, typename LIterator>
+struct label_cache_helper<Desc, LIterator, std::enable_if_t<!Desc::Categorical && !etl::is_etl_expr<typename LIterator::value_type>::value>> {
+    using T = typename Desc::weight;
+
+    using cache_type = etl::dyn_matrix<T, 1>;
+
+    static void init(size_t n, size_t n_classes, LIterator& it, cache_type& cache){
+        cache = cache_type(n);
+
+        cpp_unused(it);
+        cpp_unused(n_classes);
+    }
+
+    static void set(size_t i, const LIterator& it, cache_type& cache){
+        cache[i] = *it;
+    }
+};
+
+// Case 3: 1D labels
+template<typename Desc, typename LIterator>
+struct label_cache_helper<Desc, LIterator, std::enable_if_t<etl::is_1d<typename LIterator::value_type>::value>> {
+    using T = typename Desc::weight;
+
+    using cache_type = etl::dyn_matrix<T, 2>;
+
+    static_assert(!Desc::Categorical, "Cannot make such vector labels categorical");
+
+    static void init(size_t n, size_t n_classes, LIterator& it, cache_type& cache){
+        auto one = *it;
+        cache = cache_type(n, etl::dim<0>(one));
+
+        cpp_unused(it);
+        cpp_unused(n_classes);
+    }
+
+    static void set(size_t i, const LIterator& it, cache_type& cache){
+        cache(i) = *it;
+    }
+};
+
+template<typename Desc, typename LIterator>
+struct label_cache_helper<Desc, LIterator, std::enable_if_t<etl::is_3d<typename LIterator::value_type>::value>> {
+    using T = typename Desc::weight;
+
+    using cache_type = etl::dyn_matrix<T, 4>;
+
+    static_assert(!Desc::Categorical, "Cannot make such matrix labels categorical");
+
+    static void init(size_t n, size_t n_classes, LIterator& it, cache_type& cache){
+        auto one = *it;
+        cache = cache_type(n, etl::dim<0>(one), etl::dim<1>(one), etl::dim<2>(one));
+
+        cpp_unused(it);
+        cpp_unused(n_classes);
+    }
+
+    static void set(size_t i, const LIterator& it, cache_type& cache){
+        cache(i) = *it;
+    }
+};
+
 template<typename Desc, typename Iterator, typename Enable = void>
 struct cache_helper;
 
@@ -68,31 +153,32 @@ template<typename Iterator, typename LIterator, typename Desc>
 struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_augmented<Desc>::value>> {
     using desc = Desc;
     using weight = typename desc::weight;
-    using cache_helper_t = cache_helper<Desc, Iterator>;
+    using data_cache_helper_t = cache_helper<Desc, Iterator>;
+    using label_cache_helper_t = label_cache_helper<Desc, LIterator>;
 
-    using cache_type = typename cache_helper_t::cache_type;
-    using label_type = etl::dyn_matrix<weight, 2>;
+    using data_cache_type = typename data_cache_helper_t::cache_type;
+    using label_cache_type = typename label_cache_helper_t::cache_type;
+
+    static constexpr bool dll_generator = true;
 
     static constexpr size_t batch_size = desc::BatchSize;
 
-    cache_type input_cache;
-    label_type labels;
+    data_cache_type input_cache;
+    label_cache_type label_cache;
 
     size_t current = 0;
 
     memory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes){
         const size_t n = std::distance(first, last);
 
-        cache_helper_t::init(n, first, input_cache);
-        labels = label_type(n, n_classes);
-
-        labels = weight(0);
+        data_cache_helper_t::init(n, first, input_cache);
+        label_cache_helper_t::init(n, n_classes, lfirst, label_cache);
 
         size_t i = 0;
         while(first != last){
             input_cache(i) = *first;
 
-            labels(i, *lfirst) = weight(1);
+            label_cache_helper_t::set(i, lfirst, label_cache);
 
             ++i;
             ++first;
@@ -114,7 +200,7 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_au
     void shuffle(){
         cpp_assert(!current, "Shuffle should only be performed on start of generation");
 
-        etl::parallel_shuffle(input_cache, labels);
+        etl::parallel_shuffle(input_cache, label_cache);
     }
 
     size_t current_batch() const {
@@ -146,11 +232,11 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_au
     }
 
     auto label_batch() const {
-        return etl::slice(labels, current, std::min(current + batch_size, size()));
+        return etl::slice(label_cache, current, std::min(current + batch_size, size()));
     }
 
     static constexpr size_t dimensions() {
-        return etl::dimensions<cache_type>() - 1;
+        return etl::dimensions<data_cache_type>() - 1;
     }
 };
 
@@ -446,18 +532,21 @@ template<typename Iterator, typename LIterator, typename Desc>
 struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_augmented<Desc>::value>> {
     using desc = Desc;
     using weight = typename desc::weight;
-    using cache_helper_t = cache_helper<desc, Iterator>;
+    using data_cache_helper_t = cache_helper<desc, Iterator>;
+    using label_cache_helper_t = label_cache_helper<desc, LIterator>;
 
-    using cache_type = typename cache_helper_t::cache_type;
-    using big_cache_type = typename cache_helper_t::big_cache_type;
-    using label_type = etl::dyn_matrix<weight, 2>;
+    using data_cache_type  = typename data_cache_helper_t::cache_type;
+    using big_cache_type   = typename data_cache_helper_t::big_cache_type;
+    using label_cache_type = typename label_cache_helper_t::cache_type;
+
+    static constexpr bool dll_generator = true;
 
     static constexpr size_t batch_size = desc::BatchSize;
     static constexpr size_t big_batch_size = desc::BigBatchSize;
 
-    cache_type input_cache;
+    data_cache_type input_cache;
     big_cache_type batch_cache;
-    label_type labels;
+    label_cache_type label_cache;
 
     random_cropper<Desc> cropper;
     random_mirrorer<Desc> mirrorer;
@@ -480,18 +569,16 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
     memory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes) : cropper(*first), mirrorer(*first), distorter(*first) {
         const size_t n = std::distance(first, last);
 
-        cache_helper_t::init(n, first, input_cache);
-        cache_helper_t::init_big(big_batch_size, batch_size, first, batch_cache);
+        data_cache_helper_t::init(n, first, input_cache);
+        data_cache_helper_t::init_big(big_batch_size, batch_size, first, batch_cache);
 
-        labels = label_type(n, n_classes);
-
-        labels = weight(0);
+        label_cache_helper_t::init(n, n_classes, lfirst, label_cache);
 
         size_t i = 0;
         while(first != last){
             input_cache(i) = *first;
 
-            labels(i, *lfirst) = weight(1);
+            label_cache_helper_t::set(i, lfirst, label_cache);
 
             ++i;
             ++first;
@@ -619,7 +706,7 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
     void shuffle(){
         cpp_assert(!current, "Shuffle should only be performed on start of generation");
 
-        etl::parallel_shuffle(input_cache, labels);
+        etl::parallel_shuffle(input_cache, label_cache);
     }
 
     size_t current_batch() const {
@@ -677,11 +764,11 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
     }
 
     auto label_batch() const {
-        return etl::slice(labels, current, std::min(current + batch_size, size()));
+        return etl::slice(label_cache, current, std::min(current + batch_size, size()));
     }
 
     static constexpr size_t dimensions() {
-        return etl::dimensions<cache_type>() - 1;
+        return etl::dimensions<data_cache_type>() - 1;
     }
 };
 
@@ -704,6 +791,11 @@ struct memory_data_generator_desc {
      * \brief The number of batch in cache
      */
     static constexpr size_t BigBatchSize = detail::get_value<big_batch_size<1>, Parameters...>::value;
+
+    /*!
+     * \brief Indicates if the generators must make the labels categorical
+     */
+    static constexpr bool Categorical = parameters::template contains<categorical>();
 
     /*!
      * \brief Indicates if horizontal mirroring should be used as augmentation.
@@ -739,7 +831,7 @@ struct memory_data_generator_desc {
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid<cpp::type_list<batch_size_id, big_batch_size_id, horizontal_mirroring_id, vertical_mirroring_id, random_crop_id, elastic_distortion_id, nop_id>,
+        detail::is_valid<cpp::type_list<batch_size_id, big_batch_size_id, horizontal_mirroring_id, vertical_mirroring_id, random_crop_id, elastic_distortion_id, categorical_id, nop_id>,
                          Parameters...>::value,
         "Invalid parameters type for rbm_desc");
 
