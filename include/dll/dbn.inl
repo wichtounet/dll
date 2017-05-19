@@ -729,7 +729,7 @@ public:
      * \param max_epochs The maximum number of epochs to train the network for.
      * \return The final classification error
      */
-    template <typename Generator, cpp_enable_if(Generator::dll_generator)>
+    template <typename Generator, cpp_enable_if(is_generator<Generator>::value)>
     weight fine_tune_ae(Generator& generator, size_t max_epochs) {
         dll::auto_timer timer("dbn:train:ft:ae");
 
@@ -745,7 +745,7 @@ public:
      * \param max_epochs The maximum number of epochs to train the network for.
      * \return The final classification error
      */
-    template <typename Samples, cpp_disable_if(Samples::dll_generator)>
+    template <typename Samples, cpp_disable_if(is_generator<Samples>::value)>
     weight fine_tune_ae(const Samples& training_data, size_t max_epochs) {
         return fine_tune_ae(
             training_data.begin(), training_data.end(),
