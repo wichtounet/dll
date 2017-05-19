@@ -14,7 +14,7 @@ namespace dll {
 
 template<typename Desc>
 struct is_augmented {
-    static constexpr bool value = (Desc::random_crop_x > 0 && Desc::random_crop_y > 0) || Desc::HorizontalMirroring || Desc::VerticalMirroring || Desc::ElasticDistortion;
+    static constexpr bool value = (Desc::random_crop_x > 0 && Desc::random_crop_y > 0) || Desc::HorizontalMirroring || Desc::VerticalMirroring || Desc::Noise || Desc::ElasticDistortion;
 };
 
 template<typename Iterator, typename LIterator, typename Desc, typename Enable = void>
@@ -134,6 +134,7 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
     random_cropper<Desc> cropper;
     random_mirrorer<Desc> mirrorer;
     elastic_distorter<Desc> distorter;
+    random_noise<Desc> noiser;
 
     size_t current = 0;
 
@@ -149,7 +150,7 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
     std::thread main_thread;
     bool threaded = false;
 
-    memory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes) : cropper(*first), mirrorer(*first), distorter(*first) {
+    memory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes) : cropper(*first), mirrorer(*first), distorter(*first), noiser(*first) {
         const size_t n = std::distance(first, last);
 
         data_cache_helper_t::init(n, first, input_cache);
@@ -235,6 +236,9 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
 
                     // Distort the image
                     distorter.transform(batch_cache(index)(i));
+
+                    // Noise the image
+                    noiser.transform(batch_cache(index)(i));
                 }
 
                 // Notify a waiter that one batch is ready
@@ -301,7 +305,7 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
     }
 
     size_t augmented_size() const {
-        return cropper.scaling() * mirrorer.scaling() * etl::dim<0>(input_cache);
+        return cropper.scaling() * mirrorer.scaling() * noiser.scaling() * distorter.scaling() * etl::dim<0>(input_cache);
     }
 
     size_t batches() const {
@@ -406,6 +410,11 @@ struct memory_data_generator_desc {
     static constexpr size_t ElasticDistortion = detail::get_value<elastic_distortion<0>, Parameters...>::value;
 
     /*!
+     * \brief The noise
+     */
+    static constexpr size_t Noise = detail::get_value<noise<0>, Parameters...>::value;
+
+    /*!
      * The type used to store the weights
      */
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
@@ -414,7 +423,7 @@ struct memory_data_generator_desc {
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid<cpp::type_list<batch_size_id, big_batch_size_id, horizontal_mirroring_id, vertical_mirroring_id, random_crop_id, elastic_distortion_id, categorical_id, nop_id>,
+        detail::is_valid<cpp::type_list<batch_size_id, big_batch_size_id, horizontal_mirroring_id, vertical_mirroring_id, random_crop_id, elastic_distortion_id, categorical_id, noise_id, nop_id>,
                          Parameters...>::value,
         "Invalid parameters type for rbm_desc");
 

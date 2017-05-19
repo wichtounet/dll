@@ -158,6 +158,54 @@ struct random_mirrorer <Desc, std::enable_if_t<!Desc::HorizontalMirroring && !De
 };
 
 template<typename Desc, typename Enable = void>
+struct random_noise;
+
+template<typename Desc>
+struct random_noise <Desc, std::enable_if_t<Desc::Noise>> {
+    using weight = typename Desc::weight;
+
+    static constexpr size_t N = Desc::Noise;
+
+    std::random_device rd;
+    std::default_random_engine engine;
+
+    std::uniform_int_distribution<size_t> dist;
+
+    template<typename T>
+    random_noise(const T& image) : engine(rd()), dist(0, 1000) {
+        cpp_unused(image);
+    }
+
+    size_t scaling() const {
+        return 10;
+    }
+
+    template<typename O>
+    void transform(O&& target){
+        for(auto& v :  target){
+            v *= dist(engine) < N * 10 ? 0.0 : 1.0;
+        }
+    }
+};
+
+template<typename Desc>
+struct random_noise <Desc, std::enable_if_t<!Desc::Noise>> {
+    template<typename T>
+    random_noise(const T& image){
+        cpp_unused(image);
+    }
+
+    static constexpr size_t scaling() {
+        return 1;
+    }
+
+    template<typename O>
+    static void transform(O&& target){
+        cpp_unused(target);
+    }
+};
+
+template<typename Desc, typename Enable = void>
 struct elastic_distorter;
 
 // TODO This needs to be made MUCH faster

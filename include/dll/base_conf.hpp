@@ -101,6 +101,7 @@ struct vertical_mirroring_id;
 struct categorical_id;
 struct nop_id;
 struct elastic_distortion_id;
+struct noise_id;
 
 /*!
  * \brief Sets the minibatch size
@@ -256,6 +257,13 @@ struct categorical : basic_conf_elt<categorical_id> {};
  */
 template <size_t K>
 struct elastic_distortion : value_conf_elt<elastic_distortion_id, size_t, K> {};
+
+/*!
+ * \brief Sets the noise
+ * \tparam N The percent of noise
+ */
+template <size_t N>
+struct noise : value_conf_elt<noise_id, size_t, N> {};
 
 /*
  * !\brief Initialize the weights of an RBM given the inputs
