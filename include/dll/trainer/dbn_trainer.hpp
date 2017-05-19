@@ -74,6 +74,11 @@ struct dbn_trainer {
         return train_impl(dbn, false, generator, max_epochs);
     }
 
+    template <typename Generator>
+    error_type train_ae(DBN& dbn, Generator& generator, size_t max_epochs) {
+        return train_impl(dbn, true, generator, max_epochs);
+    }
+
     template <typename Iterator, typename LIterator>
     error_type train(DBN& dbn, Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, size_t max_epochs) {
         auto error_function = [&dbn, &first, &last, &lfirst, &llast]() {

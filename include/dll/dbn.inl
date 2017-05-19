@@ -671,6 +671,8 @@ public:
         return trainer;
     }
 
+    // Fine-tune for classification
+
     /*!
      * \brief Fine tune the network for classifcation with a generator.
      *
@@ -719,13 +721,31 @@ public:
                              max_epochs);
     }
 
+    // Fine-tune for auto-encoder
+
     /*!
      * \brief Fine tune the network for autoencoder.
      * \param training_data A container containing all the samples
      * \param max_epochs The maximum number of epochs to train the network for.
      * \return The final classification error
      */
-    template <typename Samples>
+    template <typename Generator, cpp_enable_if(Generator::dll_generator)>
+    weight fine_tune_ae(Generator& generator, size_t max_epochs) {
+        dll::auto_timer timer("dbn:train:ft:ae");
+
+        cpp_assert(dll::input_size(layer_get<0>()) == dll::output_size(layer_get<layers - 1>()), "The network is not build as an autoencoder");
+
+        dll::dbn_trainer<this_type> trainer;
+        return trainer.train_ae(*this, generator, max_epochs);
+    }
+
+    /*!
+     * \brief Fine tune the network for autoencoder.
+     * \param training_data A container containing all the samples
+     * \param max_epochs The maximum number of epochs to train the network for.
+     * \return The final classification error
+     */
+    template <typename Samples, cpp_disable_if(Samples::dll_generator)>
     weight fine_tune_ae(const Samples& training_data, size_t max_epochs) {
         return fine_tune_ae(
             training_data.begin(), training_data.end(),
@@ -750,6 +770,8 @@ public:
                                 first, last,
                                 max_epochs);
     }
+
+    // Fine-tune for denoising-autoencoder
 
     /*!
      * \brief Fine tune the network for autoencoder.
