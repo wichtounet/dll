@@ -37,10 +37,17 @@ namespace dll {
  */
 template <typename RBM>
 struct base_trainer {
-    typedef RBM rbm_t;
+    using rmb_t = RBM; ///< The RBM type being trained
 
-    bool init = true;
+    bool init = true; ///< Helper to indicate if first epoch of CD
 
+    /*!
+     * \brief Update the gradients given some type of decay
+     * \param grad The gradients to update
+     * \param rbm The current RBM
+     * \param penalty The penalty to apply
+     * \tparam decay The type of decay to apply
+     */
     template <decay_type decay, typename V, typename G>
     void update_grad(G& grad, const V& value, const RBM& rbm, double penalty) {
         STATIC_IF_DECAY(decay_type::NONE, f(grad) = grad - penalty);
@@ -615,24 +622,24 @@ struct base_cd_trainer : base_trainer<RBM> {
 
     rbm_t& rbm;
 
-    etl::fast_matrix<weight, batch_size, num_visible> v1; ///< Input
-    etl::fast_matrix<weight, batch_size, num_visible> vf; ///< Expected
+    etl::fast_matrix<weight, batch_size, num_visible> v1; ///< The Input
+    etl::fast_matrix<weight, batch_size, num_visible> vf; ///< The Expected Output
 
-    etl::fast_matrix<weight, batch_size, num_hidden> h1_a;
-    etl::fast_matrix<weight, batch_size, num_hidden> h1_s;
+    etl::fast_matrix<weight, batch_size, num_hidden> h1_a; ///< The hidden activation probabilites at step one
+    etl::fast_matrix<weight, batch_size, num_hidden> h1_s; ///< The hidden states at step one
 
-    etl::fast_matrix<weight, batch_size, num_visible> v2_a;
-    etl::fast_matrix<weight, batch_size, num_visible> v2_s;
+    etl::fast_matrix<weight, batch_size, num_visible> v2_a; ///< The visible activation probabilites at step N
+    etl::fast_matrix<weight, batch_size, num_visible> v2_s; ///< The visible states at step N
 
-    etl::fast_matrix<weight, batch_size, num_hidden> h2_a;
-    etl::fast_matrix<weight, batch_size, num_hidden> h2_s;
+    etl::fast_matrix<weight, batch_size, num_hidden> h2_a; ///< The hidden activation probabilites at step N
+    etl::fast_matrix<weight, batch_size, num_hidden> h2_s; ///< The hidden states at step N
 
     etl::fast_matrix<weight, batch_size, num_visible, num_hidden> w_grad_b;
 
     //Gradients
-    etl::fast_matrix<weight, num_visible, num_hidden> w_grad;
-    etl::fast_vector<weight, num_hidden> b_grad;
-    etl::fast_vector<weight, num_visible> c_grad;
+    etl::fast_matrix<weight, num_visible, num_hidden> w_grad; ///< The gradients of the weights
+    etl::fast_vector<weight, num_hidden> b_grad;              ///< The gradients of the hidden biases
+    etl::fast_vector<weight, num_visible> c_grad;             ///< The gradients of the visible biases
 
     //{{{ Momentum
 
@@ -713,9 +720,9 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
     etl::dyn_matrix<weight, 3> w_grad_b;
 
     //Gradients
-    etl::dyn_matrix<weight> w_grad;
-    etl::dyn_vector<weight> b_grad;
-    etl::dyn_vector<weight> c_grad;
+    etl::dyn_matrix<weight> w_grad; ///< The gradients of the weights
+    etl::dyn_vector<weight> b_grad; ///< The gradients of the hidden biases
+    etl::dyn_vector<weight> c_grad; ///< The gradients of the visible biases
 
     //{{{ Momentum
 
