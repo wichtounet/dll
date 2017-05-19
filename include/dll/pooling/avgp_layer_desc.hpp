@@ -11,7 +11,21 @@
 
 namespace dll {
 
-template <std::size_t T_I1, std::size_t T_I2, std::size_t T_I3, std::size_t T_C1, std::size_t T_C2, std::size_t T_C3, typename... Parameters>
+template <size_t T_I1, size_t T_I2, size_t T_I3, size_t T_C1, size_t T_C2, typename... Parameters>
+struct avgp_layer_2d_desc : pooling_layer_2d_desc<T_I1, T_I2, T_I3, T_C1, T_C2, Parameters...> {
+    /*!
+     * A list of all the parameters of the descriptor
+     */
+    using parameters = cpp::type_list<Parameters...>;
+
+    /*! The layer type */
+    using layer_t = avgp_layer_2d<avgp_layer_2d_desc<T_I1, T_I2, T_I3, T_C1, T_C2, Parameters...>>;
+
+    /*! The layer type */
+    using dyn_layer_t = dyn_avgp_layer_2d<dyn_avgp_layer_2d_desc<Parameters...>>;
+};
+
+template <size_t T_I1, size_t T_I2, size_t T_I3, size_t T_C1, size_t T_C2, size_t T_C3, typename... Parameters>
 struct avgp_layer_3d_desc : pooling_layer_3d_desc<T_I1, T_I2, T_I3, T_C1, T_C2, T_C3, Parameters...> {
     /*!
      * A list of all the parameters of the descriptor
