@@ -15,7 +15,7 @@
 
 namespace dll {
 
-#define debug_convert(X) etl::inc_counter(X);
+#define debug_convert(X) etl::inc_counter(X)
 
 template<typename From, typename To>
 struct cannot_convert {
