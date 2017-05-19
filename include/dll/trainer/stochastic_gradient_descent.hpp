@@ -89,11 +89,11 @@ struct sgd_trainer {
         });
     }
 
-    void init_training(std::size_t) {}
+    void init_training(size_t) {}
 
     template <typename D, typename It>
     void copy_inputs(D& dest, It first, It last) {
-        std::size_t i = 0;
+        size_t i = 0;
 
         while (first != last) {
             dest(i++) = *first++;
@@ -104,10 +104,10 @@ struct sgd_trainer {
     void copy_labels(D& dest, It first, It last) {
         //TODO How does that work in auto encoder mode ?
 
-        std::size_t i = 0;
+        size_t i = 0;
 
         while (first != last) {
-            for (std::size_t l = 0; l < etl::dim<1>(dest); ++l) {
+            for (size_t l = 0; l < etl::dim<1>(dest); ++l) {
                 dest(i, l) = (*first)[l];
             }
             ++i;
@@ -119,7 +119,7 @@ struct sgd_trainer {
     void copy_labels(D& dest, It first, It last) {
         //TODO How does that work in auto encoder mode ?
 
-        std::size_t i = 0;
+        size_t i = 0;
 
         while (first != last) {
             dest(i++) = *first++;
@@ -129,7 +129,7 @@ struct sgd_trainer {
     // TODO: There are way too many copies going in this function
 
     template <typename Inputs, typename Labels, typename InputTransformer>
-    std::pair<double, double> train_batch(std::size_t /*epoch*/, const Inputs& inputs, const Labels& labels, InputTransformer input_transformer) {
+    std::pair<double, double> train_batch(size_t /*epoch*/, const Inputs& inputs, const Labels& labels, InputTransformer input_transformer) {
         dll::auto_timer timer("sgd::train_batch");
 
         // Ensure that the data batch and the label batch are of the same size
@@ -262,7 +262,7 @@ struct sgd_trainer {
     }
 
     template <typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer())>
-    void apply_gradients(L& layer, C& context, std::size_t n) {
+    void apply_gradients(L& layer, C& context, size_t n) {
         dll::auto_timer timer("sgd::apply_grad");
 
         //Update the gradients
@@ -294,7 +294,7 @@ struct sgd_trainer {
     }
 
     template <typename L, typename C, cpp_disable_if(decay_layer_traits<L>::is_neural_layer())>
-    void apply_gradients(L& /*layer*/, C& /*context*/, std::size_t /*n*/) {
+    void apply_gradients(L& /*layer*/, C& /*context*/, size_t /*n*/) {
         //Pooling and transform layers have no weights, therefore no
         //gradients
     }

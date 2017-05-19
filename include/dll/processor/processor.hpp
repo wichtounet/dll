@@ -86,19 +86,19 @@ struct datasource_pack {
 
 struct general_desc {
     bool batch_mode       = false;
-    std::size_t big_batch = 1;
+    size_t big_batch = 1;
 };
 
 struct pretraining_desc {
-    std::size_t epochs = 25;
+    size_t epochs = 25;
     bool denoising     = false;
 };
 
 struct training_desc {
-    std::size_t epochs     = 25;
+    size_t epochs     = 25;
     double learning_rate   = stupid_default;
     double momentum        = stupid_default;
-    std::size_t batch_size = 0;
+    size_t batch_size = 0;
 
     std::string decay     = "none";
     double l1_weight_cost = stupid_default;
@@ -129,7 +129,7 @@ struct task {
 
 template <bool Three, typename Sample>
 bool read_samples(const datasource& ds, std::vector<Sample>& samples) {
-    std::size_t limit = 0;
+    size_t limit = 0;
 
     if (ds.limit > 0) {
         limit = ds.limit;
@@ -190,7 +190,7 @@ bool read_samples(const datasource& ds, std::vector<Sample>& samples) {
 
 template <typename Label>
 bool read_labels(const datasource& ds, std::vector<Label>& labels) {
-    std::size_t limit = 0;
+    size_t limit = 0;
 
     if (ds.limit > 0) {
         limit = ds.limit;
@@ -267,7 +267,7 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
             }
 
             std::vector<Container> ft_samples;
-            std::vector<std::size_t> ft_labels;
+            std::vector<size_t> ft_labels;
 
             //Try to read the samples
             if (!read_samples<Three>(task.training.samples, ft_samples)) {
@@ -303,7 +303,7 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
             }
 
             std::vector<Container> test_samples;
-            std::vector<std::size_t> test_labels;
+            std::vector<size_t> test_labels;
 
             //Try to read the samples
             if (!read_samples<Three>(task.testing.samples, test_samples)) {
@@ -319,12 +319,12 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
 
             auto classes = dbn.output_size();
 
-            etl::dyn_matrix<std::size_t, 2> conf(classes, classes, 0.0);
+            etl::dyn_matrix<size_t, 2> conf(classes, classes, 0.0);
 
-            std::size_t n  = test_samples.size();
-            std::size_t tp = 0;
+            size_t n  = test_samples.size();
+            size_t tp = 0;
 
-            for (std::size_t i = 0; i < test_samples.size(); ++i) {
+            for (size_t i = 0; i < test_samples.size(); ++i) {
                 auto sample = test_samples[i];
                 auto label  = test_labels[i];
 
@@ -349,8 +349,8 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
 
             std::cout << "   | Accuracy | Error rate |" << std::endl;
 
-            for (std::size_t l = 0; l < classes; ++l) {
-                std::size_t total = etl::sum(conf(l));
+            for (size_t l = 0; l < classes; ++l) {
+                size_t total = etl::sum(conf(l));
                 double acc = (total - conf(l, l)) / double(total);
                 std::cout << std::setw(3) << l;
                 std::cout << "|" << std::setw(10) << (1.0 - acc) << "|" << std::setw(12) << acc << "|" << std::endl;
@@ -367,15 +367,15 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
                       << std::endl;
 
             std::cout << "    ";
-            for (std::size_t l = 0; l < classes; ++l) {
+            for (size_t l = 0; l < classes; ++l) {
                 std::cout << std::setw(5) << l << " ";
             }
             std::cout << std::endl;
 
-            for (std::size_t l = 0; l < classes; ++l) {
-                std::size_t total = etl::sum(conf(l));
+            for (size_t l = 0; l < classes; ++l) {
+                size_t total = etl::sum(conf(l));
                 std::cout << std::setw(3) << l << "|";
-                for (std::size_t p = 0; p < classes; ++p) {
+                for (size_t p = 0; p < classes; ++p) {
                     std::cout << std::setw(5) << std::setprecision(2) << 100.0 * (conf(l, p) / double(total)) << "|";
                 }
                 std::cout << std::endl;

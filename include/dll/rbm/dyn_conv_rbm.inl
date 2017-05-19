@@ -119,7 +119,7 @@ struct dyn_conv_rbm final : public standard_crbm<dyn_conv_rbm<Desc>, Desc> {
      * \brief Return the size of the input of this layer
      * \return The size of the input of this layer
      */
-    std::size_t input_size() const noexcept {
+    size_t input_size() const noexcept {
         return nv1 * nv2 * nc;
     }
 
@@ -127,7 +127,7 @@ struct dyn_conv_rbm final : public standard_crbm<dyn_conv_rbm<Desc>, Desc> {
      * \brief Return the size of the output of this layer
      * \return The size of the output of this layer
      */
-    std::size_t output_size() const noexcept {
+    size_t output_size() const noexcept {
         return nh1 * nh2 * k;
     }
 
@@ -135,7 +135,7 @@ struct dyn_conv_rbm final : public standard_crbm<dyn_conv_rbm<Desc>, Desc> {
      * \brief Return the number of trainable parameters of this network.
      * \return The the number of trainable parameters of this network.
      */
-    std::size_t parameters() const noexcept {
+    size_t parameters() const noexcept {
         return nc * k * nw1 * nw2;
     }
 
@@ -158,7 +158,7 @@ struct dyn_conv_rbm final : public standard_crbm<dyn_conv_rbm<Desc>, Desc> {
      * \tparam Input The type of one input
      */
     template <typename Input>
-    output_t prepare_output(std::size_t samples) const {
+    output_t prepare_output(size_t samples) const {
         output_t output;
         output.reserve(samples);
         for(size_t i = 0; i < samples; ++i){
@@ -278,13 +278,13 @@ private:
         return etl::dyn_matrix<weight, 4>(1UL, k, nh1, nh2);
     }
 
-    template <typename V1, typename V2, std::size_t Off = 0>
+    template <typename V1, typename V2, size_t Off = 0>
     static void validate_inputs() {
         static_assert(etl::decay_traits<V1>::dimensions() == 3 + Off, "Inputs must be 3D");
         static_assert(etl::decay_traits<V2>::dimensions() == 3 + Off, "Inputs must be 3D");
     }
 
-    template <typename H1, typename H2, std::size_t Off = 0>
+    template <typename H1, typename H2, size_t Off = 0>
     static void validate_outputs() {
         static_assert(etl::decay_traits<H1>::dimensions() == 3 + Off, "Outputs must be 3D");
         static_assert(etl::decay_traits<H2>::dimensions() == 3 + Off, "Outputs must be 3D");

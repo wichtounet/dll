@@ -114,7 +114,7 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
      * \brief Return the size of the input of this layer
      * \return The size of the input of this layer
      */
-    std::size_t input_size() const noexcept {
+    size_t input_size() const noexcept {
         return num_visible;
     }
 
@@ -122,7 +122,7 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
      * \brief Return the size of the output of this layer
      * \return The size of the output of this layer
      */
-    std::size_t output_size() const noexcept {
+    size_t output_size() const noexcept {
         return num_hidden;
     }
 
@@ -130,7 +130,7 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
      * \brief Return the number of trainable parameters of this network.
      * \return The the number of trainable parameters of this network.
      */
-    std::size_t parameters() const noexcept {
+    size_t parameters() const noexcept {
         return num_visible * num_hidden;
     }
 
@@ -337,7 +337,7 @@ struct cg_context<dyn_rbm<Desc>> {
     std::vector<etl::dyn_vector<weight>> gr_probs_a;
     std::vector<etl::dyn_vector<weight>> gr_probs_s;
 
-    cg_context(std::size_t num_visible, std::size_t num_hidden) :
+    cg_context(size_t num_visible, size_t num_hidden) :
         gr_w_incs(num_visible, num_hidden), gr_b_incs(num_hidden),
         gr_w_best(num_visible, num_hidden), gr_b_best(num_hidden),
         gr_w_best_incs(num_visible, num_hidden), gr_b_best_incs(num_hidden),

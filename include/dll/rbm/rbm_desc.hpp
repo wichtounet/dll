@@ -20,17 +20,17 @@ namespace dll {
  * This struct should be used to define a RBM either as standalone or for a DBN.
  * Once configured, the ::layer_t member returns the type of the configured RBM.
  */
-template <std::size_t visibles, std::size_t hiddens, typename... Parameters>
+template <size_t visibles, size_t hiddens, typename... Parameters>
 struct rbm_desc {
-    static constexpr std::size_t num_visible = visibles; ///< The number of visible units
-    static constexpr std::size_t num_hidden  = hiddens;  ///< The number of hidden units
+    static constexpr size_t num_visible = visibles; ///< The number of visible units
+    static constexpr size_t num_hidden  = hiddens;  ///< The number of hidden units
 
     /*!
      * A list of all the parameters of the descriptor
      */
     using parameters = cpp::type_list<Parameters...>;
 
-    static constexpr std::size_t BatchSize    = detail::get_value<batch_size<1>, Parameters...>::value;
+    static constexpr size_t BatchSize    = detail::get_value<batch_size<1>, Parameters...>::value;
     static constexpr unit_type visible_unit   = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;
     static constexpr unit_type hidden_unit    = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
     static constexpr sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;

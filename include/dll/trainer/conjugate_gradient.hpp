@@ -24,13 +24,13 @@ namespace dll {
 
 template <typename Sample, typename Label>
 struct gradient_context {
-    std::size_t max_iterations;
-    std::size_t epoch;
+    size_t max_iterations;
+    size_t epoch;
     batch<Sample> inputs;
     batch<Label> targets;
-    std::size_t start_layer;
+    size_t start_layer;
 
-    gradient_context(batch<Sample> i, batch<Label> t, std::size_t e)
+    gradient_context(batch<Sample> i, batch<Label> t, size_t e)
             : max_iterations(5), epoch(e), inputs(std::move(i)), targets(std::move(t)), start_layer(0) {
         //Nothing else to init
     }
@@ -43,7 +43,7 @@ struct cg_trainer_base {
 
     using this_type = cg_trainer_base<DBN, Debug>;
 
-    static constexpr std::size_t layers = dbn_t::layers;
+    static constexpr size_t layers = dbn_t::layers;
 
     dbn_t& dbn;
     bool ae_training = false;
@@ -67,14 +67,14 @@ struct cg_trainer_base {
         this->ae_training = ae;;
     }
 
-    void init_training(std::size_t batch_size) {
+    void init_training(size_t batch_size) {
         dbn.for_each_layer([batch_size](auto& rbm) {
             auto& ctx = rbm.get_cg_context();
 
             if (ctx.is_trained) {
                 const auto n_hidden = num_hidden(rbm);
 
-                for (std::size_t i = 0; i < batch_size; ++i) {
+                for (size_t i = 0; i < batch_size; ++i) {
                     ctx.gr_probs_a.emplace_back(n_hidden);
                     ctx.gr_probs_s.emplace_back(n_hidden);
                 }
@@ -83,7 +83,7 @@ struct cg_trainer_base {
     }
 
     template <typename Inputs, typename Labels, typename InputTransformer>
-    std::pair<double, double> train_batch(std::size_t epoch, const Inputs& inputs, const Labels& labels, InputTransformer /*input_transformer*/) {
+    std::pair<double, double> train_batch(size_t epoch, const Inputs& inputs, const Labels& labels, InputTransformer /*input_transformer*/) {
         using T = etl::dyn_matrix<etl::value_t<Inputs>, etl::decay_traits<Inputs>::dimensions() - 1>;
         using L = etl::dyn_matrix<etl::value_t<Labels>, etl::decay_traits<Labels>::dimensions() - 1>;
 
@@ -109,16 +109,16 @@ struct cg_trainer_base {
     /* Gradient */
 
     template <bool Temp, typename R1, typename R2, typename C1, typename C2, typename D>
-    static void update_diffs(R1&, R2& r2, C1& c1, C2& c2, std::vector<D>& diffs, std::size_t n_samples) {
+    static void update_diffs(R1&, R2& r2, C1& c1, C2& c2, std::vector<D>& diffs, size_t n_samples) {
         auto n_visible = num_visible(r2);
         auto n_hidden  = num_hidden(r2);
 
-        for (std::size_t sample = 0; sample < n_samples; ++sample) {
+        for (size_t sample = 0; sample < n_samples; ++sample) {
             D diff(n_visible);
 
-            for (std::size_t i = 0; i < n_visible; ++i) {
+            for (size_t i = 0; i < n_visible; ++i) {
                 double s = 0.0;
-                for (std::size_t j = 0; j < n_hidden; ++j) {
+                for (size_t j = 0; j < n_hidden; ++j) {
                     s += diffs[sample][j] * (Temp ? c2.gr_w_tmp(i, j) : r2.w(i, j));
                 }
 
@@ -142,19 +142,19 @@ struct cg_trainer_base {
 
         auto it            = visibles.begin();
         auto end           = visibles.end();
-        std::size_t sample = 0;
+        size_t sample = 0;
 
         while (it != end) {
             auto& v = *it;
             auto& d = diffs[sample];
 
-            for (std::size_t i = 0; i < n_visible; ++i) {
-                for (std::size_t j = 0; j < n_hidden; ++j) {
+            for (size_t i = 0; i < n_visible; ++i) {
+                for (size_t j = 0; j < n_hidden; ++j) {
                     ctx.gr_w_incs(i, j) += v[i] * d[j];
                 }
             }
 
-            for (std::size_t j = 0; j < n_hidden; ++j) {
+            for (size_t j = 0; j < n_hidden; ++j) {
                 ctx.gr_b_incs(j) += d[j];
             }
 
@@ -183,14 +183,14 @@ struct cg_trainer_base {
         auto end = context.inputs.end();
         auto tit = context.targets.begin();
 
-        std::size_t sample = 0;
+        size_t sample = 0;
 
         while (it != end) {
             auto& input  = *it;
             auto output  = std::ref(dbn.template layer_get<0>().get_cg_context().gr_probs_a[sample]);
             auto& target = *tit;
 
-            dbn.for_each_layer_i([&input, &output, sample](std::size_t I, auto& rbm) {
+            dbn.for_each_layer_i([&input, &output, sample](size_t I, auto& rbm) {
                 auto& ctx        = rbm.get_cg_context();
                 auto& output_ref = static_cast<etl::dyn_vector<weight>&>(output);
 
@@ -212,7 +212,7 @@ struct cg_trainer_base {
                 r *= (1.0 / scale);
             }
 
-            for (std::size_t i = 0; i < n_hidden; ++i) {
+            for (size_t i = 0; i < n_hidden; ++i) {
                 diff[i] = result[i] - target[i];
                 cost += target[i] * log(result[i]);
                 error += diff[i] * diff[i];
@@ -227,14 +227,14 @@ struct cg_trainer_base {
 
         //Get pointers to the different gr_probs
         std::array<std::vector<etl::dyn_vector<weight>>*, layers> probs_refs;
-        dbn.for_each_layer_i([&probs_refs](std::size_t I, auto& rbm) {
+        dbn.for_each_layer_i([&probs_refs](size_t I, auto& rbm) {
             probs_refs[I] = &rbm.get_cg_context().gr_probs_a;
         });
 
         update_incs<Temp>(dbn.template layer_get<layers - 1>(), diffs, dbn.template layer_get<layers - 2>().get_cg_context().gr_probs_a);
 
 #ifdef __clang__
-        dbn.for_each_layer_rpair_i([n_samples, &probs_refs](std::size_t I, auto& r1, auto& r2) {
+        dbn.for_each_layer_rpair_i([n_samples, &probs_refs](size_t I, auto& r1, auto& r2) {
             auto& c1 = r1.get_cg_context();
             auto& c2 = r2.get_cg_context();
 
@@ -248,7 +248,7 @@ struct cg_trainer_base {
 #else
         std::vector<std::vector<weight>>& diffs_p = diffs;
 
-        dbn.for_each_layer_rpair_i([&diffs_p, n_samples, &probs_refs](std::size_t I, auto& r1, auto& r2) {
+        dbn.for_each_layer_rpair_i([&diffs_p, n_samples, &probs_refs](size_t I, auto& r1, auto& r2) {
             auto& c1 = r1.get_cg_context();
             auto& c2 = r2.get_cg_context();
 
@@ -353,7 +353,7 @@ struct cg_trainer_base {
         constexpr weight SIG      = 0.1;       //Maximum allowed maximum ration between previous and new slopes
         constexpr weight RHO      = SIG / 2.0; //mimimum allowd fraction of the expected
         constexpr weight RATIO    = 10.0;      //Maximum allowed slope ratio
-        constexpr std::size_t MAX = 20;        //Maximum number of function evaluations per line search
+        constexpr size_t MAX = 20;        //Maximum number of function evaluations per line search
 
         //Maximum number of try
         auto max_iteration = context.max_iterations;
@@ -375,7 +375,7 @@ struct cg_trainer_base {
         int_t i3 = {0.0, 0.0, static_cast<weight>(1.0) / (1 - i0.d)};
 
         bool failed = false;
-        for (std::size_t i = 0; i < max_iteration; ++i) {
+        for (size_t i = 0; i < max_iteration; ++i) {
             auto best_cost = i0.f;
             i3.f           = 0.0;
 

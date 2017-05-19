@@ -40,9 +40,9 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
     using input_one_t  = typename rbm_base_traits<this_type>::input_one_t;
     using output_one_t = typename rbm_base_traits<this_type>::output_one_t;
 
-    static constexpr std::size_t num_visible = desc::num_visible; ///< The number of visible units
-    static constexpr std::size_t num_hidden  = desc::num_hidden;  ///< The number of hidden units
-    static constexpr std::size_t batch_size  = desc::BatchSize;  ///< The mini-batch size
+    static constexpr size_t num_visible = desc::num_visible; ///< The number of visible units
+    static constexpr size_t num_hidden  = desc::num_hidden;  ///< The number of hidden units
+    static constexpr size_t batch_size  = desc::BatchSize;  ///< The mini-batch size
 
     static constexpr unit_type visible_unit = desc::visible_unit; ///< The type of visible units
     static constexpr unit_type hidden_unit  = desc::hidden_unit;  ///< The type of hidden units
@@ -91,7 +91,7 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
      * \brief Return the size of the input of this layer
      * \return the number of elements input into this layer
      */
-    static constexpr std::size_t input_size() noexcept {
+    static constexpr size_t input_size() noexcept {
         return num_visible;
     }
 
@@ -99,7 +99,7 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
      * \brief Return the size of the output of this layer
      * \return the number of elements output from this layer
      */
-    static constexpr std::size_t output_size() noexcept {
+    static constexpr size_t output_size() noexcept {
         return num_hidden;
     }
 
@@ -107,7 +107,7 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
      * \brief Return the number of parameters of this layer
      * \return the number of parameters of this layer
      */
-    static constexpr std::size_t parameters() noexcept {
+    static constexpr size_t parameters() noexcept {
         return num_visible * num_hidden;
     }
 
@@ -218,10 +218,10 @@ struct rbm_base_traits<rbm<Desc>> {
 //Allow odr-use of the constexpr static members
 
 template <typename Desc>
-const std::size_t rbm<Desc>::num_visible;
+const size_t rbm<Desc>::num_visible;
 
 template <typename Desc>
-const std::size_t rbm<Desc>::num_hidden;
+const size_t rbm<Desc>::num_hidden;
 
 // Declare the traits for the RBM
 
@@ -299,8 +299,8 @@ struct cg_context<rbm<Desc>> {
 
     static constexpr bool is_trained = true;
 
-    static constexpr std::size_t num_visible = rbm_t::num_visible;
-    static constexpr std::size_t num_hidden  = rbm_t::num_hidden;
+    static constexpr size_t num_visible = rbm_t::num_visible;
+    static constexpr size_t num_hidden  = rbm_t::num_hidden;
 
     etl::fast_matrix<weight, num_visible, num_hidden> gr_w_incs;
     etl::fast_vector<weight, num_hidden> gr_b_incs;

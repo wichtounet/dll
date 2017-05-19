@@ -24,23 +24,23 @@ namespace dll {
 namespace detail {
 
 struct shape {
-    const std::size_t width;
-    const std::size_t height;
-    constexpr shape(std::size_t width, std::size_t height)
+    const size_t width;
+    const size_t height;
+    constexpr shape(size_t width, size_t height)
             : width(width), height(height) {}
 };
 
-constexpr inline std::size_t ct_mid(std::size_t a, std::size_t b) {
+constexpr inline size_t ct_mid(size_t a, size_t b) {
     return (a + b) / 2;
 }
 
-constexpr inline std::size_t ct_pow(std::size_t a) {
+constexpr inline size_t ct_pow(size_t a) {
     return a * a;
 }
 
 #ifdef __clang__
 
-constexpr std::size_t ct_sqrt(std::size_t res, std::size_t l, std::size_t r) {
+constexpr size_t ct_sqrt(size_t res, size_t l, size_t r) {
     if (l == r) {
         return r;
     } else {
@@ -54,11 +54,11 @@ constexpr std::size_t ct_sqrt(std::size_t res, std::size_t l, std::size_t r) {
     }
 }
 
-constexpr inline std::size_t ct_sqrt(const std::size_t res) {
+constexpr inline size_t ct_sqrt(const size_t res) {
     return ct_sqrt(res, 1, res);
 }
 
-constexpr inline std::size_t best_height(const std::size_t total) {
+constexpr inline size_t best_height(const size_t total) {
     const auto width  = ct_sqrt(total);
     const auto square = total / width;
 
@@ -71,7 +71,7 @@ constexpr inline std::size_t best_height(const std::size_t total) {
 
 #else
 
-constexpr inline std::size_t ct_sqrt(std::size_t res, std::size_t l, std::size_t r) {
+constexpr inline size_t ct_sqrt(size_t res, size_t l, size_t r) {
     return l == r ? r
                   : ct_sqrt(res, ct_pow(
                                      ct_mid(r, l)) >= res
@@ -80,17 +80,17 @@ constexpr inline std::size_t ct_sqrt(std::size_t res, std::size_t l, std::size_t
                             ct_pow(ct_mid(r, l)) >= res ? ct_mid(r, l) : r);
 }
 
-constexpr inline std::size_t ct_sqrt(const std::size_t res) {
+constexpr inline size_t ct_sqrt(const size_t res) {
     return ct_sqrt(res, 1, res);
 }
 
-constexpr inline std::size_t best_height(const std::size_t total) {
+constexpr inline size_t best_height(const size_t total) {
     return (ct_sqrt(total) * (total / ct_sqrt(total))) >= total ? total / ct_sqrt(total) : ((total / ct_sqrt(total)) + 1);
 }
 
 #endif
 
-constexpr inline std::size_t best_width(const std::size_t total) {
+constexpr inline size_t best_width(const size_t total) {
     return ct_sqrt(total);
 }
 
@@ -102,12 +102,12 @@ template <typename RBM>
 struct base_ocv_rbm_visualizer {
     cpp::stop_watch<std::chrono::seconds> watch;
 
-    const std::size_t width;
-    const std::size_t height;
+    const size_t width;
+    const size_t height;
 
     cv::Mat buffer_image;
 
-    base_ocv_rbm_visualizer(std::size_t width, std::size_t height)
+    base_ocv_rbm_visualizer(size_t width, size_t height)
             : width(width), height(height), buffer_image(cv::Size(width, height), CV_8UC1) {
         //Nothing to init
     }
@@ -150,7 +150,7 @@ struct base_ocv_rbm_visualizer {
         cv::waitKey(0);
     }
 
-    void batch_end(const RBM& /* rbm */, const rbm_training_context& context, std::size_t batch, std::size_t batches) {
+    void batch_end(const RBM& /* rbm */, const rbm_training_context& context, size_t batch, size_t batches) {
         printf("Batch %ld/%ld - Reconstruction error: %.5f - Sparsity: %.5f\n", batch, batches,
                context.batch_error, context.batch_sparsity);
     }
@@ -164,7 +164,7 @@ struct base_ocv_rbm_visualizer {
 //rbm_ocv_config is used instead of directly passing the parameters because
 //adding non-type template parameters would break dll::watcher
 
-template <std::size_t P = 20, bool S = true>
+template <size_t P = 20, bool S = true>
 struct rbm_ocv_config {
     static constexpr auto padding = P;
     static constexpr auto scale   = S;
@@ -193,8 +193,8 @@ struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
                   filter_shape.height * tile_shape.height + (tile_shape.height + 1) * 1 + 2 * padding) {}
 
     void draw_weights(const RBM& rbm) {
-        for (std::size_t hi = 0; hi < tile_shape.width; ++hi) {
-            for (std::size_t hj = 0; hj < tile_shape.height; ++hj) {
+        for (size_t hi = 0; hi < tile_shape.width; ++hi) {
+            for (size_t hj = 0; hj < tile_shape.height; ++hj) {
                 auto real_h = hi * tile_shape.height + hj;
 
                 if (real_h >= rbm_t::num_hidden) {
@@ -209,8 +209,8 @@ struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
                     max = etl::max(rbm.w);
                 }
 
-                for (std::size_t i = 0; i < filter_shape.width; ++i) {
-                    for (std::size_t j = 0; j < filter_shape.height; ++j) {
+                for (size_t i = 0; i < filter_shape.width; ++i) {
+                    for (size_t j = 0; j < filter_shape.height; ++j) {
                         auto real_v = i * filter_shape.height + j;
 
                         if (real_v >= rbm_t::num_visible) {
@@ -233,7 +233,7 @@ struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
         }
     }
 
-    void epoch_end(std::size_t epoch, const rbm_training_context& context, const RBM& rbm) {
+    void epoch_end(size_t epoch, const rbm_training_context& context, const RBM& rbm) {
         printf("epoch %ld - Reconstruction error: %.5f - Free energy: %.3f - Sparsity: %.5f\n", epoch,
                context.reconstruction_error, context.free_energy, context.sparsity);
 
@@ -267,10 +267,10 @@ struct opencv_rbm_visualizer<RBM, C, std::enable_if_t<layer_traits<RBM>::is_conv
                   filter_shape.height * tile_shape.height + (tile_shape.height + 1) * 1 + 2 * padding) {}
 
     void draw_weights(const RBM& rbm) {
-        std::size_t channel = 0;
+        size_t channel = 0;
 
-        for (std::size_t hi = 0; hi < tile_shape.width; ++hi) {
-            for (std::size_t hj = 0; hj < tile_shape.height; ++hj) {
+        for (size_t hi = 0; hi < tile_shape.width; ++hi) {
+            for (size_t hj = 0; hj < tile_shape.height; ++hj) {
                 auto real_k = hi * tile_shape.height + hj;
 
                 if (real_k >= rbm_t::K) {
@@ -285,8 +285,8 @@ struct opencv_rbm_visualizer<RBM, C, std::enable_if_t<layer_traits<RBM>::is_conv
                     max = etl::max(rbm.w(channel)(real_k));
                 }
 
-                for (std::size_t fi = 0; fi < filter_shape.width; ++fi) {
-                    for (std::size_t fj = 0; fj < filter_shape.height; ++fj) {
+                for (size_t fi = 0; fi < filter_shape.width; ++fi) {
+                    for (size_t fj = 0; fj < filter_shape.height; ++fj) {
                         auto value = rbm.w(channel, real_k, fi, fj);
 
                         if (scale) {
@@ -303,7 +303,7 @@ struct opencv_rbm_visualizer<RBM, C, std::enable_if_t<layer_traits<RBM>::is_conv
         }
     }
 
-    void epoch_end(std::size_t epoch, const rbm_training_context& context, const RBM& rbm) {
+    void epoch_end(size_t epoch, const rbm_training_context& context, const RBM& rbm) {
         printf("epoch %ld - Reconstruction error: %.5f - Free energy: %.3f - Sparsity: %.5f\n", epoch,
                context.reconstruction_error, context.free_energy, context.sparsity);
 
@@ -327,20 +327,20 @@ struct opencv_dbn_visualizer {
     using dbn_t = DBN;
 
     static std::vector<cv::Mat> buffer_images;
-    static std::size_t current_image;
+    static size_t current_image;
 
     opencv_dbn_visualizer() = default;
 
     //Pretraining phase
 
-    void pretraining_begin(const DBN& /*dbn*/, std::size_t max_epochs) {
+    void pretraining_begin(const DBN& /*dbn*/, size_t max_epochs) {
         std::cout << "DBN: Pretraining begin for " << max_epochs << " epochs" << std::endl;
 
         cv::namedWindow("DBN Training", cv::WINDOW_NORMAL);
     }
 
     template <typename RBM>
-    void pretrain_layer(const DBN& /*dbn*/, std::size_t I, std::size_t input_size) {
+    void pretrain_layer(const DBN& /*dbn*/, size_t I, size_t input_size) {
         using rbm_t                    = RBM;
         static constexpr auto NV = rbm_t::num_visible;
         static constexpr auto NH = rbm_t::num_hidden;
@@ -395,7 +395,7 @@ struct opencv_dbn_visualizer {
     }
 
     template <typename RBM>
-    void epoch_end(std::size_t epoch, const rbm_training_context& context, const RBM& rbm) {
+    void epoch_end(size_t epoch, const rbm_training_context& context, const RBM& rbm) {
         printf("epoch %ld - Reconstruction error: %.5f - Free energy: %.3f - Sparsity: %.5f\n", epoch,
                context.reconstruction_error, context.free_energy, context.sparsity);
 
@@ -418,8 +418,8 @@ struct opencv_dbn_visualizer {
                     "layer: " + std::to_string(current_image) + " epoch " + std::to_string(epoch),
                     cv::Point(10, 12), CV_FONT_NORMAL, 0.3, cv::Scalar(0), 1, 2);
 
-        for (std::size_t hi = 0; hi < tile_shape.width; ++hi) {
-            for (std::size_t hj = 0; hj < tile_shape.height; ++hj) {
+        for (size_t hi = 0; hi < tile_shape.width; ++hi) {
+            for (size_t hj = 0; hj < tile_shape.height; ++hj) {
                 auto real_h = hi * tile_shape.height + hj;
 
                 if (real_h >= rbm_t::num_hidden) {
@@ -434,8 +434,8 @@ struct opencv_dbn_visualizer {
                     max = etl::max(rbm.w);
                 }
 
-                for (std::size_t i = 0; i < filter_shape.width; ++i) {
-                    for (std::size_t j = 0; j < filter_shape.height; ++j) {
+                for (size_t i = 0; i < filter_shape.width; ++i) {
+                    for (size_t j = 0; j < filter_shape.height; ++j) {
                         auto real_v = i * filter_shape.height + j;
 
                         if (real_v >= rbm_t::num_visible) {
@@ -461,7 +461,7 @@ struct opencv_dbn_visualizer {
     }
 
     template <typename RBM>
-    void batch_end(const RBM& /* rbm */, const rbm_training_context& context, std::size_t batch, std::size_t batches) {
+    void batch_end(const RBM& /* rbm */, const rbm_training_context& context, size_t batch, size_t batches) {
         printf("Batch %ld/%ld - Reconstruction error: %.5f - Sparsity: %.5f\n", batch, batches,
                context.batch_error, context.batch_sparsity);
     }
@@ -478,7 +478,7 @@ struct opencv_dbn_visualizer {
         std::cout << "DBN: Pretraining end" << std::endl;
     }
 
-    void pretraining_batch(const DBN& /*dbn*/, std::size_t batch) {
+    void pretraining_batch(const DBN& /*dbn*/, size_t batch) {
         std::cout << "DBN: Pretraining batch " << batch << std::endl;
     }
 
@@ -494,7 +494,7 @@ struct opencv_dbn_visualizer {
         }
     }
 
-    void ft_epoch_end(std::size_t epoch, double error, const DBN&) {
+    void ft_epoch_end(size_t epoch, double error, const DBN&) {
         printf("epoch %ld - Classification error: %.5f \n", epoch, error);
 
         //TODO Would be interesting to update RBM images here
@@ -525,7 +525,7 @@ template <typename DBN, typename C, typename Enable>
 std::vector<cv::Mat> opencv_dbn_visualizer<DBN, C, Enable>::buffer_images;
 
 template <typename DBN, typename C, typename Enable>
-std::size_t opencv_dbn_visualizer<DBN, C, Enable>::current_image;
+size_t opencv_dbn_visualizer<DBN, C, Enable>::current_image;
 
 template <typename DBN, typename C>
 struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynamic()>> {
@@ -537,20 +537,20 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynami
     using dbn_t = DBN;
 
     static std::vector<cv::Mat> buffer_images;
-    static std::size_t current_image;
+    static size_t current_image;
 
     opencv_dbn_visualizer() = default;
 
     //Pretraining phase
 
-    void pretraining_begin(const DBN& /*dbn*/, std::size_t max_epochs) {
+    void pretraining_begin(const DBN& /*dbn*/, size_t max_epochs) {
         std::cout << "DBN: Pretraining begin for " << max_epochs << " epochs" << std::endl;
 
         cv::namedWindow("DBN Training", cv::WINDOW_NORMAL);
     }
 
     template <typename RBM>
-    void pretrain_layer(const DBN& /*dbn*/, std::size_t I, std::size_t input_size) {
+    void pretrain_layer(const DBN& /*dbn*/, size_t I, size_t input_size) {
         printf("DBN: Train layer %lu with %lu entries\n", I, input_size);
         current_image = I;
     }
@@ -596,7 +596,7 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynami
     }
 
     template <typename RBM>
-    void epoch_end(std::size_t epoch, const rbm_training_context& context, const RBM& rbm) {
+    void epoch_end(size_t epoch, const rbm_training_context& context, const RBM& rbm) {
         printf("epoch %ld - Reconstruction error: %.5f - Free energy: %.3f - Sparsity: %.5f\n", epoch,
                context.reconstruction_error, context.free_energy, context.sparsity);
 
@@ -617,8 +617,8 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynami
                     "layer: " + std::to_string(current_image) + " epoch " + std::to_string(epoch),
                     cv::Point(10, 12), CV_FONT_NORMAL, 0.3, cv::Scalar(0), 1, 2);
 
-        for (std::size_t hi = 0; hi < tile_shape.width; ++hi) {
-            for (std::size_t hj = 0; hj < tile_shape.height; ++hj) {
+        for (size_t hi = 0; hi < tile_shape.width; ++hi) {
+            for (size_t hj = 0; hj < tile_shape.height; ++hj) {
                 auto real_h = hi * tile_shape.height + hj;
 
                 if (real_h >= hidden) {
@@ -633,8 +633,8 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynami
                     max = etl::max(rbm.w);
                 }
 
-                for (std::size_t i = 0; i < filter_shape.width; ++i) {
-                    for (std::size_t j = 0; j < filter_shape.height; ++j) {
+                for (size_t i = 0; i < filter_shape.width; ++i) {
+                    for (size_t j = 0; j < filter_shape.height; ++j) {
                         auto real_v = i * filter_shape.height + j;
 
                         if (real_v >= visible) {
@@ -660,7 +660,7 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynami
     }
 
     template <typename RBM>
-    void batch_end(const RBM& /* rbm */, const rbm_training_context& context, std::size_t batch, std::size_t batches) {
+    void batch_end(const RBM& /* rbm */, const rbm_training_context& context, size_t batch, size_t batches) {
         printf("Batch %ld/%ld - Reconstruction error: %.5f - Sparsity: %.5f\n", batch, batches,
                context.batch_error, context.batch_sparsity);
     }
@@ -677,7 +677,7 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynami
         std::cout << "DBN: Pretraining end" << std::endl;
     }
 
-    void pretraining_batch(const DBN& /*dbn*/, std::size_t batch) {
+    void pretraining_batch(const DBN& /*dbn*/, size_t batch) {
         std::cout << "DBN: Pretraining batch " << batch << std::endl;
     }
 
@@ -693,7 +693,7 @@ template <typename DBN, typename C>
 std::vector<cv::Mat> opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynamic()>>::buffer_images;
 
 template <typename DBN, typename C>
-std::size_t opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynamic()>>::current_image;
+size_t opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynamic()>>::current_image;
 
 template <typename DBN, typename C>
 struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convolutional_rbm_layer()>> {
@@ -705,20 +705,20 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
     using dbn_t = DBN;
 
     static std::vector<cv::Mat> buffer_images;
-    static std::size_t current_image;
+    static size_t current_image;
 
     opencv_dbn_visualizer() = default;
 
     //Pretraining phase
 
-    void pretraining_begin(const DBN& /*dbn*/, std::size_t max_epochs) {
+    void pretraining_begin(const DBN& /*dbn*/, size_t max_epochs) {
         std::cout << "CDBN: Pretraining begin for " << max_epochs << " epochs" << std::endl;
 
         cv::namedWindow("CDBN Training", cv::WINDOW_NORMAL);
     }
 
     template <typename RBM>
-    void pretrain_layer(const DBN& /*dbn*/, std::size_t I, std::size_t input_size) {
+    void pretrain_layer(const DBN& /*dbn*/, size_t I, size_t input_size) {
         using rbm_t = RBM;
 
         static constexpr auto NC  = rbm_t::NC;
@@ -775,7 +775,7 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
     }
 
     template <typename RBM>
-    void epoch_end(std::size_t epoch, const rbm_training_context& context, const RBM& rbm) {
+    void epoch_end(size_t epoch, const rbm_training_context& context, const RBM& rbm) {
         printf("epoch %ld - Reconstruction error: %.5f - Free energy: %.3f - Sparsity: %.5f\n", epoch,
                context.reconstruction_error, context.free_energy, context.sparsity);
 
@@ -795,10 +795,10 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
                     "layer: " + std::to_string(current_image) + " epoch " + std::to_string(epoch),
                     cv::Point(10, 12), CV_FONT_NORMAL, 0.3, cv::Scalar(0), 1, 2);
 
-        std::size_t channel = 0;
+        size_t channel = 0;
 
-        for (std::size_t hi = 0; hi < tile_shape.width; ++hi) {
-            for (std::size_t hj = 0; hj < tile_shape.height; ++hj) {
+        for (size_t hi = 0; hi < tile_shape.width; ++hi) {
+            for (size_t hj = 0; hj < tile_shape.height; ++hj) {
                 auto real_k = hi * tile_shape.height + hj;
 
                 if (real_k >= rbm_t::K) {
@@ -813,8 +813,8 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
                     max = etl::max(rbm.w(channel)(real_k));
                 }
 
-                for (std::size_t fi = 0; fi < filter_shape.width; ++fi) {
-                    for (std::size_t fj = 0; fj < filter_shape.height; ++fj) {
+                for (size_t fi = 0; fi < filter_shape.width; ++fi) {
+                    for (size_t fj = 0; fj < filter_shape.height; ++fj) {
                         auto value = rbm.w(channel, real_k, fi, fj);
 
                         if (scale) {
@@ -834,7 +834,7 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
     }
 
     template <typename RBM>
-    void batch_end(const RBM& /* rbm */, const rbm_training_context& context, std::size_t batch, std::size_t batches) {
+    void batch_end(const RBM& /* rbm */, const rbm_training_context& context, size_t batch, size_t batches) {
         printf("Batch %ld/%ld - Reconstruction error: %.5f - Sparsity: %.5f\n", batch, batches,
                context.batch_error, context.batch_sparsity);
     }
@@ -863,7 +863,7 @@ template <typename DBN, typename C>
 std::vector<cv::Mat> opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convolutional_rbm_layer()>>::buffer_images;
 
 template <typename DBN, typename C>
-std::size_t opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convolutional_rbm_layer()>>::current_image;
+size_t opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convolutional_rbm_layer()>>::current_image;
 
 template <typename RBM>
 void visualize_rbm(const RBM& rbm) {

@@ -27,7 +27,7 @@ namespace dll {
 namespace text {
 
 template<template<typename...> class Container = std::vector, typename Image, typename Functor>
-void read_images(Container<Image>& images, const std::string& path, std::size_t limit, Functor func){
+void read_images(Container<Image>& images, const std::string& path, size_t limit, Functor func){
     struct dirent* entry;
     auto dir = opendir(path.c_str());
 
@@ -47,8 +47,8 @@ void read_images(Container<Image>& images, const std::string& path, std::size_t 
 
             std::ifstream file(full_path);
 
-            std::size_t lines = 0;
-            std::size_t columns = 0;
+            size_t lines = 0;
+            size_t columns = 0;
 
             std::string line;
             while (std::getline(file, line)) {
@@ -73,7 +73,7 @@ void read_images(Container<Image>& images, const std::string& path, std::size_t 
 
             images[id - 1] = func(1, lines, columns);
 
-            std::size_t i = 0;
+            size_t i = 0;
             for (auto& value : temp) {
                 images[id - 1][i++] = static_cast<typename Image::value_type>(value);
             }
@@ -82,7 +82,7 @@ void read_images(Container<Image>& images, const std::string& path, std::size_t 
 }
 
 template<template<typename...> class  Container = std::vector, typename Label = uint8_t>
-void read_labels(Container<Label>& labels, const std::string& path, std::size_t limit = 0){
+void read_labels(Container<Label>& labels, const std::string& path, size_t limit = 0){
     struct dirent* entry;
     auto dir = opendir(path.c_str());
 
@@ -113,29 +113,29 @@ void read_labels(Container<Label>& labels, const std::string& path, std::size_t 
 }
 
 template<bool Three, template<typename...> class Container, typename Image, cpp_enable_if(etl::all_fast<Image>::value)>
-void read_images_direct(Container<Image>& images, const std::string& path, std::size_t limit){
-    read_images<Container, Image>(images, path, limit, [](std::size_t /*c*/, std::size_t /*h*/, std::size_t /*w*/){ return Image();});
+void read_images_direct(Container<Image>& images, const std::string& path, size_t limit){
+    read_images<Container, Image>(images, path, limit, [](size_t /*c*/, size_t /*h*/, size_t /*w*/){ return Image();});
 }
 
 template<bool Three, template<typename...> class Container, typename Image, cpp_enable_if(Three && !etl::all_fast<Image>::value)>
-void read_images_direct(Container<Image>& images, const std::string& path, std::size_t limit){
-    read_images<Container, Image>(images, path, limit, [](std::size_t c, std::size_t h, std::size_t w){ return Image(c, h, w);});
+void read_images_direct(Container<Image>& images, const std::string& path, size_t limit){
+    read_images<Container, Image>(images, path, limit, [](size_t c, size_t h, size_t w){ return Image(c, h, w);});
 }
 
 template<bool Three, template<typename...> class Container, typename Image, cpp_enable_if(!Three && !etl::all_fast<Image>::value)>
-void read_images_direct(Container<Image>& images, const std::string& path, std::size_t limit){
-    read_images<Container, Image>(images, path, limit, [](std::size_t c, std::size_t h, std::size_t w){ return Image(c * h * w);});
+void read_images_direct(Container<Image>& images, const std::string& path, size_t limit){
+    read_images<Container, Image>(images, path, limit, [](size_t c, size_t h, size_t w){ return Image(c * h * w);});
 }
 
 template<template<typename...> class Container, typename Image, bool Three>
-Container<Image> read_images(const std::string& path, std::size_t limit){
+Container<Image> read_images(const std::string& path, size_t limit){
     Container<Image> images;
     read_images_direct<Three>(images, path, limit);
     return images;
 }
 
 template<template<typename...> class Container = std::vector, typename Label = uint8_t>
-Container<Label> read_labels(const std::string& path, std::size_t limit){
+Container<Label> read_labels(const std::string& path, size_t limit){
     Container<Label> labels;
     read_labels<Container, Label>(labels, path, limit);
     return labels;

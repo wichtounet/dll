@@ -22,7 +22,7 @@ struct fake_label_array {
     fake_label_array(value_type v)
             : value(v) {}
 
-    double operator[](std::size_t i) const {
+    double operator[](size_t i) const {
         if (i == value) {
             return 1.0;
         } else {

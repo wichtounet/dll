@@ -101,8 +101,8 @@ void update_normal(RBM& rbm, Trainer& t) {
 
         f(t).b_grad -= q_local_penalty;
 
-        for (std::size_t i = 0; i < num_hidden(rbm); ++i) {
-            for (std::size_t j = 0; j < num_visible(rbm); ++j) {
+        for (size_t i = 0; i < num_hidden(rbm); ++i) {
+            for (size_t j = 0; j < num_visible(rbm); ++j) {
                 f(t).w_grad(j, i) -= q_local_penalty(i);
             }
         }
@@ -190,7 +190,7 @@ void update_convolutional(RBM& rbm, Trainer& t) {
         const auto K   = get_k(rbm);
 
         auto k_penalty = sum_r(q_local_penalty);
-        for (std::size_t k = 0; k < K; ++k) {
+        for (size_t k = 0; k < K; ++k) {
             f(t).w_grad(k) = t.w_grad(k) - k_penalty(k);
         }
     });
@@ -240,12 +240,12 @@ void batch_compute_gradients(Trainer& t) {
     t.w_grad -= batch_outer(t.v2_a, t.h2_a);
 
     t.b_grad = t.h1_a(0) - t.h2_a(0);
-    for (std::size_t b = 1; b < B; b++) {
+    for (size_t b = 1; b < B; b++) {
         t.b_grad += t.h1_a(b) - t.h2_a(b);
     }
 
     t.c_grad = t.vf(0) - t.v2_a(0);
-    for (std::size_t b = 1; b < B; b++) {
+    for (size_t b = 1; b < B; b++) {
         t.c_grad += t.vf(b) - t.v2_a(b);
     }
 }
@@ -256,8 +256,8 @@ void compute_gradients_one(Trainer& t) {
 
     t.w_grad = 0;
 
-    for (std::size_t i = 0; i < etl::dim<0>(t.w_grad); i++) {
-        for (std::size_t j = 0; j < etl::dim<1>(t.w_grad); j++) {
+    for (size_t i = 0; i < etl::dim<0>(t.w_grad); i++) {
+        for (size_t j = 0; j < etl::dim<1>(t.w_grad); j++) {
             t.w_grad(i, j) += t.vf(0, i) * t.h1_a(0, j) - t.v2_a(0, i) * t.h2_a(0, j);
         }
     }
@@ -268,7 +268,7 @@ void compute_gradients_one(Trainer& t) {
 
 /* The training procedures */
 
-template <bool Persistent, std::size_t K, typename T, typename RBM, typename Trainer, cpp_enable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
+template <bool Persistent, size_t K, typename T, typename RBM, typename Trainer, cpp_enable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
 void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:gradients:normal:par");
 
@@ -276,7 +276,7 @@ void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch
 
     // clang-format off
     maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(),
-            [&](const auto& input, const auto& expected, std::size_t i)
+            [&](const auto& input, const auto& expected, size_t i)
     {
         SERIAL_SECTION {
             //Copy input/expected for computations
@@ -301,7 +301,7 @@ void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch
             });
 
             //CD-k
-            for(std::size_t k = 1; k < K; ++k){
+            for(size_t k = 1; k < K; ++k){
                 rbm.template activate_visible<true, false>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
                 rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
             }
@@ -310,8 +310,8 @@ void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch
                 //Reset the batch gradients
                 t.w_grad_b(i) = 0;
 
-                for(std::size_t i2 = 0; i2 < num_visible(rbm); i2++){
-                    for(std::size_t j = 0; j < num_hidden(rbm); j++){
+                for(size_t i2 = 0; i2 < num_visible(rbm); i2++){
+                    for(size_t j = 0; j < num_hidden(rbm); j++){
                         t.w_grad_b(i, i2, j) += t.vf(i, i2) * t.h1_a(i,j) - t.v2_a(i, i2) * t.h2_a(i, j);
                     }
                 }
@@ -330,7 +330,7 @@ void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch
     }
 }
 
-template <bool Persistent, std::size_t K, typename T, typename RBM, typename Trainer, cpp_disable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
+template <bool Persistent, size_t K, typename T, typename RBM, typename Trainer, cpp_disable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
 void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:gradients:normal:batch");
 
@@ -339,7 +339,7 @@ void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch
     auto iend = input_batch.end();
     auto eit  = expected_batch.begin();
 
-    for (std::size_t i = 0; iit != iend; ++i, ++iit, ++eit) {
+    for (size_t i = 0; iit != iend; ++i, ++iit, ++eit) {
         t.v1(i) = *iit;
         t.vf(i) = *eit;
     }
@@ -362,7 +362,7 @@ void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch
     });
 
     //CD-k
-    for (std::size_t k = 1; k < K; ++k) {
+    for (size_t k = 1; k < K; ++k) {
         rbm.template batch_activate_visible<true, false>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
         rbm.template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
     }
@@ -372,7 +372,7 @@ void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch
     batch_compute_gradients(t);
 }
 
-template <bool Persistent, std::size_t K, typename T, typename RBM, typename Trainer>
+template <bool Persistent, size_t K, typename T, typename RBM, typename Trainer>
 void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:train:normal");
 
@@ -424,13 +424,13 @@ void normal_compute_gradients_conv(RBM& /*rbm*/, Trainer& t) {
     }
 }
 
-template <bool Persistent, bool Denoising, std::size_t N, typename Trainer, typename T, typename RBM, cpp_enable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
+template <bool Persistent, bool Denoising, size_t N, typename Trainer, typename T, typename RBM, cpp_enable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
 void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:gradients:conv:par");
 
     // clang-format off
     maybe_parallel_foreach_pair_i(t.pool, input_batch.begin(), input_batch.end(), expected_batch.begin(), expected_batch.end(),
-            [&](const auto& input, const auto& expected, std::size_t i)
+            [&](const auto& input, const auto& expected, size_t i)
     {
         SERIAL_SECTION {
             //Copy input/expected for computations
@@ -458,7 +458,7 @@ void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T
             }
 
             //CD-k
-            for(std::size_t k = 1; k < N; ++k){
+            for(size_t k = 1; k < N; ++k){
                 rbm.template activate_visible<true, false>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
                 rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
             }
@@ -487,7 +487,7 @@ void batch_compute_gradients_conv(RBM& rbm, Trainer& t) {
     cpp_unused(rbm);
 }
 
-template <bool Persistent, bool Denoising, std::size_t N, typename Trainer, typename T, typename RBM, cpp_disable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
+template <bool Persistent, bool Denoising, size_t N, typename Trainer, typename T, typename RBM, cpp_disable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
 void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:gradients:conv:batch");
 
@@ -495,7 +495,7 @@ void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T
     auto iit  = input_batch.begin();
     auto iend = input_batch.end();
 
-    for (std::size_t i = 0; iit != iend; ++i, ++iit) {
+    for (size_t i = 0; iit != iend; ++i, ++iit) {
         t.v1(i) = *iit;
     }
 
@@ -503,7 +503,7 @@ void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T
         auto eit  = expected_batch.begin();
         auto eend = expected_batch.end();
 
-        for (std::size_t i = 0; eit != eend; ++i, ++eit) {
+        for (size_t i = 0; eit != eend; ++i, ++eit) {
             t.vf(i) = *eit;
         }
     }
@@ -526,7 +526,7 @@ void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T
     }
 
     //CD-k
-    for (std::size_t k = 1; k < N; ++k) {
+    for (size_t k = 1; k < N; ++k) {
         rbm.template batch_activate_visible<true, false>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
         rbm.template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
     }
@@ -535,7 +535,7 @@ void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T
     batch_compute_gradients_conv<Denoising>(rbm, t);
 }
 
-template <bool Persistent, bool Denoising, std::size_t N, typename Trainer, typename T, typename RBM>
+template <bool Persistent, bool Denoising, size_t N, typename Trainer, typename T, typename RBM>
 void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:train:conv");
 
@@ -601,7 +601,7 @@ void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& 
  *
  * This class provides update which applies the gradients to the RBM.
  */
-template <std::size_t N, typename RBM, bool Persistent, bool Denoising, typename Enable = void>
+template <size_t N, typename RBM, bool Persistent, bool Denoising, typename Enable = void>
 struct base_cd_trainer : base_trainer<RBM> {
     static_assert(N > 0, "(P)CD-0 is not a valid training method");
 
@@ -688,7 +688,7 @@ struct base_cd_trainer : base_trainer<RBM> {
  *
  * This class provides update which applies the gradients to the RBM.
  */
-template <std::size_t N, typename RBM, bool Persistent, bool Denoising>
+template <size_t N, typename RBM, bool Persistent, bool Denoising>
 struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_traits<RBM>::is_dynamic() && !layer_traits<RBM>::is_convolutional_rbm_layer()>> : base_trainer<RBM> {
     static_assert(N > 0, "(P)CD-0 is not a valid training method");
 
@@ -811,7 +811,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
  *
  * This class provides update which applies the gradients to the RBM.
  */
-template <std::size_t N, typename RBM, bool Persistent, bool Denoising>
+template <size_t N, typename RBM, bool Persistent, bool Denoising>
 struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<!layer_traits<RBM>::is_dynamic() && layer_traits<RBM>::is_convolutional_rbm_layer()>> : base_trainer<RBM> {
     static_assert(N > 0, "(P)CD-0 is not a valid training method");
 
@@ -929,7 +929,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<!layer_tr
  *
  * This class provides update which applies the gradients to the RBM.
  */
-template <std::size_t N, typename RBM, bool Persistent, bool Denoising>
+template <size_t N, typename RBM, bool Persistent, bool Denoising>
 struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_traits<RBM>::is_dynamic() && layer_traits<RBM>::is_convolutional_rbm_layer()>> : base_trainer<RBM> {
     static_assert(N > 0, "(P)CD-0 is not a valid training method");
 
@@ -1039,13 +1039,13 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
 /*!
  * \brief Contrastive Divergence Trainer for RBM.
  */
-template <std::size_t N, typename RBM, bool Denoising, typename Enable = void>
+template <size_t N, typename RBM, bool Denoising, typename Enable = void>
 using cd_trainer                                                       = base_cd_trainer<N, RBM, false, Denoising>;
 
 /*!
  * \brief Persistent Contrastive Divergence Trainer for RBM.
  */
-template <std::size_t N, typename RBM, bool Denoising, typename Enable = void>
+template <size_t N, typename RBM, bool Denoising, typename Enable = void>
 using persistent_cd_trainer                                            = base_cd_trainer<N, RBM, true, Denoising>;
 
 /*!

@@ -32,7 +32,7 @@ struct layer {
     /*!
      * \brief Returns the number of hidden unit
      */
-    virtual std::size_t hidden_get() const {
+    virtual size_t hidden_get() const {
         return 0;
     }
 
@@ -53,25 +53,25 @@ struct layer {
     /*!
      * \brief Returns the first dimension of the output matrix
      */
-    virtual std::size_t hidden_get_1() const {
+    virtual size_t hidden_get_1() const {
         return 0;
     }
 
     /*!
      * \brief Returns the second dimension of the output matrix
      */
-    virtual std::size_t hidden_get_2() const {
+    virtual size_t hidden_get_2() const {
         return 0;
     }
 
     /*!
      * \brief Returns the third dimension of the output matrix
      */
-    virtual std::size_t hidden_get_3() const {
+    virtual size_t hidden_get_3() const {
         return 0;
     }
 
-    virtual bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) = 0;
+    virtual bool parse(const layers_t& layers, const std::vector<std::string>& lines, size_t& i) = 0;
 
     virtual void set(std::ostream& /*out*/, const std::string& /*lhs*/) const {/* Nothing */};
 };
@@ -86,7 +86,7 @@ struct function_layer : layer {
     std::string activation;
 
     void print(std::ostream& out) const override;
-    bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override;
+    bool parse(const layers_t& layers, const std::vector<std::string>& lines, size_t& i) override;
 
     bool is_transform() const override;
 };
@@ -97,7 +97,7 @@ struct base_rbm_layer : layer {
 
     double learning_rate   = dll::processor::stupid_default; ///< The learning rate
     double momentum        = dll::processor::stupid_default; ///< The momentum
-    std::size_t batch_size = 0;                              ///< The batch size
+    size_t batch_size = 0;                              ///< The batch size
 
     std::string decay     = "none";                         ///< The type of decay
     double l1_weight_cost = dll::processor::stupid_default; ///< The L1 decay rate
@@ -116,114 +116,114 @@ struct base_rbm_layer : layer {
     void print(std::ostream& out) const override;
     void set(std::ostream& out, const std::string& lhs) const override;
 
-    parse_result base_parse(const std::vector<std::string>& lines, std::size_t& i);
+    parse_result base_parse(const std::vector<std::string>& lines, size_t& i);
 };
 
 struct rbm_layer : base_rbm_layer {
-    std::size_t visible = 0; ///< The number of visible units
-    std::size_t hidden  = 0; ///< The number of hidden units
+    size_t visible = 0; ///< The number of visible units
+    size_t hidden  = 0; ///< The number of hidden units
 
     void print(std::ostream& out) const override;
-    bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override;
+    bool parse(const layers_t& layers, const std::vector<std::string>& lines, size_t& i) override;
 
-    std::size_t hidden_get() const override;
+    size_t hidden_get() const override;
 };
 
 struct conv_rbm_layer : base_rbm_layer {
-    std::size_t c  = 0; ///< The number of channels
-    std::size_t v1 = 0; ///< The first dimension of the output
-    std::size_t v2 = 0; ///< The second dimension of the output
-    std::size_t k  = 0; ///< The number of filters
-    std::size_t w1 = 0; ///< The first dimension of the filters
-    std::size_t w2 = 0; ///< The second dimension of the filters
+    size_t c  = 0; ///< The number of channels
+    size_t v1 = 0; ///< The first dimension of the output
+    size_t v2 = 0; ///< The second dimension of the output
+    size_t k  = 0; ///< The number of filters
+    size_t w1 = 0; ///< The first dimension of the filters
+    size_t w2 = 0; ///< The second dimension of the filters
 
     void print(std::ostream& out) const override;
-    bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override;
+    bool parse(const layers_t& layers, const std::vector<std::string>& lines, size_t& i) override;
 
     bool is_conv() const override;
-    std::size_t hidden_get() const override;
-    std::size_t hidden_get_1() const override;
-    std::size_t hidden_get_2() const override;
-    std::size_t hidden_get_3() const override;
+    size_t hidden_get() const override;
+    size_t hidden_get_1() const override;
+    size_t hidden_get_2() const override;
+    size_t hidden_get_3() const override;
 };
 
 struct conv_rbm_mp_layer : base_rbm_layer {
-    std::size_t c  = 0; ///< The number of channels
-    std::size_t v1 = 0; ///< The first dimension of the output
-    std::size_t v2 = 0; ///< The second dimension of the output
-    std::size_t k  = 0; ///< The number of filters
-    std::size_t w1 = 0; ///< The first dimension of the filters
-    std::size_t w2 = 0; ///< The second dimension of the filters
-    std::size_t p  = 0;
+    size_t c  = 0; ///< The number of channels
+    size_t v1 = 0; ///< The first dimension of the output
+    size_t v2 = 0; ///< The second dimension of the output
+    size_t k  = 0; ///< The number of filters
+    size_t w1 = 0; ///< The first dimension of the filters
+    size_t w2 = 0; ///< The second dimension of the filters
+    size_t p  = 0;
 
     void print(std::ostream& out) const override;
-    bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override;
+    bool parse(const layers_t& layers, const std::vector<std::string>& lines, size_t& i) override;
 
     bool is_conv() const override;
-    std::size_t hidden_get() const override;
-    std::size_t hidden_get_1() const override;
-    std::size_t hidden_get_2() const override;
-    std::size_t hidden_get_3() const override;
+    size_t hidden_get() const override;
+    size_t hidden_get_1() const override;
+    size_t hidden_get_2() const override;
+    size_t hidden_get_3() const override;
 };
 
 struct dense_layer : layer {
-    std::size_t visible = 0; ///< The number of visible units
-    std::size_t hidden  = 0; ///< The number of hidden units
+    size_t visible = 0; ///< The number of visible units
+    size_t hidden  = 0; ///< The number of hidden units
 
     std::string activation;
 
     void print(std::ostream& out) const override;
-    bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override;
+    bool parse(const layers_t& layers, const std::vector<std::string>& lines, size_t& i) override;
 
-    std::size_t hidden_get() const override;
+    size_t hidden_get() const override;
 };
 
 struct conv_layer : layer {
-    std::size_t c  = 0; ///< The number of channels
-    std::size_t v1 = 0; ///< The first dimension of the input
-    std::size_t v2 = 0; ///< The second dimension of the input
-    std::size_t k  = 0; ///< The number of filters
-    std::size_t w1 = 0; ///< The first dimension of the filters
-    std::size_t w2 = 0; ///< The second dimension of the filters
+    size_t c  = 0; ///< The number of channels
+    size_t v1 = 0; ///< The first dimension of the input
+    size_t v2 = 0; ///< The second dimension of the input
+    size_t k  = 0; ///< The number of filters
+    size_t w1 = 0; ///< The first dimension of the filters
+    size_t w2 = 0; ///< The second dimension of the filters
 
     std::string activation;
 
     void print(std::ostream& out) const override;
-    bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override;
+    bool parse(const layers_t& layers, const std::vector<std::string>& lines, size_t& i) override;
 
     bool is_conv() const override;
-    std::size_t hidden_get() const override;
-    std::size_t hidden_get_1() const override;
-    std::size_t hidden_get_2() const override;
-    std::size_t hidden_get_3() const override;
+    size_t hidden_get() const override;
+    size_t hidden_get_1() const override;
+    size_t hidden_get_2() const override;
+    size_t hidden_get_3() const override;
 };
 
 struct pooling_layer : layer {
-    std::size_t c  = 0; ///< The number of channels
-    std::size_t v1 = 0; ///< The first dimension of the input
-    std::size_t v2 = 0; ///< The second dimension of the input
-    std::size_t c1 = 0; ///< The pooling factor of the first dimension
-    std::size_t c2 = 0; ///< The pooling factor of the first dimension
-    std::size_t c3 = 0; ///< The pooling factor of the first dimension
+    size_t c  = 0; ///< The number of channels
+    size_t v1 = 0; ///< The first dimension of the input
+    size_t v2 = 0; ///< The second dimension of the input
+    size_t c1 = 0; ///< The pooling factor of the first dimension
+    size_t c2 = 0; ///< The pooling factor of the first dimension
+    size_t c3 = 0; ///< The pooling factor of the first dimension
 
     void print(std::ostream& out) const override;
-    bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override;
+    bool parse(const layers_t& layers, const std::vector<std::string>& lines, size_t& i) override;
 
     bool is_conv() const override;
-    std::size_t hidden_get() const override;
-    std::size_t hidden_get_1() const override;
-    std::size_t hidden_get_2() const override;
-    std::size_t hidden_get_3() const override;
+    size_t hidden_get() const override;
+    size_t hidden_get_1() const override;
+    size_t hidden_get_2() const override;
+    size_t hidden_get_3() const override;
 };
 
 struct mp_layer : pooling_layer {
     void print(std::ostream& out) const override;
-    bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override;
+    bool parse(const layers_t& layers, const std::vector<std::string>& lines, size_t& i) override;
 };
 
 struct avgp_layer : pooling_layer {
     void print(std::ostream& out) const override;
-    bool parse(const layers_t& layers, const std::vector<std::string>& lines, std::size_t& i) override;
+    bool parse(const layers_t& layers, const std::vector<std::string>& lines, size_t& i) override;
 };
 
 } //end of namespace dllp

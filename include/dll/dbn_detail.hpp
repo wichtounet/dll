@@ -18,30 +18,30 @@ namespace dbn_detail {
 
 // extract_weight
 
-template <std::size_t I, typename DBN, typename Enable = void>
+template <size_t I, typename DBN, typename Enable = void>
 struct extract_weight_t;
 
-template <std::size_t I, typename DBN>
+template <size_t I, typename DBN>
 struct extract_weight_t<I, DBN, std::enable_if_t<layer_traits<typename DBN::template layer_type<I>>::has_same_type()>> {
     using type = typename extract_weight_t<I + 1, DBN>::type;
 };
 
-template <std::size_t I, typename DBN>
+template <size_t I, typename DBN>
 struct extract_weight_t<I, DBN, cpp::disable_if_t<layer_traits<typename DBN::template layer_type<I>>::has_same_type()>> {
     using type = typename DBN::template layer_type<I>::weight;
 };
 
 // test that a layer has the correct weight type
 
-template <std::size_t I, typename DBN, typename T, typename Enable = void>
+template <size_t I, typename DBN, typename T, typename Enable = void>
 struct weight_type_same;
 
-template <std::size_t I, typename DBN, typename T>
+template <size_t I, typename DBN, typename T>
 struct weight_type_same<I, DBN, T, std::enable_if_t<layer_traits<typename DBN::template layer_type<I>>::has_same_type()>> {
     static constexpr bool value = true;
 };
 
-template <std::size_t I, typename DBN, typename T>
+template <size_t I, typename DBN, typename T>
 struct weight_type_same<I, DBN, T, cpp::disable_if_t<layer_traits<typename DBN::template layer_type<I>>::has_same_type()>> {
     using type = typename DBN::template layer_type<I>::weight;
     static constexpr bool value = std::is_same<T, type>::value;
@@ -70,7 +70,7 @@ struct validate_weight_type {
 // Compute the distance between two iterators, only if random_access
 
 template <typename Iterator>
-std::size_t fast_distance(Iterator& first, Iterator& last) {
+size_t fast_distance(Iterator& first, Iterator& last) {
     if (std::is_same<typename std::iterator_traits<Iterator>::iterator_category, std::random_access_iterator_tag>::value) {
         return std::distance(first, last);
     } else {
@@ -91,8 +91,8 @@ void safe_sort(Iterator first, Iterator last) {
 }
 
 template <typename Iterator>
-void safe_advance(Iterator& it, const Iterator& end, std::size_t distance) {
-    std::size_t i = 0;
+void safe_advance(Iterator& it, const Iterator& end, size_t distance) {
+    size_t i = 0;
     while (it != end && i < distance) {
         ++it;
         ++i;
@@ -102,7 +102,7 @@ void safe_advance(Iterator& it, const Iterator& end, std::size_t distance) {
 template <typename D, size_t N, typename T>
 struct for_each_impl;
 
-template <typename D, std::size_t... I>
+template <typename D, size_t... I>
 struct for_each_impl<D, 1, std::index_sequence<I...>> {
     D& dbn;
 
@@ -144,7 +144,7 @@ struct for_each_impl<D, 1, std::index_sequence<I...>> {
     }
 };
 
-template <typename D, size_t N, std::size_t... I>
+template <typename D, size_t N, size_t... I>
 struct for_each_impl<D, N, std::index_sequence<I...>> {
     D& dbn;
 

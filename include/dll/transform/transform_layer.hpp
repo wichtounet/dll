@@ -42,7 +42,7 @@ struct transform_layer : layer<Derived> {
      */
     template <typename I, typename O_A>
     void activate_many(const I& input, O_A& output) const {
-        for (std::size_t i = 0; i < input.size(); ++i) {
+        for (size_t i = 0; i < input.size(); ++i) {
             as_derived().activate_hidden(input[i], output[i]);
         }
     }
@@ -52,7 +52,7 @@ struct transform_layer : layer<Derived> {
      * \param samples The number of samples in the output set
      */
     template <typename Input>
-    static std::vector<Input> prepare_output(std::size_t samples) {
+    static std::vector<Input> prepare_output(size_t samples) {
         return std::vector<Input>(samples);
     }
 

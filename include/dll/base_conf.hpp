@@ -91,8 +91,8 @@ struct nop_id;
  * \brief Sets the minibatch size
  * \tparam B The minibatch size
  */
-template <std::size_t B>
-struct batch_size : value_conf_elt<batch_size_id, std::size_t, B> {};
+template <size_t B>
+struct batch_size : value_conf_elt<batch_size_id, size_t, B> {};
 
 /*!
  * \brief Sets the big batch size.
@@ -101,8 +101,8 @@ struct batch_size : value_conf_elt<batch_size_id, std::size_t, B> {};
  *
  * \tparam B The big batch size
  */
-template <std::size_t B>
-struct big_batch_size : value_conf_elt<big_batch_size_id, std::size_t, B> {};
+template <size_t B>
+struct big_batch_size : value_conf_elt<big_batch_size_id, size_t, B> {};
 
 /*!
  * \brief Sets the visible unit type
@@ -156,10 +156,10 @@ struct weight_decay : value_conf_elt<weight_decay_id, decay_type, T> {};
 template <lr_driver_type T = lr_driver_type::FIXED>
 struct lr_driver : value_conf_elt<lr_driver_id, lr_driver_type, T> {};
 
-template <std::size_t C>
-struct copy : value_conf_elt<copy_id, std::size_t, C> {};
+template <size_t C>
+struct copy : value_conf_elt<copy_id, size_t, C> {};
 
-template <std::size_t C, std::size_t K = 9>
+template <size_t C, size_t K = 9>
 struct elastic : basic_conf_elt<elastic_id> {};
 
 /*!

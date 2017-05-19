@@ -15,14 +15,14 @@ namespace dll {
 /*!
  * \brief Describe a standard convolutional layer.
  */
-template <std::size_t NC_T, std::size_t NV_1, std::size_t NV_2, std::size_t K_T, std::size_t NW_1, std::size_t NW_2, typename... Parameters>
+template <size_t NC_T, size_t NV_1, size_t NV_2, size_t K_T, size_t NW_1, size_t NW_2, typename... Parameters>
 struct conv_desc {
-    static constexpr std::size_t NV1 = NV_1; ///< The first dimension of the input
-    static constexpr std::size_t NV2 = NV_2; ///< The second dimension of the input
-    static constexpr std::size_t NW1 = NW_1; ///< The first dimension of the output
-    static constexpr std::size_t NW2 = NW_2; ///< The second dimension of the output
-    static constexpr std::size_t NC  = NC_T; ///< The number of input channels
-    static constexpr std::size_t K   = K_T;  ///< The number of filters
+    static constexpr size_t NV1 = NV_1; ///< The first dimension of the input
+    static constexpr size_t NV2 = NV_2; ///< The second dimension of the input
+    static constexpr size_t NW1 = NW_1; ///< The first dimension of the output
+    static constexpr size_t NW2 = NW_2; ///< The second dimension of the output
+    static constexpr size_t NC  = NC_T; ///< The number of input channels
+    static constexpr size_t K   = K_T;  ///< The number of filters
 
     /*!
      * \brief A list of all the parameters of the descriptor

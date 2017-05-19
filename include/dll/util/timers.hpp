@@ -32,12 +32,12 @@ namespace chrono = std::chrono;
 
 namespace dll {
 
-constexpr std::size_t max_timers = 64;
+constexpr size_t max_timers = 64;
 
 struct timer_t {
     const char* name;
-    std::atomic<std::size_t> count;
-    std::atomic<std::size_t> duration;
+    std::atomic<size_t> count;
+    std::atomic<size_t> duration;
 
     timer_t()
             : name(nullptr), count(0), duration(0) {}
@@ -180,7 +180,7 @@ struct stop_timer {
         start_time = chrono::steady_clock::now();
     }
 
-    std::size_t stop() const {
+    size_t stop() const {
         auto end = chrono::steady_clock::now();
         return chrono::duration_cast<chrono::milliseconds>(end - start_time).count();
     }

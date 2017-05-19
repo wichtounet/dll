@@ -20,13 +20,13 @@ struct patches_layer_padh : layer<patches_layer_padh<Desc>> {
     using desc = Desc;
     using base_type = layer<patches_layer_padh<Desc>>; ///< The base type
 
-    static constexpr std::size_t width    = desc::width;
-    static constexpr std::size_t height   = desc::height;
-    static constexpr std::size_t v_stride = desc::v_stride;
-    static constexpr std::size_t h_stride = desc::h_stride;
-    static constexpr std::size_t filler   = desc::filler;
+    static constexpr size_t width    = desc::width;
+    static constexpr size_t height   = desc::height;
+    static constexpr size_t v_stride = desc::v_stride;
+    static constexpr size_t h_stride = desc::h_stride;
+    static constexpr size_t filler   = desc::filler;
 
-    static constexpr std::size_t h_context = width / 2;
+    static constexpr size_t h_context = width / 2;
 
     using weight = typename desc::weight;
 
@@ -52,7 +52,7 @@ struct patches_layer_padh : layer<patches_layer_padh<Desc>> {
      * \brief Return the size of the output of this layer
      * \return The size of the output of this layer
      */
-    static constexpr std::size_t output_size() noexcept {
+    static constexpr size_t output_size() noexcept {
         return width * height;
     }
 
@@ -64,13 +64,13 @@ struct patches_layer_padh : layer<patches_layer_padh<Desc>> {
 
         h_a.clear();
 
-        for (std::size_t y = 0; y + height <= etl::dim<1>(input); y += v_stride) {
-            for (std::size_t x = 0; x < etl::dim<2>(input); x += h_stride) {
+        for (size_t y = 0; y + height <= etl::dim<1>(input); y += v_stride) {
+            for (size_t x = 0; x < etl::dim<2>(input); x += h_stride) {
                 h_a.emplace_back();
 
                 auto& patch = h_a.back();
 
-                for (std::size_t yy = 0; yy < height; ++yy) {
+                for (size_t yy = 0; yy < height; ++yy) {
                     for (int xx = x - h_context; xx < int(x + h_context); ++xx) {
                         double value(filler);
 
@@ -86,7 +86,7 @@ struct patches_layer_padh : layer<patches_layer_padh<Desc>> {
     }
 
     static void activate_many(output_t& h_a, const input_t& input) {
-        for (std::size_t i = 0; i < input.size(); ++i) {
+        for (size_t i = 0; i < input.size(); ++i) {
             activate_one(input[i], h_a[i]);
         }
     }
@@ -98,7 +98,7 @@ struct patches_layer_padh : layer<patches_layer_padh<Desc>> {
      * \tparam Input The type of one input
      */
     template <typename Input>
-    static output_t prepare_output(std::size_t samples) {
+    static output_t prepare_output(size_t samples) {
         return output_t(samples);
     }
 
@@ -128,19 +128,19 @@ struct patches_layer_padh : layer<patches_layer_padh<Desc>> {
 //Allow odr-use of the constexpr static members
 
 template <typename Desc>
-const std::size_t patches_layer_padh<Desc>::width;
+const size_t patches_layer_padh<Desc>::width;
 
 template <typename Desc>
-const std::size_t patches_layer_padh<Desc>::height;
+const size_t patches_layer_padh<Desc>::height;
 
 template <typename Desc>
-const std::size_t patches_layer_padh<Desc>::v_stride;
+const size_t patches_layer_padh<Desc>::v_stride;
 
 template <typename Desc>
-const std::size_t patches_layer_padh<Desc>::h_stride;
+const size_t patches_layer_padh<Desc>::h_stride;
 
 template <typename Desc>
-const std::size_t patches_layer_padh<Desc>::filler;
+const size_t patches_layer_padh<Desc>::filler;
 
 // Declare the traits for the layer
 

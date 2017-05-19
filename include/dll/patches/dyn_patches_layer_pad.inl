@@ -28,16 +28,16 @@ struct dyn_patches_layer_padh : layer<dyn_patches_layer_padh<Desc>> {
     using output_one_t  = std::vector<etl::dyn_matrix<weight, 3>>;
     using output_t      = std::vector<output_one_t>;
 
-    std::size_t width;
-    std::size_t height;
-    std::size_t v_stride;
-    std::size_t h_stride;
-    std::size_t filler;
-    std::size_t h_context;
+    size_t width;
+    size_t height;
+    size_t v_stride;
+    size_t h_stride;
+    size_t filler;
+    size_t h_context;
 
     dyn_patches_layer_padh() = default;
 
-    void init_layer(std::size_t width, std::size_t height, std::size_t v_stride, std::size_t h_stride, std::size_t filler) {
+    void init_layer(size_t width, size_t height, size_t v_stride, size_t h_stride, size_t filler) {
         this->width     = width;
         this->height    = height;
         this->v_stride  = v_stride;
@@ -60,7 +60,7 @@ struct dyn_patches_layer_padh : layer<dyn_patches_layer_padh<Desc>> {
      * \brief Return the size of the output of this layer
      * \return The size of the output of this layer
      */
-    std::size_t output_size() const noexcept {
+    size_t output_size() const noexcept {
         return width * height;
     }
 
@@ -72,15 +72,15 @@ struct dyn_patches_layer_padh : layer<dyn_patches_layer_padh<Desc>> {
 
         h_a.clear();
 
-        for (std::size_t y = 0; y + height <= etl::dim<1>(input); y += v_stride) {
-            for (std::size_t x = 0; x < etl::dim<2>(input); x += h_stride) {
+        for (size_t y = 0; y + height <= etl::dim<1>(input); y += v_stride) {
+            for (size_t x = 0; x < etl::dim<2>(input); x += h_stride) {
                 h_a.emplace_back();
 
                 auto& patch = h_a.back();
 
                 patch.inherit_if_null(etl::dyn_matrix<weight,3>(1UL, height, width));
 
-                for (std::size_t yy = 0; yy < height; ++yy) {
+                for (size_t yy = 0; yy < height; ++yy) {
                     for (int xx = x - h_context; xx < int(x + h_context); ++xx) {
                         double value(filler);
 
@@ -96,7 +96,7 @@ struct dyn_patches_layer_padh : layer<dyn_patches_layer_padh<Desc>> {
     }
 
     void activate_many(output_t& h_a, const input_t& input) const {
-        for (std::size_t i = 0; i < input.size(); ++i) {
+        for (size_t i = 0; i < input.size(); ++i) {
             activate_one(input[i], h_a[i]);
         }
     }
@@ -108,7 +108,7 @@ struct dyn_patches_layer_padh : layer<dyn_patches_layer_padh<Desc>> {
      * \tparam Input The type of one input
      */
     template <typename Input>
-    static output_t prepare_output(std::size_t samples) {
+    static output_t prepare_output(size_t samples) {
         return output_t(samples);
     }
 

@@ -15,10 +15,10 @@ namespace dll {
 /*!
  * \brief Describe a dense layer.
  */
-template <std::size_t visibles, std::size_t hiddens, typename... Parameters>
+template <size_t visibles, size_t hiddens, typename... Parameters>
 struct dense_desc {
-    static constexpr std::size_t num_visible = visibles;
-    static constexpr std::size_t num_hidden  = hiddens;
+    static constexpr size_t num_visible = visibles;
+    static constexpr size_t num_hidden  = hiddens;
 
     /*!
      * A list of all the parameters of the descriptor

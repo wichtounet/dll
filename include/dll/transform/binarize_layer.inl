@@ -23,7 +23,7 @@ struct binarize_layer : transform_layer<binarize_layer<Desc>> {
     using desc      = Desc;                                  ///< The descriptor type
     using base_type = transform_layer<binarize_layer<Desc>>; ///< The base type
 
-    static constexpr std::size_t Threshold = desc::T;
+    static constexpr size_t Threshold = desc::T;
 
     binarize_layer() = default;
 
@@ -111,7 +111,7 @@ struct binarize_layer : transform_layer<binarize_layer<Desc>> {
 //Allow odr-use of the constexpr static members
 
 template <typename Desc>
-const std::size_t binarize_layer<Desc>::Threshold;
+const size_t binarize_layer<Desc>::Threshold;
 
 // Declare the traits for the layer
 
@@ -160,8 +160,8 @@ struct cg_context<binarize_layer<Desc>> {
 
     static constexpr bool is_trained = false;
 
-    static constexpr std::size_t num_visible = 1;
-    static constexpr std::size_t num_hidden  = 1;
+    static constexpr size_t num_visible = 1;
+    static constexpr size_t num_hidden  = 1;
 
     etl::fast_matrix<weight, 1, 1> gr_w_incs;
     etl::fast_vector<weight, 1> gr_b_incs;

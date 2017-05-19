@@ -87,13 +87,13 @@ struct rbm_base : layer<Parent> {
     //Normal Train functions
 
     template <bool EnableWatcher = true, typename RW = void, typename Input, typename... Args>
-    double train(const Input& training_data, std::size_t max_epochs, Args... args) {
+    double train(const Input& training_data, size_t max_epochs, Args... args) {
         dll::rbm_trainer<parent_t, EnableWatcher, RW, false> trainer(args...);
         return trainer.train(as_derived(), training_data.begin(), training_data.end(), max_epochs);
     }
 
     template <bool EnableWatcher = true, typename RW = void, typename Iterator, typename... Args>
-    double train(Iterator&& first, Iterator&& last, std::size_t max_epochs, Args... args) {
+    double train(Iterator&& first, Iterator&& last, size_t max_epochs, Args... args) {
         dll::rbm_trainer<parent_t, EnableWatcher, RW, false> trainer(args...);
         return trainer.train(as_derived(), std::forward<Iterator>(first), std::forward<Iterator>(last), max_epochs);
     }
@@ -101,13 +101,13 @@ struct rbm_base : layer<Parent> {
     //Train denoising autoencoder
 
     template <bool EnableWatcher = true, typename RW = void, typename Noisy, typename Clean, typename... Args>
-    double train_denoising(const Noisy& noisy, const Clean& clean, std::size_t max_epochs, Args... args) {
+    double train_denoising(const Noisy& noisy, const Clean& clean, size_t max_epochs, Args... args) {
         dll::rbm_trainer<parent_t, EnableWatcher, RW, true> trainer(args...);
         return trainer.train(as_derived(), noisy.begin(), noisy.end(), clean.begin(), clean.end(), max_epochs);
     }
 
     template <typename NIterator, typename CIterator, bool EnableWatcher = true, typename RW = void, typename... Args>
-    double train_denoising(NIterator noisy_it, NIterator noisy_end, CIterator clean_it, CIterator clean_end, std::size_t max_epochs, Args... args) {
+    double train_denoising(NIterator noisy_it, NIterator noisy_end, CIterator clean_it, CIterator clean_end, size_t max_epochs, Args... args) {
         dll::rbm_trainer<parent_t, EnableWatcher, RW, true> trainer(args...);
         return trainer.train(as_derived(),
                              noisy_it, noisy_end,
@@ -118,13 +118,13 @@ struct rbm_base : layer<Parent> {
     //Train denoising autoencoder (auto)
 
     template <bool EnableWatcher = true, typename RW = void, typename Clean, typename... Args>
-    double train_denoising_auto(const Clean& clean, std::size_t max_epochs, double noise, Args... args) {
+    double train_denoising_auto(const Clean& clean, size_t max_epochs, double noise, Args... args) {
         dll::rbm_trainer<parent_t, EnableWatcher, RW, false> trainer(args...);
         return trainer.train_denoising_auto(as_derived(), clean.begin(), clean.end(), max_epochs, noise);
     }
 
     template <typename CIterator, bool EnableWatcher = true, typename RW = void, typename... Args>
-    double train_denoising_auto(CIterator clean_it, CIterator clean_end, std::size_t max_epochs, double noise, Args... args) {
+    double train_denoising_auto(CIterator clean_it, CIterator clean_end, size_t max_epochs, double noise, Args... args) {
         dll::rbm_trainer<parent_t, EnableWatcher, RW, false> trainer(args...);
         return trainer.train_denoising_auto(as_derived(), clean_it, clean_end, max_epochs, noise);
     }

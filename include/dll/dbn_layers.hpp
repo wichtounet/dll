@@ -95,7 +95,7 @@ struct validate_label_layers<L1, L2, Layers...> : cpp::bool_constant_c<
 
 namespace detail {
 
-template <std::size_t I, typename T>
+template <size_t I, typename T>
 struct layers_leaf {
     T value;
 
@@ -111,7 +111,7 @@ struct layers_leaf {
 template <typename Indices, typename... Layers>
 struct layers_impl;
 
-template <std::size_t... I, typename... Layers>
+template <size_t... I, typename... Layers>
 struct layers_impl<std::index_sequence<I...>, Layers...> : layers_leaf<I, Layers>... {
 };
 
@@ -119,7 +119,7 @@ struct layers_impl<std::index_sequence<I...>, Layers...> : layers_leaf<I, Layers
 
 template <bool Labels, typename... Layers>
 struct layers {
-    static constexpr std::size_t size = sizeof...(Layers);
+    static constexpr size_t size = sizeof...(Layers);
 
     static constexpr bool is_dynamic        = Labels ? false : detail::is_dynamic<Layers...>();
     static constexpr bool is_convolutional  = Labels ? false : detail::is_convolutional<Layers...>();
@@ -139,10 +139,10 @@ struct layers {
 
 //Note: Maybe simplify further removing the type_list
 
-template <std::size_t I, typename T>
+template <size_t I, typename T>
 struct layer_type;
 
-template <std::size_t I>
+template <size_t I>
 struct layer_type<I, cpp::type_list<>> {
     static_assert(I == 0, "index out of range");
     static_assert(I != 0, "index out of range");
@@ -153,30 +153,30 @@ struct layer_type<0, cpp::type_list<Head, T...>> {
     using type = Head;
 };
 
-template <std::size_t I, typename Head, typename... T>
+template <size_t I, typename Head, typename... T>
 struct layer_type<I, cpp::type_list<Head, T...>> {
     using type = typename layer_type<I - 1, cpp::type_list<T...>>::type;
 };
 
-template <std::size_t I, bool Labels, typename... Layers>
+template <size_t I, bool Labels, typename... Layers>
 struct layer_type<I, layers<Labels, Layers...>> {
     using type = typename layer_type<I, cpp::type_list<Layers...>>::type;
 };
 
-template <std::size_t I, typename Layers>
+template <size_t I, typename Layers>
 using layer_type_t = typename layer_type<I, Layers>::type;
 
-template <std::size_t I, typename Layers>
+template <size_t I, typename Layers>
 layer_type_t<I, Layers>& layer_get(Layers& layers) {
     return static_cast<layers_leaf<I, layer_type_t<I, Layers>>&>(layers.base).get();
 }
 
-template <std::size_t I, typename Layers>
+template <size_t I, typename Layers>
 const layer_type_t<I, Layers>& layer_get(const Layers& layers) {
     return static_cast<const layers_leaf<I, layer_type_t<I, Layers>>&>(layers.base).get();
 }
 
-template <typename DBN, typename Functor, std::size_t... I>
+template <typename DBN, typename Functor, size_t... I>
 void for_each_layer_type_sub(Functor&& functor, const std::index_sequence<I...>& /* i */) {
     int wormhole[] = {(functor(static_cast<typename DBN::template layer_type<I>*>(nullptr)), 0)...};
     cpp_unused(wormhole);

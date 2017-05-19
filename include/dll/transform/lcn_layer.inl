@@ -21,8 +21,8 @@ struct lcn_layer : transform_layer<lcn_layer<Desc>> {
     using desc = Desc; ///< The descriptor type
     using base_type = transform_layer<lcn_layer<Desc>>; ///< The base type
 
-    static constexpr std::size_t K = desc::K;
-    static constexpr std::size_t Mid = K / 2;
+    static constexpr size_t K = desc::K;
+    static constexpr size_t Mid = K / 2;
 
     double sigma = 2.0;
 
@@ -85,7 +85,7 @@ struct lcn_layer : transform_layer<lcn_layer<Desc>> {
     void batch_activate_hidden(Output& output, const Input& input) const {
         inherit_dim(output, input);
 
-        for (std::size_t b = 0; b < etl::dim<0>(input); ++b) {
+        for (size_t b = 0; b < etl::dim<0>(input); ++b) {
             activate_hidden(output(b), input(b));
         }
     }

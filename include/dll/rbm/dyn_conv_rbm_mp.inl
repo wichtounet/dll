@@ -139,7 +139,7 @@ struct dyn_conv_rbm_mp final : public standard_crbm_mp<dyn_conv_rbm_mp<Desc>, De
      * \brief Return the size of the input of this layer
      * \return The size of the input of this layer
      */
-    std::size_t input_size() const noexcept {
+    size_t input_size() const noexcept {
         return nv1 * nv2 * nc;
     }
 
@@ -147,7 +147,7 @@ struct dyn_conv_rbm_mp final : public standard_crbm_mp<dyn_conv_rbm_mp<Desc>, De
      * \brief Return the size of the output of this layer
      * \return The size of the output of this layer
      */
-    std::size_t output_size() const noexcept {
+    size_t output_size() const noexcept {
         return np1 * np2 * k;
     }
 
@@ -155,7 +155,7 @@ struct dyn_conv_rbm_mp final : public standard_crbm_mp<dyn_conv_rbm_mp<Desc>, De
      * \brief Return the number of trainable parameters of this network.
      * \return The the number of trainable parameters of this network.
      */
-    std::size_t parameters() const noexcept {
+    size_t parameters() const noexcept {
         return nc * k * nw1 * nw2;
     }
 
@@ -180,7 +180,7 @@ struct dyn_conv_rbm_mp final : public standard_crbm_mp<dyn_conv_rbm_mp<Desc>, De
      * \tparam Input The type of one input
      */
     template <typename Input>
-    output_t prepare_output(std::size_t samples) const {
+    output_t prepare_output(size_t samples) const {
         output_t output;
         output.reserve(samples);
         for(size_t i = 0; i < samples; ++i){

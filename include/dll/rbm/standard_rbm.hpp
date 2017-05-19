@@ -150,7 +150,7 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
         display_visible_units(as_derived());
     }
 
-    void display_visible_units(std::size_t matrix) const {
+    void display_visible_units(size_t matrix) const {
         display_visible_units(as_derived(), matrix);
     }
 
@@ -162,7 +162,7 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
         display_weights(as_derived());
     }
 
-    void display_weights(std::size_t matrix) const {
+    void display_weights(size_t matrix) const {
         display_weights(matrix, as_derived());
     }
 
@@ -173,11 +173,11 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
      * \tparam Input The type of one input
      */
     template <typename Input>
-    output_t prepare_output(std::size_t samples, bool is_last = false, std::size_t labels = 0) const {
+    output_t prepare_output(size_t samples, bool is_last = false, size_t labels = 0) const {
         output_t output;
         output.reserve(samples);
 
-        for (std::size_t i = 0; i < samples; ++i) {
+        for (size_t i = 0; i < samples; ++i) {
             output.emplace_back(as_derived().output_size() + (is_last ? labels : 0));
         }
 
@@ -185,7 +185,7 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
     }
 
     template <typename Input>
-    output_one_t prepare_one_output(bool is_last = false, std::size_t labels = 0) const {
+    output_one_t prepare_one_output(bool is_last = false, size_t labels = 0) const {
         return output_one_t(as_derived().output_size() + (is_last ? labels : 0));
     }
 
@@ -194,7 +194,7 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
     }
 
     void activate_many(const input_t& input, output_t& h_a) const {
-        for (std::size_t i = 0; i < input.size(); ++i) {
+        for (size_t i = 0; i < input.size(); ++i) {
             activate_one(input[i], h_a[i]);
         }
     }
@@ -224,7 +224,7 @@ private:
         auto size = std::distance(first, last);
 
         //Initialize the visible biases to log(pi/(1-pi))
-        for (std::size_t i = 0; i < num_visible(rbm); ++i) {
+        for (size_t i = 0; i < num_visible(rbm); ++i) {
             auto count = std::count_if(first, last,
                                        [i](auto& a) { return a[i] == 1; });
 
@@ -252,18 +252,18 @@ private:
     }
 
     static void display_weights(const parent_t& rbm) {
-        for (std::size_t j = 0; j < num_hidden(rbm); ++j) {
-            for (std::size_t i = 0; i < num_visible(rbm); ++i) {
+        for (size_t j = 0; j < num_hidden(rbm); ++j) {
+            for (size_t i = 0; i < num_visible(rbm); ++i) {
                 std::cout << rbm.w(i, j) << " ";
             }
             std::cout << std::endl;
         }
     }
 
-    static void display_weights(const parent_t& rbm, std::size_t matrix) {
-        for (std::size_t j = 0; j < num_hidden(rbm); ++j) {
-            for (std::size_t i = 0; i < num_visible(rbm);) {
-                for (std::size_t m = 0; m < matrix; ++m) {
+    static void display_weights(const parent_t& rbm, size_t matrix) {
+        for (size_t j = 0; j < num_hidden(rbm); ++j) {
+            for (size_t i = 0; i < num_visible(rbm);) {
+                for (size_t m = 0; m < matrix; ++m) {
                     std::cout << rbm.w(i++, j) << " ";
                 }
                 std::cout << std::endl;
@@ -274,14 +274,14 @@ private:
     static void display_visible_units(const parent_t& rbm) {
         std::cout << "Visible  Value" << std::endl;
 
-        for (std::size_t i = 0; i < num_visible(rbm); ++i) {
+        for (size_t i = 0; i < num_visible(rbm); ++i) {
             printf("%-8lu %d\n", i, rbm.v2_s(i));
         }
     }
 
-    static void display_visible_units(const parent_t& rbm, std::size_t matrix) {
-        for (std::size_t i = 0; i < matrix; ++i) {
-            for (std::size_t j = 0; j < matrix; ++j) {
+    static void display_visible_units(const parent_t& rbm, size_t matrix) {
+        for (size_t i = 0; i < matrix; ++i) {
+            for (size_t j = 0; j < matrix; ++j) {
                 std::cout << rbm.v2_s(i * matrix + j) << " ";
             }
             std::cout << std::endl;
@@ -291,7 +291,7 @@ private:
     static void display_hidden_units(const parent_t& rbm) {
         std::cout << "Hidden Value" << std::endl;
 
-        for (std::size_t j = 0; j < num_hidden(rbm); ++j) {
+        for (size_t j = 0; j < num_hidden(rbm); ++j) {
             printf("%-8lu %d\n", j, rbm.h2_s(j));
         }
     }
@@ -435,7 +435,7 @@ private:
         ([&](auto f) {
             auto x = f(etl::force_temporary(rep_l(b, Batch) + v_a * w));
 
-            for (std::size_t b = 0; b < Batch; ++b) {
+            for (size_t b = 0; b < Batch; ++b) {
                 f(h_a)(b) = stable_softmax(x(b));
             }
         });
@@ -446,7 +446,7 @@ private:
         H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = min(max(ranged_noise(rep_l(b, Batch) + v_a * w, 6.0), 0.0), 6.0));
         H_SAMPLE_PROBS_MULTI(unit_type::SOFTMAX)
         ([&](auto f) {
-            for (std::size_t b = 0; b < Batch; ++b) {
+            for (size_t b = 0; b < Batch; ++b) {
                 f(h_s)(b) = stable_softmax(h_a(b));
             }
         });
@@ -459,7 +459,7 @@ private:
         ([&](auto f) {
             auto x = f(etl::force_temporary(rep_l(b, Batch) + v_a * w));
 
-            for (std::size_t b = 0; b < Batch; ++b) {
+            for (size_t b = 0; b < Batch; ++b) {
                 f(h_s)(b) = one_if_max(stable_softmax(x(b)));
             }
         });

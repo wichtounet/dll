@@ -21,16 +21,16 @@ struct unpooling_layer_3d : layer<Parent> {
     using desc   = Desc;
     using weight = typename desc::weight;
 
-    static constexpr std::size_t I1 = desc::I1; ///< The first dimension of the input
-    static constexpr std::size_t I2 = desc::I2; ///< The second dimension of the input
-    static constexpr std::size_t I3 = desc::I3; ///< The third dimension of the input
-    static constexpr std::size_t C1 = desc::C1; ///< The first dimension pooling ratio
-    static constexpr std::size_t C2 = desc::C2; ///< The second dimension pooling ratio
-    static constexpr std::size_t C3 = desc::C3; ///< The third dimension pooling ratio
+    static constexpr size_t I1 = desc::I1; ///< The first dimension of the input
+    static constexpr size_t I2 = desc::I2; ///< The second dimension of the input
+    static constexpr size_t I3 = desc::I3; ///< The third dimension of the input
+    static constexpr size_t C1 = desc::C1; ///< The first dimension pooling ratio
+    static constexpr size_t C2 = desc::C2; ///< The second dimension pooling ratio
+    static constexpr size_t C3 = desc::C3; ///< The third dimension pooling ratio
 
-    static constexpr std::size_t O1 = I1 * C1; ///< The first dimension of the output
-    static constexpr std::size_t O2 = I2 * C2; ///< The second dimension of the output
-    static constexpr std::size_t O3 = I3 * C3; ///< The third dimension of the output
+    static constexpr size_t O1 = I1 * C1; ///< The first dimension of the output
+    static constexpr size_t O2 = I2 * C2; ///< The second dimension of the output
+    static constexpr size_t O3 = I3 * C3; ///< The third dimension of the output
 
     static constexpr bool is_nop = C1 * C2 * C3 == 1; ///< Indicate if the operation has no effect
 
@@ -45,7 +45,7 @@ struct unpooling_layer_3d : layer<Parent> {
      * \brief Return the size of the input of this layer
      * \return The size of the input of this layer
      */
-    static constexpr std::size_t input_size() noexcept {
+    static constexpr size_t input_size() noexcept {
         return I1 * I2 * I3;
     }
 
@@ -53,7 +53,7 @@ struct unpooling_layer_3d : layer<Parent> {
      * \brief Return the size of the output of this layer
      * \return The size of the output of this layer
      */
-    static constexpr std::size_t output_size() noexcept {
+    static constexpr size_t output_size() noexcept {
         return O1 * O2 * O3;
     }
 
@@ -61,7 +61,7 @@ struct unpooling_layer_3d : layer<Parent> {
      * \brief Return the number of trainable parameters of this network.
      * \return The the number of trainable parameters of this network.
      */
-    static constexpr std::size_t parameters() noexcept {
+    static constexpr size_t parameters() noexcept {
         return 0;
     }
 
@@ -72,7 +72,7 @@ struct unpooling_layer_3d : layer<Parent> {
      */
     template <typename I, typename O_A>
     void activate_many(const I& input, O_A& output) const {
-        for (std::size_t i = 0; i < input.size(); ++i) {
+        for (size_t i = 0; i < input.size(); ++i) {
             as_derived().activate_hidden(input[i], output[i]);
         }
     }
@@ -84,7 +84,7 @@ struct unpooling_layer_3d : layer<Parent> {
      * \tparam Input The type of one input
      */
     template <typename Input>
-    static output_t prepare_output(std::size_t samples) {
+    static output_t prepare_output(size_t samples) {
         return output_t{samples};
     }
 
@@ -120,16 +120,16 @@ struct dyn_unpooling_layer_3d : layer<Parent> {
     using input_t      = std::vector<input_one_t>;
     using output_t     = std::vector<output_one_t>;
 
-    std::size_t i1; ///< The first dimension of the input
-    std::size_t i2; ///< The second dimension of the input
-    std::size_t i3; ///< The third dimension of the input
-    std::size_t c1; ///< The first dimension pooling ratio
-    std::size_t c2; ///< The second dimension pooling ratio
-    std::size_t c3; ///< The third dimension pooling ratio
+    size_t i1; ///< The first dimension of the input
+    size_t i2; ///< The second dimension of the input
+    size_t i3; ///< The third dimension of the input
+    size_t c1; ///< The first dimension pooling ratio
+    size_t c2; ///< The second dimension pooling ratio
+    size_t c3; ///< The third dimension pooling ratio
 
-    std::size_t o1; ///< The first dimension of the output
-    std::size_t o2; ///< The second dimension of the output
-    std::size_t o3; ///< The third dimension of the output
+    size_t o1; ///< The first dimension of the output
+    size_t o2; ///< The second dimension of the output
+    size_t o3; ///< The third dimension of the output
 
     dyn_unpooling_layer_3d() = default;
 
@@ -149,7 +149,7 @@ struct dyn_unpooling_layer_3d : layer<Parent> {
      * \brief Return the size of the input of this layer
      * \return The size of the input of this layer
      */
-    std::size_t input_size() const noexcept {
+    size_t input_size() const noexcept {
         return i1 * i2 * i3;
     }
 
@@ -157,7 +157,7 @@ struct dyn_unpooling_layer_3d : layer<Parent> {
      * \brief Return the size of the output of this layer
      * \return The size of the output of this layer
      */
-    std::size_t output_size() const noexcept {
+    size_t output_size() const noexcept {
         return o1 * o2 * o3;
     }
 
@@ -165,7 +165,7 @@ struct dyn_unpooling_layer_3d : layer<Parent> {
      * \brief Return the number of trainable parameters of this network.
      * \return The the number of trainable parameters of this network.
      */
-    std::size_t parameters() const noexcept {
+    size_t parameters() const noexcept {
         return 0;
     }
 
@@ -176,7 +176,7 @@ struct dyn_unpooling_layer_3d : layer<Parent> {
      */
     template <typename I, typename O_A>
     void activate_many(const I& input, O_A& output) const {
-        for (std::size_t i = 0; i < input.size(); ++i) {
+        for (size_t i = 0; i < input.size(); ++i) {
             as_derived().activate_hidden(input[i], output[i]);
         }
     }
@@ -188,7 +188,7 @@ struct dyn_unpooling_layer_3d : layer<Parent> {
      * \tparam Input The type of one input
      */
     template <typename Input>
-    output_t prepare_output(std::size_t samples) const {
+    output_t prepare_output(size_t samples) const {
         output_t output;
         output.reserve(samples);
         for(size_t i = 0; i < samples; ++i){

@@ -16,8 +16,8 @@ inline double gaussian(double x, double y, double sigma) {
 
 template <typename W>
 void lcn_filter(W& w, size_t K, size_t Mid, double sigma){
-    for (std::size_t i = 0; i < K; ++i) {
-        for (std::size_t j = 0; j < K; ++j) {
+    for (size_t i = 0; i < K; ++i) {
+        for (size_t j = 0; j < K; ++j) {
             w(i, j) = gaussian(double(i) - Mid, double(j) - Mid, sigma);
         }
     }
@@ -37,15 +37,15 @@ void lcn_compute(Output& y, const Input& x, const W& w, size_t K, size_t Mid){
     auto v = etl::force_temporary(x(0));
     auto o = etl::force_temporary(x(0));
 
-    for (std::size_t c = 0; c < etl::dim<0>(x); ++c) {
+    for (size_t c = 0; c < etl::dim<0>(x); ++c) {
         //1. For each pixel, remove mean of 9x9 neighborhood
-        for (std::size_t j = 0; j < etl::dim<1>(x); ++j) {
-            for (std::size_t k = 0; k < etl::dim<2>(x); ++k) {
+        for (size_t j = 0; j < etl::dim<1>(x); ++j) {
+            for (size_t k = 0; k < etl::dim<2>(x); ++k) {
                 weight_t sum(0.0);
 
-                for (std::size_t p = 0; p < K; ++p) {
+                for (size_t p = 0; p < K; ++p) {
                     if (long(j) + p - Mid >= 0 && long(j) + p - Mid < etl::dim<1>(x)) {
-                        for (std::size_t q = 0; q < K; ++q) {
+                        for (size_t q = 0; q < K; ++q) {
                             if (long(k) + q - Mid >= 0 && long(k) + q - Mid < etl::dim<2>(x)) {
                                 sum += w(p, q) * x(c, j + p - Mid, k + q - Mid);
                             }
@@ -59,13 +59,13 @@ void lcn_compute(Output& y, const Input& x, const W& w, size_t K, size_t Mid){
 
         //2. Scale down norm of 9x9 patch if norm is bigger than 1
 
-        for (std::size_t j = 0; j < etl::dim<1>(x); ++j) {
-            for (std::size_t k = 0; k < etl::dim<2>(x); ++k) {
+        for (size_t j = 0; j < etl::dim<1>(x); ++j) {
+            for (size_t k = 0; k < etl::dim<2>(x); ++k) {
                 weight_t sum(0.0);
 
-                for (std::size_t p = 0; p < K; ++p) {
+                for (size_t p = 0; p < K; ++p) {
                     if (long(j) + p - Mid >= 0 && long(j) + p - Mid < etl::dim<1>(x)) {
-                        for (std::size_t q = 0; q < K; ++q) {
+                        for (size_t q = 0; q < K; ++q) {
                             if (long(k) + q - Mid >= 0 && long(k) + q - Mid < etl::dim<2>(x)) {
                                 sum += w(p, q) * x(c, j + p - Mid, k + q - Mid) * x(c, j + p - Mid, k + q - Mid);
                             }

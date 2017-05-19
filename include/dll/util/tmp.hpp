@@ -98,12 +98,12 @@ struct get_template_type_tb<D> {
 
 } //end of namespace detail
 
-template <typename Tuple, typename Functor, std::size_t I1>
+template <typename Tuple, typename Functor, size_t I1>
 void for_each_type_sub(Functor&& functor, const std::index_sequence<I1>& /* i */) {
     functor(static_cast<std::tuple_element_t<I1, Tuple>*>(nullptr));
 }
 
-template <typename Tuple, typename Functor, std::size_t I1, std::size_t... I, cpp_enable_if((sizeof...(I) > 0))>
+template <typename Tuple, typename Functor, size_t I1, size_t... I, cpp_enable_if((sizeof...(I) > 0))>
 void for_each_type_sub(Functor&& functor, const std::index_sequence<I1, I...>& /* i */) {
     functor(static_cast<std::tuple_element_t<I1, Tuple>*>(nullptr));
     for_each_type_sub<Tuple>(functor, std::index_sequence<I...>());
@@ -118,7 +118,7 @@ void for_each_type(Functor&& functor) {
 //when it is not used, although this fast matrix is viewed as having
 //the correct size
 
-template <bool C, typename W, std::size_t... Dims>
+template <bool C, typename W, size_t... Dims>
 struct conditional_fast_matrix {
     using type = std::conditional_t<
         C,
@@ -126,7 +126,7 @@ struct conditional_fast_matrix {
         etl::fast_matrix_impl<W, std::array<W, 0>, etl::order::RowMajor, Dims...>>;
 };
 
-template <bool C, typename W, std::size_t... Dims>
+template <bool C, typename W, size_t... Dims>
 using conditional_fast_matrix_t = typename conditional_fast_matrix<C, W, Dims...>::type;
 
 /* Utilities to build dyn layer types from normal layer types */

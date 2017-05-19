@@ -56,7 +56,7 @@ struct augment_layer : layer<augment_layer<Desc>> {
 
     template <typename Input, typename Output>
     static void activate_many(Output& h_a, const Input& input) {
-        for (std::size_t i = 0; i < input.size(); ++i) {
+        for (size_t i = 0; i < input.size(); ++i) {
             activate_one(input[i], h_a[i]);
         }
     }
@@ -68,7 +68,7 @@ struct augment_layer : layer<augment_layer<Desc>> {
      * \tparam Input The type of one input
      */
     template <typename Input>
-    static std::vector<std::vector<Input>> prepare_output(std::size_t samples) {
+    static std::vector<std::vector<Input>> prepare_output(size_t samples) {
         return std::vector<std::vector<Input>>(samples);
     }
 
@@ -84,7 +84,7 @@ struct augment_layer : layer<augment_layer<Desc>> {
     }
 
     template <typename Input>
-    static std::vector<Input> prepare_test_output(std::size_t samples) {
+    static std::vector<Input> prepare_test_output(size_t samples) {
         return std::vector<Input>(samples);
     }
 

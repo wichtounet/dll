@@ -38,20 +38,20 @@ struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
     //static_assert(!(std::is_same<float, weight>::value && visible_unit == unit_type::GAUSSIAN),
                   //"Gaussian visible units should use double-precision");
 
-    static constexpr std::size_t NV1 = desc::NV1; ///< The first dimension of the visible units
-    static constexpr std::size_t NV2 = desc::NV2; ///< The second dimension of the visible units
-    static constexpr std::size_t NW1 = desc::NW1; ///< The first dimension of the hidden units
-    static constexpr std::size_t NW2 = desc::NW2; ///< The second dimension of the hidden units
-    static constexpr std::size_t NC  = desc::NC;  ///< The number of input channels
-    static constexpr std::size_t K   = desc::K;   ///< The number of filters
-    static constexpr std::size_t C   = desc::C;
+    static constexpr size_t NV1 = desc::NV1; ///< The first dimension of the visible units
+    static constexpr size_t NV2 = desc::NV2; ///< The second dimension of the visible units
+    static constexpr size_t NW1 = desc::NW1; ///< The first dimension of the hidden units
+    static constexpr size_t NW2 = desc::NW2; ///< The second dimension of the hidden units
+    static constexpr size_t NC  = desc::NC;  ///< The number of input channels
+    static constexpr size_t K   = desc::K;   ///< The number of filters
+    static constexpr size_t C   = desc::C;
 
-    static constexpr std::size_t NH1 = NV1 - NW1 + 1; //By definition
-    static constexpr std::size_t NH2 = NV2 - NW2 + 1; //By definition
-    static constexpr std::size_t NP1 = NH1 / C;       //By definition
-    static constexpr std::size_t NP2 = NH2 / C;       //By definition
+    static constexpr size_t NH1 = NV1 - NW1 + 1; //By definition
+    static constexpr size_t NH2 = NV2 - NW2 + 1; //By definition
+    static constexpr size_t NP1 = NH1 / C;       //By definition
+    static constexpr size_t NP2 = NH2 / C;       //By definition
 
-    static constexpr std::size_t batch_size  = desc::BatchSize;  ///< The mini-batch size
+    static constexpr size_t batch_size  = desc::BatchSize;  ///< The mini-batch size
 
     static constexpr bool dbn_only = rbm_layer_traits<this_type>::is_dbn_only();
 
@@ -100,21 +100,21 @@ struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
     /*!
      * \brief Return the input size of the layer
      */
-    static constexpr std::size_t input_size() noexcept {
+    static constexpr size_t input_size() noexcept {
         return NV1 * NV2 * NC;
     }
 
     /*!
      * \brief Return the output size of the layer
      */
-    static constexpr std::size_t output_size() noexcept {
+    static constexpr size_t output_size() noexcept {
         return NP1 * NP2 * K;
     }
 
     /*!
      * \brief Return the number of parameters of the layer
      */
-    static constexpr std::size_t parameters() noexcept {
+    static constexpr size_t parameters() noexcept {
         return NC * K * NW1 * NW2;
     }
 
@@ -136,7 +136,7 @@ struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
      * \tparam Input The type of one input
      */
     template <typename Input>
-    static output_t prepare_output(std::size_t samples) {
+    static output_t prepare_output(size_t samples) {
         return output_t(samples);
     }
 
@@ -255,37 +255,37 @@ struct rbm_base_traits<conv_rbm_mp<Desc>> {
 //Allow odr-use of the constexpr static members
 
 template <typename Desc>
-const std::size_t conv_rbm_mp<Desc>::NV1;
+const size_t conv_rbm_mp<Desc>::NV1;
 
 template <typename Desc>
-const std::size_t conv_rbm_mp<Desc>::NV2;
+const size_t conv_rbm_mp<Desc>::NV2;
 
 template <typename Desc>
-const std::size_t conv_rbm_mp<Desc>::NH1;
+const size_t conv_rbm_mp<Desc>::NH1;
 
 template <typename Desc>
-const std::size_t conv_rbm_mp<Desc>::NH2;
+const size_t conv_rbm_mp<Desc>::NH2;
 
 template <typename Desc>
-const std::size_t conv_rbm_mp<Desc>::NC;
+const size_t conv_rbm_mp<Desc>::NC;
 
 template <typename Desc>
-const std::size_t conv_rbm_mp<Desc>::NW1;
+const size_t conv_rbm_mp<Desc>::NW1;
 
 template <typename Desc>
-const std::size_t conv_rbm_mp<Desc>::NW2;
+const size_t conv_rbm_mp<Desc>::NW2;
 
 template <typename Desc>
-const std::size_t conv_rbm_mp<Desc>::NP1;
+const size_t conv_rbm_mp<Desc>::NP1;
 
 template <typename Desc>
-const std::size_t conv_rbm_mp<Desc>::NP2;
+const size_t conv_rbm_mp<Desc>::NP2;
 
 template <typename Desc>
-const std::size_t conv_rbm_mp<Desc>::K;
+const size_t conv_rbm_mp<Desc>::K;
 
 template <typename Desc>
-const std::size_t conv_rbm_mp<Desc>::C;
+const size_t conv_rbm_mp<Desc>::C;
 
 // Declare the traits for the RBM
 

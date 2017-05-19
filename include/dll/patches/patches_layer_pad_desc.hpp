@@ -9,13 +9,13 @@
 
 namespace dll {
 
-template <std::size_t W_T, std::size_t H_T, std::size_t VS_T, std::size_t HS_T, std::size_t Filler_T, typename... Parameters>
+template <size_t W_T, size_t H_T, size_t VS_T, size_t HS_T, size_t Filler_T, typename... Parameters>
 struct patches_layer_padh_desc {
-    static constexpr std::size_t width    = W_T;
-    static constexpr std::size_t height   = H_T;
-    static constexpr std::size_t v_stride = VS_T;
-    static constexpr std::size_t h_stride = HS_T;
-    static constexpr std::size_t filler   = Filler_T;
+    static constexpr size_t width    = W_T;
+    static constexpr size_t height   = H_T;
+    static constexpr size_t v_stride = VS_T;
+    static constexpr size_t h_stride = HS_T;
+    static constexpr size_t filler   = Filler_T;
 
     /*!
      * A list of all the parameters of the descriptor

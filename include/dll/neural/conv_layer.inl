@@ -65,7 +65,7 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
      * \brief Return the size of the input of this layer
      * \return The size of the input of this layer
      */
-    static constexpr std::size_t input_size() noexcept {
+    static constexpr size_t input_size() noexcept {
         return NC * NV1 * NV2;
     }
 
@@ -73,7 +73,7 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
      * \brief Return the size of the output of this layer
      * \return The size of the output of this layer
      */
-    static constexpr std::size_t output_size() noexcept {
+    static constexpr size_t output_size() noexcept {
         return K * NH1 * NH2;
     }
 
@@ -81,7 +81,7 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
      * \brief Return the number of trainable parameters of this network.
      * \return The the number of trainable parameters of this network.
      */
-    static constexpr std::size_t parameters() noexcept {
+    static constexpr size_t parameters() noexcept {
         return K * NW1 * NW2;
     }
 
@@ -155,7 +155,7 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
      * \return a container containing empty ETL matrices suitable to store samples output of this layer
      */
     template <typename Input>
-    static output_t prepare_output(std::size_t samples) {
+    static output_t prepare_output(size_t samples) {
         return output_t{samples};
     }
 
@@ -214,28 +214,28 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
 //Allow odr-use of the constexpr static members
 
 template <typename Desc>
-const std::size_t conv_layer<Desc>::NV1;
+const size_t conv_layer<Desc>::NV1;
 
 template <typename Desc>
-const std::size_t conv_layer<Desc>::NV2;
+const size_t conv_layer<Desc>::NV2;
 
 template <typename Desc>
-const std::size_t conv_layer<Desc>::NH1;
+const size_t conv_layer<Desc>::NH1;
 
 template <typename Desc>
-const std::size_t conv_layer<Desc>::NH2;
+const size_t conv_layer<Desc>::NH2;
 
 template <typename Desc>
-const std::size_t conv_layer<Desc>::NC;
+const size_t conv_layer<Desc>::NC;
 
 template <typename Desc>
-const std::size_t conv_layer<Desc>::NW1;
+const size_t conv_layer<Desc>::NW1;
 
 template <typename Desc>
-const std::size_t conv_layer<Desc>::NW2;
+const size_t conv_layer<Desc>::NW2;
 
 template <typename Desc>
-const std::size_t conv_layer<Desc>::K;
+const size_t conv_layer<Desc>::K;
 
 // Declare the traits for the Layer
 

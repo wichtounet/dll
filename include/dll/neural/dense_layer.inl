@@ -24,8 +24,8 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
     using this_type = dense_layer<desc>;
     using base_type = neural_layer<this_type, desc>;
 
-    static constexpr std::size_t num_visible = desc::num_visible;
-    static constexpr std::size_t num_hidden  = desc::num_hidden;
+    static constexpr size_t num_visible = desc::num_visible;
+    static constexpr size_t num_hidden  = desc::num_hidden;
 
     static constexpr auto activation_function = desc::activation_function;
     static constexpr auto w_initializer       = desc::w_initializer;
@@ -61,21 +61,21 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
     /*!
      * \brief Returns the input size of this layer
      */
-    static constexpr std::size_t input_size() noexcept {
+    static constexpr size_t input_size() noexcept {
         return num_visible;
     }
 
     /*!
      * \brief Returns the output size of this layer
      */
-    static constexpr std::size_t output_size() noexcept {
+    static constexpr size_t output_size() noexcept {
         return num_hidden;
     }
 
     /*!
      * \brief Returns the number of parameters of this layer
      */
-    static constexpr std::size_t parameters() noexcept {
+    static constexpr size_t parameters() noexcept {
         return num_visible * num_hidden;
     }
 
@@ -136,7 +136,7 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
         if (activation_function == function::SOFTMAX) {
             output = bias_add_2d(output, b);
 
-            for (std::size_t i = 0; i < Batch; ++i) {
+            for (size_t i = 0; i < Batch; ++i) {
                 output(i) = f_activate<activation_function>(output(i));
             }
         } else {
@@ -160,7 +160,7 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
         if (activation_function == function::SOFTMAX) {
             output = bias_add_2d(output, b);
 
-            for (std::size_t i = 0; i < Batch; ++i) {
+            for (size_t i = 0; i < Batch; ++i) {
                 output(i) = f_activate<activation_function>(output(i));
             }
         } else {
@@ -181,7 +181,7 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
         if (activation_function == function::SOFTMAX) {
             output = bias_add_2d(output, b);
 
-            for (std::size_t i = 0; i < Batch; ++i) {
+            for (size_t i = 0; i < Batch; ++i) {
                 output(i) = f_activate<activation_function>(output(i));
             }
         } else {
@@ -207,7 +207,7 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
      * \tparam Input The type of one input
      */
     template <typename Input>
-    static output_t prepare_output(std::size_t samples) {
+    static output_t prepare_output(size_t samples) {
         return output_t{samples};
     }
 
@@ -268,10 +268,10 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
 //Allow odr-use of the constexpr static members
 
 template <typename Desc>
-const std::size_t dense_layer<Desc>::num_visible;
+const size_t dense_layer<Desc>::num_visible;
 
 template <typename Desc>
-const std::size_t dense_layer<Desc>::num_hidden;
+const size_t dense_layer<Desc>::num_hidden;
 
 // Declare the traits for the Layer
 

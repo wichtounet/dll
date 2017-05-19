@@ -66,7 +66,7 @@ struct activation_layer : transform_layer<activation_layer<Desc>> {
     static void batch_activate_hidden(Output& output, const Input& input) {
         if (activation_function == function::SOFTMAX) {
             auto Batch = etl::dim<0>(input);
-            for (std::size_t i = 0; i < Batch; ++i) {
+            for (size_t i = 0; i < Batch; ++i) {
                 output(i) = f_activate<activation_function>(input(i));
             }
         } else {

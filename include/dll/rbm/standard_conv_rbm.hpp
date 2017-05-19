@@ -84,13 +84,13 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
     //Various functions
 
     void activate_many(const input_t& input, output_t& h_a, output_t& h_s) const {
-        for (std::size_t i = 0; i < input.size(); ++i) {
+        for (size_t i = 0; i < input.size(); ++i) {
             as_derived().activate_one(input[i], h_a[i], h_s[i]);
         }
     }
 
     void activate_many(const input_t& input, output_t& h_a) const {
-        for (std::size_t i = 0; i < input.size(); ++i) {
+        for (size_t i = 0; i < input.size(); ++i) {
             as_derived().activate_one(input[i], h_a[i]);
         }
     }
@@ -152,7 +152,7 @@ private:
     }
 
     static void display_visible_unit_activations(const parent_t& rbm) {
-        for (std::size_t channel = 0; channel < parent_t::NC; ++channel) {
+        for (size_t channel = 0; channel < parent_t::NC; ++channel) {
             std::cout << "Channel " << channel << std::endl;
 
             for (size_t i = 0; i < get_nv1(rbm); ++i) {
@@ -165,7 +165,7 @@ private:
     }
 
     static void display_visible_unit_samples(const parent_t& rbm) {
-        for (std::size_t channel = 0; channel < parent_t::NC; ++channel) {
+        for (size_t channel = 0; channel < parent_t::NC; ++channel) {
             std::cout << "Channel " << channel << std::endl;
 
             for (size_t i = 0; i < get_nv1(rbm); ++i) {

@@ -81,7 +81,7 @@ struct layer {
     }
 
     template <typename Input>
-    auto prepare_test_output(std::size_t samples) const {
+    auto prepare_test_output(size_t samples) const {
         return as_derived().template prepare_output<Input>(samples);
     }
 
@@ -91,7 +91,7 @@ struct layer {
     }
 
     template <typename Input>
-    auto prepare_train_output(std::size_t samples) const {
+    auto prepare_train_output(size_t samples) const {
         return as_derived().template prepare_output<Input>(samples);
     }
 
@@ -101,12 +101,12 @@ struct layer {
     }
 
     template <bool Train, typename Input, cpp_enable_if(Train)>
-    auto select_prepare_output(std::size_t samples) const {
+    auto select_prepare_output(size_t samples) const {
         return as_derived().template prepare_train_output<Input>(samples);
     }
 
     template <bool Train, typename Input, cpp_enable_if(!Train)>
-    auto select_prepare_output(std::size_t samples) const {
+    auto select_prepare_output(size_t samples) const {
         return as_derived().template prepare_test_output<Input>(samples);
     }
 

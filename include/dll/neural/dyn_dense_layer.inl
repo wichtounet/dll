@@ -42,8 +42,8 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
     std::unique_ptr<w_type> bak_w; //!< Backup Weights
     std::unique_ptr<b_type> bak_b; //!< Backup Hidden biases
 
-    std::size_t num_visible;
-    std::size_t num_hidden;
+    size_t num_visible;
+    size_t num_hidden;
 
     dyn_dense_layer() : base_type() {}
 
@@ -61,21 +61,21 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
     /*!
      * \brief Returns the input size of this layer
      */
-    std::size_t input_size() const noexcept {
+    size_t input_size() const noexcept {
         return num_visible;
     }
 
     /*!
      * \brief Returns the output size of this layer
      */
-    std::size_t output_size() const noexcept {
+    size_t output_size() const noexcept {
         return num_hidden;
     }
 
     /*!
      * \brief Returns the number of parameters of this layer
      */
-    std::size_t parameters() const noexcept {
+    size_t parameters() const noexcept {
         return num_visible * num_hidden;
     }
 
@@ -121,7 +121,7 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
         if (activation_function == function::SOFTMAX) {
             output = bias_add_2d(output, b);
 
-            for (std::size_t i = 0; i < Batch; ++i) {
+            for (size_t i = 0; i < Batch; ++i) {
                 output(i) = f_activate<activation_function>(output(i));
             }
         } else {
@@ -140,7 +140,7 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
         if (activation_function == function::SOFTMAX) {
             output = bias_add_2d(output, b);
 
-            for (std::size_t i = 0; i < Batch; ++i) {
+            for (size_t i = 0; i < Batch; ++i) {
                 output(i) = f_activate<activation_function>(output(i));
             }
         } else {
@@ -166,10 +166,10 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
      * \tparam Input The type of one input
      */
     template <typename Input>
-    output_t prepare_output(std::size_t samples) const {
+    output_t prepare_output(size_t samples) const {
         output_t output;
         output.reserve(samples);
-        for(std::size_t i = 0; i < samples; ++i){
+        for(size_t i = 0; i < samples; ++i){
             output.emplace_back(num_hidden);
         }
         return output;

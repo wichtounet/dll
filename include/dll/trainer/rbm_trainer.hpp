@@ -123,8 +123,8 @@ struct rbm_trainer {
         typename std::vector<typename std::iterator_traits<Iterator>::value_type>::iterator,
         Iterator>;
 
-    std::size_t batch_size            = 0;
-    std::size_t total_batches         = 0;
+    size_t batch_size            = 0;
+    size_t total_batches         = 0;
     error_type last_error = 0.0;
 
     //Note: input_first/input_last only relevant for its size, not
@@ -163,7 +163,7 @@ struct rbm_trainer {
     }
 
     template <typename Iterator>
-    error_type train(RBM& rbm, Iterator first, Iterator last, std::size_t max_epochs) {
+    error_type train(RBM& rbm, Iterator first, Iterator last, size_t max_epochs) {
         return train(rbm, first, last, first, last, max_epochs);
     }
 
@@ -181,7 +181,7 @@ struct rbm_trainer {
     }
 
     template <typename IIterator, typename EIterator>
-    error_type train(RBM& rbm, IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast, std::size_t max_epochs) {
+    error_type train(RBM& rbm, IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast, size_t max_epochs) {
         dll::auto_timer timer("rbm_trainer:train");
 
         //In case of shuffle, we don't want to shuffle the input, therefore create a copy and shuffle it
@@ -209,7 +209,7 @@ struct rbm_trainer {
         auto trainer = get_trainer(rbm);
 
         //Train for max_epochs epoch
-        for (std::size_t epoch = 0; epoch < max_epochs; ++epoch) {
+        for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
             //Shuffle if necessary
             shuffle(input_first, input_last, expected_first, expected_last);
 
@@ -230,7 +230,7 @@ struct rbm_trainer {
     }
 
     template <typename IIterator>
-    error_type train_denoising_auto(RBM& rbm, IIterator ifirst, IIterator ilast, std::size_t max_epochs, double noise) {
+    error_type train_denoising_auto(RBM& rbm, IIterator ifirst, IIterator ilast, size_t max_epochs, double noise) {
         dll::auto_timer timer("rbm_trainer:train:auto");
 
         cpp_assert(!Denoising, "train_denoising_auto should not set Denoising");
@@ -265,7 +265,7 @@ struct rbm_trainer {
         };
 
         //Train for max_epochs epoch
-        for (std::size_t epoch = 0; epoch < max_epochs; ++epoch) {
+        for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
             //Shuffle if necessary
             shuffle_direct(input_clean.begin(), input_clean.end());
 
@@ -293,8 +293,8 @@ struct rbm_trainer {
         return finalize_training(rbm);
     }
 
-    std::size_t batches = 0;
-    std::size_t samples = 0;
+    size_t batches = 0;
+    size_t samples = 0;
 
     void init_epoch() {
         batches = 0;
@@ -311,7 +311,7 @@ struct rbm_trainer {
             auto istart = iit;
             auto estart = eit;
 
-            std::size_t i = 0;
+            size_t i = 0;
             while (iit != end && i < batch_size) {
                 ++iit;
                 ++eit;
@@ -346,7 +346,7 @@ struct rbm_trainer {
         }
     }
 
-    void finalize_epoch(std::size_t epoch, rbm_training_context& context, rbm_t& rbm) {
+    void finalize_epoch(size_t epoch, rbm_training_context& context, rbm_t& rbm) {
         //Average all the gathered information
         context.reconstruction_error /= batches;
         context.sparsity /= batches;
