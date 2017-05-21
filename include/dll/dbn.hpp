@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include "generators.hpp"
+
 #include "dbn_layers.hpp"
 #include "dbn.inl"
 #include "dbn_desc.hpp"
