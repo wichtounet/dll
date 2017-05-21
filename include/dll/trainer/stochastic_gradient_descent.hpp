@@ -48,17 +48,8 @@ struct sgd_trainer {
     static constexpr auto layers     = dbn_t::layers;
     static constexpr auto batch_size = dbn_t::batch_size;
 
-    bool ae_training = false;
-
     dbn_t& dbn;
     decltype(build_context<sgd_context>(dbn)) full_context;
-
-    /*!
-     * \brief Indicates if the model is being trained as an auto-encoder (true) or not (false)
-     */
-    void set_autoencoder(bool ae){
-        this->ae_training = ae;;
-    }
 
     // Transform layers need to inherit dimensions from back
 
@@ -201,7 +192,6 @@ struct sgd_trainer {
 
             if /*constexpr*/ (dbn_t::loss == loss_function::CATEGORICAL_CROSS_ENTROPY){
                 if (cpp_unlikely(!full_batch)) {
-                    first_ctx.input = 0;
                     last_ctx.errors = 0;
 
                     for (size_t i = 0; i < n; ++i) {
@@ -212,7 +202,6 @@ struct sgd_trainer {
                 }
             } else if (dbn_t::loss == loss_function::MEAN_SQUARED_ERROR){
                 if (cpp_unlikely(!full_batch)) {
-                    first_ctx.input = 0;
                     last_ctx.errors = 0;
 
                     for (size_t i = 0; i < n; ++i) {
@@ -223,14 +212,17 @@ struct sgd_trainer {
                 }
             } else if (dbn_t::loss == loss_function::BINARY_CROSS_ENTROPY){
                 if (cpp_unlikely(!full_batch)) {
-                    first_ctx.input = 0;
                     last_ctx.errors = 0;
 
+                    auto& out = last_ctx.output;
+
                     for (size_t i = 0; i < n; ++i) {
-                        last_ctx.errors(i) = labels(i) - last_ctx.output(i);
+                        last_ctx.errors(i) = (labels(i) - out(i)) / ((1.0 - out(i)) >> out(i));
                     }
                 } else {
-                    last_ctx.errors = labels - last_ctx.output;
+                    auto& out = last_ctx.output;
+
+                    last_ctx.errors = (labels - out) / ((1.0 - out) >> out);
                 }
             } else {
                 cpp_unreachable("Unsupported loss function");

@@ -156,8 +156,6 @@ struct dbn_trainer {
 
         trainer = std::make_unique<trainer_t<dbn_t>>(dbn);
 
-        trainer->set_autoencoder(ae);
-
         //Initialize the trainer if necessary
         trainer->init_training(batch_size);
 
