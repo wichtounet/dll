@@ -18,6 +18,7 @@ struct label_cache_helper<Desc, LIterator, std::enable_if_t<Desc::Categorical &&
     using T = typename Desc::weight;
 
     using cache_type = etl::dyn_matrix<T, 2>;
+    using big_cache_type = etl::dyn_matrix<T, 3>;
 
     static void init(size_t n, size_t n_classes, LIterator& it, cache_type& cache){
         cache = cache_type(n, n_classes);
@@ -26,7 +27,20 @@ struct label_cache_helper<Desc, LIterator, std::enable_if_t<Desc::Categorical &&
         cpp_unused(it);
     }
 
+    static void init_big(size_t big, size_t n, size_t n_classes, LIterator& it, big_cache_type& cache){
+        cache = big_cache_type(big, n, n_classes);
+
+        cpp_unused(it);
+    }
+
+    template<typename E>
     static void set(size_t i, const LIterator& it, cache_type& cache){
+        cache(i, *it) = T(1);
+    }
+
+    template<typename E>
+    static void set(size_t i, const LIterator& it, E&& cache){
+        cache(i) = T(0);
         cache(i, *it) = T(1);
     }
 };
@@ -38,6 +52,7 @@ struct label_cache_helper<Desc, LIterator, std::enable_if_t<!Desc::Categorical &
     using T = typename Desc::weight;
 
     using cache_type = etl::dyn_matrix<T, 1>;
+    using big_cache_type = etl::dyn_matrix<T, 2>;
 
     static void init(size_t n, size_t n_classes, LIterator& it, cache_type& cache){
         cache = cache_type(n);
@@ -46,7 +61,15 @@ struct label_cache_helper<Desc, LIterator, std::enable_if_t<!Desc::Categorical &
         cpp_unused(n_classes);
     }
 
-    static void set(size_t i, const LIterator& it, cache_type& cache){
+    static void init_big(size_t big, size_t n, size_t n_classes, LIterator& it, big_cache_type& cache){
+        cache = big_cache_type(big, n);
+
+        cpp_unused(it);
+        cpp_unused(n_classes);
+    }
+
+    template<typename E>
+    static void set(size_t i, const LIterator& it, E&& cache){
         cache[i] = *it;
     }
 };
@@ -57,6 +80,7 @@ struct label_cache_helper<Desc, LIterator, std::enable_if_t<etl::is_1d<typename 
     using T = typename Desc::weight;
 
     using cache_type = etl::dyn_matrix<T, 2>;
+    using big_cache_type = etl::dyn_matrix<T, 3>;
 
     static_assert(!Desc::Categorical, "Cannot make such vector labels categorical");
 
@@ -68,16 +92,27 @@ struct label_cache_helper<Desc, LIterator, std::enable_if_t<etl::is_1d<typename 
         cpp_unused(n_classes);
     }
 
-    static void set(size_t i, const LIterator& it, cache_type& cache){
+    static void init_big(size_t big, size_t n, size_t n_classes, LIterator& it, big_cache_type& cache){
+        auto one = *it;
+        cache = big_cache_type(big, n, etl::dim<0>(one));
+
+        cpp_unused(it);
+        cpp_unused(n_classes);
+    }
+
+    template<typename E>
+    static void set(size_t i, const LIterator& it, E&& cache){
         cache(i) = *it;
     }
 };
 
+// Case 4: 3D labels
 template<typename Desc, typename LIterator>
 struct label_cache_helper<Desc, LIterator, std::enable_if_t<etl::is_3d<typename LIterator::value_type>::value>> {
     using T = typename Desc::weight;
 
     using cache_type = etl::dyn_matrix<T, 4>;
+    using big_cache_type = etl::dyn_matrix<T, 5>;
 
     static_assert(!Desc::Categorical, "Cannot make such matrix labels categorical");
 
@@ -89,7 +124,16 @@ struct label_cache_helper<Desc, LIterator, std::enable_if_t<etl::is_3d<typename 
         cpp_unused(n_classes);
     }
 
-    static void set(size_t i, const LIterator& it, cache_type& cache){
+    static void init_big(size_t big, size_t n, size_t n_classes, LIterator& it, big_cache_type& cache){
+        auto one = *it;
+        cache = big_cache_type(big, n, etl::dim<0>(one), etl::dim<1>(one), etl::dim<2>(one));
+
+        cpp_unused(it);
+        cpp_unused(n_classes);
+    }
+
+    template<typename E>
+    static void set(size_t i, const LIterator& it, E&& cache){
         cache(i) = *it;
     }
 };
