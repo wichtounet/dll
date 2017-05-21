@@ -146,7 +146,7 @@ struct dbn_trainer {
      * \param ae Indicates if trained as auto-encoder or not
      * \param max_epochs How many epochs will be used
      */
-    void start_training(dbn_t& dbn, bool ae, size_t max_epochs){
+    void start_training(dbn_t& dbn, size_t max_epochs){
         constexpr auto batch_size = std::decay_t<dbn_t>::batch_size;
 
         //Initialize the momentum
@@ -286,7 +286,7 @@ private:
         dll::auto_timer timer("dbn::trainer::train_impl");
 
         // Initialization steps
-        start_training(dbn, ae, max_epochs);
+        start_training(dbn, max_epochs);
 
         //Train the model for max_epochs epoch
 
@@ -323,7 +323,7 @@ private:
         cpp_unused(llast);
 
         // Initialization steps
-        start_training(dbn, ae, max_epochs);
+        start_training(dbn, max_epochs);
 
         // Train the model
 
