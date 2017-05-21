@@ -135,6 +135,7 @@ public:
     static constexpr size_t layers         = layers_t::size;     ///< The number of layers
     static constexpr size_t batch_size     = desc::BatchSize;    ///< The batch size (for finetuning)
     static constexpr size_t big_batch_size = desc::BigBatchSize; ///< The number of pretraining batch to do at once
+    static constexpr auto loss             = desc::Loss;         ///< The loss function
 
     layers_t tuples; ///< The layers
 
