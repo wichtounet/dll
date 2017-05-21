@@ -185,23 +185,58 @@ struct sgd_trainer {
             });
         }
 
-        //Compute the errors of the last layer
-
-        if (cpp_unlikely(!full_batch)) {
-            first_ctx.input = 0;
-            last_ctx.errors = 0;
-
-            for (size_t i = 0; i < etl::dim<0>(inputs); ++i) {
-                last_ctx.errors(i) = labels(i) - last_ctx.output(i);
-            }
-        } else {
-            last_ctx.errors = labels - last_ctx.output;
-        }
-
-        // Backpropagate the error
-
         {
             dll::auto_timer timer("sgd::backward");
+
+            //Compute the errors of the last layer
+
+            // Note: This only compute the derivative of the error function
+            // The derivative of the activation function for the last layer
+            // will be computed in the next step in adapt errors
+
+            // TODO: The computation is not totally since it should in
+            // fact depends on the activation function of the last layer
+
+            // TODO: The MSE and CCE gradients should not be the same
+
+            if /*constexpr*/ (dbn_t::loss == loss_function::CATEGORICAL_CROSS_ENTROPY){
+                if (cpp_unlikely(!full_batch)) {
+                    first_ctx.input = 0;
+                    last_ctx.errors = 0;
+
+                    for (size_t i = 0; i < n; ++i) {
+                        last_ctx.errors(i) = labels(i) - last_ctx.output(i);
+                    }
+                } else {
+                    last_ctx.errors = labels - last_ctx.output;
+                }
+            } else if (dbn_t::loss == loss_function::MEAN_SQUARED_ERROR){
+                if (cpp_unlikely(!full_batch)) {
+                    first_ctx.input = 0;
+                    last_ctx.errors = 0;
+
+                    for (size_t i = 0; i < n; ++i) {
+                        last_ctx.errors(i) = labels(i) - last_ctx.output(i);
+                    }
+                } else {
+                    last_ctx.errors = labels - last_ctx.output;
+                }
+            } else if (dbn_t::loss == loss_function::BINARY_CROSS_ENTROPY){
+                if (cpp_unlikely(!full_batch)) {
+                    first_ctx.input = 0;
+                    last_ctx.errors = 0;
+
+                    for (size_t i = 0; i < n; ++i) {
+                        last_ctx.errors(i) = labels(i) - last_ctx.output(i);
+                    }
+                } else {
+                    last_ctx.errors = labels - last_ctx.output;
+                }
+            } else {
+                cpp_unreachable("Unsupported loss function");
+            }
+
+            // Backpropagate the error
 
             cpp::for_each_rpair(full_context, [](auto& layer_ctx_1, auto& layer_ctx_2) {
                 auto& r2 = layer_ctx_2.first;
@@ -240,26 +275,40 @@ struct sgd_trainer {
 
             auto& out = last_ctx.output;
 
-            if (cpp_unlikely(!full_batch)) {
-                error = amean(labels - slice(out, 0, etl::dim<0>(inputs)));
+            if /*constexpr*/ (dbn_t::loss == loss_function::CATEGORICAL_CROSS_ENTROPY){
+                if (cpp_unlikely(!full_batch)) {
+                    auto sout = slice(out, 0, n);
 
-                if (ae_training) {
-                    // Reconstruction Cross-Entropy Loss
-                    loss = -sum((labels >> log(slice(out, 0, etl::dim<0>(inputs)))) + ((1.0 - labels) >> log(1 - slice(out, 0, etl::dim<0>(inputs))))) / double(n);
+                    loss = (-1.0 / n) * sum(log(sout) >> labels);
                 } else {
-                    // Cross-Entropy Loss
-                    loss = -sum(log(slice(out, 0, etl::dim<0>(inputs))) >> labels) / double(n);
+                    loss = (-1.0 / n) * sum(log(out) >> labels);
+                }
+            } else if (dbn_t::loss == loss_function::MEAN_SQUARED_ERROR){
+                if (cpp_unlikely(!full_batch)) {
+                    auto sout = slice(out, 0, n);
+
+                    loss = (1.0 / 2.0 * n) * sum((sout - labels) >> (sout - labels));
+                } else {
+                    loss = (1.0 / 2.0 * n) * sum((out - labels) >> (out - labels));
+                }
+            } else if (dbn_t::loss == loss_function::BINARY_CROSS_ENTROPY){
+                if (cpp_unlikely(!full_batch)) {
+                    auto sout = slice(out, 0, n);
+
+                    loss = (-1.0 / n) * sum((labels >> log(sout)) + ((1.0 - labels) >> log(1.0 - sout)));
+                } else {
+                    loss = (-1.0 / n) * sum((labels >> log(out)) + ((1.0 - labels) >> log(1.0 - out)));
                 }
             } else {
-                error = amean(labels - out);
+                cpp_unreachable("Unsupported loss function");
+            }
 
-                if (ae_training) {
-                    // Reconstruction Cross-Entropy Loss
-                    loss = -sum((labels >> log(out)) + ((1.0 - labels) >> log(1 - out))) / double(n);
-                } else {
-                    // Cross-Entropy Loss
-                    loss = -sum(log(out) >> labels) / double(n);
-                }
+            // Compute the error
+
+            if (cpp_unlikely(!full_batch)) {
+                error = amean(labels - slice(out, 0, n));
+            } else {
+                error = amean(labels - out);
             }
         }
 
