@@ -287,9 +287,9 @@ struct sgd_trainer {
                 if (cpp_unlikely(!full_batch)) {
                     auto sout = slice(out, 0, n);
 
-                    loss = (-1.0 / n) * sum((labels >> log(sout)) + ((1.0 - labels) >> log(1.0 - sout)));
+                    loss = -1.0 * mean((labels >> log(sout)) + ((1.0 - labels) >> log(1.0 - sout)));
                 } else {
-                    loss = (-1.0 / n) * sum((labels >> log(out)) + ((1.0 - labels) >> log(1.0 - out)));
+                    loss = -1.0 * mean((labels >> log(out)) + ((1.0 - labels) >> log(1.0 - out)));
                 }
             } else {
                 cpp_unreachable("Unsupported loss function");
