@@ -210,6 +210,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
     big_label_cache_type label_cache;
 
     size_t current = 0;
+    size_t current_read = 0;
 
     mutable volatile bool status[big_batch_size];
     mutable volatile size_t indices[big_batch_size];
@@ -241,6 +242,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
         cpp_unused(last);
         cpp_unused(llast);
 
+        current_read = 0;
         it = orig_it;
         lit = orig_lit;
 
@@ -289,7 +291,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
                     }
                 }
 
-                for(size_t i = 0; i < batch_size; ++i){
+                for(size_t i = 0; i < batch_size && current_read < _size; ++i){
                     // Random crop the image
                     cropper.transform_first(batch_cache(index)(i), *it);
 
@@ -306,6 +308,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
 
                     ++it;
                     ++lit;
+                    ++current_read;
                 }
 
                 // Notify a waiter that one batch is ready
@@ -338,8 +341,9 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
     void reset_generation(){
         std::unique_lock<std::mutex> ulock(main_lock);
 
-        lit = orig_lit;
+        current_read = 0;
         it = orig_it;
+        lit = orig_lit;
 
         for(size_t b = 0; b < big_batch_size; ++b){
             status[b] = false;
@@ -450,14 +454,14 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
         const auto b = batch % big_batch_size;
 
         if(status[b]){
-            return batch_cache(b);
+            return etl::slice(batch_cache(b), 0, std::min(batch_size, _size - current));
         }
 
         ready_condition.wait(ulock, [this, b] {
             return status[b];
         });
 
-        return batch_cache(b);
+        return etl::slice(batch_cache(b), 0, std::min(batch_size, _size - current));
     }
 
     /*!
@@ -471,14 +475,14 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
         const auto b = batch % big_batch_size;
 
         if(status[b]){
-            return label_cache(b);
+            return etl::slice(label_cache(b), 0, std::min(batch_size, _size - current));
         }
 
         ready_condition.wait(ulock, [this, b] {
             return status[b];
         });
 
-        return label_cache(b);
+        return etl::slice(label_cache(b), 0, std::min(batch_size, _size - current));
     }
 
     /*!
