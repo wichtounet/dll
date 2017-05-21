@@ -38,6 +38,8 @@ struct generic_dbn_desc {
     static constexpr size_t BatchSize    = detail::get_value<batch_size<1>, Parameters...>::value;
     static constexpr size_t BigBatchSize = detail::get_value<big_batch_size<1>, Parameters...>::value;
 
+    static constexpr auto Loss = detail::get_value<loss<loss_function::CATEGORICAL_CROSS_ENTROPY>, Parameters...>::value;
+
     /*! The type of the trainer to use to train the DBN */
     template <typename DBN>
     using trainer_t = typename detail::get_template_type<trainer<default_dbn_trainer_t>, Parameters...>::template value<DBN>;
@@ -57,7 +59,7 @@ struct generic_dbn_desc {
         detail::is_valid<
             cpp::type_list<
                 trainer_id, watcher_id, momentum_id, weight_decay_id, big_batch_size_id, batch_size_id, verbose_id, no_epoch_error_id,
-                memory_id, batch_mode_id, svm_concatenate_id, svm_scale_id, serial_id, lr_driver_id, shuffle_id, shuffle_pre_id>,
+                memory_id, batch_mode_id, svm_concatenate_id, svm_scale_id, serial_id, lr_driver_id, shuffle_id, shuffle_pre_id, loss_id>,
             Parameters...>::value,
         "Invalid parameters type");
 };

@@ -11,6 +11,7 @@
 
 #include "unit_type.hpp"
 #include "function.hpp"
+#include "loss.hpp"
 #include "decay_type.hpp"
 #include "lr_driver_type.hpp"
 #include "sparsity_method.hpp"
@@ -68,6 +69,7 @@ struct visible_id;
 struct hidden_id;
 struct pooling_id;
 struct activation_id;
+struct loss_id;
 struct initializer_id;
 struct initializer_bias_id;
 struct weight_decay_id;
@@ -148,6 +150,13 @@ struct pooling : value_conf_elt<pooling_id, unit_type, PT> {};
  */
 template <function FT>
 struct activation : value_conf_elt<activation_id, function, FT> {};
+
+/*!
+ * \brief Sets the loss function
+ * \tparam FT The loss function type
+ */
+template <loss_function FT>
+struct loss : value_conf_elt<loss_id, loss_function, FT> {};
 
 /*!
  * \brief Sets the initializer
