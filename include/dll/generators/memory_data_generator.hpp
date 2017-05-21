@@ -17,9 +17,15 @@ struct is_augmented {
     static constexpr bool value = (Desc::random_crop_x > 0 && Desc::random_crop_y > 0) || Desc::HorizontalMirroring || Desc::VerticalMirroring || Desc::Noise || Desc::ElasticDistortion;
 };
 
+/*!
+ * \brief a in-memory data generator
+ */
 template<typename Iterator, typename LIterator, typename Desc, typename Enable = void>
 struct memory_data_generator;
 
+/*!
+ * \copydoc memory_data_generator
+ */
 template<typename Iterator, typename LIterator, typename Desc>
 struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_augmented<Desc>::value>> {
     using desc = Desc;
@@ -59,58 +65,113 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_au
         cpp_unused(llast);
     }
 
+    /*!
+     * \brief Reset the generator to the beginning
+     */
     void reset(){
         current = 0;
     }
 
+    /*
+     * \brief Reset the generator and shuffle the order of samples
+     */
     void reset_shuffle(){
         current = 0;
         shuffle();
     }
 
+    /*!
+     * \brief Shuffle the order of the samples.
+     *
+     * This should only be done when the generator is at the beginning.
+     */
     void shuffle(){
         cpp_assert(!current, "Shuffle should only be performed on start of generation");
 
         etl::parallel_shuffle(input_cache, label_cache);
     }
 
+    /*!
+     * \brief Return the index of the current batch in the generation
+     * \return The current batch index
+     */
     size_t current_batch() const {
         return current / batch_size;
     }
 
+    /*
+     * \brief Returns the number of elements in the generator
+     * \return The number of elements in the generator
+     */
     size_t size() const {
         return etl::dim<0>(input_cache);
     }
 
+    /*
+     * \brief Returns the augmented number of elements in the generator.
+     *
+     * This number may be an estimate, depending on which augmentation
+     * techniques are enabled.
+     *
+     * \return The augmented number of elements in the generator
+     */
     size_t augmented_size() const {
         return etl::dim<0>(input_cache);
     }
 
+    /*
+     * \brief Returns the number of batches in the generator.
+     * \return The number of batches in the generator
+     */
     size_t batches() const {
         return size() / batch_size + (size() % batch_size == 0 ? 0 : 1);
     }
 
+    /*
+     * \brief Indicates if the generator has a next batch or not
+     * \return true if the generator has a next batch, false otherwise
+     */
     bool has_next_batch() const {
         return current < size() - 1;
     }
 
+    /*!
+     * \brief Moves to the next batch.
+     *
+     * This should only be called if the generator has a next batch.
+     */
     void next_batch() {
         current += batch_size;
     }
 
+    /*!
+     * \brief Returns the current data batch
+     * \return a a batch of data.
+     */
     auto data_batch() const {
         return etl::slice(input_cache, current, std::min(current + batch_size, size()));
     }
 
+    /*!
+     * \brief Returns the current label batch
+     * \return a a batch of label.
+     */
     auto label_batch() const {
         return etl::slice(label_cache, current, std::min(current + batch_size, size()));
     }
 
+    /*!
+     * \brief Returns the number of dimensions of the input.
+     * \return The number of dimensions of the input.
+     */
     static constexpr size_t dimensions() {
         return etl::dimensions<data_cache_type>() - 1;
     }
 };
 
+/*!
+ * \copydoc memory_data_generator
+ */
 template<typename Iterator, typename LIterator, typename Desc>
 struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_augmented<Desc>::value>> {
     using desc = Desc;
@@ -279,43 +340,83 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
         condition.notify_one();
     }
 
+    /*!
+     * \brief Reset the generator to the beginning
+     */
     void reset(){
         current = 0;
         reset_generation();
     }
 
+    /*
+     * \brief Reset the generator and shuffle the order of samples
+     */
     void reset_shuffle(){
         current = 0;
         shuffle();
         reset_generation();
     }
 
+    /*!
+     * \brief Shuffle the order of the samples.
+     *
+     * This should only be done when the generator is at the beginning.
+     */
     void shuffle(){
         cpp_assert(!current, "Shuffle should only be performed on start of generation");
 
         etl::parallel_shuffle(input_cache, label_cache);
     }
 
+    /*!
+     * \brief Return the index of the current batch in the generation
+     * \return The current batch index
+     */
     size_t current_batch() const {
         return current / batch_size;
     }
 
+    /*
+     * \brief Returns the number of elements in the generator
+     * \return The number of elements in the generator
+     */
     size_t size() const {
         return etl::dim<0>(input_cache);
     }
 
+    /*
+     * \brief Returns the augmented number of elements in the generator.
+     *
+     * This number may be an estimate, depending on which augmentation
+     * techniques are enabled.
+     *
+     * \return The augmented number of elements in the generator
+     */
     size_t augmented_size() const {
         return cropper.scaling() * mirrorer.scaling() * noiser.scaling() * distorter.scaling() * etl::dim<0>(input_cache);
     }
 
+    /*
+     * \brief Returns the number of batches in the generator.
+     * \return The number of batches in the generator
+     */
     size_t batches() const {
         return size() / batch_size + (size() % batch_size == 0 ? 0 : 1);
     }
 
+    /*
+     * \brief Indicates if the generator has a next batch or not
+     * \return true if the generator has a next batch, false otherwise
+     */
     bool has_next_batch() const {
         return current < size() - 1;
     }
 
+    /*!
+     * \brief Moves to the next batch.
+     *
+     * This should only be called if the generator has a next batch.
+     */
     void next_batch() {
         // Get information from batch that has been consumed
         const auto batch = current / batch_size;
@@ -333,6 +434,10 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
         current += batch_size;
     }
 
+    /*!
+     * \brief Returns the current data batch
+     * \return a a batch of data.
+     */
     auto data_batch() const {
         std::unique_lock<std::mutex> ulock(main_lock);
 
@@ -350,10 +455,18 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
         return batch_cache(b);
     }
 
+    /*!
+     * \brief Returns the current label batch
+     * \return a a batch of label.
+     */
     auto label_batch() const {
         return etl::slice(label_cache, current, std::min(current + batch_size, size()));
     }
 
+    /*!
+     * \brief Returns the number of dimensions of the input.
+     * \return The number of dimensions of the input.
+     */
     static constexpr size_t dimensions() {
         return etl::dimensions<data_cache_type>() - 1;
     }
