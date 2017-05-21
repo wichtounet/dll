@@ -21,13 +21,13 @@ struct is_augmented {
  * \brief a in-memory data generator
  */
 template<typename Iterator, typename LIterator, typename Desc, typename Enable = void>
-struct memory_data_generator;
+struct inmemory_data_generator;
 
 /*!
- * \copydoc memory_data_generator
+ * \copydoc inmemory_data_generator
  */
 template<typename Iterator, typename LIterator, typename Desc>
-struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_augmented<Desc>::value>> {
+struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_augmented<Desc>::value>> {
     using desc = Desc;
     using weight = typename desc::weight;
     using data_cache_helper_t = cache_helper<Desc, Iterator>;
@@ -45,7 +45,7 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_au
 
     size_t current = 0;
 
-    memory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes){
+    inmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes){
         const size_t n = std::distance(first, last);
 
         data_cache_helper_t::init(n, first, input_cache);
@@ -170,10 +170,10 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_au
 };
 
 /*!
- * \copydoc memory_data_generator
+ * \copydoc inmemory_data_generator
  */
 template<typename Iterator, typename LIterator, typename Desc>
-struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_augmented<Desc>::value>> {
+struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_augmented<Desc>::value>> {
     using desc = Desc;
     using weight = typename desc::weight;
     using data_cache_helper_t = cache_helper<desc, Iterator>;
@@ -211,7 +211,7 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
     std::thread main_thread;
     bool threaded = false;
 
-    memory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes) : cropper(*first), mirrorer(*first), distorter(*first), noiser(*first) {
+    inmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes) : cropper(*first), mirrorer(*first), distorter(*first), noiser(*first) {
         const size_t n = std::distance(first, last);
 
         data_cache_helper_t::init(n, first, input_cache);
@@ -315,13 +315,13 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
         });
     }
 
-    memory_data_generator(const memory_data_generator& rhs) = delete;
-    memory_data_generator& operator=(const memory_data_generator& rhs) = delete;
+    inmemory_data_generator(const inmemory_data_generator& rhs) = delete;
+    inmemory_data_generator& operator=(const inmemory_data_generator& rhs) = delete;
 
-    memory_data_generator(memory_data_generator&& rhs) = delete;
-    memory_data_generator& operator=(memory_data_generator&& rhs) = delete;
+    inmemory_data_generator(inmemory_data_generator&& rhs) = delete;
+    inmemory_data_generator& operator=(inmemory_data_generator&& rhs) = delete;
 
-    ~memory_data_generator(){
+    ~inmemory_data_generator(){
         cpp::with_lock(main_lock, [this] { stop_flag = true; });
 
         condition.notify_all();
@@ -473,10 +473,10 @@ struct memory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_aug
 };
 
 /*!
- * \brief Descriptor for a memory_data_generator
+ * \brief Descriptor for a inmemory_data_generator
  */
 template <typename... Parameters>
-struct memory_data_generator_desc {
+struct inmemory_data_generator_desc {
     /*!
      * A list of all the parameters of the descriptor
      */
@@ -544,18 +544,18 @@ struct memory_data_generator_desc {
      * The generator type
      */
     template<typename Iterator, typename LIterator>
-    using generator_t = memory_data_generator<Iterator, LIterator, memory_data_generator_desc<Parameters...>>;
+    using generator_t = inmemory_data_generator<Iterator, LIterator, inmemory_data_generator_desc<Parameters...>>;
 };
 
 template<typename Iterator, typename LIterator, typename... Parameters>
-auto make_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, const memory_data_generator_desc<Parameters...>& /*desc*/){
-    using generator_t = typename memory_data_generator_desc<Parameters...>::template generator_t<Iterator, LIterator>;
+auto make_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, const inmemory_data_generator_desc<Parameters...>& /*desc*/){
+    using generator_t = typename inmemory_data_generator_desc<Parameters...>::template generator_t<Iterator, LIterator>;
     return std::make_unique<generator_t>(first, last, lfirst, llast, n_classes);
 }
 
 template<typename Container, typename LContainer, typename... Parameters>
-auto make_generator(const Container& container, const LContainer& lcontainer, size_t n_classes, const memory_data_generator_desc<Parameters...>& /*desc*/){
-    using generator_t = typename memory_data_generator_desc<Parameters...>::template generator_t<typename Container::const_iterator, typename LContainer::const_iterator>;
+auto make_generator(const Container& container, const LContainer& lcontainer, size_t n_classes, const inmemory_data_generator_desc<Parameters...>& /*desc*/){
+    using generator_t = typename inmemory_data_generator_desc<Parameters...>::template generator_t<typename Container::const_iterator, typename LContainer::const_iterator>;
     return std::make_unique<generator_t>(container.begin(), container.end(), lcontainer.begin(), lcontainer.end(), n_classes);
 }
 
