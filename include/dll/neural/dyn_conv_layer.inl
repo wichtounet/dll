@@ -221,7 +221,7 @@ struct dyn_conv_layer final : neural_layer<dyn_conv_layer<Desc>, Desc> {
         dll::auto_timer timer("conv:compute_gradients");
 
         context.w_grad = etl::ml::convolution_backward_filter(context.input, context.errors);
-        context.b_grad = etl::bias_batch_mean(context.errors);
+        context.b_grad = etl::bias_batch_mean_4d(context.errors);
     }
 };
 

@@ -228,7 +228,7 @@ struct dyn_conv_rbm final : public standard_crbm<dyn_conv_rbm<Desc>, Desc> {
      */
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
-        output = etl::conv_4d_full_flipped(context.errors, w);
+        output = etl::ml::convolution_backward(context.errors, w);
     }
 
     /*!
@@ -237,8 +237,8 @@ struct dyn_conv_rbm final : public standard_crbm<dyn_conv_rbm<Desc>, Desc> {
      */
     template<typename C>
     void compute_gradients(C& context) const {
-        context.w_grad = conv_4d_valid_filter_flipped(context.input, context.errors);
-        context.b_grad = etl::mean_r(etl::sum_l(context.errors));
+        context.w_grad = etl::ml::convolution_backward_filter(context.input, context.errors);
+        context.b_grad = etl::bias_batch_mean_4d(context.errors);
     }
 
     friend base_type;
