@@ -71,12 +71,7 @@ struct dbn_trainer {
 
     template <typename Generator>
     error_type train(DBN& dbn, Generator& generator, size_t max_epochs) {
-        return train_impl(dbn, false, generator, max_epochs);
-    }
-
-    template <typename Generator>
-    error_type train_ae(DBN& dbn, Generator& generator, size_t max_epochs) {
-        return train_impl(dbn, true, generator, max_epochs);
+        return train_impl(dbn, generator, max_epochs);
     }
 
     template <typename Iterator, typename LIterator>
@@ -282,7 +277,7 @@ struct dbn_trainer {
 
 private:
     template <typename Generator>
-    error_type train_impl(DBN& dbn, bool ae, Generator& generator, size_t max_epochs) {
+    error_type train_impl(DBN& dbn, Generator& generator, size_t max_epochs) {
         dll::auto_timer timer("dbn::trainer::train_impl");
 
         // Initialization steps
@@ -304,7 +299,7 @@ private:
 
             double new_error;
             double loss;
-            std::tie(loss, new_error) = train_fast_partial_direct(dbn, ae, generator, epoch);
+            std::tie(loss, new_error) = train_fast_partial_direct(dbn, generator, epoch);
 
             if(stop_epoch(dbn, epoch, new_error, loss)){
                 break;
@@ -448,10 +443,8 @@ private:
     }
 
     template<typename Generator>
-    std::pair<double, double> train_fast_partial_direct(dbn_t& dbn, bool ae, Generator& generator, size_t epoch){
+    std::pair<double, double> train_fast_partial_direct(dbn_t& dbn, Generator& generator, size_t epoch){
         const size_t batches = generator.batches();
-
-        double loss = 0;
 
         //Train one mini-batch at a time
         while(generator.has_next_batch()){
@@ -472,25 +465,23 @@ private:
                 watcher.ft_batch_end(epoch, generator.current_batch(), batches, batch_error, batch_loss, dbn);
             }
 
-            loss += batch_loss;
-
             generator.next_batch();
         }
 
-        loss /= batches;
-
         // Compute the error at this epoch
         double new_error;
+        double new_loss;
 
         if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()){
             dll::auto_timer timer("dbn::trainer::train_impl::epoch::error");
 
-            new_error = batch_error_function(dbn, ae, generator);
+            std::tie(new_error, new_loss) = dbn.evaluate_metrics(generator);
         } else {
             new_error = -1.0;
+            new_loss  = -1.0;
         }
 
-        return {loss, new_error};
+        return {new_loss, new_error};
     }
 
     template<typename Data, typename Labels, typename Transformer>
