@@ -554,4 +554,22 @@ auto make_generator(const Container& container, const LContainer& lcontainer, si
     return std::make_unique<generator_t>(container.begin(), container.end(), lcontainer.begin(), lcontainer.end(), n_classes);
 }
 
+// The following are simply helpers for creating generic generators
+
+template<typename Iterator, typename LIterator, typename... Parameters>
+auto make_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n, size_t n_classes, const inmemory_data_generator_desc<Parameters...>& /*desc*/){
+    cpp_unused(n);
+
+    using generator_t = typename inmemory_data_generator_desc<Parameters...>::template generator_t<Iterator, LIterator>;
+    return std::make_unique<generator_t>(first, last, lfirst, llast, n_classes);
+}
+
+template<typename Container, typename LContainer, typename... Parameters>
+auto make_generator(const Container& container, const LContainer& lcontainer, size_t n, size_t n_classes, const inmemory_data_generator_desc<Parameters...>& /*desc*/){
+    cpp_unused(n);
+
+    using generator_t = typename inmemory_data_generator_desc<Parameters...>::template generator_t<typename Container::const_iterator, typename LContainer::const_iterator>;
+    return std::make_unique<generator_t>(container.begin(), container.end(), lcontainer.begin(), lcontainer.end(), n_classes);
+}
+
 } //end of dll namespace
