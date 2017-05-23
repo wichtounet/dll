@@ -100,7 +100,7 @@ decltype(auto) f_activate(E&& expr) {
  */
 template <function F, typename E, cpp_enable_if(F == function::IDENTITY)>
 decltype(auto) f_derivative(E&& expr) {
-    return etl::identity_derivative(std::forward<E>(expr));
+    return etl::ml::identity_derivative_out(std::forward<E>(expr));
 }
 
 /*!
@@ -108,7 +108,7 @@ decltype(auto) f_derivative(E&& expr) {
  */
 template <function F, typename E, cpp_enable_if(F == function::SIGMOID)>
 decltype(auto) f_derivative(E&& expr) {
-    return etl::sigmoid_derivative(std::forward<E>(expr));
+    return etl::ml::sigmoid_derivative_out(std::forward<E>(expr));
 }
 
 /*!
@@ -116,7 +116,7 @@ decltype(auto) f_derivative(E&& expr) {
  */
 template <function F, typename E, cpp_enable_if(F == function::TANH)>
 decltype(auto) f_derivative(E&& expr) {
-    return etl::tanh_derivative(std::forward<E>(expr));
+    return etl::ml::tanh_derivative_out(std::forward<E>(expr));
 }
 
 /*!
@@ -124,7 +124,7 @@ decltype(auto) f_derivative(E&& expr) {
  */
 template <function F, typename E, cpp_enable_if(F == function::RELU)>
 decltype(auto) f_derivative(E&& expr) {
-    return etl::relu_derivative(std::forward<E>(expr));
+    return etl::ml::relu_derivative_out(std::forward<E>(expr));
 }
 
 /*!
@@ -132,7 +132,7 @@ decltype(auto) f_derivative(E&& expr) {
  */
 template <function F, typename E, cpp_enable_if(F == function::SOFTMAX)>
 decltype(auto) f_derivative(E&& expr) {
-    return etl::softmax_derivative(std::forward<E>(expr));
+    return etl::ml::softmax_derivative_out(std::forward<E>(expr));
 }
 
 } //end of dll namespace
