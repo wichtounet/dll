@@ -265,43 +265,7 @@ struct sgd_trainer {
         {
             dll::auto_timer timer("sgd::error");
 
-            auto& out = last_ctx.output;
-
-            if /*constexpr*/ (dbn_t::loss == loss_function::CATEGORICAL_CROSS_ENTROPY){
-                if (cpp_unlikely(!full_batch)) {
-                    auto sout = slice(out, 0, n);
-
-                    loss = (-1.0 / n) * sum(log(sout) >> labels);
-                } else {
-                    loss = (-1.0 / n) * sum(log(out) >> labels);
-                }
-            } else if (dbn_t::loss == loss_function::MEAN_SQUARED_ERROR){
-                if (cpp_unlikely(!full_batch)) {
-                    auto sout = slice(out, 0, n);
-
-                    loss = (1.0 / 2.0 * n) * sum((sout - labels) >> (sout - labels));
-                } else {
-                    loss = (1.0 / 2.0 * n) * sum((out - labels) >> (out - labels));
-                }
-            } else if (dbn_t::loss == loss_function::BINARY_CROSS_ENTROPY){
-                if (cpp_unlikely(!full_batch)) {
-                    auto sout = slice(out, 0, n);
-
-                    loss = -mean((labels >> log(sout)) + ((1.0 - labels) >> log(1.0 - sout)));
-                } else {
-                    loss = -mean((labels >> log(out)) + ((1.0 - labels) >> log(1.0 - out)));
-                }
-            } else {
-                cpp_unreachable("Unsupported loss function");
-            }
-
-            // Compute the error
-
-            if (cpp_unlikely(!full_batch)) {
-                error = amean(labels - slice(out, 0, n));
-            } else {
-                error = amean(labels - out);
-            }
+            std::tie(error, loss) = dbn.evaluate_metrics_batch(last_ctx.output, labels, n, true);
         }
 
         return std::make_pair(error, loss);

@@ -837,6 +837,7 @@ public:
         auto metrics = evaluate_metrics(generator);
 
         printf("error: %.5f \n", std::get<0>(metrics));
+        printf(" loss: %.5f \n", std::get<1>(metrics));
     }
 
     /*!
@@ -904,7 +905,7 @@ public:
         return std::get<0>(metrics);
     }
 
-    using metrics_t = std::tuple<double>; ///< The metrics returned by evaluate_metrics
+    using metrics_t = std::tuple<double, double>; ///< The metrics returned by evaluate_metrics
 
 private:
 
@@ -922,6 +923,58 @@ private:
     }
 
 public:
+    template <typename Output, typename Labels>
+    metrics_t evaluate_metrics_batch(Output&& output, Labels&& labels, size_t n, bool normalize){
+        double batch_error = 0.0;
+        double batch_loss  = 0.0;
+
+        const bool full_batch = n == batch_size;
+
+        double s = 1.0;
+
+        if(normalize){
+            s = n;
+        }
+
+        // TODO Detect if labels are categorical already or not
+        // And change the way this is done
+
+        if /*constexpr*/ (loss == loss_function::CATEGORICAL_CROSS_ENTROPY) {
+            if (cpp_unlikely(!full_batch)) {
+                auto soutput = slice(output, 0, n);
+
+                batch_loss  = (-1.0 / s) * sum(log(soutput) >> labels);
+                batch_error = (1.0 / s) * sum(min(abs(argmax(labels) - argmax(soutput)), 1.0));
+            } else {
+                batch_loss  = (-1.0 / s) * sum(log(output) >> labels);
+                batch_error = (1.0 / s) * sum(min(abs(argmax(labels) - argmax(output)), 1.0));
+            }
+        } else if (loss == loss_function::MEAN_SQUARED_ERROR) {
+            if (cpp_unlikely(!full_batch)) {
+                auto soutput = slice(output, 0, n);
+
+                batch_loss  = (1.0 / (2.0 * s)) * sum((soutput - labels) >> (soutput - labels));
+                batch_error = (1.0 / s) * asum(labels - soutput);
+            } else {
+                batch_loss  = (1.0 / (2.0 * s)) * sum((output - labels) >> (output - labels));
+                batch_error = (1.0 / s) * asum(labels - output);
+            }
+        } else if (loss == loss_function::BINARY_CROSS_ENTROPY) {
+            if (cpp_unlikely(!full_batch)) {
+                auto soutput = slice(output, 0, n);
+
+                batch_loss  = (-1.0 / s) * sum((labels >> log(soutput)) + ((1.0 - labels) >> log(1.0 - soutput)));
+                batch_error = (1.0 / s) * asum(labels - soutput);
+            } else {
+                batch_loss  = (-1.0 / s) * sum((labels >> log(output)) + ((1.0 - labels) >> log(1.0 - output)));
+                batch_error = (1.0 / s) * asum(labels - output);
+            }
+        } else {
+            cpp_unreachable("Unsupported loss function");
+        }
+
+        return std::make_tuple(batch_error, batch_loss);
+    }
 
     /*!
      * \brief Evaluate the network on the given classification task
@@ -933,12 +986,10 @@ public:
      */
     template <typename Generator>
     metrics_t evaluate_metrics(Generator& generator){
-        // TODO Detect if labels are categorical already or not
-        // And change the way this is done
-
         generator.reset();
 
         double error = 0.0;
+        double loss  = 0.0;
 
         while(generator.has_next_batch()){
             auto input_batch = generator.data_batch();
@@ -946,15 +997,21 @@ public:
 
             decltype(auto) output = this->forward_batch(input_batch);
 
-            error += sum(min(abs(argmax(label_batch) - argmax(output)), 1.0));
+            double batch_error;
+            double batch_loss;
+
+            std::tie(batch_error, batch_loss) = evaluate_metrics_batch(output, label_batch, etl::dim<0>(input_batch), false);
+
+            error += batch_error;
+            loss += batch_loss;
 
             generator.next_batch();
         }
 
-        // Normalize the error
         error /= generator.size();
+        loss /= generator.size();
 
-        return std::make_tuple(error);
+        return std::make_tuple(error, loss);
     }
 
     /*!
@@ -1013,7 +1070,7 @@ public:
         // Normalize the error
         error /= count;
 
-        return std::make_tuple(error);
+        return std::make_tuple(error, 0.0);
     }
 
 private:
