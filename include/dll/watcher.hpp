@@ -134,7 +134,7 @@ struct default_dbn_watcher {
      * \param max_epochs The maximum number of epochs to train the network
      */
     void fine_tuning_begin(const DBN& dbn, size_t max_epochs) {
-        std::cout << "Train the network with \"" << DBN::desc::template trainer_t<DBN>::name() << "\"" << std::endl;
+        std::cout << "Train the network with \"" << DBN::desc::template trainer_t<DBN>::name() << "\" (" << dll::to_string(DBN::loss) << ")" << std::endl;
         std::cout << "With parameters:" << std::endl;
         std::cout << "          epochs=" << max_epochs << std::endl;
         std::cout << "      batch_size=" << DBN::batch_size << std::endl;
