@@ -196,7 +196,7 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
     template<typename C>
     void compute_gradients(C& context) const {
         context.w_grad = batch_outer(context.input, context.errors);
-        context.b_grad = etl::sum_l(context.errors);
+        context.b_grad = bias_batch_sum_2d(context.errors);
     }
 };
 

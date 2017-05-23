@@ -261,7 +261,7 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
         dll::auto_timer timer("dense:compute_gradients");
 
         context.w_grad = batch_outer(context.input, context.errors);
-        context.b_grad = etl::sum_l(context.errors);
+        context.b_grad = bias_batch_sum_2d(context.errors);
     }
 };
 
