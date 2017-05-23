@@ -129,6 +129,7 @@ struct sgd_trainer {
         auto& first_layer = std::get<0>(full_context).first;
         auto& first_ctx   = *std::get<0>(full_context).second;
 
+        auto& last_layer = std::get<layers - 1>(full_context).first;
         auto& last_ctx   = *std::get<layers - 1>(full_context).second;
 
         const bool full_batch = etl::dim<0>(inputs) == etl::dim<0>(first_ctx.input);
@@ -167,15 +168,6 @@ struct sgd_trainer {
 
             //Compute the errors of the last layer
 
-            // Note: This only compute the derivative of the error function
-            // The derivative of the activation function for the last layer
-            // will be computed in the next step in adapt errors
-
-            // TODO: The computation is not totally since it should in
-            // fact depends on the activation function of the last layer
-
-            // TODO: The MSE and CCE gradients should not be the same
-
             if /*constexpr*/ (dbn_t::loss == loss_function::CATEGORICAL_CROSS_ENTROPY){
                 if (cpp_unlikely(!full_batch)) {
                     last_ctx.errors = 0;
@@ -186,16 +178,23 @@ struct sgd_trainer {
                 } else {
                     last_ctx.errors = labels - last_ctx.output;
                 }
+
+                // Note: No need to multiply by the derivative of
+                // the activation function since the terms are
+                // canceling out in the derivative of the loss
             } else if (dbn_t::loss == loss_function::MEAN_SQUARED_ERROR){
                 if (cpp_unlikely(!full_batch)) {
                     last_ctx.errors = 0;
 
                     for (size_t i = 0; i < n; ++i) {
-                        last_ctx.errors(i) = labels(i) - last_ctx.output(i);
+                        last_ctx.errors(i) = 2.0 * (labels(i) - last_ctx.output(i));
                     }
                 } else {
-                    last_ctx.errors = labels - last_ctx.output;
+                    last_ctx.errors = 2.0 * (labels - last_ctx.output);
                 }
+
+                // Multiply by the derivative of the activation function
+                last_layer.adapt_errors(last_ctx);
             } else if (dbn_t::loss == loss_function::BINARY_CROSS_ENTROPY){
                 if (cpp_unlikely(!full_batch)) {
                     last_ctx.errors = 0;
@@ -210,19 +209,29 @@ struct sgd_trainer {
 
                     last_ctx.errors = (labels - out) / ((1.0 - out) >> out);
                 }
+
+                // Multiply by the derivative of the activation function
+                last_layer.adapt_errors(last_ctx);
             } else {
                 cpp_unreachable("Unsupported loss function");
             }
 
             // Backpropagate the error
 
-            cpp::for_each_rpair(full_context, [](auto& layer_ctx_1, auto& layer_ctx_2) {
+            bool last = true;
+
+            cpp::for_each_rpair(full_context, [&last](auto& layer_ctx_1, auto& layer_ctx_2) {
                 auto& r2 = layer_ctx_2.first;
 
                 auto& ctx1 = *layer_ctx_1.second;
                 auto& ctx2 = *layer_ctx_2.second;
 
-                r2.adapt_errors(ctx2);
+                if(!last){
+                    r2.adapt_errors(ctx2);
+                }
+
+                last = false;
+
                 r2.backward_batch(ctx1.errors, ctx2);
             });
 
