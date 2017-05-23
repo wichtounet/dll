@@ -166,10 +166,15 @@ public:
     bool svm_loaded = false; ///< Indicates if a SVM model has been loaded (and therefore must be saved)
 #endif                       //DLL_SVM_SUPPORT
 
-    using generator_t = std::conditional_t<
+    using categorical_generator_t = std::conditional_t<
         dbn_traits<this_type>::batch_mode(),
         inmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>, dll::categorical>,
         outmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>, dll::categorical>>;
+
+    using ae_generator_t = std::conditional_t<
+        dbn_traits<this_type>::batch_mode(),
+        inmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>>,
+        outmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>>>;
 
 private:
     cpp::thread_pool<!dbn_traits<this_type>::is_serial()> pool;
@@ -705,7 +710,7 @@ public:
      */
     template <typename Input, typename Labels>
     weight fine_tune(const Input& training_data, Labels& labels, size_t max_epochs) {
-        auto generator = make_generator(training_data, labels, training_data.size(), output_size(), generator_t{});
+        auto generator = make_generator(training_data, labels, training_data.size(), output_size(), categorical_generator_t{});
         return fine_tune(*generator, max_epochs);
     }
 
@@ -720,7 +725,7 @@ public:
      */
     template <typename Iterator, typename LIterator>
     weight fine_tune(Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, size_t max_epochs) {
-        auto generator = make_generator(first, last, lfirst, llast, output_size(), generator_t{});
+        auto generator = make_generator(first, last, lfirst, llast, output_size(), categorical_generator_t{});
         return fine_tune(*generator, max_epochs);
     }
 
@@ -739,7 +744,7 @@ public:
         cpp_assert(dll::input_size(layer_get<0>()) == dll::output_size(layer_get<layers - 1>()), "The network is not build as an autoencoder");
 
         dll::dbn_trainer<this_type> trainer;
-        return trainer.train_ae(*this, generator, max_epochs);
+        return trainer.train(*this, generator, max_epochs);
     }
 
     /*!
@@ -750,7 +755,7 @@ public:
      */
     template <typename Samples, cpp_disable_if(is_generator<Samples>::value)>
     weight fine_tune_ae(const Samples& training_data, size_t max_epochs) {
-        auto generator = make_generator(training_data, training_data, training_data.size(), output_size(), generator_t{});
+        auto generator = make_generator(training_data, training_data, training_data.size(), output_size(), ae_generator_t{});
         return fine_tune_ae(*generator, max_epochs);
     }
 
@@ -763,7 +768,7 @@ public:
      */
     template <typename Iterator>
     weight fine_tune_ae(Iterator&& first, Iterator&& last, size_t max_epochs) {
-        auto generator = make_generator(first, last, first, last, output_size(), generator_t{});
+        auto generator = make_generator(first, last, first, last, output_size(), ae_generator_t{});
         return fine_tune_ae(*generator, max_epochs);
     }
 
@@ -845,7 +850,7 @@ public:
      */
     template <typename Samples, typename Labels>
     void evaluate(const Samples&  samples, const Labels& labels){
-        auto generator = make_generator(samples, labels, samples.size(), output_size(), generator_t{});
+        auto generator = make_generator(samples, labels, samples.size(), output_size(), categorical_generator_t{});
 
         return evaluate(*generator);
     }
@@ -862,7 +867,51 @@ public:
      */
     template <typename InputIterator, typename LabelIterator>
     void evaluate(InputIterator&& iit, InputIterator&& iend, LabelIterator&& lit, LabelIterator&& lend){
-        auto generator = make_generator(iit, iend, lit, lend, std::distance(lit, lend), output_size(), generator_t{});
+        auto generator = make_generator(iit, iend, lit, lend, std::distance(lit, lend), output_size(), categorical_generator_t{});
+
+        evaluate(*generator);
+    }
+
+    /*!
+     * \brief Evaluate the network on the given auto-encoder task.
+     *
+     * The result of the evaluation will be printed on the console.
+     *
+     * \param generator The data generator
+     */
+    template <typename Generator, cpp_enable_if(is_generator<Generator>::value)>
+    void evaluate_ae(Generator& generator){
+        evaluate(generator);
+    }
+
+    /*!
+     * \brief Evaluate the network on the given auto-encoder task.
+     *
+     * The result of the evaluation will be printed on the console.
+     *
+     * \param samples The container containing the samples
+     * \param labels The container containing the labels
+     */
+    template <typename Samples, cpp_enable_if(!is_generator<Samples>::value)>
+    void evaluate_ae(const Samples&  samples){
+        auto generator = make_generator(samples, samples, samples.size(), output_size(), ae_generator_t{});
+
+        return evaluate(*generator);
+    }
+
+    /*!
+     * \brief Evaluate the network on the given auto-encoder task.
+     *
+     * The result of the evaluation will be printed on the console.
+     *
+     * \param iit The beginning of the range of the samples
+     * \param iend The end of the range of the samples
+     * \param lit The beginning of the range of the labels
+     * \param lend The end of the range of the labels
+     */
+    template <typename InputIterator>
+    void evaluate_ae(InputIterator&& iit, InputIterator&& iend){
+        auto generator = make_generator(iit, iend, iit, iend, std::distance(iit, iend), output_size(), ae_generator_t{});
 
         evaluate(*generator);
     }
@@ -893,7 +942,7 @@ public:
      */
     template <typename Samples, typename Labels>
     double evaluate_error(const Samples&  samples, const Labels& labels){
-        auto generator = make_generator(samples, labels, samples.size(), output_size(), generator_t{});
+        auto generator = make_generator(samples, labels, samples.size(), output_size(), categorical_generator_t{});
         return evaluate_error(*generator);
     }
 
@@ -910,7 +959,7 @@ public:
      */
     template <typename InputIterator, typename LabelIterator>
     double evaluate_error(InputIterator&& iit, InputIterator&& iend, LabelIterator&& lit, LabelIterator&& lend){
-        auto generator = make_generator(iit, iend, lit, lend, std::distance(lit, lend), output_size(), generator_t{});
+        auto generator = make_generator(iit, iend, lit, lend, std::distance(lit, lend), output_size(), categorical_generator_t{});
         return evaluate_error(*generator);
     }
 
