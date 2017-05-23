@@ -19,6 +19,7 @@
 #include "cpp_utils/static_if.hpp"
 #include "cpp_utils/maybe_parallel.hpp"
 
+#include "generators.hpp"
 #include "unit_type.hpp"
 #include "trainer/dbn_trainer.hpp"
 #include "trainer/rbm_trainer_fwd.hpp"
@@ -164,6 +165,11 @@ public:
     svm::problem problem;    ///< libsvm is stupid, therefore, you cannot destroy the problem if you want to use the model...
     bool svm_loaded = false; ///< Indicates if a SVM model has been loaded (and therefore must be saved)
 #endif                       //DLL_SVM_SUPPORT
+
+    using generator_t = std::conditional_t<
+        dbn_traits<this_type>::batch_mode(),
+        inmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>, dll::categorical>,
+        outmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>, dll::categorical>>;
 
 private:
     cpp::thread_pool<!dbn_traits<this_type>::is_serial()> pool;
@@ -850,20 +856,9 @@ public:
      */
     template <typename Samples, typename Labels>
     void evaluate(const Samples&  samples, const Labels& labels){
-        return evaluate(samples.begin(), samples.end(), labels.begin(), labels.end());
-    }
-    /*!
-     * \brief Evaluate the network on the given classification task
-     * and return the classification error.
-     *
-     * \param samples The container containing the samples
-     * \param labels The container containing the labels
-     *
-     * \return The classification error
-     */
-    template <typename Samples, typename Labels>
-    double evaluate_error(const Samples&  samples, const Labels& labels){
-        return evaluate_error(samples.begin(), samples.end(), labels.begin(), labels.end());
+        auto generator = make_generator(samples, labels, samples.size(), output_size(), generator_t{});
+
+        return evaluate(*generator);
     }
 
     /*!
@@ -878,11 +873,39 @@ public:
      */
     template <typename InputIterator, typename LabelIterator>
     void evaluate(InputIterator&& iit, InputIterator&& iend, LabelIterator&& lit, LabelIterator&& lend){
-        auto metrics = evaluate_metrics(
-            std::forward<InputIterator>(iit), std::forward<InputIterator>(iend),
-            std::forward<LabelIterator>(lit), std::forward<LabelIterator>(lend));
+        auto generator = make_generator(iit, iend, lit, lend, std::distance(lit, lend), output_size(), generator_t{});
 
-        printf("error: %.5f \n", std::get<0>(metrics));
+        evaluate(*generator);
+    }
+
+    /*!
+     * \brief Evaluate the network on the given classification task
+     * and return the classification error.
+     *
+     * The result of the evaluation will be printed on the console.
+     *
+     * \param generator The data generator
+     */
+    template <typename Generator>
+    void evaluate_error(Generator& generator){
+        auto metrics = evaluate_metrics(generator);
+
+        return std::get<0>(metrics);
+    }
+
+    /*!
+     * \brief Evaluate the network on the given classification task
+     * and return the classification error.
+     *
+     * \param samples The container containing the samples
+     * \param labels The container containing the labels
+     *
+     * \return The classification error
+     */
+    template <typename Samples, typename Labels>
+    double evaluate_error(const Samples&  samples, const Labels& labels){
+        auto generator = make_generator(samples, labels, samples.size(), output_size(), generator_t{});
+        return evaluate_error(*generator);
     }
 
     /*!
@@ -898,31 +921,22 @@ public:
      */
     template <typename InputIterator, typename LabelIterator>
     double evaluate_error(InputIterator&& iit, InputIterator&& iend, LabelIterator&& lit, LabelIterator&& lend){
-        auto metrics = evaluate_metrics(
-            std::forward<InputIterator>(iit), std::forward<InputIterator>(iend),
-            std::forward<LabelIterator>(lit), std::forward<LabelIterator>(lend));
-
-        return std::get<0>(metrics);
+        auto generator = make_generator(iit, iend, lit, lend, std::distance(lit, lend), output_size(), generator_t{});
+        return evaluate_error(*generator);
     }
 
     using metrics_t = std::tuple<double, double>; ///< The metrics returned by evaluate_metrics
 
-private:
-
-    //Note: if constexpr
-    template <typename InputIterator, cpp_enable_if(etl::decay_traits<decltype(*std::declval<InputIterator>())>::dimensions() == 1)>
-    auto prepare_input_batch(InputIterator& iit){
-        auto first = *iit;
-        return etl::dyn_matrix<weight, 2>(batch_size, etl::size(first));
-    }
-
-    template <typename InputIterator, cpp_enable_if(etl::decay_traits<decltype(*std::declval<InputIterator>())>::dimensions() == 3)>
-    auto prepare_input_batch(InputIterator& iit){
-        auto first = *iit;
-        return etl::dyn_matrix<weight, 4>(batch_size, etl::dim<0>(first), etl::dim<1>(first), etl::dim<2>(first));
-    }
-
-public:
+    /*!
+     * \brief Evaluate the network on the given output batch and labels and return the metrics.
+     *
+     * \param output The output of the network
+     * \param labels The expected labels
+     * \param n The size of the batch
+     * \param normalize Indicates if the metrics must be normalized by the size of the batch
+     *
+     * \return A tuple contains the error and the loss
+     */
     template <typename Output, typename Labels>
     metrics_t evaluate_metrics_batch(Output&& output, Labels&& labels, size_t n, bool normalize){
         double batch_error = 0.0;
@@ -1012,65 +1026,6 @@ public:
         loss /= generator.size();
 
         return std::make_tuple(error, loss);
-    }
-
-    /*!
-     * \brief Evaluate the network on the given classification task
-     * and return the evaluation metrics.
-     *
-     * \param iit The beginning of the range of the samples
-     * \param iend The end of the range of the samples
-     * \param lit The beginning of the range of the labels
-     * \param lend The end of the range of the labels
-     *
-     * \return The evaluation metrics
-     */
-    template <typename InputIterator, typename LabelIterator>
-    metrics_t evaluate_metrics(InputIterator iit, InputIterator iend, LabelIterator lit, LabelIterator lend){
-        cpp_unused(lend);
-
-        // TODO Detect if labels are categorical already or not
-        // And change the way this is done
-
-        auto input_batch = prepare_input_batch(iit);
-        etl::dyn_matrix<weight, 1> label_batch(batch_size);
-
-        double error = 0.0;
-        size_t count = 0;
-
-        while(iit != iend){
-            size_t n = 0;
-
-            while(n < batch_size && iit != iend){
-                input_batch(n) = *iit;
-                label_batch(n) = *lit;
-
-                ++iit;
-                ++lit;
-                ++n;
-            }
-
-            if(cpp_likely(n == batch_size)){
-                // Handle full batch
-
-                decltype(auto) output = this->forward_batch(input_batch);
-
-                error += sum(min(abs(label_batch - argmax(output)), 1.0));
-            } else {
-                // Handle partial batch
-
-                decltype(auto) output = this->forward_batch(slice(input_batch, 0, n));
-
-                error += sum(min(abs(slice(label_batch, 0, n) - argmax(slice(output, 0, n))), 1.0));
-            }
-
-            count += n;
-        }
-
-        // Normalize the error
-        error /= count;
-
-        return std::make_tuple(error, 0.0);
     }
 
 private:
