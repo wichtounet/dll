@@ -117,20 +117,6 @@ struct sgd_trainer {
         }
     }
 
-    // TODO: There are way too many copies going in this function
-
-    template <typename Inputs, typename Labels, typename InputTransformer>
-    std::pair<double, double> train_batch(size_t epoch, const Inputs& inputs, const Labels& labels, InputTransformer input_transformer) {
-        //Copy inputs into suitable data structure
-
-        auto tilde_inputs = force_temporary(inputs);
-        for(size_t i = 0; i < etl::dim<0>(tilde_inputs); ++i){
-            input_transformer(tilde_inputs(i));
-        }
-
-        return train_batch(epoch, tilde_inputs, labels);
-    }
-
     template <typename Inputs, typename Labels>
     std::pair<double, double> train_batch(size_t /*epoch*/, const Inputs& inputs, const Labels& labels) {
         dll::auto_timer timer("sgd::train_batch");
