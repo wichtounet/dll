@@ -705,7 +705,8 @@ public:
      */
     template <typename Input, typename Labels>
     weight fine_tune(const Input& training_data, Labels& labels, size_t max_epochs) {
-        return fine_tune(training_data.begin(), training_data.end(), labels.begin(), labels.end(), max_epochs);
+        auto generator = make_generator(training_data, labels, training_data.size(), output_size(), generator_t{});
+        return fine_tune(*generator, max_epochs);
     }
 
     /*!
@@ -719,13 +720,8 @@ public:
      */
     template <typename Iterator, typename LIterator>
     weight fine_tune(Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, size_t max_epochs) {
-        dll::auto_timer timer("dbn:train:ft");
-
-        dll::dbn_trainer<this_type> trainer;
-        return trainer.train(*this,
-                             std::forward<Iterator>(first), std::forward<Iterator>(last),
-                             std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
-                             max_epochs);
+        auto generator = make_generator(first, last, lfirst, llast, output_size(), generator_t{});
+        return fine_tune(*generator, max_epochs);
     }
 
     // Fine-tune for auto-encoder
@@ -754,9 +750,8 @@ public:
      */
     template <typename Samples, cpp_disable_if(is_generator<Samples>::value)>
     weight fine_tune_ae(const Samples& training_data, size_t max_epochs) {
-        return fine_tune_ae(
-            training_data.begin(), training_data.end(),
-            max_epochs);
+        auto generator = make_generator(training_data, training_data, training_data.size(), output_size(), generator_t{});
+        return fine_tune_ae(*generator, max_epochs);
     }
 
     /*!
@@ -768,14 +763,8 @@ public:
      */
     template <typename Iterator>
     weight fine_tune_ae(Iterator&& first, Iterator&& last, size_t max_epochs) {
-        dll::auto_timer timer("dbn:train:ft:ae");
-
-        cpp_assert(dll::input_size(layer_get<0>()) == dll::output_size(layer_get<layers - 1>()), "The network is not build as an autoencoder");
-
-        dll::dbn_trainer<this_type> trainer;
-        return trainer.train_ae(*this,
-                                first, last,
-                                max_epochs);
+        auto generator = make_generator(first, last, first, last, output_size(), generator_t{});
+        return fine_tune_ae(*generator, max_epochs);
     }
 
     // Fine-tune for denoising-autoencoder
