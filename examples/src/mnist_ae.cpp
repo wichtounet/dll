@@ -16,10 +16,6 @@ int main(int /*argc*/, char* /*argv*/ []) {
     // Load the dataset
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>();
 
-    // Limit the test
-    dataset.training_images.resize(20000);
-    dataset.training_labels.resize(20000);
-
     // Scale the images
 
     for(auto& image : dataset.training_images){
@@ -37,7 +33,7 @@ int main(int /*argc*/, char* /*argv*/ []) {
             dll::dense_desc<28 * 28, 32>::layer_t,
             dll::dense_desc<32, 28 * 28>::layer_t
         >,
-        dll::momentum, dll::batch_size<100>, dll::loss<dll::loss_function::BINARY_CROSS_ENTROPY>>::dbn_t;
+        dll::momentum, dll::batch_size<100>, dll::shuffle, dll::loss<dll::loss_function::BINARY_CROSS_ENTROPY>>::dbn_t;
 
     auto net = std::make_unique<network_t>();
 
