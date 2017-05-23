@@ -59,7 +59,7 @@ struct generic_dbn_desc {
         detail::is_valid<
             cpp::type_list<
                 trainer_id, watcher_id, momentum_id, weight_decay_id, big_batch_size_id, batch_size_id, verbose_id, no_epoch_error_id,
-                memory_id, batch_mode_id, svm_concatenate_id, svm_scale_id, serial_id, lr_driver_id, shuffle_id, shuffle_pre_id, loss_id>,
+                batch_mode_id, svm_concatenate_id, svm_scale_id, serial_id, lr_driver_id, shuffle_id, shuffle_pre_id, loss_id>,
             Parameters...>::value,
         "Invalid parameters type");
 };

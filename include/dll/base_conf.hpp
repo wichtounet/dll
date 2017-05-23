@@ -95,7 +95,6 @@ struct weight_type_id;
 struct free_energy_id;
 struct no_epoch_error_id;
 struct random_crop_id;
-struct memory_id;
 struct batch_mode_id;
 struct dbn_only_id;
 struct horizontal_mirroring_id;
