@@ -56,6 +56,13 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_
 
             label_cache_helper_t::set(i, lfirst, label_cache);
 
+            // In case of auto-encoders, the label images also need to be transformed
+            cpp::static_if<desc::AutoEncoder>([&](auto f){
+                pre_scaler<desc>::transform(f(label_cache)(i));
+                pre_normalizer<desc>::transform(f(label_cache)(i));
+                pre_binarizer<desc>::transform(f(label_cache)(i));
+            });
+
             ++i;
             ++first;
             ++lfirst;
@@ -235,6 +242,13 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_a
             pre_binarizer<desc>::transform(input_cache(i));
 
             label_cache_helper_t::set(i, lfirst, label_cache);
+
+            // In case of auto-encoders, the label images also need to be transformed
+            cpp::static_if<desc::AutoEncoder>([&](auto f){
+                pre_scaler<desc>::transform(f(label_cache)(i));
+                pre_normalizer<desc>::transform(f(label_cache)(i));
+                pre_binarizer<desc>::transform(f(label_cache)(i));
+            });
 
             ++i;
             ++first;
