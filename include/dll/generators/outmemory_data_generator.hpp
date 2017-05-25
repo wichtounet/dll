@@ -222,7 +222,6 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
     volatile bool stop_flag = false;
 
     std::thread main_thread;
-    bool threaded = false;
 
     const size_t _size;
     Iterator orig_it;

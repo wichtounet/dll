@@ -204,7 +204,6 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_a
     volatile bool stop_flag = false;
 
     std::thread main_thread;
-    bool threaded = false;
 
     inmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes) : cropper(*first), mirrorer(*first), distorter(*first), noiser(*first) {
         const size_t n = std::distance(first, last);
