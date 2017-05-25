@@ -9,14 +9,12 @@
 
 namespace dll {
 
-template<typename Desc, typename LIterator, typename Enable = void>
+template<typename Desc, typename T, typename LIterator, typename Enable = void>
 struct label_cache_helper;
 
 // Case 1: make the labels categorical
-template<typename Desc, typename LIterator>
-struct label_cache_helper<Desc, LIterator, std::enable_if_t<Desc::Categorical && !etl::is_etl_expr<typename LIterator::value_type>::value>> {
-    using T = typename Desc::weight;
-
+template<typename Desc, typename T, typename LIterator>
+struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<Desc::Categorical && !etl::is_etl_expr<typename LIterator::value_type>::value>> {
     using cache_type = etl::dyn_matrix<T, 2>;
     using big_cache_type = etl::dyn_matrix<T, 3>;
 
@@ -47,10 +45,8 @@ struct label_cache_helper<Desc, LIterator, std::enable_if_t<Desc::Categorical &&
 
 // Case 2: Keep the labels as 1D
 // Note: May be useless
-template<typename Desc, typename LIterator>
-struct label_cache_helper<Desc, LIterator, std::enable_if_t<!Desc::Categorical && !etl::is_etl_expr<typename LIterator::value_type>::value>> {
-    using T = typename Desc::weight;
-
+template<typename Desc, typename T, typename LIterator>
+struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<!Desc::Categorical && !etl::is_etl_expr<typename LIterator::value_type>::value>> {
     using cache_type = etl::dyn_matrix<T, 1>;
     using big_cache_type = etl::dyn_matrix<T, 2>;
 
@@ -75,10 +71,8 @@ struct label_cache_helper<Desc, LIterator, std::enable_if_t<!Desc::Categorical &
 };
 
 // Case 3: 1D labels
-template<typename Desc, typename LIterator>
-struct label_cache_helper<Desc, LIterator, std::enable_if_t<etl::is_1d<typename LIterator::value_type>::value>> {
-    using T = typename Desc::weight;
-
+template<typename Desc, typename T, typename LIterator>
+struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<etl::is_1d<typename LIterator::value_type>::value>> {
     using cache_type = etl::dyn_matrix<T, 2>;
     using big_cache_type = etl::dyn_matrix<T, 3>;
 
@@ -107,10 +101,8 @@ struct label_cache_helper<Desc, LIterator, std::enable_if_t<etl::is_1d<typename 
 };
 
 // Case 4: 3D labels
-template<typename Desc, typename LIterator>
-struct label_cache_helper<Desc, LIterator, std::enable_if_t<etl::is_3d<typename LIterator::value_type>::value>> {
-    using T = typename Desc::weight;
-
+template<typename Desc, typename T, typename LIterator>
+struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<etl::is_3d<typename LIterator::value_type>::value>> {
     using cache_type = etl::dyn_matrix<T, 4>;
     using big_cache_type = etl::dyn_matrix<T, 5>;
 

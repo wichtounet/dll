@@ -24,9 +24,9 @@ struct outmemory_data_generator;
 template<typename Iterator, typename LIterator, typename Desc>
 struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_augmented<Desc>::value && !is_threaded<Desc>::value>> {
     using desc = Desc;
-    using weight = typename desc::weight;
+    using weight = etl::value_t<typename Iterator::value_type>;
     using data_cache_helper_t = cache_helper<Desc, Iterator>;
-    using label_cache_helper_t = label_cache_helper<Desc, LIterator>;
+    using label_cache_helper_t = label_cache_helper<Desc, weight, LIterator>;
 
     using big_data_cache_type  = typename data_cache_helper_t::big_cache_type;
     using big_label_cache_type = typename label_cache_helper_t::big_cache_type;
@@ -214,9 +214,9 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
 template<typename Iterator, typename LIterator, typename Desc>
 struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_augmented<Desc>::value || is_threaded<Desc>::value>> {
     using desc = Desc;
-    using weight = typename desc::weight;
+    using weight = etl::value_t<typename Iterator::value_type>;
     using data_cache_helper_t = cache_helper<desc, Iterator>;
-    using label_cache_helper_t = label_cache_helper<desc, LIterator>;
+    using label_cache_helper_t = label_cache_helper<desc, weight, LIterator>;
 
     using big_data_cache_type  = typename data_cache_helper_t::big_cache_type;
     using big_label_cache_type = typename label_cache_helper_t::big_cache_type;
@@ -621,11 +621,6 @@ struct outmemory_data_generator_desc {
      * \brief Indicates if this is an auto-encoder task
      */
     static constexpr bool AutoEncoder = parameters::template contains<autoencoder>();
-
-    /*!
-     * The type used to store the weights
-     */
-    using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
 
     static_assert(BatchSize > 0, "The batch size must be larger than one");
 

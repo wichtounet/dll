@@ -17,7 +17,7 @@ struct cache_helper;
 
 template<typename Desc, typename Iterator>
 struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_1d<typename Iterator::value_type>::value>> {
-    using T = typename Desc::weight;
+    using T = etl::value_t<typename Iterator::value_type>;
 
     using cache_type = etl::dyn_matrix<T, 2>;
     using big_cache_type = etl::dyn_matrix<T, 3>;
@@ -35,7 +35,7 @@ struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_1d<typename Iterato
 
 template<typename Desc, typename Iterator>
 struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_3d<typename Iterator::value_type>::value>> {
-    using T = typename Desc::weight;
+    using T = etl::value_t<typename Iterator::value_type>;
 
     using cache_type = etl::dyn_matrix<T, 4>;
     using big_cache_type = etl::dyn_matrix<T, 5>;
