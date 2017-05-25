@@ -104,6 +104,9 @@ struct threaded_id;
 struct nop_id;
 struct elastic_distortion_id;
 struct noise_id;
+struct scale_pre_id;
+struct normalize_pre_id;
+struct binarize_pre_id;
 
 /*!
  * \brief Sets the minibatch size
@@ -274,6 +277,25 @@ struct elastic_distortion : value_conf_elt<elastic_distortion_id, size_t, K> {};
  */
 template <size_t N>
 struct noise : value_conf_elt<noise_id, size_t, N> {};
+
+/*!
+ * \brief Sets the prescaling factor
+ * \tparam S The scaling factor
+ */
+template <size_t S>
+struct scale_pre : value_conf_elt<scale_pre_id, size_t, S> {};
+
+/*!
+ * \brief Sets the binarize threshold
+ * \tparam B The binarize threshold
+ */
+template <size_t B>
+struct binarize_pre : value_conf_elt<binarize_pre_id, size_t, B> {};
+
+/*
+ * !\brief Normalize the inputs
+ */
+struct normalize_pre : basic_conf_elt<normalize_pre_id> {};
 
 /*
  * !\brief Initialize the weights of an RBM given the inputs
