@@ -168,13 +168,13 @@ public:
 
     using categorical_generator_t = std::conditional_t<
         !dbn_traits<this_type>::batch_mode(),
-        inmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>, dll::categorical>,
-        outmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>, dll::categorical>>;
+        inmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>, dll::categorical, dll::scale_pre<desc::ScalePre>, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>,
+        outmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>, dll::categorical, dll::scale_pre<desc::ScalePre>, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>>;
 
     using ae_generator_t = std::conditional_t<
         !dbn_traits<this_type>::batch_mode(),
-        inmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>>,
-        outmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>>>;
+        inmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>,
+        outmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>>;
 
 private:
     cpp::thread_pool<!dbn_traits<this_type>::is_serial()> pool;

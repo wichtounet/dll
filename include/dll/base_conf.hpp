@@ -357,4 +357,10 @@ using shuffle_cond = std::conditional_t<Cond, shuffle, nop>;
 template <bool Cond>
 using clipping_cond = std::conditional_t<Cond, clip_gradients, nop>;
 
+/*
+ * !\brief Conditional pre normalization.
+ */
+template <bool Cond>
+using normalize_pre_cond = std::conditional_t<Cond, normalize_pre, nop>;
+
 } //end of dll namespace

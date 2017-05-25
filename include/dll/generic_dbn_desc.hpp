@@ -38,6 +38,21 @@ struct generic_dbn_desc {
     static constexpr size_t BatchSize    = detail::get_value<batch_size<1>, Parameters...>::value;
     static constexpr size_t BigBatchSize = detail::get_value<big_batch_size<1>, Parameters...>::value;
 
+    /*!
+     * \brief The pre scaling factor
+     */
+    static constexpr size_t ScalePre = detail::get_value<scale_pre<0>, Parameters...>::value;
+
+    /*!
+     * \brief The pre binarization thresholding
+     */
+    static constexpr size_t BinarizePre = detail::get_value<binarize_pre<0>, Parameters...>::value;
+
+    /*!
+     * \brief Indicates if input are normalized
+     */
+    static constexpr bool NormalizePre = parameters::template contains<normalize_pre>();
+
     static constexpr auto Loss = detail::get_value<loss<loss_function::CATEGORICAL_CROSS_ENTROPY>, Parameters...>::value;
 
     /*! The type of the trainer to use to train the DBN */
@@ -59,7 +74,8 @@ struct generic_dbn_desc {
         detail::is_valid<
             cpp::type_list<
                 trainer_id, watcher_id, momentum_id, weight_decay_id, big_batch_size_id, batch_size_id, verbose_id, no_epoch_error_id,
-                batch_mode_id, svm_concatenate_id, svm_scale_id, serial_id, lr_driver_id, shuffle_id, shuffle_pre_id, loss_id>,
+                batch_mode_id, svm_concatenate_id, svm_scale_id, serial_id, lr_driver_id, shuffle_id, shuffle_pre_id, loss_id,
+                normalize_pre_id, binarize_pre_id, scale_pre_id>,
             Parameters...>::value,
         "Invalid parameters type");
 };
