@@ -21,8 +21,6 @@ int main(int /*argc*/, char* /*argv*/ []) {
     dataset.training_images.resize(20000);
     dataset.training_labels.resize(20000);
 
-    mnist::binarize_dataset(dataset);
-
     // Build the network
 
     using network_t = dll::dbn_desc<
@@ -32,8 +30,12 @@ int main(int /*argc*/, char* /*argv*/ []) {
             dll::conv_desc<8, 12, 12, 8, 5, 5>::layer_t,
             dll::mp_layer_3d_desc<8, 8, 8, 1, 2, 2, dll::weight_type<float>>::layer_t,
             dll::dense_desc<8 * 4 * 4, 150>::layer_t,
-            dll::dense_desc<150, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::batch_size<100>, dll::shuffle>::dbn_t;
+            dll::dense_desc<150, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>
+        , dll::momentum              // Momentum
+        , dll::batch_size<100>       // The mini-batch size
+        , dll::shuffle               // Shuffle the dataset before each epoch
+        , dll::scale_pre<255>        // Scale the data (divide by 255)
+    >::dbn_t;
 
     auto net = std::make_unique<network_t>();
 
