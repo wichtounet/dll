@@ -22,7 +22,7 @@ struct pre_scaler <Desc, std::enable_if_t<Desc::ScalePre>> {
     static constexpr size_t S = Desc::ScalePre;
 
     template<typename O>
-    void transform(O&& target){
+    static void transform(O&& target){
         target /= S;
     }
 };
@@ -43,7 +43,7 @@ struct pre_binarizer <Desc, std::enable_if_t<Desc::BinarizePre>> {
     static constexpr size_t B = Desc::BinarizePre;
 
     template<typename O>
-    void transform(O&& target){
+    static void transform(O&& target){
         for(auto& x : target){
             x = x > B ? 1.0 : 0.0;
         }
@@ -64,7 +64,7 @@ struct pre_normalizer;
 template<typename Desc>
 struct pre_normalizer <Desc, std::enable_if_t<Desc::NormalizePre>> {
     template<typename O>
-    void transform(O&& target){
+    static void transform(O&& target){
         cpp::normalize(target);
     }
 };
