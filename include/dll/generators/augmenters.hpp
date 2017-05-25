@@ -59,6 +59,20 @@ struct random_cropper <Desc, std::enable_if_t<Desc::random_crop_x && Desc::rando
             }
         }
     }
+
+    template<typename O, typename T>
+    void transform_first_test(O&& target, const T& image){
+        const size_t y_offset = (x - random_crop_x) / 2;
+        const size_t x_offset = (y - random_crop_y) / 2;
+
+        for (size_t c = 0; c < etl::dim<0>(image); ++c) {
+            for (size_t y = 0; y < random_crop_y; ++y) {
+                for (size_t x = 0; x < random_crop_x; ++x) {
+                    target(c, y, x) = image(c, y_offset + y, x_offset + x);
+                }
+            }
+        }
+    }
 };
 
 template<typename Desc>
@@ -74,6 +88,11 @@ struct random_cropper <Desc, std::enable_if_t<!Desc::random_crop_x || !Desc::ran
 
     template<typename O, typename T>
     void transform_first(O&& target, const T& image){
+        target = image;
+    }
+
+    template<typename O, typename T>
+    void transform_first_test(O&& target, const T& image){
         target = image;
     }
 };
