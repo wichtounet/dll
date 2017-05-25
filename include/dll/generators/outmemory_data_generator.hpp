@@ -59,6 +59,14 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
         cpp_unused(llast);
     }
 
+    void set_test(){
+        // Nothing to do
+    }
+
+    void set_train(){
+        // Nothing to do
+    }
+
     void fetch_next(){
         current_b = 0;
 
@@ -222,6 +230,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
     volatile bool stop_flag = false;
 
     std::thread main_thread;
+    bool train_mode = false;
 
     const size_t _size;
     Iterator orig_it;
@@ -291,17 +300,22 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
                 }
 
                 for(size_t i = 0; i < batch_size && current_read < _size; ++i){
-                    // Random crop the image
-                    cropper.transform_first(batch_cache(index)(i), *it);
+                    if(train_mode){
+                        // Random crop the image
+                        cropper.transform_first(batch_cache(index)(i), *it);
 
-                    //// Mirror the image
-                    mirrorer.transform(batch_cache(index)(i));
+                        // Mirror the image
+                        mirrorer.transform(batch_cache(index)(i));
 
-                    // Distort the image
-                    distorter.transform(batch_cache(index)(i));
+                        // Distort the image
+                        distorter.transform(batch_cache(index)(i));
 
-                    // Noise the image
-                    noiser.transform(batch_cache(index)(i));
+                        // Noise the image
+                        noiser.transform(batch_cache(index)(i));
+                    } else {
+                        // Center crop the image
+                        cropper.transform_first_test(batch_cache(index)(i), *it);
+                    }
 
                     label_cache_helper_t::set(i, lit, label_cache(index));
 
@@ -335,6 +349,14 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
         condition.notify_all();
 
         main_thread.join();
+    }
+
+    void set_test(){
+        train_mode = false;
+    }
+
+    void set_train(){
+        train_mode = true;
     }
 
     void reset_generation(){

@@ -60,6 +60,14 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_
         cpp_unused(llast);
     }
 
+    void set_test(){
+        // Nothing to do
+    }
+
+    void set_train(){
+        // Nothing to do
+    }
+
     /*!
      * \brief Reset the generator to the beginning
      */
@@ -204,6 +212,7 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_a
     volatile bool stop_flag = false;
 
     std::thread main_thread;
+    bool train_mode = false;
 
     inmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes) : cropper(*first), mirrorer(*first), distorter(*first), noiser(*first) {
         const size_t n = std::distance(first, last);
@@ -283,17 +292,22 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_a
                 const size_t input_n = batch * batch_size;
 
                 for(size_t i = 0; i < batch_size && input_n < size(); ++i){
-                    // Random crop the image
-                    cropper.transform_first(batch_cache(index)(i), input_cache(input_n + i));
+                    if(train_mode){
+                        // Random crop the image
+                        cropper.transform_first(batch_cache(index)(i), input_cache(input_n + i));
 
-                    //// Mirror the image
-                    mirrorer.transform(batch_cache(index)(i));
+                        // Mirror the image
+                        mirrorer.transform(batch_cache(index)(i));
 
-                    // Distort the image
-                    distorter.transform(batch_cache(index)(i));
+                        // Distort the image
+                        distorter.transform(batch_cache(index)(i));
 
-                    // Noise the image
-                    noiser.transform(batch_cache(index)(i));
+                        // Noise the image
+                        noiser.transform(batch_cache(index)(i));
+                    } else {
+                        // Center crop the image
+                        cropper.transform_first_test(batch_cache(index)(i), input_cache(input_n + i));
+                    }
                 }
 
                 // Notify a waiter that one batch is ready
@@ -307,6 +321,14 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_a
                 }
             }
         });
+    }
+
+    void set_test(){
+        train_mode = false;
+    }
+
+    void set_train(){
+        train_mode = true;
     }
 
     inmemory_data_generator(const inmemory_data_generator& rhs) = delete;
