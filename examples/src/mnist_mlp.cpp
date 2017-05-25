@@ -17,10 +17,8 @@ int main(int /*argc*/, char* /*argv*/ []) {
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>();
 
     // Limit the test
-    dataset.training_images.resize(10000);
-    dataset.training_labels.resize(10000);
-
-    mnist::binarize_dataset(dataset);
+    dataset.training_images.resize(20000);
+    dataset.training_labels.resize(20000);
 
     // Build the network
 
@@ -28,8 +26,11 @@ int main(int /*argc*/, char* /*argv*/ []) {
         dll::dbn_layers<
             dll::dense_desc<28 * 28, 500>::layer_t,
             dll::dense_desc<500, 250>::layer_t,
-            dll::dense_desc<250, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::batch_size<100>>::dbn_t;
+            dll::dense_desc<250, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>
+        , dll::momentum           // Use momentum during training
+        , dll::batch_size<100>    // The mini-batch size
+        , dll::normalize_pre
+    >::dbn_t;
 
     auto net = std::make_unique<network_t>();
 
