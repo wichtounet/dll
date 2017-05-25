@@ -151,44 +151,8 @@ struct dbn_trainer {
         return false;
     }
 
-private:
-    template <typename Generator>
-    error_type train_impl(DBN& dbn, Generator& generator, size_t max_epochs) {
-        dll::auto_timer timer("dbn::trainer::train_impl");
-
-        // Initialization steps
-        start_training(dbn, max_epochs);
-
-        //Train the model for max_epochs epoch
-
-        for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
-            dll::auto_timer timer("dbn::trainer::train_impl::epoch");
-
-            // Shuffle before the epoch if necessary
-            if(dbn_traits<dbn_t>::shuffle()){
-                generator.reset_shuffle();
-            } else {
-                generator.reset();
-            }
-
-            start_epoch(dbn, epoch);
-
-            double new_error;
-            double loss;
-            std::tie(loss, new_error) = train_fast_partial_direct(dbn, generator, epoch);
-
-            if(stop_epoch(dbn, epoch, new_error, loss)){
-                break;
-            }
-        }
-
-        // Finalization
-
-        return stop_training(dbn);
-    }
-
     template<typename Generator>
-    std::pair<double, double> train_fast_partial_direct(dbn_t& dbn, Generator& generator, size_t epoch){
+    std::pair<double, double> train_epoch(dbn_t& dbn, Generator& generator, size_t epoch){
         // Set the generator in train mode
         generator.set_train();
 
@@ -231,6 +195,42 @@ private:
         }
 
         return {new_loss, new_error};
+    }
+
+private:
+    template <typename Generator>
+    error_type train_impl(DBN& dbn, Generator& generator, size_t max_epochs) {
+        dll::auto_timer timer("dbn::trainer::train_impl");
+
+        // Initialization steps
+        start_training(dbn, max_epochs);
+
+        //Train the model for max_epochs epoch
+
+        for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
+            dll::auto_timer timer("dbn::trainer::train_impl::epoch");
+
+            // Shuffle before the epoch if necessary
+            if(dbn_traits<dbn_t>::shuffle()){
+                generator.reset_shuffle();
+            } else {
+                generator.reset();
+            }
+
+            start_epoch(dbn, epoch);
+
+            double new_error;
+            double loss;
+            std::tie(loss, new_error) = train_epoch(dbn, generator, epoch);
+
+            if(stop_epoch(dbn, epoch, new_error, loss)){
+                break;
+            }
+        }
+
+        // Finalization
+
+        return stop_training(dbn);
     }
 };
 

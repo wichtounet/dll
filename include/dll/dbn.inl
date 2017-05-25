@@ -925,7 +925,7 @@ public:
      * \param generator The data generator
      */
     template <typename Generator>
-    void evaluate_error(Generator& generator){
+    double evaluate_error(Generator& generator){
         auto metrics = evaluate_metrics(generator);
 
         return std::get<0>(metrics);
