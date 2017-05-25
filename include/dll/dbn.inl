@@ -1038,7 +1038,11 @@ public:
      */
     template <typename Generator>
     metrics_t evaluate_metrics(Generator& generator){
+        // Starts a new
         generator.reset();
+
+        // Set the generator in test mode
+        generator.set_test();
 
         double error = 0.0;
         double loss  = 0.0;

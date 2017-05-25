@@ -189,6 +189,10 @@ private:
 
     template<typename Generator>
     std::pair<double, double> train_fast_partial_direct(dbn_t& dbn, Generator& generator, size_t epoch){
+        // Set the generator in train mode
+        generator.set_train();
+
+        // Compute the number of batches
         const size_t batches = generator.batches();
 
         //Train one mini-batch at a time
