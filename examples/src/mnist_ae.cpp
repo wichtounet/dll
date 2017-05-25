@@ -16,24 +16,20 @@ int main(int /*argc*/, char* /*argv*/ []) {
     // Load the dataset
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>();
 
-    // Scale the images
-
-    for(auto& image : dataset.training_images){
-        image /= 255.0;
-    }
-
-    for(auto& image : dataset.test_images){
-        image /= 255.0;
-    }
-
     // Build the network
 
     using network_t = dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_desc<28 * 28, 32>::layer_t,
             dll::dense_desc<32, 28 * 28>::layer_t
-        >,
-        dll::momentum, dll::batch_size<100>, dll::shuffle, dll::loss<dll::loss_function::BINARY_CROSS_ENTROPY>>::dbn_t;
+        >
+        , dll::momentum                                        // Use momentum during training
+        , dll::batch_size<100>                                 // The mini-batch size
+        , dll::shuffle                                         // Shuffle the dataset before each epoch
+        , dll::loss<dll::loss_function::BINARY_CROSS_ENTROPY>  // Use a Binary Cross Entropy Loss
+        , dll::scale_pre<255>                                  // Scale the images (divide by 255)
+        , dll::autoencoder
+    >::dbn_t;
 
     auto net = std::make_unique<network_t>();
 
