@@ -107,6 +107,7 @@ struct noise_id;
 struct scale_pre_id;
 struct normalize_pre_id;
 struct binarize_pre_id;
+struct autoencoder_id;
 
 /*!
  * \brief Sets the minibatch size
@@ -298,6 +299,11 @@ struct binarize_pre : value_conf_elt<binarize_pre_id, size_t, B> {};
 struct normalize_pre : basic_conf_elt<normalize_pre_id> {};
 
 /*
+ * !\brief Sets the mode to auto-encoder.
+ */
+struct autoencoder : basic_conf_elt<autoencoder_id> {};
+
+/*
  * !\brief Initialize the weights of an RBM given the inputs
  */
 struct init_weights : basic_conf_elt<init_weights_id> {};
@@ -362,5 +368,11 @@ using clipping_cond = std::conditional_t<Cond, clip_gradients, nop>;
  */
 template <bool Cond>
 using normalize_pre_cond = std::conditional_t<Cond, normalize_pre, nop>;
+
+/*
+ * !\brief Conditional auto-encoder configuration.
+ */
+template <bool Cond>
+using autoencoder_cond = std::conditional_t<Cond, autoencoder, nop>;
 
 } //end of dll namespace

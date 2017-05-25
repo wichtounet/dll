@@ -567,6 +567,11 @@ struct inmemory_data_generator_desc {
     static constexpr bool NormalizePre = parameters::template contains<normalize_pre>();
 
     /*!
+     * \brief Indicates if this is an auto-encoder task
+     */
+    static constexpr bool AutoEncoder = parameters::template contains<autoencoder>();
+
+    /*!
      * The type used to store the weights
      */
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
@@ -575,7 +580,7 @@ struct inmemory_data_generator_desc {
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid<cpp::type_list<batch_size_id, big_batch_size_id, horizontal_mirroring_id, vertical_mirroring_id, random_crop_id, elastic_distortion_id, categorical_id, noise_id, nop_id, normalize_pre_id, binarize_pre_id, scale_pre_id>,
+        detail::is_valid<cpp::type_list<batch_size_id, big_batch_size_id, horizontal_mirroring_id, vertical_mirroring_id, random_crop_id, elastic_distortion_id, categorical_id, noise_id, nop_id, normalize_pre_id, binarize_pre_id, scale_pre_id, autoencoder_id>,
                          Parameters...>::value,
         "Invalid parameters type for rbm_desc");
 
