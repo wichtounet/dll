@@ -73,6 +73,11 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
         for(size_t b = 0; b < big_batch_size && current_real < _size; ++b){
             for(size_t i = 0; i < batch_size && current_real < _size; ){
                 batch_cache(b)(i) = *it;
+
+                pre_scaler<desc>::transform(batch_cache(b)(i));
+                pre_normalizer<desc>::transform(batch_cache(b)(i));
+                pre_binarizer<desc>::transform(batch_cache(b)(i));
+
                 label_cache_helper_t::set(i, lit, label_cache(b));
 
                 ++i;
@@ -304,6 +309,10 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
                         // Random crop the image
                         cropper.transform_first(batch_cache(index)(i), *it);
 
+                        pre_scaler<desc>::transform(batch_cache(index)(i));
+                        pre_normalizer<desc>::transform(batch_cache(index)(i));
+                        pre_binarizer<desc>::transform(batch_cache(index)(i));
+
                         // Mirror the image
                         mirrorer.transform(batch_cache(index)(i));
 
@@ -315,6 +324,10 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
                     } else {
                         // Center crop the image
                         cropper.transform_first_test(batch_cache(index)(i), *it);
+
+                        pre_scaler<desc>::transform(batch_cache(index)(i));
+                        pre_normalizer<desc>::transform(batch_cache(index)(i));
+                        pre_binarizer<desc>::transform(batch_cache(index)(i));
                     }
 
                     label_cache_helper_t::set(i, lit, label_cache(index));
@@ -574,6 +587,21 @@ struct outmemory_data_generator_desc {
      * \brief The noise
      */
     static constexpr size_t Noise = detail::get_value<noise<0>, Parameters...>::value;
+
+    /*!
+     * \brief The scaling
+     */
+    static constexpr size_t ScalePre = detail::get_value<scale_pre<0>, Parameters...>::value;
+
+    /*!
+     * \brief The binarization threshold
+     */
+    static constexpr size_t BinarizePre = detail::get_value<binarize_pre<0>, Parameters...>::value;
+
+    /*!
+     * \brief Indicates if input are normalized
+     */
+    static constexpr bool NormalizePre = parameters::template contains<normalize_pre>();
 
     /*!
      * The type used to store the weights

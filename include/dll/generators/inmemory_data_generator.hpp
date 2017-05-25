@@ -50,6 +50,10 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_
         while(first != last){
             input_cache(i) = *first;
 
+            pre_scaler<desc>::transform(input_cache(i));
+            pre_normalizer<desc>::transform(input_cache(i));
+            pre_binarizer<desc>::transform(input_cache(i));
+
             label_cache_helper_t::set(i, lfirst, label_cache);
 
             ++i;
@@ -225,6 +229,10 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_a
         size_t i = 0;
         while(first != last){
             input_cache(i) = *first;
+
+            pre_scaler<desc>::transform(input_cache(i));
+            pre_normalizer<desc>::transform(input_cache(i));
+            pre_binarizer<desc>::transform(input_cache(i));
 
             label_cache_helper_t::set(i, lfirst, label_cache);
 
@@ -542,6 +550,21 @@ struct inmemory_data_generator_desc {
      * \brief The noise
      */
     static constexpr size_t Noise = detail::get_value<noise<0>, Parameters...>::value;
+
+    /*!
+     * \brief The scaling
+     */
+    static constexpr size_t ScalePre = detail::get_value<scale_pre<0>, Parameters...>::value;
+
+    /*!
+     * \brief The scaling
+     */
+    static constexpr size_t BinarizePre = detail::get_value<binarize_pre<0>, Parameters...>::value;
+
+    /*!
+     * \brief Indicates if input are normalized
+     */
+    static constexpr bool NormalizePre = parameters::template contains<normalize_pre>();
 
     /*!
      * The type used to store the weights

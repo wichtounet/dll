@@ -11,6 +11,7 @@
 #include "dll/generators/cache_helper.hpp"
 #include "dll/generators/label_cache_helper.hpp"
 #include "dll/generators/augmenters.hpp"
+#include "dll/generators/transformers.hpp"
 
 namespace dll {
 
