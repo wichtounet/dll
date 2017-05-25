@@ -1015,11 +1015,11 @@ public:
             if (cpp_unlikely(!full_batch)) {
                 auto soutput = slice(output, 0, n);
 
-                batch_loss  = (-1.0 / s) * sum((labels >> log(soutput)) + ((1.0 - labels) >> log(1.0 - soutput)));
-                batch_error = (1.0 / s) * asum(labels - soutput);
+                batch_loss  = (-1.0 / (s * output_size())) * sum((labels >> log(soutput)) + ((1.0 - labels) >> log(1.0 - soutput)));
+                batch_error = (1.0 / (s * output_size())) * asum(labels - soutput);
             } else {
-                batch_loss  = (-1.0 / s) * sum((labels >> log(output)) + ((1.0 - labels) >> log(1.0 - output)));
-                batch_error = (1.0 / s) * asum(labels - output);
+                batch_loss  = (-1.0 / (s * output_size())) * sum((labels >> log(output)) + ((1.0 - labels) >> log(1.0 - output)));
+                batch_error = (1.0 / (s * output_size())) * asum(labels - output);
             }
         } else {
             cpp_unreachable("Unsupported loss function");
