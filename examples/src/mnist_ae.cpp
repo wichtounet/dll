@@ -23,12 +23,11 @@ int main(int /*argc*/, char* /*argv*/ []) {
             dll::dense_desc<28 * 28, 32>::layer_t,
             dll::dense_desc<32, 28 * 28>::layer_t
         >
-        , dll::momentum                                        // Use momentum during training
-        , dll::batch_size<100>                                 // The mini-batch size
+        , dll::batch_size<256>                                 // The mini-batch size
         , dll::shuffle                                         // Shuffle the dataset before each epoch
         , dll::loss<dll::loss_function::BINARY_CROSS_ENTROPY>  // Use a Binary Cross Entropy Loss
         , dll::scale_pre<255>                                  // Scale the images (divide by 255)
-        , dll::autoencoder
+        , dll::autoencoder                                     // Indicate auto-encoder
     >::dbn_t;
 
     auto net = std::make_unique<network_t>();
@@ -37,7 +36,7 @@ int main(int /*argc*/, char* /*argv*/ []) {
     net->display();
 
     // Train the network as auto-encoder
-    net->fine_tune_ae(dataset.training_images, 25);
+    net->fine_tune_ae(dataset.training_images, 50);
 
     // Test the network on test set
     net->evaluate_ae(dataset.test_images);
