@@ -126,28 +126,29 @@ TEST_CASE("unit/conv/sgd/partial/1", "[conv][dbn][mnist][sgd]") {
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(500);
     REQUIRE(!dataset.training_images.empty());
 
+    using generator_t = dll::inmemory_data_generator_desc<dll::batch_size<10>, dll::categorical>;
+
+    auto generator = dll::make_generator(dataset.training_images, dataset.training_labels, 10, generator_t{});
+
     auto dbn = std::make_unique<dbn_t>();
 
     dbn->learning_rate = 0.07;
 
     auto trainer = dbn->get_trainer();
 
-    trainer.start_training(*dbn, false, 30);
+    trainer.start_training(*dbn, 30);
 
     // Train for 25 epochs
     for(size_t epoch = 0; epoch < 30; ++epoch){
         trainer.start_epoch(*dbn, epoch);
 
-        double error = 0.0;
-        double loss = 0.0;
+        generator->reset();
 
-        for(size_t i = 0; i < 10; ++i){
-            std::tie(loss, error) = trainer.train_partial(
-                *dbn, false,
-                dataset.training_images.begin() + i * 50, dataset.training_images.begin() + (i + 1) * 50,
-                dataset.training_labels.begin() + i * 50,
-                epoch);
-        }
+        double error;
+        double loss;
+
+        // Train for one epoch
+        std::tie(loss, error) = trainer.train_epoch(*dbn, *generator, epoch);
 
         if(trainer.stop_epoch(*dbn, epoch, error, loss)){
             break;
