@@ -5,7 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "dll/neural/conv_same_layer.hpp"
+#include "dll/neural/conv_layer.hpp"
 #include "dll/neural/dense_layer.hpp"
 #include "dll/pooling/mp_layer.hpp"
 #include "dll/dbn.hpp"
@@ -27,16 +27,17 @@ int main(int /*argc*/, char* /*argv*/ []) {
 
     using network_t = dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_same_desc<1, 28, 28, 6, 3, 3>::layer_t,
-            dll::mp_layer_3d_desc<6, 28, 28, 1, 2, 2>::layer_t,
-            dll::conv_same_desc<6, 14, 14, 6, 3, 3>::layer_t,
-            dll::mp_layer_3d_desc<6, 14, 14, 1, 2, 2>::layer_t,
-            dll::dense_desc<6 * 7 * 7, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
+            dll::conv_desc<1, 28, 28, 8, 5, 5>::layer_t,
+            dll::mp_layer_3d_desc<8, 24, 24, 1, 2, 2, dll::weight_type<float>>::layer_t,
+            dll::conv_desc<8, 12, 12, 8, 5, 5>::layer_t,
+            dll::mp_layer_3d_desc<8, 8, 8, 1, 2, 2, dll::weight_type<float>>::layer_t,
+            dll::dense_desc<8 * 4 * 4, 150>::layer_t,
+            dll::dense_desc<150, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
         dll::momentum, dll::batch_size<100>, dll::shuffle>::dbn_t;
 
     auto net = std::make_unique<network_t>();
 
-    net->learning_rate = 0.05;
+    net->learning_rate = 0.1;
 
     // Display the network
     net->display();
