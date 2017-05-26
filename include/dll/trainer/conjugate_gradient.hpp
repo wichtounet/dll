@@ -46,7 +46,6 @@ struct cg_trainer_base {
     static constexpr size_t layers = dbn_t::layers;
 
     dbn_t& dbn;
-    bool ae_training = false;
 
     explicit cg_trainer_base(dbn_t& dbn) : dbn(dbn) {
         dbn.for_each_layer([](auto& r1) {
@@ -58,13 +57,6 @@ struct cg_trainer_base {
                 std::cerr << "Warning: CG is not tuned for RELU units" << std::endl;
             }
         });
-    }
-
-    /*!
-     * \brief Indicates if the model is being trained as an auto-encoder (true) or not (false)
-     */
-    void set_autoencoder(bool ae){
-        this->ae_training = ae;;
     }
 
     void init_training(size_t batch_size) {
@@ -82,8 +74,8 @@ struct cg_trainer_base {
         });
     }
 
-    template <typename Inputs, typename Labels, typename InputTransformer>
-    std::pair<double, double> train_batch(size_t epoch, const Inputs& inputs, const Labels& labels, InputTransformer /*input_transformer*/) {
+    template <typename Inputs, typename Labels>
+    std::pair<double, double> train_batch(size_t epoch, const Inputs& inputs, const Labels& labels) {
         using T = etl::dyn_matrix<etl::value_t<Inputs>, etl::decay_traits<Inputs>::dimensions() - 1>;
         using L = etl::dyn_matrix<etl::value_t<Labels>, etl::decay_traits<Labels>::dimensions() - 1>;
 
