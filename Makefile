@@ -199,6 +199,7 @@ $(eval $(call add_executable,dll_test_unit_crbm_mp,test/src/unit/test.cpp test/s
 $(eval $(call add_executable,dll_test_unit_crbm_mp_types,test/src/unit/test.cpp test/src/unit/crbm_mp_types.cpp,$(TEST_LD_FLAGS)))
 $(eval $(call add_executable,dll_test_unit_crbm_types,test/src/unit/test.cpp test/src/unit/crbm_types.cpp,$(TEST_LD_FLAGS)))
 $(eval $(call add_executable,dll_test_unit_dbn,test/src/unit/test.cpp test/src/unit/dbn.cpp,$(TEST_LD_FLAGS)))
+$(eval $(call add_executable,dll_test_unit_dbn_ae,test/src/unit/test.cpp test/src/unit/dbn_ae.cpp,$(TEST_LD_FLAGS)))
 $(eval $(call add_executable,dll_test_unit_dbn_types,test/src/unit/test.cpp test/src/unit/dbn_types.cpp,$(TEST_LD_FLAGS)))
 $(eval $(call add_executable,dll_test_unit_dense,test/src/unit/test.cpp test/src/unit/dense.cpp,$(TEST_LD_FLAGS)))
 $(eval $(call add_executable,dll_test_unit_dense_types,test/src/unit/test.cpp test/src/unit/dense_types.cpp,$(TEST_LD_FLAGS)))
