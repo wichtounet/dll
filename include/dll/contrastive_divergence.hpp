@@ -455,19 +455,27 @@ void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T
                 t.p_h_s(i) = t.h1_s(i);
             }
 
+            // Note: v2_s is never computed and therefore does not have memory
+            auto& v2_s = t.v2_a;
+
             //CD-1
             if(Persistent){
-                rbm.template activate_visible<true, false>(t.p_h_a(i), t.p_h_s(i), t.v2_a(i), t.v2_s(i));
-                rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
+                rbm.template activate_visible<true, false>(t.p_h_a(i), t.p_h_s(i), t.v2_a(i), v2_s(i));
+                rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), v2_s(i));
             } else {
-                rbm.template activate_visible<true, false>(t.h1_a(i), t.h1_s(i), t.v2_a(i), t.v2_s(i));
-                rbm.template activate_hidden<true, (N > 1)>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
+                if(N > 1){
+                    rbm.template activate_visible<true, false>(t.h1_a(i), t.h1_s(i), t.v2_a(i), v2_s(i));
+                    rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), v2_s(i));
+                } else {
+                    rbm.template activate_visible<true, false>(t.h1_a(i), t.h1_s(i), t.v2_a(i), v2_s(i));
+                    rbm.template activate_hidden<true, false>(t.h2_a(i), t.h2_a(i), t.v2_a(i), v2_s(i));
+                }
             }
 
             //CD-k
             for(size_t k = 1; k < N; ++k){
-                rbm.template activate_visible<true, false>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
-                rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
+                rbm.template activate_visible<true, false>(t.h2_a(i), t.h2_s(i), t.v2_a(i), v2_s(i));
+                rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), v2_s(i));
             }
         }
     });
@@ -888,7 +896,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<!layer_tr
     conditional_fast_matrix_t<false, weight, batch_size, NC, NV1, NV2> v2_s;
 
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> h2_a;
-    conditional_fast_matrix_t<(N > 1), weight, batch_size, K, NH1, NH2> h2_s;
+    conditional_fast_matrix_t<(Persistent || N > 1), weight, batch_size, K, NH1, NH2> h2_s;
 
     cpp::thread_pool<!rbm_layer_traits<rbm_t>::is_serial()> pool;
 
