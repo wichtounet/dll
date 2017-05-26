@@ -41,14 +41,14 @@ TEST_CASE("unit/conv/sgd/2", "[conv][dbn][mnist][sgd]") {
             dll::dense_desc<6 * 24 * 24, 10, dll::activation<dll::function::TANH>>::layer_t>,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(350);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(500);
     REQUIRE(!dataset.training_images.empty());
 
     dll_test::mnist_scale(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->learning_rate = 0.10;
+    dbn->learning_rate = 0.05;
 
     FT_CHECK(25, 5e-2);
     TEST_CHECK(0.4);
@@ -61,14 +61,14 @@ TEST_CASE("unit/conv/sgd/3", "[unit][conv][dbn][mnist][sgd]") {
             dll::dense_desc<6 * 24 * 24, 10, dll::activation<dll::function::TANH>>::layer_t>,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(350);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(500);
     REQUIRE(!dataset.training_images.empty());
 
     dll_test::mnist_scale(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->learning_rate = 0.07;
+    dbn->learning_rate = 0.05;
 
     FT_CHECK(25, 5e-2);
     TEST_CHECK(0.2);
