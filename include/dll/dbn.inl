@@ -710,7 +710,7 @@ public:
      */
     template <typename Input, typename Labels>
     weight fine_tune(const Input& training_data, Labels& labels, size_t max_epochs) {
-        auto generator = make_generator(training_data, labels, training_data.size(), output_size(), categorical_generator_t{});
+        auto generator = dll::make_generator(training_data, labels, training_data.size(), output_size(), categorical_generator_t{});
         return fine_tune(*generator, max_epochs);
     }
 
@@ -725,7 +725,12 @@ public:
      */
     template <typename Iterator, typename LIterator>
     weight fine_tune(Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, size_t max_epochs) {
-        auto generator = make_generator(first, last, lfirst, llast, output_size(), categorical_generator_t{});
+        // Create generator aroudn the iterators
+        auto generator = dll::make_generator(
+            std::forward<Iterator>(first), std::forward<Iterator>(last),
+            std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
+            std::distance(lfirst, llast), output_size(), categorical_generator_t{});
+
         return fine_tune(*generator, max_epochs);
     }
 
