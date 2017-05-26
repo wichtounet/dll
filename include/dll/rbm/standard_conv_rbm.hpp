@@ -95,9 +95,17 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
         }
     }
 
-    template <typename V, typename H>
+    template <typename V, typename H, cpp_enable_if(etl::dimensions<V>() == 4)>
     void batch_activate_hidden(H& h_a, const V& input) const {
         as_derived().template batch_activate_hidden<true, false>(h_a, h_a, input, input);
+    }
+
+    template <typename V, typename H, cpp_enable_if(etl::dimensions<V>() == 2)>
+    void batch_activate_hidden(H& h_a, const V& input) const {
+        decltype(auto) rbm = as_derived();
+        rbm.template batch_activate_hidden<true, false>(h_a, h_a,
+            etl::reshape(input, etl::dim<0>(input), get_nc(rbm), get_nv1(rbm), get_nv2(rbm)),
+            etl::reshape(input, etl::dim<0>(input), get_nc(rbm), get_nv1(rbm), get_nv2(rbm)));
     }
 
     template<typename Input, typename Out>
