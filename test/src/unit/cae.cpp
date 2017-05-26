@@ -25,7 +25,7 @@ TEST_CASE("conv/ae/1", "[dense][dbn][mnist][sgd][ae]") {
             dll::mp_layer_3d_desc<2, 24, 24, 1, 2, 2>::layer_t,
             dll::upsample_layer_3d_desc<2, 12, 12, 1, 2, 2>::layer_t,
             dll::deconv_desc<2, 24, 24, 1, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t
-        >, dll::trainer<dll::sgd_trainer>, dll::batch_size<20>>::dbn_t dbn_t;
+        >, dll::autoencoder, dll::loss<dll::loss_function::BINARY_CROSS_ENTROPY>, dll::trainer<dll::sgd_trainer>, dll::batch_size<20>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(1000);
     REQUIRE(!dataset.training_images.empty());
