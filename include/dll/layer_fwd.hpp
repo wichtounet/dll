@@ -99,9 +99,6 @@ template <typename Desc>
 struct dyn_deconv_layer;
 
 template <typename Desc>
-struct augment_layer;
-
-template <typename Desc>
 struct activation_layer;
 
 } //end of dll namespace
