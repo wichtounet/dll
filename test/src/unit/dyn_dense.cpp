@@ -23,7 +23,7 @@ TEST_CASE("unit/dyn_dense/sgd/1", "[unit][dyn_dense][dbn][mnist][sgd]") {
         dll::dbn_layers<
             dll::dyn_dense_desc<>::layer_t,
             dll::dyn_dense_desc<>::layer_t>,
-        dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
+        dll::trainer<dll::sgd_trainer>, dll::batch_size<10>, dll::normalize_pre>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(350);
     REQUIRE(!dataset.training_images.empty());
