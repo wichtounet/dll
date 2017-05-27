@@ -121,17 +121,10 @@ struct layer_traits {
     }
 
     /*!
-     * \brief Indicates if this layer is a patches layer.
-     */
-    static constexpr bool is_patches_layer() {
-        return false;
-    }
-
-    /*!
      * \brief Indicates if this layer is a multipley layer.
      */
     static constexpr bool is_multiplex_layer() {
-        return is_patches_layer();
+        return false;
     }
 
     /*!

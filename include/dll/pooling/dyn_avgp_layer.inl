@@ -130,7 +130,6 @@ struct layer_base_traits<dyn_avgp_layer_2d<Desc>> {
     static constexpr bool is_pooling    = true;  ///< Indicates if the layer is a pooling layer
     static constexpr bool is_unpooling  = false; ///< Indicates if the layer is an unpooling laye
     static constexpr bool is_transform  = false; ///< Indicates if the layer is a transform layer
-    static constexpr bool is_patches    = false; ///< Indicates if the layer is a patches layer
     static constexpr bool is_dynamic    = true; ///< Indicates if the layer is dynamic
     static constexpr bool pretrain_last = false; ///< Indicates if the layer is dynamic
     static constexpr bool sgd_supported = true;  ///< Indicates if the layer is supported by SGD
@@ -276,7 +275,6 @@ struct layer_base_traits<dyn_avgp_layer_3d<Desc>> {
     static constexpr bool is_pooling    = true;  ///< Indicates if the layer is a pooling layer
     static constexpr bool is_unpooling  = false; ///< Indicates if the layer is an unpooling laye
     static constexpr bool is_transform  = false; ///< Indicates if the layer is a transform layer
-    static constexpr bool is_patches    = false; ///< Indicates if the layer is a patches layer
     static constexpr bool is_dynamic    = true; ///< Indicates if the layer is dynamic
     static constexpr bool pretrain_last = false; ///< Indicates if the layer is dynamic
     static constexpr bool sgd_supported = true;  ///< Indicates if the layer is supported by SGD
