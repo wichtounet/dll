@@ -20,7 +20,6 @@
 #include "dll/rbm/conv_rbm_mp.hpp"
 #include "dll/dbn.hpp"
 
-#include "dll/transform/scale_layer.hpp"
 #include "dll/transform/random_layer.hpp"
 #include "dll/transform/binarize_layer.hpp"
 #include "dll/transform/normalize_layer.hpp"
@@ -155,11 +154,9 @@ TEST_CASE("hybrid/mnist/7", "") {
 TEST_CASE("hybrid/mnist/8", "[dense][dbn][mnist][sgd]") {
     typedef dll::dyn_dbn_desc<
         dll::dbn_layers<
-            dll::shape_layer_1d_desc<28 * 28>::layer_t,
-            dll::scale_layer_desc<1, 256>::layer_t,
             dll::dense_desc<28 * 28, 100, dll::activation<dll::function::SIGMOID>>::layer_t,
             dll::dense_desc<100, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
+        dll::momentum, dll::weight_decay<>, dll::scale_pre<255>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(350);
     REQUIRE(!dataset.training_images.empty());
