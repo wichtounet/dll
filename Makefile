@@ -210,7 +210,7 @@ $(eval $(call add_executable,dll_test_unit_dyn_dense,test/src/unit/test.cpp test
 $(eval $(call add_executable,dll_test_unit_dyn_rbm,test/src/unit/test.cpp test/src/unit/dyn_rbm.cpp,$(TEST_LD_FLAGS)))
 $(eval $(call add_executable,dll_test_unit_initializer,test/src/unit/test.cpp test/src/unit/initializer.cpp,$(TEST_LD_FLAGS)))
 $(eval $(call add_executable,dll_test_unit_lcn,test/src/unit/test.cpp test/src/unit/lcn.cpp,$(TEST_LD_FLAGS)))
-$(eval $(call add_executable,dll_test_unit_processor,test/src/unit/test.cpp test/src/unit/processor.cpp,$(TEST_LD_FLAGS)))
+$(eval $(call add_executable,dll_test_unit_processor,test/src/unit/test.cpp test/src/unit/processor.cpp $(PROCESSOR_TEST_CPP_FILES),$(TEST_LD_FLAGS)))
 $(eval $(call add_executable,dll_test_unit_random,test/src/unit/test.cpp test/src/unit/random.cpp,$(TEST_LD_FLAGS)))
 $(eval $(call add_executable,dll_test_unit_rbm,test/src/unit/test.cpp test/src/unit/rbm.cpp,$(TEST_LD_FLAGS)))
 $(eval $(call add_executable,dll_test_unit_rbm_types,test/src/unit/test.cpp test/src/unit/rbm_types.cpp,$(TEST_LD_FLAGS)))
