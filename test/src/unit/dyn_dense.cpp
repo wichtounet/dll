@@ -128,8 +128,8 @@ TEST_CASE("unit/dyn_dense/sgd/5", "[unit][dyn_dense][dbn][mnist][sgd]") {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->template layer_get<2>().init_layer(28 * 28, 100);
-    dbn->template layer_get<3>().init_layer(100, 10);
+    dbn->template layer_get<1>().init_layer(28 * 28, 100);
+    dbn->template layer_get<2>().init_layer(100, 10);
 
     dbn->initial_momentum = 0.9;
     dbn->final_momentum   = 0.9;
