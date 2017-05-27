@@ -9,8 +9,6 @@
 
 #include "dll/rbm/rbm.hpp"
 #include "dll/rbm/conv_rbm.hpp"
-#include "dll/transform/scale_layer.hpp"
-#include "dll/patches/patches_layer.hpp"
 #include "dll/dbn.hpp"
 
 #include "mnist/mnist_reader.hpp"
