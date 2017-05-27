@@ -121,13 +121,6 @@ struct layer_traits {
     }
 
     /*!
-     * \brief Indicates if this layer is a multipley layer.
-     */
-    static constexpr bool is_multiplex_layer() {
-        return false;
-    }
-
-    /*!
      * \brief Indicates if this layer keeps the same type
      */
     static constexpr bool has_same_type() {

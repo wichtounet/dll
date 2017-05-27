@@ -26,7 +26,6 @@
 #include "dll/trainer/rbm_training_context.hpp"
 #include "dbn_common.hpp"
 #include "svm_common.hpp"
-#include "util/flatten.hpp"
 #include "util/export.hpp"
 #include "util/timers.hpp"
 #include "util/random.hpp"
@@ -1089,41 +1088,12 @@ public:
     }
 
 private:
-    template<typename T>
-    using is_multi_t = etl::matrix_detail::is_vector<std::decay_t<T>>;
-
-    template <typename Output, cpp_enable_if(is_multi_t<Output>::value && is_multi_t<safe_value_t<Output>>::value)>
-    safe_value_t<Output> flatten(const Output& output) const {
-        safe_value_t<Output> flat;
-        flat.reserve(output.size() * output[0].size());
-        for(auto& sub : output){
-            std::move(sub.begin(), sub.end(), std::back_inserter(flat));
-        }
-        return flat;
-    }
-
-    template <typename Output, cpp_enable_if(!(is_multi_t<Output>::value && is_multi_t<safe_value_t<Output>>::value))>
-    Output&& flatten(Output&& output) const {
-        return std::forward<Output>(output);
-    }
-
-    template <bool Train, size_t I, size_t S, typename Input, cpp_enable_if(!is_multi_t<Input>::value && I == S)>
+    template <bool Train, size_t I, size_t S, typename Input, cpp_enable_if(I == S)>
     auto activation_probabilities_impl(const Input& input) const {
         decltype(auto) layer = layer_get<I>();
         auto output = layer.template select_prepare_one_output<Train, Input>();
         layer.template select_activate_hidden<Train>(output, input);
-        return flatten(output);
-    }
-
-    template <bool Train, size_t I, size_t S, typename Input, cpp_enable_if(is_multi_t<Input>::value && I == S)>
-    auto activation_probabilities_impl(const Input& input) const {
-        auto n_inputs = input.size();
-        decltype(auto) layer = layer_get<I>();
-        auto output = layer.template select_prepare_output<Train, safe_value_t<Input>>(n_inputs);
-        for(size_t i = 0; i < n_inputs; ++i){
-            layer.template select_activate_hidden<Train>(output[i], input[i]);
-        }
-        return flatten(output);
+        return output;
     }
 
     template <bool Train, size_t I, size_t S, typename Input, cpp_enable_if(I != S)>
@@ -1182,16 +1152,12 @@ public:
 
     template <typename Input>
     void full_activation_probabilities(const Input& input, full_output_t& result) const {
-        static_assert(!dbn_traits<this_type>::is_multiplex(), "Multiplex DBN does not support full_activation_probabilities");
-
         size_t i = 0;
         full_activation_probabilities<0, layers - 1>(input, result, i);
     }
 
     template <typename Input>
     auto full_activation_probabilities(const Input& input) const {
-        static_assert(!dbn_traits<this_type>::is_multiplex(), "Multiplex DBN does not support full_activation_probabilities");
-
         full_output_t result(full_output_size());
         full_activation_probabilities(input, result);
         return result;
@@ -1455,17 +1421,8 @@ private:
             //At this point we don't need the storage of the previous layer
             release(previous);
 
-            //In the standard case, pass the output to the next layer
-            cpp::static_if<!layer_traits<layer_t>::is_multiplex_layer()>([&](auto f) {
-                f(this)->template pretrain_layer<I + 1>(next_a.begin(), next_a.end(), watcher, max_epochs, next_a);
-            });
-
-            //In case of a multiplex layer, the output is flattened
-            cpp::static_if<layer_traits<layer_t>::is_multiplex_layer()>([&](auto f) {
-                auto flattened_next_a = flatten_clr(f(next_a));
-                this_type::release(next_a);
-                f(this)->template pretrain_layer<I + 1>(flattened_next_a.begin(), flattened_next_a.end(), watcher, max_epochs, flattened_next_a);
-            });
+            //Pass the output to the next layer
+            this->template pretrain_layer<I + 1>(next_a.begin(), next_a.end(), watcher, max_epochs, next_a);
         }
     }
 
@@ -1514,8 +1471,6 @@ private:
 
             //In the standard case, pass the output to the next layer
             pretrain_layer_denoising<I + 1>(next_n.begin(), next_n.end(), next_c.begin(), next_c.end(), watcher, max_epochs, next_n, next_c);
-
-            static_assert(!layer_traits<layer_t>::is_multiplex_layer(), "Denoising pretraining does not support multiplex layer");
         }
     }
 
@@ -1556,8 +1511,6 @@ private:
 
             //In the standard case, pass the output to the next layer
             pretrain_layer_denoising_auto<I + 1>(next_c.begin(), next_c.end(), watcher, max_epochs, noise, next_c);
-
-            static_assert(!layer_traits<layer_t>::is_multiplex_layer(), "Denoising pretraining does not support multiplex layer");
         }
     }
 
@@ -1680,7 +1633,7 @@ private:
     }
 
     //Normal version
-    template <size_t I, typename Iterator, cpp_enable_if((I > 0 && I < layers && !dbn_traits<this_type>::is_multiplex() && !batch_layer_ignore<I>::value))>
+    template <size_t I, typename Iterator, cpp_enable_if((I > 0 && I < layers && !batch_layer_ignore<I>::value))>
     void pretrain_layer_batch(Iterator orig_first, Iterator orig_last, watcher_t& watcher, size_t max_epochs) {
         std::vector<typename std::iterator_traits<Iterator>::value_type> input_copy;
 
@@ -1744,116 +1697,6 @@ private:
                     //Train the RBM on this big batch
                     r_trainer.train_sub(next_input.begin(), next_input.end(), next_input.begin(), trainer, context, rbm);
                 }
-
-                if (dbn_traits<this_type>::is_verbose()) {
-                    watcher.pretraining_batch(*this, big_batch);
-                }
-
-                ++big_batch;
-            }
-
-            r_trainer.finalize_epoch(epoch, context, rbm);
-        }
-
-        r_trainer.finalize_training(rbm);
-
-        //train the next layer, if any
-        pretrain_layer_batch<I + 1>(first, last, watcher, max_epochs);
-    }
-
-    // TODO THis should not be necessary at all
-
-    template <size_t I, typename Input, typename Enable = void>
-    struct output_deep_t;
-
-    template <size_t I, typename Input>
-    struct output_deep_t<I, Input, std::enable_if_t<layer_traits<layer_type<I>>::is_multiplex_layer()>> {
-        using type = safe_value_t<typename types_helper<I, Input>::output_t>;
-    };
-
-    template <size_t I, typename Input>
-    struct output_deep_t<I, Input, std::enable_if_t<!layer_traits<layer_type<I>>::is_multiplex_layer()>> {
-        using type = typename types_helper<I, Input>::output_t;
-    };
-
-    //Multiplex version
-    template <size_t I, typename Iterator, cpp_enable_if((I > 0 && I < layers && dbn_traits<this_type>::is_multiplex() && !batch_layer_ignore<I>::value))>
-    void pretrain_layer_batch(Iterator orig_first, Iterator orig_last, watcher_t& watcher, size_t max_epochs) {
-        std::vector<typename std::iterator_traits<Iterator>::value_type> input_copy;
-
-        auto iterators = prepare_it<!batch_layer_ignore<0>::value>(orig_first, orig_last, input_copy);
-
-        decltype(auto) first = std::get<0>(iterators);
-        decltype(auto) last = std::get<1>(iterators);
-
-        using layer_t = layer_type<I>;
-
-        decltype(auto) rbm = layer_get<I>();
-
-        watcher.pretrain_layer(*this, I, rbm, 0);
-
-        using rbm_trainer_t = dll::rbm_trainer<layer_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>>;
-
-        //Initialize the RBM trainer
-        rbm_trainer_t r_trainer;
-
-        //Init the RBM and training parameters
-        r_trainer.init_training(rbm, first, last);
-
-        //Get the specific trainer (CD)
-        auto trainer = rbm_trainer_t::get_trainer(rbm);
-
-        auto rbm_batch_size   = get_batch_size(rbm);
-        auto total_batch_size = big_batch_size * rbm_batch_size;
-
-        std::vector<std::vector<typename output_deep_t<I - 1, decltype(*first)>::type>> input(total_batch_size);
-
-        std::vector<typename layer_t::input_one_t> input_flat;
-
-        //Train for max_epochs epoch
-        for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
-            size_t big_batch = 0;
-
-            // Sort before training
-            shuffle(input_copy);
-
-            //Create a new context for this epoch
-            rbm_training_context context;
-
-            r_trainer.init_epoch();
-
-            auto it  = first;
-            auto end = last;
-
-            while (it != end) {
-                auto batch_start = it;
-
-                dbn_detail::safe_advance(it, end, total_batch_size);
-
-                multi_activation_probabilities<I - 1>(batch_start, it, input);
-
-                flatten_in(input, input_flat);
-
-                for (auto& i : input) {
-                    i.clear();
-                }
-
-                //Compute the number of batches that have been gathered
-                auto batches = input_flat.size() / rbm_batch_size;
-                auto offset  = std::min(batches * rbm_batch_size, input_flat.size());
-
-                if (batches <= 1) {
-                    //Train the RBM on one batch
-                    r_trainer.train_batch(
-                        input_flat.begin(), input_flat.begin() + offset,
-                        input_flat.begin(), input_flat.begin() + offset, trainer, context, rbm);
-                } else if (batches > 1) {
-                    //Train the RBM on this big batch
-                    r_trainer.train_sub(input_flat.begin(), input_flat.begin() + offset, input_flat.begin(), trainer, context, rbm);
-                }
-
-                //Erase what we already passed to the trainer
-                input_flat.erase(input_flat.begin(), input_flat.begin() + offset);
 
                 if (dbn_traits<this_type>::is_verbose()) {
                     watcher.pretraining_batch(*this, big_batch);

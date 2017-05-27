@@ -28,13 +28,6 @@ struct dbn_traits {
     }
 
     /*!
-     * \brief Indicates if the DBN is multiplex
-     */
-    static constexpr bool is_multiplex() noexcept {
-        return desc::layers::is_multiplex;
-    }
-
-    /*!
      * \brief Indicates if the DBN is dynamic
      */
     static constexpr bool is_dynamic() noexcept {

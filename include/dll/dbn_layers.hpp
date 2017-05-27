@@ -20,9 +20,6 @@ template <typename... Layers>
 struct is_convolutional : cpp::or_u<layer_traits<Layers>::is_convolutional_layer()...> {};
 
 template <typename... Layers>
-struct is_multiplex : cpp::or_u<layer_traits<Layers>::is_multiplex_layer()...> {};
-
-template <typename... Layers>
 struct is_denoising : cpp::and_u<layer_traits<Layers>::is_dense_rbm_layer()...> {};
 
 template <typename Layer, typename Enable = void>
@@ -123,7 +120,6 @@ struct layers {
 
     static constexpr bool is_dynamic        = Labels ? false : detail::is_dynamic<Layers...>();
     static constexpr bool is_convolutional  = Labels ? false : detail::is_convolutional<Layers...>();
-    static constexpr bool is_multiplex      = Labels ? false : detail::is_multiplex<Layers...>();
     static constexpr bool is_denoising      = Labels ? false : detail::is_denoising<Layers...>();
     static constexpr bool has_shuffle_layer = detail::has_shuffle_layer<Layers...>();
 
