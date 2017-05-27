@@ -128,24 +128,17 @@ struct layer_traits {
     }
 
     /*!
-     * \brief Indicates if this layer is an augmentation layer.
-     */
-    static constexpr bool is_augment_layer() {
-        return base_traits::is_augment;
-    }
-
-    /*!
      * \brief Indicates if this layer is a multipley layer.
      */
     static constexpr bool is_multiplex_layer() {
-        return is_augment_layer() || is_patches_layer();
+        return is_patches_layer();
     }
 
     /*!
      * \brief Indicates if this layer keeps the same type
      */
     static constexpr bool has_same_type() {
-        return is_transform_layer() || is_augment_layer();
+        return is_transform_layer();
     }
 
     /*!

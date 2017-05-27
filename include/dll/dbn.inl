@@ -50,7 +50,7 @@ using safe_value_t = typename safe_value_type<O>::type;
 template<typename Layer>
 struct is_input_layer {
     using traits = decay_layer_traits<Layer>;
-    static constexpr bool value = !traits::is_transform_layer() && !traits::is_augment_layer();
+    static constexpr bool value = !traits::is_transform_layer();
 };
 
 template<size_t Layer, typename DBN, typename Enable = void>
