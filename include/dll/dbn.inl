@@ -52,16 +52,6 @@ struct is_input_layer {
     static constexpr bool value = !traits::is_transform_layer();
 };
 
-template<size_t Layer, typename DBN, typename Enable = void>
-struct find_input_layer {
-    static constexpr size_t L = Layer;
-};
-
-template<size_t Layer, typename DBN>
-struct find_input_layer<Layer, DBN, std::enable_if_t<!is_input_layer<typename DBN::template layer_type<Layer>>::value>> {
-    static constexpr size_t L = find_input_layer<Layer + 1, DBN>::L;
-};
-
 template<typename Layer>
 struct is_output_layer {
     using traits = decay_layer_traits<Layer>;
