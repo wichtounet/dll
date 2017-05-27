@@ -103,7 +103,7 @@ struct dbn final {
 
     using watcher_t = typename desc::template watcher_t<this_type>; ///< The watcher type
 
-    static constexpr size_t input_layer_n  = find_input_layer<0, this_type>::L;                   ///< The index of the input layer
+    static constexpr size_t input_layer_n  = 0;                   ///< The index of the input layer
     static constexpr size_t output_layer_n = find_output_layer<layers_t::size - 1, this_type>::L; ///< The index of the output layer
 
     using input_layer_t = layer_type<input_layer_n>;           ///< The type of the input layer
