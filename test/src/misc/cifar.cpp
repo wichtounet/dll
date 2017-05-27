@@ -13,7 +13,6 @@
 #include "dll/neural/conv_layer.hpp"
 #include "dll/pooling/mp_layer.hpp"
 #include "dll/neural/activation_layer.hpp"
-#include "dll/transform/scale_layer.hpp"
 #include "dll/dbn.hpp"
 
 #include "cifar/cifar10_reader.hpp"
