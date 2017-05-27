@@ -14,9 +14,6 @@
 #include "dll/rbm/conv_rbm_mp.hpp"
 #include "dll/pooling/mp_layer.hpp"
 #include "dll/pooling/avgp_layer.hpp"
-#include "dll/patches/patches_layer.hpp"
-#include "dll/patches/patches_layer_pad.hpp"
-#include "dll/patches/dyn_patches_layer_pad.hpp"
 #include "dll/dbn.hpp"
 
 #include "mnist/mnist_reader.hpp"
