@@ -124,7 +124,7 @@ struct layer_traits {
      * \brief Indicates if this layer is a patches layer.
      */
     static constexpr bool is_patches_layer() {
-        return base_traits::is_patches;
+        return false;
     }
 
     /*!
