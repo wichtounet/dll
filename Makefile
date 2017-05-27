@@ -184,7 +184,6 @@ $(eval $(call add_executable_set,dll_test_perf,dll_test_perf))
 $(eval $(call add_executable_set,dll_test_misc,dll_test_misc))
 
 # Generate individual test executables (faster debugging)
-$(eval $(call add_executable,dll_test_unit_augment,test/src/unit/test.cpp test/src/unit/augment.cpp,$(TEST_LD_FLAGS)))
 $(eval $(call add_executable,dll_test_unit_cae,test/src/unit/test.cpp test/src/unit/cae.cpp,$(TEST_LD_FLAGS)))
 $(eval $(call add_executable,dll_test_unit_cdbn_1,test/src/unit/test.cpp test/src/unit/cdbn_1.cpp,$(TEST_LD_FLAGS)))
 $(eval $(call add_executable,dll_test_unit_cdbn_2,test/src/unit/test.cpp test/src/unit/cdbn_2.cpp,$(TEST_LD_FLAGS)))

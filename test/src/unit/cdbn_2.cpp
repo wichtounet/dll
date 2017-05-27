@@ -16,9 +16,6 @@
 #include "dll/rbm/conv_rbm_mp.hpp"
 #include "dll/pooling/mp_layer.hpp"
 #include "dll/pooling/avgp_layer.hpp"
-#include "dll/patches/patches_layer.hpp"
-#include "dll/patches/patches_layer_pad.hpp"
-#include "dll/patches/dyn_patches_layer_pad.hpp"
 #include "dll/dbn.hpp"
 
 #include "mnist/mnist_reader.hpp"
@@ -81,98 +78,6 @@ TEST_CASE("unit/cdbn/mnist/8", "[cdbn][ap][svm][unit]") {
     auto test_error = dll::test_set(dbn, dataset.training_images, dataset.training_labels, dll::svm_predictor());
     std::cout << "test_error:" << test_error << std::endl;
     REQUIRE(test_error < 0.1);
-}
-
-TEST_CASE("unit/cdbn/mnist/9", "[dbn][conv][mnist][patches][unit]") {
-    typedef dll::dbn_desc<
-        dll::dbn_layers<
-            dll::patches_layer_desc<14, 14, 14, 14>::layer_t,
-            dll::conv_rbm_desc_square<1, 14, 10, 5, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t,
-            dll::conv_rbm_desc_square<10, 10, 10, 5, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t>>::dbn_t dbn_t;
-
-    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(50);
-    REQUIRE(!dataset.training_images.empty());
-
-    mnist::binarize_dataset(dataset);
-
-    auto dbn = std::make_unique<dbn_t>();
-
-    dbn->pretrain(dataset.training_images, 10);
-
-    auto probs = dbn->activation_probabilities(dataset.training_images[0]);
-    REQUIRE(probs.size() == 4);
-}
-
-TEST_CASE("unit/cdbn/mnist/10", "[dbn][conv][mnist][patches][memory][unit]") {
-    typedef dll::dbn_desc<
-        dll::dbn_layers<
-            dll::patches_layer_desc<14, 14, 14, 14>::layer_t,
-            dll::conv_rbm_desc_square<1, 14, 20, 5, dll::momentum, dll::batch_size<10>>::layer_t,
-            dll::conv_rbm_desc_square<20, 10, 20, 5, dll::momentum, dll::batch_size<10>>::layer_t>,
-        dll::batch_mode>::dbn_t dbn_t;
-
-    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(50);
-    REQUIRE(!dataset.training_images.empty());
-
-    mnist::binarize_dataset(dataset);
-
-    auto dbn = std::make_unique<dbn_t>();
-
-    dbn->pretrain(dataset.training_images, 10);
-
-    auto probs = dbn->activation_probabilities(dataset.training_images[0]);
-    REQUIRE(probs.size() == 4);
-
-    //Simply to ensure compilation
-    if (false) {
-        dbn->display();
-        dbn->store("test.dat");
-        dbn->load("test.dat");
-    }
-}
-
-TEST_CASE("unit/cdbn/mnist/11", "[dbn][conv][mnist][patches][unit]") {
-    typedef dll::dbn_desc<
-        dll::dbn_layers<
-            dll::patches_layer_padh_desc<14, 14, 14, 14, 1>::layer_t,
-            dll::conv_rbm_desc_square<1, 14, 20, 5, dll::momentum, dll::batch_size<10>>::layer_t,
-            dll::conv_rbm_desc_square<20, 10, 20, 5, dll::momentum, dll::batch_size<10>>::layer_t>>::dbn_t dbn_t;
-
-    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(50);
-    REQUIRE(!dataset.training_images.empty());
-
-    mnist::binarize_dataset(dataset);
-
-    auto dbn = std::make_unique<dbn_t>();
-
-    dbn->pretrain(dataset.training_images, 10);
-
-    auto probs = dbn->activation_probabilities(dataset.training_images[0]);
-    REQUIRE(probs.size() == 4);
-}
-
-TEST_CASE("unit/cdbn/mnist/12", "[dbn][conv][mnist][patches][unit]") {
-    typedef dll::dbn_desc<
-        dll::dbn_layers<
-            dll::dyn_patches_layer_padh_desc<>::layer_t,
-            dll::dyn_conv_rbm_desc<dll::momentum>::layer_t,
-            dll::dyn_conv_rbm_desc<dll::momentum>::layer_t>>::dbn_t dbn_t;
-
-    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(50);
-    REQUIRE(!dataset.training_images.empty());
-
-    mnist::binarize_dataset(dataset);
-
-    auto dbn = std::make_unique<dbn_t>();
-
-    dbn->template init_layer<0>(14, 14, 14, 14, 1);
-    dbn->template init_layer<1>(1, 14, 14, 20, 5, 5);
-    dbn->template init_layer<2>(20, 10, 10, 20, 5, 5);
-
-    dbn->pretrain(dataset.training_images, 10);
-
-    auto probs = dbn->activation_probabilities(dataset.training_images[0]);
-    REQUIRE(probs.size() == 4);
 }
 
 TEST_CASE("hybrid/mnist/5", "[cdbn][rectifier][svm][unit]") {
