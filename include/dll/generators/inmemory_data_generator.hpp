@@ -71,6 +71,12 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_
         cpp_unused(llast);
     }
 
+    inmemory_data_generator(const inmemory_data_generator& rhs) = delete;
+    inmemory_data_generator operator=(const inmemory_data_generator& rhs) = delete;
+
+    inmemory_data_generator(inmemory_data_generator&& rhs) = delete;
+    inmemory_data_generator operator=(inmemory_data_generator&& rhs) = delete;
+
     void set_test(){
         // Nothing to do
     }
@@ -345,6 +351,12 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_a
         });
     }
 
+    inmemory_data_generator(const inmemory_data_generator& rhs) = delete;
+    inmemory_data_generator operator=(const inmemory_data_generator& rhs) = delete;
+
+    inmemory_data_generator(inmemory_data_generator&& rhs) = delete;
+    inmemory_data_generator operator=(inmemory_data_generator&& rhs) = delete;
+
     void set_test(){
         train_mode = false;
     }
@@ -352,12 +364,6 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_a
     void set_train(){
         train_mode = true;
     }
-
-    inmemory_data_generator(const inmemory_data_generator& rhs) = delete;
-    inmemory_data_generator& operator=(const inmemory_data_generator& rhs) = delete;
-
-    inmemory_data_generator(inmemory_data_generator&& rhs) = delete;
-    inmemory_data_generator& operator=(inmemory_data_generator&& rhs) = delete;
 
     ~inmemory_data_generator(){
         cpp::with_lock(main_lock, [this] { stop_flag = true; });

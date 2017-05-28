@@ -59,6 +59,12 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
         cpp_unused(llast);
     }
 
+    outmemory_data_generator(const outmemory_data_generator& rhs) = delete;
+    outmemory_data_generator operator=(const outmemory_data_generator& rhs) = delete;
+
+    outmemory_data_generator(outmemory_data_generator&& rhs) = delete;
+    outmemory_data_generator operator=(outmemory_data_generator&& rhs) = delete;
+
     void set_test(){
         // Nothing to do
     }
