@@ -7,8 +7,14 @@
 
 #pragma once
 
-#include "generators.hpp"
+#include "etl/etl.hpp"
 
-#include "dbn_layers.hpp"
-#include "dbn.inl"
-#include "dbn_desc.hpp"
+#include "dll/util/tmp.hpp"
+#include "dll/base_conf.hpp"
+
+#include "dll/generators.hpp"
+
+#include "dll/layer_traits.hpp"
+#include "dll/dbn_layers.hpp"
+#include "dll/dbn.inl"
+#include "dll/dbn_desc.hpp"
