@@ -12,6 +12,8 @@
 
 #ifdef DLL_SVM_SUPPORT
 
+#include <fstream>
+
 #include "cpp_utils/io.hpp"
 #include "nice_svm.hpp"
 
