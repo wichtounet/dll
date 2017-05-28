@@ -418,9 +418,37 @@ public:
      * \brief Pretrain the network by training all layers in an unsupervised
      * manner.
      */
-    template<typename Input>
+    template <typename Input, cpp_enable_if(!is_generator<Input>::value)>
     void pretrain(const Input& training_data, size_t max_epochs) {
         pretrain(training_data.begin(), training_data.end(), max_epochs);
+    }
+
+    /*!
+     * \brief Pretrain the network by training all layers in an unsupervised
+     * manner.
+     */
+    template <typename Generator, cpp_enable_if(is_generator<Generator>::value)>
+    void pretrain(Generator& generator, size_t max_epochs) {
+        dll::auto_timer timer("dbn:pretrain");
+
+        watcher_t watcher;
+
+        watcher.pretraining_begin(*this, max_epochs);
+
+        //Pretrain each layer one-by-one
+        if (batch_mode()) {
+            std::cout << "DBN: Pretraining done in batch mode" << std::endl;
+
+            if (layers_t::has_shuffle_layer) {
+                std::cout << "warning: batch_mode dbn does not support shuffle in layers (will be ignored)";
+            }
+
+            //pretrain_layer_batch<0>(first, last, watcher, max_epochs);
+        } else {
+            pretrain_layer<0>(generator, watcher, max_epochs, fake_resource);
+        }
+
+        watcher.pretraining_end(*this);
     }
 
     /* pretrain_denoising */
@@ -1420,6 +1448,51 @@ private:
     template <size_t I, typename Iterator, typename Container, cpp_enable_if((I == layers))>
     void pretrain_layer(Iterator, Iterator, watcher_t&, size_t, Container&) {}
 
+    // Pretrain with a generator
+
+    template <size_t I, typename Generator, typename Container, cpp_enable_if((I < layers))>
+    void pretrain_layer(Generator& generator, watcher_t& watcher, size_t max_epochs, Container& previous) {
+        using layer_t = layer_type<I>;
+
+        decltype(auto) layer = layer_get<I>();
+
+        watcher.pretrain_layer(*this, I, layer, generator.size());
+
+        cpp::static_if<layer_traits<layer_t>::is_pretrained()>([&](auto f) {
+            f(layer).template train<!watcher_t::ignore_sub,               //Enable the RBM Watcher or not
+                                    dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
+                (generator, max_epochs);
+        });
+
+        //When the next layer is a pooling layer, a lot of memory can be saved by directly computing
+        //the activations of two layers at once
+        cpp::static_if<inline_next<I + 1>::value>([&](auto f) {
+            f(this)->template inline_layer<I>(generator, watcher, max_epochs, previous);
+        });
+
+        if (train_next<I + 1>::value && !inline_next<I + 1>::value) {
+            auto next_a = layer.template prepare_output<decltype(generator.data_batch()(0))>(generator.size());
+
+            // TODO This should use batch forwarding
+            //maybe_parallel_foreach_i(pool, first, last, [&layer, &next_a](auto& v, size_t i) {
+                //SERIAL_SECTION {
+                    //layer.activate_hidden(next_a[i], v);
+                //}
+            //});
+
+            //At this point we don't need the storage of the previous layer
+            release(previous);
+
+            auto next_generator = make_generator(next_a, next_a, generator.size(), ae_generator_t{});
+
+            //Pass the output to the next layer
+            this->template pretrain_layer<I + 1>(*next_generator, watcher, max_epochs, next_a);
+        }
+    }
+
+    //Stop template recursion
+    template <size_t I, typename Generator, typename Container, cpp_enable_if((I == layers))>
+    void pretrain_layer(Generator&, watcher_t&, size_t, Container&) {}
     /* Pretrain with denoising */
 
     template <size_t I, typename NIterator, typename CIterator, typename NContainer, typename CContainer, cpp_enable_if((I < layers))>

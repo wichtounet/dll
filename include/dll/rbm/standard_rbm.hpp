@@ -84,6 +84,11 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
         init_weights(std::forward<Iterator>(first), std::forward<Iterator>(last), as_derived());
     }
 
+    template <typename Generator>
+    void init_weights(Generator& generator) {
+        init_weights(generator, as_derived());
+    }
+
     void reconstruct(const input_one_t& items) {
         reconstruct(items, as_derived());
     }
@@ -217,6 +222,36 @@ private:
         rbm.activate_visible(rbm.h1_a, rbm.h1_s, rbm.v2_a, rbm.v2_s);
 
         return etl::mean((rbm.v1 - rbm.v2_a) >> (rbm.v1 - rbm.v2_a));
+    }
+
+    template <typename Generator>
+    static void init_weights(Generator& generator, parent_t& rbm) {
+        const auto size = generator.size();
+
+        //Initialize the visible biases to log(pi/(1-pi))
+        for (size_t i = 0; i < num_visible(rbm); ++i) {
+            generator.reset();
+
+            size_t count = 0;
+
+            while(generator.has_next_batch()){
+                auto labels = generator.label_batch();
+
+                for(size_t b = 0; b < etl::dim<0>(labels); ++b){
+                    if(labels(b)[i] == 1){
+                        ++count;
+                    }
+                }
+
+                generator.next_batch();
+            }
+
+            auto pi = static_cast<double>(count) / size;
+            pi += 0.0001;
+            rbm.c(i) = log(pi / (1.0 - pi));
+
+            cpp_assert(std::isfinite(rbm.c(i)), "NaN verify");
+        }
     }
 
     template <typename Iterator>

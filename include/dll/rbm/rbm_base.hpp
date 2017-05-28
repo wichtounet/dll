@@ -86,7 +86,13 @@ struct rbm_base : layer<Parent> {
 
     //Normal Train functions
 
-    template <bool EnableWatcher = true, typename RW = void, typename Input, typename... Args>
+    template <bool EnableWatcher = true, typename RW = void, typename Generator, typename... Args, cpp_enable_if(is_generator<Generator>::value)>
+    double train(Generator& generator, size_t max_epochs, Args... args) {
+        dll::rbm_trainer<parent_t, EnableWatcher, RW, false> trainer(args...);
+        return trainer.train(as_derived(), generator, max_epochs);
+    }
+
+    template <bool EnableWatcher = true, typename RW = void, typename Input, typename... Args, cpp_enable_if(!is_generator<Input>::value)>
     double train(const Input& training_data, size_t max_epochs, Args... args) {
         dll::rbm_trainer<parent_t, EnableWatcher, RW, false> trainer(args...);
         return trainer.train(as_derived(), training_data.begin(), training_data.end(), max_epochs);

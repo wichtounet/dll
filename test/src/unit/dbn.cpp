@@ -11,9 +11,9 @@
 
 #define DLL_SVM_SUPPORT
 
+#include "dll/dbn.hpp"
 #include "dll/rbm/rbm.hpp"
 #include "dll/rbm/dyn_rbm.hpp"
-#include "dll/dbn.hpp"
 #include "dll/transform/shape_layer_1d.hpp"
 #include "dll/transform/binarize_layer.hpp"
 
@@ -33,7 +33,15 @@ TEST_CASE("unit/dbn/mnist/1", "[dbn][unit]") {
 
     mnist::binarize_dataset(dataset);
 
+    using generator_t = dll::inmemory_data_generator_desc<dll::batch_size<10>, dll::big_batch_size<5>, dll::categorical >;
+
+    auto generator = dll::make_generator(
+        dataset.training_images, dataset.training_labels,
+        dataset.training_images.size(), generator_t{});
+
     auto dbn = std::make_unique<dbn_t>();
+
+    dbn->pretrain(*generator, 25);
 
     dbn->pretrain(dataset.training_images, 25);
 

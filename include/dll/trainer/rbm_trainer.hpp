@@ -72,6 +72,16 @@ struct rbm_trainer {
         //NOP
     }
 
+    template <typename Generator, cpp_enable_if_cst(rbm_layer_traits<rbm_t>::init_weights())>
+    static void init_weights(RBM& rbm, Generator& generator) {
+        rbm.init_weights(generator);
+    }
+
+    template <typename Generator, cpp_disable_if_cst(rbm_layer_traits<rbm_t>::init_weights())>
+    static void init_weights(RBM&, Generator&) {
+        //NOP
+    }
+
     template <typename IIterator, cpp_enable_if_cst(rbm_layer_traits<rbm_t>::has_shuffle())>
     static void shuffle_direct(IIterator ifirst, IIterator ilast) {
         decltype(auto) g = dll::rand_engine();
@@ -162,6 +172,37 @@ struct rbm_trainer {
         last_error = 0.0;
     }
 
+    //Note: input_first/input_last only relevant for its size, not
+    //values since they can point to the input of the first level
+    //and not the current level
+    template <typename Generator>
+    void init_training(RBM& rbm, Generator& generator) {
+        rbm.momentum = rbm.initial_momentum;
+
+        if (EnableWatcher) {
+            watcher.training_begin(rbm);
+        }
+
+        //Get the size of each batches
+        batch_size = get_batch_size(rbm);
+
+        auto size = generator.size();
+
+        //TODO Better handling of incomplete batch size would solve this problem (this could be done by
+        //cleaning the data before the last batch)
+        if (size % batch_size != 0) {
+#ifndef DLL_SILENT
+            std::cout << "WARNING: The number of samples should be divisible by the batch size" << std::endl;
+            std::cout << "         This may cause discrepancies in the results." << std::endl;
+#endif
+        }
+
+        //Only used for debugging purposes, no need to be precise
+        total_batches = size / batch_size;
+
+        last_error = 0.0;
+    }
+
     template <typename Iterator>
     error_type train(RBM& rbm, Iterator first, Iterator last, size_t max_epochs) {
         return train(rbm, first, last, first, last, max_epochs);
@@ -221,6 +262,46 @@ struct rbm_trainer {
 
             //Train on all the data
             train_sub(input_first, input_last, expected_first, trainer, context, rbm);
+
+            //Finalize the current epoch
+            finalize_epoch(epoch, context, rbm);
+        }
+
+        return finalize_training(rbm);
+    }
+
+    template <typename Generator>
+    error_type train(RBM& rbm, Generator & generator, size_t max_epochs) {
+        dll::auto_timer timer("rbm_trainer:train");
+
+        //Initialize RBM and trainign parameters
+        init_training(rbm, generator);
+
+        //Some RBM may init weights based on the training data
+        //Note: This can't be done in init_training, since it will
+        //sometimes be called with the wrong input values
+        init_weights(rbm, generator);
+
+        //Allocate the trainer
+        auto trainer = get_trainer(rbm);
+
+        //Train for max_epochs epoch
+        for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
+            //Shuffle if necessary
+            if(rbm_layer_traits<rbm_t>::has_shuffle()){
+                generator.reset_shuffle();
+            } else {
+                generator.reset();
+            }
+
+            //Create a new context for this epoch
+            rbm_training_context context;
+
+            //Start a new epoch
+            init_epoch();
+
+            //Train on all the data
+            train_sub(generator, trainer, context, rbm);
 
             //Finalize the current epoch
             finalize_epoch(epoch, context, rbm);
@@ -301,6 +382,17 @@ struct rbm_trainer {
         samples = 0;
     }
 
+    template <typename Generator>
+    void train_sub(Generator& generator, trainer_type& trainer, rbm_training_context& context, rbm_t& rbm) {
+        while(generator.has_next_batch()){
+            //Train the batch
+            train_batch(generator.data_batch(), generator.label_batch(), trainer, context, rbm);
+
+            // Go to the next batch
+            generator.next_batch();
+        }
+    }
+
     template <typename IIT, typename EIT>
     void train_sub(IIT input_first, IIT input_last, EIT expected_first, trainer_type& trainer, rbm_training_context& context, rbm_t& rbm) {
         auto iit = input_first;
@@ -321,6 +413,26 @@ struct rbm_trainer {
 
             //Train the batch
             train_batch(istart, iit, estart, eit, trainer, context, rbm);
+        }
+    }
+
+    template <typename InputBatch, typename ExpectedBatch>
+    void train_batch(InputBatch&& input, ExpectedBatch&& expected, trainer_type& trainer, rbm_training_context& context, rbm_t& rbm) {
+        ++batches;
+
+        trainer->train_batch(input, expected, context);
+
+        context.reconstruction_error += context.batch_error;
+        context.sparsity += context.batch_sparsity;
+
+        cpp::static_if<EnableWatcher && rbm_layer_traits<rbm_t>::free_energy()>([&](auto f) {
+            for (auto& v : input) {
+                context.free_energy += f(rbm).free_energy(v);
+            }
+        });
+
+        if (EnableWatcher && rbm_layer_traits<rbm_t>::is_verbose()) {
+            watcher.batch_end(rbm, context, batches, total_batches);
         }
     }
 

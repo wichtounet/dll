@@ -379,13 +379,9 @@ void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch
     batch_compute_gradients(t);
 }
 
-template <bool Persistent, size_t K, typename T, typename RBM, typename Trainer>
-void train_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context, RBM& rbm, Trainer& t) {
+template <bool Persistent, size_t K, typename InputBatch, typename ExpectedBatch, typename RBM, typename Trainer>
+void train_normal(InputBatch& input_batch, ExpectedBatch& expected_batch, rbm_training_context& context, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:train:normal");
-
-    cpp_assert(input_batch.size() > 0, "Invalid batch size");
-    cpp_assert(input_batch.size() <= get_batch_size(rbm), "Invalid batch size");
-    cpp_assert(input_batch.begin()->size() == input_size(rbm), "The size of the training sample must match visible units");
 
     using namespace etl;
     using rbm_t = RBM;
@@ -688,6 +684,11 @@ struct base_cd_trainer : base_trainer<RBM> {
         update_normal(rbm, *this);
     }
 
+    template <typename InputBatch, typename ExpectedBatch>
+    void train_batch(InputBatch& input_batch, ExpectedBatch& expected_batch, rbm_training_context& context) {
+        train_normal<Persistent, N>(input_batch, expected_batch, context, rbm, *this);
+    }
+
     template <typename T>
     void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context) {
         train_normal<Persistent, N>(input_batch, expected_batch, context, rbm, *this);
@@ -811,6 +812,11 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
         update_normal(rbm, *this);
     }
 
+    template <typename InputBatch, typename ExpectedBatch>
+    void train_batch(InputBatch& input_batch, ExpectedBatch& expected_batch, rbm_training_context& context) {
+        train_normal<Persistent, N>(input_batch, expected_batch, context, rbm, *this);
+    }
+
     template <typename T>
     void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context) {
         train_normal<Persistent, N>(input_batch, expected_batch, context, rbm, *this);
@@ -929,6 +935,11 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<!layer_tr
         update_convolutional(rbm, *this);
     }
 
+    template <typename InputBatch, typename ExpectedBatch>
+    void train_batch(InputBatch& input_batch, ExpectedBatch& expected_batch, rbm_training_context& context) {
+        train_convolutional<Persistent, Denoising, N>(input_batch, expected_batch, context, rbm, *this);
+    }
+
     template <typename T>
     void train_batch(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context) {
         train_convolutional<Persistent, Denoising, N>(input_batch, expected_batch, context, rbm, *this);
@@ -1039,6 +1050,11 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
 
     void update(RBM& rbm) {
         update_convolutional(rbm, *this);
+    }
+
+    template <typename InputBatch, typename ExpectedBatch>
+    void train_batch(InputBatch& input_batch, ExpectedBatch& expected_batch, rbm_training_context& context) {
+        train_convolutional<Persistent, Denoising, N>(input_batch, expected_batch, context, rbm, *this);
     }
 
     template <typename T>
