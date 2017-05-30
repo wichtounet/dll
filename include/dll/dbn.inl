@@ -477,6 +477,26 @@ public:
      * \brief Pretrain the network by training all layers in an unsupervised
      * manner, the network will learn to reconstruct noisy input.
      */
+    template <typename Generator>
+    void pretrain_denoising(Generator& generator, size_t max_epochs) {
+        dll::auto_timer timer("dbn:pretrain:denoising");
+
+        watcher_t watcher;
+
+        watcher.pretraining_begin(*this, max_epochs);
+
+        cpp_assert(!batch_mode(), "pretrain_denoising has not yet been implemented in memory");
+
+        //Pretrain each layer one-by-one
+        pretrain_layer_denoising<0>(generator, watcher, max_epochs, fake_resource, fake_resource);
+
+        watcher.pretraining_end(*this);
+    }
+
+    /*!
+     * \brief Pretrain the network by training all layers in an unsupervised
+     * manner, the network will learn to reconstruct noisy input.
+     */
     template <typename Noisy, typename Clean>
     void pretrain_denoising(const Noisy& noisy, const Clean& clean, size_t max_epochs) {
         pretrain_denoising(noisy.begin(), noisy.end(), clean.begin(), clean.end(), max_epochs);
@@ -1575,8 +1595,8 @@ private:
         });
 
         if (train_next<I + 1>::value) {
-            auto next_n = layer.template prepare_output<safe_value_t<decltype(generator.data_batch()(0))>>(generator.size());
-            auto next_c = layer.template prepare_output<safe_value_t<decltype(generator.label_batch()(0))>>(generator.size());
+            auto next_n = layer.template prepare_output<decltype(generator.data_batch()(0))>(generator.size());
+            auto next_c = layer.template prepare_output<decltype(generator.label_batch()(0))>(generator.size());
 
             generator.reset();
             generator.set_train();
@@ -1590,8 +1610,10 @@ private:
                 auto label_batch = generator.label_batch();
 
                 for(size_t j = 0; j < etl::dim<0>(data_batch); ++j){
-                    layer.activate_hidden(next_n[i++], data_batch(j));
-                    layer.activate_hidden(next_c[i++], label_batch(j));
+                    layer.activate_hidden(next_n[i], data_batch(j));
+                    layer.activate_hidden(next_c[i], label_batch(j));
+
+                    ++i;
                 }
 
                 generator.next_batch();
