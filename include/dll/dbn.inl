@@ -443,7 +443,7 @@ public:
                 std::cout << "warning: batch_mode dbn does not support shuffle in layers (will be ignored)";
             }
 
-            //pretrain_layer_batch<0>(first, last, watcher, max_epochs);
+            pretrain_layer_batch<0>(generator, watcher, max_epochs);
         } else {
             pretrain_layer<0>(generator, watcher, max_epochs, fake_resource);
         }
@@ -1852,6 +1852,94 @@ private:
     //Stop template recursion
     template <size_t I, typename Iterator, cpp_enable_if(I == layers)>
     void pretrain_layer_batch(Iterator, Iterator, watcher_t&, size_t) {}
+
+    //Special handling for the layer 0
+    //data is coming from iterators not from input
+    template <size_t I, typename Generator, cpp_enable_if((I == 0 && !batch_layer_ignore<I>::value))>
+    void pretrain_layer_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
+        decltype(auto) rbm = layer_get<I>();
+
+        watcher.pretrain_layer(*this, I, rbm, 0);
+
+        // The train function can be used directly because the
+        // batch mode will be done by the generator itself
+        rbm.template train<
+                !watcher_t::ignore_sub,               //Enable the RBM Watcher or not
+                dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
+            (generator, max_epochs);
+
+        //Train the next layer
+        pretrain_layer_batch<I + 1>(generator, watcher, max_epochs);
+    }
+
+    //Special handling for untrained layers
+    template <size_t I, typename Generator, cpp_enable_if(batch_layer_ignore<I>::value)>
+    void pretrain_layer_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
+        //We simply go up one layer on untrained layers
+        pretrain_layer_batch<I + 1>(generator, watcher, max_epochs);
+    }
+
+    //Normal version
+    template <size_t I, typename Generator, cpp_enable_if((I > 0 && I < layers && !batch_layer_ignore<I>::value))>
+    void pretrain_layer_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
+        using layer_t = layer_type<I>;
+
+        decltype(auto) rbm = layer_get<I>();
+
+        watcher.pretrain_layer(*this, I, rbm, 0);
+
+        using rbm_trainer_t = dll::rbm_trainer<layer_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>>;
+
+        //Initialize the RBM trainer
+        rbm_trainer_t r_trainer;
+
+        //Init the RBM and training parameters
+        r_trainer.init_training(rbm, generator);
+
+        //Get the specific trainer (CD)
+        auto trainer = rbm_trainer_t::get_trainer(rbm);
+
+        auto total_batch_size = big_batch_size * get_batch_size(rbm);
+
+        using input_t = typename types_helper<I - 1, decltype(generator.data_batch()(0))>::input_t;
+        auto next_input = layer_get<I - 1>().template prepare_output<input_t>(total_batch_size);
+
+        //Train for max_epochs epoch
+        for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
+            size_t big_batch = 0;
+
+            //Create a new context for this epoch
+            rbm_training_context context;
+
+            r_trainer.init_epoch();
+
+            generator.reset();
+            generator.set_train();
+
+            while (generator.has_next_batch()) {
+                //TODO next_input = activate I -1
+
+                //multi_activation_probabilities<I - 1>(input_cache.begin(), input_cache.begin() + i, next_input);
+
+                r_trainer.train_batch(next_input.begin(), next_input.end(), next_input.begin(), next_input.end(), trainer, context, rbm);
+
+                watcher.pretraining_batch(*this, big_batch);
+
+                generator.next_batch();
+            }
+
+            r_trainer.finalize_epoch(epoch, context, rbm);
+        }
+
+        r_trainer.finalize_training(rbm);
+
+        //train the next layer, if any
+        pretrain_layer_batch<I + 1>(generator, watcher, max_epochs);
+    }
+
+    //Stop template recursion
+    template <size_t I, typename Generator, cpp_enable_if(I == layers)>
+    void pretrain_layer_batch(Generator&, watcher_t&, size_t) {}
 
     /* pretrain_layer_denoising_auto_batch */
 
