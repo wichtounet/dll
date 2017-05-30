@@ -338,7 +338,7 @@ void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch
 }
 
 template <bool Persistent, size_t K, typename T, typename RBM, typename Trainer, cpp_disable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
-void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
+void compute_gradients_normal(dll::batch<T>& input_batch, dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:gradients:normal:batch");
 
     //Copy input/expected for computations
@@ -350,6 +350,42 @@ void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch
         t.v1(i) = *iit;
         t.vf(i) = *eit;
     }
+
+    //First step
+    rbm.template batch_activate_hidden<true, true>(t.h1_a, t.h1_s, t.v1, t.v1);
+
+    if (Persistent && t.init) {
+        t.p_h_a = t.h1_a;
+        t.p_h_s = t.h1_s;
+    }
+
+    //CD-1
+    cpp::static_if<Persistent>([&](auto f) {
+        f(rbm).template batch_activate_visible<true, false>(t.p_h_a, t.p_h_s, t.v2_a, t.v2_s);
+        f(rbm).template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
+    }).else_([&](auto f) {
+        f(rbm).template batch_activate_visible<true, false>(t.h1_a, t.h1_s, t.v2_a, t.v2_s);
+        f(rbm).template batch_activate_hidden<true, (K > 1)>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
+    });
+
+    //CD-k
+    for (size_t k = 1; k < K; ++k) {
+        rbm.template batch_activate_visible<true, false>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
+        rbm.template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
+    }
+
+    //Compute the gradients
+
+    batch_compute_gradients(t);
+}
+
+template <bool Persistent, size_t K, typename InputBatch, typename ExpectedBatch, typename RBM, typename Trainer, cpp_disable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
+void compute_gradients_normal(InputBatch& input_batch, ExpectedBatch& expected_batch, RBM& rbm, Trainer& t) {
+    dll::auto_timer timer("cd:gradients:normal:batch");
+
+    //Copy input/expected for computations
+    t.v1 = input_batch;
+    t.vf = expected_batch;
 
     //First step
     rbm.template batch_activate_hidden<true, true>(t.h1_a, t.h1_s, t.v1, t.v1);
