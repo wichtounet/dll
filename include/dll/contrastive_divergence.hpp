@@ -540,7 +540,7 @@ void normal_compute_gradients_conv(RBM& /*rbm*/, Trainer& t) {
 }
 
 template <bool Persistent, bool Denoising, size_t N, typename Trainer, typename T, typename RBM, cpp_enable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
-void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
+void compute_gradients_conv(dll::batch<T>& input_batch, dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:gradients:conv:par");
 
     // clang-format off
@@ -553,6 +553,63 @@ void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T
 
             if(Denoising){
                 t.vf(i) = expected;
+            }
+
+            //First step
+            rbm.template activate_hidden<true, true>(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i));
+
+            if(Persistent && t.init){
+                t.p_h_a(i) = t.h1_a(i);
+                t.p_h_s(i) = t.h1_s(i);
+            }
+
+            // Note: v2_s is never computed and therefore does not have memory
+            auto& v2_s = t.v2_a;
+
+            //CD-1
+            if(Persistent){
+                rbm.template activate_visible<true, false>(t.p_h_a(i), t.p_h_s(i), t.v2_a(i), v2_s(i));
+                rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), v2_s(i));
+            } else {
+                if(N > 1){
+                    rbm.template activate_visible<true, false>(t.h1_a(i), t.h1_s(i), t.v2_a(i), v2_s(i));
+                    rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), v2_s(i));
+                } else {
+                    rbm.template activate_visible<true, false>(t.h1_a(i), t.h1_s(i), t.v2_a(i), v2_s(i));
+                    rbm.template activate_hidden<true, false>(t.h2_a(i), t.h2_a(i), t.v2_a(i), v2_s(i));
+                }
+            }
+
+            //CD-k
+            for(size_t k = 1; k < N; ++k){
+                rbm.template activate_visible<true, false>(t.h2_a(i), t.h2_s(i), t.v2_a(i), v2_s(i));
+                rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), v2_s(i));
+            }
+        }
+    });
+    // clang-format on
+
+    //Compute gradients
+    normal_compute_gradients_conv<Denoising>(rbm, t);
+}
+
+template <bool Persistent, bool Denoising, size_t N, typename Trainer, typename InputBatch, typename ExpectedBatch, typename RBM, cpp_enable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
+void compute_gradients_conv(InputBatch& input_batch, ExpectedBatch& expected_batch, RBM& rbm, Trainer& t) {
+    dll::auto_timer timer("cd:gradients:conv:par");
+
+    cpp_assert(etl::dim<0>(input_batch) == etl::dim<0>(expected_batch), "Invalid batch sizes");
+
+    const auto n = etl::dim<0>(input_batch);
+
+    // clang-format off
+    maybe_parallel_foreach_n(t.pool, 0, n, [&](size_t i)
+    {
+        SERIAL_SECTION {
+            //Copy input/expected for computations
+            t.v1(i) = input_batch(i);
+
+            if(Denoising){
+                t.vf(i) = expected_batch(i);
             }
 
             //First step
@@ -611,7 +668,7 @@ void batch_compute_gradients_conv(RBM& rbm, Trainer& t) {
 }
 
 template <bool Persistent, bool Denoising, size_t N, typename Trainer, typename T, typename RBM, cpp_disable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
-void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
+void compute_gradients_conv(dll::batch<T>& input_batch, dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:gradients:conv:batch");
 
     //Copy input/expected for computations
@@ -658,14 +715,63 @@ void compute_gradients_conv(const dll::batch<T>& input_batch, const dll::batch<T
     batch_compute_gradients_conv<Denoising>(rbm, t);
 }
 
-template <bool Persistent, bool Denoising, size_t N, typename Trainer, typename T, typename RBM>
-void train_convolutional(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, rbm_training_context& context, RBM& rbm, Trainer& t) {
-    dll::auto_timer timer("cd:train:conv");
+template <bool Persistent, bool Denoising, size_t N, typename Trainer, typename InputBatch, typename ExpectedBatch, typename RBM, cpp_disable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
+void compute_gradients_conv(InputBatch& input_batch, ExpectedBatch& expected_batch, RBM& rbm, Trainer& t) {
+    dll::auto_timer timer("cd:gradients:conv:batch");
 
-    cpp_assert(input_batch.size() > 0, "Invalid batch size");
-    cpp_assert(input_batch.size() <= get_batch_size(rbm), "Invalid batch size");
-    cpp_assert(input_batch.size() == expected_batch.size(), "Batches do not match");
-    cpp_assert(input_batch.begin()->size() == input_size(rbm), "The size of the training sample must match visible units");
+    cpp_assert(etl::dim<0>(input_batch) == etl::dim<0>(expected_batch), "Invalid batch sizes");
+
+    const size_t B        = etl::dim<0>(input_batch);
+    const bool full_batch = etl::dim<0>(input_batch) == get_batch_size(rbm);
+
+    //Copy input/expected for computations
+    if(cpp_likely(full_batch)){
+        t.v1 = input_batch;
+    } else {
+        t.v1 = 0;
+
+        etl::slice(t.v1, 0, B) = input_batch;
+    }
+
+    if (Denoising) {
+        if(cpp_likely(full_batch)){
+            t.vf = expected_batch;
+        } else {
+            t.vf = 0;
+            etl::slice(t.vf, 0, B) = expected_batch;
+        }
+    }
+
+    //First step
+    rbm.template batch_activate_hidden<true, true>(t.h1_a, t.h1_s, t.v1, t.v1);
+
+    if (Persistent && t.init) {
+        t.p_h_a = t.h1_a;
+        t.p_h_s = t.h1_s;
+    }
+
+    //CD-1
+    if (Persistent) {
+        rbm.template batch_activate_visible<true, false>(t.p_h_a, t.p_h_s, t.v2_a, t.v2_s);
+        rbm.template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
+    } else {
+        rbm.template batch_activate_visible<true, false>(t.h1_a, t.h1_s, t.v2_a, t.v2_s);
+        rbm.template batch_activate_hidden<true, (N > 1)>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
+    }
+
+    //CD-k
+    for (size_t k = 1; k < N; ++k) {
+        rbm.template batch_activate_visible<true, false>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
+        rbm.template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
+    }
+
+    //Compute gradients
+    batch_compute_gradients_conv<Denoising>(rbm, t);
+}
+
+template <bool Persistent, bool Denoising, size_t N, typename Trainer, typename InputBatch, typename ExpectedBatch, typename RBM>
+void train_convolutional(InputBatch& input_batch, ExpectedBatch& expected_batch, rbm_training_context& context, RBM& rbm, Trainer& t) {
+    dll::auto_timer timer("cd:train:conv");
 
     using rbm_t = RBM;
 
