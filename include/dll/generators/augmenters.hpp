@@ -17,8 +17,6 @@ struct random_cropper;
 
 template<typename Desc>
 struct random_cropper <Desc, std::enable_if_t<Desc::random_crop_x && Desc::random_crop_y>> {
-    using weight = typename Desc::weight;
-
     static constexpr size_t random_crop_x = Desc::random_crop_x;
     static constexpr size_t random_crop_y = Desc::random_crop_y;
 
@@ -181,8 +179,6 @@ struct random_noise;
 
 template<typename Desc>
 struct random_noise <Desc, std::enable_if_t<Desc::Noise>> {
-    using weight = typename Desc::weight;
-
     static constexpr size_t N = Desc::Noise;
 
     std::random_device rd;
