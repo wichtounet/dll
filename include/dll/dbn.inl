@@ -1936,7 +1936,7 @@ private:
         auto total_batch_size = big_batch_size * get_batch_size(rbm);
 
         using input_t = typename types_helper<I - 1, decltype(generator.data_batch()(0))>::input_t;
-        auto next_input = layer_get<I - 1>().template prepare_output<input_t>(total_batch_size);
+        auto next_input = layer_get<I - 1>().template prepare_output<input_t>(get_batch_size(rbm));
 
         //Train for max_epochs epoch
         for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
@@ -1951,9 +1951,13 @@ private:
             generator.set_train();
 
             while (generator.has_next_batch()) {
-                //TODO next_input = activate I -1
+                // TODO This is a terrible bottleneck
 
-                //multi_activation_probabilities<I - 1>(input_cache.begin(), input_cache.begin() + i, next_input);
+                auto data_batch = generator.data_batch();
+
+                for(size_t j = 0; j < etl::dim<0>(data_batch); ++j){
+                    next_input[j] = features<I - 1>(data_batch(j));
+                }
 
                 r_trainer.train_batch(next_input.begin(), next_input.end(), next_input.begin(), next_input.end(), trainer, context, rbm);
 
@@ -2040,11 +2044,17 @@ private:
             generator.set_train();
 
             while (generator.has_next_batch()) {
-                //TODO next_input = activate I -1
+                // TODO This is a terrible bottleneck
 
-                //multi_activation_probabilities<I - 1>(input_cache.begin(), input_cache.begin() + i, next_input);
+                auto data_batch = generator.data_batch();
+                auto label_batch = generator.label_batch();
 
-                r_trainer.train_batch(next_input_c.begin(), next_input_c.end(), next_input_n.begin(), next_input_n.end(), trainer, context, rbm);
+                for(size_t j = 0; j < etl::dim<0>(data_batch); ++j){
+                    next_input_n[j] = features_sub<I - 1>(data_batch(j));
+                    next_input_c[j] = features_sub<I - 1>(label_batch(j));
+                }
+
+                r_trainer.train_batch(next_input_n.begin(), next_input_n.end(), next_input_c.begin(), next_input_c.end(), trainer, context, rbm);
 
                 watcher.pretraining_batch(*this, big_batch);
 
