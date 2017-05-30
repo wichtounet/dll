@@ -383,9 +383,22 @@ template <bool Persistent, size_t K, typename InputBatch, typename ExpectedBatch
 void compute_gradients_normal(InputBatch& input_batch, ExpectedBatch& expected_batch, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:gradients:normal:batch");
 
+    cpp_assert(etl::dim<0>(input_batch) == etl::dim<0>(expected_batch), "Invalid batch sizes");
+
+    const size_t B        = etl::dim<0>(input_batch);
+    const bool full_batch = etl::dim<0>(input_batch) == get_batch_size(rbm);
+
     //Copy input/expected for computations
-    t.v1 = input_batch;
-    t.vf = expected_batch;
+    if(cpp_likely(full_batch)){
+        t.v1 = input_batch;
+        t.vf = expected_batch;
+    } else {
+        t.v1 = 0;
+        t.vf = 0;
+
+        etl::slice(t.v1, 0, B) = input_batch;
+        etl::slice(t.vf, 0, B) = expected_batch;
+    }
 
     //First step
     rbm.template batch_activate_hidden<true, true>(t.h1_a, t.h1_s, t.v1, t.v1);
