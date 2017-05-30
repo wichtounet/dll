@@ -33,10 +33,10 @@ TEST_CASE("unit/dbn/mnist/1", "[dbn][unit]") {
 
     mnist::binarize_dataset(dataset);
 
-    using generator_t = dll::inmemory_data_generator_desc<dll::batch_size<10>, dll::big_batch_size<5>, dll::categorical >;
+    using generator_t = dll::inmemory_data_generator_desc<dll::batch_size<10>, dll::big_batch_size<5>, dll::autoencoder >;
 
     auto generator = dll::make_generator(
-        dataset.training_images, dataset.training_labels,
+        dataset.training_images, dataset.training_images,
         dataset.training_images.size(), generator_t{});
 
     auto dbn = std::make_unique<dbn_t>();
