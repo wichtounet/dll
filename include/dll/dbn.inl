@@ -1517,7 +1517,7 @@ private:
             release(previous);
 
             // TODO This should be using directly the correct ae_generator_t with fixed batch size for non-dynamic RBM
-            auto next_generator = make_generator(next_a, next_a, generator.size(), ae_generator_t{});
+            auto next_generator = make_generator(next_a, next_a, generator.size(), output_size(), ae_generator_t{});
 
             //Pass the output to the next layer
             this->template pretrain_layer<I + 1>(*next_generator, watcher, max_epochs, next_a);
@@ -1624,7 +1624,7 @@ private:
             release(previous_c);
 
             // TODO This should be using directly the correct ae_generator_t with fixed batch size for non-dynamic RBM
-            auto next_generator = make_generator(next_n, next_c, generator.size(), ae_generator_t{});
+            auto next_generator = make_generator(next_n, next_c, generator.size(), output_size(), ae_generator_t{});
 
             //In the standard case, pass the output to the next layer
             pretrain_layer_denoising<I + 1>(*next_generator, watcher, max_epochs, next_n, next_c);
