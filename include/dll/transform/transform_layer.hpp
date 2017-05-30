@@ -52,15 +52,15 @@ struct transform_layer : layer<Derived> {
      * \param samples The number of samples in the output set
      */
     template <typename Input>
-    static std::vector<Input> prepare_output(size_t samples) {
-        return std::vector<Input>(samples);
+    static std::vector<decltype(etl::force_temporary(std::declval<Input>()))> prepare_output(size_t samples) {
+        return std::vector<decltype(etl::force_temporary(std::declval<Input>()))>(samples);
     }
 
     /*!
      * \brief Prepare a single output
      */
     template <typename Input>
-    static Input prepare_one_output() {
+    static decltype(etl::force_temporary(std::declval<Input>())) prepare_one_output() {
         return {};
     }
 
