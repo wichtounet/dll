@@ -1956,7 +1956,7 @@ private:
                 auto data_batch = generator.data_batch();
 
                 for(size_t j = 0; j < etl::dim<0>(data_batch); ++j){
-                    next_input[j] = features<I - 1>(data_batch(j));
+                    next_input[j] = features_sub<I - 1>(data_batch(j));
                 }
 
                 r_trainer.train_batch(next_input.begin(), next_input.end(), next_input.begin(), next_input.end(), trainer, context, rbm);
