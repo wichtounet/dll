@@ -294,6 +294,9 @@ struct rbm_trainer {
                 generator.reset();
             }
 
+            // Set the the generator in train mode
+            generator.set_train();
+
             //Create a new context for this epoch
             rbm_training_context context;
 
