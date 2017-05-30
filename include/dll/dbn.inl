@@ -1961,7 +1961,9 @@ private:
 
                 r_trainer.train_batch(next_input.begin(), next_input.end(), next_input.begin(), next_input.end(), trainer, context, rbm);
 
-                watcher.pretraining_batch(*this, big_batch);
+                if (dbn_traits<this_type>::is_verbose()) {
+                    watcher.pretraining_batch(*this, big_batch);
+                }
 
                 generator.next_batch();
             }
@@ -2056,7 +2058,9 @@ private:
 
                 r_trainer.train_batch(next_input_n.begin(), next_input_n.end(), next_input_c.begin(), next_input_c.end(), trainer, context, rbm);
 
-                watcher.pretraining_batch(*this, big_batch);
+                if (dbn_traits<this_type>::is_verbose()) {
+                    watcher.pretraining_batch(*this, big_batch);
+                }
 
                 generator.next_batch();
             }
