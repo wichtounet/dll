@@ -353,9 +353,11 @@ TEST_CASE("unit/dbn/mnist/11", "[dbn][denoising][unit]") {
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(250);
     REQUIRE(!dataset.training_images.empty());
 
-    mnist::binarize_dataset(dataset);
+    using generator_t = dll::inmemory_data_generator_desc<dll::batch_size<25>, dll::autoencoder, dll::binarize_pre<30>, dll::noise<30>>;
 
-    dbn->pretrain_denoising_auto(dataset.training_images, 50, 0.3);
+    auto generator = make_generator(dataset.training_images, dataset.training_images, dataset.training_images.size(), generator_t{});
+
+    dbn->pretrain_denoising(*generator, 50);
 }
 
 // Batch mode
