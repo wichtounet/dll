@@ -152,7 +152,7 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_
      * \return true if the generator has a next batch, false otherwise
      */
     bool has_next_batch() const {
-        return current < size() - 1;
+        return current < size();
     }
 
     /*!
@@ -453,7 +453,7 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_a
      * \return true if the generator has a next batch, false otherwise
      */
     bool has_next_batch() const {
-        return current < size() - 1;
+        return current < size();
     }
 
     /*!

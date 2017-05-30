@@ -1502,6 +1502,8 @@ private:
                 generator.next_batch();
             }
 
+            cpp_assert(next_a.size() == i, "Invalid activation");
+
             //At this point we don't need the storage of the previous layer
             release(previous);
 
