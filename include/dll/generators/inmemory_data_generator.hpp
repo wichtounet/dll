@@ -33,7 +33,7 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_
 
     static constexpr bool dll_generator = true;
 
-    static constexpr size_t batch_size = desc::BatchSize;
+    size_t batch_size = desc::BatchSize;
 
     data_cache_type input_cache;
     label_cache_type label_cache;
@@ -205,7 +205,7 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_a
 
     static constexpr bool dll_generator = true;
 
-    static constexpr size_t batch_size = desc::BatchSize;
+    size_t batch_size = desc::BatchSize;
     static constexpr size_t big_batch_size = desc::BigBatchSize;
 
     data_cache_type input_cache;
