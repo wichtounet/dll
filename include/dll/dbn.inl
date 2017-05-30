@@ -1459,6 +1459,10 @@ private:
         watcher.pretrain_layer(*this, I, layer, generator.size());
 
         cpp::static_if<layer_traits<layer_t>::is_pretrained()>([&](auto f) {
+            // Configure the generator for the RMB
+            generator.batch_size = get_batch_size(f(layer));
+
+            // Train the RBM
             f(layer).template train<!watcher_t::ignore_sub,               //Enable the RBM Watcher or not
                                     dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
                 (generator, max_epochs);
@@ -1473,16 +1477,26 @@ private:
         if (train_next<I + 1>::value && !inline_next<I + 1>::value) {
             auto next_a = layer.template prepare_output<decltype(generator.data_batch()(0))>(generator.size());
 
+            generator.reset();
+            generator.set_test();
+
             // TODO This should use batch forwarding
-            //maybe_parallel_foreach_i(pool, first, last, [&layer, &next_a](auto& v, size_t i) {
-                //SERIAL_SECTION {
-                    //layer.activate_hidden(next_a[i], v);
-                //}
-            //});
+            // Or should be parallel
+
+            size_t i = 0;
+            while(generator.has_next_batch()){
+                auto batch = generator.data_batch();
+                for(size_t j = 0; j < etl::dim<0>(batch); ++j){
+                    layer.activate_hidden(next_a[i++], batch(j));
+                }
+
+                generator.next_batch();
+            }
 
             //At this point we don't need the storage of the previous layer
             release(previous);
 
+            // TODO This should be using directly the correct ae_generator_t with fixed batch size for non-dynamic RBM
             auto next_generator = make_generator(next_a, next_a, generator.size(), ae_generator_t{});
 
             //Pass the output to the next layer
