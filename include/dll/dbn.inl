@@ -1555,6 +1555,64 @@ private:
     template <size_t I, typename NIterator, typename CIterator, typename NContainer, typename CContainer, cpp_enable_if((I == layers))>
     void pretrain_layer_denoising(NIterator, NIterator, CIterator, CIterator, watcher_t&, size_t, NContainer&, CContainer&) {}
 
+    template <size_t I, typename Generator, typename NContainer, typename CContainer, cpp_enable_if((I < layers))>
+    void pretrain_layer_denoising(Generator& generator, watcher_t& watcher, size_t max_epochs, NContainer& previous_n, CContainer& previous_c) {
+        using layer_t = layer_type<I>;
+
+        decltype(auto) layer = layer_get<I>();
+
+        watcher.pretrain_layer(*this, I, layer, generator.size());
+
+        cpp::static_if<layer_traits<layer_t>::is_pretrained()>([&](auto f) {
+            // Configure the generator for the RMB
+            generator.batch_size = get_batch_size(f(layer));
+
+            // Train the RBM
+            f(layer).template train_denoising<
+                                              !watcher_t::ignore_sub,               //Enable the RBM Watcher or not
+                                              dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
+                (generator, max_epochs);
+        });
+
+        if (train_next<I + 1>::value) {
+            auto next_n = layer.template prepare_output<safe_value_t<decltype(generator.data_batch()(0))>>(generator.size());
+            auto next_c = layer.template prepare_output<safe_value_t<decltype(generator.label_batch()(0))>>(generator.size());
+
+            generator.reset();
+            generator.set_train();
+
+            // TODO This should use batch forwarding
+            // Or should be parallel
+
+            size_t i = 0;
+            while(generator.has_next_batch()){
+                auto data_batch = generator.data_batch();
+                auto label_batch = generator.label_batch();
+
+                for(size_t j = 0; j < etl::dim<0>(data_batch); ++j){
+                    layer.activate_hidden(next_n[i++], data_batch(j));
+                    layer.activate_hidden(next_c[i++], label_batch(j));
+                }
+
+                generator.next_batch();
+            }
+
+            //At this point we don't need the storage of the previous layer
+            release(previous_n);
+            release(previous_c);
+
+            // TODO This should be using directly the correct ae_generator_t with fixed batch size for non-dynamic RBM
+            auto next_generator = make_generator(next_n, next_c, generator.size(), ae_generator_t{});
+
+            //In the standard case, pass the output to the next layer
+            pretrain_layer_denoising<I + 1>(*next_generator, watcher, max_epochs, next_n, next_c);
+        }
+    }
+
+    //Stop template recursion
+    template <size_t I, typename Generator, typename NContainer, typename CContainer, cpp_enable_if((I == layers))>
+    void pretrain_layer_denoising(Generator&, watcher_t&, size_t, NContainer&, CContainer&) {}
+
     /* Pretrain with denoising (auto) */
 
     template <size_t I, typename CIterator, typename CContainer, cpp_enable_if((I < layers))>

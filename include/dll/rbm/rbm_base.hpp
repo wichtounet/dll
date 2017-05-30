@@ -117,6 +117,12 @@ struct rbm_base : layer<Parent> {
 
     //Train denoising autoencoder
 
+    template <bool EnableWatcher = true, typename RW = void, typename Generator, typename... Args>
+    double train_denoising(Generator& generator, size_t max_epochs, Args... args) {
+        dll::rbm_trainer<parent_t, EnableWatcher, RW, true> trainer(args...);
+        return trainer.train(as_derived(), generator, max_epochs);
+    }
+
     template <bool EnableWatcher = true, typename RW = void, typename Noisy, typename Clean, typename... Args>
     double train_denoising(const Noisy& noisy, const Clean& clean, size_t max_epochs, Args... args) {
         // Create a new generator around the data
@@ -124,7 +130,7 @@ struct rbm_base : layer<Parent> {
         generator->batch_size = get_batch_size(as_derived());
 
         dll::rbm_trainer<parent_t, EnableWatcher, RW, true> trainer(args...);
-        return trainer.train(as_derived(), generator, max_epochs);
+        return trainer.train(as_derived(), *generator, max_epochs);
     }
 
     template <typename NIterator, typename CIterator, bool EnableWatcher = true, typename RW = void, typename... Args>
@@ -134,7 +140,7 @@ struct rbm_base : layer<Parent> {
         generator->batch_size = get_batch_size(as_derived());
 
         dll::rbm_trainer<parent_t, EnableWatcher, RW, true> trainer(args...);
-        return trainer.train(as_derived(), generator, max_epochs);
+        return trainer.train(as_derived(), *generator, max_epochs);
     }
 
     //Train denoising autoencoder (auto)
