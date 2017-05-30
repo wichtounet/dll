@@ -457,28 +457,6 @@ public:
      * \brief Pretrain the network by training all layers in an unsupervised
      * manner, the network will learn to reconstruct noisy input.
      */
-    template <typename NIterator, typename CIterator>
-    void pretrain_denoising(NIterator nit, NIterator nend, CIterator cit, CIterator cend, size_t max_epochs) {
-        dll::auto_timer timer("dbn:pretrain:denoising");
-
-        watcher_t watcher;
-
-        watcher.pretraining_begin(*this, max_epochs);
-
-        cpp_assert(!batch_mode(), "pretrain_denoising has not yet been implemented in memory");
-
-        std::cout << "DBN: Denoising Pretraining" << std::endl;
-
-        //Pretrain each layer one-by-one
-        pretrain_layer_denoising<0>(nit, nend, cit, cend, watcher, max_epochs, fake_resource, fake_resource);
-
-        watcher.pretraining_end(*this);
-    }
-
-    /*!
-     * \brief Pretrain the network by training all layers in an unsupervised
-     * manner, the network will learn to reconstruct noisy input.
-     */
     template <typename Generator>
     void pretrain_denoising(Generator& generator, size_t max_epochs) {
         dll::auto_timer timer("dbn:pretrain:denoising");
@@ -511,7 +489,22 @@ public:
      */
     template <typename Noisy, typename Clean>
     void pretrain_denoising(const Noisy& noisy, const Clean& clean, size_t max_epochs) {
-        pretrain_denoising(noisy.begin(), noisy.end(), clean.begin(), clean.end(), max_epochs);
+        // Create generator around the data
+        auto generator = make_generator(noisy, clean, noisy.size(), output_size(), ae_generator_t{});
+
+        pretrain_denoising(*generator, max_epochs);
+    }
+
+    /*!
+     * \brief Pretrain the network by training all layers in an unsupervised
+     * manner, the network will learn to reconstruct noisy input.
+     */
+    template <typename NIterator, typename CIterator>
+    void pretrain_denoising(NIterator nit, NIterator nend, CIterator cit, CIterator cend, size_t max_epochs) {
+        // Create generator around the data
+        auto generator = make_generator(nit, nend, cit, cend, std::distance(cit, cend), output_size(), ae_generator_t{});
+
+        pretrain_denoising(*generator, max_epochs);
     }
 
     /* train with labels */
@@ -1496,53 +1489,8 @@ private:
     //Stop template recursion
     template <size_t I, typename Generator, typename Container, cpp_enable_if((I == layers))>
     void pretrain_layer(Generator&, watcher_t&, size_t, Container&) {}
+
     /* Pretrain with denoising */
-
-    template <size_t I, typename NIterator, typename CIterator, typename NContainer, typename CContainer, cpp_enable_if((I < layers))>
-    void pretrain_layer_denoising(NIterator nit, NIterator nend, CIterator cit, CIterator cend, watcher_t& watcher, size_t max_epochs, NContainer& previous_n, CContainer& previous_c) {
-        using layer_t = layer_type<I>;
-
-        decltype(auto) layer = layer_get<I>();
-
-        watcher.pretrain_layer(*this, I, layer, dbn_detail::fast_distance(nit, nend));
-
-        cpp::static_if<layer_traits<layer_t>::is_pretrained()>([&](auto f) {
-            f(layer).template train_denoising<NIterator, CIterator,
-                                              !watcher_t::ignore_sub,               //Enable the RBM Watcher or not
-                                              dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
-                (nit, nend, cit, cend, max_epochs);
-        });
-
-        if (train_next<I + 1>::value) {
-            auto next_n = layer.template prepare_output<safe_value_t<NIterator>>(std::distance(nit, nend));
-            auto next_c = layer.template prepare_output<safe_value_t<CIterator>>(std::distance(nit, nend));
-
-            //TODO Both these activation should be done with batch
-
-            maybe_parallel_foreach_i(pool, nit, nend, [&layer, &next_n](auto& v, size_t i) {
-                SERIAL_SECTION {
-                    layer.activate_hidden(next_n[i], v);
-                }
-            });
-
-            maybe_parallel_foreach_i(pool, cit, cend, [&layer, &next_c](auto& v, size_t i) {
-                SERIAL_SECTION {
-                    layer.activate_hidden(next_c[i], v);
-                }
-            });
-
-            //At this point we don't need the storage of the previous layer
-            release(previous_n);
-            release(previous_c);
-
-            //In the standard case, pass the output to the next layer
-            pretrain_layer_denoising<I + 1>(next_n.begin(), next_n.end(), next_c.begin(), next_c.end(), watcher, max_epochs, next_n, next_c);
-        }
-    }
-
-    //Stop template recursion
-    template <size_t I, typename NIterator, typename CIterator, typename NContainer, typename CContainer, cpp_enable_if((I == layers))>
-    void pretrain_layer_denoising(NIterator, NIterator, CIterator, CIterator, watcher_t&, size_t, NContainer&, CContainer&) {}
 
     template <size_t I, typename Generator, typename NContainer, typename CContainer, cpp_enable_if((I < layers))>
     void pretrain_layer_denoising(Generator& generator, watcher_t& watcher, size_t max_epochs, NContainer& previous_n, CContainer& previous_c) {
