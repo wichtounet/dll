@@ -1520,24 +1520,6 @@ private:
     template <size_t I>
     struct batch_layer_ignore<I, std::enable_if_t<(I < layers)>> : cpp::or_u<layer_traits<layer_type<I>>::is_pooling_layer(), layer_traits<layer_type<I>>::is_transform_layer(), layer_traits<layer_type<I>>::is_standard_layer(), !layer_traits<layer_type<I>>::pretrain_last()> {};
 
-    template <bool Bypass, typename Iterator, typename Container, typename T = this_type, cpp_enable_if(Bypass && dbn_traits<T>::shuffle_pretrain())>
-    auto prepare_it(Iterator it, Iterator end, Container& container){
-        std::copy(it, end, std::back_inserter(container));
-        return std::make_tuple(container.begin(), container.end());
-    }
-
-    template <bool Bypass, typename Iterator, typename Container, typename T = this_type, cpp_disable_if(Bypass && dbn_traits<T>::shuffle_pretrain())>
-    auto prepare_it(Iterator it, Iterator end, Container& container){
-        cpp_unused(container);
-        return std::make_tuple(it, end);
-    }
-
-    template <typename Container>
-    void shuffle(Container& container){
-        decltype(auto) g = dll::rand_engine();
-        std::shuffle(container.begin(), container.end(), g);
-    }
-
     //Special handling for the layer 0
     //data is coming from iterators not from input
     template <size_t I, typename Generator, cpp_enable_if((I == 0 && !batch_layer_ignore<I>::value))>
