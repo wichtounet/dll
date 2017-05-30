@@ -1785,8 +1785,6 @@ private:
         //Get the specific trainer (CD)
         auto trainer = rbm_trainer_t::get_trainer(rbm);
 
-        auto total_batch_size = big_batch_size * get_batch_size(rbm);
-
         using input_t = typename types_helper<I - 1, decltype(generator.data_batch()(0))>::input_t;
         auto next_input = layer_get<I - 1>().template prepare_output<input_t>(get_batch_size(rbm));
 
