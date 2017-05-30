@@ -143,20 +143,6 @@ struct rbm_base : layer<Parent> {
         return trainer.train(as_derived(), *generator, max_epochs);
     }
 
-    //Train denoising autoencoder (auto)
-
-    template <bool EnableWatcher = true, typename RW = void, typename Clean, typename... Args>
-    double train_denoising_auto(const Clean& clean, size_t max_epochs, double noise, Args... args) {
-        dll::rbm_trainer<parent_t, EnableWatcher, RW, false> trainer(args...);
-        return trainer.train_denoising_auto(as_derived(), clean.begin(), clean.end(), max_epochs, noise);
-    }
-
-    template <typename CIterator, bool EnableWatcher = true, typename RW = void, typename... Args>
-    double train_denoising_auto(CIterator clean_it, CIterator clean_end, size_t max_epochs, double noise, Args... args) {
-        dll::rbm_trainer<parent_t, EnableWatcher, RW, false> trainer(args...);
-        return trainer.train_denoising_auto(as_derived(), clean_it, clean_end, max_epochs, noise);
-    }
-
     // Features
 
     template<typename Input>
