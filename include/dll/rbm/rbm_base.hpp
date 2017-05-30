@@ -12,6 +12,7 @@
 
 #include "cpp_utils/io.hpp"
 
+#include "dll/generators.hpp"
 #include "dll/layer.hpp"
 #include "dll/trainer/rbm_trainer_fwd.hpp"
 

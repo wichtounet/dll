@@ -7,6 +7,11 @@
 
 #pragma once
 
+#include "etl/etl.hpp"
+
+#include "dll/util/tmp.hpp"
+#include "dll/base_conf.hpp"
+
 // Common helpers
 #include "dll/generators/cache_helper.hpp"
 #include "dll/generators/label_cache_helper.hpp"
