@@ -276,7 +276,7 @@ void compute_gradients_one(Trainer& t) {
 /* The training procedures */
 
 template <bool Persistent, size_t K, typename T, typename RBM, typename Trainer, cpp_enable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
-void compute_gradients_normal(const dll::batch<T>& input_batch, const dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
+void compute_gradients_normal(dll::batch<T>& input_batch, dll::batch<T>& expected_batch, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:gradients:normal:par");
 
     auto n = input_batch.size();
@@ -377,6 +377,69 @@ void compute_gradients_normal(dll::batch<T>& input_batch, dll::batch<T>& expecte
     //Compute the gradients
 
     batch_compute_gradients(t);
+}
+
+template <bool Persistent, size_t K, typename InputBatch, typename ExpectedBatch, typename RBM, typename Trainer, cpp_enable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
+void compute_gradients_normal(InputBatch& input_batch, ExpectedBatch& expected_batch, RBM& rbm, Trainer& t) {
+    dll::auto_timer timer("cd:gradients:normal:par");
+
+    cpp_assert(etl::dim<0>(input_batch) == etl::dim<0>(expected_batch), "Invalid batch sizes");
+
+    const auto n = etl::dim<0>(input_batch);
+
+    // clang-format off
+    maybe_parallel_foreach_n(t.pool, 0, n, [&](size_t i)
+    {
+        SERIAL_SECTION {
+            //Copy input/expected for computations
+            t.v1(i) = input_batch(i);
+            t.vf(i) = expected_batch(i);
+
+            //First step
+            rbm.template activate_hidden<true, true>(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i));
+
+            if(Persistent && t.init){
+                t.p_h_a(i) = t.h1_a(i);
+                t.p_h_s(i) = t.h1_s(i);
+            }
+
+            //CD-1
+            cpp::static_if<Persistent>([&](auto f){
+                f(rbm).template activate_visible<true, false>(t.p_h_a(i), t.p_h_s(i), t.v2_a(i), t.v2_s(i));
+                f(rbm).template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
+            }).else_([&](auto f){
+                f(rbm).template activate_visible<true, false>(t.h1_a(i), t.h1_s(i), t.v2_a(i), t.v2_s(i));
+                f(rbm).template activate_hidden<true, (K > 1)>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
+            });
+
+            //CD-k
+            for(size_t k = 1; k < K; ++k){
+                rbm.template activate_visible<true, false>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
+                rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
+            }
+
+            if(n > 1){
+                //Reset the batch gradients
+                t.w_grad_b(i) = 0;
+
+                for(size_t i2 = 0; i2 < num_visible(rbm); i2++){
+                    for(size_t j = 0; j < num_hidden(rbm); j++){
+                        t.w_grad_b(i, i2, j) += t.vf(i, i2) * t.h1_a(i,j) - t.v2_a(i, i2) * t.h2_a(i, j);
+                    }
+                }
+            } else {
+                compute_gradients_one(t);
+            }
+        }
+    });
+    // clang-format on
+
+    if(n > 1){
+        //Compute the gradients
+        t.w_grad = sum_l(t.w_grad_b);
+        t.b_grad = sum_l(t.h1_a - t.h2_a);
+        t.c_grad = sum_l(t.vf - t.v2_a);
+    }
 }
 
 template <bool Persistent, size_t K, typename InputBatch, typename ExpectedBatch, typename RBM, typename Trainer, cpp_disable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
