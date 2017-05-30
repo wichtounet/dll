@@ -1375,6 +1375,46 @@ private:
         pretrain_layer<I + 2>(next_a.begin(), next_a.end(), watcher, max_epochs, next_a);
     }
 
+    template <size_t I, typename Generator, typename Container>
+    void inline_layer(Generator& generator, watcher_t& watcher, size_t max_epochs, Container& previous) {
+        decltype(auto) layer = layer_get<I>();
+        decltype(auto) next_layer = layer_get<I + 1>();
+
+        using input_t = decltype(generator.data_batch()(0));
+        using next_input_t = std::decay_t<decltype(layer.template prepare_one_output<input_t>())>;
+
+        watcher.pretrain_layer(*this, I+1, next_layer, generator.size());
+
+        uto a = layer.template prepare_one_output<next_input_t>();
+        auto b = next_layer.template prepare_output<next_input_t>(generator.size());
+
+        generator.reset();
+        generator.set_test();
+
+        size_t i = 0;
+
+        // TODO Should use parallel or batch
+
+        while(generator.has_next_batch()){
+            auto data_batch = generator.data_batch();
+
+            const size_t B = etl::dim<0>(data_batch);
+
+            for(size_t j = 0; j < B; ++j){
+                layer.activate_hidden(a, data_batch(j));
+                next_layer.activate_hidden(b[i++], a);
+            }
+
+            generator.next_batch();
+        }
+
+        this_type::release(previous);
+
+        auto next_generator = make_generator(b, b, generator.size(), output_size(), ae_generator_t{});
+
+        pretrain_layer<I + 2>(*next_generator, watcher, max_epochs, b);
+    }
+
     template <size_t I, typename Iterator, typename Container, cpp_enable_if((I < layers))>
     void pretrain_layer(Iterator first, Iterator last, watcher_t& watcher, size_t max_epochs, Container& previous) {
         using layer_t = layer_type<I>;
