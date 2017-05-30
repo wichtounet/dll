@@ -382,48 +382,6 @@ public:
     /* pretrain */
 
     /*!
-     * \brief Pretrain the network by training all layers in an unsupervised manner.
-     *
-     * \param first Iterator to the first element of the sequence
-     * \param last Iterator to the last element of the sequence
-     * \param max_epochs The maximum number of epochs for pretraining.
-     *
-     * \tparam Iterator the type of iterator
-     */
-    template <typename Iterator>
-    void pretrain(Iterator first, Iterator last, size_t max_epochs) {
-        dll::auto_timer timer("dbn:pretrain");
-
-        watcher_t watcher;
-
-        watcher.pretraining_begin(*this, max_epochs);
-
-        //Pretrain each layer one-by-one
-        if (batch_mode()) {
-            std::cout << "DBN: Pretraining done in batch mode" << std::endl;
-
-            if (layers_t::has_shuffle_layer) {
-                std::cout << "warning: batch_mode dbn does not support shuffle in layers (will be ignored)";
-            }
-
-            pretrain_layer_batch<0>(first, last, watcher, max_epochs);
-        } else {
-            pretrain_layer<0>(first, last, watcher, max_epochs, fake_resource);
-        }
-
-        watcher.pretraining_end(*this);
-    }
-
-    /*!
-     * \brief Pretrain the network by training all layers in an unsupervised
-     * manner.
-     */
-    template <typename Input, cpp_enable_if(!is_generator<Input>::value)>
-    void pretrain(const Input& training_data, size_t max_epochs) {
-        pretrain(training_data.begin(), training_data.end(), max_epochs);
-    }
-
-    /*!
      * \brief Pretrain the network by training all layers in an unsupervised
      * manner.
      */
@@ -449,6 +407,35 @@ public:
         }
 
         watcher.pretraining_end(*this);
+    }
+
+    /*!
+     * \brief Pretrain the network by training all layers in an unsupervised
+     * manner.
+     */
+    template <typename Input, cpp_enable_if(!is_generator<Input>::value)>
+    void pretrain(const Input& training_data, size_t max_epochs) {
+        // Create generator around the data
+        auto generator = make_generator(training_data, training_data, training_data.size(), output_size(), ae_generator_t{});
+
+        pretrain(*generator, max_epochs);
+    }
+
+    /*!
+     * \brief Pretrain the network by training all layers in an unsupervised manner.
+     *
+     * \param first Iterator to the first element of the sequence
+     * \param last Iterator to the last element of the sequence
+     * \param max_epochs The maximum number of epochs for pretraining.
+     *
+     * \tparam Iterator the type of iterator
+     */
+    template <typename Iterator>
+    void pretrain(Iterator first, Iterator last, size_t max_epochs) {
+        // Create generator around the data
+        auto generator = make_generator(first, last, first, last, std::distance(first, last), output_size(), ae_generator_t{});
+
+        pretrain(*generator, max_epochs);
     }
 
     /* pretrain_denoising */
