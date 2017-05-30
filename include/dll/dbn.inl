@@ -1385,7 +1385,7 @@ private:
 
         watcher.pretrain_layer(*this, I+1, next_layer, generator.size());
 
-        uto a = layer.template prepare_one_output<next_input_t>();
+        auto a = layer.template prepare_one_output<next_input_t>();
         auto b = next_layer.template prepare_output<next_input_t>(generator.size());
 
         generator.reset();
