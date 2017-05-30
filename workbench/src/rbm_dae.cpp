@@ -59,7 +59,7 @@ void rbm_dae_batch(const D& dataset){
     auto& training_images = dataset.training_images;
     auto generator = make_generator(training_images, training_images, training_images.size(), generator_t{});
 
-    ae->pretrain_denoising(*generator, 50);
+    ae->pretrain_denoising(*generator, 10);
 }
 
 template<typename D>
@@ -86,7 +86,7 @@ void rbm_cdae_batch(const D& dataset){
     auto& training_images = dataset.training_images;
     auto generator = make_generator(training_images, training_images, training_images.size(), generator_t{});
 
-    ae->pretrain_denoising(*generator, 50);
+    ae->pretrain_denoising(*generator, 10);
 }
 
 } //end of anonymous namespace
