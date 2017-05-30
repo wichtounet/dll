@@ -82,51 +82,6 @@ struct rbm_trainer {
         //NOP
     }
 
-    template <typename IIterator, cpp_enable_if_cst(rbm_layer_traits<rbm_t>::has_shuffle())>
-    static void shuffle_direct(IIterator ifirst, IIterator ilast) {
-        decltype(auto) g = dll::rand_engine();
-        std::shuffle(ifirst, ilast, g);
-    }
-
-    template <typename IIterator, cpp_disable_if_cst(rbm_layer_traits<rbm_t>::has_shuffle())>
-    static void shuffle_direct(IIterator, IIterator) {}
-
-    template <typename IIterator, typename EIterator, cpp_enable_if_cst(rbm_layer_traits<rbm_t>::has_shuffle())>
-    static void shuffle(IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast) {
-        decltype(auto) g = dll::rand_engine();
-        if (Denoising) {
-            cpp::parallel_shuffle(ifirst, ilast, efirst, elast, g);
-        } else {
-            std::shuffle(ifirst, ilast, g);
-        }
-    }
-
-    template <typename IIterator, typename EIterator, cpp_disable_if_cst(rbm_layer_traits<rbm_t>::has_shuffle())>
-    static void shuffle(IIterator, IIterator, EIterator, EIterator) {}
-
-    template <typename IIterator, typename EIterator, typename IVector, typename EVector, cpp_enable_if_cst(rbm_layer_traits<rbm_t>::has_shuffle())>
-    static auto prepare_it(IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast, IVector& ivec, EVector& evec) {
-        std::copy(ifirst, ilast, std::back_inserter(ivec));
-
-        auto input_first = ivec.begin();
-        auto input_last  = ivec.end();
-
-        if (Denoising) {
-            std::copy(efirst, elast, std::back_inserter(evec));
-
-            auto expected_first = evec.begin();
-            auto expected_last = evec.end();
-            return std::make_tuple(input_first, input_last, expected_first, expected_last);
-        } else {
-            return std::make_tuple(input_first, input_last, input_first, input_last);
-        }
-    }
-
-    template <typename IIterator, typename EIterator, typename IVector, typename EVector, cpp_disable_if_cst(rbm_layer_traits<rbm_t>::has_shuffle())>
-    static auto prepare_it(IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast, IVector&, EVector&) {
-        return std::make_tuple(ifirst, ilast, efirst, elast);
-    }
-
     template <typename rbm_t, typename Iterator>
     using fix_iterator_t = std::conditional_t<
         rbm_layer_traits<rbm_t>::has_shuffle(),
@@ -136,41 +91,6 @@ struct rbm_trainer {
     size_t batch_size            = 0;
     size_t total_batches         = 0;
     error_type last_error = 0.0;
-
-    //Note: input_first/input_last only relevant for its size, not
-    //values since they can point to the input of the first level
-    //and not the current level
-    template <typename Iterator>
-    void init_training(RBM& rbm, Iterator input_first, Iterator input_last) {
-        rbm.momentum = rbm.initial_momentum;
-
-        if (EnableWatcher) {
-            watcher.training_begin(rbm);
-        }
-
-        //Get the size of each batches
-        batch_size = get_batch_size(rbm);
-
-        if (std::is_same<typename std::iterator_traits<Iterator>::iterator_category, std::random_access_iterator_tag>::value) {
-            auto size = distance(input_first, input_last);
-
-            //TODO Better handling of incomplete batch size would solve this problem (this could be done by
-            //cleaning the data before the last batch)
-            if (size % batch_size != 0) {
-#ifndef DLL_SILENT
-                std::cout << "WARNING: The number of samples should be divisible by the batch size" << std::endl;
-                std::cout << "         This may cause discrepancies in the results." << std::endl;
-#endif
-            }
-
-            //Only used for debugging purposes, no need to be precise
-            total_batches = size / batch_size;
-        } else {
-            total_batches = 0;
-        }
-
-        last_error = 0.0;
-    }
 
     //Note: input_first/input_last only relevant for its size, not
     //values since they can point to the input of the first level
@@ -219,55 +139,6 @@ struct rbm_trainer {
         }
 
         return last_error;
-    }
-
-    template <typename IIterator, typename EIterator>
-    error_type train(RBM& rbm, IIterator ifirst, IIterator ilast, EIterator efirst, EIterator elast, size_t max_epochs) {
-        dll::auto_timer timer("rbm_trainer:train");
-
-        //In case of shuffle, we don't want to shuffle the input, therefore create a copy and shuffle it
-
-        std::vector<typename std::iterator_traits<IIterator>::value_type> input_copy;
-        std::vector<typename std::iterator_traits<EIterator>::value_type> expected_copy;
-
-        auto iterators = prepare_it(ifirst, ilast, efirst, elast, input_copy, expected_copy);
-
-        decltype(auto) input_first = std::get<0>(iterators);
-        decltype(auto) input_last = std::get<1>(iterators);
-
-        decltype(auto) expected_first = std::get<2>(iterators);
-        decltype(auto) expected_last = std::get<3>(iterators);
-
-        //Initialize RBM and trainign parameters
-        init_training(rbm, input_first, input_last);
-
-        //Some RBM may init weights based on the training data
-        //Note: This can't be done in init_training, since it will
-        //sometimes be called with the wrong input values
-        init_weights(rbm, input_first, input_last);
-
-        //Allocate the trainer
-        auto trainer = get_trainer(rbm);
-
-        //Train for max_epochs epoch
-        for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
-            //Shuffle if necessary
-            shuffle(input_first, input_last, expected_first, expected_last);
-
-            //Create a new context for this epoch
-            rbm_training_context context;
-
-            //Start a new epoch
-            init_epoch();
-
-            //Train on all the data
-            train_sub(input_first, input_last, expected_first, trainer, context, rbm);
-
-            //Finalize the current epoch
-            finalize_epoch(epoch, context, rbm);
-        }
-
-        return finalize_training(rbm);
     }
 
     template <typename Generator>
