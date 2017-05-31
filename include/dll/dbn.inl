@@ -68,8 +68,9 @@ struct find_rbm_layer {
 };
 
 template<size_t Layer, typename DBN>
-struct find_rbm_layer<Layer, DBN, std::enable_if_t<(Layer < DBN::layers_t::size - 1) && !decay_layer_traits<typename DBN::template layer_type<Layer>>::is_rbm_layer()>> {
-    static constexpr size_t L = find_rbm_layer<Layer + 1, DBN>::L;
+struct find_rbm_layer<Layer, DBN, std::enable_if_t<(Layer < DBN::layers_t::size)>> {
+    static constexpr bool RBM = decay_layer_traits<typename DBN::template layer_type<Layer>>::is_rbm_layer();
+    static constexpr size_t L = RBM ? Layer : find_rbm_layer<Layer + 1, DBN>::L;
 };
 
 /*!
