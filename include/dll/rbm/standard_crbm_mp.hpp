@@ -183,6 +183,38 @@ struct standard_crbm_mp : public standard_conv_rbm<Derived, Desc> {
         }
     }
 
+    template <bool P = true, bool S = true, typename Po, typename V>
+    void batch_activate_pooling(Po& p_a, Po& p_s, const V& v_a, const V&) const {
+        dll::auto_timer timer("crbm:mp:activate_pooling");
+
+        static_assert(pooling_unit == unit_type::BINARY, "Invalid pooling unit type");
+        static_assert(P, "Computing S without P is not implemented");
+
+        const auto Batch = etl::dim<0>(p_a);
+
+        cpp_assert(etl::dim<0>(p_s) == Batch, "The number of batch must be consistent");
+        cpp_assert(etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
+        cpp_unused(Batch);
+
+        auto b_rep = as_derived().get_batch_b_rep(v_a);
+
+        auto h_a = etl::force_temporary(etl::conv_4d_valid_flipped(v_a, as_derived().w));
+
+        if (pooling_unit == unit_type::BINARY) {
+            p_a = etl::p_max_pool_p(b_rep + h_a, C(), C());
+        }
+
+        nan_check_etl(p_a);
+
+        if (S) {
+            if (pooling_unit == unit_type::BINARY) {
+                p_s = r_bernoulli(p_a);
+            }
+
+            nan_check_etl(p_s);
+        }
+    }
+
     template <bool P = true, bool S = true, typename H1, typename H2, typename V1, typename V2>
     void batch_activate_visible(const H1& h_a, const H2& h_s, V1&& v_a, V2&& v_s) const {
         dll::auto_timer timer("crbm:mp:batch_activate_visible");
@@ -216,6 +248,11 @@ struct standard_crbm_mp : public standard_conv_rbm<Derived, Desc> {
     template<typename Input>
     void activate_hidden(output_one_t& h_a, const Input& input) const {
         activate_pooling<true, false>(h_a, h_a, input, input);
+    }
+
+    template <typename Po, typename V>
+    void batch_activate_pooling(Po& p_a, const V& v_a) const {
+        batch_activate_pooling<true, false>(p_a, p_a, v_a, v_a);
     }
 
     template<typename Input>
