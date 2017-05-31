@@ -32,8 +32,6 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
     using big_label_cache_type = typename label_cache_helper_t::big_cache_type;
 
     static constexpr bool dll_generator = true;
-
-    const size_t batch_size;
     static constexpr size_t big_batch_size = desc::BigBatchSize;
 
     big_data_cache_type batch_cache;
@@ -48,6 +46,8 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
     LIterator orig_lit;
     Iterator it;
     LIterator lit;
+
+    const size_t batch_size;
 
     outmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, size_t size, size_t batch = 0)
             : _size(size), orig_it(first), orig_lit(lfirst), batch_size(batch ? batch : desc::BatchSize) {
@@ -229,8 +229,6 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
     using big_label_cache_type = typename label_cache_helper_t::big_cache_type;
 
     static constexpr bool dll_generator = true;
-
-    const size_t batch_size;
     static constexpr size_t big_batch_size = desc::BigBatchSize;
 
     big_data_cache_type batch_cache;
@@ -261,6 +259,8 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
     random_mirrorer<Desc> mirrorer;
     elastic_distorter<Desc> distorter;
     random_noise<Desc> noiser;
+
+    const size_t batch_size;
 
     outmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, size_t size, size_t batch = 0)
             : _size(size), orig_it(first), orig_lit(lfirst), cropper(*first), mirrorer(*first), distorter(*first), noiser(*first), batch_size(batch ? batch : desc::BatchSize) {

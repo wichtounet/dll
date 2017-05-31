@@ -205,8 +205,6 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_a
     using label_cache_type = typename label_cache_helper_t::cache_type;
 
     static constexpr bool dll_generator = true;
-
-    const size_t batch_size;
     static constexpr size_t big_batch_size = desc::BigBatchSize;
 
     data_cache_type input_cache;
@@ -217,6 +215,8 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_a
     random_mirrorer<Desc> mirrorer;
     elastic_distorter<Desc> distorter;
     random_noise<Desc> noiser;
+
+    const size_t batch_size;
 
     size_t current = 0;
 
