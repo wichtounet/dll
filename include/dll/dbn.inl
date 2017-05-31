@@ -254,6 +254,32 @@ private:
         return 0;
     }
 
+    template <size_t L, cpp_enable_if((L < layers - 1) && decay_layer_traits<layer_type<L>>::is_rbm_layer())>
+    void validate_pretraining_base() const {
+        cpp_assert(get_batch_size(layer_get<L>()) == get_batch_size(layer_get<rbm_layer_n>()), "Incoherent batch sizes in network");
+
+        validate_pretraining_base<L + 1>();
+    }
+
+    template <size_t L, cpp_enable_if((L == layers - 1) && decay_layer_traits<layer_type<L>>::is_rbm_layer())>
+    void validate_pretraining_base() const {
+        cpp_assert(get_batch_size(layer_get<L>()) == get_batch_size(layer_get<rbm_layer_n>()), "Incoherent batch sizes in network");
+    }
+
+    template <size_t L, cpp_enable_if((L < layers - 1) && !decay_layer_traits<layer_type<L>>::is_rbm_layer())>
+    void validate_pretraining_base() const {
+        validate_pretraining_base<L + 1>();
+    }
+
+    template <size_t L, cpp_enable_if((L == layers - 1) && !decay_layer_traits<layer_type<L>>::is_rbm_layer())>
+    void validate_pretraining_base() const {
+        // Nothing to do
+    }
+
+    void validate_pretraining() const {
+        validate_pretraining_base<0>();
+    }
+
 public:
     /*!
      * Constructs a DBN and initializes all its members.
@@ -459,6 +485,8 @@ public:
     void pretrain(Generator& generator, size_t max_epochs) {
         static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
 
+        validate_pretraining();
+
         dll::auto_timer timer("dbn:pretrain");
 
         watcher_t watcher;
@@ -489,6 +517,8 @@ public:
     void pretrain(const Input& training_data, size_t max_epochs) {
         static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
 
+        validate_pretraining();
+
         // Create generator around the data
         auto generator = make_generator(
             training_data, training_data,
@@ -511,6 +541,8 @@ public:
     void pretrain(Iterator first, Iterator last, size_t max_epochs) {
         static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
 
+        validate_pretraining();
+
         // Create generator around the data
         auto generator = make_generator(
             first, last,
@@ -530,6 +562,8 @@ public:
     template <typename Generator>
     void pretrain_denoising(Generator& generator, size_t max_epochs) {
         static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
+
+        validate_pretraining();
 
         dll::auto_timer timer("dbn:pretrain:denoising");
 
@@ -563,6 +597,8 @@ public:
     void pretrain_denoising(const Noisy& noisy, const Clean& clean, size_t max_epochs) {
         static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
 
+        validate_pretraining();
+
         // Create generator around the data
         auto generator = make_generator(
             noisy, clean,
@@ -579,6 +615,8 @@ public:
     template <typename NIterator, typename CIterator>
     void pretrain_denoising(NIterator nit, NIterator nend, CIterator cit, CIterator cend, size_t max_epochs) {
         static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
+
+        validate_pretraining();
 
         // Create generator around the data
         auto generator = make_generator(
