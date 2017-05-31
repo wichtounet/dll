@@ -67,10 +67,19 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
     outmemory_data_generator(outmemory_data_generator&& rhs) = delete;
     outmemory_data_generator operator=(outmemory_data_generator&& rhs) = delete;
 
+    /*!
+     * \brief Indicates that it is safe to destroy the memory of the generator
+     * when not used by the pretraining phase
+     */
     void set_safe(){
         is_safe = true;
     }
 
+    /*!
+     * \brier Clear the memory of the generator.
+     *
+     * This is only done if the generator is marked as safe it is safe.
+     */
     void clear(){
         if(is_safe){
             batch_cache.clear();
@@ -78,10 +87,16 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
         }
     }
 
+    /*!
+     * brief Sets the generator in test mode
+     */
     void set_test(){
         // Nothing to do
     }
 
+    /*!
+     * brief Sets the generator in train mode
+     */
     void set_train(){
         // Nothing to do
     }
@@ -273,7 +288,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
     elastic_distorter<Desc> distorter;
     random_noise<Desc> noiser;
 
-    const size_t batch_size;
+    const size_t batch_size; ///< The size of the generated batches
 
     outmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, size_t size, size_t batch = 0)
             : _size(size), orig_it(first), orig_lit(lfirst), cropper(*first), mirrorer(*first), distorter(*first), noiser(*first), batch_size(batch ? batch : desc::BatchSize) {
@@ -399,10 +414,19 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
         main_thread.join();
     }
 
+    /*!
+     * \brief Indicates that it is safe to destroy the memory of the generator
+     * when not used by the pretraining phase
+     */
     void set_safe(){
         is_safe = true;
     }
 
+    /*!
+     * \brier Clear the memory of the generator.
+     *
+     * This is only done if the generator is marked as safe it is safe.
+     */
     void clear(){
         if(is_safe){
             batch_cache.clear();
@@ -410,10 +434,16 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
         }
     }
 
+    /*!
+     * brief Sets the generator in test mode
+     */
     void set_test(){
         train_mode = false;
     }
 
+    /*!
+     * brief Sets the generator in train mode
+     */
     void set_train(){
         train_mode = true;
     }

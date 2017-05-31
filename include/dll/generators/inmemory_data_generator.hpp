@@ -33,7 +33,7 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_
 
     static constexpr bool dll_generator = true;
 
-    const size_t batch_size;
+    const size_t batch_size; ///< The size of the generated batches
 
     data_cache_type input_cache;
     label_cache_type label_cache;
@@ -87,10 +87,19 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_
     inmemory_data_generator(inmemory_data_generator&& rhs) = delete;
     inmemory_data_generator operator=(inmemory_data_generator&& rhs) = delete;
 
+    /*!
+     * \brief Indicates that it is safe to destroy the memory of the generator
+     * when not used by the pretraining phase
+     */
     void set_safe(){
         is_safe = true;
     }
 
+    /*!
+     * \brier Clear the memory of the generator.
+     *
+     * This is only done if the generator is marked as safe it is safe.
+     */
     void clear(){
         if(is_safe){
             input_cache.clear();
@@ -98,10 +107,16 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_
         }
     }
 
+    /*!
+     * brief Sets the generator in test mode
+     */
     void set_test(){
         // Nothing to do
     }
 
+    /*!
+     * brief Sets the generator in train mode
+     */
     void set_train(){
         // Nothing to do
     }
@@ -256,7 +271,7 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_a
     elastic_distorter<Desc> distorter;
     random_noise<Desc> noiser;
 
-    const size_t batch_size;
+    const size_t batch_size; ///< The size of the generated batches
 
     size_t current = 0;
     bool is_safe = false;
@@ -400,10 +415,19 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_a
     inmemory_data_generator(inmemory_data_generator&& rhs) = delete;
     inmemory_data_generator operator=(inmemory_data_generator&& rhs) = delete;
 
+    /*!
+     * \brief Indicates that it is safe to destroy the memory of the generator
+     * when not used by the pretraining phase
+     */
     void set_safe(){
         is_safe = true;
     }
 
+    /*!
+     * \brier Clear the memory of the generator.
+     *
+     * This is only done if the generator is marked as safe it is safe.
+     */
     void clear(){
         if(is_safe){
             input_cache.clear();
@@ -412,10 +436,16 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_a
         }
     }
 
+    /*!
+     * brief Sets the generator in test mode
+     */
     void set_test(){
         train_mode = false;
     }
 
+    /*!
+     * brief Sets the generator in train mode
+     */
     void set_train(){
         train_mode = true;
     }
