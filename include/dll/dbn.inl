@@ -176,6 +176,8 @@ public:
         inmemory_data_generator_desc<dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>,
         outmemory_data_generator_desc<dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>>;
 
+    using rbm_ingenerator_inner_t = inmemory_data_generator_desc<dll::big_batch_size<big_batch_size>, dll::autoencoder>;
+
     using rbm_generator_inner_t = std::conditional_t<
         !dbn_traits<this_type>::batch_mode(),
         inmemory_data_generator_desc<dll::big_batch_size<big_batch_size>, dll::autoencoder>,
@@ -186,6 +188,9 @@ public:
         !dbn_traits<this_type>::batch_mode(),
         inmemory_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>,
         outmemory_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>>;
+
+    template<size_t B>
+    using rbm_ingenerator_fast_inner_t = inmemory_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::autoencoder>;
 
     template<size_t B>
     using rbm_generator_fast_inner_t = std::conditional_t<
@@ -238,6 +243,20 @@ private:
         static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_inner_desc");
 
         return rbm_generator_fast_inner_t<layer_type<L>::batch_size>{};
+    }
+
+    template<size_t L = rbm_layer_n, cpp_enable_if((decay_layer_traits<layer_type<L>>::is_dynamic()))>
+    auto get_rbm_ingenerator_inner_desc(){
+        static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_inner_desc");
+
+        return rbm_ingenerator_inner_t{};
+    }
+
+    template<size_t L = rbm_layer_n, cpp_enable_if(!(decay_layer_traits<layer_type<L>>::is_dynamic()))>
+    auto get_rbm_ingenerator_inner_desc(){
+        static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_inner_desc");
+
+        return rbm_ingenerator_fast_inner_t<layer_type<L>::batch_size>{};
     }
 
     template<size_t L = rbm_layer_n, cpp_enable_if(decay_layer_traits<layer_type<L>>::is_dynamic())>
@@ -1553,36 +1572,42 @@ private:
         });
 
         if (train_next<I + 1>::value && !inline_next<I + 1>::value) {
-            auto next_a = layer.template prepare_output<decltype(generator.data_batch()(0))>(generator.size());
-
+            // Reset correctly the generator
             generator.reset();
             generator.set_test();
 
-            // TODO This should use batch forwarding
-            // Or should be parallel
+            // Need one output in order to create the generator
+            auto one = layer.template prepare_one_output<decltype(generator.data_batch()(0))>();
+
+            // Make sure dimensions are correcty inherited
+            layer.activate_hidden(one, generator.data_batch()(0));
+
+            // Prepare a generator to hold the data
+            auto next_generator = prepare_generator(
+                one, one,
+                generator.size(), output_size(),
+                get_rbm_ingenerator_inner_desc(), get_rbm_generator_batch());
+
+            // Compute the input of the next layer
+            // using batch activation
 
             size_t i = 0;
             while(generator.has_next_batch()){
-                auto batch = generator.data_batch();
-                for(size_t j = 0; j < etl::dim<0>(batch); ++j){
-                    layer.activate_hidden(next_a[i++], batch(j));
-                }
+                auto next_batch = layer.batch_activate_hidden(generator.data_batch());
+
+                next_generator->set_data_batch(i, next_batch);
+                next_generator->set_label_batch(i, next_batch);
+
+                i += etl::dim<0>(next_batch);
 
                 generator.next_batch();
             }
 
-            cpp_assert(next_a.size() == i, "Invalid activation");
-
             //At this point we don't need the storage of the previous layer
             release(previous);
 
-            auto next_generator = make_generator(
-                next_a, next_a,
-                generator.size(), output_size(),
-                get_rbm_generator_inner_desc(), get_rbm_generator_batch());
-
             //Pass the output to the next layer
-            this->template pretrain_layer<I + 1>(*next_generator, watcher, max_epochs, next_a);
+            this->template pretrain_layer<I + 1>(*next_generator, watcher, max_epochs, previous);
         }
     }
 
@@ -1609,26 +1634,36 @@ private:
         });
 
         if (train_next<I + 1>::value) {
-            auto next_n = layer.template prepare_output<decltype(generator.data_batch()(0))>(generator.size());
-            auto next_c = layer.template prepare_output<decltype(generator.label_batch()(0))>(generator.size());
-
+            // Reset correctly the generator
             generator.reset();
-            generator.set_train();
+            generator.set_test();
 
-            // TODO This should use batch forwarding
-            // Or should be parallel
+            // Need one output in order to create the generator
+            auto one_n = layer.template prepare_one_output<decltype(generator.data_batch()(0))>();
+            auto one_c = layer.template prepare_one_output<decltype(generator.label_batch()(0))>();
+
+            // Make sure dimensions are correcty inherited
+            layer.activate_hidden(one_n, generator.data_batch()(0));
+            layer.activate_hidden(one_c, generator.label_batch()(0));
+
+            // Prepare a generator to hold the data
+            auto next_generator = prepare_generator(
+                one_n, one_c,
+                generator.size(), output_size(),
+                get_rbm_ingenerator_inner_desc(), get_rbm_generator_batch());
+
+            // Compute the input of the next layer
+            // using batch activation
 
             size_t i = 0;
             while(generator.has_next_batch()){
-                auto data_batch = generator.data_batch();
-                auto label_batch = generator.label_batch();
+                auto next_batch_n = layer.batch_activate_hidden(generator.data_batch());
+                auto next_batch_c = layer.batch_activate_hidden(generator.label_batch());
 
-                for(size_t j = 0; j < etl::dim<0>(data_batch); ++j){
-                    layer.activate_hidden(next_n[i], data_batch(j));
-                    layer.activate_hidden(next_c[i], label_batch(j));
+                next_generator->set_data_batch(i, next_batch_n);
+                next_generator->set_label_batch(i, next_batch_c);
 
-                    ++i;
-                }
+                i += etl::dim<0>(next_batch_n);
 
                 generator.next_batch();
             }
@@ -1637,13 +1672,8 @@ private:
             release(previous_n);
             release(previous_c);
 
-            auto next_generator = make_generator(
-                next_n, next_c,
-                generator.size(), output_size(),
-                get_rbm_generator_inner_desc(), get_rbm_generator_batch());
-
             //In the standard case, pass the output to the next layer
-            pretrain_layer_denoising<I + 1>(*next_generator, watcher, max_epochs, next_n, next_c);
+            pretrain_layer_denoising<I + 1>(*next_generator, watcher, max_epochs, previous_n, previous_c);
         }
     }
 
