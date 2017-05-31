@@ -208,15 +208,6 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_
      */
     template<typename Input>
     void set_data_batch(size_t i, Input&& input_batch){
-        std::cout << std::endl;
-        std::cout << i << std::endl;
-        std::cout << input_cache << std::endl;
-        std::cout << etl::dim<0>(input_batch) << std::endl;
-        std::cout << etl::size(input_batch) << std::endl;
-        std::cout << etl::dim<0>(etl::slice(input_cache, i, i + etl::dim<0>(input_batch))) << std::endl;
-        std::cout << etl::size(etl::slice(input_cache, i, i + etl::dim<0>(input_batch))) << std::endl;
-        std::cout << std::endl;
-
         etl::slice(input_cache, i, i + etl::dim<0>(input_batch)) = input_batch;
     }
 
