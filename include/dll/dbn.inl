@@ -97,9 +97,10 @@ struct dbn final {
 
     using watcher_t = typename desc::template watcher_t<this_type>; ///< The watcher type
 
-    static constexpr size_t input_layer_n  = 0;                                                   ///< The index of the input layer
-    static constexpr size_t output_layer_n = find_output_layer<layers_t::size - 1, this_type>::L; ///< The index of the output layer
-    static constexpr size_t rbm_layer_n    = find_rbm_layer<0, this_type>::L;                     ///< The index of the first RBM layer
+    static constexpr size_t input_layer_n   = 0;                                                   ///< The index of the input layer
+    static constexpr size_t output_layer_n  = find_output_layer<layers_t::size - 1, this_type>::L; ///< The index of the output layer
+    static constexpr size_t rbm_layer_n     = find_rbm_layer<0, this_type>::L;                     ///< The index of the first RBM layer
+    static constexpr bool pretrain_possible = rbm_layer_n < layers_t::size;                        ///< Indicates if pretraining is possible
 
     using input_layer_t = layer_type<input_layer_n>;           ///< The type of the input layer
     using input_one_t   = typename input_layer_t::input_one_t; ///< The type of one input
@@ -456,6 +457,8 @@ public:
      */
     template <typename Generator, cpp_enable_if(is_generator<Generator>::value)>
     void pretrain(Generator& generator, size_t max_epochs) {
+        static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
+
         dll::auto_timer timer("dbn:pretrain");
 
         watcher_t watcher;
@@ -484,6 +487,8 @@ public:
      */
     template <typename Input, cpp_enable_if(!is_generator<Input>::value)>
     void pretrain(const Input& training_data, size_t max_epochs) {
+        static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
+
         // Create generator around the data
         auto generator = make_generator(
             training_data, training_data,
@@ -504,6 +509,8 @@ public:
      */
     template <typename Iterator>
     void pretrain(Iterator first, Iterator last, size_t max_epochs) {
+        static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
+
         // Create generator around the data
         auto generator = make_generator(
             first, last,
@@ -522,6 +529,8 @@ public:
      */
     template <typename Generator>
     void pretrain_denoising(Generator& generator, size_t max_epochs) {
+        static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
+
         dll::auto_timer timer("dbn:pretrain:denoising");
 
         watcher_t watcher;
@@ -552,6 +561,8 @@ public:
      */
     template <typename Noisy, typename Clean>
     void pretrain_denoising(const Noisy& noisy, const Clean& clean, size_t max_epochs) {
+        static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
+
         // Create generator around the data
         auto generator = make_generator(
             noisy, clean,
@@ -567,6 +578,8 @@ public:
      */
     template <typename NIterator, typename CIterator>
     void pretrain_denoising(NIterator nit, NIterator nend, CIterator cit, CIterator cend, size_t max_epochs) {
+        static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
+
         // Create generator around the data
         auto generator = make_generator(
             nit, nend,
@@ -581,6 +594,8 @@ public:
 
     template <typename Iterator, typename LabelIterator>
     void train_with_labels(Iterator&& first, Iterator&& last, LabelIterator&& lfirst, LabelIterator&& llast, size_t labels, size_t max_epochs) {
+        static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
+
         dll::auto_timer timer("dbn:train:labels");
 
         cpp_assert(std::distance(first, last) == std::distance(lfirst, llast), "There must be the same number of values than labels");
@@ -597,6 +612,8 @@ public:
 
     template <typename Samples, typename Labels>
     void train_with_labels(const Samples& training_data, const Labels& training_labels, size_t labels, size_t max_epochs) {
+        static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
+
         cpp_assert(training_data.size() == training_labels.size(), "There must be the same number of values than labels");
         cpp_assert(dll::input_size(layer_get<layers - 1>()) == dll::output_size(layer_get<layers - 2>()) + labels, "There is no room for the labels units");
 
@@ -605,6 +622,8 @@ public:
 
     template<typename Input>
     size_t predict_labels(const Input& item, size_t labels) const {
+        static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
+
         cpp_assert(dll::input_size(layer_get<layers - 1>()) == dll::output_size(layer_get<layers - 2>()) + labels, "There is no room for the labels units");
 
         auto output_a = layer_get<layers - 1>().prepare_one_input();
