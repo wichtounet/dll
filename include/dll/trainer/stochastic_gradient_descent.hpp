@@ -84,41 +84,6 @@ struct sgd_trainer {
 
     void init_training(size_t) {}
 
-    template <typename D, typename It>
-    void copy_inputs(D& dest, It first, It last) {
-        size_t i = 0;
-
-        while (first != last) {
-            dest(i++) = *first++;
-        }
-    }
-
-    template <typename D, typename It, cpp_enable_if(etl::decay_traits<D>::dimensions() == 2)>
-    void copy_labels(D& dest, It first, It last) {
-        //TODO How does that work in auto encoder mode ?
-
-        size_t i = 0;
-
-        while (first != last) {
-            for (size_t l = 0; l < etl::dim<1>(dest); ++l) {
-                dest(i, l) = (*first)[l];
-            }
-            ++i;
-            ++first;
-        }
-    }
-
-    template <typename D, typename It, cpp_enable_if(etl::decay_traits<D>::dimensions() == 4)>
-    void copy_labels(D& dest, It first, It last) {
-        //TODO How does that work in auto encoder mode ?
-
-        size_t i = 0;
-
-        while (first != last) {
-            dest(i++) = *first++;
-        }
-    }
-
     template <typename Inputs, typename Labels>
     std::pair<double, double> train_batch(size_t /*epoch*/, const Inputs& inputs, const Labels& labels) {
         dll::auto_timer timer("sgd::train_batch");
