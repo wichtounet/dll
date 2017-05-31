@@ -343,9 +343,15 @@ void compute_gradients_normal(InputBatch& input_batch, ExpectedBatch& expected_b
     dll::auto_timer timer("cd:gradients:normal:batch");
 
     cpp_assert(etl::dim<0>(input_batch) == etl::dim<0>(expected_batch), "Invalid batch sizes");
+    cpp_assert(etl::dim<0>(t.v1) == etl::dim<0>(input_batch), "Invalid batch sizes");
+    cpp_assert(etl::dim<0>(t.vf) == etl::dim<0>(expected_batch), "Invalid batch sizes");
+
+    cpp_assert(etl::size(input_batch) == etl::size(expected_batch), "Invalid input to compute_gradients_normal");
+    cpp_assert(etl::size(t.v1) == etl::size(input_batch), "Invalid input to compute_gradients_normal");
+    cpp_assert(etl::size(t.vf) == etl::size(expected_batch), "Invalid input to compute_gradients_normal");
 
     const size_t B        = etl::dim<0>(input_batch);
-    const bool full_batch = etl::dim<0>(input_batch) == get_batch_size(rbm);
+    const bool full_batch = (B == get_batch_size(rbm));
 
     //Copy input/expected for computations
     if(cpp_likely(full_batch)){
