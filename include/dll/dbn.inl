@@ -201,8 +201,6 @@ public:
 private:
     cpp::thread_pool<!dbn_traits<this_type>::is_serial()> pool;
 
-    mutable int fake_resource; ///< Simple field to get a reference from for resource management
-
     template<size_t I, cpp_disable_if(I == layers)>
     void dyn_init(){
         using fast_t = detail::layer_type_t<I, typename desc::base_layers>;
@@ -522,7 +520,7 @@ public:
 
             pretrain_layer_batch<0>(generator, watcher, max_epochs);
         } else {
-            pretrain_layer<0>(generator, watcher, max_epochs, fake_resource);
+            pretrain_layer<0>(generator, watcher, max_epochs);
         }
 
         watcher.pretraining_end(*this);
@@ -602,7 +600,7 @@ public:
         } else {
             std::cout << "DBN: Denoising Pretraining" << std::endl;
 
-            pretrain_layer_denoising<0>(generator, watcher, max_epochs, fake_resource, fake_resource);
+            pretrain_layer_denoising<0>(generator, watcher, max_epochs);
         }
 
         watcher.pretraining_end(*this);
@@ -1486,13 +1484,6 @@ public:
 #endif //DLL_SVM_SUPPORT
 
 private:
-    static void release(int&) {}
-
-    template <typename T>
-    static void release(std::vector<T>& resource) {
-        std::vector<T>().swap(resource);
-    }
-
     //By default all layer are trained
     template <size_t I, class Enable = void>
     struct train_next : std::true_type {};
@@ -1507,8 +1498,8 @@ private:
     template <size_t I>
     struct inline_next<I, std::enable_if_t<(I < layers)>> : cpp::bool_constant<layer_traits<layer_type<I>>::is_pooling_layer()> {};
 
-    template <size_t I, typename Generator, typename Container>
-    void inline_layer(Generator& generator, watcher_t& watcher, size_t max_epochs, Container& previous) {
+    template <size_t I, typename Generator>
+    void inline_layer(Generator& generator, watcher_t& watcher, size_t max_epochs) {
         decltype(auto) layer = layer_get<I>();
         decltype(auto) next_layer = layer_get<I + 1>();
 
@@ -1540,7 +1531,8 @@ private:
             generator.next_batch();
         }
 
-        this_type::release(previous);
+        // Release the memory if possible
+        generator.clear();
 
         auto next_generator = make_generator(
             b, b,
@@ -1550,8 +1542,8 @@ private:
         pretrain_layer<I + 2>(*next_generator, watcher, max_epochs, b);
     }
 
-    template <size_t I, typename Generator, typename Container, cpp_enable_if((I < layers))>
-    void pretrain_layer(Generator& generator, watcher_t& watcher, size_t max_epochs, Container& previous) {
+    template <size_t I, typename Generator, cpp_enable_if((I < layers))>
+    void pretrain_layer(Generator& generator, watcher_t& watcher, size_t max_epochs) {
         using layer_t = layer_type<I>;
 
         decltype(auto) layer = layer_get<I>();
@@ -1568,7 +1560,7 @@ private:
         //When the next layer is a pooling layer, a lot of memory can be saved by directly computing
         //the activations of two layers at once
         cpp::static_if<inline_next<I + 1>::value>([&](auto f) {
-            f(this)->template inline_layer<I>(generator, watcher, max_epochs, previous);
+            f(this)->template inline_layer<I>(generator, watcher, max_epochs);
         });
 
         if (train_next<I + 1>::value && !inline_next<I + 1>::value) {
@@ -1603,22 +1595,22 @@ private:
                 generator.next_batch();
             }
 
-            //At this point we don't need the storage of the previous layer
-            release(previous);
+            // Release the memory if possible
+            generator.clear();
 
             //Pass the output to the next layer
-            this->template pretrain_layer<I + 1>(*next_generator, watcher, max_epochs, previous);
+            this->template pretrain_layer<I + 1>(*next_generator, watcher, max_epochs);
         }
     }
 
     //Stop template recursion
-    template <size_t I, typename Generator, typename Container, cpp_enable_if((I == layers))>
-    void pretrain_layer(Generator&, watcher_t&, size_t, Container&) {}
+    template <size_t I, typename Generator, cpp_enable_if((I == layers))>
+    void pretrain_layer(Generator&, watcher_t&, size_t) {}
 
     /* Pretrain with denoising */
 
-    template <size_t I, typename Generator, typename NContainer, typename CContainer, cpp_enable_if((I < layers))>
-    void pretrain_layer_denoising(Generator& generator, watcher_t& watcher, size_t max_epochs, NContainer& previous_n, CContainer& previous_c) {
+    template <size_t I, typename Generator, cpp_enable_if((I < layers))>
+    void pretrain_layer_denoising(Generator& generator, watcher_t& watcher, size_t max_epochs) {
         using layer_t = layer_type<I>;
 
         decltype(auto) layer = layer_get<I>();
@@ -1668,18 +1660,17 @@ private:
                 generator.next_batch();
             }
 
-            //At this point we don't need the storage of the previous layer
-            release(previous_n);
-            release(previous_c);
+            // Release the memory if possible
+            generator.clear();
 
             //In the standard case, pass the output to the next layer
-            pretrain_layer_denoising<I + 1>(*next_generator, watcher, max_epochs, previous_n, previous_c);
+            pretrain_layer_denoising<I + 1>(*next_generator, watcher, max_epochs);
         }
     }
 
     //Stop template recursion
-    template <size_t I, typename Generator, typename NContainer, typename CContainer, cpp_enable_if((I == layers))>
-    void pretrain_layer_denoising(Generator&, watcher_t&, size_t, NContainer&, CContainer&) {}
+    template <size_t I, typename Generator, cpp_enable_if((I == layers))>
+    void pretrain_layer_denoising(Generator&, watcher_t&, size_t) {}
 
     /* Pretrain in batch mode */
 
