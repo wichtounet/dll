@@ -251,12 +251,14 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
                 }
 
                 //Pretrain the network
-                cpp::static_if<dbn_t::layers_t::is_denoising>([&](auto f) {
+                cpp::static_if<dbn_t::pretrain_possible && dbn_t::layers_t::is_denoising>([&](auto f) {
                     f(dbn).pretrain_denoising(pt_samples.begin(), pt_samples.end(), clean_samples.begin(), clean_samples.end(), task.pt_desc.epochs);
                 });
             } else {
-                //Pretrain the network
-                dbn.pretrain(pt_samples.begin(), pt_samples.end(), task.pt_desc.epochs);
+                cpp::static_if<dbn_t::pretrain_possible>([&](auto f) {
+                    //Pretrain the network
+                    dbn.pretrain(pt_samples.begin(), pt_samples.end(), task.pt_desc.epochs);
+                });
             }
         } else if (action == "train") {
             print_title("Training");
