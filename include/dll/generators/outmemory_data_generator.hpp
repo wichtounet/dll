@@ -33,7 +33,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
 
     static constexpr bool dll_generator = true;
 
-    size_t batch_size = desc::BatchSize;
+    const size_t batch_size;
     static constexpr size_t big_batch_size = desc::BigBatchSize;
 
     big_data_cache_type batch_cache;
@@ -49,7 +49,8 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
     Iterator it;
     LIterator lit;
 
-    outmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, size_t size) : _size(size), orig_it(first), orig_lit(lfirst) {
+    outmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, size_t size, size_t batch = 0)
+            : _size(size), orig_it(first), orig_lit(lfirst), batch_size(batch ? batch : desc::BatchSize) {
         data_cache_helper_t::init_big(big_batch_size, batch_size, first, batch_cache);
         label_cache_helper_t::init_big(big_batch_size, batch_size, n_classes, lfirst, label_cache);
 
@@ -229,7 +230,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
 
     static constexpr bool dll_generator = true;
 
-    size_t batch_size = desc::BatchSize;
+    const size_t batch_size;
     static constexpr size_t big_batch_size = desc::BigBatchSize;
 
     big_data_cache_type batch_cache;
@@ -261,7 +262,8 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
     elastic_distorter<Desc> distorter;
     random_noise<Desc> noiser;
 
-    outmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, size_t size) : _size(size), orig_it(first), orig_lit(lfirst), cropper(*first), mirrorer(*first), distorter(*first), noiser(*first) {
+    outmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, size_t size, size_t batch = 0)
+            : _size(size), orig_it(first), orig_lit(lfirst), cropper(*first), mirrorer(*first), distorter(*first), noiser(*first), batch_size(batch ? batch : desc::BatchSize) {
         data_cache_helper_t::init_big(big_batch_size, batch_size, first, batch_cache);
         label_cache_helper_t::init_big(big_batch_size, batch_size, n_classes, lfirst, label_cache);
 
@@ -644,15 +646,15 @@ struct outmemory_data_generator_desc {
 };
 
 template<typename Iterator, typename LIterator, typename... Parameters>
-auto make_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t size, size_t n_classes, const outmemory_data_generator_desc<Parameters...>& /*desc*/){
+auto make_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t size, size_t n_classes, const outmemory_data_generator_desc<Parameters...>& /*desc*/, size_t batch = 0){
     using generator_t = typename outmemory_data_generator_desc<Parameters...>::template generator_t<Iterator, LIterator>;
-    return std::make_unique<generator_t>(first, last, lfirst, llast, n_classes, size);
+    return std::make_unique<generator_t>(first, last, lfirst, llast, n_classes, size, batch);
 }
 
 template<typename Container, typename LContainer, typename... Parameters>
-auto make_generator(const Container& container, const LContainer& lcontainer, size_t size, size_t n_classes, const outmemory_data_generator_desc<Parameters...>& /*desc*/){
+auto make_generator(const Container& container, const LContainer& lcontainer, size_t size, size_t n_classes, const outmemory_data_generator_desc<Parameters...>& /*desc*/, size_t batch = 0){
     using generator_t = typename outmemory_data_generator_desc<Parameters...>::template generator_t<typename Container::const_iterator, typename LContainer::const_iterator>;
-    return std::make_unique<generator_t>(container.begin(), container.end(), lcontainer.begin(), lcontainer.end(), n_classes, size);
+    return std::make_unique<generator_t>(container.begin(), container.end(), lcontainer.begin(), lcontainer.end(), n_classes, size, batch);
 }
 
 } //end of dll namespace

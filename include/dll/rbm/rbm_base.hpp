@@ -98,8 +98,7 @@ struct rbm_base : layer<Parent> {
     template <bool EnableWatcher = true, typename RW = void, typename Input, typename... Args, cpp_enable_if(!is_generator<Input>::value)>
     double train(const Input& training_data, size_t max_epochs, Args... args) {
         // Create a new generator around the data
-        auto generator = make_generator(training_data, training_data, training_data.size(), generator_t{});
-        generator->batch_size = get_batch_size(as_derived());
+        auto generator = make_generator(training_data, training_data, training_data.size(), generator_t{}, get_batch_size(as_derived()));
 
         dll::rbm_trainer<parent_t, EnableWatcher, RW, false> trainer(args...);
         return trainer.train(as_derived(), *generator, max_epochs);
@@ -108,8 +107,7 @@ struct rbm_base : layer<Parent> {
     template <bool EnableWatcher = true, typename RW = void, typename Iterator, typename... Args>
     double train(Iterator&& first, Iterator&& last, size_t max_epochs, Args... args) {
         // Create a new generator around the data
-        auto generator = make_generator(first, last, first, last, std::distance(first, last), generator_t{});
-        generator->batch_size = get_batch_size(as_derived());
+        auto generator = make_generator(first, last, first, last, std::distance(first, last), generator_t{}, get_batch_size(as_derived()));
 
         dll::rbm_trainer<parent_t, EnableWatcher, RW, false> trainer(args...);
         return trainer.train(as_derived(), *generator, max_epochs);
@@ -126,8 +124,7 @@ struct rbm_base : layer<Parent> {
     template <bool EnableWatcher = true, typename RW = void, typename Noisy, typename Clean, typename... Args>
     double train_denoising(const Noisy& noisy, const Clean& clean, size_t max_epochs, Args... args) {
         // Create a new generator around the data
-        auto generator = make_generator(noisy, clean, noisy.size(), generator_t{});
-        generator->batch_size = get_batch_size(as_derived());
+        auto generator = make_generator(noisy, clean, noisy.size(), generator_t{}, get_batch_size(as_derived()));
 
         dll::rbm_trainer<parent_t, EnableWatcher, RW, true> trainer(args...);
         return trainer.train(as_derived(), *generator, max_epochs);
@@ -136,8 +133,12 @@ struct rbm_base : layer<Parent> {
     template <typename NIterator, typename CIterator, bool EnableWatcher = true, typename RW = void, typename... Args>
     double train_denoising(NIterator noisy_it, NIterator noisy_end, CIterator clean_it, CIterator clean_end, size_t max_epochs, Args... args) {
         // Create a new generator around the data
-        auto generator = make_generator(noisy_it, noisy_end, clean_it, clean_end, std::distance(clean_it, clean_end), generator_t{});
-        generator->batch_size = get_batch_size(as_derived());
+        auto generator = make_generator(
+            noisy_it, noisy_end,
+            clean_it, clean_end,
+            std::distance(clean_it, clean_end),
+            generator_t{},
+            get_batch_size(as_derived()));
 
         dll::rbm_trainer<parent_t, EnableWatcher, RW, true> trainer(args...);
         return trainer.train(as_derived(), *generator, max_epochs);

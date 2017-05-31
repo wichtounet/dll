@@ -1397,9 +1397,6 @@ private:
         watcher.pretrain_layer(*this, I, layer, generator.size());
 
         cpp::static_if<layer_traits<layer_t>::is_pretrained()>([&](auto f) {
-            // Configure the generator for the RMB
-            generator.batch_size = get_batch_size(f(layer));
-
             // Train the RBM
             f(layer).template train<!watcher_t::ignore_sub,               //Enable the RBM Watcher or not
                                     dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
@@ -1459,9 +1456,6 @@ private:
         watcher.pretrain_layer(*this, I, layer, generator.size());
 
         cpp::static_if<layer_traits<layer_t>::is_pretrained()>([&](auto f) {
-            // Configure the generator for the RMB
-            generator.batch_size = get_batch_size(f(layer));
-
             // Train the RBM
             f(layer).template train_denoising<
                                               !watcher_t::ignore_sub,               //Enable the RBM Watcher or not
