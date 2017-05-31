@@ -87,7 +87,7 @@ private:
  * \param output The output
  * \param input The input
  */
-template <typename Input, typename Output, cpp_enable_if(etl::all_fast<Output>::value)>
+template <typename Input, typename Output, cpp_enable_if(!etl::decay_traits<Output>::is_value || etl::all_fast<Output>::value)>
 void inherit_dim(Output& output, const Input& input) {
     cpp_unused(output);
     cpp_unused(input);
@@ -100,7 +100,7 @@ void inherit_dim(Output& output, const Input& input) {
  * \param output The output
  * \param input The input
  */
-template <typename Input, typename Output, cpp_disable_if(etl::all_fast<Output>::value)>
+template <typename Input, typename Output, cpp_enable_if(etl::decay_traits<Output>::is_value && !etl::all_fast<Output>::value)>
 void inherit_dim(Output& output, const Input& input) {
     output.inherit_if_null(input);
 }
