@@ -1503,30 +1503,38 @@ private:
         decltype(auto) layer = layer_get<I>();
         decltype(auto) next_layer = layer_get<I + 1>();
 
-        using input_t = decltype(generator.data_batch()(0));
-        using next_input_t = std::decay_t<decltype(layer.template prepare_one_output<input_t>())>;
-
         watcher.pretrain_layer(*this, I+1, next_layer, generator.size());
 
-        auto a = layer.template prepare_one_output<next_input_t>();
-        auto b = next_layer.template prepare_output<next_input_t>(generator.size());
-
+        // Reset correctly the generator
         generator.reset();
         generator.set_test();
 
+        // Need one output in order to create the generator
+        auto one = layer.template prepare_one_output<decltype(generator.data_batch()(0))>();
+        auto two = next_layer.template prepare_one_output<decltype(one)>();
+
+        // Make sure dimensions are correcty inherited
+        layer.activate_hidden(one, generator.data_batch()(0));
+        next_layer.activate_hidden(two, one);
+
+        // Prepare a generator to hold the data
+        auto next_generator = prepare_generator(
+            two, two,
+            generator.size(), output_size(),
+            get_rbm_ingenerator_inner_desc(), get_rbm_generator_batch());
+
+        // Compute the input of the next layer
+        // using batch activation
+
         size_t i = 0;
-
-        // TODO Should use parallel or batch
-
         while(generator.has_next_batch()){
-            auto data_batch = generator.data_batch();
+            auto batch = layer.batch_activate_hidden(generator.data_batch());
+            auto next_batch = next_layer.batch_activate_hidden(batch);
 
-            const size_t B = etl::dim<0>(data_batch);
+            next_generator->set_data_batch(i, next_batch);
+            next_generator->set_label_batch(i, next_batch);
 
-            for(size_t j = 0; j < B; ++j){
-                layer.activate_hidden(a, data_batch(j));
-                next_layer.activate_hidden(b[i++], a);
-            }
+            i += etl::dim<0>(next_batch);
 
             generator.next_batch();
         }
@@ -1534,12 +1542,7 @@ private:
         // Release the memory if possible
         generator.clear();
 
-        auto next_generator = make_generator(
-            b, b,
-            generator.size(), output_size(),
-            get_rbm_generator_inner_desc(), get_rbm_generator_batch());
-
-        pretrain_layer<I + 2>(*next_generator, watcher, max_epochs, b);
+        pretrain_layer<I + 2>(*next_generator, watcher, max_epochs);
     }
 
     template <size_t I, typename Generator, cpp_enable_if((I < layers))>
