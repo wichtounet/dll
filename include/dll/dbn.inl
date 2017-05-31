@@ -1781,7 +1781,7 @@ private:
 
         watcher.pretrain_layer(*this, I, rbm, 0);
 
-        using rbm_trainer_t = dll::rbm_trainer<layer_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>, true>;
+        using rbm_trainer_t = dll::rbm_trainer<layer_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>>;
 
         //Initialize the RBM trainer
         rbm_trainer_t r_trainer;

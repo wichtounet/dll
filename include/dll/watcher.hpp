@@ -27,7 +27,7 @@ struct default_rbm_watcher {
     void training_begin(const RBM& rbm) {
         using rbm_t = std::decay_t<RBM>;
 
-        std::cout << "Train RBM with \"" << RBM::desc::template trainer_t<RBM, false>::name() << "\"" << std::endl;
+        std::cout << "Train RBM with \"" << RBM::desc::template trainer_t<RBM>::name() << "\"" << std::endl;
 
         rbm.display();
 

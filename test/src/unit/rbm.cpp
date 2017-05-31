@@ -208,8 +208,8 @@ TEST_CASE("unit/rbm/mnist/9", "[rbm][sparse][unit]") {
     REQUIRE(error < 5e-2);
 }
 
-template <typename RBM, bool Denoising>
-using pcd2_trainer_t = dll::persistent_cd_trainer<2, RBM, Denoising>;
+template <typename RBM>
+using pcd2_trainer_t = dll::persistent_cd_trainer<2, RBM>;
 
 TEST_CASE("unit/rbm/mnist/10", "[rbm][pcd][unit]") {
     dll::rbm_desc<

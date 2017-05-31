@@ -43,8 +43,8 @@ struct rbm_desc {
     /*!
      * The type of the trainer to use to train the RBM
      */
-    template <typename RBM, bool Denoising>
-    using trainer_t = typename detail::get_template_type_tb<trainer_rbm<cd1_trainer_t>, Parameters...>::template value<RBM, Denoising>;
+    template <typename RBM>
+    using trainer_t = typename detail::get_template_type<trainer_rbm<cd1_trainer_t>, Parameters...>::template value<RBM>;
 
     /*!
      * The type of the watched to use during training

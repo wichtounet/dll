@@ -35,8 +35,8 @@ struct dyn_conv_rbm_desc {
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
 
     /*! The type of the trainer to use to train the RBM */
-    template <typename RBM, bool Denoising>
-    using trainer_t = typename detail::get_template_type_tb<trainer_rbm<cd1_trainer_t>, Parameters...>::template value<RBM, Denoising>;
+    template <typename RBM>
+    using trainer_t = typename detail::get_template_type<trainer_rbm<cd1_trainer_t>, Parameters...>::template value<RBM>;
 
     /*! The type of the watched to use during training */
     template <typename RBM>

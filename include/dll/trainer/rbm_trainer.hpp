@@ -41,13 +41,13 @@ struct watcher_type<RBM, RW, std::enable_if_t<cpp::not_u<std::is_void<RW>::value
  * This trainer use the specified trainer of the RBM to perform unsupervised
  * training.
  */
-template <typename RBM, bool EnableWatcher, typename RW, bool Denoising>
+template <typename RBM, bool EnableWatcher, typename RW>
 struct rbm_trainer {
     using rbm_t = RBM;
     using error_type = typename rbm_t::weight;
 
     template <typename R>
-    using trainer_t = typename rbm_t::desc::template trainer_t<R, Denoising>;
+    using trainer_t = typename rbm_t::desc::template trainer_t<R>;
 
     using trainer_type = std::unique_ptr<trainer_t<rbm_t>>;
 

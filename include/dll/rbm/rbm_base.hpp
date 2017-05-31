@@ -91,7 +91,7 @@ struct rbm_base : layer<Parent> {
 
     template <bool EnableWatcher = true, typename RW = void, typename Generator, typename... Args, cpp_enable_if(is_generator<Generator>::value)>
     double train(Generator& generator, size_t max_epochs, Args... args) {
-        dll::rbm_trainer<parent_t, EnableWatcher, RW, false> trainer(args...);
+        dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
         return trainer.train(as_derived(), generator, max_epochs);
     }
 
@@ -100,7 +100,7 @@ struct rbm_base : layer<Parent> {
         // Create a new generator around the data
         auto generator = make_generator(training_data, training_data, training_data.size(), generator_t{}, get_batch_size(as_derived()));
 
-        dll::rbm_trainer<parent_t, EnableWatcher, RW, false> trainer(args...);
+        dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
         return trainer.train(as_derived(), *generator, max_epochs);
     }
 
@@ -109,7 +109,7 @@ struct rbm_base : layer<Parent> {
         // Create a new generator around the data
         auto generator = make_generator(first, last, first, last, std::distance(first, last), generator_t{}, get_batch_size(as_derived()));
 
-        dll::rbm_trainer<parent_t, EnableWatcher, RW, false> trainer(args...);
+        dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
         return trainer.train(as_derived(), *generator, max_epochs);
     }
 
@@ -117,7 +117,7 @@ struct rbm_base : layer<Parent> {
 
     template <bool EnableWatcher = true, typename RW = void, typename Generator, typename... Args>
     double train_denoising(Generator& generator, size_t max_epochs, Args... args) {
-        dll::rbm_trainer<parent_t, EnableWatcher, RW, true> trainer(args...);
+        dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
         return trainer.train(as_derived(), generator, max_epochs);
     }
 
@@ -126,7 +126,7 @@ struct rbm_base : layer<Parent> {
         // Create a new generator around the data
         auto generator = make_generator(noisy, clean, noisy.size(), generator_t{}, get_batch_size(as_derived()));
 
-        dll::rbm_trainer<parent_t, EnableWatcher, RW, true> trainer(args...);
+        dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
         return trainer.train(as_derived(), *generator, max_epochs);
     }
 
@@ -140,7 +140,7 @@ struct rbm_base : layer<Parent> {
             generator_t{},
             get_batch_size(as_derived()));
 
-        dll::rbm_trainer<parent_t, EnableWatcher, RW, true> trainer(args...);
+        dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
         return trainer.train(as_derived(), *generator, max_epochs);
     }
 

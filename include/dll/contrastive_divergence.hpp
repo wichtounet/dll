@@ -420,22 +420,17 @@ void train_normal(InputBatch& input_batch, ExpectedBatch& expected_batch, rbm_tr
     t.update(rbm);
 }
 
-template <bool Denoising, typename Trainer, typename RBM>
+template <typename Trainer, typename RBM>
 void normal_compute_gradients_conv(RBM& /*rbm*/, Trainer& t) {
     dll::auto_timer timer("cd:normal_compute_gradients_conv");
 
     using namespace etl;
 
-    if (Denoising) {
-        t.w_pos = etl::conv_4d_valid_filter_flipped(t.vf, t.h1_a);
-        t.w_neg = etl::conv_4d_valid_filter_flipped(t.v2_a, t.h2_a);
-    } else {
-        t.w_pos = etl::conv_4d_valid_filter_flipped(t.v1, t.h1_a);
-        t.w_neg = etl::conv_4d_valid_filter_flipped(t.v2_a, t.h2_a);
-    }
+    t.w_pos = etl::conv_4d_valid_filter_flipped(t.vf, t.h1_a);
+    t.w_neg = etl::conv_4d_valid_filter_flipped(t.v2_a, t.h2_a);
 }
 
-template <bool Persistent, bool Denoising, size_t N, typename Trainer, typename InputBatch, typename ExpectedBatch, typename RBM, cpp_enable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
+template <bool Persistent, size_t N, typename Trainer, typename InputBatch, typename ExpectedBatch, typename RBM, cpp_enable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
 void compute_gradients_conv(InputBatch& input_batch, ExpectedBatch& expected_batch, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:gradients:conv:par");
 
@@ -449,10 +444,7 @@ void compute_gradients_conv(InputBatch& input_batch, ExpectedBatch& expected_bat
         SERIAL_SECTION {
             //Copy input/expected for computations
             t.v1(i) = input_batch(i);
-
-            if(Denoising){
-                t.vf(i) = expected_batch(i);
-            }
+            t.vf(i) = expected_batch(i);
 
             //First step
             rbm.template activate_hidden<true, true>(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i));
@@ -489,27 +481,22 @@ void compute_gradients_conv(InputBatch& input_batch, ExpectedBatch& expected_bat
     // clang-format on
 
     //Compute gradients
-    normal_compute_gradients_conv<Denoising>(rbm, t);
+    normal_compute_gradients_conv(rbm, t);
 }
 
-template <bool Denoising, typename Trainer, typename RBM>
+template <typename Trainer, typename RBM>
 void batch_compute_gradients_conv(RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:batch_compute_gradients_conv");
 
     using namespace etl;
 
-    if (Denoising) {
-        t.w_pos = etl::conv_4d_valid_filter_flipped(t.vf, t.h1_a);
-        t.w_neg = etl::conv_4d_valid_filter_flipped(t.v2_a, t.h2_a);
-    } else {
-        t.w_pos = etl::conv_4d_valid_filter_flipped(t.v1, t.h1_a);
-        t.w_neg = etl::conv_4d_valid_filter_flipped(t.v2_a, t.h2_a);
-    }
+    t.w_pos = etl::conv_4d_valid_filter_flipped(t.vf, t.h1_a);
+    t.w_neg = etl::conv_4d_valid_filter_flipped(t.v2_a, t.h2_a);
 
     cpp_unused(rbm);
 }
 
-template <bool Persistent, bool Denoising, size_t N, typename Trainer, typename InputBatch, typename ExpectedBatch, typename RBM, cpp_disable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
+template <bool Persistent, size_t N, typename Trainer, typename InputBatch, typename ExpectedBatch, typename RBM, cpp_disable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
 void compute_gradients_conv(InputBatch& input_batch, ExpectedBatch& expected_batch, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:gradients:conv:batch");
 
@@ -521,19 +508,13 @@ void compute_gradients_conv(InputBatch& input_batch, ExpectedBatch& expected_bat
     //Copy input/expected for computations
     if(cpp_likely(full_batch)){
         t.v1 = input_batch;
+        t.vf = expected_batch;
     } else {
         t.v1 = 0;
+        t.vf = 0;
 
         etl::slice(t.v1, 0, B) = input_batch;
-    }
-
-    if (Denoising) {
-        if(cpp_likely(full_batch)){
-            t.vf = expected_batch;
-        } else {
-            t.vf = 0;
-            etl::slice(t.vf, 0, B) = expected_batch;
-        }
+        etl::slice(t.vf, 0, B) = expected_batch;
     }
 
     //First step
@@ -560,16 +541,16 @@ void compute_gradients_conv(InputBatch& input_batch, ExpectedBatch& expected_bat
     }
 
     //Compute gradients
-    batch_compute_gradients_conv<Denoising>(rbm, t);
+    batch_compute_gradients_conv(rbm, t);
 }
 
-template <bool Persistent, bool Denoising, size_t N, typename Trainer, typename InputBatch, typename ExpectedBatch, typename RBM>
+template <bool Persistent, size_t N, typename Trainer, typename InputBatch, typename ExpectedBatch, typename RBM>
 void train_convolutional(InputBatch& input_batch, ExpectedBatch& expected_batch, rbm_training_context& context, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:train:conv");
 
     using rbm_t = RBM;
 
-    compute_gradients_conv<Persistent, Denoising, N>(input_batch, expected_batch, rbm, t);
+    compute_gradients_conv<Persistent, N>(input_batch, expected_batch, rbm, t);
 
     if (Persistent) {
         t.p_h_a = t.h2_a;
@@ -580,12 +561,8 @@ void train_convolutional(InputBatch& input_batch, ExpectedBatch& expected_batch,
 
     //Compute the gradients
     t.w_grad = t.w_pos - t.w_neg;
-
     t.b_grad = mean_r(sum_l(t.h1_a - t.h2_a));
-
-    cpp::static_if<Denoising>([&](auto f) {
-        f(t).c_grad = mean_r(sum_l(t.vf - t.v2_a));
-    }).else_([&](auto f) { f(t).c_grad = mean_r(sum_l(t.v1 - t.v2_a)); });
+    t.c_grad = mean_r(sum_l(t.vf - t.v2_a));
 
     nan_check_deep(t.w_grad);
     nan_check_deep(t.b_grad);
@@ -609,9 +586,7 @@ void train_convolutional(InputBatch& input_batch, ExpectedBatch& expected_batch,
     context.batch_sparsity = t.q_global_batch;
 
     //Accumulate the error
-    cpp::static_if<Denoising>([&](auto f) {
-        f(context).batch_error = mean(etl::scale((t.vf - t.v2_a), (t.vf - t.v2_a)));
-    }).else_([&](auto f) { f(context).batch_error = mean(etl::scale((t.v1 - t.v2_a), (t.v1 - t.v2_a))); });
+    context.batch_error = mean(etl::scale((t.vf - t.v2_a), (t.vf - t.v2_a)));
 
     //Update the weights and biases based on the gradients
     t.update(rbm);
@@ -624,7 +599,7 @@ void train_convolutional(InputBatch& input_batch, ExpectedBatch& expected_batch,
  *
  * This class provides update which applies the gradients to the RBM.
  */
-template <size_t N, typename RBM, bool Persistent, bool Denoising, typename Enable = void>
+template <size_t N, typename RBM, bool Persistent, typename Enable = void>
 struct base_cd_trainer : base_trainer<RBM> {
     static_assert(N > 0, "(P)CD-0 is not a valid training method");
 
@@ -702,7 +677,7 @@ struct base_cd_trainer : base_trainer<RBM> {
     }
 
     static std::string name() {
-        return std::string("") + (Persistent ? "Persistent " : "") + (Denoising ? "Denoising " : "") + "Contrastive Divergence";
+        return std::string("") + (Persistent ? "Persistent " : "") + "Contrastive Divergence";
     }
 };
 
@@ -711,8 +686,8 @@ struct base_cd_trainer : base_trainer<RBM> {
  *
  * This class provides update which applies the gradients to the RBM.
  */
-template <size_t N, typename RBM, bool Persistent, bool Denoising>
-struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_traits<RBM>::is_dynamic() && !layer_traits<RBM>::is_convolutional_rbm_layer()>> : base_trainer<RBM> {
+template <size_t N, typename RBM, bool Persistent>
+struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::is_dynamic() && !layer_traits<RBM>::is_convolutional_rbm_layer()>> : base_trainer<RBM> {
     static_assert(N > 0, "(P)CD-0 is not a valid training method");
 
     typedef RBM rbm_t;
@@ -825,7 +800,7 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
     }
 
     static std::string name() {
-        return std::string("") + (Persistent ? "Persistent " : "") + (Denoising ? "Denoising " : "") + "Contrastive Divergence (dynamic)";
+        return std::string("") + (Persistent ? "Persistent " : "") + "Contrastive Divergence (dynamic)";
     }
 };
 
@@ -834,8 +809,8 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
  *
  * This class provides update which applies the gradients to the RBM.
  */
-template <size_t N, typename RBM, bool Persistent, bool Denoising>
-struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<!layer_traits<RBM>::is_dynamic() && layer_traits<RBM>::is_convolutional_rbm_layer()>> : base_trainer<RBM> {
+template <size_t N, typename RBM, bool Persistent>
+struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<!layer_traits<RBM>::is_dynamic() && layer_traits<RBM>::is_convolutional_rbm_layer()>> : base_trainer<RBM> {
     static_assert(N > 0, "(P)CD-0 is not a valid training method");
 
     using rbm_t = RBM;
@@ -894,8 +869,8 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<!layer_tr
     etl::fast_matrix<weight, W_DIMS> w_pos;
     etl::fast_matrix<weight, W_DIMS> w_neg;
 
-    etl::fast_matrix<weight, batch_size, NC, NV1, NV2> v1;                     //Input
-    conditional_fast_matrix_t<Denoising, weight, batch_size, NC, NV1, NV2> vf; //Expected
+    etl::fast_matrix<weight, batch_size, NC, NV1, NV2> v1; //Input
+    etl::fast_matrix<weight, batch_size, NC, NV1, NV2> vf; //Expected
 
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> h1_a;
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> h1_s;
@@ -939,11 +914,11 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<!layer_tr
 
     template <typename InputBatch, typename ExpectedBatch>
     void train_batch(InputBatch& input_batch, ExpectedBatch& expected_batch, rbm_training_context& context) {
-        train_convolutional<Persistent, Denoising, N>(input_batch, expected_batch, context, rbm, *this);
+        train_convolutional<Persistent, N>(input_batch, expected_batch, context, rbm, *this);
     }
 
     static std::string name() {
-        return std::string("") + (Persistent ? "Persistent " : "") + (Denoising ? "Denoising " : "") + "Contrastive Divergence (convolutional)";
+        return std::string("") + (Persistent ? "Persistent " : "") + "Contrastive Divergence (convolutional)";
     }
 };
 
@@ -952,8 +927,8 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<!layer_tr
  *
  * This class provides update which applies the gradients to the RBM.
  */
-template <size_t N, typename RBM, bool Persistent, bool Denoising>
-struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_traits<RBM>::is_dynamic() && layer_traits<RBM>::is_convolutional_rbm_layer()>> : base_trainer<RBM> {
+template <size_t N, typename RBM, bool Persistent>
+struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::is_dynamic() && layer_traits<RBM>::is_convolutional_rbm_layer()>> : base_trainer<RBM> {
     static_assert(N > 0, "(P)CD-0 is not a valid training method");
 
     using rbm_t = RBM;
@@ -1051,36 +1026,36 @@ struct base_cd_trainer<N, RBM, Persistent, Denoising, std::enable_if_t<layer_tra
 
     template <typename InputBatch, typename ExpectedBatch>
     void train_batch(InputBatch& input_batch, ExpectedBatch& expected_batch, rbm_training_context& context) {
-        train_convolutional<Persistent, Denoising, N>(input_batch, expected_batch, context, rbm, *this);
+        train_convolutional<Persistent, N>(input_batch, expected_batch, context, rbm, *this);
     }
 
     static std::string name() {
-        return std::string("") + (Persistent ? "Persistent " : "") + (Denoising ? "Denoising " : "") + "Contrastive Divergence (dynamic convolutional)";
+        return std::string("") + (Persistent ? "Persistent " : "") + "Contrastive Divergence (dynamic convolutional)";
     }
 };
 
 /*!
  * \brief Contrastive Divergence Trainer for RBM.
  */
-template <size_t N, typename RBM, bool Denoising, typename Enable = void>
-using cd_trainer                                                       = base_cd_trainer<N, RBM, false, Denoising>;
+template <size_t N, typename RBM, typename Enable = void>
+using cd_trainer = base_cd_trainer<N, RBM, false>;
 
 /*!
  * \brief Persistent Contrastive Divergence Trainer for RBM.
  */
-template <size_t N, typename RBM, bool Denoising, typename Enable = void>
-using persistent_cd_trainer                                            = base_cd_trainer<N, RBM, true, Denoising>;
+template <size_t N, typename RBM, typename Enable = void>
+using persistent_cd_trainer = base_cd_trainer<N, RBM, true>;
 
 /*!
  * \brief CD-1 trainer for RBM
  */
-template <typename RBM, bool Denoising>
-using cd1_trainer_t = cd_trainer<1, RBM, Denoising>;
+template <typename RBM>
+using cd1_trainer_t = cd_trainer<1, RBM>;
 
 /*!
  * \brief PCD-1 trainer for RBM
  */
-template <typename RBM, bool Denoising>
-using pcd1_trainer_t = persistent_cd_trainer<1, RBM, Denoising>;
+template <typename RBM>
+using pcd1_trainer_t = persistent_cd_trainer<1, RBM>;
 
 } //end of dll namespace

@@ -228,8 +228,8 @@ struct trainer : template_type_conf_elt<trainer_id, T> {};
  * !\brief sets the trainer for RBM
  * \tparam The trainer type
  */
-template <template <typename, bool> class T>
-struct trainer_rbm : template_type_tb_conf_elt<trainer_rbm_id, T> {};
+template <template <typename> class T>
+struct trainer_rbm : template_type_conf_elt<trainer_rbm_id, T> {};
 
 /*
  * !\brief sets the watcher
