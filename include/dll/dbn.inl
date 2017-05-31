@@ -543,6 +543,8 @@ public:
             training_data.size(), output_size(),
             get_rbm_generator_desc(), get_rbm_generator_batch());
 
+        generator->set_safe();
+
         pretrain(*generator, max_epochs);
     }
 
@@ -567,6 +569,8 @@ public:
             first, last,
             std::distance(first, last), output_size(),
             get_rbm_generator_desc(), get_rbm_generator_batch());
+
+        generator->set_safe();
 
         pretrain(*generator, max_epochs);
     }
@@ -623,6 +627,8 @@ public:
             noisy.size(), output_size(),
             get_rbm_generator_desc(), get_rbm_generator_batch());
 
+        generator->set_safe();
+
         pretrain_denoising(*generator, max_epochs);
     }
 
@@ -642,6 +648,8 @@ public:
             cit, cend,
             std::distance(cit, cend), output_size(),
             get_rbm_generator_desc(), get_rbm_generator_batch());
+
+        generator->set_safe();
 
         pretrain_denoising(*generator, max_epochs);
     }
@@ -859,6 +867,8 @@ public:
             training_data, labels,
             training_data.size(), output_size(), categorical_generator_t{});
 
+        generator->set_safe();
+
         return fine_tune(*generator, max_epochs);
     }
 
@@ -878,6 +888,8 @@ public:
             std::forward<Iterator>(first), std::forward<Iterator>(last),
             std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
             std::distance(lfirst, llast), output_size(), categorical_generator_t{});
+
+        generator->set_safe();
 
         return fine_tune(*generator, max_epochs);
     }
@@ -913,6 +925,8 @@ public:
             training_data, training_data,
             training_data.size(), output_size(), ae_generator_t{});
 
+        generator->set_safe();
+
         return fine_tune_ae(*generator, max_epochs);
     }
 
@@ -930,6 +944,8 @@ public:
             std::forward<Iterator>(first), std::forward<Iterator>(last),
             std::forward<Iterator>(first), std::forward<Iterator>(last),
             std::distance(first, last), output_size(), ae_generator_t{});
+
+        generator->set_safe();
 
         return fine_tune_ae(*generator, max_epochs);
     }
@@ -1014,6 +1030,8 @@ public:
     void evaluate(const Samples&  samples, const Labels& labels){
         auto generator = make_generator(samples, labels, samples.size(), output_size(), categorical_generator_t{});
 
+        generator->set_safe();
+
         return evaluate(*generator);
     }
 
@@ -1030,6 +1048,8 @@ public:
     template <typename InputIterator, typename LabelIterator>
     void evaluate(InputIterator&& iit, InputIterator&& iend, LabelIterator&& lit, LabelIterator&& lend){
         auto generator = make_generator(iit, iend, lit, lend, std::distance(lit, lend), output_size(), categorical_generator_t{});
+
+        generator->set_safe();
 
         evaluate(*generator);
     }
@@ -1058,6 +1078,8 @@ public:
     void evaluate_ae(const Samples&  samples){
         auto generator = make_generator(samples, samples, samples.size(), output_size(), ae_generator_t{});
 
+        generator->set_safe();
+
         return evaluate(*generator);
     }
 
@@ -1074,6 +1096,8 @@ public:
     template <typename InputIterator>
     void evaluate_ae(InputIterator&& iit, InputIterator&& iend){
         auto generator = make_generator(iit, iend, iit, iend, std::distance(iit, iend), output_size(), ae_generator_t{});
+
+        generator->set_safe();
 
         evaluate(*generator);
     }
@@ -1105,6 +1129,9 @@ public:
     template <typename Samples, typename Labels>
     double evaluate_error(const Samples&  samples, const Labels& labels){
         auto generator = make_generator(samples, labels, samples.size(), output_size(), categorical_generator_t{});
+
+        generator->set_safe();
+
         return evaluate_error(*generator);
     }
 
@@ -1122,6 +1149,9 @@ public:
     template <typename InputIterator, typename LabelIterator>
     double evaluate_error(InputIterator&& iit, InputIterator&& iend, LabelIterator&& lit, LabelIterator&& lend){
         auto generator = make_generator(iit, iend, lit, lend, std::distance(lit, lend), output_size(), categorical_generator_t{});
+
+        generator->set_safe();
+
         return evaluate_error(*generator);
     }
 
@@ -1524,6 +1554,8 @@ private:
             generator.size(), output_size(),
             get_rbm_ingenerator_inner_desc(), get_rbm_generator_batch());
 
+        next_generator->set_safe();
+
         // Compute the input of the next layer
         // using batch activation
 
@@ -1583,6 +1615,8 @@ private:
                 one, one,
                 generator.size(), output_size(),
                 get_rbm_ingenerator_inner_desc(), get_rbm_generator_batch());
+
+            next_generator->set_safe();
 
             // Compute the input of the next layer
             // using batch activation
@@ -1647,6 +1681,8 @@ private:
                 one_n, one_c,
                 generator.size(), output_size(),
                 get_rbm_ingenerator_inner_desc(), get_rbm_generator_batch());
+
+            next_generator->set_safe();
 
             // Compute the input of the next layer
             // using batch activation

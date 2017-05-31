@@ -100,6 +100,8 @@ struct rbm_base : layer<Parent> {
         // Create a new generator around the data
         auto generator = make_generator(training_data, training_data, training_data.size(), generator_t{}, get_batch_size(as_derived()));
 
+        generator->set_safe();
+
         dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
         return trainer.train(as_derived(), *generator, max_epochs);
     }
@@ -108,6 +110,8 @@ struct rbm_base : layer<Parent> {
     double train(Iterator&& first, Iterator&& last, size_t max_epochs, Args... args) {
         // Create a new generator around the data
         auto generator = make_generator(first, last, first, last, std::distance(first, last), generator_t{}, get_batch_size(as_derived()));
+
+        generator->set_safe();
 
         dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
         return trainer.train(as_derived(), *generator, max_epochs);
@@ -126,6 +130,8 @@ struct rbm_base : layer<Parent> {
         // Create a new generator around the data
         auto generator = make_generator(noisy, clean, noisy.size(), generator_t{}, get_batch_size(as_derived()));
 
+        generator->set_safe();
+
         dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
         return trainer.train(as_derived(), *generator, max_epochs);
     }
@@ -139,6 +145,8 @@ struct rbm_base : layer<Parent> {
             std::distance(clean_it, clean_end),
             generator_t{},
             get_batch_size(as_derived()));
+
+        generator->set_safe();
 
         dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
         return trainer.train(as_derived(), *generator, max_epochs);
