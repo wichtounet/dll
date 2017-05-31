@@ -24,7 +24,7 @@ struct inmemory_data_generator;
 template<typename Iterator, typename LIterator, typename Desc>
 struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_augmented<Desc>::value>> {
     using desc = Desc;
-    using weight = etl::value_t<typename Iterator::value_type>;
+    using weight = etl::value_t<typename std::iterator_traits<Iterator>::value_type>;
     using data_cache_helper_t = cache_helper<Desc, Iterator>;
     using label_cache_helper_t = label_cache_helper<Desc, weight, LIterator>;
 
@@ -39,6 +39,14 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_
     label_cache_type label_cache;
 
     size_t current = 0;
+
+    template <typename Input, typename Label>
+    inmemory_data_generator(const Input& input, const Label& label, size_t n, size_t n_classes, size_t batch = 0)
+            : batch_size(batch ? batch : desc::BatchSize) {
+        // Initialize both caches for enough elements
+        data_cache_helper_t::init(n, &input, input_cache);
+        label_cache_helper_t::init(n, n_classes, &label, label_cache);
+    }
 
     inmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, size_t batch = 0)
             : batch_size(batch ? batch : desc::BatchSize) {
@@ -179,6 +187,35 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_
      */
     auto label_batch() const {
         return etl::slice(label_cache, current, std::min(current + batch_size, size()));
+    }
+
+    /*!
+     * \brief Set some part of the data to a new set of value
+     * \param i The beginning at which to start storing the new data
+     * \param input_batch An input batch
+     */
+    template<typename Input>
+    void set_data_batch(size_t i, Input&& input_batch){
+        std::cout << std::endl;
+        std::cout << i << std::endl;
+        std::cout << input_cache << std::endl;
+        std::cout << etl::dim<0>(input_batch) << std::endl;
+        std::cout << etl::size(input_batch) << std::endl;
+        std::cout << etl::dim<0>(etl::slice(input_cache, i, i + etl::dim<0>(input_batch))) << std::endl;
+        std::cout << etl::size(etl::slice(input_cache, i, i + etl::dim<0>(input_batch))) << std::endl;
+        std::cout << std::endl;
+
+        etl::slice(input_cache, i, i + etl::dim<0>(input_batch)) = input_batch;
+    }
+
+    /*!
+     * \brief Set some part of the labels to a new set of value
+     * \param i The beginning at which to start storing the new data
+     * \param input_batch A label batch
+     */
+    template<typename Input>
+    void set_label_batch(size_t i, Input&& input_batch){
+        etl::slice(label_cache, i, i + etl::dim<0>(input_batch)) = input_batch;
     }
 
     /*!
@@ -636,6 +673,18 @@ auto make_generator(const Container& container, const LContainer& lcontainer, si
 
     using generator_t = typename inmemory_data_generator_desc<Parameters...>::template generator_t<typename Container::const_iterator, typename LContainer::const_iterator>;
     return std::make_unique<generator_t>(container.begin(), container.end(), lcontainer.begin(), lcontainer.end(), n_classes, batch);
+}
+
+template<typename Input, typename Label, typename... Parameters>
+auto prepare_generator(const Input& input, const Label& label, size_t n, size_t n_classes, const inmemory_data_generator_desc<Parameters...>& /*desc*/, size_t batch = 0){
+    // Create fake iterators for the type (won't be iterated
+    using Iterator = const Input*;
+    using LIterator = const Label*;
+
+    // The generator type
+    using generator_t = typename inmemory_data_generator_desc<Parameters...>::template generator_t<Iterator, LIterator>;
+
+    return std::make_unique<generator_t>(input, label, n, n_classes, batch);
 }
 
 } //end of dll namespace
