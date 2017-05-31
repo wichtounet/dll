@@ -1,7 +1,7 @@
 node {
    try {
        stage 'git'
-       checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'SubmoduleOption', disableSubmodules: false, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/wichtounet/dll.git']]])
+       checkout([$class: 'GitSCM', branches: scm.branches, doGenerateSubmoduleConfigurations: false, extensions: scm.extensions + [[$class: 'SubmoduleOption', disableSubmodules: false, recursiveSubmodules: true, reference: '', trackingSubmodules: false]], submoduleCfg: [], userRemoteConfigs: scm.userRemoteConfigs])
 
        stage 'pre-analysis'
        sh 'cppcheck --xml-version=2 --enable=all --std=c++11 include/dll/*.hpp test/src/*.cpp test_compile/*.cpp 2> cppcheck_report.xml'
