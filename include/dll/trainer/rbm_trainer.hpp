@@ -62,16 +62,6 @@ struct rbm_trainer {
     rbm_trainer(init_watcher_t /*init*/, Arg... args)
             : watcher(args...) {}
 
-    template <typename Iterator, cpp_enable_if_cst(rbm_layer_traits<rbm_t>::init_weights())>
-    static void init_weights(RBM& rbm, Iterator first, Iterator last) {
-        rbm.init_weights(first, last);
-    }
-
-    template <typename Iterator, cpp_disable_if_cst(rbm_layer_traits<rbm_t>::init_weights())>
-    static void init_weights(RBM&, Iterator, Iterator) {
-        //NOP
-    }
-
     template <typename Generator, cpp_enable_if_cst(rbm_layer_traits<rbm_t>::init_weights())>
     static void init_weights(RBM& rbm, Generator& generator) {
         rbm.init_weights(generator);
@@ -81,12 +71,6 @@ struct rbm_trainer {
     static void init_weights(RBM&, Generator&) {
         //NOP
     }
-
-    template <typename rbm_t, typename Iterator>
-    using fix_iterator_t = std::conditional_t<
-        rbm_layer_traits<rbm_t>::has_shuffle(),
-        typename std::vector<typename std::iterator_traits<Iterator>::value_type>::iterator,
-        Iterator>;
 
     size_t batch_size            = 0;
     size_t total_batches         = 0;
@@ -121,11 +105,6 @@ struct rbm_trainer {
         total_batches = size / batch_size;
 
         last_error = 0.0;
-    }
-
-    template <typename Iterator>
-    error_type train(RBM& rbm, Iterator first, Iterator last, size_t max_epochs) {
-        return train(rbm, first, last, first, last, max_epochs);
     }
 
     static trainer_type get_trainer(RBM& rbm) {
@@ -200,29 +179,6 @@ struct rbm_trainer {
 
             // Go to the next batch
             generator.next_batch();
-        }
-    }
-
-    template <typename IIT, typename EIT>
-    void train_sub(IIT input_first, IIT input_last, EIT expected_first, trainer_type& trainer, rbm_training_context& context, rbm_t& rbm) {
-        auto iit = input_first;
-        auto eit = expected_first;
-        auto end = input_last;
-
-        while (iit != end) {
-            auto istart = iit;
-            auto estart = eit;
-
-            size_t i = 0;
-            while (iit != end && i < batch_size) {
-                ++iit;
-                ++eit;
-                ++samples;
-                ++i;
-            }
-
-            //Train the batch
-            train_batch(istart, iit, estart, eit, trainer, context, rbm);
         }
     }
 
