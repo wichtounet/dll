@@ -39,6 +39,7 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_
     label_cache_type label_cache;
 
     size_t current = 0;
+    bool is_safe = false;
 
     template <typename Input, typename Label>
     inmemory_data_generator(const Input& input, const Label& label, size_t n, size_t n_classes, size_t batch = 0)
@@ -85,6 +86,17 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_
 
     inmemory_data_generator(inmemory_data_generator&& rhs) = delete;
     inmemory_data_generator operator=(inmemory_data_generator&& rhs) = delete;
+
+    void set_safe(){
+        is_safe = true;
+    }
+
+    void clear(){
+        if(is_safe){
+            input_cache.clear();
+            label_cache.clear();
+        }
+    }
 
     void set_test(){
         // Nothing to do
@@ -256,6 +268,7 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_a
     const size_t batch_size;
 
     size_t current = 0;
+    bool is_safe = false;
 
     mutable volatile bool status[big_batch_size];
     mutable volatile size_t indices[big_batch_size];
@@ -395,6 +408,18 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_a
 
     inmemory_data_generator(inmemory_data_generator&& rhs) = delete;
     inmemory_data_generator operator=(inmemory_data_generator&& rhs) = delete;
+
+    void set_safe(){
+        is_safe = true;
+    }
+
+    void clear(){
+        if(is_safe){
+            input_cache.clear();
+            batch_cache.clear();
+            label_cache.clear();
+        }
+    }
 
     void set_test(){
         train_mode = false;

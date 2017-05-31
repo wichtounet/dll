@@ -40,6 +40,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
     size_t current = 0;
     size_t current_real = 0;
     size_t current_b = 0;
+    bool is_safe = false;
 
     const size_t _size;
     Iterator orig_it;
@@ -65,6 +66,17 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
 
     outmemory_data_generator(outmemory_data_generator&& rhs) = delete;
     outmemory_data_generator operator=(outmemory_data_generator&& rhs) = delete;
+
+    void set_safe(){
+        is_safe = true;
+    }
+
+    void clear(){
+        if(is_safe){
+            batch_cache.clear();
+            label_cache.clear();
+        }
+    }
 
     void set_test(){
         // Nothing to do
@@ -236,6 +248,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
 
     size_t current = 0;
     size_t current_read = 0;
+    bool is_safe = false;
 
     mutable volatile bool status[big_batch_size];
     mutable volatile size_t indices[big_batch_size];
@@ -384,6 +397,17 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
         condition.notify_all();
 
         main_thread.join();
+    }
+
+    void set_safe(){
+        is_safe = true;
+    }
+
+    void clear(){
+        if(is_safe){
+            batch_cache.clear();
+            label_cache.clear();
+        }
     }
 
     void set_test(){
