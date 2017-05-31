@@ -62,6 +62,16 @@ struct find_output_layer<Layer, DBN, std::enable_if_t<!is_output_layer<typename 
     static constexpr size_t L = find_output_layer<Layer - 1, DBN>::L;
 };
 
+template<size_t Layer, typename DBN, typename Enable = void>
+struct find_rbm_layer {
+    static constexpr size_t L = Layer;
+};
+
+template<size_t Layer, typename DBN>
+struct find_rbm_layer<Layer, DBN, std::enable_if_t<(Layer < DBN::layers_t::size - 1) && !decay_layer_traits<typename DBN::template layer_type<Layer>>::is_rbm_layer()>> {
+    static constexpr size_t L = find_rbm_layer<Layer + 1, DBN>::L;
+};
+
 /*!
  * \brief A Deep Belief Network implementation
  */
@@ -87,8 +97,9 @@ struct dbn final {
 
     using watcher_t = typename desc::template watcher_t<this_type>; ///< The watcher type
 
-    static constexpr size_t input_layer_n  = 0;                   ///< The index of the input layer
+    static constexpr size_t input_layer_n  = 0;                                                   ///< The index of the input layer
     static constexpr size_t output_layer_n = find_output_layer<layers_t::size - 1, this_type>::L; ///< The index of the output layer
+    static constexpr size_t rbm_layer_n    = find_rbm_layer<0, this_type>::L;                     ///< The index of the first RBM layer
 
     using input_layer_t = layer_type<input_layer_n>;           ///< The type of the input layer
     using input_one_t   = typename input_layer_t::input_one_t; ///< The type of one input
@@ -159,6 +170,28 @@ public:
         inmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>,
         outmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>>;
 
+    using rbm_generator_t = std::conditional_t<
+        !dbn_traits<this_type>::batch_mode(),
+        inmemory_data_generator_desc<dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>,
+        outmemory_data_generator_desc<dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>>;
+
+    using rbm_generator_inner_t = std::conditional_t<
+        !dbn_traits<this_type>::batch_mode(),
+        inmemory_data_generator_desc<dll::big_batch_size<big_batch_size>, dll::autoencoder>,
+        outmemory_data_generator_desc<dll::big_batch_size<big_batch_size>, dll::autoencoder>>;
+
+    template<size_t B>
+    using rbm_generator_fast_t = std::conditional_t<
+        !dbn_traits<this_type>::batch_mode(),
+        inmemory_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>,
+        outmemory_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>>;
+
+    template<size_t B>
+    using rbm_generator_fast_inner_t = std::conditional_t<
+        !dbn_traits<this_type>::batch_mode(),
+        inmemory_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::autoencoder>,
+        outmemory_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::autoencoder>>;
+
 private:
     cpp::thread_pool<!dbn_traits<this_type>::is_serial()> pool;
 
@@ -177,6 +210,48 @@ private:
 
     template<size_t I, cpp_enable_if(I == layers)>
     void dyn_init(){}
+
+    template<size_t L = rbm_layer_n, cpp_enable_if((decay_layer_traits<layer_type<L>>::is_dynamic()))>
+    auto get_rbm_generator_desc(){
+        static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_desc");
+
+        return rbm_generator_t{};
+    }
+
+    template<size_t L = rbm_layer_n, cpp_enable_if(!(decay_layer_traits<layer_type<L>>::is_dynamic()))>
+    auto get_rbm_generator_desc(){
+        static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_desc");
+
+        return rbm_generator_fast_t<layer_type<L>::batch_size>{};
+    }
+
+    template<size_t L = rbm_layer_n, cpp_enable_if((decay_layer_traits<layer_type<L>>::is_dynamic()))>
+    auto get_rbm_generator_inner_desc(){
+        static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_inner_desc");
+
+        return rbm_generator_inner_t{};
+    }
+
+    template<size_t L = rbm_layer_n, cpp_enable_if(!(decay_layer_traits<layer_type<L>>::is_dynamic()))>
+    auto get_rbm_generator_inner_desc(){
+        static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_inner_desc");
+
+        return rbm_generator_fast_inner_t<layer_type<L>::batch_size>{};
+    }
+
+    template<size_t L = rbm_layer_n, cpp_enable_if(decay_layer_traits<layer_type<L>>::is_dynamic())>
+    size_t get_rbm_generator_batch(){
+        static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_desc");
+
+        return get_batch_size(layer_get<L>());
+    }
+
+    template<size_t L = rbm_layer_n, cpp_enable_if(!decay_layer_traits<layer_type<L>>::is_dynamic())>
+    size_t get_rbm_generator_batch(){
+        static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_desc");
+
+        return 0;
+    }
 
 public:
     /*!
@@ -410,7 +485,10 @@ public:
     template <typename Input, cpp_enable_if(!is_generator<Input>::value)>
     void pretrain(const Input& training_data, size_t max_epochs) {
         // Create generator around the data
-        auto generator = make_generator(training_data, training_data, training_data.size(), output_size(), ae_generator_t{});
+        auto generator = make_generator(
+            training_data, training_data,
+            training_data.size(), output_size(),
+            get_rbm_generator_desc(), get_rbm_generator_batch());
 
         pretrain(*generator, max_epochs);
     }
@@ -427,7 +505,11 @@ public:
     template <typename Iterator>
     void pretrain(Iterator first, Iterator last, size_t max_epochs) {
         // Create generator around the data
-        auto generator = make_generator(first, last, first, last, std::distance(first, last), output_size(), ae_generator_t{});
+        auto generator = make_generator(
+            first, last,
+            first, last,
+            std::distance(first, last), output_size(),
+            get_rbm_generator_desc(), get_rbm_generator_batch());
 
         pretrain(*generator, max_epochs);
     }
@@ -471,7 +553,10 @@ public:
     template <typename Noisy, typename Clean>
     void pretrain_denoising(const Noisy& noisy, const Clean& clean, size_t max_epochs) {
         // Create generator around the data
-        auto generator = make_generator(noisy, clean, noisy.size(), output_size(), ae_generator_t{});
+        auto generator = make_generator(
+            noisy, clean,
+            noisy.size(), output_size(),
+            get_rbm_generator_desc(), get_rbm_generator_batch());
 
         pretrain_denoising(*generator, max_epochs);
     }
@@ -483,7 +568,11 @@ public:
     template <typename NIterator, typename CIterator>
     void pretrain_denoising(NIterator nit, NIterator nend, CIterator cit, CIterator cend, size_t max_epochs) {
         // Create generator around the data
-        auto generator = make_generator(nit, nend, cit, cend, std::distance(cit, cend), output_size(), ae_generator_t{});
+        auto generator = make_generator(
+            nit, nend,
+            cit, cend,
+            std::distance(cit, cend), output_size(),
+            get_rbm_generator_desc(), get_rbm_generator_batch());
 
         pretrain_denoising(*generator, max_epochs);
     }
@@ -1377,7 +1466,10 @@ private:
 
         this_type::release(previous);
 
-        auto next_generator = make_generator(b, b, generator.size(), output_size(), ae_generator_t{});
+        auto next_generator = make_generator(
+            b, b,
+            generator.size(), output_size(),
+            get_rbm_generator_inner_desc(), get_rbm_generator_batch());
 
         pretrain_layer<I + 2>(*next_generator, watcher, max_epochs, b);
     }
@@ -1427,8 +1519,10 @@ private:
             //At this point we don't need the storage of the previous layer
             release(previous);
 
-            // TODO This should be using directly the correct ae_generator_t with fixed batch size for non-dynamic RBM
-            auto next_generator = make_generator(next_a, next_a, generator.size(), output_size(), ae_generator_t{});
+            auto next_generator = make_generator(
+                next_a, next_a,
+                generator.size(), output_size(),
+                get_rbm_generator_inner_desc(), get_rbm_generator_batch());
 
             //Pass the output to the next layer
             this->template pretrain_layer<I + 1>(*next_generator, watcher, max_epochs, next_a);
@@ -1486,8 +1580,10 @@ private:
             release(previous_n);
             release(previous_c);
 
-            // TODO This should be using directly the correct ae_generator_t with fixed batch size for non-dynamic RBM
-            auto next_generator = make_generator(next_n, next_c, generator.size(), output_size(), ae_generator_t{});
+            auto next_generator = make_generator(
+                next_n, next_c,
+                generator.size(), output_size(),
+                get_rbm_generator_inner_desc(), get_rbm_generator_batch());
 
             //In the standard case, pass the output to the next layer
             pretrain_layer_denoising<I + 1>(*next_generator, watcher, max_epochs, next_n, next_c);
