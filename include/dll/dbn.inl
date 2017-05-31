@@ -740,9 +740,9 @@ public:
         return layer.batch_activate_hidden(sample);
     }
 
-    template <typename Input>
+    template <size_t L = 0, typename Input>
     decltype(auto) forward_batch(Input&& sample) {
-        return forward_batch_impl<0>(sample);
+        return forward_batch_impl<L>(sample);
     }
 
     // Forward one sample at a time
@@ -1707,9 +1707,6 @@ private:
         //Get the specific trainer (CD)
         auto trainer = rbm_trainer_t::get_trainer(rbm);
 
-        using input_t = typename types_helper<I - 1, decltype(generator.data_batch()(0))>::input_t;
-        auto next_input = layer_get<I - 1>().template prepare_output<input_t>(get_batch_size(rbm));
-
         //Train for max_epochs epoch
         for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
             size_t big_batch = 0;
@@ -1723,15 +1720,9 @@ private:
             generator.set_train();
 
             while (generator.has_next_batch()) {
-                // TODO This is a terrible bottleneck
+                auto next_batch = forward_batch<I - 1>(generator.data_batch());
 
-                auto data_batch = generator.data_batch();
-
-                for(size_t j = 0; j < etl::dim<0>(data_batch); ++j){
-                    next_input[j] = features_sub<I - 1>(data_batch(j));
-                }
-
-                r_trainer.train_batch(next_input.begin(), next_input.end(), next_input.begin(), next_input.end(), trainer, context, rbm);
+                r_trainer.train_batch(next_batch, next_batch, trainer, context, rbm);
 
                 if (dbn_traits<this_type>::is_verbose()) {
                     watcher.pretraining_batch(*this, big_batch);
@@ -1801,10 +1792,6 @@ private:
         //Get the specific trainer (CD)
         auto trainer = rbm_trainer_t::get_trainer(rbm);
 
-        using input_t = typename types_helper<I - 1, decltype(generator.data_batch()(0))>::input_t;
-        auto next_input_c = layer_get<I - 1>().template prepare_output<input_t>(get_batch_size(rbm));
-        auto next_input_n = layer_get<I - 1>().template prepare_output<input_t>(get_batch_size(rbm));
-
         //Train for max_epochs epoch
         for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
             size_t big_batch = 0;
@@ -1818,17 +1805,10 @@ private:
             generator.set_train();
 
             while (generator.has_next_batch()) {
-                // TODO This is a terrible bottleneck
+                auto next_batch_n = forward_batch<I - 1>(generator.data_batch());
+                auto next_batch_c = forward_batch<I - 1>(generator.label_batch());
 
-                auto data_batch = generator.data_batch();
-                auto label_batch = generator.label_batch();
-
-                for(size_t j = 0; j < etl::dim<0>(data_batch); ++j){
-                    next_input_n[j] = features_sub<I - 1>(data_batch(j));
-                    next_input_c[j] = features_sub<I - 1>(label_batch(j));
-                }
-
-                r_trainer.train_batch(next_input_n.begin(), next_input_n.end(), next_input_c.begin(), next_input_c.end(), trainer, context, rbm);
+                r_trainer.train_batch(next_batch_n, next_batch_c, trainer, context, rbm);
 
                 if (dbn_traits<this_type>::is_verbose()) {
                     watcher.pretraining_batch(*this, big_batch);
