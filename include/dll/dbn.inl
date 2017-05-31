@@ -725,24 +725,24 @@ public:
 
     // TODO: Transform layers should be applied inline
 
-    template <size_t L, typename Input, cpp_enable_if((L != layers - 1))>
+    template <size_t LS, size_t L, typename Input, cpp_enable_if((L != LS))>
     decltype(auto) forward_batch_impl(Input&& sample) {
         decltype(auto) layer = layer_get<L>();
 
         decltype(auto) next = layer.batch_activate_hidden(sample);
-        return forward_batch_impl<L+1>(next);
+        return forward_batch_impl<LS, L+1>(next);
     }
 
-    template <size_t L, typename Input, cpp_enable_if((L == layers - 1))>
+    template <size_t LS, size_t L, typename Input, cpp_enable_if((L == LS))>
     decltype(auto) forward_batch_impl(Input&& sample) {
         decltype(auto) layer = layer_get<L>();
 
         return layer.batch_activate_hidden(sample);
     }
 
-    template <size_t L = 0, typename Input>
+    template <size_t LS = layers - 1, size_t L = 0, typename Input>
     decltype(auto) forward_batch(Input&& sample) {
-        return forward_batch_impl<L>(sample);
+        return forward_batch_impl<LS, L>(sample);
     }
 
     // Forward one sample at a time
