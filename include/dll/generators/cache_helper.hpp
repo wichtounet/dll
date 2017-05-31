@@ -16,13 +16,13 @@ template<typename Desc, typename Iterator, typename Enable = void>
 struct cache_helper;
 
 template<typename Desc, typename Iterator>
-struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_1d<typename Iterator::value_type>::value>> {
-    using T = etl::value_t<typename Iterator::value_type>;
+struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_1d<typename std::iterator_traits<Iterator>::value_type>::value>> {
+    using T = etl::value_t<typename std::iterator_traits<Iterator>::value_type>;
 
     using cache_type = etl::dyn_matrix<T, 2>;
     using big_cache_type = etl::dyn_matrix<T, 3>;
 
-    static void init(size_t n, Iterator& it, cache_type& cache){
+    static void init(size_t n, const Iterator& it, cache_type& cache){
         auto one = *it;
         cache = cache_type(n, etl::dim<0>(one));
     }
@@ -34,13 +34,13 @@ struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_1d<typename Iterato
 };
 
 template<typename Desc, typename Iterator>
-struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_3d<typename Iterator::value_type>::value>> {
-    using T = etl::value_t<typename Iterator::value_type>;
+struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_3d<typename std::iterator_traits<Iterator>::value_type>::value>> {
+    using T = etl::value_t<typename std::iterator_traits<Iterator>::value_type>;
 
     using cache_type = etl::dyn_matrix<T, 4>;
     using big_cache_type = etl::dyn_matrix<T, 5>;
 
-    static void init(size_t n, Iterator& it, cache_type& cache){
+    static void init(size_t n, const Iterator& it, cache_type& cache){
         auto one = *it;
         cache = cache_type(n, etl::dim<0>(one), etl::dim<1>(one), etl::dim<2>(one));
     }
