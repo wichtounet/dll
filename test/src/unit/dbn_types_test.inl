@@ -13,7 +13,9 @@ TEMPLATE_TEST_CASE_2(TYPES_TEST_PREFIX "/types/7", "[unit][types]", DBN, FLOAT_T
     typename DBN::dbn_t dbn_fake;
     DBN::init(dbn_fake);
 
+#ifndef TYPES_TEST_NO_PRE
     dbn_fake.pretrain_denoising(dataset.training_images, dataset.training_images, 5);
+#endif
 
     typename DBN::dbn_t dbn;
     DBN::init(dbn);
@@ -48,7 +50,9 @@ TEMPLATE_TEST_CASE_2(TYPES_TEST_PREFIX "/types/8", "[unit][types]", DBN, DOUBLE_
     typename DBN::dbn_t dbn_fake;
     DBN::init(dbn_fake);
 
+#ifndef TYPES_TEST_NO_PRE
     dbn_fake.pretrain_denoising(dataset.training_images, dataset.training_images, 5);
+#endif
 
     typename DBN::dbn_t dbn;
     DBN::init(dbn);
@@ -83,7 +87,9 @@ TEMPLATE_TEST_CASE_2(TYPES_TEST_PREFIX "/types/9", "[unit][types]", DBN, FLOAT_T
     typename DBN::dbn_t dbn_fake;
     DBN::init(dbn_fake);
 
+#ifndef TYPES_TEST_NO_PRE
     dbn_fake.pretrain_denoising(dataset.training_images, dataset.training_images, 5);
+#endif
 
     typename DBN::dbn_t dbn;
     DBN::init(dbn);
@@ -118,7 +124,9 @@ TEMPLATE_TEST_CASE_2(TYPES_TEST_PREFIX "/types/10", "[unit][types]", DBN, DOUBLE
     typename DBN::dbn_t dbn_fake;
     DBN::init(dbn_fake);
 
+#ifndef TYPES_TEST_NO_PRE
     dbn_fake.pretrain_denoising(dataset.training_images, dataset.training_images, 5);
+#endif
 
     typename DBN::dbn_t dbn;
     DBN::init(dbn);
@@ -153,7 +161,9 @@ TEMPLATE_TEST_CASE_2(TYPES_TEST_PREFIX "/types/11", "[unit][types]", DBN, FLOAT_
     typename DBN::dbn_t dbn_fake;
     DBN::init(dbn_fake);
 
+#ifndef TYPES_TEST_NO_PRE
     dbn_fake.pretrain_denoising(dataset.training_images, dataset.training_images, 5);
+#endif
 
     typename DBN::dbn_t dbn;
     DBN::init(dbn);
@@ -188,7 +198,9 @@ TEMPLATE_TEST_CASE_2(TYPES_TEST_PREFIX "/types/12", "[unit][types]", DBN, DOUBLE
     typename DBN::dbn_t dbn_fake;
     DBN::init(dbn_fake);
 
+#ifndef TYPES_TEST_NO_PRE
     dbn_fake.pretrain_denoising(dataset.training_images, dataset.training_images, 5);
+#endif
 
     typename DBN::dbn_t dbn;
     DBN::init(dbn);
@@ -223,7 +235,9 @@ TEMPLATE_TEST_CASE_2(TYPES_TEST_PREFIX "/types/13", "[unit][types]", DBN, FLOAT_
     typename DBN::dbn_t dbn_fake;
     DBN::init(dbn_fake);
 
+#ifndef TYPES_TEST_NO_PRE
     dbn_fake.pretrain_denoising(dataset.training_images, dataset.training_images, 5);
+#endif
 
     typename DBN::dbn_t dbn;
     DBN::init(dbn);
@@ -258,7 +272,9 @@ TEMPLATE_TEST_CASE_2(TYPES_TEST_PREFIX "/types/14", "[unit][types]", DBN, DOUBLE
     typename DBN::dbn_t dbn_fake;
     DBN::init(dbn_fake);
 
+#ifndef TYPES_TEST_NO_PRE
     dbn_fake.pretrain_denoising(dataset.training_images, dataset.training_images, 5);
+#endif
 
     typename DBN::dbn_t dbn;
     DBN::init(dbn);
