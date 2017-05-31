@@ -202,28 +202,6 @@ struct rbm_trainer {
         }
     }
 
-    template <typename IIT, typename EIT>
-    void train_batch(IIT input_first, IIT input_last, EIT expected_first, EIT expected_last, trainer_type& trainer, rbm_training_context& context, rbm_t& rbm) {
-        ++batches;
-
-        auto input_batch    = make_batch(input_first, input_last);
-        auto expected_batch = make_batch(expected_first, expected_last);
-        trainer->train_batch(input_batch, expected_batch, context);
-
-        context.reconstruction_error += context.batch_error;
-        context.sparsity += context.batch_sparsity;
-
-        cpp::static_if<EnableWatcher && rbm_layer_traits<rbm_t>::free_energy()>([&](auto f) {
-            for (auto& v : input_batch) {
-                context.free_energy += f(rbm).free_energy(v);
-            }
-        });
-
-        if (EnableWatcher && rbm_layer_traits<rbm_t>::is_verbose()) {
-            watcher.batch_end(rbm, context, batches, total_batches);
-        }
-    }
-
     void finalize_epoch(size_t epoch, rbm_training_context& context, rbm_t& rbm) {
         //Average all the gathered information
         context.reconstruction_error /= batches;
