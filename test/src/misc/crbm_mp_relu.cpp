@@ -22,10 +22,8 @@ TEST_CASE("crbm_mp/mnist_7", "crbm::relu") {
 
     rbm.learning_rate *= 2;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(100);
 
     mnist::binarize_dataset(dataset);
 
@@ -42,10 +40,8 @@ TEST_CASE("crbm_mp/mnist_8", "crbm::relu1") {
 
     rbm.learning_rate *= 2;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(100);
 
     mnist::binarize_dataset(dataset);
 
@@ -62,10 +58,8 @@ TEST_CASE("crbm_mp/mnist_9", "crbm::relu6") {
 
     rbm.learning_rate *= 2;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(100);
 
     mnist::binarize_dataset(dataset);
 

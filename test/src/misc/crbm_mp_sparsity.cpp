@@ -24,8 +24,7 @@ TEST_CASE("crbm_mp/mnist_5", "crbm::sparsity") {
     rbm.sparsity_target = 0.1;
     rbm.sparsity_cost   = 0.9;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(100);
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -43,10 +42,8 @@ TEST_CASE("crbm_mp/mnist_110", "crbm::bias_mode_none") {
         dll::sparsity<dll::sparsity_method::LEE>,
         dll::bias<dll::bias_mode::NONE>>::layer_t rbm;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(200);
     REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(200);
 
     mnist::binarize_dataset(dataset);
 
@@ -67,10 +64,8 @@ TEST_CASE("crbm_mp/mnist_111", "crbm::bias_mode_simple") {
     rbm.l2_weight_cost = 0.01;
     rbm.learning_rate  = 0.01;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>();
-
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(200);
     REQUIRE(!dataset.training_images.empty());
-    dataset.training_images.resize(200);
 
     mnist::binarize_dataset(dataset);
 
@@ -96,7 +91,7 @@ TEST_CASE("crbm_mp/mnist_12", "crbm::lee") {
     rbm.pbias_lambda = 0.1;
     rbm.learning_rate *= 12;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(200);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(200);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::normalize_dataset(dataset);

@@ -170,8 +170,8 @@ TEST_CASE("dyn_dense/sgd/6", "[dense][dbn][mnist][sgd]") {
     dbn->final_momentum   = 0.9;
     dbn->learning_rate    = 0.01;
 
-    dbn->template layer_get<2>().init_layer(28 * 28, 100);
-    dbn->template layer_get<3>().init_layer(100, 10);
+    dbn->template layer_get<0>().init_layer(28 * 28, 100);
+    dbn->template layer_get<1>().init_layer(100, 10);
 
     auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
     std::cout << "ft_error:" << ft_error << std::endl;
@@ -227,8 +227,8 @@ TEST_CASE("dyn_dense/sgd/8", "[dense][dbn][mnist][sgd]") {
 
     dbn->learning_rate = 0.05;
 
-    dbn->template layer_get<2>().init_layer(28 * 28, 100);
-    dbn->template layer_get<3>().init_layer(100, 10);
+    dbn->template layer_get<0>().init_layer(28 * 28, 100);
+    dbn->template layer_get<1>().init_layer(100, 10);
 
     auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 100);
     std::cout << "ft_error:" << ft_error << std::endl;

@@ -8,6 +8,7 @@
 #include "catch.hpp"
 #include "dll_test.hpp"
 
+#include "dll/dbn.hpp"
 #include "dll/pooling/mp_layer.hpp"
 #include "dll/pooling/avgp_layer.hpp"
 #include "dll/neural/dense_layer.hpp"
@@ -15,7 +16,6 @@
 #include "dll/rbm/rbm.hpp"
 #include "dll/rbm/conv_rbm.hpp"
 #include "dll/rbm/conv_rbm_mp.hpp"
-#include "dll/dbn.hpp"
 
 #include "dll/transform/random_layer.hpp"
 #include "dll/transform/binarize_layer.hpp"

@@ -20,7 +20,7 @@ TEST_CASE("dyn_crbm/mnist_1", "dyn_crbm::simple") {
     rbm.init_layer(1, 28, 28, 40, 17, 17);
     rbm.batch_size = 25;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(250);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(250);
 
     REQUIRE(!dataset.training_images.empty());
 
@@ -37,7 +37,7 @@ TEST_CASE("dyn_crbm/mnist_2", "crbm::momentum") {
     rbm.init_layer(1, 28, 28, 40, 17, 17);
     rbm.batch_size = 25;
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, double>(250);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(250);
 
     REQUIRE(!dataset.training_images.empty());
 
