@@ -38,7 +38,7 @@ void basic_ae(const D& dataset){
     using network_t = dll::dbn_desc<dll::dbn_layers<
             dll::dense_desc<28 * 28, 100>::layer_t,
             dll::dense_desc<100, 28 * 28>::layer_t
-        >, dll::momentum, dll::trainer<dll::sgd_trainer>, dll::batch_size<64>>::dbn_t;
+        >, dll::momentum, dll::trainer<dll::sgd_trainer>, dll::loss<dll::loss_function::BINARY_CROSS_ENTROPY>, dll::batch_size<64>>::dbn_t;
 
     auto ae = std::make_unique<network_t>();
 
@@ -63,7 +63,7 @@ void basic_dae(const D& dataset){
     using network_t = dll::dbn_desc<dll::dbn_layers<
             dll::dense_desc<28 * 28, 200>::layer_t,
             dll::dense_desc<200, 28 * 28>::layer_t
-        >, dll::momentum, dll::trainer<dll::sgd_trainer>, dll::batch_size<64>>::dbn_t;
+        >, dll::momentum, dll::trainer<dll::sgd_trainer>, dll::loss<dll::loss_function::BINARY_CROSS_ENTROPY>, dll::batch_size<64>>::dbn_t;
 
     auto ae = std::make_unique<network_t>();
 
@@ -74,7 +74,14 @@ void basic_dae(const D& dataset){
     ae->final_momentum = 0.9;
     ae->goal = 1e-4;
 
-    auto ft_error = ae->fine_tune_dae(dataset.training_images, 100, 0.30);
+    using train_generator_t = dll::inmemory_data_generator_desc<dll::batch_size<64>, dll::autoencoder, dll::noise<30>>;
+
+    auto train_generator = dll::make_generator(
+        dataset.training_images, dataset.training_images,
+        dataset.training_images.size(), 28 * 28,
+        train_generator_t{});
+
+    auto ft_error = ae->fine_tune_ae(*train_generator, 100);
     std::cout << "ft_error:" << ft_error << std::endl;
 
     auto test_error = dll::test_set_ae(*ae, dataset.test_images);
