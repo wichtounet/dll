@@ -223,7 +223,7 @@ struct dyn_conv_rbm_mp final : public standard_crbm_mp<dyn_conv_rbm_mp<Desc>, De
         const auto Batch = etl::dim<0>(v);
 
         etl::dyn_matrix<weight, 4> output(Batch, k, np1, np2);
-        batch_activate_pooling(output, v);
+        base_type::batch_activate_pooling(output, v);
         return output;
     }
 
