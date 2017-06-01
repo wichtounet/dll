@@ -685,6 +685,7 @@ struct outmemory_data_generator_desc {
     static constexpr bool AutoEncoder = parameters::template contains<autoencoder>();
 
     static_assert(BatchSize > 0, "The batch size must be larger than one");
+    static_assert(!(AutoEncoder && (random_crop_x || random_crop_y)), "autoencoder mode is not compatible with random crop");
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
