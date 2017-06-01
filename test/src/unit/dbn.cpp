@@ -26,12 +26,10 @@ TEST_CASE("unit/dbn/mnist/1", "[dbn][unit]") {
             dll::rbm_desc<28 * 28, 150, dll::momentum, dll::batch_size<10>, dll::init_weights>::layer_t,
             dll::rbm_desc<150, 250, dll::momentum, dll::batch_size<10>>::layer_t,
             dll::rbm_desc<250, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
-        dll::batch_size<25>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
+        dll::batch_size<25>, dll::binarize_pre<30>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(300);
     REQUIRE(!dataset.training_images.empty());
-
-    mnist::binarize_dataset(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
 
@@ -93,13 +91,11 @@ TEST_CASE("unit/dbn/mnist/3", "[dbn][unit]") {
             dll::rbm_desc<28 * 28, 200, dll::momentum, dll::batch_size<20>, dll::visible<dll::unit_type::GAUSSIAN>>::layer_t,
             dll::rbm_desc<200, 300, dll::momentum, dll::batch_size<20>>::layer_t,
             dll::rbm_desc<300, 10, dll::momentum, dll::batch_size<20>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
-        dll::batch_size<10>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
+        dll::batch_size<10>, dll::normalize_pre, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(250);
 
     REQUIRE(!dataset.training_images.empty());
-
-    mnist::normalize_dataset(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
 
