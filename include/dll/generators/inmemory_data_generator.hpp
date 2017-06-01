@@ -5,6 +5,11 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+/*!
+ * \file
+ * \brief Implementation of an in-memory data generator
+ */
+
 #pragma once
 
 #include <atomic>

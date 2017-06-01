@@ -5,6 +5,11 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+/*!
+ * \file
+ * \brief Implementation of an out-of-memory data generator
+ */
+
 #pragma once
 
 #include <atomic>
