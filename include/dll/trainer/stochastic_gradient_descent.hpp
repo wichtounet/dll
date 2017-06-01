@@ -88,9 +88,6 @@ struct sgd_trainer {
     std::pair<double, double> train_batch(size_t /*epoch*/, const Inputs& inputs, const Labels& labels) {
         dll::auto_timer timer("sgd::train_batch");
 
-        // Ensure that the data batch and the label batch are of the same size
-        cpp_assert(etl::dim<0>(inputs) == etl::dim<0>(labels), "Invalid sizes");
-
         const auto n = etl::dim<0>(inputs);
 
         auto& first_layer = std::get<0>(full_context).first;
@@ -98,6 +95,12 @@ struct sgd_trainer {
 
         auto& last_layer = std::get<layers - 1>(full_context).first;
         auto& last_ctx   = *std::get<layers - 1>(full_context).second;
+
+        // Ensure that the data batch and the label batch are of the same size
+        cpp_assert(etl::dim<0>(inputs) == etl::dim<0>(labels), "Invalid sizes");
+
+        // Ensure that the context can hold the inputs
+        cpp_assert(etl::dim<0>(inputs) <= etl::dim<0>(first_ctx.input), "Invalid sizes");
 
         const bool full_batch = etl::dim<0>(inputs) == etl::dim<0>(first_ctx.input);
 
