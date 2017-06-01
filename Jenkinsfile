@@ -24,8 +24,14 @@ node {
        sh 'gcovr -x -b -r . --object-directory=release_debug/test > coverage_report.xml'
        archive 'catch_report.xml'
 
+
        stage 'sonar'
-       sh '/opt/sonar-runner/bin/sonar-runner'
+       if (env.BRANCH_NAME == "master") {
+           sh '/opt/sonar-runner/bin/sonar-runner'
+       } else {
+           sh '/opt/sonar-runner/bin/sonar-runner' -Dsonar.branch=env.BRANCH_NAME
+       }
+
        currentBuild.result = 'SUCCESS'
    } catch (any) {
        currentBuild.result = 'FAILURE'
