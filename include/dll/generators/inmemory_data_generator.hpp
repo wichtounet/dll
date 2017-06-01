@@ -579,14 +579,26 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_a
         const auto b = batch % big_batch_size;
 
         if(status[b]){
-            return batch_cache(b);
+            const auto input_n = indices[b] * batch_size + batch_size;
+
+            if (input_n > size()) {
+                return etl::slice(batch_cache(b), 0, batch_size - (input_n - size()));
+            } else {
+                return etl::slice(batch_cache(b), 0, batch_size);
+            }
         }
 
         ready_condition.wait(ulock, [this, b] {
             return status[b];
         });
 
-        return batch_cache(b);
+        const auto input_n = indices[b] * batch_size + batch_size;
+
+        if(input_n > size()){
+            return etl::slice(batch_cache(b), 0, batch_size - (input_n - size()));
+        } else {
+            return etl::slice(batch_cache(b), 0, batch_size);
+        }
     }
 
     /*!
