@@ -189,7 +189,8 @@ struct dyn_mp_layer_3d final : dyn_pooling_layer_3d<dyn_mp_layer_3d<Desc>, Desc>
      * \param h The output matrix
      * \param v The input matrix
      */
-    void activate_hidden(output_one_t& h, const input_one_t& v) const {
+    template<typename Input>
+    void activate_hidden(output_one_t& h, const Input& v) const {
         h = etl::max_pool_3d(v, base::c1, base::c2, base::c3);
     }
 

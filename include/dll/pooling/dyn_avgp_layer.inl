@@ -45,7 +45,8 @@ struct dyn_avgp_layer_2d final : dyn_pooling_layer_2d<dyn_avgp_layer_2d<Desc>, D
      * \param h The output matrix
      * \param v The input matrix
      */
-    void activate_hidden(output_one_t& h, const input_one_t& v) const {
+    template<typename Input>
+    void activate_hidden(output_one_t& h, const Input& v) const {
         h = etl::avg_pool_2d(v, base::c1, base::c2);
     }
 
