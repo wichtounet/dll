@@ -39,7 +39,7 @@ pipeline {
 
         stage ('test'){
             steps {
-                sh './release_debug/bin/dll_test_unit -r junit -d yes -o catch_report.xml || true'
+                sh "LD_LIBRARY_PATH=\"${env.LD_LIBRARY_PATH}:/opt/intel/mkl/lib/intel64:/opt/intel/lib/intel64\" ./release_debug/bin/dll_test_unit -r junit -d yes -o catch_report.xml || true"
                 sh 'gcovr -x -b -r . --object-directory=release_debug/test > coverage_report.xml'
                 archive 'catch_report.xml'
                 junit 'catch_report.xml'
