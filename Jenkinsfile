@@ -6,8 +6,7 @@ pipeline {
        LD = "g++-4.9.4"
        ETL_MKL = 'true'
        DLL_COVERAGE = 'true'
-       LD_LIBRARY_PATH = "${env.LD_LIBRARY_PATH}:/opt/intel/mkl/lib/intel64"
-       LD_LIBRARY_PATH = "${env.LD_LIBRARY_PATH}:/opt/intel/lib/intel64"
+       LD_LIBRARY_PATH = "${env.LD_LIBRARY_PATH}:/opt/intel/mkl/lib/intel64:/opt/intel/lib/intel64"
     }
 
     stages {
