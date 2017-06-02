@@ -1,52 +1,82 @@
-node {
-   try {
-       stage 'git'
-       checkout([
-            $class: 'GitSCM',
-            branches: scm.branches,
-            doGenerateSubmoduleConfigurations: false,
-            extensions: scm.extensions + [[$class: 'SubmoduleOption', disableSubmodules: false, recursiveSubmodules: true, reference: '', trackingSubmodules: false]],
-            submoduleCfg: [],
-            userRemoteConfigs: scm.userRemoteConfigs])
+pipeline {
+    agent any
 
-       stage 'pre-analysis'
-       sh 'cppcheck --xml-version=2 --enable=all --std=c++11 include/dll/*.hpp test/src/*.cpp test_compile/*.cpp 2> cppcheck_report.xml'
-       sh 'sloccount --duplicates --wide --details include/dll/*.hpp test/src/*.cpp test_compile/*.cpp  > sloccount.sc'
-       sh 'cccc include/dll/*.hpp test/*.cpp test_compile/*.cpp || true'
+    environment {
+       CXX = "g++-4.9.4"
+       LD = "g++-4.9.4"
+       ETL_MKL = 'true'
+       DLL_COVERAGE = 'true'
+       LD_LIBRARY_PATH = "${env.LD_LIBRARY_PATH}:/opt/intel/mkl/lib/intel64"
+       LD_LIBRARY_PATH = "${env.LD_LIBRARY_PATH}:/opt/intel/lib/intel64"
+    }
 
-       env.CXX="g++-4.9.4"
-       env.LD="g++-4.9.4"
-       env.ETL_MKL='true'
-       env.DLL_COVERAGE='true'
-       env.LD_LIBRARY_PATH="${env.LD_LIBRARY_PATH}:/opt/intel/mkl/lib/intel64"
-       env.LD_LIBRARY_PATH="${env.LD_LIBRARY_PATH}:/opt/intel/lib/intel64"
+    stages {
+        stage ('git'){
+            steps {
+                checkout([
+                    $class: 'GitSCM',
+                    branches: scm.branches,
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: scm.extensions + [[$class: 'SubmoduleOption', disableSubmodules: false, recursiveSubmodules: true, reference: '', trackingSubmodules: false]],
+                    submoduleCfg: [],
+                    userRemoteConfigs: scm.userRemoteConfigs])
+            }
+        }
 
-       stage 'build'
-       sh 'make clean'
-       sh 'make -j6 release_debug'
+        stage ('pre-analysis') {
+            steps {
+                sh 'cppcheck --xml-version=2 --enable=all --std=c++11 include/dll/*.hpp test/src/*.cpp test_compile/*.cpp 2> cppcheck_report.xml'
+                sh 'sloccount --duplicates --wide --details include/dll/*.hpp test/src/*.cpp test_compile/*.cpp  > sloccount.sc'
+                sh 'cccc include/dll/*.hpp test/*.cpp test_compile/*.cpp || true'
+            }
+        }
 
-       stage 'test'
-       sh './release_debug/bin/dll_test_unit -r junit -d yes -o catch_report.xml || true'
-       sh 'gcovr -x -b -r . --object-directory=release_debug/test > coverage_report.xml'
-       archive 'catch_report.xml'
-       junit 'catch_report.xml'
+        stage ('build'){
+            steps {
+                sh 'make clean'
+                sh 'make -j6 release_debug'
+            }
+        }
 
-       stage 'sonar'
-       if (env.BRANCH_NAME == "master") {
-           sh "/opt/sonar-runner/bin/sonar-runner"
-       } else {
-           def sonarbranch = env.BRANCH_NAME
-           sh "/opt/sonar-runner/bin/sonar-runner -Dsonar.branch=$sonarbranch"
-       }
+        stage ('test'){
+            steps {
+                sh './release_debug/bin/dll_test_unit -r junit -d yes -o catch_report.xml || true'
+                sh 'gcovr -x -b -r . --object-directory=release_debug/test > coverage_report.xml'
+                archive 'catch_report.xml'
+                junit 'catch_report.xml'
+            }
+        }
 
-       currentBuild.result = 'SUCCESS'
-   } catch (any) {
-       currentBuild.result = 'FAILURE'
-       throw any
-   } finally {
-       step([$class: 'Mailer',
-           notifyEveryUnstableBuild: true,
-           recipients: "baptiste.wicht@gmail.com",
-           sendToIndividuals: true])
-   }
+        stage ('sonar-master'){
+            when {
+                branch 'master'
+            }
+            steps {
+                sh "/opt/sonar-runner/bin/sonar-runner"
+            }
+        }
+
+        stage ('sonar-branch'){
+            when {
+                not {
+                    branch 'master'
+                }
+            }
+            environment {
+                SONARBRANCH=env.BRANCH_NAME
+            }
+            steps {
+                sh "/opt/sonar-runner/bin/sonar-runner -Dsonar.branch=$SONARBRANCH"
+            }
+        }
+    }
+
+    post {
+        always {
+            step([$class: 'Mailer',
+                notifyEveryUnstableBuild: true,
+                recipients: "baptiste.wicht@gmail.com",
+                sendToIndividuals: true])
+        }
+    }
 }
