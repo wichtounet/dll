@@ -113,7 +113,7 @@ struct base_ocv_rbm_visualizer {
     }
 
     void training_begin(const RBM& rbm) {
-        std::cout << "Train RBM with \"" << RBM::desc::template trainer_t<RBM, false>::name() << "\"" << std::endl;
+        std::cout << "Train RBM with \"" << RBM::desc::template trainer_t<RBM>::name() << "\"" << std::endl;
         std::cout << "With parameters:" << std::endl;
         std::cout << "   learning_rate=" << rbm.learning_rate << std::endl;
 
