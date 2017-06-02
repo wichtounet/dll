@@ -93,6 +93,27 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_
     inmemory_data_generator operator=(inmemory_data_generator&& rhs) = delete;
 
     /*!
+     * \brief Display a description of the generator in the given stream
+     * \param stream The stream to print to
+     * \return stream
+     */
+    std::ostream& display(std::ostream& stream) const {
+        stream << "In-Memory Data Generator" << std::endl;
+        stream << "              Size: " << size() << std::endl;
+        stream << "           Batches: " << batches() << std::endl;
+        stream << "    Augmented Size: " << augmented_size() << std::endl;
+
+        return stream;
+    }
+
+    /*!
+     * \brief Display a description of the generator in the standard output.
+     */
+    void display() const {
+        display(std::cout);
+    }
+
+    /*!
      * \brief Indicates that it is safe to destroy the memory of the generator
      * when not used by the pretraining phase
      */
