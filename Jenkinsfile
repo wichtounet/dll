@@ -61,11 +61,8 @@ pipeline {
                     branch 'master'
                 }
             }
-            environment {
-                SONARBRANCH=env.BRANCH_NAME
-            }
             steps {
-                sh "/opt/sonar-runner/bin/sonar-runner -Dsonar.branch=$SONARBRANCH"
+                sh "/opt/sonar-runner/bin/sonar-runner -Dsonar.branch=${env.BRANCH_NAME}"
             }
         }
     }
