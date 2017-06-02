@@ -263,6 +263,24 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_
     }
 
     /*!
+     * \brief Finalize the dataset if it was filled directly after having being prepared.
+     */
+    void finalize_prepared_data(){
+        for(size_t i = 0; i < size(); ++i){
+            pre_scaler<desc>::transform(input_cache(i));
+            pre_normalizer<desc>::transform(input_cache(i));
+            pre_binarizer<desc>::transform(input_cache(i));
+
+            // In case of auto-encoders, the label images also need to be transformed
+            cpp::static_if<desc::AutoEncoder>([&](auto f){
+                pre_scaler<desc>::transform(f(label_cache)(i));
+                pre_normalizer<desc>::transform(f(label_cache)(i));
+                pre_binarizer<desc>::transform(f(label_cache)(i));
+            });
+        }
+    }
+
+    /*!
      * \brief Returns the number of dimensions of the input.
      * \return The number of dimensions of the input.
      */
