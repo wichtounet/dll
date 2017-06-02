@@ -678,6 +678,11 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_a
     }
 };
 
+template<typename Iterator, typename LIterator, typename Desc>
+std::ostream& operator<<(std::ostream& os, inmemory_data_generator<Iterator, LIterator, Desc>& generator){
+    return generator.display(os);
+}
+
 /*!
  * \brief Descriptor for a inmemory_data_generator
  */

@@ -651,6 +651,11 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
     }
 };
 
+template<typename Iterator, typename LIterator, typename Desc>
+std::ostream& operator<<(std::ostream& os, outmemory_data_generator<Iterator, LIterator, Desc>& generator){
+    return generator.display(os);
+}
+
 /*!
  * \brief Descriptor for a outmemory_data_generator
  */
