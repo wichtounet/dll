@@ -29,6 +29,7 @@ node {
        sh './release_debug/bin/dll_test_unit -r junit -d yes -o catch_report.xml || true'
        sh 'gcovr -x -b -r . --object-directory=release_debug/test > coverage_report.xml'
        archive 'catch_report.xml'
+       junit 'catch_report.xml'
 
        stage 'sonar'
        if (env.BRANCH_NAME == "master") {
