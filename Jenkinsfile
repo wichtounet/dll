@@ -32,7 +32,7 @@ pipeline {
         stage ('build'){
             steps {
                 sh 'make clean'
-                sh 'make -j6 release_debug'
+                sh 'CXX=g++-4.9.4 LD=g++-4.9.4 ETL_MKL=true DLL_COVERAGE=true make -j6 release_debug'
             }
         }
 
