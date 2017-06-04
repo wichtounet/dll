@@ -12,6 +12,7 @@
 #include "dll/neural/conv_layer.hpp"
 #include "dll/neural/dense_layer.hpp"
 #include "dll/dbn.hpp"
+#include "dll/datasets.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -23,15 +24,15 @@ TEST_CASE("unit/conv/sgd/1", "[conv][dbn][mnist][sgd]") {
             dll::dense_desc<6 * 24 * 24, 10, dll::activation<dll::function::SIGMOID>>::layer_t>,
         dll::trainer<dll::sgd_trainer>, dll::momentum, dll::batch_size<10>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(500);
-    REQUIRE(!dataset.training_images.empty());
+    // Load the dataset
+    auto dataset = dll::make_mnist_dataset_sub(500, 0, dll::batch_size<10>{});
 
     auto dbn = std::make_unique<dbn_t>();
 
     dbn->learning_rate = 0.05;
 
-    FT_CHECK(25, 5e-2);
-    TEST_CHECK(0.2);
+    FT_CHECK_DATASET(25, 5e-2);
+    TEST_CHECK_DATASET(0.2);
 }
 
 TEST_CASE("unit/conv/sgd/2", "[conv][dbn][mnist][sgd]") {

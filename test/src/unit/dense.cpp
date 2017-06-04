@@ -13,6 +13,7 @@
 #include "dll/transform/shape_layer_1d.hpp"
 #include "dll/neural/activation_layer.hpp"
 #include "dll/dbn.hpp"
+#include "dll/datasets.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -24,15 +25,15 @@ TEST_CASE("unit/dense/sgd/0", "[unit][dense][dbn][mnist][sgd]") {
             dll::dense_desc<28 * 28, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<20>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(1000);
-    REQUIRE(!dataset.training_images.empty());
+    // Load the dataset
+    auto dataset = dll::make_mnist_dataset_sub(1000, 0, dll::batch_size<20>{});
 
     auto dbn = std::make_unique<dbn_t>();
 
     dbn->learning_rate = 0.03;
 
-    FT_CHECK(50, 5e-2);
-    TEST_CHECK(0.3);
+    FT_CHECK_DATASET(50, 5e-2);
+    TEST_CHECK_DATASET(0.3);
 }
 
 // Test Sigmoid -> Sigmoid network
