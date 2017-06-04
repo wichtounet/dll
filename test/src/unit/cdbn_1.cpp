@@ -92,7 +92,7 @@ TEST_CASE("unit/cdbn/mnist/3", "[cdbn][gaussian][svm][unit]") {
 
     auto test_error = dll::test_set(dbn, dataset.training_images, dataset.training_labels, dll::svm_predictor());
     std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.1);
+    REQUIRE(test_error < 0.15);
 }
 
 TEST_CASE("unit/cdbn/mnist/4", "[cdbn][gaussian][svm][unit]") {

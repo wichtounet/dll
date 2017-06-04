@@ -49,7 +49,7 @@ TEST_CASE("unit/cdbn/mnist/7", "[cdbn][ap][svm][unit]") {
 
     auto test_error = dll::test_set(dbn, dataset.training_images, dataset.training_labels, dll::svm_predictor());
     std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.5);
+    REQUIRE(test_error <= 0.6);
 }
 
 TEST_CASE("unit/cdbn/mnist/8", "[cdbn][ap][svm][unit]") {
