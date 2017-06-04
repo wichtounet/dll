@@ -260,7 +260,7 @@ template<typename... Parameters>
 auto make_mnist_dataset_sub(const std::string& folder, size_t limit, size_t batch = 0, Parameters&&... parameters){
     return make_dataset_holder(
         make_mnist_generator_train(folder, limit, batch, std::forward<Parameters>(parameters)...),
-        make_mnist_generator_test(folder, limit, batch, std::forward<Parameters>(parameters)...));
+        make_mnist_generator_test(limit, batch, std::forward<Parameters>(parameters)...));
 }
 
 /*!
@@ -277,7 +277,7 @@ template<typename... Parameters>
 auto make_mnist_dataset_sub(size_t limit, size_t batch = 0, Parameters&&... parameters){
     return make_dataset_holder(
         make_mnist_generator_train(limit, batch, std::forward<Parameters>(parameters)...),
-        make_mnist_generator_test(limit, batch, std::forward<Parameters>(parameters)...));
+        make_mnist_generator_test(batch, std::forward<Parameters>(parameters)...));
 }
 
 } // end of namespace dll
