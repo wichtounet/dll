@@ -44,3 +44,17 @@ void mnist_scale(Dataset& dataset) {
         std::cout << "test_error:" << test_error << std::endl;                           \
         REQUIRE(test_error < error_max);                                                 \
     }
+
+#define FT_CHECK_DATASET(ft_epochs, ft_max)                         \
+    {                                                               \
+        auto ft_error = dbn->fine_tune(dataset.train(), ft_epochs); \
+        std::cout << "ft_error:" << ft_error << std::endl;          \
+        CHECK(ft_error < ft_max);                                   \
+    }
+
+#define TEST_CHECK_DATASET(error_max)                          \
+    {                                                          \
+        auto test_error = dbn->evaluate_error(dataset.test()); \
+        std::cout << "test_error:" << test_error << std::endl; \
+        REQUIRE(test_error < error_max);                       \
+    }
