@@ -46,7 +46,7 @@ struct avgp_layer_2d final : pooling_layer_2d<avgp_layer_2d<Desc>, Desc> {
      */
     template <typename Input>
     static void activate_hidden(output_one_t& h, const Input& v) {
-        h = etl::avg_pool_2d<base::C1, base::C2>(v);
+        h = etl::ml::avg_pool_forward<base::C1, base::C2>(v);
     }
 
     /*!
@@ -80,7 +80,7 @@ struct avgp_layer_2d final : pooling_layer_2d<avgp_layer_2d<Desc>, Desc> {
      */
     template <typename Input, typename Output>
     static void batch_activate_hidden(Output& output, const Input& input) {
-        output = etl::avg_pool_2d<base::C1, base::C2>(input);
+        output = etl::ml::avg_pool_forward<base::C1, base::C2>(input);
     }
 
     /*!
@@ -116,7 +116,7 @@ struct avgp_layer_2d final : pooling_layer_2d<avgp_layer_2d<Desc>, Desc> {
         static constexpr size_t C1 = base::C1;
         static constexpr size_t C2 = base::C2;
 
-        output = etl::avg_pool_derivative_2d<C1, C2>(context.input, context.output) >> etl::upsample_2d<C1, C2>(context.errors);
+        output = etl::ml::avg_pool_backward<C1, C2>(context.input, context.output);
     }
 
     /*!

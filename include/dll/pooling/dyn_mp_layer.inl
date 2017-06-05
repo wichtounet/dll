@@ -46,7 +46,7 @@ struct dyn_mp_layer_2d final : dyn_pooling_layer_2d<dyn_mp_layer_2d<Desc>, Desc>
      * \param v The input matrix
      */
     void activate_hidden(output_one_t& h, const input_one_t& v) const {
-        h = etl::max_pool_2d(v, base::c1, base::c2);
+        h = etl::ml::max_pool_forward(v, base::c1, base::c2);
     }
 
     /*!
@@ -68,7 +68,7 @@ struct dyn_mp_layer_2d final : dyn_pooling_layer_2d<dyn_mp_layer_2d<Desc>, Desc>
      */
     template <typename Input, typename Output>
     void batch_activate_hidden(Output& output, const Input& input) const {
-        output = etl::max_pool_2d(input, base::c1, base::c2);
+        output = etl::ml::max_pool_forward(input, base::c1, base::c2);
     }
 
     /*!
@@ -104,7 +104,7 @@ struct dyn_mp_layer_2d final : dyn_pooling_layer_2d<dyn_mp_layer_2d<Desc>, Desc>
         size_t c1 = base::c1;
         size_t c2 = base::c2;
 
-        output = etl::max_pool_upsample_2d(context.input, context.output, context.errors, c1, c2);
+        output = etl::ml::max_pool_backward(context.input, context.output, context.errors, c1, c2);
     }
 
     /*!

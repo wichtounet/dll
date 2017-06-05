@@ -50,7 +50,7 @@ struct mp_layer_2d final : pooling_layer_2d<mp_layer_2d<Desc>, Desc> {
     static void activate_hidden(output_one_t& h, const Input& v) {
         dll::auto_timer timer("mp:activate_hidden");
 
-        h = etl::max_pool_2d<base::C1, base::C2>(v);
+        h = etl::ml::max_pool_forward<base::C1, base::C2>(v);
     }
 
     /*!
@@ -86,7 +86,7 @@ struct mp_layer_2d final : pooling_layer_2d<mp_layer_2d<Desc>, Desc> {
     static void batch_activate_hidden(Output& output, const Input& input) {
         dll::auto_timer timer("mp:batch_activate_hidden");
 
-        output = etl::max_pool_2d<base::C1, base::C2>(input);
+        output = etl::ml::max_pool_forward<base::C1, base::C2>(input);
     }
 
     /*!
@@ -124,7 +124,7 @@ struct mp_layer_2d final : pooling_layer_2d<mp_layer_2d<Desc>, Desc> {
         static constexpr size_t C1 = base::C1;
         static constexpr size_t C2 = base::C2;
 
-        output = etl::max_pool_upsample_2d<C1, C2>(context.input, context.output, context.errors);
+        output = etl::ml::max_pool_backward<C1, C2>(context.input, context.output, context.errors);
     }
 
     /*!
