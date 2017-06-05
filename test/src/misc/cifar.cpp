@@ -14,8 +14,7 @@
 #include "dll/pooling/mp_layer.hpp"
 #include "dll/neural/activation_layer.hpp"
 #include "dll/dbn.hpp"
-
-#include "cifar/cifar10_reader.hpp"
+#include "dll/datasets.hpp"
 
 // Fully-Connected Network on CIFAR-10
 
@@ -27,8 +26,7 @@ TEST_CASE("cifar/dense/sgd/1", "[dense][dbn][mnist][sgd]") {
             dll::dense_desc<500, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
         dll::trainer<dll::sgd_trainer>, dll::momentum, dll::batch_size<20>>::dbn_t dbn_t;
 
-    auto dataset = cifar::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 3 * 32 * 32>>(2000);
-    REQUIRE(!dataset.training_images.empty());
+    auto dataset = dll::make_cifar10_dataset_sub(2000, 0, dll::batch_size<20>{});
 
     auto dbn = std::make_unique<dbn_t>();
 
@@ -37,12 +35,8 @@ TEST_CASE("cifar/dense/sgd/1", "[dense][dbn][mnist][sgd]") {
     dbn->learning_rate = 0.01;
     dbn->momentum = 0.9;
 
-    auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 50);
-    std::cout << "ft_error:" << ft_error << std::endl;
-
-    CHECK(ft_error < 5e-2);
-
-    TEST_CHECK(0.2);
+    FT_CHECK_DATASET(50, 5e-2);
+    TEST_CHECK_DATASET(0.2);
 }
 
 TEST_CASE("cifar/conv/sgd/1", "[unit][conv][dbn][mnist][sgd]") {
