@@ -491,20 +491,34 @@ std::string vector_to_string(const std::string& name, const std::vector<std::str
 }
 
 std::string get_data_type(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll::processor::task& t){
-    if(t.training.samples.reader == "mnist"){
+    std::string reader;
+    if(!t.training.samples.reader.empty()){
+        reader = t.training.samples.reader;
+    } else if(!t.testing.samples.reader.empty()){
+        reader = t.testing.samples.reader;
+    } else if(!t.pretraining.samples.reader.empty()){
+        reader = t.pretraining.samples.reader;
+    } else if(!t.pretraining_clean.samples.reader.empty()){
+        reader = t.pretraining_clean.samples.reader;
+    } else {
+        std::cerr << "dllp: error: no reader specified " << std::endl;
+        return "";
+    }
+
+    if(reader == "mnist"){
         if(layers.front()->is_conv()){
             return "etl::fast_dyn_matrix<float, 1, 28, 28>";
         } else {
             return "etl::fast_dyn_vector<float, 784>";
         }
-    } else if(t.training.samples.reader == "text"){
+    } else if(reader == "text"){
         if(layers.front()->is_conv()){
             return "etl::dyn_matrix<float, 3>";
         } else {
             return "etl::dyn_vector<float>";
         }
     } else {
-        std::cerr << "dllp: error: unknown samples reader: " << t.training.samples.reader << std::endl;
+        std::cerr << "dllp: error: unknown samples reader: " << reader << std::endl;
         return "";
     }
 }
