@@ -101,3 +101,4 @@ dataset_holder<TrainG, TestG> make_dataset_holder(std::unique_ptr<TrainG>&& trai
 } // end of namespace dll
 
 #include "datasets/mnist.hpp"
+#include "datasets/cifar.hpp"
