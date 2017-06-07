@@ -20,32 +20,32 @@ namespace dll {
 /*!
  * \brief a out-of-memory data generator
  */
-template<typename Iterator, typename LIterator, typename Desc, typename Enable = void>
+template <typename Iterator, typename LIterator, typename Desc, typename Enable = void>
 struct outmemory_data_generator;
 
 /*!
  * \copydoc outmemory_data_generator
  */
-template<typename Iterator, typename LIterator, typename Desc>
-struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_augmented<Desc>::value && !is_threaded<Desc>::value>> {
-    using desc = Desc;
-    using weight = etl::value_t<typename Iterator::value_type>;
-    using data_cache_helper_t = cache_helper<Desc, Iterator>;
-    using label_cache_helper_t = label_cache_helper<Desc, weight, LIterator>;
+template <typename Iterator, typename LIterator, typename Desc>
+struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_augmented<Desc>::value && !is_threaded<Desc>::value>> {
+    using desc                 = Desc;                                        ///< The generator descriptor
+    using weight               = etl::value_t<typename Iterator::value_type>; ///< The data type
+    using data_cache_helper_t  = cache_helper<Desc, Iterator>;                ///< The helper for the data cache
+    using label_cache_helper_t = label_cache_helper<Desc, weight, LIterator>; ///< The helper for the label cache
 
-    using big_data_cache_type  = typename data_cache_helper_t::big_cache_type;
-    using big_label_cache_type = typename label_cache_helper_t::big_cache_type;
+    using big_data_cache_type  = typename data_cache_helper_t::big_cache_type;  ///< The type of the big data cache
+    using big_label_cache_type = typename label_cache_helper_t::big_cache_type; ///< The type of the big label cache
 
-    static constexpr bool dll_generator = true;
-    static constexpr size_t big_batch_size = desc::BigBatchSize;
+    static constexpr bool dll_generator    = true;               ///< Simple flag to indicate that the class is a DLL generator
+    static constexpr size_t big_batch_size = desc::BigBatchSize; ///< The number of batches kept in cache
 
-    big_data_cache_type batch_cache;
-    big_label_cache_type label_cache;
+    big_data_cache_type batch_cache;  ///< The data batch cache
+    big_label_cache_type label_cache; ///< The label batch cache
 
-    size_t current = 0;
+    size_t current      = 0;
     size_t current_real = 0;
-    size_t current_b = 0;
-    bool is_safe = false;
+    size_t current_b    = 0;
+    bool is_safe        = false; ///< Indicates if the generator is safe to reclaim memory from
 
     const size_t _size;
     Iterator orig_it;
@@ -53,7 +53,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
     Iterator it;
     LIterator lit;
 
-    const size_t batch_size;
+    const size_t batch_size; ///< The size of the batch
 
     outmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, size_t size, size_t batch = 0)
             : _size(size), orig_it(first), orig_lit(lfirst), batch_size(batch ? batch : desc::BatchSize) {
@@ -97,7 +97,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
      * \brief Indicates that it is safe to destroy the memory of the generator
      * when not used by the pretraining phase
      */
-    void set_safe(){
+    void set_safe() {
         is_safe = true;
     }
 
@@ -106,8 +106,8 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
      *
      * This is only done if the generator is marked as safe it is safe.
      */
-    void clear(){
-        if(is_safe){
+    void clear() {
+        if (is_safe) {
             batch_cache.clear();
             label_cache.clear();
         }
@@ -116,22 +116,22 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
     /*!
      * brief Sets the generator in test mode
      */
-    void set_test(){
+    void set_test() {
         // Nothing to do
     }
 
     /*!
      * brief Sets the generator in train mode
      */
-    void set_train(){
+    void set_train() {
         // Nothing to do
     }
 
-    void fetch_next(){
+    void fetch_next() {
         current_b = 0;
 
-        for(size_t b = 0; b < big_batch_size && current_real < _size; ++b){
-            for(size_t i = 0; i < batch_size && current_real < _size; ){
+        for (size_t b = 0; b < big_batch_size && current_real < _size; ++b) {
+            for (size_t i = 0; i < batch_size && current_real < _size;) {
                 batch_cache(b)(i) = *it;
 
                 pre_scaler<desc>::transform(batch_cache(b)(i));
@@ -141,7 +141,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
                 label_cache_helper_t::set(i, lit, label_cache(b));
 
                 // In case of auto-encoders, the label images also need to be transformed
-                cpp::static_if<desc::AutoEncoder>([&](auto f){
+                cpp::static_if<desc::AutoEncoder>([&](auto f) {
                     pre_scaler<desc>::transform(f(label_cache)(b)(i));
                     pre_normalizer<desc>::transform(f(label_cache)(b)(i));
                     pre_binarizer<desc>::transform(f(label_cache)(b)(i));
@@ -158,11 +158,11 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
     /*!
      * \brief Reset the generator to the beginning
      */
-    void reset(){
-        current = 0;
+    void reset() {
+        current      = 0;
         current_real = 0;
 
-        it = orig_it;
+        it  = orig_it;
         lit = orig_lit;
 
         fetch_next();
@@ -171,7 +171,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
     /*!
      * \brief Reset the generator and shuffle the order of samples
      */
-    void reset_shuffle(){
+    void reset_shuffle() {
         cpp_unreachable("Impossible to shuffle out-of-memory data set");
     }
 
@@ -180,7 +180,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
      *
      * This should only be done when the generator is at the beginning.
      */
-    void shuffle(){
+    void shuffle() {
         cpp_unreachable("Impossible to shuffle out-of-memory data set");
     }
 
@@ -236,7 +236,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
     void next_batch() {
         ++current_b;
 
-        if(current_b == big_batch_size){
+        if (current_b == big_batch_size) {
             fetch_next();
         }
 
@@ -271,37 +271,37 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
 /*!
  * \copydoc outmemory_data_generator
  */
-template<typename Iterator, typename LIterator, typename Desc>
-struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_augmented<Desc>::value || is_threaded<Desc>::value>> {
-    using desc = Desc;
-    using weight = etl::value_t<typename Iterator::value_type>;
-    using data_cache_helper_t = cache_helper<desc, Iterator>;
-    using label_cache_helper_t = label_cache_helper<desc, weight, LIterator>;
+template <typename Iterator, typename LIterator, typename Desc>
+struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_augmented<Desc>::value || is_threaded<Desc>::value>> {
+    using desc                 = Desc;                                        ///< The generator descriptor
+    using weight               = etl::value_t<typename Iterator::value_type>; ///< The data type
+    using data_cache_helper_t  = cache_helper<desc, Iterator>;                ///< The helper for the data cache
+    using label_cache_helper_t = label_cache_helper<desc, weight, LIterator>; ///< The helper for the label cache
 
-    using big_data_cache_type  = typename data_cache_helper_t::big_cache_type;
-    using big_label_cache_type = typename label_cache_helper_t::big_cache_type;
+    using big_data_cache_type  = typename data_cache_helper_t::big_cache_type;  ///< The type of the big data cache
+    using big_label_cache_type = typename label_cache_helper_t::big_cache_type; ///< The type of the big label cache
 
-    static constexpr bool dll_generator = true;
+    static constexpr bool dll_generator    = true; ///< Simple flag to indicate that the class is a DLL generator
     static constexpr size_t big_batch_size = desc::BigBatchSize;
 
-    big_data_cache_type batch_cache;
-    big_label_cache_type label_cache;
+    big_data_cache_type batch_cache;  ///< The data batch cache
+    big_label_cache_type label_cache; ///< The label batch cache
 
-    size_t current = 0;
+    size_t current      = 0;
     size_t current_read = 0;
-    bool is_safe = false;
+    bool is_safe        = false; ///< Indicates if the generator is safe to reclaim memory from
 
-    mutable volatile bool status[big_batch_size];
-    mutable volatile size_t indices[big_batch_size];
+    mutable volatile bool status[big_batch_size];    ///< Status of each batch
+    mutable volatile size_t indices[big_batch_size]; ///< Indices of each batch
 
-    mutable std::mutex main_lock;
-    mutable std::condition_variable condition;
-    mutable std::condition_variable ready_condition;
+    mutable std::mutex main_lock;                    ///< The main lock
+    mutable std::condition_variable condition;       ///< The condition variable for the thread to wait for some space
+    mutable std::condition_variable ready_condition; ///< The condition variable for a reader to wait for ready data
 
-    volatile bool stop_flag = false;
+    volatile bool stop_flag = false; ///< Boolean flag indicating to the thread to stop
 
-    std::thread main_thread;
-    bool train_mode = false;
+    std::thread main_thread; ///< The main thread
+    bool train_mode = false; ///< The train mode status
 
     const size_t _size;
     Iterator orig_it;
@@ -309,10 +309,10 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
     Iterator it;
     LIterator lit;
 
-    random_cropper<Desc> cropper;
-    random_mirrorer<Desc> mirrorer;
-    elastic_distorter<Desc> distorter;
-    random_noise<Desc> noiser;
+    random_cropper<Desc> cropper;      ///< The random cropper
+    random_mirrorer<Desc> mirrorer;    ///< The random mirrorer
+    elastic_distorter<Desc> distorter; ///< The elastic distorter
+    random_noise<Desc> noiser;         ///< The random noiser
 
     const size_t batch_size; ///< The size of the generated batches
 
@@ -325,11 +325,11 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
         cpp_unused(llast);
 
         current_read = 0;
-        it = orig_it;
-        lit = orig_lit;
+        it           = orig_it;
+        lit          = orig_lit;
 
-        main_thread = std::thread([this]{
-            while(true){
+        main_thread = std::thread([this] {
+            while (true) {
                 // The index of the batch inside the batch cache
                 size_t index = 0;
 
@@ -339,8 +339,8 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
                     bool found = false;
 
                     // Try to find a read batch first
-                    for(size_t b = 0; b < big_batch_size; ++b){
-                        if(!status[b] && indices[b] * batch_size < _size){
+                    for (size_t b = 0; b < big_batch_size; ++b) {
+                        if (!status[b] && indices[b] * batch_size < _size) {
                             index = b;
                             found = true;
                             break;
@@ -349,15 +349,15 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
 
                     // if not found, wait for a ready to compute batch
 
-                    if(!found){
+                    if (!found) {
                         // Wait for the end or for some work
                         condition.wait(ulock, [this, &index] {
-                            if(stop_flag){
+                            if (stop_flag) {
                                 return true;
                             }
 
-                            for(size_t b = 0; b < big_batch_size; ++b){
-                                if(!status[b] && indices[b] * batch_size < _size){
+                            for (size_t b = 0; b < big_batch_size; ++b) {
+                                if (!status[b] && indices[b] * batch_size < _size) {
                                     index = b;
                                     return true;
                                 }
@@ -373,8 +373,8 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
                     }
                 }
 
-                for(size_t i = 0; i < batch_size && current_read < _size; ++i){
-                    if(train_mode){
+                for (size_t i = 0; i < batch_size && current_read < _size; ++i) {
+                    if (train_mode) {
                         // Random crop the image
                         cropper.transform_first(batch_cache(index)(i), *it);
 
@@ -402,7 +402,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
                     label_cache_helper_t::set(i, lit, label_cache(index));
 
                     // In case of auto-encoders, the label images also need to be transformed
-                    cpp::static_if<desc::AutoEncoder>([&](auto f){
+                    cpp::static_if<desc::AutoEncoder>([&](auto f) {
                         pre_scaler<desc>::transform(f(label_cache)(index)(i));
                         pre_normalizer<desc>::transform(f(label_cache)(index)(i));
                         pre_binarizer<desc>::transform(f(label_cache)(index)(i));
@@ -432,7 +432,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
     outmemory_data_generator(outmemory_data_generator&& rhs) = delete;
     outmemory_data_generator& operator=(outmemory_data_generator&& rhs) = delete;
 
-    ~outmemory_data_generator(){
+    ~outmemory_data_generator() {
         cpp::with_lock(main_lock, [this] { stop_flag = true; });
 
         condition.notify_all();
@@ -465,7 +465,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
      * \brief Indicates that it is safe to destroy the memory of the generator
      * when not used by the pretraining phase
      */
-    void set_safe(){
+    void set_safe() {
         is_safe = true;
     }
 
@@ -474,8 +474,8 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
      *
      * This is only done if the generator is marked as safe it is safe.
      */
-    void clear(){
-        if(is_safe){
+    void clear() {
+        if (is_safe) {
             batch_cache.clear();
             label_cache.clear();
         }
@@ -484,26 +484,26 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
     /*!
      * brief Sets the generator in test mode
      */
-    void set_test(){
+    void set_test() {
         train_mode = false;
     }
 
     /*!
      * brief Sets the generator in train mode
      */
-    void set_train(){
+    void set_train() {
         train_mode = true;
     }
 
-    void reset_generation(){
+    void reset_generation() {
         std::unique_lock<std::mutex> ulock(main_lock);
 
         current_read = 0;
-        it = orig_it;
-        lit = orig_lit;
+        it           = orig_it;
+        lit          = orig_lit;
 
-        for(size_t b = 0; b < big_batch_size; ++b){
-            status[b] = false;
+        for (size_t b = 0; b < big_batch_size; ++b) {
+            status[b]  = false;
             indices[b] = b;
         }
 
@@ -513,7 +513,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
     /*!
      * \brief Reset the generator to the beginning
      */
-    void reset(){
+    void reset() {
         current = 0;
         reset_generation();
     }
@@ -521,7 +521,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
     /*!
      * \brief Reset the generator and shuffle the order of samples
      */
-    void reset_shuffle(){
+    void reset_shuffle() {
         cpp_unreachable("Out-of-memory generator cannot be shuffled");
     }
 
@@ -530,7 +530,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
      *
      * This should only be done when the generator is at the beginning.
      */
-    void shuffle(){
+    void shuffle() {
         cpp_unreachable("Out-of-memory generator cannot be shuffled");
     }
 
@@ -586,7 +586,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
     void next_batch() {
         // Get information from batch that has been consumed
         const auto batch = current / batch_size;
-        const auto b = batch % big_batch_size;
+        const auto b     = batch % big_batch_size;
 
         {
             std::unique_lock<std::mutex> ulock(main_lock);
@@ -608,9 +608,9 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
         std::unique_lock<std::mutex> ulock(main_lock);
 
         const auto batch = current / batch_size;
-        const auto b = batch % big_batch_size;
+        const auto b     = batch % big_batch_size;
 
-        if(status[b]){
+        if (status[b]) {
             return etl::slice(batch_cache(b), 0, std::min(batch_size, _size - current));
         }
 
@@ -629,9 +629,9 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
         std::unique_lock<std::mutex> ulock(main_lock);
 
         const auto batch = current / batch_size;
-        const auto b = batch % big_batch_size;
+        const auto b     = batch % big_batch_size;
 
-        if(status[b]){
+        if (status[b]) {
             return etl::slice(label_cache(b), 0, std::min(batch_size, _size - current));
         }
 
@@ -657,8 +657,8 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
  * \param generator The generator to display
  * \return os
  */
-template<typename Iterator, typename LIterator, typename Desc>
-std::ostream& operator<<(std::ostream& os, outmemory_data_generator<Iterator, LIterator, Desc>& generator){
+template <typename Iterator, typename LIterator, typename Desc>
+std::ostream& operator<<(std::ostream& os, outmemory_data_generator<Iterator, LIterator, Desc>& generator) {
     return generator.display(os);
 }
 
@@ -705,12 +705,12 @@ struct outmemory_data_generator_desc {
     /*!
      * \brief The random cropping X
      */
-    static constexpr size_t random_crop_x = detail::get_value_1<random_crop<0,0>, Parameters...>::value;
+    static constexpr size_t random_crop_x = detail::get_value_1<random_crop<0, 0>, Parameters...>::value;
 
     /*!
      * \brief The random cropping Y
      */
-    static constexpr size_t random_crop_y = detail::get_value_2<random_crop<0,0>, Parameters...>::value;
+    static constexpr size_t random_crop_y = detail::get_value_2<random_crop<0, 0>, Parameters...>::value;
 
     /*!
      * \brief The elastic distortion kernel
@@ -754,18 +754,18 @@ struct outmemory_data_generator_desc {
     /*!
      * The generator type
      */
-    template<typename Iterator, typename LIterator>
+    template <typename Iterator, typename LIterator>
     using generator_t = outmemory_data_generator<Iterator, LIterator, outmemory_data_generator_desc<Parameters...>>;
 };
 
-template<typename Iterator, typename LIterator, typename... Parameters>
-auto make_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t size, size_t n_classes, const outmemory_data_generator_desc<Parameters...>& /*desc*/, size_t batch = 0){
+template <typename Iterator, typename LIterator, typename... Parameters>
+auto make_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t size, size_t n_classes, const outmemory_data_generator_desc<Parameters...>& /*desc*/, size_t batch = 0) {
     using generator_t = typename outmemory_data_generator_desc<Parameters...>::template generator_t<Iterator, LIterator>;
     return std::make_unique<generator_t>(first, last, lfirst, llast, n_classes, size, batch);
 }
 
-template<typename Container, typename LContainer, typename... Parameters>
-auto make_generator(const Container& container, const LContainer& lcontainer, size_t size, size_t n_classes, const outmemory_data_generator_desc<Parameters...>& /*desc*/, size_t batch = 0){
+template <typename Container, typename LContainer, typename... Parameters>
+auto make_generator(const Container& container, const LContainer& lcontainer, size_t size, size_t n_classes, const outmemory_data_generator_desc<Parameters...>& /*desc*/, size_t batch = 0) {
     using generator_t = typename outmemory_data_generator_desc<Parameters...>::template generator_t<typename Container::const_iterator, typename LContainer::const_iterator>;
     return std::make_unique<generator_t>(container.begin(), container.end(), lcontainer.begin(), lcontainer.end(), n_classes, size, batch);
 }
