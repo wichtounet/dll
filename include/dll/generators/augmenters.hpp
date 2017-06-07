@@ -12,23 +12,33 @@
 
 namespace dll {
 
+/*!
+ * \brief Randomly extract crops of a certain size from images
+ */
 template<typename Desc, typename Enable = void>
 struct random_cropper;
 
+/*!
+ * \copydoc random_cropper
+ */
 template<typename Desc>
 struct random_cropper <Desc, std::enable_if_t<Desc::random_crop_x && Desc::random_crop_y>> {
-    static constexpr size_t random_crop_x = Desc::random_crop_x;
-    static constexpr size_t random_crop_y = Desc::random_crop_y;
+    static constexpr size_t random_crop_x = Desc::random_crop_x; ///< The width of the crop
+    static constexpr size_t random_crop_y = Desc::random_crop_y; ///< The height of the crop
 
-    size_t x = 0;
-    size_t y = 0;
+    size_t x = 0;  ///< The input image width
+    size_t y = 0;  ///< The input image height
 
-    std::random_device rd;
-    std::default_random_engine engine;
+    std::random_device rd;             ///< The random device for seed generation
+    std::default_random_engine engine; ///< The random generator engine
 
-    std::uniform_int_distribution<size_t> dist_x;
-    std::uniform_int_distribution<size_t> dist_y;
+    std::uniform_int_distribution<size_t> dist_x; ///< The distribution in x for picking the crop start
+    std::uniform_int_distribution<size_t> dist_y; ///< The distribution in y for picking the crop start
 
+    /*!
+     * \brief Initialize the random_cropper
+     * \param image The image to crop from
+     */
     template<typename T>
     random_cropper(const T& image) : engine(rd()) {
         static_assert(etl::dimensions<T>() == 3, "random_cropper can only be used with 3D images");
@@ -40,10 +50,22 @@ struct random_cropper <Desc, std::enable_if_t<Desc::random_crop_x && Desc::rando
         dist_y = std::uniform_int_distribution<size_t>{0, y - random_crop_y};
     }
 
+    /*!
+     * \brief The number of generated images from one input image
+     * \return The augmentation factor
+     */
     size_t scaling() const {
         return (x - random_crop_x) * (y - random_crop_y);
     }
 
+    /*!
+     * \brief Transform an image.
+     *
+     * This is used as the first step for data augmentation.
+     *
+     * \param target The target output
+     * \param image The input image
+     */
     template<typename O, typename T>
     void transform_first(O&& target, const T& image){
         const size_t y_offset = dist_y(engine);
@@ -58,6 +80,14 @@ struct random_cropper <Desc, std::enable_if_t<Desc::random_crop_x && Desc::rando
         }
     }
 
+    /*!
+     * \brief Transform an image for test.
+     *
+     * This is used as the first step for data augmentation.
+     *
+     * \param target The target output
+     * \param image The input image
+     */
     template<typename O, typename T>
     void transform_first_test(O&& target, const T& image){
         const size_t y_offset = (x - random_crop_x) / 2;
@@ -73,41 +103,78 @@ struct random_cropper <Desc, std::enable_if_t<Desc::random_crop_x && Desc::rando
     }
 };
 
+/*!
+ * \copydoc random_cropper
+ */
 template<typename Desc>
 struct random_cropper <Desc, std::enable_if_t<!Desc::random_crop_x || !Desc::random_crop_y>> {
+    /*!
+     * \brief Initialize the random_cropper
+     * \param image The image to crop from
+     */
     template<typename T>
     random_cropper(const T& image){
         cpp_unused(image);
     }
 
+    /*!
+     * \brief The number of generated images from one input image
+     * \return The augmentation factor
+     */
     static constexpr size_t scaling() {
         return 1;
     }
 
+    /*!
+     * \brief Transform an image.
+     *
+     * This is used as the first step for data augmentation.
+     *
+     * \param target The target output
+     * \param image The input image
+     */
     template<typename O, typename T>
     void transform_first(O&& target, const T& image){
         target = image;
     }
 
+    /*!
+     * \brief Transform an image for test.
+     *
+     * This is used as the first step for data augmentation.
+     *
+     * \param target The target output
+     * \param image The input image
+     */
     template<typename O, typename T>
     void transform_first_test(O&& target, const T& image){
         target = image;
     }
 };
 
+/*!
+ * \brief Image augmenter by random horizontal and/or vertical mirroring
+ */
 template<typename Desc, typename Enable = void>
 struct random_mirrorer;
 
+/*!
+ * \copydoc random_mirrorer
+ */
 template<typename Desc>
 struct random_mirrorer <Desc, std::enable_if_t<Desc::HorizontalMirroring || Desc::VerticalMirroring>> {
-    static constexpr bool horizontal = Desc::HorizontalMirroring;
-    static constexpr bool vertical = Desc::VerticalMirroring;
+    static constexpr bool horizontal = Desc::HorizontalMirroring; ///< Indicates if random mirroring is done
+    static constexpr bool vertical   = Desc::VerticalMirroring;   ///< Indicates if vertical mirroring is done
 
-    std::random_device rd;
-    std::default_random_engine engine;
+    std::random_device rd;             ///< The random device for seed generation
+    std::default_random_engine engine; ///< The random generator engine
 
-    std::uniform_int_distribution<size_t> dist;
+    std::uniform_int_distribution<size_t> dist; ///< The random distribution
 
+    /*!
+     * \brief Initialize the random_mirrorer
+     * \param image The image to crop from
+     */
     template<typename T>
     random_mirrorer(const T& image) : engine(rd()) {
         static_assert(etl::dimensions<T>() == 3, "random_mirrorer can only be used with 3D images");
@@ -121,6 +188,10 @@ struct random_mirrorer <Desc, std::enable_if_t<Desc::HorizontalMirroring || Desc
         cpp_unused(image);
     }
 
+    /*!
+     * \brief The number of generated images from one input image
+     * \return The augmentation factor
+     */
     size_t scaling() const {
         if(horizontal && vertical){
             return 3;
@@ -129,6 +200,10 @@ struct random_mirrorer <Desc, std::enable_if_t<Desc::HorizontalMirroring || Desc
         }
     }
 
+    /*!
+     * \brief Apply the transform on the input
+     * \param target The input to transform
+     */
     template<typename O>
     void transform(O&& target){
         auto choice = dist(engine);
@@ -157,44 +232,77 @@ struct random_mirrorer <Desc, std::enable_if_t<Desc::HorizontalMirroring || Desc
     }
 };
 
+/*!
+ * \copydoc random_mirrorer
+ */
 template<typename Desc>
 struct random_mirrorer <Desc, std::enable_if_t<!Desc::HorizontalMirroring && !Desc::VerticalMirroring>> {
+    /*!
+     * \brief Initialize the random_mirrorer
+     * \param image The image to crop from
+     */
     template<typename T>
     random_mirrorer(const T& image){
         cpp_unused(image);
     }
 
+    /*!
+     * \brief The number of generated images from one input image
+     * \return The augmentation factor
+     */
     static constexpr size_t scaling() {
         return 1;
     }
 
+    /*!
+     * \brief Apply the transform on the input
+     * \param target The input to transform
+     */
     template<typename O>
     static void transform(O&& target){
         cpp_unused(target);
     }
 };
 
+/*!
+ * \brief Data augmenter by noise
+ */
 template<typename Desc, typename Enable = void>
 struct random_noise;
 
+/*!
+ * \copydoc random_noise
+ */
 template<typename Desc>
 struct random_noise <Desc, std::enable_if_t<Desc::Noise>> {
-    static constexpr size_t N = Desc::Noise;
+    static constexpr size_t N = Desc::Noise; ///< The amount of noise (in percent)
 
-    std::random_device rd;
-    std::default_random_engine engine;
+    std::random_device rd;             ///< The random device for seed generation
+    std::default_random_engine engine; ///< The random generator engine
 
-    std::uniform_int_distribution<size_t> dist;
+    std::uniform_int_distribution<size_t> dist; ///< The random distribution
 
+    /*!
+     * \brief Initialize the random_noise
+     * \param image The image to crop from
+     */
     template<typename T>
     random_noise(const T& image) : engine(rd()), dist(0, 1000) {
         cpp_unused(image);
     }
 
+    /*!
+     * \brief The number of generated images from one input image
+     * \return The augmentation factor
+     */
     size_t scaling() const {
         return 10;
     }
 
+    /*!
+     * \brief Apply the transform on the input
+     * \param target The input to transform
+     */
     template<typename O>
     void transform(O&& target){
         for(auto& v :  target){
@@ -203,17 +311,32 @@ struct random_noise <Desc, std::enable_if_t<Desc::Noise>> {
     }
 };
 
+/*!
+ * \copydoc random_noise
+ */
 template<typename Desc>
 struct random_noise <Desc, std::enable_if_t<!Desc::Noise>> {
+    /*!
+     * \brief Initialize the random_noise
+     * \param image The image to crop from
+     */
     template<typename T>
     random_noise(const T& image){
         cpp_unused(image);
     }
 
+    /*!
+     * \brief The number of generated images from one input image
+     * \return The augmentation factor
+     */
     static constexpr size_t scaling() {
         return 1;
     }
 
+    /*!
+     * \brief Apply the transform on the input
+     * \param target The input to transform
+     */
     template<typename O>
     static void transform(O&& target){
         cpp_unused(target);
@@ -227,16 +350,20 @@ struct elastic_distorter;
 
 template<typename Desc>
 struct elastic_distorter <Desc, std::enable_if_t<Desc::ElasticDistortion>> {
-    using weight = typename Desc::weight;
+    using weight = typename Desc::weight; ///< The data type
 
-    static constexpr size_t K     = Desc::ElasticDistortion;
-    static constexpr size_t mid   = K / 2;
-    static constexpr double sigma = 0.8 + 0.3 * ((K - 1) * 0.5 - 1);
+    static constexpr size_t K     = Desc::ElasticDistortion;         ///< size of elastic distortion kernel
+    static constexpr size_t mid   = K / 2;                           ///< Half of the kernel
+    static constexpr double sigma = 0.8 + 0.3 * ((K - 1) * 0.5 - 1); ///< Sigma for gaussian kernel
 
-    etl::fast_dyn_matrix<weight, K, K> kernel;
+    etl::fast_dyn_matrix<weight, K, K> kernel; ///< The precomputed kernel
 
     static_assert(K % 2 == 1, "The kernel size must be odd");
 
+    /*!
+     * \brief Initialize the elastic_distorter
+     * \param image The image to distort
+     */
     template<typename T>
     elastic_distorter(const T& image) {
         static_assert(etl::dimensions<T>() == 3, "elastic_distorter can only be used with 3D images");
@@ -257,10 +384,18 @@ struct elastic_distorter <Desc, std::enable_if_t<Desc::ElasticDistortion>> {
         }
     }
 
+    /*!
+     * \brief The number of generated images from one input image
+     * \return The augmentation factor
+     */
     size_t scaling() const {
         return 10;
     }
 
+    /*!
+     * \brief Apply the transform on the input
+     * \param target The input to transform
+     */
     template<typename O>
     void transform(O&& target){
         const size_t width  = etl::dim<1>(target);
@@ -348,15 +483,27 @@ struct elastic_distorter <Desc, std::enable_if_t<Desc::ElasticDistortion>> {
 
 template<typename Desc>
 struct elastic_distorter <Desc, std::enable_if_t<!Desc::ElasticDistortion>> {
+    /*!
+     * \brief Initialize the elastic_distorter
+     * \param image The image to distort
+     */
     template<typename T>
     elastic_distorter(const T& image){
         cpp_unused(image);
     }
 
+    /*!
+     * \brief The number of generated images from one input image
+     * \return The augmentation factor
+     */
     static constexpr size_t scaling() {
         return 1;
     }
 
+    /*!
+     * \brief Apply the transform on the input
+     * \param target The input to transform
+     */
     template<typename O>
     static void transform(O&& target){
         cpp_unused(target);
