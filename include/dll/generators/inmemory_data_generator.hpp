@@ -154,7 +154,7 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_
         current = 0;
     }
 
-    /*
+    /*!
      * \brief Reset the generator and shuffle the order of samples
      */
     void reset_shuffle(){
@@ -181,7 +181,7 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_
         return current / batch_size;
     }
 
-    /*
+    /*!
      * \brief Returns the number of elements in the generator
      * \return The number of elements in the generator
      */
@@ -189,7 +189,7 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_
         return etl::dim<0>(input_cache);
     }
 
-    /*
+    /*!
      * \brief Returns the augmented number of elements in the generator.
      *
      * This number may be an estimate, depending on which augmentation
@@ -201,7 +201,7 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_
         return etl::dim<0>(input_cache);
     }
 
-    /*
+    /*!
      * \brief Returns the number of batches in the generator.
      * \return The number of batches in the generator
      */
@@ -209,7 +209,7 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is_
         return size() / batch_size + (size() % batch_size == 0 ? 0 : 1);
     }
 
-    /*
+    /*!
      * \brief Indicates if the generator has a next batch or not
      * \return true if the generator has a next batch, false otherwise
      */
@@ -542,7 +542,7 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_a
         reset_generation();
     }
 
-    /*
+    /*!
      * \brief Reset the generator and shuffle the order of samples
      */
     void reset_shuffle(){
@@ -570,7 +570,7 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_a
         return current / batch_size;
     }
 
-    /*
+    /*!
      * \brief Returns the number of elements in the generator
      * \return The number of elements in the generator
      */
@@ -578,7 +578,7 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_a
         return etl::dim<0>(input_cache);
     }
 
-    /*
+    /*!
      * \brief Returns the augmented number of elements in the generator.
      *
      * This number may be an estimate, depending on which augmentation
@@ -590,7 +590,7 @@ struct inmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_a
         return cropper.scaling() * mirrorer.scaling() * noiser.scaling() * distorter.scaling() * etl::dim<0>(input_cache);
     }
 
-    /*
+    /*!
      * \brief Returns the number of batches in the generator.
      * \return The number of batches in the generator
      */

@@ -168,7 +168,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
         fetch_next();
     }
 
-    /*
+    /*!
      * \brief Reset the generator and shuffle the order of samples
      */
     void reset_shuffle(){
@@ -192,7 +192,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
         return current / batch_size;
     }
 
-    /*
+    /*!
      * \brief Returns the number of elements in the generator
      * \return The number of elements in the generator
      */
@@ -200,7 +200,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
         return _size;
     }
 
-    /*
+    /*!
      * \brief Returns the augmented number of elements in the generator.
      *
      * This number may be an estimate, depending on which augmentation
@@ -212,7 +212,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
         return _size;
     }
 
-    /*
+    /*!
      * \brief Returns the number of batches in the generator.
      * \return The number of batches in the generator
      */
@@ -220,7 +220,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<!is
         return size() / batch_size + (size() % batch_size == 0 ? 0 : 1);
     }
 
-    /*
+    /*!
      * \brief Indicates if the generator has a next batch or not
      * \return true if the generator has a next batch, false otherwise
      */
@@ -518,7 +518,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
         reset_generation();
     }
 
-    /*
+    /*!
      * \brief Reset the generator and shuffle the order of samples
      */
     void reset_shuffle(){
@@ -542,7 +542,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
         return current / batch_size;
     }
 
-    /*
+    /*!
      * \brief Returns the number of elements in the generator
      * \return The number of elements in the generator
      */
@@ -550,7 +550,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
         return _size;
     }
 
-    /*
+    /*!
      * \brief Returns the augmented number of elements in the generator.
      *
      * This number may be an estimate, depending on which augmentation
@@ -562,7 +562,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
         return cropper.scaling() * mirrorer.scaling() * noiser.scaling() * distorter.scaling() * size();
     }
 
-    /*
+    /*!
      * \brief Returns the number of batches in the generator.
      * \return The number of batches in the generator
      */
@@ -570,7 +570,7 @@ struct outmemory_data_generator <Iterator, LIterator, Desc, std::enable_if_t<is_
         return size() / batch_size + (size() % batch_size == 0 ? 0 : 1);
     }
 
-    /*
+    /*!
      * \brief Indicates if the generator has a next batch or not
      * \return true if the generator has a next batch, false otherwise
      */
