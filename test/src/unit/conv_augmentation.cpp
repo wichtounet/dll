@@ -339,7 +339,7 @@ TEST_CASE("unit/augment/conv/mnist/8", "[dbn][unit]") {
 
     dbn->pretrain(*pretrain_generator, 25);
 
-    auto error = dbn->fine_tune(*train_generator, 25);
+    auto error = dbn->fine_tune(*train_generator, 50);
     std::cout << "error:" << error << std::endl;
     REQUIRE(error < 5e-2);
 
