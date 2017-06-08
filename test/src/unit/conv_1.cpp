@@ -81,7 +81,7 @@ TEST_CASE("unit/conv/sgd/4", "[unit][conv][dbn][mnist][sgd]") {
             dll::conv_desc<1, 28, 28, 6, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t,
             dll::conv_desc<6, 24, 24, 4, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t,
             dll::dense_desc<4 * 20 * 20, 10, dll::activation<dll::function::SIGMOID>>::layer_t>,
-        dll::trainer<dll::sgd_trainer>, dll::batch_size<20>>::dbn_t dbn_t;
+        dll::trainer<dll::sgd_trainer>, dll::batch_size<20>, dll::scale_pre<255>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(800);
     REQUIRE(!dataset.training_images.empty());
