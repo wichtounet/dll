@@ -113,8 +113,8 @@ struct avgp_layer_2d final : pooling_layer_2d<avgp_layer_2d<Desc>, Desc> {
      */
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
-        static constexpr size_t C1 = base::C1;
-        static constexpr size_t C2 = base::C2;
+        static constexpr size_t C1 = base::C1; ///< The pooling first dimension
+        static constexpr size_t C2 = base::C2; ///< The pooling second dimension
 
         output = etl::ml::avg_pool_backward<C1, C2>(context.input, context.output);
     }
@@ -155,13 +155,13 @@ struct sgd_context<DBN, avgp_layer_2d<Desc>, L> {
     using layer_t = avgp_layer_2d<Desc>;
     using weight  = typename layer_t::weight; ///< The data type for this layer
 
-    static constexpr size_t I1 = layer_t::I1;
-    static constexpr size_t I2 = layer_t::I2;
-    static constexpr size_t I3 = layer_t::I3;
+    static constexpr size_t I1 = layer_t::I1; ///< The input first dimension
+    static constexpr size_t I2 = layer_t::I2; ///< The input second dimension
+    static constexpr size_t I3 = layer_t::I3; ///< The input third dimension
 
-    static constexpr size_t O1 = layer_t::O1;
-    static constexpr size_t O2 = layer_t::O2;
-    static constexpr size_t O3 = layer_t::O3;
+    static constexpr size_t O1 = layer_t::O1; ///< The padding first dimension
+    static constexpr size_t O2 = layer_t::O2; ///< The padding second dimension
+    static constexpr size_t O3 = layer_t::O3; ///< The padding third dimension
 
     static constexpr auto batch_size = DBN::batch_size;
 
@@ -274,9 +274,9 @@ struct avgp_layer_3d final : pooling_layer_3d<avgp_layer_3d<Desc>, Desc> {
      */
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
-        static constexpr size_t C1 = base::C1;
-        static constexpr size_t C2 = base::C2;
-        static constexpr size_t C3 = base::C3;
+        static constexpr size_t C1 = base::C1; ///< The pooling first dimension
+        static constexpr size_t C2 = base::C2; ///< The pooling second dimension
+        static constexpr size_t C3 = base::C3; ///< The pooling third dimension
 
         output = etl::avg_pool_derivative_3d<C1, C2, C3>(context.input, context.output) >> etl::upsample_3d<C1, C2, C3>(context.errors);
     }
@@ -317,13 +317,13 @@ struct sgd_context<DBN, avgp_layer_3d<Desc>, L> {
     using layer_t = avgp_layer_3d<Desc>;
     using weight  = typename layer_t::weight; ///< The data type for this layer
 
-    static constexpr size_t I1 = layer_t::I1;
-    static constexpr size_t I2 = layer_t::I2;
-    static constexpr size_t I3 = layer_t::I3;
+    static constexpr size_t I1 = layer_t::I1; ///< The input first dimension
+    static constexpr size_t I2 = layer_t::I2; ///< The input second dimension
+    static constexpr size_t I3 = layer_t::I3; ///< The input third dimension
 
-    static constexpr size_t O1 = layer_t::O1;
-    static constexpr size_t O2 = layer_t::O2;
-    static constexpr size_t O3 = layer_t::O3;
+    static constexpr size_t O1 = layer_t::O1; ///< The padding first dimension
+    static constexpr size_t O2 = layer_t::O2; ///< The padding second dimension
+    static constexpr size_t O3 = layer_t::O3; ///< The padding third dimension
 
     static constexpr auto batch_size = DBN::batch_size;
 
