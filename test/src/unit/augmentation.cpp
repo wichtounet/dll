@@ -181,12 +181,12 @@ TEST_CASE("unit/augment/mnist/5", "[dbn][unit]") {
         dll::dbn_layers<
             dll::dense_desc<28 * 28, 300>::layer_t,
             dll::dense_desc<300, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::batch_size<25>>::dbn_t dbn_t;
+        dll::batch_size<20>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(500);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(600);
     REQUIRE(!dataset.training_images.empty());
 
-    using train_generator_t = dll::inmemory_data_generator_desc<dll::batch_size<25>, dll::noise<20>, dll::categorical, dll::scale_pre<255>>;
+    using train_generator_t = dll::inmemory_data_generator_desc<dll::batch_size<20>, dll::noise<20>, dll::categorical, dll::scale_pre<255>>;
 
     auto train_generator = dll::make_generator(
         dataset.training_images, dataset.training_labels,
@@ -200,7 +200,7 @@ TEST_CASE("unit/augment/mnist/5", "[dbn][unit]") {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    auto error = dbn->fine_tune(*train_generator, 50);
+    auto error = dbn->fine_tune(*train_generator, 60);
     std::cout << "error:" << error << std::endl;
     CHECK(error < 5e-2);
 
