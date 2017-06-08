@@ -370,7 +370,7 @@ TEST_CASE("unit/processor/crbm_mp/1", "[unit][crbm_mp][dbn][mnist][proc]") {
     auto lines = get_result(default_options(), {"pretrain"}, "crbm_mp_1.conf");
     REQUIRE(!lines.empty());
 
-    REC_ERROR_BELOW("epoch 24", 0.01);
+    REC_ERROR_BELOW("epoch 49", 0.01);
 }
 
 // DBN (SGD)
