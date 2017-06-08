@@ -21,15 +21,15 @@ namespace dll {
  */
 template <typename Desc>
 struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
-    using desc      = Desc;
-    using weight    = typename desc::weight;
+    using desc      = Desc; ///< The descriptor of the layer
+    using weight    = typename desc::weight; ///< The data type for this layer
     using this_type = dyn_rbm<Desc>;
     using base_type = standard_rbm<this_type, Desc>;
 
-    using input_t      = typename rbm_base_traits<this_type>::input_t;
-    using output_t     = typename rbm_base_traits<this_type>::output_t;
-    using input_one_t  = typename rbm_base_traits<this_type>::input_one_t;
-    using output_one_t = typename rbm_base_traits<this_type>::output_one_t;
+    using input_t      = typename rbm_base_traits<this_type>::input_t; ///< The type of the input
+    using output_t     = typename rbm_base_traits<this_type>::output_t; ///< The type of the output
+    using input_one_t  = typename rbm_base_traits<this_type>::input_one_t; ///< The type of one input
+    using output_one_t = typename rbm_base_traits<this_type>::output_one_t; ///< The type of one output
 
     static constexpr unit_type visible_unit = desc::visible_unit;
     static constexpr unit_type hidden_unit  = desc::hidden_unit;
@@ -229,13 +229,13 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
  */
 template <typename Desc>
 struct rbm_base_traits<dyn_rbm<Desc>> {
-    using desc      = Desc;
-    using weight    = typename desc::weight;
+    using desc      = Desc; ///< The descriptor of the layer
+    using weight    = typename desc::weight; ///< The data type for this layer
 
-    using input_one_t  = etl::dyn_vector<weight>;
-    using output_one_t = etl::dyn_vector<weight>;
-    using input_t      = std::vector<input_one_t>;
-    using output_t     = std::vector<output_one_t>;
+    using input_one_t  = etl::dyn_vector<weight>; ///< The type of one input
+    using output_one_t = etl::dyn_vector<weight>; ///< The type of one output
+    using input_t      = std::vector<input_one_t>; ///< The type of the input
+    using output_t     = std::vector<output_one_t>; ///< The type of the output
 };
 
 // Declare the traits for the RBM
@@ -281,7 +281,7 @@ struct rbm_layer_base_traits<dyn_rbm<Desc>> {
 template <typename DBN, typename Desc, size_t L>
 struct sgd_context<DBN, dyn_rbm<Desc>, L> {
     using layer_t = dyn_rbm<Desc>;
-    using weight  = typename layer_t::weight;
+    using weight  = typename layer_t::weight; ///< The data type for this layer
 
     static constexpr auto batch_size = DBN::batch_size;
 
@@ -307,7 +307,7 @@ struct sgd_context<DBN, dyn_rbm<Desc>, L> {
 template <typename Desc>
 struct cg_context<dyn_rbm<Desc>> {
     using rbm_t  = dyn_rbm<Desc>;
-    using weight = typename rbm_t::weight;
+    using weight = typename rbm_t::weight; ///< The data type for this layer
 
     static constexpr bool is_trained = true;
 

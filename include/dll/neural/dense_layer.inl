@@ -19,8 +19,8 @@ namespace dll {
  */
 template <typename Desc>
 struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
-    using desc      = Desc;
-    using weight    = typename desc::weight;
+    using desc      = Desc; ///< The descriptor of the layer
+    using weight    = typename desc::weight; ///< The data type for this layer
     using this_type = dense_layer<desc>;
     using base_type = neural_layer<this_type, desc>;
 
@@ -31,10 +31,10 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
     static constexpr auto w_initializer       = desc::w_initializer;
     static constexpr auto b_initializer       = desc::b_initializer;
 
-    using input_one_t  = etl::fast_dyn_matrix<weight, num_visible>;
-    using output_one_t = etl::fast_dyn_matrix<weight, num_hidden>;
-    using input_t      = std::vector<input_one_t>;
-    using output_t     = std::vector<output_one_t>;
+    using input_one_t  = etl::fast_dyn_matrix<weight, num_visible>; ///< The type of one input
+    using output_one_t = etl::fast_dyn_matrix<weight, num_hidden>; ///< The type of one output
+    using input_t      = std::vector<input_one_t>; ///< The type of the input
+    using output_t     = std::vector<output_one_t>; ///< The type of the output
 
     using w_type = etl::fast_matrix<weight, num_visible, num_hidden>;
     using b_type = etl::fast_matrix<weight, num_hidden>;
@@ -297,7 +297,7 @@ struct layer_base_traits<dense_layer<Desc>> {
 template <typename DBN, typename Desc, size_t L>
 struct sgd_context<DBN, dense_layer<Desc>, L> {
     using layer_t = dense_layer<Desc>;
-    using weight  = typename layer_t::weight;
+    using weight  = typename layer_t::weight; ///< The data type for this layer
 
     static constexpr auto num_visible = layer_t::num_visible;
     static constexpr auto num_hidden  = layer_t::num_hidden;

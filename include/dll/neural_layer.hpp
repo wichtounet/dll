@@ -22,9 +22,9 @@ namespace dll {
  */
 template <typename Derived, typename Desc>
 struct neural_layer : layer<Derived> {
-    using desc      = Desc;
+    using desc      = Desc; ///< The descriptor of the layer
     using derived_t = Derived;
-    using weight    = typename desc::weight;
+    using weight    = typename desc::weight; ///< The data type for this layer
     using this_type = neural_layer<derived_t, desc>;
     using base_type = layer<Derived>;
 

@@ -160,7 +160,7 @@ struct layer_base_traits<upsample_layer_3d<Desc>> {
 template <typename DBN, typename Desc, size_t L>
 struct sgd_context<DBN, upsample_layer_3d<Desc>, L> {
     using layer_t = upsample_layer_3d<Desc>;
-    using weight  = typename layer_t::weight;
+    using weight  = typename layer_t::weight; ///< The data type for this layer
 
     static constexpr size_t I1 = layer_t::I1;
     static constexpr size_t I2 = layer_t::I2;

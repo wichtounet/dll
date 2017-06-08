@@ -35,10 +35,10 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
     using this_type = rbm<desc>;                     ///< The type of this layer
     using base_type = standard_rbm<this_type, desc>; ///< The base type
 
-    using input_t      = typename rbm_base_traits<this_type>::input_t;
-    using output_t     = typename rbm_base_traits<this_type>::output_t;
-    using input_one_t  = typename rbm_base_traits<this_type>::input_one_t;
-    using output_one_t = typename rbm_base_traits<this_type>::output_one_t;
+    using input_t      = typename rbm_base_traits<this_type>::input_t; ///< The type of the input
+    using output_t     = typename rbm_base_traits<this_type>::output_t; ///< The type of the output
+    using input_one_t  = typename rbm_base_traits<this_type>::input_one_t; ///< The type of one input
+    using output_one_t = typename rbm_base_traits<this_type>::output_one_t; ///< The type of one output
 
     static constexpr size_t num_visible = desc::num_visible; ///< The number of visible units
     static constexpr size_t num_hidden  = desc::num_hidden;  ///< The number of hidden units
@@ -206,13 +206,13 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
  */
 template <typename Desc>
 struct rbm_base_traits<rbm<Desc>> {
-    using desc      = Desc;
-    using weight    = typename desc::weight;
+    using desc      = Desc; ///< The descriptor of the layer
+    using weight    = typename desc::weight; ///< The data type for this layer
 
-    using input_one_t  = etl::dyn_vector<weight>;
-    using output_one_t = etl::dyn_vector<weight>;
-    using input_t      = std::vector<input_one_t>;
-    using output_t     = std::vector<output_one_t>;
+    using input_one_t  = etl::dyn_vector<weight>; ///< The type of one input
+    using output_one_t = etl::dyn_vector<weight>; ///< The type of one output
+    using input_t      = std::vector<input_one_t>; ///< The type of the input
+    using output_t     = std::vector<output_one_t>; ///< The type of the output
 };
 
 //Allow odr-use of the constexpr static members
@@ -266,7 +266,7 @@ struct rbm_layer_base_traits<rbm<Desc>> {
 template <typename DBN, typename Desc, size_t L>
 struct sgd_context<DBN, rbm<Desc>, L> {
     using layer_t = rbm<Desc>;
-    using weight  = typename layer_t::weight;
+    using weight  = typename layer_t::weight; ///< The data type for this layer
 
     static constexpr auto num_visible = layer_t::num_visible;
     static constexpr auto num_hidden  = layer_t::num_hidden;
@@ -293,7 +293,7 @@ struct sgd_context<DBN, rbm<Desc>, L> {
 template <typename Desc>
 struct cg_context<rbm<Desc>> {
     using rbm_t  = rbm<Desc>;
-    using weight = typename rbm_t::weight;
+    using weight = typename rbm_t::weight; ///< The data type for this layer
 
     static constexpr bool is_trained = true;
 

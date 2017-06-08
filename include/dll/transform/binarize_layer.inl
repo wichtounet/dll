@@ -154,7 +154,7 @@ struct sgd_context<DBN, binarize_layer<Desc>, L> {
 template <typename Desc>
 struct cg_context<binarize_layer<Desc>> {
     using rbm_t  = binarize_layer<Desc>;
-    using weight = double;
+    using weight = double; ///< The data type for this layer
 
     static constexpr bool is_trained = false;
 

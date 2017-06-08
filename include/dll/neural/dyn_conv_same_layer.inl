@@ -257,7 +257,7 @@ struct layer_base_traits<dyn_conv_same_layer<Desc>> {
 template <typename DBN, typename Desc, size_t L>
 struct sgd_context<DBN, dyn_conv_same_layer<Desc>, L> {
     using layer_t = dyn_conv_same_layer<Desc>;
-    using weight  = typename layer_t::weight;
+    using weight  = typename layer_t::weight; ///< The data type for this layer
 
     static constexpr auto batch_size = DBN::batch_size;
 

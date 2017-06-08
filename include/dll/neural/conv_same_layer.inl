@@ -18,8 +18,8 @@ namespace dll {
  */
 template <typename Desc>
 struct conv_same_layer final : neural_layer<conv_same_layer<Desc>, Desc> {
-    using desc      = Desc;
-    using weight    = typename desc::weight;
+    using desc      = Desc; ///< The descriptor of the layer
+    using weight    = typename desc::weight; ///< The data type for this layer
     using this_type = conv_same_layer<desc>;
     using base_type = neural_layer<this_type, desc>;
 
@@ -43,10 +43,10 @@ struct conv_same_layer final : neural_layer<conv_same_layer<Desc>, Desc> {
     static_assert(NW1 % 2 == 1, "conv_same_layer only works with odd-sized filters");
     static_assert(NW2 % 2 == 1, "conv_same_layer only works with odd-sized filters");
 
-    using input_one_t  = etl::fast_dyn_matrix<weight, NC, NV1, NV2>;
-    using output_one_t = etl::fast_dyn_matrix<weight, K, NH1, NH2>;
-    using input_t      = std::vector<input_one_t>;
-    using output_t     = std::vector<output_one_t>;
+    using input_one_t  = etl::fast_dyn_matrix<weight, NC, NV1, NV2>; ///< The type of one input
+    using output_one_t = etl::fast_dyn_matrix<weight, K, NH1, NH2>; ///< The type of one output
+    using input_t      = std::vector<input_one_t>; ///< The type of the input
+    using output_t     = std::vector<output_one_t>; ///< The type of the output
 
     using w_type = etl::fast_matrix<weight, K, NC, NW1, NW2>;
     using b_type = etl::fast_matrix<weight, K>;
@@ -272,7 +272,7 @@ struct layer_base_traits<conv_same_layer<Desc>> {
 template <typename DBN, typename Desc, size_t L>
 struct sgd_context<DBN, conv_same_layer<Desc>, L> {
     using layer_t = conv_same_layer<Desc>;
-    using weight  = typename layer_t::weight;
+    using weight  = typename layer_t::weight; ///< The data type for this layer
 
     static constexpr size_t NV1 = layer_t::NV1;
     static constexpr size_t NV2 = layer_t::NV2;

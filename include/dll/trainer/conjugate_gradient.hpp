@@ -39,7 +39,7 @@ struct gradient_context {
 template <typename DBN, bool Debug = false>
 struct cg_trainer_base {
     using dbn_t  = DBN;
-    using weight = typename dbn_t::weight;
+    using weight = typename dbn_t::weight; ///< The data type for this layer
 
     using this_type = cg_trainer_base<DBN, Debug>;
 

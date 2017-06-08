@@ -19,8 +19,8 @@ namespace dll {
  */
 template <typename Desc>
 struct dyn_conv_rbm_mp final : public standard_crbm_mp<dyn_conv_rbm_mp<Desc>, Desc> {
-    using desc      = Desc;
-    using weight    = typename desc::weight;
+    using desc      = Desc; ///< The descriptor of the layer
+    using weight    = typename desc::weight; ///< The data type for this layer
     using this_type = dyn_conv_rbm_mp<desc>;
     using base_type = standard_crbm_mp<this_type, desc>;
 
@@ -34,10 +34,10 @@ struct dyn_conv_rbm_mp final : public standard_crbm_mp<dyn_conv_rbm_mp<Desc>, De
     using b_type = etl::dyn_vector<weight>;
     using c_type = etl::dyn_vector<weight>;
 
-    using input_t      = typename rbm_base_traits<this_type>::input_t;
-    using output_t     = typename rbm_base_traits<this_type>::output_t;
-    using input_one_t  = typename rbm_base_traits<this_type>::input_one_t;
-    using output_one_t = typename rbm_base_traits<this_type>::output_one_t;
+    using input_t      = typename rbm_base_traits<this_type>::input_t; ///< The type of the input
+    using output_t     = typename rbm_base_traits<this_type>::output_t; ///< The type of the output
+    using input_one_t  = typename rbm_base_traits<this_type>::input_one_t; ///< The type of one input
+    using output_one_t = typename rbm_base_traits<this_type>::output_one_t; ///< The type of one output
     using hidden_output_one_t = typename rbm_base_traits<this_type>::hidden_output_one_t;
 
     w_type w; //!< shared weights
@@ -276,14 +276,14 @@ private:
  */
 template <typename Desc>
 struct rbm_base_traits<dyn_conv_rbm_mp<Desc>> {
-    using desc      = Desc;
-    using weight    = typename desc::weight;
+    using desc      = Desc; ///< The descriptor of the layer
+    using weight    = typename desc::weight; ///< The data type for this layer
 
-    using input_one_t         = etl::dyn_matrix<weight, 3>;
-    using output_one_t        = etl::dyn_matrix<weight, 3>;
+    using input_one_t         = etl::dyn_matrix<weight, 3>; ///< The type of one input
+    using output_one_t        = etl::dyn_matrix<weight, 3>; ///< The type of one output
     using hidden_output_one_t = etl::dyn_matrix<weight, 3>;
-    using input_t             = std::vector<input_one_t>;
-    using output_t            = std::vector<output_one_t>;
+    using input_t             = std::vector<input_one_t>; ///< The type of the input
+    using output_t            = std::vector<output_one_t>; ///< The type of the output
 };
 
 // Declare the traits for the RBM

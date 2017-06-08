@@ -18,7 +18,7 @@ namespace dll {
  */
 template <typename Desc>
 struct dyn_lcn_layer : transform_layer<dyn_lcn_layer<Desc>> {
-    using desc = Desc;
+    using desc = Desc; ///< The descriptor of the layer
     using base_type = transform_layer<dyn_lcn_layer<Desc>>; ///< The base type
 
     size_t K;

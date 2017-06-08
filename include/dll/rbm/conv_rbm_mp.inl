@@ -25,8 +25,8 @@ namespace dll {
  */
 template <typename Desc>
 struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
-    using desc      = Desc;
-    using weight    = typename desc::weight;
+    using desc      = Desc; ///< The descriptor of the layer
+    using weight    = typename desc::weight; ///< The data type for this layer
     using this_type = conv_rbm_mp<desc>;
     using base_type = standard_crbm_mp<this_type, desc>;
 
@@ -59,10 +59,10 @@ struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
     using b_type = etl::fast_vector<weight, K>;
     using c_type = etl::fast_vector<weight, NC>;
 
-    using input_t             = typename rbm_base_traits<this_type>::input_t;
-    using output_t            = typename rbm_base_traits<this_type>::output_t;
-    using input_one_t         = typename rbm_base_traits<this_type>::input_one_t;
-    using output_one_t        = typename rbm_base_traits<this_type>::output_one_t;
+    using input_t             = typename rbm_base_traits<this_type>::input_t; ///< The type of the input
+    using output_t            = typename rbm_base_traits<this_type>::output_t; ///< The type of the output
+    using input_one_t         = typename rbm_base_traits<this_type>::input_one_t; ///< The type of one input
+    using output_one_t        = typename rbm_base_traits<this_type>::output_one_t; ///< The type of one output
     using hidden_output_one_t = typename rbm_base_traits<this_type>::hidden_output_one_t;
 
     w_type w; //!< shared weights
@@ -242,14 +242,14 @@ private:
  */
 template <typename Desc>
 struct rbm_base_traits<conv_rbm_mp<Desc>> {
-    using desc      = Desc;
-    using weight    = typename desc::weight;
+    using desc      = Desc; ///< The descriptor of the layer
+    using weight    = typename desc::weight; ///< The data type for this layer
 
-    using input_one_t         = etl::fast_dyn_matrix<weight, desc::NC, desc::NV1, desc::NV2>;
+    using input_one_t         = etl::fast_dyn_matrix<weight, desc::NC, desc::NV1, desc::NV2>; ///< The type of one input
     using hidden_output_one_t = etl::fast_dyn_matrix<weight, desc::K, desc::NV1 - desc::NW1 + 1, desc::NV2 - desc::NW2 + 1>;
-    using output_one_t        = etl::fast_dyn_matrix<weight, desc::K, (desc::NV1 - desc::NW1 + 1) / desc::C, (desc::NV2 - desc::NW2 + 1) / desc::C>;
-    using input_t             = std::vector<input_one_t>;
-    using output_t            = std::vector<output_one_t>;
+    using output_one_t        = etl::fast_dyn_matrix<weight, desc::K, (desc::NV1 - desc::NW1 + 1) / desc::C, (desc::NV2 - desc::NW2 + 1) / desc::C>; ///< The type of one output
+    using input_t             = std::vector<input_one_t>; ///< The type of the input
+    using output_t            = std::vector<output_one_t>; ///< The type of the output
 };
 
 //Allow odr-use of the constexpr static members

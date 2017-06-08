@@ -153,7 +153,7 @@ struct layer_base_traits<avgp_layer_2d<Desc>> {
 template <typename DBN, typename Desc, size_t L>
 struct sgd_context<DBN, avgp_layer_2d<Desc>, L> {
     using layer_t = avgp_layer_2d<Desc>;
-    using weight  = typename layer_t::weight;
+    using weight  = typename layer_t::weight; ///< The data type for this layer
 
     static constexpr size_t I1 = layer_t::I1;
     static constexpr size_t I2 = layer_t::I2;
@@ -315,7 +315,7 @@ struct layer_base_traits<avgp_layer_3d<Desc>> {
 template <typename DBN, typename Desc, size_t L>
 struct sgd_context<DBN, avgp_layer_3d<Desc>, L> {
     using layer_t = avgp_layer_3d<Desc>;
-    using weight  = typename layer_t::weight;
+    using weight  = typename layer_t::weight; ///< The data type for this layer
 
     static constexpr size_t I1 = layer_t::I1;
     static constexpr size_t I2 = layer_t::I2;

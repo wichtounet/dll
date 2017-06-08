@@ -142,7 +142,7 @@ struct layer_base_traits<dyn_avgp_layer_2d<Desc>> {
 template <typename DBN, typename Desc, size_t L>
 struct sgd_context<DBN, dyn_avgp_layer_2d<Desc>, L> {
     using layer_t = dyn_avgp_layer_2d<Desc>;
-    using weight  = typename layer_t::weight;
+    using weight  = typename layer_t::weight; ///< The data type for this layer
 
     static constexpr auto batch_size = DBN::batch_size;
 
@@ -287,7 +287,7 @@ struct layer_base_traits<dyn_avgp_layer_3d<Desc>> {
 template <typename DBN, typename Desc, size_t L>
 struct sgd_context<DBN, dyn_avgp_layer_3d<Desc>, L> {
     using layer_t = dyn_avgp_layer_3d<Desc>;
-    using weight  = typename layer_t::weight;
+    using weight  = typename layer_t::weight; ///< The data type for this layer
 
     static constexpr auto batch_size = DBN::batch_size;
 

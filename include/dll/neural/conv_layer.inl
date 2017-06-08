@@ -37,10 +37,10 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
     static constexpr auto w_initializer       = desc::w_initializer;       ///< The initializer for the weights
     static constexpr auto b_initializer       = desc::b_initializer;       ///< The initializer for the biases
 
-    using input_one_t  = etl::fast_dyn_matrix<weight, NC, NV1, NV2>;
-    using output_one_t = etl::fast_dyn_matrix<weight, K, NH1, NH2>;
-    using input_t      = std::vector<input_one_t>;
-    using output_t     = std::vector<output_one_t>;
+    using input_one_t  = etl::fast_dyn_matrix<weight, NC, NV1, NV2>; ///< The type of one input
+    using output_one_t = etl::fast_dyn_matrix<weight, K, NH1, NH2>; ///< The type of one output
+    using input_t      = std::vector<input_one_t>; ///< The type of the input
+    using output_t     = std::vector<output_one_t>; ///< The type of the output
 
     using w_type = etl::fast_matrix<weight, K, NC, NW1, NW2>;
     using b_type = etl::fast_matrix<weight, K>;
@@ -269,7 +269,7 @@ struct layer_base_traits<conv_layer<Desc>> {
 template <typename DBN, typename Desc, size_t L>
 struct sgd_context<DBN, conv_layer<Desc>, L> {
     using layer_t = conv_layer<Desc>;
-    using weight  = typename layer_t::weight;
+    using weight  = typename layer_t::weight; ///< The data type for this layer
 
     static constexpr size_t NV1 = layer_t::NV1;
     static constexpr size_t NV2 = layer_t::NV2;

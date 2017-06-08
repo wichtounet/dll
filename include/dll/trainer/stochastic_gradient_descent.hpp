@@ -44,7 +44,7 @@ auto build_context(DBN& dbn){
 template <typename DBN>
 struct sgd_trainer {
     using dbn_t     = DBN;
-    using weight    = typename dbn_t::weight;
+    using weight    = typename dbn_t::weight; ///< The data type for this layer
     using this_type = sgd_trainer<dbn_t>;
 
     static constexpr auto layers     = dbn_t::layers;

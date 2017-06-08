@@ -158,7 +158,7 @@ void update_convolutional(RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:update:conv");
 
     using rbm_t  = RBM;
-    using weight = typename rbm_t::weight;
+    using weight = typename rbm_t::weight; ///< The data type for this layer
 
     //Penalty to be applied to weights and hidden biases
     weight w_penalty = 0.0;
@@ -610,7 +610,7 @@ struct base_cd_trainer : base_trainer<RBM> {
     static_assert(N > 0, "(P)CD-0 is not a valid training method");
 
     using rbm_t  = RBM;
-    using weight = typename rbm_t::weight;
+    using weight = typename rbm_t::weight; ///< The data type for this layer
 
     static constexpr auto num_hidden  = rbm_t::num_hidden;
     static constexpr auto num_visible = rbm_t::num_visible;

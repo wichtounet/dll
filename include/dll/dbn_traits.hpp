@@ -18,7 +18,7 @@ namespace dll {
 template <typename DBN>
 struct dbn_traits {
     using dbn_t = DBN;
-    using desc  = typename dbn_t::desc;
+    using desc  = typename dbn_t::desc; ///< The descriptor of the layer
 
     /*!
      * \brief Indicates if the DBN is convolutional
@@ -154,7 +154,7 @@ template <typename DBN, typename Layer>
 struct transform_output_type {
     static constexpr auto dimensions = dbn_traits<DBN>::is_convolutional() ? 4 : 2;
 
-    using weight  = typename DBN::weight;
+    using weight  = typename DBN::weight; ///< The data type for this layer
     using type = etl::dyn_matrix<weight, dimensions>;
 };
 

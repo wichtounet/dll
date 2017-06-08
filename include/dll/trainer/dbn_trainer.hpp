@@ -29,7 +29,7 @@ namespace dll {
 template <typename DBN>
 struct dbn_trainer {
     using dbn_t      = DBN;
-    using weight     = typename dbn_t::weight;
+    using weight     = typename dbn_t::weight; ///< The data type for this layer
     using error_type = typename dbn_t::weight;
 
     template <typename R>

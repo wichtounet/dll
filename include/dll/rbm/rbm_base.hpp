@@ -36,12 +36,12 @@ template <typename Parent, typename Desc>
 struct rbm_base : layer<Parent> {
     using conf     = Desc;
     using parent_t = Parent;
-    using weight   = typename conf::weight;
+    using weight   = typename conf::weight; ///< The data type for this layer
 
-    using input_one_t  = typename rbm_base_traits<parent_t>::input_one_t;
-    using output_one_t = typename rbm_base_traits<parent_t>::output_one_t;
-    using input_t      = typename rbm_base_traits<parent_t>::input_t;
-    using output_t     = typename rbm_base_traits<parent_t>::output_t;
+    using input_one_t  = typename rbm_base_traits<parent_t>::input_one_t; ///< The type of one input
+    using output_one_t = typename rbm_base_traits<parent_t>::output_one_t; ///< The type of one output
+    using input_t      = typename rbm_base_traits<parent_t>::input_t; ///< The type of the input
+    using output_t     = typename rbm_base_traits<parent_t>::output_t; ///< The type of the output
 
     using generator_t = inmemory_data_generator_desc<dll::autoencoder>;
 
@@ -66,22 +66,34 @@ struct rbm_base : layer<Parent> {
 
     weight gradient_clip = 5.0; ///< The default gradient clipping value
 
+    /*!
+     * \brief Construct an empty rbm_base
+     */
     rbm_base() {
         //Nothing to do
     }
 
+    /*!
+     * \brief Backup the weights in the secondary weights matrix
+     */
     void backup_weights() {
         unique_safe_get(as_derived().bak_w) = as_derived().w;
         unique_safe_get(as_derived().bak_b) = as_derived().b;
         unique_safe_get(as_derived().bak_c) = as_derived().c;
     }
 
+    /*!
+     * \brief Restore the weights from the secondary weights matrix
+     */
     void restore_weights() {
         as_derived().w = *as_derived().bak_w;
         as_derived().b = *as_derived().bak_b;
         as_derived().c = *as_derived().bak_c;
     }
 
+    /*!
+     * \brief Compute the reconstruction error for the given input
+     */
     template<typename Input>
     double reconstruction_error(const Input& item) {
         return parent_t::reconstruction_error_impl(item, as_derived());
@@ -168,10 +180,16 @@ struct rbm_base : layer<Parent> {
 
     //I/O functions
 
+    /*!
+     * \brief Store the weights in the given file
+     */
     void store(const std::string& file) const {
         store(file, as_derived());
     }
 
+    /*!
+     * \brief Store the weights using the given stream
+     */
     void store(std::ostream& os) const {
         store(os, as_derived());
     }

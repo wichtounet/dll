@@ -152,7 +152,7 @@ struct layer_base_traits<dyn_shape_layer_3d<Desc>> {
 template <typename DBN, typename Desc, size_t L>
 struct sgd_context<DBN, dyn_shape_layer_3d<Desc>, L> {
     using layer_t = dyn_shape_layer_3d<Desc>;
-    using weight  = typename DBN::weight;
+    using weight  = typename DBN::weight; ///< The data type for this layer
 
     static constexpr auto batch_size = DBN::batch_size;
 
