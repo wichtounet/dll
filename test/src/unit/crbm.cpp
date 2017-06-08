@@ -118,7 +118,7 @@ TEST_CASE("unit/crbm/mnist/5", "[crbm][unit]") {
 TEST_CASE("unit/crbm/mnist/6", "[crbm][unit]") {
     using layer_type = dll::conv_rbm_desc_square<
         1, 28, 20, 17,
-        dll::batch_size<25>,
+        dll::batch_size<10>,
         dll::sparsity<>>::layer_t;
 
     REQUIRE(dll::rbm_layer_traits<layer_type>::sparsity_method() == dll::sparsity_method::GLOBAL_TARGET);
@@ -134,8 +134,11 @@ TEST_CASE("unit/crbm/mnist/6", "[crbm][unit]") {
 
     mnist::binarize_dataset(dataset);
 
+    // Note: Not an excellent performance is expected due to the
+    // large kernel and high sparsity goal
+
     auto error = rbm.train(dataset.training_images, 50);
-    REQUIRE(error < 5e-2);
+    REQUIRE(error < 0.1);
 }
 
 TEST_CASE("unit/crbm/mnist/7", "[crbm][unit]") {
