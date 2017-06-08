@@ -28,12 +28,12 @@ TEST_CASE("unit/dbn/mnist/1", "[dbn][unit]") {
             dll::rbm_desc<250, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
         dll::batch_size<25>, dll::binarize_pre<30>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(300);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(500);
     REQUIRE(!dataset.training_images.empty());
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->pretrain(dataset.training_images, 25);
+    dbn->pretrain(dataset.training_images, 50);
 
     auto error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 5);
     std::cout << "error:" << error << std::endl;
