@@ -26,7 +26,7 @@ TEST_CASE("unit/conv/sgd/9", "[conv][dbn][mnist][sgd]") {
             dll::dense_desc<5 * 24 * 24, 10, dll::activation<dll::function::TANH>>::layer_t>,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<10>, dll::scale_pre<255>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(350);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(500);
     REQUIRE(!dataset.training_images.empty());
 
     auto dbn = std::make_unique<dbn_t>();
@@ -42,19 +42,19 @@ TEST_CASE("unit/conv/sgd/10", "[unit][conv][dbn][mnist][sgd]") {
     //Note: The activation layers are here to ensure compilation
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_desc<1, 28, 28, 8, 5, 5, dll::activation<dll::function::IDENTITY>>::layer_t,
+            dll::conv_desc<1, 28, 28, 6, 5, 5, dll::activation<dll::function::IDENTITY>>::layer_t,
             dll::activation_layer_desc<dll::activation<dll::function::RELU>>::layer_t,
-            dll::mp_layer_3d_desc<8, 24, 24, 1, 2, 2>::layer_t,
-            dll::conv_desc<8, 12, 12, 10, 5, 5, dll::activation<dll::function::IDENTITY>>::layer_t,
+            dll::mp_layer_3d_desc<6, 24, 24, 1, 2, 2>::layer_t,
+            dll::conv_desc<6, 12, 12, 8, 5, 5, dll::activation<dll::function::IDENTITY>>::layer_t,
             dll::activation_layer_desc<dll::activation<dll::function::RELU>>::layer_t,
-            dll::mp_layer_3d_desc<10, 8, 8, 1, 2, 2>::layer_t,
-            dll::dense_desc<10 * 4 * 4, 500, dll::activation<dll::function::IDENTITY>>::layer_t,
+            dll::mp_layer_3d_desc<8, 8, 8, 1, 2, 2>::layer_t,
+            dll::dense_desc<8 * 4 * 4, 500, dll::activation<dll::function::IDENTITY>>::layer_t,
             dll::activation_layer_desc<dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<500, 10, dll::activation<dll::function::IDENTITY>>::layer_t,
             dll::activation_layer_desc<dll::activation<dll::function::SOFTMAX>>::layer_t
-        >, dll::momentum, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<25>>::dbn_t dbn_t;
+        >, dll::shuffle, dll::momentum, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<25>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(350);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(500);
     REQUIRE(!dataset.training_images.empty());
 
     dll_test::mnist_scale(dataset);
@@ -67,5 +67,5 @@ TEST_CASE("unit/conv/sgd/10", "[unit][conv][dbn][mnist][sgd]") {
     dbn->learning_rate    = 0.01;
 
     FT_CHECK(25, 6e-2);
-    TEST_CHECK(0.2);
+    TEST_CHECK(0.22);
 }
