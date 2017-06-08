@@ -58,9 +58,9 @@ TEST_CASE("unit/conv/sgd/2", "[conv][dbn][mnist][sgd]") {
 TEST_CASE("unit/conv/sgd/3", "[unit][conv][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_desc<1, 28, 28, 6, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
-            dll::dense_desc<6 * 24 * 24, 10, dll::activation<dll::function::TANH>>::layer_t>,
-        dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
+            dll::conv_desc<1, 28, 28, 4, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
+            dll::dense_desc<4 * 24 * 24, 10, dll::activation<dll::function::TANH>>::layer_t>,
+        dll::trainer<dll::sgd_trainer>, dll::batch_size<20>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(500);
     REQUIRE(!dataset.training_images.empty());
@@ -71,8 +71,8 @@ TEST_CASE("unit/conv/sgd/3", "[unit][conv][dbn][mnist][sgd]") {
 
     dbn->learning_rate = 0.05;
 
-    FT_CHECK(25, 5e-2);
-    TEST_CHECK(0.2);
+    FT_CHECK(35, 5e-2);
+    TEST_CHECK(0.21);
 }
 
 TEST_CASE("unit/conv/sgd/4", "[unit][conv][dbn][mnist][sgd]") {
