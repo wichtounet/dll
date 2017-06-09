@@ -27,9 +27,9 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
     static constexpr size_t num_visible = desc::num_visible;
     static constexpr size_t num_hidden  = desc::num_hidden;
 
-    static constexpr auto activation_function = desc::activation_function;
-    static constexpr auto w_initializer       = desc::w_initializer;
-    static constexpr auto b_initializer       = desc::b_initializer;
+    static constexpr auto activation_function = desc::activation_function; ///< The layer's activation function
+    static constexpr auto w_initializer       = desc::w_initializer; ///< The initializer for the weights
+    static constexpr auto b_initializer       = desc::b_initializer; ///< The initializer for the biases
 
     using input_one_t  = etl::fast_dyn_matrix<weight, num_visible>; ///< The type of one input
     using output_one_t = etl::fast_dyn_matrix<weight, num_hidden>; ///< The type of one output

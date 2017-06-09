@@ -36,9 +36,9 @@ struct conv_same_layer final : neural_layer<conv_same_layer<Desc>, Desc> {
     static constexpr size_t P1 = (NW1 - 1) / 2;
     static constexpr size_t P2 = (NW2 - 1) / 2;
 
-    static constexpr auto activation_function = desc::activation_function;
-    static constexpr auto w_initializer       = desc::w_initializer;
-    static constexpr auto b_initializer       = desc::b_initializer;
+    static constexpr auto activation_function = desc::activation_function; ///< The layer's activation function
+    static constexpr auto w_initializer       = desc::w_initializer; ///< The initializer for the weights
+    static constexpr auto b_initializer       = desc::b_initializer; ///< The initializer for the biases
 
     static_assert(NW1 % 2 == 1, "conv_same_layer only works with odd-sized filters");
     static_assert(NW2 % 2 == 1, "conv_same_layer only works with odd-sized filters");

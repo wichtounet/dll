@@ -31,9 +31,9 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
     static constexpr size_t NH1 = NV1 + NW1 - 1; //By definition
     static constexpr size_t NH2 = NV2 + NW2 - 1; //By definition
 
-    static constexpr auto activation_function = desc::activation_function;
-    static constexpr auto w_initializer       = desc::w_initializer;
-    static constexpr auto b_initializer       = desc::b_initializer;
+    static constexpr auto activation_function = desc::activation_function; ///< The layer's activation function
+    static constexpr auto w_initializer       = desc::w_initializer; ///< The initializer for the weights
+    static constexpr auto b_initializer       = desc::b_initializer; ///< The initializer for the biases
 
     using input_one_t  = etl::fast_dyn_matrix<weight, NC, NV1, NV2>; ///< The type of one input
     using output_one_t = etl::fast_dyn_matrix<weight, K, NH1, NH2>; ///< The type of one output

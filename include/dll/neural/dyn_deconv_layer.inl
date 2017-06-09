@@ -22,9 +22,9 @@ struct dyn_deconv_layer final : neural_layer<dyn_deconv_layer<Desc>, Desc> {
     using this_type = dyn_deconv_layer<desc>;  ///< This type
     using base_type = neural_layer<this_type, desc>;
 
-    static constexpr auto activation_function = desc::activation_function;
-    static constexpr auto w_initializer       = desc::w_initializer;
-    static constexpr auto b_initializer       = desc::b_initializer;
+    static constexpr auto activation_function = desc::activation_function; ///< The layer's activation function
+    static constexpr auto w_initializer       = desc::w_initializer; ///< The initializer for the weights
+    static constexpr auto b_initializer       = desc::b_initializer; ///< The initializer for the biases
 
     using input_one_t  = etl::dyn_matrix<weight, 3>; ///< The type for one input
     using output_one_t = etl::dyn_matrix<weight, 3>; ///< The type for one output
