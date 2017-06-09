@@ -400,8 +400,8 @@ TEST_CASE("unit/processor/cdbn/1", "[unit_full][dbn][mnist][conv][proc]") {
     auto lines = get_result(default_options(), {"pretrain"}, "cdbn_1.conf");
     REQUIRE(!lines.empty());
 
-    REC_ERROR_BELOW("epoch 19", 0.01, 0);
-    REC_ERROR_BELOW("epoch 19", 0.02, 1);
+    REC_ERROR_BELOW("epoch 24", 0.01, 0);
+    REC_ERROR_BELOW("epoch 24", 0.03, 1);
 }
 
 TEST_CASE("unit/processor/cdbn/2", "[unit][dbn][mnist][conv][proc]") {
