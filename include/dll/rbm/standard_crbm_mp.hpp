@@ -39,7 +39,7 @@ struct standard_crbm_mp : public standard_conv_rbm<Derived, Desc> {
     using derived_t = Derived;
     using desc      = Desc; ///< The descriptor of the layer
     using weight    = typename desc::weight; ///< The data type for this layer
-    using this_type = standard_crbm_mp<derived_t, desc>;
+    using this_type = standard_crbm_mp<derived_t, desc>; ///< The type of this layer
     using base_type = standard_conv_rbm<Derived, desc>;
 
     using input_one_t         = typename rbm_base_traits<derived_t>::input_one_t; ///< The type of one input

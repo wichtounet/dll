@@ -37,7 +37,7 @@ template <typename Parent, typename Desc>
 struct standard_rbm : public rbm_base<Parent, Desc> {
     using desc      = Desc; ///< The descriptor of the layer
     using parent_t  = Parent;
-    using this_type = standard_rbm<parent_t, desc>;
+    using this_type = standard_rbm<parent_t, desc>; ///< The type of this layer
     using base_type = rbm_base<parent_t, desc>;
     using weight    = typename desc::weight; ///< The data type for this layer
 

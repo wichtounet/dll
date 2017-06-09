@@ -41,7 +41,7 @@ struct cg_trainer_base {
     using dbn_t  = DBN;
     using weight = typename dbn_t::weight; ///< The data type for this layer
 
-    using this_type = cg_trainer_base<DBN, Debug>;
+    using this_type = cg_trainer_base<DBN, Debug>; ///< The type of this layer
 
     static constexpr size_t layers = dbn_t::layers;
 

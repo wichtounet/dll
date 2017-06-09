@@ -20,7 +20,7 @@ template <typename Desc>
 struct conv_same_layer final : neural_layer<conv_same_layer<Desc>, Desc> {
     using desc      = Desc; ///< The descriptor of the layer
     using weight    = typename desc::weight; ///< The data type for this layer
-    using this_type = conv_same_layer<desc>;
+    using this_type = conv_same_layer<desc>; ///< The type of this layer
     using base_type = neural_layer<this_type, desc>;
 
     static constexpr size_t NV1 = desc::NV1; ///< The first dimension of the visible units

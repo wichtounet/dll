@@ -42,19 +42,29 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_
     big_data_cache_type batch_cache;  ///< The data batch cache
     big_label_cache_type label_cache; ///< The label batch cache
 
-    size_t current      = 0;
-    size_t current_real = 0;
-    size_t current_b    = 0;
+    size_t current      = 0;     ///< The current index
+    size_t current_real = 0;     ///< The current real index
+    size_t current_b    = 0;     ///< The current batch
     bool is_safe        = false; ///< Indicates if the generator is safe to reclaim memory from
 
-    const size_t _size;
-    Iterator orig_it;
-    LIterator orig_lit;
-    Iterator it;
-    LIterator lit;
+    const size_t _size; ///< The size of the dataset
+    Iterator orig_it;   ///< The original first iterator on data
+    LIterator orig_lit; ///< The original first iterator on label
+    Iterator it;        ///< The current iterator on data
+    LIterator lit;      ///< The current iterator on label
 
     const size_t batch_size; ///< The size of the batch
 
+    /*!
+     * \brief Construct an outmemory_data_generator
+     * \param first The iterator on the beginning on data
+     * \param last The iterator on the end  on data
+     * \param lfirst The iterator on the beginning on labels
+     * \param llast The iterator on the end  on labels
+     * \param n_classes The number of classes
+     * \param size The size of the entire dataset
+     * \param batch The size of the batch
+     */
     outmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, size_t size, size_t batch = 0)
             : _size(size), orig_it(first), orig_lit(lfirst), batch_size(batch ? batch : desc::BatchSize) {
         data_cache_helper_t::init_big(big_batch_size, batch_size, first, batch_cache);
@@ -127,6 +137,9 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_
         // Nothing to do
     }
 
+    /*!
+     * \brief Fetch the next batch
+     */
     void fetch_next() {
         current_b = 0;
 
@@ -287,8 +300,8 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_a
     big_data_cache_type batch_cache;  ///< The data batch cache
     big_label_cache_type label_cache; ///< The label batch cache
 
-    size_t current      = 0;
-    size_t current_read = 0;
+    size_t current      = 0;     ///< The current index
+    size_t current_read = 0;     ///< The current index read
     bool is_safe        = false; ///< Indicates if the generator is safe to reclaim memory from
 
     mutable volatile bool status[big_batch_size];    ///< Status of each batch
@@ -303,11 +316,11 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_a
     std::thread main_thread; ///< The main thread
     bool train_mode = false; ///< The train mode status
 
-    const size_t _size;
-    Iterator orig_it;
-    LIterator orig_lit;
-    Iterator it;
-    LIterator lit;
+    const size_t _size; ///< The size of the dataset
+    Iterator orig_it;   ///< The original first iterator on data
+    LIterator orig_lit; ///< The original first iterator on label
+    Iterator it;        ///< The current iterator on data
+    LIterator lit;      ///< The current iterator on label
 
     random_cropper<Desc> cropper;      ///< The random cropper
     random_mirrorer<Desc> mirrorer;    ///< The random mirrorer
@@ -316,6 +329,16 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_a
 
     const size_t batch_size; ///< The size of the generated batches
 
+    /*!
+     * \brief Construct an outmemory_data_generator
+     * \param first The iterator on the beginning on data
+     * \param last The iterator on the end  on data
+     * \param lfirst The iterator on the beginning on labels
+     * \param llast The iterator on the end  on labels
+     * \param n_classes The number of classes
+     * \param size The size of the entire dataset
+     * \param batch The size of the batch
+     */
     outmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, size_t size, size_t batch = 0)
             : _size(size), orig_it(first), orig_lit(lfirst), cropper(*first), mirrorer(*first), distorter(*first), noiser(*first), batch_size(batch ? batch : desc::BatchSize) {
         data_cache_helper_t::init_big(big_batch_size, batch_size, first, batch_cache);
@@ -432,6 +455,9 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_a
     outmemory_data_generator(outmemory_data_generator&& rhs) = delete;
     outmemory_data_generator& operator=(outmemory_data_generator&& rhs) = delete;
 
+    /*!
+     * \brief Destructs the outmemory_data_generator
+     */
     ~outmemory_data_generator() {
         cpp::with_lock(main_lock, [this] { stop_flag = true; });
 
@@ -495,6 +521,9 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_a
         train_mode = true;
     }
 
+    /*!
+     * \brief Reset the generation
+     */
     void reset_generation() {
         std::unique_lock<std::mutex> ulock(main_lock);
 
@@ -758,12 +787,18 @@ struct outmemory_data_generator_desc {
     using generator_t = outmemory_data_generator<Iterator, LIterator, outmemory_data_generator_desc<Parameters...>>;
 };
 
+/*!
+ * \brief Make an out of memory data generator from iterators
+ */
 template <typename Iterator, typename LIterator, typename... Parameters>
 auto make_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t size, size_t n_classes, const outmemory_data_generator_desc<Parameters...>& /*desc*/, size_t batch = 0) {
     using generator_t = typename outmemory_data_generator_desc<Parameters...>::template generator_t<Iterator, LIterator>;
     return std::make_unique<generator_t>(first, last, lfirst, llast, n_classes, size, batch);
 }
 
+/*!
+ * \brief Make an out of memory data generator from containers
+ */
 template <typename Container, typename LContainer, typename... Parameters>
 auto make_generator(const Container& container, const LContainer& lcontainer, size_t size, size_t n_classes, const outmemory_data_generator_desc<Parameters...>& /*desc*/, size_t batch = 0) {
     using generator_t = typename outmemory_data_generator_desc<Parameters...>::template generator_t<typename Container::const_iterator, typename LContainer::const_iterator>;

@@ -18,7 +18,7 @@ template <typename Desc>
 struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
     using desc      = Desc; ///< The descriptor of the layer
     using weight    = typename desc::weight; ///< The data type for this layer
-    using this_type = deconv_layer<desc>;
+    using this_type = deconv_layer<desc>; ///< The type of this layer
     using base_type = neural_layer<this_type, desc>;
 
     static constexpr size_t NC  = desc::NC;  ///< The number of input channels

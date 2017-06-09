@@ -34,8 +34,8 @@ struct rbm_base_traits;
  */
 template <typename Parent, typename Desc>
 struct rbm_base : layer<Parent> {
-    using conf     = Desc;
-    using parent_t = Parent;
+    using conf     = Desc;                  ///< The description of the layer
+    using parent_t = Parent;                ///< The parent layer
     using weight   = typename conf::weight; ///< The data type for this layer
 
     using input_one_t  = typename rbm_base_traits<parent_t>::input_one_t; ///< The type of one input
@@ -43,7 +43,7 @@ struct rbm_base : layer<Parent> {
     using input_t      = typename rbm_base_traits<parent_t>::input_t; ///< The type of the input
     using output_t     = typename rbm_base_traits<parent_t>::output_t; ///< The type of the output
 
-    using generator_t = inmemory_data_generator_desc<dll::autoencoder>;
+    using generator_t = inmemory_data_generator_desc<dll::autoencoder>; ///< The generator to use
 
     //Configurable properties
     weight learning_rate = 1e-1; ///< The learning rate
@@ -61,8 +61,8 @@ struct rbm_base : layer<Parent> {
     weight decay_rate      = 0.99; ///< The sparsity decay rate
     weight sparsity_cost   = 1.0;  ///< The sparsity cost (or sparsity multiplier)
 
-    weight pbias        = 0.002;
-    weight pbias_lambda = 5;
+    weight pbias        = 0.002; ///< The bias for sparsity (LEE)
+    weight pbias_lambda = 5;     ///< The lambda for sparsity (LEE)
 
     weight gradient_clip = 5.0; ///< The default gradient clipping value
 
@@ -101,12 +101,20 @@ struct rbm_base : layer<Parent> {
 
     //Normal Train functions
 
+    /*!
+     * \brief Train the RBM with the data from the generator
+     * \param generator The generator to use for data
+     */
     template <bool EnableWatcher = true, typename RW = void, typename Generator, typename... Args, cpp_enable_if(is_generator<Generator>::value)>
     double train(Generator& generator, size_t max_epochs, Args... args) {
         dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
         return trainer.train(as_derived(), generator, max_epochs);
     }
 
+    /*!
+     * \brief Train the RBM with the data from the given container
+     * \param training_data the training data
+     */
     template <bool EnableWatcher = true, typename RW = void, typename Input, typename... Args, cpp_enable_if(!is_generator<Input>::value)>
     double train(const Input& training_data, size_t max_epochs, Args... args) {
         // Create a new generator around the data
@@ -118,6 +126,11 @@ struct rbm_base : layer<Parent> {
         return trainer.train(as_derived(), *generator, max_epochs);
     }
 
+    /*!
+     * \brief Train the RBM with the data from the given iterators
+     * \param first The iterator to the beginning of the data
+     * \param last The iterator to the end of the data
+     */
     template <bool EnableWatcher = true, typename RW = void, typename Iterator, typename... Args>
     double train(Iterator&& first, Iterator&& last, size_t max_epochs, Args... args) {
         // Create a new generator around the data
@@ -166,11 +179,19 @@ struct rbm_base : layer<Parent> {
 
     // Features
 
+    /*!
+     * \brief Return the features corresponding to the given input
+     * \param input The input to extract the features from
+     */
     template<typename Input>
     output_one_t features(const Input& input){
         return activate_hidden(input);;
     }
 
+    /*!
+     * \brief Return the activation probabilities corresponding to the given input
+     * \param input The input to extract the features from
+     */
     template<typename Input>
     output_one_t activate_hidden(const Input& input){
         auto output = as_derived().template prepare_one_output<Input>();
@@ -194,32 +215,50 @@ struct rbm_base : layer<Parent> {
         store(os, as_derived());
     }
 
+    /*!
+     * \brief Load the weights from the given file
+     */
     void load(const std::string& file) {
         load(file, as_derived());
     }
 
+    /*!
+     * \brief Load the weights from the given stream
+     */
     void load(std::istream& is) {
         load(is, as_derived());
     }
 
 private:
+    /*!
+     * \brief Load the weigts into the given stream
+     */
     static void store(std::ostream& os, const parent_t& rbm) {
         cpp::binary_write_all(os, rbm.w);
         cpp::binary_write_all(os, rbm.b);
         cpp::binary_write_all(os, rbm.c);
     }
 
+    /*!
+     * \brief Load the weigts from the given stream
+     */
     static void load(std::istream& is, parent_t& rbm) {
         cpp::binary_load_all(is, rbm.w);
         cpp::binary_load_all(is, rbm.b);
         cpp::binary_load_all(is, rbm.c);
     }
 
+    /*!
+     * \brief Load the weigts into the given file
+     */
     static void store(const std::string& file, const parent_t& rbm) {
         std::ofstream os(file, std::ofstream::binary);
         store(os, rbm);
     }
 
+    /*!
+     * \brief Load the weigts from the given file
+     */
     static void load(const std::string& file, parent_t& rbm) {
         std::ifstream is(file, std::ifstream::binary);
         load(is, rbm);

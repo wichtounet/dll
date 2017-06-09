@@ -23,7 +23,7 @@ template <typename Desc>
 struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
     using desc      = Desc; ///< The descriptor of the layer
     using weight    = typename desc::weight; ///< The data type for this layer
-    using this_type = dyn_rbm<Desc>;
+    using this_type = dyn_rbm<Desc>; ///< The type of this layer
     using base_type = standard_rbm<this_type, Desc>;
 
     using input_t      = typename rbm_base_traits<this_type>::input_t; ///< The type of the input

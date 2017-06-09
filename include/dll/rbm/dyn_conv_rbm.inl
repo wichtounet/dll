@@ -21,7 +21,7 @@ template <typename Desc>
 struct dyn_conv_rbm final : public standard_crbm<dyn_conv_rbm<Desc>, Desc> {
     using desc      = Desc; ///< The descriptor of the layer
     using weight    = typename desc::weight; ///< The data type for this layer
-    using this_type = dyn_conv_rbm<desc>;
+    using this_type = dyn_conv_rbm<desc>; ///< The type of this layer
     using base_type = standard_crbm<this_type, desc>;
 
     static constexpr unit_type visible_unit = desc::visible_unit;

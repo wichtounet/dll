@@ -45,7 +45,7 @@ template <typename DBN>
 struct sgd_trainer {
     using dbn_t     = DBN;
     using weight    = typename dbn_t::weight; ///< The data type for this layer
-    using this_type = sgd_trainer<dbn_t>;
+    using this_type = sgd_trainer<dbn_t>; ///< The type of this layer
 
     static constexpr auto layers     = dbn_t::layers;
     static constexpr auto batch_size = dbn_t::batch_size;
