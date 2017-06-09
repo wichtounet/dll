@@ -81,15 +81,15 @@ TEST_CASE("unit/cdbn/rectifier/mnist/3", "[cdbn][rectifier][svm][unit]") {
             , dll::rectifier_layer_desc<>::layer_t
         >>::dbn_t;
 
-    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(100);
+    auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(300);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->template layer_get<0>().init_layer(1, 28, 28, 20, 17, 17);
-    dbn->template layer_get<2>().init_layer(20, 12, 12, 20, 3, 3);
+    dbn->template layer_get<0>().init_layer(1, 28, 28, 10, 17, 17);
+    dbn->template layer_get<2>().init_layer(10, 12, 12, 10, 3, 3);
 
     dbn->display();
 
