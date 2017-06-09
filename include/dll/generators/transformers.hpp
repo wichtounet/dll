@@ -14,34 +14,61 @@
 
 namespace dll {
 
+/*!
+ * \brief Transformer to scale the inputs with a scaler
+ */
 template<typename Desc, typename Enable = void>
 struct pre_scaler;
 
+/*!
+ * \copydoc pre_scaler
+ */
 template<typename Desc>
 struct pre_scaler <Desc, std::enable_if_t<Desc::ScalePre>> {
     static constexpr size_t S = Desc::ScalePre;
 
+    /*!
+     * \brief Apply the transform on the input
+     * \param target The input to transform
+     */
     template<typename O>
     static void transform(O&& target){
         target /= S;
     }
 };
 
+/*!
+ * \copydoc pre_scaler
+ */
 template<typename Desc>
 struct pre_scaler <Desc, std::enable_if_t<!Desc::ScalePre>> {
+    /*!
+     * \brief Apply the transform on the input
+     * \param target The input to transform
+     */
     template<typename O>
     static void transform(O&& target){
         cpp_unused(target);
     }
 };
 
+/*!
+ * \brief Transformer to binarize the inputs with a threshold
+ */
 template<typename Desc, typename Enable = void>
 struct pre_binarizer;
 
+/*!
+ * \copydoc pre_binarizer
+ */
 template<typename Desc>
 struct pre_binarizer <Desc, std::enable_if_t<Desc::BinarizePre>> {
     static constexpr size_t B = Desc::BinarizePre;
 
+    /*!
+     * \brief Apply the transform on the input
+     * \param target The input to transform
+     */
     template<typename O>
     static void transform(O&& target){
         for(auto& x : target){
@@ -50,27 +77,51 @@ struct pre_binarizer <Desc, std::enable_if_t<Desc::BinarizePre>> {
     }
 };
 
+/*!
+ * \copydoc pre_binarizer
+ */
 template<typename Desc>
 struct pre_binarizer <Desc, std::enable_if_t<!Desc::BinarizePre>> {
+    /*!
+     * \brief Apply the transform on the input
+     * \param target The input to transform
+     */
     template<typename O>
     static void transform(O&& target){
         cpp_unused(target);
     }
 };
 
+/*!
+ * \brief Transformer to normalize the inputs
+ */
 template<typename Desc, typename Enable = void>
 struct pre_normalizer;
 
+/*!
+ * \copydoc pre_normalizer
+ */
 template<typename Desc>
 struct pre_normalizer <Desc, std::enable_if_t<Desc::NormalizePre>> {
+    /*!
+     * \brief Apply the transform on the input
+     * \param target The input to transform
+     */
     template<typename O>
     static void transform(O&& target){
         cpp::normalize(target);
     }
 };
 
+/*!
+ * \copydoc pre_normalizer
+ */
 template<typename Desc>
 struct pre_normalizer <Desc, std::enable_if_t<!Desc::NormalizePre>> {
+    /*!
+     * \brief Apply the transform on the input
+     * \param target The input to transform
+     */
     template<typename O>
     static void transform(O&& target){
         cpp_unused(target);
