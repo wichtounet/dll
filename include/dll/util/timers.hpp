@@ -11,6 +11,11 @@
 
 namespace dll {
 
+/*!
+ * \brief Dump the values of the timer on the console.
+ *
+ * This has no effect if the timers were disabled.
+ */
 inline void dump_timers() {
     //No timers
 }
@@ -34,17 +39,29 @@ namespace dll {
 
 constexpr size_t max_timers = 64;
 
+/*!
+ * \brief A timer
+ */
 struct timer_t {
-    const char* name;
-    std::atomic<size_t> count;
-    std::atomic<size_t> duration;
+    const char* name;             ///< The name of the timer
+    std::atomic<size_t> count;    ///< The number of times it was incremented
+    std::atomic<size_t> duration; ///< The total duration
 
+    /*!
+     * \brief Initialize an empty counter
+     */
     timer_t()
             : name(nullptr), count(0), duration(0) {}
 
+    /*!
+     * \brief Copy a timer
+     */
     timer_t(const timer_t& rhs)
             : name(rhs.name), count(rhs.count.load()), duration(rhs.duration.load()) {}
 
+    /*!
+     * \brief Copy assign a timer
+     */
     timer_t& operator=(const timer_t& rhs) {
         if (&rhs != this) {
             name     = rhs.name;
@@ -55,9 +72,15 @@ struct timer_t {
         return *this;
     }
 
+    /*!
+     * \brief Move construct a timer
+     */
     timer_t(timer_t&& rhs)
             : name(std::move(rhs.name)), count(rhs.count.load()), duration(rhs.duration.load()) {}
 
+    /*!
+     * \brief Move assign a timer
+     */
     timer_t& operator=(timer_t&& rhs) {
         if (&rhs != this) {
             name     = std::move(rhs.name);
@@ -69,10 +92,16 @@ struct timer_t {
     }
 };
 
+/*!
+ * \brief The structure holding all the timers
+ */
 struct timers_t {
-    std::array<timer_t, max_timers> timers;
-    std::mutex lock;
+    std::array<timer_t, max_timers> timers; ///< The timers
+    std::mutex lock; ///< The lock to protect the timers
 
+    /*!
+     * \brief Reset the status of the timers
+     */
     void reset(){
         std::lock_guard<std::mutex> l(lock);
 
@@ -81,10 +110,12 @@ struct timers_t {
             timer.duration = 0;
             timer.count = 0;
         }
-
     }
 };
 
+/*!
+ * \brief Get a reference to the timer structure
+ */
 inline timers_t& get_timers() {
     static timers_t timers;
     return timers;
@@ -117,7 +148,9 @@ inline void reset_timers() {
 }
 
 /*!
- * \brief Dump all timers values to the console.
+ * \brief Dump the values of the timer on the console.
+ *
+ * This has no effect if the timers were disabled.
  */
 inline void dump_timers() {
     decltype(auto) timers = get_timers().timers;
@@ -171,31 +204,48 @@ inline void dump_timers_one() {
     }
 }
 
+/*!
+ * \brief Utility for a simple timer
+ */
 struct stop_timer {
-    chrono::time_point<chrono::steady_clock> start_time;
+    chrono::time_point<chrono::steady_clock> start_time; ///< The start time
 
-    stop_timer() = default;
-
+    /*!
+     * \brief Start the timer
+     */
     void start() {
         start_time = chrono::steady_clock::now();
     }
 
+    /*!
+     * \brief Stop the timer and get the elapsed since start
+     * \return elapsed time since start()
+     */
     size_t stop() const {
         auto end = chrono::steady_clock::now();
         return chrono::duration_cast<chrono::milliseconds>(end - start_time).count();
     }
 };
 
+/*!
+ * \brief Automatic timer with RAII.
+ */
 struct auto_timer {
-    const char* name;
-    chrono::time_point<chrono::steady_clock> start;
-    chrono::time_point<chrono::steady_clock> end;
+    const char* name;                               ///< The name of the timer
+    chrono::time_point<chrono::steady_clock> start; ///< The start time
+    chrono::time_point<chrono::steady_clock> end;   ///< The end time
 
-    auto_timer(const char* name)
-            : name(name) {
+    /*!
+     * \brief Create an auto_timer witht the given name
+     * \param name The name of the timer
+     */
+    auto_timer(const char* name) : name(name) {
         start = chrono::steady_clock::now();
     }
 
+    /*!
+     * \brief Destructs the timer, effectively incrementing the timer.
+     */
     ~auto_timer() {
         end           = chrono::steady_clock::now();
         auto duration = chrono::duration_cast<chrono::nanoseconds>(end - start).count();
