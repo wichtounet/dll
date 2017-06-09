@@ -154,10 +154,18 @@ struct layer {
 private:
     //CRTP Deduction
 
+    /*!
+     * \brief Returns a reference to the derived object, i.e. the object using the CRTP injector.
+     * \return a reference to the derived object.
+     */
     Parent& as_derived(){
         return *static_cast<Parent*>(this);
     }
 
+    /*!
+     * \brief Returns a reference to the derived object, i.e. the object using the CRTP injector.
+     * \return a reference to the derived object.
+     */
     const Parent& as_derived() const {
         return *static_cast<const Parent*>(this);
     }

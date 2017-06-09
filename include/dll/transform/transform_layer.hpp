@@ -76,6 +76,10 @@ struct transform_layer : layer<Derived> {
     }
 
 private:
+    /*!
+     * \brief Returns a reference to the derived object, i.e. the object using the CRTP injector.
+     * \return a reference to the derived object.
+     */
     const derived_t& as_derived() const {
         return *static_cast<const derived_t*>(this);
     }

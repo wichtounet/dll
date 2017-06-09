@@ -535,10 +535,18 @@ private:
         }
     }
 
+    /*!
+     * \brief Returns a reference to the derived object, i.e. the object using the CRTP injector.
+     * \return a reference to the derived object.
+     */
     parent_t& as_derived() {
         return *static_cast<parent_t*>(this);
     }
 
+    /*!
+     * \brief Returns a reference to the derived object, i.e. the object using the CRTP injector.
+     * \return a reference to the derived object.
+     */
     const parent_t& as_derived() const {
         return *static_cast<const parent_t*>(this);
     }

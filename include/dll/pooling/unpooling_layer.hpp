@@ -100,6 +100,10 @@ struct unpooling_layer_3d : layer<Parent> {
     }
 
 private:
+    /*!
+     * \brief Returns a reference to the derived object, i.e. the object using the CRTP injector.
+     * \return a reference to the derived object.
+     */
     const Parent& as_derived() const {
         return *static_cast<const Parent*>(this);
     }
@@ -209,6 +213,10 @@ struct dyn_unpooling_layer_3d : layer<Parent> {
     }
 
 private:
+    /*!
+     * \brief Returns a reference to the derived object, i.e. the object using the CRTP injector.
+     * \return a reference to the derived object.
+     */
     const Parent& as_derived() const {
         return *static_cast<const Parent*>(this);
     }
