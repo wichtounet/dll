@@ -648,11 +648,11 @@ struct base_cd_trainer : base_trainer<RBM> {
 
     //{{{ Sparsity
 
-    weight q_global_batch;
-    weight q_global_t;
+    weight q_global_batch; ///< The global sparsity of the batch
+    weight q_global_t; ///< The global sparsity penalty
 
-    etl::fast_matrix<weight, num_hidden> q_local_batch;
-    etl::fast_vector<weight, num_hidden> q_local_t;
+    etl::fast_matrix<weight, num_hidden> q_local_batch; ///< The local sparsity on the batch
+    etl::fast_vector<weight, num_hidden> q_local_t;     ///< The local sparsity penalty
 
     //}}} Sparsity end
 
@@ -731,11 +731,11 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
 
     //{{{ Sparsity
 
-    weight q_global_batch;
-    weight q_global_t;
+    weight q_global_batch; ///< The global sparsity on the batch
+    weight q_global_t;     ///< The global sparsity penalty
 
-    etl::dyn_vector<weight> q_local_batch;
-    etl::dyn_vector<weight> q_local_t;
+    etl::dyn_vector<weight> q_local_batch; ///< The local sparsity on the batch
+    etl::dyn_vector<weight> q_local_t;     ///< The local sparsity penalty
 
     //}}} Sparsity end
 
