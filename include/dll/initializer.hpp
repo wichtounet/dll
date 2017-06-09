@@ -64,6 +64,27 @@ struct initializer_function<initializer_type::ZERO> {
 };
 
 /*!
+ * \brief Initialization function to one
+ */
+template<>
+struct initializer_function<initializer_type::ONE> {
+    /*!
+     * \brief Initialize the given weights (or biases) according
+     * to the initialization function
+     * \param b The weights or biases to initialize
+     * \param nin The neurons input
+     * \param nin The neurons output
+     */
+    template<typename B>
+    static void initialize(B& b, size_t nin, size_t nout){
+        cpp_unused(nin);
+        cpp_unused(nout);
+
+        b = etl::value_t<B>(1.0);
+    }
+};
+
+/*!
  * \brief Initialization function to normal distribution
  */
 template<>
