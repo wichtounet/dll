@@ -34,8 +34,8 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
     static constexpr unit_type visible_unit = desc::visible_unit;
     static constexpr unit_type hidden_unit  = desc::hidden_unit;
 
-    using w_type = etl::dyn_matrix<weight>;
-    using b_type = etl::dyn_vector<weight>;
+    using w_type = etl::dyn_matrix<weight>; ///< The type of the weights
+    using b_type = etl::dyn_vector<weight>; ///< The type of the biases
     using c_type = etl::dyn_vector<weight>;
 
     //Weights and biases

@@ -48,8 +48,8 @@ struct conv_same_layer final : neural_layer<conv_same_layer<Desc>, Desc> {
     using input_t      = std::vector<input_one_t>; ///< The type of the input
     using output_t     = std::vector<output_one_t>; ///< The type of the output
 
-    using w_type = etl::fast_matrix<weight, K, NC, NW1, NW2>;
-    using b_type = etl::fast_matrix<weight, K>;
+    using w_type = etl::fast_matrix<weight, K, NC, NW1, NW2>; ///< The type of the weights
+    using b_type = etl::fast_matrix<weight, K>; ///< The type of the biases
 
     //Weights and biases
     w_type w; //!< Weights

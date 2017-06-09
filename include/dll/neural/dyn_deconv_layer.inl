@@ -31,8 +31,8 @@ struct dyn_deconv_layer final : neural_layer<dyn_deconv_layer<Desc>, Desc> {
     using input_t      = std::vector<input_one_t>;   ///< The type for many input
     using output_t     = std::vector<output_one_t>;  ///< The type for many output
 
-    using w_type = etl::dyn_matrix<weight, 4>;
-    using b_type = etl::dyn_matrix<weight, 1>;
+    using w_type = etl::dyn_matrix<weight, 4>; ///< The type of the weights
+    using b_type = etl::dyn_matrix<weight, 1>; ///< The type of the biases
 
     //Weights and biases
     w_type w; //!< Weights

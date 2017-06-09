@@ -36,8 +36,8 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
     using input_t      = std::vector<input_one_t>; ///< The type of the input
     using output_t     = std::vector<output_one_t>; ///< The type of the output
 
-    using w_type = etl::fast_matrix<weight, num_visible, num_hidden>;
-    using b_type = etl::fast_matrix<weight, num_hidden>;
+    using w_type = etl::fast_matrix<weight, num_visible, num_hidden>; ///< The type of the weights
+    using b_type = etl::fast_matrix<weight, num_hidden>; ///< The type of the biases
 
     //Weights and biases
     w_type w; //!< Weights

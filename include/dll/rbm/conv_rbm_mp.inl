@@ -55,8 +55,8 @@ struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
 
     static constexpr bool dbn_only = rbm_layer_traits<this_type>::is_dbn_only();
 
-    using w_type = etl::fast_matrix<weight, K, NC, NW1, NW2>;
-    using b_type = etl::fast_vector<weight, K>;
+    using w_type = etl::fast_matrix<weight, K, NC, NW1, NW2>; ///< The type of the weights
+    using b_type = etl::fast_vector<weight, K>; ///< The type of the biases
     using c_type = etl::fast_vector<weight, NC>;
 
     using input_t             = typename rbm_base_traits<this_type>::input_t; ///< The type of the input
