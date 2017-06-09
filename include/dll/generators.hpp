@@ -20,19 +20,39 @@
 
 namespace dll {
 
+/*!
+ * \brief Traits to test if a type is DLL generator or not
+ */
 template <typename T, typename = int>
 struct is_generator : std::false_type {};
 
+/*!
+ * \brief Traits to test if a type is DLL generator or not
+ */
 template <typename T>
 struct is_generator<T, decltype((void)T::dll_generator, 0)> : std::true_type {};
 
+/*!
+ * \brief Helper to tell from the generator description if it is
+ * augmenting the data
+ */
 template<typename Desc>
 struct is_augmented {
+    /*!
+     * \brief The value of the traits
+     */
     static constexpr bool value = (Desc::random_crop_x > 0 && Desc::random_crop_y > 0) || Desc::HorizontalMirroring || Desc::VerticalMirroring || Desc::Noise || Desc::ElasticDistortion;
 };
 
+/*!
+ * \brief Helper to tell from the generator description if it is
+ * threaded.
+ */
 template<typename Desc>
 struct is_threaded {
+    /*!
+     * \brief The value of the traits
+     */
     static constexpr bool value = Desc::Threaded;
 };
 
