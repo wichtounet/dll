@@ -54,6 +54,9 @@ constexpr size_t ct_sqrt(size_t res, size_t l, size_t r) {
     }
 }
 
+/*!
+ * \brief Compute the square root of res
+ */
 constexpr inline size_t ct_sqrt(const size_t res) {
     return ct_sqrt(res, 1, res);
 }
@@ -80,6 +83,9 @@ constexpr inline size_t ct_sqrt(size_t res, size_t l, size_t r) {
                             ct_pow(ct_mid(r, l)) >= res ? ct_mid(r, l) : r);
 }
 
+/*!
+ * \brief Compute the square root of res
+ */
 constexpr inline size_t ct_sqrt(const size_t res) {
     return ct_sqrt(res, 1, res);
 }
@@ -102,16 +108,23 @@ template <typename RBM>
 struct base_ocv_rbm_visualizer {
     cpp::stop_watch<std::chrono::seconds> watch;
 
-    const size_t width;
-    const size_t height;
+    const size_t width;  ///< The width of the view
+    const size_t height; ///< The height of the view
 
-    cv::Mat buffer_image;
+    cv::Mat buffer_image; ///< The OpenCV buffer image
 
+    /*!
+     * \brief Initialize the base_ocv_rbm_visualizer
+     */
     base_ocv_rbm_visualizer(size_t width, size_t height)
             : width(width), height(height), buffer_image(cv::Size(width, height), CV_8UC1) {
         //Nothing to init
     }
 
+    /*!
+     * \brief Indicates that the training has begin for the given RBM
+     * \param rbm The RBM started training
+     */
     void training_begin(const RBM& rbm) {
         std::cout << "Train RBM with \"" << RBM::desc::template trainer_t<RBM>::name() << "\"" << std::endl;
         std::cout << "With parameters:" << std::endl;
@@ -143,18 +156,36 @@ struct base_ocv_rbm_visualizer {
         refresh();
     }
 
-    void training_end(const RBM&) {
+    /*!
+     * \brief Indicates that the training has finished for the given RBM
+     * \param rbm The RBM stopped training
+     */
+    void training_end(const RBM& rbm) {
         std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
 
         std::cout << "Press on any key to close the window..." << std::endl;
         cv::waitKey(0);
+
+        cpp_unused(rbm);
     }
 
-    void batch_end(const RBM& /* rbm */, const rbm_training_context& context, size_t batch, size_t batches) {
+    /*!
+     * \brief Indicates the end of a pretraining batch
+     * \param rbm The RBM stopped training
+     * \param context The training context
+     * \param batch The batch that ended
+     * \param batches The total number of batches
+     */
+    void batch_end(const RBM& rbm, const rbm_training_context& context, size_t batch, size_t batches) {
         printf("Batch %ld/%ld - Reconstruction error: %.5f - Sparsity: %.5f\n", batch, batches,
                context.batch_error, context.batch_sparsity);
+
+        cpp_unused(rbm);
     }
 
+    /*!
+     * \brief Refresh the view
+     */
     void refresh() {
         cv::imshow("RBM Training", buffer_image);
         cv::waitKey(30);
@@ -354,6 +385,10 @@ struct opencv_dbn_visualizer {
         current_image = I;
     }
 
+    /*!
+     * \brief Indicates that the training has begin for the given RBM
+     * \param rbm The RBM started training
+     */
     template <typename RBM>
     void training_begin(const RBM& rbm) {
         using rbm_t = RBM;
@@ -460,12 +495,23 @@ struct opencv_dbn_visualizer {
         refresh();
     }
 
+    /*!
+     * \brief Indicates the end of a pretraining batch
+     * \param rbm The RBM stopped training
+     * \param context The training context
+     * \param batch The batch that ended
+     * \param batches The total number of batches
+     */
     template <typename RBM>
     void batch_end(const RBM& /* rbm */, const rbm_training_context& context, size_t batch, size_t batches) {
         printf("Batch %ld/%ld - Reconstruction error: %.5f - Sparsity: %.5f\n", batch, batches,
                context.batch_error, context.batch_sparsity);
     }
 
+    /*!
+     * \brief Indicates that the training has finished for the given RBM
+     * \param rbm The RBM stopped training
+     */
     template <typename RBM>
     void training_end(const RBM&) {
         std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
@@ -474,10 +520,16 @@ struct opencv_dbn_visualizer {
         cv::waitKey(0);
     }
 
+    /*!
+     * \brief Pretraining ended for the given DBN
+     */
     void pretraining_end(const DBN& /*dbn*/) {
         std::cout << "DBN: Pretraining end" << std::endl;
     }
 
+    /*!
+     * \brief Pretraining ended for the given batch for the given DBN
+     */
     void pretraining_batch(const DBN& /*dbn*/, size_t batch) {
         std::cout << "DBN: Pretraining batch " << batch << std::endl;
     }
@@ -515,6 +567,9 @@ struct opencv_dbn_visualizer {
 
     //Utility functions
 
+    /*!
+     * \brief Refresh the view
+     */
     void refresh() {
         cv::imshow("DBN Training", buffer_images[current_image]);
         cv::waitKey(30);
@@ -555,6 +610,10 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynami
         current_image = I;
     }
 
+    /*!
+     * \brief Indicates that the training has begin for the given RBM
+     * \param rbm The RBM started training
+     */
     template <typename RBM>
     void training_begin(const RBM& rbm) {
         using rbm_t = RBM;
@@ -659,12 +718,23 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynami
         refresh();
     }
 
+    /*!
+     * \brief Indicates the end of a pretraining batch
+     * \param rbm The RBM stopped training
+     * \param context The training context
+     * \param batch The batch that ended
+     * \param batches The total number of batches
+     */
     template <typename RBM>
     void batch_end(const RBM& /* rbm */, const rbm_training_context& context, size_t batch, size_t batches) {
         printf("Batch %ld/%ld - Reconstruction error: %.5f - Sparsity: %.5f\n", batch, batches,
                context.batch_error, context.batch_sparsity);
     }
 
+    /*!
+     * \brief Indicates that the training has finished for the given RBM
+     * \param rbm The RBM stopped training
+     */
     template <typename RBM>
     void training_end(const RBM&) {
         std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
@@ -673,16 +743,25 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynami
         cv::waitKey(0);
     }
 
+    /*!
+     * \brief Pretraining ended for the given DBN
+     */
     void pretraining_end(const DBN& /*dbn*/) {
         std::cout << "DBN: Pretraining end" << std::endl;
     }
 
+    /*!
+     * \brief Pretraining ended for the given batch for the given DBN
+     */
     void pretraining_batch(const DBN& /*dbn*/, size_t batch) {
         std::cout << "DBN: Pretraining batch " << batch << std::endl;
     }
 
     //Utility functions
 
+    /*!
+     * \brief Refresh the view
+     */
     void refresh() {
         cv::imshow("DBN Training", buffer_images[current_image]);
         cv::waitKey(30);
@@ -735,6 +814,10 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
         current_image = I;
     }
 
+    /*!
+     * \brief Indicates that the training has begin for the given RBM
+     * \param rbm The RBM started training
+     */
     template <typename RBM>
     void training_begin(const RBM& rbm) {
         using rbm_t = RBM;
@@ -833,12 +916,23 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
         refresh();
     }
 
+    /*!
+     * \brief Indicates the end of a pretraining batch
+     * \param rbm The RBM stopped training
+     * \param context The training context
+     * \param batch The batch that ended
+     * \param batches The total number of batches
+     */
     template <typename RBM>
     void batch_end(const RBM& /* rbm */, const rbm_training_context& context, size_t batch, size_t batches) {
         printf("Batch %ld/%ld - Reconstruction error: %.5f - Sparsity: %.5f\n", batch, batches,
                context.batch_error, context.batch_sparsity);
     }
 
+    /*!
+     * \brief Indicates that the training has finished for the given RBM
+     * \param rbm The RBM stopped training
+     */
     template <typename RBM>
     void training_end(const RBM&) {
         std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
@@ -847,6 +941,9 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
         cv::waitKey(0);
     }
 
+    /*!
+     * \brief Pretraining ended for the given DBN
+     */
     void pretraining_end(const DBN& /*dbn*/) {
         std::cout << "CDBN: Pretraining end" << std::endl;
     }

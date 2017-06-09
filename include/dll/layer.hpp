@@ -28,7 +28,7 @@ T& unique_safe_get(std::unique_ptr<T>& ptr) {
 
 template <typename Parent>
 struct layer {
-    using parent_t = Parent;
+    using parent_t = Parent; ///< The CRTP parent layer
 
     layer(const layer& rbm) = delete;
     layer& operator=(const layer& rbm) = delete;
@@ -37,6 +37,9 @@ struct layer {
     layer(layer&& rbm) = delete;
     layer& operator=(layer&& rbm) = delete;
 
+    /*
+     * !\brief Default initialize the layer
+     */
     layer() {
 #ifndef DLL_DENORMALS
         // Disable denormals for performance reason

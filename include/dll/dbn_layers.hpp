@@ -13,9 +13,15 @@ namespace dll {
 
 namespace detail {
 
+/*!
+ * \brief Helper traits indicate if the set contains dynamic layers
+ */
 template <typename... Layers>
 struct is_dynamic : cpp::or_u<layer_traits<Layers>::is_dynamic()...> {};
 
+/*!
+ * \brief Helper traits indicate if the set contains convolutional layers
+ */
 template <typename... Layers>
 struct is_convolutional : cpp::or_u<layer_traits<Layers>::is_convolutional_layer()...> {};
 
@@ -35,6 +41,9 @@ struct has_shuffle_helper <Layer, std::enable_if_t<!layer_traits<Layer>::is_rbm_
     static constexpr bool value = false;
 };
 
+/*!
+ * \brief Helper traits indicate if the set contains shuffle layers
+ */
 template <typename... Layers>
 struct has_shuffle_layer : cpp::or_u<has_shuffle_helper<Layers>::value...> {};
 
@@ -162,11 +171,23 @@ struct layer_type<I, layers<Labels, Layers...>> {
 template <size_t I, typename Layers>
 using layer_type_t = typename layer_type<I, Layers>::type;
 
+/*!
+ * \brief Return the Ith layer in the given layer set
+ * \param layers The layers holder
+ * \tparam I The layer to get
+ * \return a reference to the Ith layer in the given layer set
+ */
 template <size_t I, typename Layers>
 layer_type_t<I, Layers>& layer_get(Layers& layers) {
     return static_cast<layers_leaf<I, layer_type_t<I, Layers>>&>(layers.base).get();
 }
 
+/*!
+ * \brief Return the Ith layer in the given layer set
+ * \param layers The layers holder
+ * \tparam I The layer to get
+ * \return a reference to the Ith layer in the given layer set
+ */
 template <size_t I, typename Layers>
 const layer_type_t<I, Layers>& layer_get(const Layers& layers) {
     return static_cast<const layers_leaf<I, layer_type_t<I, Layers>>&>(layers.base).get();
@@ -185,9 +206,15 @@ void for_each_layer_type(Functor&& functor) {
 
 } //end of namespace detail
 
+/*!
+ * \brief Holder for the layers of a DBN
+ */
 template <typename... Layers>
 using dbn_layers = detail::layers<false, Layers...>;
 
+/*!
+ * \brief Holder for the layers of a DBN, training with labels + RBM in last layer
+ */
 template <typename... Layers>
 using dbn_label_layers = detail::layers<false, Layers...>;
 
