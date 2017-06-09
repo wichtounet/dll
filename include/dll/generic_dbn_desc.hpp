@@ -35,6 +35,9 @@ struct generic_dbn_desc {
      */
     using parameters = cpp::type_list<Parameters...>;
 
+    /*!
+     * \brief The batch size for training this layer
+     */
     static constexpr size_t BatchSize    = detail::get_value<batch_size<1>, Parameters...>::value;
     static constexpr size_t BigBatchSize = detail::get_value<big_batch_size<1>, Parameters...>::value;
 

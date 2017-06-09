@@ -22,21 +22,30 @@ namespace dll {
  */
 template <typename Derived, typename Desc>
 struct neural_layer : layer<Derived> {
-    using desc      = Desc; ///< The descriptor of the layer
-    using derived_t = Derived;
-    using weight    = typename desc::weight; ///< The data type for this layer
-    using this_type = neural_layer<derived_t, desc>;
-    using base_type = layer<Derived>;
+    using desc      = Desc;                          ///< The descriptor of the layer
+    using derived_t = Derived;                       ///< The derived type (CRTP)
+    using weight    = typename desc::weight;         ///< The data type for this layer
+    using this_type = neural_layer<derived_t, desc>; ///< The type of this layer
+    using base_type = layer<Derived>;                ///< The base type
 
+    /*!
+     * \brief Initialize the neural layer
+     */
     neural_layer() : base_type() {
         // Nothing to init here
     }
 
+    /*!
+     * \brief Backup the weights in the secondary weights matrix
+     */
     void backup_weights() {
         unique_safe_get(as_derived().bak_w) = as_derived().w;
         unique_safe_get(as_derived().bak_b) = as_derived().b;
     }
 
+    /*!
+     * \brief Restore the weights from the secondary weights matrix
+     */
     void restore_weights() {
         as_derived().w = *as_derived().bak_w;
         as_derived().b = *as_derived().bak_b;

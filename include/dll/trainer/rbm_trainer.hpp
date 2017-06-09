@@ -72,7 +72,7 @@ struct rbm_trainer {
         //NOP
     }
 
-    size_t batch_size            = 0;
+    size_t batch_size            = 0; ///< The batch size for pretraining
     size_t total_batches         = 0;
     error_type last_error = 0.0;
 

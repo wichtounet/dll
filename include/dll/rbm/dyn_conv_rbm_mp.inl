@@ -78,7 +78,7 @@ struct dyn_conv_rbm_mp final : public standard_crbm_mp<dyn_conv_rbm_mp<Desc>, De
     size_t np1;
     size_t np2;
 
-    size_t batch_size = 25;
+    size_t batch_size = 25; ///< The batch size for pretraining
 
     dyn_conv_rbm_mp() : base_type() {
         // Nothing else to init

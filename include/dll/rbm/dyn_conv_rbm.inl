@@ -67,7 +67,7 @@ struct dyn_conv_rbm final : public standard_crbm<dyn_conv_rbm<Desc>, Desc> {
     size_t nw1; ///< The first dimension of the filters
     size_t nw2; ///< The second dimension of the filters
 
-    size_t batch_size = 25;
+    size_t batch_size = 25; ///< The batch size for pretraining
 
     dyn_conv_rbm() : base_type() {
         // Nothing else to init

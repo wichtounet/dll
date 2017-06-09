@@ -36,6 +36,9 @@ struct conv_rbm_mp_desc {
      */
     using parameters = cpp::type_list<Parameters...>;
 
+    /*!
+     * \brief The batch size for training this layer
+     */
     static constexpr size_t BatchSize         = detail::get_value<batch_size<1>, Parameters...>::value;
     static constexpr unit_type visible_unit   = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;
     static constexpr unit_type hidden_unit    = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
