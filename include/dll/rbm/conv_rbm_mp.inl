@@ -34,10 +34,6 @@ struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
     static constexpr unit_type hidden_unit  = desc::hidden_unit;  ///< The type of hidden unit
     static constexpr unit_type pooling_unit = desc::pooling_unit; ///< The type of pooling unit
 
-    // TODO Find out again if this assert still makes any sense...
-    //static_assert(!(std::is_same<float, weight>::value && visible_unit == unit_type::GAUSSIAN),
-                  //"Gaussian visible units should use double-precision");
-
     static constexpr size_t NV1 = desc::NV1; ///< The first dimension of the visible units
     static constexpr size_t NV2 = desc::NV2; ///< The second dimension of the visible units
     static constexpr size_t NW1 = desc::NW1; ///< The first dimension of the hidden units
