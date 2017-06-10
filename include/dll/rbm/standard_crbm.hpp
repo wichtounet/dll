@@ -62,7 +62,7 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
         static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit), "Invalid hidden unit type");
         static_assert(P, "Computing S without P is not implemented");
 
-        // TODO as_derived().template validate_inputs<V1, V2>();
+        as_derived().template validate_inputs<V1, V2>();
         as_derived().template validate_outputs<H1, H2>();
 
         using namespace etl;
