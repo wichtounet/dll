@@ -25,7 +25,7 @@ struct pre_scaler;
  */
 template<typename Desc>
 struct pre_scaler <Desc, std::enable_if_t<Desc::ScalePre>> {
-    static constexpr size_t S = Desc::ScalePre;
+    static constexpr size_t S = Desc::ScalePre; ///< The scaling factor
 
     /*!
      * \brief Apply the transform on the input
@@ -63,7 +63,7 @@ struct pre_binarizer;
  */
 template<typename Desc>
 struct pre_binarizer <Desc, std::enable_if_t<Desc::BinarizePre>> {
-    static constexpr size_t B = Desc::BinarizePre;
+    static constexpr size_t B = Desc::BinarizePre; ///< The binarization threshold
 
     /*!
      * \brief Apply the transform on the input

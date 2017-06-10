@@ -18,9 +18,9 @@ namespace dll {
  * \brief An activation function
  */
 enum class loss_function {
-    CATEGORICAL_CROSS_ENTROPY,
-    BINARY_CROSS_ENTROPY,
-    MEAN_SQUARED_ERROR
+    CATEGORICAL_CROSS_ENTROPY, ///< Categorical Cross Entropy Loss
+    BINARY_CROSS_ENTROPY,      ///< Binary Cross Entropy Loss
+    MEAN_SQUARED_ERROR         ///< Mean Squared Error Loss
 };
 
 /*!

@@ -11,6 +11,9 @@
 
 namespace dll {
 
+/*!
+ * \brief Description of an Max Pooling two-dimensional layer.
+ */
 template <size_t T_I1, size_t T_I2, size_t T_I3, size_t T_C1, size_t T_C2, typename... Parameters>
 struct mp_layer_2d_desc : pooling_layer_2d_desc<T_I1, T_I2, T_I3, T_C1, T_C2, Parameters...> {
     /*!
@@ -25,6 +28,9 @@ struct mp_layer_2d_desc : pooling_layer_2d_desc<T_I1, T_I2, T_I3, T_C1, T_C2, Pa
     using dyn_layer_t = dyn_mp_layer_2d<dyn_mp_layer_2d_desc<Parameters...>>;
 };
 
+/*!
+ * \brief Description of an Max Pooling three-dimensional layer.
+ */
 template <size_t T_I1, size_t T_I2, size_t T_I3, size_t T_C1, size_t T_C2, size_t T_C3, typename... Parameters>
 struct mp_layer_3d_desc : pooling_layer_3d_desc<T_I1, T_I2, T_I3, T_C1, T_C2, T_C3, Parameters...> {
     /*!
