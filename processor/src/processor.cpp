@@ -118,18 +118,7 @@ void parse_datasource_pack(dll::processor::datasource_pack& pack, const std::vec
 void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll::processor::task& t, const std::vector<std::string>& actions);
 bool compile(const options& opt);
 
-bool parse_file(const std::string& source_file, dll::processor::task& t, std::vector<std::unique_ptr<dllp::layer>>& layers) {
-    //0. Parse the source file
-
-    auto lines = read_lines(source_file);
-
-    if (lines.empty()) {
-        std::cout << "dllp: warning: included file is empty or does not exist" << std::endl;
-        return false;
-    }
-
-    //1. Process includes
-
+void process_includes(std::vector<std::string>& lines){
     for (size_t i = 0; i < lines.size();) {
         auto& current_line = lines[i];
 
@@ -148,6 +137,223 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
 
         ++i;
     }
+}
+
+void process_data(size_t& i, const std::vector<std::string>& lines, dll::processor::task& t){
+    ++i;
+
+    while (i < lines.size()) {
+        if (lines[i] == "pretraining:") {
+            dllp::parse_datasource_pack(t.pretraining, lines, ++i);
+        } else if (lines[i] == "pretraining_clean:") {
+            dllp::parse_datasource_pack(t.pretraining_clean, lines, ++i);
+        } else if (lines[i] == "training:") {
+            dllp::parse_datasource_pack(t.training, lines, ++i);
+        } else if (lines[i] == "testing:") {
+            dllp::parse_datasource_pack(t.testing, lines, ++i);
+        } else {
+            break;
+        }
+    }
+}
+
+bool process_options(size_t& i, const std::vector<std::string>& lines, dll::processor::task& t) {
+    ++i;
+
+    while (i < lines.size()) {
+        if (lines[i] == "pretraining:") {
+            ++i;
+
+            while (i < lines.size()) {
+                if (dllp::starts_with(lines[i], "epochs: ")) {
+                    t.pt_desc.epochs = std::stol(dllp::extract_value(lines[i], "epochs: "));
+                    ++i;
+                } else if (dllp::starts_with(lines[i], "denoising: ")) {
+                    t.pt_desc.denoising = dllp::extract_value(lines[i], "denoising: ") == "true";
+                    ++i;
+                } else {
+                    break;
+                }
+            }
+        } else if (lines[i] == "general:") {
+            ++i;
+
+            while (i < lines.size()) {
+                if (dllp::starts_with(lines[i], "batch_mode: ")) {
+                    t.general_desc.batch_mode = dllp::extract_value(lines[i], "batch_mode: ") == "true";
+                    ++i;
+                } else if (dllp::starts_with(lines[i], "big_batch: ")) {
+                    t.general_desc.big_batch = std::stol(dllp::extract_value(lines[i], "big_batch: "));
+                    ++i;
+                } else {
+                    break;
+                }
+            }
+        } else if (lines[i] == "training:") {
+            ++i;
+
+            while (i < lines.size()) {
+                if (dllp::starts_with(lines[i], "epochs:")) {
+                    t.ft_desc.epochs = std::stol(dllp::extract_value(lines[i], "epochs: "));
+                    ++i;
+                } else if (dllp::starts_with(lines[i], "learning_rate:")) {
+                    t.ft_desc.learning_rate = std::stod(dllp::extract_value(lines[i], "learning_rate: "));
+                    ++i;
+                } else if (dllp::starts_with(lines[i], "momentum:")) {
+                    t.ft_desc.momentum = std::stod(dllp::extract_value(lines[i], "momentum: "));
+                    ++i;
+                } else if (dllp::starts_with(lines[i], "batch:")) {
+                    t.ft_desc.batch_size = std::stol(dllp::extract_value(lines[i], "batch: "));
+                    ++i;
+                } else if (dllp::starts_with(lines[i], "weight_decay:")) {
+                    t.ft_desc.decay = dllp::extract_value(lines[i], "weight_decay: ");
+                    ++i;
+                } else if (dllp::starts_with(lines[i], "l1_weight_cost:")) {
+                    t.ft_desc.l1_weight_cost = std::stod(dllp::extract_value(lines[i], "l1_weight_cost: "));
+                    ++i;
+                } else if (dllp::starts_with(lines[i], "l2_weight_cost:")) {
+                    t.ft_desc.l2_weight_cost = std::stod(dllp::extract_value(lines[i], "l2_weight_cost: "));
+                    ++i;
+                } else if (dllp::starts_with(lines[i], "verbose:")) {
+                    t.ft_desc.verbose = dllp::extract_value(lines[i], "verbose: ") == "true";
+                    ++i;
+                } else if (dllp::starts_with(lines[i], "trainer: ")) {
+                    t.ft_desc.trainer = dllp::extract_value(lines[i], "trainer: ");
+
+                    if (!dllp::valid_ft_trainer(t.ft_desc.trainer)) {
+                        std::cout << "dllp: error: invalid trainer must be one of [sgd, cg]" << std::endl;
+                        return false;
+                    }
+
+                    ++i;
+                } else {
+                    break;
+                }
+            }
+        } else if (lines[i] == "weights:") {
+            ++i;
+
+            while (i < lines.size()) {
+                if (dllp::starts_with(lines[i], "file:")) {
+                    t.w_desc.file = dllp::extract_value(lines[i], "file: ");
+                    ++i;
+                } else {
+                    break;
+                }
+            }
+        } else {
+            break;
+        }
+    }
+
+    return true;
+}
+
+bool process_layers(size_t& i, const std::vector<std::string>& lines, std::vector<std::unique_ptr<dllp::layer>>& layers) {
+    ++i;
+
+    while (i < lines.size()) {
+        if (lines[i] == "rbm:") {
+            ++i;
+
+            auto rbm = std::make_unique<dllp::rbm_layer>();
+
+            if (!rbm->parse(layers, lines, i)) {
+                return false;
+            }
+
+            layers.push_back(std::move(rbm));
+        } else if (lines[i] == "crbm:") {
+            ++i;
+
+            auto crbm = std::make_unique<dllp::conv_rbm_layer>();
+
+            if (!crbm->parse(layers, lines, i)) {
+                return false;
+            }
+
+            layers.push_back(std::move(crbm));
+        } else if (lines[i] == "crbm_mp:") {
+            ++i;
+
+            auto crbm_mp = std::make_unique<dllp::conv_rbm_mp_layer>();
+
+            if (!crbm_mp->parse(layers, lines, i)) {
+                return false;
+            }
+
+            layers.push_back(std::move(crbm_mp));
+        } else if (lines[i] == "dense:") {
+            ++i;
+
+            auto dense = std::make_unique<dllp::dense_layer>();
+
+            if (!dense->parse(layers, lines, i)) {
+                return false;
+            }
+
+            layers.push_back(std::move(dense));
+        } else if (lines[i] == "conv:") {
+            ++i;
+
+            auto conv = std::make_unique<dllp::conv_layer>();
+
+            if (!conv->parse(layers, lines, i)) {
+                return false;
+            }
+
+            layers.push_back(std::move(conv));
+        } else if (lines[i] == "function:") {
+            ++i;
+
+            auto function = std::make_unique<dllp::function_layer>();
+
+            if (!function->parse(layers, lines, i)) {
+                return false;
+            }
+
+            layers.push_back(std::move(function));
+        } else if (lines[i] == "mp:") {
+            ++i;
+
+            auto mp = std::make_unique<dllp::mp_layer>();
+
+            if (!mp->parse(layers, lines, i)) {
+                return false;
+            }
+
+            layers.push_back(std::move(mp));
+        } else if (lines[i] == "avgp:") {
+            ++i;
+
+            auto avgp = std::make_unique<dllp::avgp_layer>();
+
+            if (!avgp->parse(layers, lines, i)) {
+                return false;
+            }
+
+            layers.push_back(std::move(avgp));
+        } else {
+            break;
+        }
+    }
+
+    return true;
+}
+
+bool parse_file(const std::string& source_file, dll::processor::task& t, std::vector<std::unique_ptr<dllp::layer>>& layers) {
+    //0. Parse the source file
+
+    auto lines = read_lines(source_file);
+
+    if (lines.empty()) {
+        std::cout << "dllp: warning: included file is empty or does not exist" << std::endl;
+        return false;
+    }
+
+    //1. Process includes
+
+    process_includes(lines);
 
     //2. Process the lines
 
@@ -161,197 +367,14 @@ bool parse_file(const std::string& source_file, dll::processor::task& t, std::ve
             t.default_actions.push_back(action);
             ++i;
         } else if (current_line == "data:") {
-            ++i;
-
-            while (i < lines.size()) {
-                if (lines[i] == "pretraining:") {
-                    dllp::parse_datasource_pack(t.pretraining, lines, ++i);
-                } else if (lines[i] == "pretraining_clean:") {
-                    dllp::parse_datasource_pack(t.pretraining_clean, lines, ++i);
-                } else if (lines[i] == "training:") {
-                    dllp::parse_datasource_pack(t.training, lines, ++i);
-                } else if (lines[i] == "testing:") {
-                    dllp::parse_datasource_pack(t.testing, lines, ++i);
-                } else {
-                    break;
-                }
-            }
+            process_data(i, lines, t);
         } else if (current_line == "network:") {
-            ++i;
-
-            while (i < lines.size()) {
-                if (lines[i] == "rbm:") {
-                    ++i;
-
-                    auto rbm = std::make_unique<dllp::rbm_layer>();
-
-                    if (!rbm->parse(layers, lines, i)) {
-                        return false;
-                    }
-
-                    layers.push_back(std::move(rbm));
-                } else if (lines[i] == "crbm:") {
-                    ++i;
-
-                    auto crbm = std::make_unique<dllp::conv_rbm_layer>();
-
-                    if (!crbm->parse(layers, lines, i)) {
-                        return false;
-                    }
-
-                    layers.push_back(std::move(crbm));
-                } else if (lines[i] == "crbm_mp:") {
-                    ++i;
-
-                    auto crbm_mp = std::make_unique<dllp::conv_rbm_mp_layer>();
-
-                    if (!crbm_mp->parse(layers, lines, i)) {
-                        return false;
-                    }
-
-                    layers.push_back(std::move(crbm_mp));
-                } else if (lines[i] == "dense:") {
-                    ++i;
-
-                    auto dense = std::make_unique<dllp::dense_layer>();
-
-                    if (!dense->parse(layers, lines, i)) {
-                        return false;
-                    }
-
-                    layers.push_back(std::move(dense));
-                } else if (lines[i] == "conv:") {
-                    ++i;
-
-                    auto conv = std::make_unique<dllp::conv_layer>();
-
-                    if (!conv->parse(layers, lines, i)) {
-                        return false;
-                    }
-
-                    layers.push_back(std::move(conv));
-                } else if (lines[i] == "function:") {
-                    ++i;
-
-                    auto function = std::make_unique<dllp::function_layer>();
-
-                    if (!function->parse(layers, lines, i)) {
-                        return false;
-                    }
-
-                    layers.push_back(std::move(function));
-                } else if (lines[i] == "mp:") {
-                    ++i;
-
-                    auto mp = std::make_unique<dllp::mp_layer>();
-
-                    if (!mp->parse(layers, lines, i)) {
-                        return false;
-                    }
-
-                    layers.push_back(std::move(mp));
-                } else if (lines[i] == "avgp:") {
-                    ++i;
-
-                    auto avgp = std::make_unique<dllp::avgp_layer>();
-
-                    if (!avgp->parse(layers, lines, i)) {
-                        return false;
-                    }
-
-                    layers.push_back(std::move(avgp));
-                } else {
-                    break;
-                }
+            if(!process_layers(i, lines, layers)){
+                return false;
             }
-
         } else if (current_line == "options:") {
-            ++i;
-
-            while (i < lines.size()) {
-                if (lines[i] == "pretraining:") {
-                    ++i;
-
-                    while (i < lines.size()) {
-                        if (dllp::starts_with(lines[i], "epochs: ")) {
-                            t.pt_desc.epochs = std::stol(dllp::extract_value(lines[i], "epochs: "));
-                            ++i;
-                        } else if (dllp::starts_with(lines[i], "denoising: ")) {
-                            t.pt_desc.denoising = dllp::extract_value(lines[i], "denoising: ") == "true";
-                            ++i;
-                        } else {
-                            break;
-                        }
-                    }
-                } else if (lines[i] == "general:") {
-                    ++i;
-
-                    while (i < lines.size()) {
-                        if (dllp::starts_with(lines[i], "batch_mode: ")) {
-                            t.general_desc.batch_mode = dllp::extract_value(lines[i], "batch_mode: ") == "true";
-                            ++i;
-                        } else if (dllp::starts_with(lines[i], "big_batch: ")) {
-                            t.general_desc.big_batch = std::stol(dllp::extract_value(lines[i], "big_batch: "));
-                            ++i;
-                        } else {
-                            break;
-                        }
-                    }
-                } else if (lines[i] == "training:") {
-                    ++i;
-
-                    while (i < lines.size()) {
-                        if (dllp::starts_with(lines[i], "epochs:")) {
-                            t.ft_desc.epochs = std::stol(dllp::extract_value(lines[i], "epochs: "));
-                            ++i;
-                        } else if (dllp::starts_with(lines[i], "learning_rate:")) {
-                            t.ft_desc.learning_rate = std::stod(dllp::extract_value(lines[i], "learning_rate: "));
-                            ++i;
-                        } else if (dllp::starts_with(lines[i], "momentum:")) {
-                            t.ft_desc.momentum = std::stod(dllp::extract_value(lines[i], "momentum: "));
-                            ++i;
-                        } else if (dllp::starts_with(lines[i], "batch:")) {
-                            t.ft_desc.batch_size = std::stol(dllp::extract_value(lines[i], "batch: "));
-                            ++i;
-                        } else if (dllp::starts_with(lines[i], "weight_decay:")) {
-                            t.ft_desc.decay = dllp::extract_value(lines[i], "weight_decay: ");
-                            ++i;
-                        } else if (dllp::starts_with(lines[i], "l1_weight_cost:")) {
-                            t.ft_desc.l1_weight_cost = std::stod(dllp::extract_value(lines[i], "l1_weight_cost: "));
-                            ++i;
-                        } else if (dllp::starts_with(lines[i], "l2_weight_cost:")) {
-                            t.ft_desc.l2_weight_cost = std::stod(dllp::extract_value(lines[i], "l2_weight_cost: "));
-                            ++i;
-                        } else if (dllp::starts_with(lines[i], "verbose:")) {
-                            t.ft_desc.verbose = dllp::extract_value(lines[i], "verbose: ") == "true";
-                            ++i;
-                        } else if (dllp::starts_with(lines[i], "trainer: ")) {
-                            t.ft_desc.trainer = dllp::extract_value(lines[i], "trainer: ");
-
-                            if (!dllp::valid_ft_trainer(t.ft_desc.trainer)) {
-                                std::cout << "dllp: error: invalid trainer must be one of [sgd, cg]" << std::endl;
-                                return false;
-                            }
-
-                            ++i;
-                        } else {
-                            break;
-                        }
-                    }
-                } else if (lines[i] == "weights:") {
-                    ++i;
-
-                    while (i < lines.size()) {
-                        if (dllp::starts_with(lines[i], "file:")) {
-                            t.w_desc.file = dllp::extract_value(lines[i], "file: ");
-                            ++i;
-                        } else {
-                            break;
-                        }
-                    }
-                } else {
-                    break;
-                }
+            if(!process_options(i, lines, t)){
+                return false;
             }
         } else {
             std::cout << "dllp: error: invalid line: " << i << ":" << current_line << std::endl;
