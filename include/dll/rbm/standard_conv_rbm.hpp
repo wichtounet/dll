@@ -35,8 +35,8 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
     using input_t             = typename rbm_base_traits<parent_t>::input_t;             ///< The type of the input
     using output_t            = typename rbm_base_traits<parent_t>::output_t;            ///< The type of the output
 
-    static constexpr unit_type visible_unit = desc::visible_unit;
-    static constexpr unit_type hidden_unit  = desc::hidden_unit;
+    static constexpr unit_type visible_unit = desc::visible_unit; ///< The visible unit type
+    static constexpr unit_type hidden_unit  = desc::hidden_unit;  ///< The hidden unit type
 
     static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN,
                   "Only binary and linear visible units are supported");
@@ -48,6 +48,9 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
 
     //Constructors
 
+    /*!
+     * \brief Construct a new standard convolutional RBM
+     */
     standard_conv_rbm() {
         //Note: Convolutional RBM needs lower learning rate than standard RBM
 
@@ -60,23 +63,38 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
 
     //Utility functions
 
+    /*!
+     * \brief Reconstruct the given input
+     */
     template <typename Sample>
     void reconstruct(const Sample& items) {
         reconstruct(items, as_derived());
     }
 
+    /*!
+     * \brief Display the current visible unit activations
+     */
     void display_visible_unit_activations() const {
         display_visible_unit_activations(as_derived());
     }
 
+    /*!
+     * \brief Display the current visible unit samples
+     */
     void display_visible_unit_samples() const {
         display_visible_unit_samples(as_derived());
     }
 
+    /*!
+     * \brief Display the current hidden unit activations
+     */
     void display_hidden_unit_activations() const {
         display_hidden_unit_samples(as_derived());
     }
 
+    /*!
+     * \brief Display the current hidden unit samples
+     */
     void display_hidden_unit_samples() const {
         display_hidden_unit_samples(as_derived());
     }
@@ -113,11 +131,17 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
         return as_derived().energy_impl(v, h);
     }
 
+    /*!
+     * \brief Return the free energy of the given input
+     */
     template <typename V>
     weight free_energy(const V& v) const {
         return as_derived().free_energy_impl(v);
     }
 
+    /*!
+     * \brief Return the free energy of the current input
+     */
     weight free_energy() const {
         return free_energy(as_derived().v1);
     }
@@ -142,6 +166,9 @@ private:
         return etl::mean((rbm.v1 - rbm.v2_a) >> (rbm.v1 - rbm.v2_a));
     }
 
+    /*!
+     * \brief Reconstruct the given input
+     */
     template <typename Sample>
     static void reconstruct(const Sample& items, parent_t& rbm) {
         cpp_assert(items.size() == parent_t::input_size(), "The size of the training sample must match visible units");
@@ -159,6 +186,9 @@ private:
         std::cout << "Reconstruction took " << watch.elapsed() << "ms" << std::endl;
     }
 
+    /*!
+     * \brief Display the current visible unit activations
+     */
     static void display_visible_unit_activations(const parent_t& rbm) {
         for (size_t channel = 0; channel < parent_t::NC; ++channel) {
             std::cout << "Channel " << channel << std::endl;
@@ -172,6 +202,9 @@ private:
         }
     }
 
+    /*!
+     * \brief Display the current visible unit samples
+     */
     static void display_visible_unit_samples(const parent_t& rbm) {
         for (size_t channel = 0; channel < parent_t::NC; ++channel) {
             std::cout << "Channel " << channel << std::endl;
@@ -185,6 +218,9 @@ private:
         }
     }
 
+    /*!
+     * \brief Display the current hidden unit activations
+     */
     static void display_hidden_unit_activations(const parent_t& rbm) {
         for (size_t k = 0; k < get_k(rbm); ++k) {
             for (size_t i = 0; i < get_nv1(rbm); ++i) {
@@ -198,6 +234,9 @@ private:
         }
     }
 
+    /*!
+     * \brief Display the current hidden unit samples
+     */
     static void display_hidden_unit_samples(const parent_t& rbm) {
         for (size_t k = 0; k < get_k(rbm); ++k) {
             for (size_t i = 0; i < get_nv1(rbm); ++i) {

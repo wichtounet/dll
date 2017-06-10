@@ -609,13 +609,12 @@ template <size_t N, typename RBM, bool Persistent, typename Enable = void>
 struct base_cd_trainer : base_trainer<RBM> {
     static_assert(N > 0, "(P)CD-0 is not a valid training method");
 
-    using rbm_t  = RBM;
+    using rbm_t  = RBM;                    ///< The type of RBM being trained
     using weight = typename rbm_t::weight; ///< The data type for this layer
 
-    static constexpr auto num_hidden  = rbm_t::num_hidden;
-    static constexpr auto num_visible = rbm_t::num_visible;
-
-    static constexpr auto batch_size = rbm_t::batch_size;
+    static constexpr auto num_hidden  = rbm_t::num_hidden;  ///< The number of hidden units
+    static constexpr auto num_visible = rbm_t::num_visible; ///< The number of visible units
+    static constexpr auto batch_size  = rbm_t::batch_size;  ///< The batch size of the RBM
 
     rbm_t& rbm;
 
@@ -640,9 +639,9 @@ struct base_cd_trainer : base_trainer<RBM> {
 
     //{{{ Momentum
 
-    etl::fast_matrix<weight, num_visible, num_hidden> w_inc;
-    etl::fast_vector<weight, num_hidden> b_inc;
-    etl::fast_vector<weight, num_visible> c_inc;
+    etl::fast_matrix<weight, num_visible, num_hidden> w_inc; ///< The gradients of the weights at the previous step for momentum
+    etl::fast_vector<weight, num_hidden> b_inc;              ///< The gradients of the hidden biases at the previous step for momentum
+    etl::fast_vector<weight, num_visible> c_inc;             ///< The gradients of the visible biases at the previous step for momentum
 
     //}}} Momentum end
 
@@ -682,6 +681,9 @@ struct base_cd_trainer : base_trainer<RBM> {
         train_normal<Persistent, N>(input_batch, expected_batch, context, rbm, *this);
     }
 
+    /*!
+     * \brief The name of the trainer
+     */
     static std::string name() {
         return std::string("") + (Persistent ? "Persistent " : "") + "Contrastive Divergence";
     }
@@ -705,14 +707,14 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
     etl::dyn_matrix<weight> v1; ///< Input
     etl::dyn_matrix<weight> vf; ///< Expected
 
-    etl::dyn_matrix<weight> h1_a;
-    etl::dyn_matrix<weight> h1_s;
+    etl::dyn_matrix<weight> h1_a; ///< The hidden activations at step 1
+    etl::dyn_matrix<weight> h1_s; ///< The hidden samples at step 1
 
-    etl::dyn_matrix<weight> v2_a;
-    etl::dyn_matrix<weight> v2_s;
+    etl::dyn_matrix<weight> v2_a; ///< The reconstructed activations at step 1
+    etl::dyn_matrix<weight> v2_s; ///< The reconstructed samples at step 1
 
-    etl::dyn_matrix<weight> h2_a;
-    etl::dyn_matrix<weight> h2_s;
+    etl::dyn_matrix<weight> h2_a; ///< The hidden activations at step K
+    etl::dyn_matrix<weight> h2_s; ///< The hidden samples at step K
 
     etl::dyn_matrix<weight, 3> w_grad_b;
 
@@ -723,9 +725,9 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
 
     //{{{ Momentum
 
-    etl::dyn_matrix<weight> w_inc;
-    etl::dyn_vector<weight> b_inc;
-    etl::dyn_vector<weight> c_inc;
+    etl::dyn_matrix<weight> w_inc; ///< The gradients of the weights at the previous step, for momentum
+    etl::dyn_vector<weight> b_inc; ///< The gradients of the hidden biases at the previous step, for momentum
+    etl::dyn_vector<weight> c_inc; ///< The gradients of the visible biases at the previous step, for momentum
 
     //}}} Momentum end
 
@@ -805,6 +807,9 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
         train_normal<Persistent, N>(input_batch, expected_batch, context, rbm, *this);
     }
 
+    /*!
+     * \brief Return the name of the trainer
+     */
     static std::string name() {
         return std::string("") + (Persistent ? "Persistent " : "") + "Contrastive Divergence (dynamic)";
     }
@@ -821,14 +826,14 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<!layer_traits<RBM>::
 
     using rbm_t = RBM;
 
-    static constexpr auto K   = rbm_t::K;
-    static constexpr auto NC  = rbm_t::NC;
-    static constexpr auto NV1 = rbm_t::NV1;
-    static constexpr auto NV2 = rbm_t::NV2;
-    static constexpr auto NH1 = rbm_t::NH1;
-    static constexpr auto NH2 = rbm_t::NH2;
-    static constexpr auto NW1 = rbm_t::NW1;
-    static constexpr auto NW2 = rbm_t::NW2;
+    static constexpr auto K   = rbm_t::K;   ///< The number of filters
+    static constexpr auto NC  = rbm_t::NC;  ///< The number of channels
+    static constexpr auto NV1 = rbm_t::NV1; ///< The first dimension of the input
+    static constexpr auto NV2 = rbm_t::NV2; ///< The second dimension of the input
+    static constexpr auto NH1 = rbm_t::NH1; ///< The first dimension of the output
+    static constexpr auto NH2 = rbm_t::NH2; ///< The second dimension of the output
+    static constexpr auto NW1 = rbm_t::NW1; ///< The second dimension of the filter
+    static constexpr auto NW2 = rbm_t::NW2; ///< The second dimension of the filter
 
     static constexpr auto batch_size = rbm_t::batch_size;
 
@@ -839,15 +844,15 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<!layer_traits<RBM>::
 #define W_DIMS K, NC, NW1, NW2
 
     //Gradients
-    etl::fast_matrix<weight, W_DIMS> w_grad; //Gradients of shared weights
-    etl::fast_vector<weight, K> b_grad;               //Gradients of hidden biases bk
-    etl::fast_vector<weight, NC> c_grad;              //Visible gradient
+    etl::fast_matrix<weight, W_DIMS> w_grad; //Gradients of the weights weights
+    etl::fast_vector<weight, K> b_grad;      //Gradients of hidden biases
+    etl::fast_vector<weight, NC> c_grad;     //Gradients of visible biases
 
     //{{{ Momentum
 
-    etl::fast_matrix<weight, W_DIMS> w_inc;
-    etl::fast_vector<weight, K> b_inc;
-    etl::fast_vector<weight, NC> c_inc;
+    etl::fast_matrix<weight, W_DIMS> w_inc; //Gradients of the weights weights of the previous step, for momentum
+    etl::fast_vector<weight, K> b_inc;      //Gradients of the hidden biases of the previous step, for momentum
+    etl::fast_vector<weight, NC> c_inc;     //Gradients of the visible biases of the previous step, for momentum
 
     //}}} Momentum end
 
@@ -875,17 +880,17 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<!layer_traits<RBM>::
     etl::fast_matrix<weight, W_DIMS> w_pos;
     etl::fast_matrix<weight, W_DIMS> w_neg;
 
-    etl::fast_matrix<weight, batch_size, NC, NV1, NV2> v1; //Input
-    etl::fast_matrix<weight, batch_size, NC, NV1, NV2> vf; //Expected
+    etl::fast_matrix<weight, batch_size, NC, NV1, NV2> v1; ///< Input
+    etl::fast_matrix<weight, batch_size, NC, NV1, NV2> vf; ///< Expected
 
-    etl::fast_matrix<weight, batch_size, K, NH1, NH2> h1_a;
-    etl::fast_matrix<weight, batch_size, K, NH1, NH2> h1_s;
+    etl::fast_matrix<weight, batch_size, K, NH1, NH2> h1_a; ///< The hidden activation at step 1
+    etl::fast_matrix<weight, batch_size, K, NH1, NH2> h1_s; ///< The hidden samples at step 1
 
     etl::fast_matrix<weight, batch_size, NC, NV1, NV2> v2_a;
     conditional_fast_matrix_t<false, weight, batch_size, NC, NV1, NV2> v2_s;
 
-    etl::fast_matrix<weight, batch_size, K, NH1, NH2> h2_a;
-    conditional_fast_matrix_t<(Persistent || N > 1), weight, batch_size, K, NH1, NH2> h2_s;
+    etl::fast_matrix<weight, batch_size, K, NH1, NH2> h2_a;                                 ///< The hidden activation at step K
+    conditional_fast_matrix_t<(Persistent || N > 1), weight, batch_size, K, NH1, NH2> h2_s; ///< The hidden samples at step K
 
     cpp::thread_pool<!rbm_layer_traits<rbm_t>::is_serial()> pool;
 
@@ -923,6 +928,9 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<!layer_traits<RBM>::
         train_convolutional<Persistent, N>(input_batch, expected_batch, context, rbm, *this);
     }
 
+    /*!
+     * \brief Return the name of the trainer
+     */
     static std::string name() {
         return std::string("") + (Persistent ? "Persistent " : "") + "Contrastive Divergence (convolutional)";
     }
@@ -1035,6 +1043,9 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
         train_convolutional<Persistent, N>(input_batch, expected_batch, context, rbm, *this);
     }
 
+    /*!
+     * \brief Return the name of the trainer
+     */
     static std::string name() {
         return std::string("") + (Persistent ? "Persistent " : "") + "Contrastive Divergence (dynamic convolutional)";
     }

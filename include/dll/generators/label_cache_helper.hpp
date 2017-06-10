@@ -15,7 +15,11 @@ namespace dll {
 template <typename Desc, typename T, typename LIterator, typename Enable = void>
 struct label_cache_helper;
 
-// Case 1: make the labels categorical
+/*!
+ * \brief Helper to create and initialize a cache for labels.
+ *
+ * This version makes the label categorical.
+ */
 template <typename Desc, typename T, typename LIterator>
 struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<Desc::Categorical && !etl::is_etl_expr<typename std::iterator_traits<LIterator>::value_type>::value>> {
     using cache_type     = etl::dyn_matrix<T, 2>; ///< The type of the cache
@@ -62,8 +66,11 @@ struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<Desc::Categorical
     }
 };
 
-// Case 2: Keep the labels as 1D
-// Note: May be useless
+/*!
+ * \brief Helper to create and initialize a cache for labels.
+ *
+ * This version keeps the flat label as such.
+ */
 template <typename Desc, typename T, typename LIterator>
 struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<!Desc::Categorical && !etl::is_etl_expr<typename std::iterator_traits<LIterator>::value_type>::value>> {
     using cache_type     = etl::dyn_matrix<T, 1>; ///< The type of the cache
@@ -110,7 +117,11 @@ struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<!Desc::Categorica
     }
 };
 
-// Case 3: 1D labels
+/*!
+ * \brief Helper to create and initialize a cache for labels.
+ *
+ * This version keeps the ETL 1D label as such.
+ */
 template <typename Desc, typename T, typename LIterator>
 struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<etl::is_1d<typename std::iterator_traits<LIterator>::value_type>::value>> {
     using cache_type     = etl::dyn_matrix<T, 2>; ///< The type of the cache
@@ -161,7 +172,11 @@ struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<etl::is_1d<typena
     }
 };
 
-// Case 4: 3D labels
+/*!
+ * \brief Helper to create and initialize a cache for labels.
+ *
+ * This version keeps the ETL 3D label as such.
+ */
 template <typename Desc, typename T, typename LIterator>
 struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<etl::is_3d<typename std::iterator_traits<LIterator>::value_type>::value>> {
     using cache_type     = etl::dyn_matrix<T, 4>; ///< The type of the cache

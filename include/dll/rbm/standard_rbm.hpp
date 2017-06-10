@@ -89,6 +89,9 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
         init_weights(generator, as_derived());
     }
 
+    /*!
+     * \brief Reconstruct the given input
+     */
     void reconstruct(const input_one_t& items) {
         reconstruct(items, as_derived());
     }
@@ -224,6 +227,9 @@ private:
         return etl::mean((rbm.v1 - rbm.v2_a) >> (rbm.v1 - rbm.v2_a));
     }
 
+    /*!
+     * \brief Initalize the weights using the training inputs
+     */
     template <typename Generator>
     static void init_weights(Generator& generator, parent_t& rbm) {
         const auto size = generator.size();
@@ -254,6 +260,9 @@ private:
         }
     }
 
+    /*!
+     * \brief Initalize the weights using the training inputs
+     */
     template <typename Iterator>
     static void init_weights(Iterator first, Iterator last, parent_t& rbm) {
         auto size = std::distance(first, last);
@@ -271,6 +280,9 @@ private:
         }
     }
 
+    /*!
+     * \brief Reconstruct the given input
+     */
     static void reconstruct(const input_one_t& items, parent_t& rbm) {
         cpp_assert(items.size() == num_visible(rbm), "The size of the training sample must match visible units");
 

@@ -185,7 +185,7 @@ struct rbm_base : layer<Parent> {
      */
     template<typename Input>
     output_one_t features(const Input& input){
-        return activate_hidden(input);;
+        return activate_hidden(input);
     }
 
     /*!

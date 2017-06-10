@@ -182,9 +182,15 @@ struct initializer_bias : value_conf_elt<initializer_bias_id, initializer_type, 
 template <decay_type T = decay_type::L2>
 struct weight_decay : value_conf_elt<weight_decay_id, decay_type, T> {};
 
+/*!
+ * \brief Set the learning rate driver
+ */
 template <lr_driver_type T = lr_driver_type::FIXED>
 struct lr_driver : value_conf_elt<lr_driver_id, lr_driver_type, T> {};
 
+/*!
+ * \brief Copy augmentation
+ */
 template <size_t C>
 struct copy : value_conf_elt<copy_id, size_t, C> {};
 
@@ -195,6 +201,9 @@ struct copy : value_conf_elt<copy_id, size_t, C> {};
 template <size_t X, size_t Y>
 struct random_crop : value_pair_conf_elt<random_crop_id, size_t, X, Y> {};
 
+/*!
+ * \brief Elastic distortion
+ */
 template <size_t C, size_t K = 9>
 struct elastic : basic_conf_elt<elastic_id> {};
 
@@ -210,59 +219,82 @@ struct sparsity : value_conf_elt<sparsity_id, sparsity_method, M> {};
 template <bias_mode M = bias_mode::SIMPLE>
 struct bias : value_conf_elt<bias_id, bias_mode, M> {};
 
-/*
- * !\brief Sets the type to use to store (and compute) the weights
+/*!
+ * \brief Sets the type to use to store (and compute) the weights
  * \tparam The weight type
  */
 template <typename T>
 struct weight_type : type_conf_elt<weight_type_id, T> {};
 
-/*
- * !\brief sets the trainer for DBN
+/*!
+ * \brief sets the trainer for DBN
  * \tparam The trainer type
  */
 template <template <typename...> class T>
 struct trainer : template_type_conf_elt<trainer_id, T> {};
 
-/*
- * !\brief sets the trainer for RBM
+/*!
+ * \brief sets the trainer for RBM
  * \tparam The trainer type
  */
 template <template <typename> class T>
 struct trainer_rbm : template_type_conf_elt<trainer_rbm_id, T> {};
 
-/*
- * !\brief sets the watcher
+/*!
+ * \brief sets the watcher
  * \tparam The watcher type
  */
 template <template <typename...> class T>
 struct watcher : template_type_conf_elt<watcher_id, T> {};
 
-/*
- * !\brief Enable momentum learning
+/*!
+ * \brief Enable momentum learning
  */
 struct momentum : basic_conf_elt<momentum_id> {};
 
 /*
- * !\brief Use parallel mode instead of batch mode
+ * \brief Use parallel mode instead of batch mode
  */
 struct parallel_mode : basic_conf_elt<parallel_mode_id> {};
 
-/*
- * !\brief Disable threading
+/*!
+ * \brief Disable threading
  */
 struct serial : basic_conf_elt<serial_id> {};
 
-/*
- * !\brief Make execution as verbose as possible
+/*!
+ * \brief Make execution as verbose as possible
  */
 struct verbose : basic_conf_elt<verbose_id> {};
+
+/*!
+ * \brief Concatenate the features of each layer for SVM training
+ */
 struct svm_concatenate : basic_conf_elt<svm_concatenate_id> {};
+
+/*!
+ * \brief Scale the features for SVM training
+ */
 struct svm_scale : basic_conf_elt<svm_scale_id> {};
 
+/*!
+ * \brief Use horizontal mirroring for data augmentation
+ */
 struct horizontal_mirroring : basic_conf_elt<horizontal_mirroring_id> {};
+
+/*!
+ * \brief Use vertical mirroring for data augmentation
+ */
 struct vertical_mirroring : basic_conf_elt<vertical_mirroring_id> {};
+
+/*!
+ * \brief Transform the labels into categorical matrix
+ */
 struct categorical : basic_conf_elt<categorical_id> {};
+
+/*!
+ * \brief Use a thread for data augmentation.
+ */
 struct threaded : basic_conf_elt<threaded_id> {};
 
 /*!
@@ -293,44 +325,44 @@ struct scale_pre : value_conf_elt<scale_pre_id, size_t, S> {};
 template <size_t B>
 struct binarize_pre : value_conf_elt<binarize_pre_id, size_t, B> {};
 
-/*
- * !\brief Normalize the inputs
+/*!
+ * \brief Normalize the inputs
  */
 struct normalize_pre : basic_conf_elt<normalize_pre_id> {};
 
-/*
- * !\brief Sets the mode to auto-encoder.
+/*!
+ * \brief Sets the mode to auto-encoder.
  */
 struct autoencoder : basic_conf_elt<autoencoder_id> {};
 
-/*
- * !\brief Initialize the weights of an RBM given the inputs
+/*!
+ * \brief Initialize the weights of an RBM given the inputs
  */
 struct init_weights : basic_conf_elt<init_weights_id> {};
 
-/*
- * !\brief Shuffle the inputs before each epoch.
+/*!
+ * \brief Shuffle the inputs before each epoch.
  */
 struct shuffle : basic_conf_elt<shuffle_id> {};
 
-/*
- * !\brief dbn: Shuffle the inputs before each pretraining epoch.
+/*!
+ * \brief dbn: Shuffle the inputs before each pretraining epoch.
  * This implies that the inputs will be copied in memory!
  */
 struct shuffle_pre : basic_conf_elt<shuffle_pre_id> {};
 
-/*
- * !\brief Enable free energy computation
+/*!
+ * \brief Enable free energy computation
  */
 struct free_energy : basic_conf_elt<free_energy_id> {};
 
-/*
- * !\brief Disable error calculation on epoch.
+/*!
+ * \brief Disable error calculation on epoch.
  */
 struct no_epoch_error : basic_conf_elt<no_epoch_error_id> {};
 
-/*
- * !\brief Enable gradient clipping.
+/*!
+ * \brief Enable gradient clipping.
  */
 struct clip_gradients : basic_conf_elt<clip_gradients_id> {};
 
@@ -341,36 +373,36 @@ struct clip_gradients : basic_conf_elt<clip_gradients_id> {};
  */
 struct dbn_only : basic_conf_elt<dbn_only_id> {};
 
-/*
- * !\brief Do nothing (for TMP)
+/*!
+ * \brief Do nothing (for TMP)
  */
 struct nop : basic_conf_elt<nop_id> {};
 
-/*
- * !\brief Use batch mode in DBN (Do not process the complete dataset at once)
+/*!
+ * \brief Use batch mode in DBN (Do not process the complete dataset at once)
  */
 struct batch_mode : basic_conf_elt<batch_mode_id> {};
 
-/*
- * !\brief Conditional shuffle (shuffle if Cond = true)
+/*!
+ * \brief Conditional shuffle (shuffle if Cond = true)
  */
 template <bool Cond>
 using shuffle_cond = std::conditional_t<Cond, shuffle, nop>;
 
-/*
- * !\brief Conditional gradient clipping (clip gradients if Cond = true)
+/*!
+ * \brief Conditional gradient clipping (clip gradients if Cond = true)
  */
 template <bool Cond>
 using clipping_cond = std::conditional_t<Cond, clip_gradients, nop>;
 
-/*
- * !\brief Conditional pre normalization.
+/*!
+ * \brief Conditional pre normalization.
  */
 template <bool Cond>
 using normalize_pre_cond = std::conditional_t<Cond, normalize_pre, nop>;
 
-/*
- * !\brief Conditional auto-encoder configuration.
+/*!
+ * \brief Conditional auto-encoder configuration.
  */
 template <bool Cond>
 using autoencoder_cond = std::conditional_t<Cond, autoencoder, nop>;

@@ -346,11 +346,17 @@ struct random_noise<Desc, std::enable_if_t<!Desc::Noise>> {
     }
 };
 
+/*!
+ * \brief Elastic distorter for the images
+ */
 template <typename Desc, typename Enable = void>
 struct elastic_distorter;
 
 // TODO This needs to be made MUCH faster
 
+/*!
+ * \copydoc elastic_distorter
+ */
 template <typename Desc>
 struct elastic_distorter<Desc, std::enable_if_t<Desc::ElasticDistortion>> {
     using weight = typename Desc::weight; ///< The data type
@@ -484,6 +490,9 @@ struct elastic_distorter<Desc, std::enable_if_t<Desc::ElasticDistortion>> {
     }
 };
 
+/*!
+ * \copydoc elastic_distorter
+ */
 template <typename Desc>
 struct elastic_distorter<Desc, std::enable_if_t<!Desc::ElasticDistortion>> {
     /*!
