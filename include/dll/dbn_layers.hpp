@@ -94,7 +94,7 @@ struct validate_label_layers<Layer> : std::true_type {};
 template <typename L1, typename L2, typename... Layers>
 struct validate_label_layers<L1, L2, Layers...> : cpp::bool_constant_c<
                                                       cpp::and_u<
-                                                          layer_traits<L1>::output_size() <= layer_traits<L2>::input_size(),
+                                                          L1::output_size() <= L2::input_size(),
                                                           validate_label_layers<L2, Layers...>::value>> {};
 
 } // end of namespace detail
@@ -235,6 +235,6 @@ using dbn_layers = detail::layers<false, Layers...>;
  * \brief Holder for the layers of a DBN, training with labels + RBM in last layer
  */
 template <typename... Layers>
-using dbn_label_layers = detail::layers<false, Layers...>;
+using dbn_label_layers = detail::layers<true, Layers...>;
 
 } //end of namespace dll
