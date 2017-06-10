@@ -101,23 +101,44 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
 
     //Various functions
 
+    /*!
+     * \brief Compute the activations of several input at once
+     * \param input The container of inputs
+     * \param h_a The output activations
+     * \param h_s The output samples
+     */
     void activate_many(const input_t& input, output_t& h_a, output_t& h_s) const {
         for (size_t i = 0; i < input.size(); ++i) {
             as_derived().activate_one(input[i], h_a[i], h_s[i]);
         }
     }
 
+    /*!
+     * \brief Compute the activations of several input at once
+     * \param input The container of inputs
+     * \param h_a The output activations
+     */
     void activate_many(const input_t& input, output_t& h_a) const {
         for (size_t i = 0; i < input.size(); ++i) {
             as_derived().activate_one(input[i], h_a[i]);
         }
     }
 
+    /*!
+     * \brief Batch activation of inputs
+     * \param h_a The output activations
+     * \param input The batch of input
+     */
     template <typename V, typename H, cpp_enable_if(etl::dimensions<V>() == 4)>
     void batch_activate_hidden(H& h_a, const V& input) const {
         as_derived().template batch_activate_hidden<true, false>(h_a, h_a, input, input);
     }
 
+    /*!
+     * \brief Batch activation of inputs
+     * \param h_a The output activations
+     * \param input The batch of input
+     */
     template <typename V, typename H, cpp_enable_if(etl::dimensions<V>() == 2)>
     void batch_activate_hidden(H& h_a, const V& input) const {
         decltype(auto) rbm = as_derived();

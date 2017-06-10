@@ -47,6 +47,9 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
 
     dyn_dense_layer() : base_type() {}
 
+    /*!
+     * \brief Initialize the dynamic layer
+     */
     void init_layer(size_t nv, size_t nh) {
         num_visible = nv;
         num_hidden  = nh;

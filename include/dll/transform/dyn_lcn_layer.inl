@@ -25,6 +25,9 @@ struct dyn_lcn_layer : transform_layer<dyn_lcn_layer<Desc>> {
     size_t Mid;
     double sigma = 2.0;
 
+    /*!
+     * \brief Initialize the dynamic layer
+     */
     void init_layer(size_t K){
         cpp_assert(K > 1, "The LCN kernel size must be greater than 1");
         cpp_assert(K % 2 == 1, "The LCN kernel size must be odd");

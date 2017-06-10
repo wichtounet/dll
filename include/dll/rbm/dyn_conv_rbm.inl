@@ -77,6 +77,9 @@ struct dyn_conv_rbm final : public standard_crbm<dyn_conv_rbm<Desc>, Desc> {
         input = input_one_t(nc, nv1, nv2);
     }
 
+    /*!
+     * \brief Initialize the dynamic layer
+     */
     void init_layer(size_t nc, size_t nv1, size_t nv2, size_t k, size_t nw1, size_t nw2){
         this->nv1 = nv1;
         this->nv2 = nv2;

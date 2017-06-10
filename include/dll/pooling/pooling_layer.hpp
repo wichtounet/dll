@@ -135,6 +135,9 @@ struct dyn_pooling_layer_2d : layer<Parent> {
 
     dyn_pooling_layer_2d() = default;
 
+    /*!
+     * \brief Initialize the dynamic layer
+     */
     void init_layer(size_t i1, size_t i2, size_t i3, size_t c1, size_t c2){
         this->i1 = i1;
         this->i2 = i2;
@@ -343,6 +346,9 @@ struct dyn_pooling_layer_3d : layer<Parent> {
 
     dyn_pooling_layer_3d() = default;
 
+    /*!
+     * \brief Initialize the dynamic layer
+     */
     void init_layer(size_t i1, size_t i2, size_t i3, size_t c1, size_t c2, size_t c3){
         this->i1 = i1;
         this->i2 = i2;

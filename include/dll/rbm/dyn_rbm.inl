@@ -91,6 +91,9 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         w = etl::normal_generator<weight>() * 0.1;
     }
 
+    /*!
+     * \brief Initialize the dynamic layer
+     */
     void init_layer(size_t nv, size_t nh) {
         num_visible = nv;
         num_hidden  = nh;

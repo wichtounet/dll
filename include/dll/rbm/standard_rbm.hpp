@@ -35,23 +35,26 @@ namespace dll {
  */
 template <typename Parent, typename Desc>
 struct standard_rbm : public rbm_base<Parent, Desc> {
-    using desc      = Desc; ///< The descriptor of the layer
-    using parent_t  = Parent;
+    using desc      = Desc;                         ///< The descriptor of the layer
+    using parent_t  = Parent;                       ///< The type of the parent layer (CRTP)
     using this_type = standard_rbm<parent_t, desc>; ///< The type of this layer
-    using base_type = rbm_base<parent_t, desc>;
-    using weight    = typename desc::weight; ///< The data type for this layer
+    using base_type = rbm_base<parent_t, desc>;     ///< The base type
+    using weight    = typename desc::weight;        ///< The data type for this layer
 
-    using input_one_t  = typename rbm_base_traits<parent_t>::input_one_t; ///< The type of one input
+    using input_one_t  = typename rbm_base_traits<parent_t>::input_one_t;  ///< The type of one input
     using output_one_t = typename rbm_base_traits<parent_t>::output_one_t; ///< The type of one output
-    using input_t      = typename rbm_base_traits<parent_t>::input_t; ///< The type of the input
-    using output_t     = typename rbm_base_traits<parent_t>::output_t; ///< The type of the output
+    using input_t      = typename rbm_base_traits<parent_t>::input_t;      ///< The type of the input
+    using output_t     = typename rbm_base_traits<parent_t>::output_t;     ///< The type of the output
 
-    static constexpr unit_type visible_unit = desc::visible_unit;
-    static constexpr unit_type hidden_unit  = desc::hidden_unit;
+    static constexpr unit_type visible_unit = desc::visible_unit; ///< The type of visible unit
+    static constexpr unit_type hidden_unit  = desc::hidden_unit;  ///< The type of hidden unit
 
     static_assert(visible_unit != unit_type::SOFTMAX, "Softmax Visible units are not support");
     static_assert(hidden_unit != unit_type::GAUSSIAN, "Gaussian hidden units are not supported");
 
+    /*!
+     * \brief Construct empty standard_rbm
+     */
     standard_rbm() {
         //Better initialization of learning rate
         base_type::learning_rate =

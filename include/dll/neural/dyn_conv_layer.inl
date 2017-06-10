@@ -58,6 +58,9 @@ struct dyn_conv_layer final : neural_layer<dyn_conv_layer<Desc>, Desc> {
         // Nothing else to init
     }
 
+    /*!
+     * \brief Initialize the dynamic layer
+     */
     void init_layer(size_t nc, size_t nv1, size_t nv2, size_t k, size_t nw1, size_t nw2){
         this->nv1 = nv1;
         this->nv2 = nv2;

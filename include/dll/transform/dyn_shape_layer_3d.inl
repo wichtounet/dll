@@ -29,6 +29,9 @@ struct dyn_shape_layer_3d : transform_layer<dyn_shape_layer_3d<Desc>> {
     size_t W; ///< The width of the input
     size_t H; ///< The height of the input
 
+    /*!
+     * \brief Initialize the dynamic layer
+     */
     void init_layer(size_t C, size_t W, size_t H){
         cpp_assert(C > 1, "The shape must be bigger than 0");
         cpp_assert(W > 1, "The shape must be bigger than 0");
