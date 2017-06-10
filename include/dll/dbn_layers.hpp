@@ -121,20 +121,39 @@ template <size_t... I, typename... Layers>
 struct layers_impl<std::index_sequence<I...>, Layers...> : layers_leaf<I, Layers>... {
 };
 
-//Maybe make specialization for Labels = true, Labels = false
-
 template <bool Labels, typename... Layers>
-struct layers {
+struct layers;
+
+template <typename... Layers>
+struct layers <false, Layers...> {
     static constexpr size_t size = sizeof...(Layers);
 
-    static constexpr bool is_dynamic        = Labels ? false : detail::is_dynamic<Layers...>();
-    static constexpr bool is_convolutional  = Labels ? false : detail::is_convolutional<Layers...>();
-    static constexpr bool is_denoising      = Labels ? false : detail::is_denoising<Layers...>();
+    static constexpr bool is_dynamic        = detail::is_dynamic<Layers...>();
+    static constexpr bool is_convolutional  = detail::is_convolutional<Layers...>();
+    static constexpr bool is_denoising      = detail::is_denoising<Layers...>();
     static constexpr bool has_shuffle_layer = detail::has_shuffle_layer<Layers...>();
 
     static_assert(size > 0, "A network must have at least 1 layer");
-    //TODO static_assert(Labels ? detail::validate_label_layers<Layers...>::value : detail::are_layers_valid<Layers...>(), "The inner sizes of RBM must correspond");
-    static_assert(!Labels || !detail::is_dynamic<Layers...>(), "dbn_label_layers should not be used with dynamic RBMs");
+    static_assert(detail::are_layers_valid<Layers...>(), "The inner sizes of RBM must correspond");
+
+    using base_t      = layers_impl<std::make_index_sequence<size>, Layers...>;
+    using layers_list = cpp::type_list<Layers...>;
+
+    base_t base;
+};
+
+template <typename... Layers>
+struct layers <true, Layers...> {
+    static constexpr size_t size = sizeof...(Layers);
+
+    static constexpr bool is_dynamic        = false;
+    static constexpr bool is_convolutional  = false;
+    static constexpr bool is_denoising      = false;
+    static constexpr bool has_shuffle_layer = detail::has_shuffle_layer<Layers...>();
+
+    static_assert(size > 0, "A network must have at least 1 layer");
+    static_assert(detail::validate_label_layers<Layers...>::value, "The inner sizes of RBM must correspond");
+    static_assert(!detail::is_dynamic<Layers...>(), "dbn_label_layers should not be used with dynamic RBMs");
 
     using base_t      = layers_impl<std::make_index_sequence<size>, Layers...>;
     using layers_list = cpp::type_list<Layers...>;
