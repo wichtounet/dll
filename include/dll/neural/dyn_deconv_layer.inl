@@ -232,7 +232,7 @@ struct dyn_deconv_layer final : neural_layer<dyn_deconv_layer<Desc>, Desc> {
      */
     template<typename C>
     void compute_gradients(C& context) const {
-        //context.w_grad = conv_4d_valid_filter(context.errors, context.input);
+        //TODO context.w_grad = conv_4d_valid_filter(context.errors, context.input);
         context.b_grad = etl::mean_r(etl::sum_l(context.errors));
     }
 };
