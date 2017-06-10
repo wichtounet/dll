@@ -62,7 +62,6 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
         static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit), "Invalid hidden unit type");
         static_assert(P, "Computing S without P is not implemented");
 
-        as_derived().template validate_inputs<V1, V2>();
         as_derived().template validate_outputs<H1, H2>();
 
         using namespace etl;
@@ -103,7 +102,6 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
         static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN, "Invalid visible unit type");
         static_assert(P, "Computing S without P is not implemented");
 
-        as_derived().template validate_inputs<V1, V2>();
         as_derived().template validate_outputs<H1, H2>();
 
         using namespace etl;
@@ -132,7 +130,6 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
         static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit), "Invalid hidden unit type");
         static_assert(P, "Computing S without P is not implemented");
 
-        as_derived().template validate_inputs<V1, V2, 1>();
         as_derived().template validate_outputs<H1, H2, 1>();
 
         using namespace etl;
@@ -168,7 +165,6 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
         static_assert(visible_unit == unit_type::BINARY || visible_unit == unit_type::GAUSSIAN, "Invalid visible unit type");
         static_assert(P, "Computing S without P is not implemented");
 
-        as_derived().template validate_inputs<V1, V2, 1>();
         as_derived().template validate_outputs<H1, H2, 1>();
 
         v_a = etl::conv_4d_full(h_s, as_derived().w);

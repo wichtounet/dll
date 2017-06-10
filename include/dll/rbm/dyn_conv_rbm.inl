@@ -278,12 +278,6 @@ private:
         return etl::dyn_matrix<weight, 4>(1UL, k, nh1, nh2);
     }
 
-    template <typename V1, typename V2, size_t Off = 0>
-    static void validate_inputs() {
-        static_assert(etl::decay_traits<V1>::dimensions() == 3 + Off, "Inputs must be 3D");
-        static_assert(etl::decay_traits<V2>::dimensions() == 3 + Off, "Inputs must be 3D");
-    }
-
     template <typename H1, typename H2, size_t Off = 0>
     static void validate_outputs() {
         static_assert(etl::decay_traits<H1>::dimensions() == 3 + Off, "Outputs must be 3D");

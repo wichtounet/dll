@@ -262,20 +262,6 @@ private:
         return etl::fast_dyn_matrix<weight, 1, K, NH1, NH2>();
     }
 
-    template <typename V1, typename V2, size_t Off = 0, cpp_enable_if(etl::all_fast<V1, V2>::value)>
-    static void validate_inputs() {
-        static_assert(etl::decay_traits<V1>::dimensions() == 3 + Off, "Inputs must be 3D");
-        static_assert(etl::decay_traits<V2>::dimensions() == 3 + Off, "Inputs must be 3D");
-
-        static_assert(etl::decay_traits<V1>::template dim<0 + Off>() == NC, "Invalid number of input channels");
-        static_assert(etl::decay_traits<V1>::template dim<1 + Off>() == NV1, "Invalid input dimensions");
-        static_assert(etl::decay_traits<V1>::template dim<2 + Off>() == NV2, "Invalid input dimensions");
-
-        static_assert(etl::decay_traits<V2>::template dim<0 + Off>() == NC, "Invalid number of input channels");
-        static_assert(etl::decay_traits<V2>::template dim<1 + Off>() == NV1, "Invalid input dimensions");
-        static_assert(etl::decay_traits<V2>::template dim<2 + Off>() == NV2, "Invalid input dimensions");
-    }
-
     template <typename H1, typename H2, size_t Off = 0, cpp_enable_if(etl::all_fast<H1, H2>::value)>
     static void validate_outputs() {
         static_assert(etl::decay_traits<H1>::dimensions() == 3 + Off, "Outputs must be 3D");
@@ -288,12 +274,6 @@ private:
         static_assert(etl::decay_traits<H2>::template dim<0 + Off>() == K, "Invalid number of output channels");
         static_assert(etl::decay_traits<H2>::template dim<1 + Off>() == NH1, "Invalid output dimensions");
         static_assert(etl::decay_traits<H2>::template dim<2 + Off>() == NH2, "Invalid output dimensions");
-    }
-
-    template <typename V1, typename V2, size_t Off = 0, cpp_disable_if(etl::all_fast<V1, V2>::value)>
-    static void validate_inputs() {
-        static_assert(etl::decay_traits<V1>::dimensions() == 3 + Off, "Inputs must be 3D");
-        static_assert(etl::decay_traits<V2>::dimensions() == 3 + Off, "Inputs must be 3D");
     }
 
     template <typename H1, typename H2, size_t Off = 0, cpp_disable_if(etl::all_fast<H1, H2>::value)>
