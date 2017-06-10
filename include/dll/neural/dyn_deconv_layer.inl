@@ -17,14 +17,14 @@ namespace dll {
  */
 template <typename Desc>
 struct dyn_deconv_layer final : neural_layer<dyn_deconv_layer<Desc>, Desc> {
-    using desc      = Desc;                  ///< The descriptor type
-    using weight    = typename desc::weight; ///< The weight type
-    using this_type = dyn_deconv_layer<desc>;  ///< This type
-    using base_type = neural_layer<this_type, desc>;
+    using desc      = Desc;                          ///< The descriptor type
+    using weight    = typename desc::weight;         ///< The weight type
+    using this_type = dyn_deconv_layer<desc>;        ///< This type
+    using base_type = neural_layer<this_type, desc>; ///< The base type
 
     static constexpr auto activation_function = desc::activation_function; ///< The layer's activation function
-    static constexpr auto w_initializer       = desc::w_initializer; ///< The initializer for the weights
-    static constexpr auto b_initializer       = desc::b_initializer; ///< The initializer for the biases
+    static constexpr auto w_initializer       = desc::w_initializer;       ///< The initializer for the weights
+    static constexpr auto b_initializer       = desc::b_initializer;       ///< The initializer for the biases
 
     using input_one_t  = etl::dyn_matrix<weight, 3>; ///< The type for one input
     using output_one_t = etl::dyn_matrix<weight, 3>; ///< The type for one output
@@ -52,10 +52,16 @@ struct dyn_deconv_layer final : neural_layer<dyn_deconv_layer<Desc>, Desc> {
     size_t nw1; ///< The first dimension of the filters
     size_t nw2; ///< The second dimension of the filters
 
+    /*!
+     * \brief Construct an empty dyn_deconv_layer
+     */
     dyn_deconv_layer(): base_type() {
         // Nothing else to init
     }
 
+    /*!
+     * \brief Initialize the dynamic layer
+     */
     void init_layer(size_t nc, size_t nv1, size_t nv2, size_t k, size_t nh1, size_t nh2){
         this->nc = nc;
         this->nv1 = nv1;
