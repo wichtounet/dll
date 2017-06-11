@@ -9,6 +9,9 @@
 
 namespace dll {
 
+/*!
+ * \brief Descriptor for a binarization layer
+ */
 template <size_t T_T = 30>
 struct binarize_layer_desc {
     static constexpr size_t T = T_T; ///< The binary threshold
