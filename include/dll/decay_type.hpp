@@ -28,7 +28,11 @@ enum class decay_type {
  * \return one of L1,L2,NONE
  */
 constexpr decay_type w_decay(decay_type t) {
-    return (t == decay_type::L1 || t == decay_type::L1_FULL) ? decay_type::L1 : (t == decay_type::L2 || t == decay_type::L2_FULL) ? decay_type::L2 : (t == decay_type::L1L2 || t == decay_type::L1L2_FULL) ? decay_type::L1L2 : decay_type::NONE;
+    return
+        (t == decay_type::L1 || t == decay_type::L1_FULL)     ? decay_type::L1 :
+        (t == decay_type::L2 || t == decay_type::L2_FULL)     ? decay_type::L2 :
+        (t == decay_type::L1L2 || t == decay_type::L1L2_FULL) ? decay_type::L1L2
+                                                              : decay_type::NONE;
 }
 
 /*!
