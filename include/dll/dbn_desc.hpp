@@ -52,7 +52,7 @@ using dyn_dbn_desc = generic_dyn_dbn_desc<dbn, Layers, Parameters...>;
  * \tparam Layers The set of layers \tparam Parameters The set of
  * parameters for this network
  */
-template <typename Layers, typename... Parameters> j
+template <typename Layers, typename... Parameters>
 using dbn_desc = generic_dbn_desc<dbn, Layers, Parameters...>;
 
 #else
