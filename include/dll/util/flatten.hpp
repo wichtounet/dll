@@ -11,6 +11,11 @@
 
 namespace dll {
 
+/*!
+ * \brief Flatten the given vector of vector in a simple vector
+ * \param deep The vector to flatten
+ * \param flat The flatten vector
+ */
 template <typename One>
 static void flatten_in(std::vector<std::vector<One>>& deep, std::vector<One>& flat) {
     flat.reserve(deep.size());
@@ -20,6 +25,12 @@ static void flatten_in(std::vector<std::vector<One>>& deep, std::vector<One>& fl
     }
 }
 
+/*!
+ * \brief Flatten the given vector of vector in a simple vector and
+ * clear the input vector
+ * \param deep The vector to flatten
+ * \param flat The flatten vector
+ */
 template <typename One>
 static void flatten_in_clr(std::vector<std::vector<One>>& deep, std::vector<One>& flat) {
     flat.reserve(deep.size());
@@ -31,6 +42,11 @@ static void flatten_in_clr(std::vector<std::vector<One>>& deep, std::vector<One>
     deep.clear();
 }
 
+/*!
+ * \brief Flatten the given vector of vector and clear it
+ * \param deep The vector to flatten
+ * \return The flattened vector
+ */
 template <typename One>
 static std::vector<One> flatten_clr(std::vector<std::vector<One>>& deep) {
     std::vector<One> flat;
@@ -40,6 +56,11 @@ static std::vector<One> flatten_clr(std::vector<std::vector<One>>& deep) {
     return flat;
 }
 
+/*!
+ * \brief Flatten the given vector of vector
+ * \param deep The vector to flatten
+ * \return The flattened vector
+ */
 template <typename One>
 static std::vector<One> flatten(std::vector<std::vector<One>>& deep) {
     std::vector<One> flat;

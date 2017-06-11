@@ -29,6 +29,11 @@ struct generic_dyn_dbn_desc : generic_dbn_desc<DBN_T, Layers, Parameters...> {
     using dbn_t = DBN_T<generic_dyn_dbn_desc<DBN_T, Layers, Parameters...>>;
 };
 
+/*!
+ * \brief A descriptor for a multi-layer dynamic network.
+ * \tparam Layers The set of layers
+ * \tparam Parameters The set of parameters for this network
+ */
 template <typename Layers, typename... Parameters>
 using dyn_dbn_desc = generic_dyn_dbn_desc<dbn, Layers, Parameters...>;
 
@@ -36,9 +41,32 @@ using dyn_dbn_desc = generic_dyn_dbn_desc<dbn, Layers, Parameters...>;
 // if DLL_QUICK is set, it is set to hybrid mode by default
 
 #ifndef DLL_QUICK
-template <typename Layers, typename... Parameters>
+
+/*!
+ * \brief A descriptor for a multi-layer network.
+ *
+ * If DLL_QUICK if set, this will default to use dynamic layers
+ * instead of the provided layers when possible. Otherwise, the
+ * layers will be used as is.
+ *
+ * \tparam Layers The set of layers \tparam Parameters The set of
+ * parameters for this network
+ */
+template <typename Layers, typename... Parameters> j
 using dbn_desc = generic_dbn_desc<dbn, Layers, Parameters...>;
+
 #else
+
+/*!
+ * \brief A descriptor for a multi-layer network.
+ *
+ * If DLL_QUICK if set, this will default to use dynamic layers
+ * instead of the provided layers when possible. Otherwise, the
+ * layers will be used as is.
+ *
+ * \tparam Layers The set of layers \tparam Parameters The set of
+ * parameters for this network
+ */
 template <typename Layers, typename... Parameters>
 using dbn_desc = generic_dyn_dbn_desc<dbn, Layers, Parameters...>;
 #endif
@@ -46,6 +74,14 @@ using dbn_desc = generic_dyn_dbn_desc<dbn, Layers, Parameters...>;
 // fast_dbn_desc is always forced to direct mode, will not respect
 // DLL_QUICK
 
+/*!
+ * \brief A descriptor for a multi-layer network.
+ *
+ * This descriptor will always use the layers it is provided as is.
+ *
+ * \tparam Layers The set of layers
+ * \tparam Parameters The set of parameters for this network
+ */
 template <typename Layers, typename... Parameters>
 using fast_dbn_desc = generic_dbn_desc<dbn, Layers, Parameters...>;
 

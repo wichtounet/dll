@@ -17,8 +17,8 @@ namespace dll {
  */
 template <size_t visibles, size_t hiddens, typename... Parameters>
 struct dense_desc {
-    static constexpr size_t num_visible = visibles;
-    static constexpr size_t num_hidden  = hiddens;
+    static constexpr size_t num_visible = visibles; ///< The number of visible units of the dense layer
+    static constexpr size_t num_hidden  = hiddens;  ///< The number of hidden units of the dense layer
 
     /*!
      * A list of all the parameters of the descriptor

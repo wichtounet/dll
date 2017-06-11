@@ -35,19 +35,19 @@ namespace dll {
  */
 template <typename Derived, typename Desc>
 struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
-    using derived_t = Derived;
-    using desc      = Desc; ///< The descriptor of the layer
-    using weight    = typename desc::weight; ///< The data type for this layer
-    using this_type = standard_crbm<derived_t, desc>; ///< The type of this layer
-    using base_type = standard_conv_rbm<Derived, desc>;
+    using derived_t = Derived;                          ///< The derived type
+    using desc      = Desc;                             ///< The descriptor of the layer
+    using weight    = typename desc::weight;            ///< The data type for this layer
+    using this_type = standard_crbm<derived_t, desc>;   ///< The type of this layer
+    using base_type = standard_conv_rbm<Derived, desc>; ///< The base type
 
-    using input_one_t  = typename rbm_base_traits<derived_t>::input_one_t; ///< The type of one input
+    using input_one_t  = typename rbm_base_traits<derived_t>::input_one_t;  ///< The type of one input
     using output_one_t = typename rbm_base_traits<derived_t>::output_one_t; ///< The type of one output
-    using input_t      = typename rbm_base_traits<derived_t>::input_t; ///< The type of the input
-    using output_t     = typename rbm_base_traits<derived_t>::output_t; ///< The type of the output
+    using input_t      = typename rbm_base_traits<derived_t>::input_t;      ///< The type of the input
+    using output_t     = typename rbm_base_traits<derived_t>::output_t;     ///< The type of the output
 
-    static constexpr unit_type visible_unit = desc::visible_unit;
-    static constexpr unit_type hidden_unit  = desc::hidden_unit;
+    static constexpr unit_type visible_unit = desc::visible_unit; ///< The visible unit type
+    static constexpr unit_type hidden_unit  = desc::hidden_unit;  ///< The hidden unit type
 
     standard_crbm() = default;
 

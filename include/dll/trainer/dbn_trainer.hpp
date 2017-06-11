@@ -28,18 +28,24 @@ namespace dll {
  */
 template <typename DBN>
 struct dbn_trainer {
-    using dbn_t      = DBN;
+    using dbn_t      = DBN;                    ///< The DBN type being trained
     using weight     = typename dbn_t::weight; ///< The data type for this layer
-    using error_type = typename dbn_t::weight;
+    using error_type = typename dbn_t::weight; ///< The error type
 
+    /*!
+     * \brief The trainer for the given RBM
+     */
     template <typename R>
     using trainer_t = typename dbn_t::desc::template trainer_t<R>;
 
+    /*!
+     * \brief The watcher for the given RBM
+     */
     template <typename R>
     using watcher_t = typename dbn_t::desc::template watcher_t<R>;
 
     //Initialize the watcher
-    watcher_t<dbn_t> watcher;
+    watcher_t<dbn_t> watcher; ///< The watcher for the DBN
 
     std::unique_ptr<trainer_t<dbn_t>> trainer; ///< The concrete trainer
 

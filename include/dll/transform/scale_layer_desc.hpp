@@ -9,10 +9,13 @@
 
 namespace dll {
 
+/*!
+ * \brief Descriptor for a scaling layer (multiply by A/B)
+ */
 template <int A_T, int B_T>
 struct scale_layer_desc {
-    static constexpr int A = A_T;
-    static constexpr int B = B_T;
+    static constexpr int A = A_T; ///< The scaling multiplicative factor
+    static constexpr int B = B_T; ///< The scaling dividive factor
 
     /*!
      * A list of all the parameters of the descriptor

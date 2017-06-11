@@ -9,8 +9,11 @@
 
 namespace dll {
 
+/*!
+ * \brief List of possible rectifier methods
+ */
 enum class rectifier_method {
-    ABS
+    ABS ///< Rectifier with absolute value
 };
 
 } //end of dll namespace

@@ -294,8 +294,8 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_a
     using big_data_cache_type  = typename data_cache_helper_t::big_cache_type;  ///< The type of the big data cache
     using big_label_cache_type = typename label_cache_helper_t::big_cache_type; ///< The type of the big label cache
 
-    static constexpr bool dll_generator    = true; ///< Simple flag to indicate that the class is a DLL generator
-    static constexpr size_t big_batch_size = desc::BigBatchSize;
+    static constexpr bool dll_generator    = true;               ///< Simple flag to indicate that the class is a DLL generator
+    static constexpr size_t big_batch_size = desc::BigBatchSize; ///< The number of batches kept in cache
 
     big_data_cache_type batch_cache;  ///< The data batch cache
     big_label_cache_type label_cache; ///< The label batch cache
@@ -776,8 +776,11 @@ struct outmemory_data_generator_desc {
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid<cpp::type_list<batch_size_id, big_batch_size_id, horizontal_mirroring_id, vertical_mirroring_id, random_crop_id, elastic_distortion_id, categorical_id, noise_id, threaded_id, nop_id, normalize_pre_id, binarize_pre_id, scale_pre_id, autoencoder_id>,
-                         Parameters...>::value,
+        detail::is_valid<
+            cpp::type_list<
+                batch_size_id, big_batch_size_id, horizontal_mirroring_id, vertical_mirroring_id, random_crop_id,
+                elastic_distortion_id, categorical_id, noise_id, threaded_id, nop_id, normalize_pre_id, binarize_pre_id, scale_pre_id, autoencoder_id>,
+            Parameters...>::value,
         "Invalid parameters type for rbm_desc");
 
     /*!

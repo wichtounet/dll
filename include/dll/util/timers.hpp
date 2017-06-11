@@ -37,7 +37,7 @@ namespace chrono = std::chrono;
 
 namespace dll {
 
-constexpr size_t max_timers = 64;
+constexpr size_t max_timers = 64; ///< The maximum number of timers
 
 /*!
  * \brief A timer

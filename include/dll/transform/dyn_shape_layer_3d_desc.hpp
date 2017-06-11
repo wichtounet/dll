@@ -9,6 +9,9 @@
 
 namespace dll {
 
+/*!
+ * \brief Descriptor for a Dynamic 3D shaping layer.
+ */
 template<typename... Parameters>
 struct dyn_shape_layer_3d_desc {
     /*!

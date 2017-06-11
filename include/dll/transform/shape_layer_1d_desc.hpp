@@ -9,6 +9,9 @@
 
 namespace dll {
 
+/*!
+ * \brief Descriptor for a 1D shaping layer.
+ */
 template <size_t S_T = 30, typename... Parameters>
 struct shape_layer_1d_desc {
     /*!

@@ -11,6 +11,9 @@
 
 namespace dll {
 
+/*!
+ * \brief Descriptor for a 3D upsample layer
+ */
 template <size_t T_I1, size_t T_I2, size_t T_I3, size_t T_C1, size_t T_C2, size_t T_C3, typename... Parameters>
 struct upsample_layer_3d_desc : unpooling_layer_3d_desc<T_I1, T_I2, T_I3, T_C1, T_C2, T_C3, Parameters...> {
     /*!

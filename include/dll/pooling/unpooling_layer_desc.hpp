@@ -9,6 +9,9 @@
 
 namespace dll {
 
+/*!
+ * \brief Descriptor for an unpooling 3D layer
+ */
 template <size_t T_I1, size_t T_I2, size_t T_I3, size_t T_C1, size_t T_C2, size_t T_C3, typename... Parameters>
 struct unpooling_layer_3d_desc {
     static constexpr size_t I1 = T_I1; ///< The input first dimension
@@ -31,6 +34,9 @@ struct unpooling_layer_3d_desc {
         "Invalid parameters type for unpooling_layer");
 };
 
+/*!
+ * \brief Descriptor for a dynamic unpooling 3D layer
+ */
 template <typename... Parameters>
 struct dyn_unpooling_layer_3d_desc {
     /*! The type used to store the weights */

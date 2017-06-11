@@ -16,7 +16,7 @@ enum class sparsity_method {
     NONE,          ///< Don't train a sparse representation
     GLOBAL_TARGET, ///< Sparsity according to (Nair and Hinton, 2009) but using global penalty
     LOCAL_TARGET,  ///< Sparsity according to (Nair and Hinton, 2009)
-    LEE
+    LEE            ///< Sparsity according to (Lee, 2009)
 };
 
 } //end of dll namespace

@@ -11,6 +11,9 @@
 
 namespace dll {
 
+/*!
+ * \brief Descriptor for a dynamic 3D upsample layer
+ */
 template <typename... Parameters>
 struct dyn_upsample_layer_3d_desc : dyn_unpooling_layer_3d_desc<Parameters...> {
     /*!

@@ -9,6 +9,12 @@
 
 namespace dll {
 
+/*!
+ * \brief A descriptor for an activation layer.
+ *
+ * Such a layer only applies an activation function to its inputs
+ * and has no weights.
+ */
 template <typename... Parameters>
 struct activation_layer_desc {
     /*!
@@ -16,6 +22,9 @@ struct activation_layer_desc {
      */
     using parameters = cpp::type_list<Parameters...>;
 
+    /*!
+     * \brief The layer's activation function
+     */
     static constexpr function activation_function = detail::get_value<activation<function::SIGMOID>, Parameters...>::value;
 
     /*!

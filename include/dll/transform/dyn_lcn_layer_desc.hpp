@@ -9,6 +9,9 @@
 
 namespace dll {
 
+/*!
+ * \brief Descriptor for a dynamic Local Contrast Normalization (LCN) layer
+ */
 struct dyn_lcn_layer_desc {
     /*!
      * A list of all the parameters of the descriptor

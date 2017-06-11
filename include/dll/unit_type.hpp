@@ -21,10 +21,20 @@ enum class unit_type {
     RELU6,    ///< Rectified Linear Unit (ReLU) capped at 6 (Krizhevsky,. 2010)
 };
 
+/*!
+ * \brief Indicates if the given unit_type is a RELU type
+ * \param t The type of unit to test
+ * \return true if the given type is of a ReLU type
+ */
 constexpr bool is_relu(unit_type t) {
     return t == unit_type::RELU || t == unit_type::RELU1 || t == unit_type::RELU6;
 }
 
+/*!
+ * \brief Return the string representation of a unit type
+ * \param type The type to transform into string
+ * \return the string representation of the unit type
+ */
 inline std::string to_string(unit_type type) {
     switch (type) {
         case unit_type::BINARY:

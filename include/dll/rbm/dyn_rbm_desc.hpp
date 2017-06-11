@@ -23,12 +23,23 @@ namespace dll {
 template <typename... Parameters>
 struct dyn_rbm_desc {
     /*!
-     * A list of all the parameters of the descriptor
+     * \brief A list of all the parameters of the descriptor
      */
     using parameters = cpp::type_list<Parameters...>;
 
+    /*!
+     * \brief The type of visible unit
+     */
     static constexpr unit_type visible_unit   = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;
+
+    /*!
+     * \brief The type of hidden unit
+     */
     static constexpr unit_type hidden_unit    = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
+
+    /*!
+     * \brief The sparsity penalty for pretraining
+     */
     static constexpr sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;
 
     /*! The type used to store the weights */

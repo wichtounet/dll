@@ -40,10 +40,30 @@ struct conv_rbm_mp_desc {
      * \brief The batch size for training this layer
      */
     static constexpr size_t BatchSize         = detail::get_value<batch_size<1>, Parameters...>::value;
+
+    /*!
+     * \brief The type of visible unit
+     */
     static constexpr unit_type visible_unit   = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;
+
+    /*!
+     * \brief The type of hidden unit
+     */
     static constexpr unit_type hidden_unit    = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
+
+    /*!
+     * \brief The type of pooling unit
+     */
     static constexpr unit_type pooling_unit   = detail::get_value<pooling<unit_type::BINARY>, Parameters...>::value;
+
+    /*!
+     * \brief The sparsity penalty for pretraining
+     */
     static constexpr sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;
+
+    /*!
+     * \brief The sparsity bias mode (LEE)
+     */
     static constexpr bias_mode Bias           = detail::get_value<bias<bias_mode::SIMPLE>, Parameters...>::value;
 
     /*! The type used to store the weights */

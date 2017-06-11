@@ -16,6 +16,9 @@ namespace dll {
 template <typename DBN>
 struct sgd_trainer;
 
+/*!
+ * \brief The default DBN trainer (Stochastic-Gradient Descent)
+ */
 template <typename DBN>
 using default_dbn_trainer_t = sgd_trainer<DBN>;
 
@@ -39,6 +42,10 @@ struct generic_dbn_desc {
      * \brief The batch size for training this layer
      */
     static constexpr size_t BatchSize    = detail::get_value<batch_size<1>, Parameters...>::value;
+
+    /*!
+     * \brief The number of batches kept in cache
+     */
     static constexpr size_t BigBatchSize = detail::get_value<big_batch_size<1>, Parameters...>::value;
 
     /*!
@@ -56,6 +63,9 @@ struct generic_dbn_desc {
      */
     static constexpr bool NormalizePre = parameters::template contains<normalize_pre>();
 
+    /*!
+     * \brief The type of loss used for training
+     */
     static constexpr auto Loss = detail::get_value<loss<loss_function::CATEGORICAL_CROSS_ENTROPY>, Parameters...>::value;
 
     /*! The type of the trainer to use to train the DBN */

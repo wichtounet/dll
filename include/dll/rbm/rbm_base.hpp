@@ -144,12 +144,25 @@ struct rbm_base : layer<Parent> {
 
     //Train denoising autoencoder
 
+    /*!
+     * \brief Train the RBM with the data from the generator as denoising auto-encoder
+     * \param generator The generator to use for data
+     * \param max_epochs The maximum number of epochs for training
+     * \params args The args to pass to the trainer
+     */
     template <bool EnableWatcher = true, typename RW = void, typename Generator, typename... Args>
     double train_denoising(Generator& generator, size_t max_epochs, Args... args) {
         dll::rbm_trainer<parent_t, EnableWatcher, RW> trainer(args...);
         return trainer.train(as_derived(), generator, max_epochs);
     }
 
+    /*!
+     * \brief Train the RBM with the data from the generator as denoising auto-encoder
+     * \param noisy The noisy images
+     * \param clean The clean images
+     * \param max_epochs The maximum number of epochs for training
+     * \params args The args to pass to the trainer
+     */
     template <bool EnableWatcher = true, typename RW = void, typename Noisy, typename Clean, typename... Args>
     double train_denoising(const Noisy& noisy, const Clean& clean, size_t max_epochs, Args... args) {
         // Create a new generator around the data
@@ -161,6 +174,14 @@ struct rbm_base : layer<Parent> {
         return trainer.train(as_derived(), *generator, max_epochs);
     }
 
+    /*!
+     * \brief Train the RBM with the data from the generator as denoising auto-encoder
+     * \param noisy_it Iterator pointing to the first element of the noisy images
+     * \param noisy_end Iterator pointing to the past-the-end element of the noisy images
+     * \param clean_it Iterator pointing to the first element of the clean images
+     * \param clean_end Iterator pointing to the past-the-end element of the clean images
+     * \params args The args to pass to the trainer
+     */
     template <typename NIterator, typename CIterator, bool EnableWatcher = true, typename RW = void, typename... Args>
     double train_denoising(NIterator noisy_it, NIterator noisy_end, CIterator clean_it, CIterator clean_end, size_t max_epochs, Args... args) {
         // Create a new generator around the data

@@ -20,6 +20,11 @@
 
 namespace dll {
 
+/*!
+ * \brief Export the given features to the given file with using DLL format
+ * \param features The features to be exported
+ * \param file The file into which to export the features
+ */
 template <typename Features>
 void export_features_dll(const Features& features, const std::string& file) {
     std::ofstream os(file);

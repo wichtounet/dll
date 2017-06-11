@@ -9,6 +9,9 @@
 
 namespace dll {
 
+/*!
+ * \brief Descriptor for randomization layer
+ */
 struct random_layer_desc {
     /*!
      * A list of all the parameters of the descriptor
