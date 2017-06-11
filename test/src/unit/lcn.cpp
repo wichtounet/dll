@@ -29,7 +29,7 @@ TEST_CASE("unit/cdbn/lcn/mnist/1", "[cdbn][lcn][svm][unit]") {
             , dll::lcn_layer_desc<9>::layer_t
         >>::dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(250);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -38,7 +38,7 @@ TEST_CASE("unit/cdbn/lcn/mnist/1", "[cdbn][lcn][svm][unit]") {
 
     dbn->display();
 
-    dbn->pretrain(dataset.training_images, 20);
+    dbn->pretrain(dataset.training_images, 30);
 
     auto result = dbn->svm_train(dataset.training_images, dataset.training_labels);
     REQUIRE(result);
