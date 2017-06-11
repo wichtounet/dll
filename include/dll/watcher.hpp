@@ -21,7 +21,7 @@ namespace dll {
 
 template <typename R>
 struct default_rbm_watcher {
-    cpp::stop_watch<std::chrono::seconds> watch;
+    cpp::stop_watch<std::chrono::seconds> watch; ///< Timer for the entire training
 
     template <typename RBM = R>
     void training_begin(const RBM& rbm) {
@@ -101,11 +101,10 @@ struct default_dbn_watcher {
     static constexpr bool ignore_sub  = false;
     static constexpr bool replace_sub = false;
 
-    size_t ft_max_epochs = 0;
-    dll::stop_timer ft_epoch_timer;
-    dll::stop_timer ft_batch_timer;
-
-    cpp::stop_watch<std::chrono::seconds> watch;
+    size_t ft_max_epochs = 0;                    ///< The maximum number of epochs
+    dll::stop_timer ft_epoch_timer;              ///< Timer for an epoch
+    dll::stop_timer ft_batch_timer;              ///< Timer for a batch
+    cpp::stop_watch<std::chrono::seconds> watch; ///< Timer for the entire training
 
     void pretraining_begin(const DBN& /*dbn*/, size_t max_epochs) {
         std::cout << "DBN: Pretraining begin for " << max_epochs << " epochs" << std::endl;
@@ -194,22 +193,47 @@ struct default_dbn_watcher {
         std::cout.flush();
     }
 
+    /*!
+     * \brief Indicates the beginning of a fine-tuning batch
+     * \param epoch The current epoch
+     * \param dbn The DBN being trained
+     */
     void ft_batch_start(size_t epoch, const DBN& dbn) {
         cpp_unused(epoch);
         cpp_unused(dbn);
         ft_batch_timer.start();
     }
 
-    void ft_batch_end(size_t epoch, size_t batch, size_t batches, double batch_error, double batch_loss, const DBN&) {
+    /*!
+     * \brief Indicates the end of a fine-tuning batch
+     * \param epoch The current epoch
+     * \param batch The current batch
+     * \param batches THe total number of batches
+     * \param batch_error The batch error
+     * \param batch_loss The batch loss
+     * \param dbn The DBN being trained
+     */
+    void ft_batch_end(size_t epoch, size_t batch, size_t batches, double batch_error, double batch_loss, const DBN& dbn) {
         auto duration = ft_batch_timer.stop();
         printf("Epoch %3ld:%ld/%ld- B. Error: %.5f B. Loss: %.5f Time %ldms\n", epoch, batch, batches, batch_error, batch_loss, duration);
         std::cout.flush();
+
+        cpp_unused(dbn);
     }
 
-    void ft_batch_end(size_t epoch, double batch_error, double batch_loss, const DBN&) {
+    /*!
+     * \brief Indicates the end of a fine-tuning batch
+     * \param epoch The current epoch
+     * \param batch_error The batch error
+     * \param batch_loss The batch loss
+     * \param dbn The DBN being trained
+     */
+    void ft_batch_end(size_t epoch, double batch_error, double batch_loss, const DBN& dbn) {
         auto duration = ft_batch_timer.stop();
         printf("Epoch %3ld - B.Error: %.5f B.Loss: %.5f Time %ldms\n", epoch, batch_error, batch_loss, duration);
         std::cout.flush();
+
+        cpp_unused(dbn);
     }
 
     void lr_adapt(const DBN& dbn) {
@@ -217,8 +241,14 @@ struct default_dbn_watcher {
         std::cout.flush();
     }
 
-    void fine_tuning_end(const DBN&) {
+    /*!
+     * \brief Fine-tuning of the given network just finished
+     * \param dbn The DBN that is being trained
+     */
+    void fine_tuning_end(const DBN& dbn) {
         std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
+
+        cpp_unused(dbn);
     }
 };
 
@@ -242,18 +272,50 @@ struct mute_dbn_watcher {
 
     void pretraining_batch(const DBN& /*dbn*/, size_t /*batch*/) {}
 
+    /*!
+     * \brief Fine-tuning of the given network just started
+     * \param dbn The DBN that is being trained
+     * \param max_epochs The maximum number of epochs to train the network
+     */
     void fine_tuning_begin(const DBN& /*dbn*/, size_t /*max_epochs*/) {}
 
     void ft_epoch_start(size_t /*epoch*/, const DBN& /*dbn*/) {}
 
     void ft_epoch_end(size_t /*epoch*/, double /*error*/, const DBN& /*dbn*/) {}
 
+    /*!
+     * \brief Indicates the beginning of a fine-tuning batch
+     * \param epoch The current epoch
+     * \param dbn The DBN being trained
+     */
     void ft_batch_start(size_t /*epoch*/, const DBN&) {}
+
+    /*!
+     * \brief Indicates the end of a fine-tuning batch
+     * \param epoch The current epoch
+     * \param batch The current batch
+     * \param batches THe total number of batches
+     * \param batch_error The batch error
+     * \param batch_loss The batch loss
+     * \param dbn The DBN being trained
+     */
     void ft_batch_end(size_t /*epoch*/, size_t /*batch*/, size_t /*batches*/, double /*batch_error*/, const DBN& /*dbn*/) {}
+
+    /*!
+     * \brief Indicates the end of a fine-tuning batch
+     * \param epoch The current epoch
+     * \param batch_error The batch error
+     * \param batch_loss The batch loss
+     * \param dbn The DBN being trained
+     */
     void ft_batch_end(size_t /*epoch*/, double /*batch_error*/, const DBN& /*dbn*/) {}
 
     void lr_adapt(const DBN& /*dbn*/) {}
 
+    /*!
+     * \brief Fine-tuning of the given network just finished
+     * \param dbn The DBN that is being trained
+     */
     void fine_tuning_end(const DBN& /*dbn*/) {}
 };
 

@@ -536,6 +536,11 @@ struct opencv_dbn_visualizer {
 
     //Fine-tuning phase
 
+    /*!
+     * \brief Fine-tuning of the given network just started
+     * \param dbn The DBN that is being trained
+     * \param max_epochs The maximum number of epochs to train the network
+     */
     void fine_tuning_begin(const DBN& dbn) {
         std::cout << "Train DBN with \"" << DBN::desc::template trainer_t<DBN>::name() << "\"" << std::endl;
         std::cout << "With parameters:" << std::endl;
@@ -558,6 +563,10 @@ struct opencv_dbn_visualizer {
         std::cout << formatted << std::endl;
     }
 
+    /*!
+     * \brief Fine-tuning of the given network just finished
+     * \param dbn The DBN that is being trained
+     */
     void fine_tuning_end(const DBN&) {
         std::cout << "Total training took " << watch.elapsed() << "s" << std::endl;
 

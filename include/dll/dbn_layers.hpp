@@ -25,19 +25,37 @@ struct is_dynamic : cpp::or_u<layer_traits<Layers>::is_dynamic()...> {};
 template <typename... Layers>
 struct is_convolutional : cpp::or_u<layer_traits<Layers>::is_convolutional_layer()...> {};
 
+/*!
+ * \brief Helper traits indicate if the set contains denoising layers
+ */
 template <typename... Layers>
 struct is_denoising : cpp::and_u<layer_traits<Layers>::is_dense_rbm_layer()...> {};
 
+/*!
+ * \brief Indicates if the layer is a RBM shuffle layer
+ */
 template <typename Layer, typename Enable = void>
 struct has_shuffle_helper;
 
+/*!
+ * \brief Indicates if the layer is a RBM shuffle layer
+ */
 template <typename Layer>
 struct has_shuffle_helper <Layer, std::enable_if_t<layer_traits<Layer>::is_rbm_layer()>> {
+    /*!
+     * \brief true if the layer can be shuffled, false otherwise.
+     */
     static constexpr bool value = rbm_layer_traits<Layer>::has_shuffle();
 };
 
+/*!
+ * \brief Indicates if the layer is a RBM shuffle layer
+ */
 template <typename Layer>
 struct has_shuffle_helper <Layer, std::enable_if_t<!layer_traits<Layer>::is_rbm_layer()>> {
+    /*!
+     * \brief true if the layer can be shuffled, false otherwise.
+     */
     static constexpr bool value = false;
 };
 
@@ -118,20 +136,25 @@ template <typename Indices, typename... Layers>
 struct layers_impl;
 
 template <size_t... I, typename... Layers>
-struct layers_impl<std::index_sequence<I...>, Layers...> : layers_leaf<I, Layers>... {
-};
+struct layers_impl<std::index_sequence<I...>, Layers...> : layers_leaf<I, Layers>... {};
 
+/*!
+ * \brief The layers of a DBN
+ */
 template <bool Labels, typename... Layers>
 struct layers;
 
+/*!
+ * \brief The layers of a DBN
+ */
 template <typename... Layers>
 struct layers <false, Layers...> {
-    static constexpr size_t size = sizeof...(Layers);
+    static constexpr size_t size = sizeof...(Layers); ///< The number of layers in the set
 
-    static constexpr bool is_dynamic        = detail::is_dynamic<Layers...>();
-    static constexpr bool is_convolutional  = detail::is_convolutional<Layers...>();
-    static constexpr bool is_denoising      = detail::is_denoising<Layers...>();
-    static constexpr bool has_shuffle_layer = detail::has_shuffle_layer<Layers...>();
+    static constexpr bool is_dynamic        = detail::is_dynamic<Layers...>();        ///< Indicates if the set contains dynamic layers
+    static constexpr bool is_convolutional  = detail::is_convolutional<Layers...>();  ///< Indicates if the set contains convolutional layers
+    static constexpr bool is_denoising      = detail::is_denoising<Layers...>();      ///< Indicates if the set contains denoising layers
+    static constexpr bool has_shuffle_layer = detail::has_shuffle_layer<Layers...>(); ///< Indicates if the set contains shuffle layers
 
     static_assert(size > 0, "A network must have at least 1 layer");
     static_assert(detail::are_layers_valid<Layers...>(), "The inner sizes of RBM must correspond");
@@ -142,14 +165,17 @@ struct layers <false, Layers...> {
     base_t base;
 };
 
+/*!
+ * \brief The layers of a DBN
+ */
 template <typename... Layers>
 struct layers <true, Layers...> {
-    static constexpr size_t size = sizeof...(Layers);
+    static constexpr size_t size = sizeof...(Layers); ///< The number of layers in the set
 
-    static constexpr bool is_dynamic        = false;
-    static constexpr bool is_convolutional  = false;
-    static constexpr bool is_denoising      = false;
-    static constexpr bool has_shuffle_layer = detail::has_shuffle_layer<Layers...>();
+    static constexpr bool is_dynamic        = false;                                  ///< Indicates if the set contains dynamic layers
+    static constexpr bool is_convolutional  = false;                                  ///< Indicates if the set contains convolutional layers
+    static constexpr bool is_denoising      = false;                                  ///< Indicates if the set contains denoising layers
+    static constexpr bool has_shuffle_layer = detail::has_shuffle_layer<Layers...>(); ///< Indicates if the set contains shuffle layers
 
     static_assert(size > 0, "A network must have at least 1 layer");
     static_assert(detail::validate_label_layers<Layers...>::value, "The inner sizes of RBM must correspond");
@@ -163,30 +189,52 @@ struct layers <true, Layers...> {
 
 //Note: Maybe simplify further removing the type_list
 
+/*!
+ * \brief Get the type of a layer by index
+ * \tparam I The index of the layer
+ * \tparam T The set of layers
+ */
 template <size_t I, typename T>
 struct layer_type;
 
+/*!
+ * \copydoc layer_type
+ */
 template <size_t I>
 struct layer_type<I, cpp::type_list<>> {
     static_assert(I == 0, "index out of range");
     static_assert(I != 0, "index out of range");
 };
 
+/*!
+ * \copydoc layer_type
+ */
 template <typename Head, typename... T>
 struct layer_type<0, cpp::type_list<Head, T...>> {
     using type = Head;
 };
 
+/*!
+ * \copydoc layer_type
+ */
 template <size_t I, typename Head, typename... T>
 struct layer_type<I, cpp::type_list<Head, T...>> {
     using type = typename layer_type<I - 1, cpp::type_list<T...>>::type;
 };
 
+/*!
+ * \copydoc layer_type
+ */
 template <size_t I, bool Labels, typename... Layers>
 struct layer_type<I, layers<Labels, Layers...>> {
     using type = typename layer_type<I, cpp::type_list<Layers...>>::type;
 };
 
+/*!
+ * \brief Get the type of a layer by index
+ * \tparam I The index of the layer
+ * \tparam Layers The set of layers
+ */
 template <size_t I, typename Layers>
 using layer_type_t = typename layer_type<I, Layers>::type;
 
