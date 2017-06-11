@@ -12,11 +12,6 @@
 
 namespace dll {
 
-//TODO This is not as generic as it should be
-//It only supports fast_matrix input otherwise the size of input and
-//output will be different and it will throw an assert One easy
-//solution would be to extend the support for empty matrix in ETL
-
 /*!
  * \brief Simple scaling layer
  *
