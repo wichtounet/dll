@@ -98,8 +98,8 @@ struct default_rbm_watcher {
 
 template <typename DBN>
 struct default_dbn_watcher {
-    static constexpr bool ignore_sub  = false;
-    static constexpr bool replace_sub = false;
+    static constexpr bool ignore_sub  = false; ///< For pretraining of a DBN, indicates if the regular RBM watcher should be used (false) or ignored (true)
+    static constexpr bool replace_sub = false; ///< For pretraining of a DBN, indicates if the DBN watcher should replace (true) the RBM watcher or not (false)
 
     size_t ft_max_epochs = 0;                    ///< The maximum number of epochs
     dll::stop_timer ft_epoch_timer;              ///< Timer for an epoch
@@ -254,14 +254,14 @@ struct default_dbn_watcher {
 
 template <typename DBN>
 struct silent_dbn_watcher : default_dbn_watcher<DBN> {
-    static constexpr bool ignore_sub  = true;
-    static constexpr bool replace_sub = false;
+    static constexpr bool ignore_sub  = true; ///< For pretraining of a DBN, indicates if the regular RBM watcher should be used (false) or ignored (true)
+    static constexpr bool replace_sub = false; ///< For pretraining of a DBN, indicates if the DBN watcher should replace (true) the RBM watcher or not (false)
 };
 
 template <typename DBN>
 struct mute_dbn_watcher {
-    static constexpr bool ignore_sub  = true;
-    static constexpr bool replace_sub = false;
+    static constexpr bool ignore_sub  = true; ///< For pretraining of a DBN, indicates if the regular RBM watcher should be used (false) or ignored (true)
+    static constexpr bool replace_sub = false; ///< For pretraining of a DBN, indicates if the DBN watcher should replace (true) the RBM watcher or not (false)
 
     void pretraining_begin(const DBN& /*dbn*/, size_t /*max_epochs*/) {}
 

@@ -350,8 +350,8 @@ struct opencv_rbm_visualizer<RBM, C, std::enable_if_t<layer_traits<RBM>::is_conv
 
 template <typename DBN, typename C = rbm_ocv_config<>, typename Enable = void>
 struct opencv_dbn_visualizer {
-    static constexpr bool ignore_sub  = false;
-    static constexpr bool replace_sub = true;
+    static constexpr bool ignore_sub  = false; ///< For pretraining of a DBN, indicates if the regular RBM watcher should be used (false) or ignored (true)
+    static constexpr bool replace_sub = true; ///< For pretraining of a DBN, indicates if the DBN watcher should replace (true) the RBM watcher or not (false)
 
     cpp::stop_watch<std::chrono::seconds> watch;
 
@@ -593,8 +593,8 @@ size_t opencv_dbn_visualizer<DBN, C, Enable>::current_image;
 
 template <typename DBN, typename C>
 struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynamic()>> {
-    static constexpr bool ignore_sub  = false;
-    static constexpr bool replace_sub = true;
+    static constexpr bool ignore_sub  = false; ///< For pretraining of a DBN, indicates if the regular RBM watcher should be used (false) or ignored (true)
+    static constexpr bool replace_sub = true; ///< For pretraining of a DBN, indicates if the DBN watcher should replace (true) the RBM watcher or not (false)
 
     cpp::stop_watch<std::chrono::seconds> watch;
 
@@ -785,8 +785,8 @@ size_t opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynami
 
 template <typename DBN, typename C>
 struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convolutional_rbm_layer()>> {
-    static constexpr bool ignore_sub  = false;
-    static constexpr bool replace_sub = true;
+    static constexpr bool ignore_sub  = false; ///< For pretraining of a DBN, indicates if the regular RBM watcher should be used (false) or ignored (true)
+    static constexpr bool replace_sub = true; ///< For pretraining of a DBN, indicates if the DBN watcher should replace (true) the RBM watcher or not (false)
 
     cpp::stop_watch<std::chrono::seconds> watch;
 
