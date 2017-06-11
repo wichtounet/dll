@@ -24,8 +24,8 @@ namespace dll {
 namespace detail {
 
 struct shape {
-    const size_t width;
-    const size_t height;
+    const size_t width;  ///< The width of the window
+    const size_t height; ///< The height of the window
     constexpr shape(size_t width, size_t height)
             : width(width), height(height) {}
 };
@@ -197,22 +197,28 @@ struct base_ocv_rbm_visualizer {
 
 template <size_t P = 20, bool S = true>
 struct rbm_ocv_config {
-    static constexpr auto padding = P;
-    static constexpr auto scale   = S;
+    static constexpr auto padding = P; ///< The padding
+    static constexpr auto scale   = S; ///< The scaling
 };
 
 template <typename RBM, typename C = rbm_ocv_config<>, typename Enable = void>
 struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
-    using rbm_t = RBM;
+    using rbm_t = RBM; ///< The type of the RBM
 
+    /*!
+     * \brief The shape of a filter
+     */
     static constexpr detail::shape filter_shape{
         detail::best_width(rbm_t::num_visible), detail::best_height(rbm_t::num_visible)};
 
+    /*!
+     * \brief The shape of a tile
+     */
     static constexpr detail::shape tile_shape{
         detail::best_width(rbm_t::num_hidden), detail::best_height(rbm_t::num_hidden)};
 
-    static constexpr auto scale   = C::scale;
-    static constexpr auto padding = C::padding;
+    static constexpr auto scale   = C::scale;   ///< The scale
+    static constexpr auto padding = C::padding; ///< The padding
 
     using base_type = base_ocv_rbm_visualizer<RBM>;
     using base_type::buffer_image;
@@ -280,13 +286,20 @@ struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
 
 template <typename RBM, typename C>
 struct opencv_rbm_visualizer<RBM, C, std::enable_if_t<layer_traits<RBM>::is_convolutional_rbm_layer()>> : base_ocv_rbm_visualizer<RBM> {
-    using rbm_t = RBM;
+    using rbm_t = RBM; ///< The type of the RBM
 
+    /*!
+     * \brief The shape of a filter
+     */
     static constexpr detail::shape filter_shape{rbm_t::NW1, rbm_t::NW2};
+
+    /*!
+     * \brief The shape of a tile
+     */
     static constexpr detail::shape tile_shape{detail::best_width(rbm_t::K), detail::best_height(rbm_t::K)};
 
-    static constexpr auto scale   = C::scale;
-    static constexpr auto padding = C::padding;
+    static constexpr auto scale   = C::scale;   ///< The scale
+    static constexpr auto padding = C::padding; ///< The padding
 
     using base_type = base_ocv_rbm_visualizer<RBM>;
     using base_type::buffer_image;
@@ -355,7 +368,7 @@ struct opencv_dbn_visualizer {
 
     cpp::stop_watch<std::chrono::seconds> watch;
 
-    using dbn_t = DBN;
+    using dbn_t = DBN; ///< The DBN being trained
 
     static std::vector<cv::Mat> buffer_images;
     static size_t current_image;
@@ -372,7 +385,8 @@ struct opencv_dbn_visualizer {
 
     template <typename RBM>
     void pretrain_layer(const DBN& /*dbn*/, size_t I, size_t input_size) {
-        using rbm_t                    = RBM;
+        using rbm_t = RBM;
+
         static constexpr auto NV = rbm_t::num_visible;
         static constexpr auto NH = rbm_t::num_hidden;
 
@@ -598,10 +612,10 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynami
 
     cpp::stop_watch<std::chrono::seconds> watch;
 
-    using dbn_t = DBN;
+    using dbn_t = DBN; ///< The type of the DBN
 
-    static std::vector<cv::Mat> buffer_images;
-    static size_t current_image;
+    static std::vector<cv::Mat> buffer_images; ///< The buffer images
+    static size_t current_image;               ///< The current images
 
     opencv_dbn_visualizer() = default;
 

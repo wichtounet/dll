@@ -72,7 +72,7 @@ template <typename RBM, typename Trainer>
 void update_normal(RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:update:normal");
 
-    using rbm_t = RBM;
+    using rbm_t  = RBM;                    ///< The type of the RBM being trained
 
     //Penalty to be applied to weights and hidden biases
     typename rbm_t::weight w_penalty = 0.0;
@@ -157,7 +157,7 @@ template <typename RBM, typename Trainer>
 void update_convolutional(RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:update:conv");
 
-    using rbm_t  = RBM;
+    using rbm_t  = RBM;                    ///< The type of the RBM being trained
     using weight = typename rbm_t::weight; ///< The data type for this layer
 
     //Penalty to be applied to weights and hidden biases
@@ -398,7 +398,9 @@ void train_normal(InputBatch& input_batch, ExpectedBatch& expected_batch, rbm_tr
     dll::auto_timer timer("cd:train:normal");
 
     using namespace etl;
-    using rbm_t = RBM;
+
+    using rbm_t  = RBM;                    ///< The type of the RBM being trained
+    using weight = typename rbm_t::weight; ///< The data type for this layer
 
     compute_gradients_normal<Persistent, K>(input_batch, expected_batch, rbm, t);
 
@@ -554,7 +556,7 @@ template <bool Persistent, size_t N, typename Trainer, typename InputBatch, type
 void train_convolutional(InputBatch& input_batch, ExpectedBatch& expected_batch, rbm_training_context& context, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:train:conv");
 
-    using rbm_t = RBM;
+    using rbm_t  = RBM;                    ///< The type of the RBM being trained
 
     compute_gradients_conv<Persistent, N>(input_batch, expected_batch, rbm, t);
 
@@ -616,7 +618,7 @@ struct base_cd_trainer : base_trainer<RBM> {
     static constexpr auto num_visible = rbm_t::num_visible; ///< The number of visible units
     static constexpr auto batch_size  = rbm_t::batch_size;  ///< The batch size of the RBM
 
-    rbm_t& rbm;
+    rbm_t& rbm; ///< The RBM being trained
 
     etl::fast_matrix<weight, batch_size, num_visible> v1; ///< The Input
     etl::fast_matrix<weight, batch_size, num_visible> vf; ///< The Expected Output
@@ -655,10 +657,10 @@ struct base_cd_trainer : base_trainer<RBM> {
 
     //}}} Sparsity end
 
-    etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_a;
-    etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_s;
+    etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_a; ///< Beginning of the contrastive divergence chain (activations)
+    etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_s; ///< Beginning of the contrastive divergence chain (samples)
 
-    cpp::thread_pool<!rbm_layer_traits<rbm_t>::is_serial()> pool;
+    cpp::thread_pool<!rbm_layer_traits<rbm_t>::is_serial()> pool; ///< The thread pool of the trainer
 
     template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_disable_if(M)>
     base_cd_trainer(rbm_t& rbm)
@@ -741,10 +743,10 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
 
     //}}} Sparsity end
 
-    etl::dyn_matrix<weight> p_h_a;
-    etl::dyn_matrix<weight> p_h_s;
+    etl::dyn_matrix<weight> p_h_a; ///< Beginning of the contrastive divergence chain (activations)
+    etl::dyn_matrix<weight> p_h_s; ///< Beginning of the contrastive divergence chain (samples)
 
-    cpp::thread_pool<!rbm_layer_traits<rbm_t>::is_serial()> pool;
+    cpp::thread_pool<!rbm_layer_traits<rbm_t>::is_serial()> pool; ///< The thread pool of the trainer
 
     template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_disable_if(M)>
     base_cd_trainer(rbm_t& rbm)
@@ -824,7 +826,7 @@ template <size_t N, typename RBM, bool Persistent>
 struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<!layer_traits<RBM>::is_dynamic() && layer_traits<RBM>::is_convolutional_rbm_layer()>> : base_trainer<RBM> {
     static_assert(N > 0, "(P)CD-0 is not a valid training method");
 
-    using rbm_t = RBM;
+    using rbm_t  = RBM;                    ///< The type of the RBM being trained
 
     static constexpr auto K   = rbm_t::K;   ///< The number of filters
     static constexpr auto NC  = rbm_t::NC;  ///< The number of channels
@@ -835,11 +837,11 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<!layer_traits<RBM>::
     static constexpr auto NW1 = rbm_t::NW1; ///< The second dimension of the filter
     static constexpr auto NW2 = rbm_t::NW2; ///< The second dimension of the filter
 
-    static constexpr auto batch_size = rbm_t::batch_size;
+    static constexpr auto batch_size = rbm_t::batch_size; ///< The batch size of the trained RBM
 
     typedef typename rbm_t::weight weight;
 
-    rbm_t& rbm;
+    rbm_t& rbm; ///< The RBM being trained
 
 #define W_DIMS K, NC, NW1, NW2
 
@@ -858,27 +860,27 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<!layer_traits<RBM>::
 
     //{{{ Sparsity
 
-    weight q_global_batch;
-    weight q_global_t;
+    weight q_global_batch; ///< The global batch sparsity
+    weight q_global_t;     ///< The global batch sparsity penalty
 
-    conditional_fast_matrix_t<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET, weight, K, NH1, NH2> q_local_batch;
-    conditional_fast_matrix_t<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET, weight, K, NH1, NH2> q_local_t;
+    conditional_fast_matrix_t<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET, weight, K, NH1, NH2> q_local_batch; ///< The local batch sparsity
+    conditional_fast_matrix_t<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET, weight, K, NH1, NH2> q_local_t;     ///< The local batch sparsity penalty
 
     //}}} Sparsity end
 
     //{{{ Sparsity biases
 
-    conditional_fast_matrix_t<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE, weight, W_DIMS> w_bias;
-    conditional_fast_matrix_t<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE, weight, K> b_bias;
-    conditional_fast_matrix_t<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE, weight, NC> c_bias;
+    conditional_fast_matrix_t<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE, weight, W_DIMS> w_bias; ///< The sparsity of the weights (for LEE sparsity method)
+    conditional_fast_matrix_t<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE, weight, K> b_bias;      ///< The sparsity of the hidden biases (for LEE sparsity method)
+    conditional_fast_matrix_t<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE, weight, NC> c_bias;     ///< The sparsity of the visible biases (for LEE sparsity method)
 
     //}}} Sparsity biases end
 
-    conditional_fast_matrix_t<Persistent, weight, batch_size, K, NH1, NH2> p_h_a;
-    conditional_fast_matrix_t<Persistent, weight, batch_size, K, NH1, NH2> p_h_s;
+    conditional_fast_matrix_t<Persistent, weight, batch_size, K, NH1, NH2> p_h_a; ///< Beginning of the contrastive divergence chain (activations)
+    conditional_fast_matrix_t<Persistent, weight, batch_size, K, NH1, NH2> p_h_s; ///< Beginning of the contrastive divergence chain (samples)
 
-    etl::fast_matrix<weight, W_DIMS> w_pos;
-    etl::fast_matrix<weight, W_DIMS> w_neg;
+    etl::fast_matrix<weight, W_DIMS> w_pos; ///< The positive gradients
+    etl::fast_matrix<weight, W_DIMS> w_neg; ///< The negative gradients
 
     etl::fast_matrix<weight, batch_size, NC, NV1, NV2> v1; ///< Input
     etl::fast_matrix<weight, batch_size, NC, NV1, NV2> vf; ///< Expected
@@ -886,13 +888,13 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<!layer_traits<RBM>::
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> h1_a; ///< The hidden activation at step 1
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> h1_s; ///< The hidden samples at step 1
 
-    etl::fast_matrix<weight, batch_size, NC, NV1, NV2> v2_a;
-    conditional_fast_matrix_t<false, weight, batch_size, NC, NV1, NV2> v2_s;
+    etl::fast_matrix<weight, batch_size, NC, NV1, NV2> v2_a;                 ///< The visible activation at step K
+    conditional_fast_matrix_t<false, weight, batch_size, NC, NV1, NV2> v2_s; ///< The visible samples at step K
 
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> h2_a;                                 ///< The hidden activation at step K
     conditional_fast_matrix_t<(Persistent || N > 1), weight, batch_size, K, NH1, NH2> h2_s; ///< The hidden samples at step K
 
-    cpp::thread_pool<!rbm_layer_traits<rbm_t>::is_serial()> pool;
+    cpp::thread_pool<!rbm_layer_traits<rbm_t>::is_serial()> pool; ///< The thread pool of the trainer
 
     template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_disable_if(M)>
     base_cd_trainer(rbm_t& rbm)
@@ -945,64 +947,63 @@ template <size_t N, typename RBM, bool Persistent>
 struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::is_dynamic() && layer_traits<RBM>::is_convolutional_rbm_layer()>> : base_trainer<RBM> {
     static_assert(N > 0, "(P)CD-0 is not a valid training method");
 
-    using rbm_t = RBM;
+    using rbm_t  = RBM;                    ///< The type of the RBM being trained
+    using weight = typename rbm_t::weight; ///< The data type
 
-    typedef typename rbm_t::weight weight;
-
-    rbm_t& rbm;
+    rbm_t& rbm; ///< The RBM being trained
 
 #define DYN_W_DIMS rbm.k, rbm.nc, rbm.nw1, rbm.nw2
 
     //Gradients
     etl::dyn_matrix<weight, 4> w_grad; //Gradients of shared weights
-    etl::dyn_matrix<weight, 1> b_grad;               //Gradients of hidden biases bk
-    etl::dyn_matrix<weight, 1> c_grad;              //Visible gradient
+    etl::dyn_matrix<weight, 1> b_grad; //Gradients of hidden biases bk
+    etl::dyn_matrix<weight, 1> c_grad; //Visible gradient
 
     //{{{ Momentum
 
-    etl::dyn_matrix<weight, 4> w_inc;
-    etl::dyn_matrix<weight, 1> b_inc;
-    etl::dyn_matrix<weight, 1> c_inc;
+    etl::dyn_matrix<weight, 4> w_inc; //Gradients of the weights of the previous step, for momentum
+    etl::dyn_matrix<weight, 1> b_inc; //Gradients of the hidden biases of the previous step, for momentum
+    etl::dyn_matrix<weight, 1> c_inc; //Gradients of the visible biases of the previous step, for momentum
 
     //}}} Momentum end
 
     //{{{ Sparsity
 
-    weight q_global_batch;
-    weight q_global_t;
+    weight q_global_batch; ///< The global batch sparsity
+    weight q_global_t;     ///< The global batch sparsity penalty
 
-    etl::dyn_matrix<weight, 3> q_local_batch;
-    etl::dyn_matrix<weight, 3> q_local_t;
+    etl::dyn_matrix<weight, 3> q_local_batch; ///< The local batch sparsity
+    etl::dyn_matrix<weight, 3> q_local_t;     ///< The local batch penalty
 
     //}}} Sparsity end
 
     //{{{ Sparsity biases
 
-    etl::dyn_matrix<weight, 4> w_bias;
-    etl::dyn_matrix<weight, 1> b_bias;
-    etl::dyn_matrix<weight, 1> c_bias;
+    etl::dyn_matrix<weight, 4> w_bias; ///< The sparsity of the weights (for LEE sparsity method)
+    etl::dyn_matrix<weight, 1> b_bias; ///< The sparsity of the hidden biases (for LEE sparsity method)
+    etl::dyn_matrix<weight, 1> c_bias; ///< The sparsity of the visible biases (for LEE sparsity method)
 
     //}}} Sparsity biases end
 
-    etl::dyn_matrix<weight, 4> p_h_a;
-    etl::dyn_matrix<weight, 4> p_h_s;
+    etl::dyn_matrix<weight, 4> p_h_a; ///< Beginning of the contrastive divergence chain (activations)
+    etl::dyn_matrix<weight, 4> p_h_s; ///< Beginning of the contrastive divergence chain (samples)
 
-    etl::dyn_matrix<weight, 4> w_pos;
-    etl::dyn_matrix<weight, 4> w_neg;
+    etl::dyn_matrix<weight, 4> w_pos; ///< The positive gradients
+    etl::dyn_matrix<weight, 4> w_neg; ///< The negative gradients
 
-    etl::dyn_matrix<weight, 4> v1;                     //Input
+    etl::dyn_matrix<weight, 4> v1; //Input
     etl::dyn_matrix<weight, 4> vf; //Expected
 
-    etl::dyn_matrix<weight, 4> h1_a;
-    etl::dyn_matrix<weight, 4> h1_s;
+    etl::dyn_matrix<weight, 4> h1_a; ///< The hidden activations at the first step
+    etl::dyn_matrix<weight, 4> h1_s; ///< The hidden samples at the first step
 
-    etl::dyn_matrix<weight, 4> v2_a;
-    etl::dyn_matrix<weight, 4> v2_s;
+    etl::dyn_matrix<weight, 4> v2_a; ///< The visible activations at the first step
+    etl::dyn_matrix<weight, 4> v2_s; ///< The visible samples at the first step
 
-    etl::dyn_matrix<weight, 4> h2_a;
-    etl::dyn_matrix<weight, 4> h2_s;
+    etl::dyn_matrix<weight, 4> h2_a; ///< The hidden activations at the last step
+    etl::dyn_matrix<weight, 4> h2_s; ///< The hidden samples at the last step
 
-    cpp::thread_pool<!rbm_layer_traits<rbm_t>::is_serial()> pool;
+    cpp::thread_pool<!rbm_layer_traits<rbm_t>::is_serial()> pool; ///< The thread pool of the trainer
 
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm),

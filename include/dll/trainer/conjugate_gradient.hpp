@@ -22,13 +22,16 @@
 
 namespace dll {
 
+/*!
+ * \brief The context of the gradient search for a batch
+ */
 template <typename Sample, typename Label>
 struct gradient_context {
-    size_t max_iterations;
-    size_t epoch;
-    batch<Sample> inputs;
-    batch<Label> targets;
-    size_t start_layer;
+    size_t max_iterations; ///< The maximum number of iterations
+    size_t epoch;          ///< The current epoch
+    batch<Sample> inputs;  ///< The inputs
+    batch<Label> targets;  ///< The targets
+    size_t start_layer;    ///< The index of the starting layer
 
     gradient_context(batch<Sample> i, batch<Label> t, size_t e)
             : max_iterations(5), epoch(e), inputs(std::move(i)), targets(std::move(t)), start_layer(0) {
@@ -38,14 +41,14 @@ struct gradient_context {
 
 template <typename DBN, bool Debug = false>
 struct cg_trainer_base {
-    using dbn_t  = DBN;
+    using dbn_t  = DBN;                    ///< The DBN being trained
     using weight = typename dbn_t::weight; ///< The data type for this layer
 
     using this_type = cg_trainer_base<DBN, Debug>; ///< The type of this layer
 
-    static constexpr size_t layers = dbn_t::layers;
+    static constexpr size_t layers = dbn_t::layers; ///< The number of layers of the DBN
 
-    dbn_t& dbn;
+    dbn_t& dbn; ///< The DBN being trained
 
     explicit cg_trainer_base(dbn_t& dbn) : dbn(dbn) {
         dbn.for_each_layer([](auto& r1) {
@@ -589,12 +592,22 @@ struct cg_trainer_base {
     }
 };
 
+/*!
+ * \brief A Conjugate-Gradient trainer for the given DBN
+ */
 template <typename DBN>
 using cg_trainer_simple = cg_trainer_base<DBN, false>;
 
+/*!
+ * \brief A Conjugate-Gradient trainer for the given DBN
+ */
 template <typename DBN>
 using cg_trainer = cg_trainer_base<DBN, false>;
 
+/*!
+ * \brief A Conjugate-Gradient trainer for the given DBN, with
+ * verbose debugging.
+ */
 template <typename DBN>
 using cg_trainer_debug = cg_trainer_base<DBN, true>;
 
