@@ -400,7 +400,6 @@ void train_normal(InputBatch& input_batch, ExpectedBatch& expected_batch, rbm_tr
     using namespace etl;
 
     using rbm_t  = RBM;                    ///< The type of the RBM being trained
-    using weight = typename rbm_t::weight; ///< The data type for this layer
 
     compute_gradients_normal<Persistent, K>(input_batch, expected_batch, rbm, t);
 
