@@ -18,16 +18,31 @@ namespace dbn_detail {
 
 // extract_weight
 
+/*!
+ * \brief Extrac the weight type from the set of the layers of the DBN
+ */
 template <size_t I, typename DBN, typename Enable = void>
 struct extract_weight_t;
 
+/*!
+ * \copydoc extract_weight_t
+ */
 template <size_t I, typename DBN>
 struct extract_weight_t<I, DBN, std::enable_if_t<layer_traits<typename DBN::template layer_type<I>>::has_same_type()>> {
+    /*!
+     * \brief The extracted weight type
+     */
     using type = typename extract_weight_t<I + 1, DBN>::type;
 };
 
+/*!
+ * \copydoc extract_weight_t
+ */
 template <size_t I, typename DBN>
 struct extract_weight_t<I, DBN, cpp::disable_if_t<layer_traits<typename DBN::template layer_type<I>>::has_same_type()>> {
+    /*!
+     * \brief The extracted weight type
+     */
     using type = typename DBN::template layer_type<I>::weight;
 };
 

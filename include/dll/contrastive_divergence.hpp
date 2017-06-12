@@ -68,6 +68,10 @@ void apply_clip_gradients(Grad& grad, T t, size_t n){
 
 /* The update weights procedure */
 
+/*!
+ * \brief Given the gradients of the RBM, update it according to the training
+ * configuration.
+ */
 template <typename RBM, typename Trainer>
 void update_normal(RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:update:normal");
@@ -153,6 +157,10 @@ void update_normal(RBM& rbm, Trainer& t) {
     nan_check_deep_3(rbm.w, rbm.b, rbm.c);
 }
 
+/*!
+ * \brief Given the gradients of the RBM, update it according to the training
+ * configuration.
+ */
 template <typename RBM, typename Trainer>
 void update_convolutional(RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:update:conv");
@@ -673,6 +681,9 @@ struct base_cd_trainer : base_trainer<RBM> {
         static_assert(rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
+    /*!
+     * \brief Update the given RBM
+     */
     void update(RBM& rbm) {
         update_normal(rbm, *this);
     }
@@ -699,11 +710,10 @@ template <size_t N, typename RBM, bool Persistent>
 struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::is_dynamic() && !layer_traits<RBM>::is_convolutional_rbm_layer()>> : base_trainer<RBM> {
     static_assert(N > 0, "(P)CD-0 is not a valid training method");
 
-    typedef RBM rbm_t;
+    using rbm_t  = RBM;                    ///< The type of RBM being trained
+    using weight = typename rbm_t::weight; ///< The weight data type
 
-    typedef typename rbm_t::weight weight;
-
-    rbm_t& rbm;
+    rbm_t& rbm; ///< The RBM being trained
 
     etl::dyn_matrix<weight> v1; ///< Input
     etl::dyn_matrix<weight> vf; ///< Expected
@@ -799,6 +809,9 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
         static_assert(rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
+    /*!
+     * \brief Update the given RBM
+     */
     void update(RBM& rbm) {
         update_normal(rbm, *this);
     }
@@ -826,6 +839,7 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<!layer_traits<RBM>::
     static_assert(N > 0, "(P)CD-0 is not a valid training method");
 
     using rbm_t  = RBM;                    ///< The type of the RBM being trained
+    using weight = typename rbm_t::weight; ///< The weight data type
 
     static constexpr auto K   = rbm_t::K;   ///< The number of filters
     static constexpr auto NC  = rbm_t::NC;  ///< The number of channels
@@ -838,22 +852,20 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<!layer_traits<RBM>::
 
     static constexpr auto batch_size = rbm_t::batch_size; ///< The batch size of the trained RBM
 
-    typedef typename rbm_t::weight weight;
-
     rbm_t& rbm; ///< The RBM being trained
 
 #define W_DIMS K, NC, NW1, NW2
 
     //Gradients
-    etl::fast_matrix<weight, W_DIMS> w_grad; //Gradients of the weights weights
-    etl::fast_vector<weight, K> b_grad;      //Gradients of hidden biases
-    etl::fast_vector<weight, NC> c_grad;     //Gradients of visible biases
+    etl::fast_matrix<weight, W_DIMS> w_grad; ///< Gradients of the weights weights
+    etl::fast_vector<weight, K> b_grad;      ///< Gradients of hidden biases
+    etl::fast_vector<weight, NC> c_grad;     ///< Gradients of visible biases
 
     //{{{ Momentum
 
-    etl::fast_matrix<weight, W_DIMS> w_inc; //Gradients of the weights weights of the previous step, for momentum
-    etl::fast_vector<weight, K> b_inc;      //Gradients of the hidden biases of the previous step, for momentum
-    etl::fast_vector<weight, NC> c_inc;     //Gradients of the visible biases of the previous step, for momentum
+    etl::fast_matrix<weight, W_DIMS> w_inc; ///< Gradients of the weights weights of the previous step, for momentum
+    etl::fast_vector<weight, K> b_inc;      ///< Gradients of the hidden biases of the previous step, for momentum
+    etl::fast_vector<weight, NC> c_inc;     ///< Gradients of the visible biases of the previous step, for momentum
 
     //}}} Momentum end
 
@@ -920,6 +932,9 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<!layer_traits<RBM>::
         static_assert(rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
+    /*!
+     * \brief Update the given RBM
+     */
     void update(RBM& rbm) {
         update_convolutional(rbm, *this);
     }
@@ -954,15 +969,15 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
 #define DYN_W_DIMS rbm.k, rbm.nc, rbm.nw1, rbm.nw2
 
     //Gradients
-    etl::dyn_matrix<weight, 4> w_grad; //Gradients of shared weights
-    etl::dyn_matrix<weight, 1> b_grad; //Gradients of hidden biases bk
-    etl::dyn_matrix<weight, 1> c_grad; //Visible gradient
+    etl::dyn_matrix<weight, 4> w_grad; ///< Gradients of shared weights
+    etl::dyn_matrix<weight, 1> b_grad; ///< Gradients of hidden biases bk
+    etl::dyn_matrix<weight, 1> c_grad; ///< Visible gradient
 
     //{{{ Momentum
 
-    etl::dyn_matrix<weight, 4> w_inc; //Gradients of the weights of the previous step, for momentum
-    etl::dyn_matrix<weight, 1> b_inc; //Gradients of the hidden biases of the previous step, for momentum
-    etl::dyn_matrix<weight, 1> c_inc; //Gradients of the visible biases of the previous step, for momentum
+    etl::dyn_matrix<weight, 4> w_inc; ///< Gradients of the weights of the previous step, for momentum
+    etl::dyn_matrix<weight, 1> b_inc; ///< Gradients of the hidden biases of the previous step, for momentum
+    etl::dyn_matrix<weight, 1> c_inc; ///< Gradients of the visible biases of the previous step, for momentum
 
     //}}} Momentum end
 
@@ -990,8 +1005,8 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
     etl::dyn_matrix<weight, 4> w_pos; ///< The positive gradients
     etl::dyn_matrix<weight, 4> w_neg; ///< The negative gradients
 
-    etl::dyn_matrix<weight, 4> v1; //Input
-    etl::dyn_matrix<weight, 4> vf; //Expected
+    etl::dyn_matrix<weight, 4> v1; ///< Input
+    etl::dyn_matrix<weight, 4> vf; ///< Expected
 
     etl::dyn_matrix<weight, 4> h1_a; ///< The hidden activations at the first step
     etl::dyn_matrix<weight, 4> h1_s; ///< The hidden samples at the first step
@@ -1034,6 +1049,9 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
         //Nothign else to init
     }
 
+    /*!
+     * \brief Update the given RBM
+     */
     void update(RBM& rbm) {
         update_convolutional(rbm, *this);
     }
