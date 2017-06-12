@@ -9,6 +9,14 @@
 
 #include <chrono>
 
+#ifndef DLL_NO_TIMERS
+
+#include <iosfwd>
+#include <iomanip>
+#include <sstream>
+
+#endif
+
 namespace dll {
 
 /*!
@@ -50,10 +58,6 @@ struct auto_timer {
 };
 
 #else
-
-#include <iosfwd>
-#include <iomanip>
-#include <sstream>
 
 constexpr size_t max_timers = 64; ///< The maximum number of timers
 
@@ -102,8 +106,7 @@ struct timer_t {
     timer_t& operator=(timer_t&& rhs) {
         if (&rhs != this) {
             name     = std::move(rhs.name);
-            count    = rhs.count.load();
-            duration = rhs.duration.load();
+            count    = rhs.count.load(); duration = rhs.duration.load();
         }
 
         return *this;
