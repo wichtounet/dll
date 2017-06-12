@@ -466,6 +466,9 @@ struct elastic_distorter<Desc, std::enable_if_t<Desc::ElasticDistortion>> {
         }
     }
 
+    /*!
+     * \brief Apply a gaussian blur on the distortion matrix
+     */
     void gaussian_blur(const etl::dyn_matrix<weight>& d, etl::dyn_matrix<weight>& d_blur) {
         const size_t width  = etl::dim<0>(d);
         const size_t height = etl::dim<1>(d);

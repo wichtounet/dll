@@ -25,6 +25,10 @@
 
 namespace dll {
 
+/*!
+ * \brief Build the context for a DBN for the given sequence of layers
+ * \param dbn The DBN to build the context from
+ */
 template<template<typename, typename, size_t> class Context, typename DBN, size_t... I>
 auto build_context(DBN& dbn, std::index_sequence<I...> /*seq*/){
     return std::make_tuple
@@ -36,25 +40,35 @@ auto build_context(DBN& dbn, std::index_sequence<I...> /*seq*/){
         );
 }
 
+/*!
+ * \brief Build the context for a DBN
+ * \param dbn The DBN to build the context from
+ */
 template<template<typename, typename, size_t> class Context, typename DBN>
 auto build_context(DBN& dbn){
     return build_context<Context>(dbn, std::make_index_sequence<DBN::layers>());
 }
 
+/*!
+ * \brief Simple gradient descent trainer
+ */
 template <typename DBN>
 struct sgd_trainer {
-    using dbn_t     = DBN;
+    using dbn_t     = DBN;                    ///< The type of DBN being trained
     using weight    = typename dbn_t::weight; ///< The data type for this layer
-    using this_type = sgd_trainer<dbn_t>; ///< The type of this layer
+    using this_type = sgd_trainer<dbn_t>;     ///< The type of this layer
 
-    static constexpr auto layers     = dbn_t::layers;
-    static constexpr auto batch_size = dbn_t::batch_size;
+    static constexpr auto layers     = dbn_t::layers;     ///< The number of layers
+    static constexpr auto batch_size = dbn_t::batch_size; ///< The batch size for training
 
-    dbn_t& dbn;
-    decltype(build_context<sgd_context>(dbn)) full_context;
+    dbn_t& dbn;                                             ///< The DBN being trained
+    decltype(build_context<sgd_context>(dbn)) full_context; ///< The context
 
     // Transform layers need to inherit dimensions from back
 
+    /*!
+     * \brief Inherit the layer dimensions from front
+     */
     template<typename L1, typename L2, cpp_enable_if(decay_layer_traits<typename L2::first_type>::is_transform_layer())>
     static void inherit_from_front(L1& l1, L2& l2){
         auto& ctx1 = *l1.second;
@@ -67,9 +81,16 @@ struct sgd_trainer {
         }
     }
 
+    /*!
+     * \brief Inherit the layer dimensions from front
+     */
     template<typename L1, typename L2, cpp_disable_if(decay_layer_traits<typename L2::first_type>::is_transform_layer())>
     static void inherit_from_front(L1& /*l1*/, L2& /*l2*/){ }
 
+    /*!
+     * \brief construct a new sgd_trainer
+     * \param dbn The DBN being trained
+     */
     explicit sgd_trainer(dbn_t& dbn) : dbn(dbn), full_context(build_context<sgd_context>(dbn)) {
         // Inherit dimensions from front to end (for transform layers)
 
@@ -82,10 +103,16 @@ struct sgd_trainer {
         });
     }
 
+    /*!
+     * \brief Initialize the training
+     */
     void init_training(size_t) {}
 
     // TODO Replace SFINAE with if constexpr
 
+    /*!
+     * \brief Compute the errors of the last layer given the loss function
+     */
     template<loss_function F, typename Labels, cpp_enable_if(F == loss_function::CATEGORICAL_CROSS_ENTROPY)>
     void last_errors(bool full_batch, size_t n, const Labels& labels){
         auto& last_ctx   = *std::get<layers - 1>(full_context).second;
@@ -105,6 +132,9 @@ struct sgd_trainer {
         // canceling out in the derivative of the loss
     }
 
+    /*!
+     * \brief Compute the errors of the last layer given the loss function
+     */
     template<loss_function F, typename Labels, cpp_enable_if(F == loss_function::MEAN_SQUARED_ERROR)>
     void last_errors(bool full_batch, size_t n, const Labels& labels){
         auto& last_layer = std::get<layers - 1>(full_context).first;
@@ -124,6 +154,9 @@ struct sgd_trainer {
         last_layer.adapt_errors(last_ctx);
     }
 
+    /*!
+     * \brief Compute the errors of the last layer given the loss function
+     */
     template<loss_function F, typename Labels, cpp_enable_if(F == loss_function::BINARY_CROSS_ENTROPY)>
     void last_errors(bool full_batch, size_t n, const Labels& labels){
         auto& last_layer = std::get<layers - 1>(full_context).first;
@@ -147,9 +180,18 @@ struct sgd_trainer {
         last_layer.adapt_errors(last_ctx);
     }
 
+    /*!
+     * \brief Train a batch of data
+     * \param epoch The current epoch
+     * \param inputs A batch of inputs
+     * \param labels A batch of labels
+     * \return a pair containing the error and the loss for the batch
+     */
     template <typename Inputs, typename Labels>
-    std::pair<double, double> train_batch(size_t /*epoch*/, const Inputs& inputs, const Labels& labels) {
+    std::pair<double, double> train_batch(size_t epoch, const Inputs& inputs, const Labels& labels) {
         dll::auto_timer timer("sgd::train_batch");
+
+        cpp_unused(epoch);
 
         const auto n = etl::dim<0>(inputs);
 
@@ -253,6 +295,9 @@ struct sgd_trainer {
 
     // TODO Replac with if constexpr
 
+    /*!
+     * \brief Apply the gradients to the given layer
+     */
     template <typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && dbn_traits<dbn_t>::has_momentum())>
     void apply_gradients(L& layer, C& context, size_t n) {
         dll::auto_timer timer("sgd::apply_grad");
@@ -278,6 +323,9 @@ struct sgd_trainer {
         nan_check_deep(layer.b);
     }
 
+    /*!
+     * \brief Apply the gradients to the given layer
+     */
     template <typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && !dbn_traits<dbn_t>::has_momentum())>
     void apply_gradients(L& layer, C& context, size_t n) {
         dll::auto_timer timer("sgd::apply_grad");
@@ -295,28 +343,43 @@ struct sgd_trainer {
         nan_check_deep(layer.b);
     }
 
+    /*!
+     * \brief Apply the gradients to the given layer
+     */
     template <typename L, typename C, cpp_disable_if(decay_layer_traits<L>::is_neural_layer())>
     void apply_gradients(L& /*layer*/, C& /*context*/, size_t /*n*/) {
         //Pooling and transform layers have no weights, therefore no
         //gradients
     }
 
+    /*!
+     * \brief Update the given gradients according to the given decay function
+     */
     template <decay_type decay, typename V, typename G, cpp_enable_if(decay == decay_type::L1)>
     void update_grad(const V& value, G& grad, double penalty) {
         grad = grad - dbn.l1_weight_cost * abs(value) - penalty;
     }
 
+    /*!
+     * \brief Update the given gradients according to the given decay function
+     */
     template <decay_type decay, typename V, typename G, cpp_enable_if(decay == decay_type::L2)>
     void update_grad(const V& value, G& grad, double penalty) {
         grad = grad - dbn.l2_weight_cost * value - penalty;
     }
 
+    /*!
+     * \brief Update the given gradients according to the given decay function
+     */
     template <decay_type decay, typename V, typename G, cpp_enable_if(decay == decay_type::L1L2)>
     void update_grad(const V& value, G& grad, double penalty) {
         grad = grad - dbn.l1_weight_cost * abs(value) - dbn.l2_weight_cost * value - penalty;
 
     }
 
+    /*!
+     * \brief Update the given gradients according to the given decay function
+     */
     template <decay_type decay, typename V, typename G, cpp_enable_if(decay == decay_type::NONE)>
     void update_grad(const V& value, G& grad, double penalty) {
         if(penalty != 0.0){
@@ -326,6 +389,9 @@ struct sgd_trainer {
         cpp_unused(value);
     }
 
+    /*!
+     * \brief Return the name of the trainer
+     */
     static std::string name() {
         return "Stochastic Gradient Descent";
     }
