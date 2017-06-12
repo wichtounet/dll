@@ -51,11 +51,6 @@ struct dbn_trainer {
 
     error_type error      = 0.0; ///< The current error
 
-    template <typename Generator>
-    error_type train(DBN& dbn, Generator& generator, size_t max_epochs) {
-        return train_impl(dbn, generator, max_epochs);
-    }
-
     /*!
      * \brief Initialize the training
      * \param dbn The network to train
@@ -167,7 +162,7 @@ struct dbn_trainer {
 
         //Train one mini-batch at a time
         while(generator.has_next_batch()){
-            dll::auto_timer timer("dbn::trainer::train_impl::epoch::batch");
+            dll::auto_timer timer("dbn::trainer::train::epoch::batch");
 
             if /*constexpr*/ (dbn_traits<dbn_t>::is_verbose()){
                 watcher.ft_batch_start(epoch, dbn);
@@ -192,7 +187,7 @@ struct dbn_trainer {
         double new_loss;
 
         if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()){
-            dll::auto_timer timer("dbn::trainer::train_impl::epoch::error");
+            dll::auto_timer timer("dbn::trainer::train::epoch::error");
 
             std::tie(new_error, new_loss) = dbn.evaluate_metrics(generator);
         } else {
@@ -203,10 +198,9 @@ struct dbn_trainer {
         return {new_loss, new_error};
     }
 
-private:
     template <typename Generator>
-    error_type train_impl(DBN& dbn, Generator& generator, size_t max_epochs) {
-        dll::auto_timer timer("dbn::trainer::train_impl");
+    error_type train(DBN& dbn, Generator& generator, size_t max_epochs) {
+        dll::auto_timer timer("dbn::trainer::train");
 
         // Initialization steps
         start_training(dbn, max_epochs);
@@ -214,7 +208,7 @@ private:
         //Train the model for max_epochs epoch
 
         for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
-            dll::auto_timer timer("dbn::trainer::train_impl::epoch");
+            dll::auto_timer timer("dbn::trainer::train::epoch");
 
             // Shuffle before the epoch if necessary
             if(dbn_traits<dbn_t>::shuffle()){
