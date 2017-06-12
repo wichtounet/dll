@@ -153,7 +153,7 @@ TEST_CASE("hybrid/mnist/8", "[dense][dbn][mnist][sgd]") {
         dll::dbn_layers<
             dll::dense_desc<28 * 28, 100, dll::activation<dll::function::SIGMOID>>::layer_t,
             dll::dense_desc<100, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::weight_decay<>, dll::scale_pre<255>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::weight_decay<>, dll::scale_pre<255>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(350);
     REQUIRE(!dataset.training_images.empty());

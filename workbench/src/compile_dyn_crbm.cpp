@@ -33,7 +33,7 @@ int main(int, char**) {
                 dll::dyn_mp_layer_3d_desc<>::layer_t,                                             \
                 dll::dyn_rbm_desc<dll::momentum>::layer_t,                                        \
                 dll::dyn_rbm_desc<dll::momentum, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>, \
-            dll::trainer<dll::sgd_trainer>, dll::momentum, dll::batch_size<64>>::dbn_t;           \
+            dll::trainer<dll::sgd_trainer>, dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<64>>::dbn_t;           \
     auto NAME = std::make_unique<NAME_T>();                                                       \
     NAME->template layer_get<0>().init_layer(1, 28, 28, 10 + F, 5, 5);                            \
     NAME->template layer_get<1>().init_layer(10 + F, 24, 24, 1, 2, 2);                            \

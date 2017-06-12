@@ -55,7 +55,7 @@ TEST_CASE("unit/dyn_dbn/mnist/2", "[dyn_dbn][sgd][unit]") {
             dll::dyn_rbm_desc<dll::momentum, dll::init_weights>::layer_t,
             dll::dyn_rbm_desc<dll::momentum>::layer_t,
             dll::dyn_rbm_desc<dll::momentum, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
-        dll::trainer<dll::sgd_trainer>, dll::momentum, dll::batch_size<25>>::dbn_t;
+        dll::trainer<dll::sgd_trainer>, dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<25>>::dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(250);
 

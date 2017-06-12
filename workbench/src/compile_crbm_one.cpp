@@ -33,7 +33,7 @@ int main(int, char**) {
                 dll::mp_layer_3d_desc<12 + F, 8, 8, 1, 2, 2>::layer_t,                                                          \
                 dll::rbm_desc<(12 + F) * 4 * 4, 500 + F, dll::momentum, dll::batch_size<64>>::layer_t,                          \
                 dll::rbm_desc<500 + F, 10, dll::momentum, dll::batch_size<64>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>, \
-            dll::trainer<dll::sgd_trainer>, dll::momentum, dll::batch_size<64>>::dbn_t;                                         \
+            dll::trainer<dll::sgd_trainer>, dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<64>>::dbn_t;                                         \
     auto NAME = std::make_unique<NAME_T>();                                                                                     \
     NAME->pretrain(dataset.training_images, 10);                                                                                \
     NAME->fine_tune(dataset.training_images, dataset.training_labels, 10);

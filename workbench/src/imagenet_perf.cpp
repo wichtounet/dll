@@ -69,7 +69,7 @@ void first_ex(){
 
             dll::dense_desc<10 * 6 * 6, 500>::layer_t,
             dll::dense_desc<500, 1000, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::batch_mode, dll::verbose, dll::big_batch_size<5>, dll::batch_size<B>, dll::trainer<dll::sgd_trainer>>::dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::batch_mode, dll::verbose, dll::big_batch_size<5>, dll::batch_size<B>, dll::trainer<dll::sgd_trainer>>::dbn_t;
 
     auto net = std::make_unique<dbn_t>();
 
@@ -131,7 +131,7 @@ void second_ex(){
 
             dll::dense_desc<32 * 8 * 8, 2048>::layer_t,
             dll::dense_desc<2048, 1000, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::verbose, dll::batch_mode, dll::big_batch_size<5>, dll::batch_size<B>, dll::trainer<dll::sgd_trainer>>::dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::verbose, dll::batch_mode, dll::big_batch_size<5>, dll::batch_size<B>, dll::trainer<dll::sgd_trainer>>::dbn_t;
 
     auto net = std::make_unique<dbn_t>();
 

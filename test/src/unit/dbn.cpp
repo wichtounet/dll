@@ -147,7 +147,7 @@ TEST_CASE("unit/dbn/mnist/5", "[dbn][sgd][unit]") {
             dll::rbm_desc<28 * 28, 150, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
             dll::rbm_desc<150, 200, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
-        dll::trainer<dll::sgd_trainer>, dll::momentum, dll::batch_size<25>>::dbn_t;
+        dll::trainer<dll::sgd_trainer>, dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<25>>::dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(250);
 
@@ -365,7 +365,7 @@ TEST_CASE("unit/dbn/mnist/12", "[dbn][unit]") {
             dll::rbm_desc<28 * 28, 150, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
             dll::rbm_desc<150, 200, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
-        dll::batch_mode, dll::momentum, dll::trainer<dll::sgd_trainer>, dll::batch_size<25>>::dbn_t dbn_t;
+        dll::batch_mode, dll::updater<dll::updater_type::MOMENTUM>, dll::trainer<dll::sgd_trainer>, dll::batch_size<25>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(250);
 

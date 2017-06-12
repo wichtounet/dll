@@ -45,7 +45,7 @@ TEST_CASE("dbn/sgd/2", "[dbn][mnist][sgd]") {
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
             dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
-        dll::trainer<dll::sgd_trainer>, dll::no_epoch_error, dll::momentum, dll::batch_size<10>>::dbn_t dbn_t;
+        dll::trainer<dll::sgd_trainer>, dll::no_epoch_error, dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<10>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(1000);
 
@@ -137,7 +137,7 @@ TEST_CASE("dbn/sgd/6", "[dbn][mnist][sgd]") {
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
             dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::layer_t,
             dll::rbm_desc<200, 10, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
-        dll::trainer<dll::sgd_trainer>, dll::momentum, dll::weight_decay<dll::decay_type::L2>, dll::batch_size<100>>::dbn_t dbn_t;
+        dll::trainer<dll::sgd_trainer>, dll::updater<dll::updater_type::MOMENTUM>, dll::weight_decay<dll::decay_type::L2>, dll::batch_size<100>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(300);
     REQUIRE(!dataset.training_images.empty());

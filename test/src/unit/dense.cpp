@@ -82,7 +82,7 @@ TEST_CASE("unit/dense/sgd/3", "[unit][dense][dbn][mnist][sgd]") {
         dll::dbn_layers<
             dll::dense_desc<28 * 28, 100>::layer_t,
             dll::dense_desc<100, 10>::layer_t>,
-        dll::momentum, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(350);
     REQUIRE(!dataset.training_images.empty());
@@ -105,7 +105,7 @@ TEST_CASE("unit/dense/sgd/4", "[unit][dense][dbn][mnist][sgd]") {
         dll::dbn_layers<
             dll::dense_desc<28 * 28, 125>::layer_t,
             dll::dense_desc<125, 10>::layer_t>,
-        dll::momentum, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(350);
     REQUIRE(!dataset.training_images.empty());
@@ -128,7 +128,7 @@ TEST_CASE("unit/dense/sgd/5", "[unit][dense][dbn][mnist][sgd]") {
         dll::dbn_layers<
             dll::dense_desc<28 * 28, 175, dll::activation<dll::function::TANH>>::layer_t,
             dll::dense_desc<175, 10, dll::activation<dll::function::TANH>>::layer_t>,
-        dll::momentum, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(350);
     REQUIRE(!dataset.training_images.empty());
@@ -151,7 +151,7 @@ TEST_CASE("unit/dense/sgd/6", "[unit][dense][dbn][mnist][sgd]") {
         dll::dbn_layers<
             dll::dense_desc<28 * 28, 100, dll::activation<dll::function::IDENTITY>>::layer_t,
             dll::dense_desc<100, 10, dll::activation<dll::function::IDENTITY>>::layer_t>,
-        dll::momentum, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(350);
     REQUIRE(!dataset.training_images.empty());
@@ -174,7 +174,7 @@ TEST_CASE("unit/dense/sgd/7", "[unit][dense][dbn][mnist][sgd]") {
         dll::dbn_layers<
             dll::dense_desc<28 * 28, 100, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<100, 10, dll::activation<dll::function::SIGMOID>>::layer_t>,
-        dll::momentum, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(350);
     REQUIRE(!dataset.training_images.empty());
@@ -197,7 +197,7 @@ TEST_CASE("unit/dense/sgd/8", "[unit][dense][dbn][mnist][sgd]") {
         dll::dbn_layers<
             dll::dense_desc<28 * 28, 100, dll::activation<dll::function::SIGMOID>>::layer_t,
             dll::dense_desc<100, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(350);
     REQUIRE(!dataset.training_images.empty());
@@ -220,7 +220,7 @@ TEST_CASE("unit/dense/sgd/9", "[unit][dense][dbn][mnist][sgd]") {
         dll::dbn_layers<
             dll::dense_desc<28 * 28, 100, dll::activation<dll::function::SIGMOID>>::layer_t,
             dll::dense_desc<100, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>, dll::scale_pre<255>>::dbn_t dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>, dll::scale_pre<255>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(350);
     REQUIRE(!dataset.training_images.empty());
@@ -241,7 +241,7 @@ TEST_CASE("unit/dense/sgd/10", "[unit][dense][dbn][mnist][sgd]") {
         dll::dbn_layers<
             dll::dense_desc<28 * 28, 100, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<100, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(500);
     REQUIRE(!dataset.training_images.empty());
@@ -265,7 +265,7 @@ TEST_CASE("unit/dense/sgd/11", "[unit][dense][dbn][mnist][sgd]") {
             dll::dense_desc<28 * 28, 150, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<150, 150, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<150, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(500);
     REQUIRE(!dataset.training_images.empty());
@@ -333,7 +333,7 @@ TEST_CASE("unit/dense/sgd/14", "[unit][dense][dbn][mnist][sgd]") {
             dll::dense_desc<100, 10, dll::activation<dll::function::IDENTITY>>::layer_t,
             dll::activation_layer_desc<dll::activation<dll::function::SOFTMAX>>::layer_t
         >,
-        dll::momentum, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>(350);
     REQUIRE(!dataset.training_images.empty());

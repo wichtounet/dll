@@ -25,7 +25,7 @@ TEST_CASE("unit/conv/sgd/6", "[unit][conv][dbn][mnist][sgd]") {
             dll::conv_desc<6, 24, 24, 6, 5, 5, dll::activation<dll::function::RELU>, dll::initializer<dll::initializer_type::HE>>::layer_t,
             dll::dense_desc<6 * 20 * 20, 200, dll::activation<dll::function::RELU>, dll::initializer<dll::initializer_type::HE>>::layer_t,
             dll::dense_desc<200, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::trainer<dll::sgd_trainer>, dll::batch_size<20>>::dbn_t dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::trainer<dll::sgd_trainer>, dll::batch_size<20>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(600);
     REQUIRE(!dataset.training_images.empty());
@@ -50,7 +50,7 @@ TEST_CASE("unit/conv/sgd/7", "[unit][conv][dbn][mnist][sgd]") {
             dll::conv_desc<6, 12, 12, 5, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<5 * 8 * 8, 100, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<100, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::trainer<dll::sgd_trainer>, dll::batch_size<20>>::dbn_t dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::trainer<dll::sgd_trainer>, dll::batch_size<20>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(600);
     REQUIRE(!dataset.training_images.empty());

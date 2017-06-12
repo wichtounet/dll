@@ -36,7 +36,7 @@ struct dbn_double {
             >
             , dll::trainer<dll::sgd_trainer>
             , dll::batch_size<10>
-            , dll::momentum
+            , dll::updater<dll::updater_type::MOMENTUM>
         >::dbn_t;
 
     static void init(dbn_t& net){
@@ -54,7 +54,7 @@ struct dbn_float {
             >
             , dll::trainer<dll::sgd_trainer>
             , dll::batch_size<10>
-            , dll::momentum
+            , dll::updater<dll::updater_type::MOMENTUM>
         >::dbn_t;
 
     static void init(dbn_t& net){
@@ -72,7 +72,7 @@ struct dyn_dbn_float {
             >
             , dll::trainer<dll::sgd_trainer>
             , dll::batch_size<10>
-            , dll::momentum
+            , dll::updater<dll::updater_type::MOMENTUM>
         >::dbn_t;
 
     static void init(dbn_t& net){
@@ -92,7 +92,7 @@ struct dyn_dbn_double {
             >
             , dll::trainer<dll::sgd_trainer>
             , dll::batch_size<10>
-            , dll::momentum
+            , dll::updater<dll::updater_type::MOMENTUM>
         >::dbn_t;
 
     static void init(dbn_t& net){

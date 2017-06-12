@@ -41,7 +41,7 @@ void dense_sgd(Dataset& dataset){
         dll::dbn_layers<
             dll::dense_desc<28 * 28, 200, dll::activation<dll::function::SIGMOID>>::layer_t,
             dll::dense_desc<200, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::batch_size<50>, dll::trainer<dll::sgd_trainer>>::dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<50>, dll::trainer<dll::sgd_trainer>>::dbn_t;
 
     auto net = std::make_unique<dense_net>();
 
@@ -64,7 +64,7 @@ void dense_sgd_split(Dataset& dataset){
             dll::dense_desc<200, 10, dll::activation<dll::function::IDENTITY>>::layer_t,
             dll::activation_layer_desc<dll::activation<dll::function::SOFTMAX>>::layer_t
         >,
-        dll::momentum, dll::batch_size<50>, dll::trainer<dll::sgd_trainer>>::dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<50>, dll::trainer<dll::sgd_trainer>>::dbn_t;
 
     auto net = std::make_unique<dense_net>();
 
@@ -86,7 +86,7 @@ void conv_sgd(Dataset& dataset){
             dll::conv_desc<4, 24, 24, 4, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<4 * 20 * 20, 200, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<200, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::batch_size<50>, dll::trainer<dll::sgd_trainer>>::dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<50>, dll::trainer<dll::sgd_trainer>>::dbn_t;
 
     auto net = std::make_unique<dense_net>();
 
@@ -110,7 +110,7 @@ void conv_mp_sgd(Dataset& dataset){
             dll::mp_layer_3d_desc<5, 8, 8, 1, 2, 2, dll::weight_type<float>>::layer_t,
             dll::dense_desc<5 * 4 * 4, 200, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<200, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::batch_size<50>, dll::trainer<dll::sgd_trainer>>::dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<50>, dll::trainer<dll::sgd_trainer>>::dbn_t;
 
     auto net = std::make_unique<dense_net>();
 
@@ -134,7 +134,7 @@ void conv_avgp_sgd(Dataset& dataset){
             dll::avgp_layer_3d_desc<5, 8, 8, 1, 2, 2, dll::weight_type<float>>::layer_t,
             dll::dense_desc<5 * 4 * 4, 200, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<200, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::batch_size<50>, dll::trainer<dll::sgd_trainer>>::dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<50>, dll::trainer<dll::sgd_trainer>>::dbn_t;
 
     auto net = std::make_unique<dense_net>();
 

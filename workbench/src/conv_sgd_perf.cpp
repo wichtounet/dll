@@ -65,7 +65,7 @@ void first_ex(){
             dll::conv_desc<6, 24, 24, 6, 5, 5>::layer_t,
             dll::dense_desc<6 * 20 * 20, 500>::layer_t,
             dll::dense_desc<500, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::batch_size<100>, dll::trainer<dll::sgd_trainer>>::dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<100>, dll::trainer<dll::sgd_trainer>>::dbn_t;
 
     auto net = std::make_unique<dbn_t>();
 
@@ -106,7 +106,7 @@ void second_ex(){
             dll::conv_desc<10, 12, 12, 10, 5, 5>::layer_t,
             dll::dense_desc<10 * 8 * 8, 250>::layer_t,
             dll::dense_desc<250, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::batch_size<100>, dll::trainer<dll::sgd_trainer>>::dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<100>, dll::trainer<dll::sgd_trainer>>::dbn_t;
 
     auto net = std::make_unique<dbn_t>();
 
@@ -148,7 +148,7 @@ void third_ex(){
             dll::mp_layer_2d_desc<10, 8, 8, 2, 2>::layer_t,
             dll::dense_desc<10 * 4 * 4, 300>::layer_t,
             dll::dense_desc<300, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::batch_size<100>, dll::trainer<dll::sgd_trainer>>::dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<100>, dll::trainer<dll::sgd_trainer>>::dbn_t;
 
     auto net = std::make_unique<dbn_t>();
 
@@ -188,7 +188,7 @@ void fourth_ex(){
             dll::mp_layer_2d_desc<24, 12, 12, 2, 2>::layer_t,
             dll::dense_desc<24 * 6 * 6, 64>::layer_t,
             dll::dense_desc<64, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::batch_size<100>, dll::trainer<dll::sgd_trainer>>::dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<100>, dll::trainer<dll::sgd_trainer>>::dbn_t;
 
     auto net = std::make_unique<dbn_t>();
 
@@ -237,7 +237,7 @@ void fifth_ex(){
 
             dll::dense_desc<12 * 7 * 7, 64, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<64, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::batch_size<100>, dll::trainer<dll::sgd_trainer>>::dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<100>, dll::trainer<dll::sgd_trainer>>::dbn_t;
 
     auto net = std::make_unique<dbn_t>();
 

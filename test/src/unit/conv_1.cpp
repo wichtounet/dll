@@ -22,7 +22,7 @@ TEST_CASE("unit/conv/sgd/1", "[conv][dbn][mnist][sgd]") {
         dll::dbn_layers<
             dll::conv_desc<1, 28, 28, 6, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t,
             dll::dense_desc<6 * 24 * 24, 10, dll::activation<dll::function::SIGMOID>>::layer_t>,
-        dll::trainer<dll::sgd_trainer>, dll::momentum, dll::batch_size<10>>::dbn_t dbn_t;
+        dll::trainer<dll::sgd_trainer>, dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<10>>::dbn_t dbn_t;
 
     // Load the dataset
     auto dataset = dll::make_mnist_dataset_sub(500, 0, dll::batch_size<10>{});

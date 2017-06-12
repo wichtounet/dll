@@ -24,8 +24,8 @@ int main(int /*argc*/, char* /*argv*/ []) {
             dll::dense_desc<28 * 28, 500>::layer_t,
             dll::dense_desc<500, 250>::layer_t,
             dll::dense_desc<250, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>
-        , dll::momentum           // Use momentum during training
-        , dll::batch_size<100>    // The mini-batch size
+        , dll::updater<dll::updater_type::MOMENTUM>     // Momentum
+        , dll::batch_size<100>                          // The mini-batch size
     >::dbn_t;
 
     auto net = std::make_unique<network_t>();

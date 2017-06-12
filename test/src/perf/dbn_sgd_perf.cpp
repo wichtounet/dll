@@ -22,7 +22,7 @@ TEST_CASE("dbn/sgd/perf/1", "[dbn][mnist][sgd][perf]") {
             dll::dense_desc<28 * 28, 500>::layer_t,
             dll::dense_desc<500, 250>::layer_t,
             dll::dense_desc<250, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::batch_size<100>, dll::trainer<dll::sgd_trainer>>::dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<100>, dll::trainer<dll::sgd_trainer>>::dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(2000);
     REQUIRE(!dataset.training_images.empty());

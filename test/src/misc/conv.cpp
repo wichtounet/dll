@@ -201,7 +201,7 @@ TEST_CASE("lenet", "[dense][dbn][mnist][sgd]") {
             dll::mp_layer_3d_desc<50, 8, 8, 1, 2, 2, dll::weight_type<float>>::layer_t,
             dll::dense_desc<50 * 4 * 4, 500, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_desc<500, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::momentum, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<25>>::dbn_t dbn_t;
+        dll::updater<dll::updater_type::MOMENTUM>, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<25>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(1000);
     REQUIRE(!dataset.training_images.empty());

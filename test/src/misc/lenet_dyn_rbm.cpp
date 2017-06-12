@@ -28,7 +28,7 @@ TEST_CASE("dyn_lenet_rbm", "[dbn][mnist][sgd]") {
             dll::dyn_mp_layer_3d_desc<dll::weight_type<float>>::layer_t,
             dll::dyn_rbm_desc<dll::hidden<dll::unit_type::BINARY>, dll::momentum>::layer_t,
             dll::dyn_rbm_desc<dll::momentum, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
-        dll::trainer<dll::sgd_trainer>, dll::momentum, dll::weight_decay<>, dll::batch_size<25>>::dbn_t dbn_t;
+        dll::trainer<dll::sgd_trainer>, dll::updater<dll::updater_type::MOMENTUM>, dll::weight_decay<>, dll::batch_size<25>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(1000);
     REQUIRE(!dataset.training_images.empty());
