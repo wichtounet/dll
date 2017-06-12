@@ -7,9 +7,34 @@
 
 #pragma once
 
-#ifdef DLL_NO_TIMERS
+#include <chrono>
 
 namespace dll {
+
+/*!
+ * \brief Utility for a simple timer
+ */
+struct stop_timer {
+    std::chrono::time_point<std::chrono::steady_clock> start_time; ///< The start time
+
+    /*!
+     * \brief Start the timer
+     */
+    void start() {
+        start_time = std::chrono::steady_clock::now();
+    }
+
+    /*!
+     * \brief Stop the timer and get the elapsed since start
+     * \return elapsed time since start()
+     */
+    size_t stop() const {
+        auto end = std::chrono::steady_clock::now();
+        return std::chrono::duration_cast<std::chrono::milliseconds>(end - start_time).count();
+    }
+};
+
+#ifdef DLL_NO_TIMERS
 
 /*!
  * \brief Dump the values of the timer on the console.
@@ -24,18 +49,11 @@ struct auto_timer {
     auto_timer(const char* /*name*/) {}
 };
 
-} //end of namespace dll
-
 #else
 
-#include <chrono>
 #include <iosfwd>
 #include <iomanip>
 #include <sstream>
-
-namespace chrono = std::chrono;
-
-namespace dll {
 
 constexpr size_t max_timers = 64; ///< The maximum number of timers
 
@@ -205,50 +223,27 @@ inline void dump_timers_one() {
 }
 
 /*!
- * \brief Utility for a simple timer
- */
-struct stop_timer {
-    chrono::time_point<chrono::steady_clock> start_time; ///< The start time
-
-    /*!
-     * \brief Start the timer
-     */
-    void start() {
-        start_time = chrono::steady_clock::now();
-    }
-
-    /*!
-     * \brief Stop the timer and get the elapsed since start
-     * \return elapsed time since start()
-     */
-    size_t stop() const {
-        auto end = chrono::steady_clock::now();
-        return chrono::duration_cast<chrono::milliseconds>(end - start_time).count();
-    }
-};
-
-/*!
  * \brief Automatic timer with RAII.
  */
 struct auto_timer {
     const char* name;                               ///< The name of the timer
-    chrono::time_point<chrono::steady_clock> start; ///< The start time
-    chrono::time_point<chrono::steady_clock> end;   ///< The end time
+    std::chrono::time_point<std::chrono::steady_clock> start; ///< The start time
+    std::chrono::time_point<std::chrono::steady_clock> end;   ///< The end time
 
     /*!
      * \brief Create an auto_timer witht the given name
      * \param name The name of the timer
      */
     auto_timer(const char* name) : name(name) {
-        start = chrono::steady_clock::now();
+        start = std::chrono::steady_clock::now();
     }
 
     /*!
      * \brief Destructs the timer, effectively incrementing the timer.
      */
     ~auto_timer() {
-        end           = chrono::steady_clock::now();
-        auto duration = chrono::duration_cast<chrono::nanoseconds>(end - start).count();
+        end           = std::chrono::steady_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 
         decltype(auto) timers = get_timers();
 
@@ -286,6 +281,6 @@ struct auto_timer {
     }
 };
 
-} //end of namespace dll
-
 #endif
+
+} //end of namespace dll
