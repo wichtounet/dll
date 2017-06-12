@@ -177,6 +177,9 @@ private:
     //to put the fields in standard_rbm, therefore, it is necessary to use template
     //functions to implement the details
 
+    /*!
+     * \brief Compute the reconstruction for the given input and RBM
+     */
     template<typename Input>
     static double reconstruction_error_impl(const Input& items, parent_t& rbm) {
         cpp_assert(items.size() == input_size(rbm), "The size of the training sample must match visible units");
