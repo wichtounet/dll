@@ -60,7 +60,7 @@ TEST_CASE("unit/dbn/mnist/1", "[dbn][unit]") {
         }
     }
 
-    REQUIRE(big == 1);
+    REQUIRE((big == 1 || big == 2));
 }
 
 TEST_CASE("unit/dbn/mnist/2", "[dbn][unit]") {
