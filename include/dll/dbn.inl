@@ -1188,7 +1188,7 @@ public:
             batch_error = (1.0 / s) * sum(min(abs(argmax(labels) - argmax(output)), 1.0));
         }
 
-        return std::make_tuple(batch_loss, batch_error);
+        return std::make_tuple(batch_error, batch_loss);
     }
 
     template <loss_function F, typename Output, typename Labels, cpp_enable_if((F == loss_function::BINARY_CROSS_ENTROPY))>
@@ -1206,7 +1206,7 @@ public:
             batch_error = (1.0 / (s * output_size())) * asum(labels - output);
         }
 
-        return std::make_tuple(batch_loss, batch_error);
+        return std::make_tuple(batch_error, batch_loss);
     }
 
     template <loss_function F, typename Output, typename Labels, cpp_enable_if((F == loss_function::MEAN_SQUARED_ERROR))>
@@ -1224,7 +1224,7 @@ public:
             batch_error = (1.0 / s) * asum(labels - output);
         }
 
-        return std::make_tuple(batch_loss, batch_error);
+        return std::make_tuple(batch_error, batch_loss);
     }
 
     /*!
