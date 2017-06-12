@@ -251,33 +251,45 @@ struct sgd_trainer {
         return std::make_pair(error, loss);
     }
 
-    template <typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer())>
+    // TODO Replac with if constexpr
+
+    template <typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && dbn_traits<dbn_t>::has_momentum())>
     void apply_gradients(L& layer, C& context, size_t n) {
         dll::auto_timer timer("sgd::apply_grad");
 
         //Update the gradients
-        this->update_grad(layer.w, context.w_grad, w_decay(dbn_traits<dbn_t>::decay()), 0.0);
-        this->update_grad(layer.b, context.b_grad, b_decay(dbn_traits<dbn_t>::decay()), 0.0);
+        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0);
+        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, 0.0);
 
         //Update with momentum and learning rate
-        if (dbn_traits<dbn_t>::has_momentum()) {
-            auto momentum = dbn.momentum;
-            auto eps      = dbn.learning_rate;
+        auto momentum = dbn.momentum;
+        auto eps      = dbn.learning_rate;
 
-            // Note(perf): Some performance could be gained by doing the pair of
-            // operations on w in a loop to improve data locality
+        // Note(perf): Some performance could be gained by doing the pair of
+        // operations on w in a loop to improve data locality
 
-            context.w_inc = momentum * context.w_inc + (eps / n) * context.w_grad;
-            layer.w += context.w_inc;
+        context.w_inc = momentum * context.w_inc + (eps / n) * context.w_grad;
+        layer.w += context.w_inc;
 
-            context.b_inc = momentum * context.b_inc + (eps / n) * context.b_grad;
-            layer.b += context.b_inc;
-        } else {
-            auto eps = dbn.learning_rate;
+        context.b_inc = momentum * context.b_inc + (eps / n) * context.b_grad;
+        layer.b += context.b_inc;
 
-            layer.w += (eps / n) * context.w_grad;
-            layer.b += (eps / n) * context.b_grad;
-        }
+        nan_check_deep(layer.w);
+        nan_check_deep(layer.b);
+    }
+
+    template <typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && !dbn_traits<dbn_t>::has_momentum())>
+    void apply_gradients(L& layer, C& context, size_t n) {
+        dll::auto_timer timer("sgd::apply_grad");
+
+        //Update the gradients
+        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0);
+        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, 0.0);
+
+        auto eps = dbn.learning_rate;
+
+        layer.w += (eps / n) * context.w_grad;
+        layer.b += (eps / n) * context.b_grad;
 
         nan_check_deep(layer.w);
         nan_check_deep(layer.b);
@@ -289,19 +301,29 @@ struct sgd_trainer {
         //gradients
     }
 
-    template <typename V, typename G>
-    void update_grad(const V& value, G& grad, decay_type decay, double penalty) {
-        if (decay == decay_type::L1) {
-            grad = grad - dbn.l1_weight_cost * abs(value) - penalty;
-        } else if (decay == decay_type::L2) {
-            grad = grad - dbn.l2_weight_cost * value - penalty;
-        } else if (decay == decay_type::L1L2) {
-            grad = grad - dbn.l1_weight_cost * abs(value) - dbn.l2_weight_cost * value - penalty;
-        } else {
-            if(penalty != 0.0){
-                grad = grad - penalty;
-            }
+    template <decay_type decay, typename V, typename G, cpp_enable_if(decay == decay_type::L1)>
+    void update_grad(const V& value, G& grad, double penalty) {
+        grad = grad - dbn.l1_weight_cost * abs(value) - penalty;
+    }
+
+    template <decay_type decay, typename V, typename G, cpp_enable_if(decay == decay_type::L2)>
+    void update_grad(const V& value, G& grad, double penalty) {
+        grad = grad - dbn.l2_weight_cost * value - penalty;
+    }
+
+    template <decay_type decay, typename V, typename G, cpp_enable_if(decay == decay_type::L1L2)>
+    void update_grad(const V& value, G& grad, double penalty) {
+        grad = grad - dbn.l1_weight_cost * abs(value) - dbn.l2_weight_cost * value - penalty;
+
+    }
+
+    template <decay_type decay, typename V, typename G, cpp_enable_if(decay == decay_type::NONE)>
+    void update_grad(const V& value, G& grad, double penalty) {
+        if(penalty != 0.0){
+            grad = grad - penalty;
         }
+
+        cpp_unused(value);
     }
 
     static std::string name() {
