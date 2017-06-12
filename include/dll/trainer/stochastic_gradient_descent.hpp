@@ -84,6 +84,69 @@ struct sgd_trainer {
 
     void init_training(size_t) {}
 
+    // TODO Replace SFINAE with if constexpr
+
+    template<loss_function F, typename Labels, cpp_enable_if(F == loss_function::CATEGORICAL_CROSS_ENTROPY)>
+    void last_errors(bool full_batch, size_t n, const Labels& labels){
+        auto& last_ctx   = *std::get<layers - 1>(full_context).second;
+
+        if (cpp_unlikely(!full_batch)) {
+            last_ctx.errors = 0;
+
+            for (size_t i = 0; i < n; ++i) {
+                last_ctx.errors(i) = labels(i) - last_ctx.output(i);
+            }
+        } else {
+            last_ctx.errors = labels - last_ctx.output;
+        }
+
+        // Note: No need to multiply by the derivative of
+        // the activation function since the terms are
+        // canceling out in the derivative of the loss
+    }
+
+    template<loss_function F, typename Labels, cpp_enable_if(F == loss_function::MEAN_SQUARED_ERROR)>
+    void last_errors(bool full_batch, size_t n, const Labels& labels){
+        auto& last_layer = std::get<layers - 1>(full_context).first;
+        auto& last_ctx   = *std::get<layers - 1>(full_context).second;
+
+        if (cpp_unlikely(!full_batch)) {
+            last_ctx.errors = 0;
+
+            for (size_t i = 0; i < n; ++i) {
+                last_ctx.errors(i) = 2.0 * (labels(i) - last_ctx.output(i));
+            }
+        } else {
+            last_ctx.errors = 2.0 * (labels - last_ctx.output);
+        }
+
+        // Multiply by the derivative of the activation function
+        last_layer.adapt_errors(last_ctx);
+    }
+
+    template<loss_function F, typename Labels, cpp_enable_if(F == loss_function::BINARY_CROSS_ENTROPY)>
+    void last_errors(bool full_batch, size_t n, const Labels& labels){
+        auto& last_layer = std::get<layers - 1>(full_context).first;
+        auto& last_ctx   = *std::get<layers - 1>(full_context).second;
+
+        if (cpp_unlikely(!full_batch)) {
+            last_ctx.errors = 0;
+
+            auto& out = last_ctx.output;
+
+            for (size_t i = 0; i < n; ++i) {
+                last_ctx.errors(i) = (labels(i) - out(i)) / ((1.0 - out(i)) >> out(i));
+            }
+        } else {
+            auto& out = last_ctx.output;
+
+            last_ctx.errors = (labels - out) / ((1.0 - out) >> out);
+        }
+
+        // Multiply by the derivative of the activation function
+        last_layer.adapt_errors(last_ctx);
+    }
+
     template <typename Inputs, typename Labels>
     std::pair<double, double> train_batch(size_t /*epoch*/, const Inputs& inputs, const Labels& labels) {
         dll::auto_timer timer("sgd::train_batch");
@@ -92,9 +155,7 @@ struct sgd_trainer {
 
         auto& first_layer = std::get<0>(full_context).first;
         auto& first_ctx   = *std::get<0>(full_context).second;
-
-        auto& last_layer = std::get<layers - 1>(full_context).first;
-        auto& last_ctx   = *std::get<layers - 1>(full_context).second;
+        auto& last_ctx    = *std::get<layers - 1>(full_context).second;
 
         // Ensure that the data batch and the label batch are of the same size
         cpp_assert(etl::dim<0>(inputs) == etl::dim<0>(labels), "Invalid sizes");
@@ -138,53 +199,7 @@ struct sgd_trainer {
 
             //Compute the errors of the last layer
 
-            if /*constexpr*/ (dbn_t::loss == loss_function::CATEGORICAL_CROSS_ENTROPY){
-                if (cpp_unlikely(!full_batch)) {
-                    last_ctx.errors = 0;
-
-                    for (size_t i = 0; i < n; ++i) {
-                        last_ctx.errors(i) = labels(i) - last_ctx.output(i);
-                    }
-                } else {
-                    last_ctx.errors = labels - last_ctx.output;
-                }
-
-                // Note: No need to multiply by the derivative of
-                // the activation function since the terms are
-                // canceling out in the derivative of the loss
-            } else if (dbn_t::loss == loss_function::MEAN_SQUARED_ERROR){
-                if (cpp_unlikely(!full_batch)) {
-                    last_ctx.errors = 0;
-
-                    for (size_t i = 0; i < n; ++i) {
-                        last_ctx.errors(i) = 2.0 * (labels(i) - last_ctx.output(i));
-                    }
-                } else {
-                    last_ctx.errors = 2.0 * (labels - last_ctx.output);
-                }
-
-                // Multiply by the derivative of the activation function
-                last_layer.adapt_errors(last_ctx);
-            } else if (dbn_t::loss == loss_function::BINARY_CROSS_ENTROPY){
-                if (cpp_unlikely(!full_batch)) {
-                    last_ctx.errors = 0;
-
-                    auto& out = last_ctx.output;
-
-                    for (size_t i = 0; i < n; ++i) {
-                        last_ctx.errors(i) = (labels(i) - out(i)) / ((1.0 - out(i)) >> out(i));
-                    }
-                } else {
-                    auto& out = last_ctx.output;
-
-                    last_ctx.errors = (labels - out) / ((1.0 - out) >> out);
-                }
-
-                // Multiply by the derivative of the activation function
-                last_layer.adapt_errors(last_ctx);
-            } else {
-                cpp_unreachable("Unsupported loss function");
-            }
+            last_errors<dbn_t::loss>(full_batch, n, labels);
 
             // Backpropagate the error
 
