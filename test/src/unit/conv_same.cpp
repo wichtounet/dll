@@ -55,6 +55,6 @@ TEST_CASE("unit/conv/same/2", "[conv][dbn][mnist][sgd]") {
 
     dbn->display();
 
-    FT_CHECK(50, 5e-2);
+    FT_CHECK(100, 5e-2);
     TEST_CHECK(0.2);
 }
