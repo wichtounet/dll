@@ -358,7 +358,7 @@ TEST_CASE("unit/augment/conv/mnist/9", "[dbn][unit]") {
             dll::dense_desc<300, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
         dll::batch_size<25>, dll::momentum>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(400);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(500);
     REQUIRE(!dataset.training_images.empty());
 
     using train_generator_t = dll::inmemory_data_generator_desc<dll::random_crop<24,24>, dll::batch_size<25>, dll::noise<20>, dll::categorical, dll::scale_pre<255>>;
@@ -375,7 +375,7 @@ TEST_CASE("unit/augment/conv/mnist/9", "[dbn][unit]") {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    auto error = dbn->fine_tune(*train_generator, 50);
+    auto error = dbn->fine_tune(*train_generator, 100);
     std::cout << "error:" << error << std::endl;
     CHECK(error < 5e-2);
 
