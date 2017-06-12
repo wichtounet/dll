@@ -43,9 +43,6 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
     static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit),
                   "Only binary hidden units are supported");
 
-    double std_gaussian = 0.2;
-    double c_sigm       = 1.0;
-
     //Constructors
 
     /*!
