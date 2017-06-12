@@ -141,25 +141,52 @@ struct default_dbn_watcher {
     dll::stop_timer ft_batch_timer;              ///< Timer for a batch
     cpp::stop_watch<std::chrono::seconds> watch; ///< Timer for the entire training
 
-    void pretraining_begin(const DBN& /*dbn*/, size_t max_epochs) {
+    /*!
+     * \brief Indicates that the pretraining has begun for the given
+     * DBN
+     * \param dbn The DBN being pretrained
+     * \param max_epochs The maximum number of epochs
+     */
+    void pretraining_begin(const DBN& dbn, size_t max_epochs) {
         std::cout << "DBN: Pretraining begin for " << max_epochs << " epochs" << std::endl;
+        cpp_unused(dbn);
     }
 
+    /*!
+     * \brief Indicates that the given layer is starting pretraining
+     * \param dbn The DBN being trained
+     * \param I The index of the layer being pretraining
+     * \param rbm The RBM being trained
+     * \param input_size the number of inputs
+     */
     template <typename RBM>
-    void pretrain_layer(const DBN& /*dbn*/, size_t I, const RBM& rbm, size_t input_size) {
+    void pretrain_layer(const DBN& dbn, size_t I, const RBM& rbm, size_t input_size) {
         if (input_size) {
             std::cout << "DBN: Pretrain layer " << I << " (" << rbm.to_short_string() << ") with " << input_size << " entries" << std::endl;
         } else {
             std::cout << "DBN: Pretrain layer " << I << " (" << rbm.to_short_string() << ")" << std::endl;
         }
+
+        cpp_unused(dbn);
     }
 
-    void pretraining_end(const DBN& /*dbn*/) {
+    /*!
+     * \brief Indicates that the pretraining has ended for the given DBN
+     * \param dbn The DBN being pretrained
+     */
+    void pretraining_end(const DBN& dbn) {
         std::cout << "DBN: Pretraining finished after " << watch.elapsed() << "s" << std::endl;
+
+        cpp_unused(dbn);
     }
 
-    void pretraining_batch(const DBN& /*dbn*/, size_t batch) {
+    /*!
+     * \brief Pretraining ended for the given batch for the given DBN
+     */
+    void pretraining_batch(const DBN& dbn, size_t batch) {
         std::cout << "DBN: Pretraining batch " << batch << std::endl;
+
+        cpp_unused(dbn);
     }
 
     /*!
@@ -298,14 +325,47 @@ struct mute_dbn_watcher {
     static constexpr bool ignore_sub  = true; ///< For pretraining of a DBN, indicates if the regular RBM watcher should be used (false) or ignored (true)
     static constexpr bool replace_sub = false; ///< For pretraining of a DBN, indicates if the DBN watcher should replace (true) the RBM watcher or not (false)
 
-    void pretraining_begin(const DBN& /*dbn*/, size_t /*max_epochs*/) {}
+    /*!
+     * \brief Indicates that the pretraining has begun for the given
+     * DBN
+     * \param dbn The DBN being pretrained
+     * \param max_epochs The maximum number of epochs
+     */
+    void pretraining_begin(const DBN& dbn, size_t max_epochs) {
+        cpp_unused(dbn);
+        cpp_unused(max_epochs);
+    }
 
+    /*!
+     * \brief Indicates that the given layer is starting pretraining
+     * \param dbn The DBN being trained
+     * \param I The index of the layer being pretraining
+     * \param rbm The RBM being trained
+     * \param input_size the number of inputs
+     */
     template <typename RBM>
-    void pretrain_layer(const DBN& /*dbn*/, size_t /*I*/, const RBM& /*rbm*/, size_t /*input_size*/) {}
+    void pretrain_layer(const DBN& dbn, size_t I, const RBM& rbm, size_t input_size) {
+        cpp_unused(dbn);
+        cpp_unused(I);
+        cpp_unused(rbm);
+        cpp_unused(input_size);
+    }
 
-    void pretraining_end(const DBN& /*dbn*/) {}
+    /*!
+     * \brief Indicates that the pretraining has ended for the given DBN
+     * \param dbn The DBN being pretrained
+     */
+    void pretraining_end(const DBN& dbn) {
+        cpp_unused(dbn);
+    }
 
-    void pretraining_batch(const DBN& /*dbn*/, size_t /*batch*/) {}
+    /*!
+     * \brief Pretraining ended for the given batch for the given DBN
+     */
+    void pretraining_batch(const DBN& dbn, size_t batch) {
+        cpp_unused(dbn);
+        cpp_unused(batch);
+    }
 
     /*!
      * \brief Fine-tuning of the given network just started
@@ -314,9 +374,27 @@ struct mute_dbn_watcher {
      */
     void fine_tuning_begin(const DBN& /*dbn*/, size_t /*max_epochs*/) {}
 
-    void ft_epoch_start(size_t /*epoch*/, const DBN& /*dbn*/) {}
+    /*!
+     * \brief One fine-tuning epoch is starting
+     * \param epoch The current epoch
+     * \param dbn The network being trained
+     */
+    void ft_epoch_start(size_t epoch, const DBN& dbn) {
+        cpp_unused(epoch);
+        cpp_unused(dbn);
+    }
 
-    void ft_epoch_end(size_t /*epoch*/, double /*error*/, const DBN& /*dbn*/) {}
+    /*!
+     * \brief One fine-tuning epoch is ended
+     * \param epoch The current epoch
+     * \param error The current epoch error
+     * \param dbn The network being trained
+     */
+    void ft_epoch_end(size_t epoch, double error, const DBN& dbn) {
+        cpp_unused(epoch);
+        cpp_unused(error);
+        cpp_unused(dbn);
+    }
 
     /*!
      * \brief Indicates the beginning of a fine-tuning batch
