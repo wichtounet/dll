@@ -43,21 +43,26 @@ struct watcher_type<RBM, RW, std::enable_if_t<cpp::not_u<std::is_void<RW>::value
  */
 template <typename RBM, bool EnableWatcher, typename RW>
 struct rbm_trainer {
-    using rbm_t = RBM;
-    using error_type = typename rbm_t::weight;
-
     template <typename R>
-    using trainer_t = typename rbm_t::desc::template trainer_t<R>;
+    using trainer_t = typename RBM::desc::template trainer_t<R>;
 
-    using trainer_type = std::unique_ptr<trainer_t<rbm_t>>;
+    using rbm_t        = RBM;                                         ///< The RBM type being trained
+    using error_type   = typename rbm_t::weight;                      ///< The error data type
+    using trainer_type = std::unique_ptr<trainer_t<rbm_t>>;           ///< The type of the trainer
+    using watcher_t    = typename watcher_type<rbm_t, RW>::watcher_t; ///< The type of the watcher
 
-    using watcher_t = typename watcher_type<rbm_t, RW>::watcher_t;
+    mutable watcher_t watcher; ///< The watcher
 
-    mutable watcher_t watcher;
-
+    /*!
+     * \brief construct a new rbm_trainer, default-initializing the watcher
+     */
     rbm_trainer()
             : watcher() {}
 
+    /*!
+     * \brief construct a new rbm_trainer, initializing the watcher with the
+     * given arguments.
+     */
     template <typename... Arg>
     rbm_trainer(init_watcher_t /*init*/, Arg... args)
             : watcher(args...) {}
@@ -72,9 +77,9 @@ struct rbm_trainer {
         //NOP
     }
 
-    size_t batch_size            = 0; ///< The batch size for pretraining
-    size_t total_batches         = 0;
-    error_type last_error = 0.0;
+    size_t batch_size     = 0;   ///< The batch size for pretraining
+    size_t total_batches  = 0;   ///< The total number of batches
+    error_type last_error = 0.0; ///< The last training error
 
     //Note: input_first/input_last only relevant for its size, not
     //values since they can point to the input of the first level
@@ -107,6 +112,9 @@ struct rbm_trainer {
         last_error = 0.0;
     }
 
+    /*!
+     * \brief Return the trainer for the given RBM
+     */
     static trainer_type get_trainer(RBM& rbm) {
         //Allocate the trainer on the heap (may be large)
         return std::make_unique<trainer_t<rbm_t>>(rbm);

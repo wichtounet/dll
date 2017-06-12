@@ -19,8 +19,8 @@ namespace dll {
  */
 template <typename Layer>
 struct layer_traits {
-    using layer_t = Layer; ///< The layer type being inspected
-    using base_traits = layer_base_traits<layer_t>;
+    using layer_t     = Layer;                      ///< The layer type being inspected
+    using base_traits = layer_base_traits<layer_t>; ///< The base traits for the layer
 
     /*!
      * \brief Indicates if the layer is neural (dense or conv)
@@ -158,9 +158,12 @@ struct layer_traits {
  */
 template <typename Layer>
 struct rbm_layer_traits {
-    using layer_t = Layer; ///< The layer type being inspected
-    using base_traits = rbm_layer_base_traits<layer_t>;
+    using layer_t     = Layer;                          ///< The layer type being inspected
+    using base_traits = rbm_layer_base_traits<layer_t>; ///< The base traits for the layer
 
+    /*!
+     * \brief Indicates if the RBM must be trained with momentum or not
+     */
     static constexpr bool has_momentum() {
         return base_traits::has_momentum;
     }
@@ -169,18 +172,30 @@ struct rbm_layer_traits {
         return base_traits::has_clip_gradients;
     }
 
+    /*!
+     * \brief Indicates if the RBM must be trained in parallel mode instead of batch mode
+     */
     static constexpr bool is_parallel_mode() {
         return base_traits::is_parallel_mode;
     }
 
+    /*!
+     * \brief Indicates if the RBM cannot use threads.
+     */
     static constexpr bool is_serial() {
         return base_traits::is_serial;
     }
 
+    /*!
+     * \brief Indicates if the RBM training is made verbose.
+     */
     static constexpr bool is_verbose() {
         return base_traits::is_verbose;
     }
 
+    /*!
+     * \brief Indicates if the RBM must be trained with shuffle or not
+     */
     static constexpr bool has_shuffle() {
         return base_traits::has_shuffle;
     }
@@ -189,6 +204,9 @@ struct rbm_layer_traits {
         return base_traits::is_dbn_only;
     }
 
+    /*!
+     * \brief Indicates if the RBM must be trained with sparsity or not
+     */
     static constexpr bool has_sparsity() {
         return base_traits::has_sparsity;
     }
@@ -209,6 +227,9 @@ struct rbm_layer_traits {
         return base_traits::has_init_weights;
     }
 
+    /*!
+     * \brief Indicates if the RBM's free energy is displayed while training.
+     */
     static constexpr bool free_energy() {
         return base_traits::has_free_energy;
     }
@@ -287,41 +308,73 @@ constexpr size_t get_nw2(const RBM&) {
     return RBM::NW2;
 }
 
+/*!
+ * \brief Return the number of visible units of the given RBM
+ * \param rbm The RBM to get the information from
+ */
 template <typename RBM, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
 size_t num_visible(const RBM& rbm) {
     return rbm.num_visible;
 }
 
+/*!
+ * \brief Return the number of visible units of the given RBM
+ * \param rbm The RBM to get the information from
+ */
 template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
 constexpr size_t num_visible(const RBM&) {
     return RBM::desc::num_visible;
 }
 
+/*!
+ * \brief Return the number of hidden units of the given RBM
+ * \param rbm The RBM to get the information from
+ */
 template <typename RBM, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
 size_t num_hidden(const RBM& rbm) {
     return rbm.num_hidden;
 }
 
+/*!
+ * \brief Return the number of hidden units of the given RBM
+ * \param rbm The RBM to get the information from
+ */
 template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
 constexpr size_t num_hidden(const RBM&) {
     return RBM::desc::num_hidden;
 }
 
+/*!
+ * \brief Return the output size of the given RBM
+ * \param rbm The RBM to get the information from
+ */
 template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
 constexpr size_t output_size(const RBM&) {
     return RBM::output_size();
 }
 
+/*!
+ * \brief Return the output size of the given RBM
+ * \param rbm The RBM to get the information from
+ */
 template <typename RBM, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
 size_t output_size(const RBM& rbm) {
     return rbm.output_size();
 }
 
+/*!
+ * \brief Return the input size of the given RBM
+ * \param rbm The RBM to get the information from
+ */
 template <typename RBM, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
 size_t input_size(const RBM& rbm) {
     return rbm.input_size();
 }
 
+/*!
+ * \brief Return the input size of the given RBM
+ * \param rbm The RBM to get the information from
+ */
 template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
 constexpr size_t input_size(const RBM&) {
     return RBM::input_size();

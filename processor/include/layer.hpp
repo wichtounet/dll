@@ -91,27 +91,30 @@ struct function_layer : layer {
     bool is_transform() const override;
 };
 
+/*!
+ * \brief Base layer type for all RBM layer types
+ */
 struct base_rbm_layer : layer {
     std::string visible_unit; ///< The visible unit type
     std::string hidden_unit;  ///< The hidden unit type
 
-    double learning_rate   = dll::processor::stupid_default; ///< The learning rate
-    double momentum        = dll::processor::stupid_default; ///< The momentum
-    size_t batch_size = 0;                              ///< The batch size
+    double learning_rate = dll::processor::stupid_default; ///< The learning rate
+    double momentum      = dll::processor::stupid_default; ///< The momentum
+    size_t batch_size    = 0;                              ///< The batch size
 
     std::string decay     = "none";                         ///< The type of decay
     double l1_weight_cost = dll::processor::stupid_default; ///< The L1 decay rate
     double l2_weight_cost = dll::processor::stupid_default; ///< The L2 decay rate
 
-    std::string sparsity   = "none";
-    double sparsity_target = dll::processor::stupid_default;
-    double pbias_lambda    = dll::processor::stupid_default;
-    double pbias           = dll::processor::stupid_default;
+    std::string sparsity   = "none";                         ///< The sparsity mode for the layer
+    double sparsity_target = dll::processor::stupid_default; ///< The sparsity target for the layer
+    double pbias_lambda    = dll::processor::stupid_default; ///< The sparsity lambda bias for the layer
+    double pbias           = dll::processor::stupid_default; ///< The sparsity bias for the layer
 
     std::string trainer = "cd";
 
-    bool parallel_mode = false;
-    bool shuffle       = false;
+    bool parallel_mode = false; ///< Indicates if the RBM is trained in parallel mode
+    bool shuffle       = false; ///< Indicates if the RBM is trained with shuffle
 
     void print(std::ostream& out) const override;
     void set(std::ostream& out, const std::string& lhs) const override;

@@ -62,6 +62,10 @@ struct cg_trainer_base {
         });
     }
 
+    /*!
+     * \brief Initialize the training of the network with the given batch size
+     * \param batch_size The batch size of the network
+     */
     void init_training(size_t batch_size) {
         dbn.for_each_layer([batch_size](auto& rbm) {
             auto& ctx = rbm.get_cg_context();
