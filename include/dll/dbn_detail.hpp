@@ -93,27 +93,6 @@ size_t fast_distance(Iterator& first, Iterator& last) {
     }
 }
 
-template <typename Iterator, cpp_enable_if(std::is_same<typename std::iterator_traits<Iterator>::iterator_category, std::random_access_iterator_tag>::value)>
-void safe_sort(Iterator first, Iterator last) {
-    std::sort(first, last);
-}
-
-template <typename Iterator, cpp_disable_if(std::is_same<typename std::iterator_traits<Iterator>::iterator_category, std::random_access_iterator_tag>::value)>
-void safe_sort(Iterator first, Iterator last) {
-    cpp_unused(first);
-    cpp_unused(last);
-    //Nothing
-}
-
-template <typename Iterator>
-void safe_advance(Iterator& it, const Iterator& end, size_t distance) {
-    size_t i = 0;
-    while (it != end && i < distance) {
-        ++it;
-        ++i;
-    }
-}
-
 template <typename D, size_t N, typename T>
 struct for_each_impl;
 
