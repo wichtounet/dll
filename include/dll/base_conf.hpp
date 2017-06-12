@@ -5,6 +5,11 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+/*!
+ * \file
+ * \brief Utilites to configure the layers of the DBN and the DBN itself.
+ */
+
 #pragma once
 
 #include <cstddef>
@@ -20,45 +25,75 @@
 
 namespace dll {
 
+/*!
+ * \brief A basic configuration element, without value.
+ *
+ * This is used as a flag to enable or disable a feature
+ */
 template <typename ID>
 struct basic_conf_elt {
-    using type_id = ID;
+    using type_id = ID; ///< The unique identifier type of this element
 };
 
+/*!
+ * \brief A configuration element with a type as value.
+ */
 template <typename ID, typename T>
 struct type_conf_elt {
-    using type_id = ID;
+    using type_id = ID; ///< The unique identifier type of this element
 
-    using value = T;
+    using value = T; ///< The value tpye
 };
 
+/*!
+ * \brief A configuration element with a template type as value.
+ *
+ * The template type takes a single typename.
+ */
 template <typename ID, template <typename...> class T>
 struct template_type_conf_elt {
-    using type_id = ID;
+    using type_id = ID; ///< The unique identifier type of this element
 
+    /*!
+     * \brief the template value type
+     */
     template <typename RBM>
     using value = T<RBM>;
 };
 
+/*!
+ * \brief A configuration element with a template type as value.
+ *
+ * The template type takes a typename and a bool.
+ */
 template <typename ID, template <typename, bool> class T>
 struct template_type_tb_conf_elt {
-    using type_id = ID;
+    using type_id = ID; ///< The unique identifier type of this element
 
+    /*!
+     * \brief the template value type
+     */
     template <typename RBM, bool Denoising>
     using value = T<RBM, Denoising>;
 };
 
+/*!
+ * \brief A configuration element with an integral value.
+ */
 template <typename ID, typename T, T value>
 struct value_conf_elt : std::integral_constant<T, value> {
-    using type_id = ID;
+    using type_id = ID; ///< The unique identifier type of this element
 };
 
+/*!
+ * \brief A configuration element with a pair of integral values.
+ */
 template <typename ID, typename T, T v1, T v2>
 struct value_pair_conf_elt {
-    using type_id = ID;
+    using type_id = ID; ///< The unique identifier type of this element
 
-    static constexpr T value_1 = v1;
-    static constexpr T value_2 = v2;
+    static constexpr T value_1 = v1; ///< The first value of the configuration element
+    static constexpr T value_2 = v2; ///< The second value of the configuration element
 };
 
 struct copy_id;
@@ -252,7 +287,7 @@ struct watcher : template_type_conf_elt<watcher_id, T> {};
  */
 struct momentum : basic_conf_elt<momentum_id> {};
 
-/*
+/*!
  * \brief Use parallel mode instead of batch mode
  */
 struct parallel_mode : basic_conf_elt<parallel_mode_id> {};

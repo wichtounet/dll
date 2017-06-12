@@ -23,17 +23,30 @@ namespace dll {
 
 namespace detail {
 
+/*!
+ * \brief Simple helper for compile-time shape.
+ */
 struct shape {
     const size_t width;  ///< The width of the window
     const size_t height; ///< The height of the window
+
+    /*!
+     * \brief construct a new shape
+     */
     constexpr shape(size_t width, size_t height)
             : width(width), height(height) {}
 };
 
+/*!
+ * \brief Compute the middle of two numbers, rounded
+ */
 constexpr inline size_t ct_mid(size_t a, size_t b) {
     return (a + b) / 2;
 }
 
+/*!
+ * \brief Compute the power of two numbers
+ */
 constexpr inline size_t ct_pow(size_t a) {
     return a * a;
 }
@@ -104,9 +117,12 @@ constexpr inline size_t best_width(const size_t total) {
 
 #ifndef DLL_DETAIL_ONLY
 
+/*!
+ * \brief The base type for an OpenCV visualizer
+ */
 template <typename RBM>
 struct base_ocv_rbm_visualizer {
-    cpp::stop_watch<std::chrono::seconds> watch;
+    cpp::stop_watch<std::chrono::seconds> watch; ///< The timer for entire training
 
     const size_t width;  ///< The width of the view
     const size_t height; ///< The height of the view
@@ -366,12 +382,12 @@ struct opencv_dbn_visualizer {
     static constexpr bool ignore_sub  = false; ///< For pretraining of a DBN, indicates if the regular RBM watcher should be used (false) or ignored (true)
     static constexpr bool replace_sub = true; ///< For pretraining of a DBN, indicates if the DBN watcher should replace (true) the RBM watcher or not (false)
 
-    cpp::stop_watch<std::chrono::seconds> watch;
+    cpp::stop_watch<std::chrono::seconds> watch; ///< The timer for entire training
 
     using dbn_t = DBN; ///< The DBN being trained
 
-    static std::vector<cv::Mat> buffer_images;
-    static size_t current_image;
+    static std::vector<cv::Mat> buffer_images; ///< The buffer images
+    static size_t current_image;               ///< The current images
 
     opencv_dbn_visualizer() = default;
 
@@ -610,7 +626,7 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynami
     static constexpr bool ignore_sub  = false; ///< For pretraining of a DBN, indicates if the regular RBM watcher should be used (false) or ignored (true)
     static constexpr bool replace_sub = true; ///< For pretraining of a DBN, indicates if the DBN watcher should replace (true) the RBM watcher or not (false)
 
-    cpp::stop_watch<std::chrono::seconds> watch;
+    cpp::stop_watch<std::chrono::seconds> watch; ///< The timer for entire training
 
     using dbn_t = DBN; ///< The type of the DBN
 
@@ -802,7 +818,7 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
     static constexpr bool ignore_sub  = false; ///< For pretraining of a DBN, indicates if the regular RBM watcher should be used (false) or ignored (true)
     static constexpr bool replace_sub = true; ///< For pretraining of a DBN, indicates if the DBN watcher should replace (true) the RBM watcher or not (false)
 
-    cpp::stop_watch<std::chrono::seconds> watch;
+    cpp::stop_watch<std::chrono::seconds> watch; ///< The timer for entire training
 
     using dbn_t = DBN;
 

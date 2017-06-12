@@ -65,16 +65,28 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
 
     //Energy functions
 
+    /*!
+     * \brief Return the energy of the given joint configuration
+     * \param v The configuration of the inputs
+     * \param h The configuration of the outputs
+     * \return The scalar energy of the model for the given joint configuration
+     */
     template<typename Input>
     weight energy(const Input& v, const output_one_t& h) const {
         return energy(as_derived(), v, h);
     }
 
+    /*!
+     * \brief Return the free energy of the given input
+     */
     template<typename Input>
     weight free_energy(const Input& v) const {
         return free_energy(as_derived(), v);
     }
 
+    /*!
+     * \brief Return the free energy of the current input
+     */
     weight free_energy() const {
         auto& rbm = as_derived();
         return free_energy(rbm, rbm.v1);
@@ -82,11 +94,17 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
 
     //Various functions
 
+    /*!
+     * \brief Initalize the weights using the training inputs
+     */
     template <typename Iterator>
     void init_weights(Iterator&& first, Iterator&& last) {
         init_weights(std::forward<Iterator>(first), std::forward<Iterator>(last), as_derived());
     }
 
+    /*!
+     * \brief Initalize the weights using the training inputs
+     */
     template <typename Generator>
     void init_weights(Generator& generator) {
         init_weights(generator, as_derived());
@@ -152,27 +170,47 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
 
     //Display functions
 
+    /*!
+     * \brief Display the values of the units of the RBM
+     */
     void display_units() const {
         display_visible_units();
         display_hidden_units();
     }
 
+    /*!
+     * \brief Display the values of the visible units of the RBM
+     */
     void display_visible_units() const {
         display_visible_units(as_derived());
     }
 
+    /*!
+     * \brief Display the values of the visible units of the RBM using the given
+     * size to display a square matrix of the values.
+     */
     void display_visible_units(size_t matrix) const {
         display_visible_units(as_derived(), matrix);
     }
 
+    /*!
+     * \brief Display the values of the hidden units of the RBM
+     */
     void display_hidden_units() const {
         display_hidden_units(as_derived());
     }
 
+    /*!
+     * \brief Display the weights of the RBM.
+     */
     void display_weights() const {
         display_weights(as_derived());
     }
 
+    /*!
+     * \brief Display the weights of the RBM using the given
+     * size to display a square matrix of the values.
+     */
     void display_weights(size_t matrix) const {
         display_weights(matrix, as_derived());
     }
@@ -301,6 +339,9 @@ private:
         std::cout << "Reconstruction took " << watch.elapsed() << "ms" << std::endl;
     }
 
+    /*!
+     * \brief Display the weights of the RBM
+     */
     static void display_weights(const parent_t& rbm) {
         for (size_t j = 0; j < num_hidden(rbm); ++j) {
             for (size_t i = 0; i < num_visible(rbm); ++i) {
@@ -310,6 +351,9 @@ private:
         }
     }
 
+    /*!
+     * \brief Display the weights of the RBM
+     */
     static void display_weights(const parent_t& rbm, size_t matrix) {
         for (size_t j = 0; j < num_hidden(rbm); ++j) {
             for (size_t i = 0; i < num_visible(rbm);) {
@@ -321,6 +365,9 @@ private:
         }
     }
 
+    /*!
+     * \brief Display the current visible unit samples
+     */
     static void display_visible_units(const parent_t& rbm) {
         std::cout << "Visible  Value" << std::endl;
 
@@ -329,6 +376,9 @@ private:
         }
     }
 
+    /*!
+     * \brief Display the current visible unit samples
+     */
     static void display_visible_units(const parent_t& rbm, size_t matrix) {
         for (size_t i = 0; i < matrix; ++i) {
             for (size_t j = 0; j < matrix; ++j) {
@@ -338,6 +388,9 @@ private:
         }
     }
 
+    /*!
+     * \brief Display the current visible unit samples
+     */
     static void display_hidden_units(const parent_t& rbm) {
         std::cout << "Hidden Value" << std::endl;
 

@@ -138,31 +138,65 @@ struct get_value_l;
 template <typename D, typename... T>
 struct get_value_l<D, cpp::type_list<T...>> : cpp::auto_constant<get_value<D, T...>> {};
 
+/*!
+ * \brief Extract the type corresponding to the given configuration element from
+ * the list of the parameters.
+ * \tparam D The configuration element type
+ * \tparam Args The arguments to extract the type from
+ */
 template <typename D, typename... Args>
 struct get_type;
 
-//Simply using conditional_t is not enough since T2::value can be a real value and not a type and therefore should not always be evaluated
+/*!
+ * \copydoc get_type
+ */
 template <typename D, typename T2, typename... Args>
 struct get_type<D, T2, Args...> {
+    // Simply using conditional_t is not enough since T2::value can be a real value and not a type and therefore should not always be evaluated
+
+    /*!
+     * \brief The extracted value type
+     */
     using value = typename cpp::conditional_type_constant_c<std::is_same<typename D::type_id, typename T2::type_id>::value, T2, get_type<D, Args...>>::type;
 };
 
+/*!
+ * \copydoc get_type
+ */
 template <typename D>
 struct get_type<D> {
-    using value = typename D::value;
+    using value = typename D::value; ///< The extracted value type
 };
 
+/*!
+ * \brief Extract the template type corresponding to the given configuration element from
+ * the list of the parameters.
+ * \tparam D The configuration element type
+ * \tparam Args The arguments to extract the template type from
+ */
 template <typename D, typename... Args>
 struct get_template_type;
 
+/*!
+ * \copydoc get_template_type
+ */
 template <typename D, typename T2, typename... Args>
 struct get_template_type<D, T2, Args...> {
+    /*!
+     * \brief The extracted value template type
+     */
     template <typename RBM>
     using value = typename cpp::conditional_template_type_constant_c<std::is_same<typename D::type_id, typename T2::type_id>::value, T2, get_template_type<D, Args...>>::template type<RBM>;
 };
 
+/*!
+ * \copydoc get_template_type
+ */
 template <typename D>
 struct get_template_type<D> {
+    /*!
+     * \brief The extracted value template type
+     */
     template <typename RBM>
     using value = typename D::template value<RBM>;
 };

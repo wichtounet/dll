@@ -19,10 +19,18 @@
 
 namespace dll {
 
+/*!
+ * \brief The default watcher for RBM pretraining.
+ * \tparam R The RBM type
+ */
 template <typename R>
 struct default_rbm_watcher {
     cpp::stop_watch<std::chrono::seconds> watch; ///< Timer for the entire training
 
+    /*!
+     * \brief Indicates that the training of the given RBM started.
+     * \param rbm The rbm that started training.
+     */
     template <typename RBM = R>
     void training_begin(const RBM& rbm) {
         using rbm_t = std::decay_t<RBM>;
@@ -70,8 +78,14 @@ struct default_rbm_watcher {
         }
     }
 
+    /*!
+     * \brief Indicates the end of an epoch of pretraining.
+     * \param epoch The epoch that just finished training
+     * \param context The RBM's training context
+     * \param rbm The RBM being trained
+     */
     template <typename RBM = R>
-    void epoch_end(size_t epoch, const rbm_training_context& context, const RBM& /*rbm*/) {
+    void epoch_end(size_t epoch, const rbm_training_context& context, const RBM& rbm) {
         char formatted[1024];
         if (rbm_layer_traits<RBM>::free_energy()) {
             snprintf(formatted, 1024, "epoch %ld - Reconstruction error: %.5f - Free energy: %.3f - Sparsity: %.5f", epoch,
@@ -79,23 +93,44 @@ struct default_rbm_watcher {
         } else {
             snprintf(formatted, 1024, "epoch %ld - Reconstruction error: %.5f - Sparsity: %.5f", epoch, context.reconstruction_error, context.sparsity);
         }
+
         std::cout << formatted << std::endl;
+
+        cpp_unused(rbm);
     }
 
+    /*!
+     * \brief Indicates the end of a batch of pretraining.
+     * \param batch The batch that just finished training
+     * \param batches The total number of batches
+     * \param context The RBM's training context
+     * \param rbm The RBM being trained
+     */
     template <typename RBM = R>
-    void batch_end(const RBM& /* rbm */, const rbm_training_context& context, size_t batch, size_t batches) {
+    void batch_end(const RBM& rbm, const rbm_training_context& context, size_t batch, size_t batches) {
         char formatted[1024];
-        sprintf(formatted, "Batch %ld/%ld - Reconstruction error: %.5f - Sparsity: %.5f", batch, batches,
-                context.batch_error, context.batch_sparsity);
+        sprintf(formatted, "Batch %ld/%ld - Reconstruction error: %.5f - Sparsity: %.5f",
+            batch, batches, context.batch_error, context.batch_sparsity);
         std::cout << formatted << std::endl;
+
+        cpp_unused(rbm);
     }
 
+    /*!
+     * \brief Indicates the end of pretraining.
+     * \param rbm The RBM being trained
+     */
     template <typename RBM = R>
-    void training_end(const RBM&) {
+    void training_end(const RBM& rbm) {
         std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
+
+        cpp_unused(rbm);
     }
 };
 
+/*!
+ * \brief The default watcher for DBN training/pretraining
+ */
 template <typename DBN>
 struct default_dbn_watcher {
     static constexpr bool ignore_sub  = false; ///< For pretraining of a DBN, indicates if the regular RBM watcher should be used (false) or ignored (true)

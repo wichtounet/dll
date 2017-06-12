@@ -144,6 +144,12 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
             etl::reshape(input, etl::dim<0>(input), get_nc(rbm), get_nv1(rbm), get_nv2(rbm)));
     }
 
+    /*!
+     * \brief Return the energy of the given joint configuration
+     * \param v The configuration of the inputs
+     * \param h The configuration of the outputs
+     * \return The scalar energy of the model for the given joint configuration
+     */
     template<typename Input, typename Out>
     weight energy(const Input& v, const Out& h) const {
         return as_derived().energy_impl(v, h);

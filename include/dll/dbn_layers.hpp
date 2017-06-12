@@ -119,14 +119,23 @@ struct validate_label_layers<L1, L2, Layers...> : cpp::bool_constant_c<
 
 namespace detail {
 
+/*!
+ * \brief A leaf in the list of layers.
+ */
 template <size_t I, typename T>
 struct layers_leaf {
-    T value;
+    T value; ///< The value of the leaf
 
+    /*!
+     * \brief Returns a reference to the value of the layer
+     */
     T& get() noexcept {
         return value;
     }
 
+    /*!
+     * \brief Returns a const reference to the value of the layer
+     */
     const T& get() const noexcept {
         return value;
     }
