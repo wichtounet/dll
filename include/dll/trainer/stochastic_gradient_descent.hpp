@@ -275,7 +275,7 @@ struct sgd_trainer {
                 layer_ctx.first.compute_gradients(*layer_ctx.second);
 
                 // Apply the gradients
-                this->apply_gradients(layer_ctx.first, *layer_ctx.second, n);
+                this->apply_gradients<dbn_traits<dbn_t>::updater()>(layer_ctx.first, *layer_ctx.second, n);
             });
         }
 
@@ -298,7 +298,7 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && dbn_traits<dbn_t>::has_momentum())>
+    template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::MOMENTUM)>
     void apply_gradients(L& layer, C& context, size_t n) {
         dll::auto_timer timer("sgd::apply_grad");
 
@@ -326,7 +326,7 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && !dbn_traits<dbn_t>::has_momentum())>
+    template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::SGD)>
     void apply_gradients(L& layer, C& context, size_t n) {
         dll::auto_timer timer("sgd::apply_grad");
 
@@ -346,7 +346,7 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <typename L, typename C, cpp_disable_if(decay_layer_traits<L>::is_neural_layer())>
+    template <updater_type UT, typename L, typename C, cpp_disable_if(decay_layer_traits<L>::is_neural_layer())>
     void apply_gradients(L& /*layer*/, C& /*context*/, size_t /*n*/) {
         //Pooling and transform layers have no weights, therefore no
         //gradients

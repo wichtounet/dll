@@ -15,6 +15,7 @@
 #include <cstddef>
 
 #include "unit_type.hpp"
+#include "updater_type.hpp"
 #include "function.hpp"
 #include "loss.hpp"
 #include "decay_type.hpp"
@@ -143,6 +144,7 @@ struct scale_pre_id;
 struct normalize_pre_id;
 struct binarize_pre_id;
 struct autoencoder_id;
+struct updater_id;
 
 /*!
  * \brief Sets the minibatch size
@@ -160,6 +162,13 @@ struct batch_size : value_conf_elt<batch_size_id, size_t, B> {};
  */
 template <size_t B>
 struct big_batch_size : value_conf_elt<big_batch_size_id, size_t, B> {};
+
+/*!
+ * \brief Sets the updater type
+ * \tparam UT The updater type
+ */
+template <updater_type UT>
+struct updater : value_conf_elt<updater_id, updater_type, UT> {};
 
 /*!
  * \brief Sets the visible unit type

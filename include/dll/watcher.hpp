@@ -201,7 +201,7 @@ struct default_dbn_watcher {
         std::cout << "      batch_size=" << DBN::batch_size << std::endl;
         std::cout << "   learning_rate=" << dbn.learning_rate << std::endl;
 
-        if (dbn_traits<DBN>::has_momentum()) {
+        if (dbn_traits<DBN>::updater() == updater_type::MOMENTUM) {
             std::cout << "   momentum=" << dbn.momentum << std::endl;
         }
 

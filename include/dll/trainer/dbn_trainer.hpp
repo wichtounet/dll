@@ -108,7 +108,7 @@ struct dbn_trainer {
         error = new_error;
 
         //After some time increase the momentum
-        if (dbn_traits<dbn_t>::has_momentum() && epoch == dbn.final_momentum_epoch) {
+        if (dbn_traits<dbn_t>::updater() == updater_type::MOMENTUM && epoch == dbn.final_momentum_epoch) {
             dbn.momentum = dbn.final_momentum;
         }
 

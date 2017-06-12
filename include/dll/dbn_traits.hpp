@@ -35,10 +35,10 @@ struct dbn_traits {
     }
 
     /*!
-     * \brief Indicates if the DBN uses momentum training
+     * \brief Get the updater type of the DBN.
      */
-    static constexpr bool has_momentum() noexcept {
-        return desc::parameters::template contains<momentum>();
+    static constexpr updater_type updater() noexcept {
+        return desc::Updater;
     }
 
     /*!
