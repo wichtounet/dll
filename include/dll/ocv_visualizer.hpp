@@ -677,7 +677,7 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynami
      * \param input_size the number of inputs
      */
     template <typename RBM>
-    void pretrain_layer(const DBN& /*dbn*/, size_t I, size_t input_size) {
+    void pretrain_layer(const DBN& dbn, size_t I, size_t input_size) {
         printf("DBN: Train layer %lu with %lu entries\n", I, input_size);
         current_image = I;
 
