@@ -1173,6 +1173,60 @@ public:
 
     using metrics_t = std::tuple<double, double>; ///< The metrics returned by evaluate_metrics
 
+    template <loss_function F, typename Output, typename Labels, cpp_enable_if((F == loss_function::CATEGORICAL_CROSS_ENTROPY))>
+    std::tuple<double, double> compute_loss(size_t n, bool full_batch, double s, Output&& output, Labels&& labels){
+        double batch_loss;
+        double batch_error;
+
+        if (cpp_unlikely(!full_batch)) {
+            auto soutput = slice(output, 0, n);
+
+            batch_loss  = (-1.0 / s) * sum(log(soutput) >> labels);
+            batch_error = (1.0 / s) * sum(min(abs(argmax(labels) - argmax(soutput)), 1.0));
+        } else {
+            batch_loss  = (-1.0 / s) * sum(log(output) >> labels);
+            batch_error = (1.0 / s) * sum(min(abs(argmax(labels) - argmax(output)), 1.0));
+        }
+
+        return std::make_tuple(batch_loss, batch_error);
+    }
+
+    template <loss_function F, typename Output, typename Labels, cpp_enable_if((F == loss_function::BINARY_CROSS_ENTROPY))>
+    std::tuple<double, double> compute_loss(size_t n, bool full_batch, double s, Output&& output, Labels&& labels){
+        double batch_loss;
+        double batch_error;
+
+        if (cpp_unlikely(!full_batch)) {
+            auto soutput = slice(output, 0, n);
+
+            batch_loss  = (-1.0 / (s * output_size())) * sum((labels >> log(soutput)) + ((1.0 - labels) >> log(1.0 - soutput)));
+            batch_error = (1.0 / (s * output_size())) * asum(labels - soutput);
+        } else {
+            batch_loss  = (-1.0 / (s * output_size())) * sum((labels >> log(output)) + ((1.0 - labels) >> log(1.0 - output)));
+            batch_error = (1.0 / (s * output_size())) * asum(labels - output);
+        }
+
+        return std::make_tuple(batch_loss, batch_error);
+    }
+
+    template <loss_function F, typename Output, typename Labels, cpp_enable_if((F == loss_function::MEAN_SQUARED_ERROR))>
+    std::tuple<double, double> compute_loss(size_t n, bool full_batch, double s, Output&& output, Labels&& labels){
+        double batch_loss;
+        double batch_error;
+
+        if (cpp_unlikely(!full_batch)) {
+            auto soutput = slice(output, 0, n);
+
+            batch_loss  = (1.0 / (2.0 * s)) * sum((soutput - labels) >> (soutput - labels));
+            batch_error = (1.0 / s) * asum(labels - soutput);
+        } else {
+            batch_loss  = (1.0 / (2.0 * s)) * sum((output - labels) >> (output - labels));
+            batch_error = (1.0 / s) * asum(labels - output);
+        }
+
+        return std::make_tuple(batch_loss, batch_error);
+    }
+
     /*!
      * \brief Evaluate the network on the given output batch and labels and return the metrics.
      *
@@ -1185,9 +1239,6 @@ public:
      */
     template <typename Output, typename Labels>
     metrics_t evaluate_metrics_batch(Output&& output, Labels&& labels, size_t n, bool normalize){
-        double batch_error = 0.0;
-        double batch_loss  = 0.0;
-
         const bool full_batch = n == batch_size;
 
         double s = 1.0;
@@ -1199,41 +1250,8 @@ public:
         // TODO Detect if labels are categorical already or not
         // And change the way this is done
 
-        if /*constexpr*/ (loss == loss_function::CATEGORICAL_CROSS_ENTROPY) {
-            if (cpp_unlikely(!full_batch)) {
-                auto soutput = slice(output, 0, n);
-
-                batch_loss  = (-1.0 / s) * sum(log(soutput) >> labels);
-                batch_error = (1.0 / s) * sum(min(abs(argmax(labels) - argmax(soutput)), 1.0));
-            } else {
-                batch_loss  = (-1.0 / s) * sum(log(output) >> labels);
-                batch_error = (1.0 / s) * sum(min(abs(argmax(labels) - argmax(output)), 1.0));
-            }
-        } else if (loss == loss_function::MEAN_SQUARED_ERROR) {
-            if (cpp_unlikely(!full_batch)) {
-                auto soutput = slice(output, 0, n);
-
-                batch_loss  = (1.0 / (2.0 * s)) * sum((soutput - labels) >> (soutput - labels));
-                batch_error = (1.0 / s) * asum(labels - soutput);
-            } else {
-                batch_loss  = (1.0 / (2.0 * s)) * sum((output - labels) >> (output - labels));
-                batch_error = (1.0 / s) * asum(labels - output);
-            }
-        } else if (loss == loss_function::BINARY_CROSS_ENTROPY) {
-            if (cpp_unlikely(!full_batch)) {
-                auto soutput = slice(output, 0, n);
-
-                batch_loss  = (-1.0 / (s * output_size())) * sum((labels >> log(soutput)) + ((1.0 - labels) >> log(1.0 - soutput)));
-                batch_error = (1.0 / (s * output_size())) * asum(labels - soutput);
-            } else {
-                batch_loss  = (-1.0 / (s * output_size())) * sum((labels >> log(output)) + ((1.0 - labels) >> log(1.0 - output)));
-                batch_error = (1.0 / (s * output_size())) * asum(labels - output);
-            }
-        } else {
-            cpp_unreachable("Unsupported loss function");
-        }
-
-        return std::make_tuple(batch_error, batch_loss);
+        // TODO Use if constexpr instaed of SFINAE
+        return compute_loss<loss>(n, full_batch, s, output, labels);
     }
 
     /*!
