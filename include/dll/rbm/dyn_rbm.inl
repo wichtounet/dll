@@ -291,16 +291,12 @@ struct sgd_context<DBN, dyn_rbm<Desc>, L> {
     etl::dyn_matrix<weight, 2> w_grad;
     etl::dyn_matrix<weight, 1> b_grad;
 
-    etl::dyn_matrix<weight, 2> w_inc;
-    etl::dyn_matrix<weight, 1> b_inc;
-
     etl::dyn_matrix<weight, 2> input;
     etl::dyn_matrix<weight, 2> output;
     etl::dyn_matrix<weight, 2> errors;
 
     sgd_context(layer_t& layer)
             : w_grad(layer.num_visible, layer.num_hidden), b_grad(layer.num_hidden),
-              w_inc(layer.num_visible, layer.num_hidden, 0.0), b_inc(layer.num_hidden, 0.0),
               input(batch_size, layer.num_visible, 0.0), output(batch_size, layer.num_hidden, 0.0), errors(batch_size, layer.num_hidden, 0.0) {}
 };
 

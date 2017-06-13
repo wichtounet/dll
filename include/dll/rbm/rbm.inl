@@ -276,15 +276,12 @@ struct sgd_context<DBN, rbm<Desc>, L> {
     etl::fast_matrix<weight, num_visible, num_hidden> w_grad;
     etl::fast_matrix<weight, num_hidden> b_grad;
 
-    etl::fast_matrix<weight, num_visible, num_hidden> w_inc;
-    etl::fast_matrix<weight, num_hidden> b_inc;
-
     etl::fast_matrix<weight, batch_size, num_visible> input;
     etl::fast_matrix<weight, batch_size, num_hidden> output;
     etl::fast_matrix<weight, batch_size, num_hidden> errors;
 
     sgd_context(layer_t& /*layer*/)
-            : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
+            : output(0.0), errors(0.0) {}
 };
 
 /*!

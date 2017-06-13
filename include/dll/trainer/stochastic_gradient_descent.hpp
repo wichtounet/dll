@@ -25,6 +25,69 @@
 
 namespace dll {
 
+template <updater_type UT, bool Neural, typename Context>
+struct updater_context {
+    updater_context(Context& context) {
+        cpp_unused(context);
+    }
+};
+
+// Data for Momentum
+template <typename Context>
+struct updater_context<updater_type::MOMENTUM, true, Context> {
+    using w_grad_t = decltype(std::declval<Context>().w_grad);
+    using b_grad_t = decltype(std::declval<Context>().b_grad);
+
+    w_grad_t w_inc;
+    b_grad_t b_inc;
+
+    updater_context(Context& context) : w_inc(context.w_grad), b_inc(context.b_grad) {
+        w_inc = 0;
+        b_inc = 0;
+    }
+};
+
+// Data for RMSPROP
+template <typename Context>
+struct updater_context<updater_type::RMSPROP, true, Context> {
+    using w_grad_t = decltype(std::declval<Context>().w_grad);
+    using b_grad_t = decltype(std::declval<Context>().b_grad);
+
+    w_grad_t w_inc;
+    b_grad_t b_inc;
+
+    updater_context(Context& context) : w_inc(context.w_grad), b_inc(context.b_grad) {
+        w_inc = 0;
+        b_inc = 0;
+    }
+};
+
+// Data for ADAGRAD
+template <typename Context>
+struct updater_context<updater_type::ADAGRAD, true, Context> {
+    using w_grad_t = decltype(std::declval<Context>().w_grad);
+    using b_grad_t = decltype(std::declval<Context>().b_grad);
+
+    w_grad_t w_inc;
+    b_grad_t b_inc;
+
+    updater_context(Context& context) : w_inc(context.w_grad), b_inc(context.b_grad) {
+        w_inc = 0;
+        b_inc = 0;
+    }
+};
+
+template <typename DBN, typename Layer, size_t L>
+struct full_sgd_context : sgd_context<DBN, Layer, L> {
+    using context_type = sgd_context<DBN, Layer, L>;
+
+    updater_context<DBN::updater, decay_layer_traits<Layer>::is_neural_layer(), context_type> up;
+
+    full_sgd_context(Layer& layer) : context_type(layer), up(*this) {
+        // Nothing else to init
+    }
+};
+
 /*!
  * \brief Build the context for a DBN for the given sequence of layers
  * \param dbn The DBN to build the context from
@@ -62,7 +125,7 @@ struct sgd_trainer {
     static constexpr auto batch_size = dbn_t::batch_size; ///< The batch size for training
 
     dbn_t& dbn;                                             ///< The DBN being trained
-    decltype(build_context<sgd_context>(dbn)) full_context; ///< The context
+    decltype(build_context<full_sgd_context>(dbn)) full_context; ///< The context
 
     // Transform layers need to inherit dimensions from back
 
@@ -91,7 +154,7 @@ struct sgd_trainer {
      * \brief construct a new sgd_trainer
      * \param dbn The DBN being trained
      */
-    explicit sgd_trainer(dbn_t& dbn) : dbn(dbn), full_context(build_context<sgd_context>(dbn)) {
+    explicit sgd_trainer(dbn_t& dbn) : dbn(dbn), full_context(build_context<full_sgd_context>(dbn)) {
         // Inherit dimensions from front to end (for transform layers)
 
         cpp::for_each_pair(full_context, [](auto& layer_ctx_1, auto& layer_ctx_2) {
@@ -333,11 +396,11 @@ struct sgd_trainer {
         // Note(perf): Some performance could be gained by doing the pair of
         // operations on w in a loop to improve data locality
 
-        context.w_inc = momentum * context.w_inc + (eps / n) * context.w_grad;
-        layer.w += context.w_inc;
+        context.up.w_inc = momentum * context.up.w_inc + (eps / n) * context.w_grad;
+        context.up.b_inc = momentum * context.up.b_inc + (eps / n) * context.b_grad;
 
-        context.b_inc = momentum * context.b_inc + (eps / n) * context.b_grad;
-        layer.b += context.b_inc;
+        layer.w += context.up.w_inc;
+        layer.b += context.up.b_inc;
 
         nan_check_deep(layer.w);
         nan_check_deep(layer.b);
@@ -357,11 +420,11 @@ struct sgd_trainer {
         const auto eps = dbn.learning_rate;
         const auto e = 1e-8;
 
-        context.w_inc = context.w_inc + (context.w_grad >> context.w_grad);
-        context.b_inc = context.b_inc + (context.b_grad >> context.b_grad);
+        context.up.w_inc = context.up.w_inc + (context.w_grad >> context.w_grad);
+        context.up.b_inc = context.up.b_inc + (context.b_grad >> context.b_grad);
 
-        layer.w += (eps >> context.w_grad) / etl::sqrt(context.w_inc + e);
-        layer.b += (eps >> context.b_grad) / etl::sqrt(context.b_inc + e);
+        layer.w += (eps >> context.w_grad) / etl::sqrt(context.up.w_inc + e);
+        layer.b += (eps >> context.b_grad) / etl::sqrt(context.up.b_inc + e);
 
         nan_check_deep(layer.w);
         nan_check_deep(layer.b);
@@ -384,11 +447,11 @@ struct sgd_trainer {
         const auto decay = dbn.rmsprop_decay;
         const auto e = 1e-8;
 
-        context.w_inc = decay * context.w_inc + (1 - decay) * (context.w_grad >> context.w_grad);
-        context.b_inc = decay * context.b_inc + (1 - decay) * (context.b_grad >> context.b_grad);
+        context.up.w_inc = decay * context.up.w_inc + (1 - decay) * (context.w_grad >> context.w_grad);
+        context.up.b_inc = decay * context.up.b_inc + (1 - decay) * (context.b_grad >> context.b_grad);
 
-        layer.w += (eps >> context.w_grad) / etl::sqrt(context.w_inc + e);
-        layer.b += (eps >> context.b_grad) / etl::sqrt(context.b_inc + e);
+        layer.w += (eps >> context.w_grad) / etl::sqrt(context.up.w_inc + e);
+        layer.b += (eps >> context.b_grad) / etl::sqrt(context.up.b_inc + e);
 
         nan_check_deep(layer.w);
         nan_check_deep(layer.b);

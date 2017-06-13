@@ -295,15 +295,12 @@ struct sgd_context<DBN, deconv_layer<Desc>, L> {
     etl::fast_matrix<weight, NC, K, NW1, NW2> w_grad;
     etl::fast_matrix<weight, K> b_grad;
 
-    etl::fast_matrix<weight, NC, K, NW1, NW2> w_inc;
-    etl::fast_matrix<weight, K> b_inc;
-
     etl::fast_matrix<weight, batch_size, NC, NV1, NV2> input;
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> output;
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> errors;
 
     sgd_context(layer_t& /* layer */)
-            : w_inc(0.0), b_inc(0.0), output(0.0), errors(0.0) {}
+            : output(0.0), errors(0.0) {}
 };
 
 } //end of dll namespace
