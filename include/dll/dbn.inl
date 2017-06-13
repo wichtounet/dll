@@ -137,7 +137,8 @@ public:
 
     layers_t tuples; ///< The layers
 
-    weight learning_rate     = 0.1;  ///< The learning rate for finetuning
+    weight learning_rate       = 0.1; ///< The learning rate for finetuning
+    weight learning_rate_decay = 0.0; ///< The learning rate decay
 
     weight initial_momentum     = 0.9; ///< The initial momentum
     weight final_momentum       = 0.9; ///< The final momentum applied after *final_momentum_epoch* epoch

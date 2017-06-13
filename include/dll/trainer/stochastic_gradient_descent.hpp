@@ -513,6 +513,11 @@ struct sgd_trainer {
         this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, 0.0);
 
         auto eps = dbn.learning_rate;
+        auto eps_decay = dbn.learning_rate_decay;
+
+        if(eps_decay > 0.0){
+            eps *= 1.0 / (1.0 + eps_decay * iteration);
+        }
 
         layer.w += (eps / n) * context.w_grad;
         layer.b += (eps / n) * context.b_grad;
@@ -536,7 +541,12 @@ struct sgd_trainer {
 
         //Update with momentum and learning rate
         auto momentum = dbn.momentum;
-        auto eps      = dbn.learning_rate;
+        auto eps = dbn.learning_rate;
+        auto eps_decay = dbn.learning_rate_decay;
+
+        if(eps_decay > 0.0){
+            eps *= 1.0 / (1.0 + eps_decay * iteration);
+        }
 
         context.up.w_inc = momentum * context.up.w_inc + (eps / n) * context.w_grad;
         context.up.b_inc = momentum * context.up.b_inc + (eps / n) * context.b_grad;
@@ -563,7 +573,12 @@ struct sgd_trainer {
 
         //Update with momentum and learning rate
         auto momentum = dbn.momentum;
-        auto eps      = dbn.learning_rate;
+        auto eps = dbn.learning_rate;
+        auto eps_decay = dbn.learning_rate_decay;
+
+        if(eps_decay > 0.0){
+            eps *= 1.0 / (1.0 + eps_decay * iteration);
+        }
 
         context.up.w_inc_prev = context.up.w_inc;
         context.up.b_inc_prev = context.up.b_inc;
@@ -591,8 +606,14 @@ struct sgd_trainer {
         this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0);
         this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, 0.0);
 
-        const auto eps = dbn.learning_rate;
         const auto e = 1e-8;
+
+        auto eps = dbn.learning_rate;
+        auto eps_decay = dbn.learning_rate_decay;
+
+        if(eps_decay > 0.0){
+            eps *= 1.0 / (1.0 + eps_decay * iteration);
+        }
 
         context.up.w_inc = context.up.w_inc + (context.w_grad >> context.w_grad);
         context.up.b_inc = context.up.b_inc + (context.b_grad >> context.b_grad);
@@ -651,7 +672,13 @@ struct sgd_trainer {
         this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0);
         this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, 0.0);
 
-        const auto eps = dbn.learning_rate;
+        auto eps = dbn.learning_rate;
+        auto eps_decay = dbn.learning_rate_decay;
+
+        if(eps_decay > 0.0){
+            eps *= 1.0 / (1.0 + eps_decay * iteration);
+        }
+
         const auto beta1 = dbn.adam_beta1;
         const auto beta2 = dbn.adam_beta2;
         const auto e = 1e-8;
@@ -683,7 +710,13 @@ struct sgd_trainer {
         this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0);
         this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, 0.0);
 
-        const auto eps = dbn.learning_rate;
+        auto eps = dbn.learning_rate;
+        auto eps_decay = dbn.learning_rate_decay;
+
+        if(eps_decay > 0.0){
+            eps *= 1.0 / (1.0 + eps_decay * iteration);
+        }
+
         const auto beta1 = dbn.adam_beta1;
         const auto beta2 = dbn.adam_beta2;
         const auto e = 1e-8;
@@ -723,7 +756,13 @@ struct sgd_trainer {
         this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0);
         this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, 0.0);
 
-        const auto eps = dbn.learning_rate;
+        auto eps = dbn.learning_rate;
+        auto eps_decay = dbn.learning_rate_decay;
+
+        if(eps_decay > 0.0){
+            eps *= 1.0 / (1.0 + eps_decay * iteration);
+        }
+
         const auto decay = dbn.rmsprop_decay;
         const auto e = 1e-8;
 
