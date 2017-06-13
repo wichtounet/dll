@@ -190,10 +190,10 @@ struct layers <true, Layers...> {
     static_assert(detail::validate_label_layers<Layers...>::value, "The inner sizes of RBM must correspond");
     static_assert(!detail::is_dynamic<Layers...>(), "dbn_label_layers should not be used with dynamic RBMs");
 
-    using base_t      = layers_impl<std::make_index_sequence<size>, Layers...>;
-    using layers_list = cpp::type_list<Layers...>;
+    using base_t      = layers_impl<std::make_index_sequence<size>, Layers...>; ///< The base implementation for layers
+    using layers_list = cpp::type_list<Layers...>;                              ///< The list of layers
 
-    base_t base;
+    base_t base; ///< The tuple structure to hold all layers
 };
 
 //Note: Maybe simplify further removing the type_list
