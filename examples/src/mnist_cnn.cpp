@@ -20,7 +20,7 @@ int main(int /*argc*/, char* /*argv*/ []) {
 
     // Build the network
 
-    using network_t = dll::dbn_desc<
+    using network_t = dll::dyn_dbn_desc<
         dll::dbn_layers<
             dll::conv_desc<1, 28, 28, 8, 5, 5>::layer_t,
             dll::mp_layer_2d_desc<8, 24, 24, 2, 2>::layer_t,
@@ -38,14 +38,16 @@ int main(int /*argc*/, char* /*argv*/ []) {
     net->learning_rate = 0.1;
 
     // Display the network and dataset
-    net->display();
-    dataset.display();
+    //net->display();
+    //dataset.display();
 
     // Train the network for performance sake
     net->fine_tune(dataset.train(), 25);
 
     // Test the network on test set
-    net->evaluate(dataset.test());
+    //net->evaluate(dataset.test());
+
+    cpp_unused(dataset);
 
     return 0;
 }

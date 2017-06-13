@@ -18,7 +18,7 @@ int main(int /*argc*/, char* /*argv*/ []) {
 
     // Build the network
 
-    using network_t = dll::dbn_desc<
+    using network_t = dll::dyn_dbn_desc<
         dll::dbn_layers<
             dll::dense_desc<28 * 28, 32>::layer_t,
             dll::dense_desc<32, 28 * 28>::layer_t
