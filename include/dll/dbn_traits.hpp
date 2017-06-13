@@ -92,10 +92,16 @@ struct dbn_traits {
         return desc::parameters::template contains<verbose>();
     }
 
+    /*!
+     * \brief Indicates if the DBN scales its features before sending to SVM.
+     */
     static constexpr bool scale() noexcept {
         return desc::parameters::template contains<svm_scale>();
     }
 
+    /*!
+     * \brief Returns the type of learning rate driver
+     */
     static constexpr lr_driver_type lr_driver() noexcept {
         return detail::get_value_l<dll::lr_driver<lr_driver_type::FIXED>, typename desc::parameters>::value;
     }
@@ -110,44 +116,52 @@ struct dbn_traits {
 
 /** Functions to get the dimensions of DBN regardless of dynamic or not **/
 
+/*!
+ * \brief Return the DBN output size
+ */
 template <typename DBN, cpp_disable_if(dbn_traits<DBN>::is_dynamic())>
 constexpr size_t dbn_output_size(const DBN& /*dbn*/) {
     return DBN::output_size();
 }
 
+/*!
+ * \brief Return the DBN output size
+ */
 template <typename DBN, cpp_enable_if(dbn_traits<DBN>::is_dynamic())>
 size_t dbn_output_size(const DBN& dbn) {
     return dbn.output_size();
 }
 
+/*!
+ * \brief Return the DBN concatenated output size
+ */
 template <typename DBN, cpp_disable_if(dbn_traits<DBN>::is_dynamic())>
 constexpr size_t dbn_full_output_size(const DBN& /*dbn*/) {
     return DBN::full_output_size();
 }
 
+/*!
+ * \brief Return the DBN concatenated output size
+ */
 template <typename DBN, cpp_enable_if(dbn_traits<DBN>::is_dynamic())>
 size_t dbn_full_output_size(const DBN& dbn) {
     return dbn.full_output_size();
 }
 
+/*!
+ * \brief Return the DBN input size
+ */
 template <typename DBN, cpp_disable_if(dbn_traits<DBN>::is_dynamic())>
 constexpr size_t dbn_input_size(const DBN& /*dbn*/) {
     return DBN::input_size();
 }
 
+/*!
+ * \brief Return the DBN input size
+ */
 template <typename DBN, cpp_enable_if(dbn_traits<DBN>::is_dynamic())>
 size_t dbn_input_size(const DBN& dbn) {
     return dbn.input_size();
-}
-
-template <typename DBN, cpp_disable_if(dbn_traits<DBN>::is_dynamic())>
-constexpr size_t dbn_full_input_size(const DBN& /*dbn*/) {
-    return DBN::full_input_size();
-}
-
-template <typename DBN, cpp_enable_if(dbn_traits<DBN>::is_dynamic())>
-size_t dbn_full_input_size(const DBN& dbn) {
-    return dbn.full_input_size();
 }
 
 template <typename DBN, typename Layer>
