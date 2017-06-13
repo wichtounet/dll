@@ -298,6 +298,26 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
+    template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::SGD)>
+    void apply_gradients(L& layer, C& context, size_t n) {
+        dll::auto_timer timer("sgd::apply_grad");
+
+        //Update the gradients
+        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0);
+        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, 0.0);
+
+        auto eps = dbn.learning_rate;
+
+        layer.w += (eps / n) * context.w_grad;
+        layer.b += (eps / n) * context.b_grad;
+
+        nan_check_deep(layer.w);
+        nan_check_deep(layer.b);
+    }
+
+    /*!
+     * \brief Apply the gradients to the given layer
+     */
     template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::MOMENTUM)>
     void apply_gradients(L& layer, C& context, size_t n) {
         dll::auto_timer timer("sgd::apply_grad");
@@ -318,26 +338,6 @@ struct sgd_trainer {
 
         context.b_inc = momentum * context.b_inc + (eps / n) * context.b_grad;
         layer.b += context.b_inc;
-
-        nan_check_deep(layer.w);
-        nan_check_deep(layer.b);
-    }
-
-    /*!
-     * \brief Apply the gradients to the given layer
-     */
-    template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::SGD)>
-    void apply_gradients(L& layer, C& context, size_t n) {
-        dll::auto_timer timer("sgd::apply_grad");
-
-        //Update the gradients
-        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0);
-        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, 0.0);
-
-        auto eps = dbn.learning_rate;
-
-        layer.w += (eps / n) * context.w_grad;
-        layer.b += (eps / n) * context.b_grad;
 
         nan_check_deep(layer.w);
         nan_check_deep(layer.b);
