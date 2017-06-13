@@ -18,4 +18,24 @@ enum class updater_type {
     ADAGRAD   ///< Use ADAGRAD for SGD
 };
 
+/*!
+ * \brief Returns a string representation of an updater type
+ * \param f The updater type to transform to string
+ * \return a string representation of an updater type
+ */
+inline std::string to_string(updater_type f) {
+    switch (f) {
+        case updater_type::SGD:
+            return "SGD";
+        case updater_type::MOMENTUM:
+            return "MOMENTUM";
+        case updater_type::ADAGRAD:
+            return "ADAGRAD";
+    }
+
+    cpp_unreachable("Unreachable code");
+
+    return "UNDEFINED";
+}
+
 } //end of dll namespace
