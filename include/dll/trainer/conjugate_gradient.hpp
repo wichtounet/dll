@@ -266,6 +266,10 @@ struct cg_trainer_base {
         }
     }
 
+    /*!
+     * \brief Test if the gradients are finite
+     * \return true if the gradients are finite, false otherwise
+     */
     bool is_finite() {
         bool finite = true;
 
@@ -339,20 +343,26 @@ struct cg_trainer_base {
         return acc;
     }
 
+    /*!
+     * \brief Helper structure for interpolation data
+     */
     struct int_t {
         weight f;
         weight d;
         weight x;
     };
 
+    /*!
+     * \brief Minimize the gradient of the given context
+     */
     template <typename Sample, typename Target>
     void minimize(const gradient_context<Sample, Target>& context) {
-        constexpr weight INT      = 0.1;       //Don't reevaluate within 0.1 of the limit of the current bracket
-        constexpr weight EXT      = 3.0;       //Extrapolate maximum 3 times the current step-size
-        constexpr weight SIG      = 0.1;       //Maximum allowed maximum ration between previous and new slopes
-        constexpr weight RHO      = SIG / 2.0; //mimimum allowd fraction of the expected
-        constexpr weight RATIO    = 10.0;      //Maximum allowed slope ratio
-        constexpr size_t MAX = 20;        //Maximum number of function evaluations per line search
+        constexpr weight INT   = 0.1;       //Don't reevaluate within 0.1 of the limit of the current bracket
+        constexpr weight EXT   = 3.0;       //Extrapolate maximum 3 times the current step-size
+        constexpr weight SIG   = 0.1;       //Maximum allowed maximum ration between previous and new slopes
+        constexpr weight RHO   = SIG / 2.0; //mimimum allowd fraction of the expected
+        constexpr weight RATIO = 10.0;      //Maximum allowed slope ratio
+        constexpr size_t MAX   = 20;        //Maximum number of function evaluations per line search
 
         //Maximum number of try
         auto max_iteration = context.max_iterations;
@@ -591,6 +601,9 @@ struct cg_trainer_base {
         }
     }
 
+    /*!
+     * \brief Return the name of the trainer
+     */
     static std::string name() {
         return "Conjugate Gradient";
     }

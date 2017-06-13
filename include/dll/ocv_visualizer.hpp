@@ -286,6 +286,12 @@ struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
         }
     }
 
+    /*!
+     * \brief Indicates the end of an epoch of pretraining.
+     * \param epoch The epoch that just finished training
+     * \param context The RBM's training context
+     * \param rbm The RBM being trained
+     */
     void epoch_end(size_t epoch, const rbm_training_context& context, const RBM& rbm) {
         printf("epoch %ld - Reconstruction error: %.5f - Free energy: %.3f - Sparsity: %.5f\n", epoch,
                context.reconstruction_error, context.free_energy, context.sparsity);
@@ -363,6 +369,12 @@ struct opencv_rbm_visualizer<RBM, C, std::enable_if_t<layer_traits<RBM>::is_conv
         }
     }
 
+    /*!
+     * \brief Indicates the end of an epoch of pretraining.
+     * \param epoch The epoch that just finished training
+     * \param context The RBM's training context
+     * \param rbm The RBM being trained
+     */
     void epoch_end(size_t epoch, const rbm_training_context& context, const RBM& rbm) {
         printf("epoch %ld - Reconstruction error: %.5f - Free energy: %.3f - Sparsity: %.5f\n", epoch,
                context.reconstruction_error, context.free_energy, context.sparsity);
@@ -466,6 +478,12 @@ struct opencv_dbn_visualizer {
         refresh();
     }
 
+    /*!
+     * \brief Indicates the end of an epoch of pretraining.
+     * \param epoch The epoch that just finished training
+     * \param context The RBM's training context
+     * \param rbm The RBM being trained
+     */
     template <typename RBM>
     void epoch_end(size_t epoch, const rbm_training_context& context, const RBM& rbm) {
         printf("epoch %ld - Reconstruction error: %.5f - Free energy: %.3f - Sparsity: %.5f\n", epoch,

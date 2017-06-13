@@ -200,6 +200,11 @@ struct rbm_layer_traits {
         return base_traits::has_shuffle;
     }
 
+    /*!
+     * \brief Indicates if the RBM is only to be used inside a DBN.
+     *
+     * This can save some memory
+     */
     static constexpr bool is_dbn_only() {
         return base_traits::is_dbn_only;
     }
@@ -215,14 +220,24 @@ struct rbm_layer_traits {
         return base_traits::sparsity_method;
     }
 
+    /*
+     * \brief Return the bias mode t be used for the LEE sparsity regularization
+     */
     static constexpr enum dll::bias_mode bias_mode() {
         return base_traits::bias_mode;
     }
 
+    /*
+     * \brief Return the type of weight decay
+     */
     static constexpr decay_type decay() {
         return base_traits::decay;
     }
 
+    /*!
+     * \brief Indicates if the weights of the RBM should be initialized using
+     * the inputs according to Hinton
+     */
     static constexpr bool init_weights() {
         return base_traits::has_init_weights;
     }
@@ -238,71 +253,113 @@ struct rbm_layer_traits {
 template <typename T>
 using decay_layer_traits = layer_traits<std::decay_t<T>>;
 
+/*!
+ * \brief Return the batch size of the given RBM
+ */
 template <typename RBM, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
 size_t get_batch_size(const RBM& rbm) {
     return rbm.batch_size;
 }
 
+/*!
+ * \brief Return the batch size of the given RBM
+ */
 template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
 constexpr size_t get_batch_size(const RBM&) {
     return RBM::batch_size;
 }
 
+/*!
+ * \brief Return the number of input channels of the given CRBM
+ */
 template <typename RBM, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
 size_t get_nc(const RBM& rbm) {
     return rbm.nc;
 }
 
+/*!
+ * \brief Return the number of input channels of the given CRBM
+ */
 template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
 constexpr size_t get_nc(const RBM&) {
     return RBM::NC;
 }
 
+/*!
+ * \brief Return the number of filters of the given CRBM
+ */
 template <typename RBM, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
 size_t get_k(const RBM& rbm) {
     return rbm.k;
 }
 
+/*!
+ * \brief Return the number of filters of the given CRBM
+ */
 template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
 constexpr size_t get_k(const RBM&) {
     return RBM::K;
 }
 
+/*!
+ * \brief Return the first dimension of the inputs
+ */
 template <typename RBM, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
 size_t get_nv1(const RBM& rbm) {
     return rbm.nv1;
 }
 
+/*!
+ * \brief Return the first dimension of the inputs
+ */
 template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
 constexpr size_t get_nv1(const RBM&) {
     return RBM::NV1;
 }
 
+/*!
+ * \brief Return the second dimension of the inputs
+ */
 template <typename RBM, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
 size_t get_nv2(const RBM& rbm) {
     return rbm.nv2;
 }
 
+/*!
+ * \brief Return the second dimension of the inputs
+ */
 template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
 constexpr size_t get_nv2(const RBM&) {
     return RBM::NV2;
 }
 
+/*!
+ * \brief Return the first dimension of the filters
+ */
 template <typename RBM, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
 size_t get_nw1(const RBM& rbm) {
     return rbm.nw1;
 }
 
+/*!
+ * \brief Return the first dimension of the filters
+ */
 template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
 constexpr size_t get_nw1(const RBM&) {
     return RBM::NW1;
 }
 
+/*!
+ * \brief Return the second dimension of the filters
+ */
 template <typename RBM, cpp_enable_if(layer_traits<RBM>::is_dynamic())>
 size_t get_nw2(const RBM& rbm) {
     return rbm.nw2;
 }
 
+/*!
+ * \brief Return the second dimension of the filters
+ */
 template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
 constexpr size_t get_nw2(const RBM&) {
     return RBM::NW2;

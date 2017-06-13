@@ -11,7 +11,13 @@
 
 namespace dll {
 
+/*!
+ * \brief Utility to predict a label from an input
+ */
 struct predictor {
+    /*!
+     * \brief Return the predicted label for the given image using the given DBN
+     */
     template <typename T, typename V>
     size_t operator()(T& dbn, V& image) {
         return dbn->predict(image);
@@ -20,7 +26,14 @@ struct predictor {
 
 #ifdef DLL_SVM_SUPPORT
 
+/*!
+ * \brief Utility to predict a label from an input in SVM mode
+ */
 struct svm_predictor {
+    /*!
+     * \brief Return the predicted label for the given image using the given DBN
+     * in SVM mode.
+     */
     template <typename T, typename V>
     size_t operator()(T& dbn, V& image) {
         return dbn->svm_predict(image);
@@ -29,7 +42,14 @@ struct svm_predictor {
 
 #endif //DLL_SVM_SUPPORT
 
+/*!
+ * \brief Utility to predict a label from an input using a DBN with only RBM
+ * pretraining.
+ */
 struct label_predictor {
+    /*!
+     * \brief Return the predicted label for the given image using the given DBN
+     */
     template <typename T, typename V>
     size_t operator()(T& dbn, V& image) {
         return dbn->predict_labels(image, 10);
