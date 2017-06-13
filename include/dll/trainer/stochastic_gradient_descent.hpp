@@ -25,64 +25,95 @@
 
 namespace dll {
 
+/*!
+ * \brief The context for the updater
+ */
 template <updater_type UT, bool Neural, typename Context>
 struct updater_context {
+    /*!
+     * \brief Construct a new updater_context using the parent context
+     */
     updater_context(Context& context) {
         cpp_unused(context);
     }
 };
 
-// Data for Momentum
+/*!
+ * \brief The context for the Momentum updater
+ */
 template <typename Context>
 struct updater_context<updater_type::MOMENTUM, true, Context> {
-    using w_grad_t = decltype(std::declval<Context>().w_grad);
-    using b_grad_t = decltype(std::declval<Context>().b_grad);
+    using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
+    using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
 
-    w_grad_t w_inc;
-    b_grad_t b_inc;
+    w_grad_t w_inc; //< The momentum cache for the weights
+    b_grad_t b_inc; //< The momentum cache for the biases
 
+    /*!
+     * \brief Construct a new updater_context using the parent context
+     */
     updater_context(Context& context) : w_inc(context.w_grad), b_inc(context.b_grad) {
         w_inc = 0;
         b_inc = 0;
     }
 };
 
-// Data for RMSPROP
+/*!
+ * \brief The context for the RMSPROP updater
+ */
 template <typename Context>
 struct updater_context<updater_type::RMSPROP, true, Context> {
-    using w_grad_t = decltype(std::declval<Context>().w_grad);
-    using b_grad_t = decltype(std::declval<Context>().b_grad);
+    using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
+    using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
 
-    w_grad_t w_inc;
-    b_grad_t b_inc;
+    w_grad_t w_inc; //< The rmsprop cache for the weights
+    b_grad_t b_inc; //< The rmsprop cache for the biases
 
+    /*!
+     * \brief Construct a new updater_context using the parent context
+     */
     updater_context(Context& context) : w_inc(context.w_grad), b_inc(context.b_grad) {
         w_inc = 0;
         b_inc = 0;
     }
 };
 
-// Data for ADAGRAD
+/*!
+ * \brief The context for the Adagrad updater
+ */
 template <typename Context>
 struct updater_context<updater_type::ADAGRAD, true, Context> {
-    using w_grad_t = decltype(std::declval<Context>().w_grad);
-    using b_grad_t = decltype(std::declval<Context>().b_grad);
+    using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
+    using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
 
-    w_grad_t w_inc;
-    b_grad_t b_inc;
+    w_grad_t w_inc; //< The adagrad cache for the weights
+    b_grad_t b_inc; //< The adagrad cache for the biases
 
+    /*!
+     * \brief Construct a new updater_context using the parent context
+     */
     updater_context(Context& context) : w_inc(context.w_grad), b_inc(context.b_grad) {
         w_inc = 0;
         b_inc = 0;
     }
 };
 
+/*!
+ * \brief The full SGD context, it contains the context of the layer as well as
+ * the context for the SGD updater
+ */
 template <typename DBN, typename Layer, size_t L>
 struct full_sgd_context : sgd_context<DBN, Layer, L> {
-    using context_type = sgd_context<DBN, Layer, L>;
+    using context_type = sgd_context<DBN, Layer, L>; ///< The parent context type
 
+    /*!
+     * \brief The updater context
+     */
     updater_context<DBN::updater, decay_layer_traits<Layer>::is_neural_layer(), context_type> up;
 
+    /*!
+     * \brief Construct the full_sgd_context for the given layer
+     */
     full_sgd_context(Layer& layer) : context_type(layer), up(*this) {
         // Nothing else to init
     }
