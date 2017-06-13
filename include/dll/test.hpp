@@ -29,24 +29,10 @@ struct svm_predictor {
 
 #endif //DLL_SVM_SUPPORT
 
-struct deep_predictor {
-    template <typename T, typename V>
-    size_t operator()(T& dbn, V& image) {
-        return dbn->deep_predict(image, 5);
-    }
-};
-
 struct label_predictor {
     template <typename T, typename V>
     size_t operator()(T& dbn, V& image) {
         return dbn->predict_labels(image, 10);
-    }
-};
-
-struct deep_label_predictor {
-    template <typename T, typename V>
-    size_t operator()(T& dbn, V& image) {
-        return dbn->deep_predict_labels(image, 10, 5);
     }
 };
 
