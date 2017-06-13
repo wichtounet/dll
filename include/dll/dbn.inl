@@ -1754,7 +1754,11 @@ private:
 
     //Transform and pooling layers can safely be skipped
     template <size_t I>
-    struct batch_layer_ignore<I, std::enable_if_t<(I < layers)>> : cpp::or_u<layer_traits<layer_type<I>>::is_pooling_layer(), layer_traits<layer_type<I>>::is_transform_layer(), layer_traits<layer_type<I>>::is_standard_layer(), !layer_traits<layer_type<I>>::pretrain_last()> {};
+    struct batch_layer_ignore<I, std::enable_if_t<(I < layers)>> : cpp::or_u<
+        layer_traits<layer_type<I>>::is_pooling_layer(),
+        layer_traits<layer_type<I>>::is_transform_layer(),
+        layer_traits<layer_type<I>>::is_standard_layer(),
+        !layer_traits<layer_type<I>>::pretrain_last()> {};
 
     //Special handling for the layer 0
     //data is coming from iterators not from input
