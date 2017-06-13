@@ -216,14 +216,6 @@ struct default_dbn_watcher {
             std::cout << "   weight_cost(L2)=" << dbn.l2_weight_cost << std::endl;
         }
 
-        if (dbn_traits<DBN>::lr_driver() == lr_driver_type::BOLD) {
-            std::cout << "   lr_driver(BOLD)=" << dbn.lr_bold_inc << ":" << dbn.lr_bold_dec << std::endl;
-        }
-
-        if (dbn_traits<DBN>::lr_driver() == lr_driver_type::STEP) {
-            std::cout << "   lr_driver(STEP)=" << dbn.lr_step_size << ":" << dbn.lr_step_gamma << std::endl;
-        }
-
         ft_max_epochs = max_epochs;
     }
 
@@ -299,11 +291,6 @@ struct default_dbn_watcher {
         std::cout.flush();
 
         cpp_unused(dbn);
-    }
-
-    void lr_adapt(const DBN& dbn) {
-        printf("driver: learning rate adapted to %.5f \n", dbn.learning_rate);
-        std::cout.flush();
     }
 
     /*!

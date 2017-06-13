@@ -623,12 +623,6 @@ struct opencv_dbn_visualizer {
         //TODO Would be interesting to update RBM images here
     }
 
-    void lr_adapt(const DBN& dbn) {
-        char formatted[1024];
-        snprintf(formatted, 1024, "driver: learning rate adapted to %.5f", dbn.learning_rate);
-        std::cout << formatted << std::endl;
-    }
-
     /*!
      * \brief Fine-tuning of the given network just finished
      * \param dbn The DBN that is being trained

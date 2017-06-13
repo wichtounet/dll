@@ -100,13 +100,6 @@ struct dbn_traits {
     }
 
     /*!
-     * \brief Returns the type of learning rate driver
-     */
-    static constexpr lr_driver_type lr_driver() noexcept {
-        return detail::get_value_l<dll::lr_driver<lr_driver_type::FIXED>, typename desc::parameters>::value;
-    }
-
-    /*!
      * \brief Returns the type of weight decay used during training
      */
     static constexpr decay_type decay() noexcept {

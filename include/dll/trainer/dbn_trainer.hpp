@@ -103,8 +103,6 @@ struct dbn_trainer {
      * \return true if the training is over
      */
     bool stop_epoch(dbn_t& dbn, size_t epoch, double new_error, double loss){
-        auto last_error = new_error;
-
         error = new_error;
 
         //After some time increase the momentum
@@ -118,34 +116,6 @@ struct dbn_trainer {
         if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()){
             if (new_error <= dbn.goal) {
                 return true;
-            }
-        }
-
-        if (dbn_traits<dbn_t>::lr_driver() == lr_driver_type::BOLD) {
-            if (epoch) {
-                if (new_error > last_error + 1e-8) {
-                    //Error increased
-                    dbn.learning_rate *= dbn.lr_bold_dec;
-                    watcher.lr_adapt(dbn);
-                    dbn.restore_weights();
-                } else if (new_error < last_error - 1e-10) {
-                    //Error decreased
-                    dbn.learning_rate *= dbn.lr_bold_inc;
-                    watcher.lr_adapt(dbn);
-                    dbn.backup_weights();
-                } else {
-                    //Error didn't change enough
-                    dbn.backup_weights();
-                }
-            } else {
-                dbn.backup_weights();
-            }
-        }
-
-        if (dbn_traits<dbn_t>::lr_driver() == lr_driver_type::STEP) {
-            if (epoch && epoch % dbn.lr_step_size == 0) {
-                dbn.learning_rate *= dbn.lr_step_gamma;
-                watcher.lr_adapt(dbn);
             }
         }
 

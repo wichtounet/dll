@@ -19,7 +19,6 @@
 #include "function.hpp"
 #include "loss.hpp"
 #include "decay_type.hpp"
-#include "lr_driver_type.hpp"
 #include "sparsity_method.hpp"
 #include "bias_mode.hpp"
 #include "initializer.hpp"
@@ -109,7 +108,6 @@ struct loss_id;
 struct initializer_id;
 struct initializer_bias_id;
 struct weight_decay_id;
-struct lr_driver_id;
 struct trainer_id;
 struct trainer_rbm_id;
 struct watcher_id;
@@ -225,12 +223,6 @@ struct initializer_bias : value_conf_elt<initializer_bias_id, initializer_type, 
  */
 template <decay_type T = decay_type::L2>
 struct weight_decay : value_conf_elt<weight_decay_id, decay_type, T> {};
-
-/*!
- * \brief Set the learning rate driver
- */
-template <lr_driver_type T = lr_driver_type::FIXED>
-struct lr_driver : value_conf_elt<lr_driver_id, lr_driver_type, T> {};
 
 /*!
  * \brief Copy augmentation
