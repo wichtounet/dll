@@ -15,7 +15,8 @@ namespace dll {
 enum class updater_type {
     SGD,      ///< The basic updater for SGD
     MOMENTUM, ///< Use momentum for SGD
-    ADAGRAD   ///< Use ADAGRAD for SGD
+    ADAGRAD,  ///< Use ADAGRAD for SGD
+    RMSPROP   ///< Use RMSPROP for SGD
 };
 
 /*!
@@ -31,6 +32,8 @@ inline std::string to_string(updater_type f) {
             return "MOMENTUM";
         case updater_type::ADAGRAD:
             return "ADAGRAD";
+        case updater_type::RMSPROP:
+            return "RMSPROP";
     }
 
     cpp_unreachable("Unreachable code");

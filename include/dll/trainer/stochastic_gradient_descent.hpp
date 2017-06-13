@@ -372,6 +372,33 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
+    template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::RMSPROP)>
+    void apply_gradients(L& layer, C& context, size_t n) {
+        dll::auto_timer timer("sgd::apply_grad");
+
+        //Update the gradients
+        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0);
+        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, 0.0);
+
+        const auto eps = dbn.learning_rate;
+        const auto decay = dbn.rmsprop_decay;
+        const auto e = 1e-8;
+
+        context.w_inc = decay * context.w_inc + (1 - decay) * (context.w_grad >> context.w_grad);
+        context.b_inc = decay * context.b_inc + (1 - decay) * (context.b_grad >> context.b_grad);
+
+        layer.w += (eps >> context.w_grad) / etl::sqrt(context.w_inc + e);
+        layer.b += (eps >> context.b_grad) / etl::sqrt(context.b_inc + e);
+
+        nan_check_deep(layer.w);
+        nan_check_deep(layer.b);
+
+        cpp_unused(n);
+    }
+
+    /*!
+     * \brief Apply the gradients to the given layer
+     */
     template <updater_type UT, typename L, typename C, cpp_disable_if(decay_layer_traits<L>::is_neural_layer())>
     void apply_gradients(L& /*layer*/, C& /*context*/, size_t /*n*/) {
         //Pooling and transform layers have no weights, therefore no

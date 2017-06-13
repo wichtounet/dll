@@ -146,11 +146,12 @@ public:
     weight initial_momentum     = 0.9; ///< The initial momentum
     weight final_momentum       = 0.9; ///< The final momentum applied after *final_momentum_epoch* epoch
     weight final_momentum_epoch = 6;   ///< The epoch at which momentum change
+    weight momentum             = 0;   ///< The current momentum
 
     weight l1_weight_cost = 0.0002; ///< The weight cost for L1 weight decay
     weight l2_weight_cost = 0.0002; ///< The weight cost for L2 weight decay
 
-    weight momentum = 0; ///< The current momentum
+    weight rmsprop_decay = 0.9; ///< The decay rate for RMSPROB
 
     bool batch_mode_run = false;
 
