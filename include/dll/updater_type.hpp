@@ -16,7 +16,8 @@ enum class updater_type {
     SGD,      ///< The basic updater for SGD
     MOMENTUM, ///< Use momentum for SGD
     ADAGRAD,  ///< Use ADAGRAD for SGD
-    RMSPROP   ///< Use RMSPROP for SGD
+    RMSPROP,  ///< Use RMSPROP for SGD
+    ADAM      ///< Use RMSPROP for SGD
 };
 
 /*!
@@ -34,6 +35,8 @@ inline std::string to_string(updater_type f) {
             return "ADAGRAD";
         case updater_type::RMSPROP:
             return "RMSPROP";
+        case updater_type::ADAM:
+            return "ADAM";
     }
 
     cpp_unreachable("Unreachable code");
