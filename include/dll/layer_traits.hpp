@@ -220,14 +220,14 @@ struct rbm_layer_traits {
         return base_traits::sparsity_method;
     }
 
-    /*
+    /*!
      * \brief Return the bias mode t be used for the LEE sparsity regularization
      */
     static constexpr enum dll::bias_mode bias_mode() {
         return base_traits::bias_mode;
     }
 
-    /*
+    /*!
      * \brief Return the type of weight decay
      */
     static constexpr decay_type decay() {
