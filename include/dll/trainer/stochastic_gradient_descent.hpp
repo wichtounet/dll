@@ -475,7 +475,7 @@ struct sgd_trainer {
      */
     template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::SGD)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n) {
-        dll::auto_timer timer("sgd::apply_grad");
+        dll::auto_timer timer("sgd::apply_grad:sgd");
 
         //Update the gradients
         this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0);
@@ -497,7 +497,7 @@ struct sgd_trainer {
      */
     template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::MOMENTUM)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n) {
-        dll::auto_timer timer("sgd::apply_grad");
+        dll::auto_timer timer("sgd::apply_grad:momentum");
 
         //Update the gradients
         this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0);
@@ -527,7 +527,7 @@ struct sgd_trainer {
      */
     template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::NESTEROV)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n) {
-        dll::auto_timer timer("sgd::apply_grad");
+        dll::auto_timer timer("sgd::apply_grad:nesterov");
 
         //Update the gradients
         this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0);
@@ -557,7 +557,7 @@ struct sgd_trainer {
      */
     template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::ADAGRAD)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n) {
-        dll::auto_timer timer("sgd::apply_grad");
+        dll::auto_timer timer("sgd::apply_grad:adagrad");
 
         //Update the gradients
         this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0);
@@ -584,7 +584,7 @@ struct sgd_trainer {
      */
     template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::ADAM)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n) {
-        dll::auto_timer timer("sgd::apply_grad");
+        dll::auto_timer timer("sgd::apply_grad:adam");
 
         //Update the gradients
         this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0);
@@ -616,7 +616,7 @@ struct sgd_trainer {
      */
     template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::ADAM_CORRECT)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n) {
-        dll::auto_timer timer("sgd::apply_grad");
+        dll::auto_timer timer("sgd::apply_grad:adam_correct");
 
         //Update the gradients
         this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0);
@@ -656,7 +656,7 @@ struct sgd_trainer {
      */
     template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::RMSPROP)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n) {
-        dll::auto_timer timer("sgd::apply_grad");
+        dll::auto_timer timer("sgd::apply_grad:rmsprop");
 
         //Update the gradients
         this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0);
