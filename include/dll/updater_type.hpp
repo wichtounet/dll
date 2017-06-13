@@ -13,8 +13,9 @@ namespace dll {
  * \brief The updater type for gradient descent
  */
 enum class updater_type {
-    SGD,     ///< The basic updater for SGD
-    MOMENTUM ///< Use momentum for SGD
+    SGD,      ///< The basic updater for SGD
+    MOMENTUM, ///< Use momentum for SGD
+    ADAGRAD   ///< Use ADAGRAD for SGD
 };
 
 } //end of dll namespace
