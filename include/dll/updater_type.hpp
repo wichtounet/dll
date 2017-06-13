@@ -14,7 +14,8 @@ namespace dll {
  */
 enum class updater_type {
     SGD,         ///< The basic updater for SGD
-    MOMENTUM,    ///< Use momentum for SGD
+    MOMENTUM,    ///< Use Momentum for SGD
+    NESTEROV,    ///< Use Nesterov Momentum for SGD
     ADAGRAD,     ///< Use ADAGRAD for SGD
     RMSPROP,     ///< Use RMSPROP for SGD
     ADAM,        ///< Use Adam for SGD
@@ -32,6 +33,8 @@ inline std::string to_string(updater_type f) {
             return "SGD";
         case updater_type::MOMENTUM:
             return "MOMENTUM";
+        case updater_type::NESTEROV:
+            return "NESTEROV";
         case updater_type::ADAGRAD:
             return "ADAGRAD";
         case updater_type::RMSPROP:

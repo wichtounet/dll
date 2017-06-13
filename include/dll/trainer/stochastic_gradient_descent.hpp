@@ -59,6 +59,28 @@ struct updater_context<updater_type::MOMENTUM, true, Context> {
 };
 
 /*!
+ * \brief The context for the Nesterov Momentum updater
+ */
+template <typename Context>
+struct updater_context<updater_type::NESTEROV, true, Context> {
+    using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
+    using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
+
+    w_grad_t w_inc; //< The momentum cache for the weights
+    b_grad_t b_inc; //< The momentum cache for the biases
+    w_grad_t w_inc_prev; //< The momentum cache for the weights
+    b_grad_t b_inc_prev; //< The momentum cache for the biases
+
+    /*!
+     * \brief Construct a new updater_context using the parent context
+     */
+    updater_context(Context& context) : w_inc(context.w_grad), b_inc(context.b_grad), w_inc_prev(context.w_grad), b_inc_prev(context.b_grad) {
+        w_inc = 0;
+        b_inc = 0;
+    }
+};
+
+/*!
  * \brief The context for the RMSPROP updater
  */
 template <typename Context>
@@ -493,6 +515,36 @@ struct sgd_trainer {
 
         layer.w += context.up.w_inc;
         layer.b += context.up.b_inc;
+
+        nan_check_deep(layer.w);
+        nan_check_deep(layer.b);
+
+        cpp_unused(epoch);
+    }
+
+    /*!
+     * \brief Apply the gradients to the given layer
+     */
+    template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::NESTEROV)>
+    void apply_gradients(size_t epoch, L& layer, C& context, size_t n) {
+        dll::auto_timer timer("sgd::apply_grad");
+
+        //Update the gradients
+        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0);
+        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, 0.0);
+
+        //Update with momentum and learning rate
+        auto momentum = dbn.momentum;
+        auto eps      = dbn.learning_rate;
+
+        context.up.w_inc_prev = context.up.w_inc;
+        context.up.b_inc_prev = context.up.b_inc;
+
+        context.up.w_inc = momentum * context.up.w_inc + (eps / n) * context.w_grad;
+        context.up.b_inc = momentum * context.up.b_inc + (eps / n) * context.b_grad;
+
+        layer.w += (-momentum) * context.up.w_inc_prev + (1.0 + momentum) * context.up.w_inc;
+        layer.b += (-momentum) * context.up.b_inc_prev + (1.0 + momentum) * context.up.b_inc;
 
         nan_check_deep(layer.w);
         nan_check_deep(layer.b);
