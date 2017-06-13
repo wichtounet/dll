@@ -105,7 +105,6 @@ template <typename Context>
 struct updater_context<updater_type::ADAM, true, Context> {
     using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
     using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
-
     w_grad_t w_m; //< The Adam cache for the weights
     w_grad_t w_v; //< The Adam cache for the weights
     b_grad_t b_m; //< The Adam cache for the biases
@@ -119,6 +118,40 @@ struct updater_context<updater_type::ADAM, true, Context> {
         w_v = 0;
         b_m = 0;
         b_v = 0;
+    }
+};
+
+/*!
+ * \brief The context for the Adam with bias correction updater
+ */
+template <typename Context>
+struct updater_context<updater_type::ADAM_CORRECT, true, Context> {
+    using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
+    using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
+
+    w_grad_t w_m; //< The Adam cache for the weights
+    w_grad_t w_v; //< The Adam cache for the weights
+    b_grad_t b_m; //< The Adam cache for the biases
+    b_grad_t b_v; //< The Adam cache for the biases
+
+    w_grad_t w_mt; //< The Adam cache for the weights
+    w_grad_t w_vt; //< The Adam cache for the weights
+    b_grad_t b_mt; //< The Adam cache for the biases
+    b_grad_t b_vt; //< The Adam cache for the biases
+
+    /*!
+     * \brief Construct a new updater_context using the parent context
+     */
+    updater_context(Context& context) : w_m(context.w_grad), w_v(context.w_grad), b_m(context.b_grad), b_v(context.b_grad), w_mt(context.w_grad), w_vt(context.w_grad), b_mt(context.b_grad), b_vt(context.b_grad) {
+        w_m = 0;
+        w_v = 0;
+        b_m = 0;
+        b_v = 0;
+
+        w_mt = 0;
+        w_vt = 0;
+        b_mt = 0;
+        b_vt = 0;
     }
 };
 
@@ -179,8 +212,9 @@ struct sgd_trainer {
     static constexpr auto layers     = dbn_t::layers;     ///< The number of layers
     static constexpr auto batch_size = dbn_t::batch_size; ///< The batch size for training
 
-    dbn_t& dbn;                                             ///< The DBN being trained
+    dbn_t& dbn;                                                  ///< The DBN being trained
     decltype(build_context<full_sgd_context>(dbn)) full_context; ///< The context
+    size_t iteration;
 
     // Transform layers need to inherit dimensions from back
 
@@ -209,7 +243,7 @@ struct sgd_trainer {
      * \brief construct a new sgd_trainer
      * \param dbn The DBN being trained
      */
-    explicit sgd_trainer(dbn_t& dbn) : dbn(dbn), full_context(build_context<full_sgd_context>(dbn)) {
+    explicit sgd_trainer(dbn_t& dbn) : dbn(dbn), full_context(build_context<full_sgd_context>(dbn)), iteration(1) {
         // Inherit dimensions from front to end (for transform layers)
 
         cpp::for_each_pair(full_context, [](auto& layer_ctx_1, auto& layer_ctx_2) {
@@ -309,8 +343,6 @@ struct sgd_trainer {
     std::pair<double, double> train_batch(size_t epoch, const Inputs& inputs, const Labels& labels) {
         dll::auto_timer timer("sgd::train_batch");
 
-        cpp_unused(epoch);
-
         const auto n = etl::dim<0>(inputs);
 
         auto& first_layer = std::get<0>(full_context).first;
@@ -388,14 +420,17 @@ struct sgd_trainer {
         {
             dll::auto_timer timer("sgd::grad");
 
-            cpp::for_each(full_context, [this, n](auto& layer_ctx) {
+            cpp::for_each(full_context, [this, epoch, n](auto& layer_ctx) {
                 // Compute the gradients
                 layer_ctx.first.compute_gradients(*layer_ctx.second);
 
                 // Apply the gradients
-                this->apply_gradients<dbn_traits<dbn_t>::updater()>(layer_ctx.first, *layer_ctx.second, n);
+                this->apply_gradients<dbn_traits<dbn_t>::updater()>(epoch, layer_ctx.first, *layer_ctx.second, n);
             });
         }
+
+        // Update the counter of iterations
+        ++iteration;
 
         // Compute error and loss
 
@@ -417,7 +452,7 @@ struct sgd_trainer {
      * \brief Apply the gradients to the given layer
      */
     template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::SGD)>
-    void apply_gradients(L& layer, C& context, size_t n) {
+    void apply_gradients(size_t epoch, L& layer, C& context, size_t n) {
         dll::auto_timer timer("sgd::apply_grad");
 
         //Update the gradients
@@ -431,13 +466,15 @@ struct sgd_trainer {
 
         nan_check_deep(layer.w);
         nan_check_deep(layer.b);
+
+        cpp_unused(epoch);
     }
 
     /*!
      * \brief Apply the gradients to the given layer
      */
     template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::MOMENTUM)>
-    void apply_gradients(L& layer, C& context, size_t n) {
+    void apply_gradients(size_t epoch, L& layer, C& context, size_t n) {
         dll::auto_timer timer("sgd::apply_grad");
 
         //Update the gradients
@@ -459,13 +496,15 @@ struct sgd_trainer {
 
         nan_check_deep(layer.w);
         nan_check_deep(layer.b);
+
+        cpp_unused(epoch);
     }
 
     /*!
      * \brief Apply the gradients to the given layer
      */
     template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::ADAGRAD)>
-    void apply_gradients(L& layer, C& context, size_t n) {
+    void apply_gradients(size_t epoch, L& layer, C& context, size_t n) {
         dll::auto_timer timer("sgd::apply_grad");
 
         //Update the gradients
@@ -485,13 +524,14 @@ struct sgd_trainer {
         nan_check_deep(layer.b);
 
         cpp_unused(n);
+        cpp_unused(epoch);
     }
 
     /*!
      * \brief Apply the gradients to the given layer
      */
     template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::ADAM)>
-    void apply_gradients(L& layer, C& context, size_t n) {
+    void apply_gradients(size_t epoch, L& layer, C& context, size_t n) {
         dll::auto_timer timer("sgd::apply_grad");
 
         //Update the gradients
@@ -516,13 +556,54 @@ struct sgd_trainer {
         nan_check_deep(layer.b);
 
         cpp_unused(n);
+        cpp_unused(epoch);
     }
 
     /*!
      * \brief Apply the gradients to the given layer
      */
+    template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::ADAM_CORRECT)>
+    void apply_gradients(size_t epoch, L& layer, C& context, size_t n) {
+        dll::auto_timer timer("sgd::apply_grad");
+
+        //Update the gradients
+        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0);
+        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, 0.0);
+
+        const auto eps = dbn.learning_rate;
+        const auto beta1 = dbn.adam_beta1;
+        const auto beta2 = dbn.adam_beta2;
+        const auto e = 1e-8;
+        const auto t = iteration;
+
+        context.up.w_m = beta1 * context.up.w_m + ((1.0 - beta1) >> context.w_grad);
+        context.up.b_m = beta1 * context.up.b_m + ((1.0 - beta1) >> context.b_grad);
+
+        context.up.w_mt = context.up.w_m / (1.0 - std::pow(beta1, t));
+        context.up.b_mt = context.up.b_m / (1.0 - std::pow(beta1, t));
+
+        context.up.w_v = beta2 * context.up.w_v + ((1.0 - beta2) >> (context.w_grad >> context.w_grad));
+        context.up.b_v = beta2 * context.up.b_v + ((1.0 - beta2) >> (context.b_grad >> context.b_grad));
+
+        context.up.w_vt = context.up.w_v / (1.0 - std::pow(beta2, t));
+        context.up.b_vt = context.up.b_v / (1.0 - std::pow(beta2, t));
+
+        layer.w += (eps >> context.up.w_mt) / sqrt(context.up.w_vt + e);
+        layer.b += (eps >> context.up.b_mt) / sqrt(context.up.b_vt + e);
+
+        nan_check_deep(layer.w);
+        nan_check_deep(layer.b);
+
+        cpp_unused(n);
+        cpp_unused(epoch);
+    }
+
+
+    /*!
+     * \brief Apply the gradients to the given layer
+     */
     template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::RMSPROP)>
-    void apply_gradients(L& layer, C& context, size_t n) {
+    void apply_gradients(size_t epoch, L& layer, C& context, size_t n) {
         dll::auto_timer timer("sgd::apply_grad");
 
         //Update the gradients
@@ -543,13 +624,14 @@ struct sgd_trainer {
         nan_check_deep(layer.b);
 
         cpp_unused(n);
+        cpp_unused(epoch);
     }
 
     /*!
      * \brief Apply the gradients to the given layer
      */
     template <updater_type UT, typename L, typename C, cpp_disable_if(decay_layer_traits<L>::is_neural_layer())>
-    void apply_gradients(L& /*layer*/, C& /*context*/, size_t /*n*/) {
+    void apply_gradients(size_t /*epoch*/, L& /*layer*/, C& /*context*/, size_t /*n*/) {
         //Pooling and transform layers have no weights, therefore no
         //gradients
     }
