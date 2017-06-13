@@ -1250,7 +1250,7 @@ public:
         // TODO Detect if labels are categorical already or not
         // And change the way this is done
 
-        // TODO Use if constexpr instaed of SFINAE
+        // CPP17 Use if constexpr instaed of SFINAE
         return compute_loss<loss>(n, full_batch, s, output, labels);
     }
 

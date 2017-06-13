@@ -108,7 +108,7 @@ struct sgd_trainer {
      */
     void init_training(size_t) {}
 
-    // TODO Replace SFINAE with if constexpr
+    // CPP17 Replace SFINAE with if constexpr
 
     /*!
      * \brief Compute the errors of the last layer given the loss function
@@ -293,7 +293,7 @@ struct sgd_trainer {
         return std::make_pair(error, loss);
     }
 
-    // TODO Replac with if constexpr
+    // CPP17 Replace with if constexpr
 
     /*!
      * \brief Apply the gradients to the given layer
