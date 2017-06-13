@@ -121,12 +121,43 @@ struct updater_context<updater_type::ADAGRAD, true, Context> {
 };
 
 /*!
+ * \brief The context for the Adadelta updater
+ */
+template <typename Context>
+struct updater_context<updater_type::ADADELTA, true, Context> {
+    using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
+    using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
+
+    w_grad_t w_g; //< The Adadelta cache for the weights
+    w_grad_t w_x; //< The Adadelta cache for the weights
+    w_grad_t w_v; //< The Adadelta cache for the weights
+
+    b_grad_t b_g; //< The Adadelta cache for the biases
+    b_grad_t b_x; //< The Adadelta cache for the biases
+    b_grad_t b_v; //< The Adadelta cache for the biases
+
+    /*!
+     * \brief Construct a new updater_context using the parent context
+     */
+    updater_context(Context& context) : w_g(context.w_grad), w_x(context.w_grad), w_v(context.w_grad), b_g(context.b_grad), b_x(context.b_grad), b_v(context.b_grad) {
+        w_g = 0;
+        w_x = 0;
+        w_v = 0;
+
+        b_g = 0;
+        b_x = 0;
+        b_v = 0;
+    }
+};
+
+/*!
  * \brief The context for the Adam updater
  */
 template <typename Context>
 struct updater_context<updater_type::ADAM, true, Context> {
     using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
     using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
+
     w_grad_t w_m; //< The Adam cache for the weights
     w_grad_t w_v; //< The Adam cache for the weights
     b_grad_t b_m; //< The Adam cache for the biases
@@ -568,6 +599,39 @@ struct sgd_trainer {
 
         layer.w += (eps >> context.w_grad) / etl::sqrt(context.up.w_inc + e);
         layer.b += (eps >> context.b_grad) / etl::sqrt(context.up.b_inc + e);
+
+        nan_check_deep(layer.w);
+        nan_check_deep(layer.b);
+
+        cpp_unused(n);
+        cpp_unused(epoch);
+    }
+
+    /*!
+     * \brief Apply the gradients to the given layer
+     */
+    template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::ADADELTA)>
+    void apply_gradients(size_t epoch, L& layer, C& context, size_t n) {
+        dll::auto_timer timer("sgd::apply_grad:adam");
+
+        //Update the gradients
+        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0);
+        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, 0.0);
+
+        const auto beta = dbn.adadelta_beta;
+        const auto e = 1e-8;
+
+        context.up.w_g = beta * context.up.w_g + ((1.0 - beta) >> context.w_grad >> context.w_grad);
+        context.up.b_g = beta * context.up.b_g + ((1.0 - beta) >> context.b_grad >> context.b_grad);
+
+        context.up.w_v = (sqrt(context.up.w_x + e) >> context.w_grad) / sqrt(context.up.w_g + e);
+        context.up.b_v = (sqrt(context.up.b_x + e) >> context.b_grad) / sqrt(context.up.b_g + e);
+
+        context.up.w_x = beta * context.up.w_x + ((1.0 - beta) >> context.up.w_v >> context.up.w_v);
+        context.up.b_x = beta * context.up.b_x + ((1.0 - beta) >> context.up.b_v >> context.up.b_v);
+
+        layer.w += context.up.w_v;
+        layer.b += context.up.b_v;
 
         nan_check_deep(layer.w);
         nan_check_deep(layer.b);

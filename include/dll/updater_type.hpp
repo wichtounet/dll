@@ -13,13 +13,14 @@ namespace dll {
  * \brief The updater type for gradient descent
  */
 enum class updater_type {
-    SGD,         ///< The basic updater for SGD
-    MOMENTUM,    ///< Use Momentum for SGD
-    NESTEROV,    ///< Use Nesterov Momentum for SGD
-    ADAGRAD,     ///< Use ADAGRAD for SGD
-    RMSPROP,     ///< Use RMSPROP for SGD
-    ADAM,        ///< Use Adam for SGD
-    ADAM_CORRECT ///< Use Adam with bias correction for SGD
+    SGD,          ///< The basic updater for SGD
+    MOMENTUM,     ///< Use Momentum for SGD
+    NESTEROV,     ///< Use Nesterov Momentum for SGD
+    ADAGRAD,      ///< Use ADAGRAD for SGD
+    RMSPROP,      ///< Use RMSPROP for SGD
+    ADAM,         ///< Use Adam for SGD
+    ADAM_CORRECT, ///< Use Adam with bias correction for SGD
+    ADADELTA      ///< Use Adam for SGD
 };
 
 /*!
@@ -41,6 +42,8 @@ inline std::string to_string(updater_type f) {
             return "RMSPROP";
         case updater_type::ADAM:
             return "ADAM";
+        case updater_type::ADADELTA:
+            return "ADADELTA";
         case updater_type::ADAM_CORRECT:
             return "ADAM_CORRECT";
     }

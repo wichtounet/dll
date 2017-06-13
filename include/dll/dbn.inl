@@ -153,6 +153,8 @@ public:
 
     weight rmsprop_decay = 0.9; ///< The decay rate for RMSPROB
 
+    weight adadelta_beta = 0.95;
+
     weight adam_beta1 = 0.9;
     weight adam_beta2 = 0.999;
 
