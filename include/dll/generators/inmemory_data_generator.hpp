@@ -173,7 +173,7 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_a
     void shuffle() {
         cpp_assert(!current, "Shuffle should only be performed on start of generation");
 
-        etl::parallel_shuffle(input_cache, label_cache);
+        etl::parallel_shuffle(input_cache, label_cache, dll::random_engine());
     }
 
     /*!
@@ -571,7 +571,7 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_au
     void shuffle() {
         cpp_assert(!current, "Shuffle should only be performed on start of generation");
 
-        etl::parallel_shuffle(input_cache, label_cache);
+        etl::parallel_shuffle(input_cache, label_cache, dll::random_engine());
     }
 
     /*!
