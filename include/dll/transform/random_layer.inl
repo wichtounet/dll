@@ -37,7 +37,7 @@ struct random_layer : transform_layer<random_layer<Desc>> {
     template <typename Input, typename Output>
     static void activate_hidden(Output& output, const Input& input) {
         inherit_dim(output, input);
-        output = etl::normal_generator<etl::value_t<Input>>();
+        output = etl::normal_generator<etl::value_t<Input>>(dll::rand_engine());
     }
 
     /*!
@@ -59,7 +59,7 @@ struct random_layer : transform_layer<random_layer<Desc>> {
     template <typename Input, typename Output>
     static void batch_activate_hidden(Output& output, const Input& input) {
         inherit_dim(output, input);
-        output = etl::normal_generator<etl::value_t<Input>>();
+        output = etl::normal_generator<etl::value_t<Input>>(dll::rand_engine());
     }
 };
 

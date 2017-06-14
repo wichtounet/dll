@@ -5,7 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "initializer_type.hpp"
+#include "dll/initializer_type.hpp"
+#include "dll/util/random.hpp"
 
 /*!
  * \brief Initialization methods
@@ -101,7 +102,7 @@ struct initializer_function<initializer_type::GAUSSIAN> {
         cpp_unused(nin);
         cpp_unused(nout);
 
-        b = etl::normal_generator<etl::value_t<B>>(0.0, 1.0);
+        b = etl::normal_generator<etl::value_t<B>>(dll::rand_engine(), 0.0, 1.0);
     }
 };
 
@@ -122,7 +123,7 @@ struct initializer_function<initializer_type::SMALL_GAUSSIAN> {
         cpp_unused(nin);
         cpp_unused(nout);
 
-        b = etl::normal_generator<etl::value_t<B>>(0.0, 0.01);
+        b = etl::normal_generator<etl::value_t<B>>(dll::rand_engine(), 0.0, 0.01);
     }
 };
 
@@ -143,7 +144,7 @@ struct initializer_function<initializer_type::UNIFORM> {
         cpp_unused(nin);
         cpp_unused(nout);
 
-        b = etl::uniform_generator<etl::value_t<B>>(-0.05, 0.05);
+        b = etl::uniform_generator<etl::value_t<B>>(dll::rand_engine(), -0.05, 0.05);
     }
 };
 
@@ -163,7 +164,7 @@ struct initializer_function<initializer_type::LECUN> {
     static void initialize(B& b, size_t nin, size_t nout){
         cpp_unused(nout);
 
-        b = etl::normal_generator<etl::value_t<B>>(0.0, 1.0) / sqrt(double(nin));
+        b = etl::normal_generator<etl::value_t<B>>(dll::rand_engine(), 0.0, 1.0) / sqrt(double(nin));
     }
 };
 
@@ -183,7 +184,7 @@ struct initializer_function<initializer_type::XAVIER> {
     static void initialize(B& b, size_t nin, size_t nout){
         cpp_unused(nout);
 
-        b = etl::normal_generator<etl::value_t<B>>(0.0, 1.0) * sqrt(1.0 / nin);
+        b = etl::normal_generator<etl::value_t<B>>(dll::rand_engine(), 0.0, 1.0) * sqrt(1.0 / nin);
     }
 };
 
@@ -201,7 +202,7 @@ struct initializer_function<initializer_type::XAVIER_FULL> {
      */
     template<typename B>
     static void initialize(B& b, size_t nin, size_t nout){
-        b = etl::normal_generator<etl::value_t<B>>(0.0, 1.0) * sqrt(2.0 / (nin + nout));
+        b = etl::normal_generator<etl::value_t<B>>(dll::rand_engine(), 0.0, 1.0) * sqrt(2.0 / (nin + nout));
     }
 };
 
@@ -221,7 +222,7 @@ struct initializer_function<initializer_type::HE> {
     static void initialize(B& b, size_t nin, size_t nout){
         cpp_unused(nout);
 
-        b = etl::normal_generator<etl::value_t<B>>(0.0, 1.0) * sqrt(2.0 / nin);
+        b = etl::normal_generator<etl::value_t<B>>(dll::rand_engine(), 0.0, 1.0) * sqrt(2.0 / nin);
     }
 };
 

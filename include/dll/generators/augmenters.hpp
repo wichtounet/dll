@@ -407,8 +407,8 @@ struct elastic_distorter<Desc, std::enable_if_t<Desc::ElasticDistortion>> {
         etl::dyn_matrix<weight> d_x(width, height);
         etl::dyn_matrix<weight> d_y(width, height);
 
-        d_x = etl::uniform_generator(-1.0, 1.0);
-        d_y = etl::uniform_generator(-1.0, 1.0);
+        d_x = etl::uniform_generator(dll::rand_engine(), -1.0, 1.0);
+        d_y = etl::uniform_generator(dll::rand_engine(), -1.0, 1.0);
 
         // 1. Gaussian blur the displacement fields
 
