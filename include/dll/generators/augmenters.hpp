@@ -10,6 +10,8 @@
 #include <atomic>
 #include <thread>
 
+#include "dll/util/random.hpp"
+
 namespace dll {
 
 /*!
@@ -29,9 +31,6 @@ struct random_cropper<Desc, std::enable_if_t<Desc::random_crop_x && Desc::random
     size_t x = 0; ///< The input image width
     size_t y = 0; ///< The input image height
 
-    std::random_device rd;             ///< The random device for seed generation
-    std::default_random_engine engine; ///< The random generator engine
-
     std::uniform_int_distribution<size_t> dist_x; ///< The distribution in x for picking the crop start
     std::uniform_int_distribution<size_t> dist_y; ///< The distribution in y for picking the crop start
 
@@ -40,8 +39,7 @@ struct random_cropper<Desc, std::enable_if_t<Desc::random_crop_x && Desc::random
      * \param image The image to crop from
      */
     template <typename T>
-    random_cropper(const T& image)
-            : engine(rd()) {
+    random_cropper(const T& image){
         static_assert(etl::dimensions<T>() == 3, "random_cropper can only be used with 3D images");
 
         y = etl::dim<1>(image);
@@ -69,8 +67,8 @@ struct random_cropper<Desc, std::enable_if_t<Desc::random_crop_x && Desc::random
      */
     template <typename O, typename T>
     void transform_first(O&& target, const T& image) {
-        const size_t y_offset = dist_y(engine);
-        const size_t x_offset = dist_x(engine);
+        const size_t y_offset = dist_y(dll::rand_engine());
+        const size_t x_offset = dist_x(dll::rand_engine());
 
         for (size_t c = 0; c < etl::dim<0>(image); ++c) {
             for (size_t y = 0; y < random_crop_y; ++y) {
@@ -167,9 +165,6 @@ struct random_mirrorer<Desc, std::enable_if_t<Desc::HorizontalMirroring || Desc:
     static constexpr bool horizontal = Desc::HorizontalMirroring; ///< Indicates if random mirroring is done
     static constexpr bool vertical   = Desc::VerticalMirroring;   ///< Indicates if vertical mirroring is done
 
-    std::random_device rd;             ///< The random device for seed generation
-    std::default_random_engine engine; ///< The random generator engine
-
     std::uniform_int_distribution<size_t> dist; ///< The random distribution
 
     /*!
@@ -177,8 +172,7 @@ struct random_mirrorer<Desc, std::enable_if_t<Desc::HorizontalMirroring || Desc:
      * \param image The image to crop from
      */
     template <typename T>
-    random_mirrorer(const T& image)
-            : engine(rd()) {
+    random_mirrorer(const T& image){
         static_assert(etl::dimensions<T>() == 3, "random_mirrorer can only be used with 3D images");
 
         if (horizontal && vertical) {
@@ -208,7 +202,7 @@ struct random_mirrorer<Desc, std::enable_if_t<Desc::HorizontalMirroring || Desc:
      */
     template <typename O>
     void transform(O&& target) {
-        auto choice = dist(engine);
+        auto choice = dist(dll::rand_engine());
 
         if (horizontal && vertical && choice == 1) {
             for (size_t c = 0; c < etl::dim<0>(target); ++c) {
@@ -279,9 +273,6 @@ template <typename Desc>
 struct random_noise<Desc, std::enable_if_t<Desc::Noise>> {
     static constexpr size_t N = Desc::Noise; ///< The amount of noise (in percent)
 
-    std::random_device rd;             ///< The random device for seed generation
-    std::default_random_engine engine; ///< The random generator engine
-
     std::uniform_int_distribution<size_t> dist; ///< The random distribution
 
     /*!
@@ -289,8 +280,7 @@ struct random_noise<Desc, std::enable_if_t<Desc::Noise>> {
      * \param image The image to crop from
      */
     template <typename T>
-    random_noise(const T& image)
-            : engine(rd()), dist(0, 1000) {
+    random_noise(const T& image) : dist(0, 1000) {
         cpp_unused(image);
     }
 
@@ -308,8 +298,10 @@ struct random_noise<Desc, std::enable_if_t<Desc::Noise>> {
      */
     template <typename O>
     void transform(O&& target) {
+        auto& g = dll::rand_engine();
+
         for (auto& v : target) {
-            v *= dist(engine) < N * 10 ? 0.0 : 1.0;
+            v *= dist(g) < N * 10 ? 0.0 : 1.0;
         }
     }
 };
