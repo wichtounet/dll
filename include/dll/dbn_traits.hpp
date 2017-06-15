@@ -100,6 +100,13 @@ struct dbn_traits {
     }
 
     /*!
+     * \brief Indicates if the DBN clip its gradients
+     */
+    static constexpr bool has_clip_gradients() noexcept {
+        return desc::parameters::template contains<clip_gradients>();
+    }
+
+    /*!
      * \brief Returns the type of weight decay used during training
      */
     static constexpr decay_type decay() noexcept {

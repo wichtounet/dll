@@ -148,12 +148,12 @@ public:
     weight l1_weight_cost = 0.0002; ///< The weight cost for L1 weight decay
     weight l2_weight_cost = 0.0002; ///< The weight cost for L2 weight decay
 
-    weight rmsprop_decay = 0.9; ///< The decay rate for RMSPROB
+    weight rmsprop_decay = 0.9;   ///< The decay rate for RMSPROB
+    weight adadelta_beta = 0.95;  ///< Adadelta beta factor
+    weight adam_beta1    = 0.9;   ///< Adam's beta1 factor
+    weight adam_beta2    = 0.999; ///< Adam's beta1 factor
 
-    weight adadelta_beta = 0.95;
-
-    weight adam_beta1 = 0.9;
-    weight adam_beta2 = 0.999;
+    weight gradient_clip = 5.0; ///< The gradient clipping
 
     bool batch_mode_run = false;
 
