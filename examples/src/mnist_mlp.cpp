@@ -6,6 +6,7 @@
 //=======================================================================
 
 #include "dll/neural/dense_layer.hpp"
+#include "dll/neural/dropout_layer.hpp"
 #include "dll/test.hpp"
 #include "dll/dbn.hpp"
 #include "dll/datasets.hpp"
@@ -22,7 +23,9 @@ int main(int /*argc*/, char* /*argv*/ []) {
     using network_t = dll::dyn_dbn_desc<
         dll::dbn_layers<
             dll::dense_desc<28 * 28, 500>::layer_t,
+            dll::dropout_layer_desc<50>::layer_t,
             dll::dense_desc<500, 250>::layer_t,
+            dll::dropout_layer_desc<50>::layer_t,
             dll::dense_desc<250, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>
         , dll::updater<dll::updater_type::MOMENTUM>     // Momentum
         , dll::batch_size<100>                          // The mini-batch size
@@ -36,7 +39,7 @@ int main(int /*argc*/, char* /*argv*/ []) {
     dataset.display();
 
     // Train the network for performance sake
-    net->fine_tune(dataset.train(), 20);
+    net->fine_tune(dataset.train(), 50);
 
     // Test the network on test set
     net->evaluate(dataset.test());
