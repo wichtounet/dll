@@ -510,8 +510,8 @@ struct sgd_trainer {
         dll::auto_timer timer("sgd::apply_grad:sgd");
 
         //Update the gradients
-        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0, n);
-        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, 0.0, n);
+        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, n);
+        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, n);
 
         auto eps = dbn.learning_rate;
         auto eps_decay = dbn.learning_rate_decay;
@@ -537,8 +537,8 @@ struct sgd_trainer {
         dll::auto_timer timer("sgd::apply_grad:momentum");
 
         //Update the gradients
-        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0, n);
-        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, 0.0, n);
+        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, n);
+        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, n);
 
         //Update with momentum and learning rate
         auto momentum = dbn.momentum;
@@ -569,8 +569,8 @@ struct sgd_trainer {
         dll::auto_timer timer("sgd::apply_grad:nesterov");
 
         //Update the gradients
-        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0, n);
-        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, 0.0, n);
+        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, n);
+        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, n);
 
         //Update with momentum and learning rate
         auto momentum = dbn.momentum;
@@ -604,8 +604,8 @@ struct sgd_trainer {
         dll::auto_timer timer("sgd::apply_grad:adagrad");
 
         //Update the gradients
-        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0, n);
-        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, 0.0, n);
+        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, n);
+        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, n);
 
         const auto e = 1e-8;
 
@@ -637,8 +637,8 @@ struct sgd_trainer {
         dll::auto_timer timer("sgd::apply_grad:adam");
 
         //Update the gradients
-        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0, n);
-        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, 0.0, n);
+        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, n);
+        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, n);
 
         const auto beta = dbn.adadelta_beta;
         const auto e = 1e-8;
@@ -670,8 +670,8 @@ struct sgd_trainer {
         dll::auto_timer timer("sgd::apply_grad:adam");
 
         //Update the gradients
-        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0, n);
-        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, 0.0, n);
+        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, n);
+        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, n);
 
         auto eps = dbn.learning_rate;
         auto eps_decay = dbn.learning_rate_decay;
@@ -708,8 +708,8 @@ struct sgd_trainer {
         dll::auto_timer timer("sgd::apply_grad:adam_correct");
 
         //Update the gradients
-        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0, n);
-        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, 0.0, n);
+        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, n);
+        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, n);
 
         auto eps = dbn.learning_rate;
         auto eps_decay = dbn.learning_rate_decay;
@@ -754,8 +754,8 @@ struct sgd_trainer {
         dll::auto_timer timer("sgd::apply_grad:rmsprop");
 
         //Update the gradients
-        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, 0.0, n);
-        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, 0.0, n);
+        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, n);
+        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, n);
 
         auto eps = dbn.learning_rate;
         auto eps_decay = dbn.learning_rate_decay;
@@ -815,8 +815,8 @@ struct sgd_trainer {
      * \brief Update the given gradients according to the given decay function
      */
     template <decay_type decay, typename V, typename G, cpp_enable_if(decay == decay_type::L1)>
-    void update_grad(const V& value, G& grad, double penalty, size_t n) {
-        grad = grad - dbn.l1_weight_cost * abs(value) - penalty;
+    void update_grad(const V& value, G& grad, size_t n) {
+        grad = grad - dbn.l1_weight_cost * abs(value);
 
         clip_gradients(grad, n);
     }
@@ -825,8 +825,8 @@ struct sgd_trainer {
      * \brief Update the given gradients according to the given decay function
      */
     template <decay_type decay, typename V, typename G, cpp_enable_if(decay == decay_type::L2)>
-    void update_grad(const V& value, G& grad, double penalty, size_t n) {
-        grad = grad - dbn.l2_weight_cost * value - penalty;
+    void update_grad(const V& value, G& grad, size_t n) {
+        grad = grad - dbn.l2_weight_cost * value;
 
         clip_gradients(grad, n);
     }
@@ -835,8 +835,8 @@ struct sgd_trainer {
      * \brief Update the given gradients according to the given decay function
      */
     template <decay_type decay, typename V, typename G, cpp_enable_if(decay == decay_type::L1L2)>
-    void update_grad(const V& value, G& grad, double penalty, size_t n) {
-        grad = grad - dbn.l1_weight_cost * abs(value) - dbn.l2_weight_cost * value - penalty;
+    void update_grad(const V& value, G& grad, size_t n) {
+        grad = grad - dbn.l1_weight_cost * abs(value) - dbn.l2_weight_cost * value;
 
         clip_gradients(grad, n);
     }
@@ -845,11 +845,7 @@ struct sgd_trainer {
      * \brief Update the given gradients according to the given decay function
      */
     template <decay_type decay, typename V, typename G, cpp_enable_if(decay == decay_type::NONE)>
-    void update_grad(const V& value, G& grad, double penalty, size_t n) {
-        if(penalty != 0.0){
-            grad = grad - penalty;
-        }
-
+    void update_grad(const V& value, G& grad, size_t n) {
         clip_gradients(grad, n);
 
         cpp_unused(value);
