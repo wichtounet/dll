@@ -479,7 +479,7 @@ struct sgd_trainer {
                 layer_ctx.first.compute_gradients(*layer_ctx.second);
 
                 // Apply the gradients
-                this->apply_gradients<dbn_traits<dbn_t>::updater()>(epoch, layer_ctx.first, *layer_ctx.second, n);
+                this->update_weights<dbn_traits<dbn_t>::updater()>(epoch, layer_ctx.first, *layer_ctx.second, n);
             });
         }
 
@@ -505,20 +505,43 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::SGD)>
-    void apply_gradients(size_t epoch, L& layer, C& context, size_t n) {
-        dll::auto_timer timer("sgd::apply_grad:sgd");
+    template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer())>
+    void update_weights(size_t epoch, L& layer, C& context, size_t n) {
+        dll::auto_timer timer("sgd::update_weights");
 
-        //Update the gradients
+        //1. Update the gradients (L1/L2 and gradient clipping)
+
         this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, n);
         this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, n);
 
-        auto eps = dbn.learning_rate;
-        auto eps_decay = dbn.learning_rate_decay;
+        // 2. Decay the learning rate
 
-        if(eps_decay > 0.0){
+        auto eps             = dbn.learning_rate;
+        const auto eps_decay = dbn.learning_rate_decay;
+
+        if (eps_decay > 0.0) {
             eps *= 1.0 / (1.0 + eps_decay * iteration);
         }
+
+        // 3. Apply the learning rate
+
+        apply_gradients<UT>(epoch, layer, context, n, eps);
+    }
+
+    template <updater_type UT, typename L, typename C, cpp_disable_if(decay_layer_traits<L>::is_neural_layer())>
+    void update_weights(size_t epoch, L& layer, C& context, size_t n) {
+        cpp_unused(epoch);
+        cpp_unused(layer);
+        cpp_unused(context);
+        cpp_unused(n);
+    }
+
+    /*!
+     * \brief Apply the gradients to the given layer
+     */
+    template <updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::SGD)>
+    void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
+        dll::auto_timer timer("sgd::apply_grad:sgd");
 
         layer.w += (eps / n) * context.w_grad;
         layer.b += (eps / n) * context.b_grad;
@@ -532,22 +555,12 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::MOMENTUM)>
-    void apply_gradients(size_t epoch, L& layer, C& context, size_t n) {
+    template <updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::MOMENTUM)>
+    void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:momentum");
-
-        //Update the gradients
-        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, n);
-        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, n);
 
         //Update with momentum and learning rate
         auto momentum = dbn.momentum;
-        auto eps = dbn.learning_rate;
-        auto eps_decay = dbn.learning_rate_decay;
-
-        if(eps_decay > 0.0){
-            eps *= 1.0 / (1.0 + eps_decay * iteration);
-        }
 
         context.up.w_inc = momentum * context.up.w_inc + (eps / n) * context.w_grad;
         context.up.b_inc = momentum * context.up.b_inc + (eps / n) * context.b_grad;
@@ -564,22 +577,12 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::NESTEROV)>
-    void apply_gradients(size_t epoch, L& layer, C& context, size_t n) {
+    template <updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::NESTEROV)>
+    void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:nesterov");
-
-        //Update the gradients
-        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, n);
-        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, n);
 
         //Update with momentum and learning rate
         auto momentum = dbn.momentum;
-        auto eps = dbn.learning_rate;
-        auto eps_decay = dbn.learning_rate_decay;
-
-        if(eps_decay > 0.0){
-            eps *= 1.0 / (1.0 + eps_decay * iteration);
-        }
 
         context.up.w_inc_prev = context.up.w_inc;
         context.up.b_inc_prev = context.up.b_inc;
@@ -599,22 +602,11 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::ADAGRAD)>
-    void apply_gradients(size_t epoch, L& layer, C& context, size_t n) {
+    template <updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::ADAGRAD)>
+    void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:adagrad");
 
-        //Update the gradients
-        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, n);
-        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, n);
-
         const auto e = 1e-8;
-
-        auto eps = dbn.learning_rate;
-        auto eps_decay = dbn.learning_rate_decay;
-
-        if(eps_decay > 0.0){
-            eps *= 1.0 / (1.0 + eps_decay * iteration);
-        }
 
         context.up.w_inc = context.up.w_inc + (context.w_grad >> context.w_grad);
         context.up.b_inc = context.up.b_inc + (context.b_grad >> context.b_grad);
@@ -632,13 +624,9 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::ADADELTA)>
-    void apply_gradients(size_t epoch, L& layer, C& context, size_t n) {
+    template <updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::ADADELTA)>
+    void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:adam");
-
-        //Update the gradients
-        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, n);
-        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, n);
 
         const auto beta = dbn.adadelta_beta;
         const auto e = 1e-8;
@@ -660,25 +648,15 @@ struct sgd_trainer {
 
         cpp_unused(n);
         cpp_unused(epoch);
+        cpp_unused(eps);
     }
 
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::ADAM)>
-    void apply_gradients(size_t epoch, L& layer, C& context, size_t n) {
+    template <updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::ADAM)>
+    void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:adam");
-
-        //Update the gradients
-        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, n);
-        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, n);
-
-        auto eps = dbn.learning_rate;
-        auto eps_decay = dbn.learning_rate_decay;
-
-        if(eps_decay > 0.0){
-            eps *= 1.0 / (1.0 + eps_decay * iteration);
-        }
 
         const auto beta1 = dbn.adam_beta1;
         const auto beta2 = dbn.adam_beta2;
@@ -703,20 +681,9 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::ADAM_CORRECT)>
-    void apply_gradients(size_t epoch, L& layer, C& context, size_t n) {
+    template <updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::ADAM_CORRECT)>
+    void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:adam_correct");
-
-        //Update the gradients
-        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, n);
-        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, n);
-
-        auto eps = dbn.learning_rate;
-        auto eps_decay = dbn.learning_rate_decay;
-
-        if(eps_decay > 0.0){
-            eps *= 1.0 / (1.0 + eps_decay * iteration);
-        }
 
         const auto beta1 = dbn.adam_beta1;
         const auto beta2 = dbn.adam_beta2;
@@ -749,20 +716,9 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer() && UT == updater_type::RMSPROP)>
-    void apply_gradients(size_t epoch, L& layer, C& context, size_t n) {
+    template <updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::RMSPROP)>
+    void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:rmsprop");
-
-        //Update the gradients
-        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, n);
-        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, n);
-
-        auto eps = dbn.learning_rate;
-        auto eps_decay = dbn.learning_rate_decay;
-
-        if(eps_decay > 0.0){
-            eps *= 1.0 / (1.0 + eps_decay * iteration);
-        }
 
         const auto decay = dbn.rmsprop_decay;
         const auto e = 1e-8;
@@ -778,15 +734,6 @@ struct sgd_trainer {
 
         cpp_unused(n);
         cpp_unused(epoch);
-    }
-
-    /*!
-     * \brief Apply the gradients to the given layer
-     */
-    template <updater_type UT, typename L, typename C, cpp_disable_if(decay_layer_traits<L>::is_neural_layer())>
-    void apply_gradients(size_t /*epoch*/, L& /*layer*/, C& /*context*/, size_t /*n*/) {
-        //Pooling and transform layers have no weights, therefore no
-        //gradients
     }
 
     /*!
