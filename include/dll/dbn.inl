@@ -765,7 +765,7 @@ public:
     decltype(auto) forward_batch_impl(Input&& sample) {
         decltype(auto) layer = layer_get<L>();
 
-        decltype(auto) next = layer.batch_activate_hidden(sample);
+        decltype(auto) next = layer.test_batch_activate_hidden(sample);
         return forward_batch_impl<LS, L+1>(next);
     }
 
@@ -773,7 +773,7 @@ public:
     decltype(auto) forward_batch_impl(Input&& sample) {
         decltype(auto) layer = layer_get<L>();
 
-        return layer.batch_activate_hidden(sample);
+        return layer.test_batch_activate_hidden(sample);
     }
 
     template <size_t LS = layers - 1, size_t L = 0, typename Input>
@@ -1599,8 +1599,8 @@ private:
 
         size_t i = 0;
         while(generator.has_next_batch()){
-            auto batch = layer.batch_activate_hidden(generator.data_batch());
-            auto next_batch = next_layer.batch_activate_hidden(batch);
+            auto batch = layer.train_batch_activate_hidden(generator.data_batch());
+            auto next_batch = next_layer.train_batch_activate_hidden(batch);
 
             next_generator->set_data_batch(i, next_batch);
             next_generator->set_label_batch(i, next_batch);
@@ -1661,7 +1661,7 @@ private:
 
             size_t i = 0;
             while(generator.has_next_batch()){
-                auto next_batch = layer.batch_activate_hidden(generator.data_batch());
+                auto next_batch = layer.train_batch_activate_hidden(generator.data_batch());
 
                 next_generator->set_data_batch(i, next_batch);
                 next_generator->set_label_batch(i, next_batch);
@@ -1727,8 +1727,8 @@ private:
 
             size_t i = 0;
             while(generator.has_next_batch()){
-                auto next_batch_n = layer.batch_activate_hidden(generator.data_batch());
-                auto next_batch_c = layer.batch_activate_hidden(generator.label_batch());
+                auto next_batch_n = layer.train_batch_activate_hidden(generator.data_batch());
+                auto next_batch_c = layer.train_batch_activate_hidden(generator.label_batch());
 
                 next_generator->set_data_batch(i, next_batch_n);
                 next_generator->set_label_batch(i, next_batch_c);
