@@ -78,6 +78,11 @@ struct layer {
         return as_derived().batch_activate_hidden(input);
     }
 
+    template <typename Input>
+    auto train_batch_activate_hidden(const Input& input) const {
+        return as_derived().batch_activate_hidden(input);
+    }
+
     template <typename Input, typename Output>
     void test_batch_activate_hidden(Output& output, const Input& input) const {
         as_derived().batch_activate_hidden(output, input);
