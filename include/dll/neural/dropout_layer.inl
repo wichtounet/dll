@@ -33,6 +33,7 @@ struct dropout_layer : transform_layer<dropout_layer<Desc>> {
     }
 
     using base_type::activate_hidden;
+    using base_type::test_batch_activate_hidden;
 
     /*!
      * \brief Apply the layer to the input
