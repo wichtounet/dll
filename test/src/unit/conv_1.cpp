@@ -32,7 +32,7 @@ TEST_CASE("unit/conv/sgd/1", "[conv][dbn][mnist][sgd]") {
     dbn->learning_rate = 0.05;
 
     FT_CHECK_DATASET(25, 5e-2);
-    TEST_CHECK_DATASET(0.2);
+    TEST_CHECK_DATASET(0.25);
 }
 
 TEST_CASE("unit/conv/sgd/2", "[conv][dbn][mnist][sgd]") {
@@ -72,7 +72,7 @@ TEST_CASE("unit/conv/sgd/3", "[unit][conv][dbn][mnist][sgd]") {
     dbn->learning_rate = 0.05;
 
     FT_CHECK(50, 6e-2);
-    TEST_CHECK(0.21);
+    TEST_CHECK(0.25);
 }
 
 TEST_CASE("unit/conv/sgd/4", "[unit][conv][dbn][mnist][sgd]") {

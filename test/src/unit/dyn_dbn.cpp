@@ -27,7 +27,7 @@ TEST_CASE("unit/dyn_dbn/mnist/1", "[dyn_dbn][unit]") {
             dll::dyn_rbm_desc<dll::momentum, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
         dll::batch_size<25>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(300);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(350);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
@@ -38,13 +38,13 @@ TEST_CASE("unit/dyn_dbn/mnist/1", "[dyn_dbn][unit]") {
     dbn->template layer_get<1>().init_layer(150, 150);
     dbn->template layer_get<2>().init_layer(150, 10);
 
-    dbn->pretrain(dataset.training_images, 35);
+    dbn->pretrain(dataset.training_images, 50);
 
     auto ft_error = dbn->fine_tune(dataset.training_images, dataset.training_labels, 5);
     std::cout << "ft_error:" << ft_error << std::endl;
     REQUIRE(ft_error < 5e-2);
 
-    TEST_CHECK(0.22);
+    TEST_CHECK(0.25);
 }
 
 TEST_CASE("unit/dyn_dbn/mnist/2", "[dyn_dbn][sgd][unit]") {
