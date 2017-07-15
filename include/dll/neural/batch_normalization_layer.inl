@@ -125,10 +125,10 @@ struct batch_normalization_2d_layer : transform_layer<batch_normalization_2d_lay
     void test_batch_activate_hidden(Output& output, const Input& input) const {
         const auto B = etl::dim<0>(input);
 
-        auto mean_rep = etl::rep(mean, B);
-        auto var_rep  = etl::rep(var, B);
-        auto gamma_rep = etl::rep(gamma, B);
-        auto beta_rep  = etl::rep(beta, B);
+        auto mean_rep  = etl::rep_l(mean, B);
+        auto var_rep   = etl::rep_l(var, B);
+        auto gamma_rep = etl::rep_l(gamma, B);
+        auto beta_rep  = etl::rep_l(beta, B);
 
         output = (gamma_rep >> ((input - mean_rep) / etl::sqrt(var_rep + e))) + beta_rep;
     }
@@ -143,15 +143,15 @@ struct batch_normalization_2d_layer : transform_layer<batch_normalization_2d_lay
         const auto B = etl::dim<0>(input);
 
         last_mean     = etl::mean_l(input);
-        auto last_mean_rep = etl::rep(last_mean, B);
+        auto last_mean_rep = etl::rep_l(last_mean, B);
 
         last_var      = etl::mean_l((input - last_mean_rep) >> (input - last_mean_rep));
-        auto last_var_rep  = etl::rep(last_var, B);
+        auto last_var_rep  = etl::rep_l(last_var, B);
 
         input_pre = (input - last_mean_rep) / etl::sqrt(last_var_rep + e);
 
-        auto gamma_rep = etl::rep(gamma, B);
-        auto beta_rep  = etl::rep(beta, B);
+        auto gamma_rep = etl::rep_l(gamma, B);
+        auto beta_rep  = etl::rep_l(beta, B);
         output         = (gamma_rep >> input_pre) + beta_rep;
 
         // Update the current mean and variance
@@ -180,16 +180,16 @@ struct batch_normalization_2d_layer : transform_layer<batch_normalization_2d_lay
     void backward_batch(H&& output, C& context) const {
         const auto B = etl::dim<0>(context.input);
 
-        auto last_mean_rep = etl::rep(last_mean, B);
-        auto last_var_rep  = etl::rep(last_var, B);
-        auto gamma_rep     = etl::rep(gamma, B);
+        auto last_mean_rep = etl::rep_l(last_mean, B);
+        auto last_var_rep  = etl::rep_l(last_var, B);
+        auto gamma_rep     = etl::rep_l(gamma, B);
 
         auto& dy = context.errors;
         auto& h = context.input;
 
         output =
                  (1.0 / B) * gamma_rep >> etl::sqrt(last_var_rep + e)
-            >>  ((B >> dy) - etl::rep(etl::sum_l(dy), B) - ((h - last_mean_rep) >> (1.0 / (last_var_rep + e)) >> etl::rep(etl::sum_l(dy >> (h - last_mean_rep)), B)));
+            >>  ((B >> dy) - etl::rep_l(etl::sum_l(dy), B) - ((h - last_mean_rep) >> (1.0 / (last_var_rep + e)) >> etl::rep_l(etl::sum_l(dy >> (h - last_mean_rep)), B)));
     }
 
     /*!
