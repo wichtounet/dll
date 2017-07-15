@@ -126,12 +126,11 @@ struct batch_normalization_2d_layer : transform_layer<batch_normalization_2d_lay
     void test_batch_activate_hidden(Output& output, const Input& input) const {
         const auto B = etl::dim<0>(input);
 
-        auto mean_rep  = etl::rep_l(mean, B);
-        auto var_rep   = etl::rep_l(var, B);
-        auto gamma_rep = etl::rep_l(gamma, B);
-        auto beta_rep  = etl::rep_l(beta, B);
+        auto inv_var = etl::force_temporary(1.0 / etl::sqrt(var + e));
 
-        output = (gamma_rep >> ((input - mean_rep) / etl::sqrt(var_rep + e))) + beta_rep;
+        for(size_t b = 0; b < B; ++b){
+            output(b) = (gamma >> ((input(b) - mean) >> inv_var)) + beta;
+        }
     }
 
     /*!
@@ -143,19 +142,18 @@ struct batch_normalization_2d_layer : transform_layer<batch_normalization_2d_lay
     void train_batch_activate_hidden(Output& output, const Input& input) {
         const auto B = etl::dim<0>(input);
 
-        last_mean     = etl::mean_l(input);
+        last_mean          = etl::mean_l(input);
         auto last_mean_rep = etl::rep_l(last_mean, B);
 
         last_var = etl::mean_l((input - last_mean_rep) >> (input - last_mean_rep));
         inv_var  = 1.0 / etl::sqrt(last_var + e);
 
-        auto inv_var_rep = etl::rep_l(inv_var, B);
+        input_pre.inherit_if_null(input);
 
-        input_pre = (input - last_mean_rep) >> inv_var_rep;
-
-        auto gamma_rep = etl::rep_l(gamma, B);
-        auto beta_rep  = etl::rep_l(beta, B);
-        output         = (gamma_rep >> input_pre) + beta_rep;
+        for(size_t b = 0; b < B; ++b){
+            input_pre(b) = (input(b) - last_mean) >> inv_var;
+            output(b)    = (gamma >> input_pre(b)) + beta;
+        }
 
         // Update the current mean and variance
         mean = momentum * mean + (1.0 - momentum) * last_mean;
@@ -183,15 +181,13 @@ struct batch_normalization_2d_layer : transform_layer<batch_normalization_2d_lay
     void backward_batch(H&& output, C& context) const {
         const auto B = etl::dim<0>(context.input);
 
-        auto& x_hat = input_pre;
-        auto& dout  = context.errors;
+        auto dxhat        = etl::force_temporary(context.errors >> etl::rep_l(gamma, B));
+        auto dxhat_l      = etl::force_temporary(etl::sum_l(dxhat));
+        auto dxhat_xhat_l = etl::force_temporary(etl::sum_l(dxhat >> input_pre));
 
-        auto gamma_rep   = etl::rep_l(gamma, B);
-        auto inv_var_rep = etl::rep_l(inv_var, B);
-
-        auto dxhat = etl::force_temporary(dout >> gamma_rep);
-
-        output = (1.0 / B) >> inv_var_rep >> (B * dxhat - etl::rep_l(etl::sum_l(dxhat), B) - (x_hat >> etl::rep_l(etl::sum_l(dxhat >> x_hat), B)));
+        for(size_t b = 0; b < B; ++b){
+            output(b) = (1.0 / B) >> inv_var >> (B * dxhat(b) - dxhat_l - (input_pre(b) >> dxhat_xhat_l));
+        }
     }
 
     /*!
