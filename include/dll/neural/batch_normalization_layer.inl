@@ -142,10 +142,10 @@ struct batch_normalization_2d_layer : transform_layer<batch_normalization_2d_lay
     void train_batch_activate_hidden(Output& output, const Input& input) {
         const auto B = etl::dim<0>(input);
 
-        last_mean     = etl::force_temporary(etl::mean_l(input));
+        last_mean     = etl::mean_l(input);
         auto last_mean_rep = etl::rep(last_mean, B);
 
-        last_var      = etl::force_temporary(etl::mean_l((input - last_mean_rep) >> (input - last_mean_rep)));
+        last_var      = etl::mean_l((input - last_mean_rep) >> (input - last_mean_rep));
         auto last_var_rep  = etl::rep(last_var, B);
 
         input_pre = (input - last_mean_rep) / etl::sqrt(last_var_rep + e);
@@ -203,8 +203,6 @@ struct batch_normalization_2d_layer : transform_layer<batch_normalization_2d_lay
 
         // Gradients of beta
         context.b_grad = etl::sum_l(context.errors);
-
-        cpp_unused(context);
     }
 };
 
