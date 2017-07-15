@@ -30,6 +30,7 @@ struct batch_normalization_2d_layer : transform_layer<batch_normalization_2d_lay
 
     etl::fast_matrix<float, Input> last_mean;
     etl::fast_matrix<float, Input> last_var;
+    etl::fast_matrix<float, Input> inv_var;
 
     etl::dyn_matrix<float, 2> input_pre; /// B x Input
 
@@ -145,10 +146,12 @@ struct batch_normalization_2d_layer : transform_layer<batch_normalization_2d_lay
         last_mean     = etl::mean_l(input);
         auto last_mean_rep = etl::rep_l(last_mean, B);
 
-        last_var      = etl::mean_l((input - last_mean_rep) >> (input - last_mean_rep));
-        auto last_var_rep  = etl::rep_l(last_var, B);
+        last_var = etl::mean_l((input - last_mean_rep) >> (input - last_mean_rep));
+        inv_var  = 1.0 / etl::sqrt(last_var + e);
 
-        input_pre = (input - last_mean_rep) / etl::sqrt(last_var_rep + e);
+        auto inv_var_rep = etl::rep_l(inv_var, B);
+
+        input_pre = (input - last_mean_rep) >> inv_var_rep;
 
         auto gamma_rep = etl::rep_l(gamma, B);
         auto beta_rep  = etl::rep_l(beta, B);
@@ -180,16 +183,15 @@ struct batch_normalization_2d_layer : transform_layer<batch_normalization_2d_lay
     void backward_batch(H&& output, C& context) const {
         const auto B = etl::dim<0>(context.input);
 
-        auto last_mean_rep = etl::rep_l(last_mean, B);
-        auto last_var_rep  = etl::rep_l(last_var, B);
-        auto gamma_rep     = etl::rep_l(gamma, B);
+        auto& x_hat = input_pre;
+        auto& dout  = context.errors;
 
-        auto& dy = context.errors;
-        auto& h = context.input;
+        auto gamma_rep   = etl::rep_l(gamma, B);
+        auto inv_var_rep = etl::rep_l(inv_var, B);
 
-        output =
-                 (1.0 / B) * gamma_rep >> etl::sqrt(last_var_rep + e)
-            >>  ((B >> dy) - etl::rep_l(etl::sum_l(dy), B) - ((h - last_mean_rep) >> (1.0 / (last_var_rep + e)) >> etl::rep_l(etl::sum_l(dy >> (h - last_mean_rep)), B)));
+        auto dxhat = etl::force_temporary(dout >> gamma_rep);
+
+        output = (1.0 / B) >> inv_var_rep >> (B * dxhat - etl::rep_l(etl::sum_l(dxhat), B) - (x_hat >> etl::rep_l(etl::sum_l(dxhat >> x_hat), B)));
     }
 
     /*!
