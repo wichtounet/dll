@@ -16,12 +16,12 @@ namespace dll {
  */
 template <typename Desc>
 struct batch_normalization_2d_layer : transform_layer<batch_normalization_2d_layer<Desc>> {
-    using desc      = Desc;                                             ///< The descriptor type
+    using desc      = Desc;                                                ///< The descriptor type
     using base_type = transform_layer<batch_normalization_2d_layer<Desc>>; ///< The base type
-    using weight    = typename desc::weight;         ///< The data type of the layer
+    using weight    = typename desc::weight;                               ///< The data type of the layer
 
     static constexpr size_t Input = desc::Input; ///< The input size
-    static constexpr weight e      = 1e-8;        ///< Epsilon for numerical stability
+    static constexpr weight e     = 1e-8;        ///< Epsilon for numerical stability
 
     etl::fast_matrix<weight, Input> gamma;
     etl::fast_matrix<weight, Input> beta;
@@ -41,9 +41,29 @@ struct batch_normalization_2d_layer : transform_layer<batch_normalization_2d_lay
     etl::fast_matrix<weight, Input>& w = gamma;
     etl::fast_matrix<weight, Input>& b = beta;
 
+    //Backup gamma and beta
+    std::unique_ptr<etl::fast_matrix<weight, Input>> bak_gamma; ///< Backup gamma
+    std::unique_ptr<etl::fast_matrix<weight, Input>> bak_beta;  ///< Backup beta
+
     batch_normalization_2d_layer() : base_type() {
         gamma = 1.0;
         beta = 1.0;
+    }
+
+    /*!
+     * \brief Backup the weights in the secondary weights matrix
+     */
+    void backup_weights() {
+        unique_safe_get(bak_gamma) = gamma;
+        unique_safe_get(bak_beta)  = beta;
+    }
+
+    /*!
+     * \brief Restore the weights from the secondary weights matrix
+     */
+    void restore_weights() {
+        gamma = *bak_gamma;
+        beta  = *bak_beta;
     }
 
     /*!

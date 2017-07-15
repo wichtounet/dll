@@ -43,9 +43,29 @@ struct batch_normalization_4d_layer : transform_layer<batch_normalization_4d_lay
     etl::fast_matrix<weight, Kernels>& w = gamma;
     etl::fast_matrix<weight, Kernels>& b = beta;
 
+    //Backup gamma and beta
+    std::unique_ptr<etl::fast_matrix<weight, Kernels>> bak_gamma; ///< Backup gamma
+    std::unique_ptr<etl::fast_matrix<weight, Kernels>> bak_beta;  ///< Backup beta
+
     batch_normalization_4d_layer() : base_type() {
         gamma = 1.0;
         beta = 1.0;
+    }
+
+    /*!
+     * \brief Backup the weights in the secondary weights matrix
+     */
+    void backup_weights() {
+        unique_safe_get(bak_gamma) = gamma;
+        unique_safe_get(bak_beta)  = beta;
+    }
+
+    /*!
+     * \brief Restore the weights from the secondary weights matrix
+     */
+    void restore_weights() {
+        gamma = *bak_gamma;
+        beta  = *bak_beta;
     }
 
     /*!
