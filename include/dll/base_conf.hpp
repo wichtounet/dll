@@ -197,6 +197,11 @@ template <function FT>
 struct activation : value_conf_elt<activation_id, function, FT> {};
 
 /*!
+ * \brief Specify that a layer does not use an activation function
+ */
+using no_activation = activation<function::IDENTITY>;
+
+/*!
  * \brief Sets the loss function
  * \tparam FT The loss function type
  */
