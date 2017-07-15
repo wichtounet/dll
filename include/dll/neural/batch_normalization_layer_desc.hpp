@@ -22,12 +22,12 @@ struct batch_normalization_layer_2d_desc {
     /*!
      * The layer type
      */
-    using layer_t = batch_normalization_2d_layer<batch_normalization_2d_layer_desc<Input>>;
+    using layer_t = batch_normalization_2d_layer<batch_normalization_layer_2d_desc<Input>>;
 
     /*!
      * The dynamic layer type
      */
-    using dyn_layer_t = batch_normalization_2d_layer<batch_normalization_2d_layer_desc<Input>>;
+    using dyn_layer_t = batch_normalization_2d_layer<batch_normalization_layer_2d_desc<Input>>;
 };
 
 } //end of dll namespace

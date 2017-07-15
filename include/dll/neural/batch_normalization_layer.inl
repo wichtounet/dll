@@ -22,8 +22,6 @@ struct batch_normalization_2d_layer : transform_layer<batch_normalization_2d_lay
     static constexpr size_t Input = desc::Input; ///< The input size
     static constexpr float e      = 1e-8;        ///< Epsilon for numerical stability
 
-    batch_normalization_2d_layer() = default;
-
     etl::fast_matrix<float, Input> gamma;
     etl::fast_matrix<float, Input> beta;
 
@@ -33,11 +31,14 @@ struct batch_normalization_2d_layer : transform_layer<batch_normalization_2d_lay
     etl::fast_matrix<float, Input> last_mean;
     etl::fast_matrix<float, Input> last_var;
 
-    etl::fast_matrix<float, Input> input_pre;
+    etl::dyn_matrix<float, 2> input_pre; /// B x Input
 
     float momentum = 0.9;
 
-    batch_normalization_2d_layer() : transform_layer() {
+    etl::fast_matrix<float, Input>& w = gamma;
+    etl::fast_matrix<float, Input>& b = beta;
+
+    batch_normalization_2d_layer() : base_type() {
         gamma = 1.0;
         beta = 1.0;
     }
@@ -80,6 +81,7 @@ struct batch_normalization_2d_layer : transform_layer<batch_normalization_2d_lay
     static void train_activate_hidden(Output& output, const Input& input) {
         output = input;
 
+        // TODO
     }
 
     /*!
@@ -89,7 +91,18 @@ struct batch_normalization_2d_layer : transform_layer<batch_normalization_2d_lay
     template <typename V>
     auto batch_activate_hidden(const V& v) const {
         auto output = force_temporary_dim_only(v);
-        batch_activate_hidden(output, v);
+        test_batch_activate_hidden(output, v);
+        return output;
+    }
+
+    /*!
+     * \brief Apply the layer to the batch of input
+     * \return A batch of output corresponding to the activated input
+     */
+    template <typename V>
+    auto test_batch_activate_hidden(const V& v) const {
+        auto output = force_temporary_dim_only(v);
+        test_batch_activate_hidden(output, v);
         return output;
     }
 
@@ -99,7 +112,7 @@ struct batch_normalization_2d_layer : transform_layer<batch_normalization_2d_lay
      * \param input The batch of input to apply the layer to
      */
     template <typename Input, typename Output>
-    static void batch_activate_hidden(Output& output, const Input& input) {
+    void batch_activate_hidden(Output& output, const Input& input) const {
         test_batch_activate_hidden(output, input);
     }
 
@@ -109,13 +122,15 @@ struct batch_normalization_2d_layer : transform_layer<batch_normalization_2d_lay
      * \param input The batch of input to apply the layer to
      */
     template <typename Input, typename Output>
-    static void test_batch_activate_hidden(Output& output, const Input& input) {
+    void test_batch_activate_hidden(Output& output, const Input& input) const {
         const auto B = etl::dim<0>(input);
 
         auto mean_rep = etl::rep(mean, B);
         auto var_rep  = etl::rep(var, B);
+        auto gamma_rep = etl::rep(gamma, B);
+        auto beta_rep  = etl::rep(beta, B);
 
-        output = gamma * (input - mean_rep) / etl::sqrt(var_rep + e) + beta;
+        output = (gamma_rep >> ((input - mean_rep) / etl::sqrt(var_rep + e))) + beta_rep;
     }
 
     /*!
@@ -124,7 +139,7 @@ struct batch_normalization_2d_layer : transform_layer<batch_normalization_2d_lay
      * \param input The batch of input to apply the layer to
      */
     template <typename Input, typename Output>
-    static void train_batch_activate_hidden(Output& output, const Input& input) {
+    void train_batch_activate_hidden(Output& output, const Input& input) {
         const auto B = etl::dim<0>(input);
 
         last_mean     = etl::force_temporary(etl::mean_l(input));
@@ -135,7 +150,9 @@ struct batch_normalization_2d_layer : transform_layer<batch_normalization_2d_lay
 
         input_pre = (input - last_mean_rep) / etl::sqrt(last_var_rep + e);
 
-        output = gamma * input_pre + beta;
+        auto gamma_rep = etl::rep(gamma, B);
+        auto beta_rep  = etl::rep(beta, B);
+        output         = (gamma_rep >> input_pre) + beta_rep;
 
         // Update the current mean and variance
         mean = momentum * mean + (1.0 - momentum) * last_mean;
@@ -163,7 +180,16 @@ struct batch_normalization_2d_layer : transform_layer<batch_normalization_2d_lay
     void backward_batch(H&& output, C& context) const {
         const auto B = etl::dim<0>(context.input);
 
-        output = (1.0 / B) * gamma * etl::sqrt(last_var + eps) * (B * context.errors - etl::sum_l(context.errors) - (context.input - last_mean) * (1.0 / (last_var + eps)) * etl::sum_l(context.errors * (context.input - last_mean)));
+        auto last_mean_rep = etl::rep(last_mean, B);
+        auto last_var_rep  = etl::rep(last_var, B);
+        auto gamma_rep     = etl::rep(gamma, B);
+
+        auto& dy = context.errors;
+        auto& h = context.input;
+
+        output =
+                 (1.0 / B) * gamma_rep >> etl::sqrt(last_var_rep + e)
+            >>  ((B >> dy) - etl::rep(etl::sum_l(dy), B) - ((h - last_mean_rep) >> (1.0 / (last_var_rep + e)) >> etl::rep(etl::sum_l(dy >> (h - last_mean_rep)), B)));
     }
 
     /*!
@@ -172,8 +198,11 @@ struct batch_normalization_2d_layer : transform_layer<batch_normalization_2d_lay
      */
     template<typename C>
     void compute_gradients(C& context) const {
-        auto dbeta = etl::sum_l(context.errors);
-        auto dgamma = etl::sum_l(input_pre >> context.errors);
+        // Gradients of gamma
+        context.w_grad = etl::sum_l(input_pre >> context.errors);
+
+        // Gradients of beta
+        context.b_grad = etl::sum_l(context.errors);
 
         cpp_unused(context);
     }
@@ -210,6 +239,9 @@ struct sgd_context<DBN, batch_normalization_2d_layer<Desc>, L> {
     inputs_t input;  ///< A batch of input
     inputs_t output; ///< A batch of output
     inputs_t errors; ///< A batch of errors
+
+    etl::fast_matrix<float, Desc::Input> w_grad;
+    etl::fast_matrix<float, Desc::Input> b_grad;
 
     sgd_context(layer_t& /*layer*/){}
 };
