@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "dll/transform/transform_layer.hpp"
+#include "dll/neural_layer.hpp"
 
 namespace dll {
 
@@ -15,10 +15,10 @@ namespace dll {
  * \brief Batch Normalization layer
  */
 template <typename Desc>
-struct batch_normalization_4d_layer : transform_layer<batch_normalization_4d_layer<Desc>> {
-    using desc      = Desc;                                                ///< The descriptor type
-    using base_type = transform_layer<batch_normalization_4d_layer<Desc>>; ///< The base type
-    using weight    = typename desc::weight;         ///< The data type of the layer
+struct batch_normalization_4d_layer : neural_layer<batch_normalization_4d_layer<Desc>, Desc> {
+    using desc      = Desc;                                                   ///< The descriptor type
+    using base_type = neural_layer<batch_normalization_4d_layer<Desc>, Desc>; ///< The base type
+    using weight    = typename desc::weight;                                  ///< The data type of the layer
 
     static constexpr size_t Kernels = desc::Kernels; ///< The number of feature maps
     static constexpr size_t W       = desc::Width;   ///< The width of feature maps
@@ -53,26 +53,34 @@ struct batch_normalization_4d_layer : transform_layer<batch_normalization_4d_lay
     }
 
     /*!
-     * \brief Backup the weights in the secondary weights matrix
-     */
-    void backup_weights() {
-        unique_safe_get(bak_gamma) = gamma;
-        unique_safe_get(bak_beta)  = beta;
-    }
-
-    /*!
-     * \brief Restore the weights from the secondary weights matrix
-     */
-    void restore_weights() {
-        gamma = *bak_gamma;
-        beta  = *bak_beta;
-    }
-
-    /*!
      * \brief Returns a string representation of the layer
      */
     static std::string to_short_string() {
         return "batch_norm";
+    }
+
+    /*!
+     * \brief Return the number of trainable parameters of this network.
+     * \return The the number of trainable parameters of this network.
+     */
+    static constexpr size_t parameters() noexcept {
+        return 4 * Kernels;
+    }
+
+    /*!
+     * \brief Return the size of the input of this layer
+     * \return The size of the input of this layer
+     */
+    static constexpr size_t input_size() noexcept {
+        return Kernels * W * H;
+    }
+
+    /*!
+     * \brief Return the size of the output of this layer
+     * \return The size of the output of this layer
+     */
+    static constexpr size_t output_size() noexcept {
+        return Kernels * W * H;
     }
 
     using base_type::activate_hidden;
@@ -260,13 +268,22 @@ struct batch_normalization_4d_layer : transform_layer<batch_normalization_4d_lay
         // Gradients of beta
         context.b_grad = etl::bias_batch_sum_4d(context.errors);
     }
+
+    /*!
+     * \brief Initialize the dynamic version of the layer from the fast version of the layer
+     * \param dyn Reference to the dynamic version of the layer that needs to be initialized
+     */
+    template<typename DLayer>
+    static void dyn_init(DLayer& dyn){
+        dyn.init_layer(Kernels, W, H);
+    }
 };
 
 // Declare the traits for the layer
 
 template<typename Desc>
 struct layer_base_traits<batch_normalization_4d_layer<Desc>> {
-    static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
+    static constexpr bool is_neural     = true; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
     static constexpr bool is_deconv     = false; ///< Indicates if the layer is deconvolutional
@@ -274,7 +291,7 @@ struct layer_base_traits<batch_normalization_4d_layer<Desc>> {
     static constexpr bool is_rbm        = false; ///< Indicates if the layer is RBM
     static constexpr bool is_pooling    = false; ///< Indicates if the layer is a pooling layer
     static constexpr bool is_unpooling  = false; ///< Indicates if the layer is an unpooling laye
-    static constexpr bool is_transform  = true;  ///< Indicates if the layer is a transform layer
+    static constexpr bool is_transform  = false;  ///< Indicates if the layer is a transform layer
     static constexpr bool is_dynamic    = false; ///< Indicates if the layer is dynamic
     static constexpr bool pretrain_last = false; ///< Indicates if the layer is dynamic
     static constexpr bool sgd_supported = true;  ///< Indicates if the layer is supported by SGD
