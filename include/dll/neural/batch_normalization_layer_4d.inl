@@ -18,29 +18,30 @@ template <typename Desc>
 struct batch_normalization_4d_layer : transform_layer<batch_normalization_4d_layer<Desc>> {
     using desc      = Desc;                                                ///< The descriptor type
     using base_type = transform_layer<batch_normalization_4d_layer<Desc>>; ///< The base type
+    using weight    = typename desc::weight;         ///< The data type of the layer
 
     static constexpr size_t Kernels = desc::Kernels; ///< The number of feature maps
     static constexpr size_t W       = desc::Width;   ///< The width of feature maps
     static constexpr size_t H       = desc::Height;  ///< The height of feature maps
-    static constexpr float e        = 1e-8;          ///< Epsilon for numerical stability
+    static constexpr weight e        = 1e-8;          ///< Epsilon for numerical stability
 
-    etl::fast_matrix<float, Kernels> gamma;
-    etl::fast_matrix<float, Kernels> beta;
+    etl::fast_matrix<weight, Kernels> gamma;
+    etl::fast_matrix<weight, Kernels> beta;
 
-    etl::fast_matrix<float, Kernels> mean;
-    etl::fast_matrix<float, Kernels> var;
+    etl::fast_matrix<weight, Kernels> mean;
+    etl::fast_matrix<weight, Kernels> var;
 
-    etl::fast_matrix<float, Kernels> last_mean;
-    etl::fast_matrix<float, Kernels> last_var;
-    etl::fast_matrix<float, Kernels> inv_var;
+    etl::fast_matrix<weight, Kernels> last_mean;
+    etl::fast_matrix<weight, Kernels> last_var;
+    etl::fast_matrix<weight, Kernels> inv_var;
 
-    etl::dyn_matrix<float, 4> input_pre; /// B x K x W x H
+    etl::dyn_matrix<weight, 4> input_pre; /// B x K x W x H
 
-    float momentum = 0.9;
+    weight momentum = 0.9;
 
     // For SGD
-    etl::fast_matrix<float, Kernels>& w = gamma;
-    etl::fast_matrix<float, Kernels>& b = beta;
+    etl::fast_matrix<weight, Kernels>& w = gamma;
+    etl::fast_matrix<weight, Kernels>& b = beta;
 
     batch_normalization_4d_layer() : base_type() {
         gamma = 1.0;
@@ -268,13 +269,14 @@ struct sgd_context<DBN, batch_normalization_4d_layer<Desc>, L> {
     using previous_layer   = typename DBN::template layer_type<L - 1>;          ///< The previous layer type
     using previous_context = sgd_context<DBN, previous_layer, L - 1>;           ///< The previous layer's context
     using inputs_t         = decltype(std::declval<previous_context>().output); ///< The type of inputs
+    using weight  = typename layer_t::weight; ///< The data type for this layer
 
     inputs_t input;  ///< A batch of input
     inputs_t output; ///< A batch of output
     inputs_t errors; ///< A batch of errors
 
-    etl::fast_matrix<float, Desc::Kernels> w_grad;
-    etl::fast_matrix<float, Desc::Kernels> b_grad;
+    etl::fast_matrix<weight, Desc::Kernels> w_grad;
+    etl::fast_matrix<weight, Desc::Kernels> b_grad;
 
     sgd_context(layer_t& /*layer*/){}
 };

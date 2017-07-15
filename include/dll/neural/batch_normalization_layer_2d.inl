@@ -18,27 +18,28 @@ template <typename Desc>
 struct batch_normalization_2d_layer : transform_layer<batch_normalization_2d_layer<Desc>> {
     using desc      = Desc;                                             ///< The descriptor type
     using base_type = transform_layer<batch_normalization_2d_layer<Desc>>; ///< The base type
+    using weight    = typename desc::weight;         ///< The data type of the layer
 
     static constexpr size_t Input = desc::Input; ///< The input size
-    static constexpr float e      = 1e-8;        ///< Epsilon for numerical stability
+    static constexpr weight e      = 1e-8;        ///< Epsilon for numerical stability
 
-    etl::fast_matrix<float, Input> gamma;
-    etl::fast_matrix<float, Input> beta;
+    etl::fast_matrix<weight, Input> gamma;
+    etl::fast_matrix<weight, Input> beta;
 
-    etl::fast_matrix<float, Input> mean;
-    etl::fast_matrix<float, Input> var;
+    etl::fast_matrix<weight, Input> mean;
+    etl::fast_matrix<weight, Input> var;
 
-    etl::fast_matrix<float, Input> last_mean;
-    etl::fast_matrix<float, Input> last_var;
-    etl::fast_matrix<float, Input> inv_var;
+    etl::fast_matrix<weight, Input> last_mean;
+    etl::fast_matrix<weight, Input> last_var;
+    etl::fast_matrix<weight, Input> inv_var;
 
-    etl::dyn_matrix<float, 2> input_pre; /// B x Input
+    etl::dyn_matrix<weight, 2> input_pre; /// B x Input
 
-    float momentum = 0.9;
+    weight momentum = 0.9;
 
     // For SGD
-    etl::fast_matrix<float, Input>& w = gamma;
-    etl::fast_matrix<float, Input>& b = beta;
+    etl::fast_matrix<weight, Input>& w = gamma;
+    etl::fast_matrix<weight, Input>& b = beta;
 
     batch_normalization_2d_layer() : base_type() {
         gamma = 1.0;
@@ -232,13 +233,14 @@ struct sgd_context<DBN, batch_normalization_2d_layer<Desc>, L> {
     using previous_layer   = typename DBN::template layer_type<L - 1>;          ///< The previous layer type
     using previous_context = sgd_context<DBN, previous_layer, L - 1>;           ///< The previous layer's context
     using inputs_t         = decltype(std::declval<previous_context>().output); ///< The type of inputs
+    using weight  = typename layer_t::weight; ///< The data type for this layer
 
     inputs_t input;  ///< A batch of input
     inputs_t output; ///< A batch of output
     inputs_t errors; ///< A batch of errors
 
-    etl::fast_matrix<float, Desc::Input> w_grad;
-    etl::fast_matrix<float, Desc::Input> b_grad;
+    etl::fast_matrix<weight, Desc::Input> w_grad;
+    etl::fast_matrix<weight, Desc::Input> b_grad;
 
     sgd_context(layer_t& /*layer*/){}
 };
