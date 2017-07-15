@@ -47,7 +47,7 @@ struct batch_normalization_2d_layer : neural_layer<batch_normalization_2d_layer<
 
     batch_normalization_2d_layer() : base_type() {
         gamma = 1.0;
-        beta = 1.0;
+        beta = 0.0;
     }
 
     /*!
