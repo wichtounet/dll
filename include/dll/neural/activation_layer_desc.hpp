@@ -15,32 +15,22 @@ namespace dll {
  * Such a layer only applies an activation function to its inputs
  * and has no weights.
  */
-template <typename... Parameters>
+template <dll::function F = dll::function::SIGMOID>
 struct activation_layer_desc {
-    /*!
-     * A list of all the parameters of the descriptor
-     */
-    using parameters = cpp::type_list<Parameters...>;
-
     /*!
      * \brief The layer's activation function
      */
-    static constexpr function activation_function = detail::get_value<activation<function::SIGMOID>, Parameters...>::value;
+    static constexpr function activation_function = F;
 
     /*!
      * The layer type
      */
-    using layer_t = activation_layer<activation_layer_desc<Parameters...>>;
+    using layer_t = activation_layer<activation_layer_desc<F>>;
 
     /*!
      * The dynamic layer type
      */
-    using dyn_layer_t = activation_layer<activation_layer_desc<Parameters...>>;
-
-    //Make sure only valid types are passed to the configuration list
-    static_assert(
-        detail::is_valid<cpp::type_list<activation_id>, Parameters...>::value,
-        "Invalid parameters type for activation_layer_desc");
+    using dyn_layer_t = activation_layer<activation_layer_desc<F>>;
 };
 
 } //end of dll namespace
