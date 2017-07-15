@@ -60,9 +60,9 @@ void dense_sgd_split(Dataset& dataset){
     using dense_net = dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_desc<28 * 28, 200, dll::activation<dll::function::IDENTITY>>::layer_t,
-            dll::activation_layer_desc<dll::activation<dll::function::SIGMOID>>::layer_t,
+            dll::activation_layer_desc<dll::function::SIGMOID>::layer_t,
             dll::dense_desc<200, 10, dll::activation<dll::function::IDENTITY>>::layer_t,
-            dll::activation_layer_desc<dll::activation<dll::function::SOFTMAX>>::layer_t
+            dll::activation_layer_desc<dll::function::SOFTMAX>::layer_t
         >,
         dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<50>, dll::trainer<dll::sgd_trainer>>::dbn_t;
 

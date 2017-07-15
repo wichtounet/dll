@@ -43,15 +43,15 @@ TEST_CASE("unit/conv/sgd/10", "[unit][conv][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_desc<1, 28, 28, 6, 5, 5, dll::activation<dll::function::IDENTITY>>::layer_t,
-            dll::activation_layer_desc<dll::activation<dll::function::RELU>>::layer_t,
+            dll::activation_layer_desc<dll::function::RELU>::layer_t,
             dll::mp_layer_3d_desc<6, 24, 24, 1, 2, 2>::layer_t,
             dll::conv_desc<6, 12, 12, 8, 5, 5, dll::activation<dll::function::IDENTITY>>::layer_t,
-            dll::activation_layer_desc<dll::activation<dll::function::RELU>>::layer_t,
+            dll::activation_layer_desc<dll::function::RELU>::layer_t,
             dll::mp_layer_3d_desc<8, 8, 8, 1, 2, 2>::layer_t,
             dll::dense_desc<8 * 4 * 4, 500, dll::activation<dll::function::IDENTITY>>::layer_t,
-            dll::activation_layer_desc<dll::activation<dll::function::RELU>>::layer_t,
+            dll::activation_layer_desc<dll::function::RELU>::layer_t,
             dll::dense_desc<500, 10, dll::activation<dll::function::IDENTITY>>::layer_t,
-            dll::activation_layer_desc<dll::activation<dll::function::SOFTMAX>>::layer_t
+            dll::activation_layer_desc<dll::function::SOFTMAX>::layer_t
         >, dll::shuffle, dll::updater<dll::updater_type::MOMENTUM>, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<25>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(500);

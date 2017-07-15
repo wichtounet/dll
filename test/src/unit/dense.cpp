@@ -286,10 +286,10 @@ TEST_CASE("unit/dense/sgd/11", "[unit][dense][dbn][mnist][sgd]") {
 TEST_CASE("unit/dense/sgd/14", "[unit][dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::dense_desc<28 * 28, 100, dll::activation<dll::function::IDENTITY>>::layer_t,
-            dll::activation_layer_desc<dll::activation<dll::function::SIGMOID>>::layer_t,
-            dll::dense_desc<100, 10, dll::activation<dll::function::IDENTITY>>::layer_t,
-            dll::activation_layer_desc<dll::activation<dll::function::SOFTMAX>>::layer_t
+            dll::dense_desc<28 * 28, 100, dll::no_activation>::layer_t,
+            dll::activation_layer_desc<dll::function::SIGMOID>::layer_t,
+            dll::dense_desc<100, 10, dll::no_activation>::layer_t,
+            dll::activation_layer_desc<dll::function::SOFTMAX>::layer_t
         >,
         dll::updater<dll::updater_type::MOMENTUM>, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
