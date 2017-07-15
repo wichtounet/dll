@@ -38,14 +38,14 @@ int main(int /*argc*/, char* /*argv*/ []) {
     net->learning_rate = 0.1;
 
     // Display the network and dataset
-    //net->display();
-    //dataset.display();
+    net->display();
+    dataset.display();
 
     // Train the network for performance sake
     net->fine_tune(dataset.train(), 25);
 
     // Test the network on test set
-    //net->evaluate(dataset.test());
+    net->evaluate(dataset.test());
 
     cpp_unused(dataset);
 
