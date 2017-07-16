@@ -20,7 +20,7 @@ enum class updater_type {
     RMSPROP,      ///< Use RMSPROP for SGD
     ADAM,         ///< Use Adam for SGD
     ADAM_CORRECT, ///< Use Adam with bias correction for SGD
-    ADADELTA      ///< Use Adam for SGD
+    ADADELTA      ///< Use Adadelta for SGD
 };
 
 /*!
