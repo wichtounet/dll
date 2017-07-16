@@ -47,7 +47,5 @@ int main(int /*argc*/, char* /*argv*/ []) {
     // Test the network on test set
     net->evaluate(dataset.test());
 
-    cpp_unused(dataset);
-
     return 0;
 }
