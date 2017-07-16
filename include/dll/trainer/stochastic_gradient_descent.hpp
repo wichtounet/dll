@@ -209,6 +209,44 @@ struct updater_context<updater_type::ADAM_CORRECT, true, Context> {
 };
 
 /*!
+ * \brief The context for the Nesterov Adam with bias correction updater
+ */
+template <typename Context>
+struct updater_context<updater_type::NADAM, true, Context> {
+    using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
+    using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
+
+    w_grad_t w_m; //< The Adam cache for the weights
+    w_grad_t w_v; //< The Adam cache for the weights
+    b_grad_t b_m; //< The Adam cache for the biases
+    b_grad_t b_v; //< The Adam cache for the biases
+
+    w_grad_t w_mt; //< The Adam cache for the weights
+    w_grad_t w_vt; //< The Adam cache for the weights
+    b_grad_t b_mt; //< The Adam cache for the biases
+    b_grad_t b_vt; //< The Adam cache for the biases
+
+    double m_schedule;
+
+    /*!
+     * \brief Construct a new updater_context using the parent context
+     */
+    updater_context(Context& context) : w_m(context.w_grad), w_v(context.w_grad), b_m(context.b_grad), b_v(context.b_grad), w_mt(context.w_grad), w_vt(context.w_grad), b_mt(context.b_grad), b_vt(context.b_grad) {
+        w_m = 0;
+        w_v = 0;
+        b_m = 0;
+        b_v = 0;
+
+        w_mt = 0;
+        w_vt = 0;
+        b_mt = 0;
+        b_vt = 0;
+
+        m_schedule = 1.0;
+    }
+};
+
+/*!
  * \brief The context for the Adamax updater
  */
 template <typename Context>
@@ -770,6 +808,56 @@ struct sgd_trainer {
 
         layer.w += (eps >> context.up.w_m) / context.up.w_v;
         layer.b += (eps >> context.up.b_m) / context.up.b_v;
+
+        nan_check_deep(layer.w);
+        nan_check_deep(layer.b);
+
+        cpp_unused(n);
+        cpp_unused(epoch);
+    }
+
+    /*!
+     * \brief Apply the gradients to the given layer
+     */
+    template <updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::NADAM)>
+    void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
+        dll::auto_timer timer("sgd::apply_grad:adam_correct");
+
+        const auto beta1          = dbn.adam_beta1;
+        const auto beta2          = dbn.adam_beta2;
+        const auto schedule_decay = dbn.nadam_schedule_decay;
+        const auto e              = 1e-8;
+        const auto t              = iteration;
+
+        // Compute the schedule for momentum
+
+        auto momentum_cache_t   = beta1 * (1. - 0.5 * (std::pow(0.96, t * schedule_decay)));
+        auto momentum_cache_t_1 = beta1 * (1. - 0.5 * (std::pow(0.96, (t + 1) * schedule_decay)));
+
+        auto m_schedule_new  = context.up.m_schedule * momentum_cache_t;
+        auto m_schedule_next = context.up.m_schedule * momentum_cache_t * momentum_cache_t_1;
+
+        context.up.m_schedule = m_schedule_new;
+
+        // Standard Adam estimations of the first and second order moments
+
+        context.up.w_m = beta1 * context.up.w_m + ((1.0 - beta1) >> context.w_grad);
+        context.up.b_m = beta1 * context.up.b_m + ((1.0 - beta1) >> context.b_grad);
+
+        context.up.w_v = beta2 * context.up.w_v + ((1.0 - beta2) >> (context.w_grad >> context.w_grad));
+        context.up.b_v = beta2 * context.up.b_v + ((1.0 - beta2) >> (context.b_grad >> context.b_grad));
+
+        // Correct the bias (towards zero) of the first and second moments
+
+        context.up.w_mt = context.up.w_m / (1.0 - m_schedule_next);
+        context.up.b_mt = context.up.b_m / (1.0 - m_schedule_next);
+
+        context.up.w_vt = context.up.w_v / (1.0 - std::pow(beta2, t));
+        context.up.b_vt = context.up.b_v / (1.0 - std::pow(beta2, t));
+
+        // Update the parameters
+
+        layer.w += ((eps >> ((1.0 - momentum_cache_t) * (context.w_grad / (1.0 - m_schedule_new)) + momentum_cache_t_1 * context.up.w_mt)) / (etl::sqrt(context.up.w_vt) + e));
 
         nan_check_deep(layer.w);
         nan_check_deep(layer.b);

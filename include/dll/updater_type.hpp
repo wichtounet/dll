@@ -21,6 +21,7 @@ enum class updater_type {
     ADAM,         ///< Use Adam for SGD
     ADAM_CORRECT, ///< Use Adam with bias correction for SGD
     ADAMAX,       ///< Use Adamax for SGD
+    NADAM,        ///< Use Nesterov Adam for SGD
     ADADELTA      ///< Use Adadelta for SGD
 };
 
@@ -47,6 +48,8 @@ inline std::string to_string(updater_type f) {
             return "ADAM_CORRECT";
         case updater_type::ADAMAX:
             return "ADAMAX";
+        case updater_type::NADAM:
+            return "NADAM";
         case updater_type::ADADELTA:
             return "ADADELTA";
     }
