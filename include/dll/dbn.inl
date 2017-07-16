@@ -401,7 +401,7 @@ public:
      */
     void store(std::ostream& os) const {
         for_each_layer([&os](auto& layer) {
-            cpp::static_if<decay_layer_traits<decltype(layer)>::is_rbm_layer()>([&](auto f) {
+            cpp::static_if<decay_layer_traits<decltype(layer)>::is_neural_layer()>([&](auto f) {
                 f(layer).store(os);
             });
         });
@@ -417,7 +417,7 @@ public:
      */
     void load(std::istream& is) {
         for_each_layer([&is](auto& layer) {
-            cpp::static_if<decay_layer_traits<decltype(layer)>::is_rbm_layer()>([&](auto f) {
+            cpp::static_if<decay_layer_traits<decltype(layer)>::is_neural_layer()>([&](auto f) {
                 f(layer).load(is);
             });
         });

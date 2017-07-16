@@ -51,6 +51,38 @@ struct neural_layer : layer<Derived> {
         as_derived().b = *as_derived().bak_b;
     }
 
+    /*!
+     * \brief Load the weigts into the given stream
+     */
+    void store(std::ostream& os) const {
+        cpp::binary_write_all(os, as_derived().w);
+        cpp::binary_write_all(os, as_derived().b);
+    }
+
+    /*!
+     * \brief Load the weigts from the given stream
+     */
+    void load(std::istream& is) {
+        cpp::binary_load_all(is, as_derived().w);
+        cpp::binary_load_all(is, as_derived().b);
+    }
+
+    /*!
+     * \brief Load the weigts into the given file
+     */
+    void store(const std::string& file) const {
+        std::ofstream os(file, std::ofstream::binary);
+        store(os);
+    }
+
+    /*!
+     * \brief Load the weigts from the given file
+     */
+    void load(const std::string& file) {
+        std::ifstream is(file, std::ifstream::binary);
+        load(is);
+    }
+
 private:
     //CRTP Deduction
 
