@@ -7,7 +7,10 @@
 
 #pragma once
 
+#include <fstream>
+
 #include "cpp_utils/assert.hpp" //Assertions
+#include "cpp_utils/io.hpp"     // For binary writing
 
 #include "etl/etl.hpp"
 
