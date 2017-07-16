@@ -209,6 +209,30 @@ struct updater_context<updater_type::ADAM_CORRECT, true, Context> {
 };
 
 /*!
+ * \brief The context for the Adamax updater
+ */
+template <typename Context>
+struct updater_context<updater_type::ADAMAX, true, Context> {
+    using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
+    using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
+
+    w_grad_t w_m; //< The Adam cache for the weights
+    w_grad_t w_v; //< The Adam cache for the weights
+    b_grad_t b_m; //< The Adam cache for the biases
+    b_grad_t b_v; //< The Adam cache for the biases
+
+    /*!
+     * \brief Construct a new updater_context using the parent context
+     */
+    updater_context(Context& context) : w_m(context.w_grad), w_v(context.w_grad), b_m(context.b_grad), b_v(context.b_grad) {
+        w_m = 0;
+        w_v = 0;
+        b_m = 0;
+        b_v = 0;
+    }
+};
+
+/*!
  * \brief The full SGD context, it contains the context of the layer as well as
  * the context for the SGD updater
  */
@@ -722,6 +746,37 @@ struct sgd_trainer {
         cpp_unused(epoch);
     }
 
+    /*!
+     * \brief Apply the gradients to the given layer
+     */
+    template <updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::ADAMAX)>
+    void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
+        dll::auto_timer timer("sgd::apply_grad:adamax");
+
+        const auto beta1 = dbn.adam_beta1;
+        const auto beta2 = dbn.adam_beta2;
+
+        // Standard Adam estimations of the first moment
+
+        context.up.w_m = beta1 * context.up.w_m + ((1.0 - beta1) >> context.w_grad);
+        context.up.b_m = beta1 * context.up.b_m + ((1.0 - beta1) >> context.b_grad);
+
+        // Estimation of the second moment with infinite-norm
+
+        context.up.w_v = etl::max(beta2 * context.up.w_v, etl::abs(context.w_grad));
+        context.up.b_v = etl::max(beta2 * context.up.b_v, etl::abs(context.b_grad));
+
+        // Update the parameters
+
+        layer.w += (eps >> context.up.w_m) / context.up.w_v;
+        layer.b += (eps >> context.up.b_m) / context.up.b_v;
+
+        nan_check_deep(layer.w);
+        nan_check_deep(layer.b);
+
+        cpp_unused(n);
+        cpp_unused(epoch);
+    }
 
     /*!
      * \brief Apply the gradients to the given layer

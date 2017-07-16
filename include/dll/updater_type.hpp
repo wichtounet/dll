@@ -20,6 +20,7 @@ enum class updater_type {
     RMSPROP,      ///< Use RMSPROP for SGD
     ADAM,         ///< Use Adam for SGD
     ADAM_CORRECT, ///< Use Adam with bias correction for SGD
+    ADAMAX,       ///< Use Adamax for SGD
     ADADELTA      ///< Use Adadelta for SGD
 };
 
@@ -42,10 +43,12 @@ inline std::string to_string(updater_type f) {
             return "RMSPROP";
         case updater_type::ADAM:
             return "ADAM";
-        case updater_type::ADADELTA:
-            return "ADADELTA";
         case updater_type::ADAM_CORRECT:
             return "ADAM_CORRECT";
+        case updater_type::ADAMAX:
+            return "ADAMAX";
+        case updater_type::ADADELTA:
+            return "ADADELTA";
     }
 
     cpp_unreachable("Unreachable code");
