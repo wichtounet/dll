@@ -71,7 +71,7 @@ TEST_CASE("unit/conv/sgd/3", "[unit][conv][dbn][mnist][sgd]") {
 
     dbn->learning_rate = 0.05;
 
-    FT_CHECK(50, 6e-2);
+    FT_CHECK(75, 6e-2);
     TEST_CHECK(0.25);
 }
 
