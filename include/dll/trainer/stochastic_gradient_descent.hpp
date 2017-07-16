@@ -662,14 +662,18 @@ struct sgd_trainer {
         const auto beta2 = dbn.adam_beta2;
         const auto e = 1e-8;
 
+        // Standard Adam estimations of the first and second moments
+
         context.up.w_m = beta1 * context.up.w_m + ((1.0 - beta1) >> context.w_grad);
         context.up.b_m = beta1 * context.up.b_m + ((1.0 - beta1) >> context.b_grad);
 
         context.up.w_v = beta2 * context.up.w_v + ((1.0 - beta2) >> (context.w_grad >> context.w_grad));
         context.up.b_v = beta2 * context.up.b_v + ((1.0 - beta2) >> (context.b_grad >> context.b_grad));
 
-        layer.w += (eps >> context.up.w_m) / sqrt(context.up.w_v + e);
-        layer.b += (eps >> context.up.b_m) / sqrt(context.up.b_v + e);
+        // Update the parameters
+
+        layer.w += (eps >> context.up.w_m) / (etl::sqrt(context.up.w_v) + e);
+        layer.b += (eps >> context.up.b_m) / (etl::sqrt(context.up.b_v) + e);
 
         nan_check_deep(layer.w);
         nan_check_deep(layer.b);
@@ -690,20 +694,26 @@ struct sgd_trainer {
         const auto e = 1e-8;
         const auto t = iteration;
 
+        // Standard Adam estimations of the first and second moments
+
         context.up.w_m = beta1 * context.up.w_m + ((1.0 - beta1) >> context.w_grad);
         context.up.b_m = beta1 * context.up.b_m + ((1.0 - beta1) >> context.b_grad);
-
-        context.up.w_mt = context.up.w_m / (1.0 - std::pow(beta1, t));
-        context.up.b_mt = context.up.b_m / (1.0 - std::pow(beta1, t));
 
         context.up.w_v = beta2 * context.up.w_v + ((1.0 - beta2) >> (context.w_grad >> context.w_grad));
         context.up.b_v = beta2 * context.up.b_v + ((1.0 - beta2) >> (context.b_grad >> context.b_grad));
 
+        // Correct the bias (towards zero) of the first and second moments
+
+        context.up.w_mt = context.up.w_m / (1.0 - std::pow(beta1, t));
+        context.up.b_mt = context.up.b_m / (1.0 - std::pow(beta1, t));
+
         context.up.w_vt = context.up.w_v / (1.0 - std::pow(beta2, t));
         context.up.b_vt = context.up.b_v / (1.0 - std::pow(beta2, t));
 
-        layer.w += (eps >> context.up.w_mt) / sqrt(context.up.w_vt + e);
-        layer.b += (eps >> context.up.b_mt) / sqrt(context.up.b_vt + e);
+        // Update the parameters
+
+        layer.w += (eps >> context.up.w_m) / (etl::sqrt(context.up.w_v) + e);
+        layer.b += (eps >> context.up.b_m) / (etl::sqrt(context.up.b_v) + e);
 
         nan_check_deep(layer.w);
         nan_check_deep(layer.b);
