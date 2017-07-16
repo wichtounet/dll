@@ -626,7 +626,7 @@ struct sgd_trainer {
      */
     template <updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::ADADELTA)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
-        dll::auto_timer timer("sgd::apply_grad:adam");
+        dll::auto_timer timer("sgd::apply_grad:adadelta");
 
         const auto beta = dbn.adadelta_beta;
         const auto e = 1e-8;
