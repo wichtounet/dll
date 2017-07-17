@@ -526,17 +526,15 @@ struct base_cd_trainer : base_trainer<RBM> {
     etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_a; ///< Beginning of the contrastive divergence chain (activations)
     etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_s; ///< Beginning of the contrastive divergence chain (samples)
 
-    cpp::thread_pool<!rbm_layer_traits<rbm_t>::is_serial()> pool; ///< The thread pool of the trainer
-
     template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_disable_if(M)>
     base_cd_trainer(rbm_t& rbm)
-            : rbm(rbm), q_global_t(0.0), q_local_t(0.0), pool(etl::threads) {
+            : rbm(rbm), q_global_t(0.0), q_local_t(0.0) {
         static_assert(!rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
     template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_enable_if(M)>
     base_cd_trainer(rbm_t& rbm)
-            : rbm(rbm), w_inc(0.0), b_inc(0.0), c_inc(0.0), q_global_t(0.0), q_local_t(0.0), pool(etl::threads) {
+            : rbm(rbm), w_inc(0.0), b_inc(0.0), c_inc(0.0), q_global_t(0.0), q_local_t(0.0) {
         static_assert(rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
@@ -617,8 +615,6 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
     etl::dyn_matrix<weight> p_h_a; ///< Beginning of the contrastive divergence chain (activations)
     etl::dyn_matrix<weight> p_h_s; ///< Beginning of the contrastive divergence chain (samples)
 
-    cpp::thread_pool<!rbm_layer_traits<rbm_t>::is_serial()> pool; ///< The thread pool of the trainer
-
     template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_disable_if(M)>
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm),
@@ -641,7 +637,7 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
               q_local_batch(rbm.num_hidden),
               q_local_t(rbm.num_hidden, static_cast<weight>(0.0)),
               p_h_a(get_batch_size(rbm), rbm.num_hidden),
-              p_h_s(get_batch_size(rbm), rbm.num_hidden), pool(etl::threads) {
+              p_h_s(get_batch_size(rbm), rbm.num_hidden){
         static_assert(!rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
@@ -667,7 +663,7 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
               q_local_batch(rbm.num_hidden),
               q_local_t(rbm.num_hidden, static_cast<weight>(0.0)),
               p_h_a(get_batch_size(rbm), rbm.num_hidden),
-              p_h_s(get_batch_size(rbm), rbm.num_hidden), pool(etl::threads) {
+              p_h_s(get_batch_size(rbm), rbm.num_hidden){
         static_assert(rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
@@ -770,8 +766,6 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<!layer_traits<RBM>::
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> h2_a;                                 ///< The hidden activation at step K
     conditional_fast_matrix_t<(Persistent || N > 1), weight, batch_size, K, NH1, NH2> h2_s; ///< The hidden samples at step K
 
-    cpp::thread_pool<!rbm_layer_traits<rbm_t>::is_serial()> pool; ///< The thread pool of the trainer
-
     template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_disable_if(M)>
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm),
@@ -779,7 +773,7 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<!layer_traits<RBM>::
               q_local_t(0.0),
               w_bias(0.0),
               b_bias(0.0),
-              c_bias(0.0), pool(etl::threads) {
+              c_bias(0.0) {
         static_assert(!rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
@@ -793,7 +787,7 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<!layer_traits<RBM>::
               q_local_t(0.0),
               w_bias(0.0),
               b_bias(0.0),
-              c_bias(0.0), pool(etl::threads) {
+              c_bias(0.0) {
         static_assert(rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
@@ -885,8 +879,6 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
     etl::dyn_matrix<weight, 4> h2_a; ///< The hidden activations at the last step
     etl::dyn_matrix<weight, 4> h2_s; ///< The hidden samples at the last step
 
-    cpp::thread_pool<!rbm_layer_traits<rbm_t>::is_serial()> pool; ///< The thread pool of the trainer
-
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm),
              w_grad(DYN_W_DIMS, 0.0),
@@ -912,8 +904,8 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
              v2_a(get_batch_size(rbm), rbm.nc, rbm.nv1, rbm.nv2),
              v2_s(get_batch_size(rbm), rbm.nc, rbm.nv1, rbm.nv2),
              h2_a(get_batch_size(rbm), rbm.k, rbm.nh1, rbm.nh2),
-             h2_s(get_batch_size(rbm), rbm.k, rbm.nh1, rbm.nh2),
-             pool(etl::threads) {
+             h2_s(get_batch_size(rbm), rbm.k, rbm.nh1, rbm.nh2)
+             {
         //Nothign else to init
     }
 
