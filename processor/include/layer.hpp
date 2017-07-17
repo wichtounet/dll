@@ -113,7 +113,6 @@ struct base_rbm_layer : layer {
 
     std::string trainer = "cd";
 
-    bool parallel_mode = false; ///< Indicates if the RBM is trained in parallel mode
     bool shuffle       = false; ///< Indicates if the RBM is trained with shuffle
 
     void print(std::ostream& out) const override;

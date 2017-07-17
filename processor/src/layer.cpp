@@ -37,9 +37,6 @@ dllp::parse_result dllp::base_rbm_layer::base_parse(const std::vector<std::strin
         }
 
         return parse_result::PARSED;
-    } else if (dllp::extract_value(lines[i], "parallel_mode: ", value)) {
-        parallel_mode = value == "true";
-        return parse_result::PARSED;
     } else if (dllp::extract_value(lines[i], "learning_rate: ", value)) {
         learning_rate = std::stod(value);
         return parse_result::PARSED;
@@ -129,10 +126,6 @@ void dllp::base_rbm_layer::print(std::ostream& out) const {
 
     if (trainer == "pcd") {
         out << "\n  , dll::trainer_rbm<dll::pcd1_trainer_t>";
-    }
-
-    if (parallel_mode) {
-        out << "\n  , dll::parallel_mode";
     }
 
     if (shuffle) {
