@@ -92,40 +92,6 @@ int main(int argc, char* argv []) {
     std::cout << n << " images used for training" << std::endl;
     std::cout << etl::threads << " maximum threads" << std::endl;
 
-    if(number.empty() || number == "1"){
-        dll::conv_rbm_desc_square<1, 28, 40, 9, dll::parallel_mode, dll::serial, dll::batch_size<1>, dll::weight_type<float>>::layer_t crbm_1;
-        dll::conv_rbm_desc_square<40, 20, 40, 5, dll::parallel_mode, dll::serial, dll::batch_size<1>, dll::weight_type<float>>::layer_t crbm_2;
-        dll::conv_rbm_desc_square<40, 16, 96, 5, dll::parallel_mode, dll::serial, dll::batch_size<1>, dll::weight_type<float>>::layer_t crbm_3;
-        dll::conv_rbm_desc_square<96, 12, 8, 3, dll::parallel_mode, dll::serial, dll::batch_size<1>, dll::weight_type<float>>::layer_t crbm_4;
-
-        crbm_1.learning_rate = 1e-4;
-        crbm_2.learning_rate = 1e-4;
-        crbm_3.learning_rate = 1e-4;
-        crbm_4.learning_rate = 1e-4;
-
-        MEASURE(crbm_1, "crbm_1x28x28_normal", data_1);
-        MEASURE(crbm_2, "crbm_40x20x20_normal", data_2);
-        MEASURE(crbm_3, "crbm_40x16x16_normal", data_3);
-        MEASURE(crbm_4, "crbm_100x12x12_normal", data_4);
-    }
-
-    if(number.empty() || number == "2"){
-        dll::conv_rbm_desc_square<1, 28, 40, 9, dll::parallel_mode, dll::batch_size<64>, dll::weight_type<float>>::layer_t crbm_1;
-        dll::conv_rbm_desc_square<40, 20, 40, 5, dll::parallel_mode, dll::batch_size<64>, dll::weight_type<float>>::layer_t crbm_2;
-        dll::conv_rbm_desc_square<40, 16, 96, 5, dll::parallel_mode, dll::batch_size<64>, dll::weight_type<float>>::layer_t crbm_3;
-        dll::conv_rbm_desc_square<96, 12, 8, 3, dll::parallel_mode, dll::batch_size<64>, dll::weight_type<float>>::layer_t crbm_4;
-
-        crbm_1.learning_rate = 1e-4;
-        crbm_2.learning_rate = 1e-4;
-        crbm_3.learning_rate = 1e-4;
-        crbm_4.learning_rate = 1e-4;
-
-        MEASURE(crbm_1, "crbm_1x28x28_par", data_1);
-        MEASURE(crbm_2, "crbm_40x20x20_par", data_2);
-        MEASURE(crbm_3, "crbm_40x16x16_par", data_3);
-        MEASURE(crbm_4, "crbm_100x12x12_par", data_4);
-    }
-
     if(number.empty() || number == "3"){
 #define BATCH_MEASURE(batch)                                                                                        \
     {                                                                                                               \

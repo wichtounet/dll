@@ -85,30 +85,6 @@ int main(int argc, char* argv []) {
 
     std::cout << n << " images used for training" << std::endl;
 
-    if(number.empty() || number == "1"){
-        dll::rbm_desc<784, 500, dll::parallel_mode, dll::serial, dll::batch_size<1>, dll::weight_type<float>>::layer_t rbm_1;
-        dll::rbm_desc<500, 500, dll::parallel_mode, dll::serial, dll::batch_size<1>, dll::weight_type<float>>::layer_t rbm_2;
-        dll::rbm_desc<500, 2000, dll::parallel_mode, dll::serial, dll::batch_size<1>, dll::weight_type<float>>::layer_t rbm_3;
-        dll::rbm_desc<2000, 10, dll::parallel_mode, dll::serial, dll::batch_size<1>, dll::weight_type<float>>::layer_t rbm_4;
-
-        MEASURE(rbm_1, "rbm_784_500_normal", data_1);
-        MEASURE(rbm_2, "rbm_500_500_normal", data_2);
-        MEASURE(rbm_3, "rbm_500_2000_normal", data_3);
-        MEASURE(rbm_4, "rbm_2000_10_normal", data_4);
-    }
-
-    if(number.empty() || number == "2"){
-        dll::rbm_desc<784, 500, dll::parallel_mode, dll::batch_size<8>, dll::weight_type<float>>::layer_t rbm_1;
-        dll::rbm_desc<500, 500, dll::parallel_mode, dll::batch_size<8>, dll::weight_type<float>>::layer_t rbm_2;
-        dll::rbm_desc<500, 2000, dll::parallel_mode, dll::batch_size<8>, dll::weight_type<float>>::layer_t rbm_3;
-        dll::rbm_desc<2000, 10, dll::parallel_mode, dll::batch_size<8>, dll::weight_type<float>>::layer_t rbm_4;
-
-        MEASURE(rbm_1, "rbm_784_500_par_8", data_1);
-        MEASURE(rbm_2, "rbm_500_500_par_8", data_2);
-        MEASURE(rbm_3, "rbm_500_2000_par_8", data_3);
-        MEASURE(rbm_4, "rbm_2000_10_par_8", data_4);
-    }
-
     if(number.empty() || number == "3"){
 #define BATCH_MEASURE(batch)                                                                      \
     {                                                                                             \
