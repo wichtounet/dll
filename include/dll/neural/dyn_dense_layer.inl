@@ -88,7 +88,7 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
      */
     std::string to_short_string() const {
         char buffer[1024];
-        snprintf(buffer, 1024, "Dense: %lu -> %s -> %lu", num_visible, to_string(activation_function).c_str(), num_hidden);
+        snprintf(buffer, 1024, "Dense(dyn): %lu -> %s -> %lu", num_visible, to_string(activation_function).c_str(), num_hidden);
         return {buffer};
     }
 
