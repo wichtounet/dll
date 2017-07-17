@@ -171,9 +171,12 @@ struct rbm_trainer {
         return finalize_training(rbm);
     }
 
-    size_t batches = 0;
-    size_t samples = 0;
+    size_t batches = 0; ///< The number of batches
+    size_t samples = 0; ///< The number of samples
 
+    /*!
+     * \brief Initialization of the epoch
+     */
     void init_epoch() {
         batches = 0;
         samples = 0;

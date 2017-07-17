@@ -53,12 +53,21 @@ struct weight_type_same;
 
 template <size_t I, typename DBN, typename T>
 struct weight_type_same<I, DBN, T, std::enable_if_t<layer_traits<typename DBN::template layer_type<I>>::has_same_type()>> {
+    /*!
+     * \brief Boolean flag indicating if the weight type of the two
+     * layers is the same
+     */
     static constexpr bool value = true;
 };
 
 template <size_t I, typename DBN, typename T>
 struct weight_type_same<I, DBN, T, cpp::disable_if_t<layer_traits<typename DBN::template layer_type<I>>::has_same_type()>> {
     using type = typename DBN::template layer_type<I>::weight;
+
+    /*!
+     * \brief Boolean flag indicating if the weight type of the two
+     * layers is the same
+     */
     static constexpr bool value = std::is_same<T, type>::value;
 };
 

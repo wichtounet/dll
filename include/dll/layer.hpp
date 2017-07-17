@@ -26,6 +26,9 @@ T& unique_safe_get(std::unique_ptr<T>& ptr) {
     return *ptr;
 }
 
+/*!
+ * \brief A layer in a neural network
+ */
 template <typename Parent>
 struct layer {
     using parent_t = Parent; ///< The CRTP parent layer
@@ -37,8 +40,8 @@ struct layer {
     layer(layer&& rbm) = delete;
     layer& operator=(layer&& rbm) = delete;
 
-    /*
-     * !\brief Default initialize the layer
+    /*!
+     * \brief Default initialize the layer
      */
     layer() {
 #ifndef DLL_DENORMALS
@@ -56,6 +59,11 @@ struct layer {
 
     // Default function
 
+    /*!
+     * \brief Compute the hidden representation for a given input
+     * \param input The input to compute the representation from
+     * \return The hidden representation for the given input
+     */
     template <typename Input>
     auto activate_hidden(const Input& input) const {
         auto output = as_derived().template prepare_one_output<Input>();
@@ -63,11 +71,21 @@ struct layer {
         return output;
     }
 
+    /*!
+     * \brief Compute the test presentation for a given input
+     * \param output The output to fill
+     * \param input The input to compute the representation from
+     */
     template <typename Input, typename Output>
     void test_activate_hidden(Output& output, const Input& input) const {
         as_derived().activate_hidden(output, input);
     }
 
+    /*!
+     * \brief Compute the train presentation for a given input
+     * \param output The output to fill
+     * \param input The input to compute the representation from
+     */
     template <typename Input, typename Output>
     void train_activate_hidden(Output& output, const Input& input) const {
         as_derived().activate_hidden(output, input);
@@ -194,10 +212,18 @@ private:
     }
 
 protected:
-    //Needs to be shared because of dyn_rbm
+    /*!
+     * \brief Pointer to the Conjugate Gradient (CG) context.
+     *
+     * Needs to be shared because of dyn_rbm
+     */
     mutable std::shared_ptr<cg_context<parent_t>> cg_context_ptr;
 
-    //Needs to be shared because of dyn_rbm
+    /*!
+     * \brief Pointer to the Stochastic Gradient Descent (SGD) context.
+     *
+     * Needs to be shared because of dyn_rbm
+     */
     mutable std::shared_ptr<void> sgd_context_ptr;
 };
 

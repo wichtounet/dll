@@ -220,6 +220,9 @@ struct layer_type<I, cpp::type_list<>> {
  */
 template <typename Head, typename... T>
 struct layer_type<0, cpp::type_list<Head, T...>> {
+    /*!
+     * \brief The type of the layer
+     */
     using type = Head;
 };
 
@@ -228,6 +231,9 @@ struct layer_type<0, cpp::type_list<Head, T...>> {
  */
 template <size_t I, typename Head, typename... T>
 struct layer_type<I, cpp::type_list<Head, T...>> {
+    /*!
+     * \brief The type of the layer
+     */
     using type = typename layer_type<I - 1, cpp::type_list<T...>>::type;
 };
 
@@ -236,6 +242,9 @@ struct layer_type<I, cpp::type_list<Head, T...>> {
  */
 template <size_t I, bool Labels, typename... Layers>
 struct layer_type<I, layers<Labels, Layers...>> {
+    /*!
+     * \brief The type of the layer
+     */
     using type = typename layer_type<I, cpp::type_list<Layers...>>::type;
 };
 
