@@ -72,7 +72,7 @@ struct rbm_desc {
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid<cpp::type_list<momentum_id, parallel_mode_id, serial_id, verbose_id, batch_size_id, visible_id,
+        detail::is_valid<cpp::type_list<momentum_id, serial_id, verbose_id, batch_size_id, visible_id,
                                         hidden_id, weight_decay_id, init_weights_id, sparsity_id, trainer_rbm_id, watcher_id,
                                         weight_type_id, shuffle_id, free_energy_id, dbn_only_id, nop_id, clip_gradients_id>,
                          Parameters...>::value,

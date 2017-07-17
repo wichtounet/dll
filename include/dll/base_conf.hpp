@@ -114,7 +114,6 @@ struct watcher_id;
 struct sparsity_id;
 struct bias_id;
 struct momentum_id;
-struct parallel_mode_id;
 struct serial_id;
 struct verbose_id;
 struct horizontal_id;
@@ -292,11 +291,6 @@ struct watcher : template_type_conf_elt<watcher_id, T> {};
  * \brief Enable momentum learning
  */
 struct momentum : basic_conf_elt<momentum_id> {};
-
-/*!
- * \brief Use parallel mode instead of batch mode
- */
-struct parallel_mode : basic_conf_elt<parallel_mode_id> {};
 
 /*!
  * \brief Disable threading

@@ -173,13 +173,6 @@ struct rbm_layer_traits {
     }
 
     /*!
-     * \brief Indicates if the RBM must be trained in parallel mode instead of batch mode
-     */
-    static constexpr bool is_parallel_mode() {
-        return base_traits::is_parallel_mode;
-    }
-
-    /*!
      * \brief Indicates if the RBM cannot use threads.
      */
     static constexpr bool is_serial() {
