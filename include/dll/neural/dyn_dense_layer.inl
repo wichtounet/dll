@@ -94,12 +94,7 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
 
     using base_type::activate_hidden;
 
-    template <typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 1)>
-    void activate_hidden(H&& output, const V& v) const {
-        output = f_activate<activation_function>(b + v * w);
-    }
-
-    template <typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 1)>
+    template <typename H, typename V>
     void activate_hidden(H&& output, const V& v) const {
         output = f_activate<activation_function>(b + etl::reshape(v, num_visible) * w);
     }
@@ -113,28 +108,12 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
         return output;
     }
 
-    template <typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 2)>
-    void batch_activate_hidden(H&& output, const V& v) const {
-        const auto Batch = etl::dim<0>(v);
-
-        cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
-
-        output = v * w;
-
-        if (activation_function == function::SOFTMAX) {
-            output = bias_add_2d(output, b);
-
-            for (size_t i = 0; i < Batch; ++i) {
-                output(i) = f_activate<activation_function>(output(i));
-            }
-        } else {
-            output = f_activate<activation_function>(bias_add_2d(output, b));
-        }
-    }
-
-    template <typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 2)>
+    template <typename H, typename V>
     void batch_activate_hidden(H&& output, const V& input) const {
-        auto Batch = etl::dim<0>(input);
+        const auto Batch = etl::dim<0>(input);
+
+        // Note: The compile-time Batch information is lost here, but it does
+        // not matter for BLAS gemm computation
 
         cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
 

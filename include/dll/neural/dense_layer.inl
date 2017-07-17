@@ -91,14 +91,7 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
 
     using base_type::activate_hidden;
 
-    template <typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 1)>
-    void activate_hidden(H&& output, const V& v) const {
-        dll::auto_timer timer("dense:activate_hidden");
-
-        output = f_activate<activation_function>(b + v * w);
-    }
-
-    template <typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 1)>
+    template <typename H, typename V>
     void activate_hidden(H&& output, const V& v) const {
         dll::auto_timer timer("dense:activate_hidden");
 
@@ -123,56 +116,14 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
         return output;
     }
 
-    template <typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 2)>
-    void batch_activate_hidden(H&& output, const V& v) const {
-        dll::auto_timer timer("dense:batch_activate_hidden");
-
-        const auto Batch = etl::dim<0>(v);
-
-        cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
-
-        output = v * w;
-
-        if (activation_function == function::SOFTMAX) {
-            output = bias_add_2d(output, b);
-
-            for (size_t i = 0; i < Batch; ++i) {
-                output(i) = f_activate<activation_function>(output(i));
-            }
-        } else {
-            output = f_activate<activation_function>(bias_add_2d(output, b));
-        }
-    }
-
-    //TODO Find a way to reduce this duplication without too much
-    //overhead
-
-    template <typename H, typename V, cpp_enable_if((etl::decay_traits<V>::dimensions() != 2 && etl::decay_traits<V>::is_fast))>
-    void batch_activate_hidden(H&& output, const V& input) const {
-        dll::auto_timer timer("dense:batch_activate_hidden");
-
-        static constexpr auto Batch = etl::decay_traits<V>::template dim<0>();
-
-        cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
-
-        output = etl::reshape<Batch, num_visible>(input) * w;
-
-        if (activation_function == function::SOFTMAX) {
-            output = bias_add_2d(output, b);
-
-            for (size_t i = 0; i < Batch; ++i) {
-                output(i) = f_activate<activation_function>(output(i));
-            }
-        } else {
-            output = f_activate<activation_function>(bias_add_2d(output, b));
-        }
-    }
-
-    template <typename H, typename V, cpp_enable_if((etl::decay_traits<V>::dimensions() != 2 && !etl::decay_traits<V>::is_fast))>
+    template <typename H, typename V>
     void batch_activate_hidden(H&& output, const V& input) const {
         dll::auto_timer timer("dense:batch_activate_hidden");
 
         const auto Batch = etl::dim<0>(input);
+
+        // Note: The compile-time Batch information is lost here, but it does
+        // not matter for BLAS gemm computation
 
         cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
 
