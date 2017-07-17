@@ -349,7 +349,6 @@ struct rbm_layer_base_traits<conv_rbm<Desc>> {
 
     static constexpr bool has_momentum       = param::template contains<momentum>();                            ///< Does the RBM has momentum
     static constexpr bool has_clip_gradients = param::template contains<clip_gradients>();                      ///< Does the RBM has gradient clipping
-    static constexpr bool is_serial          = param::template contains<serial>();                              ///< Does the RBM is in serial mode
     static constexpr bool is_verbose         = param::template contains<verbose>();                             ///< Does the RBM is verbose
     static constexpr bool has_shuffle        = param::template contains<shuffle>();                             ///< Does the RBM has shuffle
     static constexpr bool is_dbn_only        = param::template contains<dbn_only>();                            ///< Does the RBM is only used inside a DBN

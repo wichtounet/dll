@@ -68,7 +68,7 @@ struct dyn_conv_rbm_desc {
         detail::is_valid<cpp::type_list<
                              momentum_id, visible_id, hidden_id, dbn_only_id, clip_gradients_id,
                              weight_decay_id, sparsity_id, trainer_rbm_id, watcher_id,
-                             bias_id, weight_type_id, shuffle_id, serial_id, verbose_id, nop_id>,
+                             bias_id, weight_type_id, shuffle_id, verbose_id, nop_id>,
                          Parameters...>::value,
         "Invalid parameters type");
 

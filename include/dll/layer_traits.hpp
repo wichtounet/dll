@@ -173,13 +173,6 @@ struct rbm_layer_traits {
     }
 
     /*!
-     * \brief Indicates if the RBM cannot use threads.
-     */
-    static constexpr bool is_serial() {
-        return base_traits::is_serial;
-    }
-
-    /*!
      * \brief Indicates if the RBM training is made verbose.
      */
     static constexpr bool is_verbose() {

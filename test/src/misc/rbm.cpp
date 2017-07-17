@@ -18,8 +18,7 @@ TEST_CASE("rbm/mnist_1", "rbm::simple") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
-        dll::verbose,
-        dll::serial>::layer_t rbm;
+        dll::verbose>::layer_t rbm;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
