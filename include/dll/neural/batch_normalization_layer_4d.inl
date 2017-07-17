@@ -245,10 +245,6 @@ struct batch_normalization_4d_layer : neural_layer<batch_normalization_4d_layer<
         *dxhat_l;
         *dxhat_xhat_l;
 
-        //auto dxhat        = etl::force_temporary(context.errors >> etl::rep_l(gamma, B));
-        //auto dxhat_l      = etl::force_temporary(etl::sum_l(dxhat));
-        //auto dxhat_xhat_l = etl::force_temporary(etl::sum_l(dxhat >> input_pre));
-
         for(size_t b = 0; b < B; ++b){
             for (size_t k = 0; k < Kernels; ++k) {
                 output(b)(k) = ((1.0 / S) * inv_var(k)) >> (S * dxhat(b)(k) - dxhat_l(k) - (input_pre(b)(k) >> dxhat_xhat_l(k)));
