@@ -18,10 +18,9 @@
 #include "cpp_utils/static_if.hpp"
 #include "cpp_utils/tuple_utils.hpp"
 
-#include "dll/util/checks.hpp" // For NaN checks
-#include "dll/util/timers.hpp" // For auto_timer
-#include "dll/context.hpp"     // For sgd_context
 #include "dll/trainer/context_fwd.hpp" // For sgd_context
+#include "dll/util/checks.hpp"         // For NaN checks
+#include "dll/util/timers.hpp"         // For auto_timer
 
 namespace dll {
 
