@@ -46,8 +46,8 @@ struct updater_context<updater_type::MOMENTUM, true, Context> {
     using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
     using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
 
-    w_grad_t w_inc; //< The momentum cache for the weights
-    b_grad_t b_inc; //< The momentum cache for the biases
+    w_grad_t w_inc; ///< The momentum cache for the weights
+    b_grad_t b_inc; ///< The momentum cache for the biases
 
     /*!
      * \brief Construct a new updater_context using the parent context
@@ -66,10 +66,10 @@ struct updater_context<updater_type::NESTEROV, true, Context> {
     using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
     using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
 
-    w_grad_t w_inc; //< The momentum cache for the weights
-    b_grad_t b_inc; //< The momentum cache for the biases
-    w_grad_t w_inc_prev; //< The momentum cache for the weights
-    b_grad_t b_inc_prev; //< The momentum cache for the biases
+    w_grad_t w_inc; ///< The momentum cache for the weights
+    b_grad_t b_inc; ///< The momentum cache for the biases
+    w_grad_t w_inc_prev; ///< The momentum cache for the weights
+    b_grad_t b_inc_prev; ///< The momentum cache for the biases
 
     /*!
      * \brief Construct a new updater_context using the parent context
@@ -88,8 +88,8 @@ struct updater_context<updater_type::RMSPROP, true, Context> {
     using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
     using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
 
-    w_grad_t w_inc; //< The rmsprop cache for the weights
-    b_grad_t b_inc; //< The rmsprop cache for the biases
+    w_grad_t w_inc; ///< The rmsprop cache for the weights
+    b_grad_t b_inc; ///< The rmsprop cache for the biases
 
     /*!
      * \brief Construct a new updater_context using the parent context
@@ -108,8 +108,8 @@ struct updater_context<updater_type::ADAGRAD, true, Context> {
     using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
     using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
 
-    w_grad_t w_inc; //< The adagrad cache for the weights
-    b_grad_t b_inc; //< The adagrad cache for the biases
+    w_grad_t w_inc; ///< The adagrad cache for the weights
+    b_grad_t b_inc; ///< The adagrad cache for the biases
 
     /*!
      * \brief Construct a new updater_context using the parent context
@@ -128,13 +128,13 @@ struct updater_context<updater_type::ADADELTA, true, Context> {
     using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
     using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
 
-    w_grad_t w_g; //< The Adadelta cache for the weights
-    w_grad_t w_x; //< The Adadelta cache for the weights
-    w_grad_t w_v; //< The Adadelta cache for the weights
+    w_grad_t w_g; ///< The Adadelta cache for the weights
+    w_grad_t w_x; ///< The Adadelta cache for the weights
+    w_grad_t w_v; ///< The Adadelta cache for the weights
 
-    b_grad_t b_g; //< The Adadelta cache for the biases
-    b_grad_t b_x; //< The Adadelta cache for the biases
-    b_grad_t b_v; //< The Adadelta cache for the biases
+    b_grad_t b_g; ///< The Adadelta cache for the biases
+    b_grad_t b_x; ///< The Adadelta cache for the biases
+    b_grad_t b_v; ///< The Adadelta cache for the biases
 
     /*!
      * \brief Construct a new updater_context using the parent context
@@ -158,10 +158,10 @@ struct updater_context<updater_type::ADAM, true, Context> {
     using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
     using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
 
-    w_grad_t w_m; //< The Adam cache for the weights
-    w_grad_t w_v; //< The Adam cache for the weights
-    b_grad_t b_m; //< The Adam cache for the biases
-    b_grad_t b_v; //< The Adam cache for the biases
+    w_grad_t w_m; ///< The Adam cache for the weights
+    w_grad_t w_v; ///< The Adam cache for the weights
+    b_grad_t b_m; ///< The Adam cache for the biases
+    b_grad_t b_v; ///< The Adam cache for the biases
 
     /*!
      * \brief Construct a new updater_context using the parent context
@@ -182,15 +182,15 @@ struct updater_context<updater_type::ADAM_CORRECT, true, Context> {
     using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
     using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
 
-    w_grad_t w_m; //< The Adam cache for the weights
-    w_grad_t w_v; //< The Adam cache for the weights
-    b_grad_t b_m; //< The Adam cache for the biases
-    b_grad_t b_v; //< The Adam cache for the biases
+    w_grad_t w_m; ///< The Adam cache for the weights
+    w_grad_t w_v; ///< The Adam cache for the weights
+    b_grad_t b_m; ///< The Adam cache for the biases
+    b_grad_t b_v; ///< The Adam cache for the biases
 
-    w_grad_t w_mt; //< The Adam cache for the weights
-    w_grad_t w_vt; //< The Adam cache for the weights
-    b_grad_t b_mt; //< The Adam cache for the biases
-    b_grad_t b_vt; //< The Adam cache for the biases
+    w_grad_t w_mt; ///< The Adam cache for the weights
+    w_grad_t w_vt; ///< The Adam cache for the weights
+    b_grad_t b_mt; ///< The Adam cache for the biases
+    b_grad_t b_vt; ///< The Adam cache for the biases
 
     /*!
      * \brief Construct a new updater_context using the parent context
@@ -216,15 +216,15 @@ struct updater_context<updater_type::NADAM, true, Context> {
     using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
     using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
 
-    w_grad_t w_m; //< The Adam cache for the weights
-    w_grad_t w_v; //< The Adam cache for the weights
-    b_grad_t b_m; //< The Adam cache for the biases
-    b_grad_t b_v; //< The Adam cache for the biases
+    w_grad_t w_m; ///< The Adam cache for the weights
+    w_grad_t w_v; ///< The Adam cache for the weights
+    b_grad_t b_m; ///< The Adam cache for the biases
+    b_grad_t b_v; ///< The Adam cache for the biases
 
-    w_grad_t w_mt; //< The Adam cache for the weights
-    w_grad_t w_vt; //< The Adam cache for the weights
-    b_grad_t b_mt; //< The Adam cache for the biases
-    b_grad_t b_vt; //< The Adam cache for the biases
+    w_grad_t w_mt; ///< The Adam cache for the weights
+    w_grad_t w_vt; ///< The Adam cache for the weights
+    b_grad_t b_mt; ///< The Adam cache for the biases
+    b_grad_t b_vt; ///< The Adam cache for the biases
 
     double m_schedule;
 
@@ -254,10 +254,10 @@ struct updater_context<updater_type::ADAMAX, true, Context> {
     using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
     using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
 
-    w_grad_t w_m; //< The Adam cache for the weights
-    w_grad_t w_v; //< The Adam cache for the weights
-    b_grad_t b_m; //< The Adam cache for the biases
-    b_grad_t b_v; //< The Adam cache for the biases
+    w_grad_t w_m; ///< The Adam cache for the weights
+    w_grad_t w_v; ///< The Adam cache for the weights
+    b_grad_t b_m; ///< The Adam cache for the biases
+    b_grad_t b_v; ///< The Adam cache for the biases
 
     /*!
      * \brief Construct a new updater_context using the parent context
