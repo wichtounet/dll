@@ -235,7 +235,7 @@ TEST_CASE("unit/processor/conv/sgd/3", "[unit][conv][dense][dbn][mnist][sgd][pro
     REQUIRE(!lines.empty());
 
     FT_ERROR_BELOW(5e-2);
-    TEST_ERROR_BELOW(0.3);
+    TEST_ERROR_BELOW(0.35); // tanh are much lower
 }
 
 // Not include in standard unit tests (covered by unit/processor/conv/sgd/5)
