@@ -83,10 +83,10 @@ TEST_CASE("unit/cdbn/mnist/8", "[cdbn][ap][svm][unit]") {
 TEST_CASE("hybrid/mnist/5", "[cdbn][rectifier][svm][unit]") {
     using dbn_t =
         dll::dyn_dbn_desc<dll::dbn_layers<
-              dll::conv_rbm_desc_square<1, 28, 20, 17, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
+              dll::conv_rbm_desc_square<1, 28, 20, 17, dll::momentum, dll::batch_size<10>>::layer_t
             , dll::random_layer_desc::layer_t
             , dll::rectifier_layer_desc<>::layer_t
-            , dll::conv_rbm_desc_square<20, 12, 20, 3, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
+            , dll::conv_rbm_desc_square<20, 12, 20, 3, dll::momentum, dll::batch_size<10>>::layer_t
         >>::dbn_t;
 
     auto dbn = std::make_unique<dbn_t>();

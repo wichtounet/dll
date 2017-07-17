@@ -38,23 +38,6 @@ TEST_CASE("unit/rbm/mnist/1", "[rbm][momentum][unit]") {
     REQUIRE(rec_error < 1e-2);
 }
 
-TEST_CASE("unit/rbm/mnist/2", "[rbm][momentum][parallel][unit]") {
-    dll::rbm_desc<
-        28 * 28, 100,
-        dll::batch_size<25>,
-        dll::momentum,
-        dll::parallel_mode>::layer_t rbm;
-
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
-    REQUIRE(!dataset.training_images.empty());
-
-    mnist::binarize_dataset(dataset);
-
-    auto error = rbm.train(dataset.training_images, 50);
-
-    REQUIRE(error < 1e-2);
-}
-
 TEST_CASE("unit/rbm/mnist/3", "[rbm][momemtum][gaussian][unit]") {
     dll::rbm_desc<
         28 * 28, 150,

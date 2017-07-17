@@ -21,9 +21,7 @@ TEST_CASE("unit/crbm_mp/mnist/1", "[crbm_mp][unit]") {
         1, 28, 5, 17, 2,
         dll::weight_type<float>,
         dll::batch_size<25>,
-        dll::momentum,
-        dll::serial,
-        dll::parallel_mode>::layer_t rbm;
+        dll::momentum>::layer_t rbm;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());

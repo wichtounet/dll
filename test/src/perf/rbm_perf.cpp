@@ -46,19 +46,3 @@ TEST_CASE("rbm/perf/2", "rbm::slow") {
 
     dll::dump_timers();
 }
-
-TEST_CASE("rbm/mnist_102", "rbm::slow_parallel") {
-    dll::rbm_desc<
-        28 * 28, 459,
-        dll::batch_size<48>,
-        dll::parallel_mode>::layer_t rbm;
-
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(1099);
-    REQUIRE(!dataset.training_images.empty());
-
-    mnist::binarize_dataset(dataset);
-
-    auto error = rbm.train(dataset.training_images, 15);
-
-    REQUIRE(error < 5e-2);
-}

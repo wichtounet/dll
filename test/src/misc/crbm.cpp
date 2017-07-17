@@ -184,20 +184,3 @@ TEST_CASE("crbm/mnist_15", "crbm::denoising") {
 
     REQUIRE(error < 2e-2);
 }
-
-TEST_CASE("crbm/mnist_16", "crbm::momentum") {
-    dll::conv_rbm_desc_square<
-        1, 28, 40, 17,
-        dll::batch_size<25>,
-        dll::momentum,
-        dll::parallel_mode>::layer_t rbm;
-
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(250);
-    REQUIRE(!dataset.training_images.empty());
-
-    mnist::binarize_dataset(dataset);
-
-    auto error = rbm.train(dataset.training_images, 100);
-
-    REQUIRE(error < 2e-2);
-}

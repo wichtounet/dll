@@ -41,30 +41,6 @@ TEST_CASE("dyn_dbn/mnist_1", "dbn::simple") {
     TEST_CHECK(1.0);
 }
 
-TEST_CASE("dyn_dbn/mnist_2", "dbn::parallel") {
-    using dbn_t =
-        dll::dbn_desc<
-            dll::dbn_layers<
-                dll::dyn_rbm_desc<dll::momentum, dll::parallel_mode, dll::init_weights>::layer_t,
-                dll::dyn_rbm_desc<dll::momentum, dll::parallel_mode>::layer_t,
-                dll::dyn_rbm_desc<dll::momentum, dll::parallel_mode, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>, dll::trainer<dll::cg_trainer>>::dbn_t;
-
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(500);
-    REQUIRE(!dataset.training_images.empty());
-
-    mnist::binarize_dataset(dataset);
-
-    auto dbn = std::make_unique<dbn_t>();
-
-    dbn->template layer_get<0>().init_layer(28 * 28, 100);
-    dbn->template layer_get<1>().init_layer(100, 200);
-    dbn->template layer_get<2>().init_layer(200, 10);
-
-    dbn->pretrain(dataset.training_images, 20);
-
-    TEST_CHECK(1.0);
-}
-
 TEST_CASE("dyn_dbn/mnist_3", "dbn::labels") {
     using dbn_t =
         dll::dbn_desc<

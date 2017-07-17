@@ -47,7 +47,6 @@ TEST_CASE("unit/crbm/mnist/2", "[crbm][parallel][unit]") {
         1, 28, 20, 5,
         dll::batch_size<25>,
         dll::momentum,
-        dll::parallel_mode,
         dll::weight_decay<dll::decay_type::L2>,
         dll::visible<dll::unit_type::GAUSSIAN>>::layer_t rbm;
 

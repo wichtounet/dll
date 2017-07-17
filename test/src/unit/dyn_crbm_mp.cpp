@@ -16,34 +16,6 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("unit/dyn_crbm_mp/mnist/1", "[dyn_crbm_mp][unit]") {
-    dll::dyn_conv_rbm_mp_desc<
-        dll::weight_type<float>,
-        dll::momentum,
-        dll::serial,
-        dll::parallel_mode>::layer_t rbm;
-
-    rbm.init_layer(1, 28, 28, 20, 17, 17, 2);
-
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
-    REQUIRE(!dataset.training_images.empty());
-
-    mnist::binarize_dataset(dataset);
-
-    auto error = rbm.train(dataset.training_images, 40);
-    REQUIRE(error < 5e-2);
-
-    rbm.v1 = dataset.training_images[1];
-
-    rbm.template activate_hidden<true, false>(rbm.h1_a, rbm.h1_a, rbm.v1, rbm.v1);
-
-    auto energy = rbm.energy(dataset.training_images[1], rbm.h1_a);
-    REQUIRE(energy < 0.0);
-
-    auto free_energy = rbm.free_energy();
-    REQUIRE(free_energy < 0.0);
-}
-
 TEST_CASE("unit/dyn_crbm_mp/mnist/3", "[dyn_crbm_mp][denoising][unit]") {
     dll::dyn_conv_rbm_mp_desc<
         dll::momentum,

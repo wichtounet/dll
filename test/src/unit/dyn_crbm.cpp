@@ -42,10 +42,9 @@ TEST_CASE("unit/dyn_crbm/mnist/1", "[dyn_crbm][unit]") {
     REQUIRE(free_energy < 0.0);
 }
 
-TEST_CASE("unit/dyn_crbm/mnist/2", "[dyn_crbm][parallel][unit]") {
+TEST_CASE("unit/dyn_crbm/mnist/2", "[dyn_crbm][unit]") {
     dll::dyn_conv_rbm_desc<
         dll::momentum,
-        dll::parallel_mode,
         dll::weight_decay<dll::decay_type::L2>,
         dll::visible<dll::unit_type::GAUSSIAN>>::layer_t rbm;
 

@@ -171,8 +171,8 @@ TEST_CASE("hybrid/mnist/8", "[dense][dbn][mnist][sgd]") {
 TEST_CASE("hybrid/mnist/10", "") {
     using dbn_t =
         dll::dyn_dbn_desc<dll::dbn_layers<
-              dll::conv_rbm_desc_square<1, 28, 20, 17, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
-            , dll::conv_rbm_desc_square<20, 12, 20, 3, dll::parallel_mode, dll::momentum, dll::batch_size<10>>::layer_t
+              dll::conv_rbm_desc_square<1, 28, 20, 17, dll::momentum, dll::batch_size<10>>::layer_t
+            , dll::conv_rbm_desc_square<20, 12, 20, 3, dll::momentum, dll::batch_size<10>>::layer_t
             , dll::lcn_layer_desc<9>::layer_t
         >, dll::trainer<dll::cg_trainer>>::dbn_t;
 

@@ -41,27 +41,6 @@ TEST_CASE("dbn/perf/1", "[dbn][bench][fast]") {
     dll::dump_timers();
 }
 
-TEST_CASE("dbn/perf/2", "[dbn][bench][slow][parallel]") {
-    typedef dll::dbn_desc<
-        dll::dbn_layers<
-            dll::rbm_desc<28 * 28, 300, dll::momentum, dll::parallel_mode, dll::batch_size<24>, dll::init_weights>::layer_t,
-            dll::rbm_desc<300, 1000, dll::momentum, dll::parallel_mode, dll::batch_size<24>>::layer_t,
-            dll::rbm_desc<1000, 10, dll::momentum, dll::parallel_mode, dll::batch_size<24>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
-        dll::batch_size<5>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
-
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(2000);
-
-    REQUIRE(!dataset.training_images.empty());
-
-    mnist::binarize_dataset(dataset);
-
-    auto dbn = std::make_unique<dbn_t>();
-
-    dbn->pretrain(dataset.training_images, 20);
-
-    dll::dump_timers();
-}
-
 TEST_CASE("dbn/perf/3", "[dbn][bench][slow]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<

@@ -220,16 +220,3 @@ TEST_CASE("dyn_rbm/mnist_15", "rbm::fast") {
 
     REQUIRE(error < 5e-1);
 }
-
-TEST_CASE("dyn_rbm/mnist_16", "rbm::parallel") {
-    dll::dyn_rbm_desc<dll::parallel_mode, dll::momentum>::layer_t rbm(28 * 28, 100);
-
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
-    REQUIRE(!dataset.training_images.empty());
-
-    mnist::binarize_dataset(dataset);
-
-    auto error = rbm.train(dataset.training_images, 100);
-
-    REQUIRE(error < 1e-3);
-}
