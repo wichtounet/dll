@@ -250,84 +250,7 @@ void update_convolutional(RBM& rbm, Trainer& t) {
 /*!
  * \brief Compute the gradients for a fully-connected RBM
  */
-template <bool Persistent, size_t K, typename InputBatch, typename ExpectedBatch, typename RBM, typename Trainer, cpp_enable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
-void compute_gradients_normal(InputBatch& input_batch, ExpectedBatch& expected_batch, RBM& rbm, Trainer& t) {
-    dll::auto_timer timer("cd:gradients:normal:par");
-
-    cpp_assert(etl::dim<0>(input_batch) == etl::dim<0>(expected_batch), "Invalid batch sizes");
-
-    const auto n = etl::dim<0>(input_batch);
-
-    // clang-format off
-    maybe_parallel_foreach_n(t.pool, 0, n, [&](size_t i)
-    {
-        SERIAL_SECTION {
-            //Copy input/expected for computations
-            t.v1(i) = input_batch(i);
-            t.vf(i) = expected_batch(i);
-
-            //First step
-            rbm.template activate_hidden<true, true>(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i));
-
-            if(Persistent && t.init){
-                t.p_h_a(i) = t.h1_a(i);
-                t.p_h_s(i) = t.h1_s(i);
-            }
-
-            //CD-1
-            cpp::static_if<Persistent>([&](auto f){
-                f(rbm).template activate_visible<true, false>(t.p_h_a(i), t.p_h_s(i), t.v2_a(i), t.v2_s(i));
-                f(rbm).template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
-            }).else_([&](auto f){
-                f(rbm).template activate_visible<true, false>(t.h1_a(i), t.h1_s(i), t.v2_a(i), t.v2_s(i));
-                f(rbm).template activate_hidden<true, (K > 1)>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
-            });
-
-            //CD-k
-            for(size_t k = 1; k < K; ++k){
-                rbm.template activate_visible<true, false>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
-                rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), t.v2_s(i));
-            }
-
-            if(n > 1){
-                //Reset the batch gradients
-                t.w_grad_b(i) = 0;
-
-                for(size_t i2 = 0; i2 < num_visible(rbm); i2++){
-                    for(size_t j = 0; j < num_hidden(rbm); j++){
-                        t.w_grad_b(i, i2, j) += t.vf(i, i2) * t.h1_a(i,j) - t.v2_a(i, i2) * t.h2_a(i, j);
-                    }
-                }
-            } else {
-                dll::auto_timer timer("cd:compute_gradients_one:std");
-
-                t.w_grad = 0;
-
-                for (size_t i = 0; i < etl::dim<0>(t.w_grad); i++) {
-                    for (size_t j = 0; j < etl::dim<1>(t.w_grad); j++) {
-                        t.w_grad(i, j) += t.vf(0, i) * t.h1_a(0, j) - t.v2_a(0, i) * t.h2_a(0, j);
-                    }
-                }
-
-                t.b_grad = t.h1_a(0) - t.h2_a(0);
-                t.c_grad = t.vf(0) - t.v2_a(0);
-            }
-        }
-    });
-    // clang-format on
-
-    if(n > 1){
-        //Compute the gradients
-        t.w_grad = sum_l(t.w_grad_b);
-        t.b_grad = sum_l(t.h1_a - t.h2_a);
-        t.c_grad = sum_l(t.vf - t.v2_a);
-    }
-}
-
-/*!
- * \brief Compute the gradients for a fully-connected RBM
- */
-template <bool Persistent, size_t K, typename InputBatch, typename ExpectedBatch, typename RBM, typename Trainer, cpp_disable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
+template <bool Persistent, size_t K, typename InputBatch, typename ExpectedBatch, typename RBM, typename Trainer>
 void compute_gradients_normal(InputBatch& input_batch, ExpectedBatch& expected_batch, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:gradients:normal:batch");
 
@@ -438,70 +361,7 @@ void train_normal(InputBatch& input_batch, ExpectedBatch& expected_batch, rbm_tr
 /*!
  * \brief Compute the gradients for a Convolutional RBM
  */
-template <bool Persistent, size_t N, typename Trainer, typename InputBatch, typename ExpectedBatch, typename RBM, cpp_enable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
-void compute_gradients_conv(InputBatch& input_batch, ExpectedBatch& expected_batch, RBM& rbm, Trainer& t) {
-    dll::auto_timer timer("cd:gradients:conv:par");
-
-    cpp_assert(etl::dim<0>(input_batch) == etl::dim<0>(expected_batch), "Invalid batch sizes");
-
-    const auto n = etl::dim<0>(input_batch);
-
-    // clang-format off
-    maybe_parallel_foreach_n(t.pool, 0, n, [&](size_t i)
-    {
-        SERIAL_SECTION {
-            //Copy input/expected for computations
-            t.v1(i) = input_batch(i);
-            t.vf(i) = expected_batch(i);
-
-            //First step
-            rbm.template activate_hidden<true, true>(t.h1_a(i), t.h1_s(i), t.v1(i), t.v1(i));
-
-            if(Persistent && t.init){
-                t.p_h_a(i) = t.h1_a(i);
-                t.p_h_s(i) = t.h1_s(i);
-            }
-
-            // Note: v2_s is never computed and therefore does not have memory
-            auto& v2_s = t.v2_a;
-
-            //CD-1
-            if(Persistent){
-                rbm.template activate_visible<true, false>(t.p_h_a(i), t.p_h_s(i), t.v2_a(i), v2_s(i));
-                rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), v2_s(i));
-            } else {
-                if(N > 1){
-                    rbm.template activate_visible<true, false>(t.h1_a(i), t.h1_s(i), t.v2_a(i), v2_s(i));
-                    rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), v2_s(i));
-                } else {
-                    rbm.template activate_visible<true, false>(t.h1_a(i), t.h1_s(i), t.v2_a(i), v2_s(i));
-                    rbm.template activate_hidden<true, false>(t.h2_a(i), t.h2_a(i), t.v2_a(i), v2_s(i));
-                }
-            }
-
-            //CD-k
-            for(size_t k = 1; k < N; ++k){
-                rbm.template activate_visible<true, false>(t.h2_a(i), t.h2_s(i), t.v2_a(i), v2_s(i));
-                rbm.template activate_hidden<true, true>(t.h2_a(i), t.h2_s(i), t.v2_a(i), v2_s(i));
-            }
-        }
-    });
-    // clang-format on
-
-    //Compute gradients
-
-    {
-        dll::auto_timer timer("cd:normal_compute_gradients_conv");
-
-        t.w_pos = conv_4d_valid_filter_flipped(t.vf, t.h1_a);
-        t.w_neg = conv_4d_valid_filter_flipped(t.v2_a, t.h2_a);
-    }
-}
-
-/*!
- * \brief Compute the gradients for a Convolutional RBM
- */
-template <bool Persistent, size_t N, typename Trainer, typename InputBatch, typename ExpectedBatch, typename RBM, cpp_disable_if(rbm_layer_traits<RBM>::is_parallel_mode())>
+template <bool Persistent, size_t N, typename Trainer, typename InputBatch, typename ExpectedBatch, typename RBM>
 void compute_gradients_conv(InputBatch& input_batch, ExpectedBatch& expected_batch, RBM& rbm, Trainer& t) {
     dll::auto_timer timer("cd:gradients:conv:batch");
 
