@@ -17,7 +17,7 @@
 TEST_CASE("crbm/mnist_140", "crbm::slow") {
     dll::conv_rbm_desc_square<
         2, 28, 40, 17,
-        dll::batch_size<50>,
+        dll::batch_size<100>,
         dll::momentum, dll::weight_type<float>>::layer_t rbm;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 2, 28, 28>>(500);
@@ -35,7 +35,7 @@ TEST_CASE("crbm/mnist_140", "crbm::slow") {
 TEST_CASE("crbm/mnist_141", "crbm::slow_parallel") {
     dll::conv_rbm_desc_square<
         2, 28, 40, 17,
-        dll::batch_size<50>,
+        dll::batch_size<100>,
         dll::momentum,
         dll::parallel_mode, dll::weight_type<float>>::layer_t rbm;
 
@@ -52,7 +52,7 @@ TEST_CASE("crbm/mnist_141", "crbm::slow_parallel") {
 TEST_CASE("crbm/mnist_142", "crbm::slow_second") {
     dll::conv_rbm_desc_square<
         40, 12, 40, 7,
-        dll::batch_size<25>,
+        dll::batch_size<100>,
         dll::momentum, dll::weight_type<float>>::layer_t rbm;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 40, 12, 12>>(500);
@@ -68,7 +68,7 @@ TEST_CASE("crbm/mnist_142", "crbm::slow_second") {
 TEST_CASE("crbm/mnist_143", "crbm::slow_parallel_second") {
     dll::conv_rbm_desc_square<
         40, 12, 40, 7,
-        dll::batch_size<25>,
+        dll::batch_size<100>,
         dll::momentum,
         dll::parallel_mode, dll::weight_type<float>>::layer_t rbm;
 
@@ -85,7 +85,7 @@ TEST_CASE("crbm/mnist_143", "crbm::slow_parallel_second") {
 TEST_CASE("crbm/mnist_144", "crbm::slow") {
     dll::conv_rbm_desc_square<
         1, 28, 40, 5,
-        dll::batch_size<25>,
+        dll::batch_size<100>,
         dll::momentum, dll::weight_type<float>>::layer_t rbm;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(500);
@@ -101,7 +101,7 @@ TEST_CASE("crbm/mnist_144", "crbm::slow") {
 TEST_CASE("crbm/mnist_145", "crbm::slow") {
     dll::conv_rbm_desc_square<
         1, 28, 40, 5,
-        dll::batch_size<25>,
+        dll::batch_size<100>,
         dll::momentum, dll::parallel_mode, dll::weight_type<float>>::layer_t rbm;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(500);
