@@ -74,6 +74,9 @@ constexpr inline size_t ct_sqrt(const size_t res) {
     return ct_sqrt(res, 1, res);
 }
 
+/*!
+ * \brief Compute the best height for the total number of weights
+ */
 constexpr inline size_t best_height(const size_t total) {
     const auto width  = ct_sqrt(total);
     const auto square = total / width;
@@ -103,12 +106,18 @@ constexpr inline size_t ct_sqrt(const size_t res) {
     return ct_sqrt(res, 1, res);
 }
 
+/*!
+ * \brief Compute the best height for the total number of weights
+ */
 constexpr inline size_t best_height(const size_t total) {
     return (ct_sqrt(total) * (total / ct_sqrt(total))) >= total ? total / ct_sqrt(total) : ((total / ct_sqrt(total)) + 1);
 }
 
 #endif
 
+/*!
+ * \brief Compute the best width for the total number of weights
+ */
 constexpr inline size_t best_width(const size_t total) {
     return ct_sqrt(total);
 }
@@ -405,7 +414,14 @@ struct opencv_dbn_visualizer {
 
     //Pretraining phase
 
-    void pretraining_begin(const DBN& /*dbn*/, size_t max_epochs) {
+    /*!
+     * \brief The pretraining is beginning
+     * \param dbn The DBN to pretrain
+     * \param max_epochs The total number of epochs
+     */
+    void pretraining_begin(const DBN& dbn, size_t max_epochs) {
+        cpp_unused(dbn);
+
         std::cout << "DBN: Pretraining begin for " << max_epochs << " epochs" << std::endl;
 
         cv::namedWindow("DBN Training", cv::WINDOW_NORMAL);
@@ -869,10 +885,10 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
 
     cpp::stop_watch<std::chrono::seconds> watch; ///< The timer for entire training
 
-    using dbn_t = DBN;
+    using dbn_t = DBN; ///< The DBN type
 
-    static std::vector<cv::Mat> buffer_images;
-    static size_t current_image;
+    static std::vector<cv::Mat> buffer_images; ///< The buffer images
+    static size_t current_image;               ///< The current images
 
     opencv_dbn_visualizer() = default;
 
