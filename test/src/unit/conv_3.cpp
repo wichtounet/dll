@@ -23,15 +23,16 @@ TEST_CASE("unit/conv/sgd/9", "[conv][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_desc<1, 28, 28, 5, 5, 5, dll::activation<dll::function::TANH>>::layer_t,
-            dll::dense_desc<5 * 24 * 24, 10, dll::activation<dll::function::TANH>>::layer_t>,
-        dll::trainer<dll::sgd_trainer>, dll::batch_size<10>, dll::scale_pre<255>>::dbn_t dbn_t;
+            dll::conv_desc<5, 24, 24, 5, 5, 5, dll::activation<dll::function::TANH>>::layer_t,
+            dll::dense_desc<5 * 20 * 20, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
+        dll::trainer<dll::sgd_trainer>, dll::updater<dll::updater_type::NADAM>, dll::batch_size<25>, dll::scale_pre<255>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(500);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(1000);
     REQUIRE(!dataset.training_images.empty());
 
     auto dbn = std::make_unique<dbn_t>();
 
-    dbn->learning_rate = 0.05;
+    dbn->learning_rate = 0.002;
 
     FT_CHECK(25, 6e-2);
     TEST_CHECK(0.3);
@@ -52,7 +53,7 @@ TEST_CASE("unit/conv/sgd/10", "[unit][conv][dbn][mnist][sgd]") {
             dll::activation_layer_desc<dll::function::RELU>::layer_t,
             dll::dense_desc<500, 10, dll::activation<dll::function::IDENTITY>>::layer_t,
             dll::activation_layer_desc<dll::function::SOFTMAX>::layer_t
-        >, dll::shuffle, dll::updater<dll::updater_type::MOMENTUM>, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<25>>::dbn_t dbn_t;
+        >, dll::shuffle, dll::updater<dll::updater_type::ADADELTA>, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<25>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(500);
     REQUIRE(!dataset.training_images.empty());
