@@ -827,23 +827,23 @@ public:
     // TODO: Transform layers should be applied inline
 
     template <size_t L, typename Input, cpp_enable_if((L != layers - 1))>
-    decltype(auto) forward_impl(Input&& sample) {
+    decltype(auto) forward_one_impl(Input&& sample) {
         decltype(auto) layer = layer_get<L>();
 
         decltype(auto) next = layer.activate_hidden(sample);
-        return forward_impl<L+1>(next);
+        return forward_one_impl<L+1>(next);
     }
 
     template <size_t L, typename Input, cpp_enable_if((L == layers - 1))>
-    decltype(auto) forward_impl(Input&& sample) {
+    decltype(auto) forward_one_impl(Input&& sample) {
         decltype(auto) layer = layer_get<L>();
 
         return layer.activate_hidden(sample);
     }
 
     template <typename Input>
-    decltype(auto) forward(Input&& sample) {
-        return forward_impl<0>(sample);
+    decltype(auto) forward_one(Input&& sample) {
+        return forward_one_impl<0>(sample);
     }
 
     /*!
