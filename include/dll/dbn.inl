@@ -111,6 +111,47 @@ auto prepare_one_ready_output(Layer& layer, const Input& input){
 }
 
 /*!
+ * \brief Prepare a collection of ready output for the given layer from the given input.
+ *
+ * A ready output as all its dimensions set correctly.
+ *
+ * \param layer The layer to use to generate the output
+ * \param input The input to the layer
+ * \param n The number of samples to prepare
+ *
+ * \return The collection of all-ready output
+ */
+template<typename Layer, typename Input, cpp_enable_if(decay_layer_traits<Layer>::is_transform_layer())>
+auto prepare_many_ready_output(Layer& layer, const Input& input, size_t n){
+    auto out = layer.template prepare_output<Input>(n);
+
+    // At this point, the dimensions are not ready, so inherit
+    for (auto& x : out) {
+        x.inherit_if_null(input);
+    }
+
+    return out;
+}
+
+/*!
+ * \brief Prepare a collection of ready output for the given layer from the given input.
+ *
+ * A ready output as all its dimensions set correctly.
+ *
+ * \param layer The layer to use to generate the output
+ * \param input The input to the layer
+ * \param n The number of samples to prepare
+ *
+ * \return The collection of all-ready output
+ */
+template<typename Layer, typename Input, cpp_disable_if(decay_layer_traits<Layer>::is_transform_layer())>
+auto prepare_many_ready_output(Layer& layer, const Input& input, size_t n){
+    cpp_unused(input);
+
+    return layer.template prepare_output<Input>(n);
+}
+
+/*!
  * \brief A Deep Belief Network implementation
  */
 template <typename Desc>
@@ -844,6 +885,45 @@ public:
     template <typename Input>
     decltype(auto) forward_one(Input&& sample) {
         return forward_one_impl<0>(sample);
+    }
+
+    // Forward a collection of samples at a time
+    // This is not as fast as it could be, far from it, but supports
+    // larger range of input. The rationale being that time should
+    // be spent in forward_batch
+
+    // TODO: Transform layers should be applied inline
+    // TODO: Should delegate to forward_batch
+
+    template <size_t L, typename Inputs, cpp_enable_if((L != layers - 1))>
+    decltype(auto) forward_many_impl(Inputs&& samples) {
+        decltype(auto) layer = layer_get<L>();
+
+        auto next = prepare_many_ready_output(layer, samples[0], samples.size());
+
+        for(size_t i = 0; i < samples.size(); ++i){
+            layer.activate_hidden(next[i], samples[i]);
+        }
+
+        return forward_one_impl<L+1>(next);
+    }
+
+    template <size_t L, typename Inputs, cpp_enable_if((L == layers - 1))>
+    decltype(auto) forward_many_impl(Inputs&& samples) {
+        decltype(auto) layer = layer_get<L>();
+
+        auto out = prepare_many_ready_output(layer, samples[0], samples.size());
+
+        for(size_t i = 0; i < samples.size(); ++i){
+            layer.activate_hidden(out[i], samples[i]);
+        }
+
+        return out;
+    }
+
+    template <typename Inputs>
+    decltype(auto) forward_many(Inputs&& samples) {
+        return forward_many_impl<0>(samples);
     }
 
     /*!
