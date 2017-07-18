@@ -138,6 +138,74 @@ struct layer {
     void select_activate_hidden(Output&& output, const Input& input) const {
         as_derived().test_batch_activate_hidden(batch_reshape(output), batch_reshape(input));
     }
+    // Functions to forward propagate several samples (collection) at a time
+
+    /*!
+     * \brief Compute the test presentation for a collection of inputs
+     *
+     * \param output The output collection to fill
+     * \param input The input collection to compute the representation from
+     */
+    template <typename Input, typename Output>
+    void activate_many(Output&& output, const Input& input) const {
+        test_activate_many(output, input);
+    }
+
+    /*!
+     * \brief Compute the test presentation for a collection of inputs
+     *
+     * \param output The output collection to fill
+     * \param input The input collection to compute the representation from
+     */
+    template <typename Input, typename Output>
+    void test_activate_many(Output&& output, const Input& input) const {
+        for(size_t i = 0; i < output.size(); ++i){
+            test_activate_hidden(output[i], input[i]);
+        }
+    }
+
+    /*!
+     * \brief Compute the test presentation for a collection of inputs
+     *
+     * \param output The output collection to fill
+     * \param input The input collection to compute the representation from
+     */
+    template <typename Input, typename Output>
+    void train_activate_many(Output&& output, const Input& input) const {
+        for(size_t i = 0; i < output.size(); ++i){
+            train_activate_hidden(output[i], input[i]);
+        }
+    }
+
+    /*!
+     * \brief Compute the presentation for a collection of inputs, selecting train or
+     * test at compile-time with Train template parameter
+     *
+     * \tparam Train if true compute the train representation,
+     * otherwise the test representation
+     *
+     * \param output The collection of output to fill
+     * \param input The collection of input to compute the representation from
+     */
+    template <bool Train, typename Input, typename Output, cpp_enable_if(Train)>
+    void select_activate_many(Output&& output, const Input& input) const {
+        train_activate_many(output, input);
+    }
+
+    /*!
+     * \brief Compute the presentation for a collection of inputs, selecting train or
+     * test at compile-time with Train template parameter
+     *
+     * \tparam Train if true compute the train representation,
+     * otherwise the test representation
+     *
+     * \param output The collection of output to fill
+     * \param input The collection of input to compute the representation from
+     */
+    template <bool Train, typename Input, typename Output, cpp_enable_if(!Train)>
+    void select_activate_many(Output&& output, const Input& input) const {
+        test_activate_many(output, input);
+    }
 
     // Functions to propagate one batch at time
 

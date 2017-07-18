@@ -66,18 +66,6 @@ struct unpooling_layer_3d : layer<Parent> {
     }
 
     /*!
-     * \brief Apply the layer to many inputs
-     * \param output The set of output
-     * \param input The set of input to apply the layer to
-     */
-    template <typename I, typename O_A>
-    void activate_many(const I& input, O_A& output) const {
-        for (size_t i = 0; i < input.size(); ++i) {
-            as_derived().activate_hidden(input[i], output[i]);
-        }
-    }
-
-    /*!
      * \brief Prepare a set of empty outputs for this layer
      * \param samples The number of samples to prepare the output for
      * \return a container containing empty ETL matrices suitable to store samples output of this layer
@@ -174,18 +162,6 @@ struct dyn_unpooling_layer_3d : layer<Parent> {
      */
     size_t parameters() const noexcept {
         return 0;
-    }
-
-    /*!
-     * \brief Apply the layer to many inputs
-     * \param output The set of output
-     * \param input The set of input to apply the layer to
-     */
-    template <typename I, typename O_A>
-    void activate_many(const I& input, O_A& output) const {
-        for (size_t i = 0; i < input.size(); ++i) {
-            as_derived().activate_hidden(input[i], output[i]);
-        }
     }
 
     /*!

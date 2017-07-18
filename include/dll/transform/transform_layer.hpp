@@ -25,18 +25,6 @@ struct transform_layer : layer<Derived> {
     transform_layer() = default;
 
     /*!
-     * \brief Apply the layer to many inputs
-     * \param output The set of output
-     * \param input The set of input to apply the layer to
-     */
-    template <typename I, typename O_A>
-    void activate_many(const I& input, O_A& output) const {
-        for (size_t i = 0; i < input.size(); ++i) {
-            as_derived().activate_hidden(input[i], output[i]);
-        }
-    }
-
-    /*!
      * \brief Prepare a set of output
      * \param samples The number of samples in the output set
      */

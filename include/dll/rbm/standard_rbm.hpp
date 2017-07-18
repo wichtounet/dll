@@ -242,12 +242,6 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
         return input_one_t(as_derived().input_size());
     }
 
-    void activate_many(const input_t& input, output_t& h_a) const {
-        for (size_t i = 0; i < input.size(); ++i) {
-            activate_one(input[i], h_a[i]);
-        }
-    }
-
     friend base_type;
 
 private:
