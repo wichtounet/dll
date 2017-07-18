@@ -1384,7 +1384,8 @@ private:
     template <bool Train, size_t I, size_t S, typename Input, cpp_enable_if(I == S)>
     auto activation_probabilities_impl(const Input& input) const {
         decltype(auto) layer = layer_get<I>();
-        auto output = layer.template select_prepare_one_output<Train, Input>();
+        // TODO Correctly prepare train/test output
+        auto output = prepare_one_ready_output(layer, input);
         layer.template select_forward_one<Train>(output, input);
         return output;
     }
