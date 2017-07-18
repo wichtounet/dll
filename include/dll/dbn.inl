@@ -1569,7 +1569,7 @@ private:
     struct inline_next<I, std::enable_if_t<(I < layers)>> : cpp::bool_constant<layer_traits<layer_type<I>>::is_pooling_layer()> {};
 
     template <size_t I, typename Generator>
-    void inline_layer(Generator& generator, watcher_t& watcher, size_t max_epochs) {
+    void inline_layer_pretrain(Generator& generator, watcher_t& watcher, size_t max_epochs) {
         decltype(auto) layer = layer_get<I>();
         decltype(auto) next_layer = layer_get<I + 1>();
 
@@ -1635,7 +1635,7 @@ private:
         //When the next layer is a pooling layer, a lot of memory can be saved by directly computing
         //the activations of two layers at once
         cpp::static_if<inline_next<I + 1>::value>([&](auto f) {
-            f(this)->template inline_layer<I>(generator, watcher, max_epochs);
+            f(this)->template inline_layer_pretrain<I>(generator, watcher, max_epochs);
         });
 
         if (train_next<I + 1>::value && !inline_next<I + 1>::value) {
