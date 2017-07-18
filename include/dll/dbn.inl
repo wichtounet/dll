@@ -2185,16 +2185,6 @@ private:
 
     /* Activation Probabilities */
 
-    template <size_t I, typename Iterator, typename Output>
-    void multi_activation_probabilities(Iterator first, Iterator last, Output& output) {
-        //Collect an entire batch
-        maybe_parallel_foreach_i(pool, first, last, [this, &output](auto& v, size_t i) {
-            SERIAL_SECTION {
-                output[i] = this->activation_probabilities_sub<I>(v);
-            }
-        });
-    }
-
 #ifdef DLL_SVM_SUPPORT
 
     template <typename Samples, typename Input, typename DBN = this_type, cpp_enable_if(dbn_traits<DBN>::concatenate())>
