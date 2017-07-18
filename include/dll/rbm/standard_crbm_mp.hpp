@@ -251,7 +251,7 @@ struct standard_crbm_mp : public standard_conv_rbm<Derived, Desc> {
     }
 
     template <typename Po, typename V>
-    void batch_activate_pooling(Po& p_a, const V& v_a) const {
+    void batch_activate_pooling(Po&& p_a, const V& v_a) const {
         batch_activate_pooling<true, false>(p_a, p_a, v_a, v_a);
     }
 
@@ -260,6 +260,38 @@ struct standard_crbm_mp : public standard_conv_rbm<Derived, Desc> {
         auto out = as_derived().template prepare_one_hidden_output<input_one_t>();
         activate_hidden<true, false>(out, out, input, input);
         return out;
+    }
+
+    // It is necessary to use here in order to pool
+
+    /*!
+     * \brief Compute the test presentation for a given input
+     * \param output The output to fill
+     * \param input The input to compute the representation from
+     */
+    template <typename Input, typename Output>
+    void test_activate_hidden(Output&& output, const Input& input) const {
+        batch_activate_pooling(batch_reshape(output), batch_reshape(input));
+    }
+
+    /*!
+     * \brief Compute the train presentation for a given input
+     * \param output The output to fill
+     * \param input The input to compute the representation from
+     */
+    template <typename Input, typename Output>
+    void train_activate_hidden(Output&& output, const Input& input) const {
+        batch_activate_pooling(batch_reshape(output), batch_reshape(input));
+    }
+
+    template <bool Train, typename Input, typename Output, cpp_enable_if(Train)>
+    void select_activate_hidden(Output&& output, const Input& input) const {
+        batch_activate_pooling(batch_reshape(output), batch_reshape(input));
+    }
+
+    template <bool Train, typename Input, typename Output, cpp_enable_if(!Train)>
+    void select_activate_hidden(Output&& output, const Input& input) const {
+        batch_activate_pooling(batch_reshape(output), batch_reshape(input));
     }
 
     friend base_type;
