@@ -74,6 +74,43 @@ struct find_rbm_layer<Layer, DBN, std::enable_if_t<(Layer < DBN::layers_t::size)
 };
 
 /*!
+ * \brief Prepare a ready output for the given layer from the given input.
+ *
+ * A ready output as all its dimensions set correctly.
+ *
+ * \param layer The layer to use to generate the output
+ * \param input The input to the layer
+ *
+ * \return The all-ready output
+ */
+template<typename Layer, typename Input, cpp_enable_if(decay_layer_traits<Layer>::is_transform_layer())>
+auto prepare_one_ready_output(Layer& layer, const Input& input){
+    auto out = layer.template prepare_one_output<Input>();
+
+    // At this point, the dimensions are not ready, so inherit
+    out.inherit_if_null(input);
+
+    return out;
+}
+
+/*!
+ * \brief Prepare a ready output for the given layer from the given input.
+ *
+ * A ready output as all its dimensions set correctly.
+ *
+ * \param layer The layer to use to generate the output
+ * \param input The input to the layer
+ *
+ * \return The all-ready output
+ */
+template<typename Layer, typename Input, cpp_disable_if(decay_layer_traits<Layer>::is_transform_layer())>
+auto prepare_one_ready_output(Layer& layer, const Input& input){
+    cpp_unused(input);
+
+    return layer.template prepare_one_output<Input>();
+}
+
+/*!
  * \brief A Deep Belief Network implementation
  */
 template <typename Desc>
@@ -1580,12 +1617,8 @@ private:
         generator.set_test();
 
         // Need one output in order to create the generator
-        auto one = layer.template prepare_one_output<decltype(generator.data_batch()(0))>();
-        auto two = next_layer.template prepare_one_output<decltype(one)>();
-
-        // Make sure dimensions are correcty inherited
-        layer.activate_hidden(one, generator.data_batch()(0));
-        next_layer.activate_hidden(two, one);
+        auto one = prepare_one_ready_output(layer, generator.data_batch()(0));
+        auto two = prepare_one_ready_output(next_layer, one);
 
         // Prepare a generator to hold the data
         auto next_generator = prepare_generator(
@@ -1644,10 +1677,7 @@ private:
             generator.set_test();
 
             // Need one output in order to create the generator
-            auto one = layer.template prepare_one_output<decltype(generator.data_batch()(0))>();
-
-            // Make sure dimensions are correcty inherited
-            layer.activate_hidden(one, generator.data_batch()(0));
+            auto one = prepare_one_ready_output(layer, generator.data_batch()(0));
 
             // Prepare a generator to hold the data
             auto next_generator = prepare_generator(
@@ -1708,12 +1738,8 @@ private:
             generator.set_test();
 
             // Need one output in order to create the generator
-            auto one_n = layer.template prepare_one_output<decltype(generator.data_batch()(0))>();
-            auto one_c = layer.template prepare_one_output<decltype(generator.label_batch()(0))>();
-
-            // Make sure dimensions are correcty inherited
-            layer.activate_hidden(one_n, generator.data_batch()(0));
-            layer.activate_hidden(one_c, generator.label_batch()(0));
+            auto one_n = prepare_one_ready_output(layer, generator.data_batch()(0));
+            auto one_c = prepare_one_ready_output(layer, generator.label_batch()(0));
 
             // Prepare a generator to hold the data
             auto next_generator = prepare_generator(
