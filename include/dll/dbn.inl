@@ -794,7 +794,7 @@ public:
     decltype(auto) forward_one_impl(Input&& sample) {
         decltype(auto) layer = layer_get<L>();
 
-        decltype(auto) next = layer.activate_hidden(sample);
+        decltype(auto) next = layer.forward_one(sample);
         return forward_one_impl<L+1>(next);
     }
 
@@ -802,7 +802,7 @@ public:
     decltype(auto) forward_one_impl(Input&& sample) {
         decltype(auto) layer = layer_get<L>();
 
-        return layer.activate_hidden(sample);
+        return layer.forward_one(sample);
     }
 
     template <size_t LS = layers - 1, size_t L = 0, typename Input>
@@ -824,9 +824,7 @@ public:
 
         auto next = prepare_many_ready_output(layer, samples[0], samples.size());
 
-        for(size_t i = 0; i < samples.size(); ++i){
-            layer.activate_hidden(next[i], samples[i]);
-        }
+        layer.activate_many(next, samples);
 
         return forward_many_impl<L+1>(next);
     }
@@ -837,9 +835,7 @@ public:
 
         auto out = prepare_many_ready_output(layer, samples[0], samples.size());
 
-        for(size_t i = 0; i < samples.size(); ++i){
-            layer.activate_hidden(out[i], samples[i]);
-        }
+        layer.activate_many(out, samples);
 
         return out;
     }
@@ -866,7 +862,7 @@ public:
         auto next = prepare_many_ready_output(layer, *first, n);
 
         cpp::foreach_i(first, last, [&](auto& sample, size_t i) {
-            layer.activate_hidden(next[i], sample);
+            layer.forward_one(next[i], sample);
         });
 
         return forward_many_impl<L+1>(next);
@@ -881,7 +877,7 @@ public:
         auto out = prepare_many_ready_output(layer, *first, n);
 
         cpp::foreach_i(first, last, [&](auto& sample, size_t i) {
-            layer.activate_hidden(out[i], sample);
+            layer.forward_one(out[i], sample);
         });
 
         return out;
@@ -1389,7 +1385,7 @@ private:
     auto activation_probabilities_impl(const Input& input) const {
         decltype(auto) layer = layer_get<I>();
         auto output = layer.template select_prepare_one_output<Train, Input>();
-        layer.template select_activate_hidden<Train>(output, input);
+        layer.template select_forward_one<Train>(output, input);
         return output;
     }
 

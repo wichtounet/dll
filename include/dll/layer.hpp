@@ -71,12 +71,12 @@ struct layer {
      * \return The test representation for the given input
      */
     template <typename Input>
-    auto activate_hidden(const Input& input) const {
+    auto forward_one(const Input& input) const {
         // Prepare one fully-ready output
         auto output = prepare_one_ready_output(as_derived(), input);
 
         // Forward propagation
-        test_activate_hidden(output, input);
+        test_forward_one(output, input);
 
         // Return the forward-propagated result
         return output;
@@ -88,8 +88,8 @@ struct layer {
      * \param input The input to compute the representation from
      */
     template <typename Input, typename Output>
-    void activate_hidden(Output&& output, const Input& input) const {
-        test_activate_hidden(output, input);
+    void forward_one(Output&& output, const Input& input) const {
+        test_forward_one(output, input);
     }
 
     /*!
@@ -98,7 +98,7 @@ struct layer {
      * \param input The input to compute the representation from
      */
     template <typename Input, typename Output>
-    void test_activate_hidden(Output&& output, const Input& input) const {
+    void test_forward_one(Output&& output, const Input& input) const {
         as_derived().test_batch_activate_hidden(batch_reshape(output), batch_reshape(input));
     }
 
@@ -108,7 +108,7 @@ struct layer {
      * \param input The input to compute the representation from
      */
     template <typename Input, typename Output>
-    void train_activate_hidden(Output&& output, const Input& input) const {
+    void train_forward_one(Output&& output, const Input& input) const {
         as_derived().train_batch_activate_hidden(batch_reshape(output), batch_reshape(input));
     }
 
@@ -122,7 +122,7 @@ struct layer {
      * \param input The input to compute the representation from
      */
     template <bool Train, typename Input, typename Output, cpp_enable_if(Train)>
-    void select_activate_hidden(Output&& output, const Input& input) const {
+    void select_forward_one(Output&& output, const Input& input) const {
         as_derived().train_batch_activate_hidden(batch_reshape(output), batch_reshape(input));
     }
 
@@ -136,9 +136,10 @@ struct layer {
      * \param input The input to compute the representation from
      */
     template <bool Train, typename Input, typename Output, cpp_enable_if(!Train)>
-    void select_activate_hidden(Output&& output, const Input& input) const {
+    void select_forward_one(Output&& output, const Input& input) const {
         as_derived().test_batch_activate_hidden(batch_reshape(output), batch_reshape(input));
     }
+
     // Functions to forward propagate several samples (collection) at a time
 
     /*!
@@ -161,7 +162,7 @@ struct layer {
     template <typename Input, typename Output>
     void test_activate_many(Output&& output, const Input& input) const {
         for(size_t i = 0; i < output.size(); ++i){
-            test_activate_hidden(output[i], input[i]);
+            test_forward_one(output[i], input[i]);
         }
     }
 
@@ -174,7 +175,7 @@ struct layer {
     template <typename Input, typename Output>
     void train_activate_many(Output&& output, const Input& input) const {
         for(size_t i = 0; i < output.size(); ++i){
-            train_activate_hidden(output[i], input[i]);
+            train_forward_one(output[i], input[i]);
         }
     }
 
