@@ -35,6 +35,7 @@ template <typename Parent>
 struct layer {
     using parent_t = Parent; ///< The CRTP parent layer
 
+    //No copying
     layer(const layer& rbm) = delete;
     layer& operator=(const layer& rbm) = delete;
 
@@ -59,7 +60,7 @@ struct layer {
         std::cout << as_derived().to_short_string() << std::endl;
     }
 
-    // Default function
+    // Functions to forward propagate one sample at a time
 
     /*!
      * \brief Compute the test representation for a given input
@@ -110,17 +111,35 @@ struct layer {
         as_derived().train_batch_activate_hidden(batch_reshape(output), batch_reshape(input));
     }
 
+    /*!
+     * \brief Compute the presentation for a given input, selecting train or
+     * test at compile-time with Train template parameter
+     *
+     * \tparam Train if true compute the train representation, otherwise the test representation
+     *
+     * \param output The output to fill
+     * \param input The input to compute the representation from
+     */
     template <bool Train, typename Input, typename Output, cpp_enable_if(Train)>
     void select_activate_hidden(Output&& output, const Input& input) const {
         as_derived().train_batch_activate_hidden(batch_reshape(output), batch_reshape(input));
     }
 
+    /*!
+     * \brief Compute the presentation for a given input, selecting train or
+     * test at compile-time with Train template parameter
+     *
+     * \tparam Train if true compute the train representation, otherwise the test representation
+     *
+     * \param output The output to fill
+     * \param input The input to compute the representation from
+     */
     template <bool Train, typename Input, typename Output, cpp_enable_if(!Train)>
     void select_activate_hidden(Output&& output, const Input& input) const {
         as_derived().test_batch_activate_hidden(batch_reshape(output), batch_reshape(input));
     }
 
-    // Batch version
+    // Functions to propagate one batch at time
 
     template <typename Input>
     auto test_batch_activate_hidden(const Input& input) const {
