@@ -32,45 +32,7 @@ struct dropout_layer : transform_layer<dropout_layer<Desc>> {
         return {buffer};
     }
 
-    using base_type::activate_hidden;
     using base_type::test_batch_activate_hidden;
-
-    /*!
-     * \brief Apply the layer to the input
-     * \param output The output
-     * \param input The input to apply the layer to
-     */
-    template <typename Input, typename Output>
-    static void activate_hidden(Output& output, const Input& input) {
-        output = input;
-    }
-
-    /*!
-     * \brief Apply the layer to the input
-     * \param output The output
-     * \param input The input to apply the layer to
-     */
-    template <typename Input, typename Output>
-    static void test_activate_hidden(Output& output, const Input& input) {
-        output = input;
-    }
-
-    /*!
-     * \brief Apply the layer to the input
-     * \param output The output
-     * \param input The input to apply the layer to
-     */
-    template <typename Input, typename Output>
-    static void train_activate_hidden(Output& output, const Input& input) {
-        std::uniform_real_distribution<float> dist(0.0f, 1.0f);
-        auto& g = dll::rand_engine();
-
-        output = input;
-
-        for(size_t i = 0; i < etl::size(output); ++i){
-            output[i] = dist(g) < p ? 0.0 : (input[i] / p);
-        }
-    }
 
     /*!
      * \brief Apply the layer to the batch of input

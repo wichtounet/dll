@@ -39,20 +39,6 @@ struct mp_layer_2d final : pooling_layer_2d<mp_layer_2d<Desc>, Desc> {
     using input_t      = typename base::input_t;      ///< The type of many input
     using output_t     = typename base::output_t;     ///< The type of many output
 
-    using base::activate_hidden;
-
-    /*!
-     * \brief Forward activation of the layer for one sample
-     * \param h The output matrix
-     * \param v The input matrix
-     */
-    template <typename Input>
-    static void activate_hidden(output_one_t& h, const Input& v) {
-        dll::auto_timer timer("mp:activate_hidden");
-
-        h = etl::ml::max_pool_forward<base::C1, base::C2>(v);
-    }
-
     /*!
      * \brief Apply the layer to the batch of input
      * \return A batch of output corresponding to the activated input
@@ -205,20 +191,6 @@ struct mp_layer_3d final : pooling_layer_3d<mp_layer_3d<Desc>, Desc> {
     using output_one_t = typename base::output_one_t; ///< The type of one output
     using input_t      = typename base::input_t;      ///< The type of many input
     using output_t     = typename base::output_t;     ///< The type of many output
-
-    using base::activate_hidden;
-
-    /*!
-     * \brief Forward activation of the layer for one sample
-     * \param h The output matrix
-     * \param v The input matrix
-     */
-    template <typename Input>
-    static void activate_hidden(output_one_t& h, const Input& v) {
-        dll::auto_timer timer("mp:activate_hidden");
-
-        h = etl::max_pool_3d<base::C1, base::C2, base::C3>(v);
-    }
 
     /*!
      * \brief Apply the layer to the batch of input

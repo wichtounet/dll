@@ -54,24 +54,6 @@ struct dyn_lcn_layer : transform_layer<dyn_lcn_layer<Desc>> {
         return w;
     }
 
-    using base_type::activate_hidden;
-
-    /*!
-     * \brief Apply the layer to the input
-     * \param y The output
-     * \param x The input to apply the layer to
-     */
-    template <typename Input, typename Output>
-    void activate_hidden(Output&& y, Input&& x) const {
-        inherit_dim(y, x);
-
-        using weight_t = etl::value_t<Input>;
-
-        auto w = filter<weight_t>(sigma);
-
-        lcn_compute(y, x, w, K, Mid);
-    }
-
     /*!
      * \brief Apply the layer to the batch of input
      * \return A batch of output corresponding to the activated input
@@ -92,8 +74,12 @@ struct dyn_lcn_layer : transform_layer<dyn_lcn_layer<Desc>> {
     void batch_activate_hidden(Output&& output, Input&& input) const {
         inherit_dim(output, input);
 
+        using weight_t = etl::value_t<Input>;
+
+        auto w = filter<weight_t>(sigma);
+
         for (size_t b = 0; b < etl::dim<0>(input); ++b) {
-            activate_hidden(output(b), input(b));
+            lcn_compute(output(b), input(b), w, K, Mid);
         }
     }
 };

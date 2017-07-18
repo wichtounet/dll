@@ -92,13 +92,6 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
         return {buffer};
     }
 
-    using base_type::activate_hidden;
-
-    template <typename H, typename V>
-    void activate_hidden(H&& output, const V& v) const {
-        output = f_activate<activation_function>(b + etl::reshape(v, num_visible) * w);
-    }
-
     template <typename V>
     auto batch_activate_hidden(const V& v) const {
         const auto Batch = etl::dim<0>(v);

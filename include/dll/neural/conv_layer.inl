@@ -95,19 +95,6 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
         return {buffer};
     }
 
-    using base_type::activate_hidden;
-
-    template <typename H, typename V>
-    void activate_hidden(H&& output, const V& v) const {
-        dll::auto_timer timer("conv:forward");
-
-        auto b_rep = etl::force_temporary(etl::rep<NH1, NH2>(b));
-
-        etl::reshape<1, K, NH1, NH2>(output) = etl::ml::convolution_forward(etl::reshape<1, NC, NV1, NV2>(v), w);
-
-        output = f_activate<activation_function>(b_rep + output);
-    }
-
     /*!
      * \brief Apply the layer to the batch of input
      * \return A batch of output corresponding to the activated input

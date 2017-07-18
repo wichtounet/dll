@@ -103,40 +103,6 @@ struct dyn_batch_normalization_4d_layer : neural_layer<dyn_batch_normalization_4
         return Kernels * W * H;
     }
 
-    using base_type::activate_hidden;
-
-    /*!
-     * \brief Apply the layer to the input
-     * \param output The output
-     * \param input The input to apply the layer to
-     */
-    template <typename Input, typename Output>
-    static void activate_hidden(Output& output, const Input& input) {
-        test_activate_hidden(output, input);
-    }
-
-    /*!
-     * \brief Apply the layer to the input
-     * \param output The output
-     * \param input The input to apply the layer to
-     */
-    template <typename Input, typename Output>
-    static void test_activate_hidden(Output& output, const Input& input) {
-        output = input;
-    }
-
-    /*!
-     * \brief Apply the layer to the input
-     * \param output The output
-     * \param input The input to apply the layer to
-     */
-    template <typename Input, typename Output>
-    static void train_activate_hidden(Output& output, const Input& input) {
-        output = input;
-
-        // TODO
-    }
-
     /*!
      * \brief Apply the layer to the batch of input
      * \return A batch of output corresponding to the activated input

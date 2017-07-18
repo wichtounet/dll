@@ -55,18 +55,6 @@ struct shape_layer_3d : transform_layer<shape_layer_3d<Desc>> {
         return C * W * H;
     }
 
-    using base_type::activate_hidden;
-
-    /*!
-     * \brief Apply the layer to the input
-     * \param output The output
-     * \param input The input to apply the layer to
-     */
-    template <typename Input, typename Output>
-    static void activate_hidden(Output& output, const Input& input) {
-        output = input;
-    }
-
     /*!
      * \brief Apply the layer to the batch of input
      * \return A batch of output corresponding to the activated input

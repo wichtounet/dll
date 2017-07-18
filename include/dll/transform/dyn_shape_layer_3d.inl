@@ -65,18 +65,6 @@ struct dyn_shape_layer_3d : transform_layer<dyn_shape_layer_3d<Desc>> {
         return C * W * H;
     }
 
-    using base_type::activate_hidden;
-
-    /*!
-     * \brief Apply the layer to the input
-     * \param y The output
-     * \param x The input to apply the layer to
-     */
-    template <typename Input, typename Output>
-    void activate_hidden(Output& y, const Input& x) const {
-        y = x;
-    }
-
     /*!
      * \brief Apply the layer to the batch of input
      * \return A batch of output corresponding to the activated input

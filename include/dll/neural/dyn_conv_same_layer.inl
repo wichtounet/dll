@@ -120,17 +120,6 @@ struct dyn_conv_same_layer final : neural_layer<dyn_conv_same_layer<Desc>, Desc>
         return {buffer};
     }
 
-    using base_type::activate_hidden;
-
-    template <typename V>
-    void activate_hidden(output_one_t& output, const V& v) const {
-        auto b_rep = etl::force_temporary(etl::rep(b, nh1, nh2));
-
-        etl::reshape(output, 1, k, nh1, nh2) = etl::ml::convolution_forward(etl::reshape(v, 1, nc, nv1, nv2), w, 1, 1, p1, p2);
-
-        output = f_activate<activation_function>(b_rep + output);
-    }
-
     /*!
      * \brief Apply the layer to the batch of input
      * \return A batch of output corresponding to the activated input

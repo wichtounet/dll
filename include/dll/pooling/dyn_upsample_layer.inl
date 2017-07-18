@@ -38,17 +38,6 @@ struct dyn_upsample_layer_3d final : dyn_unpooling_layer_3d<dyn_upsample_layer_3
     using input_t      = typename base::input_t;      ///< The type of many input
     using output_t     = typename base::output_t;     ///< The type of many output
 
-    using base::activate_hidden;
-
-    /*!
-     * \brief Forward activation of the layer for one sample
-     * \param h The output matrix
-     * \param v The input matrix
-     */
-    void activate_hidden(output_one_t& h, const input_one_t& v) const {
-        h = etl::upsample_3d(v, base::c1, base::c2, base::c3);
-    }
-
     /*!
      * \brief Apply the layer to the batch of input
      * \return A batch of output corresponding to the activated input

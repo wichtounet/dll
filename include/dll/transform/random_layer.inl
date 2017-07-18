@@ -27,19 +27,6 @@ struct random_layer : transform_layer<random_layer<Desc>> {
         return "Random";
     }
 
-    using base_type::activate_hidden;
-
-    /*!
-     * \brief Apply the layer to the input
-     * \param output The output
-     * \param input The input to apply the layer to
-     */
-    template <typename Input, typename Output>
-    static void activate_hidden(Output& output, const Input& input) {
-        inherit_dim(output, input);
-        output = etl::normal_generator<etl::value_t<Input>>(dll::rand_engine());
-    }
-
     /*!
      * \brief Apply the layer to the batch of input
      * \return A batch of output corresponding to the activated input

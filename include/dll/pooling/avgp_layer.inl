@@ -37,18 +37,6 @@ struct avgp_layer_2d final : pooling_layer_2d<avgp_layer_2d<Desc>, Desc> {
         return {buffer};
     }
 
-    using base::activate_hidden;
-
-    /*!
-     * \brief Forward activation of the layer for one sample
-     * \param h The output matrix
-     * \param v The input matrix
-     */
-    template <typename Input>
-    static void activate_hidden(output_one_t& h, const Input& v) {
-        h = etl::ml::avg_pool_forward<base::C1, base::C2>(v);
-    }
-
     /*!
      * \brief Apply the layer to the batch of input
      * \return A batch of output corresponding to the activated input
@@ -196,18 +184,6 @@ struct avgp_layer_3d final : pooling_layer_3d<avgp_layer_3d<Desc>, Desc> {
         snprintf(buffer, 1024, "AVGP(3D): %lux%lux%lu -> (%lux%lux%lu) -> %lux%lux%lu",
                  base::I1, base::I2, base::I3, base::C1, base::C2, base::C3, base::O1, base::O2, base::O3);
         return {buffer};
-    }
-
-    using base::activate_hidden;
-
-    /*!
-     * \brief Forward activation of the layer for one sample
-     * \param h The output matrix
-     * \param v The input matrix
-     */
-    template <typename Input>
-    static void activate_hidden(output_one_t& h, const Input& v) {
-        h = etl::avg_pool_3d<base::C1, base::C2, base::C3>(v);
     }
 
     /*!

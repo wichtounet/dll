@@ -12,8 +12,10 @@
 #include "etl/etl.hpp" // Every layer needs ETL
 
 #include "dll/base_conf.hpp"           // Every layer description used the conf utility
-#include "dll/util/tmp.hpp"            // Every layer description needs TMP
 #include "dll/trainer/context_fwd.hpp" // Forward declaration of the context classes
+#include "dll/util/batch_reshape.hpp"  // For easy batch reshaping
+#include "dll/util/ready.hpp"          // To create ready output
+#include "dll/util/tmp.hpp"            // Every layer description needs TMP
 
 namespace dll {
 
@@ -60,14 +62,21 @@ struct layer {
     // Default function
 
     /*!
-     * \brief Compute the hidden representation for a given input
+     * \brief Compute the test representation for a given input
+     *
      * \param input The input to compute the representation from
-     * \return The hidden representation for the given input
+     *
+     * \return The test representation for the given input
      */
     template <typename Input>
     auto activate_hidden(const Input& input) const {
-        auto output = as_derived().template prepare_one_output<Input>();
-        as_derived().activate_hidden(output, input);
+        // Prepare one fully-ready output
+        auto output = prepare_one_ready_output(as_derived(), input);
+
+        // Forward propagation
+        test_activate_hidden(output, input);
+
+        // Return the forward-propagated result
         return output;
     }
 
@@ -77,8 +86,18 @@ struct layer {
      * \param input The input to compute the representation from
      */
     template <typename Input, typename Output>
-    void test_activate_hidden(Output& output, const Input& input) const {
-        as_derived().activate_hidden(output, input);
+    void activate_hidden(Output&& output, const Input& input) const {
+        test_activate_hidden(output, input);
+    }
+
+    /*!
+     * \brief Compute the test presentation for a given input
+     * \param output The output to fill
+     * \param input The input to compute the representation from
+     */
+    template <typename Input, typename Output>
+    void test_activate_hidden(Output&& output, const Input& input) const {
+        as_derived().test_batch_activate_hidden(batch_reshape(output), batch_reshape(input));
     }
 
     /*!
@@ -87,9 +106,21 @@ struct layer {
      * \param input The input to compute the representation from
      */
     template <typename Input, typename Output>
-    void train_activate_hidden(Output& output, const Input& input) const {
-        as_derived().activate_hidden(output, input);
+    void train_activate_hidden(Output&& output, const Input& input) const {
+        as_derived().train_batch_activate_hidden(batch_reshape(output), batch_reshape(input));
     }
+
+    template <bool Train, typename Input, typename Output, cpp_enable_if(Train)>
+    void select_activate_hidden(Output&& output, const Input& input) const {
+        as_derived().train_activate_hidden(output, input);
+    }
+
+    template <bool Train, typename Input, typename Output, cpp_enable_if(!Train)>
+    void select_activate_hidden(Output&& output, const Input& input) const {
+        as_derived().test_activate_hidden(output, input);
+    }
+
+    // Batch version
 
     template <typename Input>
     auto test_batch_activate_hidden(const Input& input) const {
@@ -102,24 +133,16 @@ struct layer {
     }
 
     template <typename Input, typename Output>
-    void test_batch_activate_hidden(Output& output, const Input& input) const {
+    void test_batch_activate_hidden(Output&& output, const Input& input) const {
         as_derived().batch_activate_hidden(output, input);
     }
 
     template <typename Input, typename Output>
-    void train_batch_activate_hidden(Output& output, const Input& input) const {
+    void train_batch_activate_hidden(Output&& output, const Input& input) const {
         as_derived().batch_activate_hidden(output, input);
     }
 
-    template <bool Train, typename Input, typename Output, cpp_enable_if(Train)>
-    void select_activate_hidden(Output& output, const Input& input) const {
-        as_derived().train_activate_hidden(output, input);
-    }
-
-    template <bool Train, typename Input, typename Output, cpp_enable_if(!Train)>
-    void select_activate_hidden(Output& output, const Input& input) const {
-        as_derived().test_activate_hidden(output, input);
-    }
+    // Prepare function
 
     template <typename Input>
     auto prepare_test_output(size_t samples) const {

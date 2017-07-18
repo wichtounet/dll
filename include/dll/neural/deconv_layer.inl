@@ -93,17 +93,6 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
         return {buffer};
     }
 
-    using base_type::activate_hidden;
-
-    template <typename V>
-    void activate_hidden(output_one_t& output, const V& v) const {
-        auto b_rep = etl::force_temporary(etl::rep<NH1, NH2>(b));
-
-        etl::reshape<1, K, NH1, NH2>(output) = etl::conv_4d_full_flipped(etl::reshape<1, NC, NV1, NV2>(v), w);
-
-        output = f_activate<activation_function>(b_rep + output);
-    }
-
     /*!
      * \brief Apply the layer to the batch of input
      * \return A batch of output corresponding to the activated input
