@@ -824,7 +824,7 @@ public:
 
         auto next = prepare_many_ready_output(layer, samples[0], samples.size());
 
-        layer.activate_many(next, samples);
+        layer.forward_many(next, samples);
 
         return forward_many_impl<L+1>(next);
     }
@@ -835,7 +835,7 @@ public:
 
         auto out = prepare_many_ready_output(layer, samples[0], samples.size());
 
-        layer.activate_many(out, samples);
+        layer.forward_many(out, samples);
 
         return out;
     }

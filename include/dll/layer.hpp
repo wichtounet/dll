@@ -149,8 +149,8 @@ struct layer {
      * \param input The input collection to compute the representation from
      */
     template <typename Input, typename Output>
-    void activate_many(Output&& output, const Input& input) const {
-        test_activate_many(output, input);
+    void forward_many(Output&& output, const Input& input) const {
+        test_forward_many(output, input);
     }
 
     /*!
@@ -160,7 +160,7 @@ struct layer {
      * \param input The input collection to compute the representation from
      */
     template <typename Input, typename Output>
-    void test_activate_many(Output&& output, const Input& input) const {
+    void test_forward_many(Output&& output, const Input& input) const {
         for(size_t i = 0; i < output.size(); ++i){
             test_forward_one(output[i], input[i]);
         }
@@ -173,7 +173,7 @@ struct layer {
      * \param input The input collection to compute the representation from
      */
     template <typename Input, typename Output>
-    void train_activate_many(Output&& output, const Input& input) const {
+    void train_forward_many(Output&& output, const Input& input) const {
         for(size_t i = 0; i < output.size(); ++i){
             train_forward_one(output[i], input[i]);
         }
@@ -190,8 +190,8 @@ struct layer {
      * \param input The collection of input to compute the representation from
      */
     template <bool Train, typename Input, typename Output, cpp_enable_if(Train)>
-    void select_activate_many(Output&& output, const Input& input) const {
-        train_activate_many(output, input);
+    void select_forward_many(Output&& output, const Input& input) const {
+        train_forward_many(output, input);
     }
 
     /*!
@@ -205,8 +205,8 @@ struct layer {
      * \param input The collection of input to compute the representation from
      */
     template <bool Train, typename Input, typename Output, cpp_enable_if(!Train)>
-    void select_activate_many(Output&& output, const Input& input) const {
-        test_activate_many(output, input);
+    void select_forward_many(Output&& output, const Input& input) const {
+        test_forward_many(output, input);
     }
 
     // Functions to propagate one batch at time
