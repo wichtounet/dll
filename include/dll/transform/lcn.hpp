@@ -31,7 +31,7 @@ void lcn_filter(W& w, size_t K, size_t Mid, double sigma){
  * \param x The input to apply the layer to
  */
 template <typename Input, typename Output, typename W>
-void lcn_compute(Output& y, const Input& x, const W& w, size_t K, size_t Mid){
+void lcn_compute(Output&& y, const Input& x, const W& w, size_t K, size_t Mid){
     using weight_t = etl::value_t<Input>;
 
     auto v = etl::force_temporary(x(0));
