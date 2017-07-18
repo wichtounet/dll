@@ -9,6 +9,8 @@
 
 #include "etl/etl.hpp"
 
+#include "dll/layer_traits.hpp"
+
 namespace dll {
 
 /*!
