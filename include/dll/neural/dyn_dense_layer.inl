@@ -35,12 +35,12 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
     using b_type = etl::dyn_matrix<weight, 1>; ///< The type of the biases
 
     //Weights and biases
-    w_type w; //!< Weights
-    b_type b; //!< Hidden biases
+    w_type w; ///< Weights
+    b_type b; ///< Hidden biases
 
     //Backup Weights and biases
-    std::unique_ptr<w_type> bak_w; //!< Backup Weights
-    std::unique_ptr<b_type> bak_b; //!< Backup Hidden biases
+    std::unique_ptr<w_type> bak_w; ///< Backup Weights
+    std::unique_ptr<b_type> bak_b; ///< Backup Hidden biases
 
     size_t num_visible;
     size_t num_hidden;

@@ -54,26 +54,26 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
     using c_type = etl::fast_vector<weight, num_visible>;             ///< The type used to store visible biases
 
     //Weights and biases
-    w_type w; //!< Weights
-    b_type b; //!< Hidden biases
-    c_type c; //!< Visible biases
+    w_type w; ///< Weights
+    b_type b; ///< Hidden biases
+    c_type c; ///< Visible biases
 
     //Backup weights and biases
-    std::unique_ptr<w_type> bak_w; //!< Backup Weights
-    std::unique_ptr<b_type> bak_b; //!< Backup Hidden biases
-    std::unique_ptr<c_type> bak_c; //!< Backup Visible biases
+    std::unique_ptr<w_type> bak_w; ///< Backup Weights
+    std::unique_ptr<b_type> bak_b; ///< Backup Hidden biases
+    std::unique_ptr<c_type> bak_c; ///< Backup Visible biases
 
     //Reconstruction data
-    conditional_fast_matrix_t<!dbn_only, weight, num_visible> v1; //!< State of the visible units
+    conditional_fast_matrix_t<!dbn_only, weight, num_visible> v1; ///< State of the visible units
 
-    conditional_fast_matrix_t<!dbn_only, weight, num_hidden> h1_a; //!< Activation probabilities of hidden units after first CD-step
-    conditional_fast_matrix_t<!dbn_only, weight, num_hidden> h1_s; //!< Sampled value of hidden units after first CD-step
+    conditional_fast_matrix_t<!dbn_only, weight, num_hidden> h1_a; ///< Activation probabilities of hidden units after first CD-step
+    conditional_fast_matrix_t<!dbn_only, weight, num_hidden> h1_s; ///< Sampled value of hidden units after first CD-step
 
-    conditional_fast_matrix_t<!dbn_only, weight, num_visible> v2_a; //!< Activation probabilities of visible units after first CD-step
-    conditional_fast_matrix_t<!dbn_only, weight, num_visible> v2_s; //!< Sampled value of visible units after first CD-step
+    conditional_fast_matrix_t<!dbn_only, weight, num_visible> v2_a; ///< Activation probabilities of visible units after first CD-step
+    conditional_fast_matrix_t<!dbn_only, weight, num_visible> v2_s; ///< Sampled value of visible units after first CD-step
 
-    conditional_fast_matrix_t<!dbn_only, weight, num_hidden> h2_a; //!< Activation probabilities of hidden units after last CD-step
-    conditional_fast_matrix_t<!dbn_only, weight, num_hidden> h2_s; //!< Sampled value of hidden units after last CD-step
+    conditional_fast_matrix_t<!dbn_only, weight, num_hidden> h2_a; ///< Activation probabilities of hidden units after last CD-step
+    conditional_fast_matrix_t<!dbn_only, weight, num_hidden> h2_s; ///< Sampled value of hidden units after last CD-step
 
     /*!
      * \brief Initialize a RBM with basic weights.

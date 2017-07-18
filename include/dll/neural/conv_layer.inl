@@ -46,12 +46,12 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
     using b_type = etl::fast_matrix<weight, K>; ///< The type of the biases
 
     //Weights and biases
-    w_type w; //!< Weights
-    b_type b; //!< Hidden biases
+    w_type w; ///< Weights
+    b_type b; ///< Hidden biases
 
     //Backup weights and biases
-    std::unique_ptr<w_type> bak_w; //!< Backup Weights
-    std::unique_ptr<b_type> bak_b; //!< Backup Hidden biases
+    std::unique_ptr<w_type> bak_w; ///< Backup Weights
+    std::unique_ptr<b_type> bak_b; ///< Backup Hidden biases
 
     /*!
      * \brief Initialize a conv layer with basic weights.

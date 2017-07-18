@@ -40,12 +40,12 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
     using b_type = etl::fast_matrix<weight, num_hidden>; ///< The type of the biases
 
     //Weights and biases
-    w_type w; //!< Weights
-    b_type b; //!< Hidden biases
+    w_type w; ///< Weights
+    b_type b; ///< Hidden biases
 
     //Backup Weights and biases
-    std::unique_ptr<w_type> bak_w; //!< Backup Weights
-    std::unique_ptr<b_type> bak_b; //!< Backup Hidden biases
+    std::unique_ptr<w_type> bak_w; ///< Backup Weights
+    std::unique_ptr<b_type> bak_b; ///< Backup Hidden biases
 
     /*!
      * \brief Initialize a dense layer with basic weights.

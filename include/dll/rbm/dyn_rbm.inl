@@ -39,26 +39,26 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
     using c_type = etl::dyn_vector<weight>;
 
     //Weights and biases
-    w_type w; //!< Weights
-    b_type b; //!< Hidden biases
-    c_type c; //!< Visible biases
+    w_type w; ///< Weights
+    b_type b; ///< Hidden biases
+    c_type c; ///< Visible biases
 
     //Backup weights and biases
-    std::unique_ptr<w_type> bak_w; //!< Backup Weights
-    std::unique_ptr<b_type> bak_b; //!< Backup Hidden biases
-    std::unique_ptr<c_type> bak_c; //!< Backup Visible biases
+    std::unique_ptr<w_type> bak_w; ///< Backup Weights
+    std::unique_ptr<b_type> bak_b; ///< Backup Hidden biases
+    std::unique_ptr<c_type> bak_c; ///< Backup Visible biases
 
     //Reconstruction data
-    etl::dyn_vector<weight> v1; //!< State of the visible units
+    etl::dyn_vector<weight> v1; ///< State of the visible units
 
-    etl::dyn_vector<weight> h1_a; //!< Activation probabilities of hidden units after first CD-step
-    etl::dyn_vector<weight> h1_s; //!< Sampled value of hidden units after first CD-step
+    etl::dyn_vector<weight> h1_a; ///< Activation probabilities of hidden units after first CD-step
+    etl::dyn_vector<weight> h1_s; ///< Sampled value of hidden units after first CD-step
 
-    etl::dyn_vector<weight> v2_a; //!< Activation probabilities of visible units after first CD-step
-    etl::dyn_vector<weight> v2_s; //!< Sampled value of visible units after first CD-step
+    etl::dyn_vector<weight> v2_a; ///< Activation probabilities of visible units after first CD-step
+    etl::dyn_vector<weight> v2_s; ///< Sampled value of visible units after first CD-step
 
-    etl::dyn_vector<weight> h2_a; //!< Activation probabilities of hidden units after last CD-step
-    etl::dyn_vector<weight> h2_s; //!< Sampled value of hidden units after last CD-step
+    etl::dyn_vector<weight> h2_a; ///< Activation probabilities of hidden units after last CD-step
+    etl::dyn_vector<weight> h2_s; ///< Sampled value of hidden units after last CD-step
 
     size_t num_visible;
     size_t num_hidden;

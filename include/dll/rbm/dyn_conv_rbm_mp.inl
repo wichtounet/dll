@@ -40,13 +40,13 @@ struct dyn_conv_rbm_mp final : public standard_crbm_mp<dyn_conv_rbm_mp<Desc>, De
     using output_one_t = typename rbm_base_traits<this_type>::output_one_t; ///< The type of one output
     using hidden_output_one_t = typename rbm_base_traits<this_type>::hidden_output_one_t;
 
-    w_type w; //!< shared weights
-    b_type b; //!< hidden biases bk
-    c_type c; //!< visible single bias c
+    w_type w; ///< shared weights
+    b_type b; ///< hidden biases bk
+    c_type c; ///< visible single bias c
 
-    std::unique_ptr<w_type> bak_w; //!< backup shared weights
-    std::unique_ptr<b_type> bak_b; //!< backup hidden biases bk
-    std::unique_ptr<c_type> bak_c; //!< backup visible single bias c
+    std::unique_ptr<w_type> bak_w; ///< backup shared weights
+    std::unique_ptr<b_type> bak_b; ///< backup hidden biases bk
+    std::unique_ptr<c_type> bak_c; ///< backup visible single bias c
 
     etl::dyn_matrix<weight, 3> v1; //visible units
 

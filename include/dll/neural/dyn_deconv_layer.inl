@@ -35,12 +35,12 @@ struct dyn_deconv_layer final : neural_layer<dyn_deconv_layer<Desc>, Desc> {
     using b_type = etl::dyn_matrix<weight, 1>; ///< The type of the biases
 
     //Weights and biases
-    w_type w; //!< Weights
-    b_type b; //!< Hidden biases
+    w_type w; ///< Weights
+    b_type b; ///< Hidden biases
 
     //Backup weights and biases
-    std::unique_ptr<w_type> bak_w; //!< Backup Weights
-    std::unique_ptr<b_type> bak_b; //!< Backup Hidden biases
+    std::unique_ptr<w_type> bak_w; ///< Backup Weights
+    std::unique_ptr<b_type> bak_b; ///< Backup Hidden biases
 
     size_t nv1; ///< The first visible dimension
     size_t nv2; ///< The second visible dimension

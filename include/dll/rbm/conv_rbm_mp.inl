@@ -61,13 +61,13 @@ struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
     using output_one_t        = typename rbm_base_traits<this_type>::output_one_t; ///< The type of one output
     using hidden_output_one_t = typename rbm_base_traits<this_type>::hidden_output_one_t;
 
-    w_type w; //!< shared weights
-    b_type b; //!< hidden biases bk
-    c_type c; //!< visible single bias c
+    w_type w; ///< shared weights
+    b_type b; ///< hidden biases bk
+    c_type c; ///< visible single bias c
 
-    std::unique_ptr<w_type> bak_w; //!< backup shared weights
-    std::unique_ptr<b_type> bak_b; //!< backup hidden biases bk
-    std::unique_ptr<c_type> bak_c; //!< backup visible single bias c
+    std::unique_ptr<w_type> bak_w; ///< backup shared weights
+    std::unique_ptr<b_type> bak_b; ///< backup hidden biases bk
+    std::unique_ptr<c_type> bak_c; ///< backup visible single bias c
 
     etl::fast_matrix<weight, NC, NV1, NV2> v1; ///< visible units
 
