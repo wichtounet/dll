@@ -2070,8 +2070,8 @@ private:
     std::enable_if_t<(I < layers)> predict_labels(const Input& input, Output& output, size_t labels) const {
         decltype(auto) layer = layer_get<I>();
 
-        auto next_a = layer.template prepare_one_output<Input>();
-        auto next_s = layer.template prepare_one_output<Input>();
+        auto next_a = prepare_one_ready_output(layer, input);
+        auto next_s = prepare_one_ready_output(layer, input);
 
         layer.activate_hidden(next_a, next_s, input, input);
 
@@ -2087,7 +2087,7 @@ private:
 
             //If the next layers is the last layer
             if (is_last) {
-                auto big_next_a = layer.template prepare_one_output<Input>(is_last, labels);
+                auto big_next_a = layer.template prepare_one_output<Input>(true, labels);
 
                 for (size_t i = 0; i < next_a.size(); ++i) {
                     big_next_a[i] = next_a[i];
