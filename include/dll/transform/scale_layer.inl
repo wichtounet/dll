@@ -35,17 +35,6 @@ struct scale_layer : transform_layer<scale_layer<Desc>> {
 
     /*!
      * \brief Apply the layer to the batch of input
-     * \return A batch of output corresponding to the activated input
-     */
-    template <typename V>
-    auto batch_activate_hidden(const V& v) const {
-        auto output = force_temporary_dim_only(v);
-        batch_activate_hidden(output, v);
-        return output;
-    }
-
-    /*!
-     * \brief Apply the layer to the batch of input
      * \param output The batch of output
      * \param input The batch of input to apply the layer to
      */

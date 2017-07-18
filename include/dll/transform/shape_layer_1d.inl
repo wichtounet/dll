@@ -55,32 +55,6 @@ struct shape_layer_1d : transform_layer<shape_layer_1d<Desc>> {
 
     /*!
      * \brief Apply the layer to the batch of input
-     * \return A batch of output corresponding to the activated input
-     */
-    template <typename V, cpp_enable_if((etl::decay_traits<V>::is_fast))>
-    auto batch_activate_hidden(const V& v) const {
-        static constexpr auto Batch = etl::decay_traits<V>::template dim<0>();
-
-        etl::fast_dyn_matrix<etl::value_t<V>, Batch, Size> output;
-        batch_activate_hidden(output, v);
-        return output;
-    }
-
-    /*!
-     * \brief Apply the layer to the batch of input
-     * \return A batch of output corresponding to the activated input
-     */
-    template <typename V, cpp_disable_if((etl::decay_traits<V>::is_fast))>
-    auto batch_activate_hidden(const V& v) const {
-        const auto Batch = etl::dim<0>(v);
-
-        etl::dyn_matrix<etl::value_t<V>, 2> output(Batch, Size);
-        batch_activate_hidden(output, v);
-        return output;
-    }
-
-    /*!
-     * \brief Apply the layer to the batch of input
      * \param output The batch of output
      * \param input The batch of input to apply the layer to
      */

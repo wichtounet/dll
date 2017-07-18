@@ -152,26 +152,6 @@ struct conv_rbm final : public standard_crbm<conv_rbm<Desc>, Desc> {
         dyn.batch_size  = batch_size;
     }
 
-    using base_type::batch_activate_hidden;
-
-    template <typename V, cpp_enable_if((etl::decay_traits<V>::is_fast))>
-    auto batch_activate_hidden(const V& v) const {
-        static constexpr auto Batch = etl::decay_traits<V>::template dim<0>();
-
-        etl::fast_dyn_matrix<weight, Batch, K, NH1, NH2> output;
-        base_type::batch_activate_hidden(output, v);
-        return output;
-    }
-
-    template <typename V, cpp_disable_if((etl::decay_traits<V>::is_fast))>
-    auto batch_activate_hidden(const V& v) const {
-        const auto Batch = etl::dim<0>(v);
-
-        etl::dyn_matrix<weight, 4> output(Batch, K, NH1, NH2);
-        batch_activate_hidden(output, v);
-        return output;
-    }
-
     /*!
      * \brief Adapt the errors, called before backpropagation of the errors.
      *

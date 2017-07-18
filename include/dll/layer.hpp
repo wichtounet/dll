@@ -13,6 +13,7 @@
 
 #include "dll/base_conf.hpp"           // Every layer description used the conf utility
 #include "dll/trainer/context_fwd.hpp" // Forward declaration of the context classes
+#include "dll/util/batch_extend.hpp"   // For easy batch creation
 #include "dll/util/batch_reshape.hpp"  // For easy batch reshaping
 #include "dll/util/ready.hpp"          // To create ready output
 #include "dll/util/tmp.hpp"            // Every layer description needs TMP
@@ -209,14 +210,66 @@ struct layer {
 
     // Functions to propagate one batch at time
 
-    template <typename Input>
-    auto test_batch_activate_hidden(const Input& input) const {
-        return as_derived().batch_activate_hidden(input);
+    /*!
+     * \brief Apply the layer to the batch of input.
+     *
+     * This will create a new batch of result that will be forward propagated
+     * from the input and then returned from the function. It is not necessary
+     * efficient.
+     *
+     * \return A batch of output corresponding to the activated input
+     */
+    template <typename V>
+    auto test_batch_activate_hidden(const V& input_batch) const {
+        // Prepare one output
+        auto one = prepare_one_ready_output(as_derived(), input_batch(0));
+
+        // Prepare one output batch
+        auto output_batch = batch_extend(input_batch, one);
+
+        // Finally forward propagation from input to output
+        test_batch_activate_hidden(output_batch, input_batch);
+
+        // Return the output batch
+        return output_batch;
     }
 
-    template <typename Input>
-    auto train_batch_activate_hidden(const Input& input) const {
-        return as_derived().batch_activate_hidden(input);
+    /*!
+     * \brief Apply the layer to the batch of input.
+     *
+     * This will create a new batch of result that will be forward propagated
+     * from the input and then returned from the function. It is not necessary
+     * efficient.
+     *
+     * \return A batch of output corresponding to the activated input
+     */
+    template <typename V>
+    auto train_batch_activate_hidden(const V& input_batch) const {
+        // Prepare one output
+        auto one = prepare_one_ready_output(as_derived(), input_batch(0));
+
+        // Prepare one output batch
+        auto output_batch = batch_extend(input_batch, one);
+
+        // Finally forward propagation from input to output
+        train_batch_activate_hidden(output_batch, input_batch);
+
+        // Return the output batch
+        return output_batch;
+    }
+
+    /*!
+     * \brief Apply the layer to the batch of input.
+     *
+     * This will create a new batch of result that will be forward propagated
+     * from the input and then returned from the function. It is not necessary
+     * efficient.
+     *
+     * \return A batch of output corresponding to the activated input
+     */
+    template <typename V>
+    auto batch_activate_hidden(const V& input_batch) const {
+        return test_batch_activate_hidden(input_batch);
     }
 
     template <typename Input, typename Output>

@@ -38,30 +38,6 @@ struct upsample_layer_3d final : unpooling_layer_3d<upsample_layer_3d<Desc>, Des
     using input_t      = typename base::input_t;      ///< The type of many input
     using output_t     = typename base::output_t;     ///< The type of many output
 
-    /*!
-     * \brief Apply the layer to the batch of input
-     * \return A batch of output corresponding to the activated input
-     */
-    template <typename V, cpp_enable_if(etl::decay_traits<V>::is_fast)>
-    auto batch_activate_hidden(const V& v) const {
-        static constexpr auto Batch = etl::decay_traits<V>::template dim<0>();
-        etl::fast_dyn_matrix<weight, Batch, base::O1, base::O2, base::O3> output;
-        batch_activate_hidden(output, v);
-        return output;
-    }
-
-    /*!
-     * \brief Apply the layer to the batch of input
-     * \return A batch of output corresponding to the activated input
-     */
-    template <typename V, cpp_enable_if(!etl::decay_traits<V>::is_fast)>
-    auto batch_activate_hidden(const V& v) const {
-        const auto Batch = etl::dim<0>(v);
-        etl::dyn_matrix<weight, 4> output(Batch, base::O1, base::O2, base::O3);
-        batch_activate_hidden(output, v);
-        return output;
-    }
-
     template <typename Input, typename Output>
     static void batch_activate_hidden(Output& output, const Input& input) {
         output = etl::upsample_3d<base::C1, base::C2, base::C3>(input);

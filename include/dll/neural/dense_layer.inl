@@ -89,24 +89,6 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
         return {buffer};
     }
 
-    template <typename V, cpp_enable_if((etl::decay_traits<V>::is_fast))>
-    auto batch_activate_hidden(const V& v) const {
-        static constexpr auto Batch = etl::decay_traits<V>::template dim<0>();
-
-        etl::fast_dyn_matrix<weight, Batch, num_hidden> output;
-        batch_activate_hidden(output, v);
-        return output;
-    }
-
-    template <typename V, cpp_disable_if((etl::decay_traits<V>::is_fast))>
-    auto batch_activate_hidden(const V& v) const {
-        const auto Batch = etl::dim<0>(v);
-
-        etl::dyn_matrix<weight, 2> output(Batch, num_hidden);
-        batch_activate_hidden(output, v);
-        return output;
-    }
-
     template <typename H, typename V>
     void batch_activate_hidden(H&& output, const V& input) const {
         dll::auto_timer timer("dense:batch_activate_hidden");

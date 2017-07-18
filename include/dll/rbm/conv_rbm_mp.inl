@@ -166,6 +166,16 @@ struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
 
     using base_type::batch_activate_hidden;
 
+    template <typename V>
+    auto train_batch_activate_hidden(const V& v) const {
+        return batch_activate_hidden(v);
+    }
+
+    template <typename V>
+    auto test_batch_activate_hidden(const V& v) const {
+        return batch_activate_hidden(v);
+    }
+
     template <typename V, cpp_enable_if((etl::decay_traits<V>::is_fast))>
     auto batch_activate_hidden(const V& v) const {
         static constexpr auto Batch = etl::decay_traits<V>::template dim<0>();

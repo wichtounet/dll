@@ -38,30 +38,6 @@ struct avgp_layer_2d final : pooling_layer_2d<avgp_layer_2d<Desc>, Desc> {
     }
 
     /*!
-     * \brief Apply the layer to the batch of input
-     * \return A batch of output corresponding to the activated input
-     */
-    template <typename V, cpp_enable_if(etl::decay_traits<V>::is_fast)>
-    auto batch_activate_hidden(const V& v) const {
-        static constexpr auto Batch = etl::decay_traits<V>::template dim<0>();
-        etl::fast_dyn_matrix<weight, Batch, base::O1, base::O2, base::O3> output;
-        batch_activate_hidden(output, v);
-        return output;
-    }
-
-    /*!
-     * \brief Apply the layer to the batch of input
-     * \return A batch of output corresponding to the activated input
-     */
-    template <typename V, cpp_enable_if(!etl::decay_traits<V>::is_fast)>
-    auto batch_activate_hidden(const V& v) const {
-        const auto Batch = etl::dim<0>(v);
-        etl::dyn_matrix<weight, 4> output(Batch, base::O1, base::O2, base::O3);
-        batch_activate_hidden(output, v);
-        return output;
-    }
-
-    /*!
      * \brief Forward activation of the layer for one batch of sample
      * \param output The output matrix
      * \param input The input matrix
@@ -184,30 +160,6 @@ struct avgp_layer_3d final : pooling_layer_3d<avgp_layer_3d<Desc>, Desc> {
         snprintf(buffer, 1024, "AVGP(3D): %lux%lux%lu -> (%lux%lux%lu) -> %lux%lux%lu",
                  base::I1, base::I2, base::I3, base::C1, base::C2, base::C3, base::O1, base::O2, base::O3);
         return {buffer};
-    }
-
-    /*!
-     * \brief Apply the layer to the batch of input
-     * \return A batch of output corresponding to the activated input
-     */
-    template <typename V, cpp_enable_if(etl::decay_traits<V>::is_fast)>
-    auto batch_activate_hidden(const V& v) const {
-        static constexpr auto Batch = etl::decay_traits<V>::template dim<0>();
-        etl::fast_dyn_matrix<weight, Batch, base::O1, base::O2, base::O3> output;
-        batch_activate_hidden(output, v);
-        return output;
-    }
-
-    /*!
-     * \brief Apply the layer to the batch of input
-     * \return A batch of output corresponding to the activated input
-     */
-    template <typename V, cpp_enable_if(!etl::decay_traits<V>::is_fast)>
-    auto batch_activate_hidden(const V& v) const {
-        const auto Batch = etl::dim<0>(v);
-        etl::dyn_matrix<weight, 4> output(Batch, base::O1, base::O2, base::O3);
-        batch_activate_hidden(output, v);
-        return output;
     }
 
     /*!

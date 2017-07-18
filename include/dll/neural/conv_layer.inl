@@ -95,30 +95,6 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
         return {buffer};
     }
 
-    /*!
-     * \brief Apply the layer to the batch of input
-     * \return A batch of output corresponding to the activated input
-     */
-    template <typename V, cpp_enable_if(etl::decay_traits<V>::is_fast)>
-    auto batch_activate_hidden(const V& v) const {
-        static constexpr auto Batch = etl::decay_traits<V>::template dim<0>();
-        etl::fast_dyn_matrix<weight, Batch, K, NH1, NH2> output;
-        batch_activate_hidden(output, v);
-        return output;
-    }
-
-    /*!
-     * \brief Apply the layer to the batch of input
-     * \return A batch of output corresponding to the activated input
-     */
-    template <typename V, cpp_enable_if(!etl::decay_traits<V>::is_fast)>
-    auto batch_activate_hidden(const V& v) const {
-        const auto Batch = etl::dim<0>(v);
-        etl::dyn_matrix<weight, 4> output(Batch, K, NH1, NH2);
-        batch_activate_hidden(output, v);
-        return output;
-    }
-
     template <typename H1, typename V, cpp_enable_if(etl::dimensions<V>() == 4)>
     void batch_activate_hidden(H1&& output, const V& v) const {
         dll::auto_timer timer("conv:forward_batch");
