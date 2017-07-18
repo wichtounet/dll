@@ -867,7 +867,7 @@ public:
 
     // TODO: Transform layers should be applied inline
 
-    template <size_t L, typename Input, cpp_enable_if((L != layers - 1))>
+    template <size_t LS, size_t L, typename Input, cpp_enable_if((L != LS))>
     decltype(auto) forward_one_impl(Input&& sample) {
         decltype(auto) layer = layer_get<L>();
 
@@ -875,16 +875,16 @@ public:
         return forward_one_impl<L+1>(next);
     }
 
-    template <size_t L, typename Input, cpp_enable_if((L == layers - 1))>
+    template <size_t LS, size_t L, typename Input, cpp_enable_if((L == LS))>
     decltype(auto) forward_one_impl(Input&& sample) {
         decltype(auto) layer = layer_get<L>();
 
         return layer.activate_hidden(sample);
     }
 
-    template <typename Input>
+    template <size_t LS = layers - 1, size_t L = 0, typename Input>
     decltype(auto) forward_one(Input&& sample) {
-        return forward_one_impl<0>(sample);
+        return forward_one_impl<LS, L>(sample);
     }
 
     // Forward a collection of samples at a time
@@ -895,7 +895,7 @@ public:
     // TODO: Transform layers should be applied inline
     // TODO: Should delegate to forward_batch
 
-    template <size_t L, typename Inputs, cpp_enable_if((L != layers - 1))>
+    template <size_t LS, size_t L, typename Inputs, cpp_enable_if((L != LS))>
     decltype(auto) forward_many_impl(Inputs&& samples) {
         decltype(auto) layer = layer_get<L>();
 
@@ -905,10 +905,10 @@ public:
             layer.activate_hidden(next[i], samples[i]);
         }
 
-        return forward_one_impl<L+1>(next);
+        return forward_many_impl<L+1>(next);
     }
 
-    template <size_t L, typename Inputs, cpp_enable_if((L == layers - 1))>
+    template <size_t LS, size_t L, typename Inputs, cpp_enable_if((L == LS))>
     decltype(auto) forward_many_impl(Inputs&& samples) {
         decltype(auto) layer = layer_get<L>();
 
@@ -921,9 +921,52 @@ public:
         return out;
     }
 
-    template <typename Inputs>
+    template <size_t LS = layers - 1, size_t L = 0, typename Inputs>
     decltype(auto) forward_many(Inputs&& samples) {
-        return forward_many_impl<0>(samples);
+        return forward_many_impl<LS, L>(samples);
+    }
+
+    // Forward a collection of samples (iterators) at a time
+    // This is not as fast as it could be, far from it, but supports
+    // larger range of input. The rationale being that time should
+    // be spent in forward_batch
+
+    // TODO: Transform layers should be applied inline
+    // TODO: Should delegate to forward_batch
+
+    template <size_t LS, size_t L, typename Iterator, cpp_enable_if((L != LS))>
+    decltype(auto) forward_many_impl(const Iterator& first, const Iterator& last) {
+        decltype(auto) layer = layer_get<L>();
+
+        auto n = std::distance(first, last);
+
+        auto next = prepare_many_ready_output(layer, *first, n);
+
+        cpp::foreach_i(first, last, [&](auto& sample, size_t i) {
+            layer.activate_hidden(next[i], sample);
+        });
+
+        return forward_many_impl<L+1>(next);
+    }
+
+    template <size_t LS, size_t L, typename Iterator, cpp_enable_if((L == LS))>
+    decltype(auto) forward_many_impl(const Iterator& first, const Iterator& last) {
+        decltype(auto) layer = layer_get<L>();
+
+        auto n = std::distance(first, last);
+
+        auto out = prepare_many_ready_output(layer, *first, n);
+
+        cpp::foreach_i(first, last, [&](auto& sample, size_t i) {
+            layer.activate_hidden(out[i], sample);
+        });
+
+        return out;
+    }
+
+    template <size_t LS = layers - 1, size_t L = 0, typename Iterator>
+    decltype(auto) forward_many(const Iterator& first, const Iterator& last) {
+        return forward_many_impl<LS, L>(first, last);
     }
 
     /*!
@@ -2059,15 +2102,11 @@ private:
         });
 
         if (I < layers - 1) {
-            using input_t = std::decay_t<decltype(*first)>;
-            auto next_a = layer.template prepare_output<input_t>(input_size);
-
-            cpp::foreach_i(first, last, [&](auto& sample, size_t i) {
-                layer.activate_hidden(next_a[i], sample);
-            });
+            auto next_a = this_type::template forward_many<I, I>(first, last);
 
             //If the next layer is the last layer
             if (I == layers - 2) {
+                using input_t = std::decay_t<decltype(*first)>;
                 auto big_next_a = layer.template prepare_output<input_t>(input_size, true, labels);
 
                 //Cannot use std copy since the sub elements have different size
