@@ -764,38 +764,108 @@ public:
     // Forward functions are not perfect:
     // TODO: Transform layers should be applied inline
 
+    /*
+     * \brief Return the test representation for the given input batch.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param sample The input batch to the layer L
+     *
+     * \return The test representation of the LS layer forwarded from L
+     */
     template <size_t LS, size_t L, typename Input, cpp_enable_if((L != LS))>
     decltype(auto) test_forward_batch_impl(Input&& sample) const {
         decltype(auto) next = layer_get<L>().test_forward_batch(sample);
         return test_forward_batch_impl<LS, L+1>(next);
     }
 
+    /*
+     * \brief Return the test representation for the given input batch.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param sample The input batch to the layer L
+     *
+     * \return The test representation of the LS layer forwarded from L
+     */
     template <size_t LS, size_t L, typename Input, cpp_enable_if((L == LS))>
     decltype(auto) test_forward_batch_impl(Input&& sample) const {
         return layer_get<L>().test_forward_batch(sample);
     }
 
+    /*
+     * \brief Return the train representation for the given input batch.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param sample The input batch to the layer L
+     *
+     * \return The train representation of the LS layer forwarded from L
+     */
     template <size_t LS, size_t L, typename Input, cpp_enable_if((L != LS))>
     decltype(auto) train_forward_batch_impl(Input&& sample) {
         decltype(auto) next = layer_get<L>().train_forward_batch(sample);
         return train_forward_batch_impl<LS, L+1>(next);
     }
 
+    /*
+     * \brief Return the train representation for the given input batch.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param sample The input batch to the layer L
+     *
+     * \return The train representation of the LS layer forwarded from L
+     */
     template <size_t LS, size_t L, typename Input, cpp_enable_if((L == LS))>
     decltype(auto) train_forward_batch_impl(Input&& sample) {
         return layer_get<L>().train_forward_batch(sample);
     }
 
+    /*
+     * \brief Return the test representation for the given input batch.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param sample The input batch to the layer L
+     *
+     * \return The test representation of the LS layer forwarded from L
+     */
     template <size_t LS = layers - 1, size_t L = 0, typename Input>
     decltype(auto) test_forward_batch(Input&& sample) const {
         return test_forward_batch_impl<LS, L>(sample);
     }
 
+    /*
+     * \brief Return the train representation for the given input batch.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param sample The input batch to the layer L
+     *
+     * \return The train representation of the LS layer forwarded from L
+     */
     template <size_t LS = layers - 1, size_t L = 0, typename Input>
     decltype(auto) train_forward_batch(Input&& sample) {
         return train_forward_batch_impl<LS, L>(sample);
     }
 
+    /*
+     * \brief Return the test representation for the given input batch.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param sample The input batch to the layer L
+     *
+     * \return The test representation of the LS layer forwarded from L
+     */
     template <size_t LS = layers - 1, size_t L = 0, typename Input>
     decltype(auto) forward_batch(Input&& sample) const {
         return test_forward_batch_impl<LS, L>(sample);
@@ -806,38 +876,108 @@ public:
     // larger range of input. The rationale being that time should
     // be spent in forward_batch
 
+    /*
+     * \brief Return the test representation for the given input sample.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param sample The input sample to the layer L
+     *
+     * \return The test representation of the LS layer forwarded from L
+     */
     template <size_t LS, size_t L, typename Input, cpp_enable_if((L != LS))>
     decltype(auto) test_forward_one_impl(Input&& sample) const {
         decltype(auto) next = layer_get<L>().test_forward_one(sample);
         return test_forward_one_impl<LS, L+1>(next);
     }
 
+    /*
+     * \brief Return the test representation for the given input sample.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param sample The input sample to the layer L
+     *
+     * \return The test representation of the LS layer forwarded from L
+     */
     template <size_t LS, size_t L, typename Input, cpp_enable_if((L == LS))>
     decltype(auto) test_forward_one_impl(Input&& sample) const {
         return layer_get<L>().test_forward_one(sample);
     }
 
+    /*
+     * \brief Return the train representation for the given input sample.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param sample The input sample to the layer L
+     *
+     * \return The train representation of the LS layer forwarded from L
+     */
     template <size_t LS, size_t L, typename Input, cpp_enable_if((L != LS))>
     decltype(auto) train_forward_one_impl(Input&& sample) {
         decltype(auto) next = layer_get<L>().train_forward_one(sample);
         return train_forward_one_impl<LS, L+1>(next);
     }
 
+    /*
+     * \brief Return the train representation for the given input sample.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param sample The input sample to the layer L
+     *
+     * \return The train representation of the LS layer forwarded from L
+     */
     template <size_t LS, size_t L, typename Input, cpp_enable_if((L == LS))>
     decltype(auto) train_forward_one_impl(Input&& sample) {
         return layer_get<L>().train_forward_one(sample);
     }
 
+    /*
+     * \brief Return the test representation for the given input sample.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param sample The input sample to the layer L
+     *
+     * \return The test representation of the LS layer forwarded from L
+     */
     template <size_t LS = layers - 1, size_t L = 0, typename Input>
     decltype(auto) test_forward_one(Input&& sample) const {
         return test_forward_one_impl<LS, L>(sample);
     }
 
+    /*
+     * \brief Return the train representation for the given input sample.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param sample The input sample to the layer L
+     *
+     * \return The train representation of the LS layer forwarded from L
+     */
     template <size_t LS = layers - 1, size_t L = 0, typename Input>
     decltype(auto) train_forward_one(Input&& sample) {
         return train_forward_one_impl<LS, L>(sample);
     }
 
+    /*
+     * \brief Return the test representation for the given input sample.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param sample The input sample to the layer L
+     *
+     * \return The test representation of the LS layer forwarded from L
+     */
     template <size_t LS = layers - 1, size_t L = 0, typename Input>
     decltype(auto) forward_one(Input&& sample) const {
         return test_forward_one_impl<LS, L>(sample);
@@ -848,6 +988,16 @@ public:
     // larger range of input. The rationale being that time should
     // be spent in forward_batch
 
+    /*
+     * \brief Return the test representation for the given collection of inputs.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param samples The collection of inputs to the layer L
+     *
+     * \return The test representation of the LS layer forwarded from L
+     */
     template <size_t LS, size_t L, typename Inputs, cpp_enable_if((L != LS))>
     decltype(auto) test_forward_many_impl(Inputs&& samples) const {
         decltype(auto) layer = layer_get<L>();
@@ -859,6 +1009,16 @@ public:
         return test_forward_many_impl<LS, L+1>(next);
     }
 
+    /*
+     * \brief Return the test representation for the given collection of inputs.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param samples The collection of inputs to the layer L
+     *
+     * \return The test representation of the LS layer forwarded from L
+     */
     template <size_t LS, size_t L, typename Inputs, cpp_enable_if((L == LS))>
     decltype(auto) test_forward_many_impl(Inputs&& samples) const {
         decltype(auto) layer = layer_get<L>();
@@ -870,6 +1030,16 @@ public:
         return out;
     }
 
+    /*
+     * \brief Return the train representation for the given collection of inputs.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param samples The collection of inputs to the layer L
+     *
+     * \return The train representation of the LS layer forwarded from L
+     */
     template <size_t LS, size_t L, typename Inputs, cpp_enable_if((L != LS))>
     decltype(auto) train_forward_many_impl(Inputs&& samples) {
         decltype(auto) layer = layer_get<L>();
@@ -881,6 +1051,16 @@ public:
         return train_forward_many_impl<LS, L+1>(next);
     }
 
+    /*
+     * \brief Return the train representation for the given collection of inputs.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param samples The collection of inputs to the layer L
+     *
+     * \return The train representation of the LS layer forwarded from L
+     */
     template <size_t LS, size_t L, typename Inputs, cpp_enable_if((L == LS))>
     decltype(auto) train_forward_many_impl(Inputs&& samples) {
         decltype(auto) layer = layer_get<L>();
@@ -892,16 +1072,46 @@ public:
         return out;
     }
 
+    /*
+     * \brief Return the test representation for the given collection of inputs.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param samples The collection of inputs to the layer L
+     *
+     * \return The test representation of the LS layer forwarded from L
+     */
     template <size_t LS = layers - 1, size_t L = 0, typename Inputs>
     decltype(auto) test_forward_many(Inputs&& samples) const {
         return test_forward_many_impl<LS, L>(samples);
     }
 
+    /*
+     * \brief Return the train representation for the given collection of inputs.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param samples The collection of inputs to the layer L
+     *
+     * \return The train representation of the LS layer forwarded from L
+     */
     template <size_t LS = layers - 1, size_t L = 0, typename Inputs>
     decltype(auto) train_forward_many(Inputs&& samples) {
         return train_forward_many_impl<LS, L>(samples);
     }
 
+    /*
+     * \brief Return the test representation for the given collection of inputs.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param samples The collection of inputs to the layer L
+     *
+     * \return The test representation of the LS layer forwarded from L
+     */
     template <size_t LS = layers - 1, size_t L = 0, typename Inputs>
     decltype(auto) forward_many(Inputs&& samples) const {
         return test_forward_many_impl<LS, L>(samples);
@@ -912,6 +1122,17 @@ public:
     // larger range of input. The rationale being that time should
     // be spent in forward_batch
 
+    /*
+     * \brief Return the test representation for the given collection of inputs.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param first Iterator to the first element of the collection of inputs
+     * \param last Iterator to the past-the-end element of the collection of inputs
+     *
+     * \return The test representation of the LS layer forwarded from L
+     */
     template <size_t LS, size_t L, typename Iterator, cpp_enable_if((L != LS))>
     decltype(auto) test_forward_many_impl(const Iterator& first, const Iterator& last) const {
         decltype(auto) layer = layer_get<L>();
@@ -927,6 +1148,17 @@ public:
         return test_forward_many_impl<LS, L+1>(next);
     }
 
+    /*
+     * \brief Return the test representation for the given collection of inputs.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param first Iterator to the first element of the collection of inputs
+     * \param last Iterator to the past-the-end element of the collection of inputs
+     *
+     * \return The test representation of the LS layer forwarded from L
+     */
     template <size_t LS, size_t L, typename Iterator, cpp_enable_if((L == LS))>
     decltype(auto) test_forward_many_impl(const Iterator& first, const Iterator& last) const {
         decltype(auto) layer = layer_get<L>();
@@ -942,6 +1174,17 @@ public:
         return out;
     }
 
+    /*
+     * \brief Return the train representation for the given collection of inputs.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param first Iterator to the first element of the collection of inputs
+     * \param last Iterator to the past-the-end element of the collection of inputs
+     *
+     * \return The train representation of the LS layer forwarded from L
+     */
     template <size_t LS, size_t L, typename Iterator, cpp_enable_if((L != LS))>
     decltype(auto) train_forward_many_impl(const Iterator& first, const Iterator& last) {
         decltype(auto) layer = layer_get<L>();
@@ -957,6 +1200,17 @@ public:
         return train_forward_many_impl<LS, L+1>(next);
     }
 
+    /*
+     * \brief Return the train representation for the given collection of inputs.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param first Iterator to the first element of the collection of inputs
+     * \param last Iterator to the past-the-end element of the collection of inputs
+     *
+     * \return The train representation of the LS layer forwarded from L
+     */
     template <size_t LS, size_t L, typename Iterator, cpp_enable_if((L == LS))>
     decltype(auto) train_forward_many_impl(const Iterator& first, const Iterator& last) {
         decltype(auto) layer = layer_get<L>();
@@ -972,16 +1226,49 @@ public:
         return out;
     }
 
+    /*
+     * \brief Return the test representation for the given collection of inputs.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param first Iterator to the first element of the collection of inputs
+     * \param last Iterator to the past-the-end element of the collection of inputs
+     *
+     * \return The test representation of the LS layer forwarded from L
+     */
     template <size_t LS = layers - 1, size_t L = 0, typename Iterator>
     decltype(auto) test_forward_many(const Iterator& first, const Iterator& last) const {
         return test_forward_many_impl<LS, L>(first, last);
     }
 
+    /*
+     * \brief Return the train representation for the given collection of inputs.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param first Iterator to the first element of the collection of inputs
+     * \param last Iterator to the past-the-end element of the collection of inputs
+     *
+     * \return The train representation of the LS layer forwarded from L
+     */
     template <size_t LS = layers - 1, size_t L = 0, typename Iterator>
     decltype(auto) train_forward_many(const Iterator& first, const Iterator& last) {
         return train_forward_many_impl<LS, L>(first, last);
     }
 
+    /*
+     * \brief Return the test representation for the given collection of inputs.
+     *
+     * \tparam LS The layer from which the representation is extracted
+     * \tparam L The layer to which the input is given
+     *
+     * \param first Iterator to the first element of the collection of inputs
+     * \param last Iterator to the past-the-end element of the collection of inputs
+     *
+     * \return The test representation of the LS layer forwarded from L
+     */
     template <size_t LS = layers - 1, size_t L = 0, typename Iterator>
     decltype(auto) forward_many(const Iterator& first, const Iterator& last) const {
         return test_forward_many_impl<LS, L>(first, last);
