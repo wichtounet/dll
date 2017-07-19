@@ -304,21 +304,53 @@ struct layer {
         return test_forward_batch(input_batch);
     }
 
+    /*!
+     * \brief Compute the test presentation for a batch of inputs
+     *
+     * \param output The output batch to fill
+     * \param input The input batch to compute the representation from
+     */
     template <typename Input, typename Output>
     void test_forward_batch(Output&& output, const Input& input) const {
         as_derived().forward_batch(output, input);
     }
 
+    /*!
+     * \brief Compute the train presentation for a batch of inputs
+     *
+     * \param output The output batch to fill
+     * \param input The input batch to compute the representation from
+     */
     template <typename Input, typename Output>
     void train_forward_batch(Output&& output, const Input& input) const {
         as_derived().forward_batch(output, input);
     }
 
+    /*!
+     * \brief Compute the presentation for a batch of inputs, selecting train or
+     * test at compile-time with Train template parameter
+     *
+     * \tparam Train if true compute the train representation,
+     * otherwise the test representation
+     *
+     * \param output The output batch to fill
+     * \param input The input batch to compute the representation from
+     */
     template <bool Train, typename Input, typename Output, cpp_enable_if(Train)>
     void select_forward_batch(Output&& output, const Input& input) const {
         train_forward_batch(output, input);
     }
 
+    /*!
+     * \brief Compute the presentation for a batch of inputs, selecting train or
+     * test at compile-time with Train template parameter
+     *
+     * \tparam Train if true compute the train representation,
+     * otherwise the test representation
+     *
+     * \param output The output batch to fill
+     * \param input The input batch to compute the representation from
+     */
     template <bool Train, typename Input, typename Output, cpp_enable_if(!Train)>
     void select_forward_batch(Output&& output, const Input& input) const {
         test_forward_batch(output, input);
