@@ -81,6 +81,15 @@ struct cg_trainer_base {
         });
     }
 
+    /*!
+     * \brief Train a batch of inputs
+     *
+     * \param epoch The current epoch
+     * \param inputs The batch of inputs
+     * \param labels The batch of labels
+     *
+     * \return the error and the loss of the batch
+     */
     template <typename Inputs, typename Labels>
     std::pair<double, double> train_batch(size_t epoch, const Inputs& inputs, const Labels& labels) {
         using T = etl::dyn_matrix<etl::value_t<Inputs>, etl::decay_traits<Inputs>::dimensions() - 1>;
@@ -162,6 +171,11 @@ struct cg_trainer_base {
         }
     }
 
+    /*!
+     * \brief Compute the gradient of one context
+     * \param contex The current gradient context
+     * \param cost The current cost
+     */
     template <bool Temp, typename Sample, typename Target>
     void gradient(const gradient_context<Sample, Target>& context, weight& cost) {
         const auto n_hidden = output_size(dbn.template layer_get<layers - 1>());
@@ -298,6 +312,10 @@ struct cg_trainer_base {
         return finite;
     }
 
+    /*!
+     * \brief Compute the sum of the dot products of the s of the weights and
+     * of the biases
+     */
     weight s_dot_s() {
         weight acc = 0.0;
         dbn.for_each_layer([&acc](auto& rbm) {
@@ -307,6 +325,10 @@ struct cg_trainer_base {
         return acc;
     }
 
+    /*!
+     * \brief Compute the sum of the dot products of the df3 and s of the weights and
+     * of the biases
+     */
     weight df3_dot_s() {
         weight acc = 0.0;
         dbn.for_each_layer([&acc](auto& rbm) {
@@ -316,6 +338,10 @@ struct cg_trainer_base {
         return acc;
     }
 
+    /*!
+     * \brief Compute the sum of the dot products of the df3 of the weights and
+     * of the biases
+     */
     weight df3_dot_df3() {
         weight acc = 0.0;
         dbn.for_each_layer([&acc](auto& rbm) {
@@ -325,6 +351,10 @@ struct cg_trainer_base {
         return acc;
     }
 
+    /*!
+     * \brief Compute the sum of the dot products of the df0 of the weights and
+     * of the biases
+     */
     weight df0_dot_df0() {
         weight acc = 0.0;
         dbn.for_each_layer([&acc](auto& rbm) {
@@ -334,6 +364,10 @@ struct cg_trainer_base {
         return acc;
     }
 
+    /*!
+     * \brief Compute the sum of the dot products of the df0 and df3 of the weights and
+     * of the biases
+     */
     weight df0_dot_df3() {
         weight acc = 0.0;
         dbn.for_each_layer([&acc](auto& rbm) {

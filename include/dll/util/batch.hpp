@@ -13,6 +13,9 @@
 
 namespace dll {
 
+/*!
+ * \brief A batch of samples or labels
+ */
 template <typename Iterator>
 struct batch {
     using size_type  = size_t;                                      ///< The size type of the batch
@@ -21,6 +24,11 @@ struct batch {
     Iterator first; ///< The iterator to the first element
     Iterator last;  ///< The iterator to the past the end element
 
+    /*!
+     * \brief Create a batch
+     * \param first The first element of the batch
+     * \param first The past-the-end element of the batch
+     */
     batch(Iterator&& first, Iterator&& last)
             : first(std::forward<Iterator>(first)),
               last(std::forward<Iterator>(last)) {
@@ -49,6 +57,12 @@ struct batch {
     }
 };
 
+/*!
+ * \brief Create a new a batch from the given iterators
+ * \param first The first element of the batch
+ * \param first The past-the-end element of the batch
+ * \return the created batch around the given iterators
+ */
 template <typename Iterator>
 batch<Iterator> make_batch(Iterator&& first, Iterator&& last) {
     return {std::forward<Iterator>(first), std::forward<Iterator>(last)};

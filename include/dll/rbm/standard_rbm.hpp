@@ -121,17 +121,40 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
 
     using base_type::activate_hidden;
 
-    // Note: This function is only used by CG
+    /*!
+     * \brief Compute the hidden representation from the given input.
+     *
+     * Special functions to be used by optimizer.
+     *
+     * \param h_a The output to set the activation probabilities of the hidden representation
+     * \param h_s The output to set the activation samples of the hidden representation
+     * \param v_a The input activation probabilities of the visible representation
+     * \param v_s The input the activation samples of the visible representation
+     * \param b The biases
+     * \param w The weights
+     */
     template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W>
     void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s, const B& b, const W& w) const {
         std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, b, w);
     }
 
+    /*!
+     * \brief Compute the hidden representation from the given input
+     * \param h_a The output to set the activation probabilities of the hidden representation
+     * \param h_s The output to set the activation samples of the hidden representation
+     * \param v_a The input activation probabilities of the visible representation
+     * \param v_s The input the activation samples of the visible representation
+     */
     template <bool P = true, bool S = true, typename H1, typename H2, typename V>
     void activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s) const {
         std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, as_derived().b, as_derived().w);
     }
 
+    /*!
+     * \brief Compute the hidden representation from the given input
+     * \param h_a The output to set
+     * \param v_a The input
+     */
     template <typename H, typename Input>
     void activate_hidden(H&& h_a, const Input& v_a) const {
         std_activate_hidden<true, false>(std::forward<H>(h_a), std::forward<H>(h_a), v_a, v_a, as_derived().b, as_derived().w);
@@ -153,16 +176,35 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
 
     // batch_activate_hidden
 
+    /*!
+     * \brief Compute the hidden representation from the given input
+     * \param h_a The batch output to set the activation probabilities of the hidden representation
+     * \param h_s The batch output to set the activation samples of the hidden representation
+     * \param v_a The batch input activation probabilities of the visible representation
+     * \param v_s The batch input the activation samples of the visible representation
+     */
     template <bool P = true, bool S = true, typename H1, typename H2, typename V>
     void batch_activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V& v_s) const {
         batch_std_activate_hidden<P, S>(std::forward<H1>(h_a), std::forward<H2>(h_s), v_a, v_s, as_derived().b, as_derived().w);
     }
 
+    /*!
+     * \brief Compute the hidden representation from a given batch of input
+     *
+     * \param h_a The batch output to set
+     * \param v_a The batch input
+     */
     template <typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 2)>
     void batch_activate_hidden(H&& h_a, const V& v_a) const {
         batch_std_activate_hidden<true, false>(std::forward<H>(h_a), std::forward<H>(h_a), v_a, v_a, as_derived().b, as_derived().w);
     }
 
+    /*!
+     * \brief Compute the hidden representation from a given batch of input
+     *
+     * \param h_a The batch output to set
+     * \param v_a The batch input
+     */
     template <typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 2)>
     void batch_activate_hidden(H&& h_a, const V& v_a) const {
         batch_activate_hidden(h_a, etl::reshape(v_a, etl::dim(h_a, 0), as_derived().input_size()));
