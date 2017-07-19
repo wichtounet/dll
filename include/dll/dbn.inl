@@ -765,23 +765,40 @@ public:
     // TODO: Transform layers should be applied inline
 
     template <size_t LS, size_t L, typename Input, cpp_enable_if((L != LS))>
-    decltype(auto) forward_batch_impl(Input&& sample) {
-        decltype(auto) layer = layer_get<L>();
-
-        decltype(auto) next = layer.test_forward_batch(sample);
-        return forward_batch_impl<LS, L+1>(next);
+    decltype(auto) test_forward_batch_impl(Input&& sample) {
+        decltype(auto) next = layer_get<L>().test_forward_batch(sample);
+        return test_forward_batch_impl<LS, L+1>(next);
     }
 
     template <size_t LS, size_t L, typename Input, cpp_enable_if((L == LS))>
-    decltype(auto) forward_batch_impl(Input&& sample) {
-        decltype(auto) layer = layer_get<L>();
+    decltype(auto) test_forward_batch_impl(Input&& sample) {
+        return layer_get<L>().test_forward_batch(sample);
+    }
 
-        return layer.test_forward_batch(sample);
+    template <size_t LS, size_t L, typename Input, cpp_enable_if((L != LS))>
+    decltype(auto) train_forward_batch_impl(Input&& sample) {
+        decltype(auto) next = layer_get<L>().train_forward_batch(sample);
+        return train_forward_batch_impl<LS, L+1>(next);
+    }
+
+    template <size_t LS, size_t L, typename Input, cpp_enable_if((L == LS))>
+    decltype(auto) train_forward_batch_impl(Input&& sample) {
+        return layer_get<L>().train_forward_batch(sample);
+    }
+
+    template <size_t LS = layers - 1, size_t L = 0, typename Input>
+    decltype(auto) test_forward_batch(Input&& sample) {
+        return test_forward_batch_impl<LS, L>(sample);
+    }
+
+    template <size_t LS = layers - 1, size_t L = 0, typename Input>
+    decltype(auto) train_forward_batch(Input&& sample) {
+        return train_forward_batch_impl<LS, L>(sample);
     }
 
     template <size_t LS = layers - 1, size_t L = 0, typename Input>
     decltype(auto) forward_batch(Input&& sample) {
-        return forward_batch_impl<LS, L>(sample);
+        return test_forward_batch_impl<LS, L>(sample);
     }
 
     // Forward one sample at a time
@@ -790,23 +807,40 @@ public:
     // be spent in forward_batch
 
     template <size_t LS, size_t L, typename Input, cpp_enable_if((L != LS))>
-    decltype(auto) forward_one_impl(Input&& sample) {
-        decltype(auto) layer = layer_get<L>();
-
-        decltype(auto) next = layer.forward_one(sample);
-        return forward_one_impl<L+1>(next);
+    decltype(auto) test_forward_one_impl(Input&& sample) {
+        decltype(auto) next = layer_get<L>().test_forward_one(sample);
+        return test_forward_one_impl<L+1>(next);
     }
 
     template <size_t LS, size_t L, typename Input, cpp_enable_if((L == LS))>
-    decltype(auto) forward_one_impl(Input&& sample) {
-        decltype(auto) layer = layer_get<L>();
+    decltype(auto) test_forward_one_impl(Input&& sample) {
+        return layer_get<L>().test_forward_one(sample);
+    }
 
-        return layer.forward_one(sample);
+    template <size_t LS, size_t L, typename Input, cpp_enable_if((L != LS))>
+    decltype(auto) train_forward_one_impl(Input&& sample) {
+        decltype(auto) next = layer_get<L>().train_forward_one(sample);
+        return train_forward_one_impl<L+1>(next);
+    }
+
+    template <size_t LS, size_t L, typename Input, cpp_enable_if((L == LS))>
+    decltype(auto) train_forward_one_impl(Input&& sample) {
+        return layer_get<L>().train_forward_one(sample);
+    }
+
+    template <size_t LS = layers - 1, size_t L = 0, typename Input>
+    decltype(auto) test_forward_one(Input&& sample) {
+        return test_forward_one_impl<LS, L>(sample);
+    }
+
+    template <size_t LS = layers - 1, size_t L = 0, typename Input>
+    decltype(auto) train_forward_one(Input&& sample) {
+        return train_forward_one_impl<LS, L>(sample);
     }
 
     template <size_t LS = layers - 1, size_t L = 0, typename Input>
     decltype(auto) forward_one(Input&& sample) {
-        return forward_one_impl<LS, L>(sample);
+        return test_forward_one_impl<LS, L>(sample);
     }
 
     // Forward a collection of samples at a time
@@ -815,30 +849,62 @@ public:
     // be spent in forward_batch
 
     template <size_t LS, size_t L, typename Inputs, cpp_enable_if((L != LS))>
-    decltype(auto) forward_many_impl(Inputs&& samples) {
+    decltype(auto) test_forward_many_impl(Inputs&& samples) {
         decltype(auto) layer = layer_get<L>();
 
         auto next = prepare_many_ready_output(layer, samples[0], samples.size());
 
-        layer.forward_many(next, samples);
+        layer.test_forward_many(next, samples);
 
-        return forward_many_impl<L+1>(next);
+        return test_forward_many_impl<L+1>(next);
     }
 
     template <size_t LS, size_t L, typename Inputs, cpp_enable_if((L == LS))>
-    decltype(auto) forward_many_impl(Inputs&& samples) {
+    decltype(auto) test_forward_many_impl(Inputs&& samples) {
         decltype(auto) layer = layer_get<L>();
 
         auto out = prepare_many_ready_output(layer, samples[0], samples.size());
 
-        layer.forward_many(out, samples);
+        layer.test_forward_many(out, samples);
+
+        return out;
+    }
+
+    template <size_t LS, size_t L, typename Inputs, cpp_enable_if((L != LS))>
+    decltype(auto) train_forward_many_impl(Inputs&& samples) {
+        decltype(auto) layer = layer_get<L>();
+
+        auto next = prepare_many_ready_output(layer, samples[0], samples.size());
+
+        layer.train_forward_many(next, samples);
+
+        return train_forward_many_impl<L+1>(next);
+    }
+
+    template <size_t LS, size_t L, typename Inputs, cpp_enable_if((L == LS))>
+    decltype(auto) train_forward_many_impl(Inputs&& samples) {
+        decltype(auto) layer = layer_get<L>();
+
+        auto out = prepare_many_ready_output(layer, samples[0], samples.size());
+
+        layer.train_forward_many(out, samples);
 
         return out;
     }
 
     template <size_t LS = layers - 1, size_t L = 0, typename Inputs>
+    decltype(auto) test_forward_many(Inputs&& samples) {
+        return test_forward_many_impl<LS, L>(samples);
+    }
+
+    template <size_t LS = layers - 1, size_t L = 0, typename Inputs>
+    decltype(auto) train_forward_many(Inputs&& samples) {
+        return train_forward_many_impl<LS, L>(samples);
+    }
+
+    template <size_t LS = layers - 1, size_t L = 0, typename Inputs>
     decltype(auto) forward_many(Inputs&& samples) {
-        return forward_many_impl<LS, L>(samples);
+        return test_forward_many_impl<LS, L>(samples);
     }
 
     // Forward a collection of samples (iterators) at a time
@@ -847,7 +913,7 @@ public:
     // be spent in forward_batch
 
     template <size_t LS, size_t L, typename Iterator, cpp_enable_if((L != LS))>
-    decltype(auto) forward_many_impl(const Iterator& first, const Iterator& last) {
+    decltype(auto) test_forward_many_impl(const Iterator& first, const Iterator& last) {
         decltype(auto) layer = layer_get<L>();
 
         auto n = std::distance(first, last);
@@ -855,14 +921,14 @@ public:
         auto next = prepare_many_ready_output(layer, *first, n);
 
         cpp::foreach_i(first, last, [&](auto& sample, size_t i) {
-            layer.forward_one(next[i], sample);
+            layer.test_forward_one(next[i], sample);
         });
 
-        return forward_many_impl<L+1>(next);
+        return test_forward_many_impl<L+1>(next);
     }
 
     template <size_t LS, size_t L, typename Iterator, cpp_enable_if((L == LS))>
-    decltype(auto) forward_many_impl(const Iterator& first, const Iterator& last) {
+    decltype(auto) test_forward_many_impl(const Iterator& first, const Iterator& last) {
         decltype(auto) layer = layer_get<L>();
 
         auto n = std::distance(first, last);
@@ -870,15 +936,55 @@ public:
         auto out = prepare_many_ready_output(layer, *first, n);
 
         cpp::foreach_i(first, last, [&](auto& sample, size_t i) {
-            layer.forward_one(out[i], sample);
+            layer.test_forward_one(out[i], sample);
+        });
+
+        return out;
+    }
+
+    template <size_t LS, size_t L, typename Iterator, cpp_enable_if((L != LS))>
+    decltype(auto) train_forward_many_impl(const Iterator& first, const Iterator& last) {
+        decltype(auto) layer = layer_get<L>();
+
+        auto n = std::distance(first, last);
+
+        auto next = prepare_many_ready_output(layer, *first, n);
+
+        cpp::foreach_i(first, last, [&](auto& sample, size_t i) {
+            layer.train_forward_one(next[i], sample);
+        });
+
+        return train_forward_many_impl<L+1>(next);
+    }
+
+    template <size_t LS, size_t L, typename Iterator, cpp_enable_if((L == LS))>
+    decltype(auto) train_forward_many_impl(const Iterator& first, const Iterator& last) {
+        decltype(auto) layer = layer_get<L>();
+
+        auto n = std::distance(first, last);
+
+        auto out = prepare_many_ready_output(layer, *first, n);
+
+        cpp::foreach_i(first, last, [&](auto& sample, size_t i) {
+            layer.train_forward_one(out[i], sample);
         });
 
         return out;
     }
 
     template <size_t LS = layers - 1, size_t L = 0, typename Iterator>
+    decltype(auto) test_forward_many(const Iterator& first, const Iterator& last) {
+        return test_forward_many_impl<LS, L>(first, last);
+    }
+
+    template <size_t LS = layers - 1, size_t L = 0, typename Iterator>
+    decltype(auto) train_forward_many(const Iterator& first, const Iterator& last) {
+        return train_forward_many_impl<LS, L>(first, last);
+    }
+
+    template <size_t LS = layers - 1, size_t L = 0, typename Iterator>
     decltype(auto) forward_many(const Iterator& first, const Iterator& last) {
-        return forward_many_impl<LS, L>(first, last);
+        return test_forward_many_impl<LS, L>(first, last);
     }
 
     /*!
