@@ -92,6 +92,12 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
         return {buffer};
     }
 
+    /*!
+     * \brief Apply the layer to the given batch of input.
+     *
+     * \param input A batch of input
+     * \param output A batch of output that will be filled
+     */
     template <typename H, typename V>
     void forward_batch(H&& output, const V& input) const {
         const auto Batch = etl::dim<0>(input);

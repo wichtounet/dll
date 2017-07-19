@@ -93,6 +93,12 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
         return {buffer};
     }
 
+    /*!
+     * \brief Apply the layer to the given batch of input.
+     *
+     * \param input A batch of input
+     * \param output A batch of output that will be filled
+     */
     template <typename H1, typename V, cpp_enable_if(etl::decay_traits<H1>::is_fast)>
     void forward_batch(H1&& output, const V& v) const {
         output = etl::conv_4d_full_flipped(v, w);
@@ -104,6 +110,12 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
         output = f_activate<activation_function>(b_rep + output);
     }
 
+    /*!
+     * \brief Apply the layer to the given batch of input.
+     *
+     * \param input A batch of input
+     * \param output A batch of output that will be filled
+     */
     template <typename H1, typename V, cpp_disable_if(etl::decay_traits<H1>::is_fast)>
     void forward_batch(H1&& output, const V& v) const {
         output = etl::conv_4d_full_flipped(v, w);

@@ -115,6 +115,12 @@ struct dyn_deconv_layer final : neural_layer<dyn_deconv_layer<Desc>, Desc> {
         return {buffer};
     }
 
+    /*!
+     * \brief Apply the layer to the given batch of input.
+     *
+     * \param input A batch of input
+     * \param output A batch of output that will be filled
+     */
     template <typename H1, typename V>
     void forward_batch(H1&& output, const V& v) const {
         output = etl::conv_4d_full_flipped(v, w);

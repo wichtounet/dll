@@ -38,6 +38,12 @@ struct upsample_layer_3d final : unpooling_layer_3d<upsample_layer_3d<Desc>, Des
     using input_t      = typename base::input_t;      ///< The type of many input
     using output_t     = typename base::output_t;     ///< The type of many output
 
+    /*!
+     * \brief Apply the layer to the given batch of input.
+     *
+     * \param input A batch of input
+     * \param output A batch of output that will be filled
+     */
     template <typename Input, typename Output>
     static void forward_batch(Output& output, const Input& input) {
         output = etl::upsample_3d<base::C1, base::C2, base::C3>(input);
