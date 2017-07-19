@@ -99,7 +99,7 @@ struct layer {
      */
     template <typename Input, typename Output>
     void test_forward_one(Output&& output, const Input& input) const {
-        as_derived().test_batch_activate_hidden(batch_reshape(output), batch_reshape(input));
+        as_derived().test_forward_batch(batch_reshape(output), batch_reshape(input));
     }
 
     /*!
@@ -109,7 +109,7 @@ struct layer {
      */
     template <typename Input, typename Output>
     void train_forward_one(Output&& output, const Input& input) const {
-        as_derived().train_batch_activate_hidden(batch_reshape(output), batch_reshape(input));
+        as_derived().train_forward_batch(batch_reshape(output), batch_reshape(input));
     }
 
     /*!
@@ -123,7 +123,7 @@ struct layer {
      */
     template <bool Train, typename Input, typename Output, cpp_enable_if(Train)>
     void select_forward_one(Output&& output, const Input& input) const {
-        as_derived().train_batch_activate_hidden(batch_reshape(output), batch_reshape(input));
+        as_derived().train_forward_batch(batch_reshape(output), batch_reshape(input));
     }
 
     /*!
@@ -137,7 +137,7 @@ struct layer {
      */
     template <bool Train, typename Input, typename Output, cpp_enable_if(!Train)>
     void select_forward_one(Output&& output, const Input& input) const {
-        as_derived().test_batch_activate_hidden(batch_reshape(output), batch_reshape(input));
+        as_derived().test_forward_batch(batch_reshape(output), batch_reshape(input));
     }
 
     // Functions to forward propagate several samples (collection) at a time
@@ -221,7 +221,7 @@ struct layer {
      * \return A batch of output corresponding to the activated input
      */
     template <typename V>
-    auto test_batch_activate_hidden(const V& input_batch) const {
+    auto test_forward_batch(const V& input_batch) const {
         // Prepare one output
         auto one = prepare_one_ready_output(as_derived(), input_batch(0));
 
@@ -229,7 +229,7 @@ struct layer {
         auto output_batch = batch_extend(input_batch, one);
 
         // Finally forward propagation from input to output
-        test_batch_activate_hidden(output_batch, input_batch);
+        test_forward_batch(output_batch, input_batch);
 
         // Return the output batch
         return output_batch;
@@ -245,7 +245,7 @@ struct layer {
      * \return A batch of output corresponding to the activated input
      */
     template <typename V>
-    auto train_batch_activate_hidden(const V& input_batch) const {
+    auto train_forward_batch(const V& input_batch) const {
         // Prepare one output
         auto one = prepare_one_ready_output(as_derived(), input_batch(0));
 
@@ -253,7 +253,7 @@ struct layer {
         auto output_batch = batch_extend(input_batch, one);
 
         // Finally forward propagation from input to output
-        train_batch_activate_hidden(output_batch, input_batch);
+        train_forward_batch(output_batch, input_batch);
 
         // Return the output batch
         return output_batch;
@@ -269,18 +269,28 @@ struct layer {
      * \return A batch of output corresponding to the activated input
      */
     template <typename V>
-    auto batch_activate_hidden(const V& input_batch) const {
-        return test_batch_activate_hidden(input_batch);
+    auto forward_batch(const V& input_batch) const {
+        return test_forward_batch(input_batch);
     }
 
     template <typename Input, typename Output>
-    void test_batch_activate_hidden(Output&& output, const Input& input) const {
-        as_derived().batch_activate_hidden(output, input);
+    void test_forward_batch(Output&& output, const Input& input) const {
+        as_derived().forward_batch(output, input);
     }
 
     template <typename Input, typename Output>
-    void train_batch_activate_hidden(Output&& output, const Input& input) const {
-        as_derived().batch_activate_hidden(output, input);
+    void train_forward_batch(Output&& output, const Input& input) const {
+        as_derived().forward_batch(output, input);
+    }
+
+    template <bool Train, typename Input, typename Output, cpp_enable_if(Train)>
+    void select_forward_batch(Output&& output, const Input& input) const {
+        train_forward_batch(output, input);
+    }
+
+    template <bool Train, typename Input, typename Output, cpp_enable_if(!Train)>
+    void select_forward_batch(Output&& output, const Input& input) const {
+        test_forward_batch(output, input);
     }
 
     // Prepare function

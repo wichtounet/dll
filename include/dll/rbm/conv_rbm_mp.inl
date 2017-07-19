@@ -164,46 +164,14 @@ struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
         dyn.batch_size  = batch_size;
     }
 
-    using base_type::batch_activate_hidden;
-    using base_type::train_batch_activate_hidden;
-    using base_type::test_batch_activate_hidden;
-
-    template <typename V>
-    auto train_batch_activate_hidden(const V& v) const {
-        return batch_activate_hidden(v);
-    }
-
-    template <typename V>
-    auto test_batch_activate_hidden(const V& v) const {
-        return batch_activate_hidden(v);
-    }
-
+    /*!
+     * \brief Apply the layer to the batch of input
+     * \param output The batch of output
+     * \param input The batch of input to apply the layer to
+     */
     template <typename Input, typename Output>
-    void test_batch_activate_hidden(Output&& output, const Input& input) const {
-        base_type::batch_activate_pooling(output, input);
-    }
-
-    template <typename Input, typename Output>
-    void train_batch_activate_hidden(Output&& output, const Input& input) const {
-        base_type::batch_activate_pooling(output, input);
-    }
-
-    template <typename V, cpp_enable_if((etl::decay_traits<V>::is_fast))>
-    auto batch_activate_hidden(const V& v) const {
-        static constexpr auto Batch = etl::decay_traits<V>::template dim<0>();
-
-        etl::fast_dyn_matrix<weight, Batch, K, NP1, NP2> output;
-        base_type::batch_activate_pooling(output, v);
-        return output;
-    }
-
-    template <typename V, cpp_disable_if((etl::decay_traits<V>::is_fast))>
-    auto batch_activate_hidden(const V& v) const {
-        const auto Batch = etl::dim<0>(v);
-
-        etl::dyn_matrix<weight, 4> output(Batch, K, NP1, NP2);
-        base_type::batch_activate_pooling(output, v);
-        return output;
+    void forward_batch(Output& output, const Input& input) const {
+        this->batch_activate_pooling(output, input);
     }
 
     friend base_type;

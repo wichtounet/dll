@@ -59,7 +59,7 @@ struct shape_layer_1d : transform_layer<shape_layer_1d<Desc>> {
      * \param input The batch of input to apply the layer to
      */
     template <typename Input, typename Output>
-    static void batch_activate_hidden(Output& output, const Input& input) {
+    static void forward_batch(Output& output, const Input& input) {
         output = input;
     }
 

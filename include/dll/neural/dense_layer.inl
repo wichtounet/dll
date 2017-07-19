@@ -90,8 +90,8 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
     }
 
     template <typename H, typename V>
-    void batch_activate_hidden(H&& output, const V& input) const {
-        dll::auto_timer timer("dense:batch_activate_hidden");
+    void forward_batch(H&& output, const V& input) const {
+        dll::auto_timer timer("dense:forward_batch");
 
         const auto Batch = etl::dim<0>(input);
 

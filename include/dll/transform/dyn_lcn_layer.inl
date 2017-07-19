@@ -60,7 +60,7 @@ struct dyn_lcn_layer : transform_layer<dyn_lcn_layer<Desc>> {
      * \param input The batch of input to apply the layer to
      */
     template <typename Input, typename Output>
-    void batch_activate_hidden(Output&& output, Input&& input) const {
+    void forward_batch(Output&& output, Input&& input) const {
         inherit_dim(output, input);
 
         using weight_t = etl::value_t<Input>;

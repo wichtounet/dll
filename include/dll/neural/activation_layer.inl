@@ -40,7 +40,7 @@ struct activation_layer : transform_layer<activation_layer<Desc>> {
      * \param input The batch of input to apply the layer to
      */
     template <typename Input, typename Output>
-    static void batch_activate_hidden(Output& output, const Input& input) {
+    static void forward_batch(Output& output, const Input& input) {
         if (activation_function == function::SOFTMAX) {
             auto Batch = etl::dim<0>(input);
             for (size_t i = 0; i < Batch; ++i) {

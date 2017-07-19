@@ -116,7 +116,7 @@ struct dyn_deconv_layer final : neural_layer<dyn_deconv_layer<Desc>, Desc> {
     }
 
     template <typename H1, typename V>
-    void batch_activate_hidden(H1&& output, const V& v) const {
+    void forward_batch(H1&& output, const V& v) const {
         output = etl::conv_4d_full_flipped(v, w);
 
         const auto batch_size = etl::dim<0>(output);

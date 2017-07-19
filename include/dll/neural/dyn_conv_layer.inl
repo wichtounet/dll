@@ -115,7 +115,7 @@ struct dyn_conv_layer final : neural_layer<dyn_conv_layer<Desc>, Desc> {
     }
 
     template <typename H1, typename V, cpp_enable_if(etl::dimensions<V>() == 4)>
-    void batch_activate_hidden(H1&& output, const V& v) const {
+    void forward_batch(H1&& output, const V& v) const {
         dll::auto_timer timer("conv:forward_batch");
 
         output = etl::ml::convolution_forward(v, w);
@@ -123,7 +123,7 @@ struct dyn_conv_layer final : neural_layer<dyn_conv_layer<Desc>, Desc> {
     }
 
     template <typename H1, typename V, cpp_enable_if(etl::dimensions<V>() == 2)>
-    void batch_activate_hidden(H1&& output, const V& v) const {
+    void forward_batch(H1&& output, const V& v) const {
         dll::auto_timer timer("conv:forward_batch");
 
         output = etl::ml::convolution_forward(etl::reshape(v, etl::dim<0>(v), nc, nv1, nv2), w);

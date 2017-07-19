@@ -33,7 +33,7 @@ struct random_layer : transform_layer<random_layer<Desc>> {
      * \param input The batch of input to apply the layer to
      */
     template <typename Input, typename Output>
-    static void batch_activate_hidden(Output& output, const Input& input) {
+    static void forward_batch(Output& output, const Input& input) {
         inherit_dim(output, input);
         output = etl::normal_generator<etl::value_t<Input>>(dll::rand_engine());
     }

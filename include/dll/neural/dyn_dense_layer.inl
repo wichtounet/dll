@@ -93,7 +93,7 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
     }
 
     template <typename H, typename V>
-    void batch_activate_hidden(H&& output, const V& input) const {
+    void forward_batch(H&& output, const V& input) const {
         const auto Batch = etl::dim<0>(input);
 
         // Note: The compile-time Batch information is lost here, but it does

@@ -45,8 +45,8 @@ struct mp_layer_2d final : pooling_layer_2d<mp_layer_2d<Desc>, Desc> {
      * \param input The input matrix
      */
     template <typename Input, typename Output>
-    static void batch_activate_hidden(Output& output, const Input& input) {
-        dll::auto_timer timer("mp:batch_activate_hidden");
+    static void forward_batch(Output& output, const Input& input) {
+        dll::auto_timer timer("mp:forward_batch");
 
         output = etl::ml::max_pool_forward<base::C1, base::C2>(input);
     }
@@ -174,8 +174,8 @@ struct mp_layer_3d final : pooling_layer_3d<mp_layer_3d<Desc>, Desc> {
      * \param input The input matrix
      */
     template <typename Input, typename Output>
-    static void batch_activate_hidden(Output& output, const Input& input) {
-        dll::auto_timer timer("mp:batch_activate_hidden");
+    static void forward_batch(Output& output, const Input& input) {
+        dll::auto_timer timer("mp:forward_batch");
 
         output = etl::max_pool_3d<base::C1, base::C2, base::C3>(input);
     }

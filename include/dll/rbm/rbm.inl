@@ -120,6 +120,16 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
     }
 
     /*!
+     * \brief Apply the layer to the batch of input
+     * \param output The batch of output
+     * \param input The batch of input to apply the layer to
+     */
+    template <typename Input, typename Output>
+    void forward_batch(Output& output, const Input& input) const {
+        this->batch_activate_hidden(output, input);
+    }
+
+    /*!
      * \brief Initialize the dynamic version of the layer from the
      * fast version of the layer
      * \param dyn Reference to the dynamic version of the layer that

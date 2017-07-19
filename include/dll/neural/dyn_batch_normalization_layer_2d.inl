@@ -105,8 +105,8 @@ struct dyn_batch_normalization_2d_layer : neural_layer<dyn_batch_normalization_2
      * \param input The batch of input to apply the layer to
      */
     template <typename Input, typename Output>
-    void batch_activate_hidden(Output& output, const Input& input) const {
-        test_batch_activate_hidden(output, input);
+    void forward_batch(Output& output, const Input& input) const {
+        test_forward_batch(output, input);
     }
 
     /*!
@@ -115,7 +115,7 @@ struct dyn_batch_normalization_2d_layer : neural_layer<dyn_batch_normalization_2
      * \param input The batch of input to apply the layer to
      */
     template <typename Input, typename Output>
-    void test_batch_activate_hidden(Output& output, const Input& input) const {
+    void test_forward_batch(Output& output, const Input& input) const {
         const auto B = etl::dim<0>(input);
 
         auto inv_var = etl::force_temporary(1.0 / etl::sqrt(var + e));
@@ -131,7 +131,7 @@ struct dyn_batch_normalization_2d_layer : neural_layer<dyn_batch_normalization_2
      * \param input The batch of input to apply the layer to
      */
     template <typename Input, typename Output>
-    void train_batch_activate_hidden(Output& output, const Input& input) {
+    void train_forward_batch(Output& output, const Input& input) {
         const auto B = etl::dim<0>(input);
 
         last_mean          = etl::mean_l(input);

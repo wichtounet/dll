@@ -39,7 +39,7 @@ struct upsample_layer_3d final : unpooling_layer_3d<upsample_layer_3d<Desc>, Des
     using output_t     = typename base::output_t;     ///< The type of many output
 
     template <typename Input, typename Output>
-    static void batch_activate_hidden(Output& output, const Input& input) {
+    static void forward_batch(Output& output, const Input& input) {
         output = etl::upsample_3d<base::C1, base::C2, base::C3>(input);
     }
 

@@ -44,7 +44,7 @@ struct dyn_mp_layer_2d final : dyn_pooling_layer_2d<dyn_mp_layer_2d<Desc>, Desc>
      * \param input The input matrix
      */
     template <typename Input, typename Output>
-    void batch_activate_hidden(Output& output, const Input& input) const {
+    void forward_batch(Output& output, const Input& input) const {
         output = etl::ml::max_pool_forward(input, base::c1, base::c2);
     }
 
@@ -165,7 +165,7 @@ struct dyn_mp_layer_3d final : dyn_pooling_layer_3d<dyn_mp_layer_3d<Desc>, Desc>
      * \param input The input matrix
      */
     template <typename Input, typename Output>
-    void batch_activate_hidden(Output& output, const Input& input) const {
+    void forward_batch(Output& output, const Input& input) const {
         output = etl::max_pool_3d(input, base::c1, base::c2, base::c3);
     }
 

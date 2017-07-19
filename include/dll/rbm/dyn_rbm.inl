@@ -149,6 +149,16 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
         return {buffer};
     }
 
+    /*!
+     * \brief Apply the layer to the batch of input
+     * \param output The batch of output
+     * \param input The batch of input to apply the layer to
+     */
+    template <typename Input, typename Output>
+    void forward_batch(Output& output, const Input& input) const {
+        this->batch_activate_hidden(output, input);
+    }
+
     // This is specific to dyn because of the nv/nh
     void init_cg_context() {
         if (!this->cg_context_ptr) {

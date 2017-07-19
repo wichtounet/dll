@@ -71,7 +71,7 @@ struct dyn_shape_layer_3d : transform_layer<dyn_shape_layer_3d<Desc>> {
      * \param input The batch of input to apply the layer to
      */
     template <typename Input, typename Output>
-    void batch_activate_hidden(Output& output, const Input& input) const {
+    void forward_batch(Output& output, const Input& input) const {
         output = input;
     }
 

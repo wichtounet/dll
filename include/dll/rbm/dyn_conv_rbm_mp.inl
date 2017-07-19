@@ -219,17 +219,14 @@ struct dyn_conv_rbm_mp final : public standard_crbm_mp<dyn_conv_rbm_mp<Desc>, De
         //Nothing to change
     }
 
-    using base_type::batch_activate_hidden;
-
-    // Note: This is necessary here because of the pooling
-
-    template <typename V>
-    auto batch_activate_hidden(const V& v) const {
-        const auto Batch = etl::dim<0>(v);
-
-        etl::dyn_matrix<weight, 4> output(Batch, k, np1, np2);
-        base_type::batch_activate_pooling(output, v);
-        return output;
+    /*!
+     * \brief Apply the layer to the batch of input
+     * \param output The batch of output
+     * \param input The batch of input to apply the layer to
+     */
+    template <typename Input, typename Output>
+    void forward_batch(Output& output, const Input& input) const {
+        this->batch_activate_pooling(output, input);
     }
 
     friend base_type;

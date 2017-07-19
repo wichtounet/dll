@@ -102,7 +102,7 @@ struct conv_same_layer final : neural_layer<conv_same_layer<Desc>, Desc> {
     }
 
     template <typename H1, typename V, cpp_enable_if(etl::dimensions<V>() == 4)>
-    void batch_activate_hidden(H1&& output, const V& v) const {
+    void forward_batch(H1&& output, const V& v) const {
         dll::auto_timer timer("conv:forward_batch");
 
         output = etl::ml::convolution_forward<1, 1, P1, P2>(v, w);
@@ -110,7 +110,7 @@ struct conv_same_layer final : neural_layer<conv_same_layer<Desc>, Desc> {
     }
 
     template <typename H1, typename V, cpp_enable_if(etl::dimensions<V>() == 2)>
-    void batch_activate_hidden(H1&& output, const V& v) const {
+    void forward_batch(H1&& output, const V& v) const {
         dll::auto_timer timer("conv:forward_batch");
 
         output = etl::ml::convolution_forward<1, 1, P1, P2>(etl::reshape(v, etl::dim<0>(v), NC, NV1, NV2), w);

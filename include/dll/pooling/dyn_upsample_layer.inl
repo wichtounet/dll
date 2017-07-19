@@ -44,7 +44,7 @@ struct dyn_upsample_layer_3d final : dyn_unpooling_layer_3d<dyn_upsample_layer_3
      * \param input The input matrix
      */
     template <typename Input, typename Output>
-    void batch_activate_hidden(Output& output, const Input& input) const {
+    void forward_batch(Output& output, const Input& input) const {
         output = etl::upsample_3d(input, base::c1, base::c2, base::c3);
     }
 

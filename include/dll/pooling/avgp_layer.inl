@@ -43,7 +43,7 @@ struct avgp_layer_2d final : pooling_layer_2d<avgp_layer_2d<Desc>, Desc> {
      * \param input The input matrix
      */
     template <typename Input, typename Output>
-    static void batch_activate_hidden(Output& output, const Input& input) {
+    static void forward_batch(Output& output, const Input& input) {
         output = etl::ml::avg_pool_forward<base::C1, base::C2>(input);
     }
 
@@ -168,7 +168,7 @@ struct avgp_layer_3d final : pooling_layer_3d<avgp_layer_3d<Desc>, Desc> {
      * \param input The input matrix
      */
     template <typename Input, typename Output>
-    static void batch_activate_hidden(Output& output, const Input& input) {
+    static void forward_batch(Output& output, const Input& input) {
         output = etl::avg_pool_3d<base::C1, base::C2, base::C3>(input);
     }
 

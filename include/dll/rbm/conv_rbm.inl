@@ -119,6 +119,16 @@ struct conv_rbm final : public standard_crbm<conv_rbm<Desc>, Desc> {
     }
 
     /*!
+     * \brief Apply the layer to the batch of input
+     * \param output The batch of output
+     * \param input The batch of input to apply the layer to
+     */
+    template <typename Input, typename Output>
+    void forward_batch(Output& output, const Input& input) const {
+        this->batch_activate_hidden(output, input);
+    }
+
+    /*!
      * \brief Prepare a set of empty outputs for this layer
      * \param samples The number of samples to prepare the output for
      * \return a container containing empty ETL matrices suitable to store samples output of this layer

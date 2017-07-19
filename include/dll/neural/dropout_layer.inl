@@ -32,7 +32,7 @@ struct dropout_layer : transform_layer<dropout_layer<Desc>> {
         return {buffer};
     }
 
-    using base_type::test_batch_activate_hidden;
+    using base_type::test_forward_batch;
 
     /*!
      * \brief Apply the layer to the batch of input
@@ -40,7 +40,7 @@ struct dropout_layer : transform_layer<dropout_layer<Desc>> {
      * \param input The batch of input to apply the layer to
      */
     template <typename Input, typename Output>
-    static void batch_activate_hidden(Output& output, const Input& input) {
+    static void forward_batch(Output& output, const Input& input) {
         output = input;
     }
 
@@ -50,7 +50,7 @@ struct dropout_layer : transform_layer<dropout_layer<Desc>> {
      * \param input The batch of input to apply the layer to
      */
     template <typename Input, typename Output>
-    static void test_batch_activate_hidden(Output& output, const Input& input) {
+    static void test_forward_batch(Output& output, const Input& input) {
         output = input;
     }
 
@@ -60,7 +60,7 @@ struct dropout_layer : transform_layer<dropout_layer<Desc>> {
      * \param input The batch of input to apply the layer to
      */
     template <typename Input, typename Output>
-    static void train_batch_activate_hidden(Output& output, const Input& input) {
+    static void train_forward_batch(Output& output, const Input& input) {
         std::uniform_real_distribution<float> dist(0.0f, 1.0f);
         auto& g = dll::rand_engine();
 

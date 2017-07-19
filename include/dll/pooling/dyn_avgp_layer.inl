@@ -39,24 +39,12 @@ struct dyn_avgp_layer_2d final : dyn_pooling_layer_2d<dyn_avgp_layer_2d<Desc>, D
     using output_t     = typename base::output_t;     ///< The type of many output
 
     /*!
-     * \brief Apply the layer to the batch of input
-     * \return A batch of output corresponding to the activated input
-     */
-    template <typename V>
-    auto batch_activate_hidden(const V& v) const {
-        const auto Batch = etl::dim<0>(v);
-        etl::dyn_matrix<weight, 4> output(Batch, base::o1, base::o2, base::o3);
-        batch_activate_hidden(output, v);
-        return output;
-    }
-
-    /*!
      * \brief Forward activation of the layer for one batch of sample
      * \param output The output matrix
      * \param input The input matrix
      */
     template <typename Input, typename Output>
-    void batch_activate_hidden(Output& output, const Input& input) const {
+    void forward_batch(Output& output, const Input& input) const {
         output = etl::ml::avg_pool_forward(input, base::c1, base::c2);
     }
 
@@ -177,7 +165,7 @@ struct dyn_avgp_layer_3d final : dyn_pooling_layer_3d<dyn_avgp_layer_3d<Desc>, D
      * \param input The input matrix
      */
     template <typename Input, typename Output>
-    void batch_activate_hidden(Output& output, const Input& input) const {
+    void forward_batch(Output& output, const Input& input) const {
         output = etl::avg_pool_3d(input, base::c1, base::c2, base::c3);
     }
 

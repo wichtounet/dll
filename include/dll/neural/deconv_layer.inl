@@ -94,7 +94,7 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
     }
 
     template <typename H1, typename V, cpp_enable_if(etl::decay_traits<H1>::is_fast)>
-    void batch_activate_hidden(H1&& output, const V& v) const {
+    void forward_batch(H1&& output, const V& v) const {
         output = etl::conv_4d_full_flipped(v, w);
 
         static constexpr auto batch_size = etl::decay_traits<H1>::template dim<0>();
@@ -105,7 +105,7 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
     }
 
     template <typename H1, typename V, cpp_disable_if(etl::decay_traits<H1>::is_fast)>
-    void batch_activate_hidden(H1&& output, const V& v) const {
+    void forward_batch(H1&& output, const V& v) const {
         output = etl::conv_4d_full_flipped(v, w);
 
         auto batch_size = etl::dim<0>(output);

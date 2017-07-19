@@ -488,7 +488,7 @@ struct sgd_trainer {
                 first_ctx.input = inputs;
             }
 
-            first_layer.train_batch_activate_hidden(first_ctx.output, first_ctx.input);
+            first_layer.train_forward_batch(first_ctx.output, first_ctx.input);
 
             cpp::for_each_pair(full_context, [](auto& layer_ctx_1, auto& layer_ctx_2) {
                 auto& layer_2 = layer_ctx_2.first;
@@ -497,7 +497,7 @@ struct sgd_trainer {
                 auto& ctx2 = *layer_ctx_2.second;
 
                 ctx2.input = ctx1.output;
-                layer_2.train_batch_activate_hidden(ctx2.output, ctx2.input);
+                layer_2.train_forward_batch(ctx2.output, ctx2.input);
             });
         }
 
