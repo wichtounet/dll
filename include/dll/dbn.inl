@@ -761,6 +761,7 @@ public:
 
     // Forward one batch at a time
 
+    // Forward functions are not perfect:
     // TODO: Transform layers should be applied inline
 
     template <size_t LS, size_t L, typename Input, cpp_enable_if((L != LS))>
@@ -788,8 +789,6 @@ public:
     // larger range of input. The rationale being that time should
     // be spent in forward_batch
 
-    // TODO: Transform layers should be applied inline
-
     template <size_t LS, size_t L, typename Input, cpp_enable_if((L != LS))>
     decltype(auto) forward_one_impl(Input&& sample) {
         decltype(auto) layer = layer_get<L>();
@@ -814,9 +813,6 @@ public:
     // This is not as fast as it could be, far from it, but supports
     // larger range of input. The rationale being that time should
     // be spent in forward_batch
-
-    // TODO: Transform layers should be applied inline
-    // TODO: Should delegate to forward_batch
 
     template <size_t LS, size_t L, typename Inputs, cpp_enable_if((L != LS))>
     decltype(auto) forward_many_impl(Inputs&& samples) {
@@ -849,9 +845,6 @@ public:
     // This is not as fast as it could be, far from it, but supports
     // larger range of input. The rationale being that time should
     // be spent in forward_batch
-
-    // TODO: Transform layers should be applied inline
-    // TODO: Should delegate to forward_batch
 
     template <size_t LS, size_t L, typename Iterator, cpp_enable_if((L != LS))>
     decltype(auto) forward_many_impl(const Iterator& first, const Iterator& last) {
