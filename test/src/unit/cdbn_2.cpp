@@ -40,7 +40,7 @@ TEST_CASE("unit/cdbn/mnist/7", "[cdbn][ap][svm][unit]") {
 
     dbn->pretrain(dataset.training_images, 25);
 
-    auto output = dbn->activation_probabilities(dataset.training_images.front());
+    auto output = dbn->forward_one(dataset.training_images.front());
     REQUIRE(output.size() == 8 * 4 * 4);
 
     auto result = dbn->svm_train(dataset.training_images, dataset.training_labels);
@@ -69,7 +69,7 @@ TEST_CASE("unit/cdbn/mnist/8", "[cdbn][ap][svm][unit]") {
 
     dbn->pretrain(dataset.training_images, 20);
 
-    auto output = dbn->activation_probabilities(dataset.training_images.front());
+    auto output = dbn->forward_one(dataset.training_images.front());
     REQUIRE(output.size() == 1600);
 
     auto result = dbn->svm_train(dataset.training_images, dataset.training_labels);

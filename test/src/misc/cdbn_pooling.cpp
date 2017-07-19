@@ -36,7 +36,7 @@ TEST_CASE("conv_dbn/mnist_9", "max_pooling") {
 
     dbn->pretrain(dataset.training_images, 20);
 
-    auto output = dbn->activation_probabilities(dataset.training_images.front());
+    auto output = dbn->forward_one(dataset.training_images.front());
 
     REQUIRE(dbn->output_size() == 800);
     REQUIRE(output.size() == 800);
@@ -70,7 +70,7 @@ TEST_CASE("conv_dbn/mnist_10", "max_pooling") {
 
     REQUIRE(dbn->output_size() == 800);
 
-    auto output = dbn->activation_probabilities(dataset.training_images.front());
+    auto output = dbn->forward_one(dataset.training_images.front());
 
     REQUIRE(output.size() == 800);
 
@@ -102,7 +102,7 @@ TEST_CASE("conv_dbn/mnist_11", "avg_pooling") {
 
     dbn->pretrain(dataset.training_images, 20);
 
-    auto output = dbn->activation_probabilities(dataset.training_images.front());
+    auto output = dbn->forward_one(dataset.training_images.front());
 
     REQUIRE(output.size() == 800);
 
@@ -135,7 +135,7 @@ TEST_CASE("conv_dbn/mnist_12", "avgp_pooling") {
 
     dbn->pretrain(dataset.training_images, 20);
 
-    auto output = dbn->activation_probabilities(dataset.training_images.front());
+    auto output = dbn->forward_one(dataset.training_images.front());
 
     REQUIRE(output.size() == 800);
 
@@ -169,7 +169,7 @@ TEST_CASE("conv_dbn/mnist_13", "nop_layers") {
 
     dbn->pretrain(dataset.training_images, 2);
 
-    auto output = dbn->activation_probabilities(dataset.training_images.front());
+    auto output = dbn->forward_one(dataset.training_images.front());
 
     REQUIRE(output.size() == 3200);
 

@@ -71,7 +71,7 @@ struct layer {
      * \return The test representation for the given input
      */
     template <typename Input>
-    auto forward_one(const Input& input) const {
+    auto test_forward_one(const Input& input) const {
         // Prepare one fully-ready output
         auto output = prepare_one_ready_output(as_derived(), input);
 
@@ -80,6 +80,37 @@ struct layer {
 
         // Return the forward-propagated result
         return output;
+    }
+
+    /*!
+     * \brief Compute the test representation for a given input
+     *
+     * \param input The input to compute the representation from
+     *
+     * \return The test representation for the given input
+     */
+    template <typename Input>
+    auto train_forward_one(const Input& input) const {
+        // Prepare one fully-ready output
+        auto output = prepare_one_ready_output(as_derived(), input);
+
+        // Forward propagation
+        train_forward_one(output, input);
+
+        // Return the forward-propagated result
+        return output;
+    }
+
+    /*!
+     * \brief Compute the test representation for a given input
+     *
+     * \param input The input to compute the representation from
+     *
+     * \return The test representation for the given input
+     */
+    template <typename Input>
+    auto forward_one(const Input& input) const {
+        return test_forward_one(input);
     }
 
     /*!

@@ -161,7 +161,7 @@ TEST_CASE("unit/cdbn/mnist/6", "[cdbn][mp][svm][unit]") {
 
     dbn->pretrain(dataset.training_images, 20);
 
-    auto output = dbn->activation_probabilities(dataset.training_images.front());
+    auto output = dbn->forward_one(dataset.training_images.front());
     REQUIRE(output.size() == 200);
 
     auto result = dbn->svm_train(dataset.training_images, dataset.training_labels);

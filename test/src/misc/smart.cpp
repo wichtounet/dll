@@ -33,9 +33,9 @@ TEST_CASE("smart/mnist/1", "[dbn][smart]") {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    REQUIRE(dbn->activation_probabilities(dataset.training_images[0]).size() == 100);
-    REQUIRE(dbn->train_activation_probabilities(dataset.training_images[0]).size() == 100);
-    REQUIRE(dbn->test_activation_probabilities(dataset.training_images[0]).size() == 100);
+    REQUIRE(dbn->forward_one(dataset.training_images[0]).size() == 100);
+    REQUIRE(dbn->train_forward_one(dataset.training_images[0]).size() == 100);
+    REQUIRE(dbn->test_forward_one(dataset.training_images[0]).size() == 100);
     REQUIRE(dbn->full_activation_probabilities(dataset.training_images[0]).size() == 100);
 }
 
@@ -55,8 +55,8 @@ TEST_CASE("smart/mnist/2", "[dbn][smart]") {
 
     auto dbn = std::make_unique<dbn_t>();
 
-    REQUIRE(dbn->activation_probabilities(dataset.training_images[0]).size() == 100);
-    REQUIRE(dbn->train_activation_probabilities(dataset.training_images[0]).size() == 100);
-    REQUIRE(dbn->test_activation_probabilities(dataset.training_images[0]).size() == 100);
+    REQUIRE(dbn->forward_one(dataset.training_images[0]).size() == 100);
+    REQUIRE(dbn->train_forward_one(dataset.training_images[0]).size() == 100);
+    REQUIRE(dbn->test_forward_one(dataset.training_images[0]).size() == 100);
     REQUIRE(dbn->full_activation_probabilities(dataset.training_images[0]).size() == 300);
 }

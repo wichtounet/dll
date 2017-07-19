@@ -711,7 +711,7 @@ public:
             std::max_element(std::prev(output_a.end(), labels), output_a.end()));
     }
 
-    //Note: features_sub are alias functions for activation_probabilities_sub
+    //Note: features_sub are alias functions for forward_one
 
     /*!
      * \brief Returns the output features of the Ith layer for the given sample and saves them in the given container
@@ -722,7 +722,7 @@ public:
      */
     template <size_t I, typename Input, typename Output, typename T = this_type>
     auto features_sub(const Input& sample, Output& result) const {
-        return result = activation_probabilities_sub<I>(sample);
+        return result = forward_one<I>(sample);
     }
 
     /*!
@@ -733,10 +733,10 @@ public:
      */
     template <size_t I, typename Input>
     auto features_sub(const Input& sample) const {
-        return activation_probabilities_sub<I>(sample);
+        return forward_one<I>(sample);
     }
 
-    //Note: features are alias functions for activation_probabilities
+    //Note: features functions are alias functions for forward_one
 
     /*!
      * \brief Computes the output features for the given sample and saves them in the given container
@@ -746,7 +746,7 @@ public:
      */
     template <typename Output>
     auto features(const input_one_t& sample, Output& result) const {
-        return activation_probabilities(sample, result);
+        return result = forward_one(sample);
     }
 
     /*!
@@ -756,7 +756,7 @@ public:
      */
     template<typename Input>
     auto features(const Input& sample) const {
-        return activation_probabilities(sample);
+        return forward_one(sample);
     }
 
     // Forward one batch at a time
@@ -765,13 +765,13 @@ public:
     // TODO: Transform layers should be applied inline
 
     template <size_t LS, size_t L, typename Input, cpp_enable_if((L != LS))>
-    decltype(auto) test_forward_batch_impl(Input&& sample) {
+    decltype(auto) test_forward_batch_impl(Input&& sample) const {
         decltype(auto) next = layer_get<L>().test_forward_batch(sample);
         return test_forward_batch_impl<LS, L+1>(next);
     }
 
     template <size_t LS, size_t L, typename Input, cpp_enable_if((L == LS))>
-    decltype(auto) test_forward_batch_impl(Input&& sample) {
+    decltype(auto) test_forward_batch_impl(Input&& sample) const {
         return layer_get<L>().test_forward_batch(sample);
     }
 
@@ -787,7 +787,7 @@ public:
     }
 
     template <size_t LS = layers - 1, size_t L = 0, typename Input>
-    decltype(auto) test_forward_batch(Input&& sample) {
+    decltype(auto) test_forward_batch(Input&& sample) const {
         return test_forward_batch_impl<LS, L>(sample);
     }
 
@@ -797,7 +797,7 @@ public:
     }
 
     template <size_t LS = layers - 1, size_t L = 0, typename Input>
-    decltype(auto) forward_batch(Input&& sample) {
+    decltype(auto) forward_batch(Input&& sample) const {
         return test_forward_batch_impl<LS, L>(sample);
     }
 
@@ -807,20 +807,20 @@ public:
     // be spent in forward_batch
 
     template <size_t LS, size_t L, typename Input, cpp_enable_if((L != LS))>
-    decltype(auto) test_forward_one_impl(Input&& sample) {
+    decltype(auto) test_forward_one_impl(Input&& sample) const {
         decltype(auto) next = layer_get<L>().test_forward_one(sample);
-        return test_forward_one_impl<L+1>(next);
+        return test_forward_one_impl<LS, L+1>(next);
     }
 
     template <size_t LS, size_t L, typename Input, cpp_enable_if((L == LS))>
-    decltype(auto) test_forward_one_impl(Input&& sample) {
+    decltype(auto) test_forward_one_impl(Input&& sample) const {
         return layer_get<L>().test_forward_one(sample);
     }
 
     template <size_t LS, size_t L, typename Input, cpp_enable_if((L != LS))>
     decltype(auto) train_forward_one_impl(Input&& sample) {
         decltype(auto) next = layer_get<L>().train_forward_one(sample);
-        return train_forward_one_impl<L+1>(next);
+        return train_forward_one_impl<LS, L+1>(next);
     }
 
     template <size_t LS, size_t L, typename Input, cpp_enable_if((L == LS))>
@@ -829,7 +829,7 @@ public:
     }
 
     template <size_t LS = layers - 1, size_t L = 0, typename Input>
-    decltype(auto) test_forward_one(Input&& sample) {
+    decltype(auto) test_forward_one(Input&& sample) const {
         return test_forward_one_impl<LS, L>(sample);
     }
 
@@ -839,7 +839,7 @@ public:
     }
 
     template <size_t LS = layers - 1, size_t L = 0, typename Input>
-    decltype(auto) forward_one(Input&& sample) {
+    decltype(auto) forward_one(Input&& sample) const {
         return test_forward_one_impl<LS, L>(sample);
     }
 
@@ -849,18 +849,18 @@ public:
     // be spent in forward_batch
 
     template <size_t LS, size_t L, typename Inputs, cpp_enable_if((L != LS))>
-    decltype(auto) test_forward_many_impl(Inputs&& samples) {
+    decltype(auto) test_forward_many_impl(Inputs&& samples) const {
         decltype(auto) layer = layer_get<L>();
 
         auto next = prepare_many_ready_output(layer, samples[0], samples.size());
 
         layer.test_forward_many(next, samples);
 
-        return test_forward_many_impl<L+1>(next);
+        return test_forward_many_impl<LS, L+1>(next);
     }
 
     template <size_t LS, size_t L, typename Inputs, cpp_enable_if((L == LS))>
-    decltype(auto) test_forward_many_impl(Inputs&& samples) {
+    decltype(auto) test_forward_many_impl(Inputs&& samples) const {
         decltype(auto) layer = layer_get<L>();
 
         auto out = prepare_many_ready_output(layer, samples[0], samples.size());
@@ -878,7 +878,7 @@ public:
 
         layer.train_forward_many(next, samples);
 
-        return train_forward_many_impl<L+1>(next);
+        return train_forward_many_impl<LS, L+1>(next);
     }
 
     template <size_t LS, size_t L, typename Inputs, cpp_enable_if((L == LS))>
@@ -893,7 +893,7 @@ public:
     }
 
     template <size_t LS = layers - 1, size_t L = 0, typename Inputs>
-    decltype(auto) test_forward_many(Inputs&& samples) {
+    decltype(auto) test_forward_many(Inputs&& samples) const {
         return test_forward_many_impl<LS, L>(samples);
     }
 
@@ -903,7 +903,7 @@ public:
     }
 
     template <size_t LS = layers - 1, size_t L = 0, typename Inputs>
-    decltype(auto) forward_many(Inputs&& samples) {
+    decltype(auto) forward_many(Inputs&& samples) const {
         return test_forward_many_impl<LS, L>(samples);
     }
 
@@ -913,7 +913,7 @@ public:
     // be spent in forward_batch
 
     template <size_t LS, size_t L, typename Iterator, cpp_enable_if((L != LS))>
-    decltype(auto) test_forward_many_impl(const Iterator& first, const Iterator& last) {
+    decltype(auto) test_forward_many_impl(const Iterator& first, const Iterator& last) const {
         decltype(auto) layer = layer_get<L>();
 
         auto n = std::distance(first, last);
@@ -924,11 +924,11 @@ public:
             layer.test_forward_one(next[i], sample);
         });
 
-        return test_forward_many_impl<L+1>(next);
+        return test_forward_many_impl<LS, L+1>(next);
     }
 
     template <size_t LS, size_t L, typename Iterator, cpp_enable_if((L == LS))>
-    decltype(auto) test_forward_many_impl(const Iterator& first, const Iterator& last) {
+    decltype(auto) test_forward_many_impl(const Iterator& first, const Iterator& last) const {
         decltype(auto) layer = layer_get<L>();
 
         auto n = std::distance(first, last);
@@ -954,7 +954,7 @@ public:
             layer.train_forward_one(next[i], sample);
         });
 
-        return train_forward_many_impl<L+1>(next);
+        return train_forward_many_impl<LS, L+1>(next);
     }
 
     template <size_t LS, size_t L, typename Iterator, cpp_enable_if((L == LS))>
@@ -973,7 +973,7 @@ public:
     }
 
     template <size_t LS = layers - 1, size_t L = 0, typename Iterator>
-    decltype(auto) test_forward_many(const Iterator& first, const Iterator& last) {
+    decltype(auto) test_forward_many(const Iterator& first, const Iterator& last) const {
         return test_forward_many_impl<LS, L>(first, last);
     }
 
@@ -983,7 +983,7 @@ public:
     }
 
     template <size_t LS = layers - 1, size_t L = 0, typename Iterator>
-    decltype(auto) forward_many(const Iterator& first, const Iterator& last) {
+    decltype(auto) forward_many(const Iterator& first, const Iterator& last) const {
         return test_forward_many_impl<LS, L>(first, last);
     }
 
@@ -1011,7 +1011,7 @@ public:
 
     template <typename Input>
     size_t predict(const Input& item) const {
-        auto result = activation_probabilities(item);
+        auto result = forward_one(item);
         return predict_label(result);
     }
 
@@ -1479,56 +1479,10 @@ public:
         return std::make_tuple(error, loss);
     }
 
-private:
-    template <bool Train, size_t I, size_t S, typename Input, cpp_enable_if(I == S)>
-    auto activation_probabilities_impl(const Input& input) const {
-        decltype(auto) layer = layer_get<I>();
-        // TODO Correctly prepare train/test output
-        auto output = prepare_one_ready_output(layer, input);
-        layer.template select_forward_one<Train>(output, input);
-        return output;
-    }
-
-    template <bool Train, size_t I, size_t S, typename Input, cpp_enable_if(I != S)>
-    auto activation_probabilities_impl(const Input& input) const {
-        decltype(auto) previous_output = activation_probabilities_impl<Train, I, I>(input);
-        return activation_probabilities_impl<Train, I+1, S>(previous_output);
-    }
-
 public:
-    template <size_t I, typename Input>
-    auto train_activation_probabilities_sub(const Input& input) const {
-        return activation_probabilities_impl<true, 0, I>(input);
-    }
-
-    template <size_t I, typename Input>
-    auto test_activation_probabilities_sub(const Input& input) const {
-        return activation_probabilities_impl<false, 0, I>(input);
-    }
-
-    template <size_t I, typename Input>
-    auto activation_probabilities_sub(const Input& input) const {
-        return train_activation_probabilities_sub<I>(input);
-    }
-
-    template <typename Input>
-    auto train_activation_probabilities(const Input& input) const {
-        return activation_probabilities_impl<true, 0, layers - 1>(input);
-    }
-
-    template <typename Input>
-    auto test_activation_probabilities(const Input& input) const {
-        return activation_probabilities_impl<false, 0, layers - 1>(input);
-    }
-
-    template <typename Input>
-    auto activation_probabilities(const Input& input) const {
-        return train_activation_probabilities(input);
-    }
-
     template <size_t I, size_t S, typename Input, cpp_enable_if(I != S)>
     void full_activation_probabilities(const Input& input, full_output_t& result, size_t& i) const {
-        auto output = activation_probabilities_impl<false, I, I>(input);
+        auto output = forward_one<I, I>(input);
         for(auto& feature : output){
             result[i++] = feature;
         }
@@ -1537,7 +1491,7 @@ public:
 
     template <size_t I, size_t S, typename Input, cpp_enable_if(I == S)>
     void full_activation_probabilities(const Input& input, full_output_t& result, size_t& i) const {
-        auto output = activation_probabilities_impl<false, I, I>(input);
+        auto output = forward_one<I, I>(input);
         for(auto& feature : output){
             result[i++] = feature;
         }
@@ -1626,7 +1580,7 @@ private:
 
     template <typename Input, typename DBN = this_type, cpp_disable_if(dbn_traits<DBN>::concatenate())>
     auto get_final_activation_probabilities(const Input& sample) const {
-        return activation_probabilities(sample);
+        return forward_one(sample);
     }
 
 public:
@@ -2214,7 +2168,7 @@ private:
 
     template <typename Samples,typename Input, typename DBN = this_type, cpp_disable_if(dbn_traits<DBN>::concatenate())>
     void add_activation_probabilities(Samples& result, const Input& sample) {
-        result.push_back(activation_probabilities(sample));
+        result.push_back(forward_one(sample));
     }
 
     template <typename Input>
