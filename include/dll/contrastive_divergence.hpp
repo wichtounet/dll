@@ -120,7 +120,7 @@ void update_normal(RBM& rbm, Trainer& t) {
     });
 
     //TODO the batch is not necessary full!
-    const auto n_samples = double(etl::dim<0>(t.w_grad_b));
+    const auto n_samples = double(etl::dim<0>(t.v1));
 
     // Gradients clipping
     if(rbm_layer_traits<rbm_t>::has_clip_gradients()){
@@ -262,7 +262,7 @@ void compute_gradients_normal(InputBatch& input_batch, ExpectedBatch& expected_b
     cpp_assert(etl::size(t.v1) >= etl::size(input_batch), "Invalid input to compute_gradients_normal");
     cpp_assert(etl::size(t.vf) >= etl::size(expected_batch), "Invalid input to compute_gradients_normal");
 
-    const auto B          = etl::dim<0>(t.w_grad_b);
+    const auto B          = etl::dim<0>(t.v1);
     const size_t IB       = etl::dim<0>(input_batch);
     const bool full_batch = (IB == get_batch_size(rbm));
 
@@ -498,8 +498,6 @@ struct base_cd_trainer : base_trainer<RBM> {
     etl::fast_matrix<weight, batch_size, num_hidden> h2_a; ///< The hidden activation probabilites at step N
     etl::fast_matrix<weight, batch_size, num_hidden> h2_s; ///< The hidden states at step N
 
-    etl::fast_matrix<weight, batch_size, num_visible, num_hidden> w_grad_b;
-
     //Gradients
     etl::fast_matrix<weight, num_visible, num_hidden> w_grad; ///< The gradients of the weights
     etl::fast_vector<weight, num_hidden> b_grad;              ///< The gradients of the hidden biases
@@ -587,8 +585,6 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
     etl::dyn_matrix<weight> h2_a; ///< The hidden activations at step K
     etl::dyn_matrix<weight> h2_s; ///< The hidden samples at step K
 
-    etl::dyn_matrix<weight, 3> w_grad_b;
-
     //Gradients
     etl::dyn_matrix<weight> w_grad; ///< The gradients of the weights
     etl::dyn_vector<weight> b_grad; ///< The gradients of the hidden biases
@@ -626,7 +622,6 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
               v2_s(get_batch_size(rbm), rbm.num_visible),
               h2_a(get_batch_size(rbm), rbm.num_hidden),
               h2_s(get_batch_size(rbm), rbm.num_hidden),
-              w_grad_b(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden),
               w_grad(rbm.num_visible, rbm.num_hidden),
               b_grad(rbm.num_hidden),
               c_grad(rbm.num_visible),
@@ -652,7 +647,6 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
               v2_s(get_batch_size(rbm), rbm.num_visible),
               h2_a(get_batch_size(rbm), rbm.num_hidden),
               h2_s(get_batch_size(rbm), rbm.num_hidden),
-              w_grad_b(get_batch_size(rbm), rbm.num_visible, rbm.num_hidden),
               w_grad(rbm.num_visible, rbm.num_hidden),
               b_grad(rbm.num_hidden),
               c_grad(rbm.num_visible),
