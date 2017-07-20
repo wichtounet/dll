@@ -136,7 +136,7 @@ struct dbn_trainer {
         double error = train_stats.first;
 
         current_error = error;
-        current_loss  = loss;
+        current_loss  = train_stats.second;
 
         //After some time increase the momentum
         if (dbn_traits<dbn_t>::updater() == updater_type::MOMENTUM && epoch == dbn.final_momentum_epoch) {
