@@ -49,7 +49,8 @@ struct dbn_trainer {
 
     std::unique_ptr<trainer_t<dbn_t>> trainer; ///< The concrete trainer
 
-    error_type error      = 0.0; ///< The current error
+    error_type current_error = 0.0; ///< The current error
+    error_type current_loss  = 0.0; ///< The current loss
 
     /*!
      * \brief Initialize the training
@@ -70,8 +71,9 @@ struct dbn_trainer {
         //Initialize the trainer if necessary
         trainer->init_training(batch_size);
 
-        // Set the initial error
-        error = 0.0;
+        // Set the initial error and loss
+        current_error = 0.0;
+        current_loss = 0.0;
     }
 
     /*!
@@ -79,10 +81,9 @@ struct dbn_trainer {
      * \param dbn The network that was trained
      */
     error_type stop_training(dbn_t& dbn){
-
         watcher.fine_tuning_end(dbn);
 
-        return error;
+        return current_error;
     }
 
     /*!
@@ -98,23 +99,24 @@ struct dbn_trainer {
      * \brief Indicates the end of an epoch
      * \param dbn The network that is trained
      * \param epoch The current epoch
-     * \param new_error The new training error
+     * \param error The new training error
      * \param loss The new training loss
      * \return true if the training is over
      */
-    bool stop_epoch(dbn_t& dbn, size_t epoch, double new_error, double loss){
-        error = new_error;
+    bool stop_epoch(dbn_t& dbn, size_t epoch, double error, double loss){
+        current_error = error;
+        current_loss  = loss;
 
         //After some time increase the momentum
         if (dbn_traits<dbn_t>::updater() == updater_type::MOMENTUM && epoch == dbn.final_momentum_epoch) {
             dbn.momentum = dbn.final_momentum;
         }
 
-        watcher.ft_epoch_end(epoch, new_error, loss, dbn);
+        watcher.ft_epoch_end(epoch, error, loss, dbn);
 
         //Once the goal is reached, stop training
         if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()){
-            if (new_error <= dbn.goal) {
+            if (error <= dbn.goal) {
                 return true;
             }
         }
@@ -131,20 +133,21 @@ struct dbn_trainer {
      * \return true if the training is over
      */
     bool stop_epoch(dbn_t& dbn, size_t epoch, const std::pair<double, double>& train_stats, const std::pair<double, double>& val_stats){
-        double new_error = train_stats.first;
+        double error = train_stats.first;
 
-        error = new_error;
+        current_error = error;
+        current_loss  = loss;
 
         //After some time increase the momentum
         if (dbn_traits<dbn_t>::updater() == updater_type::MOMENTUM && epoch == dbn.final_momentum_epoch) {
             dbn.momentum = dbn.final_momentum;
         }
 
-        watcher.ft_epoch_end(epoch, new_error, train_stats.second, val_stats.first, val_stats.second, dbn);
+        watcher.ft_epoch_end(epoch, error, train_stats.second, val_stats.first, val_stats.second, dbn);
 
         //Once the goal is reached, stop training
         if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()){
-            if (new_error <= dbn.goal) {
+            if (error <= dbn.goal) {
                 return true;
             }
         }
@@ -154,7 +157,7 @@ struct dbn_trainer {
 
     template<typename Generator>
     std::pair<double, double> compute_error_loss(dbn_t& dbn, Generator& generator){
-        // Compute the error at this epoch
+        // Compute the error and loss at this epoch
         double new_error;
         double new_loss;
 
