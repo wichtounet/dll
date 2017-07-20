@@ -34,11 +34,12 @@ TEST_CASE("unit/bn/1", "[unit][bn]") {
         >,
         dll::updater<dll::updater_type::ADADELTA>, dll::batch_size<25>>::dbn_t;
 
-    auto dataset = dll::make_mnist_dataset_sub(1000, 0, dll::batch_size<20>{}, dll::scale_pre<255>{});
+    auto dataset = dll::make_mnist_dataset_val(0, 1000, 2000, 0, dll::batch_size<20>{}, dll::scale_pre<255>{});
 
     auto dbn = std::make_unique<network_t>();
 
     dbn->display();
+    dataset.display();
 
     dbn->initial_momentum = 0.9;
     dbn->final_momentum   = 0.9;
@@ -65,7 +66,7 @@ TEST_CASE("unit/bn/2", "[unit][bn]") {
         >,
         dll::updater<dll::updater_type::ADADELTA>, dll::batch_size<25>>::dbn_t;
 
-    auto dataset = dll::make_mnist_dataset_sub(1000, 0, dll::batch_size<20>{}, dll::scale_pre<255>{});
+    auto dataset = dll::make_mnist_dataset_sub(0, 1000, 0, dll::batch_size<20>{}, dll::scale_pre<255>{});
 
     auto dbn = std::make_unique<network_t>();
 
@@ -104,7 +105,7 @@ TEST_CASE("unit/bn/3", "[unit][bn]") {
         >,
         dll::updater<dll::updater_type::ADADELTA>, dll::batch_size<25>>::dbn_t;
 
-    auto dataset = dll::make_mnist_dataset_sub(500, 0, dll::batch_size<20>{}, dll::scale_pre<255>{});
+    auto dataset = dll::make_mnist_dataset_sub(0, 500, 0, dll::batch_size<20>{}, dll::scale_pre<255>{});
 
     auto dbn = std::make_unique<network_t>();
 
@@ -143,7 +144,7 @@ TEST_CASE("unit/bn/4", "[unit][bn]") {
         >,
         dll::updater<dll::updater_type::ADADELTA>, dll::batch_size<25>>::dbn_t;
 
-    auto dataset = dll::make_mnist_dataset_sub(500, 0, dll::batch_size<20>{}, dll::scale_pre<255>{});
+    auto dataset = dll::make_mnist_dataset_sub(0, 500, 0, dll::batch_size<20>{}, dll::scale_pre<255>{});
 
     auto dbn = std::make_unique<network_t>();
 
@@ -186,7 +187,7 @@ TEST_CASE("unit/bn/5", "[unit][bn]") {
         >,
         dll::updater<dll::updater_type::ADADELTA>, dll::batch_size<25>>::dbn_t;
 
-    auto dataset = dll::make_mnist_dataset_sub(500, 0, dll::batch_size<20>{}, dll::scale_pre<255>{});
+    auto dataset = dll::make_mnist_dataset_sub(0, 500, 0, dll::batch_size<20>{}, dll::scale_pre<255>{});
 
     auto dbn = std::make_unique<network_t>();
 
