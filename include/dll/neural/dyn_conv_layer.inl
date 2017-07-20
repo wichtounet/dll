@@ -109,8 +109,14 @@ struct dyn_conv_layer final : neural_layer<dyn_conv_layer<Desc>, Desc> {
      * \return an std::string containing a short description of the layer
      */
     std::string to_short_string() const {
-        char buffer[1024];
-        snprintf(buffer, 1024, "Conv(dyn): %lux%lux%lu -> (%lux%lux%lu) -> %s -> %lux%lux%lu", nc, nv1, nv2, k, nw1, nw2, to_string(activation_function).c_str(), k, nh1, nh2);
+        char buffer[512];
+
+        if /*constexpr*/ (activation_function == function::IDENTITY) {
+            snprintf(buffer, 512, "Conv(dyn): %lux%lux%lu -> (%lux%lux%lu) -> %lux%lux%lu", nc, nv1, nv2, k, nw1, nw2, k, nh1, nh2);
+        } else {
+            snprintf(buffer, 512, "Conv(dyn): %lux%lux%lu -> (%lux%lux%lu) -> %s -> %lux%lux%lu", nc, nv1, nv2, k, nw1, nw2, to_string(activation_function).c_str(), k, nh1, nh2);
+        }
+
         return {buffer};
     }
 

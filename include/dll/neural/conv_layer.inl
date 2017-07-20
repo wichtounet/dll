@@ -90,8 +90,14 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
      * \return an std::string containing a short description of the layer
      */
     static std::string to_short_string() {
-        char buffer[1024];
-        snprintf(buffer, 1024, "Conv: %lux%lux%lu -> (%lux%lux%lu) -> %s -> %lux%lux%lu", NC, NV1, NV2, K, NW1, NW2, to_string(activation_function).c_str(), K, NH1, NH2);
+        char buffer[512];
+
+        if /*constexpr*/ (activation_function == function::IDENTITY) {
+            snprintf(buffer, 512, "Conv: %lux%lux%lu -> (%lux%lux%lu) -> %lux%lux%lu", NC, NV1, NV2, K, NW1, NW2, K, NH1, NH2);
+        } else {
+            snprintf(buffer, 512, "Conv: %lux%lux%lu -> (%lux%lux%lu) -> %s -> %lux%lux%lu", NC, NV1, NV2, K, NW1, NW2, to_string(activation_function).c_str(), K, NH1, NH2);
+        }
+
         return {buffer};
     }
 
