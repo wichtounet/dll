@@ -7,8 +7,9 @@
 
 #pragma once
 
-#include "dll/base_traits.hpp"
-#include "dll/neural_layer.hpp"
+#include "dll/base_traits.hpp"  // The traits
+#include "dll/neural_layer.hpp" // The base class
+#include "dll/util/timers.hpp"  // For auto_timer
 
 namespace dll {
 
