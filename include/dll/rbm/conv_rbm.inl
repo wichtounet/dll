@@ -199,8 +199,8 @@ struct conv_rbm final : public standard_crbm<conv_rbm<Desc>, Desc> {
      */
     template<typename C>
     void compute_gradients(C& context) const {
-        context.w_grad = etl::ml::convolution_backward_filter(context.input, context.errors);
-        context.b_grad = etl::bias_batch_sum_4d(context.errors);
+        std::get<0>(context.up.context)->grad = etl::ml::convolution_backward_filter(context.input, context.errors);
+        std::get<1>(context.up.context)->grad = etl::bias_batch_sum_4d(context.errors);
     }
 
     friend base_type;
@@ -368,9 +368,6 @@ struct sgd_context<DBN, conv_rbm<Desc>, L> {
     static constexpr size_t K   = layer_t::K;
 
     static constexpr auto batch_size = DBN::batch_size;
-
-    etl::fast_matrix<weight, K, NC, NW1, NW2> w_grad;
-    etl::fast_matrix<weight, K> b_grad;
 
     etl::fast_matrix<weight, batch_size, NC, NV1, NV2> input;
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> output;

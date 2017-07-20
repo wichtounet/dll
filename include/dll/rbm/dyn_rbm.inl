@@ -220,8 +220,8 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
      */
     template<typename C>
     void compute_gradients(C& context) const {
-        context.w_grad = batch_outer(context.input, context.errors);
-        context.b_grad = bias_batch_sum_2d(context.errors);
+        std::get<0>(context.up.context)->grad = batch_outer(context.input, context.errors);
+        std::get<1>(context.up.context)->grad = bias_batch_sum_2d(context.errors);
     }
 };
 
@@ -285,16 +285,12 @@ struct sgd_context<DBN, dyn_rbm<Desc>, L> {
 
     static constexpr auto batch_size = DBN::batch_size;
 
-    etl::dyn_matrix<weight, 2> w_grad;
-    etl::dyn_matrix<weight, 1> b_grad;
-
     etl::dyn_matrix<weight, 2> input;
     etl::dyn_matrix<weight, 2> output;
     etl::dyn_matrix<weight, 2> errors;
 
     sgd_context(layer_t& layer)
-            : w_grad(layer.num_visible, layer.num_hidden), b_grad(layer.num_hidden),
-              input(batch_size, layer.num_visible, 0.0), output(batch_size, layer.num_hidden, 0.0), errors(batch_size, layer.num_hidden, 0.0) {}
+            : input(batch_size, layer.num_visible, 0.0), output(batch_size, layer.num_hidden, 0.0), errors(batch_size, layer.num_hidden, 0.0) {}
 };
 
 /*!

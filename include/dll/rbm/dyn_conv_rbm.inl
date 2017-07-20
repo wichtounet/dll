@@ -239,8 +239,8 @@ struct dyn_conv_rbm final : public standard_crbm<dyn_conv_rbm<Desc>, Desc> {
      */
     template<typename C>
     void compute_gradients(C& context) const {
-        context.w_grad = etl::ml::convolution_backward_filter(context.input, context.errors);
-        context.b_grad = etl::bias_batch_sum_4d(context.errors);
+        std::get<0>(context.up.context)->grad = etl::ml::convolution_backward_filter(context.input, context.errors);
+        std::get<1>(context.up.context)->grad = etl::bias_batch_sum_4d(context.errors);
     }
 
     friend base_type;
@@ -348,16 +348,12 @@ struct sgd_context<DBN, dyn_conv_rbm<Desc>, L> {
 
     static constexpr auto batch_size = DBN::batch_size;
 
-    etl::dyn_matrix<weight, 4> w_grad;
-    etl::dyn_matrix<weight, 1> b_grad;
-
     etl::dyn_matrix<weight, 4> input;
     etl::dyn_matrix<weight, 4> output;
     etl::dyn_matrix<weight, 4> errors;
 
     sgd_context(layer_t& layer)
-            : w_grad(layer.k, layer.nc, layer.nv1 - layer.nh1 + 1, layer.nv2 - layer.nh2 + 1), b_grad(layer.k),
-              input(batch_size, layer.nc, layer.nv1, layer.nv2),
+            : input(batch_size, layer.nc, layer.nv1, layer.nv2),
               output(batch_size, layer.k, layer.nh1, layer.nh2), errors(batch_size, layer.k, layer.nh1, layer.nh2) {}
 };
 

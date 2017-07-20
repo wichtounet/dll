@@ -220,8 +220,8 @@ struct dyn_conv_same_layer final : neural_layer<dyn_conv_same_layer<Desc>, Desc>
      */
     template<typename C>
     void compute_gradients(C& context) const {
-        context.w_grad = etl::ml::convolution_backward_filter(context.input, context.errors, 1, 1, p1, p2);
-        context.b_grad = etl::bias_batch_sum_4d(context.errors);
+        std::get<0>(context.up.context)->grad = etl::ml::convolution_backward_filter(context.input, context.errors, 1, 1, p1, p2);
+        std::get<1>(context.up.context)->grad = etl::bias_batch_sum_4d(context.errors);
     }
 };
 
@@ -253,16 +253,12 @@ struct sgd_context<DBN, dyn_conv_same_layer<Desc>, L> {
 
     static constexpr auto batch_size = DBN::batch_size;
 
-    etl::dyn_matrix<weight, 4> w_grad;
-    etl::dyn_matrix<weight, 1> b_grad;
-
     etl::dyn_matrix<weight, 4> input;
     etl::dyn_matrix<weight, 4> output;
     etl::dyn_matrix<weight, 4> errors;
 
     sgd_context(layer_t& layer)
-            : w_grad(layer.k, layer.nc, layer.nw1, layer.nw2), b_grad(layer.k),
-              input(batch_size, layer.nc, layer.nv1, layer.nv2),
+            : input(batch_size, layer.nc, layer.nv1, layer.nv2),
               output(batch_size, layer.k, layer.nv1, layer.nv2), errors(batch_size, layer.k, layer.nv1, layer.nv2) {}
 };
 

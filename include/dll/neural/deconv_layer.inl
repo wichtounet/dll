@@ -202,7 +202,7 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
     template<typename C>
     void compute_gradients(C& context) const {
         //TODO Update the gradients (probably with conv_4d_valid_filter)
-        context.b_grad = etl::mean_r(etl::sum_l(context.errors));
+        std::get<1>(context.up.context)->grad = etl::mean_r(etl::sum_l(context.errors));
     }
 };
 
@@ -268,9 +268,6 @@ struct sgd_context<DBN, deconv_layer<Desc>, L> {
     static constexpr size_t K   = layer_t::K;
 
     static constexpr auto batch_size = DBN::batch_size;
-
-    etl::fast_matrix<weight, NC, K, NW1, NW2> w_grad;
-    etl::fast_matrix<weight, K> b_grad;
 
     etl::fast_matrix<weight, batch_size, NC, NV1, NV2> input;
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> output;

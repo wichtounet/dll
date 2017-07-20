@@ -189,10 +189,10 @@ struct dyn_batch_normalization_2d_layer : neural_layer<dyn_batch_normalization_2
     template<typename C>
     void compute_gradients(C& context) const {
         // Gradients of gamma
-        context.w_grad = etl::sum_l(input_pre >> context.errors);
+        std::get<0>(context.up.context)->grad = etl::sum_l(input_pre >> context.errors);
 
         // Gradients of beta
-        context.b_grad = etl::sum_l(context.errors);
+        std::get<1>(context.up.context)->grad = etl::sum_l(context.errors);
     }
 
     /*!
@@ -239,10 +239,7 @@ struct sgd_context<DBN, dyn_batch_normalization_2d_layer<Desc>, L> {
     etl::dyn_matrix<weight, 2> output; ///< A batch of output
     etl::dyn_matrix<weight, 2> errors; ///< A batch of errors
 
-    etl::dyn_matrix<weight, 1> w_grad;
-    etl::dyn_matrix<weight, 1> b_grad;
-
-    sgd_context(layer_t& layer) : input(batch_size, layer.Input), output(batch_size, layer.Input), errors(batch_size, layer.Input), w_grad(layer.Input), b_grad(layer.Input) {}
+    sgd_context(layer_t& layer) : input(batch_size, layer.Input), output(batch_size, layer.Input), errors(batch_size, layer.Input) {}
 };
 
 } //end of dll namespace

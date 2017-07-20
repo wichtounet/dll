@@ -223,10 +223,10 @@ struct dyn_batch_normalization_4d_layer : neural_layer<dyn_batch_normalization_4
     template<typename C>
     void compute_gradients(C& context) const {
         // Gradients of gamma
-        context.w_grad = etl::bias_batch_sum_4d(input_pre >> context.errors);
+        std::get<0>(context.up.context)->grad = etl::bias_batch_sum_4d(input_pre >> context.errors);
 
         // Gradients of beta
-        context.b_grad = etl::bias_batch_sum_4d(context.errors);
+        std::get<1>(context.up.context)->grad = etl::bias_batch_sum_4d(context.errors);
     }
 
     /*!
@@ -236,6 +236,10 @@ struct dyn_batch_normalization_4d_layer : neural_layer<dyn_batch_normalization_4
     template<typename DLayer>
     static void dyn_init(DLayer& /*dyn*/){
         // Nothing to do
+    }
+
+    decltype(auto) trainable_parameters(){
+        return std::make_tuple(std::ref(gamma), std::ref(beta));
     }
 };
 
@@ -271,11 +275,8 @@ struct sgd_context<DBN, dyn_batch_normalization_4d_layer<Desc>, L> {
     etl::dyn_matrix<weight, 4> output; ///< A batch of output
     etl::dyn_matrix<weight, 4> errors; ///< A batch of errors
 
-    etl::dyn_matrix<weight, 1> w_grad;
-    etl::dyn_matrix<weight, 1> b_grad;
-
     sgd_context(layer_t& layer)
-            : input(batch_size, layer.Kernels, layer.W, layer.H), output(batch_size, layer.Kernels, layer.W, layer.H), errors(batch_size, layer.Kernels, layer.W, layer.H), w_grad(layer.Kernels), b_grad(layer.Kernels) {}
+            : input(batch_size, layer.Kernels, layer.W, layer.H), output(batch_size, layer.Kernels, layer.W, layer.H), errors(batch_size, layer.Kernels, layer.W, layer.H) {}
 };
 
 } //end of dll namespace

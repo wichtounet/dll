@@ -203,10 +203,10 @@ struct batch_normalization_4d_layer : neural_layer<batch_normalization_4d_layer<
     template<typename C>
     void compute_gradients(C& context) const {
         // Gradients of gamma
-        context.w_grad = etl::bias_batch_sum_4d(input_pre >> context.errors);
+        std::get<0>(context.up.context)->grad = etl::bias_batch_sum_4d(input_pre >> context.errors);
 
         // Gradients of beta
-        context.b_grad = etl::bias_batch_sum_4d(context.errors);
+        std::get<1>(context.up.context)->grad = etl::bias_batch_sum_4d(context.errors);
     }
 
     /*!
@@ -250,9 +250,6 @@ struct sgd_context<DBN, batch_normalization_4d_layer<Desc>, L> {
     etl::fast_matrix<weight, batch_size, Desc::Kernels, Desc::W, Desc::H> input;  ///< A batch of input
     etl::fast_matrix<weight, batch_size, Desc::Kernels, Desc::W, Desc::H> output; ///< A batch of output
     etl::fast_matrix<weight, batch_size, Desc::Kernels, Desc::W, Desc::H> errors; ///< A batch of errors
-
-    etl::fast_matrix<weight, Desc::Kernels> w_grad;
-    etl::fast_matrix<weight, Desc::Kernels> b_grad;
 
     sgd_context(layer_t& /*layer*/){}
 };

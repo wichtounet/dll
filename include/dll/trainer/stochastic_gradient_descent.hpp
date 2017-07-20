@@ -25,221 +25,176 @@
 namespace dll {
 
 /*!
- * \brief The context for the updater
+ * \brief Build the sub context for a updater context
+ *
+ * \param layer The layer to build the context for
  */
-template <updater_type UT, bool Neural, typename Context>
-struct updater_context {
-    /*!
-     * \brief Construct a new updater_context using the parent context
-     */
-    updater_context(Context& context) {
-        cpp_unused(context);
+template <template <typename, size_t, updater_type> class SubContext, updater_type UT, typename Layer, size_t... I>
+auto build_sub_context(Layer& layer, std::index_sequence<I...> /*seq*/) {
+    return std::make_tuple
+        (
+            std::make_shared<SubContext<Layer, I, UT>>(layer)...
+        );
+}
+
+/*!
+ * \brief Build the sub context for a updater context
+ *
+ * \param layer The layer to build the context for
+ */
+template <template <typename, size_t, updater_type> class SubContext, updater_type UT, typename Layer>
+auto build_sub_context(Layer& layer) {
+    static constexpr size_t N = std::tuple_size<decltype(layer.trainable_parameters())>();
+
+    return build_sub_context<SubContext, UT>(layer, std::make_index_sequence<N>());
+}
+
+template<typename Layer, size_t I, updater_type UT>
+struct updater_sub_context;
+
+template<typename Layer, size_t I>
+struct updater_sub_context <Layer, I, updater_type::SGD> {
+    using type = std::remove_reference_t<decltype(std::get<I>(std::declval<Layer>().trainable_parameters()))>;
+
+    type grad;
+
+    updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())) {
+        grad = 0;
     }
 };
 
-/*!
- * \brief The context for the Momentum updater
- */
-template <typename Context>
-struct updater_context<updater_type::MOMENTUM, true, Context> {
-    using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
-    using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
+template<typename Layer, size_t I>
+struct updater_sub_context <Layer, I, updater_type::MOMENTUM> {
+    using type = std::remove_reference_t<decltype(std::get<I>(std::declval<Layer>().trainable_parameters()))>;
 
-    w_grad_t w_inc; ///< The momentum cache for the weights
-    b_grad_t b_inc; ///< The momentum cache for the biases
+    type grad;
+    type inc;
 
-    /*!
-     * \brief Construct a new updater_context using the parent context
-     */
-    updater_context(Context& context) : w_inc(context.w_grad), b_inc(context.b_grad) {
-        w_inc = 0;
-        b_inc = 0;
+    updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), inc(grad) {
+        grad = 0;
+        inc = 0;
     }
 };
 
-/*!
- * \brief The context for the Nesterov Momentum updater
- */
-template <typename Context>
-struct updater_context<updater_type::NESTEROV, true, Context> {
-    using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
-    using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
+template<typename Layer, size_t I>
+struct updater_sub_context <Layer, I, updater_type::NESTEROV> {
+    using type = std::remove_reference_t<decltype(std::get<I>(std::declval<Layer>().trainable_parameters()))>;
 
-    w_grad_t w_inc; ///< The momentum cache for the weights
-    b_grad_t b_inc; ///< The momentum cache for the biases
-    w_grad_t w_inc_prev; ///< The momentum cache for the weights
-    b_grad_t b_inc_prev; ///< The momentum cache for the biases
+    type grad;
+    type inc;
+    type inc_prev;
 
-    /*!
-     * \brief Construct a new updater_context using the parent context
-     */
-    updater_context(Context& context) : w_inc(context.w_grad), b_inc(context.b_grad), w_inc_prev(context.w_grad), b_inc_prev(context.b_grad) {
-        w_inc = 0;
-        b_inc = 0;
+    updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), inc(grad), inc_prev(grad) {
+        grad = 0;
+        inc = 0;
+        inc_prev = 0;
     }
 };
 
-/*!
- * \brief The context for the RMSPROP updater
- */
-template <typename Context>
-struct updater_context<updater_type::RMSPROP, true, Context> {
-    using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
-    using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
+template<typename Layer, size_t I>
+struct updater_sub_context <Layer, I, updater_type::RMSPROP> {
+    using type = std::remove_reference_t<decltype(std::get<I>(std::declval<Layer>().trainable_parameters()))>;
 
-    w_grad_t w_inc; ///< The rmsprop cache for the weights
-    b_grad_t b_inc; ///< The rmsprop cache for the biases
+    type grad;
+    type inc;
 
-    /*!
-     * \brief Construct a new updater_context using the parent context
-     */
-    updater_context(Context& context) : w_inc(context.w_grad), b_inc(context.b_grad) {
-        w_inc = 0;
-        b_inc = 0;
+    updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), inc(grad) {
+        grad = 0;
+        inc = 0;
     }
 };
 
-/*!
- * \brief The context for the Adagrad updater
- */
-template <typename Context>
-struct updater_context<updater_type::ADAGRAD, true, Context> {
-    using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
-    using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
+template<typename Layer, size_t I>
+struct updater_sub_context <Layer, I, updater_type::ADAGRAD> {
+    using type = std::remove_reference_t<decltype(std::get<I>(std::declval<Layer>().trainable_parameters()))>;
 
-    w_grad_t w_inc; ///< The adagrad cache for the weights
-    b_grad_t b_inc; ///< The adagrad cache for the biases
+    type grad;
+    type inc;
 
-    /*!
-     * \brief Construct a new updater_context using the parent context
-     */
-    updater_context(Context& context) : w_inc(context.w_grad), b_inc(context.b_grad) {
-        w_inc = 0;
-        b_inc = 0;
+    updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), inc(grad) {
+        grad = 0;
+        inc = 0;
     }
 };
 
-/*!
- * \brief The context for the Adadelta updater
- */
-template <typename Context>
-struct updater_context<updater_type::ADADELTA, true, Context> {
-    using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
-    using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
+template<typename Layer, size_t I>
+struct updater_sub_context <Layer, I, updater_type::ADADELTA> {
+    using type = std::remove_reference_t<decltype(std::get<I>(std::declval<Layer>().trainable_parameters()))>;
 
-    w_grad_t w_g; ///< The Adadelta cache for the weights
-    w_grad_t w_x; ///< The Adadelta cache for the weights
-    w_grad_t w_v; ///< The Adadelta cache for the weights
+    type grad;
+    type g;
+    type x;
+    type v;
 
-    b_grad_t b_g; ///< The Adadelta cache for the biases
-    b_grad_t b_x; ///< The Adadelta cache for the biases
-    b_grad_t b_v; ///< The Adadelta cache for the biases
-
-    /*!
-     * \brief Construct a new updater_context using the parent context
-     */
-    updater_context(Context& context) : w_g(context.w_grad), w_x(context.w_grad), w_v(context.w_grad), b_g(context.b_grad), b_x(context.b_grad), b_v(context.b_grad) {
-        w_g = 0;
-        w_x = 0;
-        w_v = 0;
-
-        b_g = 0;
-        b_x = 0;
-        b_v = 0;
+    updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), g(grad), x(grad), v(grad) {
+        grad = 0;
+        g = 0;
+        x = 0;
+        v = 0;
     }
 };
 
 /*!
  * \brief The context for the Adam updater
  */
-template <typename Context>
-struct updater_context<updater_type::ADAM, true, Context> {
-    using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
-    using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
+template<typename Layer, size_t I>
+struct updater_sub_context <Layer, I, updater_type::ADAM> {
+    using type = std::remove_reference_t<decltype(std::get<I>(std::declval<Layer>().trainable_parameters()))>;
 
-    w_grad_t w_m; ///< The Adam cache for the weights
-    w_grad_t w_v; ///< The Adam cache for the weights
-    b_grad_t b_m; ///< The Adam cache for the biases
-    b_grad_t b_v; ///< The Adam cache for the biases
+    type grad;
+    type m;
+    type v;
 
-    /*!
-     * \brief Construct a new updater_context using the parent context
-     */
-    updater_context(Context& context) : w_m(context.w_grad), w_v(context.w_grad), b_m(context.b_grad), b_v(context.b_grad) {
-        w_m = 0;
-        w_v = 0;
-        b_m = 0;
-        b_v = 0;
+    updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), m(grad), v(grad) {
+        grad = 0;
+        m = 0;
+        v = 0;
     }
 };
 
 /*!
- * \brief The context for the Adam with bias correction updater
+ * \brief The context for the Adam updater with bias correction
  */
-template <typename Context>
-struct updater_context<updater_type::ADAM_CORRECT, true, Context> {
-    using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
-    using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
+template<typename Layer, size_t I>
+struct updater_sub_context <Layer, I, updater_type::ADAM_CORRECT> {
+    using type = std::remove_reference_t<decltype(std::get<I>(std::declval<Layer>().trainable_parameters()))>;
 
-    w_grad_t w_m; ///< The Adam cache for the weights
-    w_grad_t w_v; ///< The Adam cache for the weights
-    b_grad_t b_m; ///< The Adam cache for the biases
-    b_grad_t b_v; ///< The Adam cache for the biases
+    type grad;
+    type m;
+    type mt;
+    type v;
+    type vt;
 
-    w_grad_t w_mt; ///< The Adam cache for the weights
-    w_grad_t w_vt; ///< The Adam cache for the weights
-    b_grad_t b_mt; ///< The Adam cache for the biases
-    b_grad_t b_vt; ///< The Adam cache for the biases
-
-    /*!
-     * \brief Construct a new updater_context using the parent context
-     */
-    updater_context(Context& context) : w_m(context.w_grad), w_v(context.w_grad), b_m(context.b_grad), b_v(context.b_grad), w_mt(context.w_grad), w_vt(context.w_grad), b_mt(context.b_grad), b_vt(context.b_grad) {
-        w_m = 0;
-        w_v = 0;
-        b_m = 0;
-        b_v = 0;
-
-        w_mt = 0;
-        w_vt = 0;
-        b_mt = 0;
-        b_vt = 0;
+    updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), m(grad), mt(grad), v(grad), vt(grad) {
+        grad = 0;
+        m = 0;
+        mt = 0;
+        v = 0;
+        vt = 0;
     }
 };
 
 /*!
- * \brief The context for the Nesterov Adam with bias correction updater
+ * \brief The context for the Nesterov Adam (NAdam) updater with bias correction
  */
-template <typename Context>
-struct updater_context<updater_type::NADAM, true, Context> {
-    using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
-    using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
+template<typename Layer, size_t I>
+struct updater_sub_context <Layer, I, updater_type::NADAM> {
+    using type = std::remove_reference_t<decltype(std::get<I>(std::declval<Layer>().trainable_parameters()))>;
 
-    w_grad_t w_m; ///< The Adam cache for the weights
-    w_grad_t w_v; ///< The Adam cache for the weights
-    b_grad_t b_m; ///< The Adam cache for the biases
-    b_grad_t b_v; ///< The Adam cache for the biases
-
-    w_grad_t w_mt; ///< The Adam cache for the weights
-    w_grad_t w_vt; ///< The Adam cache for the weights
-    b_grad_t b_mt; ///< The Adam cache for the biases
-    b_grad_t b_vt; ///< The Adam cache for the biases
+    type grad;
+    type m;
+    type mt;
+    type v;
+    type vt;
 
     double m_schedule;
 
-    /*!
-     * \brief Construct a new updater_context using the parent context
-     */
-    updater_context(Context& context) : w_m(context.w_grad), w_v(context.w_grad), b_m(context.b_grad), b_v(context.b_grad), w_mt(context.w_grad), w_vt(context.w_grad), b_mt(context.b_grad), b_vt(context.b_grad) {
-        w_m = 0;
-        w_v = 0;
-        b_m = 0;
-        b_v = 0;
-
-        w_mt = 0;
-        w_vt = 0;
-        b_mt = 0;
-        b_vt = 0;
+    updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), m(grad), mt(grad), v(grad), vt(grad) {
+        grad = 0;
+        m = 0;
+        mt = 0;
+        v = 0;
+        vt = 0;
 
         m_schedule = 1.0;
     }
@@ -248,24 +203,50 @@ struct updater_context<updater_type::NADAM, true, Context> {
 /*!
  * \brief The context for the Adamax updater
  */
-template <typename Context>
-struct updater_context<updater_type::ADAMAX, true, Context> {
-    using w_grad_t = decltype(std::declval<Context>().w_grad); ///< The for the weight gradients
-    using b_grad_t = decltype(std::declval<Context>().b_grad); ///< The for the weight biases
+template<typename Layer, size_t I>
+struct updater_sub_context <Layer, I, updater_type::ADAMAX> {
+    using type = std::remove_reference_t<decltype(std::get<I>(std::declval<Layer>().trainable_parameters()))>;
 
-    w_grad_t w_m; ///< The Adam cache for the weights
-    w_grad_t w_v; ///< The Adam cache for the weights
-    b_grad_t b_m; ///< The Adam cache for the biases
-    b_grad_t b_v; ///< The Adam cache for the biases
+    type grad;
+    type m;
+    type v;
+
+    updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), m(grad), v(grad) {
+        grad = 0;
+        m = 0;
+        v = 0;
+    }
+};
+
+
+/*!
+ * \brief The context for the base updater (no update).
+ */
+template <updater_type UT, bool Neural, typename Layer>
+struct updater_context {
+    /*!
+     * \brief Construct a new updater_context using the parent context
+     */
+    updater_context(Layer& layer) {
+        cpp_unused(layer);
+    }
+};
+
+/*!
+ * \brief The context for the real updaters.
+ */
+template <updater_type UT, typename Layer>
+struct updater_context<UT, true, Layer> {
+    /*!
+     * \brief The context for the updater and for each variable of the layer
+     */
+    decltype(build_sub_context<updater_sub_context, UT>(std::declval<Layer&>())) context;
 
     /*!
      * \brief Construct a new updater_context using the parent context
      */
-    updater_context(Context& context) : w_m(context.w_grad), w_v(context.w_grad), b_m(context.b_grad), b_v(context.b_grad) {
-        w_m = 0;
-        w_v = 0;
-        b_m = 0;
-        b_v = 0;
+    updater_context(Layer& layer) : context(build_sub_context<updater_sub_context, UT>(layer)) {
+        // Nothing else to init
     }
 };
 
@@ -280,12 +261,12 @@ struct full_sgd_context : sgd_context<DBN, Layer, L> {
     /*!
      * \brief The updater context
      */
-    updater_context<DBN::updater, decay_layer_traits<Layer>::is_neural_layer(), context_type> up;
+    updater_context<DBN::updater, decay_layer_traits<Layer>::is_neural_layer(), Layer> up;
 
     /*!
      * \brief Construct the full_sgd_context for the given layer
      */
-    full_sgd_context(Layer& layer) : context_type(layer), up(*this) {
+    full_sgd_context(Layer& layer) : context_type(layer), up(layer) {
         // Nothing else to init
     }
 };
@@ -563,32 +544,6 @@ struct sgd_trainer {
 
     // CPP17 Replace with if constexpr
 
-    /*!
-     * \brief Apply the gradients to the given layer
-     */
-    template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer())>
-    void update_weights(size_t epoch, L& layer, C& context, size_t n) {
-        dll::auto_timer timer("sgd::update_weights");
-
-        //1. Update the gradients (L1/L2 and gradient clipping)
-
-        this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(layer.w, context.w_grad, n);
-        this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(layer.b, context.b_grad, n);
-
-        // 2. Decay the learning rate
-
-        auto eps             = dbn.learning_rate;
-        const auto eps_decay = dbn.learning_rate_decay;
-
-        if (eps_decay > 0.0) {
-            eps *= 1.0 / (1.0 + eps_decay * iteration);
-        }
-
-        // 3. Apply the learning rate
-
-        apply_gradients<UT>(epoch, layer, context, n, eps);
-    }
-
     template <updater_type UT, typename L, typename C, cpp_disable_if(decay_layer_traits<L>::is_neural_layer())>
     void update_weights(size_t epoch, L& layer, C& context, size_t n) {
         cpp_unused(epoch);
@@ -600,15 +555,64 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::SGD)>
+    template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer())>
+    void update_weights(size_t epoch, L& layer, C& context, size_t n) {
+        dll::auto_timer timer("sgd::update_weights");
+
+        // Update all variables of the layer
+
+        static constexpr size_t N = std::tuple_size<decltype(layer.trainable_parameters())>();
+
+        update_variables<UT>(epoch, layer, context, n, std::make_index_sequence<N>());
+    }
+
+    template <updater_type UT, typename L, typename C, size_t... I>
+    void update_variables(size_t epoch, L& layer, C& context, size_t n, std::index_sequence<I...> /* args */) {
+        int unused[] = {(this->update_variable<I, UT>(epoch, layer, context, n), 1)...};
+        cpp_unused(unused);
+    }
+
+    template <size_t I, updater_type UT, typename L, typename C>
+    void update_variable(size_t epoch, L& layer, C& context, size_t n) {
+        // 1. Decay the learning rate (if necessary)
+
+        auto eps             = dbn.learning_rate;
+        const auto eps_decay = dbn.learning_rate_decay;
+
+        if (eps_decay > 0.0) {
+            eps *= 1.0 / (1.0 + eps_decay * iteration);
+        }
+
+        //2. Update the gradients (L1/L2 and gradient clipping)
+
+        auto& w      = std::get<I>(layer.trainable_parameters());
+        auto& w_grad = std::get<I>(context.up.context)->grad;
+
+        // Note the distinction for w and b for decay is far from optimal...
+        if /* constexpr */ (I == 0) {
+            this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(w, w_grad, n);
+        } else {
+            this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(w, w_grad, n);
+        }
+
+        // 3. Apply the gradients
+
+        apply_gradients<I, UT>(epoch, layer, context, n, eps);
+    }
+
+    /*!
+     * \brief Apply the gradients to the given layer
+     */
+    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::SGD)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:sgd");
 
-        layer.w += (eps / n) * context.w_grad;
-        layer.b += (eps / n) * context.b_grad;
+        auto& w      = std::get<I>(layer.trainable_parameters());
+        auto& w_grad = std::get<I>(context.up.context)->grad;
 
-        nan_check_deep(layer.w);
-        nan_check_deep(layer.b);
+        w += (eps / n) * w_grad;
+
+        nan_check_deep(w);
 
         cpp_unused(epoch);
     }
@@ -616,21 +620,23 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::MOMENTUM)>
+    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::MOMENTUM)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:momentum");
 
+        const auto momentum = dbn.momentum;
+
+        auto& w      = std::get<I>(layer.trainable_parameters());
+        auto& w_grad = std::get<I>(context.up.context)->grad;
+        auto& w_inc  = std::get<I>(context.up.context)->inc;
+
         //Update with momentum and learning rate
-        auto momentum = dbn.momentum;
 
-        context.up.w_inc = momentum * context.up.w_inc + (eps / n) * context.w_grad;
-        context.up.b_inc = momentum * context.up.b_inc + (eps / n) * context.b_grad;
+        w_inc = momentum * w_inc + (eps / n) * w_grad;
 
-        layer.w += context.up.w_inc;
-        layer.b += context.up.b_inc;
+        w += w_inc;
 
-        nan_check_deep(layer.w);
-        nan_check_deep(layer.b);
+        nan_check_deep(w);
 
         cpp_unused(epoch);
     }
@@ -638,24 +644,26 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::NESTEROV)>
+    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::NESTEROV)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:nesterov");
 
+        const auto momentum = dbn.momentum;
+
+        auto& w          = std::get<I>(layer.trainable_parameters());
+        auto& w_grad     = std::get<I>(context.up.context)->grad;
+        auto& w_inc      = std::get<I>(context.up.context)->inc;
+        auto& w_inc_prev = std::get<I>(context.up.context)->inc_prev;
+
         //Update with momentum and learning rate
-        auto momentum = dbn.momentum;
 
-        context.up.w_inc_prev = context.up.w_inc;
-        context.up.b_inc_prev = context.up.b_inc;
+        w_inc_prev = w_inc;
 
-        context.up.w_inc = momentum * context.up.w_inc + (eps / n) * context.w_grad;
-        context.up.b_inc = momentum * context.up.b_inc + (eps / n) * context.b_grad;
+        w_inc = momentum * w_inc + (eps / n) * w_grad;
 
-        layer.w += (-momentum) * context.up.w_inc_prev + (1.0 + momentum) * context.up.w_inc;
-        layer.b += (-momentum) * context.up.b_inc_prev + (1.0 + momentum) * context.up.b_inc;
+        w += (-momentum) * w_inc_prev + (1.0 + momentum) * w_inc;
 
-        nan_check_deep(layer.w);
-        nan_check_deep(layer.b);
+        nan_check_deep(w);
 
         cpp_unused(epoch);
     }
@@ -663,20 +671,21 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::ADAGRAD)>
+    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::ADAGRAD)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:adagrad");
 
         const auto e = 1e-8;
 
-        context.up.w_inc = context.up.w_inc + (context.w_grad >> context.w_grad);
-        context.up.b_inc = context.up.b_inc + (context.b_grad >> context.b_grad);
+        auto& w      = std::get<I>(layer.trainable_parameters());
+        auto& w_grad = std::get<I>(context.up.context)->grad;
+        auto& w_inc  = std::get<I>(context.up.context)->inc;
 
-        layer.w += (eps >> context.w_grad) / etl::sqrt(context.up.w_inc + e);
-        layer.b += (eps >> context.b_grad) / etl::sqrt(context.up.b_inc + e);
+        w_inc = w_inc + (w_grad >> w_grad);
 
-        nan_check_deep(layer.w);
-        nan_check_deep(layer.b);
+        w += (eps >> w_grad) / etl::sqrt(w_inc + e);
+
+        nan_check_deep(w);
 
         cpp_unused(n);
         cpp_unused(epoch);
@@ -685,27 +694,26 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::ADADELTA)>
+    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::ADADELTA)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:adadelta");
 
         const auto beta = dbn.adadelta_beta;
         const auto e = 1e-8;
 
-        context.up.w_g = beta * context.up.w_g + ((1.0 - beta) >> context.w_grad >> context.w_grad);
-        context.up.b_g = beta * context.up.b_g + ((1.0 - beta) >> context.b_grad >> context.b_grad);
+        auto& w      = std::get<I>(layer.trainable_parameters());
+        auto& w_grad = std::get<I>(context.up.context)->grad;
+        auto& w_g    = std::get<I>(context.up.context)->g;
+        auto& w_v    = std::get<I>(context.up.context)->v;
+        auto& w_x    = std::get<I>(context.up.context)->x;
 
-        context.up.w_v = (sqrt(context.up.w_x + e) >> context.w_grad) / sqrt(context.up.w_g + e);
-        context.up.b_v = (sqrt(context.up.b_x + e) >> context.b_grad) / sqrt(context.up.b_g + e);
+        w_g = beta * w_g + ((1.0 - beta) >> w_grad >> w_grad);
+        w_v = (sqrt(w_x + e) >> w_grad) / sqrt(w_g + e);
+        w_x = beta * w_x + ((1.0 - beta) >> w_v >> w_v);
 
-        context.up.w_x = beta * context.up.w_x + ((1.0 - beta) >> context.up.w_v >> context.up.w_v);
-        context.up.b_x = beta * context.up.b_x + ((1.0 - beta) >> context.up.b_v >> context.up.b_v);
+        w += w_v;
 
-        layer.w += context.up.w_v;
-        layer.b += context.up.b_v;
-
-        nan_check_deep(layer.w);
-        nan_check_deep(layer.b);
+        nan_check_deep(w);
 
         cpp_unused(n);
         cpp_unused(epoch);
@@ -715,7 +723,7 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::ADAM)>
+    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::ADAM)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:adam");
 
@@ -723,21 +731,21 @@ struct sgd_trainer {
         const auto beta2 = dbn.adam_beta2;
         const auto e = 1e-8;
 
+        auto& w      = std::get<I>(layer.trainable_parameters());
+        auto& w_grad = std::get<I>(context.up.context)->grad;
+        auto& w_m    = std::get<I>(context.up.context)->m;
+        auto& w_v    = std::get<I>(context.up.context)->v;
+
         // Standard Adam estimations of the first and second moments
 
-        context.up.w_m = beta1 * context.up.w_m + ((1.0 - beta1) >> context.w_grad);
-        context.up.b_m = beta1 * context.up.b_m + ((1.0 - beta1) >> context.b_grad);
-
-        context.up.w_v = beta2 * context.up.w_v + ((1.0 - beta2) >> (context.w_grad >> context.w_grad));
-        context.up.b_v = beta2 * context.up.b_v + ((1.0 - beta2) >> (context.b_grad >> context.b_grad));
+        w_m = beta1 * w_m + ((1.0 - beta1) >> w_grad);
+        w_v = beta2 * w_v + ((1.0 - beta2) >> (w_grad >> w_grad));
 
         // Update the parameters
 
-        layer.w += (eps >> context.up.w_m) / (etl::sqrt(context.up.w_v) + e);
-        layer.b += (eps >> context.up.b_m) / (etl::sqrt(context.up.b_v) + e);
+        w += (eps >> w_m) / (etl::sqrt(w_v) + e);
 
-        nan_check_deep(layer.w);
-        nan_check_deep(layer.b);
+        nan_check_deep(w);
 
         cpp_unused(n);
         cpp_unused(epoch);
@@ -746,7 +754,7 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::ADAM_CORRECT)>
+    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::ADAM_CORRECT)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:adam_correct");
 
@@ -755,29 +763,28 @@ struct sgd_trainer {
         const auto e = 1e-8;
         const auto t = iteration;
 
+        auto& w      = std::get<I>(layer.trainable_parameters());
+        auto& w_grad = std::get<I>(context.up.context)->grad;
+        auto& w_m    = std::get<I>(context.up.context)->m;
+        auto& w_mt   = std::get<I>(context.up.context)->mt;
+        auto& w_v    = std::get<I>(context.up.context)->v;
+        auto& w_vt   = std::get<I>(context.up.context)->vt;
+
         // Standard Adam estimations of the first and second moments
 
-        context.up.w_m = beta1 * context.up.w_m + ((1.0 - beta1) >> context.w_grad);
-        context.up.b_m = beta1 * context.up.b_m + ((1.0 - beta1) >> context.b_grad);
-
-        context.up.w_v = beta2 * context.up.w_v + ((1.0 - beta2) >> (context.w_grad >> context.w_grad));
-        context.up.b_v = beta2 * context.up.b_v + ((1.0 - beta2) >> (context.b_grad >> context.b_grad));
+        w_m = beta1 * w_m + ((1.0 - beta1) >> w_grad);
+        w_v = beta2 * w_v + ((1.0 - beta2) >> (w_grad >> w_grad));
 
         // Correct the bias (towards zero) of the first and second moments
 
-        context.up.w_mt = context.up.w_m / (1.0 - std::pow(beta1, t));
-        context.up.b_mt = context.up.b_m / (1.0 - std::pow(beta1, t));
-
-        context.up.w_vt = context.up.w_v / (1.0 - std::pow(beta2, t));
-        context.up.b_vt = context.up.b_v / (1.0 - std::pow(beta2, t));
+        w_mt = w_m / (1.0 - std::pow(beta1, t));
+        w_vt = w_v / (1.0 - std::pow(beta2, t));
 
         // Update the parameters
 
-        layer.w += (eps >> context.up.w_m) / (etl::sqrt(context.up.w_v) + e);
-        layer.b += (eps >> context.up.b_m) / (etl::sqrt(context.up.b_v) + e);
+        w += (eps >> w_m) / (etl::sqrt(w_v) + e);
 
-        nan_check_deep(layer.w);
-        nan_check_deep(layer.b);
+        nan_check_deep(w);
 
         cpp_unused(n);
         cpp_unused(epoch);
@@ -786,30 +793,31 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::ADAMAX)>
+    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::ADAMAX)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:adamax");
 
         const auto beta1 = dbn.adam_beta1;
         const auto beta2 = dbn.adam_beta2;
 
+        auto& w      = std::get<I>(layer.trainable_parameters());
+        auto& w_grad = std::get<I>(context.up.context)->grad;
+        auto& w_m    = std::get<I>(context.up.context)->m;
+        auto& w_v    = std::get<I>(context.up.context)->v;
+
         // Standard Adam estimations of the first moment
 
-        context.up.w_m = beta1 * context.up.w_m + ((1.0 - beta1) >> context.w_grad);
-        context.up.b_m = beta1 * context.up.b_m + ((1.0 - beta1) >> context.b_grad);
+        w_m = beta1 * w_m + ((1.0 - beta1) >> w_grad);
 
         // Estimation of the second moment with infinite-norm
 
-        context.up.w_v = etl::max(beta2 * context.up.w_v, etl::abs(context.w_grad));
-        context.up.b_v = etl::max(beta2 * context.up.b_v, etl::abs(context.b_grad));
+        w_v = etl::max(beta2 * w_v, etl::abs(w_grad));
 
         // Update the parameters
 
-        layer.w += (eps >> context.up.w_m) / context.up.w_v;
-        layer.b += (eps >> context.up.b_m) / context.up.b_v;
+        w += (eps >> w_m) / w_v;
 
-        nan_check_deep(layer.w);
-        nan_check_deep(layer.b);
+        nan_check_deep(w);
 
         cpp_unused(n);
         cpp_unused(epoch);
@@ -818,7 +826,7 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::NADAM)>
+    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::NADAM)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:adam_correct");
 
@@ -828,38 +836,41 @@ struct sgd_trainer {
         const auto e              = 1e-8;
         const auto t              = iteration;
 
+        auto& w          = std::get<I>(layer.trainable_parameters());
+        auto& w_grad     = std::get<I>(context.up.context)->grad;
+        auto& w_m        = std::get<I>(context.up.context)->m;
+        auto& w_mt       = std::get<I>(context.up.context)->mt;
+        auto& w_v        = std::get<I>(context.up.context)->v;
+        auto& w_vt       = std::get<I>(context.up.context)->vt;
+        auto& m_schedule = std::get<I>(context.up.context)->m_schedule;
+
         // Compute the schedule for momentum
 
         auto momentum_cache_t   = beta1 * (1. - 0.5 * (std::pow(0.96, t * schedule_decay)));
         auto momentum_cache_t_1 = beta1 * (1. - 0.5 * (std::pow(0.96, (t + 1) * schedule_decay)));
 
-        auto m_schedule_new  = context.up.m_schedule * momentum_cache_t;
-        auto m_schedule_next = context.up.m_schedule * momentum_cache_t * momentum_cache_t_1;
+        auto m_schedule_new  = m_schedule * momentum_cache_t;
+        auto m_schedule_next = m_schedule * momentum_cache_t * momentum_cache_t_1;
 
-        context.up.m_schedule = m_schedule_new;
+        if /*constexpr*/ (I == 0) {
+            m_schedule = m_schedule_new;
+        }
 
         // Standard Adam estimations of the first and second order moments
 
-        context.up.w_m = beta1 * context.up.w_m + ((1.0 - beta1) >> context.w_grad);
-        context.up.b_m = beta1 * context.up.b_m + ((1.0 - beta1) >> context.b_grad);
-
-        context.up.w_v = beta2 * context.up.w_v + ((1.0 - beta2) >> (context.w_grad >> context.w_grad));
-        context.up.b_v = beta2 * context.up.b_v + ((1.0 - beta2) >> (context.b_grad >> context.b_grad));
+        w_m = beta1 * w_m + ((1.0 - beta1) >> w_grad);
+        w_v = beta2 * w_v + ((1.0 - beta2) >> (w_grad >> w_grad));
 
         // Correct the bias (towards zero) of the first and second moments
 
-        context.up.w_mt = context.up.w_m / (1.0 - m_schedule_next);
-        context.up.b_mt = context.up.b_m / (1.0 - m_schedule_next);
-
-        context.up.w_vt = context.up.w_v / (1.0 - std::pow(beta2, t));
-        context.up.b_vt = context.up.b_v / (1.0 - std::pow(beta2, t));
+        w_mt = w_m / (1.0 - m_schedule_next);
+        w_vt = w_v / (1.0 - std::pow(beta2, t));
 
         // Update the parameters
 
-        layer.w += ((eps >> ((1.0 - momentum_cache_t) * (context.w_grad / (1.0 - m_schedule_new)) + momentum_cache_t_1 * context.up.w_mt)) / (etl::sqrt(context.up.w_vt) + e));
+        w += ((eps >> ((1.0 - momentum_cache_t) * (w_grad / (1.0 - m_schedule_new)) + momentum_cache_t_1 * w_mt)) / (etl::sqrt(w_vt) + e));
 
-        nan_check_deep(layer.w);
-        nan_check_deep(layer.b);
+        nan_check_deep(w);
 
         cpp_unused(n);
         cpp_unused(epoch);
@@ -868,21 +879,22 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::RMSPROP)>
+    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::RMSPROP)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:rmsprop");
 
         const auto decay = dbn.rmsprop_decay;
         const auto e = 1e-8;
 
-        context.up.w_inc = decay * context.up.w_inc + (1 - decay) * (context.w_grad >> context.w_grad);
-        context.up.b_inc = decay * context.up.b_inc + (1 - decay) * (context.b_grad >> context.b_grad);
+        auto& w      = std::get<I>(layer.trainable_parameters());
+        auto& w_grad = std::get<I>(context.up.context)->grad;
+        auto& w_inc  = std::get<I>(context.up.context)->inc;
 
-        layer.w += (eps >> context.w_grad) / etl::sqrt(context.up.w_inc + e);
-        layer.b += (eps >> context.b_grad) / etl::sqrt(context.up.b_inc + e);
+        w_inc = decay * w_inc + (1 - decay) * (w_grad >> w_grad);
 
-        nan_check_deep(layer.w);
-        nan_check_deep(layer.b);
+        w += (eps >> w_grad) / etl::sqrt(w_inc + e);
+
+        nan_check_deep(w);
 
         cpp_unused(n);
         cpp_unused(epoch);

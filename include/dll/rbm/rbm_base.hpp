@@ -99,6 +99,10 @@ struct rbm_base : layer<Parent> {
         return parent_t::reconstruction_error_impl(item, as_derived());
     }
 
+    decltype(auto) trainable_parameters(){
+        return std::make_tuple(std::ref(as_derived().w), std::ref(as_derived().b));
+    }
+
     //Normal Train functions
 
     /*!

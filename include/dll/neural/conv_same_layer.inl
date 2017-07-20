@@ -192,8 +192,8 @@ struct conv_same_layer final : neural_layer<conv_same_layer<Desc>, Desc> {
     void compute_gradients(C& context) const {
         dll::auto_timer timer("conv_same:compute_gradients");
 
-        context.w_grad = etl::ml::convolution_backward_filter<1, 1, P1, P2>(context.input, context.errors);
-        context.b_grad = etl::bias_batch_sum_4d(context.errors);
+        std::get<0>(context.up.context)->grad = etl::ml::convolution_backward_filter<1, 1, P1, P2>(context.input, context.errors);
+        std::get<1>(context.up.context)->grad = etl::bias_batch_sum_4d(context.errors);
     }
 };
 
@@ -259,9 +259,6 @@ struct sgd_context<DBN, conv_same_layer<Desc>, L> {
     static constexpr size_t K   = layer_t::K;
 
     static constexpr auto batch_size = DBN::batch_size;
-
-    etl::fast_matrix<weight, K, NC, NW1, NW2> w_grad;
-    etl::fast_matrix<weight, K> b_grad;
 
     etl::fast_matrix<weight, batch_size, NC, NV1, NV2> input;
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> output;
