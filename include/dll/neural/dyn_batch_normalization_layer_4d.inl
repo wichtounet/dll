@@ -16,11 +16,16 @@ namespace dll {
  */
 template <typename Desc>
 struct dyn_batch_normalization_4d_layer : neural_layer<dyn_batch_normalization_4d_layer<Desc>, Desc> {
-    using desc      = Desc;                                                   ///< The descriptor type
+    using desc      = Desc;                                                       ///< The descriptor type
     using base_type = neural_layer<dyn_batch_normalization_4d_layer<Desc>, Desc>; ///< The base type
-    using weight    = typename desc::weight;                                  ///< The data type of the layer
+    using weight    = typename desc::weight;                                      ///< The data type of the layer
 
     static constexpr weight e = 1e-8; ///< Epsilon for numerical stability
+
+    using input_one_t  = etl::dyn_matrix<weight, 3>; ///< The type of one input
+    using output_one_t = etl::dyn_matrix<weight, 3>; ///< The type of one output
+    using input_t      = std::vector<input_one_t>;   ///< The type of the input
+    using output_t     = std::vector<output_one_t>;  ///< The type of the output
 
     etl::dyn_matrix<weight, 1> gamma;
     etl::dyn_matrix<weight, 1> beta;
@@ -98,6 +103,9 @@ struct dyn_batch_normalization_4d_layer : neural_layer<dyn_batch_normalization_4
     size_t output_size() const noexcept {
         return Kernels * W * H;
     }
+
+    using base_type::test_forward_batch;
+    using base_type::train_forward_batch;
 
     /*!
      * \brief Apply the layer to the batch of input
@@ -223,6 +231,33 @@ struct dyn_batch_normalization_4d_layer : neural_layer<dyn_batch_normalization_4
 
         // Gradients of beta
         std::get<1>(context.up.context)->grad = etl::bias_batch_sum_4d(context.errors);
+    }
+
+    /*!
+     * \brief Prepare one empty output for this layer
+     * \return an empty ETL matrix suitable to store one output of this layer
+     *
+     * \tparam Input The type of one Input
+     */
+    template <typename InputType>
+    output_one_t prepare_one_output() const {
+        return output_one_t(Kernels, W, H);
+    }
+
+    /*!
+     * \brief Prepare a set of empty outputs for this layer
+     * \param samples The number of samples to prepare the output for
+     * \return a container containing empty ETL matrices suitable to store samples output of this layer
+     * \tparam Input The type of one input
+     */
+    template <typename InputType>
+    output_t prepare_output(size_t samples) const {
+        output_t output;
+        output.reserve(samples);
+        for(size_t i = 0; i < samples; ++i){
+            output.emplace_back(Kernels, W, H);
+        }
+        return output;
     }
 
     /*!

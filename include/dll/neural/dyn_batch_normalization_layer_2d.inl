@@ -22,6 +22,11 @@ struct dyn_batch_normalization_2d_layer : neural_layer<dyn_batch_normalization_2
 
     static constexpr weight e     = 1e-8;        ///< Epsilon for numerical stability
 
+    using input_one_t  = etl::dyn_matrix<weight, 1>; ///< The type of one input
+    using output_one_t = etl::dyn_matrix<weight, 1>; ///< The type of one output
+    using input_t      = std::vector<input_one_t>; ///< The type of the input
+    using output_t     = std::vector<output_one_t>; ///< The type of the output
+
     etl::dyn_matrix<weight, 1> gamma;
     etl::dyn_matrix<weight, 1> beta;
 
@@ -94,6 +99,9 @@ struct dyn_batch_normalization_2d_layer : neural_layer<dyn_batch_normalization_2
     size_t output_size() const noexcept {
         return Input;
     }
+
+    using base_type::test_forward_batch;
+    using base_type::train_forward_batch;
 
     /*!
      * \brief Apply the layer to the batch of input
@@ -192,6 +200,33 @@ struct dyn_batch_normalization_2d_layer : neural_layer<dyn_batch_normalization_2
     }
 
     /*!
+     * \brief Prepare one empty output for this layer
+     * \return an empty ETL matrix suitable to store one output of this layer
+     *
+     * \tparam Input The type of one Input
+     */
+    template <typename InputType>
+    output_one_t prepare_one_output() const {
+        return output_one_t(Input);
+    }
+
+    /*!
+     * \brief Prepare a set of empty outputs for this layer
+     * \param samples The number of samples to prepare the output for
+     * \return a container containing empty ETL matrices suitable to store samples output of this layer
+     * \tparam Input The type of one input
+     */
+    template <typename InputType>
+    output_t prepare_output(size_t samples) const {
+        output_t output;
+        output.reserve(samples);
+        for(size_t i = 0; i < samples; ++i){
+            output.emplace_back(Input);
+        }
+        return output;
+    }
+
+    /*!
      * \brief Initialize the dynamic version of the layer from the
      * fast version of the layer
      * \param dyn Reference to the dynamic version of the layer that
@@ -200,6 +235,10 @@ struct dyn_batch_normalization_2d_layer : neural_layer<dyn_batch_normalization_2
     template<typename DRBM>
     static void dyn_init(DRBM&){
         //Nothing to change
+    }
+
+    decltype(auto) trainable_parameters(){
+        return std::make_tuple(std::ref(gamma), std::ref(beta));
     }
 };
 

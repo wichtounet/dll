@@ -25,6 +25,11 @@ struct batch_normalization_4d_layer : neural_layer<batch_normalization_4d_layer<
     static constexpr size_t H       = desc::Height;  ///< The height of feature maps
     static constexpr weight e        = 1e-8;          ///< Epsilon for numerical stability
 
+    using input_one_t  = etl::fast_dyn_matrix<weight, Kernels, W, H>; ///< The type of one input
+    using output_one_t = etl::fast_dyn_matrix<weight, Kernels, W, H>; ///< The type of one output
+    using input_t      = std::vector<input_one_t>;                    ///< The type of the input
+    using output_t     = std::vector<output_one_t>;                   ///< The type of the output
+
     etl::fast_matrix<weight, Kernels> gamma;
     etl::fast_matrix<weight, Kernels> beta;
 
@@ -78,6 +83,9 @@ struct batch_normalization_4d_layer : neural_layer<batch_normalization_4d_layer<
     static constexpr size_t output_size() noexcept {
         return Kernels * W * H;
     }
+
+    using base_type::test_forward_batch;
+    using base_type::train_forward_batch;
 
     /*!
      * \brief Apply the layer to the batch of input
@@ -206,12 +214,38 @@ struct batch_normalization_4d_layer : neural_layer<batch_normalization_4d_layer<
     }
 
     /*!
+     * \brief Prepare one empty output for this layer
+     * \return an empty ETL matrix suitable to store one output of this layer
+     *
+     * \tparam Input The type of one Input
+     */
+    template <typename InputType>
+    output_one_t prepare_one_output() const {
+        return {};
+    }
+
+    /*!
+     * \brief Prepare a set of empty outputs for this layer
+     * \param samples The number of samples to prepare the output for
+     * \return a container containing empty ETL matrices suitable to store samples output of this layer
+     * \tparam Input The type of one input
+     */
+    template <typename InputType>
+    static output_t prepare_output(size_t samples) {
+        return output_t{samples};
+    }
+
+    /*!
      * \brief Initialize the dynamic version of the layer from the fast version of the layer
      * \param dyn Reference to the dynamic version of the layer that needs to be initialized
      */
     template<typename DLayer>
     static void dyn_init(DLayer& dyn){
         dyn.init_layer(Kernels, W, H);
+    }
+
+    decltype(auto) trainable_parameters(){
+        return std::make_tuple(std::ref(gamma), std::ref(beta));
     }
 };
 
@@ -243,9 +277,9 @@ struct sgd_context<DBN, batch_normalization_4d_layer<Desc>, L> {
 
     static constexpr auto batch_size = DBN::batch_size;
 
-    etl::fast_matrix<weight, batch_size, Desc::Kernels, Desc::W, Desc::H> input;  ///< A batch of input
-    etl::fast_matrix<weight, batch_size, Desc::Kernels, Desc::W, Desc::H> output; ///< A batch of output
-    etl::fast_matrix<weight, batch_size, Desc::Kernels, Desc::W, Desc::H> errors; ///< A batch of errors
+    etl::fast_matrix<weight, batch_size, layer_t::Kernels, layer_t::W, layer_t::H> input;  ///< A batch of input
+    etl::fast_matrix<weight, batch_size, layer_t::Kernels, layer_t::W, layer_t::H> output; ///< A batch of output
+    etl::fast_matrix<weight, batch_size, layer_t::Kernels, layer_t::W, layer_t::H> errors; ///< A batch of errors
 
     sgd_context(layer_t& /*layer*/){}
 };
