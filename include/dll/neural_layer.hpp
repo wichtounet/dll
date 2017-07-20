@@ -86,6 +86,10 @@ struct neural_layer : layer<Derived> {
         load(is);
     }
 
+    /*!
+     * \brief Returns the trainable variables of this layer.
+     * \return a tuple containing references to the variables of this layer
+     */
     decltype(auto) trainable_parameters(){
         return std::make_tuple(std::ref(as_derived().w), std::ref(as_derived().b));
     }

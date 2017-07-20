@@ -49,41 +49,77 @@ auto build_sub_context(Layer& layer) {
     return build_sub_context<SubContext, UT>(layer, std::make_index_sequence<N>());
 }
 
+/*!
+ * \brief The sub context for a specific updater
+ * \param Layer The layer to optimize
+ * \param I The index of the variable to optimize
+ * \param UT The updater type
+ */
 template<typename Layer, size_t I, updater_type UT>
 struct updater_sub_context;
 
+/*!
+ * \brief Specialization of updater_sub_context for SGD updater
+ */
 template<typename Layer, size_t I>
 struct updater_sub_context <Layer, I, updater_type::SGD> {
+    /*!
+     * \brief The type of the variable to optimize
+     */
     using type = std::remove_reference_t<decltype(std::get<I>(std::declval<Layer>().trainable_parameters()))>;
 
-    type grad;
+    type grad; ///< The gradients of the variable
 
+    /*!
+     * \brief Construct the sub_context for the given layer
+     * \param layer The layer to build the context for
+     */
     updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())) {
         grad = 0;
     }
 };
 
+/*!
+ * \brief Specialization of updater_sub_context for momentum updater
+ */
 template<typename Layer, size_t I>
 struct updater_sub_context <Layer, I, updater_type::MOMENTUM> {
+    /*!
+     * \brief The type of the variable to optimize
+     */
     using type = std::remove_reference_t<decltype(std::get<I>(std::declval<Layer>().trainable_parameters()))>;
 
-    type grad;
-    type inc;
+    type grad; ///< The gradients of the variable
+    type inc;  ///< The accumulated momentum cache
 
+    /*!
+     * \brief Construct the sub_context for the given layer
+     * \param layer The layer to build the context for
+     */
     updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), inc(grad) {
         grad = 0;
         inc = 0;
     }
 };
 
+/*!
+ * \brief Specialization of updater_sub_context for Nesterov Accelerated Gradients updater
+ */
 template<typename Layer, size_t I>
 struct updater_sub_context <Layer, I, updater_type::NESTEROV> {
+    /*!
+     * \brief The type of the variable to optimize
+     */
     using type = std::remove_reference_t<decltype(std::get<I>(std::declval<Layer>().trainable_parameters()))>;
 
-    type grad;
-    type inc;
-    type inc_prev;
+    type grad;     ///< The gradients of the variable
+    type inc;      ///< The accumulated momentum cache
+    type inc_prev; ///< The previous accumulated momentum cache
 
+    /*!
+     * \brief Construct the sub_context for the given layer
+     * \param layer The layer to build the context for
+     */
     updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), inc(grad), inc_prev(grad) {
         grad = 0;
         inc = 0;
@@ -91,41 +127,71 @@ struct updater_sub_context <Layer, I, updater_type::NESTEROV> {
     }
 };
 
+/*!
+ * \brief Specialization of updater_sub_context for RMSPROP updater
+ */
 template<typename Layer, size_t I>
 struct updater_sub_context <Layer, I, updater_type::RMSPROP> {
+    /*!
+     * \brief The type of the variable to optimize
+     */
     using type = std::remove_reference_t<decltype(std::get<I>(std::declval<Layer>().trainable_parameters()))>;
 
-    type grad;
-    type inc;
+    type grad; ///< The gradients of the variable
+    type inc;  ///< The accumulated squared gradients
 
+    /*!
+     * \brief Construct the sub_context for the given layer
+     * \param layer The layer to build the context for
+     */
     updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), inc(grad) {
         grad = 0;
         inc = 0;
     }
 };
 
+/*!
+ * \brief Specialization of updater_sub_context for Adagrad updater
+ */
 template<typename Layer, size_t I>
 struct updater_sub_context <Layer, I, updater_type::ADAGRAD> {
+    /*!
+     * \brief The type of the variable to optimize
+     */
     using type = std::remove_reference_t<decltype(std::get<I>(std::declval<Layer>().trainable_parameters()))>;
 
-    type grad;
-    type inc;
+    type grad; ///< The gradients of the variable
+    type inc;  ///< Accumulated gradients for adagrad
 
+    /*!
+     * \brief Construct the sub_context for the given layer
+     * \param layer The layer to build the context for
+     */
     updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), inc(grad) {
         grad = 0;
         inc = 0;
     }
 };
 
+/*!
+ * \brief Specialization of updater_sub_context for Adadelta updater
+ */
 template<typename Layer, size_t I>
 struct updater_sub_context <Layer, I, updater_type::ADADELTA> {
+    /*!
+     * \brief The type of the variable to optimize
+     */
     using type = std::remove_reference_t<decltype(std::get<I>(std::declval<Layer>().trainable_parameters()))>;
 
-    type grad;
+    type grad; ///< The gradients of the variable
     type g;
     type x;
     type v;
 
+    /*!
+     * \brief Construct the sub_context for the given layer
+     * \param layer The layer to build the context for
+     */
     updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), g(grad), x(grad), v(grad) {
         grad = 0;
         g = 0;
@@ -139,12 +205,19 @@ struct updater_sub_context <Layer, I, updater_type::ADADELTA> {
  */
 template<typename Layer, size_t I>
 struct updater_sub_context <Layer, I, updater_type::ADAM> {
+    /*!
+     * \brief The type of the variable to optimize
+     */
     using type = std::remove_reference_t<decltype(std::get<I>(std::declval<Layer>().trainable_parameters()))>;
 
-    type grad;
-    type m;
-    type v;
+    type grad; ///< The gradients of the variable
+    type m;    ///< Estimates of the first moment of the gradient
+    type v;    ///< Estimates of the second moment of the gradient
 
+    /*!
+     * \brief Construct the sub_context for the given layer
+     * \param layer The layer to build the context for
+     */
     updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), m(grad), v(grad) {
         grad = 0;
         m = 0;
@@ -157,14 +230,21 @@ struct updater_sub_context <Layer, I, updater_type::ADAM> {
  */
 template<typename Layer, size_t I>
 struct updater_sub_context <Layer, I, updater_type::ADAM_CORRECT> {
+    /*!
+     * \brief The type of the variable to optimize
+     */
     using type = std::remove_reference_t<decltype(std::get<I>(std::declval<Layer>().trainable_parameters()))>;
 
-    type grad;
-    type m;
-    type mt;
-    type v;
-    type vt;
+    type grad; ///< The gradients of the variable
+    type m;    ///< Estimates of the first moment of the gradient
+    type mt;   ///< Corrected estimates of the first moment of the gradient
+    type v;    ///< Estimates of the second moment of the gradient
+    type vt;   ///< Corrected estimates of the second moment of the gradient
 
+    /*!
+     * \brief Construct the sub_context for the given layer
+     * \param layer The layer to build the context for
+     */
     updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), m(grad), mt(grad), v(grad), vt(grad) {
         grad = 0;
         m = 0;
@@ -179,16 +259,23 @@ struct updater_sub_context <Layer, I, updater_type::ADAM_CORRECT> {
  */
 template<typename Layer, size_t I>
 struct updater_sub_context <Layer, I, updater_type::NADAM> {
+    /*!
+     * \brief The type of the variable to optimize
+     */
     using type = std::remove_reference_t<decltype(std::get<I>(std::declval<Layer>().trainable_parameters()))>;
 
-    type grad;
-    type m;
-    type mt;
-    type v;
-    type vt;
+    type grad; ///< The gradients of the variable
+    type m;    ///< Estimates of the first moment of the gradient
+    type mt;   ///< Corrected estimates of the first moment of the gradient
+    type v;    ///< Estimates of the second moment of the gradient
+    type vt;   ///< Corrected estimates of the second moment of the gradient
 
     double m_schedule;
 
+    /*!
+     * \brief Construct the sub_context for the given layer
+     * \param layer The layer to build the context for
+     */
     updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), m(grad), mt(grad), v(grad), vt(grad) {
         grad = 0;
         m = 0;
@@ -205,12 +292,19 @@ struct updater_sub_context <Layer, I, updater_type::NADAM> {
  */
 template<typename Layer, size_t I>
 struct updater_sub_context <Layer, I, updater_type::ADAMAX> {
+    /*!
+     * \brief The type of the variable to optimize
+     */
     using type = std::remove_reference_t<decltype(std::get<I>(std::declval<Layer>().trainable_parameters()))>;
 
-    type grad;
-    type m;
-    type v;
+    type grad; ///< The gradients of the variable
+    type m;    ///< Estimates of the first moment of the gradient
+    type v;    ///< Estimates of the second moment of the gradient
 
+    /*!
+     * \brief Construct the sub_context for the given layer
+     * \param layer The layer to build the context for
+     */
     updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), m(grad), v(grad) {
         grad = 0;
         m = 0;
@@ -309,7 +403,7 @@ struct sgd_trainer {
 
     dbn_t& dbn;                                                  ///< The DBN being trained
     decltype(build_context<full_sgd_context>(dbn)) full_context; ///< The context
-    size_t iteration;
+    size_t iteration;                                            ///< The current iteration
 
     // Transform layers need to inherit dimensions from back
 

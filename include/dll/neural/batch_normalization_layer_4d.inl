@@ -244,6 +244,10 @@ struct batch_normalization_4d_layer : neural_layer<batch_normalization_4d_layer<
         dyn.init_layer(Kernels, W, H);
     }
 
+    /*!
+     * \brief Returns the trainable variables of this layer.
+     * \return a tuple containing references to the variables of this layer
+     */
     decltype(auto) trainable_parameters(){
         return std::make_tuple(std::ref(gamma), std::ref(beta));
     }
