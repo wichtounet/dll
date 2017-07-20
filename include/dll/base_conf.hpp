@@ -135,6 +135,7 @@ struct vertical_mirroring_id;
 struct categorical_id;
 struct threaded_id;
 struct nop_id;
+struct no_bias_id;
 struct elastic_distortion_id;
 struct noise_id;
 struct scale_pre_id;
@@ -412,6 +413,11 @@ struct dbn_only : basic_conf_elt<dbn_only_id> {};
  * \brief Do nothing (for TMP)
  */
 struct nop : basic_conf_elt<nop_id> {};
+
+/*!
+ * \brief Disable biases
+ */
+struct no_bias : basic_conf_elt<no_bias_id> {};
 
 /*!
  * \brief Use batch mode in DBN (Do not process the complete dataset at once)

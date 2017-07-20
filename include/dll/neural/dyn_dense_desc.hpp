@@ -37,7 +37,9 @@ struct dyn_dense_desc {
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid<cpp::type_list<weight_type_id, activation_id, initializer_id, initializer_bias_id>, Parameters...>::value,
+        detail::is_valid<
+            cpp::type_list<weight_type_id, activation_id, initializer_id, initializer_bias_id, no_bias_id>,
+        Parameters...>::value,
         "Invalid parameters type for dense_desc");
 };
 

@@ -36,6 +36,7 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
     static constexpr auto activation_function = desc::activation_function; ///< The activation function
     static constexpr auto w_initializer       = desc::w_initializer;       ///< The initializer for the weights
     static constexpr auto b_initializer       = desc::b_initializer;       ///< The initializer for the biases
+    static constexpr auto no_bias             = desc::parameters::template contains<dll::no_bias>(); ///< Disable the biases
 
     using input_one_t  = etl::fast_dyn_matrix<weight, NC, NV1, NV2>; ///< The type of one input
     using output_one_t = etl::fast_dyn_matrix<weight, K, NH1, NH2>; ///< The type of one output
@@ -112,7 +113,14 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
         dll::auto_timer timer("conv:forward_batch");
 
         output = etl::ml::convolution_forward(v, w);
-        output = f_activate<activation_function>(bias_add_4d(output, b));
+
+        if /*constexpr*/ (!no_bias) {
+            output = bias_add_4d(output, b);
+        }
+
+        if /*constexpr*/ (activation_function != function::IDENTITY) {
+            output = f_activate<activation_function>(output);
+        }
     }
 
     /*!
@@ -126,7 +134,14 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
         dll::auto_timer timer("conv:forward_batch");
 
         output = etl::ml::convolution_forward(etl::reshape(v, etl::dim<0>(v), NC, NV1, NV2), w);
-        output = f_activate<activation_function>(bias_add_4d(output, b));
+
+        if /*constexpr*/ (!no_bias) {
+            output = bias_add_4d(output, b);
+        }
+
+        if /*constexpr*/ (activation_function != function::IDENTITY) {
+            output = f_activate<activation_function>(output);
+        }
     }
 
     /*!
@@ -196,7 +211,10 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
         dll::auto_timer timer("conv:compute_gradients");
 
         std::get<0>(context.up.context)->grad = etl::ml::convolution_backward_filter(context.input, context.errors);
-        std::get<1>(context.up.context)->grad = etl::bias_batch_sum_4d(context.errors);
+
+        if /*constexpr*/ (!no_bias) {
+            std::get<1>(context.up.context)->grad = etl::bias_batch_sum_4d(context.errors);
+        }
     }
 };
 

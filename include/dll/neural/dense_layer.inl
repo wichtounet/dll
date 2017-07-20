@@ -19,25 +19,26 @@ namespace dll {
  */
 template <typename Desc>
 struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
-    using desc      = Desc; ///< The descriptor of the layer
+    using desc      = Desc;                  ///< The descriptor of the layer
     using weight    = typename desc::weight; ///< The data type for this layer
-    using this_type = dense_layer<desc>; ///< The type of this layer
+    using this_type = dense_layer<desc>;     ///< The type of this layer
     using base_type = neural_layer<this_type, desc>;
 
-    static constexpr size_t num_visible = desc::num_visible;
-    static constexpr size_t num_hidden  = desc::num_hidden;
+    static constexpr size_t num_visible = desc::num_visible; ///< The number of visible units
+    static constexpr size_t num_hidden  = desc::num_hidden;  ///< The number of hidden units
 
-    static constexpr auto activation_function = desc::activation_function; ///< The layer's activation function
-    static constexpr auto w_initializer       = desc::w_initializer; ///< The initializer for the weights
-    static constexpr auto b_initializer       = desc::b_initializer; ///< The initializer for the biases
+    static constexpr auto activation_function = desc::activation_function;                           ///< The layer's activation function
+    static constexpr auto w_initializer       = desc::w_initializer;                                 ///< The initializer for the weights
+    static constexpr auto b_initializer       = desc::b_initializer;                                 ///< The initializer for the biases
+    static constexpr auto no_bias             = desc::parameters::template contains<dll::no_bias>(); ///< Disable the biases
 
     using input_one_t  = etl::fast_dyn_matrix<weight, num_visible>; ///< The type of one input
-    using output_one_t = etl::fast_dyn_matrix<weight, num_hidden>; ///< The type of one output
-    using input_t      = std::vector<input_one_t>; ///< The type of the input
-    using output_t     = std::vector<output_one_t>; ///< The type of the output
+    using output_one_t = etl::fast_dyn_matrix<weight, num_hidden>;  ///< The type of one output
+    using input_t      = std::vector<input_one_t>;                  ///< The type of the input
+    using output_t     = std::vector<output_one_t>;                 ///< The type of the output
 
     using w_type = etl::fast_matrix<weight, num_visible, num_hidden>; ///< The type of the weights
-    using b_type = etl::fast_matrix<weight, num_hidden>; ///< The type of the biases
+    using b_type = etl::fast_matrix<weight, num_hidden>;              ///< The type of the biases
 
     //Weights and biases
     w_type w; ///< Weights
@@ -114,14 +115,20 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
 
         output = etl::reshape(input, Batch, num_visible) * w;
 
-        if (activation_function == function::SOFTMAX) {
-            output = bias_add_2d(output, b);
+        if /*constexpr*/ (activation_function == function::SOFTMAX) {
+            if /*constexpr*/ (!no_bias) {
+                output = bias_add_2d(output, b);
+            }
 
             for (size_t i = 0; i < Batch; ++i) {
                 output(i) = f_activate<activation_function>(output(i));
             }
         } else {
-            output = f_activate<activation_function>(bias_add_2d(output, b));
+            if /*constexpr*/ (no_bias) {
+                output = f_activate<activation_function>(output);
+            } else {
+                output = f_activate<activation_function>(bias_add_2d(output, b));
+            }
         }
     }
 
@@ -197,7 +204,10 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
         dll::auto_timer timer("dense:compute_gradients");
 
         std::get<0>(context.up.context)->grad = batch_outer(context.input, context.errors);
-        std::get<1>(context.up.context)->grad = bias_batch_sum_2d(context.errors);
+
+        if /*constexpr*/ (!no_bias) {
+            std::get<1>(context.up.context)->grad = bias_batch_sum_2d(context.errors);
+        }
     }
 };
 

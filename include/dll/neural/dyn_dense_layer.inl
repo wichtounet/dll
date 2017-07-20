@@ -17,19 +17,20 @@ namespace dll {
  */
 template <typename Desc>
 struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
-    using desc      = Desc; ///< The descriptor of the layer
+    using desc      = Desc;                  ///< The descriptor of the layer
     using weight    = typename desc::weight; ///< The data type for this layer
     using this_type = dyn_dense_layer<desc>; ///< The type of this layer
     using base_type = neural_layer<this_type, desc>;
 
-    static constexpr auto activation_function = desc::activation_function; ///< The layer's activation function
-    static constexpr auto w_initializer       = desc::w_initializer; ///< The initializer for the weights
-    static constexpr auto b_initializer       = desc::b_initializer; ///< The initializer for the biases
+    static constexpr auto activation_function = desc::activation_function;                           ///< The layer's activation function
+    static constexpr auto w_initializer       = desc::w_initializer;                                 ///< The initializer for the weights
+    static constexpr auto b_initializer       = desc::b_initializer;                                 ///< The initializer for the biases
+    static constexpr auto no_bias             = desc::parameters::template contains<dll::no_bias>(); ///< Disable the biases
 
     using input_one_t  = etl::dyn_matrix<weight, 1>; ///< The type of one input
     using output_one_t = etl::dyn_matrix<weight, 1>; ///< The type of one output
-    using input_t      = std::vector<input_one_t>; ///< The type of the input
-    using output_t     = std::vector<output_one_t>; ///< The type of the output
+    using input_t      = std::vector<input_one_t>;   ///< The type of the input
+    using output_t     = std::vector<output_one_t>;  ///< The type of the output
 
     using w_type = etl::dyn_matrix<weight, 2>; ///< The type of the weights
     using b_type = etl::dyn_matrix<weight, 1>; ///< The type of the biases
@@ -42,8 +43,8 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
     std::unique_ptr<w_type> bak_w; ///< Backup Weights
     std::unique_ptr<b_type> bak_b; ///< Backup Hidden biases
 
-    size_t num_visible;
-    size_t num_hidden;
+    size_t num_visible; ///< The number of visible units
+    size_t num_hidden;  ///< The number of hidden units
 
     dyn_dense_layer() : base_type() {}
 
@@ -116,13 +117,19 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
         output = etl::reshape(input, Batch, num_visible) * w;
 
         if (activation_function == function::SOFTMAX) {
-            output = bias_add_2d(output, b);
+            if /*constexpr*/ (!no_bias) {
+                output = bias_add_2d(output, b);
+            }
 
             for (size_t i = 0; i < Batch; ++i) {
                 output(i) = f_activate<activation_function>(output(i));
             }
         } else {
-            output = f_activate<activation_function>(bias_add_2d(output, b));
+            if /*constexpr*/ (no_bias) {
+                output = f_activate<activation_function>(output);
+            } else {
+                output = f_activate<activation_function>(bias_add_2d(output, b));
+            }
         }
     }
 
@@ -198,8 +205,13 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
      */
     template<typename C>
     void compute_gradients(C& context) const {
+        dll::auto_timer timer("dyn_dense:compute_gradients");
+
         std::get<0>(context.up.context)->grad = batch_outer(context.input, context.errors);
-        std::get<1>(context.up.context)->grad = bias_batch_sum_2d(context.errors);
+
+        if /*constexpr*/ (!no_bias) {
+            std::get<1>(context.up.context)->grad = bias_batch_sum_2d(context.errors);
+        }
     }
 };
 
