@@ -15,12 +15,14 @@ namespace dll {
  * \brief A dataset.
  *
  * A dataset is made of a train data generator and a test data generator.
+ * Optionally, a validation data generator is also available.
  */
-template<typename TrainG, typename TestG>
+template<typename TrainG, typename TestG, typename ValG>
 struct dataset_holder {
 private:
     std::unique_ptr<TrainG> train_generator; ///< The train data generator
     std::unique_ptr<TestG> test_generator;   ///< The test data generator
+    std::unique_ptr<ValG> val_generator;     ///< The validation data generator
 
 public:
     /*!
@@ -30,6 +32,17 @@ public:
      */
     dataset_holder(std::unique_ptr<TrainG>& train_generator, std::unique_ptr<TestG>& test_generator)
             : train_generator(std::move(train_generator)), test_generator(std::move(test_generator)) {
+        // Nothing else to init
+    }
+
+    /*!
+     * \brief Construct a new dataset_holder
+     * \param train_generator The train data generator
+     * \param test_generator The test data generator
+     * \param val_generator The validation data generator
+     */
+    dataset_holder(std::unique_ptr<TrainG>& train_generator, std::unique_ptr<TestG>& test_generator, std::unique_ptr<ValG>& val_generator)
+            : train_generator(std::move(train_generator)), test_generator(std::move(test_generator)), val_generator(std::move(val_generator)) {
         // Nothing else to init
     }
 
@@ -50,19 +63,31 @@ public:
     }
 
     /*!
+     * \brief Returns the generator around the validation data
+     * \return A reference to the generator for the validation data
+     */
+    ValG& val(){
+        return *val_generator;
+    }
+
+    /*!
      * \brief Display information about the dataset on the given stream
      * \param stream The stream to output information to
      * \return stream
      */
     std::ostream& display(std::ostream& stream){
-        std::cout << "MNIST Dataset" << std::endl;
+        std::cout << "Dataset" << std::endl;
 
         if(train_generator){
-            std::cout << "Train: " << *train_generator;
+            std::cout << "Training: " << *train_generator;
+        }
+
+        if(val_generator){
+            std::cout << "Validation: " << *val_generator;
         }
 
         if(test_generator){
-            std::cout << "Test: " << *test_generator;
+            std::cout << "Testing: " << *test_generator;
         }
 
         return stream;
@@ -82,8 +107,8 @@ public:
  * \param dataset The dataset to print information from
  * \return os
  */
-template<typename TrainG, typename TestG>
-std::ostream& operator<<(std::ostream& os, dataset_holder<TrainG, TestG>& dataset){
+template<typename TrainG, typename TestG, typename ValG>
+std::ostream& operator<<(std::ostream& os, dataset_holder<TrainG, TestG, ValG>& dataset){
     return dataset.display(os);
 }
 
@@ -94,7 +119,7 @@ std::ostream& operator<<(std::ostream& os, dataset_holder<TrainG, TestG>& datase
  * \return The dataset holder around the two generators
  */
 template<typename TrainG, typename TestG>
-dataset_holder<TrainG, TestG> make_dataset_holder(std::unique_ptr<TrainG>&& train_generator, std::unique_ptr<TestG>&& test_generator){
+dataset_holder<TrainG, TestG, int> make_dataset_holder(std::unique_ptr<TrainG>&& train_generator, std::unique_ptr<TestG>&& test_generator){
     return {train_generator, test_generator};
 }
 
