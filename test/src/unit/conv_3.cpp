@@ -40,7 +40,7 @@ TEST_CASE("unit/conv/sgd/9", "[conv][dbn][mnist][sgd]") {
 
 TEST_CASE("unit/conv/sgd/10", "[unit][conv][dbn][mnist][sgd]") {
     //Note: This is a reduced lenet version
-    //Note: The activation layers are here to ensure compilation
+    //Note: The activation layers are here to test compilation
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_desc<1, 28, 28, 6, 5, 5, dll::activation<dll::function::IDENTITY>>::layer_t,
