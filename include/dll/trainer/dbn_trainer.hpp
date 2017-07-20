@@ -249,11 +249,11 @@ struct dbn_trainer {
 
             start_epoch(dbn, epoch);
 
-            double new_error;
+            double error;
             double loss;
-            std::tie(loss, new_error) = train_epoch(dbn, generator, epoch);
+            std::tie(error, loss) = train_epoch(dbn, generator, epoch);
 
-            if(stop_epoch(dbn, epoch, new_error, loss)){
+            if(stop_epoch(dbn, epoch, error, loss)){
                 break;
             }
         }
