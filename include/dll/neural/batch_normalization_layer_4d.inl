@@ -39,10 +39,6 @@ struct batch_normalization_4d_layer : neural_layer<batch_normalization_4d_layer<
 
     weight momentum = 0.9;
 
-    // For SGD
-    etl::fast_matrix<weight, Kernels>& w = gamma;
-    etl::fast_matrix<weight, Kernels>& b = beta;
-
     //Backup gamma and beta
     std::unique_ptr<etl::fast_matrix<weight, Kernels>> bak_gamma; ///< Backup gamma
     std::unique_ptr<etl::fast_matrix<weight, Kernels>> bak_beta;  ///< Backup beta

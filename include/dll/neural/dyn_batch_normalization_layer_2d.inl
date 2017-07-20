@@ -36,10 +36,6 @@ struct dyn_batch_normalization_2d_layer : neural_layer<dyn_batch_normalization_2
 
     weight momentum = 0.9;
 
-    // For SGD
-    etl::dyn_matrix<weight, 1>& w = gamma;
-    etl::dyn_matrix<weight, 1>& b = beta;
-
     //Backup gamma and beta
     std::unique_ptr<etl::dyn_matrix<weight, 1>> bak_gamma; ///< Backup gamma
     std::unique_ptr<etl::dyn_matrix<weight, 1>> bak_beta;  ///< Backup beta
