@@ -123,6 +123,20 @@ dataset_holder<TrainG, TestG, int> make_dataset_holder(std::unique_ptr<TrainG>&&
     return {train_generator, test_generator};
 }
 
+/*!
+ * \brief Helper to create a dataset_holder
+ *
+ * \param train_generator The train data generator
+ * \param test_generator The test data generator
+ * \param val_generator The test data generator
+ *
+ * \return The dataset holder around the three generators
+ */
+template<typename TrainG, typename TestG, typename ValG>
+dataset_holder<TrainG, TestG, ValG> make_dataset_holder(std::unique_ptr<TrainG>&& train_generator, std::unique_ptr<TestG>&& test_generator, std::unique_ptr<ValG>&& val_generator){
+    return {train_generator, test_generator, val_generator};
+}
+
 } // end of namespace dll
 
 #include "datasets/mnist.hpp"
