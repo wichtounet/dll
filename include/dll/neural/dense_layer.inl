@@ -84,8 +84,14 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
      * \return an std::string containing a short description of the layer
      */
     static std::string to_short_string() {
-        char buffer[1024];
-        snprintf(buffer, 1024, "Dense: %lu -> %s -> %lu", num_visible, to_string(activation_function).c_str(), num_hidden);
+        char buffer[512];
+
+        if /*constexpr*/ (activation_function == function::IDENTITY) {
+            snprintf(buffer, 512, "Dense: %lu -> %lu", num_visible, num_hidden);
+        } else {
+            snprintf(buffer, 512, "Dense: %lu -> %s -> %lu", num_visible, to_string(activation_function).c_str(), num_hidden);
+        }
+
         return {buffer};
     }
 
