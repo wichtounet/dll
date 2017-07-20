@@ -251,6 +251,27 @@ struct default_dbn_watcher {
     }
 
     /*!
+     * \brief One fine-tuning epoch is over
+     * \param epoch The current epoch
+     * \param train_error The current error
+     * \param train_loss The current loss
+     * \param dbn The network being trained
+     */
+    void ft_epoch_end(size_t epoch, double train_error, double train_loss, double val_error, double val_loss, const DBN& dbn) {
+        cpp_unused(dbn);
+        auto duration = ft_epoch_timer.stop();
+
+        if /*constexpr*/ (dbn_traits<DBN>::error_on_epoch()){
+            printf("Epoch %3ld/%ld - error: %.5f loss: %.5f val_error: %.5f val_loss: %.5f Time %ldms \n",
+                epoch, ft_max_epochs, train_error, train_loss, val_error, val_loss, duration);
+        } else {
+            printf("Epoch %3ld/%ld - loss: %.5f val_loss: %.5f Time %ldms \n", epoch, ft_max_epochs, train_loss, val_loss, duration);
+        }
+
+        std::cout.flush();
+    }
+
+    /*!
      * \brief Indicates the beginning of a fine-tuning batch
      * \param epoch The current epoch
      * \param dbn The DBN being trained
@@ -380,9 +401,25 @@ struct mute_dbn_watcher {
      * \param error The current epoch error
      * \param dbn The network being trained
      */
-    void ft_epoch_end(size_t epoch, double error, const DBN& dbn) {
+    void ft_epoch_end(size_t epoch, double error, double loss, const DBN& dbn) {
         cpp_unused(epoch);
         cpp_unused(error);
+        cpp_unused(loss);
+        cpp_unused(dbn);
+    }
+
+    /*!
+     * \brief One fine-tuning epoch is ended
+     * \param epoch The current epoch
+     * \param error The current epoch error
+     * \param dbn The network being trained
+     */
+    void ft_epoch_end(size_t epoch, double train_error, double train_loss, double val_error, double val_loss, const DBN& dbn) {
+        cpp_unused(epoch);
+        cpp_unused(train_error);
+        cpp_unused(train_loss);
+        cpp_unused(val_error);
+        cpp_unused(val_loss);
         cpp_unused(dbn);
     }
 

@@ -122,8 +122,56 @@ struct dbn_trainer {
         return false;
     }
 
+    /*!
+     * \brief Indicates the end of an epoch
+     * \param dbn The network that is trained
+     * \param epoch The current epoch
+     * \param new_error The new training error
+     * \param loss The new training loss
+     * \return true if the training is over
+     */
+    bool stop_epoch(dbn_t& dbn, size_t epoch, const std::pair<double, double>& train_stats, const std::pair<double, double>& val_stats){
+        double new_error = train_stats.first;
+
+        error = new_error;
+
+        //After some time increase the momentum
+        if (dbn_traits<dbn_t>::updater() == updater_type::MOMENTUM && epoch == dbn.final_momentum_epoch) {
+            dbn.momentum = dbn.final_momentum;
+        }
+
+        watcher.ft_epoch_end(epoch, new_error, train_stats.second, val_stats.first, val_stats.second, dbn);
+
+        //Once the goal is reached, stop training
+        if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()){
+            if (new_error <= dbn.goal) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     template<typename Generator>
-    std::pair<double, double> train_epoch(dbn_t& dbn, Generator& generator, size_t epoch){
+    std::pair<double, double> compute_error_loss(dbn_t& dbn, Generator& generator){
+        // Compute the error at this epoch
+        double new_error;
+        double new_loss;
+
+        if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()){
+            dll::auto_timer timer("dbn::trainer::train::epoch::error");
+
+            std::tie(new_error, new_loss) = dbn.evaluate_metrics(generator);
+        } else {
+            new_error = -1.0;
+            new_loss  = -1.0;
+        }
+
+        return std::make_pair(new_error, new_loss);
+    }
+
+    template<typename Generator>
+    void train_epoch_only(dbn_t& dbn, Generator& generator, size_t epoch){
         // Set the generator in train mode
         generator.set_train();
 
@@ -151,21 +199,30 @@ struct dbn_trainer {
 
             generator.next_batch();
         }
+    }
+
+    template<typename Generator>
+    std::pair<double, double> train_epoch(dbn_t& dbn, Generator& generator, size_t epoch){
+        // Train one epoch of training data
+        train_epoch_only(dbn, generator, epoch);
 
         // Compute the error at this epoch
-        double new_error;
-        double new_loss;
+        return compute_error_loss(dbn, generator);
+    }
 
-        if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()){
-            dll::auto_timer timer("dbn::trainer::train::epoch::error");
+    template<typename TrainGenerator, typename ValGenerator>
+    std::pair<std::pair<double, double>, std::pair<double, double>> train_epoch(dbn_t& dbn, TrainGenerator& train_generator, ValGenerator& val_generator, size_t epoch){
+        // Train one epoch of training data
+        train_epoch_only(dbn, train_generator, epoch);
 
-            std::tie(new_error, new_loss) = dbn.evaluate_metrics(generator);
-        } else {
-            new_error = -1.0;
-            new_loss  = -1.0;
-        }
+        // Compute the training error at this epoch
+        auto train_stats = compute_error_loss(dbn, train_generator);
 
-        return {new_loss, new_error};
+        // Compute the training error at this epoch
+        auto val_stats = compute_error_loss(dbn, val_generator);
+
+        // Return the stats
+        return std::make_pair(train_stats, val_stats);
     }
 
     template <typename Generator>
@@ -194,6 +251,44 @@ struct dbn_trainer {
             std::tie(loss, new_error) = train_epoch(dbn, generator, epoch);
 
             if(stop_epoch(dbn, epoch, new_error, loss)){
+                break;
+            }
+        }
+
+        // Finalization
+
+        return stop_training(dbn);
+    }
+
+    template <typename TrainGenerator, typename ValGenerator>
+    error_type train(DBN& dbn, TrainGenerator& train_generator, ValGenerator& val_generator, size_t max_epochs) {
+        dll::auto_timer timer("dbn::trainer::train");
+
+        // The validation generator is always in test mode
+        val_generator.set_test();
+
+        // Initialization steps
+        start_training(dbn, max_epochs);
+
+        //Train the model for max_epochs epoch
+
+        for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
+            dll::auto_timer timer("dbn::trainer::train::epoch");
+
+            // Shuffle before the epoch if necessary
+            if(dbn_traits<dbn_t>::shuffle()){
+                train_generator.reset_shuffle();
+            } else {
+                train_generator.reset();
+            }
+
+            start_epoch(dbn, epoch);
+
+            std::pair<double, double> train_stats;
+            std::pair<double, double> val_stats;
+            std::tie(train_stats, val_stats) = train_epoch(dbn, train_generator, val_generator, epoch);
+
+            if (stop_epoch(dbn, epoch, train_stats, val_stats)) {
                 break;
             }
         }

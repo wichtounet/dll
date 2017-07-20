@@ -1330,6 +1330,23 @@ public:
     }
 
     /*!
+     * \brief Fine tune the network for classifcation with a generator.
+     *
+     * \param train_generator A generator for training data and labels
+     * \param val_generator A generator for validation data and labels
+     * \param max_epochs The maximum number of epochs to train the network for.
+     *
+     * \return The final classification error
+     */
+    template <typename Generator, typename ValGenerator>
+    weight fine_tune_val(Generator& train_generator, ValGenerator& val_generator, size_t max_epochs) {
+        dll::auto_timer timer("dbn:train:ft");
+
+        dll::dbn_trainer<this_type> trainer;
+        return trainer.train(*this, train_generator, val_generator, max_epochs);
+    }
+
+    /*!
      * \brief Fine tune the network for classifcation.
      * \param training_data A container containing all the samples
      * \param labels A container containing all the labels
