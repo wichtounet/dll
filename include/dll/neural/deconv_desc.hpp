@@ -31,7 +31,7 @@ struct deconv_desc {
 
     static constexpr auto activation_function = detail::get_value<activation<function::SIGMOID>, Parameters...>::value; ///< The layer's activation function
     static constexpr auto w_initializer       = detail::get_value<initializer<initializer_type::LECUN>, Parameters...>::value; ///< The initializer for the weights
-    static constexpr auto b_initializer       = detail::get_value<initializer_bias<initializer_type::LECUN>, Parameters...>::value; ///< The initializer for the biases
+    static constexpr auto b_initializer       = detail::get_value<initializer_bias<initializer_type::ZERO>, Parameters...>::value; ///< The initializer for the biases
 
     /*! The type used to store the weights */
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
