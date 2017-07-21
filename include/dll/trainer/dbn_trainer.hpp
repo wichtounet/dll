@@ -124,6 +124,8 @@ struct dbn_trainer {
         // The early stopping strategy
         static constexpr auto s = dbn_t::early;
 
+        // Depending on the strategy, try to save the best weights
+
         if /*constexpr*/ (s != strategy::NONE) {
             if /*constexpr*/ (is_error(s)) {
                 if(!epoch || error < best_error){
@@ -141,6 +143,8 @@ struct dbn_trainer {
                 }
             }
         }
+
+        // Depending on the strategy, decide to stop training
 
         if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()) {
             // Stop according to goal on loss
