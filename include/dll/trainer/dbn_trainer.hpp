@@ -361,6 +361,12 @@ struct dbn_trainer {
         return stop;
     }
 
+    /*!
+     * \brief Compute error and loss on the given generator with the given network.
+     * \param dbn The network to be used
+     * \param generator The generator to get data from
+     * \return a pair containing (error, loss)
+     */
     template<typename Generator>
     std::pair<double, double> compute_error_loss(dbn_t& dbn, Generator& generator){
         // Compute the error and loss at this epoch
@@ -379,6 +385,11 @@ struct dbn_trainer {
         return std::make_pair(new_error, new_loss);
     }
 
+    /*!
+     * \brief Train the network for one epoch
+     * \param generator The generator for training data
+     * \param epoch The current epoch
+     */
     template<typename Generator>
     void train_epoch_only(dbn_t& dbn, Generator& generator, size_t epoch){
         // Set the generator in train mode
@@ -410,6 +421,15 @@ struct dbn_trainer {
         }
     }
 
+    /*!
+     * \brief Train the network for one epoch and compute the loss and error on the training set
+     *
+     * \param dbn The network to train
+     * \param generator The generator to use for training data
+     * \param epoch The current epoch
+     *
+     * \return a pair containing (error, loss)
+     */
     template<typename Generator>
     std::pair<double, double> train_epoch(dbn_t& dbn, Generator& generator, size_t epoch){
         // Train one epoch of training data
@@ -419,6 +439,17 @@ struct dbn_trainer {
         return compute_error_loss(dbn, generator);
     }
 
+    /*!
+     * \brief Train the network for one epoch and compute the loss and error
+     * on the training and validation sets
+     *
+     * \param dbn The network to train
+     * \param train_generator The generator to use for training data
+     * \param val_generator The generator to use for validation data
+     * \param epoch The current epoch
+     *
+     * \return a pair of pair containing ((train_error, train_loss), (val_error, val_loss))
+     */
     template<typename TrainGenerator, typename ValGenerator>
     std::pair<std::pair<double, double>, std::pair<double, double>> train_epoch(dbn_t& dbn, TrainGenerator& train_generator, ValGenerator& val_generator, size_t epoch){
         // Train one epoch of training data
@@ -434,6 +465,15 @@ struct dbn_trainer {
         return std::make_pair(train_stats, val_stats);
     }
 
+    /*!
+     * \brief Train the network for max_epochs
+     *
+     * \param dbn The network to be trained
+     * \param generator The generator for the training data
+     * \param max_epochs The maximum number of epochs
+     *
+     * \return The final error
+     */
     template <typename Generator>
     error_type train(DBN& dbn, Generator& generator, size_t max_epochs) {
         dll::auto_timer timer("dbn::trainer::train");
@@ -470,6 +510,16 @@ struct dbn_trainer {
         return stop_training(dbn, epoch, max_epochs);
     }
 
+    /*!
+     * \brief Train the network for max_epochs
+     *
+     * \param dbn The network to be trained
+     * \param train_generator The generator for the training data
+     * \param val_generator The generator for the validation data
+     * \param max_epochs The maximum number of epochs
+     *
+     * \return The final error
+     */
     template <typename TrainGenerator, typename ValGenerator>
     error_type train(DBN& dbn, TrainGenerator& train_generator, ValGenerator& val_generator, size_t max_epochs) {
         dll::auto_timer timer("dbn::trainer::train");
