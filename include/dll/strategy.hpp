@@ -13,11 +13,13 @@ namespace dll {
  * \brief The strategy for early stopping
  */
 enum class strategy {
-    NONE,        ///< No early stopping
-    LOSS_GOAL,   ///< Stop early when goal loss is reached
-    ERROR_GOAL,  ///< Stop early when goal error is reached
-    LOSS_DIRECT, ///< Stop early when loss is decreasing
-    ERROR_DIRECT ///< Stop early when error is decreasing
+    NONE,         ///< No early stopping
+    LOSS_GOAL,    ///< Stop early when goal loss is reached
+    ERROR_GOAL,   ///< Stop early when goal error is reached
+    LOSS_DIRECT,  ///< Stop early when loss is increasing
+    ERROR_DIRECT, ///< Stop early when error is increasing
+    LOSS_BEST,    ///< Stop early when loss is not going down the best
+    ERROR_BEST    ///< Stop early when error is not going down the best
 };
 
 /*!
@@ -37,6 +39,10 @@ inline std::string to_string(strategy s) {
             return "Direct(loss)";
         case strategy::ERROR_DIRECT:
             return "Direct(error)";
+        case strategy::LOSS_BEST:
+            return "Best(loss)";
+        case strategy::ERROR_BEST:
+            return "Best(error)";
     }
 
     cpp_unreachable("Unreachable code");
@@ -50,7 +56,7 @@ inline std::string to_string(strategy s) {
  * \return true if the strategy is based on error, false if it's based on loss.
  */
 constexpr bool is_error(strategy s){
-    return s == strategy::ERROR_GOAL || s == strategy::ERROR_DIRECT;
+    return s == strategy::ERROR_GOAL || s == strategy::ERROR_DIRECT || s == strategy::ERROR_BEST;
 }
 
 } //end of dll namespace

@@ -89,9 +89,33 @@ struct dbn_trainer {
 
     /*!
      * \brief Finalize the training
+     *
      * \param dbn The network that was trained
+     * \param epoch The current epoch
+     * \param max_epochs
+     *
+     * \return the final error
      */
-    error_type stop_training(dbn_t& dbn){
+    error_type stop_training(dbn_t& dbn, size_t epoch, size_t max_epochs){
+        // Depending on the strategy, try to restore the best weights
+
+        if(epoch == max_epochs){
+            // The early stopping strategy
+            static constexpr auto s = dbn_t::early;
+
+            if /*constexpr*/ (s != strategy::NONE) {
+                if(best_epoch < max_epochs - 1){
+                    dbn.restore_weights();
+
+                    if (is_error(s)) {
+                        std::cout << "Restore the best (error) weights from epoch " << best_epoch << std::endl;
+                    } else {
+                        std::cout << "Restore the best (loss) weights from epoch " << best_epoch << std::endl;
+                    }
+                }
+            }
+        }
+
         watcher.fine_tuning_end(dbn);
 
         return current_error;
@@ -209,6 +233,50 @@ struct dbn_trainer {
 
                     if (!patience) {
                         std::cout << "Stopping: Error has been increasing for " << dbn.patience << " epochs";
+
+                        if (epoch != best_epoch) {
+                            dbn.restore_weights();
+
+                            std::cout << ", restore weights from epoch " << best_epoch;
+                        }
+
+                        std::cout << std::endl;
+
+                        return true;
+                    }
+                } else {
+                    patience = dbn.patience;
+                }
+            }
+            // Stop if loss is increasing (relative to best)
+            else if /*constexpr*/ (s == strategy::LOSS_BEST) {
+                if (loss > best_loss && epoch) {
+                    --patience;
+
+                    if (!patience) {
+                        std::cout << "Stopping: Loss has been increasing (from best) for " << dbn.patience << " epochs";
+
+                        if (epoch != best_epoch) {
+                            dbn.restore_weights();
+
+                            std::cout << ", restore weights from epoch " << best_epoch;
+                        }
+
+                        std::cout << std::endl;
+
+                        return true;
+                    }
+                } else {
+                    patience = dbn.patience;
+                }
+            }
+            // Stop if error is increasing (relative to best)
+            else if /*constexpr*/ (s == strategy::ERROR_BEST) {
+                if (error > best_error && epoch) {
+                    --patience;
+
+                    if (!patience) {
+                        std::cout << "Stopping: Error has been increasing (from best) for " << dbn.patience << " epochs";
 
                         if (epoch != best_epoch) {
                             dbn.restore_weights();
@@ -369,7 +437,8 @@ struct dbn_trainer {
 
         //Train the model for max_epochs epoch
 
-        for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
+        size_t epoch = 0;
+        for (; epoch < max_epochs; ++epoch) {
             dll::auto_timer timer("dbn::trainer::train::epoch");
 
             // Shuffle before the epoch if necessary
@@ -392,7 +461,7 @@ struct dbn_trainer {
 
         // Finalization
 
-        return stop_training(dbn);
+        return stop_training(dbn, epoch, max_epochs);
     }
 
     template <typename TrainGenerator, typename ValGenerator>
@@ -407,7 +476,8 @@ struct dbn_trainer {
 
         //Train the model for max_epochs epoch
 
-        for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
+        size_t epoch = 0;
+        for (; epoch < max_epochs; ++epoch) {
             dll::auto_timer timer("dbn::trainer::train::epoch");
 
             // Shuffle before the epoch if necessary
@@ -430,7 +500,7 @@ struct dbn_trainer {
 
         // Finalization
 
-        return stop_training(dbn);
+        return stop_training(dbn, epoch, max_epochs);
     }
 };
 
