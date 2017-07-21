@@ -362,7 +362,7 @@ public:
     void display() const {
         size_t parameters = 0;
 
-        std::cout << "DBN with " << layers << " layers" << std::endl;
+        std::cout << "Network with " << layers << " layers" << std::endl;
 
         for_each_layer([&parameters](auto& layer) {
             std::cout << "    ";
