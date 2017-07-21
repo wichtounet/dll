@@ -195,25 +195,49 @@ struct default_dbn_watcher {
      * \param max_epochs The maximum number of epochs to train the network
      */
     void fine_tuning_begin(const DBN& dbn, size_t max_epochs) {
-        std::cout << "Train the network with \"" << DBN::desc::template trainer_t<DBN>::name() << "\" (Updater: "
-            << dll::to_string(DBN::updater) << ") (Loss: "
-            << dll::to_string(DBN::loss) << ")" << std::endl;
+        static constexpr auto UT = dbn_traits<DBN>::updater();
+
+        std::cout << "Train the network with \"" << DBN::desc::template trainer_t<DBN>::name() << "\"" << std::endl;
+        std::cout << "    Updater: " << dll::to_string(UT) << std::endl;
+        std::cout << "       Loss: " << dll::to_string(DBN::loss) << std::endl;
+        std::cout << " Early Stop: " << dll::to_string(DBN::early) << std::endl << std::endl;
 
         std::cout << "With parameters:" << std::endl;
         std::cout << "          epochs=" << max_epochs << std::endl;
         std::cout << "      batch_size=" << DBN::batch_size << std::endl;
-        std::cout << "   learning_rate=" << dbn.learning_rate << std::endl;
 
-        if (dbn_traits<DBN>::updater() == updater_type::MOMENTUM) {
-            std::cout << "   momentum=" << dbn.momentum << std::endl;
+        // ADADELTA does not use the learning rate
+        if (UT != updater_type::ADADELTA) {
+            std::cout << "   learning_rate=" << dbn.learning_rate << std::endl;
+        }
+
+        if (UT == updater_type::MOMENTUM) {
+            std::cout << "        momentum=" << dbn.momentum << std::endl;
+        }
+
+        if (UT == updater_type::NESTEROV) {
+            std::cout << "        momentum=" << dbn.momentum << std::endl;
+        }
+
+        if (UT == updater_type::ADADELTA) {
+            std::cout << "            beta=" << dbn.adadelta_beta << std::endl;
+        }
+
+        if (UT == updater_type::ADAM || UT == updater_type::ADAM_CORRECT || UT == updater_type::ADAMAX || UT == updater_type::NADAM) {
+            std::cout << "           beta1=" << dbn.adam_beta1 << std::endl;
+            std::cout << "           beta2=" << dbn.adam_beta2 << std::endl;
+        }
+
+        if (UT == updater_type::RMSPROP) {
+            std::cout << "           decay=" << dbn.rmsprop_decay << std::endl;
         }
 
         if (w_decay(dbn_traits<DBN>::decay()) == decay_type::L1 || w_decay(dbn_traits<DBN>::decay()) == decay_type::L1L2) {
-            std::cout << "   weight_cost(L1)=" << dbn.l1_weight_cost << std::endl;
+            std::cout << " weight_cost(L1)=" << dbn.l1_weight_cost << std::endl;
         }
 
         if (w_decay(dbn_traits<DBN>::decay()) == decay_type::L2 || w_decay(dbn_traits<DBN>::decay()) == decay_type::L1L2) {
-            std::cout << "   weight_cost(L2)=" << dbn.l2_weight_cost << std::endl;
+            std::cout << " weight_cost(L2)=" << dbn.l2_weight_cost << std::endl;
         }
 
         ft_max_epochs = max_epochs;
