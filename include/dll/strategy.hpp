@@ -44,4 +44,13 @@ inline std::string to_string(strategy s) {
     return "UNDEFINED";
 }
 
+/*!
+ * \brief Indicates if the given strategy is based on error or loss
+ * \param s The strategy to get information from
+ * \return true if the strategy is based on error, false if it's based on loss.
+ */
+constexpr bool is_error(strategy s){
+    return s == strategy::ERROR_GOAL || s == strategy::ERROR_DIRECT;
+}
+
 } //end of dll namespace

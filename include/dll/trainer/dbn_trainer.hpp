@@ -55,6 +55,10 @@ struct dbn_trainer {
     error_type current_val_error = 0.0; ///< The current validation error
     error_type current_val_loss  = 0.0; ///< The current validation loss
 
+    error_type best_error = 0.0; ///< The best error (training or validation depending on strategy)
+    error_type best_loss  = 0.0; ///< The best loss (training or validation depending on strategy)
+    size_t best_epoch     = 0;   ///< The best epoch
+
     /*!
      * \brief Initialize the training
      * \param dbn The network to train
@@ -102,7 +106,10 @@ struct dbn_trainer {
     }
 
     /*!
-     * \brief Decides to stop, or not, early the training
+     * \brief Decides to stop, or not, early the training.
+     *
+     * This function is also responsible to save the better weights according to
+     * the early stopping strategy.
      *
      * \param dbn The network being trained
      * \param epoch The current epoch
@@ -114,30 +121,89 @@ struct dbn_trainer {
      * \return true if the training should be stopped, false otherwise
      */
     bool early_stop(dbn_t& dbn, size_t epoch, double error, double loss, double prev_error, double prev_loss){
+        // The early stopping strategy
         static constexpr auto s = dbn_t::early;
+
+        if /*constexpr*/ (s != strategy::NONE) {
+            if /*constexpr*/ (is_error(s)) {
+                if(!epoch || error < best_error){
+                    best_error = error;
+                    best_epoch = epoch;
+
+                    dbn.backup_weights();
+                }
+            } else {
+                if(!epoch || loss < best_loss){
+                    best_loss = loss;
+                    best_epoch = epoch;
+
+                    dbn.backup_weights();
+                }
+            }
+        }
 
         if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()) {
             // Stop according to goal on loss
             if /*constexpr*/ (s == strategy::LOSS_GOAL) {
                 if (loss <= dbn.goal) {
+                    std::cout << "Stopping: Loss below goal";
+
+                    if(epoch != best_epoch){
+                        dbn.restore_weights();
+
+                        std::cout << ", restore weights from epoch " << best_epoch;
+                    }
+
+                    std::cout << std::endl;
+
                     return true;
                 }
             }
             // Stop according to goal on error
             else if /*constexpr*/ (s == strategy::ERROR_GOAL) {
                 if (error <= dbn.goal) {
+                    std::cout << "Stopping: Error below goal";
+
+                    if(epoch != best_epoch){
+                        dbn.restore_weights();
+
+                        std::cout << ", restore weights from epoch " << best_epoch;
+                    }
+
+                    std::cout << std::endl;
+
                     return true;
                 }
             }
             // Stop if loss is increasing
             else if /*constexpr*/ (s == strategy::LOSS_DIRECT) {
                 if (loss > prev_loss && epoch) {
+                    std::cout << "Stopping: Loss is increasing";
+
+                    if(epoch != best_epoch){
+                        dbn.restore_weights();
+
+                        std::cout << ", restore weights from epoch " << best_epoch;
+                    }
+
+                    std::cout << std::endl;
+
                     return true;
                 }
             }
             // Stop if error is increasing
             else if /*constexpr*/ (s == strategy::ERROR_DIRECT) {
                 if (error > prev_error && epoch) {
+                    std::cout << "Stopping: Error is increasing";
+
+                    if(epoch != best_epoch){
+                        dbn.restore_weights();
+
+                        std::cout << ", restore weights from epoch " << best_epoch;
+                    }
+
+                    std::cout << std::endl;
+
                     return true;
                 }
             }
