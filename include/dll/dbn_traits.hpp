@@ -56,6 +56,14 @@ struct dbn_traits {
     }
 
     /*!
+     * \brief Indicates if early stopping strategy is forced to use
+     * training statistics when validation statistics are available.
+     */
+    static constexpr bool early_uses_training() noexcept {
+        return desc::parameters::template contains<dll::early_training>();
+    }
+
+    /*!
      * \brief Indicates if the DBN shuffles the inputs before each
      * fine-tuning epoch.
      */

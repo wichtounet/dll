@@ -342,8 +342,14 @@ struct dbn_trainer {
 
         watcher.ft_epoch_end(epoch, error, train_stats.second, val_stats.first, val_stats.second, dbn);
 
-        // Early stopping with validation error/loss
-        auto stop = early_stop(dbn, epoch, val_stats.first, val_stats.second, current_val_error, current_val_loss);
+        // Early stopping with validation (or training) error/loss
+
+        bool stop;
+        if (dbn_traits<dbn_t>::early_uses_training()) {
+            stop = early_stop(dbn, epoch, train_stats.first, train_stats.second, current_error, current_loss);
+        } else {
+            stop = early_stop(dbn, epoch, val_stats.first, val_stats.second, current_val_error, current_val_loss);
+        }
 
         // Save current error and loss for training and validation
         current_error = train_stats.first;

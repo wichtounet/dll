@@ -146,6 +146,7 @@ struct binarize_pre_id;
 struct autoencoder_id;
 struct updater_id;
 struct early_stopping_id;
+struct early_training_id;
 
 /*!
  * \brief Sets the minibatch size
@@ -177,6 +178,12 @@ struct updater : value_conf_elt<updater_id, updater_type, UT> {};
  */
 template <strategy S>
 struct early_stopping : value_conf_elt<early_stopping_id, strategy, S> {};
+
+/*!
+ * \brief Use the training (error/loss) for early stopping, even
+ * when validation statistics are available.
+ */
+struct early_training : basic_conf_elt<early_training_id> {};
 
 /*!
  * \brief Sets the visible unit type
