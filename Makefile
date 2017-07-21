@@ -147,7 +147,7 @@ endif
 
 # Enable coverage if enabled
 ifneq (,$(DLL_COVERAGE))
-$(eval $(call enable_coverage_release))
+$(eval $(call enable_coverage_release_debug))
 endif
 
 CPP_FILES=$(wildcard view/*.cpp)
