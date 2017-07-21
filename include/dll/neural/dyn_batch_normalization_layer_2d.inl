@@ -244,6 +244,22 @@ struct dyn_batch_normalization_2d_layer : neural_layer<dyn_batch_normalization_2
     decltype(auto) trainable_parameters(){
         return std::make_tuple(std::ref(gamma), std::ref(beta));
     }
+
+    /*!
+     * \brief Backup the weights in the secondary weights matrix
+     */
+    void backup_weights() {
+        unique_safe_get(bak_gamma) = gamma;
+        unique_safe_get(bak_beta)  = beta;
+    }
+
+    /*!
+     * \brief Restore the weights from the secondary weights matrix
+     */
+    void restore_weights() {
+        gamma = *bak_gamma;
+        beta  = *bak_beta;
+    }
 };
 
 // Declare the traits for the layer
