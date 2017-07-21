@@ -160,7 +160,8 @@ public:
 
     bool batch_mode_run = false;
 
-    weight goal = 0.0; ///< The learning goal
+    weight goal     = 0.0; ///< The learning goal
+    size_t patience = 1;   ///< The patience for early stopping goals
 
 #ifdef DLL_SVM_SUPPORT
     //TODO Ideally these fields should be private

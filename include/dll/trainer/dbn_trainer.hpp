@@ -58,6 +58,7 @@ struct dbn_trainer {
     error_type best_error = 0.0; ///< The best error (training or validation depending on strategy)
     error_type best_loss  = 0.0; ///< The best loss (training or validation depending on strategy)
     size_t best_epoch     = 0;   ///< The best epoch
+    size_t patience       = 0;   ///< The current patience
 
     /*!
      * \brief Initialize the training
@@ -182,33 +183,45 @@ struct dbn_trainer {
             // Stop if loss is increasing
             else if /*constexpr*/ (s == strategy::LOSS_DIRECT) {
                 if (loss > prev_loss && epoch) {
-                    std::cout << "Stopping: Loss is increasing";
+                    --patience;
 
-                    if(epoch != best_epoch){
-                        dbn.restore_weights();
+                    if (!patience) {
+                        std::cout << "Stopping: Loss has been increasing for " << dbn.patience << " epochs";
 
-                        std::cout << ", restore weights from epoch " << best_epoch;
+                        if (epoch != best_epoch) {
+                            dbn.restore_weights();
+
+                            std::cout << ", restore weights from epoch " << best_epoch;
+                        }
+
+                        std::cout << std::endl;
+
+                        return true;
                     }
-
-                    std::cout << std::endl;
-
-                    return true;
+                } else {
+                    patience = dbn.patience;
                 }
             }
             // Stop if error is increasing
             else if /*constexpr*/ (s == strategy::ERROR_DIRECT) {
                 if (error > prev_error && epoch) {
-                    std::cout << "Stopping: Error is increasing";
+                    --patience;
 
-                    if(epoch != best_epoch){
-                        dbn.restore_weights();
+                    if (!patience) {
+                        std::cout << "Stopping: Error has been increasing for " << dbn.patience << " epochs";
 
-                        std::cout << ", restore weights from epoch " << best_epoch;
+                        if (epoch != best_epoch) {
+                            dbn.restore_weights();
+
+                            std::cout << ", restore weights from epoch " << best_epoch;
+                        }
+
+                        std::cout << std::endl;
+
+                        return true;
                     }
-
-                    std::cout << std::endl;
-
-                    return true;
+                } else {
+                    patience = dbn.patience;
                 }
             }
         }
