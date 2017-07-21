@@ -14,8 +14,10 @@
 
 #include <cstddef>
 
+// All the necessary enumerations
 #include "unit_type.hpp"
 #include "updater_type.hpp"
+#include "strategy.hpp"
 #include "function.hpp"
 #include "loss.hpp"
 #include "decay_type.hpp"
@@ -143,6 +145,7 @@ struct normalize_pre_id;
 struct binarize_pre_id;
 struct autoencoder_id;
 struct updater_id;
+struct early_stopping_id;
 
 /*!
  * \brief Sets the minibatch size
@@ -167,6 +170,13 @@ struct big_batch_size : value_conf_elt<big_batch_size_id, size_t, B> {};
  */
 template <updater_type UT>
 struct updater : value_conf_elt<updater_id, updater_type, UT> {};
+
+/*!
+ * \brief Sets the strategy type for early stopping
+ * \tparam UT The strategy type
+ */
+template <strategy S>
+struct early_stopping : value_conf_elt<early_stopping_id, strategy, S> {};
 
 /*!
  * \brief Sets the visible unit type

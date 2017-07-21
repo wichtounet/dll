@@ -96,6 +96,42 @@ struct dbn_trainer {
     }
 
     /*!
+     * \brief Decides to stop, or not, early the training
+     *
+     * \param dbn The network being trained
+     * \param error The current error
+     * \param loss The current loss
+     *
+     * \return true if the training should be stopped, false otherwise
+     */
+    bool early_stop(dbn_t& dbn, double error, double loss){
+        static constexpr auto s = dbn_t::early;
+
+        // Never stop early
+        if /*constexpr*/ (s == strategy::NONE){
+            return false;
+        }
+        // Stop according to goal on loss
+        else if /*constexpr*/ (s == strategy::LOSS_GOAL){
+            if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()){
+                if (loss <= dbn.goal) {
+                    return true;
+                }
+            }
+        }
+        // Stop according to goal on error
+        else if /*constexpr*/ (s == strategy::ERROR_GOAL){
+            if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()){
+                if (error <= dbn.goal) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /*!
      * \brief Indicates the end of an epoch
      * \param dbn The network that is trained
      * \param epoch The current epoch
@@ -114,14 +150,8 @@ struct dbn_trainer {
 
         watcher.ft_epoch_end(epoch, error, loss, dbn);
 
-        //Once the goal is reached, stop training
-        if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()){
-            if (error <= dbn.goal) {
-                return true;
-            }
-        }
-
-        return false;
+        // Early stopping with training error/loss
+        return early_stop(dbn, error, loss);
     }
 
     /*!
@@ -145,14 +175,8 @@ struct dbn_trainer {
 
         watcher.ft_epoch_end(epoch, error, train_stats.second, val_stats.first, val_stats.second, dbn);
 
-        //Once the goal is reached, stop training
-        if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()){
-            if (error <= dbn.goal) {
-                return true;
-            }
-        }
-
-        return false;
+        // Early stopping with validation error/loss
+        return early_stop(dbn, val_stats.first, val_stats.second);
     }
 
     template<typename Generator>

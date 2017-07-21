@@ -135,6 +135,7 @@ public:
     static constexpr size_t big_batch_size = desc::BigBatchSize; ///< The number of pretraining batch to do at once
     static constexpr auto loss             = desc::Loss;         ///< The loss function
     static constexpr auto updater          = desc::Updater;      ///< The Updater type
+    static constexpr auto early            = desc::Early;        ///< The Early Stopping stragy
 
     layers_t tuples; ///< The layers
 

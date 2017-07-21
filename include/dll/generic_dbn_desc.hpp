@@ -73,6 +73,11 @@ struct generic_dbn_desc {
      */
     static constexpr auto Updater = detail::get_value<updater<updater_type::SGD>, Parameters...>::value;
 
+    /*!
+     * \brief The type of strategy for early stopping
+     */
+    static constexpr auto Early = detail::get_value<early_stopping<strategy::ERROR_GOAL>, Parameters...>::value;
+
     /*! The type of the trainer to use to train the DBN */
     template <typename DBN>
     using trainer_t = typename detail::get_template_type<trainer<default_dbn_trainer_t>, Parameters...>::template value<DBN>;
@@ -93,7 +98,7 @@ struct generic_dbn_desc {
             cpp::type_list<
                 trainer_id, watcher_id, weight_decay_id, big_batch_size_id, batch_size_id, verbose_id, no_epoch_error_id,
                 batch_mode_id, svm_concatenate_id, svm_scale_id, serial_id, shuffle_id, shuffle_pre_id, loss_id,
-                normalize_pre_id, binarize_pre_id, scale_pre_id, autoencoder_id, updater_id, clip_gradients_id>,
+                normalize_pre_id, binarize_pre_id, scale_pre_id, autoencoder_id, updater_id, early_stopping_id, clip_gradients_id>,
             Parameters...>::value,
         "Invalid parameters type");
 };
