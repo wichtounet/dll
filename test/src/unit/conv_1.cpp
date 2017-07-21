@@ -156,7 +156,7 @@ TEST_CASE("unit/conv/sgd/partial/1", "[conv][dbn][mnist][sgd]") {
         }
     }
 
-    auto ft_error = trainer.stop_training(*dbn);
+    auto ft_error = trainer.stop_training(*dbn, 30, 30);
 
     REQUIRE(ft_error < 5e-2);
 
