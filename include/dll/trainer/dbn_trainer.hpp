@@ -49,8 +49,11 @@ struct dbn_trainer {
 
     std::unique_ptr<trainer_t<dbn_t>> trainer; ///< The concrete trainer
 
-    error_type current_error = 0.0; ///< The current error
-    error_type current_loss  = 0.0; ///< The current loss
+    error_type current_error = 0.0; ///< The current training error
+    error_type current_loss  = 0.0; ///< The current training loss
+
+    error_type current_val_error = 0.0; ///< The current validation error
+    error_type current_val_loss  = 0.0; ///< The current validation loss
 
     /*!
      * \brief Initialize the training
@@ -74,6 +77,9 @@ struct dbn_trainer {
         // Set the initial error and loss
         current_error = 0.0;
         current_loss = 0.0;
+
+        current_val_error = 0.0;
+        current_val_loss = 0.0;
     }
 
     /*!
@@ -140,8 +146,6 @@ struct dbn_trainer {
      * \return true if the training is over
      */
     bool stop_epoch(dbn_t& dbn, size_t epoch, double error, double loss){
-        current_error = error;
-        current_loss  = loss;
 
         //After some time increase the momentum
         if (dbn_traits<dbn_t>::updater() == updater_type::MOMENTUM && epoch == dbn.final_momentum_epoch) {
@@ -151,7 +155,13 @@ struct dbn_trainer {
         watcher.ft_epoch_end(epoch, error, loss, dbn);
 
         // Early stopping with training error/loss
-        return early_stop(dbn, error, loss);
+        auto stop =  early_stop(dbn, error, loss);
+
+        // Save current error and loss
+        current_error = error;
+        current_loss  = loss;
+
+        return stop;
     }
 
     /*!
@@ -165,9 +175,6 @@ struct dbn_trainer {
     bool stop_epoch(dbn_t& dbn, size_t epoch, const std::pair<double, double>& train_stats, const std::pair<double, double>& val_stats){
         double error = train_stats.first;
 
-        current_error = error;
-        current_loss  = train_stats.second;
-
         //After some time increase the momentum
         if (dbn_traits<dbn_t>::updater() == updater_type::MOMENTUM && epoch == dbn.final_momentum_epoch) {
             dbn.momentum = dbn.final_momentum;
@@ -176,7 +183,16 @@ struct dbn_trainer {
         watcher.ft_epoch_end(epoch, error, train_stats.second, val_stats.first, val_stats.second, dbn);
 
         // Early stopping with validation error/loss
-        return early_stop(dbn, val_stats.first, val_stats.second);
+        auto stop = early_stop(dbn, val_stats.first, val_stats.second);
+
+        // Save current error and loss for training and validation
+        current_error = train_stats.first;
+        current_loss  = train_stats.second;
+
+        current_val_error = val_stats.first;
+        current_val_loss  = val_stats.second;
+
+        return stop;
     }
 
     template<typename Generator>
