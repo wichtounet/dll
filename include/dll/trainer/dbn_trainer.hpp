@@ -105,35 +105,45 @@ struct dbn_trainer {
      * \brief Decides to stop, or not, early the training
      *
      * \param dbn The network being trained
+     * \param epoch The current epoch
      * \param error The current error
      * \param loss The current loss
+     * \param prev_error The previous error
+     * \param prev_loss The previous loss
      *
      * \return true if the training should be stopped, false otherwise
      */
-    bool early_stop(dbn_t& dbn, double error, double loss){
+    bool early_stop(dbn_t& dbn, size_t epoch, double error, double loss, double prev_error, double prev_loss){
         static constexpr auto s = dbn_t::early;
 
-        // Never stop early
-        if /*constexpr*/ (s == strategy::NONE){
-            return false;
-        }
-        // Stop according to goal on loss
-        else if /*constexpr*/ (s == strategy::LOSS_GOAL){
-            if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()){
+        if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()) {
+            // Stop according to goal on loss
+            if /*constexpr*/ (s == strategy::LOSS_GOAL) {
                 if (loss <= dbn.goal) {
                     return true;
                 }
             }
-        }
-        // Stop according to goal on error
-        else if /*constexpr*/ (s == strategy::ERROR_GOAL){
-            if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()){
+            // Stop according to goal on error
+            else if /*constexpr*/ (s == strategy::ERROR_GOAL) {
                 if (error <= dbn.goal) {
+                    return true;
+                }
+            }
+            // Stop if loss is increasing
+            else if /*constexpr*/ (s == strategy::LOSS_DIRECT) {
+                if (loss > prev_loss && epoch) {
+                    return true;
+                }
+            }
+            // Stop if error is increasing
+            else if /*constexpr*/ (s == strategy::ERROR_DIRECT) {
+                if (error > prev_error && epoch) {
                     return true;
                 }
             }
         }
 
+        // Don't stop early
         return false;
     }
 
@@ -146,7 +156,6 @@ struct dbn_trainer {
      * \return true if the training is over
      */
     bool stop_epoch(dbn_t& dbn, size_t epoch, double error, double loss){
-
         //After some time increase the momentum
         if (dbn_traits<dbn_t>::updater() == updater_type::MOMENTUM && epoch == dbn.final_momentum_epoch) {
             dbn.momentum = dbn.final_momentum;
@@ -155,7 +164,7 @@ struct dbn_trainer {
         watcher.ft_epoch_end(epoch, error, loss, dbn);
 
         // Early stopping with training error/loss
-        auto stop =  early_stop(dbn, error, loss);
+        auto stop =  early_stop(dbn, epoch, error, loss, current_error, current_loss);
 
         // Save current error and loss
         current_error = error;
@@ -183,7 +192,7 @@ struct dbn_trainer {
         watcher.ft_epoch_end(epoch, error, train_stats.second, val_stats.first, val_stats.second, dbn);
 
         // Early stopping with validation error/loss
-        auto stop = early_stop(dbn, val_stats.first, val_stats.second);
+        auto stop = early_stop(dbn, epoch, val_stats.first, val_stats.second, current_val_error, current_val_loss);
 
         // Save current error and loss for training and validation
         current_error = train_stats.first;

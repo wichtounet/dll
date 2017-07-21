@@ -13,9 +13,11 @@ namespace dll {
  * \brief The strategy for early stopping
  */
 enum class strategy {
-    NONE,      ///< No early stopping
-    LOSS_GOAL, ///< Stop early when goal loss is reached
-    ERROR_GOAL ///< Stop early when goal error is reached
+    NONE,        ///< No early stopping
+    LOSS_GOAL,   ///< Stop early when goal loss is reached
+    ERROR_GOAL,  ///< Stop early when goal error is reached
+    LOSS_DIRECT, ///< Stop early when loss is decreasing
+    ERROR_DIRECT ///< Stop early when error is decreasing
 };
 
 /*!
@@ -31,6 +33,10 @@ inline std::string to_string(strategy s) {
             return "Goal(loss)";
         case strategy::ERROR_GOAL:
             return "Goal(error)";
+        case strategy::LOSS_DIRECT:
+            return "Direct(loss)";
+        case strategy::ERROR_DIRECT:
+            return "Direct(error)";
     }
 
     cpp_unreachable("Unreachable code");
