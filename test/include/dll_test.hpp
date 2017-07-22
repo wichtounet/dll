@@ -65,3 +65,24 @@ void mnist_scale(Dataset& dataset) {
         std::cout << "test_error:" << test_error << std::endl; \
         REQUIRE(test_error < error_max);                       \
     }
+
+#define FT_CHECK_2(net, dataset, ft_epochs, ft_max)                     \
+    {                                                                   \
+        auto ft_error = net->fine_tune_val(dataset.train(), ft_epochs); \
+        std::cout << "ft_error:" << ft_error << std::endl;              \
+        CHECK(ft_error < ft_max);                                       \
+    }
+
+#define FT_CHECK_2_VAL(net, dataset, ft_epochs, ft_max)                                \
+    {                                                                                  \
+        auto ft_error = net->fine_tune_val(dataset.train(), dataset.val(), ft_epochs); \
+        std::cout << "ft_error:" << ft_error << std::endl;                             \
+        CHECK(ft_error < ft_max);                                                      \
+    }
+
+#define TEST_CHECK_2(net, dataset, error_max)                  \
+    {                                                          \
+        auto test_error = net->evaluate_error(dataset.test()); \
+        std::cout << "test_error:" << test_error << std::endl; \
+        REQUIRE(test_error < error_max);                       \
+    }
