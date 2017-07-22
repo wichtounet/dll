@@ -149,7 +149,7 @@ TEST_CASE("unit/conv/sgd/partial/1", "[conv][dbn][mnist][sgd]") {
         double loss;
 
         // Train for one epoch
-        std::tie(loss, error) = trainer.train_epoch(*dbn, *generator, epoch);
+        std::tie(error, loss) = trainer.train_epoch(*dbn, *generator, epoch);
 
         if(trainer.stop_epoch(*dbn, epoch, error, loss)){
             break;
