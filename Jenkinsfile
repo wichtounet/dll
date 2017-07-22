@@ -5,7 +5,6 @@ pipeline {
        CXX = "g++-4.9.4"
        LD = "g++-4.9.4"
        ETL_MKL = 'true'
-       DLL_COVERAGE = 'true'
     }
 
     stages {
@@ -32,14 +31,13 @@ pipeline {
         stage ('build'){
             steps {
                 sh 'make clean'
-                sh 'CXX=g++-4.9.4 LD=g++-4.9.4 ETL_MKL=true DLL_COVERAGE=true make -j6 release_debug'
+                sh 'CXX=g++-4.9.4 LD=g++-4.9.4 ETL_MKL=true make -j6 release_debug'
             }
         }
 
         stage ('test'){
             steps {
                 sh "LD_LIBRARY_PATH=\"${env.LD_LIBRARY_PATH}:/opt/intel/mkl/lib/intel64:/opt/intel/lib/intel64\" ./release_debug/bin/dll_test_unit -r junit -d yes -o catch_report.xml || true"
-                sh 'gcovr -x -b -r . --object-directory=release_debug/test > coverage_report.xml'
                 archive 'catch_report.xml'
                 junit 'catch_report.xml'
             }
