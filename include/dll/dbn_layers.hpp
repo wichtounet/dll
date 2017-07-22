@@ -298,6 +298,12 @@ template <typename... Layers>
 using dbn_layers = detail::layers<false, Layers...>;
 
 /*!
+ * \brief Holder for the layers of a network
+ */
+template <typename... Layers>
+using network_layers = detail::layers<false, Layers...>;
+
+/*!
  * \brief Holder for the layers of a DBN, training with labels + RBM in last layer
  */
 template <typename... Layers>

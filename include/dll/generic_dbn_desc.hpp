@@ -26,7 +26,7 @@ using default_dbn_trainer_t = sgd_trainer<DBN>;
  * \brief Describe a DBN *
  *
  * This struct should be used to define a DBN.
- * Once configured, the ::dbn_t member returns the type of the configured DBN.
+ * Once configured, the ::network_t member (or ::dbn_t) returns the type of the configured DBN.
  */
 template <template <typename> class DBN_T, typename Layers, typename... Parameters>
 struct generic_dbn_desc {
@@ -88,6 +88,14 @@ struct generic_dbn_desc {
 
     /*! The DBN type */
     using dbn_t = DBN_T<generic_dbn_desc<DBN_T, Layers, Parameters...>>;
+
+    /*!
+     * \brief The network type.
+     *
+     * This is the same as the DBN type, only kept for legacy
+     * reasons.
+     */
+    using network_t = dbn_t;
 
     static_assert(BatchSize > 0, "Batch size must be at least 1");
     static_assert(BigBatchSize > 0, "Big Batch size must be at least 1");

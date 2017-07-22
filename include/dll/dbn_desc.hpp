@@ -27,6 +27,14 @@ struct generic_dyn_dbn_desc : generic_dbn_desc<DBN_T, Layers, Parameters...> {
 
     /*! The DBN type */
     using dbn_t = DBN_T<generic_dyn_dbn_desc<DBN_T, Layers, Parameters...>>;
+
+    /*!
+     * \brief The network type.
+     *
+     * This is the same as the DBN type, only kept for legacy
+     * reasons.
+     */
+    using network_t = dbn_t;
 };
 
 /*!
@@ -36,6 +44,14 @@ struct generic_dyn_dbn_desc : generic_dbn_desc<DBN_T, Layers, Parameters...> {
  */
 template <typename Layers, typename... Parameters>
 using dyn_dbn_desc = generic_dyn_dbn_desc<dbn, Layers, Parameters...>;
+
+/*!
+ * \brief A descriptor for a multi-layer dynamic network.
+ * \tparam Layers The set of layers
+ * \tparam Parameters The set of parameters for this network
+ */
+template <typename Layers, typename... Parameters>
+using dyn_network_desc = generic_dyn_dbn_desc<dbn, Layers, Parameters...>;
 
 // By default dbn_desc use directly the layers that it is provided
 // if DLL_QUICK is set, it is set to hybrid mode by default
@@ -55,6 +71,19 @@ using dyn_dbn_desc = generic_dyn_dbn_desc<dbn, Layers, Parameters...>;
 template <typename Layers, typename... Parameters>
 using dbn_desc = generic_dbn_desc<dbn, Layers, Parameters...>;
 
+/*!
+ * \brief A descriptor for a multi-layer network.
+ *
+ * If DLL_QUICK if set, this will default to use dynamic layers
+ * instead of the provided layers when possible. Otherwise, the
+ * layers will be used as is.
+ *
+ * \tparam Layers The set of layers \tparam Parameters The set of
+ * parameters for this network
+ */
+template <typename Layers, typename... Parameters>
+using network_desc = generic_dbn_desc<dbn, Layers, Parameters...>;
+
 #else
 
 /*!
@@ -69,6 +98,20 @@ using dbn_desc = generic_dbn_desc<dbn, Layers, Parameters...>;
  */
 template <typename Layers, typename... Parameters>
 using dbn_desc = generic_dyn_dbn_desc<dbn, Layers, Parameters...>;
+
+/*!
+ * \brief A descriptor for a multi-layer network.
+ *
+ * If DLL_QUICK if set, this will default to use dynamic layers
+ * instead of the provided layers when possible. Otherwise, the
+ * layers will be used as is.
+ *
+ * \tparam Layers The set of layers \tparam Parameters The set of
+ * parameters for this network
+ */
+template <typename Layers, typename... Parameters>
+using network_desc = generic_dyn_dbn_desc<dbn, Layers, Parameters...>;
+
 #endif
 
 // fast_dbn_desc is always forced to direct mode, will not respect
@@ -84,5 +127,16 @@ using dbn_desc = generic_dyn_dbn_desc<dbn, Layers, Parameters...>;
  */
 template <typename Layers, typename... Parameters>
 using fast_dbn_desc = generic_dbn_desc<dbn, Layers, Parameters...>;
+
+/*!
+ * \brief A descriptor for a multi-layer network.
+ *
+ * This descriptor will always use the layers it is provided as is.
+ *
+ * \tparam Layers The set of layers
+ * \tparam Parameters The set of parameters for this network
+ */
+template <typename Layers, typename... Parameters>
+using fast_network_desc = generic_dbn_desc<dbn, Layers, Parameters...>;
 
 } //end of dll namespace
