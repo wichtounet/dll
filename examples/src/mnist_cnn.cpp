@@ -8,7 +8,7 @@
 #include "dll/neural/conv_layer.hpp"
 #include "dll/neural/dense_layer.hpp"
 #include "dll/pooling/mp_layer.hpp"
-#include "dll/dbn.hpp"
+#include "dll/network.hpp"
 #include "dll/datasets.hpp"
 
 #include "mnist/mnist_reader.hpp"
@@ -20,22 +20,20 @@ int main(int /*argc*/, char* /*argv*/ []) {
 
     // Build the network
 
-    using network_t = dll::dyn_dbn_desc<
-        dll::dbn_layers<
+    using network_t = dll::dyn_network_desc<
+        dll::network_layers<
             dll::conv_desc<1, 28, 28, 8, 5, 5>::layer_t,
             dll::mp_layer_2d_desc<8, 24, 24, 2, 2>::layer_t,
             dll::conv_desc<8, 12, 12, 8, 5, 5>::layer_t,
             dll::mp_layer_2d_desc<8, 8, 8, 2, 2>::layer_t,
             dll::dense_desc<8 * 4 * 4, 150>::layer_t,
             dll::dense_desc<150, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>
-        , dll::updater<dll::updater_type::MOMENTUM>     // Momentum
-        , dll::batch_size<100>                          // The mini-batch size
-        , dll::shuffle                                  // Shuffle the dataset before each epoch
-    >::dbn_t;
+        , dll::updater<dll::updater_type::NADAM>     // Momentum
+        , dll::batch_size<100>                       // The mini-batch size
+        , dll::shuffle                               // Shuffle the dataset before each epoch
+    >::network_t;
 
     auto net = std::make_unique<network_t>();
-
-    net->learning_rate = 0.1;
 
     // Display the network and dataset
     net->display();

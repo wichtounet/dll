@@ -7,7 +7,7 @@
 
 #include "dll/neural/dense_layer.hpp"
 #include "dll/test.hpp"
-#include "dll/dbn.hpp"
+#include "dll/network.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -18,8 +18,8 @@ int main(int /*argc*/, char* /*argv*/ []) {
 
     // Build the network
 
-    using network_t = dll::dyn_dbn_desc<
-        dll::dbn_layers<
+    using network_t = dll::dyn_network_desc<
+        dll::network_layers<
             dll::dense_desc<28 * 28, 32>::layer_t,
             dll::dense_desc<32, 28 * 28>::layer_t
         >
@@ -28,7 +28,7 @@ int main(int /*argc*/, char* /*argv*/ []) {
         , dll::loss<dll::loss_function::BINARY_CROSS_ENTROPY>  // Use a Binary Cross Entropy Loss
         , dll::scale_pre<255>                                  // Scale the images (divide by 255)
         , dll::autoencoder                                     // Indicate auto-encoder
-    >::dbn_t;
+    >::network_t;
 
     auto net = std::make_unique<network_t>();
 
