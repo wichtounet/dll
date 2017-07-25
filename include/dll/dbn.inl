@@ -1682,6 +1682,59 @@ public:
         return evaluate_error(*generator);
     }
 
+    /*!
+     * \brief Evaluate the network on the given classification task
+     * and return the classification error.
+     *
+     * The result of the evaluation will be printed on the console.
+     *
+     * \param generator The data generator
+     */
+    template <typename Generator, cpp_enable_if(is_generator<Generator>::value)>
+    double evaluate_error_ae(Generator& generator){
+        auto metrics = evaluate_metrics(generator);
+
+        return std::get<0>(metrics);
+    }
+
+    /*!
+     * \brief Evaluate the network on the given classification task
+     * and return the classification error.
+     *
+     * \param samples The container containing the samples
+     * \param labels The container containing the labels
+     *
+     * \return The classification error
+     */
+    template <typename Samples, cpp_enable_if(!is_generator<Samples>::value)>
+    double evaluate_error_ae(const Samples&  samples){
+        auto generator = make_generator(samples, samples, samples.size(), output_size(), ae_generator_t{});
+
+        generator->set_safe();
+
+        return evaluate_error(*generator);
+    }
+
+    /*!
+     * \brief Evaluate the network on the given classification task
+     * and return the classification error.
+     *
+     * \param iit The beginning of the range of the samples
+     * \param iend The end of the range of the samples
+     * \param lit The beginning of the range of the labels
+     * \param lend The end of the range of the labels
+     *
+     * \return The classification error
+     */
+    template <typename InputIterator>
+    double evaluate_error_ae(InputIterator&& iit, InputIterator&& iend){
+        auto generator = make_generator(iit, iend, iit, iend, std::distance(iit, iend), output_size(), ae_generator_t{});
+
+        generator->set_safe();
+
+        return evaluate_error(*generator);
+    }
+
     using metrics_t = std::tuple<double, double>; ///< The metrics returned by evaluate_metrics
 
     template <loss_function F, typename Output, typename Labels, cpp_enable_if((F == loss_function::CATEGORICAL_CROSS_ENTROPY))>
@@ -1707,7 +1760,7 @@ public:
         double batch_loss;
         double batch_error;
 
-        // Avoid Nan in log(out) and log(1-out)
+        // Avoid Nan in log(out) or log(1-out)
         auto out = etl::force_temporary(etl::clip(output, 0.001, 0.999));
 
         if (cpp_unlikely(!full_batch)) {
