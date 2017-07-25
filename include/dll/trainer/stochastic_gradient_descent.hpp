@@ -503,17 +503,16 @@ struct sgd_trainer {
         auto& last_layer = std::get<layers - 1>(full_context).first;
         auto& last_ctx   = *std::get<layers - 1>(full_context).second;
 
+        // Avoid Nan from division by ((1 - out) * out)
+        auto out = etl::force_temporary(etl::clip(last_ctx.output, 0.001, 0.999));
+
         if (cpp_unlikely(!full_batch)) {
             last_ctx.errors = 0;
-
-            auto& out = last_ctx.output;
 
             for (size_t i = 0; i < n; ++i) {
                 last_ctx.errors(i) = (labels(i) - out(i)) / ((1.0 - out(i)) >> out(i));
             }
         } else {
-            auto& out = last_ctx.output;
-
             last_ctx.errors = (labels - out) / ((1.0 - out) >> out);
         }
 
