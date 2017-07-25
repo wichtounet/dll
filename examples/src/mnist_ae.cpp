@@ -8,13 +8,14 @@
 #include "dll/neural/dense_layer.hpp"
 #include "dll/test.hpp"
 #include "dll/network.hpp"
+#include "dll/datasets.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
 int main(int /*argc*/, char* /*argv*/ []) {
     // Load the dataset
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 28 * 28>>();
+    auto dataset = dll::make_mnist_ae_dataset(0, dll::batch_size<256>{}, dll::scale_pre<255>{});
 
     // Build the network
 
@@ -26,8 +27,6 @@ int main(int /*argc*/, char* /*argv*/ []) {
         , dll::batch_size<256>       // The mini-batch size
         , dll::shuffle               // Shuffle the dataset before each epoch
         , dll::binary_cross_entropy  // Use a Binary Cross Entropy Loss
-        , dll::scale_pre<255>        // Scale the images (divide by 255)
-        , dll::autoencoder           // Indicate auto-encoder
         , dll::adadelta              // Adadelta updates for gradient descent
     >::network_t;
 
@@ -37,10 +36,10 @@ int main(int /*argc*/, char* /*argv*/ []) {
     net->display();
 
     // Train the network as auto-encoder
-    net->fine_tune_ae(dataset.training_images, 50);
+    net->fine_tune_ae(dataset.train(), 50);
 
     // Test the network on test set
-    net->evaluate_ae(dataset.test_images);
+    net->evaluate_ae(dataset.test());
 
     return 0;
 }
