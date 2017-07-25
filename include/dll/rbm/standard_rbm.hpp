@@ -503,7 +503,7 @@ private:
         using namespace etl;
 
         //Compute activation probabilities
-        H_PROBS(unit_type::BINARY, f(h_a) = sigmoid(b + (v_a * w)));
+        H_PROBS(unit_type::BINARY, f(h_a) = etl::sigmoid(b + (v_a * w)));
         H_PROBS(unit_type::RELU, f(h_a) = max(b + (v_a * w), 0.0));
         H_PROBS(unit_type::RELU1, f(h_a) = min(max(b + (v_a * w), 0.0), 1.0));
         H_PROBS(unit_type::RELU6, f(h_a) = min(max(b + (v_a * w), 0.0), 6.0));
@@ -517,7 +517,7 @@ private:
         H_SAMPLE_PROBS(unit_type::SOFTMAX, f(h_s) = one_if_max(h_a));
 
         //Sample values from probs
-        H_SAMPLE_INPUT(unit_type::BINARY, f(h_s) = bernoulli(sigmoid(b + (v_a * w))));
+        H_SAMPLE_INPUT(unit_type::BINARY, f(h_s) = bernoulli(etl::sigmoid(b + (v_a * w))));
         H_SAMPLE_INPUT(unit_type::RELU, f(h_s) = max(logistic_noise(b + (v_a * w)), 0.0));
         H_SAMPLE_INPUT(unit_type::RELU1, f(h_s) = min(max(ranged_noise(b + (v_a * w), 1.0), 0.0), 1.0));
         H_SAMPLE_INPUT(unit_type::RELU6, f(h_s) = min(max(ranged_noise(b + (v_a * w), 6.0), 0.0), 6.0));
@@ -538,11 +538,11 @@ private:
 
         using namespace etl;
 
-        V_PROBS(unit_type::BINARY, f(v_a) = sigmoid(c + (w * h_s)));
+        V_PROBS(unit_type::BINARY, f(v_a) = etl::sigmoid(c + (w * h_s)));
         V_PROBS(unit_type::GAUSSIAN, f(v_a) = c + (w * h_s));
         V_PROBS(unit_type::RELU, f(v_a) = max(c + (w * h_s), 0.0));
 
-        V_SAMPLE_INPUT(unit_type::BINARY, f(v_s) = bernoulli(sigmoid(c + (w * h_s))));
+        V_SAMPLE_INPUT(unit_type::BINARY, f(v_s) = bernoulli(etl::sigmoid(c + (w * h_s))));
         V_SAMPLE_INPUT(unit_type::GAUSSIAN, f(v_s) = normal_noise(c + (w * h_s)));
         V_SAMPLE_INPUT(unit_type::RELU, f(v_s) = logistic_noise(max(c + (w * h_s), 0.0)));
 
@@ -565,7 +565,7 @@ private:
 
         cpp_assert(etl::dim<0>(h_s) == Batch && etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
 
-        H_PROBS(unit_type::BINARY, f(h_a) = sigmoid(rep_l(b, Batch) + v_a * w));
+        H_PROBS(unit_type::BINARY, f(h_a) = etl::sigmoid(rep_l(b, Batch) + v_a * w));
         H_PROBS(unit_type::RELU, f(h_a) = max(rep_l(b, Batch) + v_a * w, 0.0));
         H_PROBS(unit_type::RELU1, f(h_a) = min(max(rep_l(b, Batch) + v_a * w, 0.0), 1.0));
         H_PROBS(unit_type::RELU6, f(h_a) = min(max(rep_l(b, Batch) + v_a * w, 0.0), 6.0));
@@ -590,7 +590,7 @@ private:
             }
         });
 
-        H_SAMPLE_INPUT(unit_type::BINARY, f(h_s) = bernoulli(sigmoid(rep_l(b, Batch) + v_a * w)));
+        H_SAMPLE_INPUT(unit_type::BINARY, f(h_s) = bernoulli(etl::sigmoid(rep_l(b, Batch) + v_a * w)));
         H_SAMPLE_INPUT(unit_type::RELU, f(h_s) = max(logistic_noise(rep_l(b, Batch) + v_a * w), 0.0));
         H_SAMPLE_INPUT(unit_type::RELU1, f(h_s) = min(max(ranged_noise(rep_l(b, Batch) + v_a * w, 1.0), 0.0), 1.0));
         H_SAMPLE_INPUT(unit_type::RELU6, f(h_s) = min(max(ranged_noise(rep_l(b, Batch) + v_a * w, 6.0), 0.0), 6.0));
@@ -622,11 +622,11 @@ private:
 
         cpp_assert(etl::dim<0>(h_s) == Batch && etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
 
-        V_PROBS(unit_type::BINARY, f(v_a) = sigmoid(rep_l(c, Batch) + transpose(w * transpose(h_s))));
+        V_PROBS(unit_type::BINARY, f(v_a) = etl::sigmoid(rep_l(c, Batch) + transpose(w * transpose(h_s))));
         V_PROBS(unit_type::GAUSSIAN, f(v_a) = rep_l(c, Batch) + transpose(w * transpose(h_s)));
         V_PROBS(unit_type::RELU, f(v_a) = max(rep_l(c, Batch) + transpose(w * transpose(h_s)), 0.0));
 
-        V_SAMPLE_INPUT(unit_type::BINARY, f(v_s) = bernoulli(sigmoid(rep_l(c, Batch) + transpose(w * transpose(h_s)))));
+        V_SAMPLE_INPUT(unit_type::BINARY, f(v_s) = bernoulli(etl::sigmoid(rep_l(c, Batch) + transpose(w * transpose(h_s)))));
         V_SAMPLE_INPUT(unit_type::GAUSSIAN, f(v_s) = normal_noise(rep_l(c, Batch) + transpose(w * transpose(h_s))));
         V_SAMPLE_INPUT(unit_type::RELU, f(v_s) = logistic_noise(max(rep_l(c, Batch) + transpose(w * transpose(h_s)), 0.0)));
 

@@ -75,8 +75,8 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
         H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = min(max(ranged_noise(b_rep + h_a, 6.0), 0.0), 6.0));
         H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = min(max(ranged_noise(b_rep + h_a, 1.0), 0.0), 1.0));
 
-        H_PROBS2(unit_type::BINARY, unit_type::BINARY, f(h_a) = sigmoid(b_rep + h_a));
-        H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, f(h_a) = sigmoid((1.0 / (0.1 * 0.1)) >> (b_rep + h_a)));
+        H_PROBS2(unit_type::BINARY, unit_type::BINARY, f(h_a) = etl::sigmoid(b_rep + h_a));
+        H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, f(h_a) = etl::sigmoid((1.0 / (0.1 * 0.1)) >> (b_rep + h_a)));
         H_PROBS(unit_type::RELU, f(h_a) = max(b_rep + h_a, 0.0));
         H_PROBS(unit_type::RELU6, f(h_a) = min(max(b_rep + h_a, 0.0), 6.0));
         H_PROBS(unit_type::RELU1, f(h_a) = min(max(b_rep + h_a, 0.0), 1.0));
@@ -110,7 +110,7 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
 
         auto c_rep = as_derived().get_c_rep();
 
-        V_PROBS(unit_type::BINARY, f(v_a) = sigmoid(c_rep + v_a));
+        V_PROBS(unit_type::BINARY, f(v_a) = etl::sigmoid(c_rep + v_a));
         V_PROBS(unit_type::GAUSSIAN, f(v_a) = c_rep + v_a);
 
         nan_check_deep(v_a);
@@ -143,8 +143,8 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
         H_SAMPLE_PROBS(unit_type::RELU6, f(h_s) = min(max(ranged_noise(b_rep + h_a, 6.0), 0.0), 6.0));
         H_SAMPLE_PROBS(unit_type::RELU1, f(h_s) = min(max(ranged_noise(b_rep + h_a, 1.0), 0.0), 1.0));
 
-        H_PROBS2(unit_type::BINARY, unit_type::BINARY, f(h_a) = sigmoid(b_rep + h_a));
-        H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, f(h_a) = sigmoid((1.0 / (0.1 * 0.1)) >> (b_rep + h_a)));
+        H_PROBS2(unit_type::BINARY, unit_type::BINARY, f(h_a) = etl::sigmoid(b_rep + h_a));
+        H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, f(h_a) = etl::sigmoid((1.0 / (0.1 * 0.1)) >> (b_rep + h_a)));
         H_PROBS(unit_type::RELU, f(h_a) = max(b_rep + h_a, 0.0));
         H_PROBS(unit_type::RELU6, f(h_a) = min(max(b_rep + h_a, 0.0), 6.0));
         H_PROBS(unit_type::RELU1, f(h_a) = min(max(b_rep + h_a, 0.0), 1.0));

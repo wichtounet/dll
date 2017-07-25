@@ -104,7 +104,7 @@ struct standard_crbm_mp : public standard_conv_rbm<Derived, Desc> {
 
         auto c_rep = as_derived().get_c_rep();
 
-        V_PROBS(unit_type::BINARY, f(v_a) = sigmoid(c_rep + v_a));
+        V_PROBS(unit_type::BINARY, f(v_a) = etl::sigmoid(c_rep + v_a));
         V_PROBS(unit_type::GAUSSIAN, f(v_a) = c_rep + v_a);
 
         nan_check_deep(v_a);
