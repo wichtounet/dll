@@ -166,7 +166,7 @@ struct layers <false, Layers...> {
     static constexpr bool has_shuffle_layer = detail::has_shuffle_layer<Layers...>(); ///< Indicates if the set contains shuffle layers
 
     static_assert(size > 0, "A network must have at least 1 layer");
-    static_assert(detail::are_layers_valid<Layers...>(), "The inner sizes of RBM must correspond");
+    static_assert(detail::are_layers_valid<Layers...>(), "The inner sizes of the layers must correspond");
 
     using base_t      = layers_impl<std::make_index_sequence<size>, Layers...>;
     using layers_list = cpp::type_list<Layers...>;
