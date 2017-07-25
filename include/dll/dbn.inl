@@ -1707,13 +1707,16 @@ public:
         double batch_loss;
         double batch_error;
 
-        if (cpp_unlikely(!full_batch)) {
-            auto soutput = slice(output, 0, n);
+        // Avoid Nan in log(out) and log(1-out)
+        auto out = etl::force_temporary(etl::clip(output, 0.001, 0.999));
 
-            batch_loss  = (-1.0 / (s * output_size())) * sum((labels >> log(soutput)) + ((1.0 - labels) >> log(1.0 - soutput)));
-            batch_error = (1.0 / (s * output_size())) * asum(labels - soutput);
+        if (cpp_unlikely(!full_batch)) {
+            auto sout = slice(out, 0, n);
+
+            batch_loss  = (-1.0 / (s * output_size())) * sum((labels >> log(sout)) + ((1.0 - labels) >> log(1.0 - sout)));
+            batch_error = (1.0 / (s * output_size())) * asum(labels - sout);
         } else {
-            batch_loss  = (-1.0 / (s * output_size())) * sum((labels >> log(output)) + ((1.0 - labels) >> log(1.0 - output)));
+            batch_loss  = (-1.0 / (s * output_size())) * sum((labels >> log(out)) + ((1.0 - labels) >> log(1.0 - out)));
             batch_error = (1.0 / (s * output_size())) * asum(labels - output);
         }
 
