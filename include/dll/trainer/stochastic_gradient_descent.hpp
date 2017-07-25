@@ -517,8 +517,14 @@ struct sgd_trainer {
             last_ctx.errors = (labels - out) / ((1.0 - out) >> out);
         }
 
+        // Check for NAN before derivative
+        nan_check_etl(last_ctx.errors);
+
         // Multiply by the derivative of the activation function
         last_layer.adapt_errors(last_ctx);
+
+        // Check for NAN after derivative
+        nan_check_etl(last_ctx.errors);
     }
 
     /*!
