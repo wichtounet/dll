@@ -1806,7 +1806,7 @@ public:
      */
     template <typename Output, typename Labels>
     metrics_t evaluate_metrics_batch(Output&& output, Labels&& labels, size_t n, bool normalize){
-        const bool full_batch = n == batch_size;
+        const bool full_batch = n == etl::dim<0>(output);
 
         double s = 1.0;
 
