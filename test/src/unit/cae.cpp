@@ -73,11 +73,11 @@ TEST_CASE("conv/ae/1", "[dense][dbn][mnist][sgd][ae]") {
 
     dbn->display();
 
-    auto ft_error = dbn->fine_tune_ae(dataset.training_images, 25);
+    auto ft_error = dbn->fine_tune_ae(dataset.training_images, 30);
     std::cout << "ft_error:" << ft_error << std::endl;
-    CHECK(ft_error < 0.1);
+    CHECK(ft_error < 0.12);
 
     auto test_error = dbn->evaluate_error_ae(dataset.test_images);
     std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.1);
+    REQUIRE(test_error < 0.12);
 }
