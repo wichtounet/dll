@@ -12,6 +12,8 @@ ifneq (,$(DLL_LIBCXX))
 $(eval $(call use_libcxx))
 endif
 
+CXX_FLAGS += -Wno-ignored-attributes
+
 ifneq (,$(findstring clang,$(CXX)))
 CXX_FLAGS += -Wno-documentation
 endif
