@@ -110,7 +110,7 @@ auto make_mnist_generator_test(const std::string& folder, size_t start, size_t l
  * \return a unique_ptr around the create generator
  */
 template<typename... Parameters>
-auto make_mnist_generator_train(size_t start = 0, size_t limit = 0, size_t batch = 0, Parameters&&... parameters){
+auto make_mnist_generator_train(size_t start, size_t limit, size_t batch, Parameters&&... parameters){
     return make_mnist_generator_train("mnist", start, limit, batch, std::forward<Parameters>(parameters)...);
 }
 
@@ -125,7 +125,7 @@ auto make_mnist_generator_train(size_t start = 0, size_t limit = 0, size_t batch
  * \return a unique_ptr around the create generator
  */
 template<typename... Parameters>
-auto make_mnist_generator_test(size_t start = 0, size_t limit = 0, size_t batch = 0, Parameters&&... parameters){
+auto make_mnist_generator_test(size_t start, size_t limit, size_t batch, Parameters&&... parameters){
     return make_mnist_generator_test("mnist", start, limit, batch, std::forward<Parameters>(parameters)...);
 }
 
@@ -137,7 +137,7 @@ auto make_mnist_generator_test(size_t start = 0, size_t limit = 0, size_t batch 
  * \return The MNIST dataset
  */
 template<typename... Parameters>
-auto make_mnist_dataset(const std::string& folder, size_t batch = 0, Parameters&&... parameters){
+auto make_mnist_dataset(const std::string& folder, size_t batch, Parameters&&... parameters){
     return make_dataset_holder(
         make_mnist_generator_train(folder, 0UL, 60000UL, batch, std::forward<Parameters>(parameters)...),
         make_mnist_generator_test(folder, 0UL, 10000UL, batch, std::forward<Parameters>(parameters)...));
@@ -153,7 +153,7 @@ auto make_mnist_dataset(const std::string& folder, size_t batch = 0, Parameters&
  * \return The MNIST dataset
  */
 template<typename... Parameters>
-auto make_mnist_dataset(size_t batch = 0, Parameters&&... parameters){
+auto make_mnist_dataset(size_t batch, Parameters&&... parameters){
     return make_dataset_holder(
         make_mnist_generator_train(0UL, 60000UL, batch, std::forward<Parameters>(parameters)...),
         make_mnist_generator_test(0UL, 10000UL, batch, std::forward<Parameters>(parameters)...));
