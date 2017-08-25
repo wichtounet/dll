@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-       CXX = "g++-4.9.4"
-       LD = "g++-4.9.4"
+       CXX = "g++-5.4.0"
+       LD = "g++-5.4.0"
        ETL_MKL = 'true'
     }
 
@@ -31,7 +31,7 @@ pipeline {
         stage ('build'){
             steps {
                 sh 'make clean'
-                sh 'CXX=g++-4.9.4 LD=g++-4.9.4 ETL_MKL=true make -j6 release_debug'
+                sh 'CXX=g++-5.4.0 LD=g++-5.4.0 ETL_MKL=true make -j6 release_debug'
             }
         }
 
