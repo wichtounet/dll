@@ -23,7 +23,7 @@ namespace dll {
  *
  * \return The all-ready output
  */
-template<typename Layer, typename Input, cpp_enable_if(decay_layer_traits<Layer>::is_transform_layer() && !etl::all_fast<Input>::value)>
+template<typename Layer, typename Input, cpp_enable_if(decay_layer_traits<Layer>::is_transform_layer() && !etl::all_fast<Input>)>
 auto prepare_one_ready_output(Layer& layer, const Input& input){
     auto out = layer.template prepare_one_output<Input>();
 
@@ -43,7 +43,7 @@ auto prepare_one_ready_output(Layer& layer, const Input& input){
  *
  * \return The all-ready output
  */
-template<typename Layer, typename Input, cpp_enable_if(decay_layer_traits<Layer>::is_transform_layer() && etl::all_fast<Input>::value)>
+template<typename Layer, typename Input, cpp_enable_if(decay_layer_traits<Layer>::is_transform_layer() && etl::all_fast<Input>)>
 auto prepare_one_ready_output(Layer& layer, const Input& input){
     cpp_unused(input);
 
@@ -79,7 +79,7 @@ auto prepare_one_ready_output(Layer& layer, const Input& input){
  *
  * \return The collection of all-ready output
  */
-template<typename Layer, typename Input, cpp_enable_if(decay_layer_traits<Layer>::is_transform_layer() && !etl::all_fast<Input>::value)>
+template<typename Layer, typename Input, cpp_enable_if(decay_layer_traits<Layer>::is_transform_layer() && !etl::all_fast<Input>)>
 auto prepare_many_ready_output(Layer& layer, const Input& input, size_t n){
     auto out = layer.template prepare_output<Input>(n);
 
@@ -102,7 +102,7 @@ auto prepare_many_ready_output(Layer& layer, const Input& input, size_t n){
  *
  * \return The collection of all-ready output
  */
-template<typename Layer, typename Input, cpp_enable_if(decay_layer_traits<Layer>::is_transform_layer() && etl::all_fast<Input>::value)>
+template<typename Layer, typename Input, cpp_enable_if(decay_layer_traits<Layer>::is_transform_layer() && etl::all_fast<Input>)>
 auto prepare_many_ready_output(Layer& layer, const Input& input, size_t n){
     cpp_unused(input);
 

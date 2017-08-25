@@ -40,7 +40,7 @@ struct safe_value_type {
 };
 
 template<typename O>
-struct safe_value_type <O, std::enable_if_t<etl::is_etl_expr<O>::value>> {
+struct safe_value_type <O, std::enable_if_t<etl::is_etl_expr<O>>> {
     using type = etl::value_t<O>;
 };
 

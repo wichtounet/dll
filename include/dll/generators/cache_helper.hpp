@@ -25,7 +25,7 @@ struct cache_helper;
  * \brief cache_helper implementation for 1D inputs
  */
 template <typename Desc, typename Iterator>
-struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_1d<typename std::iterator_traits<Iterator>::value_type>::value>> {
+struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_1d<typename std::iterator_traits<Iterator>::value_type>>> {
     using T = etl::value_t<typename std::iterator_traits<Iterator>::value_type>; ///< Input type
 
     using cache_type     = etl::dyn_matrix<T, 2>; ///< The type of the cache
@@ -59,7 +59,7 @@ struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_1d<typename std::it
  * \brief cache_helper implementation for 3D inputs
  */
 template <typename Desc, typename Iterator>
-struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_3d<typename std::iterator_traits<Iterator>::value_type>::value>> {
+struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_3d<typename std::iterator_traits<Iterator>::value_type>>> {
     using T = etl::value_t<typename std::iterator_traits<Iterator>::value_type>; ///< Input type
 
     using cache_type     = etl::dyn_matrix<T, 4>; ///< The type of the cache

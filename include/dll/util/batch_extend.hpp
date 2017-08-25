@@ -25,7 +25,7 @@ namespace dll {
  *
  * \return the extended batchession
  */
-template<typename Batch, typename One, cpp_enable_if(etl::all_fast<Batch, One>::value && etl::dimensions<One>() == 1)>
+template<typename Batch, typename One, cpp_enable_if(etl::all_fast<Batch, One> && etl::dimensions<One>() == 1)>
 decltype(auto) batch_extend(Batch&& batch, One&& one){
     cpp_unused(batch);
     cpp_unused(one);
@@ -41,7 +41,7 @@ decltype(auto) batch_extend(Batch&& batch, One&& one){
  *
  * \return the extended batchession
  */
-template<typename Batch, typename One, cpp_enable_if(etl::all_fast<Batch, One>::value && etl::dimensions<One>() == 2)>
+template<typename Batch, typename One, cpp_enable_if(etl::all_fast<Batch, One> && etl::dimensions<One>() == 2)>
 decltype(auto) batch_extend(Batch&& batch, One&& one){
     cpp_unused(batch);
     cpp_unused(one);
@@ -57,7 +57,7 @@ decltype(auto) batch_extend(Batch&& batch, One&& one){
  *
  * \return the extended batchession
  */
-template<typename Batch, typename One, cpp_enable_if(etl::all_fast<Batch, One>::value && etl::dimensions<One>() == 3)>
+template<typename Batch, typename One, cpp_enable_if(etl::all_fast<Batch, One> && etl::dimensions<One>() == 3)>
 decltype(auto) batch_extend(Batch&& batch, One&& one){
     cpp_unused(batch);
     cpp_unused(one);
@@ -73,7 +73,7 @@ decltype(auto) batch_extend(Batch&& batch, One&& one){
  *
  * \return the extended batchession
  */
-template<typename Batch, typename One, cpp_enable_if(!etl::all_fast<Batch, One>::value && etl::dimensions<One>() == 1)>
+template<typename Batch, typename One, cpp_enable_if(!etl::all_fast<Batch, One> && etl::dimensions<One>() == 1)>
 decltype(auto) batch_extend(Batch&& batch, One&& one){
     return etl::dyn_matrix<etl::value_t<One>, etl::dimensions<One>() + 1>(etl::dim<0>(batch), etl::dim<0>(one));
 }
@@ -87,7 +87,7 @@ decltype(auto) batch_extend(Batch&& batch, One&& one){
  *
  * \return the extended batchession
  */
-template<typename Batch, typename One, cpp_enable_if(!etl::all_fast<Batch, One>::value && etl::dimensions<One>() == 2)>
+template<typename Batch, typename One, cpp_enable_if(!etl::all_fast<Batch, One> && etl::dimensions<One>() == 2)>
 decltype(auto) batch_extend(Batch&& batch, One&& one){
     return etl::dyn_matrix<etl::value_t<One>, etl::dimensions<One>() + 1>(etl::dim<0>(batch), etl::dim<0>(one), etl::dim<1>(one));
 }
@@ -101,7 +101,7 @@ decltype(auto) batch_extend(Batch&& batch, One&& one){
  *
  * \return the extended batchession
  */
-template<typename Batch, typename One, cpp_enable_if(!etl::all_fast<Batch, One>::value && etl::dimensions<One>() == 3)>
+template<typename Batch, typename One, cpp_enable_if(!etl::all_fast<Batch, One> && etl::dimensions<One>() == 3)>
 decltype(auto) batch_extend(Batch&& batch, One&& one){
     return etl::dyn_matrix<etl::value_t<One>, etl::dimensions<One>() + 1>(etl::dim<0>(batch), etl::dim<0>(one), etl::dim<1>(one), etl::dim<2>(one));
 }
