@@ -78,15 +78,17 @@ endif
 
 # On demand activation of full GPU support
 ifneq (,$(ETL_GPU))
-CXX_FLAGS += -DETL_GPU
+CXX_FLAGS += -DETL_GPU -DETL_EGBLAS_MODE
 
 CXX_FLAGS += $(shell pkg-config --cflags cublas)
 CXX_FLAGS += $(shell pkg-config --cflags cufft)
 CXX_FLAGS += $(shell pkg-config --cflags cudnn)
+CXX_FLAGS += $(shell pkg-config --cflags egblas)
 
 LD_FLAGS += $(shell pkg-config --libs cublas)
 LD_FLAGS += $(shell pkg-config --libs cufft)
 LD_FLAGS += $(shell pkg-config --libs cudnn)
+LD_FLAGS += $(shell pkg-config --libs egblas)
 else
 
 # On demand activation of cublas support
