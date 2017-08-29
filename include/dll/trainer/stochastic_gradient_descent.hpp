@@ -929,11 +929,11 @@ struct sgd_trainer {
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:nadam");
 
-        const auto beta1          = dbn.adam_beta1;
-        const auto beta2          = dbn.adam_beta2;
-        const auto schedule_decay = dbn.nadam_schedule_decay;
-        const auto e              = 1e-8;
-        const auto t              = iteration;
+        const weight beta1          = dbn.adam_beta1;
+        const weight beta2          = dbn.adam_beta2;
+        const weight schedule_decay = dbn.nadam_schedule_decay;
+        const weight e              = 1e-8;
+        const weight t              = iteration;
 
         auto& w          = std::get<I>(layer.trainable_parameters());
         auto& w_grad     = std::get<I>(context.up.context)->grad;
@@ -945,11 +945,11 @@ struct sgd_trainer {
 
         // Compute the schedule for momentum
 
-        auto momentum_cache_t   = beta1 * (1. - 0.5 * (std::pow(0.96, t * schedule_decay)));
-        auto momentum_cache_t_1 = beta1 * (1. - 0.5 * (std::pow(0.96, (t + 1) * schedule_decay)));
+        weight momentum_cache_t   = beta1 * (1. - 0.5 * (std::pow(0.96, t * schedule_decay)));
+        weight momentum_cache_t_1 = beta1 * (1. - 0.5 * (std::pow(0.96, (t + 1) * schedule_decay)));
 
-        auto m_schedule_new  = m_schedule * momentum_cache_t;
-        auto m_schedule_next = m_schedule * momentum_cache_t * momentum_cache_t_1;
+        weight m_schedule_new  = m_schedule * momentum_cache_t;
+        weight m_schedule_next = m_schedule * momentum_cache_t * momentum_cache_t_1;
 
         if /*constexpr*/ (I == 0) {
             m_schedule = m_schedule_new;
@@ -967,7 +967,13 @@ struct sgd_trainer {
 
         // Update the parameters
 
-        w += ((eps >> ((1.0 - momentum_cache_t) * (w_grad / (1.0 - m_schedule_new)) + momentum_cache_t_1 * w_mt)) / (etl::sqrt(w_vt) + e));
+        weight f1 = 1.0 - momentum_cache_t;
+        weight f2 = 1.0 - m_schedule_new;
+
+        weight m1 = eps * (f1 / f2);
+        weight m2 = eps * momentum_cache_t_1;
+
+        w += (m1 * w_grad + m2 * w_mt) / (etl::sqrt(w_vt) + e);
 
         nan_check_deep(w);
 
