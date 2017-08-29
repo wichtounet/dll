@@ -1739,6 +1739,8 @@ public:
 
     template <loss_function F, typename Output, typename Labels, cpp_enable_if((F == loss_function::CATEGORICAL_CROSS_ENTROPY))>
     std::tuple<double, double> compute_loss(size_t n, bool full_batch, double s, Output&& output, Labels&& labels){
+        dll::auto_timer timer("dbn::compute_loss::CCE");
+
         double batch_loss;
         double batch_error;
 
@@ -1757,6 +1759,8 @@ public:
 
     template <loss_function F, typename Output, typename Labels, cpp_enable_if((F == loss_function::BINARY_CROSS_ENTROPY))>
     std::tuple<double, double> compute_loss(size_t n, bool full_batch, double s, Output&& output, Labels&& labels){
+        dll::auto_timer timer("dbn::compute_loss::BCE");
+
         double batch_loss;
         double batch_error;
 
@@ -1778,6 +1782,8 @@ public:
 
     template <loss_function F, typename Output, typename Labels, cpp_enable_if((F == loss_function::MEAN_SQUARED_ERROR))>
     std::tuple<double, double> compute_loss(size_t n, bool full_batch, double s, Output&& output, Labels&& labels){
+        dll::auto_timer timer("dbn::compute_loss::MSE");
+
         double batch_loss;
         double batch_error;
 
