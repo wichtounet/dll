@@ -927,7 +927,7 @@ struct sgd_trainer {
      */
     template <size_t I, updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::NADAM)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
-        dll::auto_timer timer("sgd::apply_grad:adam_correct");
+        dll::auto_timer timer("sgd::apply_grad:nadam");
 
         const auto beta1          = dbn.adam_beta1;
         const auto beta2          = dbn.adam_beta2;
