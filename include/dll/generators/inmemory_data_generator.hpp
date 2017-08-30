@@ -177,6 +177,14 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_a
     }
 
     /*!
+     * \brief Prepare the dataset for an epoch
+     */
+    void prepare_epoch(){
+        input_cache.ensure_gpu_up_to_date();
+        label_cache.ensure_gpu_up_to_date();
+    }
+
+    /*!
      * \brief Return the index of the current batch in the generation
      * \return The current batch index
      */
@@ -572,6 +580,13 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_au
         cpp_assert(!current, "Shuffle should only be performed on start of generation");
 
         etl::parallel_shuffle(input_cache, label_cache, dll::random_engine());
+    }
+
+    /*!
+     * \brief Prepare the dataset for an epoch
+     */
+    void prepare_epoch(){
+        // Nothing can be done here
     }
 
     /*!

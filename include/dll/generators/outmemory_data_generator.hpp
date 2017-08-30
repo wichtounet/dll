@@ -198,6 +198,13 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_
     }
 
     /*!
+     * \brief Prepare the dataset for an epoch
+     */
+    void prepare_epoch(){
+        // Nothing can be done here
+    }
+
+    /*!
      * \brief Return the index of the current batch in the generation
      * \return The current batch index
      */
@@ -561,6 +568,13 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_a
      */
     void shuffle() {
         cpp_unreachable("Out-of-memory generator cannot be shuffled");
+    }
+
+    /*!
+     * \brief Prepare the dataset for an epoch
+     */
+    void prepare_epoch(){
+        // Nothing can be done here
     }
 
     /*!

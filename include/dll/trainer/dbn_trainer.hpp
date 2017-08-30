@@ -494,6 +494,9 @@ struct dbn_trainer {
                 generator.reset();
             }
 
+            // This will ensure maximum performance for the training
+            generator.prepare_epoch();
+
             start_epoch(dbn, epoch);
 
             double error;
