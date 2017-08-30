@@ -537,8 +537,6 @@ struct sgd_trainer {
     std::pair<double, double> train_batch(size_t epoch, const Inputs& inputs, const Labels& labels) {
         dll::auto_timer timer("sgd::train_batch");
 
-        cpp_unused(epoch);
-
         auto& first_layer = std::get<0>(full_context).first;
         auto& first_ctx   = *std::get<0>(full_context).second;
         auto& last_ctx    = *std::get<layers - 1>(full_context).second;
