@@ -1837,6 +1837,24 @@ public:
      */
     template <typename Generator>
     metrics_t evaluate_metrics(Generator& generator){
+        auto forward_helper = [this](auto&& input_batch){
+            return this->forward_batch(input_batch);
+        };
+
+        return evaluate_metrics(generator, forward_helper);
+    }
+
+    /*!
+     * \brief Evaluate the network on the given classification task
+     * and return the evaluation metrics.
+     *
+     * \param generator The data generator
+     * \param helper The function to use to compute a batch of output
+     *
+     * \return The evaluation metrics
+     */
+    template <typename Generator, typename Helper>
+    metrics_t evaluate_metrics(Generator& generator, Helper&& helper){
         // Starts a new
         generator.reset();
 
@@ -1850,7 +1868,7 @@ public:
             auto input_batch = generator.data_batch();
             auto label_batch = generator.label_batch();
 
-            decltype(auto) output = this->forward_batch(input_batch);
+            decltype(auto) output = helper(input_batch);
 
             double batch_error;
             double batch_loss;
