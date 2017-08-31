@@ -555,28 +555,7 @@ struct sgd_trainer {
         {
             dll::auto_timer timer("sgd::forward");
 
-            if(cpp_unlikely(!full_batch)){
-                first_ctx.input  = 0;
-                first_ctx.output = 0;
-
-                for (size_t i = 0; i < etl::dim<0>(inputs); ++i) {
-                    first_ctx.input(i) = inputs(i);
-                }
-            } else {
-                first_ctx.input = inputs;
-            }
-
-            first_layer.train_forward_batch(first_ctx.output, first_ctx.input);
-
-            cpp::for_each_pair(full_context, [](auto& layer_ctx_1, auto& layer_ctx_2) {
-                auto& layer_2 = layer_ctx_2.first;
-
-                auto& ctx1 = *layer_ctx_1.second;
-                auto& ctx2 = *layer_ctx_2.second;
-
-                ctx2.input = ctx1.output;
-                layer_2.train_forward_batch(ctx2.output, ctx2.input);
-            });
+            forward_batch_helper<true>(inputs);
         }
 
         {
@@ -637,6 +616,54 @@ struct sgd_trainer {
         }
 
         return std::make_pair(error, loss);
+    }
+
+    //TODO
+    template <bool Train, typename Inputs>
+    auto& forward_batch_helper(Inputs&& inputs) {
+        auto& first_layer = std::get<0>(full_context).first;
+        auto& first_ctx   = *std::get<0>(full_context).second;
+        auto& last_ctx    = *std::get<layers - 1>(full_context).second;
+
+        const auto n          = etl::dim<0>(inputs);
+        const bool full_batch = n == etl::dim<0>(first_ctx.input);
+
+        // Ensure that the context can hold the inputs
+        cpp_assert(n <= etl::dim<0>(first_ctx.input), "Invalid sizes");
+
+        if(cpp_unlikely(!full_batch)){
+            first_ctx.input  = 0;
+            first_ctx.output = 0;
+
+            for (size_t i = 0; i < etl::dim<0>(inputs); ++i) {
+                first_ctx.input(i) = inputs(i);
+            }
+        } else {
+            first_ctx.input = inputs;
+        }
+
+        if /*constexpr*/ (Train) {
+            first_layer.train_forward_batch(first_ctx.output, first_ctx.input);
+        } else {
+            first_layer.test_forward_batch(first_ctx.output, first_ctx.input);
+        }
+
+        cpp::for_each_pair(full_context, [](auto& layer_ctx_1, auto& layer_ctx_2) {
+            auto& layer_2 = layer_ctx_2.first;
+
+            auto& ctx1 = *layer_ctx_1.second;
+            auto& ctx2 = *layer_ctx_2.second;
+
+            ctx2.input = ctx1.output;
+
+            if /*constexpr*/ (Train) {
+                layer_2.train_forward_batch(ctx2.output, ctx2.input);
+            } else {
+                layer_2.test_forward_batch(ctx2.output, ctx2.input);
+            }
+        });
+
+        return last_ctx.output;
     }
 
     // CPP17 Replace with if constexpr

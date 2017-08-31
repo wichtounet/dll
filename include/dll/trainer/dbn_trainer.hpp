@@ -370,16 +370,17 @@ struct dbn_trainer {
     template<typename Generator>
     std::pair<double, double> compute_error_loss(dbn_t& dbn, Generator& generator){
         // Compute the error and loss at this epoch
-        double new_error;
-        double new_loss;
+        double new_error =  1.0;
+        double new_loss  = -1.0;
 
         if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()){
             dll::auto_timer timer("dbn::trainer::train::epoch::error");
 
-            std::tie(new_error, new_loss) = dbn.evaluate_metrics(generator);
-        } else {
-            new_error = -1.0;
-            new_loss  = -1.0;
+            auto forward_helper = [this](auto&& input_batch) -> decltype(auto) {
+                return this->trainer->template forward_batch_helper<false>(input_batch);
+            };
+
+            std::tie(new_error, new_loss) = dbn.evaluate_metrics(generator, forward_helper);
         }
 
         return std::make_pair(new_error, new_loss);
