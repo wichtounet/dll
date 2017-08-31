@@ -1747,11 +1747,11 @@ public:
         if (cpp_unlikely(!full_batch)) {
             auto soutput = slice(output, 0, n);
 
-            batch_loss  = (-1.0 / s) * sum(log(soutput) >> labels);
-            batch_error = (1.0 / s) * sum(min(abs(argmax(labels) - argmax(soutput)), 1.0));
+            batch_loss  = etl::ml::cce_loss(soutput, labels, -1.0 / s);
+            batch_error = etl::ml::cce_error(soutput, labels, 1.0 / s);
         } else {
-            batch_loss  = (-1.0 / s) * sum(log(output) >> labels);
-            batch_error = (1.0 / s) * sum(min(abs(argmax(labels) - argmax(output)), 1.0));
+            batch_loss  = etl::ml::cce_loss(output, labels, -1.0 / s);
+            batch_error = etl::ml::cce_error(output, labels, 1.0 / s);
         }
 
         return std::make_tuple(batch_error, batch_loss);
