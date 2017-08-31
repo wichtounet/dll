@@ -117,7 +117,7 @@ struct dyn_dense_layer final : neural_layer<dyn_dense_layer<Desc>, Desc> {
 
         output = etl::reshape(input, Batch, num_visible) * w;
 
-        if (activation_function == function::SOFTMAX) {
+        if /*constexpr*/ (activation_function == function::SOFTMAX) {
             if /*constexpr*/ (!no_bias) {
                 output = bias_add_2d(output, b);
             }
