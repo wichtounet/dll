@@ -376,8 +376,8 @@ struct dbn_trainer {
         if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()){
             dll::auto_timer timer("dbn::trainer::train::epoch::error");
 
-            auto forward_helper = [this](auto&& input_batch) -> decltype(auto) {
-                return this->trainer->template forward_batch_helper<false>(input_batch);
+            auto forward_helper = [this, &dbn](auto&& input_batch) -> decltype(auto) {
+                return this->trainer->template forward_batch_helper<false>(dbn, input_batch);
             };
 
             std::tie(new_error, new_loss) = dbn.evaluate_metrics(generator, forward_helper);

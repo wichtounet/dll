@@ -12,8 +12,6 @@ ifneq (,$(DLL_LIBCXX))
 $(eval $(call use_libcxx))
 endif
 
-CXX_FLAGS += -Wno-ignored-attributes
-
 ifneq (,$(findstring clang,$(CXX)))
 CXX_FLAGS += -Wno-documentation
 endif
@@ -28,6 +26,13 @@ LIBSVM_LD_FLAGS=-lsvm
 TEST_LD_FLAGS=$(LIBSVM_LD_FLAGS)
 
 CXX_FLAGS += -DETL_PARALLEL -DETL_VECTORIZE_FULL
+
+# Tune GCC warnings
+ifeq (,$(findstring clang,$(CXX)))
+ifneq (,$(findstring g++,$(CXX)))
+CXX_FLAGS += -Wno-ignored-attributes -Wno-misleading-indentation
+endif
+endif
 
 # Sometimes more performance
 #CXX_FLAGS += -DETL_CONV4_PREFER_BLAS

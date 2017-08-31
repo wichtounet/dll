@@ -189,7 +189,7 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
 private:
     template<typename Input, typename Out>
     weight energy_impl(const Input& v, const Out& h) const {
-        static_assert(etl::is_etl_expr<Out>::value, "energy_impl works with ETL expressions only");
+        static_assert(etl::is_etl_expr<Out>, "energy_impl works with ETL expressions only");
 
         auto rv = as_derived().reshape_v_a(v);
         auto tmp = as_derived().energy_tmp();

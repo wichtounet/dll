@@ -620,7 +620,15 @@ struct sgd_trainer {
 
     //TODO
     template <bool Train, typename Inputs>
+    auto& forward_batch_helper(dbn_t& dbn, Inputs&& inputs) {
+        cpp_unused(dbn);
+
+        return this->template forward_batch_helper<Train>(inputs);
+    }
+
+    template <bool Train, typename Inputs>
     auto& forward_batch_helper(Inputs&& inputs) {
+
         auto& first_layer = std::get<0>(full_context).first;
         auto& first_ctx   = *std::get<0>(full_context).second;
         auto& last_ctx    = *std::get<layers - 1>(full_context).second;

@@ -635,6 +635,13 @@ struct cg_trainer_base {
         }
     }
 
+    template <bool Train, typename Inputs>
+    decltype(auto) forward_batch_helper(dbn_t& dbn, Inputs&& inputs) {
+        // TODO Ideally, we want to use the context to make for
+        // efficient forward batch propagation (without temporaries)
+        return dbn.forward_batch(inputs);
+    }
+
     /*!
      * \brief Return the name of the trainer
      */
