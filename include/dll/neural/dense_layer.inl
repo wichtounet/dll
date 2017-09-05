@@ -115,11 +115,11 @@ struct dense_layer final : neural_layer<dense_layer<Desc>, Desc> {
 
         output = etl::reshape(input, Batch, num_visible) * w;
 
-        if /*constexpr*/ (no_bias) {
-            output = f_activate<activation_function>(output);
-        } else {
-            output = f_activate<activation_function>(bias_add_2d(output, b));
+        if /*constexpr*/ (!no_bias) {
+            output = bias_add_2d(output, b);
         }
+
+        output = f_activate<activation_function>(output);
     }
 
     /*!
