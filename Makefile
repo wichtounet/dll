@@ -308,6 +308,8 @@ $(eval $(call add_executable,dll_mnist_ae,examples/src/mnist_ae.cpp))
 $(eval $(call add_executable_set,dll_mnist_ae,dll_mnist_ae))
 $(eval $(call add_executable,dll_mnist_deep_ae,examples/src/mnist_deep_ae.cpp))
 $(eval $(call add_executable_set,dll_mnist_deep_ae,dll_mnist_deep_ae))
+$(eval $(call add_executable,dll_imagenet_cnn,examples/src/imagenet_cnn.cpp,$(OPENCV_LD_FLAGS)))
+$(eval $(call add_executable_set,dll_imagenet_cnn,dll_imagenet_cnn))
 
 $(eval $(call add_executable_set,dll_perf_paper,dll_perf_paper))
 $(eval $(call add_executable_set,dll_perf_paper_conv,dll_perf_paper_conv))
