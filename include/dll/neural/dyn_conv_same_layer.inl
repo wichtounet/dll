@@ -131,7 +131,8 @@ struct dyn_conv_same_layer final : neural_layer<dyn_conv_same_layer<Desc>, Desc>
         dll::auto_timer timer("conv:forward_batch");
 
         output = etl::ml::convolution_forward(v, w, 1, 1, p1, p2);
-        output = f_activate<activation_function>(bias_add_4d(output, b));
+        output = bias_add_4d(output, b);
+        output = f_activate<activation_function>(output);
     }
 
     /*!
@@ -145,7 +146,8 @@ struct dyn_conv_same_layer final : neural_layer<dyn_conv_same_layer<Desc>, Desc>
         dll::auto_timer timer("conv:forward_batch");
 
         output = etl::ml::convolution_forward(etl::reshape(v, etl::dim<0>(v), nc, nv1, nv2), w, 1, 1, p1, p2);
-        output = f_activate<activation_function>(bias_add_4d(output, b));
+        output = bias_add_4d(output, b);
+        output = f_activate<activation_function>(output);
     }
 
     void prepare_input(input_one_t& input) const {
