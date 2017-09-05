@@ -66,7 +66,7 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_
      * \param batch The size of the batch
      */
     outmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, size_t size, size_t batch = 0)
-            : _size(size), orig_it(first), orig_lit(lfirst), batch_size(batch ? batch : desc::BatchSize) {
+            : _size(size), orig_it(first), orig_lit(lfirst), it(orig_it), lit(orig_lit), batch_size(batch ? batch : desc::BatchSize) {
         data_cache_helper_t::init_big(big_batch_size, batch_size, first, batch_cache);
         label_cache_helper_t::init_big(big_batch_size, batch_size, n_classes, lfirst, label_cache);
 
@@ -347,16 +347,12 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_a
      * \param batch The size of the batch
      */
     outmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, size_t size, size_t batch = 0)
-            : _size(size), orig_it(first), orig_lit(lfirst), cropper(*first), mirrorer(*first), distorter(*first), noiser(*first), batch_size(batch ? batch : desc::BatchSize) {
+            : _size(size), orig_it(first), orig_lit(lfirst), it(orig_it), lit(orig_lit), cropper(*first), mirrorer(*first), distorter(*first), noiser(*first), batch_size(batch ? batch : desc::BatchSize) {
         data_cache_helper_t::init_big(big_batch_size, batch_size, first, batch_cache);
         label_cache_helper_t::init_big(big_batch_size, batch_size, n_classes, lfirst, label_cache);
 
         cpp_unused(last);
         cpp_unused(llast);
-
-        current_read = 0;
-        it           = orig_it;
-        lit          = orig_lit;
 
         main_thread = std::thread([this] {
             while (true) {
@@ -403,44 +399,46 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_a
                     }
                 }
 
-                for (size_t i = 0; i < batch_size && current_read < _size; ++i) {
-                    if (train_mode) {
-                        // Random crop the image
-                        cropper.transform_first(batch_cache(index)(i), *it);
+                SERIAL_SECTION {
+                    for (size_t i = 0; i < batch_size && current_read < _size; ++i) {
+                        if (train_mode) {
+                            // Random crop the image
+                            cropper.transform_first(batch_cache(index)(i), *it);
 
-                        pre_scaler<desc>::transform(batch_cache(index)(i));
-                        pre_normalizer<desc>::transform(batch_cache(index)(i));
-                        pre_binarizer<desc>::transform(batch_cache(index)(i));
+                            pre_scaler<desc>::transform(batch_cache(index)(i));
+                            pre_normalizer<desc>::transform(batch_cache(index)(i));
+                            pre_binarizer<desc>::transform(batch_cache(index)(i));
 
-                        // Mirror the image
-                        mirrorer.transform(batch_cache(index)(i));
+                            // Mirror the image
+                            mirrorer.transform(batch_cache(index)(i));
 
-                        // Distort the image
-                        distorter.transform(batch_cache(index)(i));
+                            // Distort the image
+                            distorter.transform(batch_cache(index)(i));
 
-                        // Noise the image
-                        noiser.transform(batch_cache(index)(i));
-                    } else {
-                        // Center crop the image
-                        cropper.transform_first_test(batch_cache(index)(i), *it);
+                            // Noise the image
+                            noiser.transform(batch_cache(index)(i));
+                        } else {
+                            // Center crop the image
+                            cropper.transform_first_test(batch_cache(index)(i), *it);
 
-                        pre_scaler<desc>::transform(batch_cache(index)(i));
-                        pre_normalizer<desc>::transform(batch_cache(index)(i));
-                        pre_binarizer<desc>::transform(batch_cache(index)(i));
+                            pre_scaler<desc>::transform(batch_cache(index)(i));
+                            pre_normalizer<desc>::transform(batch_cache(index)(i));
+                            pre_binarizer<desc>::transform(batch_cache(index)(i));
+                        }
+
+                        label_cache_helper_t::set(i, lit, label_cache(index));
+
+                        // In case of auto-encoders, the label images also need to be transformed
+                        cpp::static_if<desc::AutoEncoder>([&](auto f) {
+                            pre_scaler<desc>::transform(f(label_cache)(index)(i));
+                            pre_normalizer<desc>::transform(f(label_cache)(index)(i));
+                            pre_binarizer<desc>::transform(f(label_cache)(index)(i));
+                        });
+
+                        ++it;
+                        ++lit;
+                        ++current_read;
                     }
-
-                    label_cache_helper_t::set(i, lit, label_cache(index));
-
-                    // In case of auto-encoders, the label images also need to be transformed
-                    cpp::static_if<desc::AutoEncoder>([&](auto f) {
-                        pre_scaler<desc>::transform(f(label_cache)(index)(i));
-                        pre_normalizer<desc>::transform(f(label_cache)(index)(i));
-                        pre_binarizer<desc>::transform(f(label_cache)(index)(i));
-                    });
-
-                    ++it;
-                    ++lit;
-                    ++current_read;
                 }
 
                 // Notify a waiter that one batch is ready
