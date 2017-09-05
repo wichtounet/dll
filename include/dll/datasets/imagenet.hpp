@@ -22,8 +22,6 @@ namespace dll {
 namespace imagenet {
 
 inline void read_files(std::vector<std::pair<size_t, size_t>>& files, std::unordered_map<size_t, float>& label_map, const std::string& file_path){
-    std::cout << "Read images from '" << file_path << "'" << std::endl;
-
     files.reserve(1200000);
 
     struct dirent* entry;
