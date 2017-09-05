@@ -145,11 +145,13 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_
 
         for (size_t b = 0; b < big_batch_size && current_real < _size; ++b) {
             for (size_t i = 0; i < batch_size && current_real < _size;) {
-                batch_cache(b)(i) = *it;
+                auto sub = batch_cache(b)(i);
 
-                pre_scaler<desc>::transform(batch_cache(b)(i));
-                pre_normalizer<desc>::transform(batch_cache(b)(i));
-                pre_binarizer<desc>::transform(batch_cache(b)(i));
+                sub = *it;
+
+                pre_scaler<desc>::transform(sub);
+                pre_normalizer<desc>::transform(sub);
+                pre_binarizer<desc>::transform(sub);
 
                 label_cache_helper_t::set(i, lit, label_cache(b));
 
@@ -401,29 +403,31 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_a
 
                 SERIAL_SECTION {
                     for (size_t i = 0; i < batch_size && current_read < _size; ++i) {
+                        auto sub = batch_cache(index)(i);
+
                         if (train_mode) {
                             // Random crop the image
-                            cropper.transform_first(batch_cache(index)(i), *it);
+                            cropper.transform_first(sub, *it);
 
-                            pre_scaler<desc>::transform(batch_cache(index)(i));
-                            pre_normalizer<desc>::transform(batch_cache(index)(i));
-                            pre_binarizer<desc>::transform(batch_cache(index)(i));
+                            pre_scaler<desc>::transform(sub);
+                            pre_normalizer<desc>::transform(sub);
+                            pre_binarizer<desc>::transform(sub);
 
                             // Mirror the image
-                            mirrorer.transform(batch_cache(index)(i));
+                            mirrorer.transform(sub);
 
                             // Distort the image
-                            distorter.transform(batch_cache(index)(i));
+                            distorter.transform(sub);
 
                             // Noise the image
-                            noiser.transform(batch_cache(index)(i));
+                            noiser.transform(sub);
                         } else {
                             // Center crop the image
-                            cropper.transform_first_test(batch_cache(index)(i), *it);
+                            cropper.transform_first_test(sub, *it);
 
-                            pre_scaler<desc>::transform(batch_cache(index)(i));
-                            pre_normalizer<desc>::transform(batch_cache(index)(i));
-                            pre_binarizer<desc>::transform(batch_cache(index)(i));
+                            pre_scaler<desc>::transform(sub);
+                            pre_normalizer<desc>::transform(sub);
+                            pre_binarizer<desc>::transform(sub);
                         }
 
                         label_cache_helper_t::set(i, lit, label_cache(index));
