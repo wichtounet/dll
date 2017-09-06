@@ -110,6 +110,16 @@ struct dyn_conv_same_layer final : neural_layer<dyn_conv_same_layer<Desc>, Desc>
         return k * nw1 * nw2;
     }
 
+    size_t memory_size() const noexcept {
+        return w.size() * sizeof(float) + b.size() * sizeof(float);
+    }
+
+    size_t context_memory_size(size_t batch_size) const noexcept {
+        return batch_size * nc * nv1 * nv2  // Input
+           + batch_size * k * nv1 * nv2  // Output
+           + batch_size * k * nv1 * nv2; // Errors
+    }
+
     /*!
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
@@ -202,7 +212,9 @@ struct dyn_conv_same_layer final : neural_layer<dyn_conv_same_layer<Desc>, Desc>
     template<typename C>
     void adapt_errors(C& context) const {
         if(activation_function != function::IDENTITY){
-            context.errors = f_derivative<activation_function>(context.output) >> context.errors;
+            context.output = f_derivative<activation_function>(context.output);
+            //cpp_unused(context);
+            context.errors >>= context.output;
         }
     }
 
