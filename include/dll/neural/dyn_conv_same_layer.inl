@@ -110,10 +110,18 @@ struct dyn_conv_same_layer final : neural_layer<dyn_conv_same_layer<Desc>, Desc>
         return k * nw1 * nw2;
     }
 
+    /*!
+     * \brief Return the size, in bytes, used by this layer
+     * \return the size, in bytes, used by this layer
+     */
     size_t memory_size() const noexcept {
         return w.size() * sizeof(float) + b.size() * sizeof(float);
     }
 
+    /*!
+     * \brief Return the size, in bytes, used by the context of this layer
+     * \return the size, in bytes, used by the context of this layer
+     */
     size_t context_memory_size(size_t batch_size) const noexcept {
         return batch_size * nc * nv1 * nv2  // Input
            + batch_size * k * nv1 * nv2  // Output

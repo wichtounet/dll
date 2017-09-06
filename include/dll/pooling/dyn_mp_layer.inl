@@ -159,10 +159,18 @@ struct dyn_mp_layer_3d final : dyn_pooling_layer_3d<dyn_mp_layer_3d<Desc>, Desc>
     using input_t      = typename base::input_t;      ///< The type of many input
     using output_t     = typename base::output_t;     ///< The type of many output
 
+    /*!
+     * \brief Return the size, in bytes, used by this layer
+     * \return the size, in bytes, used by this layer
+     */
     size_t memory_size() const noexcept {
         return 0;
     }
 
+    /*!
+     * \brief Return the size, in bytes, used by the context of this layer
+     * \return the size, in bytes, used by the context of this layer
+     */
     size_t context_memory_size(size_t batch_size) const noexcept {
         return batch_size * base::i1 * base::i2 * base::i3                                           // Input
                + batch_size * (base::i1 / base::c1) * (base::i2 / base::c2) * (base::i3 / base::c3)  // Output
