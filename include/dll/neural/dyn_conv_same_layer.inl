@@ -221,7 +221,6 @@ struct dyn_conv_same_layer final : neural_layer<dyn_conv_same_layer<Desc>, Desc>
     void adapt_errors(C& context) const {
         if(activation_function != function::IDENTITY){
             context.output = f_derivative<activation_function>(context.output);
-            //cpp_unused(context);
             context.errors >>= context.output;
         }
     }
