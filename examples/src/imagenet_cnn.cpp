@@ -18,14 +18,12 @@
 #include "mnist/mnist_utils.hpp"
 
 int main(int /*argc*/, char* /*argv*/ []) {
-    constexpr size_t B = 64;
+    constexpr size_t B = 128;
 
     // Load the dataset
     auto dataset = dll::make_imagenet_dataset("/home/wichtounet/datasets/imagenet_resized/", 0
         , dll::batch_size<B>{}
         , dll::scale_pre<255>{}
-        , dll::big_batch_size<1>{}
-        dll::threaded{}
         );
 
     // Build the network
@@ -56,6 +54,10 @@ int main(int /*argc*/, char* /*argv*/ []) {
         dll::no_epoch_error>::dbn_t;
 
     auto net = std::make_unique<network_t>();
+
+    net->learning_rate = 0.01;
+    net->initial_momentum = 0.9;
+    net->momentum = 0.9;
 
     // Display the network and dataset
     net->display();
