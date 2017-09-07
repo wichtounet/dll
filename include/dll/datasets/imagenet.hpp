@@ -99,7 +99,7 @@ struct image_iterator : std::iterator<
         return *this;
     }
 
-    value_type operator*(){
+    value_type operator*() {
         auto& image_file = (*files)[index];
 
         auto label = std::string("/n") + (image_file.first < 10000000 ? "0" : "") + std::to_string(image_file.first);
@@ -112,13 +112,13 @@ struct image_iterator : std::iterator<
 
         value_type image;
 
-        if(!mat.data){
+        if (!mat.data) {
             std::cerr << "ERROR: Failed to read image: " << image_path << std::endl;
             image = 0;
             return image;
         }
 
-        if(mat.cols != 256 || mat.rows != 256){
+        if (mat.cols != 256 || mat.rows != 256) {
             std::cerr << "ERROR: Image of invalid size: " << image_path << std::endl;
             image = 0;
             return image;
@@ -126,7 +126,6 @@ struct image_iterator : std::iterator<
 
         for (size_t x = 0; x < 256; ++x) {
             for (size_t y = 0; y < 256; ++y) {
-
                 auto pixel = mat.at<cv::Vec3b>(y, x);
 
                 image(0, x, y) = pixel.val[0];
