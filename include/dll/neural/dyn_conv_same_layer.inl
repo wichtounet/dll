@@ -220,9 +220,7 @@ struct dyn_conv_same_layer final : neural_layer<dyn_conv_same_layer<Desc>, Desc>
     template<typename C>
     void adapt_errors(C& context) const {
         if(activation_function != function::IDENTITY){
-            // TODO Once ETL has better handling of temporaries, this should be reviewed
-            context.output = f_derivative<activation_function>(context.output);
-            context.errors >>= context.output;
+            context.errors = f_derivative<activation_function>(context.output) >> context.errors;
         }
     }
 
