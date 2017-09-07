@@ -38,6 +38,12 @@ struct neural_layer : layer<Derived> {
         // Nothing to init here
     }
 
+    neural_layer(neural_layer& rhs) = delete;
+    neural_layer(neural_layer&& rhs) = delete;
+
+    neural_layer& operator=(neural_layer& rhs) = delete;
+    neural_layer& operator=(neural_layer&& rhs) = delete;
+
     /*!
      * \brief Backup the weights in the secondary weights matrix
      */
