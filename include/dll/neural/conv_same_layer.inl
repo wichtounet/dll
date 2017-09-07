@@ -253,18 +253,14 @@ struct sgd_context<DBN, conv_same_layer<Desc>, L> {
 
     static constexpr size_t NV1 = layer_t::NV1;
     static constexpr size_t NV2 = layer_t::NV2;
-    static constexpr size_t NH1 = layer_t::NH1;
-    static constexpr size_t NH2 = layer_t::NH2;
-    static constexpr size_t NW1 = layer_t::NW1;
-    static constexpr size_t NW2 = layer_t::NW2;
     static constexpr size_t NC  = layer_t::NC;
     static constexpr size_t K   = layer_t::K;
 
     static constexpr auto batch_size = DBN::batch_size;
 
     etl::fast_matrix<weight, batch_size, NC, NV1, NV2> input;
-    etl::fast_matrix<weight, batch_size, K, NH1, NH2> output;
-    etl::fast_matrix<weight, batch_size, K, NH1, NH2> errors;
+    etl::fast_matrix<weight, batch_size, K,  NV1, NV2> output;
+    etl::fast_matrix<weight, batch_size, K,  NV1, NV2> errors;
 
     sgd_context(layer_t& /* layer */)
             : output(0.0), errors(0.0) {}
