@@ -108,11 +108,11 @@ struct image_iterator : std::iterator<
             std::string(imagenet_path) + "/train" + label + label +
             "_" + std::to_string(image_file.second) + ".JPEG";
 
-        auto mat = cv::imread(image_path.c_str(), CV_LOAD_IMAGE_ANYDEPTH);
+        auto mat = cv::imread(image_path.c_str(), cv::IMREAD_ANYCOLOR | cv::IMREAD_ANYDEPTH);
 
         value_type image;
 
-        if (!mat.data) {
+        if (!mat.data || mat.empty()) {
             std::cerr << "ERROR: Failed to read image: " << image_path << std::endl;
             image = 0;
             return image;
@@ -124,14 +124,25 @@ struct image_iterator : std::iterator<
             return image;
         }
 
-        for (size_t x = 0; x < 256; ++x) {
-            for (size_t y = 0; y < 256; ++y) {
-                auto pixel = mat.at<cv::Vec3b>(y, x);
+        if (cpp_likely(mat.channels() == 3)) {
+            for (size_t x = 0; x < 256; ++x) {
+                for (size_t y = 0; y < 256; ++y) {
+                    auto pixel = mat.at<cv::Vec3b>(y, x);
 
-                image(0, x, y) = pixel.val[0];
-                image(1, x, y) = pixel.val[1];
-                image(2, x, y) = pixel.val[2];
+                    image(0, x, y) = pixel.val[0];
+                    image(1, x, y) = pixel.val[1];
+                    image(2, x, y) = pixel.val[2];
+                }
             }
+        } else {
+            for (size_t x = 0; x < 256; ++x) {
+                for (size_t y = 0; y < 256; ++y) {
+                    image(0, x, y) = mat.at<unsigned char>(y, x);
+                }
+            }
+
+            image(1) = 0;
+            image(2) = 0;
         }
 
         return image;
