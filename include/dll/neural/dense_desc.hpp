@@ -13,7 +13,7 @@
 namespace dll {
 
 /*!
- * \brief Describe a dense layer.
+ * \brief Descriptor for a dense layer
  */
 template <size_t visibles, size_t hiddens, typename... Parameters>
 struct dense_desc {
@@ -48,5 +48,11 @@ struct dense_desc {
             Parameters...>::value,
         "Invalid parameters type for dense_desc");
 };
+
+/*!
+ * \brief Describe a dense layer
+ */
+template <size_t visibles, size_t hiddens, typename... Parameters>
+using dense_desc_layer = typename dense_desc<visibles, hiddens, Parameters...>::layer_t;
 
 } //end of dll namespace

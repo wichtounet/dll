@@ -13,7 +13,7 @@
 namespace dll {
 
 /*!
- * \brief Describe a standard convolutional layer with 'same' padding.
+ * \brief Descriptor for a standard convolutional layer with 'same' padding.
  */
 template <size_t NC_T, size_t NV_1, size_t NV_2, size_t K_T, size_t NW_1, size_t NW_2, typename... Parameters>
 struct conv_same_desc {
@@ -54,5 +54,11 @@ struct conv_same_desc {
         detail::is_valid<cpp::type_list<weight_type_id, activation_id, initializer_id, initializer_bias_id>, Parameters...>::value,
         "Invalid parameters type for conv_same_desc");
 };
+
+/*!
+ * \brief Describe a standard convolutional layer with 'same' padding.
+ */
+template <size_t NC_T, size_t NV_1, size_t NV_2, size_t K_T, size_t NW_1, size_t NW_2, typename... Parameters>
+using conv_same_desc_layer = typename conv_same_desc<NC_T, NV_1, NV_2, K_T, NW_1, NW_2, Parameters...>::layer_t;
 
 } //end of dll namespace
