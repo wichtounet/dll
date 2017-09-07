@@ -110,11 +110,19 @@ struct image_iterator : std::iterator<
 
         auto mat = cv::imread(image_path.c_str(), CV_LOAD_IMAGE_ANYDEPTH);
 
+        value_type image;
+
         if(!mat.data){
             std::cerr << "ERROR: Failed to read image: " << image_path << std::endl;
+            image = 0;
+            return image;
         }
 
-        value_type image;
+        if(mat.cols != 256 || mat.rows != 256){
+            std::cerr << "ERROR: Image of invalid size: " << image_path << std::endl;
+            image = 0;
+            return image;
+        }
 
         for (size_t x = 0; x < 256; ++x) {
             for (size_t y = 0; y < 256; ++y) {
