@@ -22,12 +22,13 @@ int main(int /*argc*/, char* /*argv*/ []) {
 
     using network_t = dll::dyn_network_desc<
         dll::network_layers<
-            dll::conv_desc<1, 28, 28, 8, 5, 5>::layer_t,
-            dll::mp_layer_2d_desc<8, 24, 24, 2, 2>::layer_t,
-            dll::conv_desc<8, 12, 12, 8, 5, 5>::layer_t,
-            dll::mp_layer_2d_desc<8, 8, 8, 2, 2>::layer_t,
-            dll::dense_desc<8 * 4 * 4, 150>::layer_t,
-            dll::dense_desc<150, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>
+            dll::conv_desc_layer<1, 28, 28, 8, 5, 5>,
+            dll::mp_layer_2d_desc_layer<8, 24, 24, 2, 2>,
+            dll::conv_desc_layer<8, 12, 12, 8, 5, 5>,
+            dll::mp_layer_2d_desc_layer<8, 8, 8, 2, 2>,
+            dll::dense_desc_layer<8 * 4 * 4, 150>,
+            dll::dense_desc_layer<150, 10, dll::softmax>
+        >
         , dll::updater<dll::updater_type::NADAM>     // Momentum
         , dll::batch_size<100>                       // The mini-batch size
         , dll::shuffle                               // Shuffle the dataset before each epoch

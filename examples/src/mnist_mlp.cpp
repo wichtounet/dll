@@ -22,11 +22,12 @@ int main(int /*argc*/, char* /*argv*/ []) {
 
     using network_t = dll::dyn_network_desc<
         dll::network_layers<
-            dll::dense_desc<28 * 28, 500>::layer_t,
-            dll::dropout_layer_desc<50>::layer_t,
-            dll::dense_desc<500, 250>::layer_t,
-            dll::dropout_layer_desc<50>::layer_t,
-            dll::dense_desc<250, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>
+            dll::dense_desc_layer<28 * 28, 500>,
+            dll::dropout_layer_desc_layer<50>,
+            dll::dense_desc_layer<500, 250>,
+            dll::dropout_layer_desc_layer<50>,
+            dll::dense_desc_layer<250, 10, dll::softmax>
+        >
         , dll::updater<dll::updater_type::NADAM>     // Nesterov Adam (NADAM)
         , dll::batch_size<100>                       // The mini-batch size
         , dll::shuffle                               // Shuffle before each epoch

@@ -30,23 +30,23 @@ int main(int /*argc*/, char* /*argv*/ []) {
 
     using network_t = dll::dyn_network_desc<
         dll::dbn_layers<
-            dll::conv_same_desc<3, 256, 256, 16, 3, 3, dll::activation<dll::function::RELU>>::layer_t,
-            dll::mp_layer_3d_desc<16, 256, 256, 1, 2, 2>::layer_t,
+            dll::conv_same_desc_layer<3, 256, 256, 16, 3, 3, dll::relu>,
+            dll::mp_layer_3d_desc_layer<16, 256, 256, 1, 2, 2>,
 
-            dll::conv_same_desc<16, 128, 128, 16, 3, 3, dll::activation<dll::function::RELU>>::layer_t,
-            dll::mp_layer_3d_desc<16, 128, 128, 1, 2, 2>::layer_t,
+            dll::conv_same_desc_layer<16, 128, 128, 16, 3, 3, dll::relu>,
+            dll::mp_layer_3d_desc_layer<16, 128, 128, 1, 2, 2>,
 
-            dll::conv_same_desc<16, 64, 64, 32, 3, 3, dll::activation<dll::function::RELU>>::layer_t,
-            dll::mp_layer_3d_desc<32, 64, 64, 1, 2, 2>::layer_t,
+            dll::conv_same_desc_layer<16, 64, 64, 32, 3, 3, dll::relu>,
+            dll::mp_layer_3d_desc_layer<32, 64, 64, 1, 2, 2>,
 
-            dll::conv_same_desc<32, 32, 32, 32, 3, 3, dll::activation<dll::function::RELU>>::layer_t,
-            dll::mp_layer_3d_desc<32, 32, 32, 1, 2, 2>::layer_t,
+            dll::conv_same_desc_layer<32, 32, 32, 32, 3, 3, dll::relu>,
+            dll::mp_layer_3d_desc_layer<32, 32, 32, 1, 2, 2>,
 
-            dll::conv_same_desc<32, 16, 16, 32, 3, 3, dll::activation<dll::function::RELU>>::layer_t,
-            dll::mp_layer_3d_desc<32, 16, 16, 1, 2, 2>::layer_t,
+            dll::conv_same_desc_layer<32, 16, 16, 32, 3, 3, dll::relu>,
+            dll::mp_layer_3d_desc_layer<32, 16, 16, 1, 2, 2>,
 
-            dll::dense_desc<2048, 2048, dll::activation<dll::function::RELU>>::layer_t,
-            dll::dense_desc<2048, 1000, dll::activation<dll::function::SOFTMAX>>::layer_t
+            dll::dense_desc_layer<2048, 2048, dll::relu>,
+            dll::dense_desc_layer<2048, 1000, dll::softmax>
         >,
         dll::batch_size<B>,
         dll::updater<dll::updater_type::MOMENTUM>,
