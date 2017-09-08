@@ -21,7 +21,8 @@ TEST_CASE("unit/dyn_crbm_mp/mnist/3", "[dyn_crbm_mp][denoising][unit]") {
         dll::momentum,
         dll::weight_decay<dll::decay_type::L2>,
         dll::visible<dll::unit_type::GAUSSIAN>,
-        dll::shuffle>::layer_t rbm;
+        dll::shuffle
+    >::layer_t rbm;
 
     rbm.init_layer(1, 28, 28, 30, 17, 17, 2);
 
