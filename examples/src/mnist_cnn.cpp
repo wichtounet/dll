@@ -22,9 +22,9 @@ int main(int /*argc*/, char* /*argv*/ []) {
 
     using network_t = dll::dyn_network_desc<
         dll::network_layers<
-            dll::conv_layer_desc_layer<1, 28, 28, 8, 5, 5>,
+            dll::conv_layer<1, 28, 28, 8, 5, 5>,
             dll::mp_2d_layer<8, 24, 24, 2, 2>,
-            dll::conv_layer_desc_layer<8, 12, 12, 8, 5, 5>,
+            dll::conv_layer<8, 12, 12, 8, 5, 5>,
             dll::mp_2d_layer<8, 8, 8, 2, 2>,
             dll::dense_layer<8 * 4 * 4, 150>,
             dll::dense_layer<150, 10, dll::softmax>

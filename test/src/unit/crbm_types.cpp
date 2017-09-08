@@ -73,4 +73,4 @@ struct dyn_crbm_double {
 #define DOUBLE_TYPES_TEST_T1 crbm_double
 #define DOUBLE_TYPES_TEST_T2 dyn_crbm_double
 
-#include "types_test_impl.hpp"
+#include "types_test.inl"

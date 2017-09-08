@@ -110,4 +110,4 @@ struct dyn_dbn_double {
 #define DOUBLE_TYPES_TEST_T2 dyn_dbn_double
 #define TYPES_TEST_NO_PRE
 
-#include "dbn_types_test_impl.hpp"
+#include "dbn_types_test.inl"

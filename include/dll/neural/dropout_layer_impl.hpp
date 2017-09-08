@@ -15,13 +15,13 @@ namespace dll {
  * \brief Dropout layer
  */
 template <typename Desc>
-struct dropout_layer : transform_layer<dropout_layer<Desc>> {
+struct dropout_layer_impl : transform_layer<dropout_layer_impl<Desc>> {
     using desc      = Desc;                                 ///< The descriptor type
-    using base_type = transform_layer<dropout_layer<Desc>>; ///< The base type
+    using base_type = transform_layer<dropout_layer_impl<Desc>>; ///< The base type
 
     static constexpr float p = float(desc::Drop) / 100.0f; ///< The dropout rate
 
-    dropout_layer() = default;
+    dropout_layer_impl() = default;
 
     /*!
      * \brief Returns a string representation of the layer
@@ -106,7 +106,7 @@ struct dropout_layer : transform_layer<dropout_layer<Desc>> {
 // Declare the traits for the layer
 
 template<typename Desc>
-struct layer_base_traits<dropout_layer<Desc>> {
+struct layer_base_traits<dropout_layer_impl<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -122,11 +122,11 @@ struct layer_base_traits<dropout_layer<Desc>> {
 };
 
 /*!
- * \brief Specialization of sgd_context for dropout_layer
+ * \brief Specialization of sgd_context for dropout_layer_impl
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, dropout_layer<Desc>, L> {
-    using layer_t          = dropout_layer<Desc>;                            ///< The current layer type
+struct sgd_context<DBN, dropout_layer_impl<Desc>, L> {
+    using layer_t          = dropout_layer_impl<Desc>;                            ///< The current layer type
     using previous_layer   = typename DBN::template layer_type<L - 1>;          ///< The previous layer type
     using previous_context = sgd_context<DBN, previous_layer, L - 1>;           ///< The previous layer's context
     using inputs_t         = decltype(std::declval<previous_context>().output); ///< The type of inputs
