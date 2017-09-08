@@ -581,7 +581,7 @@ void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll
     }
 
     if (t.ft_desc.momentum != dll::processor::stupid_default) {
-        out_stream << ", dll::momentum\n";
+        out_stream << ", dll::updater<dll::updater_type::MOMENTUM>\n";
     }
 
     if (t.ft_desc.verbose) {

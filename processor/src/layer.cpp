@@ -379,7 +379,7 @@ size_t dllp::conv_rbm_mp_layer::hidden_get_3() const {
 }
 
 void dllp::dense_layer::print(std::ostream& out) const {
-    out << "dll::dense_desc<" << visible << ", " << hidden;
+    out << "dll::dense_layer_desc<" << visible << ", " << hidden;
 
     if (!activation.empty()) {
         out << "\n  , dll::activation<dll::function::" << activation_function(activation) << ">";
@@ -624,7 +624,7 @@ bool dllp::function_layer::is_transform() const {
 
 void dllp::function_layer::print(std::ostream& out) const {
     out << "dll::activation_layer_desc<"
-        << "dll::activation<dll::function::" << activation_function(activation) << ">"
+        << "dll::function::" << activation_function(activation)
         << ">::layer_t";
 }
 
