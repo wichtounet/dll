@@ -17,13 +17,13 @@ namespace dll {
  * Applies an activation function to the output of one layer.
  */
 template <typename Desc>
-struct activation_layer : transform_layer<activation_layer<Desc>> {
+struct activation_layer_impl : transform_layer<activation_layer_impl<Desc>> {
     using desc      = Desc;                                    ///< The descriptor type
-    using base_type = transform_layer<activation_layer<Desc>>; ///< The base type
+    using base_type = transform_layer<activation_layer_impl<Desc>>; ///< The base type
 
     static constexpr function activation_function = desc::activation_function;
 
-    activation_layer() = default;
+    activation_layer_impl() = default;
 
     /*!
      * \brief Returns a string representation of the layer
@@ -86,7 +86,7 @@ struct activation_layer : transform_layer<activation_layer<Desc>> {
 // Declare the traits for the layer
 
 template<typename Desc>
-struct layer_base_traits<activation_layer<Desc>> {
+struct layer_base_traits<activation_layer_impl<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -102,11 +102,11 @@ struct layer_base_traits<activation_layer<Desc>> {
 };
 
 /*!
- * \brief Specialization of sgd_context for activation_layer
+ * \brief Specialization of sgd_context for activation_layer_impl
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, activation_layer<Desc>, L> {
-    using layer_t          = activation_layer<Desc>;                            ///< The current layer type
+struct sgd_context<DBN, activation_layer_impl<Desc>, L> {
+    using layer_t          = activation_layer_impl<Desc>;                            ///< The current layer type
     using previous_layer   = typename DBN::template layer_type<L - 1>;          ///< The previous layer type
     using previous_context = sgd_context<DBN, previous_layer, L - 1>;           ///< The previous layer's context
     using inputs_t         = decltype(std::declval<previous_context>().output); ///< The type of inputs

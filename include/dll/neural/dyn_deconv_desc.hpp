@@ -30,7 +30,7 @@ struct dyn_deconv_desc {
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
 
     /*! The layer type */
-    using layer_t = dyn_deconv_layer<dyn_deconv_desc<Parameters...>>;
+    using layer_t = dyn_deconv_layer_impl<dyn_deconv_desc<Parameters...>>;
 
     /*! The dynamic layer type */
     using dyn_layer_t = layer_t;

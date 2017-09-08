@@ -37,10 +37,10 @@ struct conv_same_desc {
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
 
     /*! The conv type */
-    using layer_t = conv_same_layer<conv_same_desc<NC_T, NV_1, NV_2, K_T, NW_1, NW_2, Parameters...>>;
+    using layer_t = conv_same_layer_impl<conv_same_desc<NC_T, NV_1, NV_2, K_T, NW_1, NW_2, Parameters...>>;
 
     /*! The conv type */
-    using dyn_layer_t = dyn_conv_same_layer<dyn_conv_same_desc<Parameters...>>;
+    using dyn_layer_t = dyn_conv_same_layer_impl<dyn_conv_same_desc<Parameters...>>;
 
     static_assert(NV1 > 0, "A matrix of at least 1x1 is necessary for the visible units");
     static_assert(NV2 > 0, "A matrix of at least 1x1 is necessary for the visible units");

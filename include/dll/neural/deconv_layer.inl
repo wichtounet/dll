@@ -15,10 +15,10 @@ namespace dll {
  * \brief Standard convolutional layer of neural network.
  */
 template <typename Desc>
-struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
+struct deconv_layer_impl final : neural_layer<deconv_layer_impl<Desc>, Desc> {
     using desc      = Desc; ///< The descriptor of the layer
     using weight    = typename desc::weight; ///< The data type for this layer
-    using this_type = deconv_layer<desc>; ///< The type of this layer
+    using this_type = deconv_layer_impl<desc>; ///< The type of this layer
     using base_type = neural_layer<this_type, desc>;
 
     static constexpr size_t NC  = desc::NC;  ///< The number of input channels
@@ -54,7 +54,7 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
     /*!
      * \brief Initialize a conv layer with basic weights.
      */
-    deconv_layer() : base_type() {
+    deconv_layer_impl() : base_type() {
         initializer_function<w_initializer>::initialize(w, input_size(), output_size());
         initializer_function<b_initializer>::initialize(b, input_size(), output_size());
     }
@@ -209,33 +209,33 @@ struct deconv_layer final : neural_layer<deconv_layer<Desc>, Desc> {
 //Allow odr-use of the constexpr static members
 
 template <typename Desc>
-const size_t deconv_layer<Desc>::NV1;
+const size_t deconv_layer_impl<Desc>::NV1;
 
 template <typename Desc>
-const size_t deconv_layer<Desc>::NV2;
+const size_t deconv_layer_impl<Desc>::NV2;
 
 template <typename Desc>
-const size_t deconv_layer<Desc>::NH1;
+const size_t deconv_layer_impl<Desc>::NH1;
 
 template <typename Desc>
-const size_t deconv_layer<Desc>::NH2;
+const size_t deconv_layer_impl<Desc>::NH2;
 
 template <typename Desc>
-const size_t deconv_layer<Desc>::NC;
+const size_t deconv_layer_impl<Desc>::NC;
 
 template <typename Desc>
-const size_t deconv_layer<Desc>::NW1;
+const size_t deconv_layer_impl<Desc>::NW1;
 
 template <typename Desc>
-const size_t deconv_layer<Desc>::NW2;
+const size_t deconv_layer_impl<Desc>::NW2;
 
 template <typename Desc>
-const size_t deconv_layer<Desc>::K;
+const size_t deconv_layer_impl<Desc>::K;
 
 // Declare the traits for the Layer
 
 template<typename Desc>
-struct layer_base_traits<deconv_layer<Desc>> {
+struct layer_base_traits<deconv_layer_impl<Desc>> {
     static constexpr bool is_neural     = true;  ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -254,8 +254,8 @@ struct layer_base_traits<deconv_layer<Desc>> {
  * \brief Specialization of the SGD Context for the deconvolutional layer
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, deconv_layer<Desc>, L> {
-    using layer_t = deconv_layer<Desc>;
+struct sgd_context<DBN, deconv_layer_impl<Desc>, L> {
+    using layer_t = deconv_layer_impl<Desc>;
     using weight  = typename layer_t::weight; ///< The data type for this layer
 
     static constexpr size_t NV1 = layer_t::NV1;

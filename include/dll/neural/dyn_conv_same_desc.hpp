@@ -30,10 +30,10 @@ struct dyn_conv_same_desc {
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
 
     /*! The conv type */
-    using layer_t = dyn_conv_same_layer<dyn_conv_same_desc<Parameters...>>;
+    using layer_t = dyn_conv_same_layer_impl<dyn_conv_same_desc<Parameters...>>;
 
     /*! The conv type */
-    using dyn_layer_t = dyn_conv_same_layer<dyn_conv_same_desc<Parameters...>>;
+    using dyn_layer_t = dyn_conv_same_layer_impl<dyn_conv_same_desc<Parameters...>>;
 
     //Make sure only valid types are passed to the configuration list
     static_assert(

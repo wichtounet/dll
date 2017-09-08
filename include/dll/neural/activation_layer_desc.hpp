@@ -25,12 +25,12 @@ struct activation_layer_desc {
     /*!
      * The layer type
      */
-    using layer_t = activation_layer<activation_layer_desc<F>>;
+    using layer_t = activation_layer_impl<activation_layer_desc<F>>;
 
     /*!
      * The dynamic layer type
      */
-    using dyn_layer_t = activation_layer<activation_layer_desc<F>>;
+    using dyn_layer_t = activation_layer_impl<activation_layer_desc<F>>;
 };
 
 /*!
@@ -40,6 +40,6 @@ struct activation_layer_desc {
  * and has no weights.
  */
 template <dll::function F = dll::function::SIGMOID>
-using activation_layer_desc_layer = typename activation_layer_desc<F>::layer_t;
+using activation_layer = typename activation_layer_desc<F>::layer_t;
 
 } //end of dll namespace

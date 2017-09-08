@@ -17,10 +17,10 @@ namespace dll {
  * \brief Standard convolutional layer of neural network.
  */
 template <typename Desc>
-struct conv_same_layer final : neural_layer<conv_same_layer<Desc>, Desc> {
+struct conv_same_layer_impl final : neural_layer<conv_same_layer_impl<Desc>, Desc> {
     using desc      = Desc; ///< The descriptor of the layer
     using weight    = typename desc::weight; ///< The data type for this layer
-    using this_type = conv_same_layer<desc>; ///< The type of this layer
+    using this_type = conv_same_layer_impl<desc>; ///< The type of this layer
     using base_type = neural_layer<this_type, desc>;
 
     static constexpr size_t NV1 = desc::NV1; ///< The first dimension of the visible units
@@ -40,8 +40,8 @@ struct conv_same_layer final : neural_layer<conv_same_layer<Desc>, Desc> {
     static constexpr auto w_initializer       = desc::w_initializer; ///< The initializer for the weights
     static constexpr auto b_initializer       = desc::b_initializer; ///< The initializer for the biases
 
-    static_assert(NW1 % 2 == 1, "conv_same_layer only works with odd-sized filters");
-    static_assert(NW2 % 2 == 1, "conv_same_layer only works with odd-sized filters");
+    static_assert(NW1 % 2 == 1, "conv_same_layer_impl only works with odd-sized filters");
+    static_assert(NW2 % 2 == 1, "conv_same_layer_impl only works with odd-sized filters");
 
     using input_one_t  = etl::fast_dyn_matrix<weight, NC, NV1, NV2>; ///< The type of one input
     using output_one_t = etl::fast_dyn_matrix<weight, K, NH1, NH2>; ///< The type of one output
@@ -62,7 +62,7 @@ struct conv_same_layer final : neural_layer<conv_same_layer<Desc>, Desc> {
     /*!
      * \brief Initialize a conv layer with basic weights.
      */
-    conv_same_layer() : base_type() {
+    conv_same_layer_impl() : base_type() {
         initializer_function<w_initializer>::initialize(w, input_size(), output_size());
         initializer_function<b_initializer>::initialize(b, input_size(), output_size());
     }
@@ -202,33 +202,33 @@ struct conv_same_layer final : neural_layer<conv_same_layer<Desc>, Desc> {
 //Allow odr-use of the constexpr static members
 
 template <typename Desc>
-const size_t conv_same_layer<Desc>::NV1;
+const size_t conv_same_layer_impl<Desc>::NV1;
 
 template <typename Desc>
-const size_t conv_same_layer<Desc>::NV2;
+const size_t conv_same_layer_impl<Desc>::NV2;
 
 template <typename Desc>
-const size_t conv_same_layer<Desc>::NH1;
+const size_t conv_same_layer_impl<Desc>::NH1;
 
 template <typename Desc>
-const size_t conv_same_layer<Desc>::NH2;
+const size_t conv_same_layer_impl<Desc>::NH2;
 
 template <typename Desc>
-const size_t conv_same_layer<Desc>::NC;
+const size_t conv_same_layer_impl<Desc>::NC;
 
 template <typename Desc>
-const size_t conv_same_layer<Desc>::NW1;
+const size_t conv_same_layer_impl<Desc>::NW1;
 
 template <typename Desc>
-const size_t conv_same_layer<Desc>::NW2;
+const size_t conv_same_layer_impl<Desc>::NW2;
 
 template <typename Desc>
-const size_t conv_same_layer<Desc>::K;
+const size_t conv_same_layer_impl<Desc>::K;
 
 // Declare the traits for the Layer
 
 template<typename Desc>
-struct layer_base_traits<conv_same_layer<Desc>> {
+struct layer_base_traits<conv_same_layer_impl<Desc>> {
     static constexpr bool is_neural     = true;  ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false;  ///< Indicates if the layer is dense
     static constexpr bool is_conv       = true; ///< Indicates if the layer is convolutional
@@ -244,11 +244,11 @@ struct layer_base_traits<conv_same_layer<Desc>> {
 };
 
 /*!
- * \brief Specialization of the sgd_context for conv_same_layer
+ * \brief Specialization of the sgd_context for conv_same_layer_impl
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, conv_same_layer<Desc>, L> {
-    using layer_t = conv_same_layer<Desc>;
+struct sgd_context<DBN, conv_same_layer_impl<Desc>, L> {
+    using layer_t = conv_same_layer_impl<Desc>;
     using weight  = typename layer_t::weight; ///< The data type for this layer
 
     static constexpr size_t NV1 = layer_t::NV1;

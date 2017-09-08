@@ -16,10 +16,10 @@ namespace dll {
  * \brief Standard dynamic deconvolutional layer of neural network.
  */
 template <typename Desc>
-struct dyn_deconv_layer final : neural_layer<dyn_deconv_layer<Desc>, Desc> {
+struct dyn_deconv_layer_impl final : neural_layer<dyn_deconv_layer_impl<Desc>, Desc> {
     using desc      = Desc;                          ///< The descriptor type
     using weight    = typename desc::weight;         ///< The weight type
-    using this_type = dyn_deconv_layer<desc>;        ///< This type
+    using this_type = dyn_deconv_layer_impl<desc>;        ///< This type
     using base_type = neural_layer<this_type, desc>; ///< The base type
 
     static constexpr auto activation_function = desc::activation_function; ///< The layer's activation function
@@ -53,9 +53,9 @@ struct dyn_deconv_layer final : neural_layer<dyn_deconv_layer<Desc>, Desc> {
     size_t nw2; ///< The second dimension of the filters
 
     /*!
-     * \brief Construct an empty dyn_deconv_layer
+     * \brief Construct an empty dyn_deconv_layer_impl
      */
-    dyn_deconv_layer(): base_type() {
+    dyn_deconv_layer_impl(): base_type() {
         // Nothing else to init
     }
 
@@ -223,7 +223,7 @@ struct dyn_deconv_layer final : neural_layer<dyn_deconv_layer<Desc>, Desc> {
 // Declare the traits for the Layer
 
 template<typename Desc>
-struct layer_base_traits<dyn_deconv_layer<Desc>> {
+struct layer_base_traits<dyn_deconv_layer_impl<Desc>> {
     static constexpr bool is_neural     = true;  ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false;  ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -242,8 +242,8 @@ struct layer_base_traits<dyn_deconv_layer<Desc>> {
  * \brief Specialization of the SGD Context for the dynamic deconvolutional layer
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, dyn_deconv_layer<Desc>, L> {
-    using layer_t = dyn_deconv_layer<Desc>;
+struct sgd_context<DBN, dyn_deconv_layer_impl<Desc>, L> {
+    using layer_t = dyn_deconv_layer_impl<Desc>;
     using weight  = typename layer_t::weight; ///< The data type for this layer
 
     static constexpr auto batch_size = DBN::batch_size;

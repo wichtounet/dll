@@ -37,10 +37,10 @@ struct deconv_desc {
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
 
     /*! The conv type */
-    using layer_t = deconv_layer<deconv_desc<NC_T, NV_1, NV_2, K_T, NW_1, NW_2, Parameters...>>;
+    using layer_t = deconv_layer_impl<deconv_desc<NC_T, NV_1, NV_2, K_T, NW_1, NW_2, Parameters...>>;
 
     /*! The dynamic layer conv type */
-    using dyn_layer_t = dyn_deconv_layer<dyn_deconv_desc<Parameters...>>;
+    using dyn_layer_t = dyn_deconv_layer_impl<dyn_deconv_desc<Parameters...>>;
 
     static_assert(NV1 > 0, "A matrix of at least 1x1 is necessary for the visible units");
     static_assert(NV2 > 0, "A matrix of at least 1x1 is necessary for the visible units");

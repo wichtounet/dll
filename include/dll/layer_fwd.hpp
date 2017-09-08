@@ -75,18 +75,18 @@ template <typename Desc>
 struct dyn_dense_layer;
 
 template <typename Desc>
-struct conv_layer;
+struct conv_layer_impl;
 
 template <typename Desc>
-struct dyn_conv_layer;
+struct dyn_conv_layer_impl;
 
 template <typename Desc>
-struct deconv_layer;
+struct deconv_layer_impl;
 
 template <typename Desc>
-struct dyn_deconv_layer;
+struct dyn_deconv_layer_impl;
 
 template <typename Desc>
-struct activation_layer;
+struct activation_layer_impl;
 
 } //end of dll namespace

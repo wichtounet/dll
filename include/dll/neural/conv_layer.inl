@@ -17,10 +17,10 @@ namespace dll {
  * \brief Standard convolutional layer of neural network.
  */
 template <typename Desc>
-struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
+struct conv_layer_impl final : neural_layer<conv_layer_impl<Desc>, Desc> {
     using desc      = Desc;                          ///< The descriptor of the layer
     using weight    = typename desc::weight;         ///< The data type of the layer
-    using this_type = conv_layer<desc>;              ///< The type of this layer
+    using this_type = conv_layer_impl<desc>;              ///< The type of this layer
     using base_type = neural_layer<this_type, desc>; ///< The base type of the layer
 
     static constexpr size_t NV1 = desc::NV1; ///< The first dimension of the visible units
@@ -57,7 +57,7 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
     /*!
      * \brief Initialize a conv layer with basic weights.
      */
-    conv_layer() : base_type() {
+    conv_layer_impl() : base_type() {
         initializer_function<w_initializer>::initialize(w, input_size(), output_size());
         initializer_function<b_initializer>::initialize(b, input_size(), output_size());
     }
@@ -221,33 +221,33 @@ struct conv_layer final : neural_layer<conv_layer<Desc>, Desc> {
 //Allow odr-use of the constexpr static members
 
 template <typename Desc>
-const size_t conv_layer<Desc>::NV1;
+const size_t conv_layer_impl<Desc>::NV1;
 
 template <typename Desc>
-const size_t conv_layer<Desc>::NV2;
+const size_t conv_layer_impl<Desc>::NV2;
 
 template <typename Desc>
-const size_t conv_layer<Desc>::NH1;
+const size_t conv_layer_impl<Desc>::NH1;
 
 template <typename Desc>
-const size_t conv_layer<Desc>::NH2;
+const size_t conv_layer_impl<Desc>::NH2;
 
 template <typename Desc>
-const size_t conv_layer<Desc>::NC;
+const size_t conv_layer_impl<Desc>::NC;
 
 template <typename Desc>
-const size_t conv_layer<Desc>::NW1;
+const size_t conv_layer_impl<Desc>::NW1;
 
 template <typename Desc>
-const size_t conv_layer<Desc>::NW2;
+const size_t conv_layer_impl<Desc>::NW2;
 
 template <typename Desc>
-const size_t conv_layer<Desc>::K;
+const size_t conv_layer_impl<Desc>::K;
 
 // Declare the traits for the Layer
 
 template<typename Desc>
-struct layer_base_traits<conv_layer<Desc>> {
+struct layer_base_traits<conv_layer_impl<Desc>> {
     static constexpr bool is_neural     = true;  ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false;  ///< Indicates if the layer is dense
     static constexpr bool is_conv       = true; ///< Indicates if the layer is convolutional
@@ -263,11 +263,11 @@ struct layer_base_traits<conv_layer<Desc>> {
 };
 
 /*!
- * \brief Specialization of the sgd_context for conv_layer
+ * \brief Specialization of the sgd_context for conv_layer_impl
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, conv_layer<Desc>, L> {
-    using layer_t = conv_layer<Desc>;
+struct sgd_context<DBN, conv_layer_impl<Desc>, L> {
+    using layer_t = conv_layer_impl<Desc>;
     using weight  = typename layer_t::weight; ///< The data type for this layer
 
     static constexpr size_t NV1 = layer_t::NV1;
@@ -285,7 +285,7 @@ struct sgd_context<DBN, conv_layer<Desc>, L> {
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> output;
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> errors;
 
-    sgd_context(conv_layer<Desc>& /* layer */)
+    sgd_context(conv_layer_impl<Desc>& /* layer */)
             : output(0.0), errors(0.0) {}
 };
 
