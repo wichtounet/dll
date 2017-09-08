@@ -28,9 +28,9 @@ int main(int, char**) {
         dll::dbn_desc<                                                                            \
             dll::dbn_layers<                                                                      \
                 dll::dyn_conv_rbm_desc<dll::momentum>::layer_t,                                   \
-                dll::dyn_mp_layer_3d_desc<>::layer_t,                                             \
+                dll::dyn_mp_3d_layer_desc<>::layer_t,                                             \
                 dll::dyn_conv_rbm_desc<dll::momentum>::layer_t,                                   \
-                dll::dyn_mp_layer_3d_desc<>::layer_t,                                             \
+                dll::dyn_mp_3d_layer_desc<>::layer_t,                                             \
                 dll::dyn_rbm_desc<dll::momentum>::layer_t,                                        \
                 dll::dyn_rbm_desc<dll::momentum, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>, \
             dll::trainer<dll::sgd_trainer>, dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<64>>::dbn_t;           \

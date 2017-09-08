@@ -7,10 +7,10 @@
 
 #pragma once
 
-#include "dll/neural/batch_normalization_layer_2d.inl"
+#include "dll/neural/batch_normalization_2d_layer.inl"
 #include "dll/neural/batch_normalization_layer_4d.inl"
 
-#include "dll/neural/dyn_batch_normalization_layer_2d.inl"
+#include "dll/neural/dyn_batch_normalization_2d_layer.inl"
 #include "dll/neural/dyn_batch_normalization_layer_4d.inl"
 
 #include "dll/neural/batch_normalization_layer_desc.hpp"

@@ -16,10 +16,10 @@ namespace dll {
  * \brief Simple shape information layer
  */
 template <typename Desc>
-struct shape_layer_3d_impl : transform_layer<shape_layer_3d_impl<Desc>> {
+struct shape_3d_layer_impl : transform_layer<shape_3d_layer_impl<Desc>> {
     using desc      = Desc;                       ///< The descriptor type
     using weight    = typename desc::weight;      ///< The data type
-    using this_type = shape_layer_3d_impl<desc>;       ///< The type of this layer
+    using this_type = shape_3d_layer_impl<desc>;       ///< The type of this layer
     using base_type = transform_layer<this_type>; ///< The base type
 
     static constexpr size_t D = 3;       ///< The number of dimensions
@@ -30,7 +30,7 @@ struct shape_layer_3d_impl : transform_layer<shape_layer_3d_impl<Desc>> {
     using input_one_t  = etl::fast_dyn_matrix<weight, C, W, H>; ///< The preferred type of input
     using output_one_t = etl::fast_dyn_matrix<weight, C, W, H>; ///< The type of output
 
-    shape_layer_3d_impl() = default;
+    shape_3d_layer_impl() = default;
 
     /*!
      * \brief Returns a string representation of the layer
@@ -101,18 +101,18 @@ struct shape_layer_3d_impl : transform_layer<shape_layer_3d_impl<Desc>> {
 //Allow odr-use of the constexpr static members
 
 template <typename Desc>
-const size_t shape_layer_3d_impl<Desc>::C;
+const size_t shape_3d_layer_impl<Desc>::C;
 
 template <typename Desc>
-const size_t shape_layer_3d_impl<Desc>::H;
+const size_t shape_3d_layer_impl<Desc>::H;
 
 template <typename Desc>
-const size_t shape_layer_3d_impl<Desc>::W;
+const size_t shape_3d_layer_impl<Desc>::W;
 
 // Declare the traits for the layer
 
 template<typename Desc>
-struct layer_base_traits<shape_layer_3d_impl<Desc>> {
+struct layer_base_traits<shape_3d_layer_impl<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -131,8 +131,8 @@ struct layer_base_traits<shape_layer_3d_impl<Desc>> {
  * \brief Specialization of sgd_context for lcn_layer_impl
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, shape_layer_3d_impl<Desc>, L> {
-    using layer_t = shape_layer_3d_impl<Desc>;
+struct sgd_context<DBN, shape_3d_layer_impl<Desc>, L> {
+    using layer_t = shape_3d_layer_impl<Desc>;
     using weight  = typename DBN::weight; ///< The data type for this layer
 
     static constexpr auto batch_size = DBN::batch_size;
@@ -141,7 +141,7 @@ struct sgd_context<DBN, shape_layer_3d_impl<Desc>, L> {
     etl::fast_matrix<weight, batch_size, layer_t::C, layer_t::H, layer_t::W> output;
     etl::fast_matrix<weight, batch_size, layer_t::C, layer_t::H, layer_t::W> errors;
 
-    sgd_context(const shape_layer_3d_impl<Desc>& /* layer */){}
+    sgd_context(const shape_3d_layer_impl<Desc>& /* layer */){}
 };
 
 } //end of dll namespace

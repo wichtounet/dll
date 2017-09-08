@@ -56,9 +56,9 @@ TEST_CASE("hybrid/mnist/2", "") {
     typedef dll::dyn_dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
-            dll::mp_layer_3d_desc<10, 24, 24, 1, 2, 2, dll::weight_type<float>>::layer_t,
+            dll::mp_3d_layer_desc<10, 24, 24, 1, 2, 2, dll::weight_type<float>>::layer_t,
             dll::conv_layer_desc<10, 12, 12, 6, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
-            dll::avgp_layer_3d_desc<6, 8, 8, 1, 2, 2, dll::weight_type<float>>::layer_t,
+            dll::avgp_3d_layer_desc<6, 8, 8, 1, 2, 2, dll::weight_type<float>>::layer_t,
             dll::dense_layer_desc<6 * 4 * 4, 100, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_layer_desc<100, 10, dll::activation<dll::function::SIGMOID>>::layer_t>,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;

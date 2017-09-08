@@ -13,7 +13,7 @@ namespace dll {
  * \brief Descriptor for a 2D pooling layer desc
  */
 template <size_t T_I1, size_t T_I2, size_t T_I3, size_t T_C1, size_t T_C2, typename... Parameters>
-struct pooling_layer_2d_desc {
+struct pooling_2d_layer_desc {
     static constexpr size_t I1 = T_I1; ///< The input first dimension
     static constexpr size_t I2 = T_I2; ///< The input second dimension
     static constexpr size_t I3 = T_I3; ///< The input third dimension
@@ -38,7 +38,7 @@ struct pooling_layer_2d_desc {
  * \brief Descriptor for a Dynamic 2D pooling layer desc
  */
 template <typename... Parameters>
-struct dyn_pooling_layer_2d_desc {
+struct dyn_pooling_2d_layer_desc {
     /*! The type used to store the weights */
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
 
@@ -52,7 +52,7 @@ struct dyn_pooling_layer_2d_desc {
  * \brief Descriptor for a 3D pooling layer desc
  */
 template <size_t T_I1, size_t T_I2, size_t T_I3, size_t T_C1, size_t T_C2, size_t T_C3, typename... Parameters>
-struct pooling_layer_3d_desc {
+struct pooling_3d_layer_desc {
     static constexpr size_t I1 = T_I1; ///< The input first dimension
     static constexpr size_t I2 = T_I2; ///< The input second dimension
     static constexpr size_t I3 = T_I3; ///< The input third dimension
@@ -80,7 +80,7 @@ struct pooling_layer_3d_desc {
  * \brief Descriptor for a Dynamic 3D pooling layer desc
  */
 template <typename... Parameters>
-struct dyn_pooling_layer_3d_desc {
+struct dyn_pooling_3d_layer_desc {
     /*! The type used to store the weights */
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
 

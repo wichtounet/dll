@@ -24,9 +24,9 @@ TEST_CASE("conv/ae/deconv/1", "[dense][dbn][mnist][sgd][ae]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 2, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t,
-            dll::mp_layer_3d_desc<2, 24, 24, 1, 2, 2>::layer_t,
+            dll::mp_3d_layer_desc<2, 24, 24, 1, 2, 2>::layer_t,
             // Features
-            dll::upsample_layer_3d_desc<2, 12, 12, 1, 2, 2>::layer_t,
+            dll::upsample_3d_layer_desc<2, 12, 12, 1, 2, 2>::layer_t,
             dll::deconv_desc<2, 24, 24, 1, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t
         >, dll::autoencoder, dll::loss<dll::loss_function::BINARY_CROSS_ENTROPY>, dll::batch_size<32>>::network_t network_t;
 

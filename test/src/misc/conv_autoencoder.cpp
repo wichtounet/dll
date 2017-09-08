@@ -50,8 +50,8 @@ TEST_CASE("conv/ae/2", "[dense][dbn][mnist][sgd][ae]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t,
-            dll::mp_layer_3d_desc<10, 24, 24, 1, 2, 2>::layer_t,
-            dll::upsample_layer_3d_desc<10, 12, 12, 1, 2, 2>::layer_t,
+            dll::mp_3d_layer_desc<10, 24, 24, 1, 2, 2>::layer_t,
+            dll::upsample_3d_layer_desc<10, 12, 12, 1, 2, 2>::layer_t,
             dll::deconv_desc<10, 24, 24, 1, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t
         >, dll::trainer<dll::sgd_trainer>, dll::batch_size<20>>::dbn_t dbn_t;
 
@@ -80,13 +80,13 @@ TEST_CASE("conv/ae/3", "[dense][dbn][mnist][sgd][ae]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t,
-            dll::mp_layer_3d_desc<10, 24, 24, 1, 2, 2>::layer_t,
+            dll::mp_3d_layer_desc<10, 24, 24, 1, 2, 2>::layer_t,
             dll::conv_layer_desc<10, 12, 12, 10, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t,
-            dll::mp_layer_3d_desc<10, 8, 8, 1, 2, 2>::layer_t,
+            dll::mp_3d_layer_desc<10, 8, 8, 1, 2, 2>::layer_t,
             // Features here
-            dll::upsample_layer_3d_desc<10, 4, 4, 1, 2, 2>::layer_t,
+            dll::upsample_3d_layer_desc<10, 4, 4, 1, 2, 2>::layer_t,
             dll::deconv_desc<10, 8, 8, 10, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t,
-            dll::upsample_layer_3d_desc<10, 12, 12, 1, 2, 2>::layer_t,
+            dll::upsample_3d_layer_desc<10, 12, 12, 1, 2, 2>::layer_t,
             dll::deconv_desc<10, 24, 24, 1, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t
         >, dll::trainer<dll::sgd_trainer>, dll::batch_size<20>>::dbn_t dbn_t;
 

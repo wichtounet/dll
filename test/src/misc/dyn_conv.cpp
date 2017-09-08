@@ -82,7 +82,7 @@ TEST_CASE("dyn/conv/sgd/3", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dyn_conv_desc<dll::activation<dll::function::RELU>>::layer_t,
-            dll::dyn_mp_layer_3d_desc<dll::weight_type<float>>::layer_t,
+            dll::dyn_mp_3d_layer_desc<dll::weight_type<float>>::layer_t,
             dll::dyn_conv_desc<dll::activation<dll::function::RELU>>::layer_t,
             dll::dyn_dense_desc<dll::activation<dll::function::RELU>>::layer_t,
             dll::dyn_dense_desc<dll::activation<dll::function::SIGMOID>>::layer_t>,
@@ -117,7 +117,7 @@ TEST_CASE("dyn/conv/sgd/4", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dyn_conv_desc<dll::activation<dll::function::RELU>>::layer_t,
-            dll::dyn_avgp_layer_3d_desc<dll::weight_type<float>>::layer_t,
+            dll::dyn_avgp_3d_layer_desc<dll::weight_type<float>>::layer_t,
             dll::dyn_conv_desc<dll::activation<dll::function::RELU>>::layer_t,
             dll::dyn_dense_desc<dll::activation<dll::function::RELU>>::layer_t,
             dll::dyn_dense_desc<dll::activation<dll::function::SIGMOID>>::layer_t>,

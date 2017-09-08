@@ -10,7 +10,7 @@
 #include "dll/rbm/dyn_rbm.hpp"
 #include "dll/rbm/dyn_conv_rbm.hpp"
 #include "dll/transform/scale_layer.hpp"
-#include "dll/transform/shape_layer_3d.hpp"
+#include "dll/transform/shape_3d_layer.hpp"
 #include "dll/pooling/dyn_mp_layer.hpp"
 #include "dll/dbn.hpp"
 
@@ -20,12 +20,12 @@
 TEST_CASE("dyn_lenet_rbm", "[dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::shape_layer_3d_desc<1, 28, 28>::layer_t,
+            dll::shape_3d_layer_desc<1, 28, 28>::layer_t,
             dll::scale_layer_desc<1, 256>::layer_t,
             dll::dyn_conv_rbm_desc<dll::hidden<dll::unit_type::RELU>, dll::momentum, dll::weight_type<float>>::layer_t,
-            dll::dyn_mp_layer_3d_desc<dll::weight_type<float>>::layer_t,
+            dll::dyn_mp_3d_layer_desc<dll::weight_type<float>>::layer_t,
             dll::dyn_conv_rbm_desc<dll::hidden<dll::unit_type::RELU>, dll::momentum, dll::weight_type<float>>::layer_t,
-            dll::dyn_mp_layer_3d_desc<dll::weight_type<float>>::layer_t,
+            dll::dyn_mp_3d_layer_desc<dll::weight_type<float>>::layer_t,
             dll::dyn_rbm_desc<dll::hidden<dll::unit_type::BINARY>, dll::momentum>::layer_t,
             dll::dyn_rbm_desc<dll::momentum, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
         dll::trainer<dll::sgd_trainer>, dll::updater<dll::updater_type::MOMENTUM>, dll::weight_decay<>, dll::batch_size<25>>::dbn_t dbn_t;

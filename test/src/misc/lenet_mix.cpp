@@ -13,7 +13,7 @@
 #include "dll/rbm/rbm.hpp"
 #include "dll/dbn.hpp"
 #include "dll/transform/scale_layer.hpp"
-#include "dll/transform/shape_layer_3d.hpp"
+#include "dll/transform/shape_3d_layer.hpp"
 #include "dll/pooling/mp_layer.hpp"
 
 #include "mnist/mnist_reader.hpp"
@@ -22,13 +22,13 @@
 TEST_CASE("lenet_mix", "[dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::shape_layer_3d_desc<1, 28, 28>::layer_t,
+            dll::shape_3d_layer_desc<1, 28, 28>::layer_t,
             dll::scale_layer_desc<1, 256>::layer_t,
             dll::conv_rbm_desc_square<1, 28, 20, 5, dll::hidden<dll::unit_type::RELU>, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::layer_t,
-            dll::mp_layer_3d_desc<20, 24, 24, 1, 2, 2, dll::weight_type<float>>::layer_t,
+            dll::mp_3d_layer_desc<20, 24, 24, 1, 2, 2, dll::weight_type<float>>::layer_t,
             //dll::conv_rbm_desc_square<20, 12, 50, 5, dll::hidden<dll::unit_type::BINARY>, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::layer_t,
             dll::conv_layer_desc<20, 12, 12, 50, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
-            dll::mp_layer_3d_desc<50, 8, 8, 1, 2, 2, dll::weight_type<float>>::layer_t,
+            dll::mp_3d_layer_desc<50, 8, 8, 1, 2, 2, dll::weight_type<float>>::layer_t,
             dll::rbm_desc<50 * 4 * 4, 500, dll::hidden<dll::unit_type::RELU>, dll::momentum, dll::batch_size<10>>::layer_t,
             //dll::rbm_desc<500, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t
             dll::dense_layer_desc<500, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,

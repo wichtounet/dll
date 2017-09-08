@@ -53,19 +53,19 @@ void first_ex(){
     using dbn_t = dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<3, 254, 254, 10, 3, 3>::layer_t,
-            dll::mp_layer_2d_desc<10, 252, 252, 2, 2>::layer_t,
+            dll::mp_2d_layer_desc<10, 252, 252, 2, 2>::layer_t,
 
             dll::conv_layer_desc<10, 126, 126, 10, 3, 3>::layer_t,
-            dll::mp_layer_2d_desc<10, 124, 124, 2, 2>::layer_t,
+            dll::mp_2d_layer_desc<10, 124, 124, 2, 2>::layer_t,
 
             dll::conv_layer_desc<10, 62, 62, 10, 3, 3>::layer_t,
-            dll::mp_layer_2d_desc<10, 60, 60, 2, 2>::layer_t,
+            dll::mp_2d_layer_desc<10, 60, 60, 2, 2>::layer_t,
 
             dll::conv_layer_desc<10, 30, 30, 10, 3, 3>::layer_t,
-            dll::mp_layer_2d_desc<10, 28, 28, 2, 2>::layer_t,
+            dll::mp_2d_layer_desc<10, 28, 28, 2, 2>::layer_t,
 
             dll::conv_layer_desc<10, 14, 14, 10, 3, 3>::layer_t,
-            dll::mp_layer_2d_desc<10, 12, 12, 2, 2>::layer_t,
+            dll::mp_2d_layer_desc<10, 12, 12, 2, 2>::layer_t,
 
             dll::dense_layer_desc<10 * 6 * 6, 500>::layer_t,
             dll::dense_layer_desc<500, 1000, dll::activation<dll::function::SOFTMAX>>::layer_t>,
@@ -115,19 +115,19 @@ void second_ex(){
     using dbn_t = dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_same_desc<3, 256, 256, 16, 3, 3>::layer_t,
-            dll::mp_layer_2d_desc<16, 256, 256, 2, 2>::layer_t,
+            dll::mp_2d_layer_desc<16, 256, 256, 2, 2>::layer_t,
 
             dll::conv_same_desc<16, 128, 128, 16, 3, 3>::layer_t,
-            dll::mp_layer_2d_desc<16, 128, 128, 2, 2>::layer_t,
+            dll::mp_2d_layer_desc<16, 128, 128, 2, 2>::layer_t,
 
             dll::conv_same_desc<16, 64, 64, 32, 3, 3>::layer_t,
-            dll::mp_layer_2d_desc<32, 64, 64, 2, 2>::layer_t,
+            dll::mp_2d_layer_desc<32, 64, 64, 2, 2>::layer_t,
 
             dll::conv_same_desc<32, 32, 32, 32, 3, 3>::layer_t,
-            dll::mp_layer_2d_desc<32, 32, 32, 2, 2>::layer_t,
+            dll::mp_2d_layer_desc<32, 32, 32, 2, 2>::layer_t,
 
             dll::conv_same_desc<32, 16, 16, 32, 3, 3>::layer_t,
-            dll::mp_layer_2d_desc<32, 16, 16, 2, 2>::layer_t,
+            dll::mp_2d_layer_desc<32, 16, 16, 2, 2>::layer_t,
 
             dll::dense_layer_desc<32 * 8 * 8, 2048>::layer_t,
             dll::dense_layer_desc<2048, 1000, dll::activation<dll::function::SOFTMAX>>::layer_t>,

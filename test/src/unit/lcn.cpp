@@ -87,7 +87,7 @@ TEST_CASE("unit/cdbn/lcn/mnist/3", "[cdbn][lcn][svm][unit]") {
             , dll::conv_rbm_desc_square<20, 12, 20, 3, dll::momentum, dll::batch_size<10>>::layer_t
             , dll::rectifier_layer_desc<>::layer_t
             , dll::lcn_layer_desc<5>::layer_t
-            , dll::mp_layer_3d_desc<20, 10, 10, 2, 2, 1>::layer_t
+            , dll::mp_3d_layer_desc<20, 10, 10, 2, 2, 1>::layer_t
         >>::dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
@@ -116,7 +116,7 @@ TEST_CASE("unit/cdbn/lcn/mnist/4", "[cdbn][lcn][svm][unit]") {
             , dll::conv_rbm_desc_square<20, 12, 20, 3, dll::momentum, dll::batch_size<10>>::layer_t
             , dll::rectifier_layer_desc<>::layer_t
             , dll::lcn_layer_desc<5>::layer_t
-            , dll::avgp_layer_3d_desc<20, 10, 10, 2, 2, 1>::layer_t
+            , dll::avgp_3d_layer_desc<20, 10, 10, 2, 2, 1>::layer_t
         >>::dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(200);
@@ -145,7 +145,7 @@ TEST_CASE("unit/cdbn/lcn/mnist/5", "[cdbn][lcn][svm][unit]") {
             , dll::conv_rbm_desc_square<20, 12, 20, 3, dll::momentum, dll::batch_size<10>>::layer_t
             , dll::rectifier_layer_desc<>::layer_t
             , dll::lcn_layer_desc<7>::layer_t
-            , dll::avgp_layer_3d_desc<20, 10, 10, 2, 2, 1>::layer_t
+            , dll::avgp_3d_layer_desc<20, 10, 10, 2, 2, 1>::layer_t
         >>::dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(150);
@@ -174,10 +174,10 @@ TEST_CASE("unit/cdbn/lcn/mnist/6", "[cdbn][lcn][unit]") {
         dll::dbn_desc<dll::dbn_layers<
               dll::conv_rbm_desc_square<1, 28, 20, 17, dll::momentum, dll::batch_size<10>>::layer_t
             , dll::lcn_layer_desc<5>::layer_t
-            , dll::avgp_layer_3d_desc<20, 12, 12, 1, 2, 2>::layer_t
+            , dll::avgp_3d_layer_desc<20, 12, 12, 1, 2, 2>::layer_t
             , dll::conv_rbm_desc_square<20, 6, 20, 3, dll::momentum, dll::batch_size<10>>::layer_t
             , dll::lcn_layer_desc<3>::layer_t
-            , dll::avgp_layer_3d_desc<20, 4, 4, 1, 2, 2>::layer_t
+            , dll::avgp_3d_layer_desc<20, 4, 4, 1, 2, 2>::layer_t
         >>::dbn_t;
 
     REQUIRE(!dll::layer_traits<dbn_t::layer_type<1>>::is_pretrained());

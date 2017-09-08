@@ -30,22 +30,22 @@ template <typename Desc>
 struct dyn_conv_rbm_mp_impl;
 
 template <typename Desc>
-struct mp_layer_3d;
+struct mp_3d_layer;
 
 template <typename Desc>
-struct dyn_mp_layer_3d;
+struct dyn_mp_3d_layer;
 
 template <typename Desc>
-struct avgp_layer_3d;
+struct avgp_3d_layer;
 
 template <typename Desc>
-struct dyn_avgp_layer_3d;
+struct dyn_avgp_3d_layer;
 
 template <typename Desc>
-struct upsample_layer_3d;
+struct upsample_3d_layer;
 
 template <typename Desc>
-struct dyn_upsample_layer_3d;
+struct dyn_upsample_3d_layer;
 
 template <typename Desc>
 struct binarize_layer_impl;

@@ -601,7 +601,7 @@ size_t dllp::pooling_layer::hidden_get_3() const {
 }
 
 void dllp::mp_layer::print(std::ostream& out) const {
-    out << "dll::mp_layer_3d_desc";
+    out << "dll::mp_3d_layer_desc";
     pooling_layer::print(out);
 }
 
@@ -610,7 +610,7 @@ bool dllp::mp_layer::parse(const layers_t& layers, const std::vector<std::string
 }
 
 void dllp::avgp_layer::print(std::ostream& out) const {
-    out << "dll::avgp_layer_3d_desc";
+    out << "dll::avgp_3d_layer_desc";
     pooling_layer::print(out);
 }
 

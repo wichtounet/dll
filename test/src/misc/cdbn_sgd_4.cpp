@@ -11,7 +11,7 @@
 #include "dll/rbm/conv_rbm.hpp"
 #include "dll/dbn.hpp"
 #include "dll/transform/scale_layer.hpp"
-#include "dll/transform/shape_layer_3d.hpp"
+#include "dll/transform/shape_3d_layer.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -19,7 +19,7 @@
 TEST_CASE("cdbn/sgd/4", "[dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::shape_layer_3d_desc<1, 28, 28>::layer_t,
+            dll::shape_3d_layer_desc<1, 28, 28>::layer_t,
             dll::scale_layer_desc<1, 256>::layer_t,
             dll::conv_rbm_desc_square<1, 28, 10, 9, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::layer_t,
             dll::conv_rbm_desc_square<10, 20, 10, 7, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::layer_t,

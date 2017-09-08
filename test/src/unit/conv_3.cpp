@@ -45,10 +45,10 @@ TEST_CASE("unit/conv/sgd/10", "[unit][conv][dbn][mnist][sgd]") {
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 6, 5, 5, dll::activation<dll::function::IDENTITY>>::layer_t,
             dll::activation_layer_desc<dll::function::RELU>::layer_t,
-            dll::mp_layer_3d_desc<6, 24, 24, 1, 2, 2>::layer_t,
+            dll::mp_3d_layer_desc<6, 24, 24, 1, 2, 2>::layer_t,
             dll::conv_layer_desc<6, 12, 12, 8, 5, 5, dll::activation<dll::function::IDENTITY>>::layer_t,
             dll::activation_layer_desc<dll::function::RELU>::layer_t,
-            dll::mp_layer_3d_desc<8, 8, 8, 1, 2, 2>::layer_t,
+            dll::mp_3d_layer_desc<8, 8, 8, 1, 2, 2>::layer_t,
             dll::dense_layer_desc<8 * 4 * 4, 500, dll::activation<dll::function::IDENTITY>>::layer_t,
             dll::activation_layer_desc<dll::function::RELU>::layer_t,
             dll::dense_layer_desc<500, 10, dll::activation<dll::function::IDENTITY>>::layer_t,

@@ -15,23 +15,23 @@ namespace dll {
  * \brief Descriptor for a 3D upsample layer
  */
 template <size_t T_I1, size_t T_I2, size_t T_I3, size_t T_C1, size_t T_C2, size_t T_C3, typename... Parameters>
-struct upsample_layer_3d_desc : unpooling_layer_3d_desc<T_I1, T_I2, T_I3, T_C1, T_C2, T_C3, Parameters...> {
+struct upsample_3d_layer_desc : unpooling_3d_layer_desc<T_I1, T_I2, T_I3, T_C1, T_C2, T_C3, Parameters...> {
     /*!
      * A list of all the parameters of the descriptor
      */
     using parameters = cpp::type_list<Parameters...>;
 
     /*! The layer type */
-    using layer_t = upsample_layer_3d<upsample_layer_3d_desc<T_I1, T_I2, T_I3, T_C1, T_C2, T_C3, Parameters...>>;
+    using layer_t = upsample_3d_layer<upsample_3d_layer_desc<T_I1, T_I2, T_I3, T_C1, T_C2, T_C3, Parameters...>>;
 
     /*! The RBM type */
-    using dyn_layer_t = dyn_upsample_layer_3d<dyn_upsample_layer_3d_desc<Parameters...>>;
+    using dyn_layer_t = dyn_upsample_3d_layer<dyn_upsample_3d_layer_desc<Parameters...>>;
 };
 
 /*!
  * \brief Descriptor for a 3D upsample layer
  */
 template <size_t T_I1, size_t T_I2, size_t T_I3, size_t T_C1, size_t T_C2, size_t T_C3, typename... Parameters>
-using upsample_layer_3d_desc_layer = typename upsample_layer_3d_desc<T_I1, T_I2, T_I3, T_C1, T_C2, T_C3, Parameters...>::layer_t;
+using upsample_3d_layer_desc_layer = typename upsample_3d_layer_desc<T_I1, T_I2, T_I3, T_C1, T_C2, T_C3, Parameters...>::layer_t;
 
 } //end of dll namespace

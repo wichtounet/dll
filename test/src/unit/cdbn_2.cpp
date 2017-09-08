@@ -25,9 +25,9 @@ TEST_CASE("unit/cdbn/mnist/7", "[cdbn][ap][svm][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_desc<1, 28, 28, 16, 9, 9, dll::momentum, dll::batch_size<25>>::layer_t,
-            dll::avgp_layer_3d_desc<16, 20, 20, 1, 2, 2>::layer_t,
+            dll::avgp_3d_layer_desc<16, 20, 20, 1, 2, 2>::layer_t,
             dll::conv_rbm_desc<16, 10, 10, 8, 3, 3, dll::momentum, dll::batch_size<25>>::layer_t,
-            dll::avgp_layer_3d_desc<8, 8, 8, 1, 2, 2>::layer_t>>::dbn_t dbn_t;
+            dll::avgp_3d_layer_desc<8, 8, 8, 1, 2, 2>::layer_t>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(200);
     REQUIRE(!dataset.training_images.empty());
@@ -56,7 +56,7 @@ TEST_CASE("unit/cdbn/mnist/8", "[cdbn][ap][svm][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_desc<1, 28, 28, 20, 15, 17, dll::momentum, dll::batch_size<25>>::layer_t,
-            dll::conv_rbm_desc<20, 14, 12, 20, 7, 3, dll::momentum, dll::batch_size<25>>::layer_t, dll::mp_layer_3d_desc<20, 8, 10, 1, 1, 1>::layer_t, dll::avgp_layer_3d_desc<20, 8, 10, 1, 1, 1>::layer_t>>::dbn_t dbn_t;
+            dll::conv_rbm_desc<20, 14, 12, 20, 7, 3, dll::momentum, dll::batch_size<25>>::layer_t, dll::mp_3d_layer_desc<20, 8, 10, 1, 1, 1>::layer_t, dll::avgp_3d_layer_desc<20, 8, 10, 1, 1, 1>::layer_t>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(100);
     REQUIRE(!dataset.training_images.empty());

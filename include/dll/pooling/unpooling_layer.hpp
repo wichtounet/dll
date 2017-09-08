@@ -17,7 +17,7 @@ namespace dll {
  * \brief Standard unpooling layer (base class).
  */
 template <typename Parent, typename Desc>
-struct unpooling_layer_3d : layer<Parent> {
+struct unpooling_3d_layer : layer<Parent> {
     using desc   = Desc; ///< The descriptor of the layer
     using weight = typename desc::weight; ///< The data type for this layer
 
@@ -39,7 +39,7 @@ struct unpooling_layer_3d : layer<Parent> {
     using input_t      = std::vector<input_one_t>; ///< The type of the input
     using output_t     = std::vector<output_one_t>; ///< The type of the output
 
-    unpooling_layer_3d() = default;
+    unpooling_3d_layer() = default;
 
     /*!
      * \brief Return the size of the input of this layer
@@ -101,7 +101,7 @@ private:
  * \brief Standard dynamic unpooling layer
  */
 template <typename Parent, typename Desc>
-struct dyn_unpooling_layer_3d : layer<Parent> {
+struct dyn_unpooling_3d_layer : layer<Parent> {
     using desc   = Desc; ///< The descriptor of the layer
     using weight = typename desc::weight; ///< The data type for this layer
 
@@ -123,7 +123,7 @@ struct dyn_unpooling_layer_3d : layer<Parent> {
     size_t o2; ///< The second dimension of the output
     size_t o3; ///< The third dimension of the output
 
-    dyn_unpooling_layer_3d() = default;
+    dyn_unpooling_3d_layer() = default;
 
     /*!
      * \brief Initialize the dynamic layer

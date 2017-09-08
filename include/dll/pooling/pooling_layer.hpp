@@ -17,7 +17,7 @@ namespace dll {
  * \brief Standard pooling layer
  */
 template <typename Parent, typename Desc>
-struct pooling_layer_2d : layer<Parent> {
+struct pooling_2d_layer : layer<Parent> {
     using desc   = Desc; ///< The descriptor of the layer
     using weight = typename desc::weight; ///< The data type for this layer
 
@@ -38,7 +38,7 @@ struct pooling_layer_2d : layer<Parent> {
     using input_t      = std::vector<input_one_t>; ///< The type of the input
     using output_t     = std::vector<output_one_t>; ///< The type of the output
 
-    pooling_layer_2d() = default;
+    pooling_2d_layer() = default;
 
     /*!
      * \brief Return the size of the input of this layer
@@ -100,7 +100,7 @@ private:
  * \brief Standard dynamic pooling layer
  */
 template <typename Parent, typename Desc>
-struct dyn_pooling_layer_2d : layer<Parent> {
+struct dyn_pooling_2d_layer : layer<Parent> {
     using desc   = Desc; ///< The descriptor of the layer
     using weight = typename desc::weight; ///< The data type for this layer
 
@@ -121,7 +121,7 @@ struct dyn_pooling_layer_2d : layer<Parent> {
     size_t o2; ///< The second dimension of the output
     size_t o3; ///< The third dimension of the output
 
-    dyn_pooling_layer_2d() = default;
+    dyn_pooling_2d_layer() = default;
 
     /*!
      * \brief Initialize the dynamic layer
@@ -202,7 +202,7 @@ private:
  * \brief Standard pooling layer
  */
 template <typename Parent, typename Desc>
-struct pooling_layer_3d : layer<Parent> {
+struct pooling_3d_layer : layer<Parent> {
     using desc   = Desc; ///< The descriptor of the layer
     using weight = typename desc::weight; ///< The data type for this layer
 
@@ -224,7 +224,7 @@ struct pooling_layer_3d : layer<Parent> {
     using input_t      = std::vector<input_one_t>; ///< The type of the input
     using output_t     = std::vector<output_one_t>; ///< The type of the output
 
-    pooling_layer_3d() = default;
+    pooling_3d_layer() = default;
 
     /*!
      * \brief Return the size of the input of this layer
@@ -286,7 +286,7 @@ private:
  * \brief Standard dynamic pooling layer
  */
 template <typename Parent, typename Desc>
-struct dyn_pooling_layer_3d : layer<Parent> {
+struct dyn_pooling_3d_layer : layer<Parent> {
     using desc   = Desc; ///< The descriptor of the layer
     using weight = typename desc::weight; ///< The data type for this layer
 
@@ -308,7 +308,7 @@ struct dyn_pooling_layer_3d : layer<Parent> {
     size_t o2; ///< The second dimension of the output
     size_t o3; ///< The third dimension of the output
 
-    dyn_pooling_layer_3d() = default;
+    dyn_pooling_3d_layer() = default;
 
     /*!
      * \brief Initialize the dynamic layer

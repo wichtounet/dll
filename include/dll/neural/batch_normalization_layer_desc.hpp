@@ -13,7 +13,7 @@ namespace dll {
  * \brief A descriptor for a 2D Batch Normalization layer.
  */
 template<size_t I, typename... Parameters>
-struct batch_normalization_layer_2d_desc {
+struct batch_normalization_2d_layer_desc {
     /*!
      * \brief Input Size
      */
@@ -27,12 +27,12 @@ struct batch_normalization_layer_2d_desc {
     /*!
      * The layer type
      */
-    using layer_t = batch_normalization_2d_layer<batch_normalization_layer_2d_desc<Input, Parameters...>>;
+    using layer_t = batch_normalization_2d_layer<batch_normalization_2d_layer_desc<Input, Parameters...>>;
 
     /*!
      * The dynamic layer type
      */
-    using dyn_layer_t = dyn_batch_normalization_2d_layer<batch_normalization_layer_2d_desc<Input, Parameters...>>;
+    using dyn_layer_t = dyn_batch_normalization_2d_layer<batch_normalization_2d_layer_desc<Input, Parameters...>>;
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
@@ -44,7 +44,7 @@ struct batch_normalization_layer_2d_desc {
  * \brief A descriptor for a dynamic 2D Batch Normalization layer.
  */
 template<typename... Parameters>
-struct dyn_batch_normalization_layer_2d_desc {
+struct dyn_batch_normalization_2d_layer_desc {
     /*!
      * The type used to store the weights
      */
@@ -53,12 +53,12 @@ struct dyn_batch_normalization_layer_2d_desc {
     /*!
      * The layer type
      */
-    using layer_t = dyn_batch_normalization_2d_layer<dyn_batch_normalization_layer_2d_desc<Parameters...>>;
+    using layer_t = dyn_batch_normalization_2d_layer<dyn_batch_normalization_2d_layer_desc<Parameters...>>;
 
     /*!
      * The dynamic layer type
      */
-    using dyn_layer_t = dyn_batch_normalization_2d_layer<dyn_batch_normalization_layer_2d_desc<Parameters...>>;
+    using dyn_layer_t = dyn_batch_normalization_2d_layer<dyn_batch_normalization_2d_layer_desc<Parameters...>>;
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
@@ -137,7 +137,7 @@ struct dyn_batch_normalization_layer_4d_desc {
  * \brief A descriptor for a 2D Batch Normalization layer.
  */
 template<size_t I, typename... Parameters>
-using batch_normalization_layer_2d_desc_layer = typename batch_normalization_2d_desc<I, Parameters...>::layer_t;
+using batch_normalization_2d_layer_desc_layer = typename batch_normalization_2d_desc<I, Parameters...>::layer_t;
 
 /*!
  * \brief A descriptor for a dynamic 4D Batch Normalization layer.

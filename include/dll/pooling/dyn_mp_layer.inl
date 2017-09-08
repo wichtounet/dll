@@ -15,13 +15,13 @@ namespace dll {
  * \brief Standard dyn max pooling layer
  */
 template <typename Desc>
-struct dyn_mp_layer_2d final : dyn_pooling_layer_2d<dyn_mp_layer_2d<Desc>, Desc> {
+struct dyn_mp_2d_layer final : dyn_pooling_2d_layer<dyn_mp_2d_layer<Desc>, Desc> {
     using desc      = Desc;                                  ///< The layer descriptor
     using weight    = typename desc::weight;                 ///< The layer weight type
-    using this_type = dyn_mp_layer_2d<Desc>;                 ///< This layer's type
-    using base      = dyn_pooling_layer_2d<this_type, desc>; ///< The layer base type
+    using this_type = dyn_mp_2d_layer<Desc>;                 ///< This layer's type
+    using base      = dyn_pooling_2d_layer<this_type, desc>; ///< The layer base type
 
-    dyn_mp_layer_2d() = default;
+    dyn_mp_2d_layer() = default;
 
     /*!
      * \brief Get a string representation of the layer
@@ -97,7 +97,7 @@ struct dyn_mp_layer_2d final : dyn_pooling_layer_2d<dyn_mp_layer_2d<Desc>, Desc>
 // Declare the traits for the Layer
 
 template<typename Desc>
-struct layer_base_traits<dyn_mp_layer_2d<Desc>> {
+struct layer_base_traits<dyn_mp_2d_layer<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -116,8 +116,8 @@ struct layer_base_traits<dyn_mp_layer_2d<Desc>> {
  * \brief Specialization of sgd_context for dyn_mp_layer
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, dyn_mp_layer_2d<Desc>, L> {
-    using layer_t = dyn_mp_layer_2d<Desc>;
+struct sgd_context<DBN, dyn_mp_2d_layer<Desc>, L> {
+    using layer_t = dyn_mp_2d_layer<Desc>;
     using weight  = typename layer_t::weight; ///< The data type for this layer
 
     static constexpr auto batch_size = DBN::batch_size;
@@ -136,13 +136,13 @@ struct sgd_context<DBN, dyn_mp_layer_2d<Desc>, L> {
  * \brief Standard dyn max pooling layer
  */
 template <typename Desc>
-struct dyn_mp_layer_3d final : dyn_pooling_layer_3d<dyn_mp_layer_3d<Desc>, Desc> {
+struct dyn_mp_3d_layer final : dyn_pooling_3d_layer<dyn_mp_3d_layer<Desc>, Desc> {
     using desc      = Desc;                                  ///< The layer descriptor
     using weight    = typename desc::weight;                 ///< The layer weight type
-    using this_type = dyn_mp_layer_3d<Desc>;                 ///< This layer's type
-    using base      = dyn_pooling_layer_3d<this_type, desc>; ///< The layer base type
+    using this_type = dyn_mp_3d_layer<Desc>;                 ///< This layer's type
+    using base      = dyn_pooling_3d_layer<this_type, desc>; ///< The layer base type
 
-    dyn_mp_layer_3d() = default;
+    dyn_mp_3d_layer() = default;
 
     /*!
      * \brief Get a string representation of the layer
@@ -237,7 +237,7 @@ struct dyn_mp_layer_3d final : dyn_pooling_layer_3d<dyn_mp_layer_3d<Desc>, Desc>
 // Declare the traits for the Layer
 
 template<typename Desc>
-struct layer_base_traits<dyn_mp_layer_3d<Desc>> {
+struct layer_base_traits<dyn_mp_3d_layer<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -256,8 +256,8 @@ struct layer_base_traits<dyn_mp_layer_3d<Desc>> {
  * \brief Specialization of sgd_context for dyn_mp_layer
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, dyn_mp_layer_3d<Desc>, L> {
-    using layer_t = dyn_mp_layer_3d<Desc>;
+struct sgd_context<DBN, dyn_mp_3d_layer<Desc>, L> {
+    using layer_t = dyn_mp_3d_layer<Desc>;
     using weight  = typename layer_t::weight; ///< The data type for this layer
 
     static constexpr auto batch_size = DBN::batch_size;
