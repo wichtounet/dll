@@ -15,9 +15,9 @@ namespace dll {
  * \brief Batch Normalization layer
  */
 template <typename Desc>
-struct dyn_batch_normalization_2d_layer : neural_layer<dyn_batch_normalization_2d_layer<Desc>, Desc> {
+struct dyn_batch_normalization_2d_layer_impl : neural_layer<dyn_batch_normalization_2d_layer_impl<Desc>, Desc> {
     using desc      = Desc;                                                   ///< The descriptor type
-    using base_type = neural_layer<dyn_batch_normalization_2d_layer<Desc>, Desc>; ///< The base type
+    using base_type = neural_layer<dyn_batch_normalization_2d_layer_impl<Desc>, Desc>; ///< The base type
     using weight    = typename desc::weight;                                  ///< The data type of the layer
 
     static constexpr weight e     = 1e-8;        ///< Epsilon for numerical stability
@@ -47,7 +47,7 @@ struct dyn_batch_normalization_2d_layer : neural_layer<dyn_batch_normalization_2
 
     size_t Input = 0;
 
-    dyn_batch_normalization_2d_layer() : base_type() {
+    dyn_batch_normalization_2d_layer_impl() : base_type() {
         // Nothing else to init
     }
 
@@ -265,7 +265,7 @@ struct dyn_batch_normalization_2d_layer : neural_layer<dyn_batch_normalization_2
 // Declare the traits for the layer
 
 template<typename Desc>
-struct layer_base_traits<dyn_batch_normalization_2d_layer<Desc>> {
+struct layer_base_traits<dyn_batch_normalization_2d_layer_impl<Desc>> {
     static constexpr bool is_neural     = true;  ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -281,11 +281,11 @@ struct layer_base_traits<dyn_batch_normalization_2d_layer<Desc>> {
 };
 
 /*!
- * \brief Specialization of sgd_context for dyn_batch_normalization_2d_layer
+ * \brief Specialization of sgd_context for dyn_batch_normalization_2d_layer_impl
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, dyn_batch_normalization_2d_layer<Desc>, L> {
-    using layer_t = dyn_batch_normalization_2d_layer<Desc>; ///< The current layer type
+struct sgd_context<DBN, dyn_batch_normalization_2d_layer_impl<Desc>, L> {
+    using layer_t = dyn_batch_normalization_2d_layer_impl<Desc>; ///< The current layer type
     using weight  = typename layer_t::weight;               ///< The data type for this layer
 
     static constexpr auto batch_size = DBN::batch_size;
