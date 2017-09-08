@@ -64,21 +64,22 @@ TEST_CASE("unit/dbn/mnist/1", "[dbn][unit]") {
 }
 
 TEST_CASE("unit/dbn/mnist/2", "[dbn][unit]") {
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(250);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(350);
     REQUIRE(!dataset.training_images.empty());
 
     mnist::binarize_dataset(dataset);
 
-    typedef dll::dbn_desc<
+    using dbn_simple_t = dll::dbn_desc<
         dll::dbn_label_layers<
-            dll::rbm_desc<28 * 28, 200, dll::batch_size<50>, dll::init_weights, dll::momentum>::layer_t,
-            dll::rbm_desc<200, 300, dll::batch_size<50>, dll::momentum>::layer_t,
-            dll::rbm_desc<310, 500, dll::batch_size<50>, dll::momentum>::layer_t>,
-        dll::batch_size<10>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_simple_t;
+            dll::rbm_desc<28 * 28, 200, dll::batch_size<25>, dll::init_weights, dll::momentum>::layer_t,
+            dll::rbm_desc<200, 300, dll::batch_size<25>, dll::momentum>::layer_t,
+            dll::rbm_desc<310, 500, dll::batch_size<25>, dll::momentum>::layer_t>,
+        dll::batch_size<10>
+    >::dbn_t;
 
     auto dbn = std::make_unique<dbn_simple_t>();
 
-    dbn->train_with_labels(dataset.training_images, dataset.training_labels, 10, 10);
+    dbn->train_with_labels(dataset.training_images, dataset.training_labels, 10, 20);
 
     auto error = dll::test_set(dbn, dataset.training_images, dataset.training_labels, dll::label_predictor());
     std::cout << "test_error:" << error << std::endl;
