@@ -177,7 +177,7 @@ struct mp_layer_3d final : pooling_layer_3d<mp_layer_3d<Desc>, Desc> {
     static void forward_batch(Output& output, const Input& input) {
         dll::auto_timer timer("mp:forward_batch");
 
-        output = etl::max_pool_3d<base::C1, base::C2, base::C3>(input);
+        output = etl::ml::max_pool_3d_forward<base::C1, base::C2, base::C3>(input);
     }
 
     /*!
@@ -216,7 +216,7 @@ struct mp_layer_3d final : pooling_layer_3d<mp_layer_3d<Desc>, Desc> {
         static constexpr size_t C2 = base::C2; ///< The pooling second dimension
         static constexpr size_t C3 = base::C3; ///< The pooling third dimension
 
-        output = etl::max_pool_upsample_3d<C1, C2, C3>(context.input, context.output, context.errors);
+        output = etl::ml::max_pool_3d_backward<C1, C2, C3>(context.input, context.output, context.errors);
     }
 
     /*!

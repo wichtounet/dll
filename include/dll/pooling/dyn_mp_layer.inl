@@ -184,7 +184,7 @@ struct dyn_mp_layer_3d final : dyn_pooling_layer_3d<dyn_mp_layer_3d<Desc>, Desc>
      */
     template <typename Input, typename Output>
     void forward_batch(Output& output, const Input& input) const {
-        output = etl::max_pool_3d(input, base::c1, base::c2, base::c3);
+        output = etl::ml::max_pool_3d_forward(input, base::c1, base::c2, base::c3);
     }
 
     /*!
@@ -221,7 +221,7 @@ struct dyn_mp_layer_3d final : dyn_pooling_layer_3d<dyn_mp_layer_3d<Desc>, Desc>
         size_t c2 = base::c2;
         size_t c3 = base::c3;
 
-        output = etl::max_pool_upsample_3d(context.input, context.output, context.errors, c1, c2, c3);
+        output = etl::ml::max_pool_3d_backward(context.input, context.output, context.errors, c1, c2, c3);
     }
 
     /*!

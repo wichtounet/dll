@@ -80,7 +80,7 @@ struct avgp_layer_2d final : pooling_layer_2d<avgp_layer_2d<Desc>, Desc> {
         static constexpr size_t C1 = base::C1; ///< The pooling first dimension
         static constexpr size_t C2 = base::C2; ///< The pooling second dimension
 
-        output = etl::ml::avg_pool_backward<C1, C2>(context.input, context.output);
+        output = etl::ml::avg_pool_backward<C1, C2, C3>(context.input, context.output, context.errors);
     }
 
     /*!
@@ -169,7 +169,7 @@ struct avgp_layer_3d final : pooling_layer_3d<avgp_layer_3d<Desc>, Desc> {
      */
     template <typename Input, typename Output>
     static void forward_batch(Output& output, const Input& input) {
-        output = etl::avg_pool_3d<base::C1, base::C2, base::C3>(input);
+        output = etl::ml::avg_pool_3d_forward<base::C1, base::C2, base::C3>(input);
     }
 
     /*!
@@ -206,7 +206,7 @@ struct avgp_layer_3d final : pooling_layer_3d<avgp_layer_3d<Desc>, Desc> {
         static constexpr size_t C2 = base::C2; ///< The pooling second dimension
         static constexpr size_t C3 = base::C3; ///< The pooling third dimension
 
-        output = etl::avg_pool_derivative_3d<C1, C2, C3>(context.input, context.output) >> etl::upsample_3d<C1, C2, C3>(context.errors);
+        output = etl::ml::avg_pool_3d_backward<C1, C2, C3>(context.input, context.output, context.errors);
     }
 
     /*!

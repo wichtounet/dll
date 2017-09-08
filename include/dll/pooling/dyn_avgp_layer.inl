@@ -81,7 +81,7 @@ struct dyn_avgp_layer_2d final : dyn_pooling_layer_2d<dyn_avgp_layer_2d<Desc>, D
         size_t c1 = base::c1;
         size_t c2 = base::c2;
 
-        output = etl::ml::avg_pool_backward(context.input, context.output, c1, c2);
+        output = etl::ml::avg_pool_backward(context.input, context.output, context.errors, c1, c2);
     }
 
     /*!
@@ -166,7 +166,7 @@ struct dyn_avgp_layer_3d final : dyn_pooling_layer_3d<dyn_avgp_layer_3d<Desc>, D
      */
     template <typename Input, typename Output>
     void forward_batch(Output& output, const Input& input) const {
-        output = etl::avg_pool_3d(input, base::c1, base::c2, base::c3);
+        output = etl::ml::avg_pool_3d_forward(input, base::c1, base::c2, base::c3);
     }
 
     /*!
@@ -203,7 +203,7 @@ struct dyn_avgp_layer_3d final : dyn_pooling_layer_3d<dyn_avgp_layer_3d<Desc>, D
         size_t c2 = base::c2;
         size_t c3 = base::c3;
 
-        output = etl::avg_pool_derivative_3d(context.input, context.output, c1, c2, c3) >> etl::upsample_3d(context.errors, c1, c2, c3);
+        output = etl::ml::avg_pool_3d_backward(context.input, context.output, context.errors, c1, c2, c3);
     }
 
     /*!
