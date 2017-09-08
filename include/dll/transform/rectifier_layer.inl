@@ -18,9 +18,9 @@ namespace dll {
  * Use abs as a rectifier by default
  */
 template <typename Desc>
-struct rectifier_layer : transform_layer<rectifier_layer<Desc>> {
+struct rectifier_layer_impl : transform_layer<rectifier_layer_impl<Desc>> {
     using desc = Desc; ///< The descriptor type
-    using base_type = transform_layer<rectifier_layer<Desc>>; ///< The base type
+    using base_type = transform_layer<rectifier_layer_impl<Desc>>; ///< The base type
 
     static constexpr rectifier_method method = desc::method; ///< The rectifier method
 
@@ -49,12 +49,12 @@ struct rectifier_layer : transform_layer<rectifier_layer<Desc>> {
 //Allow odr-use of the constexpr static members
 
 template <typename Desc>
-const rectifier_method rectifier_layer<Desc>::method;
+const rectifier_method rectifier_layer_impl<Desc>::method;
 
 // Declare the traits for the layer
 
 template<typename Desc>
-struct layer_base_traits<rectifier_layer<Desc>> {
+struct layer_base_traits<rectifier_layer_impl<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -70,11 +70,11 @@ struct layer_base_traits<rectifier_layer<Desc>> {
 };
 
 /*!
- * \brief Specialization of sgd_context for rectifier_layer
+ * \brief Specialization of sgd_context for rectifier_layer_impl
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, rectifier_layer<Desc>, L> {
-    using layer_t          = rectifier_layer<Desc>;                            ///< The current layer type
+struct sgd_context<DBN, rectifier_layer_impl<Desc>, L> {
+    using layer_t          = rectifier_layer_impl<Desc>;                            ///< The current layer type
     using previous_layer   = typename DBN::template layer_type<L - 1>;          ///< The previous layer type
     using previous_context = sgd_context<DBN, previous_layer, L - 1>;           ///< The previous layer's context
     using inputs_t         = decltype(std::declval<previous_context>().output); ///< The type of inputs

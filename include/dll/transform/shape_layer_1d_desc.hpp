@@ -27,12 +27,12 @@ struct shape_layer_1d_desc {
     /*!
      * The layer type
      */
-    using layer_t = shape_layer_1d<shape_layer_1d_desc<S_T, Parameters...>>;
+    using layer_t = shape_layer_1d_impl<shape_layer_1d_desc<S_T, Parameters...>>;
 
     /*!
      * The dynamic layer type
      */
-    using dyn_layer_t = dyn_shape_layer_1d<dyn_shape_layer_1d_desc<Parameters...>>;
+    using dyn_layer_t = dyn_shape_layer_1d_impl<dyn_shape_layer_1d_desc<Parameters...>>;
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
@@ -44,6 +44,6 @@ struct shape_layer_1d_desc {
  * \brief Descriptor for a 1D shaping layer.
  */
 template <size_t S_T = 30, typename... Parameters>
-using shape_layer_1d_desc_layer = typename shape_layer_1d_desc<S_T, Parameters...>::layer_t;
+using shape_layer_1d = typename shape_layer_1d_desc<S_T, Parameters...>::layer_t;
 
 } //end of dll namespace

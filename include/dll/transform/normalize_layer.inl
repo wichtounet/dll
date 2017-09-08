@@ -20,9 +20,9 @@ namespace dll {
  * backpropagation is possible for now.
  */
 template <typename Desc>
-struct normalize_layer : transform_layer<normalize_layer<Desc>> {
+struct normalize_layer_impl : transform_layer<normalize_layer_impl<Desc>> {
     using desc      = Desc;                                   ///< The descriptor type
-    using base_type = transform_layer<normalize_layer<Desc>>; ///< The base type
+    using base_type = transform_layer<normalize_layer_impl<Desc>>; ///< The base type
 
     /*!
      * \brief Returns a string representation of the layer
@@ -78,7 +78,7 @@ struct normalize_layer : transform_layer<normalize_layer<Desc>> {
 // Declare the traits for the layer
 
 template<typename Desc>
-struct layer_base_traits<normalize_layer<Desc>> {
+struct layer_base_traits<normalize_layer_impl<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -94,11 +94,11 @@ struct layer_base_traits<normalize_layer<Desc>> {
 };
 
 /*!
- * \brief Specialization of sgd_context for normalize_layer
+ * \brief Specialization of sgd_context for normalize_layer_impl
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, normalize_layer<Desc>, L> {
-    using layer_t          = normalize_layer<Desc>;                            ///< The current layer type
+struct sgd_context<DBN, normalize_layer_impl<Desc>, L> {
+    using layer_t          = normalize_layer_impl<Desc>;                            ///< The current layer type
     using previous_layer   = typename DBN::template layer_type<L - 1>;          ///< The previous layer type
     using previous_context = sgd_context<DBN, previous_layer, L - 1>;           ///< The previous layer's context
     using inputs_t         = decltype(std::declval<previous_context>().output); ///< The type of inputs

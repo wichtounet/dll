@@ -23,16 +23,16 @@ struct scale_layer_desc {
     using parameters = cpp::type_list<>;
 
     /*! The layer type */
-    using layer_t = scale_layer<scale_layer_desc<A, B>>;
+    using layer_t = scale_layer_impl<scale_layer_desc<A, B>>;
 
     /*! The dynamic layer type */
-    using dyn_layer_t = scale_layer<scale_layer_desc<A, B>>;
+    using dyn_layer_t = scale_layer_impl<scale_layer_desc<A, B>>;
 };
 
 /*!
  * \brief Descriptor for a scaling layer (multiply by A/B)
  */
 template <int A_T, int B_T>
-using scale_layer_desc_layer = typename scale_layer_desc<A_T, B_T>::layer_t;
+using scale_layer = typename scale_layer_desc<A_T, B_T>::layer_t;
 
 } //end of dll namespace

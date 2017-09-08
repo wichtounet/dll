@@ -17,9 +17,9 @@ namespace dll {
  * \brief Local Contrast Normalization layer
  */
 template <typename Desc>
-struct dyn_lcn_layer : transform_layer<dyn_lcn_layer<Desc>> {
+struct dyn_lcn_layer_impl : transform_layer<dyn_lcn_layer_impl<Desc>> {
     using desc = Desc; ///< The descriptor of the layer
-    using base_type = transform_layer<dyn_lcn_layer<Desc>>; ///< The base type
+    using base_type = transform_layer<dyn_lcn_layer_impl<Desc>>; ///< The base type
 
     size_t K;
     size_t Mid;
@@ -76,7 +76,7 @@ struct dyn_lcn_layer : transform_layer<dyn_lcn_layer<Desc>> {
 // Declare the traits for the layer
 
 template<typename Desc>
-struct layer_base_traits<dyn_lcn_layer<Desc>> {
+struct layer_base_traits<dyn_lcn_layer_impl<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -92,11 +92,11 @@ struct layer_base_traits<dyn_lcn_layer<Desc>> {
 };
 
 /*!
- * \brief Specialization of sgd_context for dyn_lcn_layer
+ * \brief Specialization of sgd_context for dyn_lcn_layer_impl
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, dyn_lcn_layer<Desc>, L> {
-    using layer_t          = dyn_lcn_layer<Desc>;                            ///< The current layer type
+struct sgd_context<DBN, dyn_lcn_layer_impl<Desc>, L> {
+    using layer_t          = dyn_lcn_layer_impl<Desc>;                            ///< The current layer type
     using previous_layer   = typename DBN::template layer_type<L - 1>;          ///< The previous layer type
     using previous_context = sgd_context<DBN, previous_layer, L - 1>;           ///< The previous layer's context
     using inputs_t         = decltype(std::declval<previous_context>().output); ///< The type of inputs

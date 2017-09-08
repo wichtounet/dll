@@ -22,16 +22,16 @@ struct lcn_layer_desc {
     using parameters = cpp::type_list<>;
 
     /*! The layer type */
-    using layer_t = lcn_layer<lcn_layer_desc<K>>;
+    using layer_t = lcn_layer_impl<lcn_layer_desc<K>>;
 
     /*! The dynamic layer type */
-    using dyn_layer_t = dyn_lcn_layer<dyn_lcn_layer_desc>;
+    using dyn_layer_t = dyn_lcn_layer_impl<dyn_lcn_layer_desc>;
 };
 
 /*!
  * \brief A descriptor for a Local Contrast Normalization layer.
  */
 template <size_t K_T>
-using lcn_layer_desc_layer = typename lcn_layer_desc<K_T>::layer_t;
+using lcn_layer = typename lcn_layer_desc<K_T>::layer_t;
 
 } //end of dll namespace

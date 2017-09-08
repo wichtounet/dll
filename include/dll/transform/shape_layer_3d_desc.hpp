@@ -29,12 +29,12 @@ struct shape_layer_3d_desc {
     /*!
      * The layer type
      */
-    using layer_t = shape_layer_3d<shape_layer_3d_desc<C_T, H_T, W_T, Parameters...>>;
+    using layer_t = shape_layer_3d_impl<shape_layer_3d_desc<C_T, H_T, W_T, Parameters...>>;
 
     /*!
      * The dynamic layer type
      */
-    using dyn_layer_t = dyn_shape_layer_3d<dyn_shape_layer_3d_desc<Parameters...>>;
+    using dyn_layer_t = dyn_shape_layer_3d_impl<dyn_shape_layer_3d_desc<Parameters...>>;
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
@@ -46,6 +46,6 @@ struct shape_layer_3d_desc {
  * \brief Descriptor for a 3D shaping layer.
  */
 template <size_t C_T, size_t H_T, size_t W_T, typename... Parameters>
-using shape_layer_3d_desc_layer = typename shape_layer_3d_desc<C_T, H_T, W_T, Parameters...>::layer_t;
+using shape_layer_3d = typename shape_layer_3d_desc<C_T, H_T, W_T, Parameters...>::layer_t;
 
 } //end of dll namespace

@@ -19,13 +19,13 @@ namespace dll {
  * backpropagation is possible for now.
  */
 template <typename Desc>
-struct binarize_layer : transform_layer<binarize_layer<Desc>> {
+struct binarize_layer_impl : transform_layer<binarize_layer_impl<Desc>> {
     using desc      = Desc;                                  ///< The descriptor type
-    using base_type = transform_layer<binarize_layer<Desc>>; ///< The base type
+    using base_type = transform_layer<binarize_layer_impl<Desc>>; ///< The base type
 
     static constexpr size_t Threshold = desc::T;
 
-    binarize_layer() = default;
+    binarize_layer_impl() = default;
 
     /*!
      * \brief Returns a string representation of the layer
@@ -84,12 +84,12 @@ struct binarize_layer : transform_layer<binarize_layer<Desc>> {
 //Allow odr-use of the constexpr static members
 
 template <typename Desc>
-const size_t binarize_layer<Desc>::Threshold;
+const size_t binarize_layer_impl<Desc>::Threshold;
 
 // Declare the traits for the layer
 
 template<typename Desc>
-struct layer_base_traits<binarize_layer<Desc>> {
+struct layer_base_traits<binarize_layer_impl<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -105,11 +105,11 @@ struct layer_base_traits<binarize_layer<Desc>> {
 };
 
 /*!
- * \brief Specialization of sgd_context for binarize_layer
+ * \brief Specialization of sgd_context for binarize_layer_impl
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, binarize_layer<Desc>, L> {
-    using layer_t          = binarize_layer<Desc>;                            ///< The current layer type
+struct sgd_context<DBN, binarize_layer_impl<Desc>, L> {
+    using layer_t          = binarize_layer_impl<Desc>;                            ///< The current layer type
     using previous_layer   = typename DBN::template layer_type<L - 1>;          ///< The previous layer type
     using previous_context = sgd_context<DBN, previous_layer, L - 1>;           ///< The previous layer's context
     using inputs_t         = decltype(std::declval<previous_context>().output); ///< The type of inputs
@@ -122,11 +122,11 @@ struct sgd_context<DBN, binarize_layer<Desc>, L> {
 };
 
 /*!
- * \brief Specialization of cg_context for binarize_layer
+ * \brief Specialization of cg_context for binarize_layer_impl
  */
 template <typename Desc>
-struct cg_context<binarize_layer<Desc>> {
-    using rbm_t  = binarize_layer<Desc>;
+struct cg_context<binarize_layer_impl<Desc>> {
+    using rbm_t  = binarize_layer_impl<Desc>;
     using weight = double; ///< The data type for this layer
 
     static constexpr bool is_trained = false;

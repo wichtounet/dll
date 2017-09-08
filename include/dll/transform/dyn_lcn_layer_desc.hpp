@@ -19,15 +19,15 @@ struct dyn_lcn_layer_desc {
     using parameters = cpp::type_list<>;
 
     /*! The layer type */
-    using layer_t = dyn_lcn_layer<dyn_lcn_layer_desc>;
+    using layer_t = dyn_lcn_layer_impl<dyn_lcn_layer_desc>;
 
     /*! The layer type */
-    using dyn_layer_t = dyn_lcn_layer<dyn_lcn_layer_desc>;
+    using dyn_layer_t = dyn_lcn_layer_impl<dyn_lcn_layer_desc>;
 };
 
 /*!
  * \brief Descriptor for a dynamic Local Contrast Normalization (LCN) layer
  */
-using dyn_lcn_layer_desc_layer = typename dyn_lcn_layer_desc::layer_t;
+using dyn_lcn_layer = typename dyn_lcn_layer_desc::layer_t;
 
 } //end of dll namespace

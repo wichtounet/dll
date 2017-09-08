@@ -14,10 +14,10 @@
 namespace dll {
 
 template <typename Desc>
-struct dyn_shape_layer_1d : transform_layer<dyn_shape_layer_1d<Desc>> {
+struct dyn_shape_layer_1d_impl : transform_layer<dyn_shape_layer_1d_impl<Desc>> {
     using desc      = Desc;                       ///< The descriptor type
     using weight    = typename desc::weight;      ///< The data type
-    using this_type = dyn_shape_layer_1d<desc>;   ///< The type of this layer
+    using this_type = dyn_shape_layer_1d_impl<desc>;   ///< The type of this layer
     using base_type = transform_layer<this_type>; ///< The base type
 
     static constexpr size_t D = 1; ///< The number of dimensions
@@ -105,7 +105,7 @@ struct dyn_shape_layer_1d : transform_layer<dyn_shape_layer_1d<Desc>> {
 // Declare the traits for the layer
 
 template<typename Desc>
-struct layer_base_traits<dyn_shape_layer_1d<Desc>> {
+struct layer_base_traits<dyn_shape_layer_1d_impl<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -121,11 +121,11 @@ struct layer_base_traits<dyn_shape_layer_1d<Desc>> {
 };
 
 /*!
- * \brief Specialization of sgd_context for dyn_lcn_layer
+ * \brief Specialization of sgd_context for dyn_lcn_layer_impl
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, dyn_shape_layer_1d<Desc>, L> {
-    using layer_t = dyn_shape_layer_1d<Desc>;
+struct sgd_context<DBN, dyn_shape_layer_1d_impl<Desc>, L> {
+    using layer_t = dyn_shape_layer_1d_impl<Desc>;
     using weight  = typename DBN::weight; ///< The data type for this layer
 
     static constexpr auto batch_size = DBN::batch_size;

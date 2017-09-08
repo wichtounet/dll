@@ -23,10 +23,10 @@ struct dyn_shape_layer_1d_desc {
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
 
     /*! The layer type */
-    using layer_t = dyn_shape_layer_1d<dyn_shape_layer_1d_desc<Parameters...>>;
+    using layer_t = dyn_shape_layer_1d_impl<dyn_shape_layer_1d_desc<Parameters...>>;
 
     /*! The layer type */
-    using dyn_layer_t = dyn_shape_layer_1d<dyn_shape_layer_1d_desc<Parameters...>>;
+    using dyn_layer_t = dyn_shape_layer_1d_impl<dyn_shape_layer_1d_desc<Parameters...>>;
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
@@ -38,6 +38,6 @@ struct dyn_shape_layer_1d_desc {
  * \brief Descriptor for a Dynamic 1D shaping layer.
  */
 template<typename... Parameters>
-using dyn_shape_layer_1d_desc_layer = typename dyn_shape_layer_1d_desc<Parameters...>::layer_t;
+using dyn_shape_layer_1d = typename dyn_shape_layer_1d_desc<Parameters...>::layer_t;
 
 } //end of dll namespace

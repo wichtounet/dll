@@ -16,10 +16,10 @@ namespace dll {
  * \brief Simple shape information layer
  */
 template <typename Desc>
-struct shape_layer_1d : transform_layer<shape_layer_1d<Desc>> {
+struct shape_layer_1d_impl : transform_layer<shape_layer_1d_impl<Desc>> {
     using desc      = Desc;                       ///< The descriptor type
     using weight    = typename desc::weight;      ///< The data type
-    using this_type = shape_layer_1d<desc>;       ///< The type of this layer
+    using this_type = shape_layer_1d_impl<desc>;       ///< The type of this layer
     using base_type = transform_layer<this_type>; ///< The base type
 
     static constexpr size_t Size = desc::S; ///< The input size
@@ -28,7 +28,7 @@ struct shape_layer_1d : transform_layer<shape_layer_1d<Desc>> {
     using input_one_t  = etl::fast_dyn_matrix<weight, Size>; ///< The preferred type of input
     using output_one_t = etl::fast_dyn_matrix<weight, Size>; ///< The type of output
 
-    shape_layer_1d() = default;
+    shape_layer_1d_impl() = default;
 
     /*!
      * \brief Returns a string representation of the layer
@@ -99,12 +99,12 @@ struct shape_layer_1d : transform_layer<shape_layer_1d<Desc>> {
 //Allow odr-use of the constexpr static members
 
 template <typename Desc>
-const size_t shape_layer_1d<Desc>::Size;
+const size_t shape_layer_1d_impl<Desc>::Size;
 
 // Declare the traits for the layer
 
 template<typename Desc>
-struct layer_base_traits<shape_layer_1d<Desc>> {
+struct layer_base_traits<shape_layer_1d_impl<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -123,8 +123,8 @@ struct layer_base_traits<shape_layer_1d<Desc>> {
  * \brief Specialization of sgd_context for shape_layer
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, shape_layer_1d<Desc>, L> {
-    using layer_t = shape_layer_1d<Desc>;
+struct sgd_context<DBN, shape_layer_1d_impl<Desc>, L> {
+    using layer_t = shape_layer_1d_impl<Desc>;
     using weight  = typename DBN::weight; ///< The data type for this layer
 
     static constexpr auto batch_size = DBN::batch_size;
@@ -133,7 +133,7 @@ struct sgd_context<DBN, shape_layer_1d<Desc>, L> {
     etl::fast_matrix<weight, batch_size, layer_t::Size> output;
     etl::fast_matrix<weight, batch_size, layer_t::Size> errors;
 
-    sgd_context(const shape_layer_1d<Desc>& /* layer */){}
+    sgd_context(const shape_layer_1d_impl<Desc>& /* layer */){}
 };
 
 } //end of dll namespace

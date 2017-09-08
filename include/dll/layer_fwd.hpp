@@ -48,25 +48,25 @@ template <typename Desc>
 struct dyn_upsample_layer_3d;
 
 template <typename Desc>
-struct binarize_layer;
+struct binarize_layer_impl;
 
 template <typename Desc>
-struct normalize_layer;
+struct normalize_layer_impl;
 
 template <typename Desc>
-struct rectifier_layer;
+struct rectifier_layer_impl;
 
 template <typename Desc>
 struct random_layer;
 
 template <typename Desc>
-struct lcn_layer;
+struct lcn_layer_impl;
 
 template <typename Desc>
-struct dyn_lcn_layer;
+struct dyn_lcn_layer_impl;
 
 template <typename Desc>
-struct scale_layer;
+struct scale_layer_impl;
 
 template <typename Desc>
 struct dense_layer;
