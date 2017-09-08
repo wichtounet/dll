@@ -15,7 +15,7 @@
 // Include the dyn version (for dyn_dbn)
 #include "dll/rbm/dyn_rbm.hpp"
 
-#include "dll/rbm/rbm.inl"
+#include "dll/rbm/rbm_impl.hpp"
 #include "dll/trainer/rbm_training_context.hpp"
 #include "dll/rbm/rbm_desc.hpp"
 #include "dll/trainer/rbm_trainer.hpp"

@@ -10,7 +10,7 @@
 // Include the dyn version (for dyn_dbn)
 #include "dll/rbm/dyn_conv_rbm_mp.hpp"
 
-#include "dll/rbm/conv_rbm_mp.inl"
+#include "dll/rbm/conv_rbm_mp_impl.hpp"
 #include "dll/trainer/rbm_training_context.hpp"
 #include "dll/rbm/conv_rbm_mp_desc.hpp"
 #include "dll/trainer/rbm_trainer.hpp"

@@ -7,5 +7,5 @@
 
 #pragma once
 
-#include "dll/pooling/dyn_upsample_layer.inl"
+#include "dll/pooling/dyn_upsample_layer_impl.hpp"
 #include "dll/pooling/dyn_upsample_layer_desc.hpp"

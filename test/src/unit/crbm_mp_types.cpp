@@ -74,4 +74,4 @@ struct dyn_crbm_mp_double {
 #define DOUBLE_TYPES_TEST_T2 dyn_crbm_mp_double
 #define TYPES_TEST_MP
 
-#include "types_test.inl"
+#include "types_test_impl.hpp"

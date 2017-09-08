@@ -7,5 +7,5 @@
 
 #pragma once
 
-#include "dll/neural/dyn_deconv_layer.inl"
+#include "dll/neural/dyn_deconv_layer_impl.hpp"
 #include "dll/neural/dyn_deconv_layer_desc.hpp"

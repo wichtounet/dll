@@ -10,5 +10,5 @@
 // Include the dyn version (for dyn_dbn)
 #include "dll/neural/dyn_dense_layer.hpp"
 
-#include "dll/neural/dense_layer.inl"
+#include "dll/neural/dense_layer_impl.hpp"
 #include "dll/neural/dense_layer_desc.hpp"

@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "dll/rbm/dyn_rbm.inl"
+#include "dll/rbm/dyn_rbm_impl.hpp"
 #include "dll/trainer/rbm_training_context.hpp"
 #include "dll/rbm/dyn_rbm_desc.hpp"
 #include "dll/trainer/rbm_trainer.hpp"

@@ -7,5 +7,5 @@
 
 #pragma once
 
-#include "dll/pooling/dyn_mp_layer.inl"
+#include "dll/pooling/dyn_mp_layer_impl.hpp"
 #include "dll/pooling/dyn_mp_layer_desc.hpp"

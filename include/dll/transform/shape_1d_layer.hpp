@@ -9,5 +9,5 @@
 
 #include "dll/transform/dyn_shape_1d_layer.hpp"
 
-#include "dll/transform/shape_1d_layer.inl"
+#include "dll/transform/shape_1d_layer_impl.hpp"
 #include "dll/transform/shape_1d_layer_desc.hpp"

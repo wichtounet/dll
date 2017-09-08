@@ -10,5 +10,5 @@
 // Include the dyn version (for dyn_dbn)
 #include "dll/pooling/dyn_mp_layer.hpp"
 
-#include "dll/pooling/mp_layer.inl"
+#include "dll/pooling/mp_layer_impl.hpp"
 #include "dll/pooling/mp_layer_desc.hpp"

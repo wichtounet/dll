@@ -10,5 +10,5 @@
 // Include the dyn version (for dyn_dbn)
 #include "dll/pooling/dyn_avgp_layer.hpp"
 
-#include "dll/pooling/avgp_layer.inl"
+#include "dll/pooling/avgp_layer_impl.hpp"
 #include "dll/pooling/avgp_layer_desc.hpp"

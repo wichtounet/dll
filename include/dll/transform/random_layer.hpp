@@ -7,5 +7,5 @@
 
 #pragma once
 
-#include "dll/transform/random_layer.inl"
+#include "dll/transform/random_layer_impl.hpp"
 #include "dll/transform/random_layer_desc.hpp"

@@ -7,5 +7,5 @@
 
 #pragma once
 
-#include "dll/neural/activation_layer.inl"
+#include "dll/neural/activation_layer_impl.hpp"
 #include "dll/neural/activation_layer_desc.hpp"

@@ -10,5 +10,5 @@
 // Include the dyn version (for dyn_dbn)
 #include "dll/transform/dyn_lcn_layer.hpp"
 
-#include "dll/transform/lcn_layer.inl"
+#include "dll/transform/lcn_layer_impl.hpp"
 #include "dll/transform/lcn_layer_desc.hpp"

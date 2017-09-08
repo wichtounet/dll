@@ -8,5 +8,5 @@
 #pragma once
 
 #include "dll/transform/rectifier_method.hpp"
-#include "dll/transform/rectifier_layer.inl"
+#include "dll/transform/rectifier_layer_impl.hpp"
 #include "dll/transform/rectifier_layer_desc.hpp"

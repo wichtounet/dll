@@ -7,5 +7,5 @@
 
 #pragma once
 
-#include "dll/transform/normalize_layer.inl"
+#include "dll/transform/normalize_layer_impl.hpp"
 #include "dll/transform/normalize_layer_desc.hpp"

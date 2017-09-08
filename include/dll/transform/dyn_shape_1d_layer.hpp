@@ -7,5 +7,5 @@
 
 #pragma once
 
-#include "dll/transform/dyn_shape_1d_layer.inl"
+#include "dll/transform/dyn_shape_1d_layer_impl.hpp"
 #include "dll/transform/dyn_shape_1d_layer_desc.hpp"

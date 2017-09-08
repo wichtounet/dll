@@ -7,5 +7,5 @@
 
 #pragma once
 
-#include "dll/transform/binarize_layer.inl"
+#include "dll/transform/binarize_layer_impl.hpp"
 #include "dll/transform/binarize_layer_desc.hpp"

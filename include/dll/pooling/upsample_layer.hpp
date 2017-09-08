@@ -10,5 +10,5 @@
 // Include the dyn version (for dyn_dbn)
 #include "dll/pooling/dyn_upsample_layer.hpp"
 
-#include "dll/pooling/upsample_layer.inl"
+#include "dll/pooling/upsample_layer_impl.hpp"
 #include "dll/pooling/upsample_layer_desc.hpp"

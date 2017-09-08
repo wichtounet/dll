@@ -7,5 +7,5 @@
 
 #pragma once
 
-#include "dll/transform/scale_layer.inl"
+#include "dll/transform/scale_layer_impl.hpp"
 #include "dll/transform/scale_layer_desc.hpp"
