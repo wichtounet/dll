@@ -143,7 +143,7 @@ using batch_normalization_2d_layer = typename batch_normalization_2d_layer_desc<
  * \brief A descriptor for a dynamic 4D Batch Normalization layer.
  */
 template<typename... Parameters>
-using dyn_batch_normalization_4d_layer = typename dyn_batch_normalization_2d_layer_desc<Parameters...>::layer_t;
+using dyn_batch_normalization_2d_layer = typename dyn_batch_normalization_2d_layer_desc<Parameters...>::layer_t;
 
 /*!
  * \brief A descriptor for a 4D Batch Normalization layer.

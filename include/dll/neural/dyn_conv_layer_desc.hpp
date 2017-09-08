@@ -16,7 +16,7 @@ namespace dll {
  * \brief Describe a standard dynamic convolutional layer.
  */
 template <typename... Parameters>
-struct dyn_conv_desc {
+struct dyn_conv_layer_desc {
     /*!
      * \brief A list of all the parameters of the descriptor
      */
@@ -30,21 +30,21 @@ struct dyn_conv_desc {
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
 
     /*! The conv type */
-    using layer_t = dyn_conv_layer_impl<dyn_conv_desc<Parameters...>>;
+    using layer_t = dyn_conv_layer_impl<dyn_conv_layer_desc<Parameters...>>;
 
     /*! The conv type */
-    using dyn_layer_t = dyn_conv_layer_impl<dyn_conv_desc<Parameters...>>;
+    using dyn_layer_t = dyn_conv_layer_impl<dyn_conv_layer_desc<Parameters...>>;
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
         detail::is_valid<cpp::type_list<weight_type_id, activation_id, initializer_id, initializer_bias_id, no_bias_id>, Parameters...>::value,
-        "Invalid parameters type for dyn_conv_desc");
+        "Invalid parameters type for dyn_conv_layer_desc");
 };
 
 /*!
  * \brief Describe a standard dynamic convolutional layer.
  */
 template <typename... Parameters>
-using dyn_conv_layer = typename dyn_conv_desc<Parameters...>::layer_t;
+using dyn_conv_layer = typename dyn_conv_layer_desc<Parameters...>::layer_t;
 
 } //end of dll namespace

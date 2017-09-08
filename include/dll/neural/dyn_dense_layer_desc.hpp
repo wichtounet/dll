@@ -16,7 +16,7 @@ namespace dll {
  * \brief Describe a dense layer.
  */
 template <typename... Parameters>
-struct dyn_dense_desc {
+struct dyn_dense_layer_desc {
     /*!
      * A list of all the parameters of the descriptor
      */
@@ -30,10 +30,10 @@ struct dyn_dense_desc {
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
 
     /*! The dense type */
-    using layer_t = dyn_dense_layer<dyn_dense_desc<Parameters...>>;
+    using layer_t = dyn_dense_layer_impl<dyn_dense_layer_desc<Parameters...>>;
 
     /*! The dense type */
-    using dyn_layer_t = dyn_dense_layer<dyn_dense_desc<Parameters...>>;
+    using dyn_layer_t = dyn_dense_layer_impl<dyn_dense_layer_desc<Parameters...>>;
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
@@ -47,6 +47,6 @@ struct dyn_dense_desc {
  * \brief Describe a dense layer.
  */
 template <typename... Parameters>
-using dyn_dense_layer = typename dyn_dense_desc<Parameters...>::layer_t;
+using dyn_dense_layer = typename dyn_dense_layer_desc<Parameters...>::layer_t;
 
 } //end of dll namespace

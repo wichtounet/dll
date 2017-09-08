@@ -72,7 +72,7 @@ template <typename Desc>
 struct dense_layer_impl;
 
 template <typename Desc>
-struct dyn_dense_layer;
+struct dyn_dense_layer_impl;
 
 template <typename Desc>
 struct conv_layer_impl;

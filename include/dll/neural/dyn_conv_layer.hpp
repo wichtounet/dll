@@ -8,4 +8,4 @@
 #pragma once
 
 #include "dll/neural/dyn_conv_layer.inl"
-#include "dll/neural/dyn_conv_desc.hpp"
+#include "dll/neural/dyn_conv_layer_desc.hpp"

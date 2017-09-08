@@ -66,8 +66,8 @@ struct dyn_dbn_float {
     using dbn_t =
         dll::dbn_desc<
             dll::dbn_layers<
-                dll::dyn_conv_desc<dll::weight_type<float>>::layer_t,
-                dll::dyn_dense_desc<dll::weight_type<float>>::layer_t
+                dll::dyn_conv_layer_desc<dll::weight_type<float>>::layer_t,
+                dll::dyn_dense_layer_desc<dll::weight_type<float>>::layer_t
             >
             , dll::trainer<dll::sgd_trainer>
             , dll::batch_size<10>
@@ -86,8 +86,8 @@ struct dyn_dbn_double {
     using dbn_t =
         dll::dbn_desc<
             dll::dbn_layers<
-                dll::dyn_conv_desc<dll::weight_type<double>>::layer_t,
-                dll::dyn_dense_desc<dll::weight_type<double>>::layer_t
+                dll::dyn_conv_layer_desc<dll::weight_type<double>>::layer_t,
+                dll::dyn_dense_layer_desc<dll::weight_type<double>>::layer_t
             >
             , dll::trainer<dll::sgd_trainer>
             , dll::batch_size<10>

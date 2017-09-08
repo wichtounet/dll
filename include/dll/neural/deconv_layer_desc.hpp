@@ -13,10 +13,10 @@
 namespace dll {
 
 /*!
- * \brief Describe a standard convolutional layer.
+ * \brief Describe a standard deconvolutional layer.
  */
 template <size_t NC_T, size_t NV_1, size_t NV_2, size_t K_T, size_t NW_1, size_t NW_2, typename... Parameters>
-struct conv_layer_desc {
+struct deconv_layer_desc {
     static constexpr size_t NV1 = NV_1; ///< The first dimension of the input
     static constexpr size_t NV2 = NV_2; ///< The second dimension of the input
     static constexpr size_t NW1 = NW_1; ///< The first dimension of the output
@@ -29,36 +29,36 @@ struct conv_layer_desc {
      */
     using parameters = cpp::type_list<Parameters...>;
 
-    static constexpr auto activation_function = detail::get_value<activation<function::SIGMOID>, Parameters...>::value;            ///< The layer's activation function
-    static constexpr auto w_initializer       = detail::get_value<initializer<initializer_type::LECUN>, Parameters...>::value;     ///< The initializer for the weights
+    static constexpr auto activation_function = detail::get_value<activation<function::SIGMOID>, Parameters...>::value; ///< The layer's activation function
+    static constexpr auto w_initializer       = detail::get_value<initializer<initializer_type::LECUN>, Parameters...>::value; ///< The initializer for the weights
     static constexpr auto b_initializer       = detail::get_value<initializer_bias<initializer_type::ZERO>, Parameters...>::value; ///< The initializer for the biases
 
     /*! The type used to store the weights */
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
 
     /*! The conv type */
-    using layer_t = conv_layer_impl<conv_layer_desc<NC_T, NV_1, NV_2, K_T, NW_1, NW_2, Parameters...>>;
+    using layer_t = deconv_layer_impl<deconv_layer_desc<NC_T, NV_1, NV_2, K_T, NW_1, NW_2, Parameters...>>;
 
-    /*! The conv type */
-    using dyn_layer_t = dyn_conv_layer_impl<dyn_conv_desc<Parameters...>>;
+    /*! The dynamic layer conv type */
+    using dyn_layer_t = dyn_deconv_layer_impl<dyn_deconv_layer_desc<Parameters...>>;
 
     static_assert(NV1 > 0, "A matrix of at least 1x1 is necessary for the visible units");
     static_assert(NV2 > 0, "A matrix of at least 1x1 is necessary for the visible units");
-    static_assert(NW1 > 0, "A matrix of at least 1x1 is necessary for the weights");
-    static_assert(NW2 > 0, "A matrix of at least 1x1 is necessary for the weights");
+    static_assert(NW1 > 0, "A matrix of at least 1x1 is necessary for the filter shape");
+    static_assert(NW2 > 0, "A matrix of at least 1x1 is necessary for the filter shape");
     static_assert(NC > 0, "At least one channel is necessary");
     static_assert(K > 0, "At least one group is necessary");
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid<cpp::type_list<weight_type_id, activation_id, initializer_id, initializer_bias_id, no_bias_id>, Parameters...>::value,
-        "Invalid parameters type for rbm_desc");
+        detail::is_valid<cpp::type_list<weight_type_id, activation_id, initializer_id, initializer_bias_id>, Parameters...>::value,
+        "Invalid parameters type for deconv_layer_desc");
 };
 
 /*!
- * \brief Describe a standard convolutional layer.
+ * \brief Describe a standard deconvolutional layer.
  */
 template <size_t NC_T, size_t NV_1, size_t NV_2, size_t K_T, size_t NW_1, size_t NW_2, typename... Parameters>
-using conv_layer = typename conv_layer_desc<NC_T, NV_1, NV_2, K_T, NW_1, NW_2, Parameters...>::layer_t;
+using deconv_layer = typename deconv_layer_desc<NC_T, NV_1, NV_2, K_T, NW_1, NW_2, Parameters...>::layer_t;
 
 } //end of dll namespace

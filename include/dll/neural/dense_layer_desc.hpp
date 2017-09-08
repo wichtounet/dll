@@ -36,7 +36,7 @@ struct dense_layer_desc {
     using layer_t = dense_layer_impl<dense_layer_desc<visibles, hiddens, Parameters...>>;
 
     /*! The dense type */
-    using dyn_layer_t = dyn_dense_layer<dyn_dense_desc<Parameters...>>;
+    using dyn_layer_t = dyn_dense_layer_impl<dyn_dense_layer_desc<Parameters...>>;
 
     static_assert(num_visible > 0, "There must be at least 1 visible unit");
     static_assert(num_hidden > 0, "There must be at least 1 hidden unit");

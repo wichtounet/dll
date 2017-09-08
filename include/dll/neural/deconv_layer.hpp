@@ -11,4 +11,4 @@
 #include "dll/neural/dyn_deconv_layer.hpp"
 
 #include "dll/neural/deconv_layer.inl"
-#include "dll/neural/deconv_desc.hpp"
+#include "dll/neural/deconv_layer_desc.hpp"

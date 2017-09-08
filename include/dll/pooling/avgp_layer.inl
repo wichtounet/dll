@@ -79,6 +79,7 @@ struct avgp_2d_layer_impl final : pooling_2d_layer<avgp_2d_layer_impl<Desc>, Des
     void backward_batch(H&& output, C& context) const {
         static constexpr size_t C1 = base::C1; ///< The pooling first dimension
         static constexpr size_t C2 = base::C2; ///< The pooling second dimension
+        static constexpr size_t C3 = base::C3; ///< The pooling second dimension
 
         output = etl::ml::avg_pool_backward<C1, C2, C3>(context.input, context.output, context.errors);
     }

@@ -440,7 +440,7 @@ bool dllp::conv_layer::is_conv() const {
 }
 
 void dllp::conv_layer::print(std::ostream& out) const {
-    out << "dll::conv_desc<" << c << ", " << v1 << ", " << v2 << ", " << k << ", " << w1 << ", " << w2;
+    out << "dll::conv_layer_desc<" << c << ", " << v1 << ", " << v2 << ", " << k << ", " << w1 << ", " << w2;
 
     if (!activation.empty()) {
         out << "\n  , dll::activation<dll::function::" << activation_function(activation) << ">";

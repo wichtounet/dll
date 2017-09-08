@@ -16,7 +16,7 @@ namespace dll {
  * \brief Describe a standard dynamic deconvolutional layer.
  */
 template <typename... Parameters>
-struct dyn_deconv_desc {
+struct dyn_deconv_layer_desc {
     /*!
      * \brief A list of all the parameters of the descriptor
      */
@@ -30,7 +30,7 @@ struct dyn_deconv_desc {
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
 
     /*! The layer type */
-    using layer_t = dyn_deconv_layer_impl<dyn_deconv_desc<Parameters...>>;
+    using layer_t = dyn_deconv_layer_impl<dyn_deconv_layer_desc<Parameters...>>;
 
     /*! The dynamic layer type */
     using dyn_layer_t = layer_t;
@@ -38,7 +38,13 @@ struct dyn_deconv_desc {
     //Make sure only valid types are passed to the configuration list
     static_assert(
         detail::is_valid<cpp::type_list<weight_type_id, activation_id, initializer_id, initializer_bias_id>, Parameters...>::value,
-        "Invalid parameters type for dyn_deconv_desc");
+        "Invalid parameters type for dyn_deconv_layer_desc");
 };
+
+/*!
+ * \brief Describe a standard dynamic deconvolutional layer.
+ */
+template <typename... Parameters>
+using dyn_deconv_layer = typename dyn_deconv_layer_desc<Parameters...>::layer_t;
 
 } //end of dll namespace
