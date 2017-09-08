@@ -16,7 +16,7 @@ namespace dll {
  * \brief Describe a standard convolutional layer.
  */
 template <size_t NC_T, size_t NV_1, size_t NV_2, size_t K_T, size_t NW_1, size_t NW_2, typename... Parameters>
-struct conv_desc {
+struct conv_layer_desc {
     static constexpr size_t NV1 = NV_1; ///< The first dimension of the input
     static constexpr size_t NV2 = NV_2; ///< The second dimension of the input
     static constexpr size_t NW1 = NW_1; ///< The first dimension of the output
@@ -37,7 +37,7 @@ struct conv_desc {
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
 
     /*! The conv type */
-    using layer_t = conv_layer_impl<conv_desc<NC_T, NV_1, NV_2, K_T, NW_1, NW_2, Parameters...>>;
+    using layer_t = conv_layer_impl<conv_layer_desc<NC_T, NV_1, NV_2, K_T, NW_1, NW_2, Parameters...>>;
 
     /*! The conv type */
     using dyn_layer_t = dyn_conv_layer_impl<dyn_conv_desc<Parameters...>>;
@@ -59,6 +59,6 @@ struct conv_desc {
  * \brief Describe a standard convolutional layer.
  */
 template <size_t NC_T, size_t NV_1, size_t NV_2, size_t K_T, size_t NW_1, size_t NW_2, typename... Parameters>
-using conv_desc_layer = typename conv_desc<NC_T, NV_1, NV_2, K_T, NW_1, NW_2, Parameters...>::layer_t;
+using conv_desc_layer = typename conv_layer_desc<NC_T, NV_1, NV_2, K_T, NW_1, NW_2, Parameters...>::layer_t;
 
 } //end of dll namespace

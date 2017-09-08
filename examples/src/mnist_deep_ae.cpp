@@ -20,13 +20,13 @@ int main(int /*argc*/, char* /*argv*/ []) {
 
     using network_t = dll::dyn_network_desc<
         dll::network_layers<
-            dll::dense_desc<784, 128, dll::relu>::layer_t,
-            dll::dense_desc<128, 64 , dll::relu>::layer_t,
-            dll::dense_desc<64 , 32 , dll::relu>::layer_t,
+            dll::dense_layer_desc<784, 128, dll::relu>::layer_t,
+            dll::dense_layer_desc<128, 64 , dll::relu>::layer_t,
+            dll::dense_layer_desc<64 , 32 , dll::relu>::layer_t,
             // Encoded Features
-            dll::dense_desc<32 , 64 , dll::relu>::layer_t,
-            dll::dense_desc<64 , 128, dll::relu>::layer_t,
-            dll::dense_desc<128, 784, dll::sigmoid>::layer_t
+            dll::dense_layer_desc<32 , 64 , dll::relu>::layer_t,
+            dll::dense_layer_desc<64 , 128, dll::relu>::layer_t,
+            dll::dense_layer_desc<128, 784, dll::sigmoid>::layer_t
         >
         , dll::batch_size<256>       // The mini-batch size
         , dll::shuffle               // Shuffle the dataset before each epoch

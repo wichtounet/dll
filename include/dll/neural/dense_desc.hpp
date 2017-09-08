@@ -16,7 +16,7 @@ namespace dll {
  * \brief Descriptor for a dense layer
  */
 template <size_t visibles, size_t hiddens, typename... Parameters>
-struct dense_desc {
+struct dense_layer_desc {
     static constexpr size_t num_visible = visibles; ///< The number of visible units of the dense layer
     static constexpr size_t num_hidden  = hiddens;  ///< The number of hidden units of the dense layer
 
@@ -33,7 +33,7 @@ struct dense_desc {
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
 
     /*! The dense type */
-    using layer_t = dense_layer<dense_desc<visibles, hiddens, Parameters...>>;
+    using layer_t = dense_layer_impl<dense_layer_desc<visibles, hiddens, Parameters...>>;
 
     /*! The dense type */
     using dyn_layer_t = dyn_dense_layer<dyn_dense_desc<Parameters...>>;
@@ -46,13 +46,13 @@ struct dense_desc {
         detail::is_valid<cpp::type_list<
             weight_type_id, activation_id, initializer_id, initializer_bias_id, no_bias_id>,
             Parameters...>::value,
-        "Invalid parameters type for dense_desc");
+        "Invalid parameters type for dense_layer_desc");
 };
 
 /*!
  * \brief Describe a dense layer
  */
 template <size_t visibles, size_t hiddens, typename... Parameters>
-using dense_desc_layer = typename dense_desc<visibles, hiddens, Parameters...>::layer_t;
+using dense_layer = typename dense_layer_desc<visibles, hiddens, Parameters...>::layer_t;
 
 } //end of dll namespace

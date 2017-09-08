@@ -21,9 +21,9 @@
 TEST_CASE("cifar/dense/sgd/1", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::dense_desc<3 * 32 * 32, 1000>::layer_t,
-            dll::dense_desc<1000, 500>::layer_t,
-            dll::dense_desc<500, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
+            dll::dense_layer_desc<3 * 32 * 32, 1000>::layer_t,
+            dll::dense_layer_desc<1000, 500>::layer_t,
+            dll::dense_layer_desc<500, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
         dll::trainer<dll::sgd_trainer>, dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<20>>::dbn_t dbn_t;
 
     auto dataset = dll::make_cifar10_dataset_sub(2000, 0, dll::batch_size<20>{});
@@ -42,10 +42,10 @@ TEST_CASE("cifar/dense/sgd/1", "[dense][dbn][mnist][sgd]") {
 TEST_CASE("cifar/conv/sgd/1", "[unit][conv][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_desc<3, 32, 32, 6, 5, 5>::layer_t,
-            dll::conv_desc<6, 28, 28, 6, 5, 5>::layer_t,
-            dll::dense_desc<6 * 24 * 24, 500>::layer_t,
-            dll::dense_desc<500, 10, dll::activation<dll::function::SOFTMAX>>::layer_t
+            dll::conv_layer_desc<3, 32, 32, 6, 5, 5>::layer_t,
+            dll::conv_layer_desc<6, 28, 28, 6, 5, 5>::layer_t,
+            dll::dense_layer_desc<6 * 24 * 24, 500>::layer_t,
+            dll::dense_layer_desc<500, 10, dll::activation<dll::function::SOFTMAX>>::layer_t
         >,
         dll::trainer<dll::sgd_trainer>, dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<20>>::dbn_t dbn_t;
 
@@ -66,12 +66,12 @@ TEST_CASE("cifar/conv/sgd/1", "[unit][conv][dbn][mnist][sgd]") {
 TEST_CASE("cifar/conv/sgd/2", "[unit][conv][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_desc<3, 32, 32, 12, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
+            dll::conv_layer_desc<3, 32, 32, 12, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
             dll::mp_layer_3d_desc<12, 28, 28, 1, 2, 2>::layer_t,
-            dll::conv_desc<12, 14, 14, 24, 3, 3, dll::activation<dll::function::RELU>>::layer_t,
+            dll::conv_layer_desc<12, 14, 14, 24, 3, 3, dll::activation<dll::function::RELU>>::layer_t,
             dll::mp_layer_3d_desc<24, 12, 12, 1, 2, 2>::layer_t,
-            dll::dense_desc<24 * 6 * 6, 64, dll::activation<dll::function::RELU>>::layer_t,
-            dll::dense_desc<64, 10, dll::activation<dll::function::SOFTMAX>>::layer_t
+            dll::dense_layer_desc<24 * 6 * 6, 64, dll::activation<dll::function::RELU>>::layer_t,
+            dll::dense_layer_desc<64, 10, dll::activation<dll::function::SOFTMAX>>::layer_t
         >,
         dll::trainer<dll::sgd_trainer>, dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<50>>::dbn_t dbn_t;
 

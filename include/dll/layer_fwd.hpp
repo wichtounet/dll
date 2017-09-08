@@ -69,7 +69,7 @@ template <typename Desc>
 struct scale_layer_impl;
 
 template <typename Desc>
-struct dense_layer;
+struct dense_layer_impl;
 
 template <typename Desc>
 struct dyn_dense_layer;

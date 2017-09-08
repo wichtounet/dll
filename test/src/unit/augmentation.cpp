@@ -25,8 +25,8 @@
 TEST_CASE("unit/augment/mnist/1", "[dbn][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::dense_desc<28 * 28, 300>::layer_t,
-            dll::dense_desc<300, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
+            dll::dense_layer_desc<28 * 28, 300>::layer_t,
+            dll::dense_layer_desc<300, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
         dll::batch_size<25>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(500);
@@ -102,8 +102,8 @@ TEST_CASE("unit/augment/mnist/2", "[dbn][unit]") {
 TEST_CASE("unit/augment/mnist/3", "[dbn][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::dense_desc<28 * 28, 300>::layer_t,
-            dll::dense_desc<300, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
+            dll::dense_layer_desc<28 * 28, 300>::layer_t,
+            dll::dense_layer_desc<300, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
         dll::batch_size<25>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(500);
@@ -179,8 +179,8 @@ TEST_CASE("unit/augment/mnist/4", "[dbn][unit]") {
 TEST_CASE("unit/augment/mnist/5", "[dbn][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::dense_desc<28 * 28, 300>::layer_t,
-            dll::dense_desc<300, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
+            dll::dense_layer_desc<28 * 28, 300>::layer_t,
+            dll::dense_layer_desc<300, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
         dll::batch_size<20>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(600);
@@ -256,8 +256,8 @@ TEST_CASE("unit/augment/mnist/6", "[dbn][unit]") {
 TEST_CASE("unit/augment/mnist/7", "[dbn][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::dense_desc<28 * 28, 300>::layer_t,
-            dll::dense_desc<300, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
+            dll::dense_layer_desc<28 * 28, 300>::layer_t,
+            dll::dense_layer_desc<300, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
         dll::batch_size<25>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(500);

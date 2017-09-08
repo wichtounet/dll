@@ -22,8 +22,8 @@
 TEST_CASE("conv/sgd/1", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t,
-            dll::dense_desc<10 * 24 * 24, 10, dll::activation<dll::function::SIGMOID>>::layer_t>,
+            dll::conv_layer_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t,
+            dll::dense_layer_desc<10 * 24 * 24, 10, dll::activation<dll::function::SIGMOID>>::layer_t>,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(1000);
@@ -44,8 +44,8 @@ TEST_CASE("conv/sgd/1", "[dense][dbn][mnist][sgd]") {
 TEST_CASE("conv/sgd/2", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::TANH>>::layer_t,
-            dll::dense_desc<10 * 24 * 24, 10, dll::activation<dll::function::TANH>>::layer_t>,
+            dll::conv_layer_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::TANH>>::layer_t,
+            dll::dense_layer_desc<10 * 24 * 24, 10, dll::activation<dll::function::TANH>>::layer_t>,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(1000);
@@ -68,8 +68,8 @@ TEST_CASE("conv/sgd/2", "[dense][dbn][mnist][sgd]") {
 TEST_CASE("conv/sgd/3", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
-            dll::dense_desc<10 * 24 * 24, 10, dll::activation<dll::function::TANH>>::layer_t>,
+            dll::conv_layer_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
+            dll::dense_layer_desc<10 * 24 * 24, 10, dll::activation<dll::function::TANH>>::layer_t>,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(1000);
@@ -92,9 +92,9 @@ TEST_CASE("conv/sgd/3", "[dense][dbn][mnist][sgd]") {
 TEST_CASE("conv/sgd/4", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t,
-            dll::conv_desc<10, 24, 24, 6, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t,
-            dll::dense_desc<6 * 20 * 20, 10, dll::activation<dll::function::SIGMOID>>::layer_t>,
+            dll::conv_layer_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t,
+            dll::conv_layer_desc<10, 24, 24, 6, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t,
+            dll::dense_layer_desc<6 * 20 * 20, 10, dll::activation<dll::function::SIGMOID>>::layer_t>,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(1000);
@@ -115,10 +115,10 @@ TEST_CASE("conv/sgd/4", "[dense][dbn][mnist][sgd]") {
 TEST_CASE("conv/sgd/5", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
-            dll::conv_desc<10, 24, 24, 6, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
-            dll::dense_desc<6 * 20 * 20, 200, dll::activation<dll::function::RELU>>::layer_t,
-            dll::dense_desc<200, 10, dll::activation<dll::function::SIGMOID>>::layer_t>,
+            dll::conv_layer_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
+            dll::conv_layer_desc<10, 24, 24, 6, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
+            dll::dense_layer_desc<6 * 20 * 20, 200, dll::activation<dll::function::RELU>>::layer_t,
+            dll::dense_layer_desc<200, 10, dll::activation<dll::function::SIGMOID>>::layer_t>,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(1000);
@@ -141,11 +141,11 @@ TEST_CASE("conv/sgd/5", "[dense][dbn][mnist][sgd]") {
 TEST_CASE("conv/sgd/6", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_desc<1, 28, 28, 8, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
+            dll::conv_layer_desc<1, 28, 28, 8, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
             dll::mp_layer_3d_desc<8, 24, 24, 1, 2, 2, dll::weight_type<float>>::layer_t,
-            dll::conv_desc<8, 12, 12, 6, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
-            dll::dense_desc<6 * 8 * 8, 100, dll::activation<dll::function::RELU>>::layer_t,
-            dll::dense_desc<100, 10, dll::activation<dll::function::SIGMOID>>::layer_t>,
+            dll::conv_layer_desc<8, 12, 12, 6, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
+            dll::dense_layer_desc<6 * 8 * 8, 100, dll::activation<dll::function::RELU>>::layer_t,
+            dll::dense_layer_desc<100, 10, dll::activation<dll::function::SIGMOID>>::layer_t>,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(1000);
@@ -168,11 +168,11 @@ TEST_CASE("conv/sgd/6", "[dense][dbn][mnist][sgd]") {
 TEST_CASE("conv/sgd/7", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
+            dll::conv_layer_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
             dll::avgp_layer_3d_desc<10, 24, 24, 1, 2, 2, dll::weight_type<float>>::layer_t,
-            dll::conv_desc<10, 12, 12, 6, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
-            dll::dense_desc<6 * 8 * 8, 100, dll::activation<dll::function::RELU>>::layer_t,
-            dll::dense_desc<100, 10, dll::activation<dll::function::SIGMOID>>::layer_t>,
+            dll::conv_layer_desc<10, 12, 12, 6, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
+            dll::dense_layer_desc<6 * 8 * 8, 100, dll::activation<dll::function::RELU>>::layer_t,
+            dll::dense_layer_desc<100, 10, dll::activation<dll::function::SIGMOID>>::layer_t>,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(1000);
@@ -195,12 +195,12 @@ TEST_CASE("conv/sgd/7", "[dense][dbn][mnist][sgd]") {
 TEST_CASE("lenet", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_desc<1, 28, 28, 20, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
+            dll::conv_layer_desc<1, 28, 28, 20, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
             dll::mp_layer_3d_desc<20, 24, 24, 1, 2, 2, dll::weight_type<float>>::layer_t,
-            dll::conv_desc<20, 12, 12, 50, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
+            dll::conv_layer_desc<20, 12, 12, 50, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
             dll::mp_layer_3d_desc<50, 8, 8, 1, 2, 2, dll::weight_type<float>>::layer_t,
-            dll::dense_desc<50 * 4 * 4, 500, dll::activation<dll::function::RELU>>::layer_t,
-            dll::dense_desc<500, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
+            dll::dense_layer_desc<50 * 4 * 4, 500, dll::activation<dll::function::RELU>>::layer_t,
+            dll::dense_layer_desc<500, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
         dll::updater<dll::updater_type::MOMENTUM>, dll::weight_decay<>, dll::trainer<dll::sgd_trainer>, dll::batch_size<25>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(1000);
@@ -226,8 +226,8 @@ TEST_CASE("lenet", "[dense][dbn][mnist][sgd]") {
 TEST_CASE("conv/sgd/8", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::TANH>>::layer_t,
-            dll::dense_desc<10 * 24 * 24, 10, dll::activation<dll::function::TANH>>::layer_t>,
+            dll::conv_layer_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::TANH>>::layer_t,
+            dll::dense_layer_desc<10 * 24 * 24, 10, dll::activation<dll::function::TANH>>::layer_t>,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<10>, dll::scale_pre<255>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(1000);

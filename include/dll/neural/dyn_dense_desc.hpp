@@ -40,7 +40,7 @@ struct dyn_dense_desc {
         detail::is_valid<
             cpp::type_list<weight_type_id, activation_id, initializer_id, initializer_bias_id, no_bias_id>,
         Parameters...>::value,
-        "Invalid parameters type for dense_desc");
+        "Invalid parameters type for dense_layer_desc");
 };
 
 /*!

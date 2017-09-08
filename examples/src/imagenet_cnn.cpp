@@ -45,8 +45,8 @@ int main(int /*argc*/, char* /*argv*/ []) {
             dll::conv_same_desc_layer<32, 16, 16, 32, 3, 3, dll::relu>,
             dll::mp_layer_3d_desc_layer<32, 16, 16, 1, 2, 2>,
 
-            dll::dense_desc_layer<2048, 2048, dll::relu>,
-            dll::dense_desc_layer<2048, 1000, dll::softmax>
+            dll::dense_layer<2048, 2048, dll::relu>,
+            dll::dense_layer<2048, 1000, dll::softmax>
         >,
         dll::batch_size<B>,
         dll::updater<dll::updater_type::MOMENTUM>,

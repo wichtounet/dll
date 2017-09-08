@@ -19,8 +19,8 @@
 TEST_CASE("initializer/none", "[dense][unit][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::dense_desc<28 * 28, 100, dll::initializer<dll::initializer_type::NONE>, dll::initializer_bias<dll::initializer_type::NONE>>::layer_t,
-            dll::dense_desc<100, 10, dll::initializer<dll::initializer_type::NONE>, dll::initializer_bias<dll::initializer_type::NONE>, dll::activation<dll::function::SOFTMAX>>::layer_t
+            dll::dense_layer_desc<28 * 28, 100, dll::initializer<dll::initializer_type::NONE>, dll::initializer_bias<dll::initializer_type::NONE>>::layer_t,
+            dll::dense_layer_desc<100, 10, dll::initializer<dll::initializer_type::NONE>, dll::initializer_bias<dll::initializer_type::NONE>, dll::activation<dll::function::SOFTMAX>>::layer_t
         >,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
@@ -42,8 +42,8 @@ TEST_CASE("initializer/none", "[dense][unit][mnist][sgd]") {
 TEST_CASE("initializer/zero", "[dense][unit][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::dense_desc<28 * 28, 100, dll::initializer<dll::initializer_type::ZERO>, dll::initializer_bias<dll::initializer_type::ZERO>>::layer_t,
-            dll::dense_desc<100, 10, dll::initializer<dll::initializer_type::ZERO>, dll::initializer_bias<dll::initializer_type::ZERO>, dll::activation<dll::function::SOFTMAX>>::layer_t
+            dll::dense_layer_desc<28 * 28, 100, dll::initializer<dll::initializer_type::ZERO>, dll::initializer_bias<dll::initializer_type::ZERO>>::layer_t,
+            dll::dense_layer_desc<100, 10, dll::initializer<dll::initializer_type::ZERO>, dll::initializer_bias<dll::initializer_type::ZERO>, dll::activation<dll::function::SOFTMAX>>::layer_t
         >,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
@@ -65,8 +65,8 @@ TEST_CASE("initializer/zero", "[dense][unit][mnist][sgd]") {
 TEST_CASE("initializer/gaussian", "[dense][unit][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::dense_desc<28 * 28, 100, dll::initializer<dll::initializer_type::GAUSSIAN>, dll::initializer_bias<dll::initializer_type::GAUSSIAN>>::layer_t,
-            dll::dense_desc<100, 10, dll::initializer<dll::initializer_type::GAUSSIAN>, dll::initializer_bias<dll::initializer_type::GAUSSIAN>, dll::activation<dll::function::SOFTMAX>>::layer_t
+            dll::dense_layer_desc<28 * 28, 100, dll::initializer<dll::initializer_type::GAUSSIAN>, dll::initializer_bias<dll::initializer_type::GAUSSIAN>>::layer_t,
+            dll::dense_layer_desc<100, 10, dll::initializer<dll::initializer_type::GAUSSIAN>, dll::initializer_bias<dll::initializer_type::GAUSSIAN>, dll::activation<dll::function::SOFTMAX>>::layer_t
         >,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
@@ -91,8 +91,8 @@ TEST_CASE("initializer/gaussian", "[dense][unit][mnist][sgd]") {
 TEST_CASE("initializer/small_gaussian", "[dense][unit][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::dense_desc<28 * 28, 100, dll::initializer<dll::initializer_type::SMALL_GAUSSIAN>, dll::initializer_bias<dll::initializer_type::SMALL_GAUSSIAN>>::layer_t,
-            dll::dense_desc<100, 10, dll::initializer<dll::initializer_type::SMALL_GAUSSIAN>, dll::initializer_bias<dll::initializer_type::SMALL_GAUSSIAN>, dll::activation<dll::function::SOFTMAX>>::layer_t
+            dll::dense_layer_desc<28 * 28, 100, dll::initializer<dll::initializer_type::SMALL_GAUSSIAN>, dll::initializer_bias<dll::initializer_type::SMALL_GAUSSIAN>>::layer_t,
+            dll::dense_layer_desc<100, 10, dll::initializer<dll::initializer_type::SMALL_GAUSSIAN>, dll::initializer_bias<dll::initializer_type::SMALL_GAUSSIAN>, dll::activation<dll::function::SOFTMAX>>::layer_t
         >,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
@@ -116,8 +116,8 @@ TEST_CASE("initializer/small_gaussian", "[dense][unit][mnist][sgd]") {
 TEST_CASE("initializer/lecun", "[dense][unit][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::dense_desc<28 * 28, 100, dll::initializer<dll::initializer_type::LECUN>, dll::initializer_bias<dll::initializer_type::LECUN>>::layer_t,
-            dll::dense_desc<100, 10, dll::initializer<dll::initializer_type::LECUN>, dll::initializer_bias<dll::initializer_type::LECUN>, dll::activation<dll::function::SOFTMAX>>::layer_t
+            dll::dense_layer_desc<28 * 28, 100, dll::initializer<dll::initializer_type::LECUN>, dll::initializer_bias<dll::initializer_type::LECUN>>::layer_t,
+            dll::dense_layer_desc<100, 10, dll::initializer<dll::initializer_type::LECUN>, dll::initializer_bias<dll::initializer_type::LECUN>, dll::activation<dll::function::SOFTMAX>>::layer_t
         >,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
@@ -141,8 +141,8 @@ TEST_CASE("initializer/lecun", "[dense][unit][mnist][sgd]") {
 TEST_CASE("initializer/xavier", "[dense][unit][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::dense_desc<28 * 28, 100, dll::initializer<dll::initializer_type::XAVIER>, dll::initializer_bias<dll::initializer_type::XAVIER>>::layer_t,
-            dll::dense_desc<100, 10, dll::initializer<dll::initializer_type::XAVIER>, dll::initializer_bias<dll::initializer_type::XAVIER>, dll::activation<dll::function::SOFTMAX>>::layer_t
+            dll::dense_layer_desc<28 * 28, 100, dll::initializer<dll::initializer_type::XAVIER>, dll::initializer_bias<dll::initializer_type::XAVIER>>::layer_t,
+            dll::dense_layer_desc<100, 10, dll::initializer<dll::initializer_type::XAVIER>, dll::initializer_bias<dll::initializer_type::XAVIER>, dll::activation<dll::function::SOFTMAX>>::layer_t
         >,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 
@@ -166,8 +166,8 @@ TEST_CASE("initializer/xavier", "[dense][unit][mnist][sgd]") {
 TEST_CASE("initializer/xavier_full", "[dense][unit][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::dense_desc<28 * 28, 100, dll::initializer<dll::initializer_type::XAVIER_FULL>, dll::initializer_bias<dll::initializer_type::XAVIER>>::layer_t,
-            dll::dense_desc<100, 10, dll::initializer<dll::initializer_type::XAVIER_FULL>, dll::initializer_bias<dll::initializer_type::XAVIER>, dll::activation<dll::function::SOFTMAX>>::layer_t
+            dll::dense_layer_desc<28 * 28, 100, dll::initializer<dll::initializer_type::XAVIER_FULL>, dll::initializer_bias<dll::initializer_type::XAVIER>>::layer_t,
+            dll::dense_layer_desc<100, 10, dll::initializer<dll::initializer_type::XAVIER_FULL>, dll::initializer_bias<dll::initializer_type::XAVIER>, dll::activation<dll::function::SOFTMAX>>::layer_t
         >,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;
 

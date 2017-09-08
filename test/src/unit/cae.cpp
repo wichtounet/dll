@@ -23,7 +23,7 @@
 TEST_CASE("conv/ae/deconv/1", "[dense][dbn][mnist][sgd][ae]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_desc<1, 28, 28, 2, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t,
+            dll::conv_layer_desc<1, 28, 28, 2, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t,
             dll::mp_layer_3d_desc<2, 24, 24, 1, 2, 2>::layer_t,
             // Features
             dll::upsample_layer_3d_desc<2, 12, 12, 1, 2, 2>::layer_t,

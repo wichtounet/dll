@@ -33,9 +33,9 @@ int main(int /*argc*/, char* /*argv*/ []) {
 
     using dbn_t = dll::dbn_desc<
         dll::dbn_layers<
-            dll::dense_desc<28 * 28, 500>::layer_t,
-            dll::dense_desc<500, 250>::layer_t,
-            dll::dense_desc<250, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
+            dll::dense_layer_desc<28 * 28, 500>::layer_t,
+            dll::dense_layer_desc<500, 250>::layer_t,
+            dll::dense_layer_desc<250, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
         dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<100>, dll::trainer<dll::sgd_trainer>>::dbn_t;
 
     auto net = std::make_unique<dbn_t>();
