@@ -40,4 +40,10 @@ struct shape_layer_1d_desc {
         "Invalid parameters type for shape_layer_1d_desc");
 };
 
+/*!
+ * \brief Descriptor for a 1D shaping layer.
+ */
+template <size_t S_T = 30, typename... Parameters>
+using shape_layer_1d_desc_layer = typename shape_layer_1d_desc<S_T, Parameters...>::layer_t;
+
 } //end of dll namespace

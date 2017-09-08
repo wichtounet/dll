@@ -14,7 +14,8 @@
 
 namespace dll {
 
-/*!  * \brief Describe a Convolutional Restricted Boltzmann Machine.  *
+/*!
+ * \brief Describe a Convolutional Restricted Boltzmann Machine.  *
  * This struct should be used to define a RBM either as standalone or for a DBN.
  * Once configured, the ::layer_t member returns the type of the configured RBM.
  */
@@ -116,5 +117,22 @@ public:
  */
 template <size_t NC_T, size_t NV_T, size_t K_T, size_t NW_T, typename... Parameters>
 using conv_rbm_desc_square = conv_rbm_desc<NC_T, NV_T, NV_T, K_T, NW_T, NW_T, Parameters...>;
+
+/*!
+ * \brief Describe a Convolutional Restricted Boltzmann Machine.  *
+ * This struct should be used to define a RBM either as standalone or for a DBN.
+ * Once configured, the ::layer_t member returns the type of the configured RBM.
+ */
+template <size_t NC_T, size_t NV_1, size_t NV_2, size_t K_T, size_t NW_1, size_t NW_2, typename... Parameters>
+using conv_rbm_desc_layer = typename conv_rbm_desc<NC_T, NV_1, NV_2, K_T, NW_1, NW_2, Parameters...>::layer;
+
+/*!
+ * \brief Describe a Convolutional Restricted Boltzmann Machine with square inputs and filters.
+ *
+ * This struct should be used to define a RBM either as standalone or for a DBN.
+ * Once configured, the ::rbm_t member returns the type of the configured RBM.
+ */
+template <size_t NC_T, size_t NV_T, size_t K_T, size_t NW_T, typename... Parameters>
+using conv_rbm_desc_square_layer = typename conv_rbm_desc<NC_T, NV_T, NV_T, K_T, NW_T, NW_T, Parameters...>::layer;
 
 } //end of dll namespace

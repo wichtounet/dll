@@ -26,4 +26,10 @@ struct normalize_layer_desc {
     using dyn_layer_t = normalize_layer<normalize_layer_desc>;
 };
 
+/*!
+ * \brief Descriptor for layer that normalizes the input data to
+ * zero-mean and unit-variance
+ */
+using normalize_layer_desc_layer = typename normalize_layer_desc::layer_t;
+
 } //end of dll namespace

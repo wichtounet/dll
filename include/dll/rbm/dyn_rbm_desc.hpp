@@ -70,4 +70,13 @@ struct dyn_rbm_desc {
                   "Sparsity only works with binary hidden units");
 };
 
+/*!
+ * \brief Describe a dyn RBM.
+ *
+ * This struct should be used to define a RBM either as standalone or for a DBN.
+ * Once configured, the ::layer_t member returns the type of the configured RBM.
+ */
+template <typename... Parameters>
+using dyn_rbm_desc_layer = typename dyn_rbm_desc<Parameters...>::layer_t;
+
 } //end of dll namespace

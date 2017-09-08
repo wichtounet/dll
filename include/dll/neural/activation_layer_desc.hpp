@@ -33,4 +33,13 @@ struct activation_layer_desc {
     using dyn_layer_t = activation_layer<activation_layer_desc<F>>;
 };
 
+/*!
+ * \brief A descriptor for an activation layer.
+ *
+ * Such a layer only applies an activation function to its inputs
+ * and has no weights.
+ */
+template <dll::function F = dll::function::SIGMOID>
+using activation_layer_desc_layer = typename activation_layer_desc<F>::layer_t;
+
 } //end of dll namespace

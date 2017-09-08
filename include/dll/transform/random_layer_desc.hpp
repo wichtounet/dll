@@ -25,4 +25,9 @@ struct random_layer_desc {
     using dyn_layer_t = random_layer<random_layer_desc>;
 };
 
+/*!
+ * \brief Descriptor for randomization layer
+ */
+using random_layer_desc_layer = typename random_layer_desc::layer_t;
+
 } //end of dll namespace

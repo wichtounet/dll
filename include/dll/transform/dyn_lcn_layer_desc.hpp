@@ -25,4 +25,9 @@ struct dyn_lcn_layer_desc {
     using dyn_layer_t = dyn_lcn_layer<dyn_lcn_layer_desc>;
 };
 
+/*!
+ * \brief Descriptor for a dynamic Local Contrast Normalization (LCN) layer
+ */
+using dyn_lcn_layer_desc_layer = typename dyn_lcn_layer_desc::layer_t;
+
 } //end of dll namespace

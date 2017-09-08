@@ -41,4 +41,10 @@ struct dyn_conv_desc {
         "Invalid parameters type for dyn_conv_desc");
 };
 
+/*!
+ * \brief Describe a standard dynamic convolutional layer.
+ */
+template <typename... Parameters>
+using dyn_conv_desc_layer = typename dyn_conv_desc<Parameters...>::layer_t;
+
 } //end of dll namespace

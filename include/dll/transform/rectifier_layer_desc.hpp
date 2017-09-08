@@ -28,4 +28,10 @@ struct rectifier_layer_desc {
     using dyn_layer_t = rectifier_layer<rectifier_layer_desc<M>>;
 };
 
+/*!
+ * \brief Descriptor for a rectifier layer (abs)
+ */
+template <rectifier_method M = rectifier_method::ABS>
+using rectifier_layer_desc_layer = typename rectifier_layer_desc<M>::layer_t;
+
 } //end of dll namespace

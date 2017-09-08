@@ -32,4 +32,10 @@ struct binarize_layer_desc {
     using dyn_layer_t = binarize_layer<binarize_layer_desc<T_T>>;
 };
 
+/*!
+ * \brief Descriptor for a binarization layer
+ */
+template <size_t T_T = 30>
+using binarize_layer_desc_layer = typename binarize_layer_desc<T_T>::layer_t;
+
 } //end of dll namespace

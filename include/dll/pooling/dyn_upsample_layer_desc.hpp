@@ -28,4 +28,10 @@ struct dyn_upsample_layer_3d_desc : dyn_unpooling_layer_3d_desc<Parameters...> {
     using dyn_layer_t = layer_t;
 };
 
+/*!
+ * \brief Descriptor for a dynamic 3D upsample layer
+ */
+template <typename... Parameters>
+using dyn_upsample_layer_3d_desc_layer = typename dyn_upsample_layer_3d_desc<Parameters...>::layer_t;
+
 } //end of dll namespace

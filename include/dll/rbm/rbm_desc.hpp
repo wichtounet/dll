@@ -103,4 +103,13 @@ public:
     using dyn_layer_t = typename dyn_layer_t_impl<Parameters...>::type;
 };
 
+/*!
+ * \brief Describe a RBM.
+ *
+ * This struct should be used to define a RBM either as standalone or for a DBN.
+ * Once configured, the ::layer_t member returns the type of the configured RBM.
+ */
+template <size_t visibles, size_t hiddens, typename... Parameters>
+using rbm_desc_layer = typename rbm_desc<visibles, hiddens, Parameters...>::layer_t;
+
 } //end of dll namespace

@@ -55,4 +55,10 @@ struct deconv_desc {
         "Invalid parameters type for deconv_desc");
 };
 
+/*!
+ * \brief Describe a standard deconvolutional layer.
+ */
+template <size_t NC_T, size_t NV_1, size_t NV_2, size_t K_T, size_t NW_1, size_t NW_2, typename... Parameters>
+using deconv_desc_layer = typename deconv_desc<NC_T, NV_1, NV_2, K_T, NW_1, NW_2, Parameters...>::layer_t;
+
 } //end of dll namespace

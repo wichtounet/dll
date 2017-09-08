@@ -33,4 +33,10 @@ struct dropout_layer_desc {
     using dyn_layer_t = dropout_layer<dropout_layer_desc<D>>;
 };
 
+/*!
+ * \brief A descriptor for a dropout layer.
+ */
+template <size_t D>
+using dropout_layer_desc_layer = typename dropout_layer_desc<D>::layer_t;
+
 } //end of dll namespace

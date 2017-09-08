@@ -34,4 +34,10 @@ struct dyn_shape_layer_1d_desc {
         "Invalid parameters type for dyn_shape_layer_1d_desc");
 };
 
+/*!
+ * \brief Descriptor for a Dynamic 1D shaping layer.
+ */
+template<typename... Parameters>
+using dyn_shape_layer_1d_desc_layer = typename dyn_shape_layer_1d_desc<Parameters...>::layer_t;
+
 } //end of dll namespace

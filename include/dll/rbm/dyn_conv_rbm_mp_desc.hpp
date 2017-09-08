@@ -81,4 +81,11 @@ struct dyn_conv_rbm_mp_desc {
                   "Sparsity only works with binary hidden units");
 };
 
+/*!
+ * \brief Describe a dynamic Convolutional Restricted Boltzmann Machine with Probabilistic Mapx Pooling.  *
+ * This struct should be used to define a RBM either as standalone or for a DBN.
+ */
+template <typename... Parameters>
+using dyn_conv_rbm_mp_desc_layer = typename dyn_conv_rbm_mp_desc<Parameters...>::layer_t;
+
 } //end of dll namespace

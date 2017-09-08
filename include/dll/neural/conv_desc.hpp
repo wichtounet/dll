@@ -55,4 +55,10 @@ struct conv_desc {
         "Invalid parameters type for rbm_desc");
 };
 
+/*!
+ * \brief Describe a standard convolutional layer.
+ */
+template <size_t NC_T, size_t NV_1, size_t NV_2, size_t K_T, size_t NW_1, size_t NW_2, typename... Parameters>
+using conv_desc_layer = typename conv_desc<NC_T, NV_1, NV_2, K_T, NW_1, NW_2, Parameters...>::layer_t;
+
 } //end of dll namespace

@@ -42,4 +42,10 @@ struct shape_layer_3d_desc {
         "Invalid parameters type for shape_layer_3d_desc");
 };
 
+/*!
+ * \brief Descriptor for a 3D shaping layer.
+ */
+template <size_t C_T, size_t H_T, size_t W_T, typename... Parameters>
+using shape_layer_3d_desc_layer = typename shape_layer_3d_desc<C_T, H_T, W_T, Parameters...>::layer_t;
+
 } //end of dll namespace

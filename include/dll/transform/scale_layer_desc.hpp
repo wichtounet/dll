@@ -29,4 +29,10 @@ struct scale_layer_desc {
     using dyn_layer_t = scale_layer<scale_layer_desc<A, B>>;
 };
 
+/*!
+ * \brief Descriptor for a scaling layer (multiply by A/B)
+ */
+template <int A_T, int B_T>
+using scale_layer_desc_layer = typename scale_layer_desc<A_T, B_T>::layer_t;
+
 } //end of dll namespace
