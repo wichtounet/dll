@@ -25,12 +25,12 @@ struct dropout_layer_desc {
     /*!
      * The layer type
      */
-    using layer_t = dropout_layer<dropout_layer_desc<D>>;
+    using layer_t = dropout_layer_impl<dropout_layer_desc<D>>;
 
     /*!
      * The dynamic layer type
      */
-    using dyn_layer_t = dropout_layer<dropout_layer_desc<D>>;
+    using dyn_layer_t = dropout_layer_impl<dropout_layer_desc<D>>;
 };
 
 /*!

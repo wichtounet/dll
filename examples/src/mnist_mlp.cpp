@@ -23,9 +23,9 @@ int main(int /*argc*/, char* /*argv*/ []) {
     using network_t = dll::dyn_network_desc<
         dll::network_layers<
             dll::dense_layer<28 * 28, 500>,
-            dll::dropout_layer_desc_layer<50>,
+            dll::dropout_layer<50>,
             dll::dense_layer<500, 250>,
-            dll::dropout_layer_desc_layer<50>,
+            dll::dropout_layer<50>,
             dll::dense_layer<250, 10, dll::softmax>
         >
         , dll::updater<dll::updater_type::NADAM>     // Nesterov Adam (NADAM)
