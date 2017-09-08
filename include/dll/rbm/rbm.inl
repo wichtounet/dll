@@ -29,10 +29,10 @@ namespace dll {
  * This follows the definition of a RBM by Geoffrey Hinton.
  */
 template <typename Desc>
-struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
+struct rbm_impl final : public standard_rbm<rbm_impl<Desc>, Desc> {
     using desc      = Desc;                          ///< The layer descriptor
     using weight    = typename desc::weight;         ///< The weight type
-    using this_type = rbm<desc>;                     ///< The type of this layer
+    using this_type = rbm_impl<desc>;                     ///< The type of this layer
     using base_type = standard_rbm<this_type, desc>; ///< The base type
 
     using input_t      = typename rbm_base_traits<this_type>::input_t; ///< The type of the input
@@ -81,8 +81,8 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
      * The weights are initialized from a normal distribution of
      * zero-mean and 0.1 variance.
      */
-    rbm()
-            : standard_rbm<rbm<Desc>, Desc>(), b(0.0), c(0.0) {
+    rbm_impl()
+            : standard_rbm<rbm_impl<Desc>, Desc>(), b(0.0), c(0.0) {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
         w = etl::normal_generator<weight>() * 0.1;
     }
@@ -195,7 +195,7 @@ struct rbm final : public standard_rbm<rbm<Desc>, Desc> {
  * class to the CRTP class.
  */
 template <typename Desc>
-struct rbm_base_traits<rbm<Desc>> {
+struct rbm_base_traits<rbm_impl<Desc>> {
     using desc      = Desc; ///< The descriptor of the layer
     using weight    = typename desc::weight; ///< The data type for this layer
 
@@ -208,15 +208,15 @@ struct rbm_base_traits<rbm<Desc>> {
 //Allow odr-use of the constexpr static members
 
 template <typename Desc>
-const size_t rbm<Desc>::num_visible;
+const size_t rbm_impl<Desc>::num_visible;
 
 template <typename Desc>
-const size_t rbm<Desc>::num_hidden;
+const size_t rbm_impl<Desc>::num_hidden;
 
 // Declare the traits for the RBM
 
 template<typename Desc>
-struct layer_base_traits<rbm<Desc>> {
+struct layer_base_traits<rbm_impl<Desc>> {
     static constexpr bool is_neural     = true;                                         ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = true;                                         ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false;                                        ///< Indicates if the layer is convolutional
@@ -232,7 +232,7 @@ struct layer_base_traits<rbm<Desc>> {
 };
 
 template<typename Desc>
-struct rbm_layer_base_traits<rbm<Desc>> {
+struct rbm_layer_base_traits<rbm_impl<Desc>> {
     using param = typename Desc::parameters;
 
     static constexpr bool has_momentum       = param::template contains<momentum>();                            ///< Does the RBM has momentum
@@ -252,8 +252,8 @@ struct rbm_layer_base_traits<rbm<Desc>> {
  * \brief specialization of sgd_context for rbm
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, rbm<Desc>, L> {
-    using layer_t = rbm<Desc>;
+struct sgd_context<DBN, rbm_impl<Desc>, L> {
+    using layer_t = rbm_impl<Desc>;
     using weight  = typename layer_t::weight; ///< The data type for this layer
 
     static constexpr auto num_visible = layer_t::num_visible;
@@ -273,8 +273,8 @@ struct sgd_context<DBN, rbm<Desc>, L> {
  * \brief specialization of cg_context for rbm
  */
 template <typename Desc>
-struct cg_context<rbm<Desc>> {
-    using rbm_t  = rbm<Desc>;
+struct cg_context<rbm_impl<Desc>> {
+    using rbm_t  = rbm_impl<Desc>;
     using weight = typename rbm_t::weight; ///< The data type for this layer
 
     static constexpr bool is_trained = true;

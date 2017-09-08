@@ -12,7 +12,7 @@
 namespace dll {
 
 template <typename Desc>
-struct rbm;
+struct rbm_impl;
 
 template <typename Desc>
 struct dyn_rbm;

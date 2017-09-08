@@ -86,7 +86,7 @@ struct rbm_desc {
     /*!
      * The layer type
      */
-    using layer_t = rbm<rbm_desc<visibles, hiddens, Parameters...>>;
+    using layer_t = rbm_impl<rbm_desc<visibles, hiddens, Parameters...>>;
 
 private:
     template <typename... Args>
@@ -110,6 +110,6 @@ public:
  * Once configured, the ::layer_t member returns the type of the configured RBM.
  */
 template <size_t visibles, size_t hiddens, typename... Parameters>
-using rbm_desc_layer = typename rbm_desc<visibles, hiddens, Parameters...>::layer_t;
+using rbm = typename rbm_desc<visibles, hiddens, Parameters...>::layer_t;
 
 } //end of dll namespace
