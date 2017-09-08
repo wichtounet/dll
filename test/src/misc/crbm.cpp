@@ -17,7 +17,7 @@
 #include "mnist/mnist_utils.hpp"
 
 TEST_CASE("crbm/mnist_1", "crbm::simple") {
-    dll::conv_rbm_desc_square<
+    dll::conv_rbm_square_desc<
         1, 28, 40, 17,
         dll::batch_size<25>>::layer_t rbm;
 
@@ -32,7 +32,7 @@ TEST_CASE("crbm/mnist_1", "crbm::simple") {
 }
 
 TEST_CASE("crbm/mnist_2", "crbm::momentum") {
-    dll::conv_rbm_desc_square<
+    dll::conv_rbm_square_desc<
         1, 28, 40, 17,
         dll::batch_size<25>,
         dll::momentum>::layer_t rbm;
@@ -48,7 +48,7 @@ TEST_CASE("crbm/mnist_2", "crbm::momentum") {
 }
 
 TEST_CASE("crbm/mnist_3", "crbm::decay_l1") {
-    dll::conv_rbm_desc_square<
+    dll::conv_rbm_square_desc<
         1, 28, 40, 17,
         dll::batch_size<25>,
         dll::weight_decay<dll::decay_type::L1_FULL>>::layer_t rbm;
@@ -64,7 +64,7 @@ TEST_CASE("crbm/mnist_3", "crbm::decay_l1") {
 }
 
 TEST_CASE("crbm/mnist_4", "crbm::decay_l2") {
-    dll::conv_rbm_desc_square<
+    dll::conv_rbm_square_desc<
         1, 28, 40, 17,
         dll::batch_size<25>,
         dll::weight_decay<dll::decay_type::L2_FULL>>::layer_t rbm;
@@ -80,7 +80,7 @@ TEST_CASE("crbm/mnist_4", "crbm::decay_l2") {
 }
 
 TEST_CASE("crbm/mnist_6", "crbm::gaussian") {
-    dll::conv_rbm_desc_square<
+    dll::conv_rbm_square_desc<
         1, 28, 20, 5,
         dll::batch_size<20>,
         dll::momentum,
@@ -100,7 +100,7 @@ TEST_CASE("crbm/mnist_6", "crbm::gaussian") {
 }
 
 TEST_CASE("crbm/mnist_10", "crbm::pcd") {
-    dll::conv_rbm_desc_square<
+    dll::conv_rbm_square_desc<
         1, 28, 40, 5,
         dll::batch_size<25>,
         dll::momentum,
@@ -119,7 +119,7 @@ TEST_CASE("crbm/mnist_10", "crbm::pcd") {
 }
 
 TEST_CASE("crbm/mnist_13", "crbm::multi_channel") {
-    dll::conv_rbm_desc_square<
+    dll::conv_rbm_square_desc<
         2, 28, 40, 17,
         dll::batch_size<25>,
         dll::momentum>::layer_t rbm;
@@ -135,7 +135,7 @@ TEST_CASE("crbm/mnist_13", "crbm::multi_channel") {
 }
 
 TEST_CASE("crbm/mnist_14", "crbm::fast") {
-    dll::conv_rbm_desc_square<
+    dll::conv_rbm_square_desc<
         2, 28, 40, 17,
         dll::batch_size<25>,
         dll::momentum>::layer_t rbm;
@@ -151,7 +151,7 @@ TEST_CASE("crbm/mnist_14", "crbm::fast") {
 }
 
 TEST_CASE("crbm/mnist_15", "crbm::denoising") {
-    dll::conv_rbm_desc_square<
+    dll::conv_rbm_square_desc<
         1, 28, 40, 17,
         dll::batch_size<25>,
         dll::momentum,

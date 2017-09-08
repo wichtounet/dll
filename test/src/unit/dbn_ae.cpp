@@ -14,7 +14,7 @@
 #include "dll/rbm/rbm.hpp"
 #include "dll/rbm/dyn_rbm.hpp"
 #include "dll/dbn.hpp"
-#include "dll/transform/shape_layer_1d.hpp"
+#include "dll/transform/shape_1d_layer.hpp"
 #include "dll/transform/binarize_layer.hpp"
 
 #include "mnist/mnist_reader.hpp"

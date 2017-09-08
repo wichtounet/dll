@@ -15,7 +15,7 @@
 #include "mnist/mnist_utils.hpp"
 
 TEST_CASE("crbm/mnist_140", "crbm::slow") {
-    dll::conv_rbm_desc_square<
+    dll::conv_rbm_square_desc<
         2, 28, 40, 17,
         dll::batch_size<100>,
         dll::momentum, dll::weight_type<float>>::layer_t rbm;
@@ -33,7 +33,7 @@ TEST_CASE("crbm/mnist_140", "crbm::slow") {
 }
 
 TEST_CASE("crbm/mnist_142", "crbm::slow_second") {
-    dll::conv_rbm_desc_square<
+    dll::conv_rbm_square_desc<
         40, 12, 40, 7,
         dll::batch_size<100>,
         dll::momentum, dll::weight_type<float>>::layer_t rbm;
@@ -49,7 +49,7 @@ TEST_CASE("crbm/mnist_142", "crbm::slow_second") {
 }
 
 TEST_CASE("crbm/mnist_144", "crbm::slow") {
-    dll::conv_rbm_desc_square<
+    dll::conv_rbm_square_desc<
         1, 28, 40, 5,
         dll::batch_size<100>,
         dll::momentum, dll::weight_type<float>>::layer_t rbm;

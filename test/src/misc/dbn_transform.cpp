@@ -11,7 +11,7 @@
 
 #include "catch.hpp"
 
-#include "dll/transform/shape_layer_1d.hpp"
+#include "dll/transform/shape_1d_layer.hpp"
 #include "dll/transform/binarize_layer.hpp"
 #include "dll/transform/normalize_layer.hpp"
 #include "dll/rbm/rbm.hpp"
@@ -23,7 +23,7 @@
 TEST_CASE("dbn/mnist_18", "binarize_layer_impl") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::shape_layer_1d_desc<28 * 28>::layer_t,
+            dll::shape_1d_layer_desc<28 * 28>::layer_t,
             dll::binarize_layer_desc<30>::layer_t,
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
             dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::layer_t,
@@ -40,7 +40,7 @@ TEST_CASE("dbn/mnist_18", "binarize_layer_impl") {
 TEST_CASE("dbn/mnist_19", "normalize_layer_impl") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::shape_layer_1d_desc<28 * 28>::layer_t,
+            dll::shape_1d_layer_desc<28 * 28>::layer_t,
             dll::normalize_layer_desc::layer_t,
             dll::rbm_desc<28 * 28, 200, dll::momentum, dll::batch_size<25>, dll::visible<dll::unit_type::GAUSSIAN>>::layer_t,
             dll::rbm_desc<200, 500, dll::momentum, dll::batch_size<25>>::layer_t,

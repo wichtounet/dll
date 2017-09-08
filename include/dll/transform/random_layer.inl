@@ -16,9 +16,9 @@ namespace dll {
  * \brief Test layer that generate random outputs
  */
 template <typename Desc>
-struct random_layer : transform_layer<random_layer<Desc>> {
+struct random_layer_impl : transform_layer<random_layer_impl<Desc>> {
     using desc      = Desc;                                ///< The descriptor type
-    using base_type = transform_layer<random_layer<Desc>>; ///< The base type
+    using base_type = transform_layer<random_layer_impl<Desc>>; ///< The base type
 
     /*!
      * \brief Returns a string representation of the layer
@@ -42,7 +42,7 @@ struct random_layer : transform_layer<random_layer<Desc>> {
 // Declare the traits for the layer
 
 template<typename Desc>
-struct layer_base_traits<random_layer<Desc>> {
+struct layer_base_traits<random_layer_impl<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -58,11 +58,11 @@ struct layer_base_traits<random_layer<Desc>> {
 };
 
 /*!
- * \brief Specialization of sgd_context for random_layer
+ * \brief Specialization of sgd_context for random_layer_impl
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, random_layer<Desc>, L> {
-    using layer_t          = random_layer<Desc>;                            ///< The current layer type
+struct sgd_context<DBN, random_layer_impl<Desc>, L> {
+    using layer_t          = random_layer_impl<Desc>;                            ///< The current layer type
     using previous_layer   = typename DBN::template layer_type<L - 1>;          ///< The previous layer type
     using previous_context = sgd_context<DBN, previous_layer, L - 1>;           ///< The previous layer's context
     using inputs_t         = decltype(std::declval<previous_context>().output); ///< The type of inputs

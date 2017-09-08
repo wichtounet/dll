@@ -37,6 +37,6 @@ struct dropout_layer_desc {
  * \brief A descriptor for a dropout layer.
  */
 template <size_t D>
-using dropout_layer_desc_layer = typename dropout_layer_desc<D>::layer_t;
+using dropout_layer = typename dropout_layer_desc<D>::layer_t;
 
 } //end of dll namespace

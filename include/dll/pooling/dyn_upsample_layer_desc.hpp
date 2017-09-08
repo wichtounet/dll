@@ -22,7 +22,7 @@ struct dyn_upsample_3d_layer_desc : dyn_unpooling_3d_layer_desc<Parameters...> {
     using parameters = cpp::type_list<Parameters...>;
 
     /*! The RBM type */
-    using layer_t = dyn_upsample_3d_layer<dyn_upsample_3d_layer_desc<Parameters...>>;
+    using layer_t = dyn_upsample_3d_layer_impl<dyn_upsample_3d_layer_desc<Parameters...>>;
 
     /*! The RBM type */
     using dyn_layer_t = layer_t;
@@ -32,6 +32,6 @@ struct dyn_upsample_3d_layer_desc : dyn_unpooling_3d_layer_desc<Parameters...> {
  * \brief Descriptor for a dynamic 3D upsample layer
  */
 template <typename... Parameters>
-using dyn_upsample_3d_layer_desc_layer = typename dyn_upsample_3d_layer_desc<Parameters...>::layer_t;
+using dyn_upsample_3d_layer = typename dyn_upsample_3d_layer_desc<Parameters...>::layer_t;
 
 } //end of dll namespace

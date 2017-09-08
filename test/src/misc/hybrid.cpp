@@ -22,7 +22,7 @@
 #include "dll/transform/normalize_layer.hpp"
 #include "dll/transform/rectifier_layer.hpp"
 #include "dll/transform/lcn_layer.hpp"
-#include "dll/transform/shape_layer_1d.hpp"
+#include "dll/transform/shape_1d_layer.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -100,9 +100,9 @@ TEST_CASE("hybrid/mnist/3", "") {
 TEST_CASE("hybrid/mnist/4", "") {
     typedef dll::dyn_dbn_desc<
         dll::dbn_layers<
-            dll::conv_rbm_desc_square<1, 28, 40, 17, dll::momentum, dll::batch_size<25>>::layer_t,
-            dll::conv_rbm_desc_square<40, 12, 20, 3, dll::momentum, dll::batch_size<25>>::layer_t,
-            dll::conv_rbm_desc_square<20, 10, 50, 5, dll::momentum, dll::batch_size<25>>::layer_t>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
+            dll::conv_rbm_square_desc<1, 28, 40, 17, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::conv_rbm_square_desc<40, 12, 20, 3, dll::momentum, dll::batch_size<25>>::layer_t,
+            dll::conv_rbm_square_desc<20, 10, 50, 5, dll::momentum, dll::batch_size<25>>::layer_t>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_3d<std::vector, etl::dyn_matrix<float, 3>>(100);
     REQUIRE(!dataset.training_images.empty());
@@ -117,7 +117,7 @@ TEST_CASE("hybrid/mnist/4", "") {
 TEST_CASE("hybrid/mnist/6", "") {
     typedef dll::dyn_dbn_desc<
         dll::dbn_layers<
-            dll::shape_layer_1d_desc<28 * 28>::layer_t,
+            dll::shape_1d_layer_desc<28 * 28>::layer_t,
             dll::binarize_layer_desc<30>::layer_t,
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
             dll::rbm_desc<100, 200, dll::momentum, dll::batch_size<25>>::layer_t,
@@ -134,7 +134,7 @@ TEST_CASE("hybrid/mnist/6", "") {
 TEST_CASE("hybrid/mnist/7", "") {
     typedef dll::dyn_dbn_desc<
         dll::dbn_layers<
-            dll::shape_layer_1d_desc<28 * 28>::layer_t,
+            dll::shape_1d_layer_desc<28 * 28>::layer_t,
             dll::normalize_layer_desc::layer_t,
             dll::rbm_desc<28 * 28, 200, dll::momentum, dll::batch_size<25>, dll::visible<dll::unit_type::GAUSSIAN>>::layer_t,
             dll::rbm_desc<200, 500, dll::momentum, dll::batch_size<25>>::layer_t,
@@ -171,8 +171,8 @@ TEST_CASE("hybrid/mnist/8", "[dense][dbn][mnist][sgd]") {
 TEST_CASE("hybrid/mnist/10", "") {
     using dbn_t =
         dll::dyn_dbn_desc<dll::dbn_layers<
-              dll::conv_rbm_desc_square<1, 28, 20, 17, dll::momentum, dll::batch_size<10>>::layer_t
-            , dll::conv_rbm_desc_square<20, 12, 20, 3, dll::momentum, dll::batch_size<10>>::layer_t
+              dll::conv_rbm_square_desc<1, 28, 20, 17, dll::momentum, dll::batch_size<10>>::layer_t
+            , dll::conv_rbm_square_desc<20, 12, 20, 3, dll::momentum, dll::batch_size<10>>::layer_t
             , dll::lcn_layer_desc<9>::layer_t
         >, dll::trainer<dll::cg_trainer>>::dbn_t;
 

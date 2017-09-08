@@ -8,55 +8,49 @@
 #pragma once
 
 #include "dll/base_traits.hpp"
-#include "transform_layer.hpp"
-#include "lcn.hpp"
+#include "dll/transform/transform_layer.hpp"
 
 namespace dll {
 
+/*!
+ * \brief Simple shape information layer
+ */
 template <typename Desc>
-struct dyn_shape_layer_1d_impl : transform_layer<dyn_shape_layer_1d_impl<Desc>> {
+struct shape_1d_layer_impl : transform_layer<shape_1d_layer_impl<Desc>> {
     using desc      = Desc;                       ///< The descriptor type
     using weight    = typename desc::weight;      ///< The data type
-    using this_type = dyn_shape_layer_1d_impl<desc>;   ///< The type of this layer
+    using this_type = shape_1d_layer_impl<desc>;       ///< The type of this layer
     using base_type = transform_layer<this_type>; ///< The base type
 
-    static constexpr size_t D = 1; ///< The number of dimensions
+    static constexpr size_t Size = desc::S; ///< The input size
+    static constexpr size_t D    = 1;       ///< The number of dimensions
 
-    using input_one_t  = etl::dyn_matrix<weight, 1>; ///< The preferred type of input
-    using output_one_t = etl::dyn_matrix<weight, 1>; ///< The type of output
+    using input_one_t  = etl::fast_dyn_matrix<weight, Size>; ///< The preferred type of input
+    using output_one_t = etl::fast_dyn_matrix<weight, Size>; ///< The type of output
 
-    size_t S;
-
-    /*!
-     * \brief Initialize the dynamic layer
-     */
-    void init_layer(size_t S){
-        cpp_assert(S > 1, "The shape must be bigger than 0");
-
-        this->S = S;
-    }
+    shape_1d_layer_impl() = default;
 
     /*!
      * \brief Returns a string representation of the layer
      */
     static std::string to_short_string() {
-        return "Shape1D(dyn)";
+        return "Shape";
     }
 
     /*!
      * \brief Return the size of the input of this layer
      * \return The size of the input of this layer
      */
-    size_t input_size() const  {
-        return S;
+    static constexpr size_t input_size() {
+        return Size;
     }
 
     /*!
      * \brief Return the size of the output of this layer
      * \return The size of the output of this layer
      */
-    size_t output_size() const {
-        return S;
+    static constexpr size_t output_size() {
+        return Size;
     }
 
     /*!
@@ -65,7 +59,7 @@ struct dyn_shape_layer_1d_impl : transform_layer<dyn_shape_layer_1d_impl<Desc>> 
      * \param input The batch of input to apply the layer to
      */
     template <typename Input, typename Output>
-    void forward_batch(Output& output, const Input& input) const {
+    static void forward_batch(Output& output, const Input& input) {
         output = input;
     }
 
@@ -102,10 +96,15 @@ struct dyn_shape_layer_1d_impl : transform_layer<dyn_shape_layer_1d_impl<Desc>> 
     }
 };
 
+//Allow odr-use of the constexpr static members
+
+template <typename Desc>
+const size_t shape_1d_layer_impl<Desc>::Size;
+
 // Declare the traits for the layer
 
 template<typename Desc>
-struct layer_base_traits<dyn_shape_layer_1d_impl<Desc>> {
+struct layer_base_traits<shape_1d_layer_impl<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -115,28 +114,26 @@ struct layer_base_traits<dyn_shape_layer_1d_impl<Desc>> {
     static constexpr bool is_pooling    = false; ///< Indicates if the layer is a pooling layer
     static constexpr bool is_unpooling  = false; ///< Indicates if the layer is an unpooling laye
     static constexpr bool is_transform  = true;  ///< Indicates if the layer is a transform layer
-    static constexpr bool is_dynamic    = true; ///< Indicates if the layer is dynamic
+    static constexpr bool is_dynamic    = false; ///< Indicates if the layer is dynamic
     static constexpr bool pretrain_last = false; ///< Indicates if the layer is dynamic
     static constexpr bool sgd_supported = true;  ///< Indicates if the layer is supported by SGD
 };
 
 /*!
- * \brief Specialization of sgd_context for dyn_lcn_layer_impl
+ * \brief Specialization of sgd_context for shape_layer
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, dyn_shape_layer_1d_impl<Desc>, L> {
-    using layer_t = dyn_shape_layer_1d_impl<Desc>;
+struct sgd_context<DBN, shape_1d_layer_impl<Desc>, L> {
+    using layer_t = shape_1d_layer_impl<Desc>;
     using weight  = typename DBN::weight; ///< The data type for this layer
 
     static constexpr auto batch_size = DBN::batch_size;
 
-    using inputs_t = etl::dyn_matrix<weight, 2>;
+    etl::fast_matrix<weight, batch_size, layer_t::Size> input;
+    etl::fast_matrix<weight, batch_size, layer_t::Size> output;
+    etl::fast_matrix<weight, batch_size, layer_t::Size> errors;
 
-    inputs_t input;  ///< A batch of input
-    inputs_t output; ///< A batch of output
-    inputs_t errors; ///< A batch of errors
-
-    sgd_context(layer_t& layer) : input(batch_size, layer.S), output(batch_size, layer.S), errors(batch_size, layer.S){}
+    sgd_context(const shape_1d_layer_impl<Desc>& /* layer */){}
 };
 
 } //end of dll namespace

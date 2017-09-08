@@ -21,8 +21,8 @@ TEST_CASE("cdbn/sgd/4", "[dbn][mnist][sgd]") {
         dll::dbn_layers<
             dll::shape_3d_layer_desc<1, 28, 28>::layer_t,
             dll::scale_layer_desc<1, 256>::layer_t,
-            dll::conv_rbm_desc_square<1, 28, 10, 9, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::layer_t,
-            dll::conv_rbm_desc_square<10, 20, 10, 7, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::layer_t,
+            dll::conv_rbm_square_desc<1, 28, 10, 9, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::layer_t,
+            dll::conv_rbm_square_desc<10, 20, 10, 7, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::layer_t,
             dll::rbm_desc<10 * 14 * 14, 700, dll::momentum, dll::batch_size<10>>::layer_t,
             dll::rbm_desc<700, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<10>>::dbn_t dbn_t;

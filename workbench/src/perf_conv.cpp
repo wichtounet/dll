@@ -62,7 +62,7 @@ int main(int argc, char* argv []) {
     std::cout << etl::threads << " maximum threads" << std::endl;
 
     if(sub.empty() || sub == "batch"){
-        dll::conv_rbm_desc_square<2, 28, 40, 17, dll::batch_size<64>, dll::weight_type<float>>::layer_t crbm_1;
+        dll::conv_rbm_square_desc<2, 28, 40, 17, dll::batch_size<64>, dll::weight_type<float>>::layer_t crbm_1;
         MEASURE(crbm_1, "batch", dataset.training_images);
     }
 

@@ -14,7 +14,7 @@
 #include "mnist/mnist_utils.hpp"
 
 int main(int /*argc*/, char* /*argv*/ []) {
-    dll::conv_rbm_desc_square<
+    dll::conv_rbm_square_desc<
         1, 28, 40, 17,
         dll::momentum,
         dll::batch_size<50>,

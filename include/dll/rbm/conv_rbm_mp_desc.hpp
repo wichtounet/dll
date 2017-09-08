@@ -144,6 +144,6 @@ using conv_rbm_mp = typename conv_rbm_mp_desc<NC_T, NV_1, NV_2, K_T, NW_1, NW_2,
  * This struct should be used to define a RBM either as standalone or for a DBN.
  */
 template <size_t NC_T, size_t NV_T, size_t K_T, size_t NW_T, size_t C_T, typename... Parameters>
-using conv_rbm_mp_desc_square_layer = typename conv_rbm_mp_desc<NC_T, NV_T, NV_T, K_T, NW_T, NW_T, C_T, Parameters...>::layer_t;
+using conv_rbm_mp_square = typename conv_rbm_mp_desc<NC_T, NV_T, NV_T, K_T, NW_T, NW_T, C_T, Parameters...>::layer_t;
 
 } //end of dll namespace

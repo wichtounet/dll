@@ -137,24 +137,24 @@ struct dyn_batch_normalization_4d_layer_desc {
  * \brief A descriptor for a 2D Batch Normalization layer.
  */
 template<size_t I, typename... Parameters>
-using batch_normalization_2d_layer = typename batch_normalization_2d_desc<I, Parameters...>::layer_t;
+using batch_normalization_2d_layer = typename batch_normalization_2d_layer_desc<I, Parameters...>::layer_t;
 
 /*!
  * \brief A descriptor for a dynamic 4D Batch Normalization layer.
  */
 template<typename... Parameters>
-using dyn_batch_normalization_4d_layer_desc = typename dyn_batch_normalization_2d_desc<Parameters...>::layer_t;
+using dyn_batch_normalization_4d_layer = typename dyn_batch_normalization_2d_layer_desc<Parameters...>::layer_t;
 
 /*!
  * \brief A descriptor for a 4D Batch Normalization layer.
  */
 template<size_t K, size_t W, size_t H, typename... Parameters>
-using batch_normalization_4d_layer_desc = typename batch_normalization_4d_desc<K, W, H, Parameters...>::layer_t;
+using batch_normalization_4d_layer = typename batch_normalization_4d_layer_desc<K, W, H, Parameters...>::layer_t;
 
 /*!
  * \brief A descriptor for a dynamic 4D Batch Normalization layer.
  */
 template<typename... Parameters>
-using dyn_batch_normalization_4d_layer_desc = typename dyn_batch_normalization_4d_layer_impl<Parameters...>::layer_t;
+using dyn_batch_normalization_4d_layer = typename dyn_batch_normalization_4d_layer_desc<Parameters...>::layer_t;
 
 } //end of dll namespace

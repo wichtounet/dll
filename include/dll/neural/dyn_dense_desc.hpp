@@ -47,6 +47,6 @@ struct dyn_dense_desc {
  * \brief Describe a dense layer.
  */
 template <typename... Parameters>
-using dyn_dense_desc_layer = typename dyn_dense_desc<Parameters...>::layer_t;
+using dyn_dense_layer = typename dyn_dense_desc<Parameters...>::layer_t;
 
 } //end of dll namespace

@@ -13,7 +13,7 @@
 
 #include "dll/rbm/dyn_rbm.hpp"
 #include "dll/dbn.hpp"
-#include "dll/transform/shape_layer_1d.hpp"
+#include "dll/transform/shape_1d_layer.hpp"
 #include "dll/transform/binarize_layer.hpp"
 
 #include "mnist/mnist_reader.hpp"
@@ -50,7 +50,7 @@ TEST_CASE("unit/dyn_dbn/mnist/1", "[dyn_dbn][unit]") {
 TEST_CASE("unit/dyn_dbn/mnist/2", "[dyn_dbn][sgd][unit]") {
     using dbn_t = dll::dbn_desc<
         dll::dbn_layers<
-            dll::shape_layer_1d_desc<28 * 28>::layer_t,
+            dll::shape_1d_layer_desc<28 * 28>::layer_t,
             dll::binarize_layer_desc<30>::layer_t,
             dll::dyn_rbm_desc<dll::momentum, dll::init_weights>::layer_t,
             dll::dyn_rbm_desc<dll::momentum>::layer_t,

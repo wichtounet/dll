@@ -20,9 +20,9 @@
 TEST_CASE("unit/cdbn/random/mnist/1", "[cdbn][rectifier][svm][unit]") {
     using dbn_t =
         dll::dbn_desc<dll::dbn_layers<
-              dll::conv_rbm_desc_square<1, 28, 20, 17, dll::momentum, dll::batch_size<10>>::layer_t
+              dll::conv_rbm_square_desc<1, 28, 20, 17, dll::momentum, dll::batch_size<10>>::layer_t
             , dll::random_layer_desc::layer_t
-            , dll::conv_rbm_desc_square<20, 12, 20, 3, dll::momentum, dll::batch_size<10>>::layer_t
+            , dll::conv_rbm_square_desc<20, 12, 20, 3, dll::momentum, dll::batch_size<10>>::layer_t
         >>::dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(75);

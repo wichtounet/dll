@@ -61,8 +61,8 @@ int main(int argc, char* argv []) {
     std::cout << etl::threads << " maximum threads" << std::endl;
 
     if(sub.empty() || sub == "batch"){
-        dll::conv_rbm_desc_square<1, 28, 20, 17, dll::visible<dll::unit_type::GAUSSIAN>, dll::weight_decay<dll::decay_type::L2>, dll::momentum, dll::shuffle, dll::batch_size<25>, dll::weight_type<float>>::layer_t crbm_float;
-        dll::conv_rbm_desc_square<1, 28, 20, 17, dll::visible<dll::unit_type::GAUSSIAN>, dll::weight_decay<dll::decay_type::L2>, dll::momentum, dll::shuffle, dll::batch_size<25>, dll::weight_type<double>>::layer_t crbm_double;
+        dll::conv_rbm_square_desc<1, 28, 20, 17, dll::visible<dll::unit_type::GAUSSIAN>, dll::weight_decay<dll::decay_type::L2>, dll::momentum, dll::shuffle, dll::batch_size<25>, dll::weight_type<float>>::layer_t crbm_float;
+        dll::conv_rbm_square_desc<1, 28, 20, 17, dll::visible<dll::unit_type::GAUSSIAN>, dll::weight_decay<dll::decay_type::L2>, dll::momentum, dll::shuffle, dll::batch_size<25>, dll::weight_type<double>>::layer_t crbm_double;
         MEASURE(crbm_float, "batch_float", dataset.training_images);
         MEASURE(crbm_double, "batch_double", dataset.training_images);
     }

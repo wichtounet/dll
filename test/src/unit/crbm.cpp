@@ -17,7 +17,7 @@
 #include "mnist/mnist_utils.hpp"
 
 TEST_CASE("unit/crbm/mnist/1", "[crbm][unit]") {
-    dll::conv_rbm_desc_square<
+    dll::conv_rbm_square_desc<
         1, 28, 20, 17,
         dll::batch_size<10>,
         dll::weight_decay<dll::decay_type::L2_FULL>,
@@ -43,7 +43,7 @@ TEST_CASE("unit/crbm/mnist/1", "[crbm][unit]") {
 }
 
 TEST_CASE("unit/crbm/mnist/2", "[crbm][parallel][unit]") {
-    dll::conv_rbm_desc_square<
+    dll::conv_rbm_square_desc<
         1, 28, 20, 5,
         dll::batch_size<25>,
         dll::momentum,
@@ -60,7 +60,7 @@ TEST_CASE("unit/crbm/mnist/2", "[crbm][parallel][unit]") {
 }
 
 TEST_CASE("unit/crbm/mnist/4", "[crbm][unit]") {
-    dll::conv_rbm_desc_square<
+    dll::conv_rbm_square_desc<
         1, 28, 20, 17,
         dll::batch_size<25>,
         dll::momentum,
@@ -95,7 +95,7 @@ TEST_CASE("unit/crbm/mnist/4", "[crbm][unit]") {
 }
 
 TEST_CASE("unit/crbm/mnist/5", "[crbm][unit]") {
-    dll::conv_rbm_desc_square<
+    dll::conv_rbm_square_desc<
         1, 28, 20, 9,
         dll::batch_size<20>,
         dll::momentum,
@@ -115,7 +115,7 @@ TEST_CASE("unit/crbm/mnist/5", "[crbm][unit]") {
 }
 
 TEST_CASE("unit/crbm/mnist/6", "[crbm][unit]") {
-    using layer_type = dll::conv_rbm_desc_square<
+    using layer_type = dll::conv_rbm_square_desc<
         1, 28, 20, 17,
         dll::batch_size<10>,
         dll::sparsity<>>::layer_t;
@@ -141,7 +141,7 @@ TEST_CASE("unit/crbm/mnist/6", "[crbm][unit]") {
 }
 
 TEST_CASE("unit/crbm/mnist/7", "[crbm][unit]") {
-    using layer_type = dll::conv_rbm_desc_square<
+    using layer_type = dll::conv_rbm_square_desc<
         1, 28, 20, 17,
         dll::batch_size<5>,
         dll::sparsity<dll::sparsity_method::LOCAL_TARGET>>::layer_t;

@@ -95,10 +95,10 @@ int main(int argc, char* argv []) {
     if(number.empty() || number == "3"){
 #define BATCH_MEASURE(batch)                                                                                        \
     {                                                                                                               \
-        dll::conv_rbm_desc_square<1, 28, 40, 9, dll::batch_size<batch>, dll::weight_type<float>>::layer_t crbm_1;  \
-        dll::conv_rbm_desc_square<40, 20, 40, 5, dll::batch_size<batch>, dll::weight_type<float>>::layer_t crbm_2; \
-        dll::conv_rbm_desc_square<40, 16, 96, 5, dll::batch_size<batch>, dll::weight_type<float>>::layer_t crbm_3; \
-        dll::conv_rbm_desc_square<96, 12, 8, 3, dll::batch_size<batch>, dll::weight_type<float>>::layer_t crbm_4;   \
+        dll::conv_rbm_square_desc<1, 28, 40, 9, dll::batch_size<batch>, dll::weight_type<float>>::layer_t crbm_1;  \
+        dll::conv_rbm_square_desc<40, 20, 40, 5, dll::batch_size<batch>, dll::weight_type<float>>::layer_t crbm_2; \
+        dll::conv_rbm_square_desc<40, 16, 96, 5, dll::batch_size<batch>, dll::weight_type<float>>::layer_t crbm_3; \
+        dll::conv_rbm_square_desc<96, 12, 8, 3, dll::batch_size<batch>, dll::weight_type<float>>::layer_t crbm_4;   \
         MEASURE(crbm_1, "crbm_1x28x28_batch_" #batch, data_1);                                                       \
         MEASURE(crbm_2, "crbm_40x20x20_batch_" #batch, data_2);                                                      \
         MEASURE(crbm_3, "crbm_40x16x16batch_" #batch, data_3);                                                       \

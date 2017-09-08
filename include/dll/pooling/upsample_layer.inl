@@ -16,12 +16,12 @@ namespace dll {
  * \brief Standard max pooling layer
  */
 template <typename Desc>
-struct upsample_3d_layer final : unpooling_3d_layer<upsample_3d_layer<Desc>, Desc> {
+struct upsample_3d_layer_impl final : unpooling_3d_layer<upsample_3d_layer_impl<Desc>, Desc> {
     using desc   = Desc;                                      ///< The layer descriptor
     using weight = typename desc::weight;                     ///< The layer weight type
-    using base   = unpooling_3d_layer<upsample_3d_layer<Desc>, desc>; ///< The layer base type
+    using base   = unpooling_3d_layer<upsample_3d_layer_impl<Desc>, desc>; ///< The layer base type
 
-    upsample_3d_layer() = default;
+    upsample_3d_layer_impl() = default;
 
     /*!
      * \brief Get a string representation of the layer
@@ -115,7 +115,7 @@ struct upsample_3d_layer final : unpooling_3d_layer<upsample_3d_layer<Desc>, Des
 // Declare the traits for the Layer
 
 template<typename Desc>
-struct layer_base_traits<upsample_3d_layer<Desc>> {
+struct layer_base_traits<upsample_3d_layer_impl<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -134,8 +134,8 @@ struct layer_base_traits<upsample_3d_layer<Desc>> {
  * \brief Specialization of sgd_context for upsample_layer
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, upsample_3d_layer<Desc>, L> {
-    using layer_t = upsample_3d_layer<Desc>;
+struct sgd_context<DBN, upsample_3d_layer_impl<Desc>, L> {
+    using layer_t = upsample_3d_layer_impl<Desc>;
     using weight  = typename layer_t::weight; ///< The data type for this layer
 
     static constexpr size_t I1 = layer_t::I1; ///< The input first dimension

@@ -13,7 +13,7 @@
 #include "mnist/mnist_utils.hpp"
 
 TEST_CASE("crbm/mnist_60", "crbm::global_sparsity") {
-    using rbm_type = dll::conv_rbm_desc_square<
+    using rbm_type = dll::conv_rbm_square_desc<
         1, 28, 40, 17,
         dll::batch_size<25>,
         dll::sparsity<>>::layer_t;
@@ -37,7 +37,7 @@ TEST_CASE("crbm/mnist_60", "crbm::global_sparsity") {
 }
 
 TEST_CASE("crbm/mnist_61", "crbm::local_sparsity") {
-    using rbm_type = dll::conv_rbm_desc_square<
+    using rbm_type = dll::conv_rbm_square_desc<
         1, 28, 40, 17,
         dll::batch_size<25>,
         dll::sparsity<dll::sparsity_method::LOCAL_TARGET>>::layer_t;
@@ -59,7 +59,7 @@ TEST_CASE("crbm/mnist_61", "crbm::local_sparsity") {
 }
 
 TEST_CASE("crbm/mnist_11", "crbm::bias_mode_simple") {
-    dll::conv_rbm_desc_square<
+    dll::conv_rbm_square_desc<
         1, 28, 40, 17,
         dll::batch_size<25>,
         dll::momentum,
@@ -76,7 +76,7 @@ TEST_CASE("crbm/mnist_11", "crbm::bias_mode_simple") {
 }
 
 TEST_CASE("crbm/mnist_12", "crbm::bias_mode_none") {
-    dll::conv_rbm_desc_square<
+    dll::conv_rbm_square_desc<
         1, 28, 40, 17,
         dll::batch_size<25>,
         dll::momentum,

@@ -42,10 +42,10 @@ template <typename Desc>
 struct dyn_avgp_3d_layer_impl;
 
 template <typename Desc>
-struct upsample_3d_layer;
+struct upsample_3d_layer_impl;
 
 template <typename Desc>
-struct dyn_upsample_3d_layer;
+struct dyn_upsample_3d_layer_impl;
 
 template <typename Desc>
 struct binarize_layer_impl;
@@ -57,7 +57,7 @@ template <typename Desc>
 struct rectifier_layer_impl;
 
 template <typename Desc>
-struct random_layer;
+struct random_layer_impl;
 
 template <typename Desc>
 struct lcn_layer_impl;

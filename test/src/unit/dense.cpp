@@ -10,7 +10,7 @@
 #include "dll_test.hpp"
 
 #include "dll/neural/dense_layer.hpp"
-#include "dll/transform/shape_layer_1d.hpp"
+#include "dll/transform/shape_1d_layer.hpp"
 #include "dll/neural/activation_layer.hpp"
 #include "dll/dbn.hpp"
 #include "dll/datasets.hpp"
