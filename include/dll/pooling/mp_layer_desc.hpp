@@ -22,10 +22,10 @@ struct mp_2d_layer_desc : pooling_2d_layer_desc<T_I1, T_I2, T_I3, T_C1, T_C2, Pa
     using parameters = cpp::type_list<Parameters...>;
 
     /*! The RBM type */
-    using layer_t = mp_2d_layer<mp_2d_layer_desc<T_I1, T_I2, T_I3, T_C1, T_C2, Parameters...>>;
+    using layer_t = mp_2d_layer_impl<mp_2d_layer_desc<T_I1, T_I2, T_I3, T_C1, T_C2, Parameters...>>;
 
     /*! The RBM type */
-    using dyn_layer_t = dyn_mp_2d_layer<dyn_mp_2d_layer_desc<Parameters...>>;
+    using dyn_layer_t = dyn_mp_2d_layer_impl<dyn_mp_2d_layer_desc<Parameters...>>;
 };
 
 /*!
@@ -39,22 +39,22 @@ struct mp_3d_layer_desc : pooling_3d_layer_desc<T_I1, T_I2, T_I3, T_C1, T_C2, T_
     using parameters = cpp::type_list<Parameters...>;
 
     /*! The RBM type */
-    using layer_t = mp_3d_layer<mp_3d_layer_desc<T_I1, T_I2, T_I3, T_C1, T_C2, T_C3, Parameters...>>;
+    using layer_t = mp_3d_layer_impl<mp_3d_layer_desc<T_I1, T_I2, T_I3, T_C1, T_C2, T_C3, Parameters...>>;
 
     /*! The RBM type */
-    using dyn_layer_t = dyn_mp_3d_layer<dyn_mp_3d_layer_desc<Parameters...>>;
+    using dyn_layer_t = dyn_mp_3d_layer_impl<dyn_mp_3d_layer_desc<Parameters...>>;
 };
 
 /*!
  * \brief Description of an Max Pooling two-dimensional layer.
  */
 template <size_t T_I1, size_t T_I2, size_t T_I3, size_t T_C1, size_t T_C2, typename... Parameters>
-using mp_2d_layer_desc_layer = typename mp_2d_layer_desc<T_I1, T_I2, T_I3, T_C1, T_C2, Parameters...>::layer_t;
+using mp_2d_layer = typename mp_2d_layer_desc<T_I1, T_I2, T_I3, T_C1, T_C2, Parameters...>::layer_t;
 
 /*!
  * \brief Description of an Max Pooling three-dimensional layer.
  */
 template <size_t T_I1, size_t T_I2, size_t T_I3, size_t T_C1, size_t T_C2, size_t T_C3, typename... Parameters>
-using mp_3d_layer_desc_layer = typename mp_3d_layer_desc<T_I1, T_I2, T_I3, T_C1, T_C2, T_C3, Parameters...>::layer_t;
+using mp_3d_layer = typename mp_3d_layer_desc<T_I1, T_I2, T_I3, T_C1, T_C2, T_C3, Parameters...>::layer_t;
 
 } //end of dll namespace

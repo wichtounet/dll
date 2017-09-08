@@ -87,11 +87,11 @@ TEST_CASE("unit/bn/3", "[unit][bn]") {
         dll::network_layers<
             dll::conv_layer_desc<1, 28, 28, 6, 5, 5, dll::no_bias, dll::no_activation>::layer_t,
             dll::activation_layer_desc<dll::function::SIGMOID>::layer_t,
-            dll::batch_normalization_layer_4d_desc<6, 24, 24>::layer_t,
+            dll::batch_normalization_4d_layer_desc<6, 24, 24>::layer_t,
 
             dll::conv_layer_desc<6, 24, 24, 6, 5, 5, dll::no_bias, dll::no_activation>::layer_t,
             dll::activation_layer_desc<dll::function::SIGMOID>::layer_t,
-            dll::batch_normalization_layer_4d_desc<6, 20, 20>::layer_t,
+            dll::batch_normalization_4d_layer_desc<6, 20, 20>::layer_t,
 
             dll::dense_layer_desc<6 * 20 * 20, 200, dll::no_bias, dll::no_activation>::layer_t,
             dll::activation_layer_desc<dll::function::SIGMOID>::layer_t,
@@ -126,11 +126,11 @@ TEST_CASE("unit/bn/4", "[unit][bn]") {
     using network_t = dll::network_desc<
         dll::network_layers<
             dll::conv_layer_desc<1, 28, 28, 6, 5, 5, dll::no_bias, dll::no_activation>::layer_t,
-            dll::batch_normalization_layer_4d_desc<6, 24, 24>::layer_t,
+            dll::batch_normalization_4d_layer_desc<6, 24, 24>::layer_t,
             dll::activation_layer_desc<dll::function::SIGMOID>::layer_t,
 
             dll::conv_layer_desc<6, 24, 24, 6, 5, 5, dll::no_bias, dll::no_activation>::layer_t,
-            dll::batch_normalization_layer_4d_desc<6, 20, 20>::layer_t,
+            dll::batch_normalization_4d_layer_desc<6, 20, 20>::layer_t,
             dll::activation_layer_desc<dll::function::SIGMOID>::layer_t,
 
             dll::dense_layer_desc<6 * 20 * 20, 200, dll::no_bias, dll::no_activation>::layer_t,
@@ -170,12 +170,12 @@ TEST_CASE("unit/bn/5", "[unit][bn]") {
             dll::conv_layer_desc<1, 28, 28, K, 5, 5, dll::no_bias, dll::no_activation>::layer_t,
             dll::activation_layer_desc<dll::function::SIGMOID>::layer_t,
             dll::mp_2d_layer_desc<K, 24, 24, 2, 2>::layer_t,
-            dll::batch_normalization_layer_4d_desc<K, 12, 12>::layer_t,
+            dll::batch_normalization_4d_layer_desc<K, 12, 12>::layer_t,
 
             dll::conv_layer_desc<K, 12, 12, K, 5, 5, dll::no_bias, dll::no_activation>::layer_t,
             dll::activation_layer_desc<dll::function::SIGMOID>::layer_t,
             dll::mp_2d_layer_desc<K, 8, 8, 2, 2>::layer_t,
-            dll::batch_normalization_layer_4d_desc<K, 4, 4>::layer_t,
+            dll::batch_normalization_4d_layer_desc<K, 4, 4>::layer_t,
 
             dll::dense_layer_desc<K * 4 * 4, 200, dll::no_bias, dll::no_activation>::layer_t,
             dll::activation_layer_desc<dll::function::SIGMOID>::layer_t,

@@ -70,7 +70,7 @@ struct dyn_batch_normalization_2d_layer_desc {
  * \brief A descriptor for a 4D Batch Normalization layer.
  */
 template<size_t K, size_t W, size_t H, typename... Parameters>
-struct batch_normalization_layer_4d_desc {
+struct batch_normalization_4d_layer_desc {
     /*!
      * \brief Number of feature maps
      */
@@ -94,12 +94,12 @@ struct batch_normalization_layer_4d_desc {
     /*!
      * The layer type
      */
-    using layer_t = batch_normalization_4d_layer<batch_normalization_layer_4d_desc<K, W, H, Parameters...>>;
+    using layer_t = batch_normalization_4d_layer<batch_normalization_4d_layer_desc<K, W, H, Parameters...>>;
 
     /*!
      * The dynamic layer type
      */
-    using dyn_layer_t = dyn_batch_normalization_4d_layer<batch_normalization_layer_4d_desc<K, W, H, Parameters...>>;
+    using dyn_layer_t = dyn_batch_normalization_4d_layer<batch_normalization_4d_layer_desc<K, W, H, Parameters...>>;
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
@@ -111,7 +111,7 @@ struct batch_normalization_layer_4d_desc {
  * \brief A descriptor for a dynamic 4D Batch Normalization layer.
  */
 template<typename... Parameters>
-struct dyn_batch_normalization_layer_4d_desc {
+struct dyn_batch_normalization_4d_layer_desc {
     /*!
      * The type used to store the weights
      */
@@ -120,12 +120,12 @@ struct dyn_batch_normalization_layer_4d_desc {
     /*!
      * The layer type
      */
-    using layer_t = dyn_batch_normalization_4d_layer<dyn_batch_normalization_layer_4d_desc<Parameters...>>;
+    using layer_t = dyn_batch_normalization_4d_layer<dyn_batch_normalization_4d_layer_desc<Parameters...>>;
 
     /*!
      * The dynamic layer type
      */
-    using dyn_layer_t = dyn_batch_normalization_4d_layer<dyn_batch_normalization_layer_4d_desc<Parameters...>>;
+    using dyn_layer_t = dyn_batch_normalization_4d_layer<dyn_batch_normalization_4d_layer_desc<Parameters...>>;
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
@@ -143,18 +143,18 @@ using batch_normalization_2d_layer_desc_layer = typename batch_normalization_2d_
  * \brief A descriptor for a dynamic 4D Batch Normalization layer.
  */
 template<typename... Parameters>
-using dyn_batch_normalization_layer_4d_desc = typename dyn_batch_normalization_2d_desc<Parameters...>::layer_t;
+using dyn_batch_normalization_4d_layer_desc = typename dyn_batch_normalization_2d_desc<Parameters...>::layer_t;
 
 /*!
  * \brief A descriptor for a 4D Batch Normalization layer.
  */
 template<size_t K, size_t W, size_t H, typename... Parameters>
-using batch_normalization_layer_4d_desc = typename batch_normalization_4d_desc<K, W, H, Parameters...>::layer_t;
+using batch_normalization_4d_layer_desc = typename batch_normalization_4d_desc<K, W, H, Parameters...>::layer_t;
 
 /*!
  * \brief A descriptor for a dynamic 4D Batch Normalization layer.
  */
 template<typename... Parameters>
-using dyn_batch_normalization_layer_4d_desc = typename dyn_batch_normalization_4d_layer<Parameters...>::layer_t;
+using dyn_batch_normalization_4d_layer_desc = typename dyn_batch_normalization_4d_layer<Parameters...>::layer_t;
 
 } //end of dll namespace

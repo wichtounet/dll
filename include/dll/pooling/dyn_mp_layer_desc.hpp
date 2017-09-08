@@ -22,10 +22,10 @@ struct dyn_mp_2d_layer_desc : dyn_pooling_2d_layer_desc<Parameters...> {
     using parameters = cpp::type_list<Parameters...>;
 
     /*! The RBM type */
-    using layer_t = dyn_mp_2d_layer<dyn_mp_2d_layer_desc<Parameters...>>;
+    using layer_t = dyn_mp_2d_layer_impl<dyn_mp_2d_layer_desc<Parameters...>>;
 
     /*! The RBM type */
-    using dyn_layer_t = dyn_mp_2d_layer<dyn_mp_2d_layer_desc<Parameters...>>;
+    using dyn_layer_t = dyn_mp_2d_layer_impl<dyn_mp_2d_layer_desc<Parameters...>>;
 };
 
 /*!
@@ -39,22 +39,22 @@ struct dyn_mp_3d_layer_desc : dyn_pooling_3d_layer_desc<Parameters...> {
     using parameters = cpp::type_list<Parameters...>;
 
     /*! The RBM type */
-    using layer_t = dyn_mp_3d_layer<dyn_mp_3d_layer_desc<Parameters...>>;
+    using layer_t = dyn_mp_3d_layer_impl<dyn_mp_3d_layer_desc<Parameters...>>;
 
     /*! The RBM type */
-    using dyn_layer_t = dyn_mp_3d_layer<dyn_mp_3d_layer_desc<Parameters...>>;
+    using dyn_layer_t = dyn_mp_3d_layer_impl<dyn_mp_3d_layer_desc<Parameters...>>;
 };
 
 /*!
  * \brief Description of a Dynamic Max Pooling two-dimensional layer.
  */
 template <typename... Parameters>
-using dyn_mp_2d_layer_desc_layer = typename dyn_mp_2d_layer_desc<Parameters...>::layer_t;
+using dyn_mp_2d_layer = typename dyn_mp_2d_layer_desc<Parameters...>::layer_t;
 
 /*!
  * \brief Description of a Dynamic Max Pooling three-dimensional layer.
  */
 template <typename... Parameters>
-using dyn_mp_3d_layer_desc_layer = typename dyn_mp_3d_layer_desc<Parameters...>::layer_t;
+using dyn_mp_3d_layer = typename dyn_mp_3d_layer_desc<Parameters...>::layer_t;
 
 } //end of dll namespace

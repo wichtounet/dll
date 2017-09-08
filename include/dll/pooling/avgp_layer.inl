@@ -15,17 +15,17 @@ namespace dll {
  * \brief Standard average pooling layer
  */
 template <typename Desc>
-struct avgp_2d_layer final : pooling_2d_layer<avgp_2d_layer<Desc>, Desc> {
+struct avgp_2d_layer_impl final : pooling_2d_layer<avgp_2d_layer_impl<Desc>, Desc> {
     using desc   = Desc;                                        ///< The layer descriptor
     using weight = typename desc::weight;                       ///< The layer weight type
-    using base   = pooling_2d_layer<avgp_2d_layer<Desc>, desc>; ///< The layer base type
+    using base   = pooling_2d_layer<avgp_2d_layer_impl<Desc>, desc>; ///< The layer base type
 
     using input_one_t  = typename base::input_one_t;  ///< The type of one input
     using output_one_t = typename base::output_one_t; ///< The type of one output
     using input_t      = typename base::input_t;      ///< The type of many input
     using output_t     = typename base::output_t;     ///< The type of many output
 
-    avgp_2d_layer() = default;
+    avgp_2d_layer_impl() = default;
 
     /*!
      * \brief Get a string representation of the layer
@@ -96,7 +96,7 @@ struct avgp_2d_layer final : pooling_2d_layer<avgp_2d_layer<Desc>, Desc> {
 // Declare the traits for the Layer
 
 template<typename Desc>
-struct layer_base_traits<avgp_2d_layer<Desc>> {
+struct layer_base_traits<avgp_2d_layer_impl<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -112,11 +112,11 @@ struct layer_base_traits<avgp_2d_layer<Desc>> {
 };
 
 /*!
- * \brief Specialization of sgd_context for mp_2d_layer
+ * \brief Specialization of sgd_context for mp_2d_layer_impl
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, avgp_2d_layer<Desc>, L> {
-    using layer_t = avgp_2d_layer<Desc>;
+struct sgd_context<DBN, avgp_2d_layer_impl<Desc>, L> {
+    using layer_t = avgp_2d_layer_impl<Desc>;
     using weight  = typename layer_t::weight; ///< The data type for this layer
 
     static constexpr size_t I1 = layer_t::I1; ///< The input first dimension
@@ -133,24 +133,24 @@ struct sgd_context<DBN, avgp_2d_layer<Desc>, L> {
     etl::fast_matrix<weight, batch_size, O1, O2, O3> output;
     etl::fast_matrix<weight, batch_size, O1, O2, O3> errors;
 
-    sgd_context(avgp_2d_layer<Desc>& /*layer*/){}
+    sgd_context(avgp_2d_layer_impl<Desc>& /*layer*/){}
 };
 
 /*!
  * \brief Standard average pooling layer
  */
 template <typename Desc>
-struct avgp_3d_layer final : pooling_3d_layer<avgp_3d_layer<Desc>, Desc> {
+struct avgp_3d_layer_impl final : pooling_3d_layer<avgp_3d_layer_impl<Desc>, Desc> {
     using desc   = Desc;                                        ///< The layer descriptor
     using weight = typename desc::weight;                       ///< The layer weight type
-    using base   = pooling_3d_layer<avgp_3d_layer<Desc>, desc>; ///< The layer base type
+    using base   = pooling_3d_layer<avgp_3d_layer_impl<Desc>, desc>; ///< The layer base type
 
     using input_one_t  = typename base::input_one_t;  ///< The type of one input
     using output_one_t = typename base::output_one_t; ///< The type of one output
     using input_t      = typename base::input_t;      ///< The type of many input
     using output_t     = typename base::output_t;     ///< The type of many output
 
-    avgp_3d_layer() = default;
+    avgp_3d_layer_impl() = default;
 
     /*!
      * \brief Get a string representation of the layer
@@ -222,7 +222,7 @@ struct avgp_3d_layer final : pooling_3d_layer<avgp_3d_layer<Desc>, Desc> {
 // Declare the traits for the Layer
 
 template<typename Desc>
-struct layer_base_traits<avgp_3d_layer<Desc>> {
+struct layer_base_traits<avgp_3d_layer_impl<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -238,11 +238,11 @@ struct layer_base_traits<avgp_3d_layer<Desc>> {
 };
 
 /*!
- * \brief Specialization of sgd_context for mp_3d_layer
+ * \brief Specialization of sgd_context for mp_3d_layer_impl
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, avgp_3d_layer<Desc>, L> {
-    using layer_t = avgp_3d_layer<Desc>;
+struct sgd_context<DBN, avgp_3d_layer_impl<Desc>, L> {
+    using layer_t = avgp_3d_layer_impl<Desc>;
     using weight  = typename layer_t::weight; ///< The data type for this layer
 
     static constexpr size_t I1 = layer_t::I1; ///< The input first dimension
@@ -259,7 +259,7 @@ struct sgd_context<DBN, avgp_3d_layer<Desc>, L> {
     etl::fast_matrix<weight, batch_size, O1, O2, O3> output;
     etl::fast_matrix<weight, batch_size, O1, O2, O3> errors;
 
-    sgd_context(avgp_3d_layer<Desc>& /*layer*/){}
+    sgd_context(avgp_3d_layer_impl<Desc>& /*layer*/){}
 };
 
 } //end of dll namespace

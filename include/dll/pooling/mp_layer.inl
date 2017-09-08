@@ -17,12 +17,12 @@ namespace dll {
  * \brief Standard max pooling layer (2D pooling)
  */
 template <typename Desc>
-struct mp_2d_layer final : pooling_2d_layer<mp_2d_layer<Desc>, Desc> {
+struct mp_2d_layer_impl final : pooling_2d_layer<mp_2d_layer_impl<Desc>, Desc> {
     using desc   = Desc;                                      ///< The layer descriptor
     using weight = typename desc::weight;                     ///< The layer weight type
-    using base   = pooling_2d_layer<mp_2d_layer<Desc>, desc>; ///< The layer base type
+    using base   = pooling_2d_layer<mp_2d_layer_impl<Desc>, desc>; ///< The layer base type
 
-    mp_2d_layer() = default;
+    mp_2d_layer_impl() = default;
 
     /*!
      * \brief Get a string representation of the layer
@@ -102,7 +102,7 @@ struct mp_2d_layer final : pooling_2d_layer<mp_2d_layer<Desc>, Desc> {
 // Declare the traits for the Layer
 
 template<typename Desc>
-struct layer_base_traits<mp_2d_layer<Desc>> {
+struct layer_base_traits<mp_2d_layer_impl<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -118,11 +118,11 @@ struct layer_base_traits<mp_2d_layer<Desc>> {
 };
 
 /*!
- * \brief Specialization of sgd_context for mp_2d_layer
+ * \brief Specialization of sgd_context for mp_2d_layer_impl
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, mp_2d_layer<Desc>, L> {
-    using layer_t = mp_2d_layer<Desc>;
+struct sgd_context<DBN, mp_2d_layer_impl<Desc>, L> {
+    using layer_t = mp_2d_layer_impl<Desc>;
     using weight  = typename layer_t::weight; ///< The data type for this layer
 
     static constexpr size_t I1 = layer_t::I1; ///< The input first dimension
@@ -139,19 +139,19 @@ struct sgd_context<DBN, mp_2d_layer<Desc>, L> {
     etl::fast_matrix<weight, batch_size, O1, O2, O3> output;
     etl::fast_matrix<weight, batch_size, O1, O2, O3> errors;
 
-    sgd_context(mp_2d_layer<Desc>& /*layer*/){}
+    sgd_context(mp_2d_layer_impl<Desc>& /*layer*/){}
 };
 
 /*!
  * \brief Standard max pooling layer (3D pooling)
  */
 template <typename Desc>
-struct mp_3d_layer final : pooling_3d_layer<mp_3d_layer<Desc>, Desc> {
+struct mp_3d_layer_impl final : pooling_3d_layer<mp_3d_layer_impl<Desc>, Desc> {
     using desc   = Desc;                                      ///< The layer descriptor
     using weight = typename desc::weight;                     ///< The layer weight type
-    using base   = pooling_3d_layer<mp_3d_layer<Desc>, desc>; ///< The layer base type
+    using base   = pooling_3d_layer<mp_3d_layer_impl<Desc>, desc>; ///< The layer base type
 
-    mp_3d_layer() = default;
+    mp_3d_layer_impl() = default;
 
     /*!
      * \brief Get a string representation of the layer
@@ -232,7 +232,7 @@ struct mp_3d_layer final : pooling_3d_layer<mp_3d_layer<Desc>, Desc> {
 // Declare the traits for the Layer
 
 template<typename Desc>
-struct layer_base_traits<mp_3d_layer<Desc>> {
+struct layer_base_traits<mp_3d_layer_impl<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -248,11 +248,11 @@ struct layer_base_traits<mp_3d_layer<Desc>> {
 };
 
 /*!
- * \brief Specialization of sgd_context for mp_3d_layer
+ * \brief Specialization of sgd_context for mp_3d_layer_impl
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, mp_3d_layer<Desc>, L> {
-    using layer_t = mp_3d_layer<Desc>;
+struct sgd_context<DBN, mp_3d_layer_impl<Desc>, L> {
+    using layer_t = mp_3d_layer_impl<Desc>;
     using weight  = typename layer_t::weight; ///< The data type for this layer
 
     static constexpr size_t I1 = layer_t::I1; ///< The input first dimension
@@ -269,7 +269,7 @@ struct sgd_context<DBN, mp_3d_layer<Desc>, L> {
     etl::fast_matrix<weight, batch_size, O1, O2, O3> output;
     etl::fast_matrix<weight, batch_size, O1, O2, O3> errors;
 
-    sgd_context(mp_3d_layer<Desc>& /*layer*/){}
+    sgd_context(mp_3d_layer_impl<Desc>& /*layer*/){}
 };
 
 } //end of dll namespace
