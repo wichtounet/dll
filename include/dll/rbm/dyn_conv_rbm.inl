@@ -149,8 +149,13 @@ struct dyn_conv_rbm final : public standard_crbm<dyn_conv_rbm<Desc>, Desc> {
     std::string to_short_string() const {
         char buffer[1024];
         snprintf(
-            buffer, 1024, "CRBM(dyn)(%s): %lux%lux%lu -> (%lux%lu) -> %lux%lux%lu",
-            to_string(hidden_unit).c_str(), nv1, nv2, nc, nw1, nw2, nh1, nh2, k);
+            buffer, 1024, "CRBM(dyn): %lux%lux%lu (%s) -> (%lux%lu) -> %lux%lux%lu (%s) ",
+            nv1, nv2, nc,
+            to_string(visible_unit).c_str(),
+            nw1, nw2,
+            nh1, nh2, k,
+            to_string(hidden_unit).c_str()
+            );
         return {buffer};
     }
 
