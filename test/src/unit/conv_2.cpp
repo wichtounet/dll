@@ -68,12 +68,15 @@ TEST_CASE("unit/conv/sgd/7", "[unit][conv][dbn][mnist][sgd]") {
 TEST_CASE("unit/conv/sgd/8", "[unit][conv][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_layer_desc<1, 28, 28, 6, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
-            dll::avgp_3d_layer_desc<6, 24, 24, 1, 2, 2>::layer_t,
-            dll::conv_layer_desc<6, 12, 12, 6, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
-            dll::dense_layer_desc<6 * 8 * 8, 100, dll::activation<dll::function::RELU>>::layer_t,
-            dll::dense_layer_desc<100, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::trainer<dll::sgd_trainer>, dll::updater<dll::updater_type::ADAM>, dll::batch_size<20>>::dbn_t dbn_t;
+            dll::conv_layer<1, 28, 28, 6, 5, 5, dll::relu>,
+            dll::avgp_3d_layer<6, 24, 24, 1, 2, 2>,
+            dll::conv_layer<6, 12, 12, 6, 5, 5, dll::relu>,
+            dll::dense_layer<6 * 8 * 8, 100, dll::relu>,
+            dll::dense_layer<100, 10, dll::softmax>
+        >,
+        dll::updater<dll::updater_type::ADAM>,
+        dll::batch_size<20>
+    >::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(1000);
     REQUIRE(!dataset.training_images.empty());
