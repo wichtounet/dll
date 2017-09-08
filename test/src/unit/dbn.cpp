@@ -23,9 +23,9 @@
 TEST_CASE("unit/dbn/mnist/1", "[dbn][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::rbm_desc<28 * 28, 150, dll::momentum, dll::batch_size<10>, dll::init_weights>::layer_t,
-            dll::rbm_desc<150, 250, dll::momentum, dll::batch_size<10>>::layer_t,
-            dll::rbm_desc<250, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>::layer_t>,
+            dll::rbm<28 * 28, 150, dll::momentum, dll::batch_size<10>, dll::init_weights>,
+            dll::rbm<150, 250, dll::momentum, dll::batch_size<10>>,
+            dll::rbm<250, 10, dll::momentum, dll::batch_size<10>, dll::hidden<dll::unit_type::SOFTMAX>>>,
         dll::batch_size<25>, dll::binarize_pre<30>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(500);
