@@ -20,10 +20,10 @@ namespace dll {
  * This follows the definition of a RBM by Geoffrey Hinton.
  */
 template <typename Desc>
-struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
+struct dyn_rbm_impl final : public standard_rbm<dyn_rbm_impl<Desc>, Desc> {
     using desc      = Desc; ///< The descriptor of the layer
     using weight    = typename desc::weight; ///< The data type for this layer
-    using this_type = dyn_rbm<Desc>; ///< The type of this layer
+    using this_type = dyn_rbm_impl<Desc>; ///< The type of this layer
     using base_type = standard_rbm<this_type, Desc>;
 
     using input_t      = typename rbm_base_traits<this_type>::input_t; ///< The type of the input
@@ -65,7 +65,7 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
 
     size_t batch_size = 25; ///< The batch size for pretraining
 
-    dyn_rbm() : base_type() {}
+    dyn_rbm_impl() : base_type() {}
 
     /*!
      * \brief Initialize a RBM with basic weights.
@@ -73,7 +73,7 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
      * The weights are initialized from a normal distribution of
      * zero-mean and 0.1 variance.
      */
-    dyn_rbm(size_t num_visible, size_t num_hidden)
+    dyn_rbm_impl(size_t num_visible, size_t num_hidden)
             : base_type(),
               w(num_visible, num_hidden),
               b(num_hidden, static_cast<weight>(0.0)),
@@ -230,7 +230,7 @@ struct dyn_rbm final : public standard_rbm<dyn_rbm<Desc>, Desc> {
  * class to the CRTP class.
  */
 template <typename Desc>
-struct rbm_base_traits<dyn_rbm<Desc>> {
+struct rbm_base_traits<dyn_rbm_impl<Desc>> {
     using desc      = Desc; ///< The descriptor of the layer
     using weight    = typename desc::weight; ///< The data type for this layer
 
@@ -243,7 +243,7 @@ struct rbm_base_traits<dyn_rbm<Desc>> {
 // Declare the traits for the RBM
 
 template<typename Desc>
-struct layer_base_traits<dyn_rbm<Desc>> {
+struct layer_base_traits<dyn_rbm_impl<Desc>> {
     static constexpr bool is_neural     = true;  ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = true;  ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -259,7 +259,7 @@ struct layer_base_traits<dyn_rbm<Desc>> {
 };
 
 template<typename Desc>
-struct rbm_layer_base_traits<dyn_rbm<Desc>> {
+struct rbm_layer_base_traits<dyn_rbm_impl<Desc>> {
     using param = typename Desc::parameters;
 
     static constexpr bool has_momentum       = param::template contains<momentum>();                            ///< Does the RBM has momentum
@@ -276,11 +276,11 @@ struct rbm_layer_base_traits<dyn_rbm<Desc>> {
 };
 
 /*!
- * \brief Specialization of sgd_context for dyn_rbm
+ * \brief Specialization of sgd_context for dyn_rbm_impl
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, dyn_rbm<Desc>, L> {
-    using layer_t = dyn_rbm<Desc>;
+struct sgd_context<DBN, dyn_rbm_impl<Desc>, L> {
+    using layer_t = dyn_rbm_impl<Desc>;
     using weight  = typename layer_t::weight; ///< The data type for this layer
 
     static constexpr auto batch_size = DBN::batch_size;
@@ -294,11 +294,11 @@ struct sgd_context<DBN, dyn_rbm<Desc>, L> {
 };
 
 /*!
- * \brief Specialzation of cg_context for dyn_rbm
+ * \brief Specialzation of cg_context for dyn_rbm_impl
  */
 template <typename Desc>
-struct cg_context<dyn_rbm<Desc>> {
-    using rbm_t  = dyn_rbm<Desc>;
+struct cg_context<dyn_rbm_impl<Desc>> {
+    using rbm_t  = dyn_rbm_impl<Desc>;
     using weight = typename rbm_t::weight; ///< The data type for this layer
 
     static constexpr bool is_trained = true;

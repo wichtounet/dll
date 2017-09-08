@@ -58,7 +58,7 @@ struct dyn_conv_rbm_desc {
     using watcher_t = typename detail::get_template_type<watcher<default_rbm_watcher>, Parameters...>::template value<RBM>;
 
     /*! The layer type */
-    using layer_t = dyn_conv_rbm<dyn_conv_rbm_desc<Parameters...>>;
+    using layer_t = dyn_conv_rbm_impl<dyn_conv_rbm_desc<Parameters...>>;
 
     /*! The layer type */
     using dyn_layer_t = layer_t;
@@ -82,6 +82,6 @@ struct dyn_conv_rbm_desc {
  * This struct should be used to define a RBM either as standalone or for a DBN.
  */
 template <typename... Parameters>
-using dyn_conv_rbm_desc_layer = typename dyn_conv_rbm<Parameters...>::layer_t;
+using dyn_conv_rbm = typename dyn_conv_rbm_impl<Parameters...>::layer_t;
 
 } //end of dll namespace

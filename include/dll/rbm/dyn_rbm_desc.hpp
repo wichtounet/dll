@@ -54,7 +54,7 @@ struct dyn_rbm_desc {
     using watcher_t = typename detail::get_template_type<watcher<default_rbm_watcher>, Parameters...>::template value<RBM>;
 
     /*! The layer type */
-    using layer_t = dyn_rbm<dyn_rbm_desc<Parameters...>>;
+    using layer_t = dyn_rbm_impl<dyn_rbm_desc<Parameters...>>;
 
     /*! The dynamic layer type */
     using dyn_layer_t = layer_t;
@@ -77,6 +77,6 @@ struct dyn_rbm_desc {
  * Once configured, the ::layer_t member returns the type of the configured RBM.
  */
 template <typename... Parameters>
-using dyn_rbm_desc_layer = typename dyn_rbm_desc<Parameters...>::layer_t;
+using dyn_rbm = typename dyn_rbm_desc<Parameters...>::layer_t;
 
 } //end of dll namespace

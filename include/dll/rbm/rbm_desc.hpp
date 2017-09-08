@@ -93,7 +93,7 @@ private:
     struct dyn_layer_t_impl {
         using sequence = remove_type_id<batch_size_id, Args...>;
 
-        using type = typename build_dyn_layer_t<dyn_rbm, dyn_rbm_desc, sequence, Args...>::type;
+        using type = typename build_dyn_layer_t<dyn_rbm_impl, dyn_rbm_desc, sequence, Args...>::type;
     };
 
 public:

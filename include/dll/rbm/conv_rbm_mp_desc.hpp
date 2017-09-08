@@ -78,14 +78,14 @@ struct conv_rbm_mp_desc {
     using watcher_t = typename detail::get_template_type<watcher<default_rbm_watcher>, Parameters...>::template value<RBM>;
 
     /*! The layer type */
-    using layer_t = conv_rbm_mp<conv_rbm_mp_desc<NC_T, NV_1, NV_2, K_T, NW_1, NW_2, C_T, Parameters...>>;
+    using layer_t = conv_rbm_mp_impl<conv_rbm_mp_desc<NC_T, NV_1, NV_2, K_T, NW_1, NW_2, C_T, Parameters...>>;
 
 private:
     template <typename... Args>
     struct dyn_layer_t_impl {
         using sequence = remove_type_id<batch_size_id, Args...>;
 
-        using type = typename build_dyn_layer_t<dyn_conv_rbm_mp, dyn_conv_rbm_mp_desc, sequence, Args...>::type;
+        using type = typename build_dyn_layer_t<dyn_conv_rbm_mp_impl, dyn_conv_rbm_mp_desc, sequence, Args...>::type;
     };
 
 public:
@@ -135,7 +135,7 @@ using conv_rbm_mp_desc_square = conv_rbm_mp_desc<NC_T, NV_T, NV_T, K_T, NW_T, NW
  * This struct should be used to define a RBM either as standalone or for a DBN.
  */
 template <size_t NC_T, size_t NV_1, size_t NV_2, size_t K_T, size_t NW_1, size_t NW_2, size_t C_T, typename... Parameters>
-using conv_rbm_mp_desc_layer = typename conv_rbm_mp_desc<NV_T, NV_1, NV_2, K_T, NW_1, NW_2, C_T, Parameters...>::layer_t;
+using conv_rbm_mp = typename conv_rbm_mp_desc<NC_T, NV_1, NV_2, K_T, NW_1, NW_2, C_T, Parameters...>::layer_t;
 
 /*!
  * \brief Describe a Convolutional Restricted Boltzmann Machine with

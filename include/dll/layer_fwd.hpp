@@ -15,19 +15,19 @@ template <typename Desc>
 struct rbm_impl;
 
 template <typename Desc>
-struct dyn_rbm;
+struct dyn_rbm_impl;
 
 template <typename Desc>
-struct conv_rbm;
+struct conv_rbm_impl;
 
 template <typename Desc>
-struct dyn_conv_rbm;
+struct dyn_conv_rbm_impl;
 
 template <typename Desc>
-struct conv_rbm_mp;
+struct conv_rbm_mp_impl;
 
 template <typename Desc>
-struct dyn_conv_rbm_mp;
+struct dyn_conv_rbm_mp_impl;
 
 template <typename Desc>
 struct mp_layer_3d;

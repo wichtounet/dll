@@ -24,10 +24,10 @@ namespace dll {
  * This follows the definition of a CRBM by Honglak Lee.
  */
 template <typename Desc>
-struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
+struct conv_rbm_mp_impl final : public standard_crbm_mp<conv_rbm_mp_impl<Desc>, Desc> {
     using desc      = Desc; ///< The descriptor of the layer
     using weight    = typename desc::weight; ///< The data type for this layer
-    using this_type = conv_rbm_mp<desc>; ///< The type of this layer
+    using this_type = conv_rbm_mp_impl<desc>; ///< The type of this layer
     using base_type = standard_crbm_mp<this_type, desc>;
 
     static constexpr unit_type visible_unit = desc::visible_unit; ///< The type of visible unit
@@ -86,7 +86,7 @@ struct conv_rbm_mp final : public standard_crbm_mp<conv_rbm_mp<Desc>, Desc> {
     conditional_fast_matrix_t<!dbn_only, weight, K, NP1, NP2> p2_a; ///< Activation probabilities of reconstructed hidden units
     conditional_fast_matrix_t<!dbn_only, weight, K, NP1, NP2> p2_s; ///< Sampled values of reconstructed hidden units
 
-    conv_rbm_mp() : base_type() {
+    conv_rbm_mp_impl() : base_type() {
         //Initialize the weights with a zero-mean and unit variance Gaussian distribution
         w = 0.01 * etl::normal_generator();
         b = -0.1;
@@ -227,7 +227,7 @@ private:
  * class to the CRTP class.
  */
 template <typename Desc>
-struct rbm_base_traits<conv_rbm_mp<Desc>> {
+struct rbm_base_traits<conv_rbm_mp_impl<Desc>> {
     using desc      = Desc; ///< The descriptor of the layer
     using weight    = typename desc::weight; ///< The data type for this layer
 
@@ -241,42 +241,42 @@ struct rbm_base_traits<conv_rbm_mp<Desc>> {
 //Allow odr-use of the constexpr static members
 
 template <typename Desc>
-const size_t conv_rbm_mp<Desc>::NV1;
+const size_t conv_rbm_mp_impl<Desc>::NV1;
 
 template <typename Desc>
-const size_t conv_rbm_mp<Desc>::NV2;
+const size_t conv_rbm_mp_impl<Desc>::NV2;
 
 template <typename Desc>
-const size_t conv_rbm_mp<Desc>::NH1;
+const size_t conv_rbm_mp_impl<Desc>::NH1;
 
 template <typename Desc>
-const size_t conv_rbm_mp<Desc>::NH2;
+const size_t conv_rbm_mp_impl<Desc>::NH2;
 
 template <typename Desc>
-const size_t conv_rbm_mp<Desc>::NC;
+const size_t conv_rbm_mp_impl<Desc>::NC;
 
 template <typename Desc>
-const size_t conv_rbm_mp<Desc>::NW1;
+const size_t conv_rbm_mp_impl<Desc>::NW1;
 
 template <typename Desc>
-const size_t conv_rbm_mp<Desc>::NW2;
+const size_t conv_rbm_mp_impl<Desc>::NW2;
 
 template <typename Desc>
-const size_t conv_rbm_mp<Desc>::NP1;
+const size_t conv_rbm_mp_impl<Desc>::NP1;
 
 template <typename Desc>
-const size_t conv_rbm_mp<Desc>::NP2;
+const size_t conv_rbm_mp_impl<Desc>::NP2;
 
 template <typename Desc>
-const size_t conv_rbm_mp<Desc>::K;
+const size_t conv_rbm_mp_impl<Desc>::K;
 
 template <typename Desc>
-const size_t conv_rbm_mp<Desc>::C;
+const size_t conv_rbm_mp_impl<Desc>::C;
 
 // Declare the traits for the RBM
 
 template<typename Desc>
-struct layer_base_traits<conv_rbm_mp<Desc>> {
+struct layer_base_traits<conv_rbm_mp_impl<Desc>> {
     static constexpr bool is_neural     = true;  ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = true;  ///< Indicates if the layer is convolutional
@@ -292,7 +292,7 @@ struct layer_base_traits<conv_rbm_mp<Desc>> {
 };
 
 template<typename Desc>
-struct rbm_layer_base_traits<conv_rbm_mp<Desc>> {
+struct rbm_layer_base_traits<conv_rbm_mp_impl<Desc>> {
     using param = typename Desc::parameters;
 
     static constexpr bool has_momentum       = param::template contains<momentum>();                            ///< Does the RBM has momentum

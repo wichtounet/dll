@@ -452,14 +452,14 @@ protected:
     /*!
      * \brief Pointer to the Conjugate Gradient (CG) context.
      *
-     * Needs to be shared because of dyn_rbm
+     * Needs to be shared because of dyn_rbm_impl
      */
     mutable std::shared_ptr<cg_context<parent_t>> cg_context_ptr;
 
     /*!
      * \brief Pointer to the Stochastic Gradient Descent (SGD) context.
      *
-     * Needs to be shared because of dyn_rbm
+     * Needs to be shared because of dyn_rbm_impl
      */
     mutable std::shared_ptr<void> sgd_context_ptr;
 };

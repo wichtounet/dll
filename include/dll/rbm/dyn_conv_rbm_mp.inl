@@ -18,10 +18,10 @@ namespace dll {
  * This follows the definition of a CRBM by Honglak Lee.
  */
 template <typename Desc>
-struct dyn_conv_rbm_mp final : public standard_crbm_mp<dyn_conv_rbm_mp<Desc>, Desc> {
+struct dyn_conv_rbm_mp_impl final : public standard_crbm_mp<dyn_conv_rbm_mp_impl<Desc>, Desc> {
     using desc      = Desc; ///< The descriptor of the layer
     using weight    = typename desc::weight; ///< The data type for this layer
-    using this_type = dyn_conv_rbm_mp<desc>; ///< The type of this layer
+    using this_type = dyn_conv_rbm_mp_impl<desc>; ///< The type of this layer
     using base_type = standard_crbm_mp<this_type, desc>;
 
     static constexpr unit_type visible_unit = desc::visible_unit;
@@ -80,7 +80,7 @@ struct dyn_conv_rbm_mp final : public standard_crbm_mp<dyn_conv_rbm_mp<Desc>, De
 
     size_t batch_size = 25; ///< The batch size for pretraining
 
-    dyn_conv_rbm_mp() : base_type() {
+    dyn_conv_rbm_mp_impl() : base_type() {
         // Nothing else to init
     }
 
@@ -277,7 +277,7 @@ private:
  * class to the CRTP class.
  */
 template <typename Desc>
-struct rbm_base_traits<dyn_conv_rbm_mp<Desc>> {
+struct rbm_base_traits<dyn_conv_rbm_mp_impl<Desc>> {
     using desc      = Desc; ///< The descriptor of the layer
     using weight    = typename desc::weight; ///< The data type for this layer
 
@@ -291,7 +291,7 @@ struct rbm_base_traits<dyn_conv_rbm_mp<Desc>> {
 // Declare the traits for the RBM
 
 template<typename Desc>
-struct layer_base_traits<dyn_conv_rbm_mp<Desc>> {
+struct layer_base_traits<dyn_conv_rbm_mp_impl<Desc>> {
     static constexpr bool is_neural     = true;  ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = true;  ///< Indicates if the layer is convolutional
@@ -307,7 +307,7 @@ struct layer_base_traits<dyn_conv_rbm_mp<Desc>> {
 };
 
 template<typename Desc>
-struct rbm_layer_base_traits<dyn_conv_rbm_mp<Desc>> {
+struct rbm_layer_base_traits<dyn_conv_rbm_mp_impl<Desc>> {
     using param = typename Desc::parameters;
 
     static constexpr bool has_momentum       = param::template contains<momentum>();                            ///< Does the RBM has momentum
