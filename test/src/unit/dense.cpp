@@ -20,13 +20,14 @@
 
 // Test Sigmoid network
 TEST_CASE("unit/dense/sgd/0", "[unit][dense][dbn][mnist][sgd]") {
-    typedef dll::dbn_desc<
+    using dbn_t = dll::dbn_desc<
         dll::dbn_layers<
-            dll::dense_layer_desc<28 * 28, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
-        dll::trainer<dll::sgd_trainer>, dll::batch_size<20>>::dbn_t dbn_t;
+            dll::dense_layer_desc<28 * 28, 10, dll::softmax>::layer_t>,
+        dll::batch_size<20>
+    >::dbn_t;
 
     // Load the dataset
-    auto dataset = dll::make_mnist_dataset_sub(0, 1000, 0, dll::batch_size<20>{});
+    auto dataset = dll::make_mnist_dataset_sub(0, 1000, 0, dll::normalize_pre{}, dll::batch_size<20>{});
 
     auto dbn = std::make_unique<dbn_t>();
 
