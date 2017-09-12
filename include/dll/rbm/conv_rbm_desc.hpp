@@ -36,27 +36,27 @@ struct conv_rbm_desc {
     /*!
      * \brief The batch size for training this layer
      */
-    static constexpr size_t BatchSize         = detail::get_value<batch_size<1>, Parameters...>::value;
+    static constexpr size_t BatchSize         = detail::get_value_v<batch_size<1>, Parameters...>;
 
     /*!
      * \brief The type of visible unit
      */
-    static constexpr unit_type visible_unit   = detail::get_value<visible<unit_type::BINARY>, Parameters...>::value;
+    static constexpr unit_type visible_unit   = detail::get_value_v<visible<unit_type::BINARY>, Parameters...>;
 
     /*!
      * \brief The type of hidden unit
      */
-    static constexpr unit_type hidden_unit    = detail::get_value<hidden<unit_type::BINARY>, Parameters...>::value;
+    static constexpr unit_type hidden_unit    = detail::get_value_v<hidden<unit_type::BINARY>, Parameters...>;
 
     /*!
      * \brief The sparsity penalty for pretraining
      */
-    static constexpr sparsity_method Sparsity = detail::get_value<sparsity<sparsity_method::NONE>, Parameters...>::value;
+    static constexpr sparsity_method Sparsity = detail::get_value_v<sparsity<sparsity_method::NONE>, Parameters...>;
 
     /*!
      * \brief The sparsity bias mode (LEE)
      */
-    static constexpr bias_mode Bias           = detail::get_value<bias<bias_mode::SIMPLE>, Parameters...>::value;
+    static constexpr bias_mode Bias           = detail::get_value_v<bias<bias_mode::SIMPLE>, Parameters...>;
 
     /*! The type used to store the weights */
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;

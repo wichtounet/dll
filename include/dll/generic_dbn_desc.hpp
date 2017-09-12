@@ -41,22 +41,22 @@ struct generic_dbn_desc {
     /*!
      * \brief The batch size for training this layer
      */
-    static constexpr size_t BatchSize    = detail::get_value<batch_size<1>, Parameters...>::value;
+    static constexpr size_t BatchSize    = detail::get_value_v<batch_size<1>, Parameters...>;
 
     /*!
      * \brief The number of batches kept in cache
      */
-    static constexpr size_t BigBatchSize = detail::get_value<big_batch_size<1>, Parameters...>::value;
+    static constexpr size_t BigBatchSize = detail::get_value_v<big_batch_size<1>, Parameters...>;
 
     /*!
      * \brief The pre scaling factor
      */
-    static constexpr size_t ScalePre = detail::get_value<scale_pre<0>, Parameters...>::value;
+    static constexpr size_t ScalePre = detail::get_value_v<scale_pre<0>, Parameters...>;
 
     /*!
      * \brief The pre binarization thresholding
      */
-    static constexpr size_t BinarizePre = detail::get_value<binarize_pre<0>, Parameters...>::value;
+    static constexpr size_t BinarizePre = detail::get_value_v<binarize_pre<0>, Parameters...>;
 
     /*!
      * \brief Indicates if input are normalized
@@ -66,17 +66,17 @@ struct generic_dbn_desc {
     /*!
      * \brief The type of loss used for training
      */
-    static constexpr auto Loss = detail::get_value<loss<loss_function::CATEGORICAL_CROSS_ENTROPY>, Parameters...>::value;
+    static constexpr auto Loss = detail::get_value_v<loss<loss_function::CATEGORICAL_CROSS_ENTROPY>, Parameters...>;
 
     /*!
      * \brief The type of updater for SGD
      */
-    static constexpr auto Updater = detail::get_value<updater<updater_type::SGD>, Parameters...>::value;
+    static constexpr auto Updater = detail::get_value_v<updater<updater_type::SGD>, Parameters...>;
 
     /*!
      * \brief The type of strategy for early stopping
      */
-    static constexpr auto Early = detail::get_value<early_stopping<strategy::ERROR_GOAL>, Parameters...>::value;
+    static constexpr auto Early = detail::get_value_v<early_stopping<strategy::ERROR_GOAL>, Parameters...>;
 
     /*! The type of the trainer to use to train the DBN */
     template <typename DBN>

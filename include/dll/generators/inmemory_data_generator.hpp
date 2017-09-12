@@ -729,12 +729,12 @@ struct inmemory_data_generator_desc {
     /*!
      * \brief The size of a batch
      */
-    static constexpr size_t BatchSize = detail::get_value<batch_size<1>, Parameters...>::value;
+    static constexpr size_t BatchSize = detail::get_value_v<batch_size<1>, Parameters...>;
 
     /*!
      * \brief The number of batch in cache
      */
-    static constexpr size_t BigBatchSize = detail::get_value<big_batch_size<1>, Parameters...>::value;
+    static constexpr size_t BigBatchSize = detail::get_value_v<big_batch_size<1>, Parameters...>;
 
     /*!
      * \brief Indicates if the generators must make the labels categorical
@@ -764,22 +764,22 @@ struct inmemory_data_generator_desc {
     /*!
      * \brief The elastic distortion kernel
      */
-    static constexpr size_t ElasticDistortion = detail::get_value<elastic_distortion<0>, Parameters...>::value;
+    static constexpr size_t ElasticDistortion = detail::get_value_v<elastic_distortion<0>, Parameters...>;
 
     /*!
      * \brief The noise
      */
-    static constexpr size_t Noise = detail::get_value<noise<0>, Parameters...>::value;
+    static constexpr size_t Noise = detail::get_value_v<noise<0>, Parameters...>;
 
     /*!
      * \brief The scaling
      */
-    static constexpr size_t ScalePre = detail::get_value<scale_pre<0>, Parameters...>::value;
+    static constexpr size_t ScalePre = detail::get_value_v<scale_pre<0>, Parameters...>;
 
     /*!
      * \brief The scaling
      */
-    static constexpr size_t BinarizePre = detail::get_value<binarize_pre<0>, Parameters...>::value;
+    static constexpr size_t BinarizePre = detail::get_value_v<binarize_pre<0>, Parameters...>;
 
     /*!
      * \brief Indicates if input are normalized

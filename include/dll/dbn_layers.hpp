@@ -17,19 +17,19 @@ namespace detail {
  * \brief Helper traits indicate if the set contains dynamic layers
  */
 template <typename... Layers>
-struct is_dynamic : cpp::or_u<layer_traits<Layers>::is_dynamic()...> {};
+constexpr const bool is_dynamic = cpp::or_u<layer_traits<Layers>::is_dynamic()...>::value;
 
 /*!
  * \brief Helper traits indicate if the set contains convolutional layers
  */
 template <typename... Layers>
-struct is_convolutional : cpp::or_u<layer_traits<Layers>::is_convolutional_layer()...> {};
+constexpr const bool is_convolutional = cpp::or_u<layer_traits<Layers>::is_convolutional_layer()...>::value;
 
 /*!
  * \brief Helper traits indicate if the set contains denoising layers
  */
 template <typename... Layers>
-struct is_denoising : cpp::and_u<layer_traits<Layers>::is_dense_rbm_layer()...> {};
+constexpr const bool is_denoising = cpp::and_u<layer_traits<Layers>::is_dense_rbm_layer()...>::value;
 
 /*!
  * \brief Indicates if the layer is a RBM shuffle layer
@@ -93,12 +93,12 @@ struct validate_layers_impl<L1, L2, Layers...> : cpp::bool_constant_c<
 //Note: It is not possible to add a template parameter with default value (SFINAE) on a variadic struct
 //therefore, implementing the traits as function is nicer than nested structures
 
-template <typename... Layers, cpp_enable_iff(is_dynamic<Layers...>::value)>
+template <typename... Layers, cpp_enable_iff(is_dynamic<Layers...>)>
 constexpr bool are_layers_valid() {
     return true;
 }
 
-template <typename... Layers, cpp_disable_if(is_dynamic<Layers...>::value)>
+template <typename... Layers, cpp_disable_if(is_dynamic<Layers...>)>
 constexpr bool are_layers_valid() {
     return validate_layers_impl<Layers...>();
 }
@@ -160,9 +160,9 @@ template <typename... Layers>
 struct layers <false, Layers...> {
     static constexpr size_t size = sizeof...(Layers); ///< The number of layers in the set
 
-    static constexpr bool is_dynamic        = detail::is_dynamic<Layers...>();        ///< Indicates if the set contains dynamic layers
-    static constexpr bool is_convolutional  = detail::is_convolutional<Layers...>();  ///< Indicates if the set contains convolutional layers
-    static constexpr bool is_denoising      = detail::is_denoising<Layers...>();      ///< Indicates if the set contains denoising layers
+    static constexpr bool is_dynamic        = detail::is_dynamic<Layers...>;        ///< Indicates if the set contains dynamic layers
+    static constexpr bool is_convolutional  = detail::is_convolutional<Layers...>;  ///< Indicates if the set contains convolutional layers
+    static constexpr bool is_denoising      = detail::is_denoising<Layers...>;      ///< Indicates if the set contains denoising layers
     static constexpr bool has_shuffle_layer = detail::has_shuffle_layer<Layers...>(); ///< Indicates if the set contains shuffle layers
 
     static_assert(size > 0, "A network must have at least 1 layer");
@@ -188,7 +188,7 @@ struct layers <true, Layers...> {
 
     static_assert(size > 0, "A network must have at least 1 layer");
     static_assert(detail::validate_label_layers<Layers...>::value, "The inner sizes of RBM must correspond");
-    static_assert(!detail::is_dynamic<Layers...>(), "dbn_label_layers should not be used with dynamic RBMs");
+    static_assert(!detail::is_dynamic<Layers...>, "dbn_label_layers should not be used with dynamic RBMs");
 
     using base_t      = layers_impl<std::make_index_sequence<size>, Layers...>; ///< The base implementation for layers
     using layers_list = cpp::type_list<Layers...>;                              ///< The list of layers

@@ -85,6 +85,14 @@ template <typename D>
 struct get_value<D> : cpp::auto_constant<D> {};
 
 /*!
+ * \brief Extract the value corresponding to the given configuration element from the parameters.
+ * \tparam D The configuration element type
+ * \tparam Args The arguments to extract the value from
+ */
+template <typename D, typename... Args>
+constexpr const auto get_value_v = get_value<D, Args...>::value;
+
+/*!
  * \brief Extract the first value corresponding to the given configuration element from the parameters.
  * \tparam D The configuration element type
  * \tparam Args The arguments to extract the value from

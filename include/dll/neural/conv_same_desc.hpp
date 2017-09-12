@@ -29,9 +29,9 @@ struct conv_same_desc {
      */
     using parameters = cpp::type_list<Parameters...>;
 
-    static constexpr auto activation_function = detail::get_value<activation<function::SIGMOID>, Parameters...>::value; ///< The layer's activation function
-    static constexpr auto w_initializer       = detail::get_value<initializer<initializer_type::LECUN>, Parameters...>::value; ///< The initializer for the weights
-    static constexpr auto b_initializer       = detail::get_value<initializer_bias<initializer_type::ZERO>, Parameters...>::value; ///< The initializer for the biases
+    static constexpr auto activation_function = detail::get_value_v<activation<function::SIGMOID>, Parameters...>;            ///< The layer's activation function
+    static constexpr auto w_initializer       = detail::get_value_v<initializer<initializer_type::LECUN>, Parameters...>;     ///< The initializer for the weights
+    static constexpr auto b_initializer       = detail::get_value_v<initializer_bias<initializer_type::ZERO>, Parameters...>; ///< The initializer for the biases
 
     /*! The type used to store the weights */
     using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
