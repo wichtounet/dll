@@ -55,7 +55,7 @@ inline std::string to_string(function f) {
  * \tparam F The activation function to use
  * \return The result of the activation function
  */
-template <function F, typename E, cpp_enable_if(F == function::IDENTITY)>
+template <function F, typename E, cpp_enable_iff(F == function::IDENTITY)>
 decltype(auto) f_activate(E&& expr) {
     return etl::identity(std::forward<E>(expr));
 }
@@ -63,7 +63,7 @@ decltype(auto) f_activate(E&& expr) {
 /*!
  * \copydoc f_activate
  */
-template <function F, typename E, cpp_enable_if(F == function::SIGMOID)>
+template <function F, typename E, cpp_enable_iff(F == function::SIGMOID)>
 decltype(auto) f_activate(E&& expr) {
     return etl::sigmoid(std::forward<E>(expr));
 }
@@ -71,7 +71,7 @@ decltype(auto) f_activate(E&& expr) {
 /*!
  * \copydoc f_activate
  */
-template <function F, typename E, cpp_enable_if(F == function::TANH)>
+template <function F, typename E, cpp_enable_iff(F == function::TANH)>
 decltype(auto) f_activate(E&& expr) {
     return etl::tanh(std::forward<E>(expr));
 }
@@ -79,7 +79,7 @@ decltype(auto) f_activate(E&& expr) {
 /*!
  * \copydoc f_activate
  */
-template <function F, typename E, cpp_enable_if(F == function::RELU)>
+template <function F, typename E, cpp_enable_iff(F == function::RELU)>
 decltype(auto) f_activate(E&& expr) {
     return etl::relu(std::forward<E>(expr));
 }
@@ -87,7 +87,7 @@ decltype(auto) f_activate(E&& expr) {
 /*!
  * \copydoc f_activate
  */
-template <function F, typename E, cpp_enable_if(F == function::SOFTMAX)>
+template <function F, typename E, cpp_enable_iff(F == function::SOFTMAX)>
 decltype(auto) f_activate(E&& expr) {
     return etl::stable_softmax(std::forward<E>(expr));
 }
@@ -98,7 +98,7 @@ decltype(auto) f_activate(E&& expr) {
  * \tparam F The activation function to use
  * \return The derivative of the activation function
  */
-template <function F, typename E, cpp_enable_if(F == function::IDENTITY)>
+template <function F, typename E, cpp_enable_iff(F == function::IDENTITY)>
 decltype(auto) f_derivative(E&& expr) {
     return etl::ml::identity_derivative_out(std::forward<E>(expr));
 }
@@ -106,7 +106,7 @@ decltype(auto) f_derivative(E&& expr) {
 /*!
  * \copydoc f_derivative
  */
-template <function F, typename E, cpp_enable_if(F == function::SIGMOID)>
+template <function F, typename E, cpp_enable_iff(F == function::SIGMOID)>
 decltype(auto) f_derivative(E&& expr) {
     return etl::ml::sigmoid_derivative_out(std::forward<E>(expr));
 }
@@ -114,7 +114,7 @@ decltype(auto) f_derivative(E&& expr) {
 /*!
  * \copydoc f_derivative
  */
-template <function F, typename E, cpp_enable_if(F == function::TANH)>
+template <function F, typename E, cpp_enable_iff(F == function::TANH)>
 decltype(auto) f_derivative(E&& expr) {
     return etl::ml::tanh_derivative_out(std::forward<E>(expr));
 }
@@ -122,7 +122,7 @@ decltype(auto) f_derivative(E&& expr) {
 /*!
  * \copydoc f_derivative
  */
-template <function F, typename E, cpp_enable_if(F == function::RELU)>
+template <function F, typename E, cpp_enable_iff(F == function::RELU)>
 decltype(auto) f_derivative(E&& expr) {
     return etl::ml::relu_derivative_out(std::forward<E>(expr));
 }
@@ -130,7 +130,7 @@ decltype(auto) f_derivative(E&& expr) {
 /*!
  * \copydoc f_derivative
  */
-template <function F, typename E, cpp_enable_if(F == function::SOFTMAX)>
+template <function F, typename E, cpp_enable_iff(F == function::SOFTMAX)>
 decltype(auto) f_derivative(E&& expr) {
     return etl::ml::softmax_derivative_out(std::forward<E>(expr));
 }

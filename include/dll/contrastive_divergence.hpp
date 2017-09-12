@@ -530,7 +530,7 @@ struct base_cd_trainer : base_trainer<RBM> {
         static_assert(!rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
-    template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_enable_if(M)>
+    template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_enable_iff(M)>
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm), w_inc(0.0), b_inc(0.0), c_inc(0.0), q_global_t(0.0), q_local_t(0.0) {
         static_assert(rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
@@ -636,7 +636,7 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
         static_assert(!rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
-    template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_enable_if(M)>
+    template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_enable_iff(M)>
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm),
               v1(get_batch_size(rbm), rbm.num_visible),
@@ -771,7 +771,7 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<!layer_traits<RBM>::
         static_assert(!rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
-    template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_enable_if(M)>
+    template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_enable_iff(M)>
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm),
               w_inc(0.0),

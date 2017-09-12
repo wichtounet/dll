@@ -152,7 +152,7 @@ struct layer {
      * \param output The output to fill
      * \param input The input to compute the representation from
      */
-    template <bool Train, typename Input, typename Output, cpp_enable_if(Train)>
+    template <bool Train, typename Input, typename Output, cpp_enable_iff(Train)>
     void select_forward_one(Output&& output, const Input& input) const {
         as_derived().train_forward_batch(batch_reshape(output), batch_reshape(input));
     }
@@ -166,7 +166,7 @@ struct layer {
      * \param output The output to fill
      * \param input The input to compute the representation from
      */
-    template <bool Train, typename Input, typename Output, cpp_enable_if(!Train)>
+    template <bool Train, typename Input, typename Output, cpp_enable_iff(!Train)>
     void select_forward_one(Output&& output, const Input& input) const {
         as_derived().test_forward_batch(batch_reshape(output), batch_reshape(input));
     }
@@ -220,7 +220,7 @@ struct layer {
      * \param output The collection of output to fill
      * \param input The collection of input to compute the representation from
      */
-    template <bool Train, typename Input, typename Output, cpp_enable_if(Train)>
+    template <bool Train, typename Input, typename Output, cpp_enable_iff(Train)>
     void select_forward_many(Output&& output, const Input& input) const {
         train_forward_many(output, input);
     }
@@ -235,7 +235,7 @@ struct layer {
      * \param output The collection of output to fill
      * \param input The collection of input to compute the representation from
      */
-    template <bool Train, typename Input, typename Output, cpp_enable_if(!Train)>
+    template <bool Train, typename Input, typename Output, cpp_enable_iff(!Train)>
     void select_forward_many(Output&& output, const Input& input) const {
         test_forward_many(output, input);
     }
@@ -336,7 +336,7 @@ struct layer {
      * \param output The output batch to fill
      * \param input The input batch to compute the representation from
      */
-    template <bool Train, typename Input, typename Output, cpp_enable_if(Train)>
+    template <bool Train, typename Input, typename Output, cpp_enable_iff(Train)>
     void select_forward_batch(Output&& output, const Input& input) const {
         train_forward_batch(output, input);
     }
@@ -351,7 +351,7 @@ struct layer {
      * \param output The output batch to fill
      * \param input The input batch to compute the representation from
      */
-    template <bool Train, typename Input, typename Output, cpp_enable_if(!Train)>
+    template <bool Train, typename Input, typename Output, cpp_enable_iff(!Train)>
     void select_forward_batch(Output&& output, const Input& input) const {
         test_forward_batch(output, input);
     }
@@ -378,22 +378,22 @@ struct layer {
         return as_derived().template prepare_one_output<Input>();
     }
 
-    template <bool Train, typename Input, cpp_enable_if(Train)>
+    template <bool Train, typename Input, cpp_enable_iff(Train)>
     auto select_prepare_output(size_t samples) const {
         return as_derived().template prepare_train_output<Input>(samples);
     }
 
-    template <bool Train, typename Input, cpp_enable_if(!Train)>
+    template <bool Train, typename Input, cpp_enable_iff(!Train)>
     auto select_prepare_output(size_t samples) const {
         return as_derived().template prepare_test_output<Input>(samples);
     }
 
-    template <bool Train, typename Input, cpp_enable_if(Train)>
+    template <bool Train, typename Input, cpp_enable_iff(Train)>
     auto select_prepare_one_output() const {
         return as_derived().template prepare_one_train_output<Input>();
     }
 
-    template <bool Train, typename Input, cpp_enable_if(!Train)>
+    template <bool Train, typename Input, cpp_enable_iff(!Train)>
     auto select_prepare_one_output() const {
         return as_derived().template prepare_one_test_output<Input>();
     }

@@ -67,7 +67,7 @@ struct rbm_trainer {
     rbm_trainer(init_watcher_t /*init*/, Arg... args)
             : watcher(args...) {}
 
-    template <typename Generator, cpp_enable_if_cst(rbm_layer_traits<rbm_t>::init_weights())>
+    template <typename Generator, cpp_enable_iff_cst(rbm_layer_traits<rbm_t>::init_weights())>
     static void init_weights(RBM& rbm, Generator& generator) {
         rbm.init_weights(generator);
     }

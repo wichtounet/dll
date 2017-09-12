@@ -194,7 +194,7 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
      * \param h_a The batch output to set
      * \param v_a The batch input
      */
-    template <typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() == 2)>
+    template <typename H, typename V, cpp_enable_iff(etl::decay_traits<V>::dimensions() == 2)>
     void batch_activate_hidden(H&& h_a, const V& v_a) const {
         batch_std_activate_hidden<true, false>(std::forward<H>(h_a), std::forward<H>(h_a), v_a, v_a, as_derived().b, as_derived().w);
     }
@@ -205,7 +205,7 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
      * \param h_a The batch output to set
      * \param v_a The batch input
      */
-    template <typename H, typename V, cpp_enable_if(etl::decay_traits<V>::dimensions() != 2)>
+    template <typename H, typename V, cpp_enable_iff(etl::decay_traits<V>::dimensions() != 2)>
     void batch_activate_hidden(H&& h_a, const V& v_a) const {
         batch_activate_hidden(h_a, etl::reshape(v_a, etl::dim(h_a, 0), as_derived().input_size()));
     }
@@ -490,13 +490,13 @@ private:
         }
     }
 
-    template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W, cpp_enable_if((etl::decay_traits<V>::dimensions() != 1))>
+    template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W, cpp_enable_iff((etl::decay_traits<V>::dimensions() != 1))>
     void std_activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V&, const B& b, const W& w) const {
         auto r = reshape(v_a, as_derived().num_visible);
         std_activate_hidden(h_a, h_s, r, r, b, w);
     }
 
-    template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W, cpp_enable_if((etl::decay_traits<V>::dimensions() == 1))>
+    template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W, cpp_enable_iff((etl::decay_traits<V>::dimensions() == 1))>
     static void std_activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V&, const B& b, const W& w) {
         dll::auto_timer timer("rbm:std:activate_hidden");
 

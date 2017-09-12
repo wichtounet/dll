@@ -227,83 +227,83 @@ private:
         dyn_init<I+1>();
     }
 
-    template<size_t I, cpp_enable_if(I == layers)>
+    template<size_t I, cpp_enable_iff(I == layers)>
     void dyn_init(){}
 
-    template<size_t L = rbm_layer_n, cpp_enable_if((decay_layer_traits<layer_type<L>>::is_dynamic()))>
+    template<size_t L = rbm_layer_n, cpp_enable_iff((decay_layer_traits<layer_type<L>>::is_dynamic()))>
     auto get_rbm_generator_desc(){
         static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_desc");
 
         return rbm_generator_t{};
     }
 
-    template<size_t L = rbm_layer_n, cpp_enable_if(!(decay_layer_traits<layer_type<L>>::is_dynamic()))>
+    template<size_t L = rbm_layer_n, cpp_enable_iff(!(decay_layer_traits<layer_type<L>>::is_dynamic()))>
     auto get_rbm_generator_desc(){
         static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_desc");
 
         return rbm_generator_fast_t<layer_type<L>::batch_size>{};
     }
 
-    template<size_t L = rbm_layer_n, cpp_enable_if((decay_layer_traits<layer_type<L>>::is_dynamic()))>
+    template<size_t L = rbm_layer_n, cpp_enable_iff((decay_layer_traits<layer_type<L>>::is_dynamic()))>
     auto get_rbm_generator_inner_desc(){
         static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_inner_desc");
 
         return rbm_generator_inner_t{};
     }
 
-    template<size_t L = rbm_layer_n, cpp_enable_if(!(decay_layer_traits<layer_type<L>>::is_dynamic()))>
+    template<size_t L = rbm_layer_n, cpp_enable_iff(!(decay_layer_traits<layer_type<L>>::is_dynamic()))>
     auto get_rbm_generator_inner_desc(){
         static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_inner_desc");
 
         return rbm_generator_fast_inner_t<layer_type<L>::batch_size>{};
     }
 
-    template<size_t L = rbm_layer_n, cpp_enable_if((decay_layer_traits<layer_type<L>>::is_dynamic()))>
+    template<size_t L = rbm_layer_n, cpp_enable_iff((decay_layer_traits<layer_type<L>>::is_dynamic()))>
     auto get_rbm_ingenerator_inner_desc(){
         static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_inner_desc");
 
         return rbm_ingenerator_inner_t{};
     }
 
-    template<size_t L = rbm_layer_n, cpp_enable_if(!(decay_layer_traits<layer_type<L>>::is_dynamic()))>
+    template<size_t L = rbm_layer_n, cpp_enable_iff(!(decay_layer_traits<layer_type<L>>::is_dynamic()))>
     auto get_rbm_ingenerator_inner_desc(){
         static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_inner_desc");
 
         return rbm_ingenerator_fast_inner_t<layer_type<L>::batch_size>{};
     }
 
-    template<size_t L = rbm_layer_n, cpp_enable_if(decay_layer_traits<layer_type<L>>::is_dynamic())>
+    template<size_t L = rbm_layer_n, cpp_enable_iff(decay_layer_traits<layer_type<L>>::is_dynamic())>
     size_t get_rbm_generator_batch(){
         static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_desc");
 
         return get_batch_size(layer_get<L>());
     }
 
-    template<size_t L = rbm_layer_n, cpp_enable_if(!decay_layer_traits<layer_type<L>>::is_dynamic())>
+    template<size_t L = rbm_layer_n, cpp_enable_iff(!decay_layer_traits<layer_type<L>>::is_dynamic())>
     size_t get_rbm_generator_batch(){
         static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_desc");
 
         return 0;
     }
 
-    template <size_t L, cpp_enable_if((L < layers - 1) && decay_layer_traits<layer_type<L>>::is_rbm_layer())>
+    template <size_t L, cpp_enable_iff((L < layers - 1) && decay_layer_traits<layer_type<L>>::is_rbm_layer())>
     void validate_pretraining_base() const {
         cpp_assert(get_batch_size(layer_get<L>()) == get_batch_size(layer_get<rbm_layer_n>()), "Incoherent batch sizes in network");
 
         validate_pretraining_base<L + 1>();
     }
 
-    template <size_t L, cpp_enable_if((L == layers - 1) && decay_layer_traits<layer_type<L>>::is_rbm_layer())>
+    template <size_t L, cpp_enable_iff((L == layers - 1) && decay_layer_traits<layer_type<L>>::is_rbm_layer())>
     void validate_pretraining_base() const {
         cpp_assert(get_batch_size(layer_get<L>()) == get_batch_size(layer_get<rbm_layer_n>()), "Incoherent batch sizes in network");
     }
 
-    template <size_t L, cpp_enable_if((L < layers - 1) && !decay_layer_traits<layer_type<L>>::is_rbm_layer())>
+    template <size_t L, cpp_enable_iff((L < layers - 1) && !decay_layer_traits<layer_type<L>>::is_rbm_layer())>
     void validate_pretraining_base() const {
         validate_pretraining_base<L + 1>();
     }
 
-    template <size_t L, cpp_enable_if((L == layers - 1) && !decay_layer_traits<layer_type<L>>::is_rbm_layer())>
+    template <size_t L, cpp_enable_iff((L == layers - 1) && !decay_layer_traits<layer_type<L>>::is_rbm_layer())>
     void validate_pretraining_base() const {
         // Nothing to do
     }
@@ -535,7 +535,7 @@ public:
      * \brief Pretrain the network by training all layers in an unsupervised
      * manner.
      */
-    template <typename Generator, cpp_enable_if(is_generator<Generator>::value)>
+    template <typename Generator, cpp_enable_iff(is_generator<Generator>::value)>
     void pretrain(Generator& generator, size_t max_epochs) {
         static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
 
@@ -567,7 +567,7 @@ public:
      * \brief Pretrain the network by training all layers in an unsupervised
      * manner.
      */
-    template <typename Input, cpp_enable_if(!is_generator<Input>::value)>
+    template <typename Input, cpp_enable_iff(!is_generator<Input>::value)>
     void pretrain(const Input& training_data, size_t max_epochs) {
         static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
 
@@ -798,7 +798,7 @@ public:
      *
      * \return The test representation of the LS layer forwarded from L
      */
-    template <size_t LS, size_t L, typename Input, cpp_enable_if((L != LS))>
+    template <size_t LS, size_t L, typename Input, cpp_enable_iff((L != LS))>
     decltype(auto) test_forward_batch_impl(Input&& sample) const {
         decltype(auto) next = layer_get<L>().test_forward_batch(sample);
         return test_forward_batch_impl<LS, L+1>(next);
@@ -814,7 +814,7 @@ public:
      *
      * \return The test representation of the LS layer forwarded from L
      */
-    template <size_t LS, size_t L, typename Input, cpp_enable_if((L == LS))>
+    template <size_t LS, size_t L, typename Input, cpp_enable_iff((L == LS))>
     decltype(auto) test_forward_batch_impl(Input&& sample) const {
         return layer_get<L>().test_forward_batch(sample);
     }
@@ -829,7 +829,7 @@ public:
      *
      * \return The train representation of the LS layer forwarded from L
      */
-    template <size_t LS, size_t L, typename Input, cpp_enable_if((L != LS))>
+    template <size_t LS, size_t L, typename Input, cpp_enable_iff((L != LS))>
     decltype(auto) train_forward_batch_impl(Input&& sample) {
         decltype(auto) next = layer_get<L>().train_forward_batch(sample);
         return train_forward_batch_impl<LS, L+1>(next);
@@ -845,7 +845,7 @@ public:
      *
      * \return The train representation of the LS layer forwarded from L
      */
-    template <size_t LS, size_t L, typename Input, cpp_enable_if((L == LS))>
+    template <size_t LS, size_t L, typename Input, cpp_enable_iff((L == LS))>
     decltype(auto) train_forward_batch_impl(Input&& sample) {
         return layer_get<L>().train_forward_batch(sample);
     }
@@ -910,7 +910,7 @@ public:
      *
      * \return The test representation of the LS layer forwarded from L
      */
-    template <size_t LS, size_t L, typename Input, cpp_enable_if((L != LS))>
+    template <size_t LS, size_t L, typename Input, cpp_enable_iff((L != LS))>
     decltype(auto) test_forward_one_impl(Input&& sample) const {
         decltype(auto) next = layer_get<L>().test_forward_one(sample);
         return test_forward_one_impl<LS, L+1>(next);
@@ -926,7 +926,7 @@ public:
      *
      * \return The test representation of the LS layer forwarded from L
      */
-    template <size_t LS, size_t L, typename Input, cpp_enable_if((L == LS))>
+    template <size_t LS, size_t L, typename Input, cpp_enable_iff((L == LS))>
     decltype(auto) test_forward_one_impl(Input&& sample) const {
         return layer_get<L>().test_forward_one(sample);
     }
@@ -941,7 +941,7 @@ public:
      *
      * \return The train representation of the LS layer forwarded from L
      */
-    template <size_t LS, size_t L, typename Input, cpp_enable_if((L != LS))>
+    template <size_t LS, size_t L, typename Input, cpp_enable_iff((L != LS))>
     decltype(auto) train_forward_one_impl(Input&& sample) {
         decltype(auto) next = layer_get<L>().train_forward_one(sample);
         return train_forward_one_impl<LS, L+1>(next);
@@ -957,7 +957,7 @@ public:
      *
      * \return The train representation of the LS layer forwarded from L
      */
-    template <size_t LS, size_t L, typename Input, cpp_enable_if((L == LS))>
+    template <size_t LS, size_t L, typename Input, cpp_enable_iff((L == LS))>
     decltype(auto) train_forward_one_impl(Input&& sample) {
         return layer_get<L>().train_forward_one(sample);
     }
@@ -1022,7 +1022,7 @@ public:
      *
      * \return The test representation of the LS layer forwarded from L
      */
-    template <size_t LS, size_t L, typename Inputs, cpp_enable_if((L != LS))>
+    template <size_t LS, size_t L, typename Inputs, cpp_enable_iff((L != LS))>
     decltype(auto) test_forward_many_impl(Inputs&& samples) const {
         decltype(auto) layer = layer_get<L>();
 
@@ -1043,7 +1043,7 @@ public:
      *
      * \return The test representation of the LS layer forwarded from L
      */
-    template <size_t LS, size_t L, typename Inputs, cpp_enable_if((L == LS))>
+    template <size_t LS, size_t L, typename Inputs, cpp_enable_iff((L == LS))>
     decltype(auto) test_forward_many_impl(Inputs&& samples) const {
         decltype(auto) layer = layer_get<L>();
 
@@ -1064,7 +1064,7 @@ public:
      *
      * \return The train representation of the LS layer forwarded from L
      */
-    template <size_t LS, size_t L, typename Inputs, cpp_enable_if((L != LS))>
+    template <size_t LS, size_t L, typename Inputs, cpp_enable_iff((L != LS))>
     decltype(auto) train_forward_many_impl(Inputs&& samples) {
         decltype(auto) layer = layer_get<L>();
 
@@ -1085,7 +1085,7 @@ public:
      *
      * \return The train representation of the LS layer forwarded from L
      */
-    template <size_t LS, size_t L, typename Inputs, cpp_enable_if((L == LS))>
+    template <size_t LS, size_t L, typename Inputs, cpp_enable_iff((L == LS))>
     decltype(auto) train_forward_many_impl(Inputs&& samples) {
         decltype(auto) layer = layer_get<L>();
 
@@ -1157,7 +1157,7 @@ public:
      *
      * \return The test representation of the LS layer forwarded from L
      */
-    template <size_t LS, size_t L, typename Iterator, cpp_enable_if((L != LS))>
+    template <size_t LS, size_t L, typename Iterator, cpp_enable_iff((L != LS))>
     decltype(auto) test_forward_many_impl(const Iterator& first, const Iterator& last) const {
         decltype(auto) layer = layer_get<L>();
 
@@ -1183,7 +1183,7 @@ public:
      *
      * \return The test representation of the LS layer forwarded from L
      */
-    template <size_t LS, size_t L, typename Iterator, cpp_enable_if((L == LS))>
+    template <size_t LS, size_t L, typename Iterator, cpp_enable_iff((L == LS))>
     decltype(auto) test_forward_many_impl(const Iterator& first, const Iterator& last) const {
         decltype(auto) layer = layer_get<L>();
 
@@ -1209,7 +1209,7 @@ public:
      *
      * \return The train representation of the LS layer forwarded from L
      */
-    template <size_t LS, size_t L, typename Iterator, cpp_enable_if((L != LS))>
+    template <size_t LS, size_t L, typename Iterator, cpp_enable_iff((L != LS))>
     decltype(auto) train_forward_many_impl(const Iterator& first, const Iterator& last) {
         decltype(auto) layer = layer_get<L>();
 
@@ -1235,7 +1235,7 @@ public:
      *
      * \return The train representation of the LS layer forwarded from L
      */
-    template <size_t LS, size_t L, typename Iterator, cpp_enable_if((L == LS))>
+    template <size_t LS, size_t L, typename Iterator, cpp_enable_iff((L == LS))>
     decltype(auto) train_forward_many_impl(const Iterator& first, const Iterator& last) {
         decltype(auto) layer = layer_get<L>();
 
@@ -1442,7 +1442,7 @@ public:
      * \param max_epochs The maximum number of epochs to train the network for.
      * \return The final classification error
      */
-    template <typename Generator, cpp_enable_if(is_generator<Generator>::value)>
+    template <typename Generator, cpp_enable_iff(is_generator<Generator>::value)>
     weight fine_tune_ae(Generator& generator, size_t max_epochs) {
         dll::auto_timer timer("dbn:train:ft:ae");
 
@@ -1588,7 +1588,7 @@ public:
      *
      * \param generator The data generator
      */
-    template <typename Generator, cpp_enable_if(is_generator<Generator>::value)>
+    template <typename Generator, cpp_enable_iff(is_generator<Generator>::value)>
     void evaluate_ae(Generator& generator){
         evaluate(generator);
     }
@@ -1601,7 +1601,7 @@ public:
      * \param samples The container containing the samples
      * \param labels The container containing the labels
      */
-    template <typename Samples, cpp_enable_if(!is_generator<Samples>::value)>
+    template <typename Samples, cpp_enable_iff(!is_generator<Samples>::value)>
     void evaluate_ae(const Samples&  samples){
         auto generator = make_generator(samples, samples, samples.size(), output_size(), ae_generator_t{});
 
@@ -1690,7 +1690,7 @@ public:
      *
      * \param generator The data generator
      */
-    template <typename Generator, cpp_enable_if(is_generator<Generator>::value)>
+    template <typename Generator, cpp_enable_iff(is_generator<Generator>::value)>
     double evaluate_error_ae(Generator& generator){
         auto metrics = evaluate_metrics(generator);
 
@@ -1706,7 +1706,7 @@ public:
      *
      * \return The classification error
      */
-    template <typename Samples, cpp_enable_if(!is_generator<Samples>::value)>
+    template <typename Samples, cpp_enable_iff(!is_generator<Samples>::value)>
     double evaluate_error_ae(const Samples&  samples){
         auto generator = make_generator(samples, samples, samples.size(), output_size(), ae_generator_t{});
 
@@ -1737,7 +1737,7 @@ public:
 
     using metrics_t = std::tuple<double, double>; ///< The metrics returned by evaluate_metrics
 
-    template <loss_function F, typename Output, typename Labels, cpp_enable_if((F == loss_function::CATEGORICAL_CROSS_ENTROPY))>
+    template <loss_function F, typename Output, typename Labels, cpp_enable_iff((F == loss_function::CATEGORICAL_CROSS_ENTROPY))>
     std::tuple<double, double> compute_loss(size_t n, bool full_batch, double s, Output&& output, Labels&& labels){
         dll::auto_timer timer("dbn::compute_loss::CCE");
 
@@ -1757,7 +1757,7 @@ public:
         return std::make_tuple(batch_error, batch_loss);
     }
 
-    template <loss_function F, typename Output, typename Labels, cpp_enable_if((F == loss_function::BINARY_CROSS_ENTROPY))>
+    template <loss_function F, typename Output, typename Labels, cpp_enable_iff((F == loss_function::BINARY_CROSS_ENTROPY))>
     std::tuple<double, double> compute_loss(size_t n, bool full_batch, double s, Output&& output, Labels&& labels){
         dll::auto_timer timer("dbn::compute_loss::BCE");
 
@@ -1780,7 +1780,7 @@ public:
         return std::make_tuple(batch_error, batch_loss);
     }
 
-    template <loss_function F, typename Output, typename Labels, cpp_enable_if((F == loss_function::MEAN_SQUARED_ERROR))>
+    template <loss_function F, typename Output, typename Labels, cpp_enable_iff((F == loss_function::MEAN_SQUARED_ERROR))>
     std::tuple<double, double> compute_loss(size_t n, bool full_batch, double s, Output&& output, Labels&& labels){
         dll::auto_timer timer("dbn::compute_loss::MSE");
 
@@ -1888,7 +1888,7 @@ public:
     }
 
 public:
-    template <size_t I, size_t S, typename Input, cpp_enable_if(I != S)>
+    template <size_t I, size_t S, typename Input, cpp_enable_iff(I != S)>
     void full_activation_probabilities(const Input& input, full_output_t& result, size_t& i) const {
         auto output = forward_one<I, I>(input);
         for(auto& feature : output){
@@ -1897,7 +1897,7 @@ public:
         full_activation_probabilities<I+1, S>(output, result, i);
     }
 
-    template <size_t I, size_t S, typename Input, cpp_enable_if(I == S)>
+    template <size_t I, size_t S, typename Input, cpp_enable_iff(I == S)>
     void full_activation_probabilities(const Input& input, full_output_t& result, size_t& i) const {
         auto output = forward_one<I, I>(input);
         for(auto& feature : output){
@@ -1981,7 +1981,7 @@ public:
 #ifdef DLL_SVM_SUPPORT
 
 private:
-    template <typename Input, typename DBN = this_type, cpp_enable_if(dbn_traits<DBN>::concatenate())>
+    template <typename Input, typename DBN = this_type, cpp_enable_iff(dbn_traits<DBN>::concatenate())>
     auto get_final_activation_probabilities(const Input& sample) const {
         return full_activation_probabilities(sample);
     }
@@ -2154,7 +2154,7 @@ private:
         pretrain_layer<I + 2>(*next_generator, watcher, max_epochs);
     }
 
-    template <size_t I, typename Generator, cpp_enable_if((I < layers))>
+    template <size_t I, typename Generator, cpp_enable_iff((I < layers))>
     void pretrain_layer(Generator& generator, watcher_t& watcher, size_t max_epochs) {
         using layer_t = layer_type<I>;
 
@@ -2215,12 +2215,12 @@ private:
     }
 
     //Stop template recursion
-    template <size_t I, typename Generator, cpp_enable_if((I == layers))>
+    template <size_t I, typename Generator, cpp_enable_iff((I == layers))>
     void pretrain_layer(Generator&, watcher_t&, size_t) {}
 
     /* Pretrain with denoising */
 
-    template <size_t I, typename Generator, cpp_enable_if((I < layers))>
+    template <size_t I, typename Generator, cpp_enable_iff((I < layers))>
     void pretrain_layer_denoising(Generator& generator, watcher_t& watcher, size_t max_epochs) {
         using layer_t = layer_type<I>;
 
@@ -2278,7 +2278,7 @@ private:
     }
 
     //Stop template recursion
-    template <size_t I, typename Generator, cpp_enable_if((I == layers))>
+    template <size_t I, typename Generator, cpp_enable_iff((I == layers))>
     void pretrain_layer_denoising(Generator&, watcher_t&, size_t) {}
 
     /* Pretrain in batch mode */
@@ -2297,7 +2297,7 @@ private:
 
     //Special handling for the layer 0
     //data is coming from iterators not from input
-    template <size_t I, typename Generator, cpp_enable_if((I == 0 && !batch_layer_ignore<I>::value))>
+    template <size_t I, typename Generator, cpp_enable_iff((I == 0 && !batch_layer_ignore<I>::value))>
     void pretrain_layer_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
         decltype(auto) rbm = layer_get<I>();
 
@@ -2315,14 +2315,14 @@ private:
     }
 
     //Special handling for untrained layers
-    template <size_t I, typename Generator, cpp_enable_if(batch_layer_ignore<I>::value)>
+    template <size_t I, typename Generator, cpp_enable_iff(batch_layer_ignore<I>::value)>
     void pretrain_layer_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
         //We simply go up one layer on untrained layers
         pretrain_layer_batch<I + 1>(generator, watcher, max_epochs);
     }
 
     //Normal version
-    template <size_t I, typename Generator, cpp_enable_if((I > 0 && I < layers && !batch_layer_ignore<I>::value))>
+    template <size_t I, typename Generator, cpp_enable_iff((I > 0 && I < layers && !batch_layer_ignore<I>::value))>
     void pretrain_layer_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
         using layer_t = layer_type<I>;
 
@@ -2375,14 +2375,14 @@ private:
     }
 
     //Stop template recursion
-    template <size_t I, typename Generator, cpp_enable_if(I == layers)>
+    template <size_t I, typename Generator, cpp_enable_iff(I == layers)>
     void pretrain_layer_batch(Generator&, watcher_t&, size_t) {}
 
     /* Pretrain layer denoising batch  */
 
     //Special handling for the layer 0
     //data is coming from iterators not from input
-    template <size_t I, typename Generator, cpp_enable_if((I == 0 && !batch_layer_ignore<I>::value))>
+    template <size_t I, typename Generator, cpp_enable_iff((I == 0 && !batch_layer_ignore<I>::value))>
     void pretrain_layer_denoising_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
         decltype(auto) rbm = layer_get<I>();
 
@@ -2400,14 +2400,14 @@ private:
     }
 
     //Special handling for untrained layers
-    template <size_t I, typename Generator, cpp_enable_if(batch_layer_ignore<I>::value)>
+    template <size_t I, typename Generator, cpp_enable_iff(batch_layer_ignore<I>::value)>
     void pretrain_layer_denoising_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
         //We simply go up one layer on untrained layers
         pretrain_layer_denoising_batch<I + 1>(generator, watcher, max_epochs);
     }
 
     //Normal version
-    template <size_t I, typename Generator, cpp_enable_if((I > 0 && I < layers && !batch_layer_ignore<I>::value))>
+    template <size_t I, typename Generator, cpp_enable_iff((I > 0 && I < layers && !batch_layer_ignore<I>::value))>
     void pretrain_layer_denoising_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
         using layer_t = layer_type<I>;
 
@@ -2461,7 +2461,7 @@ private:
     }
 
     //Stop template recursion
-    template <size_t I, typename Generator, cpp_enable_if(I == layers)>
+    template <size_t I, typename Generator, cpp_enable_iff(I == layers)>
     void pretrain_layer_denoising_batch(Generator&, watcher_t&, size_t) {}
 
     /* Train with labels */
@@ -2568,7 +2568,7 @@ private:
 
 #ifdef DLL_SVM_SUPPORT
 
-    template <typename Samples, typename Input, typename DBN = this_type, cpp_enable_if(dbn_traits<DBN>::concatenate())>
+    template <typename Samples, typename Input, typename DBN = this_type, cpp_enable_iff(dbn_traits<DBN>::concatenate())>
     void add_activation_probabilities(Samples& result, const Input& sample) {
         result.emplace_back(full_output_size());
         full_activation_probabilities(sample, result.back());

@@ -22,7 +22,7 @@ namespace dll {
  * \param expr The expression to reshape
  * \return the reshaped expression
  */
-template<typename Expr, cpp_enable_if(etl::all_fast<Expr> && etl::dimensions<Expr>() == 1)>
+template<typename Expr, cpp_enable_iff(etl::all_fast<Expr> && etl::dimensions<Expr>() == 1)>
 decltype(auto) batch_reshape(Expr&& expr){
     return etl::reshape<1, etl::dim<0, Expr>()>(expr);
 }
@@ -32,7 +32,7 @@ decltype(auto) batch_reshape(Expr&& expr){
  * \param expr The expression to reshape
  * \return the reshaped expression
  */
-template<typename Expr, cpp_enable_if(etl::all_fast<Expr> && etl::dimensions<Expr>() == 2)>
+template<typename Expr, cpp_enable_iff(etl::all_fast<Expr> && etl::dimensions<Expr>() == 2)>
 decltype(auto) batch_reshape(Expr&& expr){
     return etl::reshape<1, etl::dim<0, Expr>(), etl::dim<1, Expr>()>(expr);
 }
@@ -42,7 +42,7 @@ decltype(auto) batch_reshape(Expr&& expr){
  * \param expr The expression to reshape
  * \return the reshaped expression
  */
-template<typename Expr, cpp_enable_if(etl::all_fast<Expr> && etl::dimensions<Expr>() == 3)>
+template<typename Expr, cpp_enable_iff(etl::all_fast<Expr> && etl::dimensions<Expr>() == 3)>
 decltype(auto) batch_reshape(Expr&& expr){
     return etl::reshape<1, etl::dim<0, Expr>(), etl::dim<1, Expr>(), etl::dim<2, Expr>()>(expr);
 }
@@ -52,7 +52,7 @@ decltype(auto) batch_reshape(Expr&& expr){
  * \param expr The expression to reshape
  * \return the reshaped expression
  */
-template<typename Expr, cpp_enable_if(!etl::all_fast<Expr> && etl::dimensions<Expr>() == 1)>
+template<typename Expr, cpp_enable_iff(!etl::all_fast<Expr> && etl::dimensions<Expr>() == 1)>
 decltype(auto) batch_reshape(Expr&& expr){
     return etl::reshape(expr, 1, etl::dim<0>(expr));
 }
@@ -62,7 +62,7 @@ decltype(auto) batch_reshape(Expr&& expr){
  * \param expr The expression to reshape
  * \return the reshaped expression
  */
-template<typename Expr, cpp_enable_if(!etl::all_fast<Expr> && etl::dimensions<Expr>() == 2)>
+template<typename Expr, cpp_enable_iff(!etl::all_fast<Expr> && etl::dimensions<Expr>() == 2)>
 decltype(auto) batch_reshape(Expr&& expr){
     return etl::reshape(expr, 1, etl::dim<0>(expr), etl::dim<1>(expr));
 }
@@ -72,7 +72,7 @@ decltype(auto) batch_reshape(Expr&& expr){
  * \param expr The expression to reshape
  * \return the reshaped expression
  */
-template<typename Expr, cpp_enable_if(!etl::all_fast<Expr> && etl::dimensions<Expr>() == 3)>
+template<typename Expr, cpp_enable_iff(!etl::all_fast<Expr> && etl::dimensions<Expr>() == 3)>
 decltype(auto) batch_reshape(Expr&& expr){
     return etl::reshape(expr, 1, etl::dim<0>(expr), etl::dim<1>(expr), etl::dim<2>(expr));
 }

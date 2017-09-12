@@ -238,7 +238,7 @@ void for_each_type_sub(Functor&& functor, const std::index_sequence<I1>& /* i */
     functor(static_cast<std::tuple_element_t<I1, Tuple>*>(nullptr));
 }
 
-template <typename Tuple, typename Functor, size_t I1, size_t... I, cpp_enable_if((sizeof...(I) > 0))>
+template <typename Tuple, typename Functor, size_t I1, size_t... I, cpp_enable_iff((sizeof...(I) > 0))>
 void for_each_type_sub(Functor&& functor, const std::index_sequence<I1, I...>& /* i */) {
     functor(static_cast<std::tuple_element_t<I1, Tuple>*>(nullptr));
     for_each_type_sub<Tuple>(functor, std::index_sequence<I...>());

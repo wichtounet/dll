@@ -103,7 +103,7 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
      * \param h_a The output activations
      * \param input The batch of input
      */
-    template <typename V, typename H, cpp_enable_if(etl::dimensions<V>() == 4)>
+    template <typename V, typename H, cpp_enable_iff(etl::dimensions<V>() == 4)>
     void batch_activate_hidden(H& h_a, const V& input) const {
         as_derived().template batch_activate_hidden<true, false>(h_a, h_a, input, input);
     }
@@ -113,7 +113,7 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
      * \param h_a The output activations
      * \param input The batch of input
      */
-    template <typename V, typename H, cpp_enable_if(etl::dimensions<V>() == 2)>
+    template <typename V, typename H, cpp_enable_iff(etl::dimensions<V>() == 2)>
     void batch_activate_hidden(H& h_a, const V& input) const {
         decltype(auto) rbm = as_derived();
         rbm.template batch_activate_hidden<true, false>(h_a, h_a,

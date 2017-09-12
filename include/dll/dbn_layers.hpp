@@ -93,7 +93,7 @@ struct validate_layers_impl<L1, L2, Layers...> : cpp::bool_constant_c<
 //Note: It is not possible to add a template parameter with default value (SFINAE) on a variadic struct
 //therefore, implementing the traits as function is nicer than nested structures
 
-template <typename... Layers, cpp_enable_if(is_dynamic<Layers...>::value)>
+template <typename... Layers, cpp_enable_iff(is_dynamic<Layers...>::value)>
 constexpr bool are_layers_valid() {
     return true;
 }

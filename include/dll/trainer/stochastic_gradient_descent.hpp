@@ -410,7 +410,7 @@ struct sgd_trainer {
     /*!
      * \brief Inherit the layer dimensions from front
      */
-    template<typename L1, typename L2, cpp_enable_if(decay_layer_traits<typename L2::first_type>::is_transform_layer())>
+    template<typename L1, typename L2, cpp_enable_iff(decay_layer_traits<typename L2::first_type>::is_transform_layer())>
     static void inherit_from_front(L1& l1, L2& l2){
         auto& ctx1 = *l1.second;
         auto& ctx2 = *l2.second;
@@ -454,7 +454,7 @@ struct sgd_trainer {
     /*!
      * \brief Compute the errors of the last layer given the loss function
      */
-    template<loss_function F, typename Labels, cpp_enable_if(F == loss_function::CATEGORICAL_CROSS_ENTROPY)>
+    template<loss_function F, typename Labels, cpp_enable_iff(F == loss_function::CATEGORICAL_CROSS_ENTROPY)>
     void last_errors(bool full_batch, size_t n, const Labels& labels){
         auto& last_ctx   = *std::get<layers - 1>(full_context).second;
 
@@ -476,7 +476,7 @@ struct sgd_trainer {
     /*!
      * \brief Compute the errors of the last layer given the loss function
      */
-    template<loss_function F, typename Labels, cpp_enable_if(F == loss_function::MEAN_SQUARED_ERROR)>
+    template<loss_function F, typename Labels, cpp_enable_iff(F == loss_function::MEAN_SQUARED_ERROR)>
     void last_errors(bool full_batch, size_t n, const Labels& labels){
         auto& last_layer = std::get<layers - 1>(full_context).first;
         auto& last_ctx   = *std::get<layers - 1>(full_context).second;
@@ -498,7 +498,7 @@ struct sgd_trainer {
     /*!
      * \brief Compute the errors of the last layer given the loss function
      */
-    template<loss_function F, typename Labels, cpp_enable_if(F == loss_function::BINARY_CROSS_ENTROPY)>
+    template<loss_function F, typename Labels, cpp_enable_iff(F == loss_function::BINARY_CROSS_ENTROPY)>
     void last_errors(bool full_batch, size_t n, const Labels& labels){
         auto& last_layer = std::get<layers - 1>(full_context).first;
         auto& last_ctx   = *std::get<layers - 1>(full_context).second;
@@ -687,7 +687,7 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <updater_type UT, typename L, typename C, cpp_enable_if(decay_layer_traits<L>::is_neural_layer())>
+    template <updater_type UT, typename L, typename C, cpp_enable_iff(decay_layer_traits<L>::is_neural_layer())>
     void update_weights(size_t epoch, L& layer, C& context, size_t n) {
         dll::auto_timer timer("sgd::update_weights");
 
@@ -735,7 +735,7 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::SGD)>
+    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_iff(UT == updater_type::SGD)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:sgd");
 
@@ -752,7 +752,7 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::MOMENTUM)>
+    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_iff(UT == updater_type::MOMENTUM)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:momentum");
 
@@ -776,7 +776,7 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::NESTEROV)>
+    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_iff(UT == updater_type::NESTEROV)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:nesterov");
 
@@ -803,7 +803,7 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::ADAGRAD)>
+    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_iff(UT == updater_type::ADAGRAD)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:adagrad");
 
@@ -826,7 +826,7 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::ADADELTA)>
+    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_iff(UT == updater_type::ADADELTA)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:adadelta");
 
@@ -855,7 +855,7 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::ADAM)>
+    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_iff(UT == updater_type::ADAM)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:adam");
 
@@ -886,7 +886,7 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::ADAM_CORRECT)>
+    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_iff(UT == updater_type::ADAM_CORRECT)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:adam_correct");
 
@@ -925,7 +925,7 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::ADAMAX)>
+    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_iff(UT == updater_type::ADAMAX)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:adamax");
 
@@ -958,7 +958,7 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::NADAM)>
+    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_iff(UT == updater_type::NADAM)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:nadam");
 
@@ -1017,7 +1017,7 @@ struct sgd_trainer {
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_if(UT == updater_type::RMSPROP)>
+    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_iff(UT == updater_type::RMSPROP)>
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:rmsprop");
 
@@ -1041,7 +1041,7 @@ struct sgd_trainer {
     /*!
      * \brief Update the given gradients according to the given decay function
      */
-    template <typename D = dbn_t, typename G, cpp_enable_if(dbn_traits<D>::has_clip_gradients())>
+    template <typename D = dbn_t, typename G, cpp_enable_iff(dbn_traits<D>::has_clip_gradients())>
     void clip_gradients(G& grad, size_t n) {
         const auto t = dbn.gradient_clip;
         const auto grad_l2_norm = std::sqrt(etl::sum(grad >> grad) / (n * n));
@@ -1063,7 +1063,7 @@ struct sgd_trainer {
     /*!
      * \brief Update the given gradients according to the given decay function
      */
-    template <decay_type decay, typename V, typename G, cpp_enable_if(decay == decay_type::L1)>
+    template <decay_type decay, typename V, typename G, cpp_enable_iff(decay == decay_type::L1)>
     void update_grad(const V& value, G& grad, size_t n) {
         grad = grad - dbn.l1_weight_cost * abs(value);
 
@@ -1073,7 +1073,7 @@ struct sgd_trainer {
     /*!
      * \brief Update the given gradients according to the given decay function
      */
-    template <decay_type decay, typename V, typename G, cpp_enable_if(decay == decay_type::L2)>
+    template <decay_type decay, typename V, typename G, cpp_enable_iff(decay == decay_type::L2)>
     void update_grad(const V& value, G& grad, size_t n) {
         grad = grad - dbn.l2_weight_cost * value;
 
@@ -1083,7 +1083,7 @@ struct sgd_trainer {
     /*!
      * \brief Update the given gradients according to the given decay function
      */
-    template <decay_type decay, typename V, typename G, cpp_enable_if(decay == decay_type::L1L2)>
+    template <decay_type decay, typename V, typename G, cpp_enable_iff(decay == decay_type::L1L2)>
     void update_grad(const V& value, G& grad, size_t n) {
         grad = grad - dbn.l1_weight_cost * abs(value) - dbn.l2_weight_cost * value;
 
@@ -1093,7 +1093,7 @@ struct sgd_trainer {
     /*!
      * \brief Update the given gradients according to the given decay function
      */
-    template <decay_type decay, typename V, typename G, cpp_enable_if(decay == decay_type::NONE)>
+    template <decay_type decay, typename V, typename G, cpp_enable_iff(decay == decay_type::NONE)>
     void update_grad(const V& value, G& grad, size_t n) {
         clip_gradients(grad, n);
 

@@ -189,7 +189,7 @@ private:
         return etl::force_temporary(etl::rep<NV1, NV2>(c));
     }
 
-    template<typename V, cpp_enable_if(etl::all_fast<V>)>
+    template<typename V, cpp_enable_iff(etl::all_fast<V>)>
     auto get_batch_b_rep(V&& /*h*/) const {
         static constexpr auto batch_size = etl::decay_traits<V>::template dim<0>();
         return etl::force_temporary(etl::rep_l<batch_size>(etl::rep<NH1, NH2>(b)));

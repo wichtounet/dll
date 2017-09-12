@@ -214,7 +214,7 @@ private:
         return etl::force_temporary(etl::rep<NV1, NV2>(c));
     }
 
-    template<typename V, cpp_enable_if(etl::all_fast<V>)>
+    template<typename V, cpp_enable_iff(etl::all_fast<V>)>
     auto get_batch_b_rep(V&& /*h*/) const {
         static constexpr auto batch_size = etl::decay_traits<V>::template dim<0>();
         return etl::force_temporary(etl::rep_l<batch_size>(etl::rep<NH1, NH2>(b)));
@@ -226,7 +226,7 @@ private:
         return etl::force_temporary(etl::rep_l(etl::rep<NH1, NH2>(b), batch_size));
     }
 
-    template<typename H, cpp_enable_if(etl::all_fast<H>)>
+    template<typename H, cpp_enable_iff(etl::all_fast<H>)>
     auto get_batch_c_rep(H&& /*h*/) const {
         static constexpr auto batch_size = etl::decay_traits<H>::template dim<0>();
         return etl::force_temporary(etl::rep_l<batch_size>(etl::rep<NV1, NV2>(c)));
@@ -252,7 +252,7 @@ private:
         return etl::fast_dyn_matrix<weight, 1, K, NH1, NH2>();
     }
 
-    template <typename H1, typename H2, size_t Off = 0, cpp_enable_if(etl::all_fast<H1, H2>)>
+    template <typename H1, typename H2, size_t Off = 0, cpp_enable_iff(etl::all_fast<H1, H2>)>
     static void validate_outputs() {
         static_assert(etl::decay_traits<H1>::dimensions() == 3 + Off, "Outputs must be 3D");
         static_assert(etl::decay_traits<H2>::dimensions() == 3 + Off, "Outputs must be 3D");

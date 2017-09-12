@@ -107,7 +107,7 @@ struct conv_same_layer_impl final : neural_layer<conv_same_layer_impl<Desc>, Des
      * \param input A batch of input
      * \param output A batch of output that will be filled
      */
-    template <typename H1, typename V, cpp_enable_if(etl::dimensions<V>() == 4)>
+    template <typename H1, typename V, cpp_enable_iff(etl::dimensions<V>() == 4)>
     void forward_batch(H1&& output, const V& v) const {
         dll::auto_timer timer("conv:forward_batch");
 
@@ -122,7 +122,7 @@ struct conv_same_layer_impl final : neural_layer<conv_same_layer_impl<Desc>, Des
      * \param input A batch of input
      * \param output A batch of output that will be filled
      */
-    template <typename H1, typename V, cpp_enable_if(etl::dimensions<V>() == 2)>
+    template <typename H1, typename V, cpp_enable_iff(etl::dimensions<V>() == 2)>
     void forward_batch(H1&& output, const V& v) const {
         dll::auto_timer timer("conv:forward_batch");
 

@@ -284,12 +284,12 @@ struct standard_crbm_mp : public standard_conv_rbm<Derived, Desc> {
         batch_activate_pooling(batch_reshape(output), batch_reshape(input));
     }
 
-    template <bool Train, typename Input, typename Output, cpp_enable_if(Train)>
+    template <bool Train, typename Input, typename Output, cpp_enable_iff(Train)>
     void select_activate_hidden(Output&& output, const Input& input) const {
         batch_activate_pooling(batch_reshape(output), batch_reshape(input));
     }
 
-    template <bool Train, typename Input, typename Output, cpp_enable_if(!Train)>
+    template <bool Train, typename Input, typename Output, cpp_enable_iff(!Train)>
     void select_activate_hidden(Output&& output, const Input& input) const {
         batch_activate_pooling(batch_reshape(output), batch_reshape(input));
     }

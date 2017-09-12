@@ -135,7 +135,7 @@ constexpr size_t dbn_output_size(const DBN& /*dbn*/) {
 /*!
  * \brief Return the DBN output size
  */
-template <typename DBN, cpp_enable_if(dbn_traits<DBN>::is_dynamic())>
+template <typename DBN, cpp_enable_iff(dbn_traits<DBN>::is_dynamic())>
 size_t dbn_output_size(const DBN& dbn) {
     return dbn.output_size();
 }
@@ -151,7 +151,7 @@ constexpr size_t dbn_full_output_size(const DBN& /*dbn*/) {
 /*!
  * \brief Return the DBN concatenated output size
  */
-template <typename DBN, cpp_enable_if(dbn_traits<DBN>::is_dynamic())>
+template <typename DBN, cpp_enable_iff(dbn_traits<DBN>::is_dynamic())>
 size_t dbn_full_output_size(const DBN& dbn) {
     return dbn.full_output_size();
 }
@@ -167,7 +167,7 @@ constexpr size_t dbn_input_size(const DBN& /*dbn*/) {
 /*!
  * \brief Return the DBN input size
  */
-template <typename DBN, cpp_enable_if(dbn_traits<DBN>::is_dynamic())>
+template <typename DBN, cpp_enable_iff(dbn_traits<DBN>::is_dynamic())>
 size_t dbn_input_size(const DBN& dbn) {
     return dbn.input_size();
 }
