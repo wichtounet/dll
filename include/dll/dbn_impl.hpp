@@ -535,7 +535,7 @@ public:
      * \brief Pretrain the network by training all layers in an unsupervised
      * manner.
      */
-    template <typename Generator, cpp_enable_iff(is_generator<Generator>::value)>
+    template <typename Generator, cpp_enable_iff(is_generator<Generator>)>
     void pretrain(Generator& generator, size_t max_epochs) {
         static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
 
@@ -567,7 +567,7 @@ public:
      * \brief Pretrain the network by training all layers in an unsupervised
      * manner.
      */
-    template <typename Input, cpp_enable_iff(!is_generator<Input>::value)>
+    template <typename Input, cpp_enable_iff(!is_generator<Input>)>
     void pretrain(const Input& training_data, size_t max_epochs) {
         static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
 
@@ -1442,7 +1442,7 @@ public:
      * \param max_epochs The maximum number of epochs to train the network for.
      * \return The final classification error
      */
-    template <typename Generator, cpp_enable_iff(is_generator<Generator>::value)>
+    template <typename Generator, cpp_enable_iff(is_generator<Generator>)>
     weight fine_tune_ae(Generator& generator, size_t max_epochs) {
         dll::auto_timer timer("dbn:train:ft:ae");
 
@@ -1458,7 +1458,7 @@ public:
      * \param max_epochs The maximum number of epochs to train the network for.
      * \return The final classification error
      */
-    template <typename Samples, cpp_disable_if(is_generator<Samples>::value)>
+    template <typename Samples, cpp_disable_if(is_generator<Samples>)>
     weight fine_tune_ae(const Samples& training_data, size_t max_epochs) {
         if (batch_mode()) {
             // Create generator around the containers
@@ -1588,7 +1588,7 @@ public:
      *
      * \param generator The data generator
      */
-    template <typename Generator, cpp_enable_iff(is_generator<Generator>::value)>
+    template <typename Generator, cpp_enable_iff(is_generator<Generator>)>
     void evaluate_ae(Generator& generator){
         evaluate(generator);
     }
@@ -1601,7 +1601,7 @@ public:
      * \param samples The container containing the samples
      * \param labels The container containing the labels
      */
-    template <typename Samples, cpp_enable_iff(!is_generator<Samples>::value)>
+    template <typename Samples, cpp_enable_iff(!is_generator<Samples>)>
     void evaluate_ae(const Samples&  samples){
         auto generator = make_generator(samples, samples, samples.size(), output_size(), ae_generator_t{});
 
@@ -1690,7 +1690,7 @@ public:
      *
      * \param generator The data generator
      */
-    template <typename Generator, cpp_enable_iff(is_generator<Generator>::value)>
+    template <typename Generator, cpp_enable_iff(is_generator<Generator>)>
     double evaluate_error_ae(Generator& generator){
         auto metrics = evaluate_metrics(generator);
 
@@ -1706,7 +1706,7 @@ public:
      *
      * \return The classification error
      */
-    template <typename Samples, cpp_enable_iff(!is_generator<Samples>::value)>
+    template <typename Samples, cpp_enable_iff(!is_generator<Samples>)>
     double evaluate_error_ae(const Samples&  samples){
         auto generator = make_generator(samples, samples, samples.size(), output_size(), ae_generator_t{});
 

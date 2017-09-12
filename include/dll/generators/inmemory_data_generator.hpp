@@ -27,7 +27,7 @@ struct inmemory_data_generator;
  * \copydoc inmemory_data_generator
  */
 template <typename Iterator, typename LIterator, typename Desc>
-struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_augmented<Desc>::value>> {
+struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_augmented<Desc>>> {
     using desc                 = Desc;                                                              ///< The generator descriptor
     using weight               = etl::value_t<typename std::iterator_traits<Iterator>::value_type>; ///< The data type
     using data_cache_helper_t  = cache_helper<Desc, Iterator>;                                      ///< The helper for the data cache
@@ -304,7 +304,7 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_a
  * \copydoc inmemory_data_generator
  */
 template <typename Iterator, typename LIterator, typename Desc>
-struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_augmented<Desc>::value>> {
+struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_augmented<Desc>>> {
     using desc                 = Desc;                                        ///< The generator descriptor
     using weight               = etl::value_t<typename Iterator::value_type>; ///< The data type
     using data_cache_helper_t  = cache_helper<desc, Iterator>;                ///< The helper for the data cache

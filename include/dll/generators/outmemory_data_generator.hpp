@@ -27,7 +27,7 @@ struct outmemory_data_generator;
  * \copydoc outmemory_data_generator
  */
 template <typename Iterator, typename LIterator, typename Desc>
-struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_augmented<Desc>::value && !is_threaded<Desc>::value>> {
+struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_augmented<Desc> && !is_threaded<Desc>>> {
     using desc                 = Desc;                                        ///< The generator descriptor
     using weight               = etl::value_t<typename Iterator::value_type>; ///< The data type
     using data_cache_helper_t  = cache_helper<Desc, Iterator>;                ///< The helper for the data cache
@@ -294,7 +294,7 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_
  * \copydoc outmemory_data_generator
  */
 template <typename Iterator, typename LIterator, typename Desc>
-struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_augmented<Desc>::value || is_threaded<Desc>::value>> {
+struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_augmented<Desc> || is_threaded<Desc>>> {
     using desc                 = Desc;                                        ///< The generator descriptor
     using weight               = etl::value_t<typename Iterator::value_type>; ///< The data type
     using data_cache_helper_t  = cache_helper<desc, Iterator>;                ///< The helper for the data cache
