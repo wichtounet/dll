@@ -118,7 +118,7 @@ struct dbn_traits {
      * \brief Returns the type of weight decay used during training
      */
     static constexpr decay_type decay() noexcept {
-        return detail::get_value_l<weight_decay<decay_type::NONE>, typename desc::parameters>::value;
+        return get_value_l_v<weight_decay<decay_type::NONE>, typename desc::parameters>;
     }
 };
 

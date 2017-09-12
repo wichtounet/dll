@@ -323,6 +323,12 @@ struct remove_type_id_impl <T, F, F, Acc, Args...> {
 template <typename T, typename... Args>
 using remove_type_id = typename remove_type_id_impl<T, 0, sizeof...(Args), std::index_sequence<>, Args...>::type;
 
-using detail::get_value_l;
+/*!
+ * \brief Extract the value corresponding to the given configuration element from the list of type of the parameters.
+ * \tparam D The configuration element type
+ * \tparam Args The arguments to extract the value from
+ */
+template <typename D, typename L>
+constexpr auto get_value_l_v = detail::get_value_l<D, L>::value;
 
 } //end of dll namespace
