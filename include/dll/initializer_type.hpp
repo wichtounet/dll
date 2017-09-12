@@ -18,8 +18,10 @@ namespace dll {
  */
 enum class initializer_type {
     NONE,           ///< Not initialized (undefined values)
-    ZERO,           ///< All initialized to zero
-    ONE,            ///< All initialized to one
+    ZERO,           ///< All initialized to 0.0
+    ONE,            ///< All initialized to 1.0
+    CONSTANT_01,    ///< All initialized to 0.1
+    CONSTANT_001,   ///< All initialized to 0.01
     SMALL_GAUSSIAN, ///< Initialization to N(0, 0.01)
     GAUSSIAN,       ///< Initialization to N(0, 1.0)
     UNIFORM,        ///< Initialization to U(-0.05, 0.05)

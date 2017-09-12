@@ -65,6 +65,48 @@ struct initializer_function<initializer_type::ZERO> {
 };
 
 /*!
+ * \brief Initialization function to 0.1
+ */
+template<>
+struct initializer_function<initializer_type::CONSTANT_01> {
+    /*!
+     * \brief Initialize the given weights (or biases) according
+     * to the initialization function
+     * \param b The weights or biases to initialize
+     * \param nin The neurons input
+     * \param nin The neurons output
+     */
+    template<typename B>
+    static void initialize(B& b, size_t nin, size_t nout){
+        cpp_unused(nin);
+        cpp_unused(nout);
+
+        b = etl::value_t<B>(0.1);
+    }
+};
+
+/*!
+ * \brief Initialization function to 0.01
+ */
+template<>
+struct initializer_function<initializer_type::CONSTANT_001> {
+    /*!
+     * \brief Initialize the given weights (or biases) according
+     * to the initialization function
+     * \param b The weights or biases to initialize
+     * \param nin The neurons input
+     * \param nin The neurons output
+     */
+    template<typename B>
+    static void initialize(B& b, size_t nin, size_t nout){
+        cpp_unused(nin);
+        cpp_unused(nout);
+
+        b = etl::value_t<B>(0.01);
+    }
+};
+
+/*!
  * \brief Initialization function to one
  */
 template<>
