@@ -39,7 +39,7 @@ struct conv_rbm_mp_desc {
     /*!
      * \brief The batch size for training this layer
      */
-    static constexpr size_t BatchSize         = detail::get_value_v<batch_size<1>, Parameters...>::value;
+    static constexpr size_t BatchSize         = detail::get_value_v<batch_size<1>, Parameters...>;
 
     /*!
      * \brief The type of visible unit
