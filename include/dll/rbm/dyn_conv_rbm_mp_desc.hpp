@@ -70,11 +70,11 @@ struct dyn_conv_rbm_mp_desc {
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid<cpp::type_list<
+        detail::is_valid_v<cpp::type_list<
                              momentum_id, visible_id, hidden_id, pooling_id, dbn_only_id,
                              weight_decay_id, sparsity_id, trainer_rbm_id, watcher_id, clip_gradients_id,
                              bias_id, weight_type_id, shuffle_id, verbose_id, nop_id>,
-                         Parameters...>::value,
+                         Parameters...>,
         "Invalid parameters type");
 
     static_assert(Sparsity == sparsity_method::NONE || hidden_unit == unit_type::BINARY,

@@ -792,11 +792,11 @@ struct outmemory_data_generator_desc {
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid<
+        detail::is_valid_v<
             cpp::type_list<
                 batch_size_id, big_batch_size_id, horizontal_mirroring_id, vertical_mirroring_id, random_crop_id,
                 elastic_distortion_id, categorical_id, noise_id, threaded_id, nop_id, normalize_pre_id, binarize_pre_id, scale_pre_id, autoencoder_id>,
-            Parameters...>::value,
+            Parameters...>,
         "Invalid parameters type for rbm_desc");
 
     /*!

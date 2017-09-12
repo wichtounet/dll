@@ -36,7 +36,7 @@ struct shape_1d_layer_desc {
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid<cpp::type_list<weight_type_id>, Parameters...>::value,
+        detail::is_valid_v<cpp::type_list<weight_type_id>, Parameters...>,
         "Invalid parameters type for shape_1d_layer_desc");
 };
 

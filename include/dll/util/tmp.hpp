@@ -64,6 +64,9 @@ struct is_valid<V, T1, Args...> : cpp::bool_constant_c<cpp::and_u<V::template co
 template <typename V>
 struct is_valid<V> : std::true_type {};
 
+template <typename V, typename... Args>
+constexpr const bool is_valid_v = is_valid<V, Args...>::value;
+
 /*!
  * \brief Extract the value corresponding to the given configuration element from the parameters.
  * \tparam D The configuration element type
