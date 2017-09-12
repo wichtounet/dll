@@ -20,7 +20,7 @@ struct dyn_shape_1d_layer_desc {
     using parameters = cpp::type_list<Parameters...>;
 
     /*! The type used to store the weights */
-    using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
+    using weight = detail::get_type_t<weight_type<float>, Parameters...>;
 
     /*! The layer type */
     using layer_t = dyn_shape_1d_layer_impl<dyn_shape_1d_layer_desc<Parameters...>>;

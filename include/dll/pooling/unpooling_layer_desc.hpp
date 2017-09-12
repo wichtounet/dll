@@ -22,7 +22,7 @@ struct unpooling_3d_layer_desc {
     static constexpr size_t C3 = T_C3; ///< The pooling third dimension
 
     /*! The type used to store the weights */
-    using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
+    using weight = detail::get_type_t<weight_type<float>, Parameters...>;
 
     static_assert(C1 > 0, "Cannot shrink a layer by less than 1");
     static_assert(C2 > 0, "Cannot shrink a layer by less than 1");
@@ -40,7 +40,7 @@ struct unpooling_3d_layer_desc {
 template <typename... Parameters>
 struct dyn_unpooling_3d_layer_desc {
     /*! The type used to store the weights */
-    using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
+    using weight = detail::get_type_t<weight_type<float>, Parameters...>;
 
     //Make sure only valid types are passed to the configuration list
     static_assert(

@@ -176,6 +176,16 @@ struct get_type<D> {
     using value = typename D::value; ///< The extracted value type
 };
 
+
+/*!
+ * \brief Extract the type corresponding to the given configuration element from
+ * the list of the parameters.
+ * \tparam D The configuration element type
+ * \tparam Args The arguments to extract the type from
+ */
+template <typename D, typename... Args>
+using get_type_t = typename get_type<D, Args...>::value;
+
 /*!
  * \brief Extract the template type corresponding to the given configuration element from
  * the list of the parameters.

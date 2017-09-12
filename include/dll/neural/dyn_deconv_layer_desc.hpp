@@ -27,7 +27,7 @@ struct dyn_deconv_layer_desc {
     static constexpr auto b_initializer       = detail::get_value_v<initializer_bias<initializer_type::ZERO>, Parameters...>; ///< The initializer for the biases
 
     /*! The type used to store the weights */
-    using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
+    using weight = detail::get_type_t<weight_type<float>, Parameters...>;
 
     /*! The layer type */
     using layer_t = dyn_deconv_layer_impl<dyn_deconv_layer_desc<Parameters...>>;

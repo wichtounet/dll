@@ -30,7 +30,7 @@ struct dense_layer_desc {
     static constexpr auto b_initializer       = detail::get_value_v<initializer_bias<initializer_type::ZERO>, Parameters...>; ///< The initializer for the biases
 
     /*! The type used to store the weights */
-    using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
+    using weight = detail::get_type_t<weight_type<float>, Parameters...>;
 
     /*! The dense type */
     using layer_t = dense_layer_impl<dense_layer_desc<visibles, hiddens, Parameters...>>;

@@ -22,7 +22,7 @@ struct batch_normalization_2d_layer_desc {
     /*!
      * The type used to store the weights
      */
-    using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
+    using weight = detail::get_type_t<weight_type<float>, Parameters...>;
 
     /*!
      * The layer type
@@ -48,7 +48,7 @@ struct dyn_batch_normalization_2d_layer_desc {
     /*!
      * The type used to store the weights
      */
-    using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
+    using weight = detail::get_type_t<weight_type<float>, Parameters...>;
 
     /*!
      * The layer type
@@ -89,7 +89,7 @@ struct batch_normalization_4d_layer_desc {
     /*!
      * The type used to store the weights
      */
-    using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
+    using weight = detail::get_type_t<weight_type<float>, Parameters...>;
 
     /*!
      * The layer type
@@ -115,7 +115,7 @@ struct dyn_batch_normalization_4d_layer_desc {
     /*!
      * The type used to store the weights
      */
-    using weight = typename detail::get_type<weight_type<float>, Parameters...>::value;
+    using weight = detail::get_type_t<weight_type<float>, Parameters...>;
 
     /*!
      * The layer type
