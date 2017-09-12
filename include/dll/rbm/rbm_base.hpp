@@ -123,7 +123,7 @@ struct rbm_base : layer<Parent> {
      * \brief Train the RBM with the data from the given container
      * \param training_data the training data
      */
-    template <bool EnableWatcher = true, typename RW = void, typename Input, typename... Args, cpp_enable_iff(!is_generator<Input>>
+    template <bool EnableWatcher = true, typename RW = void, typename Input, typename... Args, cpp_enable_iff(!is_generator<Input>)>
     double train(const Input& training_data, size_t max_epochs, Args... args) {
         // Create a new generator around the data
         auto generator = make_generator(training_data, training_data, training_data.size(), generator_t{}, get_batch_size(as_derived()));
