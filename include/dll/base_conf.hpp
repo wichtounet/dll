@@ -224,15 +224,15 @@ struct loss : value_conf_elt<loss_id, loss_function, FT> {};
  * \brief Sets the initializer
  * \tparam IT The initializer type
  */
-template <initializer_type IT>
-struct initializer : value_conf_elt<initializer_id, initializer_type, IT> {};
+template <typename I>
+struct initializer : type_conf_elt<initializer_id, I> {};
 
 /*!
  * \brief Sets the initializer
  * \tparam IT The initializer type
  */
-template <initializer_type IT>
-struct initializer_bias : value_conf_elt<initializer_bias_id, initializer_type, IT> {};
+template <typename I>
+struct initializer_bias : type_conf_elt<initializer_bias_id, I> {};
 
 /*!
  * \brief Enable and select weight decay

@@ -5,7 +5,6 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "dll/initializer_type.hpp"
 #include "dll/util/random.hpp"
 
 /*!
@@ -17,17 +16,9 @@
 namespace dll {
 
 /*!
- * \brief Functor for initializer functions
- * \tparam T The type of the initialization function
- */
-template<initializer_type T>
-struct initializer_function;
-
-/*!
  * \brief Initialization function no-op
  */
-template<>
-struct initializer_function<initializer_type::NONE> {
+struct init_none {
     /*!
      * \brief Initialize the given weights (or biases) according
      * to the initialization function
@@ -46,8 +37,8 @@ struct initializer_function<initializer_type::NONE> {
 /*!
  * \brief Initialization function to zero
  */
-template<>
-struct initializer_function<initializer_type::ZERO> {
+template<typename Ratio>
+struct init_constant {
     /*!
      * \brief Initialize the given weights (or biases) according
      * to the initialization function
@@ -60,78 +51,17 @@ struct initializer_function<initializer_type::ZERO> {
         cpp_unused(nin);
         cpp_unused(nout);
 
-        b = etl::value_t<B>(0.0);
+        b = etl::value_t<B>(Ratio::num) / etl::value_t<B>(Ratio::den);
     }
 };
 
-/*!
- * \brief Initialization function to 0.1
- */
-template<>
-struct initializer_function<initializer_type::CONSTANT_01> {
-    /*!
-     * \brief Initialize the given weights (or biases) according
-     * to the initialization function
-     * \param b The weights or biases to initialize
-     * \param nin The neurons input
-     * \param nin The neurons output
-     */
-    template<typename B>
-    static void initialize(B& b, size_t nin, size_t nout){
-        cpp_unused(nin);
-        cpp_unused(nout);
-
-        b = etl::value_t<B>(0.1);
-    }
-};
-
-/*!
- * \brief Initialization function to 0.01
- */
-template<>
-struct initializer_function<initializer_type::CONSTANT_001> {
-    /*!
-     * \brief Initialize the given weights (or biases) according
-     * to the initialization function
-     * \param b The weights or biases to initialize
-     * \param nin The neurons input
-     * \param nin The neurons output
-     */
-    template<typename B>
-    static void initialize(B& b, size_t nin, size_t nout){
-        cpp_unused(nin);
-        cpp_unused(nout);
-
-        b = etl::value_t<B>(0.01);
-    }
-};
-
-/*!
- * \brief Initialization function to one
- */
-template<>
-struct initializer_function<initializer_type::ONE> {
-    /*!
-     * \brief Initialize the given weights (or biases) according
-     * to the initialization function
-     * \param b The weights or biases to initialize
-     * \param nin The neurons input
-     * \param nin The neurons output
-     */
-    template<typename B>
-    static void initialize(B& b, size_t nin, size_t nout){
-        cpp_unused(nin);
-        cpp_unused(nout);
-
-        b = etl::value_t<B>(1.0);
-    }
-};
+using init_zero = init_constant<std::ratio<0, 1>>;
 
 /*!
  * \brief Initialization function to normal distribution
  */
-template<>
-struct initializer_function<initializer_type::GAUSSIAN> {
+template<typename Mean = std::ratio<0, 1>, typename Std = std::ratio<1, 1>>
+struct init_normal {
     /*!
      * \brief Initialize the given weights (or biases) according
      * to the initialization function
@@ -144,57 +74,43 @@ struct initializer_function<initializer_type::GAUSSIAN> {
         cpp_unused(nin);
         cpp_unused(nout);
 
-        b = etl::normal_generator<etl::value_t<B>>(dll::rand_engine(), 0.0, 1.0);
+        constexpr auto mean   = etl::value_t<B>(Mean::num) / etl::value_t<B>(Mean::den);
+        constexpr auto stddev = etl::value_t<B>(Std::num) / etl::value_t<B>(Std::den);
+
+        b = etl::normal_generator<etl::value_t<B>>(dll::rand_engine(), mean, stddev);
     }
 };
 
 /*!
- * \brief Initialization function to small gaussian distribution
+ * \brief Initialization function to uniform distribution
  */
-template<>
-struct initializer_function<initializer_type::SMALL_GAUSSIAN> {
+template<typename A = std::ratio<-5, 100>, typename B = std::ratio<5, 100>>
+struct init_uniform {
     /*!
      * \brief Initialize the given weights (or biases) according
      * to the initialization function
-     * \param b The weights or biases to initialize
+     * \param w The weights or biases to initialize
      * \param nin The neurons input
      * \param nin The neurons output
      */
-    template<typename B>
-    static void initialize(B& b, size_t nin, size_t nout){
+    template<typename W>
+    static void initialize(W& w, size_t nin, size_t nout){
         cpp_unused(nin);
         cpp_unused(nout);
 
-        b = etl::normal_generator<etl::value_t<B>>(dll::rand_engine(), 0.0, 0.01);
+        constexpr auto a = etl::value_t<B>(A::num) / etl::value_t<B>(A::den);
+        constexpr auto b = etl::value_t<B>(B::num) / etl::value_t<B>(B::den);
+
+        w = etl::uniform_generator<etl::value_t<B>>(dll::rand_engine(), a, b);
     }
 };
 
-/*!
- * \brief Initialization function to small uniform distribution
- */
-template<>
-struct initializer_function<initializer_type::UNIFORM> {
-    /*!
-     * \brief Initialize the given weights (or biases) according
-     * to the initialization function
-     * \param b The weights or biases to initialize
-     * \param nin The neurons input
-     * \param nin The neurons output
-     */
-    template<typename B>
-    static void initialize(B& b, size_t nin, size_t nout){
-        cpp_unused(nin);
-        cpp_unused(nout);
-
-        b = etl::uniform_generator<etl::value_t<B>>(dll::rand_engine(), -0.05, 0.05);
-    }
-};
+#define constant(f) std::ratio<(std::intmax_t)(f * 1'000'000), 1'000'000>
 
 /*!
  * \brief Initialization function according to Lecun
  */
-template<>
-struct initializer_function<initializer_type::LECUN> {
+struct init_lecun {
     /*!
      * \brief Initialize the given weights (or biases) according
      * to the initialization function
@@ -213,8 +129,7 @@ struct initializer_function<initializer_type::LECUN> {
 /*!
  * \brief Initialization function according to Xavier
  */
-template<>
-struct initializer_function<initializer_type::XAVIER> {
+struct init_xavier {
     /*!
      * \brief Initialize the given weights (or biases) according
      * to the initialization function
@@ -233,8 +148,7 @@ struct initializer_function<initializer_type::XAVIER> {
 /*!
  * \brief Initialization function according to Xavier (with fanin+fanout)
  */
-template<>
-struct initializer_function<initializer_type::XAVIER_FULL> {
+struct init_xavier_full {
     /*!
      * \brief Initialize the given weights (or biases) according
      * to the initialization function
@@ -251,8 +165,7 @@ struct initializer_function<initializer_type::XAVIER_FULL> {
 /*!
  * \brief Initialization function according to He
  */
-template<>
-struct initializer_function<initializer_type::HE> {
+struct init_he {
     /*!
      * \brief Initialize the given weights (or biases) according
      * to the initialization function
