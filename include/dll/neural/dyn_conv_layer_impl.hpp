@@ -25,9 +25,10 @@ struct dyn_conv_layer_impl final : neural_layer<dyn_conv_layer_impl<Desc>, Desc>
     using base_type = neural_layer<this_type, desc>;
 
     static constexpr auto activation_function = desc::activation_function; ///< The layer's activation function
-    static constexpr auto w_initializer       = desc::w_initializer; ///< The initializer for the weights
-    static constexpr auto b_initializer       = desc::b_initializer; ///< The initializer for the biases
     static constexpr auto no_bias             = desc::parameters::template contains<dll::no_bias>(); ///< Disable the biases
+
+    using w_initializer = typename desc::w_initializer; ///< The initializer for the weights
+    using b_initializer = typename desc::b_initializer; ///< The initializer for the biases
 
     using input_one_t  = etl::dyn_matrix<weight, 3>; ///< The type for one input
     using output_one_t = etl::dyn_matrix<weight, 3>; ///< The type for one output
@@ -77,8 +78,8 @@ struct dyn_conv_layer_impl final : neural_layer<dyn_conv_layer_impl<Desc>, Desc>
 
         b = etl::dyn_vector<weight>(k);
 
-        initializer_function<w_initializer>::initialize(w, input_size(), output_size());
-        initializer_function<b_initializer>::initialize(b, input_size(), output_size());
+        w_initializer::initialize(w, input_size(), output_size());
+        b_initializer::initialize(b, input_size(), output_size());
     }
 
     /*!

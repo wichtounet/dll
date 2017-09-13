@@ -23,8 +23,9 @@ struct dyn_conv_layer_desc {
     using parameters = cpp::type_list<Parameters...>;
 
     static constexpr auto activation_function = detail::get_value_v<activation<function::SIGMOID>, Parameters...>;            ///< The layer's activation function
-    static constexpr auto w_initializer       = detail::get_value_v<initializer<initializer_type::LECUN>, Parameters...>;     ///< The initializer for the weights
-    static constexpr auto b_initializer       = detail::get_value_v<initializer_bias<initializer_type::ZERO>, Parameters...>; ///< The initializer for the biases
+
+    using w_initializer = detail::get_type_t<initializer<init_lecun>, Parameters...>;     ///< The initializer for the weights
+    using b_initializer = detail::get_type_t<initializer_bias<init_zero>, Parameters...>; ///< The initializer for the biases
 
     /*! The type used to store the weights */
     using weight = detail::get_type_t<weight_type<float>, Parameters...>;

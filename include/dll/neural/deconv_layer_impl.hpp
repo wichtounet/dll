@@ -32,8 +32,9 @@ struct deconv_layer_impl final : neural_layer<deconv_layer_impl<Desc>, Desc> {
     static constexpr size_t NH2 = NV2 + NW2 - 1; //By definition
 
     static constexpr auto activation_function = desc::activation_function; ///< The layer's activation function
-    static constexpr auto w_initializer       = desc::w_initializer; ///< The initializer for the weights
-    static constexpr auto b_initializer       = desc::b_initializer; ///< The initializer for the biases
+
+    using w_initializer = typename desc::w_initializer; ///< The initializer for the weights
+    using b_initializer = typename desc::b_initializer; ///< The initializer for the biases
 
     using input_one_t  = etl::fast_dyn_matrix<weight, NC, NV1, NV2>; ///< The type of one input
     using output_one_t = etl::fast_dyn_matrix<weight, K, NH1, NH2>; ///< The type of one output
@@ -55,8 +56,8 @@ struct deconv_layer_impl final : neural_layer<deconv_layer_impl<Desc>, Desc> {
      * \brief Initialize a conv layer with basic weights.
      */
     deconv_layer_impl() : base_type() {
-        initializer_function<w_initializer>::initialize(w, input_size(), output_size());
-        initializer_function<b_initializer>::initialize(b, input_size(), output_size());
+        w_initializer::initialize(w, input_size(), output_size());
+        b_initializer::initialize(b, input_size(), output_size());
     }
 
     /*!

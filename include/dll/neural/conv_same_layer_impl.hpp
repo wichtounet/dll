@@ -37,8 +37,9 @@ struct conv_same_layer_impl final : neural_layer<conv_same_layer_impl<Desc>, Des
     static constexpr size_t P2 = (NW2 - 1) / 2;
 
     static constexpr auto activation_function = desc::activation_function; ///< The layer's activation function
-    static constexpr auto w_initializer       = desc::w_initializer; ///< The initializer for the weights
-    static constexpr auto b_initializer       = desc::b_initializer; ///< The initializer for the biases
+
+    using w_initializer = typename desc::w_initializer; ///< The initializer for the weights
+    using b_initializer = typename desc::b_initializer; ///< The initializer for the biases
 
     static_assert(NW1 % 2 == 1, "conv_same_layer_impl only works with odd-sized filters");
     static_assert(NW2 % 2 == 1, "conv_same_layer_impl only works with odd-sized filters");
@@ -63,8 +64,8 @@ struct conv_same_layer_impl final : neural_layer<conv_same_layer_impl<Desc>, Des
      * \brief Initialize a conv layer with basic weights.
      */
     conv_same_layer_impl() : base_type() {
-        initializer_function<w_initializer>::initialize(w, input_size(), output_size());
-        initializer_function<b_initializer>::initialize(b, input_size(), output_size());
+        w_initializer::initialize(w, input_size(), output_size());
+        b_initializer::initialize(b, input_size(), output_size());
     }
 
     /*!
