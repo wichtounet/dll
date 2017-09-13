@@ -97,9 +97,9 @@ TEST_CASE("unit/conv/sgd/4", "[unit][conv][dbn][mnist][sgd]") {
 TEST_CASE("unit/conv/sgd/5", "[conv][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_layer_desc<1, 28, 28, 6, 5, 5, dll::activation<dll::function::RELU>, dll::initializer<dll::initializer_type::HE>>::layer_t,
-            dll::conv_layer_desc<6, 24, 24, 4, 5, 5, dll::activation<dll::function::RELU>, dll::initializer<dll::initializer_type::HE>>::layer_t,
-            dll::dense_layer_desc<4 * 20 * 20, 200, dll::activation<dll::function::RELU>, dll::initializer<dll::initializer_type::HE>>::layer_t,
+            dll::conv_layer_desc<1, 28, 28, 6, 5, 5, dll::activation<dll::function::RELU>, dll::initializer<dll::init_he>>::layer_t,
+            dll::conv_layer_desc<6, 24, 24, 4, 5, 5, dll::activation<dll::function::RELU>, dll::initializer<dll::init_he>>::layer_t,
+            dll::dense_layer_desc<4 * 20 * 20, 200, dll::activation<dll::function::RELU>, dll::initializer<dll::init_he>>::layer_t,
             dll::dense_layer_desc<200, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
         dll::trainer<dll::sgd_trainer>, dll::batch_size<20>>::dbn_t dbn_t;
 
