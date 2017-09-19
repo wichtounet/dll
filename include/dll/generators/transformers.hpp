@@ -62,7 +62,7 @@ struct pre_binarizer;
  * \copydoc pre_binarizer
  */
 template<typename Desc>
-struct pre_binarizer <Desc, std::enable_if_t<Desc::BinarizePre>> {
+struct pre_binarizer <Desc, std::enable_if_t<Desc::BinarizePre != 0>> {
     static constexpr size_t B = Desc::BinarizePre; ///< The binarization threshold
 
     /*!
@@ -81,7 +81,7 @@ struct pre_binarizer <Desc, std::enable_if_t<Desc::BinarizePre>> {
  * \copydoc pre_binarizer
  */
 template<typename Desc>
-struct pre_binarizer <Desc, std::enable_if_t<!Desc::BinarizePre>> {
+struct pre_binarizer <Desc, std::enable_if_t<Desc::BinarizePre == 0>> {
     /*!
      * \brief Apply the transform on the input
      * \param target The input to transform

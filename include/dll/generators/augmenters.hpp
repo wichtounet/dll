@@ -24,7 +24,7 @@ struct random_cropper;
  * \copydoc random_cropper
  */
 template <typename Desc>
-struct random_cropper<Desc, std::enable_if_t<Desc::random_crop_x && Desc::random_crop_y>> {
+struct random_cropper<Desc, std::enable_if_t<Desc::random_crop_x != 0 && Desc::random_crop_y!= 0 >> {
     static constexpr size_t random_crop_x = Desc::random_crop_x; ///< The width of the crop
     static constexpr size_t random_crop_y = Desc::random_crop_y; ///< The height of the crop
 
@@ -106,7 +106,7 @@ struct random_cropper<Desc, std::enable_if_t<Desc::random_crop_x && Desc::random
  * \copydoc random_cropper
  */
 template <typename Desc>
-struct random_cropper<Desc, std::enable_if_t<!Desc::random_crop_x || !Desc::random_crop_y>> {
+struct random_cropper<Desc, std::enable_if_t<Desc::random_crop_x == 0 || Desc::random_crop_y == 0>> {
     /*!
      * \brief Initialize the random_cropper
      * \param image The image to crop from
@@ -270,7 +270,7 @@ struct random_noise;
  * \copydoc random_noise
  */
 template <typename Desc>
-struct random_noise<Desc, std::enable_if_t<Desc::Noise>> {
+struct random_noise<Desc, std::enable_if_t<Desc::Noise != 0>> {
     static constexpr size_t N = Desc::Noise; ///< The amount of noise (in percent)
 
     std::uniform_int_distribution<size_t> dist; ///< The random distribution
@@ -310,7 +310,7 @@ struct random_noise<Desc, std::enable_if_t<Desc::Noise>> {
  * \copydoc random_noise
  */
 template <typename Desc>
-struct random_noise<Desc, std::enable_if_t<!Desc::Noise>> {
+struct random_noise<Desc, std::enable_if_t<Desc::Noise == 0>> {
     /*!
      * \brief Initialize the random_noise
      * \param image The image to crop from
@@ -350,7 +350,7 @@ struct elastic_distorter;
  * \copydoc elastic_distorter
  */
 template <typename Desc>
-struct elastic_distorter<Desc, std::enable_if_t<Desc::ElasticDistortion>> {
+struct elastic_distorter<Desc, std::enable_if_t<Desc::ElasticDistortion != 0>> {
     using weight = typename Desc::weight; ///< The data type
 
     static constexpr size_t K     = Desc::ElasticDistortion;         ///< size of elastic distortion kernel
@@ -489,7 +489,7 @@ struct elastic_distorter<Desc, std::enable_if_t<Desc::ElasticDistortion>> {
  * \copydoc elastic_distorter
  */
 template <typename Desc>
-struct elastic_distorter<Desc, std::enable_if_t<!Desc::ElasticDistortion>> {
+struct elastic_distorter<Desc, std::enable_if_t<Desc::ElasticDistortion == 0>> {
     /*!
      * \brief Initialize the elastic_distorter
      * \param image The image to distort
