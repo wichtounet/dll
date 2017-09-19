@@ -168,7 +168,7 @@ auto make_mnist_dataset(size_t batch, Parameters&&... parameters){
  * \return The MNIST dataset
  */
 template<typename... Parameters>
-auto make_mnist_dataset_sub(const std::string& folder, size_t start, size_t limit, size_t batch = 0, Parameters&&... parameters){
+auto make_mnist_dataset_sub(const std::string& folder, size_t start, size_t limit, size_t batch, Parameters&&... parameters){
     return make_dataset_holder(
         make_mnist_generator_train(folder, start, limit, batch, std::forward<Parameters>(parameters)...),
         make_mnist_generator_test(0UL, 10000UL, batch, std::forward<Parameters>(parameters)...));
@@ -185,7 +185,7 @@ auto make_mnist_dataset_sub(const std::string& folder, size_t start, size_t limi
  * \return The MNIST dataset
  */
 template<typename... Parameters>
-auto make_mnist_dataset_sub(size_t start, size_t limit, size_t batch = 0, Parameters&&... parameters){
+auto make_mnist_dataset_sub(size_t start, size_t limit, size_t batch, Parameters&&... parameters){
     return make_dataset_holder(
         make_mnist_generator_train(start, limit, batch, std::forward<Parameters>(parameters)...),
         make_mnist_generator_test(0UL, 10000UL, batch, std::forward<Parameters>(parameters)...));
@@ -205,7 +205,7 @@ auto make_mnist_dataset_sub(size_t start, size_t limit, size_t batch = 0, Parame
  * \return The MNIST dataset
  */
 template<typename... Parameters>
-auto make_mnist_dataset_val(const std::string& folder, size_t start, size_t middle, size_t limit, size_t batch = 0, Parameters&&... parameters){
+auto make_mnist_dataset_val(const std::string& folder, size_t start, size_t middle, size_t limit, size_t batch, Parameters&&... parameters){
     return make_dataset_holder(
         make_mnist_generator_train(folder, start, middle, batch, std::forward<Parameters>(parameters)...),
         make_mnist_generator_test(0UL, 10000UL, batch, std::forward<Parameters>(parameters)...),
@@ -227,7 +227,7 @@ auto make_mnist_dataset_val(const std::string& folder, size_t start, size_t midd
  * \return The MNIST dataset
  */
 template<typename... Parameters>
-auto make_mnist_dataset_val(size_t start, size_t middle, size_t limit, size_t batch = 0, Parameters&&... parameters){
+auto make_mnist_dataset_val(size_t start, size_t middle, size_t limit, size_t batch, Parameters&&... parameters){
     return make_dataset_holder(
         make_mnist_generator_train(start, middle, batch, std::forward<Parameters>(parameters)...),
         make_mnist_generator_test(0UL, 10000UL, batch, std::forward<Parameters>(parameters)...),
