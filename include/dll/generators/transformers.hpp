@@ -24,7 +24,7 @@ struct pre_scaler;
  * \copydoc pre_scaler
  */
 template<typename Desc>
-struct pre_scaler <Desc, std::enable_if_t<Desc::ScalePre>> {
+struct pre_scaler <Desc, std::enable_if_t<Desc::ScalePre != 0>> {
     static constexpr size_t S = Desc::ScalePre; ///< The scaling factor
 
     /*!
@@ -41,7 +41,7 @@ struct pre_scaler <Desc, std::enable_if_t<Desc::ScalePre>> {
  * \copydoc pre_scaler
  */
 template<typename Desc>
-struct pre_scaler <Desc, std::enable_if_t<!Desc::ScalePre>> {
+struct pre_scaler <Desc, std::enable_if_t<Desc::ScalePre == 0>> {
     /*!
      * \brief Apply the transform on the input
      * \param target The input to transform
