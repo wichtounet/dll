@@ -26,8 +26,10 @@
 namespace dll {
 namespace text {
 
-template<template<typename...> class Container = std::vector, typename Image, typename Functor>
-void read_images(Container<Image>& images, const std::string& path, size_t limit, Functor func){
+template<typename Container, typename Functor>
+void read_images(Container& images, const std::string& path, size_t limit, Functor func){
+    using Image = typename Container::value_type;
+
     struct dirent* entry;
     auto dir = opendir(path.c_str());
 
@@ -112,19 +114,19 @@ void read_labels(Container<Label>& labels, const std::string& path, size_t limit
     }
 }
 
-template<bool Three, template<typename...> class Container, typename Image, cpp_enable_iff(etl::all_fast<Image>)>
-void read_images_direct(Container<Image>& images, const std::string& path, size_t limit){
-    read_images<Container, Image>(images, path, limit, [](size_t /*c*/, size_t /*h*/, size_t /*w*/){ return Image();});
+template<bool Three, typename Container, cpp_enable_iff(etl::all_fast<typename Container::value_type>)>
+void read_images_direct(Container& images, const std::string& path, size_t limit){
+    read_images(images, path, limit, [](size_t /*c*/, size_t /*h*/, size_t /*w*/){ return typename Container::value_type();});
 }
 
-template<bool Three, template<typename...> class Container, typename Image, cpp_enable_iff(Three && !etl::all_fast<Image>)>
-void read_images_direct(Container<Image>& images, const std::string& path, size_t limit){
-    read_images<Container, Image>(images, path, limit, [](size_t c, size_t h, size_t w){ return Image(c, h, w);});
+template<bool Three, typename Container, cpp_enable_iff(Three && !etl::all_fast<typename Container::value_type>)>
+void read_images_direct(Container& images, const std::string& path, size_t limit){
+    read_images(images, path, limit, [](size_t c, size_t h, size_t w){ return typename Container::value_type(c, h, w);});
 }
 
-template<bool Three, template<typename...> class Container, typename Image, cpp_enable_iff(!Three && !etl::all_fast<Image>)>
-void read_images_direct(Container<Image>& images, const std::string& path, size_t limit){
-    read_images<Container, Image>(images, path, limit, [](size_t c, size_t h, size_t w){ return Image(c * h * w);});
+template<bool Three, typename Container, cpp_enable_iff(!Three && !etl::all_fast<typename Container::value_type>)>
+void read_images_direct(Container& images, const std::string& path, size_t limit){
+    read_images(images, path, limit, [](size_t c, size_t h, size_t w){ return typename Container::value_type(c * h * w);});
 }
 
 template<template<typename...> class Container, typename Image, bool Three>
