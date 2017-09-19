@@ -257,7 +257,7 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
             } else {
                 cpp::static_if<dbn_t::pretrain_possible>([&](auto f) {
                     //Pretrain the network
-                    dbn.pretrain(pt_samples.begin(), pt_samples.end(), task.pt_desc.epochs);
+                    f(dbn).pretrain(pt_samples.begin(), pt_samples.end(), task.pt_desc.epochs);
                 });
             }
         } else if (action == "train") {
