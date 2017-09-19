@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <string>
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -52,6 +53,9 @@ void read_images(Container& images, const std::string& path, size_t limit, Funct
             size_t lines = 0;
             size_t columns = 0;
 
+            // There is a bug in G++7.1 that causes this false positive
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
             std::string line;
             while (std::getline(file, line)) {
                 std::istringstream ss(line);
@@ -68,6 +72,7 @@ void read_images(Container& images, const std::string& path, size_t limit, Funct
 
                 ++lines;
             }
+#pragma GCC diagnostic pop
 
             if((int) images.size() < id){
                 images.resize(id);
