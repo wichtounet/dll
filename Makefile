@@ -27,6 +27,9 @@ TEST_LD_FLAGS=$(LIBSVM_LD_FLAGS)
 
 CXX_FLAGS += -DETL_PARALLEL -DETL_VECTORIZE_FULL
 
+# Use the recommended limit
+CXX_FLAGS += -ftemplate-depth=1024
+
 # Tune GCC warnings
 ifeq (,$(findstring clang,$(CXX)))
 ifneq (,$(findstring g++,$(CXX)))
