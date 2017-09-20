@@ -396,9 +396,6 @@ struct dbn_trainer {
         // Set the generator in train mode
         generator.set_train();
 
-        // Compute the number of batches
-        const size_t batches = generator.batches();
-
         //Train one mini-batch at a time
         while(generator.has_next_batch()){
             dll::auto_timer timer("dbn::trainer::train::epoch::batch");
@@ -415,7 +412,7 @@ struct dbn_trainer {
                 generator.label_batch());
 
             if /*constexpr*/ (dbn_traits<dbn_t>::is_verbose()){
-                watcher.ft_batch_end(epoch, generator.current_batch(), batches, batch_error, batch_loss, dbn);
+                watcher.ft_batch_end(epoch, generator.current_batch(), generator.batches(), batch_error, batch_loss, dbn);
             }
 
             generator.next_batch();
