@@ -55,9 +55,9 @@ TEST_CASE("conv/ae/deconv/1", "[dense][dbn][mnist][sgd][ae]") {
 TEST_CASE("conv/ae/1", "[dense][dbn][mnist][sgd][ae]") {
     using network_t = dll::dbn_desc<
         dll::dbn_layers<
-            dll::conv_same_desc<1, 28, 28, 8, 3, 3, dll::relu>::layer_t,
+            dll::conv_same_layer<1, 28, 28, 8, 3, 3, dll::relu>,
             // Features
-            dll::conv_same_desc<8, 28, 28, 1, 3, 3, dll::sigmoid>::layer_t
+            dll::conv_same_layer<8, 28, 28, 1, 3, 3, dll::sigmoid>
         >,
         dll::autoencoder,
         dll::adadelta,
@@ -73,11 +73,11 @@ TEST_CASE("conv/ae/1", "[dense][dbn][mnist][sgd][ae]") {
 
     dbn->display();
 
-    auto ft_error = dbn->fine_tune_ae(dataset.training_images, 30);
+    auto ft_error = dbn->fine_tune_ae(dataset.training_images, 40);
     std::cout << "ft_error:" << ft_error << std::endl;
-    CHECK(ft_error < 0.12);
+    CHECK(ft_error < 0.15);
 
     auto test_error = dbn->evaluate_error_ae(dataset.test_images);
     std::cout << "test_error:" << test_error << std::endl;
-    REQUIRE(test_error < 0.12);
+    REQUIRE(test_error < 0.15);
 }
