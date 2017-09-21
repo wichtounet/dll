@@ -95,7 +95,7 @@ struct validate_weight_type {
 
 template <typename Iterator>
 size_t fast_distance(Iterator& first, Iterator& last) {
-    if (std::is_same<typename std::iterator_traits<Iterator>::iterator_category, std::random_access_iterator_tag>::value) {
+    if /*constexpr*/ (std::is_same<typename std::iterator_traits<Iterator>::iterator_category, std::random_access_iterator_tag>::value) {
         return std::distance(first, last);
     } else {
         return 0;
