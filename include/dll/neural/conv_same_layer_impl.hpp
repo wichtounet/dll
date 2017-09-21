@@ -170,7 +170,7 @@ struct conv_same_layer_impl final : neural_layer<conv_same_layer_impl<Desc>, Des
     void adapt_errors(C& context) const {
         dll::auto_timer timer("conv_same:adapt_errors");
 
-        if(activation_function != function::IDENTITY){
+        if /*constexpr*/ (activation_function != function::IDENTITY){
             context.errors = f_derivative<activation_function>(context.output) >> context.errors;
         }
     }

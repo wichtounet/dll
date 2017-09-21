@@ -123,7 +123,7 @@ void update_normal(RBM& rbm, Trainer& t) {
     const auto n_samples = double(etl::dim<0>(t.v1));
 
     // Gradients clipping
-    if(rbm_layer_traits<rbm_t>::has_clip_gradients()){
+    if/*constexpr*/ (rbm_layer_traits<rbm_t>::has_clip_gradients()){
         auto grad_t = rbm.gradient_clip;
 
         apply_clip_gradients(t.w_grad, grad_t, n_samples);
@@ -146,12 +146,12 @@ void update_normal(RBM& rbm, Trainer& t) {
         f(rbm).b += t.b_inc;
         f(rbm).c += t.c_inc;
     })
-        //Apply the learning rate
-        .else_([&](auto f) {
-            f(rbm).w += eps * t.w_grad;
-            f(rbm).b += eps * t.b_grad;
-            f(rbm).c += eps * t.c_grad;
-        });
+    //Apply the learning rate
+    .else_([&](auto f) {
+        f(rbm).w += eps * t.w_grad;
+        f(rbm).b += eps * t.b_grad;
+        f(rbm).c += eps * t.c_grad;
+    });
 
     //Check for NaN
     nan_check_deep_3(rbm.w, rbm.b, rbm.c);

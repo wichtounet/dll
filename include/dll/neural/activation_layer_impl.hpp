@@ -41,14 +41,7 @@ struct activation_layer_impl : transform_layer<activation_layer_impl<Desc>> {
      */
     template <typename Input, typename Output>
     static void forward_batch(Output& output, const Input& input) {
-        if (activation_function == function::SOFTMAX) {
-            auto Batch = etl::dim<0>(input);
-            for (size_t i = 0; i < Batch; ++i) {
-                output(i) = f_activate<activation_function>(input(i));
-            }
-        } else {
-            output = f_activate<activation_function>(input);
-        }
+        output = f_activate<activation_function>(input);
     }
 
     /*!
@@ -70,7 +63,9 @@ struct activation_layer_impl : transform_layer<activation_layer_impl<Desc>> {
      */
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
-        output = f_derivative<activation_function>(context.output) >> context.errors;
+        if /*constexpr*/ (activation_function != function::IDENTITY) {
+            output = f_derivative<activation_function>(context.output) >> context.errors;
+        }
     }
 
     /*!

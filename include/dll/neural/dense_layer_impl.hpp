@@ -167,7 +167,7 @@ struct dense_layer_impl final : neural_layer<dense_layer_impl<Desc>, Desc> {
     void adapt_errors(C& context) const {
         dll::auto_timer timer("dense:adapt_errors");
 
-        if(activation_function != function::IDENTITY){
+        if /*constexpr*/ (activation_function != function::IDENTITY){
             context.errors = f_derivative<activation_function>(context.output) >> context.errors;
         }
     }

@@ -2175,7 +2175,7 @@ private:
             f(this)->template inline_layer_pretrain<I>(generator, watcher, max_epochs);
         });
 
-        if (train_next<I + 1>::value && !inline_next<I + 1>::value) {
+        if /*constexpr*/ (train_next<I + 1>::value && !inline_next<I + 1>::value) {
             // Reset correctly the generator
             generator.reset();
             generator.set_test();
@@ -2236,7 +2236,7 @@ private:
                 (generator, max_epochs);
         });
 
-        if (train_next<I + 1>::value) {
+        if /*constexpr*/ (train_next<I + 1>::value) {
             // Reset correctly the generator
             generator.reset();
             generator.set_test();

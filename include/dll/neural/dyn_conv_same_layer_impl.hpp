@@ -220,7 +220,7 @@ struct dyn_conv_same_layer_impl final : neural_layer<dyn_conv_same_layer_impl<De
      */
     template<typename C>
     void adapt_errors(C& context) const {
-        if(activation_function != function::IDENTITY){
+        if /*constexpr*/ (activation_function != function::IDENTITY){
             context.errors = f_derivative<activation_function>(context.output) >> context.errors;
         }
     }

@@ -184,7 +184,7 @@ struct dyn_deconv_layer_impl final : neural_layer<dyn_deconv_layer_impl<Desc>, D
      */
     template<typename C>
     void adapt_errors(C& context) const {
-        if(activation_function != function::IDENTITY){
+        if /*constexpr*/ (activation_function != function::IDENTITY){
             context.errors = f_derivative<activation_function>(context.output) >> context.errors;
         }
     }
