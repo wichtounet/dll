@@ -312,6 +312,13 @@ private:
         validate_pretraining_base<0>();
     }
 
+    template<typename Generator>
+    void validate_generator(const Generator& generator){
+        static_assert(batch_size == Generator::batch_size, "Invalid batch size for generator");
+
+        cpp_unused(generator);
+    }
+
 public:
     /*!
      * Constructs a DBN and initializes all its members.
@@ -540,6 +547,7 @@ public:
         static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
 
         validate_pretraining();
+        validate_generator(generator);
 
         dll::auto_timer timer("dbn:pretrain");
 
@@ -622,6 +630,7 @@ public:
         static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
 
         validate_pretraining();
+        validate_generator(generator);
 
         dll::auto_timer timer("dbn:pretrain:denoising");
 
@@ -1349,6 +1358,8 @@ public:
     weight fine_tune(Generator& generator, size_t max_epochs) {
         dll::auto_timer timer("dbn:train:ft");
 
+        validate_generator(generator);
+
         dll::dbn_trainer<this_type> trainer;
         return trainer.train(*this, generator, max_epochs);
     }
@@ -1365,6 +1376,9 @@ public:
     template <typename Generator, typename ValGenerator>
     weight fine_tune_val(Generator& train_generator, ValGenerator& val_generator, size_t max_epochs) {
         dll::auto_timer timer("dbn:train:ft");
+
+        validate_generator(train_generator);
+        validate_generator(val_generator);
 
         dll::dbn_trainer<this_type> trainer;
         return trainer.train(*this, train_generator, val_generator, max_epochs);
@@ -1445,6 +1459,8 @@ public:
     template <typename Generator, cpp_enable_iff(is_generator<Generator>)>
     weight fine_tune_ae(Generator& generator, size_t max_epochs) {
         dll::auto_timer timer("dbn:train:ft:ae");
+
+        validate_generator(generator);
 
         cpp_assert(dll::input_size(layer_get<0>()) == dll::output_size(layer_get<layers - 1>()), "The network is not build as an autoencoder");
 
@@ -1539,6 +1555,8 @@ public:
      */
     template <typename Generator>
     void evaluate(Generator& generator){
+        validate_generator(generator);
+
         auto metrics = evaluate_metrics(generator);
 
         printf("error: %.5f \n", std::get<0>(metrics));
@@ -1590,6 +1608,8 @@ public:
      */
     template <typename Generator, cpp_enable_iff(is_generator<Generator>)>
     void evaluate_ae(Generator& generator){
+        validate_generator(generator);
+
         evaluate(generator);
     }
 
@@ -1639,6 +1659,8 @@ public:
      */
     template <typename Generator>
     double evaluate_error(Generator& generator){
+        validate_generator(generator);
+
         auto metrics = evaluate_metrics(generator);
 
         return std::get<0>(metrics);
@@ -1692,6 +1714,8 @@ public:
      */
     template <typename Generator, cpp_enable_iff(is_generator<Generator>)>
     double evaluate_error_ae(Generator& generator){
+        validate_generator(generator);
+
         auto metrics = evaluate_metrics(generator);
 
         return std::get<0>(metrics);
@@ -1837,6 +1861,8 @@ public:
      */
     template <typename Generator>
     metrics_t evaluate_metrics(Generator& generator){
+        validate_generator(generator);
+
         auto forward_helper = [this](auto&& input_batch){
             return this->forward_batch(input_batch);
         };
@@ -1855,6 +1881,8 @@ public:
      */
     template <typename Generator, typename Helper>
     metrics_t evaluate_metrics(Generator& generator, Helper&& helper){
+        validate_generator(generator);
+
         // Starts a new
         generator.reset();
 
@@ -2111,6 +2139,8 @@ private:
 
     template <size_t I, typename Generator>
     void inline_layer_pretrain(Generator& generator, watcher_t& watcher, size_t max_epochs) {
+        validate_generator(generator);
+
         decltype(auto) layer = layer_get<I>();
         decltype(auto) next_layer = layer_get<I + 1>();
 
@@ -2156,6 +2186,8 @@ private:
 
     template <size_t I, typename Generator, cpp_enable_iff((I < layers))>
     void pretrain_layer(Generator& generator, watcher_t& watcher, size_t max_epochs) {
+        validate_generator(generator);
+
         using layer_t = layer_type<I>;
 
         decltype(auto) layer = layer_get<I>();
@@ -2223,6 +2255,8 @@ private:
     template <size_t I, typename Generator, cpp_enable_iff((I < layers))>
     void pretrain_layer_denoising(Generator& generator, watcher_t& watcher, size_t max_epochs) {
         using layer_t = layer_type<I>;
+
+        validate_generator(generator);
 
         decltype(auto) layer = layer_get<I>();
 
@@ -2299,6 +2333,8 @@ private:
     //data is coming from iterators not from input
     template <size_t I, typename Generator, cpp_enable_iff((I == 0 && !batch_layer_ignore<I>::value))>
     void pretrain_layer_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
+        validate_generator(generator);
+
         decltype(auto) rbm = layer_get<I>();
 
         watcher.pretrain_layer(*this, I, rbm, 0);
@@ -2317,6 +2353,8 @@ private:
     //Special handling for untrained layers
     template <size_t I, typename Generator, cpp_enable_iff(batch_layer_ignore<I>::value)>
     void pretrain_layer_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
+        validate_generator(generator);
+
         //We simply go up one layer on untrained layers
         pretrain_layer_batch<I + 1>(generator, watcher, max_epochs);
     }
@@ -2324,6 +2362,8 @@ private:
     //Normal version
     template <size_t I, typename Generator, cpp_enable_iff((I > 0 && I < layers && !batch_layer_ignore<I>::value))>
     void pretrain_layer_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
+        validate_generator(generator);
+
         using layer_t = layer_type<I>;
 
         decltype(auto) rbm = layer_get<I>();
@@ -2384,6 +2424,8 @@ private:
     //data is coming from iterators not from input
     template <size_t I, typename Generator, cpp_enable_iff((I == 0 && !batch_layer_ignore<I>::value))>
     void pretrain_layer_denoising_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
+        validate_generator(generator);
+
         decltype(auto) rbm = layer_get<I>();
 
         watcher.pretrain_layer(*this, I, rbm, 0);
@@ -2402,6 +2444,8 @@ private:
     //Special handling for untrained layers
     template <size_t I, typename Generator, cpp_enable_iff(batch_layer_ignore<I>::value)>
     void pretrain_layer_denoising_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
+        validate_generator(generator);
+
         //We simply go up one layer on untrained layers
         pretrain_layer_denoising_batch<I + 1>(generator, watcher, max_epochs);
     }
@@ -2409,6 +2453,8 @@ private:
     //Normal version
     template <size_t I, typename Generator, cpp_enable_iff((I > 0 && I < layers && !batch_layer_ignore<I>::value))>
     void pretrain_layer_denoising_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
+        validate_generator(generator);
+
         using layer_t = layer_type<I>;
 
         decltype(auto) rbm = layer_get<I>();
