@@ -76,6 +76,9 @@ struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<!Desc::Categorica
     using cache_type     = etl::dyn_matrix<T, 1>; ///< The type of the cache
     using big_cache_type = etl::dyn_matrix<T, 2>; ///< The type of the big cache
 
+    static constexpr size_t batch_size     = Desc::BatchSize;    ///< The size of the generated batches
+    static constexpr size_t big_batch_size = Desc::BigBatchSize; ///< The number of batches kept in cache
+
     /*!
      * \brief Init the cache
      * \param n The size of the cache
@@ -98,8 +101,8 @@ struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<!Desc::Categorica
      * \param it An iterator to an element
      * \param cache The big cache to initialize
      */
-    static void init_big(size_t big, size_t n, size_t n_classes, const LIterator& it, big_cache_type& cache) {
-        cache = big_cache_type(big, n);
+    static void init_big(size_t n_classes, const LIterator& it, big_cache_type& cache) {
+        cache = big_cache_type(big_batch_size, batch_size);
 
         cpp_unused(it);
         cpp_unused(n_classes);
@@ -127,6 +130,9 @@ struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<etl::is_1d<typena
     using cache_type     = etl::dyn_matrix<T, 2>; ///< The type of the cache
     using big_cache_type = etl::dyn_matrix<T, 3>; ///< The type of the big cache
 
+    static constexpr size_t batch_size     = Desc::BatchSize;    ///< The size of the generated batches
+    static constexpr size_t big_batch_size = Desc::BigBatchSize; ///< The number of batches kept in cache
+
     static_assert(!Desc::Categorical, "Cannot make such vector labels categorical");
 
     /*!
@@ -146,15 +152,13 @@ struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<etl::is_1d<typena
 
     /*!
      * \brief Init the big cache
-     * \param big The number of batches
-     * \param n The size of one batch
      * \param n_classes The number of classes
      * \param it An iterator to an element
      * \param cache The big cache to initialize
      */
-    static void init_big(size_t big, size_t n, size_t n_classes, const LIterator& it, big_cache_type& cache) {
+    static void init_big(size_t n_classes, const LIterator& it, big_cache_type& cache) {
         auto one = *it;
-        cache    = big_cache_type(big, n, etl::dim<0>(one));
+        cache    = big_cache_type(big_batch_size, batch_size, etl::dim<0>(one));
 
         cpp_unused(it);
         cpp_unused(n_classes);
@@ -182,6 +186,9 @@ struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<etl::is_3d<typena
     using cache_type     = etl::dyn_matrix<T, 4>; ///< The type of the cache
     using big_cache_type = etl::dyn_matrix<T, 5>; ///< The type of the big cache
 
+    static constexpr size_t batch_size     = Desc::BatchSize;    ///< The size of the generated batches
+    static constexpr size_t big_batch_size = Desc::BigBatchSize; ///< The number of batches kept in cache
+
     static_assert(!Desc::Categorical, "Cannot make such matrix labels categorical");
 
     /*!
@@ -207,9 +214,9 @@ struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<etl::is_3d<typena
      * \param it An iterator to an element
      * \param cache The big cache to initialize
      */
-    static void init_big(size_t big, size_t n, size_t n_classes, const LIterator& it, big_cache_type& cache) {
+    static void init_big(size_t n_classes, const LIterator& it, big_cache_type& cache) {
         auto one = *it;
-        cache    = big_cache_type(big, n, etl::dim<0>(one), etl::dim<1>(one), etl::dim<2>(one));
+        cache    = big_cache_type(big_batch_size, batch_size, etl::dim<0>(one), etl::dim<1>(one), etl::dim<2>(one));
 
         cpp_unused(it);
         cpp_unused(n_classes);

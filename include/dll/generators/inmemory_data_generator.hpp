@@ -350,7 +350,7 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_au
         const size_t n = std::distance(first, last);
 
         data_cache_helper_t::init(n, first, input_cache);
-        data_cache_helper_t::init_big(big_batch_size, batch_size, first, batch_cache);
+        data_cache_helper_t::init_big(first, batch_cache);
 
         label_cache_helper_t::init(n, n_classes, lfirst, label_cache);
 

@@ -66,8 +66,8 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_
      */
     outmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, size_t size)
             : _size(size), orig_it(first), orig_lit(lfirst), it(orig_it), lit(orig_lit) {
-        data_cache_helper_t::init_big(big_batch_size, batch_size, first, batch_cache);
-        label_cache_helper_t::init_big(big_batch_size, batch_size, n_classes, lfirst, label_cache);
+        data_cache_helper_t::init_big(first, batch_cache);
+        label_cache_helper_t::init_big(n_classes, lfirst, label_cache);
 
         reset();
 
@@ -347,8 +347,8 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_a
      */
     outmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, size_t size)
             : _size(size), orig_it(first), orig_lit(lfirst), it(orig_it), lit(orig_lit), cropper(*first), mirrorer(*first), distorter(*first), noiser(*first) {
-        data_cache_helper_t::init_big(big_batch_size, batch_size, first, batch_cache);
-        label_cache_helper_t::init_big(big_batch_size, batch_size, n_classes, lfirst, label_cache);
+        data_cache_helper_t::init_big(first, batch_cache);
+        label_cache_helper_t::init_big(n_classes, lfirst, label_cache);
 
         cpp_unused(last);
         cpp_unused(llast);

@@ -31,6 +31,9 @@ struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_1d<typename std::it
     using cache_type     = etl::dyn_matrix<T, 2>; ///< The type of the cache
     using big_cache_type = etl::dyn_matrix<T, 3>; ///< The type of the big cache
 
+    static constexpr size_t batch_size     = Desc::BatchSize;    ///< The size of the generated batches
+    static constexpr size_t big_batch_size = Desc::BigBatchSize; ///< The number of batches kept in cache
+
     /*!
      * \brief Init the cache
      * \param n The size of the cache
@@ -51,7 +54,7 @@ struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_1d<typename std::it
      */
     static void init_big(size_t big, size_t n, Iterator& it, big_cache_type& cache) {
         auto one = *it;
-        cache    = big_cache_type(big, n, etl::dim<0>(one));
+        cache    = big_cache_type(big_batch_size, batch_size, etl::dim<0>(one));
     }
 };
 
@@ -64,6 +67,9 @@ struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_3d<typename std::it
 
     using cache_type     = etl::dyn_matrix<T, 4>; ///< The type of the cache
     using big_cache_type = etl::dyn_matrix<T, 5>; ///< The type of the big cache
+
+    static constexpr size_t batch_size     = Desc::BatchSize;    ///< The size of the generated batches
+    static constexpr size_t big_batch_size = Desc::BigBatchSize; ///< The number of batches kept in cache
 
     /*!
      * \brief Init the cache
@@ -83,13 +89,13 @@ struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_3d<typename std::it
      * \param it An iterator to an element
      * \param cache The big cache to initialize
      */
-    static void init_big(size_t big, size_t n, Iterator& it, big_cache_type& cache) {
+    static void init_big(Iterator& it, big_cache_type& cache) {
         auto one = *it;
 
         if (Desc::random_crop_x && Desc::random_crop_y) {
-            cache = big_cache_type(big, n, etl::dim<0>(one), Desc::random_crop_y, Desc::random_crop_x);
+            cache = big_cache_type(big_batch_size, batch_size, etl::dim<0>(one), Desc::random_crop_y, Desc::random_crop_x);
         } else {
-            cache = big_cache_type(big, n, etl::dim<0>(one), etl::dim<1>(one), etl::dim<2>(one));
+            cache = big_cache_type(big_batch_size, batch_size, etl::dim<0>(one), etl::dim<1>(one), etl::dim<2>(one));
         }
     }
 };
