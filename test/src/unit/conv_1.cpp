@@ -25,7 +25,7 @@ TEST_CASE("unit/conv/sgd/1", "[conv][dbn][mnist][sgd]") {
         dll::trainer<dll::sgd_trainer>, dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<10>>::dbn_t dbn_t;
 
     // Load the dataset
-    auto dataset = dll::make_mnist_dataset_sub(0, 500, 0, dll::batch_size<10>{});
+    auto dataset = dll::make_mnist_dataset_sub(0, 500, dll::batch_size<10>{});
 
     auto dbn = std::make_unique<dbn_t>();
 
