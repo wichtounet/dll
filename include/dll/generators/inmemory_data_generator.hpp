@@ -38,7 +38,7 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_a
 
     static constexpr bool dll_generator = true; ///< Simple flag to indicate that the class is a DLL generator
 
-    const size_t batch_size; ///< The size of the generated batches
+    static constexpr size_t batch_size = desc::BatchSize; ///< The size of the generated batches
 
     data_cache_type input_cache;  ///< The input cache
     label_cache_type label_cache; ///< The label cache
@@ -47,8 +47,7 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_a
     bool is_safe   = false; ///< Indicates if the generator is safe to reclaim memory from
 
     template <typename Input, typename Label>
-    inmemory_data_generator(const Input& input, const Label& label, size_t n, size_t n_classes, size_t batch = 0)
-            : batch_size(batch ? batch : desc::BatchSize) {
+    inmemory_data_generator(const Input& input, const Label& label, size_t n, size_t n_classes){
         // Initialize both caches for enough elements
         data_cache_helper_t::init(n, &input, input_cache);
         label_cache_helper_t::init(n, n_classes, &label, label_cache);
@@ -57,8 +56,7 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_a
     /*!
      * \brief Construct an inmemory data generator
      */
-    inmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, size_t batch = 0)
-            : batch_size(batch ? batch : desc::BatchSize) {
+    inmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes){
         const size_t n = std::distance(first, last);
 
         data_cache_helper_t::init(n, first, input_cache);
@@ -315,6 +313,8 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_au
     using label_cache_type = typename label_cache_helper_t::cache_type;    ///< The type of the label cache
 
     static constexpr bool dll_generator    = true;               ///< Simple flag to indicate that the class is a DLL generator
+
+    static constexpr size_t batch_size     = desc::BatchSize;    ///< The size of the generated batches
     static constexpr size_t big_batch_size = desc::BigBatchSize; ///< The number of batches kept in cache
 
     data_cache_type input_cache;  ///< The data cache
@@ -326,7 +326,6 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_au
     elastic_distorter<Desc> distorter; ///< The elastic distorter
     random_noise<Desc> noiser;         ///< The random noiser
 
-    const size_t batch_size; ///< The size of the generated batches
 
     size_t current = 0;     ///< The current index
     bool is_safe   = false; ///< Indicates if the generator is safe to reclaim memory from
@@ -346,8 +345,8 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_au
     /*!
      * \brief Construct an inmemory data generator
      */
-    inmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, size_t batch = 0)
-            : cropper(*first), mirrorer(*first), distorter(*first), noiser(*first), batch_size(batch ? batch : desc::BatchSize) {
+    inmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes)
+            : cropper(*first), mirrorer(*first), distorter(*first), noiser(*first) {
         const size_t n = std::distance(first, last);
 
         data_cache_helper_t::init(n, first, input_cache);
@@ -792,6 +791,7 @@ struct inmemory_data_generator_desc {
     static constexpr bool AutoEncoder = parameters::template contains<autoencoder>();
 
     static_assert(BatchSize > 0, "The batch size must be larger than one");
+    static_assert(BigBatchSize > 0, "The big batch size must be larger than one");
     static_assert(!(AutoEncoder && (random_crop_x || random_crop_y)), "autoencoder mode is not compatible with random crop");
 
     //Make sure only valid types are passed to the configuration list
@@ -814,18 +814,18 @@ struct inmemory_data_generator_desc {
  * \brief Make an out of memory data generator from iterators
  */
 template <typename Iterator, typename LIterator, typename... Parameters>
-auto make_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, const inmemory_data_generator_desc<Parameters...>& /*desc*/, size_t batch = 0) {
+auto make_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, const inmemory_data_generator_desc<Parameters...>& /*desc*/) {
     using generator_t = typename inmemory_data_generator_desc<Parameters...>::template generator_t<Iterator, LIterator>;
-    return std::make_unique<generator_t>(first, last, lfirst, llast, n_classes, batch);
+    return std::make_unique<generator_t>(first, last, lfirst, llast, n_classes);
 }
 
 /*!
  * \brief Make an out of memory data generator from containers
  */
 template <typename Container, typename LContainer, typename... Parameters>
-auto make_generator(const Container& container, const LContainer& lcontainer, size_t n_classes, const inmemory_data_generator_desc<Parameters...>& /*desc*/, size_t batch = 0) {
+auto make_generator(const Container& container, const LContainer& lcontainer, size_t n_classes, const inmemory_data_generator_desc<Parameters...>& /*desc*/) {
     using generator_t = typename inmemory_data_generator_desc<Parameters...>::template generator_t<typename Container::const_iterator, typename LContainer::const_iterator>;
-    return std::make_unique<generator_t>(container.begin(), container.end(), lcontainer.begin(), lcontainer.end(), n_classes, batch);
+    return std::make_unique<generator_t>(container.begin(), container.end(), lcontainer.begin(), lcontainer.end(), n_classes);
 }
 
 // The following are simply helpers for creating generic generators
@@ -834,22 +834,22 @@ auto make_generator(const Container& container, const LContainer& lcontainer, si
  * \brief Make an out of memory data generator from iterators
  */
 template <typename Iterator, typename LIterator, typename... Parameters>
-auto make_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n, size_t n_classes, const inmemory_data_generator_desc<Parameters...>& /*desc*/, size_t batch = 0) {
+auto make_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n, size_t n_classes, const inmemory_data_generator_desc<Parameters...>& /*desc*/) {
     cpp_unused(n);
 
     using generator_t = typename inmemory_data_generator_desc<Parameters...>::template generator_t<Iterator, LIterator>;
-    return std::make_unique<generator_t>(first, last, lfirst, llast, n_classes, batch);
+    return std::make_unique<generator_t>(first, last, lfirst, llast, n_classes);
 }
 
 /*!
  * \brief Make an out of memory data generator from containers
  */
 template <typename Container, typename LContainer, typename... Parameters>
-auto make_generator(const Container& container, const LContainer& lcontainer, size_t n, size_t n_classes, const inmemory_data_generator_desc<Parameters...>& /*desc*/, size_t batch = 0) {
+auto make_generator(const Container& container, const LContainer& lcontainer, size_t n, size_t n_classes, const inmemory_data_generator_desc<Parameters...>& /*desc*/) {
     cpp_unused(n);
 
     using generator_t = typename inmemory_data_generator_desc<Parameters...>::template generator_t<typename Container::const_iterator, typename LContainer::const_iterator>;
-    return std::make_unique<generator_t>(container.begin(), container.end(), lcontainer.begin(), lcontainer.end(), n_classes, batch);
+    return std::make_unique<generator_t>(container.begin(), container.end(), lcontainer.begin(), lcontainer.end(), n_classes);
 }
 
 /*!
@@ -857,7 +857,7 @@ auto make_generator(const Container& container, const LContainer& lcontainer, si
  * will be constructed to hold the given size and can then be filled.
  */
 template <typename Input, typename Label, typename... Parameters>
-auto prepare_generator(const Input& input, const Label& label, size_t n, size_t n_classes, const inmemory_data_generator_desc<Parameters...>& /*desc*/, size_t batch = 0) {
+auto prepare_generator(const Input& input, const Label& label, size_t n, size_t n_classes, const inmemory_data_generator_desc<Parameters...>& /*desc*/) {
     // Create fake iterators for the type (won't be iterated
     using Iterator  = const Input*;
     using LIterator = const Label*;
@@ -865,7 +865,7 @@ auto prepare_generator(const Input& input, const Label& label, size_t n, size_t 
     // The generator type
     using generator_t = typename inmemory_data_generator_desc<Parameters...>::template generator_t<Iterator, LIterator>;
 
-    return std::make_unique<generator_t>(input, label, n, n_classes, batch);
+    return std::make_unique<generator_t>(input, label, n, n_classes);
 }
 
 } //end of dll namespace

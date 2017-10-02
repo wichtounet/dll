@@ -37,6 +37,7 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_
     using big_label_cache_type = typename label_cache_helper_t::big_cache_type; ///< The type of the big label cache
 
     static constexpr bool dll_generator    = true;               ///< Simple flag to indicate that the class is a DLL generator
+    static constexpr size_t batch_size     = desc::BatchSize;    ///< The size of the batch
     static constexpr size_t big_batch_size = desc::BigBatchSize; ///< The number of batches kept in cache
 
     big_data_cache_type batch_cache;  ///< The data batch cache
@@ -53,7 +54,6 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_
     Iterator it;        ///< The current iterator on data
     LIterator lit;      ///< The current iterator on label
 
-    const size_t batch_size; ///< The size of the batch
 
     /*!
      * \brief Construct an outmemory_data_generator
@@ -63,10 +63,9 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_
      * \param llast The iterator on the end  on labels
      * \param n_classes The number of classes
      * \param size The size of the entire dataset
-     * \param batch The size of the batch
      */
-    outmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, size_t size, size_t batch = 0)
-            : _size(size), orig_it(first), orig_lit(lfirst), it(orig_it), lit(orig_lit), batch_size(batch ? batch : desc::BatchSize) {
+    outmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, size_t size)
+            : _size(size), orig_it(first), orig_lit(lfirst), it(orig_it), lit(orig_lit) {
         data_cache_helper_t::init_big(big_batch_size, batch_size, first, batch_cache);
         label_cache_helper_t::init_big(big_batch_size, batch_size, n_classes, lfirst, label_cache);
 
@@ -304,6 +303,7 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_a
     using big_label_cache_type = typename label_cache_helper_t::big_cache_type; ///< The type of the big label cache
 
     static constexpr bool dll_generator    = true;               ///< Simple flag to indicate that the class is a DLL generator
+    static constexpr size_t batch_size     = desc::BatchSize;    ///< The size of the generated batches
     static constexpr size_t big_batch_size = desc::BigBatchSize; ///< The number of batches kept in cache
 
     big_data_cache_type batch_cache;  ///< The data batch cache
@@ -336,8 +336,6 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_a
     elastic_distorter<Desc> distorter; ///< The elastic distorter
     random_noise<Desc> noiser;         ///< The random noiser
 
-    const size_t batch_size; ///< The size of the generated batches
-
     /*!
      * \brief Construct an outmemory_data_generator
      * \param first The iterator on the beginning on data
@@ -346,10 +344,9 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_a
      * \param llast The iterator on the end  on labels
      * \param n_classes The number of classes
      * \param size The size of the entire dataset
-     * \param batch The size of the batch
      */
-    outmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, size_t size, size_t batch = 0)
-            : _size(size), orig_it(first), orig_lit(lfirst), it(orig_it), lit(orig_lit), cropper(*first), mirrorer(*first), distorter(*first), noiser(*first), batch_size(batch ? batch : desc::BatchSize) {
+    outmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, size_t size)
+            : _size(size), orig_it(first), orig_lit(lfirst), it(orig_it), lit(orig_lit), cropper(*first), mirrorer(*first), distorter(*first), noiser(*first) {
         data_cache_helper_t::init_big(big_batch_size, batch_size, first, batch_cache);
         label_cache_helper_t::init_big(big_batch_size, batch_size, n_classes, lfirst, label_cache);
 
@@ -788,6 +785,7 @@ struct outmemory_data_generator_desc {
     static constexpr bool AutoEncoder = parameters::template contains<autoencoder>();
 
     static_assert(BatchSize > 0, "The batch size must be larger than one");
+    static_assert(BigBatchSize > 0, "The big batch size must be larger than one");
     static_assert(!(AutoEncoder && (random_crop_x || random_crop_y)), "autoencoder mode is not compatible with random crop");
 
     //Make sure only valid types are passed to the configuration list
@@ -810,18 +808,18 @@ struct outmemory_data_generator_desc {
  * \brief Make an out of memory data generator from iterators
  */
 template <typename Iterator, typename LIterator, typename... Parameters>
-auto make_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t size, size_t n_classes, const outmemory_data_generator_desc<Parameters...>& /*desc*/, size_t batch = 0) {
+auto make_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t size, size_t n_classes, const outmemory_data_generator_desc<Parameters...>& /*desc*/) {
     using generator_t = typename outmemory_data_generator_desc<Parameters...>::template generator_t<Iterator, LIterator>;
-    return std::make_unique<generator_t>(first, last, lfirst, llast, n_classes, size, batch);
+    return std::make_unique<generator_t>(first, last, lfirst, llast, n_classes, size);
 }
 
 /*!
  * \brief Make an out of memory data generator from containers
  */
 template <typename Container, typename LContainer, typename... Parameters>
-auto make_generator(const Container& container, const LContainer& lcontainer, size_t size, size_t n_classes, const outmemory_data_generator_desc<Parameters...>& /*desc*/, size_t batch = 0) {
+auto make_generator(const Container& container, const LContainer& lcontainer, size_t size, size_t n_classes, const outmemory_data_generator_desc<Parameters...>& /*desc*/) {
     using generator_t = typename outmemory_data_generator_desc<Parameters...>::template generator_t<typename Container::const_iterator, typename LContainer::const_iterator>;
-    return std::make_unique<generator_t>(container.begin(), container.end(), lcontainer.begin(), lcontainer.end(), n_classes, size, batch);
+    return std::make_unique<generator_t>(container.begin(), container.end(), lcontainer.begin(), lcontainer.end(), n_classes, size);
 }
 
 } //end of dll namespace
