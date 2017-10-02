@@ -47,12 +47,10 @@ struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_1d<typename std::it
 
     /*!
      * \brief Init the big cache
-     * \param big The number of batches
-     * \param n The size of a batch
      * \param it An iterator to an element
      * \param cache The big cache to initialize
      */
-    static void init_big(size_t big, size_t n, Iterator& it, big_cache_type& cache) {
+    static void init_big(Iterator& it, big_cache_type& cache) {
         auto one = *it;
         cache    = big_cache_type(big_batch_size, batch_size, etl::dim<0>(one));
     }
@@ -84,8 +82,6 @@ struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_3d<typename std::it
 
     /*!
      * \brief Init the big cache
-     * \param big The number of batches
-     * \param n The size of a batch
      * \param it An iterator to an element
      * \param cache The big cache to initialize
      */

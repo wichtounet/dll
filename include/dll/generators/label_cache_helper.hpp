@@ -25,6 +25,9 @@ struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<Desc::Categorical
     using cache_type     = etl::dyn_matrix<T, 2>; ///< The type of the cache
     using big_cache_type = etl::dyn_matrix<T, 3>; ///< The type of the big cache
 
+    static constexpr size_t batch_size     = Desc::BatchSize;    ///< The size of the generated batches
+    static constexpr size_t big_batch_size = Desc::BigBatchSize; ///< The number of batches kept in cache
+
     /*!
      * \brief Init the cache
      * \param n The size of the cache
@@ -41,14 +44,12 @@ struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<Desc::Categorical
 
     /*!
      * \brief Init the big cache
-     * \param big The number of batches
-     * \param n The size of one batch
      * \param n_classes The number of classes
      * \param it An iterator to an element
      * \param cache The big cache to initialize
      */
-    static void init_big(size_t big, size_t n, size_t n_classes, const LIterator& it, big_cache_type& cache) {
-        cache = big_cache_type(big, n, n_classes);
+    static void init_big(size_t n_classes, const LIterator& it, big_cache_type& cache) {
+        cache = big_cache_type(big_batch_size, batch_size, n_classes);
 
         cpp_unused(it);
     }
@@ -95,8 +96,6 @@ struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<!Desc::Categorica
 
     /*!
      * \brief Init the big cache
-     * \param big The number of batches
-     * \param n The size of one batch
      * \param n_classes The number of classes
      * \param it An iterator to an element
      * \param cache The big cache to initialize
@@ -208,8 +207,6 @@ struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<etl::is_3d<typena
 
     /*!
      * \brief Init the big cache
-     * \param big The number of batches
-     * \param n The size of one batch
      * \param n_classes The number of classes
      * \param it An iterator to an element
      * \param cache The big cache to initialize
