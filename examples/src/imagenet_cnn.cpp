@@ -21,7 +21,7 @@ int main(int /*argc*/, char* /*argv*/ []) {
     constexpr size_t B = 128;
 
     // Load the dataset
-    auto dataset = dll::make_imagenet_dataset("/home/wichtounet/datasets/imagenet_resized/", 0
+    auto dataset = dll::make_imagenet_dataset("/home/wichtounet/datasets/imagenet_resized/"
         , dll::batch_size<B>{}
         , dll::scale_pre<255>{}
         );
