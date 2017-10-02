@@ -272,20 +272,6 @@ private:
         return rbm_ingenerator_fast_inner_t<layer_type<L>::batch_size>{};
     }
 
-    template<size_t L = rbm_layer_n, cpp_enable_iff(decay_layer_traits<layer_type<L>>::is_dynamic())>
-    size_t get_rbm_generator_batch(){
-        static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_desc");
-
-        return get_batch_size(layer_get<L>());
-    }
-
-    template<size_t L = rbm_layer_n, cpp_enable_iff(!decay_layer_traits<layer_type<L>>::is_dynamic())>
-    size_t get_rbm_generator_batch(){
-        static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_desc");
-
-        return 0;
-    }
-
     template <size_t L, cpp_enable_iff((L < layers - 1) && decay_layer_traits<layer_type<L>>::is_rbm_layer())>
     void validate_pretraining_base() const {
         cpp_assert(get_batch_size(layer_get<L>()) == get_batch_size(layer_get<rbm_layer_n>()), "Incoherent batch sizes in network");
@@ -585,7 +571,7 @@ public:
         auto generator = make_generator(
             training_data, training_data,
             training_data.size(), output_size(),
-            get_rbm_generator_desc(), get_rbm_generator_batch());
+            get_rbm_generator_desc());
 
         generator->set_safe();
 
@@ -612,7 +598,7 @@ public:
             first, last,
             first, last,
             std::distance(first, last), output_size(),
-            get_rbm_generator_desc(), get_rbm_generator_batch());
+            get_rbm_generator_desc());
 
         generator->set_safe();
 
@@ -670,7 +656,7 @@ public:
         auto generator = make_generator(
             noisy, clean,
             noisy.size(), output_size(),
-            get_rbm_generator_desc(), get_rbm_generator_batch());
+            get_rbm_generator_desc());
 
         generator->set_safe();
 
@@ -692,7 +678,7 @@ public:
             nit, nend,
             cit, cend,
             std::distance(cit, cend), output_size(),
-            get_rbm_generator_desc(), get_rbm_generator_batch());
+            get_rbm_generator_desc());
 
         generator->set_safe();
 
@@ -2158,7 +2144,7 @@ private:
         auto next_generator = prepare_generator(
             two, two,
             generator.size(), output_size(),
-            get_rbm_ingenerator_inner_desc(), get_rbm_generator_batch());
+            get_rbm_ingenerator_inner_desc());
 
         next_generator->set_safe();
 
@@ -2219,7 +2205,7 @@ private:
             auto next_generator = prepare_generator(
                 one, one,
                 generator.size(), output_size(),
-                get_rbm_ingenerator_inner_desc(), get_rbm_generator_batch());
+                get_rbm_ingenerator_inner_desc());
 
             next_generator->set_safe();
 
@@ -2283,7 +2269,7 @@ private:
             auto next_generator = prepare_generator(
                 one_n, one_c,
                 generator.size(), output_size(),
-                get_rbm_ingenerator_inner_desc(), get_rbm_generator_batch());
+                get_rbm_ingenerator_inner_desc());
 
             next_generator->set_safe();
 
