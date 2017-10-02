@@ -16,7 +16,7 @@
 
 int main(int /*argc*/, char* /*argv*/ []) {
     // Load the dataset
-    auto dataset = dll::make_mnist_dataset(0, dll::batch_size<100>{}, dll::scale_pre<255>{});
+    auto dataset = dll::make_mnist_dataset(dll::batch_size<100>{}, dll::scale_pre<255>{});
 
     // Build the network
 
