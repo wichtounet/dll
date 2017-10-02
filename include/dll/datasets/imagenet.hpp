@@ -211,12 +211,11 @@ struct label_iterator : std::iterator<
 /*!
  * \brief Creates a dataset around CIFAR-10
  * \param folder The folder in which the CIFAR-10 files are
- * \param batch The batch size (0 = default from parameters)
  * \param parameters The parameters of the generator
  * \return The CIFAR-10 dataset
  */
 template<typename... Parameters>
-auto make_imagenet_dataset(const std::string& folder, size_t batch = 0, Parameters&&... /*parameters*/){
+auto make_imagenet_dataset(const std::string& folder, Parameters&&... /*parameters*/){
     auto train_files = std::make_shared<std::vector<std::pair<size_t, size_t>>>();
     auto labels      = std::make_shared<std::unordered_map<size_t, float>>();
 
@@ -236,8 +235,8 @@ auto make_imagenet_dataset(const std::string& folder, size_t batch = 0, Paramete
     imagenet::label_iterator lend(train_files, labels, train_files->size());
 
     return make_dataset_holder(
-        make_generator(iit, iend, lit, lend, train_files->size(), 1000, dll::outmemory_data_generator_desc<Parameters..., dll::categorical>{}, batch),
-        make_generator(iit, iend, lit, lend, train_files->size(), 1000, dll::outmemory_data_generator_desc<Parameters..., dll::categorical>{}, batch));
+        make_generator(iit, iend, lit, lend, train_files->size(), 1000, dll::outmemory_data_generator_desc<Parameters..., dll::categorical>{}),
+        make_generator(iit, iend, lit, lend, train_files->size(), 1000, dll::outmemory_data_generator_desc<Parameters..., dll::categorical>{}));
 }
 
 } // end of namespace dll

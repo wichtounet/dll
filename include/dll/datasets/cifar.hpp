@@ -15,12 +15,11 @@ namespace dll {
  * \brief Create a data generator around the CIFAR-10 train set
  * \param folder The folder in which the CIFAR-10 train files are
  * \param limit The limit size (0 = no limit)
- * \param batch The batch size (0 = default from parameters)
  * \param parameters The parameters of the generator
  * \return a unique_ptr around the create generator
  */
 template<typename... Parameters>
-auto make_cifar10_generator_train(const std::string& folder, size_t limit, size_t batch, Parameters&&... /*parameters*/){
+auto make_cifar10_generator_train(const std::string& folder, size_t limit, Parameters&&... /*parameters*/){
     // Create examples for the caches
     etl::fast_dyn_matrix<float, 3, 32, 32> input;
     float label;
@@ -34,7 +33,7 @@ auto make_cifar10_generator_train(const std::string& folder, size_t limit, size_
     }
 
     // Prepare the empty generator
-    auto generator = prepare_generator(input, label, n, 10, dll::inmemory_data_generator_desc<Parameters..., dll::categorical>{}, batch);
+    auto generator = prepare_generator(input, label, n, 10, dll::inmemory_data_generator_desc<Parameters..., dll::categorical>{});
 
     generator->label_cache = 0;
 
@@ -51,12 +50,11 @@ auto make_cifar10_generator_train(const std::string& folder, size_t limit, size_
  * \brief Create a data generator around the CIFAR-10 test set
  * \param folder The folder in which the CIFAR-10 test files are
  * \param limit The limit size (0 = no limit)
- * \param batch The batch size (0 = default from parameters)
  * \param parameters The parameters of the generator
  * \return a unique_ptr around the create generator
  */
 template<typename... Parameters>
-auto make_cifar10_generator_test(const std::string& folder, size_t limit, size_t batch, Parameters&&... /*parameters*/){
+auto make_cifar10_generator_test(const std::string& folder, size_t limit, Parameters&&... /*parameters*/){
     // Create examples for the caches
     etl::fast_dyn_matrix<float, 3, 32, 32> input;
     float label;
@@ -70,7 +68,7 @@ auto make_cifar10_generator_test(const std::string& folder, size_t limit, size_t
     }
 
     // Prepare the empty generator
-    auto generator = prepare_generator(input, label, n, 10, dll::inmemory_data_generator_desc<Parameters..., dll::categorical>{}, batch);
+    auto generator = prepare_generator(input, label, n, 10, dll::inmemory_data_generator_desc<Parameters..., dll::categorical>{});
 
     generator->label_cache = 0;
 
@@ -89,13 +87,12 @@ auto make_cifar10_generator_test(const std::string& folder, size_t limit, size_t
  * The CIFAR-10 train files are assumed to be in a cifar-10 sub folder.
  *
  * \param limit The limit size (0 = no limit)
- * \param batch The batch size (0 = default from parameters)
  * \param parameters The parameters of the generator
  * \return a unique_ptr around the create generator
  */
 template<typename... Parameters>
-auto make_cifar10_generator_train(size_t limit = 0, size_t batch = 0, Parameters&&... parameters){
-    return make_cifar10_generator_train("cifar-10/cifar-10-batches-bin", limit, batch, std::forward<Parameters>(parameters)...);
+auto make_cifar10_generator_train(size_t limit = 0, Parameters&&... parameters){
+    return make_cifar10_generator_train("cifar-10/cifar-10-batches-bin", limit, std::forward<Parameters>(parameters)...);
 }
 
 /*!
@@ -104,27 +101,25 @@ auto make_cifar10_generator_train(size_t limit = 0, size_t batch = 0, Parameters
  * The CIFAR-10 train files are assumed to be in a cifar-10/cifar-10-batches-bin sub folder.
  *
  * \param limit The limit size (0 = no limit)
- * \param batch The batch size (0 = default from parameters)
  * \param parameters The parameters of the generator
  * \return a unique_ptr around the create generator
  */
 template<typename... Parameters>
-auto make_cifar10_generator_test(size_t limit = 0, size_t batch = 0, Parameters&&... parameters){
-    return make_cifar10_generator_test("cifar-10/cifar-10-batches-bin", limit, batch, std::forward<Parameters>(parameters)...);
+auto make_cifar10_generator_test(size_t limit = 0, Parameters&&... parameters){
+    return make_cifar10_generator_test("cifar-10/cifar-10-batches-bin", limit, std::forward<Parameters>(parameters)...);
 }
 
 /*!
  * \brief Creates a dataset around CIFAR-10
  * \param folder The folder in which the CIFAR-10 files are
- * \param batch The batch size (0 = default from parameters)
  * \param parameters The parameters of the generator
  * \return The CIFAR-10 dataset
  */
 template<typename... Parameters>
-auto make_cifar10_dataset(const std::string& folder, size_t batch = 0, Parameters&&... parameters){
+auto make_cifar10_dataset(const std::string& folder, Parameters&&... parameters){
     return make_dataset_holder(
-        make_cifar10_generator_train(folder, batch, std::forward<Parameters>(parameters)...),
-        make_cifar10_generator_test(folder, batch, std::forward<Parameters>(parameters)...));
+        make_cifar10_generator_train(folder, std::forward<Parameters>(parameters)...),
+        make_cifar10_generator_test(folder, std::forward<Parameters>(parameters)...));
 }
 
 /*!
@@ -132,30 +127,28 @@ auto make_cifar10_dataset(const std::string& folder, size_t batch = 0, Parameter
  *
  * The CIFAR-10 train files are assumed to be in a cifar-10/cifar-10-batches-bin sub folder.
  *
- * \param batch The batch size (0 = default from parameters)
  * \param parameters The parameters of the generator
  * \return The CIFAR-10 dataset
  */
 template<typename... Parameters>
-auto make_cifar10_dataset(size_t batch = 0, Parameters&&... parameters){
+auto make_cifar10_dataset(Parameters&&... parameters){
     return make_dataset_holder(
-        make_cifar10_generator_train(batch, std::forward<Parameters>(parameters)...),
-        make_cifar10_generator_test(batch, std::forward<Parameters>(parameters)...));
+        make_cifar10_generator_train(std::forward<Parameters>(parameters)...),
+        make_cifar10_generator_test(std::forward<Parameters>(parameters)...));
 }
 
 /*!
  * \brief Creates a dataset around a subset of CIFAR-10
  * \param folder The folder in which the CIFAR-10 files are
  * \param limit The limit size (0 = no limit)
- * \param batch The batch size (0 = default from parameters)
  * \param parameters The parameters of the generator
  * \return The CIFAR-10 dataset
  */
 template<typename... Parameters>
-auto make_cifar10_dataset_sub(const std::string& folder, size_t limit, size_t batch = 0, Parameters&&... parameters){
+auto make_cifar10_dataset_sub(const std::string& folder, size_t limit, Parameters&&... parameters){
     return make_dataset_holder(
-        make_cifar10_generator_train(folder, limit, batch, std::forward<Parameters>(parameters)...),
-        make_cifar10_generator_test(batch, std::forward<Parameters>(parameters)...));
+        make_cifar10_generator_train(folder, limit, std::forward<Parameters>(parameters)...),
+        make_cifar10_generator_test(std::forward<Parameters>(parameters)...));
 }
 
 /*!
@@ -164,15 +157,14 @@ auto make_cifar10_dataset_sub(const std::string& folder, size_t limit, size_t ba
  * The CIFAR-10 train files are assumed to be in a cifar-10/cifar-10-batches-bin sub folder.
  *
  * \param limit The limit size (0 = no limit)
- * \param batch The batch size (0 = default from parameters)
  * \param parameters The parameters of the generator
  * \return The CIFAR-10 dataset
  */
 template<typename... Parameters>
-auto make_cifar10_dataset_sub(size_t limit, size_t batch = 0, Parameters&&... parameters){
+auto make_cifar10_dataset_sub(size_t limit, Parameters&&... parameters){
     return make_dataset_holder(
-        make_cifar10_generator_train(limit, batch, std::forward<Parameters>(parameters)...),
-        make_cifar10_generator_test(batch, std::forward<Parameters>(parameters)...));
+        make_cifar10_generator_train(limit, std::forward<Parameters>(parameters)...),
+        make_cifar10_generator_test(std::forward<Parameters>(parameters)...));
 }
 
 } // end of namespace dll
