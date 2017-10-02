@@ -533,7 +533,6 @@ public:
         static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
 
         validate_pretraining();
-        validate_generator(generator);
 
         dll::auto_timer timer("dbn:pretrain");
 
@@ -616,7 +615,6 @@ public:
         static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
 
         validate_pretraining();
-        validate_generator(generator);
 
         dll::auto_timer timer("dbn:pretrain:denoising");
 
@@ -2125,8 +2123,6 @@ private:
 
     template <size_t I, typename Generator>
     void inline_layer_pretrain(Generator& generator, watcher_t& watcher, size_t max_epochs) {
-        validate_generator(generator);
-
         decltype(auto) layer = layer_get<I>();
         decltype(auto) next_layer = layer_get<I + 1>();
 
@@ -2172,8 +2168,6 @@ private:
 
     template <size_t I, typename Generator, cpp_enable_iff((I < layers))>
     void pretrain_layer(Generator& generator, watcher_t& watcher, size_t max_epochs) {
-        validate_generator(generator);
-
         using layer_t = layer_type<I>;
 
         decltype(auto) layer = layer_get<I>();
@@ -2241,8 +2235,6 @@ private:
     template <size_t I, typename Generator, cpp_enable_iff((I < layers))>
     void pretrain_layer_denoising(Generator& generator, watcher_t& watcher, size_t max_epochs) {
         using layer_t = layer_type<I>;
-
-        validate_generator(generator);
 
         decltype(auto) layer = layer_get<I>();
 
@@ -2319,8 +2311,6 @@ private:
     //data is coming from iterators not from input
     template <size_t I, typename Generator, cpp_enable_iff((I == 0 && !batch_layer_ignore<I>::value))>
     void pretrain_layer_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
-        validate_generator(generator);
-
         decltype(auto) rbm = layer_get<I>();
 
         watcher.pretrain_layer(*this, I, rbm, 0);
@@ -2339,8 +2329,6 @@ private:
     //Special handling for untrained layers
     template <size_t I, typename Generator, cpp_enable_iff(batch_layer_ignore<I>::value)>
     void pretrain_layer_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
-        validate_generator(generator);
-
         //We simply go up one layer on untrained layers
         pretrain_layer_batch<I + 1>(generator, watcher, max_epochs);
     }
@@ -2348,8 +2336,6 @@ private:
     //Normal version
     template <size_t I, typename Generator, cpp_enable_iff((I > 0 && I < layers && !batch_layer_ignore<I>::value))>
     void pretrain_layer_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
-        validate_generator(generator);
-
         using layer_t = layer_type<I>;
 
         decltype(auto) rbm = layer_get<I>();
@@ -2410,8 +2396,6 @@ private:
     //data is coming from iterators not from input
     template <size_t I, typename Generator, cpp_enable_iff((I == 0 && !batch_layer_ignore<I>::value))>
     void pretrain_layer_denoising_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
-        validate_generator(generator);
-
         decltype(auto) rbm = layer_get<I>();
 
         watcher.pretrain_layer(*this, I, rbm, 0);
@@ -2430,8 +2414,6 @@ private:
     //Special handling for untrained layers
     template <size_t I, typename Generator, cpp_enable_iff(batch_layer_ignore<I>::value)>
     void pretrain_layer_denoising_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
-        validate_generator(generator);
-
         //We simply go up one layer on untrained layers
         pretrain_layer_denoising_batch<I + 1>(generator, watcher, max_epochs);
     }
@@ -2439,8 +2421,6 @@ private:
     //Normal version
     template <size_t I, typename Generator, cpp_enable_iff((I > 0 && I < layers && !batch_layer_ignore<I>::value))>
     void pretrain_layer_denoising_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
-        validate_generator(generator);
-
         using layer_t = layer_type<I>;
 
         decltype(auto) rbm = layer_get<I>();
