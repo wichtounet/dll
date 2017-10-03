@@ -138,7 +138,6 @@ struct rbm_impl final : public standard_rbm<rbm_impl<Desc>, Desc> {
     template<typename DRBM>
     static void dyn_init(DRBM& dyn){
         dyn.init_layer(num_visible, num_hidden);
-        dyn.batch_size  = batch_size;
     }
 
     void prepare_input(input_one_t& input) const {

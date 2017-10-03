@@ -161,7 +161,6 @@ struct conv_rbm_mp_impl final : public standard_crbm_mp<conv_rbm_mp_impl<Desc>, 
     template<typename DRBM>
     static void dyn_init(DRBM& dyn){
         dyn.init_layer(NC, NV1, NV2, K, NW1, NW2, C);
-        dyn.batch_size  = batch_size;
     }
 
     /*!
