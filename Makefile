@@ -319,6 +319,12 @@ $(eval $(call add_executable_set,dll_perf_paper_conv,dll_perf_paper_conv))
 $(eval $(call add_executable_set,dll_perf_conv,dll_perf_conv))
 $(eval $(call add_executable_set,dll_conv_types,dll_conv_types))
 
+# Build sets for workbench sources
+debug_workbench: debug/bin/dll_sgd_perf debug/bin/dll_conv_sgd_perf debug/bin/dll_imagenet_perf debug/bin/dll_sgd_debug debug/bin/dll_dae debug/bin/dll_rbm_dae debug/bin/dll_perf_paper debug/bin/dll_perf_paper_conv debug/bin/dll_perf_conv debug/bin/dll_conv_types debug/bin/dll_dyn_perf
+release_debug_workbench: release_debug/bin/dll_sgd_perf release_debug/bin/dll_conv_sgd_perf release_debug/bin/dll_imagenet_perf release_debug/bin/dll_sgd_debug release_debug/bin/dll_dae release_debug/bin/dll_rbm_dae release_debug/bin/dll_perf_paper release_debug/bin/dll_perf_paper_conv release_debug/bin/dll_perf_conv release_debug/bin/dll_conv_types release_debug/bin/dll_dyn_perf
+release_workbench: release/bin/dll_sgd_perf release/bin/dll_conv_sgd_perf release/bin/dll_imagenet_perf release/bin/dll_sgd_debug release/bin/dll_dae release/bin/dll_rbm_dae release/bin/dll_perf_paper release/bin/dll_perf_paper_conv release/bin/dll_perf_conv release/bin/dll_conv_types release/bin/dll_dyn_perf
+
+# Build sets for the examples
 debug_examples: debug/bin/dll_mnist_mlp debug/bin/dll_mnist_cnn debug/bin/dll_mnist_ae debug/bin/dll_mnist_deep_ae
 release_debug_examples: release_debug/bin/dll_mnist_mlp release_debug/bin/dll_mnist_cnn release_debug/bin/dll_mnist_ae release_debug/bin/dll_mnist_deep_ae
 release_examples: release/bin/dll_mnist_mlp release/bin/dll_mnist_cnn release/bin/dll_mnist_ae release/bin/dll_mnist_deep_ae
