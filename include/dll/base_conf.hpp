@@ -82,9 +82,11 @@ struct template_type_tb_conf_elt {
 /*!
  * \brief A configuration element with an integral value.
  */
-template <typename ID, typename T, T value>
-struct value_conf_elt : std::integral_constant<T, value> {
+template <typename ID, typename T, T Value>
+struct value_conf_elt {
     using type_id = ID; ///< The unique identifier type of this element
+
+    static constexpr T value = Value; ///< The value of the configuration element
 };
 
 /*!
