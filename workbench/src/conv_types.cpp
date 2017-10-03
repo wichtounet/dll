@@ -10,7 +10,7 @@
 
 #include <fenv.h>
 
-#include "dll/conv_rbm.hpp"
+#include "dll/rbm/conv_rbm.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -46,7 +46,7 @@ int main(int argc, char* argv []) {
     // With this flag, float version is much faster
     // _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 
-    auto dataset = mnist::read_dataset<std::vector, std::vector, float>(2500);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(2500);
 
     std::string sub;
     if(argc > 1){

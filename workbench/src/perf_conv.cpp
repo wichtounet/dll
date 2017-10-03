@@ -8,7 +8,7 @@
 #include <iostream>
 #include <chrono>
 
-#include "dll/conv_rbm.hpp"
+#include "dll/rbm/conv_rbm.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
@@ -39,7 +39,7 @@ using resolution = std::chrono::milliseconds;
 } //end of anonymous namespace
 
 int main(int argc, char* argv []) {
-    auto dataset = mnist::read_dataset<std::vector, std::vector, float>(5000);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(5000);
 
     std::string sub;
     if(argc > 1){
@@ -50,19 +50,11 @@ int main(int argc, char* argv []) {
 
     mnist::binarize_dataset(dataset);
 
-    for (auto& image : dataset.training_images) {
-        image.reserve(image.size() * 2);
-        auto end = image.size();
-        for (size_t i = 0; i < end; ++i) {
-            image.push_back(image[i]);
-        }
-    }
-
     std::cout << n << " images used for training" << std::endl;
     std::cout << etl::threads << " maximum threads" << std::endl;
 
     if(sub.empty() || sub == "batch"){
-        dll::conv_rbm_square_desc<2, 28, 40, 17, dll::batch_size<64>, dll::weight_type<float>>::layer_t crbm_1;
+        dll::conv_rbm_square_desc<1, 28, 40, 17, dll::batch_size<64>, dll::weight_type<float>>::layer_t crbm_1;
         MEASURE(crbm_1, "batch", dataset.training_images);
     }
 
