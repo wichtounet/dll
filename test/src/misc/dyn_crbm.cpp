@@ -18,7 +18,6 @@ TEST_CASE("dyn_crbm/mnist_1", "dyn_crbm::simple") {
     dll::dyn_conv_rbm_desc<>::layer_t rbm;
 
     rbm.init_layer(1, 28, 28, 40, 17, 17);
-    rbm.batch_size = 25;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(250);
 
@@ -35,7 +34,6 @@ TEST_CASE("dyn_crbm/mnist_2", "crbm::momentum") {
     dll::dyn_conv_rbm_desc<dll::momentum>::layer_t rbm;
 
     rbm.init_layer(1, 28, 28, 40, 17, 17);
-    rbm.batch_size = 25;
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(250);
 

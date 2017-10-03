@@ -46,22 +46,22 @@ struct rbm_float {
 struct dyn_rbm_float {
     using rbm_t = dll::dyn_rbm_desc<
             dll::weight_type<float>
+            , dll::batch_size<25>
             >::layer_t;
 
     static void init(rbm_t& rbm){
         rbm.init_layer(28 * 28, 100);
-        rbm.batch_size = 25;
     }
 };
 
 struct dyn_rbm_double {
     using rbm_t = dll::dyn_rbm_desc<
             dll::weight_type<double>
+            , dll::batch_size<25>
             >::layer_t;
 
     static void init(rbm_t& rbm){
         rbm.init_layer(28 * 28, 100);
-        rbm.batch_size = 25;
     }
 };
 

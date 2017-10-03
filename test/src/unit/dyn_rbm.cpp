@@ -16,8 +16,6 @@ TEST_CASE("unit/dyn_rbm/mnist/1", "[rbm][dyn][momentum][unit]") {
     dll::dyn_rbm_desc<
         dll::momentum>::layer_t rbm(28 * 28, 100);
 
-    rbm.batch_size = 25;
-
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);
     REQUIRE(!dataset.training_images.empty());
 
