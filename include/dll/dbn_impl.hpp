@@ -274,14 +274,14 @@ private:
 
     template <size_t L, cpp_enable_iff((L < layers - 1) && decay_layer_traits<layer_type<L>>::is_rbm_layer())>
     void validate_pretraining_base() const {
-        cpp_assert(get_batch_size(layer_get<L>()) == get_batch_size(layer_get<rbm_layer_n>()), "Incoherent batch sizes in network");
+        static_assert(layer_type<L>::batch_size == layer_type<rbm_layer_n>::batch_size, "Incoherent batch sizes in network");
 
         validate_pretraining_base<L + 1>();
     }
 
     template <size_t L, cpp_enable_iff((L == layers - 1) && decay_layer_traits<layer_type<L>>::is_rbm_layer())>
     void validate_pretraining_base() const {
-        cpp_assert(get_batch_size(layer_get<L>()) == get_batch_size(layer_get<rbm_layer_n>()), "Incoherent batch sizes in network");
+        static_assert(layer_type<L>::batch_size == layer_type<rbm_layer_n>::batch_size, "Incoherent batch sizes in network");
     }
 
     template <size_t L, cpp_enable_iff((L < layers - 1) && !decay_layer_traits<layer_type<L>>::is_rbm_layer())>

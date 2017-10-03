@@ -217,7 +217,7 @@ void update_convolutional(RBM& rbm, Trainer& t) {
         f(t).c_grad -= rbm.pbias_lambda * t.c_bias;
     });
 
-    const auto n_samples = get_batch_size(rbm);
+    constexpr auto n_samples = RBM::batch_size;
     auto eps             = rbm.learning_rate / n_samples;
 
     //Apply momentum and learning rate
@@ -264,7 +264,7 @@ void compute_gradients_normal(InputBatch& input_batch, ExpectedBatch& expected_b
 
     const auto B          = etl::dim<0>(t.v1);
     const size_t IB       = etl::dim<0>(input_batch);
-    const bool full_batch = (IB == get_batch_size(rbm));
+    const bool full_batch = (IB == RBM::batch_size);
 
     //Copy input/expected for computations
     if(cpp_likely(full_batch)){
@@ -368,7 +368,7 @@ void compute_gradients_conv(InputBatch& input_batch, ExpectedBatch& expected_bat
     cpp_assert(etl::dim<0>(input_batch) == etl::dim<0>(expected_batch), "Invalid batch sizes");
 
     const size_t B        = etl::dim<0>(input_batch);
-    const bool full_batch = etl::dim<0>(input_batch) == get_batch_size(rbm);
+    const bool full_batch = etl::dim<0>(input_batch) == RBM::batch_size;
 
     //Copy input/expected for computations
     if(cpp_likely(full_batch)){
@@ -571,6 +571,8 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
     using rbm_t  = RBM;                    ///< The type of RBM being trained
     using weight = typename rbm_t::weight; ///< The weight data type
 
+    static constexpr auto batch_size  = rbm_t::batch_size;  ///< The batch size of the RBM
+
     rbm_t& rbm; ///< The RBM being trained
 
     etl::dyn_matrix<weight> v1; ///< Input
@@ -614,14 +616,14 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
     template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_disable_if(M)>
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm),
-              v1(get_batch_size(rbm), rbm.num_visible),
-              vf(get_batch_size(rbm), rbm.num_visible),
-              h1_a(get_batch_size(rbm), rbm.num_hidden),
-              h1_s(get_batch_size(rbm), rbm.num_hidden),
-              v2_a(get_batch_size(rbm), rbm.num_visible),
-              v2_s(get_batch_size(rbm), rbm.num_visible),
-              h2_a(get_batch_size(rbm), rbm.num_hidden),
-              h2_s(get_batch_size(rbm), rbm.num_hidden),
+              v1(batch_size, rbm.num_visible),
+              vf(batch_size, rbm.num_visible),
+              h1_a(batch_size, rbm.num_hidden),
+              h1_s(batch_size, rbm.num_hidden),
+              v2_a(batch_size, rbm.num_visible),
+              v2_s(batch_size, rbm.num_visible),
+              h2_a(batch_size, rbm.num_hidden),
+              h2_s(batch_size, rbm.num_hidden),
               w_grad(rbm.num_visible, rbm.num_hidden),
               b_grad(rbm.num_hidden),
               c_grad(rbm.num_visible),
@@ -631,22 +633,22 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
               q_global_t(0.0),
               q_local_batch(rbm.num_hidden),
               q_local_t(rbm.num_hidden, static_cast<weight>(0.0)),
-              p_h_a(get_batch_size(rbm), rbm.num_hidden),
-              p_h_s(get_batch_size(rbm), rbm.num_hidden){
+              p_h_a(batch_size, rbm.num_hidden),
+              p_h_s(batch_size, rbm.num_hidden){
         static_assert(!rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
     template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_enable_iff(M)>
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm),
-              v1(get_batch_size(rbm), rbm.num_visible),
-              vf(get_batch_size(rbm), rbm.num_visible),
-              h1_a(get_batch_size(rbm), rbm.num_hidden),
-              h1_s(get_batch_size(rbm), rbm.num_hidden),
-              v2_a(get_batch_size(rbm), rbm.num_visible),
-              v2_s(get_batch_size(rbm), rbm.num_visible),
-              h2_a(get_batch_size(rbm), rbm.num_hidden),
-              h2_s(get_batch_size(rbm), rbm.num_hidden),
+              v1(batch_size, rbm.num_visible),
+              vf(batch_size, rbm.num_visible),
+              h1_a(batch_size, rbm.num_hidden),
+              h1_s(batch_size, rbm.num_hidden),
+              v2_a(batch_size, rbm.num_visible),
+              v2_s(batch_size, rbm.num_visible),
+              h2_a(batch_size, rbm.num_hidden),
+              h2_s(batch_size, rbm.num_hidden),
               w_grad(rbm.num_visible, rbm.num_hidden),
               b_grad(rbm.num_hidden),
               c_grad(rbm.num_visible),
@@ -656,8 +658,8 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
               q_global_t(0.0),
               q_local_batch(rbm.num_hidden),
               q_local_t(rbm.num_hidden, static_cast<weight>(0.0)),
-              p_h_a(get_batch_size(rbm), rbm.num_hidden),
-              p_h_s(get_batch_size(rbm), rbm.num_hidden){
+              p_h_a(batch_size, rbm.num_hidden),
+              p_h_s(batch_size, rbm.num_hidden){
         static_assert(rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
@@ -820,6 +822,8 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
     using rbm_t  = RBM;                    ///< The type of the RBM being trained
     using weight = typename rbm_t::weight; ///< The data type
 
+    static constexpr auto batch_size = rbm_t::batch_size; ///< The batch size of the trained RBM
+
     rbm_t& rbm; ///< The RBM being trained
 
 #define DYN_W_DIMS rbm.k, rbm.nc, rbm.nw1, rbm.nw2
@@ -887,18 +891,18 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
              w_bias(DYN_W_DIMS, 0.0),
              b_bias(rbm.k, 0.0),
              c_bias(rbm.nc, 0.0),
-             p_h_a(get_batch_size(rbm), rbm.k, rbm.nh1, rbm.nh2),
-             p_h_s(get_batch_size(rbm), rbm.k, rbm.nh1, rbm.nh2),
+             p_h_a(batch_size, rbm.k, rbm.nh1, rbm.nh2),
+             p_h_s(batch_size, rbm.k, rbm.nh1, rbm.nh2),
              w_pos(DYN_W_DIMS),
              w_neg(DYN_W_DIMS),
-             v1(get_batch_size(rbm), rbm.nc, rbm.nv1, rbm.nv2),
-             vf(get_batch_size(rbm), rbm.nc, rbm.nv1, rbm.nv2),
-             h1_a(get_batch_size(rbm), rbm.k, rbm.nh1, rbm.nh2),
-             h1_s(get_batch_size(rbm), rbm.k, rbm.nh1, rbm.nh2),
-             v2_a(get_batch_size(rbm), rbm.nc, rbm.nv1, rbm.nv2),
-             v2_s(get_batch_size(rbm), rbm.nc, rbm.nv1, rbm.nv2),
-             h2_a(get_batch_size(rbm), rbm.k, rbm.nh1, rbm.nh2),
-             h2_s(get_batch_size(rbm), rbm.k, rbm.nh1, rbm.nh2)
+             v1(batch_size, rbm.nc, rbm.nv1, rbm.nv2),
+             vf(batch_size, rbm.nc, rbm.nv1, rbm.nv2),
+             h1_a(batch_size, rbm.k, rbm.nh1, rbm.nh2),
+             h1_s(batch_size, rbm.k, rbm.nh1, rbm.nh2),
+             v2_a(batch_size, rbm.nc, rbm.nv1, rbm.nv2),
+             v2_s(batch_size, rbm.nc, rbm.nv1, rbm.nv2),
+             h2_a(batch_size, rbm.k, rbm.nh1, rbm.nh2),
+             h2_s(batch_size, rbm.k, rbm.nh1, rbm.nh2)
              {
         //Nothign else to init
     }

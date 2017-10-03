@@ -50,7 +50,7 @@ struct default_rbm_watcher {
         }
 
         std::cout << "   learning_rate=" << rbm.learning_rate << std::endl;
-        std::cout << "   batch_size=" << get_batch_size(rbm) << std::endl;
+        std::cout << "   batch_size=" << RBM::batch_size << std::endl;
 
         if (rbm_layer_traits<RBM>::has_momentum()) {
             std::cout << "   momentum=" << rbm.momentum << std::endl;
