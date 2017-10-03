@@ -26,7 +26,7 @@ TEST_CASE("cifar/dense/sgd/1", "[dense][dbn][mnist][sgd]") {
             dll::dense_layer_desc<500, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
         dll::trainer<dll::sgd_trainer>, dll::updater<dll::updater_type::MOMENTUM>, dll::batch_size<20>>::dbn_t dbn_t;
 
-    auto dataset = dll::make_cifar10_dataset_sub(2000, 0, dll::batch_size<20>{});
+    auto dataset = dll::make_cifar10_dataset_sub(2000, dll::batch_size<20>{});
 
     auto dbn = std::make_unique<dbn_t>();
 
