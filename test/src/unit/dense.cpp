@@ -27,7 +27,7 @@ TEST_CASE("unit/dense/sgd/0", "[unit][dense][dbn][mnist][sgd]") {
     >::dbn_t;
 
     // Load the dataset
-    auto dataset = dll::make_mnist_dataset_sub(0, 1000, 0, dll::normalize_pre{}, dll::batch_size<20>{});
+    auto dataset = dll::make_mnist_dataset_sub(0, 1000, dll::normalize_pre{}, dll::batch_size<20>{});
 
     auto dbn = std::make_unique<dbn_t>();
 
