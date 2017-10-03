@@ -77,7 +77,8 @@ struct rbm_trainer {
         //NOP
     }
 
-    size_t batch_size     = 0;   ///< The batch size for pretraining
+    static constexpr size_t batch_size = RBM::batch_size; ///< The batch size for pretraining
+
     size_t total_batches  = 0;   ///< The total number of batches
     error_type last_error = 0.0; ///< The last training error
 
@@ -91,9 +92,6 @@ struct rbm_trainer {
         if (EnableWatcher) {
             watcher.training_begin(rbm);
         }
-
-        //Get the size of each batches
-        batch_size = get_batch_size(rbm);
 
         auto size = generator.size();
 

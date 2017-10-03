@@ -28,6 +28,11 @@ struct dyn_rbm_desc {
     using parameters = cpp::type_list<Parameters...>;
 
     /*!
+     * \brief The batch size for training this layer
+     */
+    static constexpr size_t BatchSize    = detail::get_value_v<batch_size<25>, Parameters...>;
+
+    /*!
      * \brief The type of visible unit
      */
     static constexpr unit_type visible_unit   = detail::get_value_v<visible<unit_type::BINARY>, Parameters...>;
@@ -61,7 +66,7 @@ struct dyn_rbm_desc {
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid_v<cpp::type_list<momentum_id, visible_id, hidden_id, weight_decay_id, verbose_id,
+        detail::is_valid_v<cpp::type_list<batch_size_id, momentum_id, visible_id, hidden_id, weight_decay_id, verbose_id,
                                         init_weights_id, sparsity_id, trainer_rbm_id, weight_type_id, shuffle_id, nop_id, free_energy_id, clip_gradients_id>,
                          Parameters...>,
         "Invalid parameters type");

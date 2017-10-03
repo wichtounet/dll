@@ -33,6 +33,7 @@ struct dyn_rbm_impl final : public standard_rbm<dyn_rbm_impl<Desc>, Desc> {
 
     static constexpr unit_type visible_unit = desc::visible_unit;
     static constexpr unit_type hidden_unit  = desc::hidden_unit;
+    static constexpr size_t batch_size      = desc::BatchSize; ///< The mini-batch size
 
     using w_type = etl::dyn_matrix<weight>; ///< The type of the weights
     using b_type = etl::dyn_vector<weight>; ///< The type of the biases
@@ -62,8 +63,6 @@ struct dyn_rbm_impl final : public standard_rbm<dyn_rbm_impl<Desc>, Desc> {
 
     size_t num_visible;
     size_t num_hidden;
-
-    size_t batch_size = 25; ///< The batch size for pretraining
 
     dyn_rbm_impl() : base_type() {}
 

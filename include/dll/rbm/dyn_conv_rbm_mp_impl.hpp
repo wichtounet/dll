@@ -27,6 +27,7 @@ struct dyn_conv_rbm_mp_impl final : public standard_crbm_mp<dyn_conv_rbm_mp_impl
     static constexpr unit_type visible_unit = desc::visible_unit;
     static constexpr unit_type hidden_unit  = desc::hidden_unit;
     static constexpr unit_type pooling_unit = desc::pooling_unit;
+    static constexpr size_t batch_size      = desc::BatchSize; ///< The mini-batch size
 
     static constexpr bool dbn_only = rbm_layer_traits<this_type>::is_dbn_only();
 
@@ -77,8 +78,6 @@ struct dyn_conv_rbm_mp_impl final : public standard_crbm_mp<dyn_conv_rbm_mp_impl
     size_t nw2; ///< The second dimension of the filters
     size_t np1;
     size_t np2;
-
-    size_t batch_size = 25; ///< The batch size for pretraining
 
     dyn_conv_rbm_mp_impl() : base_type() {
         // Nothing else to init

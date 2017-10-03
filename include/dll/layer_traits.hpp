@@ -242,15 +242,7 @@ using decay_layer_traits = layer_traits<std::decay_t<T>>;
 /*!
  * \brief Return the batch size of the given RBM
  */
-template <typename RBM, cpp_enable_iff(layer_traits<RBM>::is_dynamic())>
-size_t get_batch_size(const RBM& rbm) {
-    return rbm.batch_size;
-}
-
-/*!
- * \brief Return the batch size of the given RBM
- */
-template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
+template <typename RBM>
 constexpr size_t get_batch_size(const RBM&) {
     return RBM::batch_size;
 }
