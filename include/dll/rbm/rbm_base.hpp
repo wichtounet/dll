@@ -43,7 +43,7 @@ struct rbm_base : layer<Parent> {
     using input_t      = typename rbm_base_traits<parent_t>::input_t; ///< The type of the input
     using output_t     = typename rbm_base_traits<parent_t>::output_t; ///< The type of the output
 
-    using generator_t = inmemory_data_generator_desc<dll::autoencoder>; ///< The generator to use
+    using generator_t = inmemory_data_generator_desc<dll::autoencoder, dll::batch_size<Desc::BatchSize>>; ///< The generator to use
 
     //Configurable properties
     weight learning_rate = 1e-1; ///< The learning rate

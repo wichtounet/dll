@@ -178,18 +178,6 @@ public:
         inmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>,
         outmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>>;
 
-    using rbm_generator_t = std::conditional_t<
-        !dbn_traits<this_type>::batch_mode(),
-        inmemory_data_generator_desc<dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>,
-        outmemory_data_generator_desc<dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>>;
-
-    using rbm_ingenerator_inner_t = inmemory_data_generator_desc<dll::big_batch_size<big_batch_size>, dll::autoencoder>;
-
-    using rbm_generator_inner_t = std::conditional_t<
-        !dbn_traits<this_type>::batch_mode(),
-        inmemory_data_generator_desc<dll::big_batch_size<big_batch_size>, dll::autoencoder>,
-        outmemory_data_generator_desc<dll::big_batch_size<big_batch_size>, dll::autoencoder>>;
-
     template<size_t B>
     using rbm_generator_fast_t = std::conditional_t<
         !dbn_traits<this_type>::batch_mode(),
@@ -222,42 +210,21 @@ private:
     template<size_t I, cpp_enable_iff(I == layers)>
     void dyn_init(){}
 
-    template<size_t L = rbm_layer_n, cpp_enable_iff((decay_layer_traits<layer_type<L>>::is_dynamic()))>
-    auto get_rbm_generator_desc(){
-        static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_desc");
-
-        return rbm_generator_t{};
-    }
-
-    template<size_t L = rbm_layer_n, cpp_enable_iff(!(decay_layer_traits<layer_type<L>>::is_dynamic()))>
+    template<size_t L = rbm_layer_n>
     auto get_rbm_generator_desc(){
         static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_desc");
 
         return rbm_generator_fast_t<layer_type<L>::batch_size>{};
     }
 
-    template<size_t L = rbm_layer_n, cpp_enable_iff((decay_layer_traits<layer_type<L>>::is_dynamic()))>
-    auto get_rbm_generator_inner_desc(){
-        static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_inner_desc");
-
-        return rbm_generator_inner_t{};
-    }
-
-    template<size_t L = rbm_layer_n, cpp_enable_iff(!(decay_layer_traits<layer_type<L>>::is_dynamic()))>
+    template<size_t L = rbm_layer_n>
     auto get_rbm_generator_inner_desc(){
         static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_inner_desc");
 
         return rbm_generator_fast_inner_t<layer_type<L>::batch_size>{};
     }
 
-    template<size_t L = rbm_layer_n, cpp_enable_iff((decay_layer_traits<layer_type<L>>::is_dynamic()))>
-    auto get_rbm_ingenerator_inner_desc(){
-        static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_inner_desc");
-
-        return rbm_ingenerator_inner_t{};
-    }
-
-    template<size_t L = rbm_layer_n, cpp_enable_iff(!(decay_layer_traits<layer_type<L>>::is_dynamic()))>
+    template<size_t L = rbm_layer_n>
     auto get_rbm_ingenerator_inner_desc(){
         static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_inner_desc");
 
