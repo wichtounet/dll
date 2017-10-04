@@ -15,6 +15,7 @@
 #include <cstddef>
 
 // All the necessary enumerations
+#include "version.hpp"
 #include "unit_type.hpp"
 #include "updater_type.hpp"
 #include "strategy.hpp"
