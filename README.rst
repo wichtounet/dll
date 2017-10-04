@@ -1,11 +1,11 @@
-Deep Learning Library (DLL)
-===========================
+Deep Learning Library (DLL) 1.0
+===============================
 
 |logo|    |coverage| |jenkins| |license|
 
 .. |logo| image:: logo_small.png
 .. |coverage| image:: https://img.shields.io/sonar/https/sonar.baptiste-wicht.ch/dll/coverage.svg
-.. |jenkins| image:: https://img.shields.io/jenkins/s/https/jenkins.baptiste-wicht.ch/dll.svg 
+.. |jenkins| image:: https://img.shields.io/jenkins/s/https/jenkins.baptiste-wicht.ch/dll.svg
 .. |license| image:: https://img.shields.io/github/license/mashape/apistatus.svg
 
 DLL is a library that aims to provide a C++ implementation of Restricted
@@ -21,7 +21,7 @@ Features
   * Contrastive Divergence and Persistence Contrastive Divergence
 
     * CD-1 learning by default
-   
+
   * Momentum
   * Weight decay
   * Sparsity target
@@ -53,7 +53,7 @@ Features
 * Input data
 
   * Input data can be either in containers or in iterators
-  
+
     * Even if iterators are supported for SVM classifier, libsvm will move all
       the data in memory structure.
 
