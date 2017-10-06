@@ -11,9 +11,6 @@
 #include "dll/network.hpp"
 #include "dll/datasets.hpp"
 
-#include "mnist/mnist_reader.hpp"
-#include "mnist/mnist_utils.hpp"
-
 int main(int /*argc*/, char* /*argv*/ []) {
     // Load the dataset
     auto dataset = dll::make_mnist_dataset(dll::batch_size<100>{}, dll::scale_pre<255>{});
