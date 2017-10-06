@@ -1,4 +1,4 @@
-Deep Learning Library (DLL) 1.0
+Deep Learning Library (DLL) 1.1
 ===============================
 
 |logo|    |coverage| |jenkins| |license|

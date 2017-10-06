@@ -17,7 +17,7 @@ constexpr size_t version_major = 1;
 /*!
  * \brief The current minor version number of the library
  */
-constexpr size_t version_minor = 0;
+constexpr size_t version_minor = 1;
 
 /*!
  * \brief The current revision version number of the library
@@ -27,14 +27,14 @@ constexpr size_t version_revision = 0;
 /*!
  * \brief The current version number of the library in string form.
  */
-constexpr const char* version_str = "1.0";
+constexpr const char* version_str = "1.1";
 
 } //end of dll namespace
 
 /*!
  * \brief String representation of the current version of the library.
  */
-#define DLL_VERSION_STR "1.0"
+#define DLL_VERSION_STR "1.1"
 
 /*!
  * \brief The current major version number of the library
@@ -44,7 +44,7 @@ constexpr const char* version_str = "1.0";
 /*!
  * \brief The current minor version number of the library
  */
-#define DLL_VERSION_MINOR 0
+#define DLL_VERSION_MINOR 1
 
 /*!
  * \brief The current revision version number of the library
