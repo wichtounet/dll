@@ -7,12 +7,8 @@
 
 #include "dll/neural/dense_layer.hpp"
 #include "dll/neural/dropout_layer.hpp"
-#include "dll/test.hpp"
 #include "dll/network.hpp"
 #include "dll/datasets.hpp"
-
-#include "mnist/mnist_reader.hpp"
-#include "mnist/mnist_utils.hpp"
 
 int main(int /*argc*/, char* /*argv*/ []) {
     // Load the dataset
