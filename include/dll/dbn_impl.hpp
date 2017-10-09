@@ -1450,12 +1450,16 @@ public:
      */
     template <typename Generator>
     void evaluate(Generator& generator){
+        cpp::stop_watch<std::chrono::milliseconds> watch;
+
         validate_generator(generator);
 
         auto metrics = evaluate_metrics(generator);
 
-        printf("error: %.5f \n", std::get<0>(metrics));
-        printf(" loss: %.5f \n", std::get<1>(metrics));
+        printf("Evaluation Results\n");
+        printf("   error: %.5f \n", std::get<0>(metrics));
+        printf("    loss: %.5f \n", std::get<1>(metrics));
+        printf("evaluation took %dms \n", int(watch.elapsed()));
     }
 
     /*!
