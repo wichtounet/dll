@@ -76,6 +76,8 @@ struct default_rbm_watcher {
         } else if (rbm_layer_traits<RBM>::sparsity_method() == sparsity_method::LOCAL_TARGET) {
             std::cout << "   sparsity_target(Local)=" << rbm.sparsity_target << std::endl;
         }
+
+        std::cout << std::endl;
     }
 
     /*!
@@ -239,6 +241,8 @@ struct default_dbn_watcher {
         if (w_decay(dbn_traits<DBN>::decay()) == decay_type::L2 || w_decay(dbn_traits<DBN>::decay()) == decay_type::L1L2) {
             std::cout << " weight_cost(L2)=" << dbn.l2_weight_cost << std::endl;
         }
+
+        std::cout << std::endl;
 
         ft_max_epochs = max_epochs;
     }
