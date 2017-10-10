@@ -60,6 +60,9 @@ Features
 Building
 --------
 
+Note: When you clone the library, you need to clone the sub modules as well,
+using the --recursive option.
+
 The folder **include** must be included with the **-I** option, as well as the
 **etl/include** folder.
 
