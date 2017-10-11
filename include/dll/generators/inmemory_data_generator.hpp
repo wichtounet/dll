@@ -434,7 +434,7 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_au
                 // Get the index from where to read inside the input cache
                 const size_t input_n = batch * batch_size;
 
-                for (size_t i = 0; i < batch_size && input_n < size(); ++i) {
+                for (size_t i = 0; i < batch_size && input_n + i < size(); ++i) {
                     if (train_mode) {
                         // Random crop the image
                         cropper.transform_first(batch_cache(index)(i), input_cache(input_n + i));
