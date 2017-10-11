@@ -175,8 +175,8 @@ public:
 
     using ae_generator_t = std::conditional_t<
         !dbn_traits<this_type>::batch_mode(),
-        inmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>,
-        outmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>>;
+        inmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::noise<desc::Noise>, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>,
+        outmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::noise<desc::Noise>, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>>;
 
     template<size_t B>
     using rbm_generator_fast_t = std::conditional_t<
