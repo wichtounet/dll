@@ -193,6 +193,21 @@ public:
         inmemory_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::autoencoder>,
         outmemory_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::autoencoder>>;
 
+    template<size_t B>
+    using rbm_denoising_generator_fast_t = std::conditional_t<
+        !dbn_traits<this_type>::batch_mode(),
+        inmemory_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::noise<desc::Noise>, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>,
+        outmemory_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::noise<desc::Noise>, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>>;
+
+    template<size_t B>
+    using rbm_denoising_ingenerator_fast_inner_t = inmemory_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::autoencoder, dll::noise<desc::Noise>>;
+
+    template<size_t B>
+    using rbm_denoising_generator_fast_inner_t = std::conditional_t<
+        !dbn_traits<this_type>::batch_mode(),
+        inmemory_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::autoencoder, dll::noise<desc::Noise>>,
+        outmemory_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::autoencoder, dll::noise<desc::Noise>>>;
+
 private:
     cpp::thread_pool<!dbn_traits<this_type>::is_serial()> pool;
 
@@ -215,6 +230,13 @@ private:
         static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_desc");
 
         return rbm_generator_fast_t<layer_type<L>::batch_size>{};
+    }
+
+    template<size_t L = rbm_layer_n>
+    auto get_rbm_denoising_generator_desc(){
+        static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_denoising_generator_desc");
+
+        return rbm_denoising_generator_fast_t<layer_type<L>::batch_size>{};
     }
 
     template<size_t L = rbm_layer_n>
@@ -567,7 +589,7 @@ public:
      * \brief Pretrain the network by training all layers in an unsupervised
      * manner, the network will learn to reconstruct noisy input.
      */
-    template <typename Generator>
+    template <typename Generator, cpp_enable_if(is_generator<Generator>)>
     void pretrain_denoising(Generator& generator, size_t max_epochs) {
         static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
 
@@ -595,6 +617,27 @@ public:
         }
 
         watcher.pretraining_end(*this);
+    }
+
+    /*!
+     * \brief Pretrain the network by training all layers in an unsupervised
+     * manner, the network will learn to reconstruct noisy input.
+     */
+    template <typename Clean, cpp_disable_if(is_generator<Clean>)>
+    void pretrain_denoising(const Clean& clean, size_t max_epochs) {
+        static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
+
+        validate_pretraining();
+
+        // Create generator around the data
+        auto generator = make_generator(
+            clean, clean,
+            clean.size(), output_size(),
+            get_rbm_denoising_generator_desc());
+
+        generator->set_safe();
+
+        pretrain_denoising(*generator, max_epochs);
     }
 
     /*!
