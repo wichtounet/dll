@@ -70,14 +70,13 @@ This library is completely header-only, there is no need to build it.
 
 However, this library makes extensive use of C++11 and C++14, therefore,
 a recent compiler is necessary to use it. This library has been tested on clang
-3.7, g++ 4.9.1 and g++ 5.3.0. It should work on Clang 3.5 and Clang 3.6, but
-without debug symbols. If for some reasons, it should not work on one of the
-supported compilers, contact me and I'll fix it.
+3.9, clang 4.0, g++ 6.3.0 and g++ 7.1. If for some reasons, it should not work
+on one of the supported compilers, contact me and I'll fix it.
 
 This has never been tested on Windows. While it should compile on Mingw, I don't
-expect Visual Studio to be able to compile it for now. If you have problems
-compiling this library, I'd be glad to help, but I do not guarantee that this
-will work on other compilers.
+expect Visual Studio to be able to compile it for now, although VS 2017 sounds
+promising. If you have problems compiling this library, I'd be glad to help, but
+cannot guarantee that this will work on other compilers.
 
 License
 -------
