@@ -81,3 +81,35 @@ TEST_CASE("conv/ae/1", "[dense][dbn][mnist][sgd][ae]") {
     std::cout << "test_error:" << test_error << std::endl;
     REQUIRE(test_error < 0.15);
 }
+
+// Conv <> Conv + Noise
+TEST_CASE("conv/ae/2", "[dense][dbn][mnist][sgd][ae]") {
+    using network_t = dll::dbn_desc<
+        dll::dbn_layers<
+            dll::conv_same_layer<1, 28, 28, 8, 3, 3, dll::relu>,
+            // Features
+            dll::conv_same_layer<8, 28, 28, 1, 3, 3, dll::sigmoid>
+        >,
+        dll::autoencoder,
+        dll::noise<20>,
+        dll::adadelta,
+        dll::binary_cross_entropy,
+        dll::batch_size<128>,
+        dll::scale_pre<255>
+    >::network_t;
+
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(2048);
+    REQUIRE(!dataset.training_images.empty());
+
+    auto dbn = std::make_unique<network_t>();
+
+    dbn->display();
+
+    auto ft_error = dbn->fine_tune_ae(dataset.training_images, 40);
+    std::cout << "ft_error:" << ft_error << std::endl;
+    CHECK(ft_error < 0.15);
+
+    auto test_error = dbn->evaluate_error_ae(dataset.test_images);
+    std::cout << "test_error:" << test_error << std::endl;
+    REQUIRE(test_error < 0.15);
+}
