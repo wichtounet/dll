@@ -78,6 +78,11 @@ expect Visual Studio to be able to compile it for now, although VS 2017 sounds
 promising. If you have problems compiling this library, I'd be glad to help, but
 cannot guarantee that this will work on other compilers.
 
+If you want to use GPU, you should use CUDA 8.0 or superior and CUDNN 5.0.1 or
+superior. I haven't tried other versions, but lower versions of CUDA, such as 7,
+should work, and higher versions as well. If you got issues with different
+versions of CUDA and CUDNN, please open an issue on Github.
+
 License
 -------
 
