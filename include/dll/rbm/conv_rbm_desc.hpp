@@ -124,7 +124,7 @@ using conv_rbm_square_desc = conv_rbm_desc<NC_T, NV_T, NV_T, K_T, NW_T, NW_T, Pa
  * Once configured, the ::layer_t member returns the type of the configured RBM.
  */
 template <size_t NC_T, size_t NV_1, size_t NV_2, size_t K_T, size_t NW_1, size_t NW_2, typename... Parameters>
-using conv_rbm = typename conv_rbm_desc<NC_T, NV_1, NV_2, K_T, NW_1, NW_2, Parameters...>::layer;
+using conv_rbm = typename conv_rbm_desc<NC_T, NV_1, NV_2, K_T, NW_1, NW_2, Parameters...>::layer_t;
 
 /*!
  * \brief Describe a Convolutional Restricted Boltzmann Machine with square inputs and filters.
@@ -133,6 +133,6 @@ using conv_rbm = typename conv_rbm_desc<NC_T, NV_1, NV_2, K_T, NW_1, NW_2, Param
  * Once configured, the ::rbm_t member returns the type of the configured RBM.
  */
 template <size_t NC_T, size_t NV_T, size_t K_T, size_t NW_T, typename... Parameters>
-using conv_rbm_square = typename conv_rbm_desc<NC_T, NV_T, NV_T, K_T, NW_T, NW_T, Parameters...>::layer;
+using conv_rbm_square = typename conv_rbm_desc<NC_T, NV_T, NV_T, K_T, NW_T, NW_T, Parameters...>::layer_t;
 
 } //end of dll namespace
