@@ -95,7 +95,7 @@ auto make_mnist_ae_generator_test(const std::string& folder, size_t start, size_
  * \return a unique_ptr around the create generator
  */
 template<typename... Parameters>
-auto make_mnist_ae_generator_train(size_t start = 0, size_t limit = 0, Parameters&&... parameters){
+auto make_mnist_ae_generator_train(size_t start, size_t limit, Parameters&&... parameters){
     return make_mnist_ae_generator_train("mnist", start, limit, std::forward<Parameters>(parameters)...);
 }
 
@@ -109,7 +109,7 @@ auto make_mnist_ae_generator_train(size_t start = 0, size_t limit = 0, Parameter
  * \return a unique_ptr around the create generator
  */
 template<typename... Parameters>
-auto make_mnist_ae_generator_test(size_t start = 0, size_t limit = 0, Parameters&&... parameters){
+auto make_mnist_ae_generator_test(size_t start, size_t limit, Parameters&&... parameters){
     return make_mnist_ae_generator_test("mnist", start, limit, std::forward<Parameters>(parameters)...);
 }
 
