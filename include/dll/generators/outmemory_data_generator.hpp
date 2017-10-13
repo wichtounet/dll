@@ -693,6 +693,20 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_a
     }
 };
 
+// Allow odr-use of the constexpr static members
+
+template <typename Iterator, typename LIterator, typename Desc>
+const size_t outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_augmented<Desc> && !is_threaded<Desc>>>::batch_size;
+
+template <typename Iterator, typename LIterator, typename Desc>
+const size_t outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_augmented<Desc> && !is_threaded<Desc>>>::big_batch_size;
+
+template <typename Iterator, typename LIterator, typename Desc>
+const size_t outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_augmented<Desc> || is_threaded<Desc>>>::batch_size;
+
+template <typename Iterator, typename LIterator, typename Desc>
+const size_t outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_augmented<Desc> || is_threaded<Desc>>>::big_batch_size;
+
 /*!
  * \brief Display the given generator on the given stream
  * \param os The output stream

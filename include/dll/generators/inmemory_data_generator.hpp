@@ -704,6 +704,15 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_au
     }
 };
 
+template <typename Iterator, typename LIterator, typename Desc>
+const size_t inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_augmented<Desc>>>::batch_size;
+
+template <typename Iterator, typename LIterator, typename Desc>
+const size_t inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_augmented<Desc>>>::batch_size;
+
+template <typename Iterator, typename LIterator, typename Desc>
+const size_t inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_augmented<Desc>>>::big_batch_size;
+
 /*!
  * \brief Display the given generator on the given stream
  * \param os The output stream
