@@ -130,7 +130,7 @@ struct conv_layer_impl final : neural_layer<conv_layer_impl<Desc>, Desc> {
      * \param input A batch of input
      * \param output A batch of output that will be filled
      */
-    template <typename H1, typename V, cpp_enable_iff(etl::dimensions<V>() == 2)>
+    template <typename H1, typename V, cpp_enable_iff(etl::dimensions<V>() != 4)>
     void forward_batch(H1&& output, const V& v) const {
         dll::auto_timer timer("conv:forward_batch");
 
@@ -196,11 +196,18 @@ struct conv_layer_impl final : neural_layer<conv_layer_impl<Desc>, Desc> {
      * \param output The ETL expression into which write the output
      * \param context The training context
      */
-    template<typename H, typename C>
+    template<typename H, typename C, cpp_enable_iff(etl::dimensions<H>() == 4)>
     void backward_batch(H&& output, C& context) const {
         dll::auto_timer timer("conv:backward_batch");
 
         output = etl::ml::convolution_backward(context.errors, w);
+    }
+
+    template<typename H, typename C, cpp_enable_iff(etl::dimensions<H>() == 3)>
+    void backward_batch(H&& output, C& context) const {
+        dll::auto_timer timer("conv:backward_batch");
+
+        etl::reshape(output, etl::dim<0>(output), NC, NV1, NV2) = etl::ml::convolution_backward(context.errors, w);
     }
 
     /*!
