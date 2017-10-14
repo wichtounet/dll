@@ -424,7 +424,7 @@ struct layer {
      * \return A reference to the CG context training.
      */
     const cg_context<parent_t>& get_cg_context() const {
-        cpp_assert(sgd_context_ptr, "Use of empty cg_context");
+        cpp_assert(cg_context_ptr, "Use of empty cg_context");
 
         return *cg_context_ptr;
     }
@@ -455,13 +455,6 @@ protected:
      * Needs to be shared because of dyn_rbm_impl
      */
     mutable std::shared_ptr<cg_context<parent_t>> cg_context_ptr;
-
-    /*!
-     * \brief Pointer to the Stochastic Gradient Descent (SGD) context.
-     *
-     * Needs to be shared because of dyn_rbm_impl
-     */
-    mutable std::shared_ptr<void> sgd_context_ptr;
 };
 
 } //end of dll namespace
