@@ -429,6 +429,20 @@ struct layer {
         return *cg_context_ptr;
     }
 
+    /*!
+     * \brief Backup the weights in the secondary weights matrix
+     */
+    void backup_weights() const {
+        // Nothing by default
+    }
+
+    /*!
+     * \brief Restore the weights from the secondary weights matrix
+     */
+    void restore_weights() const {
+        // Nothing by default
+    }
+
 private:
     //CRTP Deduction
 

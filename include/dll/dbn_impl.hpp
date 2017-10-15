@@ -357,9 +357,7 @@ public:
      */
     void backup_weights() {
         for_each_layer([](auto& layer) {
-            cpp::static_if<decay_layer_traits<decltype(layer)>::is_trained()>([&layer](auto f) {
-                f(layer).backup_weights();
-            });
+            layer.backup_weights();
         });
     }
 
@@ -371,9 +369,7 @@ public:
      */
     void restore_weights() {
         for_each_layer([](auto& layer) {
-            cpp::static_if<decay_layer_traits<decltype(layer)>::is_trained()>([&layer](auto f) {
-                f(layer).restore_weights();
-            });
+            layer.restore_weights();
         });
     }
 
