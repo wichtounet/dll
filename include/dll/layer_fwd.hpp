@@ -92,4 +92,7 @@ struct activation_layer_impl;
 template <typename... Layers>
 struct group_layer_impl;
 
+template <size_t D, typename... Layers>
+struct merge_layer_impl;
+
 } //end of dll namespace
