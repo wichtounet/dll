@@ -139,7 +139,7 @@ struct sgd_context<DBN, mp_2d_layer_impl<Desc>, L> {
     etl::fast_matrix<weight, batch_size, O1, O2, O3> output;
     etl::fast_matrix<weight, batch_size, O1, O2, O3> errors;
 
-    sgd_context(mp_2d_layer_impl<Desc>& /*layer*/){}
+    sgd_context(const mp_2d_layer_impl<Desc>& /*layer*/){}
 };
 
 /*!
@@ -269,7 +269,7 @@ struct sgd_context<DBN, mp_3d_layer_impl<Desc>, L> {
     etl::fast_matrix<weight, batch_size, O1, O2, O3> output;
     etl::fast_matrix<weight, batch_size, O1, O2, O3> errors;
 
-    sgd_context(mp_3d_layer_impl<Desc>& /*layer*/){}
+    sgd_context(const mp_3d_layer_impl<Desc>& /*layer*/){}
 };
 
 } //end of dll namespace

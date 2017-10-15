@@ -63,6 +63,15 @@ struct conv_layer_impl final : neural_layer<conv_layer_impl<Desc>, Desc> {
         b_initializer::initialize(b, input_size(), output_size());
     }
 
+    // No copying or moving
+    conv_layer_impl(const conv_layer_impl& rhs) = delete;
+    conv_layer_impl& operator=(const conv_layer_impl& rhs) = delete;
+
+    // No copying or moving
+    conv_layer_impl(const conv_layer_impl&& rhs) = delete;
+    conv_layer_impl& operator=(const conv_layer_impl&& rhs) = delete;
+
+
     /*!
      * \brief Return the size of the input of this layer
      * \return The size of the input of this layer
@@ -293,7 +302,7 @@ struct sgd_context<DBN, conv_layer_impl<Desc>, L> {
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> output;
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> errors;
 
-    sgd_context(conv_layer_impl<Desc>& /* layer */)
+    sgd_context(const conv_layer_impl<Desc>& /* layer */)
             : output(0.0), errors(0.0) {}
 };
 
