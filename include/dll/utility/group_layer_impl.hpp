@@ -35,17 +35,6 @@ struct group_layer_impl final : layer<group_layer_impl<Layers...>> {
     std::tuple<Layers...> layers;
 
     /*!
-     * \brief Initialize a conv layer with basic weights.
-     */
-    group_layer_impl() = default;
-
-    group_layer_impl(group_layer_impl& rhs) = delete;
-    group_layer_impl& operator=(const group_layer_impl& rhs) = delete;
-
-    group_layer_impl(const group_layer_impl&& rhs) = delete;
-    group_layer_impl& operator=(const group_layer_impl&& rhs) = delete;
-
-    /*!
      * \brief Return the size of the input of this layer
      * \return The size of the input of this layer
      */
@@ -234,6 +223,24 @@ struct layer_base_traits<group_layer_impl<Layers...>> {
     static constexpr bool is_dynamic    = false; ///< Indicates if the layer is dynamic
     static constexpr bool pretrain_last = false; ///< Indicates if the layer is dynamic
     static constexpr bool sgd_supported = true;  ///< Indicates if the layer is supported by SGD
+};
+
+/*!
+ * \brief Specialization of the sgd_context for group_layer_impl
+ */
+template <typename DBN, typename... Layers, size_t L>
+struct sgd_context<DBN, group_layer_impl<Layers...>, L> {
+    using layer_t = group_layer_impl<Layers...>;
+
+    using input_type  = decltype(std::declval<sgd_context<DBN, cpp::first_type_t<Layers...>, L>>().input);
+    using output_type = decltype(std::declval<sgd_context<DBN, cpp::last_type_t<Layers...>, L>>().output);
+
+    input_type input;
+    output_type output;
+    output_type errors;
+
+    sgd_context(const group_layer_impl<Layers...>& /* layer */)
+            : output(0.0), errors(0.0) {}
 };
 
 } //end of dll namespace
