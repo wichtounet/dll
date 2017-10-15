@@ -65,9 +65,14 @@ struct group_layer_impl final : layer<group_layer_impl<Layers...>> {
      * \brief Return the number of trainable parameters of this network.
      * \return The the number of trainable parameters of this network.
      */
-    static constexpr size_t parameters() noexcept {
-        // TODO Fix this!
-        return last_layer_t::parameters();
+    size_t parameters() const noexcept {
+        size_t params = 0;
+
+        cpp::for_each(layers, [&params](auto& layer){
+            params += layer.parameters();
+        });
+
+        return params;
     }
 
     /*!
