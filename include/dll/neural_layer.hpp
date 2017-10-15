@@ -100,6 +100,14 @@ struct neural_layer : layer<Derived> {
         return std::make_tuple(std::ref(as_derived().w), std::ref(as_derived().b));
     }
 
+    /*!
+     * \brief Returns the trainable variables of this layer.
+     * \return a tuple containing references to the variables of this layer
+     */
+    decltype(auto) trainable_parameters() const {
+        return std::make_tuple(std::cref(as_derived().w), std::cref(as_derived().b));
+    }
+
 private:
     //CRTP Deduction
 

@@ -253,6 +253,14 @@ struct batch_normalization_4d_layer_impl : neural_layer<batch_normalization_4d_l
     }
 
     /*!
+     * \brief Returns the trainable variables of this layer.
+     * \return a tuple containing references to the variables of this layer
+     */
+    decltype(auto) trainable_parameters() const {
+        return std::make_tuple(std::cref(gamma), std::cref(beta));
+    }
+
+    /*!
      * \brief Backup the weights in the secondary weights matrix
      */
     void backup_weights() {

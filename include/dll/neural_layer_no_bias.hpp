@@ -96,6 +96,14 @@ struct neural_layer_no_bias : layer<Derived> {
         return std::make_tuple(std::ref(as_derived().w));
     }
 
+    /*!
+     * \brief Returns the trainable variables of this layer.
+     * \return a tuple containing references to the variables of this layer
+     */
+    decltype(auto) trainable_parameters() const {
+        return std::make_tuple(std::cref(as_derived().w));
+    }
+
 private:
     //CRTP Deduction
 

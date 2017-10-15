@@ -246,6 +246,14 @@ struct dyn_batch_normalization_2d_layer_impl : neural_layer<dyn_batch_normalizat
     }
 
     /*!
+     * \brief Returns the trainable variables of this layer.
+     * \return a tuple containing references to the variables of this layer
+     */
+    decltype(auto) trainable_parameters() const {
+        return std::make_tuple(std::cref(gamma), std::cref(beta));
+    }
+
+    /*!
      * \brief Backup the weights in the secondary weights matrix
      */
     void backup_weights() {
