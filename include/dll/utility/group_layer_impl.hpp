@@ -74,10 +74,12 @@ struct group_layer_impl final : layer<group_layer_impl<Layers...>> {
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    static std::string to_short_string() {
-        std::string str = "Group(\n";
+    std::string to_short_string() const {
+        std::string str = "Group(";
 
-        //TODO Concatenate sub layers
+        cpp::for_each(layers, [&str](auto& layer){
+            str += "\n  " + layer.to_short_string();
+        });
 
         str += "\n)";
 
