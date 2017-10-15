@@ -214,7 +214,7 @@ struct sgd_context<DBN, embedding_layer_impl<Desc>, L> {
     etl::fast_matrix<weight, batch_size, I, K> output;
     etl::fast_matrix<weight, batch_size, I, K> errors;
 
-    sgd_context(embedding_layer_impl<Desc>& /* layer */)
+    sgd_context(const embedding_layer_impl<Desc>& /* layer */)
             : output(0.0), errors(0.0) {}
 };
 
