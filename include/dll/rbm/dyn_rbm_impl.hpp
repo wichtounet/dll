@@ -140,7 +140,9 @@ struct dyn_rbm_impl final : public standard_rbm<dyn_rbm_impl<Desc>, Desc> {
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    std::string to_short_string() const {
+    std::string to_short_string(std::string pre = "") const {
+        cpp_unused(pre);
+
         char buffer[1024];
         snprintf(
             buffer, 1024, "RBM(dyn)(%s): %lu -> %lu",

@@ -165,7 +165,9 @@ struct dyn_conv_rbm_mp_impl final : public standard_crbm_mp<dyn_conv_rbm_mp_impl
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    std::string to_short_string() const {
+    std::string to_short_string(std::string pre = "") const {
+        cpp_unused(pre);
+
         char buffer[1024];
         snprintf(
             buffer, 1024, "CRBM_MP(dyn)(%s): %lux%lux%lu -> (%lux%lu) -> %lux%lux%lu -> %lux%lux%lu",

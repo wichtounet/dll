@@ -26,7 +26,9 @@ struct dyn_avgp_2d_layer_impl final : dyn_pooling_2d_layer<dyn_avgp_2d_layer_imp
     /*!
      * \brief Get a string representation of the layer
      */
-    std::string to_short_string() const {
+    std::string to_short_string(std::string pre = "") const {
+        cpp_unused(pre);
+
         char buffer[1024];
         snprintf(buffer, 1024, "AVGP(2d): %lux%lux%lu -> (%lux%lu) -> %lux%lux%lu",
                  base::i1, base::i2, base::i3, base::c1, base::c2, base::o1, base::o2, base::o3);
@@ -147,7 +149,9 @@ struct dyn_avgp_3d_layer_impl final : dyn_pooling_3d_layer<dyn_avgp_3d_layer_imp
     /*!
      * \brief Get a string representation of the layer
      */
-    std::string to_short_string() const {
+    std::string to_short_string(std::string pre = "") const {
+        cpp_unused(pre);
+
         char buffer[1024];
         snprintf(buffer, 1024, "AVGP(3D): %lux%lux%lu -> (%lux%lux%lu) -> %lux%lux%lu",
                  base::i1, base::i2, base::i3, base::c1, base::c2, base::c3, base::o1, base::o2, base::o3);

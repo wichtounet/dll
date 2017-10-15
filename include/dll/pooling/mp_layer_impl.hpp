@@ -27,7 +27,9 @@ struct mp_2d_layer_impl final : pooling_2d_layer<mp_2d_layer_impl<Desc>, Desc> {
     /*!
      * \brief Get a string representation of the layer
      */
-    static std::string to_short_string() {
+    static std::string to_short_string(std::string pre = "") {
+        cpp_unused(pre);
+
         char buffer[1024];
         snprintf(buffer, 1024, "MP(2D): %lux%lux%lu -> (%lux%lu) -> %lux%lux%lu",
                  base::I1, base::I2, base::I3, base::C1, base::C2, base::O1, base::O2, base::O3);
@@ -156,7 +158,9 @@ struct mp_3d_layer_impl final : pooling_3d_layer<mp_3d_layer_impl<Desc>, Desc> {
     /*!
      * \brief Get a string representation of the layer
      */
-    static std::string to_short_string() {
+    static std::string to_short_string(std::string pre = "") {
+        cpp_unused(pre);
+
         char buffer[1024];
         snprintf(buffer, 1024, "MP(3D): %lux%lux%lu -> (%lux%lux%lu) -> %lux%lux%lu",
                  base::I1, base::I2, base::I3, base::C1, base::C2, base::C3, base::O1, base::O2, base::O3);

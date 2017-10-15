@@ -39,7 +39,9 @@ struct dyn_shape_1d_layer_impl : transform_layer<dyn_shape_1d_layer_impl<Desc>> 
     /*!
      * \brief Returns a string representation of the layer
      */
-    static std::string to_short_string() {
+    static std::string to_short_string(std::string pre = "") {
+        cpp_unused(pre);
+
         return "Shape1D(dyn)";
     }
 

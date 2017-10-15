@@ -339,11 +339,13 @@ public:
         std::cout << "Network with " << layers << " layers" << std::endl;
 
         for_each_layer([&parameters](auto& layer) {
-            std::cout << "    ";
+            std::string pre = "    ";
+            std::cout << pre;
+            std::cout << layer.to_short_string(pre) << std::endl;
+
             cpp::static_if<decay_layer_traits<decltype(layer)>::is_neural_layer()>([&](auto f) {
                 parameters += f(layer).parameters();
             });
-            layer.display();
         });
 
         std::cout << "Total parameters: " << parameters << std::endl;

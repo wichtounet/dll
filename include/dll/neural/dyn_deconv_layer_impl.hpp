@@ -110,7 +110,9 @@ struct dyn_deconv_layer_impl final : neural_layer<dyn_deconv_layer_impl<Desc>, D
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    std::string to_short_string() const {
+    std::string to_short_string(std::string pre = "") const {
+        cpp_unused(pre);
+
         char buffer[1024];
         snprintf(buffer, 1024, "Deconv(dyn): %lux%lux%lu -> (%lux%lux%lu) -> %s -> %lux%lux%lu", nc, nv1, nv2, k, nw1, nw2, to_string(activation_function).c_str(), k, nh1, nh2);
         return {buffer};

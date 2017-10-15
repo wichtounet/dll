@@ -72,7 +72,9 @@ struct dyn_batch_normalization_2d_layer_impl : neural_layer<dyn_batch_normalizat
     /*!
      * \brief Returns a string representation of the layer
      */
-    static std::string to_short_string() {
+    static std::string to_short_string(std::string pre = "") {
+        cpp_unused(pre);
+
         return "batch_norm";
     }
 

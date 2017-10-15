@@ -117,7 +117,9 @@ struct conv_rbm_mp_impl final : public standard_crbm_mp<conv_rbm_mp_impl<Desc>, 
     /*!
      * \brief Return a textual representation of the layer
      */
-    static std::string to_short_string() {
+    static std::string to_short_string(std::string pre = "") {
+        cpp_unused(pre);
+
         char buffer[1024];
         snprintf(
             buffer, 1024, "CRBM_MP(%s->%s): %lux%lux%lu -> (%lux%lu) -> %lux%lux%lu -> %lux%lux%lu",

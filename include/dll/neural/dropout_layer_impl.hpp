@@ -26,7 +26,9 @@ struct dropout_layer_impl : transform_layer<dropout_layer_impl<Desc>> {
     /*!
      * \brief Returns a string representation of the layer
      */
-    static std::string to_short_string() {
+    static std::string to_short_string(std::string pre = "") {
+        cpp_unused(pre);
+
         char buffer[128];
         snprintf(buffer, 128, "Dropout(%.2f)", p);
         return {buffer};
