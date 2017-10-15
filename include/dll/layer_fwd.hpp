@@ -89,4 +89,7 @@ struct dyn_deconv_layer_impl;
 template <typename Desc>
 struct activation_layer_impl;
 
+template <typename... Layers>
+struct group_layer_impl;
+
 } //end of dll namespace

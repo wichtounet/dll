@@ -24,13 +24,16 @@
 
 namespace dll {
 
+template <typename Layer>
+static constexpr bool is_group_layer = cpp::is_specialization_of_v<dll::group_layer_impl, Layer>;
+
 /*!
  * \brief Build the sub context for a updater context
  *
  * \param layer The layer to build the context for
  */
 template <template <typename, size_t, updater_type> class SubContext, updater_type UT, typename Layer, size_t... I>
-auto build_sub_context(Layer& layer, std::index_sequence<I...> /*seq*/) {
+auto build_sub_context(const Layer& layer, std::index_sequence<I...> /*seq*/) {
     return std::make_tuple
         (
             std::make_shared<SubContext<Layer, I, UT>>(layer)...
@@ -43,8 +46,8 @@ auto build_sub_context(Layer& layer, std::index_sequence<I...> /*seq*/) {
  * \param layer The layer to build the context for
  */
 template <template <typename, size_t, updater_type> class SubContext, updater_type UT, typename Layer>
-auto build_sub_context(Layer& layer) {
-    static constexpr size_t N = std::tuple_size<decltype(layer.trainable_parameters())>();
+auto build_sub_context(const Layer& layer) {
+    static constexpr size_t N = std::tuple_size<decltype(std::declval<Layer>().trainable_parameters())>();
 
     return build_sub_context<SubContext, UT>(layer, std::make_index_sequence<N>());
 }
@@ -74,7 +77,7 @@ struct updater_sub_context <Layer, I, updater_type::SGD> {
      * \brief Construct the sub_context for the given layer
      * \param layer The layer to build the context for
      */
-    updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())) {
+    updater_sub_context(const Layer& layer) : grad(std::get<I>(layer.trainable_parameters())) {
         grad = 0;
     }
 };
@@ -96,7 +99,7 @@ struct updater_sub_context <Layer, I, updater_type::MOMENTUM> {
      * \brief Construct the sub_context for the given layer
      * \param layer The layer to build the context for
      */
-    updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), inc(grad) {
+    updater_sub_context(const Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), inc(grad) {
         grad = 0;
         inc = 0;
     }
@@ -120,7 +123,7 @@ struct updater_sub_context <Layer, I, updater_type::NESTEROV> {
      * \brief Construct the sub_context for the given layer
      * \param layer The layer to build the context for
      */
-    updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), inc(grad), inc_prev(grad) {
+    updater_sub_context(const Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), inc(grad), inc_prev(grad) {
         grad = 0;
         inc = 0;
         inc_prev = 0;
@@ -144,7 +147,7 @@ struct updater_sub_context <Layer, I, updater_type::RMSPROP> {
      * \brief Construct the sub_context for the given layer
      * \param layer The layer to build the context for
      */
-    updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), inc(grad) {
+    updater_sub_context(const Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), inc(grad) {
         grad = 0;
         inc = 0;
     }
@@ -167,7 +170,7 @@ struct updater_sub_context <Layer, I, updater_type::ADAGRAD> {
      * \brief Construct the sub_context for the given layer
      * \param layer The layer to build the context for
      */
-    updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), inc(grad) {
+    updater_sub_context(const Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), inc(grad) {
         grad = 0;
         inc = 0;
     }
@@ -192,7 +195,7 @@ struct updater_sub_context <Layer, I, updater_type::ADADELTA> {
      * \brief Construct the sub_context for the given layer
      * \param layer The layer to build the context for
      */
-    updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), g(grad), x(grad), v(grad) {
+    updater_sub_context(const Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), g(grad), x(grad), v(grad) {
         grad = 0;
         g = 0;
         x = 0;
@@ -218,7 +221,7 @@ struct updater_sub_context <Layer, I, updater_type::ADAM> {
      * \brief Construct the sub_context for the given layer
      * \param layer The layer to build the context for
      */
-    updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), m(grad), v(grad) {
+    updater_sub_context(const Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), m(grad), v(grad) {
         grad = 0;
         m = 0;
         v = 0;
@@ -245,7 +248,7 @@ struct updater_sub_context <Layer, I, updater_type::ADAM_CORRECT> {
      * \brief Construct the sub_context for the given layer
      * \param layer The layer to build the context for
      */
-    updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), m(grad), mt(grad), v(grad), vt(grad) {
+    updater_sub_context(const Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), m(grad), mt(grad), v(grad), vt(grad) {
         grad = 0;
         m = 0;
         mt = 0;
@@ -276,7 +279,7 @@ struct updater_sub_context <Layer, I, updater_type::NADAM> {
      * \brief Construct the sub_context for the given layer
      * \param layer The layer to build the context for
      */
-    updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), m(grad), mt(grad), v(grad), vt(grad) {
+    updater_sub_context(const Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), m(grad), mt(grad), v(grad), vt(grad) {
         grad = 0;
         m = 0;
         mt = 0;
@@ -305,7 +308,7 @@ struct updater_sub_context <Layer, I, updater_type::ADAMAX> {
      * \brief Construct the sub_context for the given layer
      * \param layer The layer to build the context for
      */
-    updater_sub_context(Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), m(grad), v(grad) {
+    updater_sub_context(const Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), m(grad), v(grad) {
         grad = 0;
         m = 0;
         v = 0;
@@ -321,7 +324,7 @@ struct updater_context {
     /*!
      * \brief Construct a new updater_context using the parent context
      */
-    updater_context(Layer& layer) {
+    updater_context(const Layer& layer) {
         cpp_unused(layer);
     }
 };
@@ -339,7 +342,7 @@ struct updater_context<UT, true, Layer> {
     /*!
      * \brief Construct a new updater_context using the parent context
      */
-    updater_context(Layer& layer) : context(build_sub_context<updater_sub_context, UT>(layer)) {
+    updater_context(const Layer& layer) : context(build_sub_context<updater_sub_context, UT>(layer)) {
         // Nothing else to init
     }
 };
@@ -360,7 +363,28 @@ struct full_sgd_context : sgd_context<DBN, Layer, L> {
     /*!
      * \brief Construct the full_sgd_context for the given layer
      */
-    full_sgd_context(Layer& layer) : context_type(layer), up(layer) {
+    full_sgd_context(const Layer& layer) : context_type(layer), up(layer) {
+        // Nothing else to init
+    }
+};
+
+/*!
+ * \brief The full SGD context, it contains the context of the layer as well as
+ * the context for the SGD updater
+ */
+template <typename DBN, typename... Layers, size_t L>
+struct full_sgd_context <DBN, group_layer_impl<Layers...>, L>  {
+    using layer_t      = group_layer_impl<Layers...>;  ///< The layer
+    using context_type = sgd_context<DBN, layer_t, L>; ///< The parent context type
+
+    static constexpr size_t n_layers = sizeof...(Layers); ///< The number of layers
+
+    std::tuple<full_sgd_context<DBN, Layers, L>...> sub_contexts; ///< The sub contexts
+
+    /*!
+     * \brief Construct the full_sgd_context for the given layer
+     */
+    full_sgd_context(layer_t& layer) : sub_contexts(layer.layers) {
         // Nothing else to init
     }
 };
@@ -570,18 +594,7 @@ struct sgd_trainer {
             bool last = true;
 
             cpp::for_each_rpair(full_context, [&last](auto& layer_ctx_1, auto& layer_ctx_2) {
-                auto& r2 = layer_ctx_2.first;
-
-                auto& ctx1 = *layer_ctx_1.second;
-                auto& ctx2 = *layer_ctx_2.second;
-
-                if(!last){
-                    r2.adapt_errors(ctx2);
-                }
-
-                last = false;
-
-                r2.backward_batch(ctx1.errors, ctx2);
+                backward_layer(layer_ctx_2.first, *layer_ctx_2.second, get_errors(*layer_ctx_1.second), last);
             });
 
             first_layer.adapt_errors(first_ctx);
@@ -593,11 +606,7 @@ struct sgd_trainer {
             dll::auto_timer timer("sgd::grad");
 
             cpp::for_each(full_context, [this, epoch, n](auto& layer_ctx) {
-                // Compute the gradients
-                layer_ctx.first.compute_gradients(*layer_ctx.second);
-
-                // Apply the gradients
-                this->update_weights<dbn_traits<dbn_t>::updater()>(epoch, layer_ctx.first, *layer_ctx.second, n);
+                apply_gradients_layer(epoch, n, layer_ctx.first, *layer_ctx.second);
             });
         }
 
@@ -616,6 +625,132 @@ struct sgd_trainer {
         }
 
         return std::make_pair(error, loss);
+    }
+
+    template <typename Layer, typename Context, cpp_disable_iff(is_group_layer<Layer>)>
+    void apply_gradients_layer(size_t epoch, size_t n, Layer& layer, Context& context){
+        // Compute the gradients
+        layer.compute_gradients(context);
+
+        // Apply the gradients
+        this->update_weights<dbn_traits<dbn_t>::updater()>(epoch, layer, context, n);
+    }
+
+    template <typename Layer, typename Context, cpp_enable_iff(is_group_layer<Layer>)>
+    void apply_gradients_layer(size_t epoch, size_t n, Layer& layer, Context& context){
+        cpp::for_each(layer.layers, context.sub_contexts, [this, epoch, n](auto& sub_layer, auto& sub_context) {
+            // Compute the gradients
+            sub_layer.compute_gradients(sub_context);
+
+            // Apply the gradients
+            this->update_weights<dbn_traits<dbn_t>::updater()>(epoch, sub_layer, sub_context, n);
+        });
+    }
+
+    template <typename Layer, typename Context, typename Errors, cpp_disable_iff(is_group_layer<Layer>)>
+    static void backward_layer(Layer& layer, Context& context, Errors&& errors, bool& last){
+        if(!last){
+            layer.adapt_errors(context);
+        }
+
+        last = false;
+
+        layer.backward_batch(errors, context);
+    }
+
+    template <size_t L, typename Layer, typename Context, typename Errors, cpp_enable_iff(L == 0)>
+    static void backward_layer_group(Layer& layer, Context& context, Errors&& errors, bool& last){
+        auto& sub_layer        = std::get<L>(layer.layers);
+        auto& sub_context      = std::get<L>(context.sub_contexts);
+
+        if(!last){
+            sub_layer.adapt_errors(sub_context);
+        }
+
+        last = false;
+
+        sub_layer.backward_batch(errors, sub_context);
+    }
+
+    template <size_t L, typename Layer, typename Context, typename Errors, cpp_enable_iff(L > 0)>
+    static void backward_layer_group(Layer& layer, Context& context, Errors&& errors, bool& last){
+        auto& sub_layer        = std::get<L>(layer.layers);
+        auto& sub_context      = std::get<L>(context.sub_contexts);
+        auto& prev_sub_context = std::get<L - 1>(context.sub_contexts);
+
+        if(!last){
+            sub_layer.adapt_errors(sub_context);
+        }
+
+        last = false;
+
+        sub_layer.backward_batch(prev_sub_context.errors, sub_context);
+
+        backward_layer_group<L - 1>(layer, context, errors, last);
+    }
+
+    template <typename Layer, typename Context, typename Errors, cpp_enable_iff(is_group_layer<Layer>)>
+    static void backward_layer(Layer& layer, Context& context, Errors&& errors, bool& last){
+        backward_layer_group<Layer::n_layers - 1>(layer, context, errors, last);
+    }
+
+    template <bool Train, typename Layer, typename Inputs, typename Context, cpp_disable_iff(is_group_layer<Layer>)>
+    static void forward_layer(Layer& layer, Inputs&& inputs, Context& context) {
+        context.input = inputs;
+
+        if /*constexpr*/ (Train) {
+            layer.train_forward_batch(context.output, context.input);
+        } else {
+            layer.test_forward_batch(context.output, context.input);
+        }
+    }
+
+    template <bool Train, size_t L, typename Layer, typename Inputs, typename Context, cpp_enable_iff(L == Layer::n_layers)>
+    static void forward_layer_group(Layer& layer, Inputs&& inputs, Context& context) {
+        cpp_unused(layer);
+        cpp_unused(inputs);
+        cpp_unused(context);
+    }
+
+    template <bool Train, size_t L, typename Layer, typename Inputs, typename Context, cpp_enable_iff(L < Layer::n_layers)>
+    static void forward_layer_group(Layer& layer, Inputs&& inputs, Context& context) {
+        auto& sub_layer   = std::get<L>(layer.layers);
+        auto& sub_context = std::get<L>(context.sub_contexts);
+
+        sub_context.input = inputs;
+
+        if /*constexpr*/ (Train) {
+            sub_layer.train_forward_batch(sub_context.output, sub_context.input);
+        } else {
+            sub_layer.test_forward_batch(sub_context.output, sub_context.input);
+        }
+
+        forward_layer_group<Train, L + 1>(layer, sub_context.output, context);
+    }
+
+    template <bool Train, typename Layer, typename Inputs, typename Context, cpp_enable_iff(is_group_layer<Layer>)>
+    static void forward_layer(Layer& layer, Inputs&& inputs, Context& context) {
+        forward_layer_group<Train, 0>(layer, inputs, context);
+    }
+
+    template <typename Context, cpp_disable_iff(is_group_layer<typename Context::layer_t>)>
+    static auto& get_output(Context& context) {
+        return context.output;
+    }
+
+    template <typename Context, cpp_enable_iff(is_group_layer<typename Context::layer_t>)>
+    static auto& get_output(Context& context) {
+        return get_output(std::get<Context::n_layers - 1>(context.sub_contexts));
+    }
+
+    template <typename Context, cpp_disable_iff(is_group_layer<typename Context::layer_t>)>
+    static auto& get_errors(Context& context) {
+        return context.errors;
+    }
+
+    template <typename Context, cpp_enable_iff(is_group_layer<typename Context::layer_t>)>
+    static auto& get_errors(Context& context) {
+        return get_errors(std::get<Context::n_layers - 1>(context.sub_contexts));
     }
 
     //TODO
@@ -656,18 +791,7 @@ struct sgd_trainer {
         }
 
         cpp::for_each_pair(full_context, [](auto& layer_ctx_1, auto& layer_ctx_2) {
-            auto& layer_2 = layer_ctx_2.first;
-
-            auto& ctx1 = *layer_ctx_1.second;
-            auto& ctx2 = *layer_ctx_2.second;
-
-            ctx2.input = ctx1.output;
-
-            if /*constexpr*/ (Train) {
-                layer_2.train_forward_batch(ctx2.output, ctx2.input);
-            } else {
-                layer_2.test_forward_batch(ctx2.output, ctx2.input);
-            }
+            forward_layer<Train>(layer_ctx_2.first, get_output(*layer_ctx_1.second), *layer_ctx_2.second);
         });
 
         return last_ctx.output;
