@@ -111,10 +111,9 @@ int main(int /*argc*/, char* /*argv*/ []) {
     // Train the network for performance sake
     net->fine_tune(samples, labels, 50);
 
-    // Test the network on test set
+    // Test the network on train set
     net->evaluate(samples, labels);
 
-    dll::dump_timers();
 
     return 0;
 }
