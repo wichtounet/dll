@@ -19,12 +19,14 @@ namespace dll {
  */
 template <typename Desc>
 struct dyn_conv_layer_impl final : neural_layer<dyn_conv_layer_impl<Desc>, Desc> {
-    using desc      = Desc;                  ///< The descriptor type
-    using weight    = typename desc::weight; ///< The weight type
-    using this_type = dyn_conv_layer_impl<desc>;  ///< This type
-    using base_type = neural_layer<this_type, desc>;
+    using desc        = Desc;                          ///< The descriptor type
+    using weight      = typename desc::weight;         ///< The weight type
+    using this_type   = dyn_conv_layer_impl<desc>;     ///< This type
+    using base_type   = neural_layer<this_type, desc>; ///< The layer's base type
+    using layer_t     = this_type;                     ///< The type of this layer
+    using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic type of this layer
 
-    static constexpr auto activation_function = desc::activation_function; ///< The layer's activation function
+    static constexpr auto activation_function = desc::activation_function;                           ///< The layer's activation function
     static constexpr auto no_bias             = desc::parameters::template contains<dll::no_bias>(); ///< Disable the biases
 
     using w_initializer = typename desc::w_initializer; ///< The initializer for the weights
@@ -151,7 +153,7 @@ struct dyn_conv_layer_impl final : neural_layer<dyn_conv_layer_impl<Desc>, Desc>
      * \param input A batch of input
      * \param output A batch of output that will be filled
      */
-    template <typename H1, typename V, cpp_enable_iff(etl::dimensions<V>() == 2)>
+    template <typename H1, typename V, cpp_disable_iff(etl::dimensions<V>() == 4)>
     void forward_batch(H1&& output, const V& v) const {
         dll::auto_timer timer("conv:forward_batch");
 
@@ -229,11 +231,23 @@ struct dyn_conv_layer_impl final : neural_layer<dyn_conv_layer_impl<Desc>, Desc>
      * \param output The ETL expression into which write the output
      * \param context The training context
      */
-    template<typename H, typename C>
+    template<typename H, typename C, cpp_enable_iff(etl::dimensions<H>() == 4)>
     void backward_batch(H&& output, C& context) const {
         dll::auto_timer timer("conv:backward_batch");
 
         output = etl::ml::convolution_backward(context.errors, w);
+    }
+
+    /*!
+     * \brief Backpropagate the errors to the previous layers
+     * \param output The ETL expression into which write the output
+     * \param context The training context
+     */
+    template<typename H, typename C, cpp_disable_iff(etl::dimensions<H>() == 4)>
+    void backward_batch(H&& output, C& context) const {
+        dll::auto_timer timer("conv:backward_batch");
+
+        etl::reshape(output, etl::dim<0>(output), nc, nv1, nv2) = etl::ml::convolution_backward(context.errors, w);
     }
 
     /*!
