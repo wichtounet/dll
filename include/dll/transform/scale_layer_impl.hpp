@@ -20,10 +20,11 @@ namespace dll {
  */
 template <typename Desc>
 struct scale_layer_impl : transform_layer<scale_layer_impl<Desc>> {
-    using desc      = Desc;                               ///< The descriptor type
-    using base_type = transform_layer<scale_layer_impl<Desc>>; ///< The base type
-    using layer_t     = this_type;                     ///< This layer's type
-    using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
+    using desc        = Desc;                       ///< The descriptor type
+    using this_type   = scale_layer_impl<Desc>;     ///< This layer's type
+    using base_type   = transform_layer<this_type>; ///< The base type
+    using layer_t     = this_type;                  ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t; ///< The dynamic version of this layer
 
     static constexpr int A = desc::A; ///< The scale multiplier
     static constexpr int B = desc::B; ///< The scale divisor

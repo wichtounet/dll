@@ -16,11 +16,12 @@ namespace dll {
  */
 template <typename Desc>
 struct dyn_batch_normalization_2d_layer_impl : neural_layer<dyn_batch_normalization_2d_layer_impl<Desc>, Desc> {
-    using desc      = Desc;                                                   ///< The descriptor type
-    using base_type = neural_layer<dyn_batch_normalization_2d_layer_impl<Desc>, Desc>; ///< The base type
-    using weight    = typename desc::weight;                                  ///< The data type of the layer
-    using layer_t     = this_type;                     ///< This layer's type
-    using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
+    using desc        = Desc;                                                            ///< The descriptor type
+    using base_type   = neural_layer<dyn_batch_normalization_2d_layer_impl<Desc>, Desc>; ///< The base type
+    using weight      = typename desc::weight;                                           ///< The data type of the layer
+    using this_type   = dyn_batch_normalization_2d_layer_impl<Desc>;                     ///< The type of this layer
+    using layer_t     = this_type;                                                       ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t;                                      ///< The dynamic version of this layer
 
     static constexpr weight e     = 1e-8;        ///< Epsilon for numerical stability
 

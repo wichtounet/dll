@@ -21,10 +21,11 @@ namespace dll {
  */
 template <typename Desc>
 struct normalize_layer_impl : transform_layer<normalize_layer_impl<Desc>> {
-    using desc      = Desc;                                   ///< The descriptor type
-    using base_type = transform_layer<normalize_layer_impl<Desc>>; ///< The base type
-    using layer_t     = this_type;                     ///< This layer's type
-    using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
+    using desc        = Desc;                                        ///< The descriptor type
+    using base_type   = transform_layer<normalize_layer_impl<Desc>>; ///< The base type
+    using this_type   = normalize_layer_impl<Desc>;                  ///< This layer's type
+    using layer_t     = this_type;                                   ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t;                  ///< The dynamic version of this layer
 
     /*!
      * \brief Returns a string representation of the layer

@@ -16,10 +16,11 @@ namespace dll {
  */
 template <typename Desc>
 struct dropout_layer_impl : transform_layer<dropout_layer_impl<Desc>> {
-    using desc      = Desc;                                 ///< The descriptor type
-    using base_type = transform_layer<dropout_layer_impl<Desc>>; ///< The base type
-    using layer_t     = this_type;                     ///< This layer's type
-    using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
+    using desc        = Desc;                       ///< The descriptor type
+    using this_type   = dropout_layer_impl<Desc>;   ///< This layer's type
+    using base_type   = transform_layer<this_type>; ///< The base type
+    using layer_t     = this_type;                  ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t; ///< The dynamic version of this layer
 
     static constexpr float p = float(desc::Drop) / 100.0f; ///< The dropout rate
 
