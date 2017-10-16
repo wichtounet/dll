@@ -18,10 +18,12 @@ namespace dll {
  */
 template <typename Desc>
 struct dyn_dense_layer_impl final : neural_layer<dyn_dense_layer_impl<Desc>, Desc> {
-    using desc      = Desc;                          ///< The descriptor of the layer
-    using weight    = typename desc::weight;         ///< The data type for this layer
-    using this_type = dyn_dense_layer_impl<desc>;    ///< The type of this layer
-    using base_type = neural_layer<this_type, desc>; ///< The type of the base type
+    using desc        = Desc;                          ///< The descriptor of the layer
+    using weight      = typename desc::weight;         ///< The data type for this layer
+    using this_type   = dyn_dense_layer_impl<desc>;    ///< The type of this layer
+    using base_type   = neural_layer<this_type, desc>; ///< The type of the base type
+    using layer_t     = this_type;                     ///< The type of this layer
+    using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic type of this layer
 
     static constexpr auto activation_function = desc::activation_function;                           ///< The layer's activation function
     static constexpr auto no_bias             = desc::parameters::template contains<dll::no_bias>(); ///< Disable the biases

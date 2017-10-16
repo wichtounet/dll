@@ -126,6 +126,8 @@ struct dyn_conv_layer_impl final : neural_layer<dyn_conv_layer_impl<Desc>, Desc>
         return {buffer};
     }
 
+    using base_type::forward_batch;
+
     /*!
      * \brief Apply the layer to the given batch of input.
      *
