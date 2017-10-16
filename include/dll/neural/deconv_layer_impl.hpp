@@ -202,8 +202,8 @@ struct deconv_layer_impl final : neural_layer<deconv_layer_impl<Desc>, Desc> {
      */
     template<typename C>
     void compute_gradients(C& context) const {
-        //TODO Update the gradients (probably with conv_4d_valid_filter)
-        std::get<1>(context.up.context)->grad = etl::mean_r(etl::sum_l(context.errors));
+        std::get<0>(context.up.context)->grad = etl::conv_4d_valid_filter_flipped(context.errors, context.input);
+        std::get<1>(context.up.context)->grad = etl::bias_batch_sum_4d(context.errors);
     }
 };
 
