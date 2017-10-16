@@ -23,6 +23,8 @@ struct dyn_conv_same_layer_impl final : neural_layer<dyn_conv_same_layer_impl<De
     using weight    = typename desc::weight;         ///< The weight type
     using this_type = dyn_conv_same_layer_impl<desc>;     ///< This type
     using base_type = neural_layer<this_type, desc>; ///< The base type
+    using layer_t     = this_type;                     ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
 
     static constexpr auto activation_function = desc::activation_function; ///< The layer's activation function
 

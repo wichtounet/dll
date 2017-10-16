@@ -19,6 +19,8 @@ struct dyn_shape_3d_layer_impl : transform_layer<dyn_shape_3d_layer_impl<Desc>> 
     using weight    = typename desc::weight;      ///< The data type
     using this_type = dyn_shape_3d_layer_impl<desc>;   ///< The type of this layer
     using base_type = transform_layer<this_type>; ///< The base type
+    using layer_t     = this_type;                     ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
 
     static constexpr size_t D = 3; ///< The number of dimensions
 

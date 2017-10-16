@@ -22,6 +22,8 @@ struct dyn_embedding_layer_impl final : neural_layer_no_bias<dyn_embedding_layer
     using weight    = typename desc::weight;                 ///< The data type of the layer
     using this_type = dyn_embedding_layer_impl<desc>;            ///< The type of this layer
     using base_type = neural_layer_no_bias<this_type, desc>; ///< The base type of the layer
+    using layer_t     = this_type;                     ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
 
     using w_initializer = typename desc::w_initializer; ///< The initializer for the weights
 

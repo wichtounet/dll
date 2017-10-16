@@ -20,6 +20,8 @@ struct upsample_3d_layer_impl final : unpooling_3d_layer<upsample_3d_layer_impl<
     using desc   = Desc;                                      ///< The layer descriptor
     using weight = typename desc::weight;                     ///< The layer weight type
     using base   = unpooling_3d_layer<upsample_3d_layer_impl<Desc>, desc>; ///< The layer base type
+    using layer_t     = this_type;                     ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
 
     upsample_3d_layer_impl() = default;
 

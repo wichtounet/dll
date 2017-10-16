@@ -34,6 +34,8 @@ struct rbm_impl final : public standard_rbm<rbm_impl<Desc>, Desc> {
     using weight    = typename desc::weight;         ///< The weight type
     using this_type = rbm_impl<desc>;                     ///< The type of this layer
     using base_type = standard_rbm<this_type, desc>; ///< The base type
+    using layer_t     = this_type;                     ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
 
     using input_t      = typename rbm_base_traits<this_type>::input_t; ///< The type of the input
     using output_t     = typename rbm_base_traits<this_type>::output_t; ///< The type of the output

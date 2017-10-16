@@ -28,6 +28,8 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
     using this_type = standard_conv_rbm<parent_t, desc>; ///< The type of this layer
     using base_type = rbm_base<parent_t, Desc>;          ///< The base type
     using weight    = typename desc::weight;             ///< The data type for this layer
+    using layer_t     = this_type;                     ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
 
     using input_one_t         = typename rbm_base_traits<parent_t>::input_one_t;         ///< The type of one input
     using output_one_t        = typename rbm_base_traits<parent_t>::output_one_t;        ///< The type of one output

@@ -20,6 +20,8 @@ struct dyn_avgp_2d_layer_impl final : dyn_pooling_2d_layer<dyn_avgp_2d_layer_imp
     using weight    = typename desc::weight;                 ///< The layer weight type
     using this_type = dyn_avgp_2d_layer_impl<Desc>;               ///< This layer's type
     using base      = dyn_pooling_2d_layer<this_type, desc>; ///< The layer base type
+    using layer_t     = this_type;                     ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
 
     dyn_avgp_2d_layer_impl() = default;
 
@@ -143,6 +145,8 @@ struct dyn_avgp_3d_layer_impl final : dyn_pooling_3d_layer<dyn_avgp_3d_layer_imp
     using weight    = typename desc::weight;                 ///< The layer weight type
     using this_type = dyn_avgp_3d_layer_impl<Desc>;               ///< This layer's type
     using base      = dyn_pooling_3d_layer<this_type, desc>; ///< The layer base type
+    using layer_t     = this_type;                     ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
 
     dyn_avgp_3d_layer_impl() = default;
 

@@ -19,6 +19,8 @@ struct batch_normalization_4d_layer_impl : neural_layer<batch_normalization_4d_l
     using desc      = Desc;                                                   ///< The descriptor type
     using base_type = neural_layer<batch_normalization_4d_layer_impl<Desc>, Desc>; ///< The base type
     using weight    = typename desc::weight;                                  ///< The data type of the layer
+    using layer_t     = this_type;                     ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
 
     static constexpr size_t Kernels = desc::Kernels; ///< The number of feature maps
     static constexpr size_t W       = desc::Width;   ///< The width of feature maps

@@ -21,6 +21,8 @@ struct shape_1d_layer_impl : transform_layer<shape_1d_layer_impl<Desc>> {
     using weight    = typename desc::weight;      ///< The data type
     using this_type = shape_1d_layer_impl<desc>;       ///< The type of this layer
     using base_type = transform_layer<this_type>; ///< The base type
+    using layer_t     = this_type;                     ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
 
     static constexpr size_t Size = desc::S; ///< The input size
     static constexpr size_t D    = 1;       ///< The number of dimensions

@@ -19,6 +19,8 @@ template <typename Desc>
 struct random_layer_impl : transform_layer<random_layer_impl<Desc>> {
     using desc      = Desc;                                ///< The descriptor type
     using base_type = transform_layer<random_layer_impl<Desc>>; ///< The base type
+    using layer_t     = this_type;                     ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
 
     /*!
      * \brief Returns a string representation of the layer

@@ -21,6 +21,8 @@ template <typename Desc>
 struct rectifier_layer_impl : transform_layer<rectifier_layer_impl<Desc>> {
     using desc = Desc; ///< The descriptor type
     using base_type = transform_layer<rectifier_layer_impl<Desc>>; ///< The base type
+    using layer_t     = this_type;                     ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
 
     static constexpr rectifier_method method = desc::method; ///< The rectifier method
 

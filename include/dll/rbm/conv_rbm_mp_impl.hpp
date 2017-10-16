@@ -29,6 +29,8 @@ struct conv_rbm_mp_impl final : public standard_crbm_mp<conv_rbm_mp_impl<Desc>, 
     using weight    = typename desc::weight; ///< The data type for this layer
     using this_type = conv_rbm_mp_impl<desc>; ///< The type of this layer
     using base_type = standard_crbm_mp<this_type, desc>;
+    using layer_t     = this_type;                     ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
 
     static constexpr unit_type visible_unit = desc::visible_unit; ///< The type of visible unit
     static constexpr unit_type hidden_unit  = desc::hidden_unit;  ///< The type of hidden unit

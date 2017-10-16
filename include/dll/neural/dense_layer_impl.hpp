@@ -19,10 +19,12 @@ namespace dll {
  */
 template <typename Desc>
 struct dense_layer_impl final : neural_layer<dense_layer_impl<Desc>, Desc> {
-    using desc      = Desc;                  ///< The descriptor of the layer
-    using weight    = typename desc::weight; ///< The data type for this layer
-    using this_type = dense_layer_impl<desc>;     ///< The type of this layer
-    using base_type = neural_layer<this_type, desc>;
+    using desc        = Desc;                          ///< The descriptor of the layer
+    using weight      = typename desc::weight;         ///< The data type for this layer
+    using this_type   = dense_layer_impl<desc>;        ///< The type of this layer
+    using base_type   = neural_layer<this_type, desc>; ///< The base type
+    using layer_t     = this_type;                     ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
 
     static constexpr size_t num_visible = desc::num_visible; ///< The number of visible units
     static constexpr size_t num_hidden  = desc::num_hidden;  ///< The number of hidden units

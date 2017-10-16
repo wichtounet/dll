@@ -20,6 +20,8 @@ struct deconv_layer_impl final : neural_layer<deconv_layer_impl<Desc>, Desc> {
     using weight    = typename desc::weight; ///< The data type for this layer
     using this_type = deconv_layer_impl<desc>; ///< The type of this layer
     using base_type = neural_layer<this_type, desc>;
+    using layer_t     = this_type;                     ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
 
     static constexpr size_t NC  = desc::NC;  ///< The number of input channels
     static constexpr size_t NV1 = desc::NV1; ///< The first dimension of the visible units

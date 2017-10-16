@@ -141,10 +141,12 @@ struct sgd_context<DBN, dyn_mp_2d_layer_impl<Desc>, L> {
  */
 template <typename Desc>
 struct dyn_mp_3d_layer_impl final : dyn_pooling_3d_layer<dyn_mp_3d_layer_impl<Desc>, Desc> {
-    using desc      = Desc;                                  ///< The layer descriptor
-    using weight    = typename desc::weight;                 ///< The layer weight type
-    using this_type = dyn_mp_3d_layer_impl<Desc>;                 ///< This layer's type
-    using base      = dyn_pooling_3d_layer<this_type, desc>; ///< The layer base type
+    using desc        = Desc;                                  ///< The layer descriptor
+    using weight      = typename desc::weight;                 ///< The layer weight type
+    using this_type   = dyn_mp_3d_layer_impl<Desc>;            ///< This layer's type
+    using base        = dyn_pooling_3d_layer<this_type, desc>; ///< The layer base type
+    using layer_t     = this_type;                             ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t;            ///< The dynamic version of this layer
 
     dyn_mp_3d_layer_impl() = default;
 

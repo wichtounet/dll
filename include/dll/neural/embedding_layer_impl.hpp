@@ -22,6 +22,8 @@ struct embedding_layer_impl final : neural_layer_no_bias<embedding_layer_impl<De
     using weight    = typename desc::weight;                 ///< The data type of the layer
     using this_type = embedding_layer_impl<desc>;            ///< The type of this layer
     using base_type = neural_layer_no_bias<this_type, desc>; ///< The base type of the layer
+    using layer_t     = this_type;                     ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
 
     static constexpr size_t V = desc::V; ///< The vocabulary size
     static constexpr size_t I = desc::I; ///< The input size

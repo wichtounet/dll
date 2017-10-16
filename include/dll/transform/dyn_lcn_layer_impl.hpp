@@ -20,6 +20,8 @@ template <typename Desc>
 struct dyn_lcn_layer_impl : transform_layer<dyn_lcn_layer_impl<Desc>> {
     using desc = Desc; ///< The descriptor of the layer
     using base_type = transform_layer<dyn_lcn_layer_impl<Desc>>; ///< The base type
+    using layer_t     = this_type;                     ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
 
     size_t K;
     size_t Mid;
