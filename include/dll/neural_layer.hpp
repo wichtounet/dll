@@ -38,10 +38,10 @@ struct neural_layer : layer<Derived> {
         // Nothing to init here
     }
 
-    neural_layer(neural_layer& rhs) = delete;
+    neural_layer(const neural_layer& rhs) = delete;
     neural_layer(neural_layer&& rhs) = delete;
 
-    neural_layer& operator=(neural_layer& rhs) = delete;
+    neural_layer& operator=(const neural_layer& rhs) = delete;
     neural_layer& operator=(neural_layer&& rhs) = delete;
 
     /*!
