@@ -241,7 +241,7 @@ struct sgd_context<DBN, dyn_dense_layer_impl<Desc>, L> {
     etl::dyn_matrix<weight, 2> output;
     etl::dyn_matrix<weight, 2> errors;
 
-    sgd_context(layer_t& layer) : input(batch_size, layer.num_visible, 0.0), output(batch_size, layer.num_hidden, 0.0), errors(batch_size, layer.num_hidden, 0.0) {}
+    sgd_context(const layer_t& layer) : input(batch_size, layer.num_visible, 0.0), output(batch_size, layer.num_hidden, 0.0), errors(batch_size, layer.num_hidden, 0.0) {}
 };
 
 

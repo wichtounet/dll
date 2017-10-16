@@ -128,7 +128,7 @@ struct sgd_context<DBN, dyn_mp_2d_layer_impl<Desc>, L> {
     etl::dyn_matrix<weight, 4> output;
     etl::dyn_matrix<weight, 4> errors;
 
-    sgd_context(layer_t& layer)
+    sgd_context(const layer_t& layer)
             : input(batch_size, layer.i1, layer.i2, layer.i3),
               output(batch_size, layer.i1, layer.i2 / layer.c1, layer.i3 / layer.c2),
               errors(batch_size, layer.i1, layer.i2 / layer.c1, layer.i3 / layer.c2) {}
@@ -270,7 +270,7 @@ struct sgd_context<DBN, dyn_mp_3d_layer_impl<Desc>, L> {
     etl::dyn_matrix<weight, 4> output;
     etl::dyn_matrix<weight, 4> errors;
 
-    sgd_context(layer_t& layer)
+    sgd_context(const layer_t& layer)
             : input(batch_size, layer.i1, layer.i2, layer.i3),
               output(batch_size, layer.i1 / layer.c1, layer.i2 / layer.c2, layer.i3 / layer.c3),
               errors(batch_size, layer.i1 / layer.c1, layer.i2 / layer.c2, layer.i3 / layer.c3) {}
