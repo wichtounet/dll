@@ -13,26 +13,6 @@
 
 namespace dll {
 
-/*!
- * \brief Value traits to compute the addition of all the given values
- */
-template <size_t F, size_t... Dims>
-struct add_all_impl final : std::integral_constant<size_t, F + add_all_impl<Dims...>::value> {};
-
-/*!
- * \copydoc add_all_impl
- */
-template <size_t F>
-struct add_all_impl<F> final : std::integral_constant<size_t, F> {};
-
-//CPP17: Can be totally replaced with variadic fold expansion
-
-/*!
- * \brief Value traits to compute the addition of all the given values
- */
-template <size_t F, size_t... Dims>
-constexpr size_t add_all = add_all_impl<F, Dims...>::value;
-
 template <size_t I, size_t D, typename... Outputs>
 struct get_sub_dim {
     static constexpr size_t value = etl::decay_traits<cpp::first_type_t<Outputs...>>::template dim<I>();
@@ -57,20 +37,21 @@ struct merge_output_types {
 };
 
 /*!
- * \brief Standard convolutional layer of neural network.
+ * \brief Standard merge layer of neural network.
  */
 template <size_t D, typename... Layers>
-struct merge_layer_impl final : layer<merge_layer_impl<D, Layers...>> {
+struct merge_layer_impl <merge_layer_desc<D, Layers...>> final : layer<merge_layer_impl<merge_layer_desc<D, Layers...>>> {
     static constexpr size_t merge_dim = D; ///< The dimensions at which to merge
 
     using first_layer_t = cpp::first_type_t<Layers...>; ///< The type of the first layer
     using last_layer_t  = cpp::last_type_t<Layers...>;  ///< The type of the last layer
 
-    using this_type   = merge_layer_impl<D, Layers...>;                       ///< The type of this layer
-    using weight      = typename first_layer_t::weight;                       ///< The data type of the layer
-    using base_type   = layer<this_type>;                                     ///< The base type of the layer
-    using layer_t     = this_type;                                            ///< The type of this layer
-    using dyn_layer_t = merge_layer_impl<D, typename Layers::dyn_layer_t...>; ///< The type of this layer
+    using desc        = merge_layer_desc<D, Layers...>; ///< The layer descriptor
+    using this_type   = merge_layer_impl<desc>;         ///< The type of this layer
+    using weight      = typename first_layer_t::weight; ///< The data type of the layer
+    using base_type   = layer<this_type>;               ///< The base type of the layer
+    using layer_t     = this_type;                      ///< The type of this layer
+    using dyn_layer_t = typename desc::dyn_layer_t;     ///< The type of this layer
 
     using input_one_t  = typename first_layer_t::input_one_t;                                    ///< The type of one input
     using output_one_t = typename merge_output_types<D, typename Layers::output_one_t...>::type; ///< The type of one output
@@ -79,7 +60,7 @@ struct merge_layer_impl final : layer<merge_layer_impl<D, Layers...>> {
 
     static constexpr size_t n_layers = sizeof...(Layers); ///< The number of layers
 
-    std::tuple<Layers...> layers;
+    std::tuple<Layers...> layers; ///< The layers to merge
 
     /*!
      * \brief Return the size of the input of this layer
@@ -101,14 +82,8 @@ struct merge_layer_impl final : layer<merge_layer_impl<D, Layers...>> {
      * \brief Return the number of trainable parameters of this network.
      * \return The the number of trainable parameters of this network.
      */
-    size_t parameters() const noexcept {
-        size_t params = 0;
-
-        cpp::for_each(layers, [&params](auto& layer){
-            params += layer.parameters();
-        });
-
-        return params;
+    static constexpr size_t parameters() noexcept {
+        return add_all<Layers::parameters()...>;
     }
 
     /*!
@@ -196,7 +171,7 @@ struct merge_layer_impl final : layer<merge_layer_impl<D, Layers...>> {
      * \return an empty ETL matrix suitable to store one output of this layer
      */
     template <typename Input>
-    output_one_t prepare_one_output() const {
+    static output_one_t prepare_one_output() {
         return {};
     }
 
@@ -210,6 +185,18 @@ struct merge_layer_impl final : layer<merge_layer_impl<D, Layers...>> {
         return output_t{samples};
     }
 
+    template<size_t I, typename DynLayer, cpp_enable_iff(I < n_layers)>
+    static void dyn_init(DynLayer& dyn){
+        cpp::nth_type_t<I, Layers...>::dyn_init(std::get<I>(dyn.layers));
+
+        dyn_init<I+1>(dyn);
+    }
+
+    template<size_t I, typename DynLayer, cpp_enable_iff(I == n_layers)>
+    static void dyn_init(DynLayer& dyn){
+        cpp_unused(dyn);
+    }
+
     /*!
      * \brief Initialize the dynamic version of the layer from the
      * fast version of the layer
@@ -217,10 +204,8 @@ struct merge_layer_impl final : layer<merge_layer_impl<D, Layers...>> {
      * needs to be initialized
      */
     template<typename DynLayer>
-    void dyn_init(DynLayer& dyn){
-        cpp::for_each_pair(layers, dyn.layers, [](auto& fast_sub, auto& dyn_sub){
-            fast_sub.dyn_init(dyn_sub);
-        });
+    static void dyn_init(DynLayer& dyn){
+        dyn_init<0>(dyn);
     }
 
     /*!
@@ -245,7 +230,7 @@ struct merge_layer_impl final : layer<merge_layer_impl<D, Layers...>> {
 // Declare the traits for the Layer
 
 template<size_t D, typename... Layers>
-struct layer_base_traits<merge_layer_impl<D, Layers...>> {
+struct layer_base_traits<merge_layer_impl<merge_layer_desc<D, Layers...>>> {
     static constexpr bool is_neural     = true;  ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -264,8 +249,8 @@ struct layer_base_traits<merge_layer_impl<D, Layers...>> {
  * \brief Specialization of the sgd_context for conv_layer_impl
  */
 template <typename DBN, size_t D, typename... Layers, size_t L>
-struct sgd_context<DBN, merge_layer_impl<D, Layers...>, L> {
-    using layer_t = merge_layer_impl<D, Layers...>;
+struct sgd_context<DBN, merge_layer_impl<merge_layer_desc<D, Layers...>>, L> {
+    using layer_t = merge_layer_impl<merge_layer_desc<D, Layers...>>;
 
     using input_type  = decltype(std::declval<sgd_context<DBN, cpp::first_type_t<Layers...>, L>>().input);
     using output_type = typename merge_output_types<D + 1, decltype(std::declval<sgd_context<DBN, Layers, L>>().output)...>::type;
@@ -274,7 +259,7 @@ struct sgd_context<DBN, merge_layer_impl<D, Layers...>, L> {
     output_type output;
     output_type errors;
 
-    sgd_context(const merge_layer_impl<D, Layers...>& /* layer */)
+    sgd_context(const layer_t& /* layer */)
             : output(0.0), errors(0.0) {}
 };
 

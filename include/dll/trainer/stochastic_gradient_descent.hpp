@@ -24,17 +24,11 @@
 
 namespace dll {
 
-template <typename T>
-struct is_merge_layer_impl : std::false_type {};
-
-template <size_t D, typename... Layers>
-struct is_merge_layer_impl<merge_layer_impl<D, Layers...>> : std::true_type {};
+template <typename Layer>
+static constexpr bool is_group_layer = cpp::is_specialization_of_v<dll::group_layer_impl, Layer> || cpp::is_specialization_of_v<dll::dyn_group_layer_impl, Layer>;
 
 template <typename Layer>
-static constexpr bool is_group_layer = cpp::is_specialization_of_v<dll::group_layer_impl, Layer>;
-
-template <typename Layer>
-static constexpr bool is_merge_layer = is_merge_layer_impl<Layer>::value;
+static constexpr bool is_merge_layer = cpp::is_specialization_of_v<dll::merge_layer_impl, Layer> || cpp::is_specialization_of_v<dll::dyn_merge_layer_impl, Layer>;
 
 template <typename Layer>
 static constexpr bool is_utility_layer = is_group_layer<Layer> || is_merge_layer<Layer>;
@@ -385,9 +379,30 @@ struct full_sgd_context : sgd_context<DBN, Layer, L> {
  * the context for the SGD updater
  */
 template <typename DBN, typename... Layers, size_t L>
-struct full_sgd_context <DBN, group_layer_impl<Layers...>, L>  {
-    using layer_t      = group_layer_impl<Layers...>;  ///< The layer
-    using context_type = sgd_context<DBN, layer_t, L>; ///< The parent context type
+struct full_sgd_context <DBN, group_layer_impl<group_layer_desc<Layers...>>, L>  {
+    using layer_t      = group_layer_impl<group_layer_desc<Layers...>>; ///< The layer
+    using context_type = sgd_context<DBN, layer_t, L>;                  ///< The parent context type
+
+    static constexpr size_t n_layers = sizeof...(Layers); ///< The number of layers
+
+    std::tuple<full_sgd_context<DBN, Layers, L>...> sub_contexts; ///< The sub contexts
+
+    /*!
+     * \brief Construct the full_sgd_context for the given layer
+     */
+    full_sgd_context(const layer_t& layer) : sub_contexts(layer.layers) {
+        // Nothing else to init
+    }
+};
+
+/*!
+ * \brief The full SGD context, it contains the context of the layer as well as
+ * the context for the SGD updater
+ */
+template <typename DBN, typename... Layers, size_t L>
+struct full_sgd_context <DBN, dyn_group_layer_impl<dyn_group_layer_desc<Layers...>>, L>  {
+    using layer_t      = dyn_group_layer_impl<dyn_group_layer_desc<Layers...>>; ///< The layer
+    using context_type = sgd_context<DBN, layer_t, L>;                  ///< The parent context type
 
     static constexpr size_t n_layers = sizeof...(Layers); ///< The number of layers
 
@@ -406,9 +421,30 @@ struct full_sgd_context <DBN, group_layer_impl<Layers...>, L>  {
  * the context for the SGD updater
  */
 template <typename DBN, size_t D, typename... Layers, size_t L>
-struct full_sgd_context<DBN, merge_layer_impl<D, Layers...>, L> : sgd_context<DBN, merge_layer_impl<D, Layers...>, L> {
-    using layer_t      = merge_layer_impl<D, Layers...>; ///< The layer
-    using context_type = sgd_context<DBN, layer_t, L>;   ///< The parent context type
+struct full_sgd_context<DBN, merge_layer_impl<merge_layer_desc<D, Layers...>>, L> : sgd_context<DBN, merge_layer_impl<merge_layer_desc<D, Layers...>>, L> {
+    using layer_t      = merge_layer_impl<merge_layer_desc<D, Layers...>>; ///< The layer
+    using context_type = sgd_context<DBN, layer_t, L>;                     ///< The parent context type
+
+    static constexpr size_t n_layers = sizeof...(Layers); ///< The number of layers
+
+    std::tuple<full_sgd_context<DBN, Layers, L>...> sub_contexts; ///< The sub contexts
+
+    /*!
+     * \brief Construct the full_sgd_context for the given layer
+     */
+    full_sgd_context(const layer_t& layer) : context_type(layer), sub_contexts(layer.layers) {
+        // Nothing else to init
+    }
+};
+
+/*!
+ * \brief The full SGD context, it contains the context of the layer as well as
+ * the context for the SGD updater
+ */
+template <typename DBN, size_t D, typename... Layers, size_t L>
+struct full_sgd_context<DBN, dyn_merge_layer_impl<dyn_merge_layer_desc<D, Layers...>>, L> : sgd_context<DBN, dyn_merge_layer_impl<dyn_merge_layer_desc<D, Layers...>>, L> {
+    using layer_t      = dyn_merge_layer_impl<dyn_merge_layer_desc<D, Layers...>>; ///< The layer
+    using context_type = sgd_context<DBN, layer_t, L>;                     ///< The parent context type
 
     static constexpr size_t n_layers = sizeof...(Layers); ///< The number of layers
 

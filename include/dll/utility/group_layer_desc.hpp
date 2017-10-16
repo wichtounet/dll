@@ -23,10 +23,10 @@ struct group_layer_desc {
     using parameters = cpp::type_list<>;
 
     /*! The layer type */
-    using layer_t = group_layer_impl<Layers...>;
+    using layer_t = group_layer_impl<group_layer_desc<Layers...>>;
 
     /*! The dynamic layer type */
-    using dyn_layer_t = group_layer_impl<typename Layers::dyn_layer_t...>;
+    using dyn_layer_t = dyn_group_layer_impl<dyn_group_layer_desc<typename Layers::dyn_layer_t...>>;
 
     static_assert(sizeof...(Layers) > 0, "A group layer must contain at least one layer");
 };

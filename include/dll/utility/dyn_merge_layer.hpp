@@ -7,7 +7,5 @@
 
 #pragma once
 
-#include "dll/utility/dyn_group_layer.hpp"
-
-#include "dll/utility/group_layer_desc.hpp"
-#include "dll/utility/group_layer_impl.hpp"
+#include "dll/utility/dyn_merge_layer_desc.hpp"
+#include "dll/utility/dyn_merge_layer_impl.hpp"

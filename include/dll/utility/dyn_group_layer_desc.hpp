@@ -13,30 +13,28 @@
 namespace dll {
 
 /*!
- * \brief Describe a layer that merges layers together.
+ * \brief Describe a layer that groups layers together.
  */
-template <size_t D_T, typename... Layers>
-struct merge_layer_desc {
-    static constexpr size_t D = D_T;
-
+template <typename... Layers>
+struct dyn_group_layer_desc {
     /*!
      * \brief A list of all the parameters of the descriptor
      */
     using parameters = cpp::type_list<>;
 
     /*! The layer type */
-    using layer_t = merge_layer_impl<merge_layer_desc<D, Layers...>>;
+    using layer_t = dyn_group_layer_impl<dyn_group_layer_desc<Layers...>>;
 
     /*! The dynamic layer type */
-    using dyn_layer_t = dyn_merge_layer_impl<dyn_merge_layer_desc<D, typename Layers::dyn_layer_t...>>;
+    using dyn_layer_t = dyn_group_layer_impl<dyn_group_layer_desc<Layers...>>;
 
-    static_assert(sizeof...(Layers) > 0, "A merge layer must contain at least one layer");
+    static_assert(sizeof...(Layers) > 0, "A group layer must contain at least one layer");
 };
 
 /*!
- * \brief Describe a standard merge layer.
+ * \brief Describe a standard group layer.
  */
-template <size_t D, typename... Layers>
-using merge_layer = typename merge_layer_desc<D, Layers...>::layer_t;
+template <typename... Layers>
+using dyn_group_layer = typename dyn_group_layer_desc<Layers...>::layer_t;
 
 } //end of dll namespace

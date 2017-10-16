@@ -14,51 +14,65 @@
 namespace dll {
 
 /*!
- * \brief Standard convolutional layer of neural network.
+ * \brief Standard merge layer of neural network.
  */
-template <typename... Layers>
-struct group_layer_impl<group_layer_desc<Layers...>> final : layer<group_layer_impl<group_layer_desc<Layers...>>> {
+template <size_t D, typename... Layers>
+struct dyn_merge_layer_impl <dyn_merge_layer_desc<D, Layers...>> final : layer<dyn_merge_layer_impl<dyn_merge_layer_desc<D, Layers...>>> {
+    static constexpr size_t merge_dim = D; ///< The dimensions at which to merge
+
     using first_layer_t = cpp::first_type_t<Layers...>; ///< The type of the first layer
     using last_layer_t  = cpp::last_type_t<Layers...>;  ///< The type of the last layer
 
-    using desc        = group_layer_desc<Layers...>;    ///< The layer descriptor
-    using this_type   = group_layer_impl<desc>;         ///< The type of this layer
+    using desc        = dyn_merge_layer_desc<D, Layers...>; ///< The layer descriptor
+    using this_type   = dyn_merge_layer_impl<desc>;         ///< The type of this layer
     using weight      = typename first_layer_t::weight; ///< The data type of the layer
     using base_type   = layer<this_type>;               ///< The base type of the layer
     using layer_t     = this_type;                      ///< The type of this layer
     using dyn_layer_t = typename desc::dyn_layer_t;     ///< The type of this layer
 
     using input_one_t  = typename first_layer_t::input_one_t; ///< The type of one input
-    using output_one_t = typename last_layer_t::output_one_t; ///< The type of one output
+    using output_one_t = typename first_layer_t::output_one_t; ///< The type of one output
     using input_t      = std::vector<input_one_t>;            ///< The type of the input
     using output_t     = std::vector<output_one_t>;           ///< The type of the output
 
     static constexpr size_t n_layers = sizeof...(Layers); ///< The number of layers
 
-    std::tuple<Layers...> layers; ///< The layers to group
+    std::tuple<Layers...> layers; ///< The layers to merge
 
     /*!
      * \brief Return the size of the input of this layer
      * \return The size of the input of this layer
      */
-    static constexpr size_t input_size() noexcept {
-        return first_layer_t::input_size();
+    size_t input_size() const noexcept {
+        return std::get<0>(layers).input_size();
     }
 
     /*!
      * \brief Return the size of the output of this layer
      * \return The size of the output of this layer
      */
-    static constexpr size_t output_size() noexcept {
-        return last_layer_t::output_size();
+    size_t output_size() const noexcept {
+        size_t out_size = 0;
+
+        cpp::for_each(layers, [&out_size](auto& layer){
+            out_size += layer.output_size();
+        });
+
+        return out_size;
     }
 
     /*!
      * \brief Return the number of trainable parameters of this network.
      * \return The the number of trainable parameters of this network.
      */
-    static constexpr size_t parameters() noexcept {
-        return dll::add_all<(Layers::parameters())...>;
+    size_t parameters() const noexcept {
+        size_t param = 0;
+
+        cpp::for_each(layers, [&param](auto& layer){
+            param += layer.parameters();
+        });
+
+        return param;
     }
 
     /*!
@@ -66,7 +80,7 @@ struct group_layer_impl<group_layer_desc<Layers...>> final : layer<group_layer_i
      * \return an std::string containing a short description of the layer
      */
     std::string to_short_string(std::string pre = "") const {
-        std::string str = "Group(";
+        std::string str = "Merge(";
 
         cpp::for_each(layers, [&str, &pre](auto& layer){
             str += "\n" + pre + "  " + layer.to_short_string(pre + "  ");
@@ -81,18 +95,6 @@ struct group_layer_impl<group_layer_desc<Layers...>> final : layer<group_layer_i
     using base_type::train_forward_batch;
     using base_type::test_forward_batch;
 
-    template <size_t L, typename H1, typename V, cpp_enable_iff(L != n_layers - 1)>
-    void test_forward_batch_sub(H1&& output, const V& input) const {
-        auto next_input = std::get<L>(layers).test_forward_batch(input);
-
-        test_forward_batch_sub<L+1>(output, next_input);
-    }
-
-    template <size_t L, typename H1, typename V, cpp_enable_iff(L == n_layers - 1)>
-    void test_forward_batch_sub(H1&& output, const V& input) const {
-        std::get<L>(layers).test_forward_batch(output, input);
-    }
-
     /*!
      * \brief Apply the layer to the given batch of input.
      *
@@ -101,19 +103,16 @@ struct group_layer_impl<group_layer_desc<Layers...>> final : layer<group_layer_i
      */
     template <typename H1, typename V>
     void test_forward_batch(H1&& output, const V& input) const {
-        test_forward_batch_sub<0>(output, input);
-    }
+        size_t n = 0;
+        cpp::for_each(layers, [&n, &input, &output](auto& layer){
+            auto sub_output = layer.test_forward_batch(input);
 
-    template <size_t L, typename H1, typename V, cpp_enable_iff(L != n_layers - 1)>
-    void train_forward_batch_sub(H1&& output, const V& input) const {
-        auto next_input = std::get<L>(layers).train_forward_batch(input);
+            for(size_t b = 0; b < etl::dim<0>(sub_output); ++b){
+                etl::memory_slice(output(b), n, n + etl::size(sub_output(b))) = sub_output(b);
+            }
 
-        train_forward_batch_sub<L+1>(output, next_input);
-    }
-
-    template <size_t L, typename H1, typename V, cpp_enable_iff(L == n_layers - 1)>
-    void train_forward_batch_sub(H1&& output, const V& input) const {
-        std::get<L>(layers).train_forward_batch(output, input);
+            n += etl::size(sub_output(0));
+        });
     }
 
     /*!
@@ -124,19 +123,16 @@ struct group_layer_impl<group_layer_desc<Layers...>> final : layer<group_layer_i
      */
     template <typename H1, typename V>
     void train_forward_batch(H1&& output, const V& input) const {
-        train_forward_batch_sub<0>(output, input);
-    }
+        size_t n = 0;
+        cpp::for_each(layers, [&n, &input, &output](auto& layer){
+            auto sub_output = layer.train_forward_batch(input);
 
-    template <size_t L, typename H1, typename V, cpp_enable_iff(L != n_layers - 1)>
-    void forward_batch_sub(H1&& output, const V& input) const {
-        auto next_input = std::get<L>(layers).forward_batch(input);
+            for(size_t b = 0; b < etl::dim<0>(sub_output); ++b){
+                etl::memory_slice(output(b), n, n + etl::size(sub_output(b))) = sub_output(b);
+            }
 
-        forward_batch_sub<L+1>(output, next_input);
-    }
-
-    template <size_t L, typename H1, typename V, cpp_enable_iff(L == n_layers - 1)>
-    void forward_batch_sub(H1&& output, const V& input) const {
-        std::get<L>(layers).forward_batch(output, input);
+            n += etl::size(sub_output(0));
+        });
     }
 
     /*!
@@ -147,7 +143,37 @@ struct group_layer_impl<group_layer_desc<Layers...>> final : layer<group_layer_i
      */
     template <typename H1, typename V>
     void forward_batch(H1&& output, const V& input) const {
-        forward_batch_sub<0>(output, input);
+        size_t n = 0;
+        cpp::for_each(layers, [&n, &input, &output](auto& layer){
+            auto sub_output = layer.forward_batch(input);
+
+            for(size_t b = 0; b < etl::dim<0>(sub_output); ++b){
+                etl::memory_slice(output(b), n, n + etl::size(sub_output(b))) = sub_output(b);
+            }
+
+            n += etl::size(sub_output(0));
+        });
+    }
+
+    template <typename Input, size_t I, cpp_enable_iff(I == D)>
+    size_t get_sub_dim() const {
+        size_t v = 0;
+
+        cpp::for_each(layers, [&v](auto& layer){
+            v += etl::dim<I>(layer.template prepare_one_output<Input>());
+        });
+
+        return v;
+    }
+
+    template <typename Input, size_t I, cpp_disable_iff(I == D)>
+    size_t get_sub_dim() const {
+        return etl::dim<I>(std::get<0>(layers).template prepare_one_output<Input>());
+    }
+
+    template <typename Input, size_t... I>
+    output_one_t prepare_one_output_impl(std::index_sequence<I...> /*seq*/) const {
+        return output_one_t(get_sub_dim<Input, I>()...);
     }
 
     /*!
@@ -155,8 +181,8 @@ struct group_layer_impl<group_layer_desc<Layers...>> final : layer<group_layer_i
      * \return an empty ETL matrix suitable to store one output of this layer
      */
     template <typename Input>
-    static output_one_t prepare_one_output() {
-        return {};
+    output_one_t prepare_one_output() const {
+        return prepare_one_output_impl<Input>(std::make_index_sequence<etl::dimensions<output_one_t>()>());
     }
 
     /*!
@@ -165,20 +191,12 @@ struct group_layer_impl<group_layer_desc<Layers...>> final : layer<group_layer_i
      * \return a container containing empty ETL matrices suitable to store samples output of this layer
      */
     template <typename Input>
-    static output_t prepare_output(size_t samples) {
-        return output_t{samples};
-    }
-
-    template<size_t I, typename DynLayer, cpp_enable_iff(I < n_layers)>
-    static void dyn_init(DynLayer& dyn){
-        cpp::nth_type_t<I, Layers...>::dyn_init(std::get<I>(dyn.layers));
-
-        dyn_init<I+1>(dyn);
-    }
-
-    template<size_t I, typename DynLayer, cpp_enable_iff(I == n_layers)>
-    static void dyn_init(DynLayer& dyn){
-        cpp_unused(dyn);
+    output_t prepare_output(size_t samples) {
+        output_t out{samples};
+        for(size_t i = 0; i < samples; ++i){
+            out[i] = prepare_one_output<Input>();
+        }
+        return out;
     }
 
     /*!
@@ -189,7 +207,9 @@ struct group_layer_impl<group_layer_desc<Layers...>> final : layer<group_layer_i
      */
     template<typename DynLayer>
     static void dyn_init(DynLayer& dyn){
-        dyn_init<0>(dyn);
+        cpp_unused(dyn);
+
+        // Nothing to do here
     }
 
     /*!
@@ -197,9 +217,7 @@ struct group_layer_impl<group_layer_desc<Layers...>> final : layer<group_layer_i
      */
     void backup_weights() {
         cpp::for_each(layers, [](auto& layer) {
-            cpp::static_if<decay_layer_traits<decltype(layer)>::is_trained()>([&layer](auto f) {
-                f(layer).backup_weights();
-            });
+            layer.backup_weights();
         });
     }
 
@@ -207,18 +225,16 @@ struct group_layer_impl<group_layer_desc<Layers...>> final : layer<group_layer_i
      * \brief Restore the weights from the secondary weights matrix
      */
     void restore_weights() {
-        cpp::for_each(layers, [](auto& layer){
-            cpp::static_if<decay_layer_traits<decltype(layer)>::is_trained()>([&layer](auto f) {
-                f(layer).restore_weights();
-            });
+        cpp::for_each(layers, [](auto& layer) {
+            layer.restore_weights();
         });
     }
 };
 
 // Declare the traits for the Layer
 
-template<typename... Layers>
-struct layer_base_traits<group_layer_impl<group_layer_desc<Layers...>>> {
+template<size_t D, typename... Layers>
+struct layer_base_traits<dyn_merge_layer_impl<dyn_merge_layer_desc<D, Layers...>>> {
     static constexpr bool is_neural     = true;  ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -234,21 +250,26 @@ struct layer_base_traits<group_layer_impl<group_layer_desc<Layers...>>> {
 };
 
 /*!
- * \brief Specialization of the sgd_context for group_layer_impl
+ * \brief Specialization of the sgd_context for conv_layer_impl
  */
-template <typename DBN, typename... Layers, size_t L>
-struct sgd_context<DBN, group_layer_impl<group_layer_desc<Layers...>>, L> {
-    using layer_t = group_layer_impl<group_layer_desc<Layers...>>;
+template <typename DBN, size_t D, typename... Layers, size_t L>
+struct sgd_context<DBN, dyn_merge_layer_impl<dyn_merge_layer_desc<D, Layers...>>, L> {
+    using layer_t = dyn_merge_layer_impl<dyn_merge_layer_desc<D, Layers...>>;
 
     using input_type  = decltype(std::declval<sgd_context<DBN, cpp::first_type_t<Layers...>, L>>().input);
-    using output_type = decltype(std::declval<sgd_context<DBN, cpp::last_type_t<Layers...>, L>>().output);
+    using output_type = decltype(std::declval<sgd_context<DBN, cpp::first_type_t<Layers...>, L>>().output);
 
     input_type input;
     output_type output;
     output_type errors;
 
-    sgd_context(const group_layer_impl<group_layer_desc<Layers...>>& /* layer */)
-            : output(0.0), errors(0.0) {}
+    sgd_context(const layer_t& layer) {
+        sgd_context<DBN, cpp::first_type_t<Layers...>, L> first_context(std::get<0>(layer.layers));
+        input = first_context.input;
+
+        output = batch_extend(input, layer.template prepare_one_output<decltype(input(0))>());
+        errors = batch_extend(input, layer.template prepare_one_output<decltype(input(0))>());
+    }
 };
 
 } //end of dll namespace
