@@ -63,6 +63,13 @@ struct merge_layer_impl <merge_layer_desc<D, Layers...>> final : layer<merge_lay
     std::tuple<Layers...> layers; ///< The layers to merge
 
     /*!
+     * \brief Return the type of the Lth layer
+     * \tparam L The layer index
+     */
+    template<size_t L>
+    using layer_type = cpp::nth_type_t<L, Layers...>;
+
+    /*!
      * \brief Return the size of the input of this layer
      * \return The size of the input of this layer
      */
@@ -224,6 +231,24 @@ struct merge_layer_impl <merge_layer_desc<D, Layers...>> final : layer<merge_lay
         cpp::for_each(layers, [](auto& layer) {
             layer.restore_weights();
         });
+    }
+
+    /*!
+     * \brief Return the Lth layer
+     * \tparam L The layer index
+     */
+    template<size_t L>
+    decltype(auto) layer_get(){
+        return std::get<L>(layers);
+    }
+
+    /*!
+     * \brief Return the Lth layer
+     * \tparam L The layer index
+     */
+    template<size_t L>
+    decltype(auto) layer_get() const {
+        return std::get<L>(layers);
     }
 };
 

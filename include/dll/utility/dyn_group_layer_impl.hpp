@@ -38,6 +38,13 @@ struct dyn_group_layer_impl<dyn_group_layer_desc<Layers...>> final : layer<dyn_g
     std::tuple<Layers...> layers; ///< The layers to group
 
     /*!
+     * \brief Return the type of the Lth layer
+     * \tparam L The layer index
+     */
+    template<size_t L>
+    using layer_type = cpp::nth_type_t<L, Layers...>;
+
+    /*!
      * \brief Return the size of the input of this layer
      * \return The size of the input of this layer
      */
@@ -208,6 +215,24 @@ struct dyn_group_layer_impl<dyn_group_layer_desc<Layers...>> final : layer<dyn_g
                 f(layer).restore_weights();
             });
         });
+    }
+
+    /*!
+     * \brief Return the Lth layer
+     * \tparam L The layer index
+     */
+    template<size_t L>
+    decltype(auto) layer_get(){
+        return std::get<L>(layers);
+    }
+
+    /*!
+     * \brief Return the Lth layer
+     * \tparam L The layer index
+     */
+    template<size_t L>
+    decltype(auto) layer_get() const {
+        return std::get<L>(layers);
     }
 };
 
