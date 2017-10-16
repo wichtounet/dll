@@ -73,7 +73,7 @@ int main(int /*argc*/, char* /*argv*/ []) {
     constexpr size_t embedding = 16;
     constexpr size_t length = 15;
 
-    using embedding_network_t = dll::network_desc<
+    using embedding_network_t = dll::dyn_network_desc<
         dll::network_layers<
             // The embedding layer
             dll::embedding_layer<26, length, embedding>
