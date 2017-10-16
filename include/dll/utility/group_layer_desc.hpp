@@ -25,8 +25,8 @@ struct group_layer_desc {
     /*! The layer type */
     using layer_t = group_layer_impl<Layers...>;
 
-    /*! The layer type */
-    using dyn_layer_t = group_layer_impl<Layers...>;
+    /*! The dynamic layer type */
+    using dyn_layer_t = group_layer_impl<typename Layers::dyn_layer_t...>;
 
     static_assert(sizeof...(Layers) > 0, "A group layer must contain at least one layer");
 };

@@ -66,9 +66,11 @@ struct merge_layer_impl final : layer<merge_layer_impl<D, Layers...>> {
     using first_layer_t = cpp::first_type_t<Layers...>; ///< The type of the first layer
     using last_layer_t  = cpp::last_type_t<Layers...>;  ///< The type of the last layer
 
-    using this_type = merge_layer_impl<D, Layers...>; ///< The type of this layer
-    using weight    = typename first_layer_t::weight; ///< The data type of the layer
-    using base_type = layer<this_type>;               ///< The base type of the layer
+    using this_type   = merge_layer_impl<D, Layers...>;                       ///< The type of this layer
+    using weight      = typename first_layer_t::weight;                       ///< The data type of the layer
+    using base_type   = layer<this_type>;                                     ///< The base type of the layer
+    using layer_t     = this_type;                                            ///< The type of this layer
+    using dyn_layer_t = merge_layer_impl<D, typename Layers::dyn_layer_t...>; ///< The type of this layer
 
     using input_one_t  = typename first_layer_t::input_one_t;                                    ///< The type of one input
     using output_one_t = typename merge_output_types<D, typename Layers::output_one_t...>::type; ///< The type of one output
@@ -214,10 +216,11 @@ struct merge_layer_impl final : layer<merge_layer_impl<D, Layers...>> {
      * \param dyn Reference to the dynamic version of the layer that
      * needs to be initialized
      */
-    template<typename DRBM>
-    static void dyn_init(DRBM& dyn){
-        //TODO
-        //dyn.init_layer(NC, NV1, NV2, K, NW1, NW2);
+    template<typename DynLayer>
+    void dyn_init(DynLayer& dyn){
+        cpp::for_each_pair(layers, dyn.layers, [](auto& fast_sub, auto& dyn_sub){
+            fast_sub.dyn_init(dyn_sub);
+        });
     }
 
     /*!

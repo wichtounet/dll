@@ -25,8 +25,8 @@ struct merge_layer_desc {
     /*! The layer type */
     using layer_t = merge_layer_impl<D, Layers...>;
 
-    /*! The layer type */
-    using dyn_layer_t = merge_layer_impl<D, Layers...>;
+    /*! The dynamic layer type */
+    using dyn_layer_t = merge_layer_impl<D, typename Layers::dyn_layer_t...>;
 
     static_assert(sizeof...(Layers) > 0, "A merge layer must contain at least one layer");
 };
