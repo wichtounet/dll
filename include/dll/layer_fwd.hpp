@@ -89,14 +89,26 @@ struct dyn_deconv_layer_impl;
 template <typename Desc>
 struct activation_layer_impl;
 
+template <typename... Layers>
+struct group_layer_desc;
+
 template <typename Desc>
 struct group_layer_impl;
+
+template <typename... Layers>
+struct dyn_group_layer_desc;
 
 template <typename Desc>
 struct dyn_group_layer_impl;
 
+template <size_t D, typename... Layers>
+struct merge_layer_desc;
+
 template <typename Desc>
 struct merge_layer_impl;
+
+template <size_t D, typename... Layers>
+struct dyn_merge_layer_desc;
 
 template <typename Desc>
 struct dyn_merge_layer_impl;
