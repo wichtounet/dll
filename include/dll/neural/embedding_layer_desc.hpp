@@ -26,7 +26,7 @@ struct embedding_layer_desc {
      */
     using parameters = cpp::type_list<Parameters...>;
 
-    using w_initializer = detail::get_type_t<initializer<init_lecun>, Parameters...>;     ///< The initializer for the weights
+    using w_initializer = detail::get_type_t<initializer<init_uniform<constant(-1.0), constant(1.0)>>, Parameters...>;     ///< The initializer for the weights
 
     /*! The type used to store the weights */
     using weight = detail::get_type_t<weight_type<float>, Parameters...>;
