@@ -675,7 +675,7 @@ struct sgd_trainer {
             dll::auto_timer timer("sgd::grad");
 
             cpp::for_each(full_context, [this, epoch, n](auto& layer_ctx) {
-                apply_gradients_layer(epoch, n, layer_ctx.first, *layer_ctx.second);
+                this->apply_gradients_layer(epoch, n, layer_ctx.first, *layer_ctx.second);
             });
         }
 
@@ -923,8 +923,8 @@ struct sgd_trainer {
             first_layer.test_forward_batch(first_ctx.output, first_ctx.input);
         }
 
-        cpp::for_each_pair(full_context, [](auto& layer_ctx_1, auto& layer_ctx_2) {
-            forward_layer<Train>(layer_ctx_2.first, get_output(*layer_ctx_1.second), *layer_ctx_2.second);
+        cpp::for_each_pair(full_context, [this](auto& layer_ctx_1, auto& layer_ctx_2) {
+            this->template forward_layer<Train>(layer_ctx_2.first, get_output(*layer_ctx_1.second), *layer_ctx_2.second);
         });
 
         return last_ctx.output;
