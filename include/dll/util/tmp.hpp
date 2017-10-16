@@ -331,4 +331,24 @@ using remove_type_id = typename remove_type_id_impl<T, 0, sizeof...(Args), std::
 template <typename D, typename L>
 constexpr auto get_value_l_v = detail::get_value_l<D, L>::value;
 
+/*!
+ * \brief Value traits to compute the addition of all the given values
+ */
+template <size_t F, size_t... Dims>
+struct add_all_impl final : std::integral_constant<size_t, F + add_all_impl<Dims...>::value> {};
+
+/*!
+ * \copydoc add_all_impl
+ */
+template <size_t F>
+struct add_all_impl<F> final : std::integral_constant<size_t, F> {};
+
+//CPP17: Can be totally replaced with variadic fold expansion
+
+/*!
+ * \brief Value traits to compute the addition of all the given values
+ */
+template <size_t F, size_t... Dims>
+constexpr size_t add_all = add_all_impl<F, Dims...>::value;
+
 } //end of dll namespace
