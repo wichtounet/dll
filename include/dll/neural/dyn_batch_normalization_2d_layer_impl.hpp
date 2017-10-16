@@ -304,7 +304,7 @@ struct sgd_context<DBN, dyn_batch_normalization_2d_layer_impl<Desc>, L> {
     etl::dyn_matrix<weight, 2> output; ///< A batch of output
     etl::dyn_matrix<weight, 2> errors; ///< A batch of errors
 
-    sgd_context(layer_t& layer) : input(batch_size, layer.Input), output(batch_size, layer.Input), errors(batch_size, layer.Input) {}
+    sgd_context(const layer_t& layer) : input(batch_size, layer.Input), output(batch_size, layer.Input), errors(batch_size, layer.Input) {}
 };
 
 } //end of dll namespace

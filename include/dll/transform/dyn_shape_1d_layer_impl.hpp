@@ -138,7 +138,7 @@ struct sgd_context<DBN, dyn_shape_1d_layer_impl<Desc>, L> {
     inputs_t output; ///< A batch of output
     inputs_t errors; ///< A batch of errors
 
-    sgd_context(layer_t& layer) : input(batch_size, layer.S), output(batch_size, layer.S), errors(batch_size, layer.S){}
+    sgd_context(const layer_t& layer) : input(batch_size, layer.S), output(batch_size, layer.S), errors(batch_size, layer.S){}
 };
 
 } //end of dll namespace

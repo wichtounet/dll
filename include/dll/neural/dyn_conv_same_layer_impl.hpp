@@ -280,7 +280,7 @@ struct sgd_context<DBN, dyn_conv_same_layer_impl<Desc>, L> {
     etl::dyn_matrix<weight, 4> output;
     etl::dyn_matrix<weight, 4> errors;
 
-    sgd_context(layer_t& layer)
+    sgd_context(const layer_t& layer)
             : input(batch_size, layer.nc, layer.nv1, layer.nv2),
               output(batch_size, layer.k, layer.nv1, layer.nv2), errors(batch_size, layer.k, layer.nv1, layer.nv2) {}
 };

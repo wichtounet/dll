@@ -266,7 +266,7 @@ struct sgd_context<DBN, rbm_impl<Desc>, L> {
     etl::fast_matrix<weight, batch_size, num_hidden> output;
     etl::fast_matrix<weight, batch_size, num_hidden> errors;
 
-    sgd_context(layer_t& /*layer*/)
+    sgd_context(const layer_t& /*layer*/)
             : output(0.0), errors(0.0) {}
 };
 

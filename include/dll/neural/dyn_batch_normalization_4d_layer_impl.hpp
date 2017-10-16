@@ -336,7 +336,7 @@ struct sgd_context<DBN, dyn_batch_normalization_4d_layer_impl<Desc>, L> {
     etl::dyn_matrix<weight, 4> output; ///< A batch of output
     etl::dyn_matrix<weight, 4> errors; ///< A batch of errors
 
-    sgd_context(layer_t& layer)
+    sgd_context(const layer_t& layer)
             : input(batch_size, layer.Kernels, layer.W, layer.H), output(batch_size, layer.Kernels, layer.W, layer.H), errors(batch_size, layer.Kernels, layer.W, layer.H) {}
 };
 

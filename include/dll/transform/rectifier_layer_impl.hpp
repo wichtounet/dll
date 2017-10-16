@@ -85,7 +85,7 @@ struct sgd_context<DBN, rectifier_layer_impl<Desc>, L> {
     inputs_t output; ///< A batch of output
     inputs_t errors; ///< A batch of errors
 
-    sgd_context(layer_t& /*layer*/){}
+    sgd_context(const layer_t& /*layer*/){}
 };
 
 } //end of dll namespace

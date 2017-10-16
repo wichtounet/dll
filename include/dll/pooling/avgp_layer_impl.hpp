@@ -136,7 +136,7 @@ struct sgd_context<DBN, avgp_2d_layer_impl<Desc>, L> {
     etl::fast_matrix<weight, batch_size, O1, O2, O3> output;
     etl::fast_matrix<weight, batch_size, O1, O2, O3> errors;
 
-    sgd_context(avgp_2d_layer_impl<Desc>& /*layer*/){}
+    sgd_context(const avgp_2d_layer_impl<Desc>& /*layer*/){}
 };
 
 /*!
@@ -264,7 +264,7 @@ struct sgd_context<DBN, avgp_3d_layer_impl<Desc>, L> {
     etl::fast_matrix<weight, batch_size, O1, O2, O3> output;
     etl::fast_matrix<weight, batch_size, O1, O2, O3> errors;
 
-    sgd_context(avgp_3d_layer_impl<Desc>& /*layer*/){}
+    sgd_context(const avgp_3d_layer_impl<Desc>& /*layer*/){}
 };
 
 } //end of dll namespace

@@ -311,7 +311,7 @@ struct sgd_context<DBN, batch_normalization_4d_layer_impl<Desc>, L> {
     etl::fast_matrix<weight, batch_size, layer_t::Kernels, layer_t::W, layer_t::H> output; ///< A batch of output
     etl::fast_matrix<weight, batch_size, layer_t::Kernels, layer_t::W, layer_t::H> errors; ///< A batch of errors
 
-    sgd_context(layer_t& /*layer*/){}
+    sgd_context(const layer_t& /*layer*/){}
 };
 
 } //end of dll namespace

@@ -276,7 +276,7 @@ struct sgd_context<DBN, deconv_layer_impl<Desc>, L> {
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> output;
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> errors;
 
-    sgd_context(layer_t& /* layer */)
+    sgd_context(const layer_t& /* layer */)
             : output(0.0), errors(0.0) {}
 };
 
