@@ -98,10 +98,10 @@ struct init_uniform {
         cpp_unused(nin);
         cpp_unused(nout);
 
-        constexpr auto a = etl::value_t<B>(A::num) / etl::value_t<B>(A::den);
-        constexpr auto b = etl::value_t<B>(B::num) / etl::value_t<B>(B::den);
+        constexpr auto a = etl::value_t<W>(A::num) / etl::value_t<W>(A::den);
+        constexpr auto b = etl::value_t<W>(B::num) / etl::value_t<W>(B::den);
 
-        w = etl::uniform_generator<etl::value_t<B>>(dll::rand_engine(), a, b);
+        w = etl::uniform_generator<etl::value_t<W>>(dll::rand_engine(), a, b);
     }
 };
 
