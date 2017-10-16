@@ -17,24 +17,20 @@ namespace dll {
  * \brief Standard embedding layer of neural network.
  */
 template <typename Desc>
-struct embedding_layer_impl final : neural_layer_no_bias<embedding_layer_impl<Desc>, Desc> {
+struct dyn_embedding_layer_impl final : neural_layer_no_bias<dyn_embedding_layer_impl<Desc>, Desc> {
     using desc      = Desc;                                  ///< The descriptor of the layer
     using weight    = typename desc::weight;                 ///< The data type of the layer
-    using this_type = embedding_layer_impl<desc>;            ///< The type of this layer
+    using this_type = dyn_embedding_layer_impl<desc>;            ///< The type of this layer
     using base_type = neural_layer_no_bias<this_type, desc>; ///< The base type of the layer
-
-    static constexpr size_t V = desc::V; ///< The vocabulary size
-    static constexpr size_t I = desc::I; ///< The input size
-    static constexpr size_t K = desc::K; ///< The embedding size
 
     using w_initializer = typename desc::w_initializer; ///< The initializer for the weights
 
-    using input_one_t  = etl::fast_dyn_matrix<weight, I>;    ///< The type of one input
-    using output_one_t = etl::fast_dyn_matrix<weight, I, K>; ///< The type of one output
-    using input_t      = std::vector<input_one_t>;           ///< The type of the input
-    using output_t     = std::vector<output_one_t>;          ///< The type of the output
+    using input_one_t  = etl::dyn_matrix<weight, 1>; ///< The type of one input
+    using output_one_t = etl::dyn_matrix<weight, 2>; ///< The type of one output
+    using input_t      = std::vector<input_one_t>;   ///< The type of the input
+    using output_t     = std::vector<output_one_t>;  ///< The type of the output
 
-    using w_type = etl::fast_matrix<weight, V, K>; ///< The type of the weights
+    using w_type = etl::dyn_matrix<weight, 2>; ///< The type of the weights
 
     //Weights and biases
     w_type w; ///< Weights
@@ -42,10 +38,27 @@ struct embedding_layer_impl final : neural_layer_no_bias<embedding_layer_impl<De
     //Backup weights and biases
     std::unique_ptr<w_type> bak_w; ///< Backup Weights
 
+    size_t V; ///< The vocabulary size
+    size_t I; ///< The input size
+    size_t K; ///< The embedding size
+
     /*!
      * \brief Initialize a embedding layer with basic weights.
      */
-    embedding_layer_impl() : base_type() {
+    dyn_embedding_layer_impl() : base_type() {
+        // Nothing else to init
+    }
+
+    /*!
+     * \brief Initialize the dynamic layer
+     */
+    void init_layer(size_t V, size_t I, size_t K){
+        this->V = V;
+        this->I = I;
+        this->K = K;
+
+        w = w_type(V, K);
+
         w_initializer::initialize(w, input_size(), output_size());
     }
 
@@ -53,7 +66,7 @@ struct embedding_layer_impl final : neural_layer_no_bias<embedding_layer_impl<De
      * \brief Return the size of the input of this layer
      * \return The size of the input of this layer
      */
-    static constexpr size_t input_size() noexcept {
+    size_t input_size() const noexcept {
         return I;
     }
 
@@ -61,7 +74,7 @@ struct embedding_layer_impl final : neural_layer_no_bias<embedding_layer_impl<De
      * \brief Return the size of the output of this layer
      * \return The size of the output of this layer
      */
-    static constexpr size_t output_size() noexcept {
+    size_t output_size() const noexcept {
         return I * K;
     }
 
@@ -69,7 +82,7 @@ struct embedding_layer_impl final : neural_layer_no_bias<embedding_layer_impl<De
      * \brief Return the number of trainable parameters of this network.
      * \return The the number of trainable parameters of this network.
      */
-    static constexpr size_t parameters() noexcept {
+    size_t parameters() const noexcept {
         return V * K;
     }
 
@@ -77,7 +90,7 @@ struct embedding_layer_impl final : neural_layer_no_bias<embedding_layer_impl<De
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    static std::string to_short_string(std::string pre = "") {
+    std::string to_short_string(std::string pre = "") const {
         cpp_unused(pre);
 
         char buffer[256];
@@ -102,23 +115,35 @@ struct embedding_layer_impl final : neural_layer_no_bias<embedding_layer_impl<De
         }
     }
 
-    /*!
-     * \brief Prepare one empty output for this layer
-     * \return an empty ETL matrix suitable to store one output of this layer
-     */
-    template <typename Input>
-    output_one_t prepare_one_output() const {
-        return {};
+    void prepare_input(input_one_t& input) const {
+        input = input_one_t(I);
     }
 
     /*!
      * \brief Prepare a set of empty outputs for this layer
      * \param samples The number of samples to prepare the output for
      * \return a container containing empty ETL matrices suitable to store samples output of this layer
+     * \tparam Input The type of one input
      */
     template <typename Input>
-    static output_t prepare_output(size_t samples) {
-        return output_t{samples};
+    output_t prepare_output(size_t samples) const {
+        output_t output;
+        output.reserve(samples);
+        for(size_t i = 0; i < samples; ++i){
+            output.emplace_back(I, K);
+        }
+        return output;
+    }
+
+    /*!
+     * \brief Prepare one empty output for this layer
+     * \return an empty ETL matrix suitable to store one output of this layer
+     *
+     * \tparam Input The type of one Input
+     */
+    template <typename Input>
+    output_one_t prepare_one_output() const {
+        return output_one_t(I, K);
     }
 
     /*!
@@ -129,7 +154,7 @@ struct embedding_layer_impl final : neural_layer_no_bias<embedding_layer_impl<De
      */
     template<typename DRBM>
     static void dyn_init(DRBM& dyn){
-        dyn.init_layer(V, I, K);
+        cpp_unused(dyn);
     }
 
     /*!
@@ -167,21 +192,10 @@ struct embedding_layer_impl final : neural_layer_no_bias<embedding_layer_impl<De
     }
 };
 
-//Allow odr-use of the constexpr static members
-
-template <typename Desc>
-const size_t embedding_layer_impl<Desc>::V;
-
-template <typename Desc>
-const size_t embedding_layer_impl<Desc>::I;
-
-template <typename Desc>
-const size_t embedding_layer_impl<Desc>::K;
-
 // Declare the traits for the Layer
 
 template<typename Desc>
-struct layer_base_traits<embedding_layer_impl<Desc>> {
+struct layer_base_traits<dyn_embedding_layer_impl<Desc>> {
     static constexpr bool is_neural     = true;  ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -197,25 +211,24 @@ struct layer_base_traits<embedding_layer_impl<Desc>> {
 };
 
 /*!
- * \brief Specialization of the sgd_context for embedding_layer_impl
+ * \brief Specialization of the sgd_context for dyn_embedding_layer_impl
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, embedding_layer_impl<Desc>, L> {
-    using layer_t = embedding_layer_impl<Desc>;
+struct sgd_context<DBN, dyn_embedding_layer_impl<Desc>, L> {
+    using layer_t = dyn_embedding_layer_impl<Desc>;
     using weight  = typename layer_t::weight; ///< The data type for this layer
-
-    static constexpr size_t V   = layer_t::V;
-    static constexpr size_t I   = layer_t::I;
-    static constexpr size_t K   = layer_t::K;
 
     static constexpr auto batch_size = DBN::batch_size;
 
-    etl::fast_matrix<weight, batch_size, I> input;
-    etl::fast_matrix<weight, batch_size, I, K> output;
-    etl::fast_matrix<weight, batch_size, I, K> errors;
+    etl::dyn_matrix<weight, 2> input;
+    etl::dyn_matrix<weight, 3> output;
+    etl::dyn_matrix<weight, 3> errors;
 
-    sgd_context(const embedding_layer_impl<Desc>& /* layer */)
-            : output(0.0), errors(0.0) {}
+    sgd_context(const dyn_embedding_layer_impl<Desc>&  layer )
+            : input(batch_size, layer.I), output(batch_size, layer.I, layer.K), errors(batch_size, layer.I, layer.K) {
+        output = weight(0);
+        errors = weight(0);
+    }
 };
 
 } //end of dll namespace

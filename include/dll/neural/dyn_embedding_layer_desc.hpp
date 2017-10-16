@@ -15,12 +15,8 @@ namespace dll {
 /*!
  * \brief Describe a standard embedding layer.
  */
-template <size_t V_T, size_t I_T, size_t K_T, typename... Parameters>
-struct embedding_layer_desc {
-    static constexpr size_t V   = V_T;  ///< The size of the vocabulary
-    static constexpr size_t I   = I_T;  ///< The size of each input
-    static constexpr size_t K   = K_T;  ///< The size of embeddings
-
+template <typename... Parameters>
+struct dyn_embedding_layer_desc {
     /*!
      * \brief A list of all the parameters of the descriptor
      */
@@ -32,25 +28,21 @@ struct embedding_layer_desc {
     using weight = detail::get_type_t<weight_type<float>, Parameters...>;
 
     /*! The embedding type */
-    using layer_t = embedding_layer_impl<embedding_layer_desc<V, I, K, Parameters...>>;
+    using layer_t = dyn_embedding_layer_impl<dyn_embedding_layer_desc<Parameters...>>;
 
     /*! The embedding type */
     using dyn_layer_t = dyn_embedding_layer_impl<dyn_embedding_layer_desc<Parameters...>>;
 
-    static_assert(V > 0, "At least one char in vocabulary is necessary");
-    static_assert(I > 0, "At least one input is necessary");
-    static_assert(K > 0, "At least one embedding is necessary");
-
     //Make sure only valid types are passed to the configuration list
     static_assert(
         detail::is_valid_v<cpp::type_list<weight_type_id, initializer_id>, Parameters...>,
-        "Invalid parameters type for embedding_layer_desc");
+        "Invalid parameters type for dyn_embedding_layer_desc");
 };
 
 /*!
  * \brief Describe a standard embedding layer.
  */
-template <size_t V_T, size_t I_T, size_t K_T, typename... Parameters>
-using embedding_layer = typename embedding_layer_desc<V_T, I_T, K_T, Parameters...>::layer_t;
+template <typename... Parameters>
+using dyn_embedding_layer = typename dyn_embedding_layer_desc<Parameters...>::layer_t;
 
 } //end of dll namespace

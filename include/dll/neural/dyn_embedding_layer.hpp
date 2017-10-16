@@ -7,8 +7,5 @@
 
 #pragma once
 
-// Include the dyn version (for dyn_dbn)
-#include "dll/neural/dyn_embedding_layer.hpp"
-
-#include "dll/neural/embedding_layer_impl.hpp"
-#include "dll/neural/embedding_layer_desc.hpp"
+#include "dll/neural/dyn_embedding_layer_impl.hpp"
+#include "dll/neural/dyn_embedding_layer_desc.hpp"
