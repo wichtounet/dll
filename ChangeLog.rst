@@ -1,6 +1,10 @@
 DLL 1.1 - in development
 ++++++++++++++++++++++++
 
+* Support for embeddings_layer
+* Support for group_layer
+* Support for merge_layer
+
 DLL 1.0 - 06.10.2017
 ++++++++++++++++++++
 
