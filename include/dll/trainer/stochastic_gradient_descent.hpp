@@ -765,16 +765,8 @@ struct sgd_trainer {
 
         // Dispatch all the sub contexts
 
-        size_t n = 0;
-
-        cpp::for_each(layer.layers, context.sub_contexts, [&context, &errors, &n, &last](auto& sub_layer, auto& sub_context){
-            auto& sub_errors = get_errors(sub_context);
-
-            for(size_t b = 0; b < etl::dim<0>(context.errors); ++b){
-                sub_errors(b) = etl::memory_slice(context.errors(b), n, n + etl::size(sub_errors(b)));
-            }
-
-            n += etl::size(sub_errors(0));
+        cpp::for_each_i(layer.layers, context.sub_contexts, [&context, &errors, &last](size_t i, auto& sub_layer, auto& sub_context){
+            batch_dispatch(get_errors(sub_context), context.errors, i);
 
             auto back_errors = errors;
 
@@ -853,16 +845,8 @@ struct sgd_trainer {
 
         // Concatenate all the sub contexts
 
-        size_t n = 0;
-
-        cpp::for_each(context.sub_contexts, [&context, &n](auto& sub_context){
-            auto& sub_output = get_output(sub_context);
-
-            for(size_t b = 0; b < etl::dim<0>(context.output); ++b){
-                etl::memory_slice(context.output(b), n, n + etl::size(sub_output(b))) = sub_output(b);
-            }
-
-            n += etl::size(sub_output(0));
+        cpp::for_each_i(context.sub_contexts, [&context](size_t i, auto& sub_context){
+            batch_merge(context.output, get_output(sub_context), i);
         });
     }
 

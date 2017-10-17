@@ -97,11 +97,7 @@ struct embedding_layer_impl final : neural_layer_no_bias<embedding_layer_impl<De
     void forward_batch(H1&& output, const V& v) const {
         dll::auto_timer timer("embedding:forward_batch");
 
-        for(size_t b = 0; b < etl::dim<0>(v); ++b){
-            for(size_t i = 0; i < etl::dim<1>(v); ++i){
-                output(b)(i) = w(v(b, i));
-            }
-        }
+        output = batch_embedding_lookup(v, w);
     }
 
     /*!
@@ -156,16 +152,7 @@ struct embedding_layer_impl final : neural_layer_no_bias<embedding_layer_impl<De
     void compute_gradients(C& context) const {
         dll::auto_timer timer("embedding:compute_gradients");
 
-        auto& w_grad = std::get<0>(context.up.context)->grad;
-
-        w_grad = 0;
-
-        for (size_t b = 0; b < etl::dim<0>(context.input); ++b) {
-            for (size_t i = 0; i < I; ++i) {
-                auto c = context.input(b, i);
-                w_grad(c) += context.errors(b)(i);
-            }
-        }
+        std::get<0>(context.up.context)->grad = batch_embedding_gradients(context.input, context.errors, w);;
     }
 };
 

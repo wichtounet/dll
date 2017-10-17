@@ -121,15 +121,10 @@ struct merge_layer_impl <merge_layer_desc<D, Layers...>> final : layer<merge_lay
      */
     template <typename H1, typename V>
     void test_forward_batch(H1&& output, const V& input) const {
-        size_t n = 0;
-        cpp::for_each(layers, [&n, &input, &output](auto& layer){
+        cpp::for_each_i(layers, [&input, &output](size_t i, auto& layer){
             auto sub_output = layer.test_forward_batch(input);
 
-            for(size_t b = 0; b < etl::dim<0>(sub_output); ++b){
-                etl::memory_slice(output(b), n, n + etl::size(sub_output(b))) = sub_output(b);
-            }
-
-            n += etl::size(sub_output(0));
+            etl::batch_merge(output, sub_output, i);
         });
     }
 
@@ -141,15 +136,10 @@ struct merge_layer_impl <merge_layer_desc<D, Layers...>> final : layer<merge_lay
      */
     template <typename H1, typename V>
     void train_forward_batch(H1&& output, const V& input) const {
-        size_t n = 0;
-        cpp::for_each(layers, [&n, &input, &output](auto& layer){
+        cpp::for_each_i(layers, [&input, &output](size_t i, auto& layer){
             auto sub_output = layer.train_forward_batch(input);
 
-            for(size_t b = 0; b < etl::dim<0>(sub_output); ++b){
-                etl::memory_slice(output(b), n, n + etl::size(sub_output(b))) = sub_output(b);
-            }
-
-            n += etl::size(sub_output(0));
+            etl::batch_merge(output, sub_output, i);
         });
     }
 
@@ -161,15 +151,10 @@ struct merge_layer_impl <merge_layer_desc<D, Layers...>> final : layer<merge_lay
      */
     template <typename H1, typename V>
     void forward_batch(H1&& output, const V& input) const {
-        size_t n = 0;
-        cpp::for_each(layers, [&n, &input, &output](auto& layer){
+        cpp::for_each_i(layers, [&input, &output](size_t i, auto& layer){
             auto sub_output = layer.forward_batch(input);
 
-            for(size_t b = 0; b < etl::dim<0>(sub_output); ++b){
-                etl::memory_slice(output(b), n, n + etl::size(sub_output(b))) = sub_output(b);
-            }
-
-            n += etl::size(sub_output(0));
+            etl::batch_merge(output, sub_output, i);
         });
     }
 
