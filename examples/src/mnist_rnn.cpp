@@ -13,7 +13,7 @@
 
 int main(int /*argc*/, char* /*argv*/ []) {
     // Load the dataset
-    auto dataset = dll::make_mnist_dataset(dll::batch_size<100>{}, dll::normalize_pre{});
+    auto dataset = dll::make_mnist_dataset_nc(dll::batch_size<100>{}, dll::scale_pre<255>{});
 
     constexpr size_t time_steps      = 28;
     constexpr size_t sequence_length = 28;
@@ -29,8 +29,6 @@ int main(int /*argc*/, char* /*argv*/ []) {
         >
         , dll::updater<dll::updater_type::ADAM>      // Adam
         , dll::batch_size<100>                       // The mini-batch size
-        , dll::shuffle                               // Shuffle before each epoch
-        , dll::verbose
     >::network_t;
 
     auto net = std::make_unique<network_t>();

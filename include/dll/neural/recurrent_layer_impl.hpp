@@ -57,8 +57,8 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
      * zero-mean and unit variance.
      */
     recurrent_layer_impl() : base_type() {
-        w_initializer::initialize(w, input_size(), output_size());
-        w_initializer::initialize(u, input_size(), output_size());
+        w_initializer::initialize(w, hidden_units, hidden_units);
+        w_initializer::initialize(u, hidden_units, hidden_units);
     }
 
     /*!
@@ -114,19 +114,43 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
 
         cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
 
-        output = 0;
+        if (false) {
+            // TODO: Efficient way: Rearrange input / output
 
-        // TODO: Efficient way: Rearrange input / output
+            etl::dyn_matrix<float, 3> x_t(time_steps, etl::dim<0>(x), sequence_length);
 
-        // t == 0
+            for (size_t b = 0; b < Batch; ++b) {
+                for (size_t t = 0; t < time_steps; ++t) {
+                    x_t(t)(b) = x(b)(t);
+                }
+            }
 
-        for (size_t b = 0; b < Batch; ++b) {
-            output(b)(0) = f_activate<activation_function>(u * x(b)(0));
-        }
+            etl::dyn_matrix<float, 3> s_t(time_steps, etl::dim<0>(x), hidden_units);
 
-        for (size_t b = 0; b < Batch; ++b) {
+            // t == 0
+
+            s_t(0) = f_activate<activation_function>(x_t(0) * trans(u));
+
             for (size_t t = 1; t < time_steps; ++t) {
-                output(b)(t) = f_activate<activation_function>(u * x(b)(t) + w * output(b)(t - 1));
+                s_t(t) = f_activate<activation_function>(x_t(t) * trans(u) + s_t(t - 1) * trans(w));
+            }
+
+            for (size_t b = 0; b < Batch; ++b) {
+                for (size_t t = 0; t < time_steps; ++t) {
+                    output(b)(t) = s_t(t)(b);
+                }
+            }
+        } else {
+            // t == 0
+
+            for (size_t b = 0; b < Batch; ++b) {
+                output(b)(0) = f_activate<activation_function>(u * x(b)(0));
+            }
+
+            for (size_t b = 0; b < Batch; ++b) {
+                for (size_t t = 1; t < time_steps; ++t) {
+                    output(b)(t) = f_activate<activation_function>(u * x(b)(t) + w * output(b)(t - 1));
+                }
             }
         }
     }
@@ -207,6 +231,9 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
 
         const size_t Batch = etl::dim<0>(context.errors);
 
+        auto& s = context.output;
+        auto& x = context.input;
+
         auto& w_grad = std::get<0>(context.up.context)->grad;
         auto& u_grad = std::get<1>(context.up.context)->grad;
 
@@ -217,20 +244,26 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
 
         //do {
             for (size_t b = 0; b < Batch; ++b) {
-                size_t step            = time_steps - 1;
+                size_t t            = time_steps - 1;
+
+                auto delta_t = etl::force_temporary(context.errors(b)(t) >> f_derivative<activation_function>(s(b)(t)));
+
+                size_t bptt_step = t;
                 const size_t truncate  = time_steps; //TODO Truncate ?
                 const size_t last_step = std::max(int(time_steps) - int(truncate), 0);
 
-                auto delta_t = etl::force_temporary(context.errors(b)(step) >> f_derivative<activation_function>(context.output(b)(step)));
-
                 do {
-                    w_grad += etl::outer(delta_t, context.output(b)(step - 1));
-                    u_grad += etl::outer(delta_t, context.input(b)(step - 1));
+                    w_grad += etl::outer(delta_t, s(b)(bptt_step - 1));
+                    u_grad += etl::outer(delta_t, x(b)(bptt_step));
 
-                    delta_t = trans(w) * delta_t >> f_derivative<activation_function>(context.output(b)(step -1));
+                    delta_t = (trans(w) * delta_t) >> f_derivative<activation_function>(s(b)(bptt_step - 1));
 
-                    --step;
-                } while (step > last_step);
+                    --bptt_step;
+                } while (bptt_step > last_step);
+
+                // bptt_step = 0
+
+                u_grad += etl::outer(delta_t, x(b)(0));
             }
 
             //--t;
