@@ -40,6 +40,11 @@ using softmax = activation<function::SOFTMAX>;
 using identity = activation<function::IDENTITY>;
 
 /*!
+ * \brief Specify that a layer uses a tanh activation function
+ */
+using tanh = activation<function::TANH>;
+
+/*!
  * \brief Specify that a network uses the categorical cross entropy loss
  * function.
  */
