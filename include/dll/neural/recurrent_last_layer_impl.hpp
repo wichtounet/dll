@@ -142,14 +142,13 @@ struct recurrent_last_layer_impl final : layer<recurrent_last_layer_impl<Desc>> 
     void backward_batch(H&& output, C& context) const {
         dll::auto_timer timer("recurrent_last:backward_batch");
 
-        cpp_unused(output);
-        cpp_unused(context);
+        const auto Batch = etl::dim<0>(output);
 
-        //TODO
+        output = 0;
 
-        // The reshape has no overhead, so better than SFINAE for nothing
-        //constexpr auto Batch = etl::decay_traits<decltype(context.errors)>::template dim<0>();
-        //etl::reshape<Batch, num_visible>(output) = context.errors * etl::transpose(w);
+        for(size_t b = 0; b < Batch; ++b){
+            output(b)(time_steps - 1) = context.errors(b);
+        }
     }
 
     /*!
@@ -158,11 +157,8 @@ struct recurrent_last_layer_impl final : layer<recurrent_last_layer_impl<Desc>> 
      */
     template<typename C>
     void compute_gradients(C& context) const {
-        dll::auto_timer timer("recurrent_last:compute_gradients");
-
+        // Nothing to do here
         cpp_unused(context);
-
-        //std::get<0>(context.up.context)->grad = batch_outer(context.input, context.errors);
     }
 };
 
