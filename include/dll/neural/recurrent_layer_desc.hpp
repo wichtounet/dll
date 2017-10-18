@@ -26,7 +26,7 @@ struct recurrent_layer_desc {
      */
     using parameters = cpp::type_list<Parameters...>;
 
-    static constexpr auto activation_function = detail::get_value_v<activation<function::SIGMOID>, Parameters...>;            ///< The layer's activation function
+    static constexpr auto activation_function = detail::get_value_v<activation<function::TANH>, Parameters...>;            ///< The layer's activation function
 
     using w_initializer = detail::get_type_t<initializer<init_lecun>, Parameters...>;     ///< The initializer for the weights
 
