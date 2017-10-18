@@ -35,6 +35,11 @@ using relu = activation<function::RELU>;
 using softmax = activation<function::SOFTMAX>;
 
 /*!
+ * \brief Specify that a layer uses a identity activation function
+ */
+using identity = activation<function::IDENTITY>;
+
+/*!
  * \brief Specify that a network uses the categorical cross entropy loss
  * function.
  */
