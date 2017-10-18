@@ -11,6 +11,9 @@
 
 namespace dll {
 
+using mnist_example_t = etl::fast_dyn_matrix<float, 1, 28, 28>;
+using mnist_example_nc_t = etl::fast_dyn_matrix<float, 28, 28>;
+
 /*!
  * \brief Create a data generator around the MNIST train set
  * \param folder The folder in which the MNIST train files are
@@ -18,10 +21,10 @@ namespace dll {
  * \param parameters The parameters of the generator
  * \return a unique_ptr around the create generator
  */
-template<typename... Parameters>
-auto make_mnist_generator_train(const std::string& folder, size_t start, size_t limit, Parameters&&... /*parameters*/){
+template<typename Example, typename... Parameters>
+auto make_mnist_generator_train_impl(const std::string& folder, size_t start, size_t limit, Parameters&&... /*parameters*/){
     // Create examples for the caches
-    etl::fast_dyn_matrix<float, 1, 28, 28> input;
+    Example input;
     float label;
 
     size_t n = 60000 - start;
@@ -61,10 +64,10 @@ auto make_mnist_generator_train(const std::string& folder, size_t start, size_t 
  * \param parameters The parameters of the generator
  * \return a unique_ptr around the create generator
  */
-template<typename... Parameters>
-auto make_mnist_generator_test(const std::string& folder, size_t start, size_t limit, Parameters&&... /*parameters*/){
+template<typename Example, typename... Parameters>
+auto make_mnist_generator_test_impl(const std::string& folder, size_t start, size_t limit, Parameters&&... /*parameters*/){
     // Create examples for the caches
-    etl::fast_dyn_matrix<float, 1, 28, 28> input;
+    Example input;
     float label;
 
     size_t n = 10000 - start;
@@ -108,7 +111,7 @@ auto make_mnist_generator_test(const std::string& folder, size_t start, size_t l
  */
 template<typename... Parameters>
 auto make_mnist_generator_train(size_t start, size_t limit, Parameters&&... parameters){
-    return make_mnist_generator_train("mnist", start, limit, std::forward<Parameters>(parameters)...);
+    return make_mnist_generator_train_impl<mnist_example_t>("mnist", start, limit, std::forward<Parameters>(parameters)...);
 }
 
 /*!
@@ -134,8 +137,8 @@ auto make_mnist_generator_test(size_t start, size_t limit, Parameters&&... param
 template<typename... Parameters>
 auto make_mnist_dataset(const std::string& folder, Parameters&&... parameters){
     return make_dataset_holder(
-        make_mnist_generator_train(folder, 0UL, 60000UL, std::forward<Parameters>(parameters)...),
-        make_mnist_generator_test(folder, 0UL, 10000UL, std::forward<Parameters>(parameters)...));
+        make_mnist_generator_train_impl<mnist_example_t>(folder, 0UL, 60000UL, std::forward<Parameters>(parameters)...),
+        make_mnist_generator_test_impl<mnist_example_t>(folder, 0UL, 10000UL, std::forward<Parameters>(parameters)...));
 }
 
 /*!
@@ -154,6 +157,21 @@ auto make_mnist_dataset(Parameters&&... parameters){
 }
 
 /*!
+ * \brief Creates a dataset around MNIST
+ *
+ * The MNIST train files are assumed to be in a mnist sub folder.
+ *
+ * \param parameters The parameters of the generator
+ * \return The MNIST dataset
+ */
+template<typename... Parameters>
+auto make_mnist_dataset_nc(Parameters&&... parameters){
+    return make_dataset_holder(
+        make_mnist_generator_train_impl<mnist_example_nc_t>("mnist", 0UL, 60000UL, std::forward<Parameters>(parameters)...),
+        make_mnist_generator_test_impl<mnist_example_nc_t>("mnist", 0UL, 10000UL, std::forward<Parameters>(parameters)...));
+}
+
+/*!
  * \brief Creates a dataset around a subset of MNIST
  * \param folder The folder in which the MNIST files are
  * \param limit The limit size (0 = no limit)
@@ -163,8 +181,8 @@ auto make_mnist_dataset(Parameters&&... parameters){
 template<typename... Parameters>
 auto make_mnist_dataset_sub(const std::string& folder, size_t start, size_t limit, Parameters&&... parameters){
     return make_dataset_holder(
-        make_mnist_generator_train(folder, start, limit, std::forward<Parameters>(parameters)...),
-        make_mnist_generator_test(0UL, 10000UL, std::forward<Parameters>(parameters)...));
+        make_mnist_generator_train_impl<mnist_example_t>(folder, start, limit, std::forward<Parameters>(parameters)...),
+        make_mnist_generator_test_impl<mnist_example_t>(folder, 0UL, 10000UL, std::forward<Parameters>(parameters)...));
 }
 
 /*!
@@ -198,9 +216,9 @@ auto make_mnist_dataset_sub(size_t start, size_t limit, Parameters&&... paramete
 template<typename... Parameters>
 auto make_mnist_dataset_val(const std::string& folder, size_t start, size_t middle, size_t limit, Parameters&&... parameters){
     return make_dataset_holder(
-        make_mnist_generator_train(folder, start, middle, std::forward<Parameters>(parameters)...),
-        make_mnist_generator_test(0UL, 10000UL, std::forward<Parameters>(parameters)...),
-        make_mnist_generator_train(folder, middle, limit - middle, std::forward<Parameters>(parameters)...)
+        make_mnist_generator_train_impl<mnist_example_t>(folder, start, middle, std::forward<Parameters>(parameters)...),
+        make_mnist_generator_test_impl<mnist_example_t>(folder, 0UL, 10000UL, std::forward<Parameters>(parameters)...),
+        make_mnist_generator_train_impl<mnist_example_t>(folder, middle, limit - middle, std::forward<Parameters>(parameters)...)
     );
 }
 

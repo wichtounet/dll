@@ -96,4 +96,44 @@ struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_3d<typename std::it
     }
 };
 
+/*!
+ * \brief cache_helper implementation for 3D inputs
+ */
+template <typename Desc, typename Iterator>
+struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_2d<typename std::iterator_traits<Iterator>::value_type>>> {
+    using T = etl::value_t<typename std::iterator_traits<Iterator>::value_type>; ///< Input type
+
+    using cache_type     = etl::dyn_matrix<T, 3>; ///< The type of the cache
+    using big_cache_type = etl::dyn_matrix<T, 4>; ///< The type of the big cache
+
+    static constexpr size_t batch_size     = Desc::BatchSize;    ///< The size of the generated batches
+    static constexpr size_t big_batch_size = Desc::BigBatchSize; ///< The number of batches kept in cache
+
+    /*!
+     * \brief Init the cache
+     * \param n The size of the cache
+     * \param it An iterator to an element
+     * \param cache The cache to initialize
+     */
+    static void init(size_t n, const Iterator& it, cache_type& cache) {
+        auto one = *it;
+        cache    = cache_type(n, etl::dim<0>(one), etl::dim<1>(one));
+    }
+
+    /*!
+     * \brief Init the big cache
+     * \param it An iterator to an element
+     * \param cache The big cache to initialize
+     */
+    static void init_big(Iterator& it, big_cache_type& cache) {
+        auto one = *it;
+
+        if (Desc::random_crop_x && Desc::random_crop_y) {
+            cache = big_cache_type(big_batch_size, batch_size, Desc::random_crop_y, Desc::random_crop_x);
+        } else {
+            cache = big_cache_type(big_batch_size, batch_size, etl::dim<0>(one), etl::dim<1>(one));
+        }
+    }
+};
+
 } //end of dll namespace
