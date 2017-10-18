@@ -114,43 +114,32 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
 
         cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
 
-        if (false) {
-            // TODO: Efficient way: Rearrange input / output
+        etl::dyn_matrix<float, 3> x_t(time_steps, etl::dim<0>(x), sequence_length);
+        etl::dyn_matrix<float, 3> s_t(time_steps, etl::dim<0>(x), hidden_units);
 
-            etl::dyn_matrix<float, 3> x_t(time_steps, etl::dim<0>(x), sequence_length);
+        // 1. Rearrange input
 
-            for (size_t b = 0; b < Batch; ++b) {
-                for (size_t t = 0; t < time_steps; ++t) {
-                    x_t(t)(b) = x(b)(t);
-                }
+        for (size_t b = 0; b < Batch; ++b) {
+            for (size_t t = 0; t < time_steps; ++t) {
+                x_t(t)(b) = x(b)(t);
             }
+        }
 
-            etl::dyn_matrix<float, 3> s_t(time_steps, etl::dim<0>(x), hidden_units);
+        // 2. Forward propagation through time
 
-            // t == 0
+        // t == 0
 
-            s_t(0) = f_activate<activation_function>(x_t(0) * trans(u));
+        s_t(0) = f_activate<activation_function>(x_t(0) * trans(u));
 
-            for (size_t t = 1; t < time_steps; ++t) {
-                s_t(t) = f_activate<activation_function>(x_t(t) * trans(u) + s_t(t - 1) * trans(w));
-            }
+        for (size_t t = 1; t < time_steps; ++t) {
+            s_t(t) = f_activate<activation_function>(x_t(t) * trans(u) + s_t(t - 1) * trans(w));
+        }
 
-            for (size_t b = 0; b < Batch; ++b) {
-                for (size_t t = 0; t < time_steps; ++t) {
-                    output(b)(t) = s_t(t)(b);
-                }
-            }
-        } else {
-            // t == 0
+        // 3. Rearrange the output
 
-            for (size_t b = 0; b < Batch; ++b) {
-                output(b)(0) = f_activate<activation_function>(u * x(b)(0));
-            }
-
-            for (size_t b = 0; b < Batch; ++b) {
-                for (size_t t = 1; t < time_steps; ++t) {
-                    output(b)(t) = f_activate<activation_function>(u * x(b)(t) + w * output(b)(t - 1));
-                }
+        for (size_t b = 0; b < Batch; ++b) {
+            for (size_t t = 0; t < time_steps; ++t) {
+                output(b)(t) = s_t(t)(b);
             }
         }
     }
