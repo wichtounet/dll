@@ -121,12 +121,12 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
         // t == 0
 
         for (size_t b = 0; b < Batch; ++b) {
-            output(b)(0) = etl::sigmoid(u * x(b)(0));
+            output(b)(0) = f_activate<activation_function>(u * x(b)(0));
         }
 
-        for(size_t t = 1; t < time_steps; ++t){
-            for(size_t b = 0; b < Batch; ++b){
-                output(b)(t) = etl::sigmoid(u * x(b)(t) + w * output(b)(t-1));
+        for (size_t b = 0; b < Batch; ++b) {
+            for (size_t t = 1; t < time_steps; ++t) {
+                output(b)(t) = f_activate<activation_function>(u * x(b)(t) + w * output(b)(t - 1));
             }
         }
     }
@@ -174,11 +174,8 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
      */
     template<typename C>
     void adapt_errors(C& context) const {
-        dll::auto_timer timer("recurrent:adapt_errors");
-
-        if /*constexpr*/ (activation_function != function::IDENTITY){
-            context.errors = f_derivative<activation_function>(context.output) >> context.errors;
-        }
+        // Nothing to do here (done in BPTT)
+        cpp_unused(context);
     }
 
     /*!
@@ -208,9 +205,36 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
     void compute_gradients(C& context) const {
         dll::auto_timer timer("recurrent:compute_gradients");
 
-        cpp_unused(context);
+        const size_t Batch = etl::dim<0>(context.errors);
 
-        //std::get<0>(context.up.context)->grad = batch_outer(context.input, context.errors);
+        auto& w_grad = std::get<0>(context.up.context)->grad;
+        auto& u_grad = std::get<1>(context.up.context)->grad;
+
+        w_grad = 0;
+        u_grad = 0;
+
+        //size_t t = time_steps - 1;
+
+        //do {
+            for (size_t b = 0; b < Batch; ++b) {
+                size_t step            = time_steps - 1;
+                const size_t truncate  = time_steps; //TODO Truncate ?
+                const size_t last_step = std::max(int(time_steps) - int(truncate), 0);
+
+                auto delta_t = etl::force_temporary(context.errors(b)(step) >> f_derivative<activation_function>(context.output(b)(step)));
+
+                do {
+                    w_grad += etl::outer(delta_t, context.output(b)(step - 1));
+                    u_grad += etl::outer(delta_t, context.input(b)(step - 1));
+
+                    delta_t = trans(w) * delta_t >> f_derivative<activation_function>(context.output(b)(step -1));
+
+                    --step;
+                } while (step > last_step);
+            }
+
+            //--t;
+        //} while(t != 0);
     }
 };
 
