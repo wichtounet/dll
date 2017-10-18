@@ -7,6 +7,7 @@
 
 #include "dll/neural/dense_layer.hpp"
 #include "dll/neural/recurrent_layer.hpp"
+#include "dll/neural/recurrent_last_layer.hpp"
 #include "dll/network.hpp"
 #include "dll/datasets.hpp"
 
@@ -14,16 +15,22 @@ int main(int /*argc*/, char* /*argv*/ []) {
     // Load the dataset
     auto dataset = dll::make_mnist_dataset(dll::batch_size<100>{}, dll::normalize_pre{});
 
+    constexpr size_t time_steps      = 28;
+    constexpr size_t sequence_length = 28;
+    constexpr size_t hidden_units    = 100;
+
     // Build the network
 
     using network_t = dll::network_desc<
         dll::network_layers<
-            dll::recurrent_layer<28, 28, 100>,
-            dll::dense_layer<100, 10, dll::softmax>
+            dll::recurrent_layer<time_steps, sequence_length, hidden_units>,
+            dll::recurrent_last_layer<time_steps, hidden_units>,
+            dll::dense_layer<hidden_units, 10, dll::softmax>
         >
-        , dll::updater<dll::updater_type::NADAM>     // Nesterov Adam (NADAM)
+        , dll::updater<dll::updater_type::ADAM>      // Adam
         , dll::batch_size<100>                       // The mini-batch size
         , dll::shuffle                               // Shuffle before each epoch
+        , dll::verbose
     >::network_t;
 
     auto net = std::make_unique<network_t>();
