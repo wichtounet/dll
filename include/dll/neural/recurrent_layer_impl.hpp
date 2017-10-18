@@ -103,21 +103,32 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
     /*!
      * \brief Apply the layer to the given batch of input.
      *
-     * \param input A batch of input
+     * \param x A batch of input
      * \param output A batch of output that will be filled
      */
     template <typename H, typename V>
-    void forward_batch(H&& output, const V& input) const {
+    void forward_batch(H&& output, const V& x) const {
         dll::auto_timer timer("recurrent:forward_batch");
 
-        const auto Batch = etl::dim<0>(input);
-
-        // Note: The compile-time Batch information is lost here, but it does
-        // not matter for BLAS gemm computation
+        const auto Batch = etl::dim<0>(x);
 
         cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
 
-        // TODO
+        output = 0;
+
+        // TODO: Efficient way: Rearrange input / output
+
+        // t == 0
+
+        for (size_t b = 0; b < Batch; ++b) {
+            output(b)(0) = etl::sigmoid(u * x(b)(0));
+        }
+
+        for(size_t t = 1; t < time_steps; ++t){
+            for(size_t b = 0; b < Batch; ++b){
+                output(b)(t) = etl::sigmoid(u * x(b)(t) + w * output(b)(t-1));
+            }
+        }
     }
 
     /*!
