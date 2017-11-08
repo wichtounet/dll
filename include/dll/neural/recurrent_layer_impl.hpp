@@ -223,9 +223,9 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
         auto& x = context.input;
         auto& s = context.output;
 
-        etl::dyn_matrix<float, 3> x_t(time_steps, etl::dim<0>(x), sequence_length);
-        etl::dyn_matrix<float, 3> s_t(time_steps, etl::dim<0>(x), hidden_units);
-        etl::dyn_matrix<float, 3> o_t(time_steps, etl::dim<0>(x), hidden_units);
+        etl::dyn_matrix<float, 3> x_t(time_steps, Batch, sequence_length);
+        etl::dyn_matrix<float, 3> s_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> o_t(time_steps, Batch, hidden_units);
 
         // 1. Rearrange x/s
 
