@@ -202,14 +202,60 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
     void backward_batch(H&& output, C& context) const {
         dll::auto_timer timer("recurrent:backward_batch");
 
-        cpp_unused(output);
-        cpp_unused(context);
+        const size_t Batch = etl::dim<0>(context.errors);
 
-        //TODO
+        etl::dyn_matrix<float, 3> output_t(time_steps, Batch, sequence_length);
+        etl::dyn_matrix<float, 3> s_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> o_t(time_steps, Batch, hidden_units);
 
-        // The reshape has no overhead, so better than SFINAE for nothing
-        //constexpr auto Batch = etl::decay_traits<decltype(context.errors)>::template dim<0>();
-        //etl::reshape<Batch, num_visible>(output) = context.errors * etl::transpose(w);
+        // 1. Rearrange o/s
+
+        for (size_t b = 0; b < Batch; ++b) {
+            for (size_t t = 0; t < time_steps; ++t) {
+                s_t(t)(b) = context.output(b)(t);
+            }
+        }
+
+        for (size_t b = 0; b < Batch; ++b) {
+            for (size_t t = 0; t < time_steps; ++t) {
+                o_t(t)(b) = context.errors(b)(t);
+            }
+        }
+
+        // 2. Backpropagation through time
+
+        size_t t = time_steps - 1;
+
+        do {
+            output_t(t) = etl::force_temporary(o_t(t) >> f_derivative<activation_function>(s_t(t)));
+
+            size_t bptt_step = t;
+
+            const size_t last_step = std::max(int(time_steps) - int(bptt_steps), 0);
+
+            do {
+                output_t(t) = (output_t(t) * w) >> f_derivative<activation_function>(s_t(bptt_step - 1));
+
+                --bptt_step;
+            } while (bptt_step > last_step);
+
+            // bptt_step = 0
+
+            --t;
+
+            // If only the last time step is used, no need to use the other errors
+            if /*constexpr*/ (desc::parameters::template contains<last_only>()){
+                break;
+            }
+        } while(t != 0);
+
+        // 3. Rearrange for the output
+
+        for (size_t b = 0; b < Batch; ++b) {
+            for (size_t t = 0; t < time_steps; ++t) {
+                output(b)(t) = output_t(t)(b);
+            }
+        }
     }
 
     /*!
