@@ -26,7 +26,15 @@ struct recurrent_layer_desc {
      */
     using parameters = cpp::type_list<Parameters...>;
 
+    /*!
+     * \brief The activation function
+     */
     static constexpr auto activation_function = detail::get_value_v<activation<function::TANH>, Parameters...>;            ///< The layer's activation function
+
+    /*!
+     * \brief The BPTT steps
+     */
+    static constexpr size_t Truncate    = detail::get_value_v<truncate<0>, Parameters...>;
 
     using w_initializer = detail::get_type_t<initializer<init_lecun>, Parameters...>;     ///< The initializer for the weights
 
@@ -47,7 +55,7 @@ struct recurrent_layer_desc {
     //Make sure only valid types are passed to the configuration list
     static_assert(
         detail::is_valid_v<cpp::type_list<
-            weight_type_id, activation_id, initializer_id>,
+            weight_type_id, activation_id, initializer_id, truncate_id>,
             Parameters...>,
         "Invalid parameters type for recurrent_layer_desc");
 };

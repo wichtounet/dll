@@ -150,6 +150,7 @@ struct autoencoder_id;
 struct updater_id;
 struct early_stopping_id;
 struct early_training_id;
+struct truncate_id;
 
 /*!
  * \brief Sets the minibatch size
@@ -438,6 +439,13 @@ struct no_bias : basic_conf_elt<no_bias_id> {};
  * \brief Use batch mode in DBN (Do not process the complete dataset at once)
  */
 struct batch_mode : basic_conf_elt<batch_mode_id> {};
+
+/*!
+ * \brief Sets the BPTT steps to truncate
+ * \tparam T The truncate steps
+ */
+template <size_t T>
+struct truncate : value_conf_elt<truncate_id, size_t, T> {};
 
 /*!
  * \brief Conditional shuffle (shuffle if Cond = true)
