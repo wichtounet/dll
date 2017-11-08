@@ -55,7 +55,7 @@ struct recurrent_layer_desc {
     //Make sure only valid types are passed to the configuration list
     static_assert(
         detail::is_valid_v<cpp::type_list<
-            weight_type_id, activation_id, initializer_id, truncate_id>,
+            weight_type_id, activation_id, initializer_id, truncate_id, last_only_id>,
             Parameters...>,
         "Invalid parameters type for recurrent_layer_desc");
 };

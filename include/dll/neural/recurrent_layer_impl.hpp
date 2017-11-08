@@ -255,16 +255,14 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
         w_grad = 0;
         u_grad = 0;
 
-        //size_t t = time_steps - 1;
+        size_t t = time_steps - 1;
 
-        //do {
-            size_t t            = time_steps - 1;
-
+        do {
             auto delta_t = etl::force_temporary(o_t(t) >> f_derivative<activation_function>(s_t(t)));
 
             size_t bptt_step = t;
-            const size_t truncate  = bptt_steps;
-            const size_t last_step = std::max(int(time_steps) - int(truncate), 0);
+
+            const size_t last_step = std::max(int(time_steps) - int(bptt_steps), 0);
 
             do {
                 w_grad += etl::batch_outer(delta_t, s_t(bptt_step - 1));
@@ -279,8 +277,13 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
 
             u_grad += etl::batch_outer(delta_t, x_t(0));
 
-            //--t;
-        //} while(t != 0);
+            --t;
+
+            // If only the last time step is used, no need to use the other errors
+            if /*constexpr*/ (desc::parameters::template contains<last_only>()){
+                break;
+            }
+        } while(t != 0);
     }
 };
 

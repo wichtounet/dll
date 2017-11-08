@@ -135,6 +135,7 @@ struct no_epoch_error_id;
 struct random_crop_id;
 struct batch_mode_id;
 struct dbn_only_id;
+struct last_only_id;
 struct horizontal_mirroring_id;
 struct vertical_mirroring_id;
 struct categorical_id;
@@ -424,6 +425,13 @@ struct clip_gradients : basic_conf_elt<clip_gradients_id> {};
  * This will disable a few fields and save some memory
  */
 struct dbn_only : basic_conf_elt<dbn_only_id> {};
+
+/*!
+ * \brief Indicates that only the last time steps is used.
+ *
+ * This will save a lot of computation time.
+ */
+struct last_only : basic_conf_elt<last_only_id> {};
 
 /*!
  * \brief Do nothing (for TMP)
