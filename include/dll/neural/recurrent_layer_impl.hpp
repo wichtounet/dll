@@ -34,7 +34,8 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
 
     static constexpr auto activation_function = desc::activation_function; ///< The layer's activation function
 
-    using w_initializer = typename desc::w_initializer; ///< The initializer for the weights
+    using w_initializer = typename desc::w_initializer; ///< The initializer for the W weights
+    using u_initializer = typename desc::u_initializer; ///< The initializer for the U weights
 
     using input_one_t  = etl::fast_dyn_matrix<weight, time_steps, sequence_length>; ///< The type of one input
     using output_one_t = etl::fast_dyn_matrix<weight, time_steps, hidden_units>;    ///< The type of one output
@@ -60,7 +61,7 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
      */
     recurrent_layer_impl() : base_type() {
         w_initializer::initialize(w, hidden_units, hidden_units);
-        w_initializer::initialize(u, hidden_units, hidden_units);
+        u_initializer::initialize(u, hidden_units, hidden_units);
     }
 
     /*!
