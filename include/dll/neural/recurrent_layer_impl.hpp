@@ -30,7 +30,7 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
     static constexpr size_t sequence_length = desc::sequence_length; ///< The length of the sequences
     static constexpr size_t hidden_units    = desc::hidden_units;    ///< The number of hidden units
 
-    static constexpr size_t bptt_steps  = desc::Truncate == 0 ? time_steps : desc::Truncate;  ///< The number of bptt steps
+    static constexpr size_t bptt_steps = desc::Truncate == 0 ? time_steps : desc::Truncate; ///< The number of bptt steps
 
     static constexpr auto activation_function = desc::activation_function; ///< The layer's activation function
 
