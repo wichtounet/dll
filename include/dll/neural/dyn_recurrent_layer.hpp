@@ -7,7 +7,5 @@
 
 #pragma once
 
-#include "dll/neural/dyn_recurrent_layer.hpp"
-
-#include "dll/neural/recurrent_layer_impl.hpp"
-#include "dll/neural/recurrent_layer_desc.hpp"
+#include "dll/neural/dyn_recurrent_layer_impl.hpp"
+#include "dll/neural/dyn_recurrent_layer_desc.hpp"
