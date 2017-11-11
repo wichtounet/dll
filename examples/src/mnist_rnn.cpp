@@ -21,7 +21,7 @@ int main(int /*argc*/, char* /*argv*/ []) {
 
     // Build the network
 
-    using network_t = dll::network_desc<
+    using network_t = dll::dyn_network_desc<
         dll::network_layers<
             dll::recurrent_layer<time_steps, sequence_length, hidden_units, dll::last_only, dll::truncate<28>>,
             dll::recurrent_last_layer<time_steps, hidden_units>,
