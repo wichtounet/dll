@@ -113,38 +113,9 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
     void forward_batch(H&& output, const V& x) const {
         dll::auto_timer timer("recurrent:forward_batch");
 
-        const auto Batch = etl::dim<0>(x);
+        cpp_assert(etl::dim<0>(output) == etl::dim<0>(x), "The number of samples must be consistent");
 
-        cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
-
-        etl::dyn_matrix<float, 3> x_t(time_steps, etl::dim<0>(x), sequence_length);
-        etl::dyn_matrix<float, 3> s_t(time_steps, etl::dim<0>(x), hidden_units);
-
-        // 1. Rearrange input
-
-        for (size_t b = 0; b < Batch; ++b) {
-            for (size_t t = 0; t < time_steps; ++t) {
-                x_t(t)(b) = x(b)(t);
-            }
-        }
-
-        // 2. Forward propagation through time
-
-        // t == 0
-
-        s_t(0) = f_activate<activation_function>(x_t(0) * trans(u));
-
-        for (size_t t = 1; t < time_steps; ++t) {
-            s_t(t) = f_activate<activation_function>(x_t(t) * trans(u) + s_t(t - 1) * trans(w));
-        }
-
-        // 3. Rearrange the output
-
-        for (size_t b = 0; b < Batch; ++b) {
-            for (size_t t = 0; t < time_steps; ++t) {
-                output(b)(t) = s_t(t)(b);
-            }
-        }
+        base_type::forward_batch_impl(output, x, w, u, time_steps, sequence_length, hidden_units);
     }
 
     /*!
@@ -202,60 +173,7 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
     void backward_batch(H&& output, C& context) const {
         dll::auto_timer timer("recurrent:backward_batch");
 
-        const size_t Batch = etl::dim<0>(context.errors);
-
-        etl::dyn_matrix<float, 3> output_t(time_steps, Batch, sequence_length);
-        etl::dyn_matrix<float, 3> s_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> o_t(time_steps, Batch, hidden_units);
-
-        // 1. Rearrange o/s
-
-        for (size_t b = 0; b < Batch; ++b) {
-            for (size_t t = 0; t < time_steps; ++t) {
-                s_t(t)(b) = context.output(b)(t);
-            }
-        }
-
-        for (size_t b = 0; b < Batch; ++b) {
-            for (size_t t = 0; t < time_steps; ++t) {
-                o_t(t)(b) = context.errors(b)(t);
-            }
-        }
-
-        // 2. Backpropagation through time
-
-        size_t t = time_steps - 1;
-
-        do {
-            output_t(t) = etl::force_temporary(o_t(t) >> f_derivative<activation_function>(s_t(t)));
-
-            size_t bptt_step = t;
-
-            const size_t last_step = std::max(int(time_steps) - int(bptt_steps), 0);
-
-            do {
-                output_t(t) = (output_t(t) * w) >> f_derivative<activation_function>(s_t(bptt_step - 1));
-
-                --bptt_step;
-            } while (bptt_step > last_step);
-
-            // bptt_step = 0
-
-            --t;
-
-            // If only the last time step is used, no need to use the other errors
-            if /*constexpr*/ (desc::parameters::template contains<last_only>()){
-                break;
-            }
-        } while(t != 0);
-
-        // 3. Rearrange for the output
-
-        for (size_t b = 0; b < Batch; ++b) {
-            for (size_t t = 0; t < time_steps; ++t) {
-                output(b)(t) = output_t(t)(b);
-            }
-        }
+        base_type::backward_batch_impl(output, context, w, time_steps, sequence_length, hidden_units, bptt_steps);
     }
 
     /*!
@@ -266,70 +184,7 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
     void compute_gradients(C& context) const {
         dll::auto_timer timer("recurrent:compute_gradients");
 
-        const size_t Batch = etl::dim<0>(context.errors);
-
-        auto& x = context.input;
-        auto& s = context.output;
-
-        etl::dyn_matrix<float, 3> x_t(time_steps, Batch, sequence_length);
-        etl::dyn_matrix<float, 3> s_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> o_t(time_steps, Batch, hidden_units);
-
-        // 1. Rearrange x/s
-
-        for (size_t b = 0; b < Batch; ++b) {
-            for (size_t t = 0; t < time_steps; ++t) {
-                x_t(t)(b) = x(b)(t);
-            }
-        }
-
-        for (size_t b = 0; b < Batch; ++b) {
-            for (size_t t = 0; t < time_steps; ++t) {
-                s_t(t)(b) = s(b)(t);
-            }
-        }
-
-        for (size_t b = 0; b < Batch; ++b) {
-            for (size_t t = 0; t < time_steps; ++t) {
-                o_t(t)(b) = context.errors(b)(t);
-            }
-        }
-
-        auto& w_grad = std::get<0>(context.up.context)->grad;
-        auto& u_grad = std::get<1>(context.up.context)->grad;
-
-        w_grad = 0;
-        u_grad = 0;
-
-        size_t t = time_steps - 1;
-
-        do {
-            auto delta_t = etl::force_temporary(o_t(t) >> f_derivative<activation_function>(s_t(t)));
-
-            size_t bptt_step = t;
-
-            const size_t last_step = std::max(int(time_steps) - int(bptt_steps), 0);
-
-            do {
-                w_grad += etl::batch_outer(delta_t, s_t(bptt_step - 1));
-                u_grad += etl::batch_outer(delta_t, x_t(bptt_step));
-
-                delta_t = (delta_t * w) >> f_derivative<activation_function>(s_t(bptt_step - 1));
-
-                --bptt_step;
-            } while (bptt_step > last_step);
-
-            // bptt_step = 0
-
-            u_grad += etl::batch_outer(delta_t, x_t(0));
-
-            --t;
-
-            // If only the last time step is used, no need to use the other errors
-            if /*constexpr*/ (desc::parameters::template contains<last_only>()){
-                break;
-            }
-        } while(t != 0);
+        base_type::compute_gradients_impl(context, w, time_steps, sequence_length, hidden_units, bptt_steps);
     }
 };
 

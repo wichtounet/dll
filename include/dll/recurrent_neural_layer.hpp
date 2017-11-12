@@ -31,6 +31,8 @@ struct recurrent_neural_layer : layer<Derived> {
     using this_type = recurrent_neural_layer<derived_t, desc>; ///< The type of this layer
     using base_type = layer<Derived>;                          ///< The base type
 
+    static constexpr auto activation_function = desc::activation_function; ///< The layer's activation function
+
     /*!
      * \brief Initialize the neural layer
      */
@@ -43,6 +45,121 @@ struct recurrent_neural_layer : layer<Derived> {
 
     recurrent_neural_layer& operator=(const recurrent_neural_layer& rhs) = delete;
     recurrent_neural_layer& operator=(recurrent_neural_layer&& rhs) = delete;
+
+    /*!
+     * \brief Apply the layer to the given batch of input.
+     *
+     * \param x A batch of input
+     * \param output A batch of output that will be filled
+     * \param w The W weights matrix
+     * \param u The U weights matrix
+     */
+    template <typename H, typename V, typename W, typename U>
+    static void forward_batch_impl(H&& output, const V& x, const W& w, const U& u, size_t time_steps, size_t sequence_length, size_t hidden_units) {
+        const auto Batch = etl::dim<0>(x);
+
+        etl::dyn_matrix<float, 3> x_t(time_steps, etl::dim<0>(x), sequence_length);
+        etl::dyn_matrix<float, 3> s_t(time_steps, etl::dim<0>(x), hidden_units);
+
+        // 1. Rearrange input
+
+        for (size_t b = 0; b < Batch; ++b) {
+            for (size_t t = 0; t < time_steps; ++t) {
+                x_t(t)(b) = x(b)(t);
+            }
+        }
+
+        // 2. Forward propagation through time
+
+        // t == 0
+
+        s_t(0) = f_activate<activation_function>(x_t(0) * trans(u));
+
+        for (size_t t = 1; t < time_steps; ++t) {
+            s_t(t) = f_activate<activation_function>(x_t(t) * trans(u) + s_t(t - 1) * trans(w));
+        }
+
+        // 3. Rearrange the output
+
+        for (size_t b = 0; b < Batch; ++b) {
+            for (size_t t = 0; t < time_steps; ++t) {
+                output(b)(t) = s_t(t)(b);
+            }
+        }
+    }
+
+    /*!
+     * \brief Compute the gradients for this layer, if any
+     * \param context The trainng context
+     */
+    template<typename C, typename W>
+    static void compute_gradients_impl(C& context, const W& w, size_t time_steps, size_t sequence_length, size_t hidden_units, size_t bptt_steps) {
+        const size_t Batch = etl::dim<0>(context.errors);
+
+        auto& x = context.input;
+        auto& s = context.output;
+
+        etl::dyn_matrix<float, 3> x_t(time_steps, Batch, sequence_length);
+        etl::dyn_matrix<float, 3> s_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> o_t(time_steps, Batch, hidden_units);
+
+        // 1. Rearrange x/s
+
+        for (size_t b = 0; b < Batch; ++b) {
+            for (size_t t = 0; t < time_steps; ++t) {
+                x_t(t)(b) = x(b)(t);
+            }
+        }
+
+        for (size_t b = 0; b < Batch; ++b) {
+            for (size_t t = 0; t < time_steps; ++t) {
+                s_t(t)(b) = s(b)(t);
+            }
+        }
+
+        for (size_t b = 0; b < Batch; ++b) {
+            for (size_t t = 0; t < time_steps; ++t) {
+                o_t(t)(b) = context.errors(b)(t);
+            }
+        }
+
+        auto& w_grad = std::get<0>(context.up.context)->grad;
+        auto& u_grad = std::get<1>(context.up.context)->grad;
+
+        w_grad = 0;
+        u_grad = 0;
+
+        size_t t = time_steps - 1;
+
+        do {
+            auto delta_t = etl::force_temporary(o_t(t) >> f_derivative<activation_function>(s_t(t)));
+
+            size_t bptt_step = t;
+
+            const size_t last_step = std::max(int(time_steps) - int(bptt_steps), 0);
+
+            do {
+                w_grad += etl::batch_outer(delta_t, s_t(bptt_step - 1));
+                u_grad += etl::batch_outer(delta_t, x_t(bptt_step));
+
+                delta_t = (delta_t * w) >> f_derivative<activation_function>(s_t(bptt_step - 1));
+
+                --bptt_step;
+            } while (bptt_step > last_step);
+
+            // bptt_step = 0
+
+            u_grad += etl::batch_outer(delta_t, x_t(0));
+
+            --t;
+
+            // If only the last time step is used, no need to use the other errors
+            if /*constexpr*/ (desc::parameters::template contains<last_only>()){
+                break;
+            }
+        } while(t != 0);
+    }
+
 
     /*!
      * \brief Backup the weights in the secondary weights matrix
