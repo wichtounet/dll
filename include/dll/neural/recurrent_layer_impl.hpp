@@ -59,7 +59,8 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
      * The weights are initialized from a normal distribution of
      * zero-mean and unit variance.
      */
-    recurrent_layer_impl() : base_type() {
+    recurrent_layer_impl()
+            : base_type() {
         w_initializer::initialize(w, hidden_units, hidden_units);
         u_initializer::initialize(u, hidden_units, hidden_units);
     }
@@ -146,8 +147,8 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
      * \param dyn Reference to the dynamic version of the layer that
      * needs to be initialized
      */
-    template<typename DLayer>
-    static void dyn_init(DLayer& dyn){
+    template <typename DLayer>
+    static void dyn_init(DLayer& dyn) {
         dyn.init_layer(time_steps, sequence_length, hidden_units);
     }
 
@@ -158,7 +159,7 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
      *
      * \param context the training context
      */
-    template<typename C>
+    template <typename C>
     void adapt_errors(C& context) const {
         // Nothing to do here (done in BPTT)
         cpp_unused(context);
@@ -169,7 +170,7 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
      * \param output The ETL expression into which write the output
      * \param context The training context
      */
-    template<typename H, typename C>
+    template <typename H, typename C>
     void backward_batch(H&& output, C& context) const {
         dll::auto_timer timer("recurrent:backward_batch");
 
@@ -180,7 +181,7 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
      * \brief Compute the gradients for this layer, if any
      * \param context The trainng context
      */
-    template<typename C>
+    template <typename C>
     void compute_gradients(C& context) const {
         dll::auto_timer timer("recurrent:compute_gradients");
 
@@ -201,14 +202,14 @@ const size_t recurrent_layer_impl<Desc>::hidden_units;
 
 // Declare the traits for the Layer
 
-template<typename Desc>
+template <typename Desc>
 struct layer_base_traits<recurrent_layer_impl<Desc>> {
     static constexpr bool is_neural     = true;  ///< Indicates if the layer is a neural layer
-    static constexpr bool is_dense      = false;  ///< Indicates if the layer is dense
+    static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
     static constexpr bool is_deconv     = false; ///< Indicates if the layer is deconvolutional
     static constexpr bool is_standard   = true;  ///< Indicates if the layer is standard
-    static constexpr bool is_rbm        = false;  ///< Indicates if the layer is RBM
+    static constexpr bool is_rbm        = false; ///< Indicates if the layer is RBM
     static constexpr bool is_pooling    = false; ///< Indicates if the layer is a pooling layer
     static constexpr bool is_unpooling  = false; ///< Indicates if the layer is an unpooling laye
     static constexpr bool is_transform  = false; ///< Indicates if the layer is a transform layer

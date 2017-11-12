@@ -15,8 +15,8 @@
 #include "etl/etl.hpp"
 
 #include "layer.hpp"
-#include "util/tmp.hpp"
 #include "layer_traits.hpp"
+#include "util/tmp.hpp"
 
 namespace dll {
 
@@ -36,12 +36,13 @@ struct recurrent_neural_layer : layer<Derived> {
     /*!
      * \brief Initialize the neural layer
      */
-    recurrent_neural_layer() : base_type() {
+    recurrent_neural_layer()
+            : base_type() {
         // Nothing to init here
     }
 
     recurrent_neural_layer(const recurrent_neural_layer& rhs) = delete;
-    recurrent_neural_layer(recurrent_neural_layer&& rhs) = delete;
+    recurrent_neural_layer(recurrent_neural_layer&& rhs)      = delete;
 
     recurrent_neural_layer& operator=(const recurrent_neural_layer& rhs) = delete;
     recurrent_neural_layer& operator=(recurrent_neural_layer&& rhs) = delete;
@@ -93,7 +94,7 @@ struct recurrent_neural_layer : layer<Derived> {
      * \param output The ETL expression into which write the output
      * \param context The training context
      */
-    template<typename H, typename C, typename W>
+    template <typename H, typename C, typename W>
     void backward_batch_impl(H&& output, C& context, const W& w, size_t time_steps, size_t sequence_length, size_t hidden_units, size_t bptt_steps) const {
         const size_t Batch = etl::dim<0>(context.errors);
 
@@ -137,10 +138,10 @@ struct recurrent_neural_layer : layer<Derived> {
             --t;
 
             // If only the last time step is used, no need to use the other errors
-            if /*constexpr*/ (desc::parameters::template contains<last_only>()){
+            if /*constexpr*/ (desc::parameters::template contains<last_only>()) {
                 break;
             }
-        } while(t != 0);
+        } while (t != 0);
 
         // 3. Rearrange for the output
 
@@ -155,7 +156,7 @@ struct recurrent_neural_layer : layer<Derived> {
      * \brief Compute the gradients for this layer, if any
      * \param context The trainng context
      */
-    template<typename C, typename W>
+    template <typename C, typename W>
     static void compute_gradients_impl(C& context, const W& w, size_t time_steps, size_t sequence_length, size_t hidden_units, size_t bptt_steps) {
         const size_t Batch = etl::dim<0>(context.errors);
 
@@ -217,12 +218,11 @@ struct recurrent_neural_layer : layer<Derived> {
             --t;
 
             // If only the last time step is used, no need to use the other errors
-            if /*constexpr*/ (desc::parameters::template contains<last_only>()){
+            if /*constexpr*/ (desc::parameters::template contains<last_only>()) {
                 break;
             }
-        } while(t != 0);
+        } while (t != 0);
     }
-
 
     /*!
      * \brief Backup the weights in the secondary weights matrix
@@ -276,7 +276,7 @@ struct recurrent_neural_layer : layer<Derived> {
      * \brief Returns the trainable variables of this layer.
      * \return a tuple containing references to the variables of this layer
      */
-    decltype(auto) trainable_parameters(){
+    decltype(auto) trainable_parameters() {
         return std::make_tuple(std::ref(as_derived().w), std::ref(as_derived().u));
     }
 
@@ -295,7 +295,7 @@ private:
      * \brief Returns a reference to the derived object, i.e. the object using the CRTP injector.
      * \return a reference to the derived object.
      */
-    derived_t& as_derived(){
+    derived_t& as_derived() {
         return *static_cast<derived_t*>(this);
     }
 

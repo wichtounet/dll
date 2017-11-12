@@ -58,7 +58,8 @@ struct dyn_recurrent_layer_impl final : recurrent_neural_layer<dyn_recurrent_lay
      * The weights are initialized from a normal distribution of
      * zero-mean and unit variance.
      */
-    dyn_recurrent_layer_impl() : base_type() {}
+    dyn_recurrent_layer_impl()
+            : base_type() {}
 
     /*!
      * \brief Initialize the dynamic layer
@@ -152,7 +153,7 @@ struct dyn_recurrent_layer_impl final : recurrent_neural_layer<dyn_recurrent_lay
     output_t prepare_output(size_t samples) const {
         output_t output;
         output.reserve(samples);
-        for(size_t i = 0; i < samples; ++i){
+        for (size_t i = 0; i < samples; ++i) {
             output.emplace_back(time_steps, hidden_units);
         }
         return output;
@@ -164,8 +165,8 @@ struct dyn_recurrent_layer_impl final : recurrent_neural_layer<dyn_recurrent_lay
      * \param dyn Reference to the dynamic version of the layer that
      * needs to be initialized
      */
-    template<typename DLayer>
-    static void dyn_init(DLayer& dyn){
+    template <typename DLayer>
+    static void dyn_init(DLayer& dyn) {
         cpp_unused(dyn);
     }
 
@@ -176,7 +177,7 @@ struct dyn_recurrent_layer_impl final : recurrent_neural_layer<dyn_recurrent_lay
      *
      * \param context the training context
      */
-    template<typename C>
+    template <typename C>
     void adapt_errors(C& context) const {
         // Nothing to do here (done in BPTT)
         cpp_unused(context);
@@ -187,7 +188,7 @@ struct dyn_recurrent_layer_impl final : recurrent_neural_layer<dyn_recurrent_lay
      * \param output The ETL expression into which write the output
      * \param context The training context
      */
-    template<typename H, typename C>
+    template <typename H, typename C>
     void backward_batch(H&& output, C& context) const {
         dll::auto_timer timer("dyn_recurrent:backward_batch");
 
@@ -198,7 +199,7 @@ struct dyn_recurrent_layer_impl final : recurrent_neural_layer<dyn_recurrent_lay
      * \brief Compute the gradients for this layer, if any
      * \param context The trainng context
      */
-    template<typename C>
+    template <typename C>
     void compute_gradients(C& context) const {
         dll::auto_timer timer("dyn_recurrent:compute_gradients");
 
@@ -208,7 +209,7 @@ struct dyn_recurrent_layer_impl final : recurrent_neural_layer<dyn_recurrent_lay
 
 // Declare the traits for the Layer
 
-template<typename Desc>
+template <typename Desc>
 struct layer_base_traits<dyn_recurrent_layer_impl<Desc>> {
     static constexpr bool is_neural     = true;  ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
