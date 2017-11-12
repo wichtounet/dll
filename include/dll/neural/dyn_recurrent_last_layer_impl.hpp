@@ -18,33 +18,41 @@ namespace dll {
  * \brief Standard dense layer of neural network.
  */
 template <typename Desc>
-struct recurrent_last_layer_impl final : layer<recurrent_last_layer_impl<Desc>> {
+struct dyn_recurrent_last_layer_impl final : layer<dyn_recurrent_last_layer_impl<Desc>> {
     using desc        = Desc;                            ///< The descriptor of the layer
     using weight      = typename desc::weight;           ///< The data type for this layer
-    using this_type   = recurrent_last_layer_impl<desc>; ///< The type of this layer
+    using this_type   = dyn_recurrent_last_layer_impl<desc>; ///< The type of this layer
     using base_type   = layer<this_type>;                ///< The base type
     using layer_t     = this_type;                       ///< This layer's type
     using dyn_layer_t = typename desc::dyn_layer_t;      ///< The dynamic version of this layer
 
-    static constexpr size_t time_steps   = desc::time_steps;   ///< The number of time steps
-    static constexpr size_t hidden_units = desc::hidden_units; ///< The number of hidden units
+    using input_one_t  = etl::dyn_matrix<weight, 2>; ///< The type of one input
+    using output_one_t = etl::dyn_matrix<weight, 1>; ///< The type of one output
+    using input_t      = std::vector<input_one_t>;   ///< The type of the input
+    using output_t     = std::vector<output_one_t>;  ///< The type of the output
 
-    using input_one_t  = etl::fast_dyn_matrix<weight, time_steps, hidden_units>; ///< The type of one input
-    using output_one_t = etl::fast_dyn_matrix<weight, hidden_units>;             ///< The type of one output
-    using input_t      = std::vector<input_one_t>;                               ///< The type of the input
-    using output_t     = std::vector<output_one_t>;                              ///< The type of the output
+    size_t time_steps;   ///< The number of time steps
+    size_t hidden_units; ///< The number of hidden units
+
+    /*!
+     * \brief Initialize the dynamic layer
+     */
+    void init_layer(size_t time_steps, size_t hidden_units){
+        this->time_steps   = time_steps;
+        this->hidden_units = hidden_units;
+    }
 
     /*!
      * \brief Returns the input size of this layer
      */
-    static constexpr size_t input_size() noexcept {
+    size_t input_size() const noexcept {
         return time_steps * hidden_units;
     }
 
     /*!
      * \brief Returns the output size of this layer
      */
-    static constexpr size_t output_size() noexcept {
+    size_t output_size() const noexcept {
         return hidden_units;
     }
 
@@ -59,7 +67,7 @@ struct recurrent_last_layer_impl final : layer<recurrent_last_layer_impl<Desc>> 
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    static std::string to_short_string(std::string pre = "") {
+    std::string to_short_string(std::string pre = "") const {
         cpp_unused(pre);
 
         char buffer[512];
@@ -94,7 +102,7 @@ struct recurrent_last_layer_impl final : layer<recurrent_last_layer_impl<Desc>> 
      */
     template <typename Input>
     output_one_t prepare_one_output() const {
-        return {};
+        return output_one_t(hidden_units);
     }
 
     /*!
@@ -104,8 +112,13 @@ struct recurrent_last_layer_impl final : layer<recurrent_last_layer_impl<Desc>> 
      * \tparam Input The type of one input
      */
     template <typename Input>
-    static output_t prepare_output(size_t samples) {
-        return output_t{samples};
+    output_t prepare_output(size_t samples) const {
+        output_t output;
+        output.reserve(samples);
+        for(size_t i = 0; i < samples; ++i){
+            output.emplace_back(hidden_units);
+        }
+        return output;
     }
 
     /*!
@@ -116,7 +129,7 @@ struct recurrent_last_layer_impl final : layer<recurrent_last_layer_impl<Desc>> 
      */
     template<typename DLayer>
     static void dyn_init(DLayer& dyn){
-        dyn.init_layer(time_steps, hidden_units);
+        cpp_unused(dyn);
     }
 
     /*!
@@ -161,18 +174,10 @@ struct recurrent_last_layer_impl final : layer<recurrent_last_layer_impl<Desc>> 
     }
 };
 
-//Allow odr-use of the constexpr static members
-
-template <typename Desc>
-const size_t recurrent_last_layer_impl<Desc>::time_steps;
-
-template <typename Desc>
-const size_t recurrent_last_layer_impl<Desc>::hidden_units;
-
 // Declare the traits for the Layer
 
 template<typename Desc>
-struct layer_base_traits<recurrent_last_layer_impl<Desc>> {
+struct layer_base_traits<dyn_recurrent_last_layer_impl<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -182,30 +187,27 @@ struct layer_base_traits<recurrent_last_layer_impl<Desc>> {
     static constexpr bool is_pooling    = false; ///< Indicates if the layer is a pooling layer
     static constexpr bool is_unpooling  = false; ///< Indicates if the layer is an unpooling laye
     static constexpr bool is_transform  = false; ///< Indicates if the layer is a transform layer
-    static constexpr bool is_dynamic    = false; ///< Indicates if the layer is dynamic
+    static constexpr bool is_dynamic    = true;  ///< Indicates if the layer is dynamic
     static constexpr bool pretrain_last = false; ///< Indicates if the layer is dynamic
     static constexpr bool sgd_supported = true;  ///< Indicates if the layer is supported by SGD
 };
 
 /*!
- * \brief specialization of sgd_context for recurrent_last_layer_impl
+ * \brief specialization of sgd_context for dyn_recurrent_last_layer_impl
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, recurrent_last_layer_impl<Desc>, L> {
-    using layer_t = recurrent_last_layer_impl<Desc>;
+struct sgd_context<DBN, dyn_recurrent_last_layer_impl<Desc>, L> {
+    using layer_t = dyn_recurrent_last_layer_impl<Desc>;
     using weight  = typename layer_t::weight; ///< The data type for this layer
-
-    static constexpr size_t time_steps      = layer_t::time_steps;      ///< The number of time steps
-    static constexpr size_t hidden_units    = layer_t::hidden_units;    ///< The number of hidden units
 
     static constexpr auto batch_size = DBN::batch_size;
 
-    etl::fast_matrix<weight, batch_size, time_steps, hidden_units> input;
-    etl::fast_matrix<weight, batch_size, hidden_units> output;
-    etl::fast_matrix<weight, batch_size, hidden_units> errors;
+    etl::dyn_matrix<weight, 3> input;
+    etl::dyn_matrix<weight, 2> output;
+    etl::dyn_matrix<weight, 2> errors;
 
-    sgd_context(const recurrent_last_layer_impl<Desc>& /* layer */)
-            : output(0.0), errors(0.0) {}
+    sgd_context(const dyn_recurrent_last_layer_impl<Desc>& layer)
+            : input(batch_size, layer.time_steps, layer.hidden_units), output(batch_size, layer.hidden_units, 0.0), errors(batch_size, layer.hidden_units, 0.0) {}
 };
 
 } //end of dll namespace

@@ -15,11 +15,8 @@ namespace dll {
 /*!
  * \brief Descriptor for a recurrent last layer
  */
-template <size_t TS_T, size_t HU_T, typename... Parameters>
-struct recurrent_last_layer_desc {
-    static constexpr size_t time_steps      = TS_T; ///< The number of time steps
-    static constexpr size_t hidden_units    = HU_T; ///< The number of hidden units
-
+template <typename... Parameters>
+struct dyn_recurrent_last_layer_desc {
     /*!
      * A list of all the parameters of the descriptor
      */
@@ -29,13 +26,10 @@ struct recurrent_last_layer_desc {
     using weight = detail::get_type_t<weight_type<float>, Parameters...>;
 
     /*! The fast type */
-    using layer_t = recurrent_last_layer_impl<recurrent_last_layer_desc<TS_T, HU_T, Parameters...>>;
+    using layer_t = dyn_recurrent_last_layer_impl<dyn_recurrent_last_layer_desc<Parameters...>>;
 
     /*! The dynamic type */
     using dyn_layer_t = dyn_recurrent_last_layer_impl<dyn_recurrent_last_layer_desc<Parameters...>>;
-
-    static_assert(time_steps > 0, "There must be at least 1 time step");
-    static_assert(hidden_units > 0, "There must be at least 1 hidden unit");
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
@@ -48,7 +42,7 @@ struct recurrent_last_layer_desc {
 /*!
  * \brief Describe a dense layer
  */
-template <size_t TS_T, size_t HU_T, typename... Parameters>
-using recurrent_last_layer = typename recurrent_last_layer_desc<TS_T, HU_T, Parameters...>::layer_t;
+template <typename... Parameters>
+using dyn_recurrent_last_layer = typename dyn_recurrent_last_layer_desc<Parameters...>::layer_t;
 
 } //end of dll namespace
