@@ -172,6 +172,21 @@ auto make_mnist_dataset_nc(Parameters&&... parameters){
 }
 
 /*!
+ * \brief Creates a dataset around MNIST
+ *
+ * The MNIST train files are assumed to be in a mnist sub folder.
+ *
+ * \param parameters The parameters of the generator
+ * \return The MNIST dataset
+ */
+template<typename... Parameters>
+auto make_mnist_dataset_nc_sub(size_t start, size_t limit, Parameters&&... parameters){
+    return make_dataset_holder(
+        make_mnist_generator_train_impl<mnist_example_nc_t>("mnist", start, limit, std::forward<Parameters>(parameters)...),
+        make_mnist_generator_test_impl<mnist_example_nc_t>("mnist", 0UL, 10000UL, std::forward<Parameters>(parameters)...));
+}
+
+/*!
  * \brief Creates a dataset around a subset of MNIST
  * \param folder The folder in which the MNIST files are
  * \param limit The limit size (0 = no limit)
