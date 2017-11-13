@@ -43,8 +43,8 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
     using input_t      = std::vector<input_one_t>;                                  ///< The type of the input
     using output_t     = std::vector<output_one_t>;                                 ///< The type of the output
 
-    using w_type = etl::fast_matrix<weight, sequence_length, hidden_units>; ///< The type of the W weights
-    using u_type = etl::fast_matrix<weight, hidden_units, hidden_units>;    ///< The type of the U weights
+    using w_type = etl::fast_matrix<weight, hidden_units, hidden_units>; ///< The type of the W weights
+    using u_type = etl::fast_matrix<weight, sequence_length, hidden_units>;    ///< The type of the U weights
 
     //Weights and biases
     w_type w_i; ///< Weights W of the input gate
@@ -133,12 +133,55 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
     void forward_batch(H&& output, const V& x) const {
         dll::auto_timer timer("lstm:forward_batch");
 
-        cpp_assert(etl::dim<0>(output) == etl::dim<0>(x), "The number of samples must be consistent");
+        const auto Batch = etl::dim<0>(x);
 
-        cpp_unused(output);
-        cpp_unused(x);
+        cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
 
-        //base_type::forward_batch_impl(output, x, w, u, time_steps, sequence_length, hidden_units);
+        etl::dyn_matrix<float, 3> x_t(time_steps, Batch, sequence_length);
+        etl::dyn_matrix<float, 3> g_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> i_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> f_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> o_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> s_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> h_t(time_steps, Batch, hidden_units);
+
+        // 1. Rearrange input
+
+        for (size_t b = 0; b < Batch; ++b) {
+            for (size_t t = 0; t < time_steps; ++t) {
+                x_t(t)(b) = x(b)(t);
+            }
+        }
+
+        // 2. Forward propagation through time
+
+        // t == 0
+
+        g_t(0) = etl::tanh(x_t(0) * (u_g));
+        i_t(0) = etl::sigmoid(x_t(0) * (u_i));
+        f_t(0) = etl::sigmoid(x_t(0) * (u_f));
+        o_t(0) = etl::sigmoid(x_t(0) * (u_o));
+
+        s_t(0) = g_t(0) >> i_t(0);
+        h_t(0) = f_activate<activation_function>(s_t(0)) >> o_t(0);
+
+        for (size_t t = 1; t < time_steps; ++t) {
+            g_t(t) = etl::tanh(x_t(t) * u_g + h_t(t - 1) * w_g);
+            i_t(t) = etl::sigmoid(x_t(t) * u_i + h_t(t - 1) * w_i);
+            f_t(t) = etl::sigmoid(x_t(t) * u_f + h_t(t - 1) * w_f);
+            o_t(t) = etl::sigmoid(x_t(t) * u_o + h_t(t - 1) * w_o);
+
+            s_t(t) = (g_t(t) >> i_t(t)) + (s_t(t - 1) >> f_t(t));
+            h_t(t) = f_activate<activation_function>(s_t(t)) >> o_t(t);
+        }
+
+        // 3. Rearrange the output
+
+        for (size_t b = 0; b < Batch; ++b) {
+            for (size_t t = 0; t < time_steps; ++t) {
+                output(b)(t) = h_t(t)(b);
+            }
+        }
     }
 
     /*!
