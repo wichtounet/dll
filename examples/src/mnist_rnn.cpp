@@ -6,7 +6,7 @@
 //=======================================================================
 
 #include "dll/neural/dense_layer.hpp"
-#include "dll/neural/recurrent_layer.hpp"
+#include "dll/neural/rnn_layer.hpp"
 #include "dll/neural/recurrent_last_layer.hpp"
 #include "dll/network.hpp"
 #include "dll/datasets.hpp"
@@ -23,7 +23,7 @@ int main(int /*argc*/, char* /*argv*/ []) {
 
     using network_t = dll::dyn_network_desc<
         dll::network_layers<
-            dll::recurrent_layer<time_steps, sequence_length, hidden_units, dll::last_only, dll::truncate<28>>,
+            dll::rnn_layer<time_steps, sequence_length, hidden_units, dll::last_only, dll::truncate<28>>,
             dll::recurrent_last_layer<time_steps, hidden_units>,
             dll::dense_layer<hidden_units, 10, dll::softmax>
         >

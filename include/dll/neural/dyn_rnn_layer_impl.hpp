@@ -18,32 +18,26 @@ namespace dll {
  * \brief Standard dense layer of neural network.
  */
 template <typename Desc>
-struct recurrent_layer_impl final : base_rnn_layer<recurrent_layer_impl<Desc>, Desc> {
+struct dyn_rnn_layer_impl final : base_rnn_layer<dyn_rnn_layer_impl<Desc>, Desc> {
     using desc        = Desc;                            ///< The descriptor of the layer
     using weight      = typename desc::weight;           ///< The data type for this layer
-    using this_type   = recurrent_layer_impl<desc>;      ///< The type of this layer
+    using this_type   = dyn_rnn_layer_impl<desc>;  ///< The type of this layer
     using base_type   = base_rnn_layer<this_type, desc>; ///< The base type
     using layer_t     = this_type;                       ///< This layer's type
     using dyn_layer_t = typename desc::dyn_layer_t;      ///< The dynamic version of this layer
-
-    static constexpr size_t time_steps      = desc::time_steps;      ///< The number of time steps
-    static constexpr size_t sequence_length = desc::sequence_length; ///< The length of the sequences
-    static constexpr size_t hidden_units    = desc::hidden_units;    ///< The number of hidden units
-
-    static constexpr size_t bptt_steps = desc::Truncate == 0 ? time_steps : desc::Truncate; ///< The number of bptt steps
 
     static constexpr auto activation_function = desc::activation_function; ///< The layer's activation function
 
     using w_initializer = typename desc::w_initializer; ///< The initializer for the W weights
     using u_initializer = typename desc::u_initializer; ///< The initializer for the U weights
 
-    using input_one_t  = etl::fast_dyn_matrix<weight, time_steps, sequence_length>; ///< The type of one input
-    using output_one_t = etl::fast_dyn_matrix<weight, time_steps, hidden_units>;    ///< The type of one output
-    using input_t      = std::vector<input_one_t>;                                  ///< The type of the input
-    using output_t     = std::vector<output_one_t>;                                 ///< The type of the output
+    using input_one_t  = etl::dyn_matrix<weight, 2>; ///< The type of one input
+    using output_one_t = etl::dyn_matrix<weight, 2>; ///< The type of one output
+    using input_t      = std::vector<input_one_t>;   ///< The type of the input
+    using output_t     = std::vector<output_one_t>;  ///< The type of the output
 
-    using w_type = etl::fast_matrix<weight, hidden_units, hidden_units>;    ///< The type of the W weights
-    using u_type = etl::fast_matrix<weight, hidden_units, sequence_length>; ///< The type of the U weights
+    using w_type = etl::dyn_matrix<weight, 2>; ///< The type of the W weights
+    using u_type = etl::dyn_matrix<weight, 2>; ///< The type of the U weights
 
     //Weights and biases
     w_type w; ///< Weights W
@@ -53,14 +47,33 @@ struct recurrent_layer_impl final : base_rnn_layer<recurrent_layer_impl<Desc>, D
     std::unique_ptr<w_type> bak_w; ///< Backup Weights W
     std::unique_ptr<u_type> bak_u; ///< Backup Weights U
 
+    size_t time_steps;      ///< The number of time steps
+    size_t sequence_length; ///< The length of the sequences
+    size_t hidden_units;    ///< The number of hidden units
+    size_t bptt_steps;      ///< The number of BPTT steps
+
     /*!
      * \brief Initialize a recurrent layer with basic weights.
      *
      * The weights are initialized from a normal distribution of
      * zero-mean and unit variance.
      */
-    recurrent_layer_impl()
-            : base_type() {
+    dyn_rnn_layer_impl()
+            : base_type() {}
+
+    /*!
+     * \brief Initialize the dynamic layer
+     */
+    void init_layer(size_t time_steps, size_t sequence_length, size_t hidden_units) {
+        this->time_steps      = time_steps;
+        this->sequence_length = sequence_length;
+        this->hidden_units    = hidden_units;
+
+        this->bptt_steps = desc::Truncate == 0 ? time_steps : desc::Truncate;
+
+        w = etl::dyn_matrix<weight, 2>(hidden_units, hidden_units);
+        u = etl::dyn_matrix<weight, 2>(hidden_units, sequence_length);
+
         w_initializer::initialize(w, hidden_units, hidden_units);
         u_initializer::initialize(u, hidden_units, hidden_units);
     }
@@ -68,21 +81,21 @@ struct recurrent_layer_impl final : base_rnn_layer<recurrent_layer_impl<Desc>, D
     /*!
      * \brief Returns the input size of this layer
      */
-    static constexpr size_t input_size() noexcept {
+    size_t input_size() const noexcept {
         return time_steps * sequence_length;
     }
 
     /*!
      * \brief Returns the output size of this layer
      */
-    static constexpr size_t output_size() noexcept {
+    size_t output_size() const noexcept {
         return time_steps * hidden_units;
     }
 
     /*!
      * \brief Returns the number of parameters of this layer
      */
-    static constexpr size_t parameters() noexcept {
+    size_t parameters() const noexcept {
         return hidden_units * hidden_units + hidden_units * sequence_length;
     }
 
@@ -90,14 +103,14 @@ struct recurrent_layer_impl final : base_rnn_layer<recurrent_layer_impl<Desc>, D
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    static std::string to_short_string(std::string pre = "") {
+    std::string to_short_string(std::string pre = "") const {
         cpp_unused(pre);
 
         if /*constexpr*/ (activation_function == function::IDENTITY) {
-            return "RNN";
+            return "RNN (dyn)";
         } else {
             char buffer[512];
-            snprintf(buffer, 512, "RNN(%s)", to_string(activation_function).c_str());
+            snprintf(buffer, 512, "RNN (%s) (dyn)", to_string(activation_function).c_str());
             return {buffer};
         }
     }
@@ -106,15 +119,15 @@ struct recurrent_layer_impl final : base_rnn_layer<recurrent_layer_impl<Desc>, D
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    static std::string to_full_string(std::string pre = "") {
+    std::string to_full_string(std::string pre = "") const {
         cpp_unused(pre);
 
         char buffer[512];
 
         if /*constexpr*/ (activation_function == function::IDENTITY) {
-            snprintf(buffer, 512, "RNN: %lux%lu -> %lux%lu", time_steps, sequence_length, time_steps, hidden_units);
+            snprintf(buffer, 512, "RNN(dyn): %lux%lu -> %lux%lu", time_steps, sequence_length, time_steps, hidden_units);
         } else {
-            snprintf(buffer, 512, "RNN: %lux%lu -> %s -> %lux%lu", time_steps, sequence_length, to_string(activation_function).c_str(), time_steps, hidden_units);
+            snprintf(buffer, 512, "RNN(dyn): %lux%lu -> %s -> %lux%lu", time_steps, sequence_length, to_string(activation_function).c_str(), time_steps, hidden_units);
         }
 
         return {buffer};
@@ -138,7 +151,7 @@ struct recurrent_layer_impl final : base_rnn_layer<recurrent_layer_impl<Desc>, D
      */
     template <typename H, typename V>
     void forward_batch(H&& output, const V& x) const {
-        dll::auto_timer timer("recurrent:forward_batch");
+        dll::auto_timer timer("dyn_rnn:forward_batch");
 
         cpp_assert(etl::dim<0>(output) == etl::dim<0>(x), "The number of samples must be consistent");
 
@@ -153,7 +166,7 @@ struct recurrent_layer_impl final : base_rnn_layer<recurrent_layer_impl<Desc>, D
      */
     template <typename Input>
     output_one_t prepare_one_output() const {
-        return {};
+        return output_one_t(time_steps, hidden_units);
     }
 
     /*!
@@ -163,8 +176,13 @@ struct recurrent_layer_impl final : base_rnn_layer<recurrent_layer_impl<Desc>, D
      * \tparam Input The type of one input
      */
     template <typename Input>
-    static output_t prepare_output(size_t samples) {
-        return output_t{samples};
+    output_t prepare_output(size_t samples) const {
+        output_t output;
+        output.reserve(samples);
+        for (size_t i = 0; i < samples; ++i) {
+            output.emplace_back(time_steps, hidden_units);
+        }
+        return output;
     }
 
     /*!
@@ -175,7 +193,7 @@ struct recurrent_layer_impl final : base_rnn_layer<recurrent_layer_impl<Desc>, D
      */
     template <typename DLayer>
     static void dyn_init(DLayer& dyn) {
-        dyn.init_layer(time_steps, sequence_length, hidden_units);
+        cpp_unused(dyn);
     }
 
     /*!
@@ -198,7 +216,7 @@ struct recurrent_layer_impl final : base_rnn_layer<recurrent_layer_impl<Desc>, D
      */
     template <typename H, typename C>
     void backward_batch(H&& output, C& context) const {
-        dll::auto_timer timer("recurrent:backward_batch");
+        dll::auto_timer timer("dyn_rnn:backward_batch");
 
         base_type::backward_batch_impl(output, context, w, time_steps, sequence_length, hidden_units, bptt_steps);
     }
@@ -209,27 +227,16 @@ struct recurrent_layer_impl final : base_rnn_layer<recurrent_layer_impl<Desc>, D
      */
     template <typename C>
     void compute_gradients(C& context) const {
-        dll::auto_timer timer("recurrent:compute_gradients");
+        dll::auto_timer timer("dyn_rnn:compute_gradients");
 
         base_type::compute_gradients_impl(context, w, time_steps, sequence_length, hidden_units, bptt_steps);
     }
 };
 
-//Allow odr-use of the constexpr static members
-
-template <typename Desc>
-const size_t recurrent_layer_impl<Desc>::time_steps;
-
-template <typename Desc>
-const size_t recurrent_layer_impl<Desc>::sequence_length;
-
-template <typename Desc>
-const size_t recurrent_layer_impl<Desc>::hidden_units;
-
 // Declare the traits for the Layer
 
 template <typename Desc>
-struct layer_base_traits<recurrent_layer_impl<Desc>> {
+struct layer_base_traits<dyn_rnn_layer_impl<Desc>> {
     static constexpr bool is_neural     = true;  ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -241,31 +248,27 @@ struct layer_base_traits<recurrent_layer_impl<Desc>> {
     static constexpr bool is_transform  = false; ///< Indicates if the layer is a transform layer
     static constexpr bool is_recurrent  = true; ///< Indicates if the layer is a recurrent layer
     static constexpr bool is_multi      = false; ///< Indicates if the layer is a multi-layer layer
-    static constexpr bool is_dynamic    = false; ///< Indicates if the layer is dynamic
+    static constexpr bool is_dynamic    = true;  ///< Indicates if the layer is dynamic
     static constexpr bool pretrain_last = false; ///< Indicates if the layer is dynamic
     static constexpr bool sgd_supported = true;  ///< Indicates if the layer is supported by SGD
 };
 
 /*!
- * \brief specialization of sgd_context for recurrent_layer_impl
+ * \brief specialization of sgd_context for dyn_rnn_layer_impl
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, recurrent_layer_impl<Desc>, L> {
-    using layer_t = recurrent_layer_impl<Desc>;
-    using weight  = typename layer_t::weight; ///< The data type for this layer
-
-    static constexpr size_t time_steps      = layer_t::time_steps;      ///< The number of time steps
-    static constexpr size_t sequence_length = layer_t::sequence_length; ///< The length of the sequences
-    static constexpr size_t hidden_units    = layer_t::hidden_units;    ///< The number of hidden units
+struct sgd_context<DBN, dyn_rnn_layer_impl<Desc>, L> {
+    using layer_t = dyn_rnn_layer_impl<Desc>; ///< The layer
+    using weight  = typename layer_t::weight;       ///< The data type for this layer
 
     static constexpr auto batch_size = DBN::batch_size;
 
-    etl::fast_matrix<weight, batch_size, time_steps, sequence_length> input;
-    etl::fast_matrix<weight, batch_size, time_steps, hidden_units> output;
-    etl::fast_matrix<weight, batch_size, time_steps, hidden_units> errors;
+    etl::dyn_matrix<weight, 3> input;
+    etl::dyn_matrix<weight, 3> output;
+    etl::dyn_matrix<weight, 3> errors;
 
-    sgd_context(const recurrent_layer_impl<Desc>& /* layer */)
-            : output(0.0), errors(0.0) {}
+    sgd_context(const dyn_rnn_layer_impl<Desc>& layer)
+            : input(batch_size, layer.time_steps, layer.sequence_length), output(batch_size, layer.time_steps, layer.hidden_units, 0.0), errors(batch_size, layer.time_steps, layer.hidden_units, 0.0) {}
 };
 
 } //end of dll namespace

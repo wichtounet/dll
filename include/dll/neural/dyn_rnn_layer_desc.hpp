@@ -13,14 +13,10 @@
 namespace dll {
 
 /*!
- * \brief Descriptor for a recurrent layer
+ * \brief Descriptor for a dynamic recurrent layer
  */
-template <size_t TS_T, size_t SL_T, size_t HU_T, typename... Parameters>
-struct recurrent_layer_desc {
-    static constexpr size_t time_steps      = TS_T; ///< The number of time steps
-    static constexpr size_t sequence_length = SL_T; ///< The length of the sequences
-    static constexpr size_t hidden_units    = HU_T; ///< The number of hidden units
-
+template <typename... Parameters>
+struct dyn_rnn_layer_desc {
     /*!
      * A list of all the parameters of the descriptor
      */
@@ -43,27 +39,23 @@ struct recurrent_layer_desc {
     using weight = detail::get_type_t<weight_type<float>, Parameters...>;
 
     /*! The dense type */
-    using layer_t = recurrent_layer_impl<recurrent_layer_desc<TS_T, SL_T, HU_T, Parameters...>>;
+    using layer_t = dyn_rnn_layer_impl<dyn_rnn_layer_desc<Parameters...>>;
 
     /*! The dense type */
-    using dyn_layer_t = dyn_recurrent_layer_impl<dyn_recurrent_layer_desc<Parameters...>>;
-
-    static_assert(time_steps > 0, "There must be at least 1 time step");
-    static_assert(sequence_length > 0, "The sequence must be at least 1 element");
-    static_assert(hidden_units > 0, "There must be at least 1 hidden unit");
+    using dyn_layer_t = dyn_rnn_layer_impl<dyn_rnn_layer_desc<Parameters...>>;
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
         detail::is_valid_v<cpp::type_list<
             weight_type_id, activation_id, rnn_initializer_w_id, rnn_initializer_u_id, truncate_id, last_only_id>,
             Parameters...>,
-        "Invalid parameters type for recurrent_layer_desc");
+        "Invalid parameters type for dyn_rnn_layer_desc");
 };
 
 /*!
  * \brief Describe a dense layer
  */
-template <size_t TS_T, size_t SL_T, size_t HU_T, typename... Parameters>
-using recurrent_layer = typename recurrent_layer_desc<TS_T, SL_T, HU_T, Parameters...>::layer_t;
+template <typename... Parameters>
+using dyn_rnn_layer = typename dyn_rnn_layer_desc<Parameters...>::layer_t;
 
 } //end of dll namespace
