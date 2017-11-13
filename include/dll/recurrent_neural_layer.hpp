@@ -21,7 +21,7 @@
 namespace dll {
 
 /*!
- * \brief Standard dense layer of neural network.
+ * \brief Base class for RNN layers (fast / dynamic)
  */
 template <typename Derived, typename Desc>
 struct recurrent_neural_layer : layer<Derived> {
