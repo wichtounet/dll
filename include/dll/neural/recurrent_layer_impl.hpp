@@ -8,7 +8,7 @@
 #pragma once
 
 #include "dll/base_traits.hpp"
-#include "dll/recurrent_neural_layer.hpp"
+#include "dll/base_rnn_layer.hpp"
 
 #include "dll/util/timers.hpp" // for auto_timer
 
@@ -18,13 +18,13 @@ namespace dll {
  * \brief Standard dense layer of neural network.
  */
 template <typename Desc>
-struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<Desc>, Desc> {
-    using desc        = Desc;                                    ///< The descriptor of the layer
-    using weight      = typename desc::weight;                   ///< The data type for this layer
-    using this_type   = recurrent_layer_impl<desc>;              ///< The type of this layer
-    using base_type   = recurrent_neural_layer<this_type, desc>; ///< The base type
-    using layer_t     = this_type;                               ///< This layer's type
-    using dyn_layer_t = typename desc::dyn_layer_t;              ///< The dynamic version of this layer
+struct recurrent_layer_impl final : base_rnn_layer<recurrent_layer_impl<Desc>, Desc> {
+    using desc        = Desc;                            ///< The descriptor of the layer
+    using weight      = typename desc::weight;           ///< The data type for this layer
+    using this_type   = recurrent_layer_impl<desc>;      ///< The type of this layer
+    using base_type   = base_rnn_layer<this_type, desc>; ///< The base type
+    using layer_t     = this_type;                       ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t;      ///< The dynamic version of this layer
 
     static constexpr size_t time_steps      = desc::time_steps;      ///< The number of time steps
     static constexpr size_t sequence_length = desc::sequence_length; ///< The length of the sequences

@@ -24,28 +24,28 @@ namespace dll {
  * \brief Base class for RNN layers (fast / dynamic)
  */
 template <typename Derived, typename Desc>
-struct recurrent_neural_layer : layer<Derived> {
-    using desc      = Desc;                                    ///< The descriptor of the layer
-    using derived_t = Derived;                                 ///< The derived type (CRTP)
-    using weight    = typename desc::weight;                   ///< The data type for this layer
-    using this_type = recurrent_neural_layer<derived_t, desc>; ///< The type of this layer
-    using base_type = layer<Derived>;                          ///< The base type
+struct base_rnn_layer : layer<Derived> {
+    using desc      = Desc;                            ///< The descriptor of the layer
+    using derived_t = Derived;                         ///< The derived type (CRTP)
+    using weight    = typename desc::weight;           ///< The data type for this layer
+    using this_type = base_rnn_layer<derived_t, desc>; ///< The type of this layer
+    using base_type = layer<Derived>;                  ///< The base type
 
     static constexpr auto activation_function = desc::activation_function; ///< The layer's activation function
 
     /*!
      * \brief Initialize the neural layer
      */
-    recurrent_neural_layer()
+    base_rnn_layer()
             : base_type() {
         // Nothing to init here
     }
 
-    recurrent_neural_layer(const recurrent_neural_layer& rhs) = delete;
-    recurrent_neural_layer(recurrent_neural_layer&& rhs)      = delete;
+    base_rnn_layer(const base_rnn_layer& rhs) = delete;
+    base_rnn_layer(base_rnn_layer&& rhs)      = delete;
 
-    recurrent_neural_layer& operator=(const recurrent_neural_layer& rhs) = delete;
-    recurrent_neural_layer& operator=(recurrent_neural_layer&& rhs) = delete;
+    base_rnn_layer& operator=(const base_rnn_layer& rhs) = delete;
+    base_rnn_layer& operator=(base_rnn_layer&& rhs) = delete;
 
     /*!
      * \brief Apply the layer to the given batch of input.
