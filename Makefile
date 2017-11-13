@@ -319,6 +319,8 @@ $(eval $(call add_executable,dll_char_cnn,examples/src/char_cnn.cpp))
 $(eval $(call add_executable_set,dll_char_cnn,dll_char_cnn))
 $(eval $(call add_executable,dll_mnist_rnn,examples/src/mnist_rnn.cpp))
 $(eval $(call add_executable_set,dll_mnist_rnn,dll_mnist_rnn))
+$(eval $(call add_executable,dll_mnist_lstm,examples/src/mnist_lstm.cpp))
+$(eval $(call add_executable_set,dll_mnist_lstm,dll_mnist_lstm))
 
 $(eval $(call add_executable_set,dll_perf_paper,dll_perf_paper))
 $(eval $(call add_executable_set,dll_perf_paper_conv,dll_perf_paper_conv))
