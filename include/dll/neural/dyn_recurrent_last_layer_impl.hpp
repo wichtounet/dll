@@ -8,7 +8,6 @@
 #pragma once
 
 #include "dll/base_traits.hpp"
-#include "dll/recurrent_neural_layer.hpp"
 
 #include "dll/util/timers.hpp" // for auto_timer
 
