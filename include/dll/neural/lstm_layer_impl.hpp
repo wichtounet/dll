@@ -43,28 +43,37 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
     using input_t      = std::vector<input_one_t>;                                  ///< The type of the input
     using output_t     = std::vector<output_one_t>;                                 ///< The type of the output
 
-    using w_type = etl::fast_matrix<weight, hidden_units, hidden_units>; ///< The type of the W weights
-    using u_type = etl::fast_matrix<weight, sequence_length, hidden_units>;    ///< The type of the U weights
+    using w_type = etl::fast_matrix<weight, hidden_units, hidden_units>;    ///< The type of the W weights
+    using u_type = etl::fast_matrix<weight, sequence_length, hidden_units>; ///< The type of the U weights
+    using b_type = etl::fast_matrix<weight, hidden_units>;                  ///< The type of the biases
 
     //Weights and biases
     w_type w_i; ///< Weights W of the input gate
     u_type u_i; ///< Weights U of the input gate
+    b_type b_i; ///< Biases of the input gate
     w_type w_g; ///< Weights W of the input modulation gate
     u_type u_g; ///< Weights U of the input modulation gate
+    b_type b_g; ///< Biases of the input modulation gate
     w_type w_f; ///< Weights W of the forget gate
     u_type u_f; ///< Weights U of the forget gate
+    b_type b_f; ///< Biases of the forget gate
     w_type w_o; ///< Weights W of the output gate
     u_type u_o; ///< Weights U of the output gate
+    b_type b_o; ///< Biases of the output gate
 
     //Backup Weights and biases
     std::unique_ptr<w_type> bak_w_i; ///< Backup Weights W of the input gate
     std::unique_ptr<u_type> bak_u_i; ///< Backup Weights U of the input gate
+    std::unique_ptr<b_type> bak_b_i; ///< Backup Biases of the input gate
     std::unique_ptr<w_type> bak_w_g; ///< Backup Weights W of the input modulation gate
     std::unique_ptr<u_type> bak_u_g; ///< Backup Weights U of the input modulation gate
+    std::unique_ptr<b_type> bak_b_g; ///< Backup Biases of the input modulation gate
     std::unique_ptr<w_type> bak_w_f; ///< Backup Weights W of the forget gate
     std::unique_ptr<u_type> bak_u_f; ///< Backup Weights U of the forget gate
+    std::unique_ptr<b_type> bak_b_f; ///< Backup Biases of the forget gate
     std::unique_ptr<w_type> bak_w_o; ///< Backup Weights W of the output gate
     std::unique_ptr<u_type> bak_u_o; ///< Backup Weights U of the output gate
+    std::unique_ptr<b_type> bak_b_o; ///< Backup Biases of the output gate
 
     /*!
      * \brief Initialize a recurrent layer with basic weights.
@@ -82,6 +91,12 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
         u_initializer::initialize(u_g, hidden_units, hidden_units);
         u_initializer::initialize(u_f, hidden_units, hidden_units);
         u_initializer::initialize(u_o, hidden_units, hidden_units);
+
+        //TODO Initializer for the biases
+        b_i = 0;
+        b_g = 0;
+        b_f = 0;
+        b_o = 0;
     }
 
     /*!
@@ -157,19 +172,19 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
 
         // t == 0
 
-        g_t(0) = etl::tanh(x_t(0) * (u_g));
-        i_t(0) = etl::sigmoid(x_t(0) * (u_i));
-        f_t(0) = etl::sigmoid(x_t(0) * (u_f));
-        o_t(0) = etl::sigmoid(x_t(0) * (u_o));
+        g_t(0) =    etl::tanh(bias_add_2d(x_t(0) * (u_g), b_g));
+        i_t(0) = etl::sigmoid(bias_add_2d(x_t(0) * (u_i), b_i));
+        f_t(0) = etl::sigmoid(bias_add_2d(x_t(0) * (u_f), b_f));
+        o_t(0) = etl::sigmoid(bias_add_2d(x_t(0) * (u_o), b_o));
 
         s_t(0) = g_t(0) >> i_t(0);
         h_t(0) = f_activate<activation_function>(s_t(0)) >> o_t(0);
 
         for (size_t t = 1; t < time_steps; ++t) {
-            g_t(t) = etl::tanh(x_t(t) * u_g + h_t(t - 1) * w_g);
-            i_t(t) = etl::sigmoid(x_t(t) * u_i + h_t(t - 1) * w_i);
-            f_t(t) = etl::sigmoid(x_t(t) * u_f + h_t(t - 1) * w_f);
-            o_t(t) = etl::sigmoid(x_t(t) * u_o + h_t(t - 1) * w_o);
+            g_t(t) =    etl::tanh(bias_add_2d(x_t(t) * u_g + h_t(t - 1) * w_g, b_g));
+            i_t(t) = etl::sigmoid(bias_add_2d(x_t(t) * u_i + h_t(t - 1) * w_i, b_i));
+            f_t(t) = etl::sigmoid(bias_add_2d(x_t(t) * u_f + h_t(t - 1) * w_f, b_f));
+            o_t(t) = etl::sigmoid(bias_add_2d(x_t(t) * u_o + h_t(t - 1) * w_o, b_o));
 
             s_t(t) = (g_t(t) >> i_t(t)) + (s_t(t - 1) >> f_t(t));
             h_t(t) = f_activate<activation_function>(s_t(t)) >> o_t(t);

@@ -53,12 +53,16 @@ struct base_lstm_layer : layer<Derived> {
     void backup_weights() {
         unique_safe_get(as_derived().bak_w_i) = as_derived().w_i;
         unique_safe_get(as_derived().bak_u_i) = as_derived().u_i;
+        unique_safe_get(as_derived().bak_b_i) = as_derived().b_i;
         unique_safe_get(as_derived().bak_w_g) = as_derived().w_g;
         unique_safe_get(as_derived().bak_u_g) = as_derived().u_g;
+        unique_safe_get(as_derived().bak_b_g) = as_derived().b_g;
         unique_safe_get(as_derived().bak_w_f) = as_derived().w_f;
         unique_safe_get(as_derived().bak_u_f) = as_derived().u_f;
+        unique_safe_get(as_derived().bak_b_f) = as_derived().b_f;
         unique_safe_get(as_derived().bak_w_o) = as_derived().w_o;
         unique_safe_get(as_derived().bak_u_o) = as_derived().u_o;
+        unique_safe_get(as_derived().bak_b_o) = as_derived().b_o;
     }
 
     /*!
@@ -67,12 +71,16 @@ struct base_lstm_layer : layer<Derived> {
     void restore_weights() {
         as_derived().w_i = *as_derived().bak_w_i;
         as_derived().u_i = *as_derived().bak_u_i;
+        as_derived().b_i = *as_derived().bak_b_i;
         as_derived().w_g = *as_derived().bak_w_g;
         as_derived().u_g = *as_derived().bak_u_g;
+        as_derived().b_g = *as_derived().bak_b_g;
         as_derived().w_f = *as_derived().bak_w_f;
         as_derived().u_f = *as_derived().bak_u_f;
+        as_derived().b_f = *as_derived().bak_b_f;
         as_derived().w_o = *as_derived().bak_w_o;
         as_derived().u_o = *as_derived().bak_u_o;
+        as_derived().b_o = *as_derived().bak_b_o;
     }
 
     /*!
@@ -81,12 +89,16 @@ struct base_lstm_layer : layer<Derived> {
     void store(std::ostream& os) const {
         cpp::binary_write_all(os, as_derived().w_i);
         cpp::binary_write_all(os, as_derived().u_i);
+        cpp::binary_write_all(os, as_derived().b_i);
         cpp::binary_write_all(os, as_derived().w_g);
         cpp::binary_write_all(os, as_derived().u_g);
+        cpp::binary_write_all(os, as_derived().b_g);
         cpp::binary_write_all(os, as_derived().w_f);
         cpp::binary_write_all(os, as_derived().u_f);
+        cpp::binary_write_all(os, as_derived().b_f);
         cpp::binary_write_all(os, as_derived().w_o);
         cpp::binary_write_all(os, as_derived().u_o);
+        cpp::binary_write_all(os, as_derived().b_o);
     }
 
     /*!
@@ -95,12 +107,16 @@ struct base_lstm_layer : layer<Derived> {
     void load(std::istream& is) {
         cpp::binary_load_all(is, as_derived().w_i);
         cpp::binary_load_all(is, as_derived().u_i);
+        cpp::binary_load_all(is, as_derived().b_i);
         cpp::binary_load_all(is, as_derived().w_g);
         cpp::binary_load_all(is, as_derived().u_g);
+        cpp::binary_load_all(is, as_derived().b_g);
         cpp::binary_load_all(is, as_derived().w_f);
         cpp::binary_load_all(is, as_derived().u_f);
+        cpp::binary_load_all(is, as_derived().b_f);
         cpp::binary_load_all(is, as_derived().w_o);
         cpp::binary_load_all(is, as_derived().u_o);
+        cpp::binary_load_all(is, as_derived().b_o);
     }
 
     /*!
@@ -125,10 +141,10 @@ struct base_lstm_layer : layer<Derived> {
      */
     decltype(auto) trainable_parameters() {
         return std::make_tuple(
-            std::ref(as_derived().w_i), std::ref(as_derived().u_i),
-            std::ref(as_derived().w_g), std::ref(as_derived().u_g),
-            std::ref(as_derived().w_f), std::ref(as_derived().u_f),
-            std::ref(as_derived().w_o), std::ref(as_derived().u_o));
+            std::ref(as_derived().w_i), std::ref(as_derived().u_i), std::ref(as_derived().b_i),
+            std::ref(as_derived().w_g), std::ref(as_derived().u_g), std::ref(as_derived().b_g),
+            std::ref(as_derived().w_f), std::ref(as_derived().u_f), std::ref(as_derived().b_f),
+            std::ref(as_derived().w_o), std::ref(as_derived().u_o), std::ref(as_derived().b_o));
     }
 
     /*!
@@ -137,10 +153,10 @@ struct base_lstm_layer : layer<Derived> {
      */
     decltype(auto) trainable_parameters() const {
         return std::make_tuple(
-            std::cref(as_derived().w_i), std::cref(as_derived().u_i),
-            std::cref(as_derived().w_g), std::cref(as_derived().u_g),
-            std::cref(as_derived().w_f), std::cref(as_derived().u_f),
-            std::cref(as_derived().w_o), std::cref(as_derived().u_o));
+            std::cref(as_derived().w_i), std::cref(as_derived().u_i), std::cref(as_derived().b_i),
+            std::cref(as_derived().w_g), std::cref(as_derived().u_g), std::cref(as_derived().b_g),
+            std::cref(as_derived().w_f), std::cref(as_derived().u_f), std::cref(as_derived().b_f),
+            std::cref(as_derived().w_o), std::cref(as_derived().u_o), std::cref(as_derived().b_o));
     }
 
 private:
