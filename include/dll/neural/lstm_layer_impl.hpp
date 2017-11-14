@@ -283,11 +283,9 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
         const size_t Batch = etl::dim<0>(context.errors);
 
         auto& x = context.input;
-        auto& h = context.output;
 
         etl::dyn_matrix<float, 3> x_t(time_steps, Batch, sequence_length);
-        etl::dyn_matrix<float, 3> h_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> o_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> delta_t(time_steps, Batch, hidden_units);
 
         // 1. Rearrange x/h
 
@@ -299,28 +297,22 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
 
         for (size_t b = 0; b < Batch; ++b) {
             for (size_t t = 0; t < time_steps; ++t) {
-                h_t(t)(b) = h(b)(t);
-            }
-        }
-
-        for (size_t b = 0; b < Batch; ++b) {
-            for (size_t t = 0; t < time_steps; ++t) {
-                o_t(t)(b) = context.errors(b)(t);
+                delta_t(t)(b) = context.errors(b)(t);
             }
         }
 
         auto& w_i_grad = std::get<0>(context.up.context)->grad;
         auto& u_i_grad = std::get<1>(context.up.context)->grad;
-        auto& b_i_grad = std::get<1>(context.up.context)->grad;
-        auto& w_g_grad = std::get<0>(context.up.context)->grad;
-        auto& u_g_grad = std::get<1>(context.up.context)->grad;
-        auto& b_g_grad = std::get<1>(context.up.context)->grad;
-        auto& w_f_grad = std::get<0>(context.up.context)->grad;
-        auto& u_f_grad = std::get<1>(context.up.context)->grad;
-        auto& b_f_grad = std::get<1>(context.up.context)->grad;
-        auto& w_o_grad = std::get<0>(context.up.context)->grad;
-        auto& u_o_grad = std::get<1>(context.up.context)->grad;
-        auto& b_o_grad = std::get<1>(context.up.context)->grad;
+        auto& b_i_grad = std::get<2>(context.up.context)->grad;
+        auto& w_g_grad = std::get<3>(context.up.context)->grad;
+        auto& u_g_grad = std::get<4>(context.up.context)->grad;
+        auto& b_g_grad = std::get<5>(context.up.context)->grad;
+        auto& w_f_grad = std::get<6>(context.up.context)->grad;
+        auto& u_f_grad = std::get<7>(context.up.context)->grad;
+        auto& b_f_grad = std::get<8>(context.up.context)->grad;
+        auto& w_o_grad = std::get<9>(context.up.context)->grad;
+        auto& u_o_grad = std::get<10>(context.up.context)->grad;
+        auto& b_o_grad = std::get<11>(context.up.context)->grad;
 
         w_i_grad = 0;
         u_i_grad = 0;
@@ -335,32 +327,102 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
         u_o_grad = 0;
         b_o_grad = 0;
 
-        size_t t = time_steps - 1;
+        auto& a_t = g_t;
+
+        etl::dyn_matrix<float, 3> d_state_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> delta_out_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> d_out_t(time_steps, Batch, hidden_units);
+
+        etl::dyn_matrix<float, 3> d_a_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> d_i_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> d_f_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> d_o_t(time_steps, Batch, hidden_units);
+
+        etl::dyn_matrix<float, 3> d_x_a_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> d_x_i_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> d_x_f_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> d_x_o_t(time_steps, Batch, hidden_units);
+
+        size_t ttt = time_steps - 1;
 
         do {
-            //TODO
-
-            size_t bptt_step = t;
+            size_t t = ttt; // The BPTT  step
 
             const size_t last_step = std::max(int(time_steps) - int(bptt_steps), 0);
 
             do {
-                //TODO
+                if (t == time_steps - 1) {
+                    d_out_t(t) = delta_t(t);
 
-                --bptt_step;
-            } while (bptt_step > last_step);
+                    d_state_t(t) = d_out_t(t) >> o_t(t) >> etl::tanh_derivative(s_t(t));
+                } else {
+                    d_out_t(t) = delta_t(t) + delta_out_t(t);
 
-            // bptt_step = 0
+                    d_state_t(t) = (d_out_t(t) >> o_t(t) >> etl::tanh_derivative(s_t(t))) + (d_state_t(t + 1) >> f_t(t + 1));
+                }
 
-            //TODO
+                d_a_t(t) = d_state_t(t) >> i_t(t) >> (1 - (a_t(t) >> a_t(t)));
+                d_i_t(t) = d_state_t(t) >> a_t(t) >> i_t(t) >> (1 - i_t(t));
+                d_f_t(t) = d_state_t(t) >> s_t(t - 1) >> f_t(t) >> (1 - f_t(t));
+                d_o_t(t) = d_out_t(t) >> etl::tanh(s_t(t)) >> o_t(t) >> (1 - o_t(t));
 
-            --t;
+                d_x_a_t(t) = d_a_t(t) >> trans(w_g);
+                d_x_i_t(t) = d_i_t(t) >> trans(w_i);
+                d_x_f_t(t) = d_f_t(t) >> trans(w_f);
+                d_x_o_t(t) = d_o_t(t) >> trans(w_o);
+
+                //TODO This is wrong!
+                //delta_out_t(t-1) = d_a_t(t) * trans(u_g) + d_i_t(t) * trans(u_i) + d_f_t(t) * trans(u_f) + d_o_t(t) * trans(u_o);
+
+                --t;
+            } while (t > last_step);
+
+            // t = 0
+
+            d_out_t(t) = delta_t(t) + delta_out_t(t);
+
+            d_state_t(t) = (d_out_t(t) >> o_t(t) >> etl::tanh_derivative(s_t(t))) + (d_state_t(t + 1) >> f_t(t + 1));
+
+            d_a_t(t) = d_state_t(t) >> i_t(t) >> (1 - (a_t(t) >> a_t(t)));
+            d_i_t(t) = d_state_t(t) >> a_t(t) >> i_t(t) >> (1 - i_t(t));
+            d_f_t(t) = 0;
+            d_o_t(t) = d_out_t(t) >> etl::tanh(s_t(t)) >> o_t(t) >> (1 - o_t(t));
+
+            d_x_a_t(t) = d_a_t(t) >> trans(w_g);
+            d_x_i_t(t) = d_i_t(t) >> trans(w_i);
+            d_x_f_t(t) = d_f_t(t) >> trans(w_f);
+            d_x_o_t(t) = d_o_t(t) >> trans(w_o);
+
+            // Compute the gradients
+
+            for (size_t t = 0; t < time_steps; ++t) {
+                w_g_grad += etl::batch_outer(d_a_t(t), x_t(t));
+                w_i_grad += etl::batch_outer(d_i_t(t), x_t(t));
+                w_f_grad += etl::batch_outer(d_f_t(t), x_t(t));
+                w_o_grad += etl::batch_outer(d_o_t(t), x_t(t));
+            }
+
+            for (size_t t = 0; t < time_steps - 1; ++t) {
+                u_g_grad += etl::batch_outer(d_a_t(t + 1), h_t(t));
+                u_i_grad += etl::batch_outer(d_i_t(t + 1), h_t(t));
+                u_f_grad += etl::batch_outer(d_f_t(t + 1), h_t(t));
+                u_o_grad += etl::batch_outer(d_o_t(t + 1), h_t(t));
+            }
+
+            for (size_t t = 0; t < time_steps; ++t) {
+                b_g_grad += etl::bias_batch_sum_2d(d_a_t(t));
+                b_i_grad += etl::bias_batch_sum_2d(d_i_t(t));
+                b_f_grad += etl::bias_batch_sum_2d(d_f_t(t));
+                b_o_grad += etl::bias_batch_sum_2d(d_o_t(t));
+            }
+
+            --ttt;
 
             // If only the last time step is used, no need to use the other errors
             if /*constexpr*/ (desc::parameters::template contains<last_only>()) {
                 break;
             }
-        } while (t != 0);
+        } while (ttt != 0);
     }
 };
 
