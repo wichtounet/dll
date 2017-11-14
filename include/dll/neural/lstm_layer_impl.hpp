@@ -267,11 +267,87 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
      */
     template <typename C>
     void compute_gradients(C& context) const {
-        dll::auto_timer timer("lstm:compute_gradients");
+        const size_t Batch = etl::dim<0>(context.errors);
 
-        cpp_unused(context);
+        auto& x = context.input;
+        auto& h = context.output;
 
-        //TODO base_type::compute_gradients_impl(context, w, time_steps, sequence_length, hidden_units, bptt_steps);
+        etl::dyn_matrix<float, 3> x_t(time_steps, Batch, sequence_length);
+        etl::dyn_matrix<float, 3> h_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> o_t(time_steps, Batch, hidden_units);
+
+        // 1. Rearrange x/h
+
+        for (size_t b = 0; b < Batch; ++b) {
+            for (size_t t = 0; t < time_steps; ++t) {
+                x_t(t)(b) = x(b)(t);
+            }
+        }
+
+        for (size_t b = 0; b < Batch; ++b) {
+            for (size_t t = 0; t < time_steps; ++t) {
+                h_t(t)(b) = h(b)(t);
+            }
+        }
+
+        for (size_t b = 0; b < Batch; ++b) {
+            for (size_t t = 0; t < time_steps; ++t) {
+                o_t(t)(b) = context.errors(b)(t);
+            }
+        }
+
+        auto& w_i_grad = std::get<0>(context.up.context)->grad;
+        auto& u_i_grad = std::get<1>(context.up.context)->grad;
+        auto& b_i_grad = std::get<1>(context.up.context)->grad;
+        auto& w_g_grad = std::get<0>(context.up.context)->grad;
+        auto& u_g_grad = std::get<1>(context.up.context)->grad;
+        auto& b_g_grad = std::get<1>(context.up.context)->grad;
+        auto& w_f_grad = std::get<0>(context.up.context)->grad;
+        auto& u_f_grad = std::get<1>(context.up.context)->grad;
+        auto& b_f_grad = std::get<1>(context.up.context)->grad;
+        auto& w_o_grad = std::get<0>(context.up.context)->grad;
+        auto& u_o_grad = std::get<1>(context.up.context)->grad;
+        auto& b_o_grad = std::get<1>(context.up.context)->grad;
+
+        w_i_grad = 0;
+        u_i_grad = 0;
+        b_i_grad = 0;
+        w_g_grad = 0;
+        u_g_grad = 0;
+        b_g_grad = 0;
+        w_f_grad = 0;
+        u_f_grad = 0;
+        b_f_grad = 0;
+        w_o_grad = 0;
+        u_o_grad = 0;
+        b_o_grad = 0;
+
+        size_t t = time_steps - 1;
+
+        do {
+            //TODO
+
+            size_t bptt_step = t;
+
+            const size_t last_step = std::max(int(time_steps) - int(bptt_steps), 0);
+
+            do {
+                //TODO
+
+                --bptt_step;
+            } while (bptt_step > last_step);
+
+            // bptt_step = 0
+
+            //TODO
+
+            --t;
+
+            // If only the last time step is used, no need to use the other errors
+            if /*constexpr*/ (desc::parameters::template contains<last_only>()) {
+                break;
+            }
+        } while (t != 0);
     }
 };
 
