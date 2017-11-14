@@ -138,6 +138,24 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
         return {buffer};
     }
 
+    mutable etl::dyn_matrix<float, 3> g_t;
+    mutable etl::dyn_matrix<float, 3> i_t;
+    mutable etl::dyn_matrix<float, 3> f_t;
+    mutable etl::dyn_matrix<float, 3> o_t;
+    mutable etl::dyn_matrix<float, 3> s_t;
+    mutable etl::dyn_matrix<float, 3> h_t;
+
+    void prepare_cache(size_t Batch) const {
+        if (cpp_unlikely(!i_t.memory_start())) {
+            g_t.resize(time_steps, Batch, hidden_units);
+            i_t.resize(time_steps, Batch, hidden_units);
+            f_t.resize(time_steps, Batch, hidden_units);
+            o_t.resize(time_steps, Batch, hidden_units);
+            s_t.resize(time_steps, Batch, hidden_units);
+            h_t.resize(time_steps, Batch, hidden_units);
+        }
+    }
+
     /*!
      * \brief Apply the layer to the given batch of input.
      *
@@ -152,13 +170,9 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
 
         cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
 
+        prepare_cache(Batch);
+
         etl::dyn_matrix<float, 3> x_t(time_steps, Batch, sequence_length);
-        etl::dyn_matrix<float, 3> g_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> i_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> f_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> o_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> s_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> h_t(time_steps, Batch, hidden_units);
 
         // 1. Rearrange input
 
@@ -176,7 +190,6 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
         i_t(0) = etl::sigmoid(bias_add_2d(x_t(0) * (u_i), b_i));
         f_t(0) = etl::sigmoid(bias_add_2d(x_t(0) * (u_f), b_f));
         o_t(0) = etl::sigmoid(bias_add_2d(x_t(0) * (u_o), b_o));
-
         s_t(0) = g_t(0) >> i_t(0);
         h_t(0) = f_activate<activation_function>(s_t(0)) >> o_t(0);
 
