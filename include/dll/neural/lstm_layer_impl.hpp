@@ -354,11 +354,12 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
         size_t ttt = time_steps - 1;
 
         do {
-            size_t t = ttt; // The BPTT  step
-
             const size_t last_step = std::max(int(time_steps) - int(bptt_steps), 0);
 
-            do {
+            // Backpropagation through time
+            for(int tt = ttt; tt >= int(last_step); --tt){
+                const size_t t = tt;
+
                 if (t == time_steps - 1) {
                     d_h_t(t) = delta_t(t);
                     d_c_t(t) = (o_t(t) >> d_h_t(t)) >> (1 - (s_t(t) >> s_t(t)));
@@ -368,9 +369,14 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
                 }
 
                 d_h_o_t(t) = (s_t(t) >> d_h_t(t)) >> o_t(t) >> (1 - o_t(t));
-                d_h_f_t(t) = (s_t(t - 1) >> d_c_t(t)) >> f_t(t) >> (1 - f_t(t));
                 d_h_i_t(t) = (g_t(t) >> d_c_t(t))     >> i_t(t) >> (1 - i_t(t));
                 d_h_c_t(t) = (i_t(t) >> d_c_t(t))     >> (1 - (g_t(t) >> g_t(t)));
+
+                if (t == 0) {
+                    d_h_f_t(t) = 0;
+                } else {
+                    d_h_f_t(t) = (s_t(t - 1) >> d_c_t(t)) >> f_t(t) >> (1 - f_t(t));
+                }
 
                 b_o_grad += bias_batch_sum_2d(d_h_o_t(t));
                 b_i_grad += bias_batch_sum_2d(d_h_i_t(t));
@@ -382,10 +388,12 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
                 u_f_grad += batch_outer(x_t(t), d_h_f_t(t));
                 u_g_grad += batch_outer(x_t(t), d_h_c_t(t));
 
-                w_o_grad += batch_outer(h_t(t - 1), d_h_o_t(t));
-                w_i_grad += batch_outer(h_t(t - 1), d_h_i_t(t));
-                w_f_grad += batch_outer(h_t(t - 1), d_h_f_t(t));
-                w_g_grad += batch_outer(h_t(t - 1), d_h_c_t(t));
+                if(t > 0){
+                    w_o_grad += batch_outer(h_t(t - 1), d_h_o_t(t));
+                    w_i_grad += batch_outer(h_t(t - 1), d_h_i_t(t));
+                    w_f_grad += batch_outer(h_t(t - 1), d_h_f_t(t));
+                    w_g_grad += batch_outer(h_t(t - 1), d_h_c_t(t));
+                }
 
                 // The part going back to x
                 d_x_o_t(t) = d_h_o_t(t) * trans(u_o);
@@ -406,11 +414,7 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
 
                 //dc_next
                 d_c_t(t) = f_t(t) >> d_c_t(t);
-
-                --t;
-            } while (t > last_step);
-
-            // t = 0
+            }
 
             --ttt;
 
