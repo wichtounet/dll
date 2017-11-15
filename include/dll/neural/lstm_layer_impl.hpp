@@ -361,18 +361,13 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
             do {
                 if (t == time_steps - 1) {
                     d_h_t(t) = delta_t(t);
-                } else {
-                    d_h_t(t) = delta_t(t) + d_h_t(t + 1);
-                }
-
-                d_h_o_t(t) = (s_t(t) >> d_h_t(t)) >> o_t(t) >> (1 - o_t(t));
-
-                if (t == time_steps - 1) {
                     d_c_t(t) = (o_t(t) >> d_h_t(t)) >> (1 - (s_t(t) >> s_t(t)));
                 } else {
+                    d_h_t(t) = delta_t(t) + d_h_t(t + 1);
                     d_c_t(t) = ((o_t(t) >> d_h_t(t)) >> (1 - (s_t(t) >> s_t(t)))) + d_c_t(t + 1);
                 }
 
+                d_h_o_t(t) = (s_t(t) >> d_h_t(t)) >> o_t(t) >> (1 - o_t(t));
                 d_h_f_t(t) = (s_t(t - 1) >> d_c_t(t)) >> f_t(t) >> (1 - f_t(t));
                 d_h_i_t(t) = (g_t(t) >> d_c_t(t))     >> i_t(t) >> (1 - i_t(t));
                 d_h_c_t(t) = (i_t(t) >> d_c_t(t))     >> (1 - (g_t(t) >> g_t(t)));
