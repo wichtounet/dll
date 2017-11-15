@@ -138,19 +138,31 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
         return {buffer};
     }
 
+    mutable etl::dyn_matrix<float, 3> g_pre_t;
+    mutable etl::dyn_matrix<float, 3> i_pre_t;
+    mutable etl::dyn_matrix<float, 3> f_pre_t;
+    mutable etl::dyn_matrix<float, 3> o_pre_t;
+
     mutable etl::dyn_matrix<float, 3> g_t;
     mutable etl::dyn_matrix<float, 3> i_t;
     mutable etl::dyn_matrix<float, 3> f_t;
     mutable etl::dyn_matrix<float, 3> o_t;
+
     mutable etl::dyn_matrix<float, 3> s_t;
     mutable etl::dyn_matrix<float, 3> h_t;
 
     void prepare_cache(size_t Batch) const {
         if (cpp_unlikely(!i_t.memory_start())) {
+            g_pre_t.resize(time_steps, Batch, hidden_units);
+            i_pre_t.resize(time_steps, Batch, hidden_units);
+            f_pre_t.resize(time_steps, Batch, hidden_units);
+            o_pre_t.resize(time_steps, Batch, hidden_units);
+
             g_t.resize(time_steps, Batch, hidden_units);
             i_t.resize(time_steps, Batch, hidden_units);
             f_t.resize(time_steps, Batch, hidden_units);
             o_t.resize(time_steps, Batch, hidden_units);
+
             s_t.resize(time_steps, Batch, hidden_units);
             h_t.resize(time_steps, Batch, hidden_units);
         }
@@ -186,18 +198,29 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
 
         // t == 0
 
-        g_t(0) =    etl::tanh(bias_add_2d(x_t(0) * (u_g), b_g));
-        i_t(0) = etl::sigmoid(bias_add_2d(x_t(0) * (u_i), b_i));
-        f_t(0) = etl::sigmoid(bias_add_2d(x_t(0) * (u_f), b_f));
-        o_t(0) = etl::sigmoid(bias_add_2d(x_t(0) * (u_o), b_o));
+        g_pre_t(0) = bias_add_2d(x_t(0) * (u_g), b_g);
+        i_pre_t(0) = bias_add_2d(x_t(0) * (u_i), b_i);
+        f_pre_t(0) = bias_add_2d(x_t(0) * (u_f), b_f);
+        o_pre_t(0) = bias_add_2d(x_t(0) * (u_o), b_o);
+
+        g_t(0) =    etl::tanh(g_pre_t(0));
+        i_t(0) = etl::sigmoid(i_pre_t(0));
+        f_t(0) = etl::sigmoid(f_pre_t(0));
+        o_t(0) = etl::sigmoid(o_pre_t(0));
+
         s_t(0) = g_t(0) >> i_t(0);
         h_t(0) = f_activate<activation_function>(s_t(0)) >> o_t(0);
 
         for (size_t t = 1; t < time_steps; ++t) {
-            g_t(t) =    etl::tanh(bias_add_2d(x_t(t) * u_g + h_t(t - 1) * w_g, b_g));
-            i_t(t) = etl::sigmoid(bias_add_2d(x_t(t) * u_i + h_t(t - 1) * w_i, b_i));
-            f_t(t) = etl::sigmoid(bias_add_2d(x_t(t) * u_f + h_t(t - 1) * w_f, b_f));
-            o_t(t) = etl::sigmoid(bias_add_2d(x_t(t) * u_o + h_t(t - 1) * w_o, b_o));
+            g_pre_t(t) = bias_add_2d(x_t(t) * u_g + h_t(t - 1) * w_g, b_g);
+            i_pre_t(t) = bias_add_2d(x_t(t) * u_i + h_t(t - 1) * w_i, b_i);
+            f_pre_t(t) = bias_add_2d(x_t(t) * u_f + h_t(t - 1) * w_f, b_f);
+            o_pre_t(t) = bias_add_2d(x_t(t) * u_o + h_t(t - 1) * w_o, b_o);
+
+            g_t(t) =    etl::tanh(g_pre_t(t));
+            i_t(t) = etl::sigmoid(i_pre_t(t));
+            f_t(t) = etl::sigmoid(f_pre_t(t));
+            o_t(t) = etl::sigmoid(o_pre_t(t));
 
             s_t(t) = (g_t(t) >> i_t(t)) + (s_t(t - 1) >> f_t(t));
             h_t(t) = f_activate<activation_function>(s_t(t)) >> o_t(t);
