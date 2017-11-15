@@ -362,10 +362,10 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
 
                 if (t == time_steps - 1) {
                     d_h_t(t) = delta_t(t);
-                    d_c_t(t) = (o_t(t) >> d_h_t(t)) >> (1 - (s_t(t) >> s_t(t)));
+                    d_c_t(t) = (o_t(t) >> d_h_t(t)) >> f_derivative<activation_function>(s_t(t));
                 } else {
                     d_h_t(t) = delta_t(t) + d_h_t(t + 1);
-                    d_c_t(t) = ((o_t(t) >> d_h_t(t)) >> (1 - (s_t(t) >> s_t(t)))) + d_c_t(t + 1);
+                    d_c_t(t) = ((o_t(t) >> d_h_t(t)) >> f_derivative<activation_function>(s_t(t))) + d_c_t(t + 1);
                 }
 
                 d_h_o_t(t) = etl::ml::sigmoid_backward(o_t(t), s_t(t) >> d_h_t(t));
