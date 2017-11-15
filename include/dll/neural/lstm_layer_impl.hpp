@@ -368,14 +368,14 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
                     d_c_t(t) = ((o_t(t) >> d_h_t(t)) >> (1 - (s_t(t) >> s_t(t)))) + d_c_t(t + 1);
                 }
 
-                d_h_o_t(t) = (s_t(t) >> d_h_t(t)) >> o_t(t) >> (1 - o_t(t));
-                d_h_i_t(t) = (g_t(t) >> d_c_t(t))     >> i_t(t) >> (1 - i_t(t));
-                d_h_c_t(t) = (i_t(t) >> d_c_t(t))     >> (1 - (g_t(t) >> g_t(t)));
+                d_h_o_t(t) = etl::ml::sigmoid_backward(o_t(t), s_t(t) >> d_h_t(t));
+                d_h_i_t(t) = etl::ml::sigmoid_backward(i_t(t), g_t(t) >> d_c_t(t));
+                d_h_c_t(t) = etl::ml::tanh_backward(g_t(t), i_t(t) >> d_c_t(t));
 
                 if (t == 0) {
                     d_h_f_t(t) = 0;
                 } else {
-                    d_h_f_t(t) = (s_t(t - 1) >> d_c_t(t)) >> f_t(t) >> (1 - f_t(t));
+                    d_h_f_t(t) = etl::ml::sigmoid_backward(f_t(t), s_t(t - 1) >> d_c_t(t));
                 }
 
                 b_o_grad += bias_batch_sum_2d(d_h_o_t(t));
