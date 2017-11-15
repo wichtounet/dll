@@ -352,21 +352,24 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
 
         // 3. Backpropagation through time
 
-        auto& a_t = g_t;
+        etl::dyn_matrix<float, 3> d_h_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> d_c_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> d_x_t(time_steps, Batch, sequence_length);
 
-        etl::dyn_matrix<float, 3> d_state_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> delta_out_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> d_out_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> d_h_o_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> d_h_f_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> d_h_i_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> d_h_c_t(time_steps, Batch, hidden_units);
 
-        etl::dyn_matrix<float, 3> d_a_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> d_i_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> d_f_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> d_o_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> d_x_o_t(time_steps, Batch, sequence_length);
+        etl::dyn_matrix<float, 3> d_x_f_t(time_steps, Batch, sequence_length);
+        etl::dyn_matrix<float, 3> d_x_i_t(time_steps, Batch, sequence_length);
+        etl::dyn_matrix<float, 3> d_x_c_t(time_steps, Batch, sequence_length);
 
-        etl::dyn_matrix<float, 3> d_x_a_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> d_x_i_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> d_x_f_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> d_x_o_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> d_xh_o_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> d_xh_f_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> d_xh_i_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> d_xh_c_t(time_steps, Batch, hidden_units);
 
         size_t ttt = time_steps - 1;
 
@@ -377,69 +380,62 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
 
             do {
                 if (t == time_steps - 1) {
-                    d_out_t(t) = delta_t(t);
-
-                    d_state_t(t) = d_out_t(t) >> o_t(t) >> etl::tanh_derivative(s_t(t));
+                    d_h_t(t) = delta_t(t);
                 } else {
-                    d_out_t(t) = delta_t(t) + delta_out_t(t);
-
-                    d_state_t(t) = (d_out_t(t) >> o_t(t) >> etl::tanh_derivative(s_t(t))) + (d_state_t(t + 1) >> f_t(t + 1));
+                    d_h_t(t) = delta_t(t) + d_h_t(t + 1);
                 }
 
-                d_a_t(t) = d_state_t(t) >> i_t(t) >> (1 - (a_t(t) >> a_t(t)));
-                d_i_t(t) = d_state_t(t) >> a_t(t) >> i_t(t) >> (1 - i_t(t));
-                d_f_t(t) = d_state_t(t) >> s_t(t - 1) >> f_t(t) >> (1 - f_t(t));
-                d_o_t(t) = d_out_t(t) >> etl::tanh(s_t(t)) >> o_t(t) >> (1 - o_t(t));
+                d_h_o_t(t) = (s_t(t) >> d_h_t(t)) >> o_t(t) >> (1 - o_t(t));
 
-                d_x_a_t(t) = d_a_t(t) >> trans(w_g);
-                d_x_i_t(t) = d_i_t(t) >> trans(w_i);
-                d_x_f_t(t) = d_f_t(t) >> trans(w_f);
-                d_x_o_t(t) = d_o_t(t) >> trans(w_o);
+                if (t == time_steps - 1) {
+                    d_c_t(t) = (o_t(t) >> d_h_t(t)) >> (1 - (s_t(t) >> s_t(t)));
+                } else {
+                    d_c_t(t) = ((o_t(t) >> d_h_t(t)) >> (1 - (s_t(t) >> s_t(t)))) + d_c_t(t + 1);
+                }
 
-                //TODO This is wrong!
-                //delta_out_t(t-1) = d_a_t(t) * trans(u_g) + d_i_t(t) * trans(u_i) + d_f_t(t) * trans(u_f) + d_o_t(t) * trans(u_o);
+                d_h_f_t(t) = (s_t(t - 1) >> d_c_t(t)) >> f_t(t) >> (1 - f_t(t));
+                d_h_i_t(t) = (g_t(t) >> d_c_t(t))     >> i_t(t) >> (1 - i_t(t));
+                d_h_c_t(t) = (i_t(t) >> d_c_t(t))     >> (1 - (g_t(t) >> g_t(t)));
+
+                b_o_grad += bias_batch_sum_2d(d_h_o_t(t));
+                b_i_grad += bias_batch_sum_2d(d_h_i_t(t));
+                b_f_grad += bias_batch_sum_2d(d_h_f_t(t));
+                b_g_grad += bias_batch_sum_2d(d_h_c_t(t));
+
+                u_o_grad += batch_outer(x_t(t), d_h_o_t(t));
+                u_i_grad += batch_outer(x_t(t), d_h_i_t(t));
+                u_f_grad += batch_outer(x_t(t), d_h_f_t(t));
+                u_g_grad += batch_outer(x_t(t), d_h_c_t(t));
+
+                w_o_grad += batch_outer(h_t(t - 1), d_h_o_t(t));
+                w_i_grad += batch_outer(h_t(t - 1), d_h_i_t(t));
+                w_f_grad += batch_outer(h_t(t - 1), d_h_f_t(t));
+                w_g_grad += batch_outer(h_t(t - 1), d_h_c_t(t));
+
+                // The part going back to x
+                d_x_o_t(t) = d_h_o_t(t) * trans(u_o);
+                d_x_i_t(t) = d_h_i_t(t) * trans(u_i);
+                d_x_f_t(t) = d_h_f_t(t) * trans(u_f);
+                d_x_c_t(t) = d_h_c_t(t) * trans(u_g);
+
+                // The part going back to h
+                d_xh_o_t(t) = d_h_o_t(t) * trans(w_o);
+                d_xh_i_t(t) = d_h_i_t(t) * trans(w_i);
+                d_xh_f_t(t) = d_h_f_t(t) * trans(w_f);
+                d_xh_c_t(t) = d_h_c_t(t) * trans(w_g);
+
+                d_x_t(t) = d_x_o_t(t) + d_x_i_t(t) + d_x_f_t(t) + d_x_c_t(t);
+
+                //dh_next
+                d_h_t(t) = d_xh_o_t(t) + d_xh_i_t(t) + d_xh_f_t(t) + d_xh_c_t(t);
+
+                //dc_next
+                d_c_t(t) = f_t(t) >> d_c_t(t);
 
                 --t;
             } while (t > last_step);
 
             // t = 0
-
-            d_out_t(t) = delta_t(t) + delta_out_t(t);
-
-            d_state_t(t) = (d_out_t(t) >> o_t(t) >> etl::tanh_derivative(s_t(t))) + (d_state_t(t + 1) >> f_t(t + 1));
-
-            d_a_t(t) = d_state_t(t) >> i_t(t) >> (1 - (a_t(t) >> a_t(t)));
-            d_i_t(t) = d_state_t(t) >> a_t(t) >> i_t(t) >> (1 - i_t(t));
-            d_f_t(t) = 0;
-            d_o_t(t) = d_out_t(t) >> etl::tanh(s_t(t)) >> o_t(t) >> (1 - o_t(t));
-
-            d_x_a_t(t) = d_a_t(t) >> trans(w_g);
-            d_x_i_t(t) = d_i_t(t) >> trans(w_i);
-            d_x_f_t(t) = d_f_t(t) >> trans(w_f);
-            d_x_o_t(t) = d_o_t(t) >> trans(w_o);
-
-            // Compute the gradients
-
-            for (size_t t = 0; t < time_steps; ++t) {
-                w_g_grad += etl::batch_outer(d_a_t(t), x_t(t));
-                w_i_grad += etl::batch_outer(d_i_t(t), x_t(t));
-                w_f_grad += etl::batch_outer(d_f_t(t), x_t(t));
-                w_o_grad += etl::batch_outer(d_o_t(t), x_t(t));
-            }
-
-            for (size_t t = 0; t < time_steps - 1; ++t) {
-                u_g_grad += etl::batch_outer(d_a_t(t + 1), h_t(t));
-                u_i_grad += etl::batch_outer(d_i_t(t + 1), h_t(t));
-                u_f_grad += etl::batch_outer(d_f_t(t + 1), h_t(t));
-                u_o_grad += etl::batch_outer(d_o_t(t + 1), h_t(t));
-            }
-
-            for (size_t t = 0; t < time_steps; ++t) {
-                b_g_grad += etl::bias_batch_sum_2d(d_a_t(t));
-                b_i_grad += etl::bias_batch_sum_2d(d_i_t(t));
-                b_f_grad += etl::bias_batch_sum_2d(d_f_t(t));
-                b_o_grad += etl::bias_batch_sum_2d(d_o_t(t));
-            }
 
             --ttt;
 
