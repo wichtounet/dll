@@ -305,16 +305,14 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
     void compute_gradients(C& context) const {
         const size_t Batch = etl::dim<0>(context.errors);
 
-        auto& x = context.input;
+        // 1. Rearrange input/errors
 
         etl::dyn_matrix<float, 3> x_t(time_steps, Batch, sequence_length);
         etl::dyn_matrix<float, 3> delta_t(time_steps, Batch, hidden_units);
 
-        // 1. Rearrange x/h
-
         for (size_t b = 0; b < Batch; ++b) {
             for (size_t t = 0; t < time_steps; ++t) {
-                x_t(t)(b) = x(b)(t);
+                x_t(t)(b) = context.input(b)(t);
             }
         }
 
@@ -323,6 +321,8 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
                 delta_t(t)(b) = context.errors(b)(t);
             }
         }
+
+        // 2. Get gradients from the context
 
         auto& w_i_grad = std::get<0>(context.up.context)->grad;
         auto& u_i_grad = std::get<1>(context.up.context)->grad;
@@ -349,6 +349,8 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
         w_o_grad = 0;
         u_o_grad = 0;
         b_o_grad = 0;
+
+        // 3. Backpropagation through time
 
         auto& a_t = g_t;
 
