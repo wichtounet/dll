@@ -222,8 +222,8 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
             f_t(t) = etl::sigmoid(f_pre_t(t));
             o_t(t) = etl::sigmoid(o_pre_t(t));
 
-            s_t(t) = (g_t(t) >> i_t(t)) + (s_t(t - 1) >> f_t(t));
-            h_t(t) = f_activate<activation_function>(s_t(t)) >> o_t(t);
+            s_t(t) = f_activate<activation_function>( (g_t(t) >> i_t(t)) + (s_t(t - 1) >> f_t(t)) );
+            h_t(t) = s_t(t) >> o_t(t);
         }
 
         // 3. Rearrange the output
