@@ -146,6 +146,25 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
     mutable etl::dyn_matrix<float, 3> s_t;
     mutable etl::dyn_matrix<float, 3> h_t;
 
+    mutable etl::dyn_matrix<float, 3> d_h_t;
+    mutable etl::dyn_matrix<float, 3> d_c_t;
+    mutable etl::dyn_matrix<float, 3> d_x_t;
+
+    mutable etl::dyn_matrix<float, 3> d_h_o_t;
+    mutable etl::dyn_matrix<float, 3> d_h_f_t;
+    mutable etl::dyn_matrix<float, 3> d_h_i_t;
+    mutable etl::dyn_matrix<float, 3> d_h_c_t;
+
+    mutable etl::dyn_matrix<float, 3> d_x_o_t;
+    mutable etl::dyn_matrix<float, 3> d_x_f_t;
+    mutable etl::dyn_matrix<float, 3> d_x_i_t;
+    mutable etl::dyn_matrix<float, 3> d_x_c_t;
+
+    mutable etl::dyn_matrix<float, 3> d_xh_o_t;
+    mutable etl::dyn_matrix<float, 3> d_xh_f_t;
+    mutable etl::dyn_matrix<float, 3> d_xh_i_t;
+    mutable etl::dyn_matrix<float, 3> d_xh_c_t;
+
     void prepare_cache(size_t Batch) const {
         if (cpp_unlikely(!i_t.memory_start())) {
             g_t.resize(time_steps, Batch, hidden_units);
@@ -155,6 +174,25 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
 
             s_t.resize(time_steps, Batch, hidden_units);
             h_t.resize(time_steps, Batch, hidden_units);
+
+            d_h_t.resize(time_steps, Batch, hidden_units);
+            d_c_t.resize(time_steps, Batch, hidden_units);
+            d_x_t.resize(time_steps, Batch, sequence_length);
+
+            d_h_o_t.resize(time_steps, Batch, hidden_units);
+            d_h_f_t.resize(time_steps, Batch, hidden_units);
+            d_h_i_t.resize(time_steps, Batch, hidden_units);
+            d_h_c_t.resize(time_steps, Batch, hidden_units);
+
+            d_x_o_t.resize(time_steps, Batch, sequence_length);
+            d_x_f_t.resize(time_steps, Batch, sequence_length);
+            d_x_i_t.resize(time_steps, Batch, sequence_length);
+            d_x_c_t.resize(time_steps, Batch, sequence_length);
+
+            d_xh_o_t.resize(time_steps, Batch, hidden_units);
+            d_xh_f_t.resize(time_steps, Batch, hidden_units);
+            d_xh_i_t.resize(time_steps, Batch, hidden_units);
+            d_xh_c_t.resize(time_steps, Batch, hidden_units);
         }
     }
 
@@ -332,25 +370,6 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
 
         // 3. Backpropagation through time
 
-        etl::dyn_matrix<float, 3> d_h_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> d_c_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> d_x_t(time_steps, Batch, sequence_length);
-
-        etl::dyn_matrix<float, 3> d_h_o_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> d_h_f_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> d_h_i_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> d_h_c_t(time_steps, Batch, hidden_units);
-
-        etl::dyn_matrix<float, 3> d_x_o_t(time_steps, Batch, sequence_length);
-        etl::dyn_matrix<float, 3> d_x_f_t(time_steps, Batch, sequence_length);
-        etl::dyn_matrix<float, 3> d_x_i_t(time_steps, Batch, sequence_length);
-        etl::dyn_matrix<float, 3> d_x_c_t(time_steps, Batch, sequence_length);
-
-        etl::dyn_matrix<float, 3> d_xh_o_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> d_xh_f_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> d_xh_i_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> d_xh_c_t(time_steps, Batch, hidden_units);
-
         size_t ttt = time_steps - 1;
 
         do {
@@ -401,13 +420,13 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
                 d_x_f_t(t) = d_h_f_t(t) * trans(u_f);
                 d_x_c_t(t) = d_h_c_t(t) * trans(u_g);
 
+                d_x_t(t) = d_x_o_t(t) + d_x_i_t(t) + d_x_f_t(t) + d_x_c_t(t);
+
                 // The part going back to h
                 d_xh_o_t(t) = d_h_o_t(t) * trans(w_o);
                 d_xh_i_t(t) = d_h_i_t(t) * trans(w_i);
                 d_xh_f_t(t) = d_h_f_t(t) * trans(w_f);
                 d_xh_c_t(t) = d_h_c_t(t) * trans(w_g);
-
-                d_x_t(t) = d_x_o_t(t) + d_x_i_t(t) + d_x_f_t(t) + d_x_c_t(t);
 
                 //dh_next
                 d_h_t(t) = d_xh_o_t(t) + d_xh_i_t(t) + d_xh_f_t(t) + d_xh_c_t(t);
