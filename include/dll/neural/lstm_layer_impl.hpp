@@ -95,7 +95,7 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
         //TODO Initializer for the biases
         b_i = 0;
         b_g = 0;
-        b_f = 0;
+        b_f = 1;
         b_o = 0;
     }
 
