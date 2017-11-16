@@ -206,10 +206,10 @@ struct dyn_batch_normalization_2d_layer_impl : neural_layer<dyn_batch_normalizat
         dll::auto_timer timer("bn:2d:dyn:gradients");
 
         // Gradients of gamma
-        std::get<0>(context.up.context)->grad = etl::sum_l(input_pre >> context.errors);
+        std::get<0>(context.up.context)->grad = bias_batch_sum_2d(input_pre >> context.errors);
 
         // Gradients of beta
-        std::get<1>(context.up.context)->grad = etl::sum_l(context.errors);
+        std::get<1>(context.up.context)->grad = bias_batch_sum_2d(context.errors);
     }
 
     /*!
