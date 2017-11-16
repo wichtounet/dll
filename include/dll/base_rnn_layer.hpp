@@ -47,6 +47,16 @@ struct base_rnn_layer : layer<Derived> {
     base_rnn_layer& operator=(const base_rnn_layer& rhs) = delete;
     base_rnn_layer& operator=(base_rnn_layer&& rhs) = delete;
 
+    mutable etl::dyn_matrix<float, 3> x_t;
+    mutable etl::dyn_matrix<float, 3> s_t;
+
+    void prepare_cache(size_t Batch, size_t time_steps, size_t sequence_length, size_t hidden_units) const {
+        if (cpp_unlikely(!x_t.memory_start())) {
+            x_t.resize(time_steps, Batch, sequence_length);
+            s_t.resize(time_steps, Batch, hidden_units);
+        }
+    }
+
     /*!
      * \brief Apply the layer to the given batch of input.
      *
@@ -56,11 +66,10 @@ struct base_rnn_layer : layer<Derived> {
      * \param u The U weights matrix
      */
     template <typename H, typename V, typename W, typename U, typename B>
-    static void forward_batch_impl(H&& output, const V& x, const W& w, const U& u, const B& b, size_t time_steps, size_t sequence_length, size_t hidden_units) {
+    void forward_batch_impl(H&& output, const V& x, const W& w, const U& u, const B& b, size_t time_steps, size_t sequence_length, size_t hidden_units) const {
         const auto Batch = etl::dim<0>(x);
 
-        etl::dyn_matrix<float, 3> x_t(time_steps, etl::dim<0>(x), sequence_length);
-        etl::dyn_matrix<float, 3> s_t(time_steps, etl::dim<0>(x), hidden_units);
+        prepare_cache(Batch, time_steps, sequence_length, hidden_units);
 
         // 1. Rearrange input
 
@@ -157,36 +166,23 @@ struct base_rnn_layer : layer<Derived> {
      * \param context The trainng context
      */
     template <typename C, typename W>
-    static void compute_gradients_impl(C& context, const W& w, size_t time_steps, size_t sequence_length, size_t hidden_units, size_t bptt_steps) {
+    void compute_gradients_impl(C& context, const W& w, size_t time_steps, size_t sequence_length, size_t hidden_units, size_t bptt_steps) const {
+        cpp_unused(sequence_length);
+
         const size_t Batch = etl::dim<0>(context.errors);
 
-        auto& x = context.input;
-        auto& s = context.output;
-
-        etl::dyn_matrix<float, 3> x_t(time_steps, Batch, sequence_length);
-        etl::dyn_matrix<float, 3> s_t(time_steps, Batch, hidden_units);
         etl::dyn_matrix<float, 3> o_t(time_steps, Batch, hidden_units);
         etl::dyn_matrix<float, 3> d_h_t(time_steps, Batch, hidden_units);
 
-        // 1. Rearrange x/s
-
-        for (size_t b = 0; b < Batch; ++b) {
-            for (size_t t = 0; t < time_steps; ++t) {
-                x_t(t)(b) = x(b)(t);
-            }
-        }
-
-        for (size_t b = 0; b < Batch; ++b) {
-            for (size_t t = 0; t < time_steps; ++t) {
-                s_t(t)(b) = s(b)(t);
-            }
-        }
+        // 1. Rearrange errors
 
         for (size_t b = 0; b < Batch; ++b) {
             for (size_t t = 0; t < time_steps; ++t) {
                 o_t(t)(b) = context.errors(b)(t);
             }
         }
+
+        // 2. Get the gradients from the context
 
         auto& w_grad = std::get<0>(context.up.context)->grad;
         auto& u_grad = std::get<1>(context.up.context)->grad;
@@ -195,6 +191,8 @@ struct base_rnn_layer : layer<Derived> {
         w_grad = 0;
         u_grad = 0;
         b_grad = 0;
+
+        // 3. Backpropagation through time
 
         size_t ttt = time_steps - 1;
 
