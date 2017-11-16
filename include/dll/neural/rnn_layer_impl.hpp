@@ -44,14 +44,17 @@ struct rnn_layer_impl final : base_rnn_layer<rnn_layer_impl<Desc>, Desc> {
 
     using w_type = etl::fast_matrix<weight, hidden_units, hidden_units>;    ///< The type of the W weights
     using u_type = etl::fast_matrix<weight, hidden_units, sequence_length>; ///< The type of the U weights
+    using b_type = etl::fast_matrix<weight, hidden_units>;                  ///< The type of the U weights
 
     //Weights and biases
     w_type w; ///< Weights W
     u_type u; ///< Weights U
+    b_type b; ///< Biases b
 
     //Backup Weights and biases
     std::unique_ptr<w_type> bak_w; ///< Backup Weights W
     std::unique_ptr<u_type> bak_u; ///< Backup Weights U
+    std::unique_ptr<b_type> bak_b; ///< Backup Weights U
 
     /*!
      * \brief Initialize a recurrent layer with basic weights.
@@ -63,6 +66,9 @@ struct rnn_layer_impl final : base_rnn_layer<rnn_layer_impl<Desc>, Desc> {
             : base_type() {
         w_initializer::initialize(w, hidden_units, hidden_units);
         u_initializer::initialize(u, hidden_units, hidden_units);
+
+        // TODO bias initializer
+        b = 0;
     }
 
     /*!
@@ -83,7 +89,7 @@ struct rnn_layer_impl final : base_rnn_layer<rnn_layer_impl<Desc>, Desc> {
      * \brief Returns the number of parameters of this layer
      */
     static constexpr size_t parameters() noexcept {
-        return hidden_units * hidden_units + hidden_units * sequence_length;
+        return hidden_units * hidden_units + hidden_units * sequence_length + hidden_units;
     }
 
     /*!
@@ -142,7 +148,7 @@ struct rnn_layer_impl final : base_rnn_layer<rnn_layer_impl<Desc>, Desc> {
 
         cpp_assert(etl::dim<0>(output) == etl::dim<0>(x), "The number of samples must be consistent");
 
-        base_type::forward_batch_impl(output, x, w, u, time_steps, sequence_length, hidden_units);
+        base_type::forward_batch_impl(output, x, w, u, b, time_steps, sequence_length, hidden_units);
     }
 
     /*!

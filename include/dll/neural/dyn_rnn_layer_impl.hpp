@@ -38,14 +38,17 @@ struct dyn_rnn_layer_impl final : base_rnn_layer<dyn_rnn_layer_impl<Desc>, Desc>
 
     using w_type = etl::dyn_matrix<weight, 2>; ///< The type of the W weights
     using u_type = etl::dyn_matrix<weight, 2>; ///< The type of the U weights
+    using b_type = etl::dyn_matrix<weight, 1>; ///< The type of the b biases
 
     //Weights and biases
     w_type w; ///< Weights W
     u_type u; ///< Weights U
+    b_type b; ///< Biases b
 
     //Backup Weights and biases
     std::unique_ptr<w_type> bak_w; ///< Backup Weights W
     std::unique_ptr<u_type> bak_u; ///< Backup Weights U
+    std::unique_ptr<b_type> bak_b; ///< Backup biases b
 
     size_t time_steps;      ///< The number of time steps
     size_t sequence_length; ///< The length of the sequences
@@ -73,9 +76,13 @@ struct dyn_rnn_layer_impl final : base_rnn_layer<dyn_rnn_layer_impl<Desc>, Desc>
 
         w = etl::dyn_matrix<weight, 2>(hidden_units, hidden_units);
         u = etl::dyn_matrix<weight, 2>(hidden_units, sequence_length);
+        b = etl::dyn_matrix<weight, 1>(hidden_units);
 
         w_initializer::initialize(w, hidden_units, hidden_units);
         u_initializer::initialize(u, hidden_units, hidden_units);
+
+        // TODO bias initializer
+        b = 0;
     }
 
     /*!
@@ -96,7 +103,7 @@ struct dyn_rnn_layer_impl final : base_rnn_layer<dyn_rnn_layer_impl<Desc>, Desc>
      * \brief Returns the number of parameters of this layer
      */
     size_t parameters() const noexcept {
-        return hidden_units * hidden_units + hidden_units * sequence_length;
+        return hidden_units * hidden_units + hidden_units * sequence_length + hidden_units;
     }
 
     /*!
@@ -155,7 +162,7 @@ struct dyn_rnn_layer_impl final : base_rnn_layer<dyn_rnn_layer_impl<Desc>, Desc>
 
         cpp_assert(etl::dim<0>(output) == etl::dim<0>(x), "The number of samples must be consistent");
 
-        base_type::forward_batch_impl(output, x, w, u, time_steps, sequence_length, hidden_units);
+        base_type::forward_batch_impl(output, x, w, u, b, time_steps, sequence_length, hidden_units);
     }
 
     /*!

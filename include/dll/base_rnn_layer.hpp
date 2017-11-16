@@ -55,8 +55,8 @@ struct base_rnn_layer : layer<Derived> {
      * \param w The W weights matrix
      * \param u The U weights matrix
      */
-    template <typename H, typename V, typename W, typename U>
-    static void forward_batch_impl(H&& output, const V& x, const W& w, const U& u, size_t time_steps, size_t sequence_length, size_t hidden_units) {
+    template <typename H, typename V, typename W, typename U, typename B>
+    static void forward_batch_impl(H&& output, const V& x, const W& w, const U& u, const B& b, size_t time_steps, size_t sequence_length, size_t hidden_units) {
         const auto Batch = etl::dim<0>(x);
 
         etl::dyn_matrix<float, 3> x_t(time_steps, etl::dim<0>(x), sequence_length);
@@ -74,10 +74,10 @@ struct base_rnn_layer : layer<Derived> {
 
         // t == 0
 
-        s_t(0) = f_activate<activation_function>(x_t(0) * trans(u));
+        s_t(0) = f_activate<activation_function>(bias_add_2d(x_t(0) * trans(u), b));
 
         for (size_t t = 1; t < time_steps; ++t) {
-            s_t(t) = f_activate<activation_function>(x_t(t) * trans(u) + s_t(t - 1) * trans(w));
+            s_t(t) = f_activate<activation_function>(bias_add_2d(x_t(t) * trans(u) + s_t(t - 1) * trans(w), b));
         }
 
         // 3. Rearrange the output
@@ -189,9 +189,11 @@ struct base_rnn_layer : layer<Derived> {
 
         auto& w_grad = std::get<0>(context.up.context)->grad;
         auto& u_grad = std::get<1>(context.up.context)->grad;
+        auto& b_grad = std::get<2>(context.up.context)->grad;
 
         w_grad = 0;
         u_grad = 0;
+        b_grad = 0;
 
         size_t t = time_steps - 1;
 
@@ -205,6 +207,7 @@ struct base_rnn_layer : layer<Derived> {
             do {
                 w_grad += etl::batch_outer(delta_t, s_t(bptt_step - 1));
                 u_grad += etl::batch_outer(delta_t, x_t(bptt_step));
+                b_grad += etl::bias_batch_sum_2d(delta_t);
 
                 delta_t = (delta_t * w) >> f_derivative<activation_function>(s_t(bptt_step - 1));
 
@@ -214,6 +217,7 @@ struct base_rnn_layer : layer<Derived> {
             // bptt_step = 0
 
             u_grad += etl::batch_outer(delta_t, x_t(0));
+            b_grad += etl::bias_batch_sum_2d(delta_t);
 
             --t;
 
@@ -230,6 +234,7 @@ struct base_rnn_layer : layer<Derived> {
     void backup_weights() {
         unique_safe_get(as_derived().bak_w) = as_derived().w;
         unique_safe_get(as_derived().bak_u) = as_derived().u;
+        unique_safe_get(as_derived().bak_b) = as_derived().b;
     }
 
     /*!
@@ -238,6 +243,7 @@ struct base_rnn_layer : layer<Derived> {
     void restore_weights() {
         as_derived().w = *as_derived().bak_w;
         as_derived().u = *as_derived().bak_u;
+        as_derived().b = *as_derived().bak_b;
     }
 
     /*!
@@ -246,6 +252,7 @@ struct base_rnn_layer : layer<Derived> {
     void store(std::ostream& os) const {
         cpp::binary_write_all(os, as_derived().w);
         cpp::binary_write_all(os, as_derived().u);
+        cpp::binary_write_all(os, as_derived().b);
     }
 
     /*!
@@ -254,6 +261,7 @@ struct base_rnn_layer : layer<Derived> {
     void load(std::istream& is) {
         cpp::binary_load_all(is, as_derived().w);
         cpp::binary_load_all(is, as_derived().u);
+        cpp::binary_load_all(is, as_derived().b);
     }
 
     /*!
@@ -277,7 +285,7 @@ struct base_rnn_layer : layer<Derived> {
      * \return a tuple containing references to the variables of this layer
      */
     decltype(auto) trainable_parameters() {
-        return std::make_tuple(std::ref(as_derived().w), std::ref(as_derived().u));
+        return std::make_tuple(std::ref(as_derived().w), std::ref(as_derived().u), std::ref(as_derived().b));
     }
 
     /*!
@@ -285,7 +293,7 @@ struct base_rnn_layer : layer<Derived> {
      * \return a tuple containing references to the variables of this layer
      */
     decltype(auto) trainable_parameters() const {
-        return std::make_tuple(std::cref(as_derived().w), std::cref(as_derived().u));
+        return std::make_tuple(std::cref(as_derived().w), std::cref(as_derived().u), std::cref(as_derived().b));
     }
 
 private:
