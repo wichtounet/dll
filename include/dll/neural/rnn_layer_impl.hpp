@@ -264,7 +264,8 @@ struct sgd_context<DBN, rnn_layer_impl<Desc>, L> {
     static constexpr size_t sequence_length = layer_t::sequence_length; ///< The length of the sequences
     static constexpr size_t hidden_units    = layer_t::hidden_units;    ///< The number of hidden units
 
-    static constexpr auto batch_size = DBN::batch_size;
+    static constexpr size_t layer    = L;               ///< The index of the layer
+    static constexpr auto batch_size = DBN::batch_size; ///< The batch size of the network
 
     etl::fast_matrix<weight, batch_size, time_steps, sequence_length> input;
     etl::fast_matrix<weight, batch_size, time_steps, hidden_units> output;

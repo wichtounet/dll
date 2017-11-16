@@ -268,7 +268,8 @@ struct sgd_context<DBN, dyn_rnn_layer_impl<Desc>, L> {
     using layer_t = dyn_rnn_layer_impl<Desc>; ///< The layer
     using weight  = typename layer_t::weight;       ///< The data type for this layer
 
-    static constexpr auto batch_size = DBN::batch_size;
+    static constexpr size_t layer    = L;               ///< The index of the layer
+    static constexpr auto batch_size = DBN::batch_size; ///< The batch size of the network
 
     etl::dyn_matrix<weight, 3> input;
     etl::dyn_matrix<weight, 3> output;
