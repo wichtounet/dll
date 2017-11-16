@@ -30,6 +30,7 @@ struct dyn_rnn_layer_impl final : base_rnn_layer<dyn_rnn_layer_impl<Desc>, Desc>
 
     using w_initializer = typename desc::w_initializer; ///< The initializer for the W weights
     using u_initializer = typename desc::u_initializer; ///< The initializer for the U weights
+    using b_initializer = typename desc::b_initializer; ///< The initializer for the biases
 
     using input_one_t  = etl::dyn_matrix<weight, 2>; ///< The type of one input
     using output_one_t = etl::dyn_matrix<weight, 2>; ///< The type of one output
@@ -81,8 +82,7 @@ struct dyn_rnn_layer_impl final : base_rnn_layer<dyn_rnn_layer_impl<Desc>, Desc>
         w_initializer::initialize(w, hidden_units, hidden_units);
         u_initializer::initialize(u, hidden_units, hidden_units);
 
-        // TODO bias initializer
-        b = 0;
+        b_initializer::initialize(b, sequence_length, hidden_units);
     }
 
     /*!

@@ -36,8 +36,9 @@ struct rnn_layer_desc {
      */
     static constexpr size_t Truncate    = detail::get_value_v<truncate<0>, Parameters...>;
 
-    using w_initializer = detail::get_type_t<rnn_initializer_w<init_lecun>, Parameters...>;     ///< The initializer for the W weights
-    using u_initializer = detail::get_type_t<rnn_initializer_u<init_lecun>, Parameters...>;     ///< The initializer for the U weights
+    using w_initializer = detail::get_type_t<rnn_initializer_w<init_lecun>, Parameters...>; ///< The initializer for the W weights
+    using u_initializer = detail::get_type_t<rnn_initializer_u<init_lecun>, Parameters...>; ///< The initializer for the U weights
+    using b_initializer = detail::get_type_t<initializer_bias<init_zero>, Parameters...>;   ///< The initializer for the biases
 
     /*! The type used to store the weights */
     using weight = detail::get_type_t<weight_type<float>, Parameters...>;
@@ -55,7 +56,7 @@ struct rnn_layer_desc {
     //Make sure only valid types are passed to the configuration list
     static_assert(
         detail::is_valid_v<cpp::type_list<
-            weight_type_id, activation_id, rnn_initializer_w_id, rnn_initializer_u_id, truncate_id, last_only_id>,
+            weight_type_id, activation_id, rnn_initializer_w_id, rnn_initializer_u_id, initializer_bias_id, truncate_id, last_only_id>,
             Parameters...>,
         "Invalid parameters type for rnn_layer_desc");
 };
