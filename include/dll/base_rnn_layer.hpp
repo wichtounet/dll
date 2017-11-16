@@ -108,20 +108,13 @@ struct base_rnn_layer : layer<Derived> {
         const size_t Batch = etl::dim<0>(context.errors);
 
         etl::dyn_matrix<float, 3> output_t(time_steps, Batch, sequence_length);
-        etl::dyn_matrix<float, 3> s_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 3> o_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> delta_t(time_steps, Batch, hidden_units);
 
         // 1. Rearrange o/s
 
         for (size_t b = 0; b < Batch; ++b) {
             for (size_t t = 0; t < time_steps; ++t) {
-                s_t(t)(b) = context.output(b)(t);
-            }
-        }
-
-        for (size_t b = 0; b < Batch; ++b) {
-            for (size_t t = 0; t < time_steps; ++t) {
-                o_t(t)(b) = context.errors(b)(t);
+                delta_t(t)(b) = context.errors(b)(t);
             }
         }
 
@@ -130,7 +123,7 @@ struct base_rnn_layer : layer<Derived> {
         size_t t = time_steps - 1;
 
         do {
-            output_t(t) = etl::force_temporary(o_t(t) >> f_derivative<activation_function>(s_t(t)));
+            output_t(t) = etl::force_temporary(delta_t(t) >> f_derivative<activation_function>(s_t(t)));
 
             size_t bptt_step = t;
 
@@ -171,14 +164,14 @@ struct base_rnn_layer : layer<Derived> {
 
         const size_t Batch = etl::dim<0>(context.errors);
 
-        etl::dyn_matrix<float, 3> o_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> delta_t(time_steps, Batch, hidden_units);
         etl::dyn_matrix<float, 3> d_h_t(time_steps, Batch, hidden_units);
 
         // 1. Rearrange errors
 
         for (size_t b = 0; b < Batch; ++b) {
             for (size_t t = 0; t < time_steps; ++t) {
-                o_t(t)(b) = context.errors(b)(t);
+                delta_t(t)(b) = context.errors(b)(t);
             }
         }
 
@@ -204,9 +197,9 @@ struct base_rnn_layer : layer<Derived> {
                 const size_t t = tt;
 
                 if(t == time_steps - 1){
-                    d_h_t(t) = o_t(t) >> f_derivative<activation_function>(s_t(t));
+                    d_h_t(t) = delta_t(t) >> f_derivative<activation_function>(s_t(t));
                 } else {
-                    d_h_t(t) = (o_t(t) + d_h_t(t + 1)) >> f_derivative<activation_function>(s_t(t));
+                    d_h_t(t) = (delta_t(t) + d_h_t(t + 1)) >> f_derivative<activation_function>(s_t(t));
                 }
 
                 if (t > 0) {
