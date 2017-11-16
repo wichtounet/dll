@@ -147,11 +147,9 @@ struct dyn_batch_normalization_2d_layer_impl : neural_layer<dyn_batch_normalizat
 
         const auto B = etl::dim<0>(input);
 
-        last_mean          = etl::bias_batch_mean_2d(input);
-        auto last_mean_rep = etl::rep_l(last_mean, B);
-
-        last_var = etl::mean_l((input - last_mean_rep) >> (input - last_mean_rep));
-        inv_var  = 1.0 / etl::sqrt(last_var + e);
+        last_mean = etl::bias_batch_mean_2d(input);
+        last_var  = etl::bias_batch_var_2d(input, last_mean);
+        inv_var   = 1.0 / etl::sqrt(last_var + e);
 
         input_pre.inherit_if_null(input);
 
