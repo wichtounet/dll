@@ -374,7 +374,7 @@ struct dbn_trainer {
         double new_loss  = -1.0;
 
         if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()){
-            dll::auto_timer timer("dbn::trainer::train::epoch::error");
+            dll::auto_timer timer("net:trainer:train:epoch:error");
 
             auto forward_helper = [this, &dbn](auto&& input_batch) -> decltype(auto) {
                 return this->trainer->template forward_batch_helper<false>(dbn, input_batch);
@@ -398,7 +398,7 @@ struct dbn_trainer {
 
         //Train one mini-batch at a time
         while(generator.has_next_batch()){
-            dll::auto_timer timer("dbn::trainer::train::epoch::batch");
+            dll::auto_timer timer("net:trainer:train:epoch:batch");
 
             if /*constexpr*/ (dbn_traits<dbn_t>::is_verbose()){
                 watcher.ft_batch_start(epoch, dbn);
@@ -474,7 +474,7 @@ struct dbn_trainer {
      */
     template <typename Generator>
     error_type train(DBN& dbn, Generator& generator, size_t max_epochs) {
-        dll::auto_timer timer("dbn::trainer::train");
+        dll::auto_timer timer("net:trainer:train");
 
         // Initialization steps
         start_training(dbn, max_epochs);
@@ -483,7 +483,7 @@ struct dbn_trainer {
 
         size_t epoch = 0;
         for (; epoch < max_epochs; ++epoch) {
-            dll::auto_timer timer("dbn::trainer::train::epoch");
+            dll::auto_timer timer("net:trainer:train:epoch");
 
             // Shuffle before the epoch if necessary
             if(dbn_traits<dbn_t>::shuffle()){
@@ -523,7 +523,7 @@ struct dbn_trainer {
      */
     template <typename TrainGenerator, typename ValGenerator>
     error_type train(DBN& dbn, TrainGenerator& train_generator, ValGenerator& val_generator, size_t max_epochs) {
-        dll::auto_timer timer("dbn::trainer::train");
+        dll::auto_timer timer("net:trainer:train");
 
         // The validation generator is always in test mode
         val_generator.set_test();
@@ -535,7 +535,7 @@ struct dbn_trainer {
 
         size_t epoch = 0;
         for (; epoch < max_epochs; ++epoch) {
-            dll::auto_timer timer("dbn::trainer::train::epoch");
+            dll::auto_timer timer("net:trainer:train:epoch");
 
             // Shuffle before the epoch if necessary
             if(dbn_traits<dbn_t>::shuffle()){

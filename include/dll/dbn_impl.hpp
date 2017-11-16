@@ -511,7 +511,7 @@ public:
 
         validate_pretraining();
 
-        dll::auto_timer timer("dbn:pretrain");
+        dll::auto_timer timer("net:pretrain");
 
         watcher_t watcher;
 
@@ -593,7 +593,7 @@ public:
 
         validate_pretraining();
 
-        dll::auto_timer timer("dbn:pretrain:denoising");
+        dll::auto_timer timer("net:pretrain:denoising");
 
         watcher_t watcher;
 
@@ -687,7 +687,7 @@ public:
     void train_with_labels(Iterator&& first, Iterator&& last, LabelIterator&& lfirst, LabelIterator&& llast, size_t labels, size_t max_epochs) {
         static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
 
-        dll::auto_timer timer("dbn:train:labels");
+        dll::auto_timer timer("net:train:labels");
 
         cpp_assert(std::distance(first, last) == std::distance(lfirst, llast), "There must be the same number of values than labels");
         cpp_assert(dll::input_size(layer_get<layers - 1>()) == dll::output_size(layer_get<layers - 2>()) + labels, "There is no room for the labels units");
@@ -1338,7 +1338,7 @@ public:
      */
     template <typename Generator>
     weight fine_tune(Generator& generator, size_t max_epochs) {
-        dll::auto_timer timer("dbn:train:ft");
+        dll::auto_timer timer("net:train:ft");
 
         validate_generator(generator);
 
@@ -1357,7 +1357,7 @@ public:
      */
     template <typename Generator, typename ValGenerator>
     weight fine_tune_val(Generator& train_generator, ValGenerator& val_generator, size_t max_epochs) {
-        dll::auto_timer timer("dbn:train:ft");
+        dll::auto_timer timer("net:train:ft");
 
         validate_generator(train_generator);
         validate_generator(val_generator);
@@ -1417,7 +1417,7 @@ public:
      */
     template <typename Generator, cpp_enable_iff(is_generator<Generator>)>
     weight fine_tune_ae(Generator& generator, size_t max_epochs) {
-        dll::auto_timer timer("dbn:train:ft:ae");
+        dll::auto_timer timer("net:train:ft:ae");
 
         validate_generator(generator);
 
@@ -1703,7 +1703,7 @@ public:
 
     template <loss_function F, typename Output, typename Labels, cpp_enable_iff((F == loss_function::CATEGORICAL_CROSS_ENTROPY))>
     std::tuple<double, double> compute_loss(size_t n, bool full_batch, double s, Output&& output, Labels&& labels){
-        dll::auto_timer timer("dbn::compute_loss::CCE");
+        dll::auto_timer timer("net:compute_loss:CCE");
 
         double batch_loss;
         double batch_error;
@@ -1723,7 +1723,7 @@ public:
 
     template <loss_function F, typename Output, typename Labels, cpp_enable_iff((F == loss_function::BINARY_CROSS_ENTROPY))>
     std::tuple<double, double> compute_loss(size_t n, bool full_batch, double s, Output&& output, Labels&& labels){
-        dll::auto_timer timer("dbn::compute_loss::BCE");
+        dll::auto_timer timer("net:compute_loss:BCE");
 
         double batch_loss;
         double batch_error;
@@ -1746,7 +1746,7 @@ public:
 
     template <loss_function F, typename Output, typename Labels, cpp_enable_iff((F == loss_function::MEAN_SQUARED_ERROR))>
     std::tuple<double, double> compute_loss(size_t n, bool full_batch, double s, Output&& output, Labels&& labels){
-        dll::auto_timer timer("dbn::compute_loss::MSE");
+        dll::auto_timer timer("net:compute_loss:MSE");
 
         double batch_loss;
         double batch_error;
