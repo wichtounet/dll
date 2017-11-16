@@ -125,7 +125,7 @@ auto make_mnist_generator_train(size_t start, size_t limit, Parameters&&... para
  */
 template<typename... Parameters>
 auto make_mnist_generator_test(size_t start, size_t limit, Parameters&&... parameters){
-    return make_mnist_generator_test("mnist", start, limit, std::forward<Parameters>(parameters)...);
+    return make_mnist_generator_test_impl<mnist_example_t>("mnist", start, limit, std::forward<Parameters>(parameters)...);
 }
 
 /*!
