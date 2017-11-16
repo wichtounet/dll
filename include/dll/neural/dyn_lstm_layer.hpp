@@ -7,7 +7,5 @@
 
 #pragma once
 
-#include "dll/neural/dyn_lstm_layer.hpp"
-
-#include "dll/neural/lstm_layer_impl.hpp"
-#include "dll/neural/lstm_layer_desc.hpp"
+#include "dll/neural/dyn_lstm_layer_impl.hpp"
+#include "dll/neural/dyn_lstm_layer_desc.hpp"

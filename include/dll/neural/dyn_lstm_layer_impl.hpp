@@ -18,33 +18,27 @@ namespace dll {
  * \brief Standard dense layer of neural network.
  */
 template <typename Desc>
-struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
+struct dyn_lstm_layer_impl final : base_lstm_layer<dyn_lstm_layer_impl<Desc>, Desc> {
     using desc        = Desc;                             ///< The descriptor of the layer
     using weight      = typename desc::weight;            ///< The data type for this layer
-    using this_type   = lstm_layer_impl<desc>;            ///< The type of this layer
+    using this_type   = dyn_lstm_layer_impl<desc>;            ///< The type of this layer
     using base_type   = base_lstm_layer<this_type, desc>; ///< The base type
     using layer_t     = this_type;                        ///< This layer's type
     using dyn_layer_t = typename desc::dyn_layer_t;       ///< The dynamic version of this layer
-
-    static constexpr size_t time_steps      = desc::time_steps;               ///< The number of time steps
-    static constexpr size_t sequence_length = desc::sequence_length;          ///< The length of the sequences
-    static constexpr size_t hidden_units    = desc::hidden_units;             ///< The number of hidden units
-
-    static constexpr size_t bptt_steps = desc::Truncate == 0 ? time_steps : desc::Truncate; ///< The number of bptt steps
 
     static constexpr auto activation_function = desc::activation_function; ///< The layer's activation function
 
     using w_initializer = typename desc::w_initializer; ///< The initializer for the W weights
     using u_initializer = typename desc::u_initializer; ///< The initializer for the U weights
 
-    using input_one_t  = etl::fast_dyn_matrix<weight, time_steps, sequence_length>; ///< The type of one input
-    using output_one_t = etl::fast_dyn_matrix<weight, time_steps, hidden_units>;    ///< The type of one output
-    using input_t      = std::vector<input_one_t>;                                  ///< The type of the input
-    using output_t     = std::vector<output_one_t>;                                 ///< The type of the output
+    using input_one_t  = etl::dyn_matrix<weight, 2>; ///< The type of one input
+    using output_one_t = etl::dyn_matrix<weight, 2>; ///< The type of one output
+    using input_t      = std::vector<input_one_t>;   ///< The type of the input
+    using output_t     = std::vector<output_one_t>;  ///< The type of the output
 
-    using w_type = etl::fast_matrix<weight, hidden_units, hidden_units>;    ///< The type of the W weights
-    using u_type = etl::fast_matrix<weight, sequence_length, hidden_units>; ///< The type of the U weights
-    using b_type = etl::fast_matrix<weight, hidden_units>;                  ///< The type of the biases
+    using w_type = etl::dyn_matrix<weight, 2>; ///< The type of the W weights
+    using u_type = etl::dyn_matrix<weight, 2>; ///< The type of the U weights
+    using b_type = etl::dyn_matrix<weight, 1>; ///< The type of the biases
 
     //Weights and biases
     w_type w_i; ///< Weights W of the input gate
@@ -74,13 +68,44 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
     std::unique_ptr<u_type> bak_u_o; ///< Backup Weights U of the output gate
     std::unique_ptr<b_type> bak_b_o; ///< Backup Biases of the output gate
 
+    size_t time_steps;      ///< The number of time steps
+    size_t sequence_length; ///< The length of the sequences
+    size_t hidden_units;    ///< The number of hidden units
+    size_t bptt_steps;      ///< The number of BPTT steps
+
     /*!
      * \brief Initialize a recurrent layer with basic weights.
      *
      * The weights are initialized from a normal distribution of
      * zero-mean and unit variance.
      */
-    lstm_layer_impl() : base_type() {
+    dyn_lstm_layer_impl() : base_type() {}
+
+    /*!
+     * \brief Initialize the dynamic layer
+     */
+    void init_layer(size_t time_steps, size_t sequence_length, size_t hidden_units) {
+        this->time_steps      = time_steps;
+        this->sequence_length = sequence_length;
+        this->hidden_units    = hidden_units;
+
+        this->bptt_steps = desc::Truncate == 0 ? time_steps : desc::Truncate;
+
+        w_i = etl::dyn_matrix<weight, 2>(hidden_units, hidden_units);
+        w_g = etl::dyn_matrix<weight, 2>(hidden_units, hidden_units);
+        w_f = etl::dyn_matrix<weight, 2>(hidden_units, hidden_units);
+        w_o = etl::dyn_matrix<weight, 2>(hidden_units, hidden_units);
+
+        u_i = etl::dyn_matrix<weight, 2>(sequence_length, hidden_units);
+        u_g = etl::dyn_matrix<weight, 2>(sequence_length, hidden_units);
+        u_f = etl::dyn_matrix<weight, 2>(sequence_length, hidden_units);
+        u_o = etl::dyn_matrix<weight, 2>(sequence_length, hidden_units);
+
+        b_i = etl::dyn_matrix<weight, 1>(hidden_units);
+        b_g = etl::dyn_matrix<weight, 1>(hidden_units);
+        b_f = etl::dyn_matrix<weight, 1>(hidden_units);
+        b_o = etl::dyn_matrix<weight, 1>(hidden_units);
+
         w_initializer::initialize(w_i, sequence_length, hidden_units);
         w_initializer::initialize(w_g, sequence_length, hidden_units);
         w_initializer::initialize(w_f, sequence_length, hidden_units);
@@ -101,21 +126,21 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
     /*!
      * \brief Returns the input size of this layer
      */
-    static constexpr size_t input_size() noexcept {
+    size_t input_size() const noexcept {
         return time_steps * sequence_length;
     }
 
     /*!
      * \brief Returns the output size of this layer
      */
-    static constexpr size_t output_size() noexcept {
+    size_t output_size() const noexcept {
         return time_steps * hidden_units;
     }
 
     /*!
      * \brief Returns the number of parameters of this layer
      */
-    static constexpr size_t parameters() noexcept {
+    size_t parameters() const noexcept {
         return 4 * hidden_units * hidden_units + 4 * hidden_units * sequence_length;
     }
 
@@ -123,15 +148,15 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    static std::string to_short_string(std::string pre = "") {
+    std::string to_short_string(std::string pre = "") const {
         cpp_unused(pre);
 
         char buffer[512];
 
         if /*constexpr*/ (activation_function == function::IDENTITY) {
-            snprintf(buffer, 512, "LSTM: %lux%lu -> %lux%lu", time_steps, sequence_length, time_steps, hidden_units);
+            snprintf(buffer, 512, "LSTM(dyn): %lux%lu -> %lux%lu", time_steps, sequence_length, time_steps, hidden_units);
         } else {
-            snprintf(buffer, 512, "LSTM: %lux%lu -> %s -> %lux%lu", time_steps, sequence_length, to_string(activation_function).c_str(), time_steps, hidden_units);
+            snprintf(buffer, 512, "LSTM(dyn): %lux%lu -> %s -> %lux%lu", time_steps, sequence_length, to_string(activation_function).c_str(), time_steps, hidden_units);
         }
 
         return {buffer};
@@ -260,7 +285,7 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
      */
     template <typename Input>
     output_one_t prepare_one_output() const {
-        return {};
+        return output_one_t(time_steps, hidden_units);
     }
 
     /*!
@@ -270,19 +295,13 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
      * \tparam Input The type of one input
      */
     template <typename Input>
-    static output_t prepare_output(size_t samples) {
-        return output_t{samples};
-    }
-
-    /*!
-     * \brief Initialize the dynamic version of the layer from the
-     * fast version of the layer
-     * \param dyn Reference to the dynamic version of the layer that
-     * needs to be initialized
-     */
-    template <typename DLayer>
-    static void dyn_init(DLayer& dyn) {
-        dyn.init_layer(time_steps, sequence_length, hidden_units);
+    output_t prepare_output(size_t samples) const {
+        output_t output;
+        output.reserve(samples);
+        for (size_t i = 0; i < samples; ++i) {
+            output.emplace_back(time_steps, hidden_units);
+        }
+        return output;
     }
 
     /*!
@@ -449,21 +468,10 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
     }
 };
 
-//Allow odr-use of the constexpr static members
-
-template <typename Desc>
-const size_t lstm_layer_impl<Desc>::time_steps;
-
-template <typename Desc>
-const size_t lstm_layer_impl<Desc>::sequence_length;
-
-template <typename Desc>
-const size_t lstm_layer_impl<Desc>::hidden_units;
-
 // Declare the traits for the Layer
 
 template <typename Desc>
-struct layer_base_traits<lstm_layer_impl<Desc>> {
+struct layer_base_traits<dyn_lstm_layer_impl<Desc>> {
     static constexpr bool is_neural     = true;  ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -479,26 +487,22 @@ struct layer_base_traits<lstm_layer_impl<Desc>> {
 };
 
 /*!
- * \brief specialization of sgd_context for lstm_layer_impl
+ * \brief specialization of sgd_context for dyn_lstm_layer_impl
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, lstm_layer_impl<Desc>, L> {
-    using layer_t = lstm_layer_impl<Desc>;
+struct sgd_context<DBN, dyn_lstm_layer_impl<Desc>, L> {
+    using layer_t = dyn_lstm_layer_impl<Desc>;
     using weight  = typename layer_t::weight; ///< The data type for this layer
-
-    static constexpr size_t time_steps      = layer_t::time_steps;      ///< The number of time steps
-    static constexpr size_t sequence_length = layer_t::sequence_length; ///< The length of the sequences
-    static constexpr size_t hidden_units    = layer_t::hidden_units;    ///< The number of hidden units
 
     static constexpr size_t layer    = L;               ///< The index of the layer
     static constexpr auto batch_size = DBN::batch_size; ///< The batch size of the network
 
-    etl::fast_matrix<weight, batch_size, time_steps, sequence_length> input;
-    etl::fast_matrix<weight, batch_size, time_steps, hidden_units> output;
-    etl::fast_matrix<weight, batch_size, time_steps, hidden_units> errors;
+    etl::dyn_matrix<weight, 3> input;
+    etl::dyn_matrix<weight, 3> output;
+    etl::dyn_matrix<weight, 3> errors;
 
-    sgd_context(const lstm_layer_impl<Desc>& /* layer */)
-            : output(0.0), errors(0.0) {}
+    sgd_context(const dyn_lstm_layer_impl<Desc>& layer)
+            : input(batch_size, layer.time_steps, layer.sequence_length), output(batch_size, layer.time_steps, layer.hidden_units, 0.0), errors(batch_size, layer.time_steps, layer.hidden_units, 0.0) {}
 };
 
 } //end of dll namespace
