@@ -29,7 +29,6 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
     static constexpr size_t time_steps      = desc::time_steps;               ///< The number of time steps
     static constexpr size_t sequence_length = desc::sequence_length;          ///< The length of the sequences
     static constexpr size_t hidden_units    = desc::hidden_units;             ///< The number of hidden units
-    static constexpr size_t Z               = sequence_length + hidden_units; ///< The size of the internal input
 
     static constexpr size_t bptt_steps = desc::Truncate == 0 ? time_steps : desc::Truncate; ///< The number of bptt steps
 
