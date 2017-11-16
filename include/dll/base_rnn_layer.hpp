@@ -74,10 +74,10 @@ struct base_rnn_layer : layer<Derived> {
 
         // t == 0
 
-        s_t(0) = f_activate<activation_function>(bias_add_2d(x_t(0) * trans(u), b));
+        s_t(0) = f_activate<activation_function>(bias_add_2d(x_t(0) * u, b));
 
         for (size_t t = 1; t < time_steps; ++t) {
-            s_t(t) = f_activate<activation_function>(bias_add_2d(x_t(t) * trans(u) + s_t(t - 1) * trans(w), b));
+            s_t(t) = f_activate<activation_function>(bias_add_2d(x_t(t) * u + s_t(t - 1) * w, b));
         }
 
         // 3. Rearrange the output
@@ -128,7 +128,7 @@ struct base_rnn_layer : layer<Derived> {
             const size_t last_step = std::max(int(time_steps) - int(bptt_steps), 0);
 
             do {
-                output_t(t) = (output_t(t) * w) >> f_derivative<activation_function>(s_t(bptt_step - 1));
+                output_t(t) = (output_t(t) * trans(w)) >> f_derivative<activation_function>(s_t(bptt_step - 1));
 
                 --bptt_step;
             } while (bptt_step > last_step);
@@ -208,14 +208,14 @@ struct base_rnn_layer : layer<Derived> {
                 if(t == time_steps - 1){
                     delta_t = o_t(t) >> f_derivative<activation_function>(s_t(t));
                 } else {
-                    delta_t = (delta_t * w) >> f_derivative<activation_function>(s_t(t));
+                    delta_t = (delta_t * trans(w)) >> f_derivative<activation_function>(s_t(t));
                 }
 
                 if (t > 0) {
-                    w_grad += etl::batch_outer(delta_t, s_t(t - 1));
+                    w_grad += etl::batch_outer(s_t(t - 1), delta_t);
                 }
 
-                u_grad += etl::batch_outer(delta_t, x_t(t));
+                u_grad += etl::batch_outer(x_t(t), delta_t);
                 b_grad += etl::bias_batch_sum_2d(delta_t);
             }
 

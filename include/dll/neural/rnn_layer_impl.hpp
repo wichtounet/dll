@@ -43,7 +43,7 @@ struct rnn_layer_impl final : base_rnn_layer<rnn_layer_impl<Desc>, Desc> {
     using output_t     = std::vector<output_one_t>;                                 ///< The type of the output
 
     using w_type = etl::fast_matrix<weight, hidden_units, hidden_units>;    ///< The type of the W weights
-    using u_type = etl::fast_matrix<weight, hidden_units, sequence_length>; ///< The type of the U weights
+    using u_type = etl::fast_matrix<weight, sequence_length, hidden_units>; ///< The type of the U weights
     using b_type = etl::fast_matrix<weight, hidden_units>;                  ///< The type of the U weights
 
     //Weights and biases

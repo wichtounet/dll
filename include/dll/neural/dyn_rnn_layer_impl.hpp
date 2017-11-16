@@ -75,7 +75,7 @@ struct dyn_rnn_layer_impl final : base_rnn_layer<dyn_rnn_layer_impl<Desc>, Desc>
         this->bptt_steps = desc::Truncate == 0 ? time_steps : desc::Truncate;
 
         w = etl::dyn_matrix<weight, 2>(hidden_units, hidden_units);
-        u = etl::dyn_matrix<weight, 2>(hidden_units, sequence_length);
+        u = etl::dyn_matrix<weight, 2>(sequence_length, hidden_units);
         b = etl::dyn_matrix<weight, 1>(hidden_units);
 
         w_initializer::initialize(w, hidden_units, hidden_units);
