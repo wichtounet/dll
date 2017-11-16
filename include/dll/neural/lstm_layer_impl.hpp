@@ -428,10 +428,8 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
                 d_xh_f_t(t) = d_h_f_t(t) * trans(w_f);
                 d_xh_c_t(t) = d_h_c_t(t) * trans(w_g);
 
-                //dh_next
+                // Update for the next step
                 d_h_t(t) = d_xh_o_t(t) + d_xh_i_t(t) + d_xh_f_t(t) + d_xh_c_t(t);
-
-                //dc_next
                 d_c_t(t) = f_t(t) >> d_c_t(t);
             }
 
