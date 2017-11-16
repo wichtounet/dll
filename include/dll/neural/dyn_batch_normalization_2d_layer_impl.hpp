@@ -205,13 +205,17 @@ struct dyn_batch_normalization_2d_layer_impl : neural_layer<dyn_batch_normalizat
      */
     template<typename C>
     void compute_gradients(C& context) const {
-        dll::auto_timer timer("bn:2d:dyn:gradients");
+        // If the layer is not the first one, the gradients already have been computed
 
-        // Gradients of gamma
-        std::get<0>(context.up.context)->grad = bias_batch_sum_2d(input_pre >> context.errors);
+        if (!C::layer) {
+            dll::auto_timer timer("bn:2d:dyn:gradients");
 
-        // Gradients of beta
-        std::get<1>(context.up.context)->grad = bias_batch_sum_2d(context.errors);
+            // Gradients of gamma
+            std::get<0>(context.up.context)->grad = bias_batch_sum_2d(input_pre >> context.errors);
+
+            // Gradients of beta
+            std::get<1>(context.up.context)->grad = bias_batch_sum_2d(context.errors);
+        }
     }
 
     /*!
@@ -311,7 +315,8 @@ struct sgd_context<DBN, dyn_batch_normalization_2d_layer_impl<Desc>, L> {
     using layer_t = dyn_batch_normalization_2d_layer_impl<Desc>; ///< The current layer type
     using weight  = typename layer_t::weight;               ///< The data type for this layer
 
-    static constexpr auto batch_size = DBN::batch_size;
+    static constexpr auto batch_size = DBN::batch_size; ///< The batch size of the network
+    static constexpr auto layer      = L;               ///> The layer's index
 
     etl::dyn_matrix<weight, 2> input;  ///< A batch of input
     etl::dyn_matrix<weight, 2> output; ///< A batch of output
