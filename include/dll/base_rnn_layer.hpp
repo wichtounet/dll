@@ -166,6 +166,7 @@ struct base_rnn_layer : layer<Derived> {
         etl::dyn_matrix<float, 3> x_t(time_steps, Batch, sequence_length);
         etl::dyn_matrix<float, 3> s_t(time_steps, Batch, hidden_units);
         etl::dyn_matrix<float, 3> o_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 2> delta_t(Batch, hidden_units);
 
         // 1. Rearrange x/s
 
@@ -195,37 +196,36 @@ struct base_rnn_layer : layer<Derived> {
         u_grad = 0;
         b_grad = 0;
 
-        size_t t = time_steps - 1;
+        size_t ttt = time_steps - 1;
 
         do {
-            auto delta_t = etl::force_temporary(o_t(t) >> f_derivative<activation_function>(s_t(t)));
-
-            size_t bptt_step = t;
-
             const size_t last_step = std::max(int(time_steps) - int(bptt_steps), 0);
 
-            do {
-                w_grad += etl::batch_outer(delta_t, s_t(bptt_step - 1));
-                u_grad += etl::batch_outer(delta_t, x_t(bptt_step));
+            // Backpropagation through time
+            for (int tt = ttt; tt >= int(last_step); --tt) {
+                const size_t t = tt;
+
+                if(t == time_steps - 1){
+                    delta_t = o_t(t) >> f_derivative<activation_function>(s_t(t));
+                } else {
+                    delta_t = (delta_t * w) >> f_derivative<activation_function>(s_t(t));
+                }
+
+                if (t > 0) {
+                    w_grad += etl::batch_outer(delta_t, s_t(t - 1));
+                }
+
+                u_grad += etl::batch_outer(delta_t, x_t(t));
                 b_grad += etl::bias_batch_sum_2d(delta_t);
+            }
 
-                delta_t = (delta_t * w) >> f_derivative<activation_function>(s_t(bptt_step - 1));
-
-                --bptt_step;
-            } while (bptt_step > last_step);
-
-            // bptt_step = 0
-
-            u_grad += etl::batch_outer(delta_t, x_t(0));
-            b_grad += etl::bias_batch_sum_2d(delta_t);
-
-            --t;
+            --ttt;
 
             // If only the last time step is used, no need to use the other errors
             if /*constexpr*/ (desc::parameters::template contains<last_only>()) {
                 break;
             }
-        } while (t != 0);
+        } while (ttt != 0);
     }
 
     /*!
