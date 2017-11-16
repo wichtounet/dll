@@ -125,6 +125,8 @@ struct dyn_batch_normalization_2d_layer_impl : neural_layer<dyn_batch_normalizat
      */
     template <typename Input, typename Output>
     void test_forward_batch(Output& output, const Input& input) const {
+        dll::auto_timer timer("bn:2d:dyn:test:forward");
+
         const auto B = etl::dim<0>(input);
 
         auto inv_var = etl::force_temporary(1.0 / etl::sqrt(var + e));
@@ -141,6 +143,8 @@ struct dyn_batch_normalization_2d_layer_impl : neural_layer<dyn_batch_normalizat
      */
     template <typename Input, typename Output>
     void train_forward_batch(Output& output, const Input& input) {
+        dll::auto_timer timer("bn:2d:dyn:train:forward");
+
         const auto B = etl::dim<0>(input);
 
         last_mean          = etl::mean_l(input);
@@ -180,6 +184,8 @@ struct dyn_batch_normalization_2d_layer_impl : neural_layer<dyn_batch_normalizat
      */
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
+        dll::auto_timer timer("bn:2d:dyn:backward");
+
         const auto B = etl::dim<0>(context.input);
 
         auto dxhat        = etl::force_temporary(context.errors >> etl::rep_l(gamma, B));
@@ -197,6 +203,8 @@ struct dyn_batch_normalization_2d_layer_impl : neural_layer<dyn_batch_normalizat
      */
     template<typename C>
     void compute_gradients(C& context) const {
+        dll::auto_timer timer("bn:2d:dyn:gradients");
+
         // Gradients of gamma
         std::get<0>(context.up.context)->grad = etl::sum_l(input_pre >> context.errors);
 
