@@ -143,6 +143,7 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
     mutable etl::dyn_matrix<float, 3> f_t;
     mutable etl::dyn_matrix<float, 3> o_t;
 
+    mutable etl::dyn_matrix<float, 3> x_t;
     mutable etl::dyn_matrix<float, 3> s_t;
     mutable etl::dyn_matrix<float, 3> h_t;
 
@@ -172,6 +173,7 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
             f_t.resize(time_steps, Batch, hidden_units);
             o_t.resize(time_steps, Batch, hidden_units);
 
+            x_t.resize(time_steps, Batch, sequence_length);
             s_t.resize(time_steps, Batch, hidden_units);
             h_t.resize(time_steps, Batch, hidden_units);
 
@@ -211,8 +213,6 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
         cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
 
         prepare_cache(Batch);
-
-        etl::dyn_matrix<float, 3> x_t(time_steps, Batch, sequence_length);
 
         // 1. Rearrange input
 
@@ -325,14 +325,7 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
 
         // 1. Rearrange input/errors
 
-        etl::dyn_matrix<float, 3> x_t(time_steps, Batch, sequence_length);
         etl::dyn_matrix<float, 3> delta_t(time_steps, Batch, hidden_units);
-
-        for (size_t b = 0; b < Batch; ++b) {
-            for (size_t t = 0; t < time_steps; ++t) {
-                x_t(t)(b) = context.input(b)(t);
-            }
-        }
 
         for (size_t b = 0; b < Batch; ++b) {
             for (size_t t = 0; t < time_steps; ++t) {
