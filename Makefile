@@ -222,6 +222,7 @@ $(eval $(call add_executable,dll_test_unit_text_reader,test/src/unit/test.cpp te
 $(eval $(call add_executable,dll_test_unit_unit,test/src/unit/test.cpp test/src/unit/unit.cpp,$(TEST_LD_FLAGS)))
 $(eval $(call add_executable,dll_test_unit_embedding,test/src/unit/test.cpp test/src/unit/embedding.cpp,$(TEST_LD_FLAGS)))
 $(eval $(call add_executable,dll_test_unit_rnn,test/src/unit/test.cpp test/src/unit/rnn.cpp,$(TEST_LD_FLAGS)))
+$(eval $(call add_executable,dll_test_unit_lstm,test/src/unit/test.cpp test/src/unit/lstm.cpp,$(TEST_LD_FLAGS)))
 
 # Generate individual misc executables (faster debugging)
 $(eval $(call add_executable,dll_test_misc_autoencoder,test/src/misc/test.cpp test/src/misc/autoencoder.cpp,$(TEST_LD_FLAGS)))
