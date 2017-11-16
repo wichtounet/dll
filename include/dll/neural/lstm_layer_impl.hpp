@@ -300,27 +300,8 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
         cpp_unused(context);
     }
 
-    /*!
-     * \brief Backpropagate the errors to the previous layers
-     * \param output The ETL expression into which write the output
-     * \param context The training context
-     */
-    template <typename H, typename C>
-    void backward_batch(H&& output, C& context) const {
-        dll::auto_timer timer("lstm:backward_batch");
-
-        cpp_unused(output);
-        cpp_unused(context);
-
-        //TODO base_type::backward_batch_impl(output, context, w, time_steps, sequence_length, hidden_units, bptt_steps);
-    }
-
-    /*!
-     * \brief Compute the gradients for this layer, if any
-     * \param context The trainng context
-     */
-    template <typename C>
-    void compute_gradients(C& context) const {
+    template <typename Output, typename C>
+    void backward_pass(Output& output, C& context, bool direct = true) const {
         const size_t Batch = etl::dim<0>(context.errors);
 
         // 1. Rearrange input/errors
@@ -433,6 +414,40 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
                 break;
             }
         } while (ttt != 0);
+
+        // 3. Rearrange for the output
+
+        if (direct) {
+            for (size_t b = 0; b < Batch; ++b) {
+                for (size_t t = 0; t < time_steps; ++t) {
+                    output(b)(t) = d_x_t(t)(b);
+                }
+            }
+        }
+    }
+
+    /*!
+     * \brief Backpropagate the errors to the previous layers
+     * \param output The ETL expression into which write the output
+     * \param context The training context
+     */
+    template <typename H, typename C>
+    void backward_batch(H&& output, C& context) const {
+        dll::auto_timer timer("lstm:backward_batch");
+
+        backward_pass(output, context, true);
+    }
+
+    /*!
+     * \brief Compute the gradients for this layer, if any
+     * \param context The trainng context
+     */
+    template <typename C>
+    void compute_gradients(C& context) const {
+        if /*constexpr*/ (!C::layer) {
+            dll::auto_timer timer("lstm:compute_gradients");
+            backward_pass(x_t, context, false);
+        }
     }
 };
 
@@ -477,7 +492,8 @@ struct sgd_context<DBN, lstm_layer_impl<Desc>, L> {
     static constexpr size_t sequence_length = layer_t::sequence_length; ///< The length of the sequences
     static constexpr size_t hidden_units    = layer_t::hidden_units;    ///< The number of hidden units
 
-    static constexpr auto batch_size = DBN::batch_size;
+    static constexpr size_t layer    = L;               ///< The index of the layer
+    static constexpr auto batch_size = DBN::batch_size; ///< The batch size of the network
 
     etl::fast_matrix<weight, batch_size, time_steps, sequence_length> input;
     etl::fast_matrix<weight, batch_size, time_steps, hidden_units> output;
