@@ -8,7 +8,7 @@
 #include "dll_test.hpp"
 
 #include "dll/neural/dense_layer.hpp"
-#include "dll/neural/recurrent_layer.hpp"
+#include "dll/neural/rnn_layer.hpp"
 #include "dll/neural/recurrent_last_layer.hpp"
 #include "dll/network.hpp"
 #include "dll/datasets.hpp"
@@ -23,7 +23,7 @@ TEST_CASE("unit/rnn/1", "[unit][rnn]") {
 
     using network_t = dll::dyn_network_desc<
         dll::network_layers<
-            dll::recurrent_layer<time_steps, sequence_length, hidden_units, dll::last_only>,
+            dll::rnn_layer<time_steps, sequence_length, hidden_units, dll::last_only>,
             dll::recurrent_last_layer<time_steps, hidden_units>,
             dll::dense_layer<hidden_units, 10, dll::softmax>
         >
@@ -47,7 +47,7 @@ TEST_CASE("unit/rnn/2", "[unit][rnn]") {
 
     using network_t = dll::dyn_network_desc<
         dll::network_layers<
-            dll::recurrent_layer<time_steps, sequence_length, hidden_units, dll::last_only, dll::truncate<20>>,
+            dll::rnn_layer<time_steps, sequence_length, hidden_units, dll::last_only, dll::truncate<20>>,
             dll::recurrent_last_layer<time_steps, hidden_units>,
             dll::dense_layer<hidden_units, 10, dll::softmax>
         >
@@ -71,8 +71,8 @@ TEST_CASE("unit/rnn/3", "[unit][rnn]") {
 
     using network_t = dll::dyn_network_desc<
         dll::network_layers<
-            dll::recurrent_layer<time_steps, sequence_length, hidden_units, dll::last_only>,
-            dll::recurrent_layer<time_steps, hidden_units, hidden_units, dll::last_only>,
+            dll::rnn_layer<time_steps, sequence_length, hidden_units, dll::last_only>,
+            dll::rnn_layer<time_steps, hidden_units, hidden_units, dll::last_only>,
             dll::recurrent_last_layer<time_steps, hidden_units>,
             dll::dense_layer<hidden_units, 10, dll::softmax>
         >
