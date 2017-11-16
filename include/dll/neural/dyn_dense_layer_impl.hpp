@@ -113,6 +113,8 @@ struct dyn_dense_layer_impl final : neural_layer<dyn_dense_layer_impl<Desc>, Des
      */
     template <typename H, typename V>
     void forward_batch(H&& output, const V& input) const {
+        dll::auto_timer timer("dense:dyn:forward");
+
         const auto Batch = etl::dim<0>(input);
 
         // Note: The compile-time Batch information is lost here, but it does
@@ -180,6 +182,8 @@ struct dyn_dense_layer_impl final : neural_layer<dyn_dense_layer_impl<Desc>, Des
      */
     template<typename C>
     void adapt_errors(C& context) const {
+        dll::auto_timer timer("dense:dyn:errors");
+
         context.errors = f_derivative<activation_function>(context.output) >> context.errors;
     }
 
@@ -190,6 +194,8 @@ struct dyn_dense_layer_impl final : neural_layer<dyn_dense_layer_impl<Desc>, Des
      */
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
+        dll::auto_timer timer("dense:dyn:backward");
+
         // The reshape has no overhead, so better than SFINAE for nothing
         auto batch_size = etl::dim<0>(output);
         etl::reshape(output, batch_size, num_visible) = context.errors * etl::transpose(w);
@@ -201,7 +207,7 @@ struct dyn_dense_layer_impl final : neural_layer<dyn_dense_layer_impl<Desc>, Des
      */
     template<typename C>
     void compute_gradients(C& context) const {
-        dll::auto_timer timer("dyn_dense:compute_gradients");
+        dll::auto_timer timer("dense:dyn:gradients");
 
         std::get<0>(context.up.context)->grad = batch_outer(context.input, context.errors);
 
