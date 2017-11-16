@@ -188,12 +188,14 @@ struct dyn_batch_normalization_2d_layer_impl : neural_layer<dyn_batch_normalizat
 
         const auto B = etl::dim<0>(context.input);
 
-        auto dxhat        = etl::force_temporary(context.errors >> etl::rep_l(gamma, B));
-        auto dxhat_l      = etl::force_temporary(etl::sum_l(dxhat));
-        auto dxhat_xhat_l = etl::force_temporary(etl::sum_l(dxhat >> input_pre));
+        auto& dgamma = std::get<0>(context.up.context)->grad;
+        auto& dbeta  = std::get<1>(context.up.context)->grad;
+
+        dbeta  = bias_batch_sum_2d(context.errors);
+        dgamma = bias_batch_sum_2d(input_pre >> context.errors);
 
         for(size_t b = 0; b < B; ++b){
-            output(b) = (1.0 / B) >> inv_var >> (B * dxhat(b) - dxhat_l - (input_pre(b) >> dxhat_xhat_l));
+            output(b) = (1.0 / B) >> inv_var >> gamma >> ((B >> context.errors(b)) - (input_pre(b) >> dgamma) - dbeta);
         }
     }
 
