@@ -103,14 +103,15 @@ struct base_rnn_layer : layer<Derived> {
      * \param output The ETL expression into which write the output
      * \param context The training context
      */
-    template <typename H, typename C, typename W>
-    void backward_batch_impl(H&& output, C& context, const W& w, size_t time_steps, size_t sequence_length, size_t hidden_units, size_t bptt_steps, bool direct = true) const {
+    template <typename H, typename C, typename W, typename U>
+    void backward_batch_impl(H&& output, C& context, const W& w, const U& u, size_t time_steps, size_t sequence_length, size_t hidden_units, size_t bptt_steps, bool direct = true) const {
         cpp_unused(sequence_length);
 
         const size_t Batch = etl::dim<0>(context.errors);
 
         etl::dyn_matrix<float, 3> delta_t(time_steps, Batch, hidden_units);
         etl::dyn_matrix<float, 3> d_h_t(time_steps, Batch, hidden_units);
+        etl::dyn_matrix<float, 3> d_x_t(time_steps, Batch, sequence_length);
 
         // 1. Rearrange errors
 
@@ -154,6 +155,9 @@ struct base_rnn_layer : layer<Derived> {
                 u_grad += etl::batch_outer(x_t(t), d_h_t(t));
                 b_grad += etl::bias_batch_sum_2d(d_h_t(t));
 
+                // Gradients to the input
+                d_x_t(t) = d_h_t(t) * trans(u);
+
                 // Update for next steps
                 d_h_t(t) = d_h_t(t) * trans(w);
             }
@@ -171,7 +175,7 @@ struct base_rnn_layer : layer<Derived> {
         if (direct) {
             for (size_t b = 0; b < Batch; ++b) {
                 for (size_t t = 0; t < time_steps; ++t) {
-                    output(b)(t) = d_h_t(t)(b);
+                    output(b)(t) = d_x_t(t)(b);
                 }
             }
         }
@@ -181,10 +185,10 @@ struct base_rnn_layer : layer<Derived> {
      * \brief Compute the gradients for this layer, if any
      * \param context The trainng context
      */
-    template <typename C, typename W>
-    void compute_gradients_impl(C& context, const W& w, size_t time_steps, size_t sequence_length, size_t hidden_units, size_t bptt_steps) const {
+    template <typename C, typename W, typename U>
+    void compute_gradients_impl(C& context, const W& w, const U& u, size_t time_steps, size_t sequence_length, size_t hidden_units, size_t bptt_steps) const {
         if /*constexpr*/ (!C::layer){
-            backward_batch_impl(x_t, context, w, time_steps, sequence_length, hidden_units, bptt_steps, false);
+            backward_batch_impl(x_t, context, w, u, time_steps, sequence_length, hidden_units, bptt_steps, false);
         }
     }
 
