@@ -55,7 +55,15 @@ struct init_constant {
     }
 };
 
+/*!
+ * \brief Initialize all the values to 0
+ */
 using init_zero = init_constant<std::ratio<0, 1>>;
+
+/*!
+ * \brief Initialize all the values to 1
+ */
+using init_one = init_constant<std::ratio<1, 1>>;
 
 /*!
  * \brief Initialization function to normal distribution
