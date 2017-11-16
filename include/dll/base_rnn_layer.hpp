@@ -166,7 +166,7 @@ struct base_rnn_layer : layer<Derived> {
         etl::dyn_matrix<float, 3> x_t(time_steps, Batch, sequence_length);
         etl::dyn_matrix<float, 3> s_t(time_steps, Batch, hidden_units);
         etl::dyn_matrix<float, 3> o_t(time_steps, Batch, hidden_units);
-        etl::dyn_matrix<float, 2> delta_t(Batch, hidden_units);
+        etl::dyn_matrix<float, 3> d_h_t(time_steps, Batch, hidden_units);
 
         // 1. Rearrange x/s
 
@@ -206,17 +206,20 @@ struct base_rnn_layer : layer<Derived> {
                 const size_t t = tt;
 
                 if(t == time_steps - 1){
-                    delta_t = o_t(t) >> f_derivative<activation_function>(s_t(t));
+                    d_h_t(t) = o_t(t) >> f_derivative<activation_function>(s_t(t));
                 } else {
-                    delta_t = (delta_t * trans(w)) >> f_derivative<activation_function>(s_t(t));
+                    d_h_t(t) = (o_t(t) + d_h_t(t + 1)) >> f_derivative<activation_function>(s_t(t));
                 }
 
                 if (t > 0) {
-                    w_grad += etl::batch_outer(s_t(t - 1), delta_t);
+                    w_grad += etl::batch_outer(s_t(t - 1), d_h_t(t));
                 }
 
-                u_grad += etl::batch_outer(x_t(t), delta_t);
-                b_grad += etl::bias_batch_sum_2d(delta_t);
+                u_grad += etl::batch_outer(x_t(t), d_h_t(t));
+                b_grad += etl::bias_batch_sum_2d(d_h_t(t));
+
+                // Update for next steps
+                d_h_t(t) = d_h_t(t) * trans(w);
             }
 
             --ttt;
