@@ -112,6 +112,7 @@ struct activation_id;
 struct loss_id;
 struct initializer_id;
 struct initializer_bias_id;
+struct initializer_forget_bias_id;
 struct rnn_initializer_w_id;
 struct rnn_initializer_u_id;
 struct weight_decay_id;
@@ -240,6 +241,13 @@ struct initializer : type_conf_elt<initializer_id, I> {};
  */
 template <typename I>
 struct initializer_bias : type_conf_elt<initializer_bias_id, I> {};
+
+/*!
+ * \brief Sets the initializer of the forget bias
+ * \tparam IT The initializer type
+ */
+template <typename I>
+struct initializer_forget_bias : type_conf_elt<initializer_forget_bias_id, I> {};
 
 /*!
  * \brief Sets the initializer for RNN W matrix

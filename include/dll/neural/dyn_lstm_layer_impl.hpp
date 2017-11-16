@@ -28,8 +28,10 @@ struct dyn_lstm_layer_impl final : base_lstm_layer<dyn_lstm_layer_impl<Desc>, De
 
     static constexpr auto activation_function = desc::activation_function; ///< The layer's activation function
 
-    using w_initializer = typename desc::w_initializer; ///< The initializer for the W weights
-    using u_initializer = typename desc::u_initializer; ///< The initializer for the U weights
+    using w_initializer  = typename desc::w_initializer;  ///< The initializer for the W weights
+    using u_initializer  = typename desc::u_initializer;  ///< The initializer for the U weights
+    using b_initializer  = typename desc::b_initializer;  ///< The initializer for the biases
+    using fb_initializer = typename desc::fb_initializer; ///< The initializer for the forget biases
 
     using input_one_t  = etl::dyn_matrix<weight, 2>; ///< The type of one input
     using output_one_t = etl::dyn_matrix<weight, 2>; ///< The type of one output
@@ -116,11 +118,12 @@ struct dyn_lstm_layer_impl final : base_lstm_layer<dyn_lstm_layer_impl<Desc>, De
         u_initializer::initialize(u_f, hidden_units, hidden_units);
         u_initializer::initialize(u_o, hidden_units, hidden_units);
 
-        //TODO Initializer for the biases
-        b_i = 0;
-        b_g = 0;
-        b_f = 1;
-        b_o = 0;
+        b_initializer::initialize(b_i, hidden_units, hidden_units);
+        b_initializer::initialize(b_g, hidden_units, hidden_units);
+        b_initializer::initialize(b_o, hidden_units, hidden_units);
+
+        // Initialized differently because should be initialized to 1
+        fb_initializer::initialize(b_f, hidden_units, hidden_units);
     }
 
     /*!
