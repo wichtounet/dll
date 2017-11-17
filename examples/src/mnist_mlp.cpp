@@ -33,7 +33,7 @@ int main(int /*argc*/, char* /*argv*/ []) {
 
     // Display the network and dataset
     net->display();
-    dataset.display();
+    dataset.display_pretty();
 
     // Train the network for performance sake
     net->fine_tune(dataset.train(), 50);
