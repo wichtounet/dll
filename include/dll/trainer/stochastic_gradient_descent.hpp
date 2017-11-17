@@ -1033,7 +1033,7 @@ struct sgd_trainer {
 
         w_inc = momentum * w_inc + (eps / n) * w_grad;
 
-        w += (-momentum) * w_inc_prev + (1.0 + momentum) * w_inc;
+        w += -momentum * w_inc_prev + (1.0 + momentum) * w_inc;
 
         nan_check_deep(w);
 
