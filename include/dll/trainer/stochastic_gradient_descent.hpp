@@ -1055,7 +1055,7 @@ struct sgd_trainer {
 
         w_inc = w_inc + (w_grad >> w_grad);
 
-        w += (eps >> w_grad) / etl::sqrt(w_inc + e);
+        w += (eps * w_grad) / etl::sqrt(w_inc + e);
 
         nan_check_deep(w);
 
@@ -1079,9 +1079,9 @@ struct sgd_trainer {
         auto& w_v    = std::get<I>(context.up.context)->v;
         auto& w_x    = std::get<I>(context.up.context)->x;
 
-        w_g = beta * w_g + ((1.0 - beta) >> w_grad >> w_grad);
+        w_g = beta * w_g + ((1.0 - beta) * (w_grad >> w_grad));
         w_v = (sqrt(w_x + e) >> w_grad) / sqrt(w_g + e);
-        w_x = beta * w_x + ((1.0 - beta) >> w_v >> w_v);
+        w_x = beta * w_x + ((1.0 - beta) * (w_v >> w_v));
 
         w += w_v;
 
@@ -1110,12 +1110,12 @@ struct sgd_trainer {
 
         // Standard Adam estimations of the first and second moments
 
-        w_m = beta1 * w_m + ((1.0 - beta1) >> w_grad);
-        w_v = beta2 * w_v + ((1.0 - beta2) >> (w_grad >> w_grad));
+        w_m = beta1 * w_m + ((1.0 - beta1) * w_grad);
+        w_v = beta2 * w_v + ((1.0 - beta2) * (w_grad >> w_grad));
 
         // Update the parameters
 
-        w += (eps >> w_m) / (etl::sqrt(w_v) + e);
+        w += (eps * w_m) / (etl::sqrt(w_v) + e);
 
         nan_check_deep(w);
 
@@ -1144,8 +1144,8 @@ struct sgd_trainer {
 
         // Standard Adam estimations of the first and second moments
 
-        w_m = beta1 * w_m + ((1.0 - beta1) >> w_grad);
-        w_v = beta2 * w_v + ((1.0 - beta2) >> (w_grad >> w_grad));
+        w_m = beta1 * w_m + ((1.0 - beta1) * w_grad);
+        w_v = beta2 * w_v + ((1.0 - beta2) * (w_grad >> w_grad));
 
         // Correct the bias (towards zero) of the first and second moments
 
@@ -1154,7 +1154,7 @@ struct sgd_trainer {
 
         // Update the parameters
 
-        w += (eps >> w_m) / (etl::sqrt(w_v) + e);
+        w += (eps * w_m) / (etl::sqrt(w_v) + e);
 
         nan_check_deep(w);
 
