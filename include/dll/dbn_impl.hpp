@@ -352,6 +352,69 @@ public:
     }
 
     /*!
+     * \brief Prints a textual representation of the network.
+     */
+    void display_pretty() const {
+        constexpr size_t columns = 4;
+
+        std::cout << '\n';
+
+        std::array<std::string, columns> column_name;
+        column_name[0] = "Index";
+        column_name[1] = "Layer";
+        column_name[2] = "Parameters";
+        column_name[3] = "Output";
+
+        std::array<size_t, columns> column_length;
+        column_length[0] = column_name[0].size();
+        column_length[1] = column_name[1].size();
+        column_length[2] = column_name[2].size();
+        column_length[3] = column_name[3].size();
+
+        size_t parameters = 0;
+
+        for_each_layer([&](auto& layer) {
+            column_length[1] = std::max(column_length[1], layer.to_short_string("").size());
+
+            cpp::static_if<decay_layer_traits<decltype(layer)>::is_neural_layer()>([&](auto f) {
+                column_length[2] = std::max(column_length[2], std::to_string(f(layer).parameters()).size());
+            });
+
+            // TODO column_length[3]
+        });
+
+        const size_t line_length = (columns + 1) * 1 + 2 + (columns - 1) * 2 + std::accumulate(column_length.begin(), column_length.end(), 0);
+
+        std::cout << std::string(line_length, '-') << '\n';
+
+        printf("| %-*s | %-*s | %-*s | %-*s |\n",
+               int(column_length[0]), column_name[0].c_str(),
+               int(column_length[1]), column_name[1].c_str(),
+               int(column_length[2]), column_name[2].c_str(),
+               int(column_length[3]), column_name[3].c_str());
+
+        std::cout << std::string(line_length, '-') << '\n';
+
+        for_each_layer_i([&](size_t I, auto& layer) {
+            std::string parameters_str = "0";
+
+            cpp::static_if<decay_layer_traits<decltype(layer)>::is_neural_layer()>([&](auto f) {
+                parameters_str = std::to_string(f(layer).parameters());
+            });
+
+            printf("| %-*lu | %-*s | %-*s | %-*s |\n",
+                   int(column_length[0]), I,
+                   int(column_length[1]), layer.to_short_string("").c_str(),
+                   int(column_length[2]), parameters_str.c_str(),
+                   int(column_length[3]), ""); // TODO
+        });
+
+        std::cout << std::string(line_length, '-') << '\n';
+
+        std::cout << "   Total parameters: " << parameters << std::endl;
+    }
+
+    /*!
      * \brief Backup the weights of all the layers into a temporary storage.
      *
      * Only one temporary storage is available, i.e. calling this function
