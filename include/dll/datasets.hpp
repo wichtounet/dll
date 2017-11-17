@@ -11,6 +11,41 @@
 
 namespace dll {
 
+template<typename G>
+void fill_length(const char* name, std::unique_ptr<G>& generator, std::array<size_t, 4>& column_length){
+    if(generator){
+        column_length[0] = std::max(column_length[0], std::string(name).size());
+        column_length[1] = std::max(column_length[1], std::to_string(generator->size()).size());
+        column_length[2] = std::max(column_length[2], std::to_string(generator->batches()).size());
+        column_length[3] = std::max(column_length[3], std::to_string(generator->augmented_size()).size());
+    }
+}
+
+template<>
+void fill_length(const char* name, std::unique_ptr<int>& g, std::array<size_t, 4>& column_length){
+    cpp_unused(g);
+    cpp_unused(column_length);
+    cpp_unused(name);
+}
+
+template<typename G>
+void print_line(const char* name, std::unique_ptr<G>& generator, std::array<size_t, 4>& column_length){
+    if(generator){
+        printf("| %-*s | %-*s | %-*s | %-*s |\n",
+            int(column_length[0]), name,
+            int(column_length[1]), std::to_string(generator->size()).c_str(),
+            int(column_length[2]), std::to_string(generator->batches()).c_str(),
+            int(column_length[3]), std::to_string(generator->augmented_size()).c_str());
+    }
+}
+
+template<>
+void print_line(const char* name, std::unique_ptr<int>& g, std::array<size_t, 4>& column_length){
+    cpp_unused(g);
+    cpp_unused(column_length);
+    cpp_unused(name);
+}
+
 /*!
  * \brief A dataset.
  *
@@ -98,6 +133,58 @@ public:
      */
     void display(){
         display(std::cout);
+    }
+
+    /*!
+     * \brief Display information about the dataset on the given stream
+     * \param stream The stream to output information to
+     * \return stream
+     */
+    std::ostream& display_pretty(std::ostream& stream){
+        constexpr size_t columns = 4;
+
+        std::array<std::string, columns> column_name;
+        column_name[0] = "Set";
+        column_name[1] = "Size";
+        column_name[2] = "Batches";
+        column_name[3] = "Augmented Size";
+
+        std::array<size_t, columns> column_length;
+        column_length[0] = 8;
+        column_length[1] = column_name[1].size();
+        column_length[2] = column_name[2].size();
+        column_length[3] = column_name[3].size();
+
+        const size_t line_length = (columns + 1) * 1 + 2 + (columns - 1) * 2 + std::accumulate(column_length.begin(), column_length.end(), 0);
+
+        fill_length("train", train_generator, column_length);
+        fill_length("val", val_generator, column_length);
+        fill_length("test", test_generator, column_length);
+
+        std::cout << std::string(line_length, '-') << '\n';
+
+        printf("| %-*s | %-*s | %-*s | %-*s |\n",
+               int(column_length[0]), column_name[0].c_str(),
+               int(column_length[1]), column_name[1].c_str(),
+               int(column_length[2]), column_name[2].c_str(),
+               int(column_length[3]), column_name[3].c_str());
+
+        std::cout << std::string(line_length, '-') << '\n';
+
+        print_line("train", train_generator, column_length);
+        print_line("val", val_generator, column_length);
+        print_line("test", test_generator, column_length);
+
+        std::cout << std::string(line_length, '-') << '\n';
+
+        return stream;
+    }
+
+    /*!
+     * \brief Display information about the dataset on the standard output
+     */
+    void display_pretty(){
+        display_pretty(std::cout);
     }
 };
 
