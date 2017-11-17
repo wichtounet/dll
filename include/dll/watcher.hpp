@@ -199,7 +199,7 @@ struct default_dbn_watcher {
     void fine_tuning_begin(const DBN& dbn, size_t max_epochs) {
         static constexpr auto UT = dbn_traits<DBN>::updater();
 
-        std::cout << "Train the network with \"" << DBN::desc::template trainer_t<DBN>::name() << "\"" << std::endl;
+        std::cout << "\nTrain the network with \"" << DBN::desc::template trainer_t<DBN>::name() << "\"" << std::endl;
         std::cout << "    Updater: " << dll::to_string(UT) << std::endl;
         std::cout << "       Loss: " << dll::to_string(DBN::loss) << std::endl;
         std::cout << " Early Stop: " << dll::to_string(DBN::early) << std::endl << std::endl;
