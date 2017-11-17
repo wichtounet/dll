@@ -227,6 +227,84 @@ inline void dump_timers_one() {
 }
 
 /*!
+ * \brief Dump all timers values to the console in the form of a table.
+ */
+inline void dump_timers_pretty() {
+    decltype(auto) timers = get_timers().timers;
+
+    if(timers.empty()){
+        std::cout << "No timers have been recorded!" << std::endl;
+        return;
+    }
+
+    //Sort the timers by duration (DESC)
+    std::sort(timers.begin(), timers.end(), [](auto& left, auto& right) {
+        return left.duration > right.duration;
+    });
+
+    double total_duration = timers.front().duration.load();
+
+    constexpr size_t columns = 5;
+
+    std::string column_name[columns];
+    column_name[0] = "%";
+    column_name[1] = "Timer";
+    column_name[2] = "Count";
+    column_name[3] = "Total";
+    column_name[4] = "Average";
+
+    size_t column_length[columns];
+    column_length[0] = 8;
+    column_length[1] = column_name[1].size();
+    column_length[2] = column_name[2].size();
+    column_length[3] = column_name[3].size();
+    column_length[4] = column_name[4].size();
+
+    // Compute the width of each column
+    for (decltype(auto) timer : timers) {
+        if (timer.name) {
+            size_t count = timer.count;
+            size_t duration = timer.duration;
+
+            column_length[1] = std::max(column_length[1], std::string(timer.name).size());
+            column_length[2] = std::max(column_length[2], std::to_string(count).size());
+            column_length[3] = std::max(column_length[3], duration_str(duration).size());
+            column_length[4] = std::max(column_length[4], duration_str(duration / count).size());
+        }
+    }
+
+    const size_t line_length = (columns + 1) * 1 + 2 + (columns - 1) * 2 + std::accumulate(column_length, column_length + columns, 0);
+
+    std::cout << std::string(line_length, '-') << '\n';
+
+    printf("| %-*s | %-*s | %-*s | %-*s | %-*s |\n",
+        int(column_length[0]), column_name[0].c_str(),
+        int(column_length[1]), column_name[1].c_str(),
+        int(column_length[2]), column_name[2].c_str(),
+        int(column_length[3]), column_name[3].c_str(),
+        int(column_length[4]), column_name[4].c_str());
+
+    std::cout << std::string(line_length, '-') << '\n';
+
+    // Print all the used timers
+    for (decltype(auto) timer : timers) {
+        if (timer.name) {
+            size_t count = timer.count;
+            size_t duration = timer.duration;
+
+            printf("| %*.3f%% | %-*s | %-*s | %-*s | %-*s |\n",
+                int(column_length[0] - 1), 100.0 * (duration / double(total_duration)),
+                int(column_length[1]), timer.name,
+                int(column_length[2]), std::to_string(count).c_str(),
+                int(column_length[3]), duration_str(duration).c_str(),
+                int(column_length[4]), duration_str(duration / count).c_str());
+        }
+    }
+
+    std::cout << std::string(line_length, '-') << '\n';
+}
+
+/*!
  * \brief Automatic timer with RAII.
  */
 struct auto_timer {
