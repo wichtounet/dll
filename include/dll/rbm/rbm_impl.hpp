@@ -117,6 +117,16 @@ struct rbm_impl final : public standard_rbm<rbm_impl<Desc>, Desc> {
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
+    static std::string to_short_string(std::string pre = "") {
+        cpp_unused(pre);
+
+        return "RBM: (" + to_string(visible_unit) + " -> " + to_string(hidden_unit) + ")";
+    }
+
+    /*!
+     * \brief Returns a short description of the layer
+     * \return an std::string containing a short description of the layer
+     */
     static std::string to_full_string(std::string pre = "") {
         cpp_unused(pre);
 

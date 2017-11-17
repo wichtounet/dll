@@ -103,6 +103,22 @@ struct dyn_recurrent_layer_impl final : recurrent_neural_layer<dyn_recurrent_lay
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
+    std::string to_short_string(std::string pre = "") const {
+        cpp_unused(pre);
+
+        if /*constexpr*/ (activation_function == function::IDENTITY) {
+            return "RNN (dyn)";
+        } else {
+            char buffer[512];
+            snprintf(buffer, 512, "RNN (%s) (dyn)", to_string(activation_function).c_str());
+            return {buffer};
+        }
+    }
+
+    /*!
+     * \brief Returns a short description of the layer
+     * \return an std::string containing a short description of the layer
+     */
     std::string to_full_string(std::string pre = "") const {
         cpp_unused(pre);
 

@@ -135,6 +135,18 @@ struct dyn_conv_same_layer_impl final : neural_layer<dyn_conv_same_layer_impl<De
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
+    std::string to_short_string(std::string pre = "") const {
+        cpp_unused(pre);
+
+        char buffer[1024];
+        snprintf(buffer, 1024, "Conv(%s)(Same)(dyn)", to_string(activation_function).c_str());
+        return {buffer};
+    }
+
+    /*!
+     * \brief Returns a short description of the layer
+     * \return an std::string containing a short description of the layer
+     */
     std::string to_full_string(std::string pre = "") const {
         cpp_unused(pre);
 

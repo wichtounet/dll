@@ -27,7 +27,18 @@ struct dropout_layer_impl : transform_layer<dropout_layer_impl<Desc>> {
     dropout_layer_impl() = default;
 
     /*!
-     * \brief Returns a string representation of the layer
+     * \brief Returns a full string representation of the layer
+     */
+    static std::string to_short_string(std::string pre = "") {
+        cpp_unused(pre);
+
+        char buffer[128];
+        snprintf(buffer, 128, "Dropout(%.2f)", p);
+        return {buffer};
+    }
+
+    /*!
+     * \brief Returns a full string representation of the layer
      */
     static std::string to_full_string(std::string pre = "") {
         cpp_unused(pre);

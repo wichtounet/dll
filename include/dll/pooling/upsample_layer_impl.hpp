@@ -24,7 +24,21 @@ struct upsample_3d_layer_impl final : unpooling_3d_layer<upsample_3d_layer_impl<
     using layer_t     = this_type;                           ///< This layer's type
     using dyn_layer_t = typename desc::dyn_layer_t;          ///< The dynamic version of this layer
 
+    using input_one_t  = typename base::input_one_t;  ///< The type of one input
+    using output_one_t = typename base::output_one_t; ///< The type of one output
+    using input_t      = typename base::input_t;      ///< The type of many input
+    using output_t     = typename base::output_t;     ///< The type of many output
+
     upsample_3d_layer_impl() = default;
+
+    /*!
+     * \brief Get a string representation of the layer
+     */
+    static std::string to_short_string(std::string pre = "") {
+        cpp_unused(pre);
+
+        return "upsampel(3D)";
+    }
 
     /*!
      * \brief Get a string representation of the layer
@@ -37,11 +51,6 @@ struct upsample_3d_layer_impl final : unpooling_3d_layer<upsample_3d_layer_impl<
                  base::I1, base::I2, base::I3, base::C1, base::C2, base::C3, base::O1, base::O2, base::O3);
         return {buffer};
     }
-
-    using input_one_t  = typename base::input_one_t;  ///< The type of one input
-    using output_one_t = typename base::output_one_t; ///< The type of one output
-    using input_t      = typename base::input_t;      ///< The type of many input
-    using output_t     = typename base::output_t;     ///< The type of many output
 
     /*!
      * \brief Apply the layer to the given batch of input.

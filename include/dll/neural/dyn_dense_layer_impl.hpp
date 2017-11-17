@@ -88,6 +88,22 @@ struct dyn_dense_layer_impl final : neural_layer<dyn_dense_layer_impl<Desc>, Des
     }
 
     /*!
+     * \brief Returns a full description of the layer
+     * \return an std::string containing a full description of the layer
+     */
+    std::string to_short_string(std::string pre = "") const {
+        cpp_unused(pre);
+
+        if /*constexpr*/ (activation_function == function::IDENTITY) {
+            return "Dense (dyn)";
+        } else {
+            char buffer[512];
+            snprintf(buffer, 512, "Dense(%s) (dyn)", to_string(activation_function).c_str());
+            return {buffer};
+        }
+    }
+
+    /*!
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
@@ -97,9 +113,9 @@ struct dyn_dense_layer_impl final : neural_layer<dyn_dense_layer_impl<Desc>, Des
         char buffer[512];
 
         if /*constexpr*/ (activation_function == function::IDENTITY) {
-            snprintf(buffer, 512, "Dense(dyn): %lu -> %lu", num_visible, num_hidden);
+            snprintf(buffer, 512, "Dense(dyn) %lu", num_hidden);
         } else {
-            snprintf(buffer, 512, "Dense(dyn): %lu -> %s -> %lu", num_visible, to_string(activation_function).c_str(), num_hidden);
+            snprintf(buffer, 512, "Dense(dyn) %lu + %s", num_hidden, to_string(activation_function).c_str());
         }
 
         return {buffer};

@@ -147,6 +147,22 @@ struct dyn_conv_rbm_impl final : public standard_crbm<dyn_conv_rbm_impl<Desc>, D
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
+    std::string to_short_string(std::string pre = "") const {
+        cpp_unused(pre);
+
+        char buffer[1024];
+        snprintf(
+            buffer, 1024, "CRBM (%s->%s) (dyn)",
+            to_string(visible_unit).c_str(),
+            to_string(hidden_unit).c_str()
+            );
+        return {buffer};
+    }
+
+    /*!
+     * \brief Returns a short description of the layer
+     * \return an std::string containing a short description of the layer
+     */
     std::string to_full_string(std::string pre = "") const {
         cpp_unused(pre);
 

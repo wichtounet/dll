@@ -23,7 +23,21 @@ struct dyn_upsample_3d_layer_impl final : dyn_unpooling_3d_layer<dyn_upsample_3d
     using layer_t     = this_type;                     ///< This layer's type
     using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
 
+    using input_one_t  = typename base::input_one_t;  ///< The type of one input
+    using output_one_t = typename base::output_one_t; ///< The type of one output
+    using input_t      = typename base::input_t;      ///< The type of many input
+    using output_t     = typename base::output_t;     ///< The type of many output
+
     dyn_upsample_3d_layer_impl() = default;
+
+    /*!
+     * \brief Get a string representation of the layer
+     */
+    std::string to_short_string(std::string pre = "") const {
+        cpp_unused(pre);
+
+        return "upsample(3D)";
+    }
 
     /*!
      * \brief Get a string representation of the layer
@@ -36,11 +50,6 @@ struct dyn_upsample_3d_layer_impl final : dyn_unpooling_3d_layer<dyn_upsample_3d
                  base::i1, base::i2, base::i3, base::c1, base::c2, base::c3, base::o1, base::o2, base::o3);
         return {buffer};
     }
-
-    using input_one_t  = typename base::input_one_t;  ///< The type of one input
-    using output_one_t = typename base::output_one_t; ///< The type of one output
-    using input_t      = typename base::input_t;      ///< The type of many input
-    using output_t     = typename base::output_t;     ///< The type of many output
 
     /*!
      * \brief Forward activation of the layer for one batch of sample

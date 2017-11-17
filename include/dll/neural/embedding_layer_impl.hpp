@@ -79,6 +79,16 @@ struct embedding_layer_impl final : neural_layer_no_bias<embedding_layer_impl<De
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
+    static std::string to_short_string(std::string pre = "") {
+        cpp_unused(pre);
+
+        return "Embedding";
+    }
+
+    /*!
+     * \brief Returns a short description of the layer
+     * \return an std::string containing a short description of the layer
+     */
     static std::string to_full_string(std::string pre = "") {
         cpp_unused(pre);
 

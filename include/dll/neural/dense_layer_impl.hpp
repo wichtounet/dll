@@ -87,6 +87,22 @@ struct dense_layer_impl final : neural_layer<dense_layer_impl<Desc>, Desc> {
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
+    static std::string to_short_string(std::string pre = "") {
+        cpp_unused(pre);
+
+        if /*constexpr*/ (activation_function == function::IDENTITY) {
+            return "Dense";
+        } else {
+            char buffer[512];
+            snprintf(buffer, 512, "Dense (%s)", to_string(activation_function).c_str());
+            return {buffer};
+        }
+    }
+
+    /*!
+     * \brief Returns a short description of the layer
+     * \return an std::string containing a short description of the layer
+     */
     static std::string to_full_string(std::string pre = "") {
         cpp_unused(pre);
 

@@ -33,6 +33,15 @@ struct avgp_2d_layer_impl final : pooling_2d_layer<avgp_2d_layer_impl<Desc>, Des
     /*!
      * \brief Get a string representation of the layer
      */
+    static std::string to_short_string(std::string pre = "") {
+        cpp_unused(pre);
+
+        return "AVGP(2D)";
+    }
+
+    /*!
+     * \brief Get a string representation of the layer
+     */
     static std::string to_full_string(std::string pre = "") {
         cpp_unused(pre);
 
@@ -160,6 +169,15 @@ struct avgp_3d_layer_impl final : pooling_3d_layer<avgp_3d_layer_impl<Desc>, Des
     using output_t     = typename base::output_t;     ///< The type of many output
 
     avgp_3d_layer_impl() = default;
+
+    /*!
+     * \brief Get a string representation of the layer
+     */
+    static std::string to_short_string(std::string pre = "") {
+        cpp_unused(pre);
+
+        return "AVGP(3D)";
+    }
 
     /*!
      * \brief Get a string representation of the layer
