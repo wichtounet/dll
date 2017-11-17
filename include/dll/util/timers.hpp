@@ -50,7 +50,24 @@ struct stop_timer {
  * This has no effect if the timers were disabled.
  */
 inline void dump_timers() {
-    //No timers
+    std::cout << "Timers have been disabled by defining DLL_NO_TIMERS" << std::endl;
+}
+
+/*!
+ * \brief Dump all timers values to the console, with percentage of time from
+ * the total.
+ *
+ * The total is the counter with the maximum total time
+ */
+inline void dump_timers_one() {
+    std::cout << "Timers have been disabled by defining DLL_NO_TIMERS" << std::endl;
+}
+
+/*!
+ * \brief Dump all timers values to the console in the form of a nice table.
+ */
+inline void dump_timers_pretty() {
+    std::cout << "Timers have been disabled by defining DLL_NO_TIMERS" << std::endl;
 }
 
 struct auto_timer {
@@ -227,7 +244,7 @@ inline void dump_timers_one() {
 }
 
 /*!
- * \brief Dump all timers values to the console in the form of a table.
+ * \brief Dump all timers values to the console in the form of a nice table.
  */
 inline void dump_timers_pretty() {
     decltype(auto) timers = get_timers().timers;
