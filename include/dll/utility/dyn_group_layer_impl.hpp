@@ -78,11 +78,11 @@ struct dyn_group_layer_impl<dyn_group_layer_desc<Layers...>> final : layer<dyn_g
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    std::string to_short_string(std::string pre = "") const {
+    std::string to_full_string(std::string pre = "") const {
         std::string str = "Group(";
 
         cpp::for_each(layers, [&str, &pre](auto& layer){
-            str += "\n" + pre + "  " + layer.to_short_string(pre + "  ");
+            str += "\n" + pre + "  " + layer.to_full_string(pre + "  ");
         });
 
         str += "\n" + pre + ")";

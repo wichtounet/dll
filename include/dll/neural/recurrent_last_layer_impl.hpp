@@ -59,7 +59,7 @@ struct recurrent_last_layer_impl final : layer<recurrent_last_layer_impl<Desc>> 
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    static std::string to_short_string(std::string pre = "") {
+    static std::string to_full_string(std::string pre = "") {
         cpp_unused(pre);
 
         char buffer[512];

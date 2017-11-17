@@ -341,7 +341,7 @@ public:
         for_each_layer([&parameters](auto& layer) {
             std::string pre = "    ";
             std::cout << pre;
-            std::cout << layer.to_short_string(pre) << std::endl;
+            std::cout << layer.to_full_string(pre) << std::endl;
 
             cpp::static_if<decay_layer_traits<decltype(layer)>::is_neural_layer()>([&](auto f) {
                 parameters += f(layer).parameters();
@@ -374,7 +374,7 @@ public:
         size_t parameters = 0;
 
         for_each_layer([&](auto& layer) {
-            column_length[1] = std::max(column_length[1], layer.to_short_string("").size());
+            column_length[1] = std::max(column_length[1], layer.to_full_string("").size());
 
             cpp::static_if<decay_layer_traits<decltype(layer)>::is_neural_layer()>([&](auto f) {
                 column_length[2] = std::max(column_length[2], std::to_string(f(layer).parameters()).size());
@@ -404,7 +404,7 @@ public:
 
             printf("| %-*lu | %-*s | %-*s | %-*s |\n",
                    int(column_length[0]), I,
-                   int(column_length[1]), layer.to_short_string("").c_str(),
+                   int(column_length[1]), layer.to_full_string("").c_str(),
                    int(column_length[2]), parameters_str.c_str(),
                    int(column_length[3]), ""); // TODO
         });

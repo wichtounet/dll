@@ -28,7 +28,7 @@ struct dyn_avgp_2d_layer_impl final : dyn_pooling_2d_layer<dyn_avgp_2d_layer_imp
     /*!
      * \brief Get a string representation of the layer
      */
-    std::string to_short_string(std::string pre = "") const {
+    std::string to_full_string(std::string pre = "") const {
         cpp_unused(pre);
 
         char buffer[1024];
@@ -153,7 +153,7 @@ struct dyn_avgp_3d_layer_impl final : dyn_pooling_3d_layer<dyn_avgp_3d_layer_imp
     /*!
      * \brief Get a string representation of the layer
      */
-    std::string to_short_string(std::string pre = "") const {
+    std::string to_full_string(std::string pre = "") const {
         cpp_unused(pre);
 
         char buffer[1024];

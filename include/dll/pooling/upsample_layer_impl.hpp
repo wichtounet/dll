@@ -29,7 +29,7 @@ struct upsample_3d_layer_impl final : unpooling_3d_layer<upsample_3d_layer_impl<
     /*!
      * \brief Get a string representation of the layer
      */
-    static std::string to_short_string(std::string pre = "") {
+    static std::string to_full_string(std::string pre = "") {
         cpp_unused(pre);
 
         char buffer[512];

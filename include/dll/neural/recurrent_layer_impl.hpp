@@ -90,7 +90,7 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    static std::string to_short_string(std::string pre = "") {
+    static std::string to_full_string(std::string pre = "") {
         cpp_unused(pre);
 
         char buffer[512];

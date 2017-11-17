@@ -28,7 +28,7 @@ struct dyn_upsample_3d_layer_impl final : dyn_unpooling_3d_layer<dyn_upsample_3d
     /*!
      * \brief Get a string representation of the layer
      */
-    std::string to_short_string(std::string pre = "") const {
+    std::string to_full_string(std::string pre = "") const {
         cpp_unused(pre);
 
         char buffer[512];

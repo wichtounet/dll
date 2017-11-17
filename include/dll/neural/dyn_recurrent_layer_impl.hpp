@@ -103,7 +103,7 @@ struct dyn_recurrent_layer_impl final : recurrent_neural_layer<dyn_recurrent_lay
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    std::string to_short_string(std::string pre = "") const {
+    std::string to_full_string(std::string pre = "") const {
         cpp_unused(pre);
 
         char buffer[512];

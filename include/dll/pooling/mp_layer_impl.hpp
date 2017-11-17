@@ -30,7 +30,7 @@ struct mp_2d_layer_impl final : pooling_2d_layer<mp_2d_layer_impl<Desc>, Desc> {
     /*!
      * \brief Get a string representation of the layer
      */
-    static std::string to_short_string(std::string pre = "") {
+    static std::string to_full_string(std::string pre = "") {
         cpp_unused(pre);
 
         char buffer[1024];
@@ -164,7 +164,7 @@ struct mp_3d_layer_impl final : pooling_3d_layer<mp_3d_layer_impl<Desc>, Desc> {
     /*!
      * \brief Get a string representation of the layer
      */
-    static std::string to_short_string(std::string pre = "") {
+    static std::string to_full_string(std::string pre = "") {
         cpp_unused(pre);
 
         char buffer[1024];

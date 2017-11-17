@@ -164,9 +164,9 @@ struct default_dbn_watcher {
     template <typename RBM>
     void pretrain_layer(const DBN& dbn, size_t I, const RBM& rbm, size_t input_size) {
         if (input_size) {
-            std::cout << "DBN: Pretrain layer " << I << " (" << rbm.to_short_string() << ") with " << input_size << " entries" << std::endl;
+            std::cout << "DBN: Pretrain layer " << I << " (" << rbm.to_full_string() << ") with " << input_size << " entries" << std::endl;
         } else {
-            std::cout << "DBN: Pretrain layer " << I << " (" << rbm.to_short_string() << ")" << std::endl;
+            std::cout << "DBN: Pretrain layer " << I << " (" << rbm.to_full_string() << ")" << std::endl;
         }
 
         cpp_unused(dbn);

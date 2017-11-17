@@ -97,11 +97,11 @@ struct merge_layer_impl <merge_layer_desc<D, Layers...>> final : layer<merge_lay
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    std::string to_short_string(std::string pre = "") const {
+    std::string to_full_string(std::string pre = "") const {
         std::string str = "Merge(";
 
         cpp::for_each(layers, [&str, &pre](auto& layer){
-            str += "\n" + pre + "  " + layer.to_short_string(pre + "  ");
+            str += "\n" + pre + "  " + layer.to_full_string(pre + "  ");
         });
 
         str += "\n" + pre + ")";
