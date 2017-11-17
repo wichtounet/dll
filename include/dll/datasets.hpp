@@ -158,11 +158,11 @@ public:
         column_length[2] = column_name[2].size();
         column_length[3] = column_name[3].size();
 
-        const size_t line_length = (columns + 1) * 1 + 2 + (columns - 1) * 2 + std::accumulate(column_length.begin(), column_length.end(), 0);
-
         fill_length("train", train_generator, column_length);
         fill_length("val", val_generator, column_length);
         fill_length("test", test_generator, column_length);
+
+        const size_t line_length = (columns + 1) * 1 + 2 + (columns - 1) * 2 + std::accumulate(column_length.begin(), column_length.end(), 0);
 
         std::cout << std::string(line_length, '-') << '\n';
 
