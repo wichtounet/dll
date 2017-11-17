@@ -374,10 +374,12 @@ public:
         size_t parameters = 0;
 
         for_each_layer([&](auto& layer) {
-            column_length[1] = std::max(column_length[1], layer.to_full_string("").size());
+            column_length[1] = std::max(column_length[1], layer.to_short_string("").size());
 
             cpp::static_if<decay_layer_traits<decltype(layer)>::is_neural_layer()>([&](auto f) {
                 column_length[2] = std::max(column_length[2], std::to_string(f(layer).parameters()).size());
+
+                parameters += f(layer).parameters();
             });
 
             // TODO column_length[3]
@@ -402,16 +404,16 @@ public:
                 parameters_str = std::to_string(f(layer).parameters());
             });
 
-            printf("| %-*lu | %-*s | %-*s | %-*s |\n",
+            printf("| %*lu | %-*s | %*s | %-*s |\n",
                    int(column_length[0]), I,
-                   int(column_length[1]), layer.to_full_string("").c_str(),
+                   int(column_length[1]), layer.to_short_string("").c_str(),
                    int(column_length[2]), parameters_str.c_str(),
                    int(column_length[3]), ""); // TODO
         });
 
         std::cout << std::string(line_length, '-') << '\n';
 
-        std::cout << "   Total parameters: " << parameters << std::endl;
+        printf(" %*s: %*lu\n", int(column_length[0] + column_length[1] + 5), "Total Parameters", int(column_length[2]), parameters);
     }
 
     /*!
