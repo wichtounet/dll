@@ -90,7 +90,10 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_
         stream << "Out-Of-Memory Data Generator" << std::endl;
         stream << "              Size: " << size() << std::endl;
         stream << "           Batches: " << batches() << std::endl;
-        stream << "    Augmented Size: " << augmented_size() << std::endl;
+
+        if (augmented_size() != size()) {
+            stream << "    Augmented Size: " << augmented_size() << std::endl;
+        }
 
         return stream;
     }
@@ -481,7 +484,10 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_a
         stream << "Out-Of-Memory Data Generator" << std::endl;
         stream << "              Size: " << size() << std::endl;
         stream << "           Batches: " << batches() << std::endl;
-        stream << "    Augmented Size: " << augmented_size() << std::endl;
+
+        if (augmented_size() != size()) {
+            stream << "    Augmented Size: " << augmented_size() << std::endl;
+        }
 
         return stream;
     }
