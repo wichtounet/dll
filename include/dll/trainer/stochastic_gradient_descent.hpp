@@ -1218,8 +1218,8 @@ struct sgd_trainer {
 
         // Compute the schedule for momentum
 
-        weight momentum_cache_t   = beta1 * (1. - 0.5 * (std::pow(0.96, t * schedule_decay)));
-        weight momentum_cache_t_1 = beta1 * (1. - 0.5 * (std::pow(0.96, (t + 1) * schedule_decay)));
+        weight momentum_cache_t   = beta1 * (1.0 - 0.5 * (std::pow(0.96, t * schedule_decay)));
+        weight momentum_cache_t_1 = beta1 * (1.0 - 0.5 * (std::pow(0.96, (t + 1) * schedule_decay)));
 
         weight m_schedule_new  = m_schedule * momentum_cache_t;
         weight m_schedule_next = m_schedule * momentum_cache_t * momentum_cache_t_1;
