@@ -56,6 +56,8 @@ struct dropout_layer_impl : transform_layer<dropout_layer_impl<Desc>> {
      */
     template <typename Input, typename Output>
     static void test_forward_batch(Output& output, const Input& input) {
+        dll::auto_timer timer("dropout:test:forward");
+
         output = input;
     }
 
@@ -66,6 +68,8 @@ struct dropout_layer_impl : transform_layer<dropout_layer_impl<Desc>> {
      */
     template <typename Input, typename Output>
     static void train_forward_batch(Output& output, const Input& input) {
+        dll::auto_timer timer("dropout:train:forward");
+
         std::uniform_real_distribution<float> dist(0.0f, 1.0f);
         auto& g = dll::rand_engine();
 
@@ -95,6 +99,8 @@ struct dropout_layer_impl : transform_layer<dropout_layer_impl<Desc>> {
      */
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
+        dll::auto_timer timer("dropout:backward");
+
         output = context.errors;
     }
 
