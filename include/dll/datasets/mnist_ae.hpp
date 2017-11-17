@@ -122,6 +122,7 @@ auto make_mnist_ae_generator_test(size_t start, size_t limit, Parameters&&... pa
 template<typename... Parameters>
 auto make_mnist_ae_dataset(const std::string& folder, Parameters&&... parameters){
     return make_dataset_holder(
+        "mnist",
         make_mnist_ae_generator_train(folder, 0UL, 60000UL, std::forward<Parameters>(parameters)...),
         make_mnist_ae_generator_test(folder, 0UL, 10000UL, std::forward<Parameters>(parameters)...));
 }
@@ -137,6 +138,7 @@ auto make_mnist_ae_dataset(const std::string& folder, Parameters&&... parameters
 template<typename... Parameters>
 auto make_mnist_ae_dataset(Parameters&&... parameters){
     return make_dataset_holder(
+        "mnist",
         make_mnist_ae_generator_train(0UL, 60000UL, std::forward<Parameters>(parameters)...),
         make_mnist_ae_generator_test(0UL, 10000UL, std::forward<Parameters>(parameters)...));
 }
@@ -151,6 +153,7 @@ auto make_mnist_ae_dataset(Parameters&&... parameters){
 template<typename... Parameters>
 auto make_mnist_ae_dataset_sub(const std::string& folder, size_t start, size_t limit, Parameters&&... parameters){
     return make_dataset_holder(
+        "mnist",
         make_mnist_ae_generator_train(folder, start, limit, std::forward<Parameters>(parameters)...),
         make_mnist_ae_generator_test(0UL, 10000UL, std::forward<Parameters>(parameters)...));
 }
@@ -167,6 +170,7 @@ auto make_mnist_ae_dataset_sub(const std::string& folder, size_t start, size_t l
 template<typename... Parameters>
 auto make_mnist_ae_dataset_sub(size_t start, size_t limit, Parameters&&... parameters){
     return make_dataset_holder(
+        "mnist",
         make_mnist_ae_generator_train(start, limit, std::forward<Parameters>(parameters)...),
         make_mnist_ae_generator_test(0UL, 10000UL, std::forward<Parameters>(parameters)...));
 }
@@ -186,6 +190,7 @@ auto make_mnist_ae_dataset_sub(size_t start, size_t limit, Parameters&&... param
 template<typename... Parameters>
 auto make_mnist_ae_dataset_val(const std::string& folder, size_t start, size_t middle, size_t limit, Parameters&&... parameters){
     return make_dataset_holder(
+        "mnist",
         make_mnist_ae_generator_train(folder, start, middle, std::forward<Parameters>(parameters)...),
         make_mnist_ae_generator_test(0UL, 10000UL, std::forward<Parameters>(parameters)...),
         make_mnist_ae_generator_train(folder, middle, limit - middle, std::forward<Parameters>(parameters)...)
@@ -207,6 +212,7 @@ auto make_mnist_ae_dataset_val(const std::string& folder, size_t start, size_t m
 template<typename... Parameters>
 auto make_mnist_ae_dataset_val(size_t start, size_t middle, size_t limit, Parameters&&... parameters){
     return make_dataset_holder(
+        "mnist",
         make_mnist_ae_generator_train(start, middle, std::forward<Parameters>(parameters)...),
         make_mnist_ae_generator_test(0UL, 10000UL, std::forward<Parameters>(parameters)...),
         make_mnist_ae_generator_train(middle, limit - middle, std::forward<Parameters>(parameters)...)

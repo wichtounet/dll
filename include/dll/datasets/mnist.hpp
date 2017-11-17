@@ -137,6 +137,7 @@ auto make_mnist_generator_test(size_t start, size_t limit, Parameters&&... param
 template<typename... Parameters>
 auto make_mnist_dataset(const std::string& folder, Parameters&&... parameters){
     return make_dataset_holder(
+        "mnist",
         make_mnist_generator_train_impl<mnist_example_t>(folder, 0UL, 60000UL, std::forward<Parameters>(parameters)...),
         make_mnist_generator_test_impl<mnist_example_t>(folder, 0UL, 10000UL, std::forward<Parameters>(parameters)...));
 }
@@ -152,6 +153,7 @@ auto make_mnist_dataset(const std::string& folder, Parameters&&... parameters){
 template<typename... Parameters>
 auto make_mnist_dataset(Parameters&&... parameters){
     return make_dataset_holder(
+        "mnist",
         make_mnist_generator_train(0UL, 60000UL, std::forward<Parameters>(parameters)...),
         make_mnist_generator_test(0UL, 10000UL, std::forward<Parameters>(parameters)...));
 }
@@ -167,6 +169,7 @@ auto make_mnist_dataset(Parameters&&... parameters){
 template<typename... Parameters>
 auto make_mnist_dataset_nc(Parameters&&... parameters){
     return make_dataset_holder(
+        "mnist",
         make_mnist_generator_train_impl<mnist_example_nc_t>("mnist", 0UL, 60000UL, std::forward<Parameters>(parameters)...),
         make_mnist_generator_test_impl<mnist_example_nc_t>("mnist", 0UL, 10000UL, std::forward<Parameters>(parameters)...));
 }
@@ -182,6 +185,7 @@ auto make_mnist_dataset_nc(Parameters&&... parameters){
 template<typename... Parameters>
 auto make_mnist_dataset_nc_sub(size_t start, size_t limit, Parameters&&... parameters){
     return make_dataset_holder(
+        "mnist",
         make_mnist_generator_train_impl<mnist_example_nc_t>("mnist", start, limit, std::forward<Parameters>(parameters)...),
         make_mnist_generator_test_impl<mnist_example_nc_t>("mnist", 0UL, 10000UL, std::forward<Parameters>(parameters)...));
 }
@@ -196,6 +200,7 @@ auto make_mnist_dataset_nc_sub(size_t start, size_t limit, Parameters&&... param
 template<typename... Parameters>
 auto make_mnist_dataset_sub(const std::string& folder, size_t start, size_t limit, Parameters&&... parameters){
     return make_dataset_holder(
+        "mnist",
         make_mnist_generator_train_impl<mnist_example_t>(folder, start, limit, std::forward<Parameters>(parameters)...),
         make_mnist_generator_test_impl<mnist_example_t>(folder, 0UL, 10000UL, std::forward<Parameters>(parameters)...));
 }
@@ -212,6 +217,7 @@ auto make_mnist_dataset_sub(const std::string& folder, size_t start, size_t limi
 template<typename... Parameters>
 auto make_mnist_dataset_sub(size_t start, size_t limit, Parameters&&... parameters){
     return make_dataset_holder(
+        "mnist",
         make_mnist_generator_train(start, limit, std::forward<Parameters>(parameters)...),
         make_mnist_generator_test(0UL, 10000UL, std::forward<Parameters>(parameters)...));
 }
@@ -231,6 +237,7 @@ auto make_mnist_dataset_sub(size_t start, size_t limit, Parameters&&... paramete
 template<typename... Parameters>
 auto make_mnist_dataset_val(const std::string& folder, size_t start, size_t middle, size_t limit, Parameters&&... parameters){
     return make_dataset_holder(
+        "mnist",
         make_mnist_generator_train_impl<mnist_example_t>(folder, start, middle, std::forward<Parameters>(parameters)...),
         make_mnist_generator_test_impl<mnist_example_t>(folder, 0UL, 10000UL, std::forward<Parameters>(parameters)...),
         make_mnist_generator_train_impl<mnist_example_t>(folder, middle, limit - middle, std::forward<Parameters>(parameters)...)
@@ -252,6 +259,7 @@ auto make_mnist_dataset_val(const std::string& folder, size_t start, size_t midd
 template<typename... Parameters>
 auto make_mnist_dataset_val(size_t start, size_t middle, size_t limit, Parameters&&... parameters){
     return make_dataset_holder(
+        "mnist",
         make_mnist_generator_train(start, middle, std::forward<Parameters>(parameters)...),
         make_mnist_generator_test(0UL, 10000UL, std::forward<Parameters>(parameters)...),
         make_mnist_generator_train(middle, limit - middle, std::forward<Parameters>(parameters)...)

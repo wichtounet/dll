@@ -235,6 +235,7 @@ auto make_imagenet_dataset(const std::string& folder, Parameters&&... /*paramete
     imagenet::label_iterator lend(train_files, labels, train_files->size());
 
     return make_dataset_holder(
+        "imagenet",
         make_generator(iit, iend, lit, lend, train_files->size(), 1000, dll::outmemory_data_generator_desc<Parameters..., dll::categorical>{}),
         make_generator(iit, iend, lit, lend, train_files->size(), 1000, dll::outmemory_data_generator_desc<Parameters..., dll::categorical>{}));
 }

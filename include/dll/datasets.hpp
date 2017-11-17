@@ -55,6 +55,7 @@ void print_line(const char* name, std::unique_ptr<int>& g, std::array<size_t, 4>
 template<typename TrainG, typename TestG, typename ValG>
 struct dataset_holder {
 private:
+    std::string name; ///< The name of the dataset
     std::unique_ptr<TrainG> train_generator; ///< The train data generator
     std::unique_ptr<TestG> test_generator;   ///< The test data generator
     std::unique_ptr<ValG> val_generator;     ///< The validation data generator
@@ -65,8 +66,8 @@ public:
      * \param train_generator The train data generator
      * \param test_generator The test data generator
      */
-    dataset_holder(std::unique_ptr<TrainG>& train_generator, std::unique_ptr<TestG>& test_generator)
-            : train_generator(std::move(train_generator)), test_generator(std::move(test_generator)) {
+    dataset_holder(std::string name, std::unique_ptr<TrainG>& train_generator, std::unique_ptr<TestG>& test_generator)
+            : name(std::move(name)), train_generator(std::move(train_generator)), test_generator(std::move(test_generator)) {
         // Nothing else to init
     }
 
@@ -76,8 +77,8 @@ public:
      * \param test_generator The test data generator
      * \param val_generator The validation data generator
      */
-    dataset_holder(std::unique_ptr<TrainG>& train_generator, std::unique_ptr<TestG>& test_generator, std::unique_ptr<ValG>& val_generator)
-            : train_generator(std::move(train_generator)), test_generator(std::move(test_generator)), val_generator(std::move(val_generator)) {
+    dataset_holder(std::string name, std::unique_ptr<TrainG>& train_generator, std::unique_ptr<TestG>& test_generator, std::unique_ptr<ValG>& val_generator)
+            : name(std::move(name)), train_generator(std::move(train_generator)), test_generator(std::move(test_generator)), val_generator(std::move(val_generator)) {
         // Nothing else to init
     }
 
@@ -143,14 +144,16 @@ public:
     std::ostream& display_pretty(std::ostream& stream){
         constexpr size_t columns = 4;
 
+        std::cout << '\n';
+
         std::array<std::string, columns> column_name;
-        column_name[0] = "Set";
+        column_name[0] = name;
         column_name[1] = "Size";
         column_name[2] = "Batches";
         column_name[3] = "Augmented Size";
 
         std::array<size_t, columns> column_length;
-        column_length[0] = 8;
+        column_length[0] = column_name[0].size();
         column_length[1] = column_name[1].size();
         column_length[2] = column_name[2].size();
         column_length[3] = column_name[3].size();
@@ -206,8 +209,8 @@ std::ostream& operator<<(std::ostream& os, dataset_holder<TrainG, TestG, ValG>& 
  * \return The dataset holder around the two generators
  */
 template<typename TrainG, typename TestG>
-dataset_holder<TrainG, TestG, int> make_dataset_holder(std::unique_ptr<TrainG>&& train_generator, std::unique_ptr<TestG>&& test_generator){
-    return {train_generator, test_generator};
+dataset_holder<TrainG, TestG, int> make_dataset_holder(const std::string& name, std::unique_ptr<TrainG>&& train_generator, std::unique_ptr<TestG>&& test_generator){
+    return {name, train_generator, test_generator};
 }
 
 /*!
@@ -220,8 +223,8 @@ dataset_holder<TrainG, TestG, int> make_dataset_holder(std::unique_ptr<TrainG>&&
  * \return The dataset holder around the three generators
  */
 template<typename TrainG, typename TestG, typename ValG>
-dataset_holder<TrainG, TestG, ValG> make_dataset_holder(std::unique_ptr<TrainG>&& train_generator, std::unique_ptr<TestG>&& test_generator, std::unique_ptr<ValG>&& val_generator){
-    return {train_generator, test_generator, val_generator};
+dataset_holder<TrainG, TestG, ValG> make_dataset_holder(const std::string& name, std::unique_ptr<TrainG>&& train_generator, std::unique_ptr<TestG>&& test_generator, std::unique_ptr<ValG>&& val_generator){
+    return {name, train_generator, test_generator, val_generator};
 }
 
 } // end of namespace dll

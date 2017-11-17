@@ -118,6 +118,7 @@ auto make_cifar10_generator_test(size_t limit, Parameters&&... parameters){
 template<typename... Parameters>
 auto make_cifar10_dataset(const std::string& folder, Parameters&&... parameters){
     return make_dataset_holder(
+        "cifar",
         make_cifar10_generator_train(folder, 0, std::forward<Parameters>(parameters)...),
         make_cifar10_generator_test(folder, 0, std::forward<Parameters>(parameters)...));
 }
@@ -133,6 +134,7 @@ auto make_cifar10_dataset(const std::string& folder, Parameters&&... parameters)
 template<typename... Parameters>
 auto make_cifar10_dataset(Parameters&&... parameters){
     return make_dataset_holder(
+        "cifar",
         make_cifar10_generator_train(0, std::forward<Parameters>(parameters)...),
         make_cifar10_generator_test(0, std::forward<Parameters>(parameters)...));
 }
@@ -147,6 +149,7 @@ auto make_cifar10_dataset(Parameters&&... parameters){
 template<typename... Parameters>
 auto make_cifar10_dataset_sub(const std::string& folder, size_t limit, Parameters&&... parameters){
     return make_dataset_holder(
+        "cifar",
         make_cifar10_generator_train(folder, limit, std::forward<Parameters>(parameters)...),
         make_cifar10_generator_test(0, std::forward<Parameters>(parameters)...));
 }
@@ -163,6 +166,7 @@ auto make_cifar10_dataset_sub(const std::string& folder, size_t limit, Parameter
 template<typename... Parameters>
 auto make_cifar10_dataset_sub(size_t limit, Parameters&&... parameters){
     return make_dataset_holder(
+        "cifar",
         make_cifar10_generator_train(limit, std::forward<Parameters>(parameters)...),
         make_cifar10_generator_test(0, std::forward<Parameters>(parameters)...));
 }
