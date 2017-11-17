@@ -169,7 +169,7 @@ struct dense_layer_impl final : neural_layer<dense_layer_impl<Desc>, Desc> {
      */
     template<typename C>
     void adapt_errors(C& context) const {
-        dll::auto_timer timer("dense:adapt_errors");
+        dll::unsafe_auto_timer timer("dense:adapt_errors");
 
         if /*constexpr*/ (activation_function != function::IDENTITY){
             context.errors = f_derivative<activation_function>(context.output) >> context.errors;
@@ -183,7 +183,7 @@ struct dense_layer_impl final : neural_layer<dense_layer_impl<Desc>, Desc> {
      */
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
-        dll::auto_timer timer("dense:backward_batch");
+        dll::unsafe_auto_timer timer("dense:backward_batch");
 
         // The reshape has no overhead, so better than SFINAE for nothing
         constexpr auto Batch = etl::decay_traits<decltype(context.errors)>::template dim<0>();
@@ -196,7 +196,7 @@ struct dense_layer_impl final : neural_layer<dense_layer_impl<Desc>, Desc> {
      */
     template<typename C>
     void compute_gradients(C& context) const {
-        dll::auto_timer timer("dense:compute_gradients");
+        dll::unsafe_auto_timer timer("dense:compute_gradients");
 
         std::get<0>(context.up.context)->grad = batch_outer(context.input, context.errors);
 

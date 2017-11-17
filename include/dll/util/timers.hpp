@@ -74,6 +74,10 @@ struct auto_timer {
     auto_timer(const char* /*name*/) {}
 };
 
+struct unsafe_auto_timer {
+    unsafe_auto_timer(const char* /*name*/) {}
+};
+
 #else
 
 constexpr size_t max_timers = 64; ///< The maximum number of timers
@@ -346,16 +350,7 @@ struct auto_timer {
 
         decltype(auto) timers = get_timers();
 
-        for (decltype(auto) timer : timers.timers) {
-            if (timer.name == name) {
-                timer.duration += duration;
-                ++timer.count;
-
-                return;
-            }
-        }
-
-        std::lock_guard<std::mutex> lock(timers.lock);
+        // Try to increment without the lock
 
         for (decltype(auto) timer : timers.timers) {
             if (timer.name == name) {
@@ -365,6 +360,76 @@ struct auto_timer {
                 return;
             }
         }
+
+        {
+            std::lock_guard<std::mutex> lock(timers.lock);
+
+            // Retry again to increment with lock
+
+            for (decltype(auto) timer : timers.timers) {
+                if (timer.name == name) {
+                    timer.duration += duration;
+                    ++timer.count;
+
+                    return;
+                }
+            }
+
+            // At this point the timer does not exist, create it
+
+            for (decltype(auto) timer : timers.timers) {
+                if (!timer.name) {
+                    timer.name     = name;
+                    timer.duration = duration;
+                    timer.count    = 1;
+
+                    return;
+                }
+            }
+        }
+
+        // If there are no more timers
+        std::cerr << "Unable to register timer " << name << std::endl;
+    }
+};
+
+/*!
+ * \brief Automatic timer with RAII, without synchronization.
+ */
+struct unsafe_auto_timer {
+    const char* name;                                         ///< The name of the timer
+    std::chrono::time_point<std::chrono::steady_clock> start; ///< The start time
+    std::chrono::time_point<std::chrono::steady_clock> end;   ///< The end time
+
+    /*!
+     * \brief Create an unsafe_auto_timer witht the given name
+     * \param name The name of the timer
+     */
+    unsafe_auto_timer(const char* name) : name(name) {
+        start = std::chrono::steady_clock::now();
+    }
+
+    /*!
+     * \brief Destructs the timer, effectively incrementing the timer.
+     */
+    ~unsafe_auto_timer() {
+        end           = std::chrono::steady_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+
+        decltype(auto) timers = get_timers();
+
+        // Increment the timer if it exists
+
+        for (decltype(auto) timer : timers.timers) {
+            if (timer.name == name) {
+                timer.duration += duration;
+                ++timer.count;
+
+                return;
+            }
+        }
+
+        // At this point the timer does not exist, create it
 
         for (decltype(auto) timer : timers.timers) {
             if (!timer.name) {
@@ -376,6 +441,7 @@ struct auto_timer {
             }
         }
 
+        // If there are no more timers
         std::cerr << "Unable to register timer " << name << std::endl;
     }
 };

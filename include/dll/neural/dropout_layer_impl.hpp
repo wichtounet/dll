@@ -99,7 +99,7 @@ struct dropout_layer_impl : transform_layer<dropout_layer_impl<Desc>> {
      */
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
-        dll::auto_timer timer("dropout:backward");
+        dll::unsafe_auto_timer timer("dropout:backward");
 
         output = context.errors;
     }

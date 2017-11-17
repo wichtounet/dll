@@ -182,7 +182,7 @@ struct dyn_batch_normalization_2d_layer_impl : neural_layer<dyn_batch_normalizat
      */
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
-        dll::auto_timer timer("bn:2d:dyn:backward");
+        dll::unsafe_auto_timer timer("bn:2d:dyn:backward");
 
         const auto B = etl::dim<0>(context.input);
 
@@ -206,7 +206,7 @@ struct dyn_batch_normalization_2d_layer_impl : neural_layer<dyn_batch_normalizat
         // If the layer is not the first one, the gradients already have been computed
 
         if (!C::layer) {
-            dll::auto_timer timer("bn:2d:dyn:gradients");
+            dll::unsafe_auto_timer timer("bn:2d:dyn:gradients");
 
             // Gradients of gamma
             std::get<0>(context.up.context)->grad = bias_batch_sum_2d(input_pre >> context.errors);
