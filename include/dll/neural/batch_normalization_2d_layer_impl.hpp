@@ -129,17 +129,15 @@ struct batch_normalization_2d_layer_impl : neural_layer<batch_normalization_2d_l
 
         const auto B = etl::dim<0>(input);
 
-        last_mean          = etl::mean_l(input);
-        auto last_mean_rep = etl::rep_l(last_mean, B);
-
-        last_var = etl::mean_l((input - last_mean_rep) >> (input - last_mean_rep));
-        inv_var  = 1.0 / etl::sqrt(last_var + e);
+        last_mean = etl::bias_batch_mean_2d(input);
+        last_var  = etl::bias_batch_var_2d(input, last_mean);
+        inv_var   = 1.0 / etl::sqrt(last_var + e);
 
         input_pre.inherit_if_null(input);
 
         for(size_t b = 0; b < B; ++b){
             input_pre(b) = (input(b) - last_mean) >> inv_var;
-            output(b)    = (gamma >> input_pre(b)) + beta;
+            output(b)    = (input_pre(b) >> gamma) + beta;
         }
 
         // Update the current mean and variance
@@ -170,12 +168,14 @@ struct batch_normalization_2d_layer_impl : neural_layer<batch_normalization_2d_l
 
         const auto B = etl::dim<0>(context.input);
 
-        auto dxhat        = etl::force_temporary(context.errors >> etl::rep_l(gamma, B));
-        auto dxhat_l      = etl::force_temporary(etl::sum_l(dxhat));
-        auto dxhat_xhat_l = etl::force_temporary(etl::sum_l(dxhat >> input_pre));
+        auto& dgamma = std::get<0>(context.up.context)->grad;
+        auto& dbeta  = std::get<1>(context.up.context)->grad;
+
+        dbeta  = bias_batch_sum_2d(context.errors);
+        dgamma = bias_batch_sum_2d(input_pre >> context.errors);
 
         for(size_t b = 0; b < B; ++b){
-            output(b) = (1.0 / B) >> inv_var >> (B * dxhat(b) - dxhat_l - (input_pre(b) >> dxhat_xhat_l));
+            output(b) = (1.0 / B) >> inv_var >> gamma >> ((B >> context.errors(b)) - (input_pre(b) >> dgamma) - dbeta);
         }
     }
 
@@ -185,13 +185,17 @@ struct batch_normalization_2d_layer_impl : neural_layer<batch_normalization_2d_l
      */
     template<typename C>
     void compute_gradients(C& context) const {
-        dll::auto_timer timer("bn:2d:gradients");
+        // If the layer is not the first one, the gradients already have been computed
 
-        // Gradients of gamma
-        std::get<0>(context.up.context)->grad = etl::sum_l(input_pre >> context.errors);
+        if (!C::layer) {
+            dll::auto_timer timer("bn:2d:gradients");
 
-        // Gradients of beta
-        std::get<1>(context.up.context)->grad = etl::sum_l(context.errors);
+            // Gradients of gamma
+            std::get<0>(context.up.context)->grad = bias_batch_sum_2d(input_pre >> context.errors);
+
+            // Gradients of beta
+            std::get<1>(context.up.context)->grad = bias_batch_sum_2d(context.errors);
+        }
     }
 
     /*!
@@ -284,7 +288,8 @@ struct sgd_context<DBN, batch_normalization_2d_layer_impl<Desc>, L> {
     using layer_t = batch_normalization_2d_layer_impl<Desc>; ///< The current layer type
     using weight  = typename layer_t::weight;           ///< The data type for this layer
 
-    static constexpr auto batch_size = DBN::batch_size;
+    static constexpr auto batch_size = DBN::batch_size; ///< The batch size of the network
+    static constexpr auto layer      = L;               ///> The layer's index
 
     etl::fast_matrix<weight, batch_size, Desc::Input> input;  ///< A batch of input
     etl::fast_matrix<weight, batch_size, Desc::Input> output; ///< A batch of output
