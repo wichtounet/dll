@@ -115,8 +115,6 @@ struct dyn_embedding_layer_impl final : neural_layer_no_bias<dyn_embedding_layer
      * \return an std::string containing the description of the output shape
      */
     std::string output_shape() const {
-        cpp_unused(pre);
-
         char buffer[128];
         snprintf(buffer, 128, "[Bx%lu]", K);
         return {buffer};
