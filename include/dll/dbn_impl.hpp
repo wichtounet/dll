@@ -389,15 +389,15 @@ public:
 
         const size_t line_length = (columns + 1) * 1 + 2 + (columns - 1) * 2 + std::accumulate(column_length.begin(), column_length.end(), 0);
 
-        std::cout << std::string(line_length, '-') << '\n';
+        std::cout << " " << std::string(line_length, '-') << '\n';
 
-        printf("| %-*s | %-*s | %-*s | %-*s |\n",
+        printf(" | %-*s | %-*s | %-*s | %-*s |\n",
                int(column_length[0]), column_name[0].c_str(),
                int(column_length[1]), column_name[1].c_str(),
                int(column_length[2]), column_name[2].c_str(),
                int(column_length[3]), column_name[3].c_str());
 
-        std::cout << std::string(line_length, '-') << '\n';
+        std::cout << " " << std::string(line_length, '-') << '\n';
 
         std::string output;
 
@@ -412,16 +412,16 @@ public:
                 output = f(layer).output_shape();
             });
 
-            printf("| %*lu | %-*s | %*s | %-*s |\n",
+            printf(" | %*lu | %-*s | %*s | %-*s |\n",
                    int(column_length[0]), I,
                    int(column_length[1]), layer.to_short_string("").c_str(),
                    int(column_length[2]), parameters_str.c_str(),
                    int(column_length[3]), output.c_str());
         });
 
-        std::cout << std::string(line_length, '-') << '\n';
+        std::cout << " " << std::string(line_length, '-') << '\n';
 
-        printf(" %*s: %*lu\n", int(column_length[0] + column_length[1] + 5), "Total Parameters", int(column_length[2]), parameters);
+        printf("  %*s: %*lu\n", int(column_length[0] + column_length[1] + 5), "Total Parameters", int(column_length[2]), parameters);
     }
 
     /*!

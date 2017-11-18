@@ -31,7 +31,7 @@ void fill_length(const char* name, std::unique_ptr<int>& g, std::array<size_t, 4
 template<typename G>
 void print_line(const char* name, std::unique_ptr<G>& generator, std::array<size_t, 4>& column_length){
     if(generator){
-        printf("| %-*s | %-*s | %-*s | %-*s |\n",
+        printf(" | %-*s | %-*s | %-*s | %-*s |\n",
             int(column_length[0]), name,
             int(column_length[1]), std::to_string(generator->size()).c_str(),
             int(column_length[2]), std::to_string(generator->batches()).c_str(),
@@ -164,21 +164,21 @@ public:
 
         const size_t line_length = (columns + 1) * 1 + 2 + (columns - 1) * 2 + std::accumulate(column_length.begin(), column_length.end(), 0);
 
-        std::cout << std::string(line_length, '-') << '\n';
+        std::cout << " " << std::string(line_length, '-') << '\n';
 
-        printf("| %-*s | %-*s | %-*s | %-*s |\n",
+        printf(" | %-*s | %-*s | %-*s | %-*s |\n",
                int(column_length[0]), column_name[0].c_str(),
                int(column_length[1]), column_name[1].c_str(),
                int(column_length[2]), column_name[2].c_str(),
                int(column_length[3]), column_name[3].c_str());
 
-        std::cout << std::string(line_length, '-') << '\n';
+        std::cout << " " << std::string(line_length, '-') << '\n';
 
         print_line("train", train_generator, column_length);
         print_line("val", val_generator, column_length);
         print_line("test", test_generator, column_length);
 
-        std::cout << std::string(line_length, '-') << '\n';
+        std::cout << " " << std::string(line_length, '-') << '\n';
 
         return stream;
     }

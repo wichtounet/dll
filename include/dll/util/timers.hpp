@@ -296,16 +296,16 @@ inline void dump_timers_pretty() {
 
     const size_t line_length = (columns + 1) * 1 + 2 + (columns - 1) * 2 + std::accumulate(column_length, column_length + columns, 0);
 
-    std::cout << std::string(line_length, '-') << '\n';
+    std::cout << " " << std::string(line_length, '-') << '\n';
 
-    printf("| %-*s | %-*s | %-*s | %-*s | %-*s |\n",
+    printf(" | %-*s | %-*s | %-*s | %-*s | %-*s |\n",
         int(column_length[0]), column_name[0].c_str(),
         int(column_length[1]), column_name[1].c_str(),
         int(column_length[2]), column_name[2].c_str(),
         int(column_length[3]), column_name[3].c_str(),
         int(column_length[4]), column_name[4].c_str());
 
-    std::cout << std::string(line_length, '-') << '\n';
+    std::cout << " " << std::string(line_length, '-') << '\n';
 
     // Print all the used timers
     for (decltype(auto) timer : timers) {
@@ -313,7 +313,7 @@ inline void dump_timers_pretty() {
             size_t count = timer.count;
             size_t duration = timer.duration;
 
-            printf("| %*.3f%% | %-*s | %-*s | %-*s | %-*s |\n",
+            printf(" | %*.3f%% | %-*s | %-*s | %-*s | %-*s |\n",
                 int(column_length[0] - 1), 100.0 * (duration / double(total_duration)),
                 int(column_length[1]), timer.name,
                 int(column_length[2]), std::to_string(count).c_str(),
@@ -322,7 +322,7 @@ inline void dump_timers_pretty() {
         }
     }
 
-    std::cout << std::string(line_length, '-') << '\n';
+    std::cout << " " << std::string(line_length, '-') << '\n';
 }
 
 /*!
