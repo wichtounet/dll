@@ -351,6 +351,72 @@ public:
         std::cout << "Total parameters: " << parameters << std::endl;
     }
 
+    template<typename Layer>
+    void sub_display_length(const std::string& parent, const std::string& pre, Layer& layer, std::array<size_t, 4>& column_length) const {
+        std::string sub_output = "TODO";
+
+        cpp::for_each_i(layer.layers, [&](size_t i, auto& sub_layer) {
+            std::string sub_pre = pre + "  ";
+
+            std::string sub_parameters_str = "0";
+
+            // Extract the number of parameters
+            cpp::static_if<decay_layer_traits<decltype(sub_layer)>::is_neural_layer()>([&](auto f) {
+                sub_parameters_str = std::to_string(f(sub_layer).parameters());
+            });
+
+            // Extract the output shape if possible
+            cpp::static_if<!decay_layer_traits<decltype(sub_layer)>::base_traits::is_transform>([&](auto f) {
+                sub_output = f(sub_layer).output_shape();
+            });
+
+            std::string number = parent + ":" + std::to_string(i);
+
+            column_length[0] = std::max(column_length[0], number.size());
+            column_length[1] = std::max(column_length[1], (sub_pre + sub_layer.to_short_string(sub_pre)).size());
+            column_length[2] = std::max(column_length[2], sub_parameters_str.size());
+            column_length[3] = std::max(column_length[3], sub_output.size());
+
+            cpp::static_if<decay_layer_traits<decltype(sub_layer)>::base_traits::is_multi>([&](auto f) {
+                sub_display_length(number, sub_pre, f(sub_layer), column_length);
+            });
+        });
+    }
+
+    template<typename Layer>
+    void sub_display_pretty(const std::string& parent, const std::string& pre, Layer& layer, const std::array<size_t, 4>& column_length) const {
+        std::string sub_output = "TODO";
+
+        cpp::for_each_i(layer.layers, [&](size_t i, auto& sub_layer) {
+            std::string sub_pre = pre + "  ";
+
+            std::string sub_parameters_str = "0";
+
+            // Extract the number of parameters
+            cpp::static_if<decay_layer_traits<decltype(sub_layer)>::is_neural_layer()>([&](auto f) {
+                sub_parameters_str = std::to_string(f(sub_layer).parameters());
+            });
+
+            // Extract the output shape if possible
+            cpp::static_if<!decay_layer_traits<decltype(sub_layer)>::base_traits::is_transform>([&](auto f) {
+                sub_output = f(sub_layer).output_shape();
+            });
+
+            std::string number = parent + ":" + std::to_string(i);
+
+            // Print the layer line
+            printf(" | %-*s | %-*s | %*s | %-*s |\n",
+                   int(column_length[0]), number.c_str(),
+                   int(column_length[1]), (sub_pre + sub_layer.to_short_string(sub_pre)).c_str(),
+                   int(column_length[2]), sub_parameters_str.c_str(),
+                   int(column_length[3]), sub_output.c_str());
+
+            cpp::static_if<decay_layer_traits<decltype(sub_layer)>::base_traits::is_multi>([&](auto f) {
+                sub_display_pretty(number, sub_pre, f(sub_layer), column_length);
+            });
+        });
+    }
+
     /*!
      * \brief Prints a textual representation of the network.
      */
@@ -373,7 +439,7 @@ public:
 
         size_t parameters = 0;
 
-        for_each_layer([&](auto& layer) {
+        for_each_layer_i([&](size_t I, auto& layer) {
             column_length[1] = std::max(column_length[1], layer.to_short_string("").size());
 
             cpp::static_if<decay_layer_traits<decltype(layer)>::is_neural_layer()>([&](auto f) {
@@ -384,6 +450,10 @@ public:
 
             cpp::static_if<!decay_layer_traits<decltype(layer)>::base_traits::is_transform>([&](auto f) {
                 column_length[3] = std::max(column_length[3], f(layer).output_shape().size());
+            });
+
+            cpp::static_if<decay_layer_traits<decltype(layer)>::base_traits::is_multi>([&](auto f) {
+                sub_display_length(std::to_string(I), "", f(layer), column_length);
             });
         });
 
@@ -404,19 +474,26 @@ public:
         for_each_layer_i([&](size_t I, auto& layer) {
             std::string parameters_str = "0";
 
+            // Extract the number of parameters
             cpp::static_if<decay_layer_traits<decltype(layer)>::is_neural_layer()>([&](auto f) {
                 parameters_str = std::to_string(f(layer).parameters());
             });
 
+            // Extract the output shape if possible
             cpp::static_if<!decay_layer_traits<decltype(layer)>::base_traits::is_transform>([&](auto f) {
                 output = f(layer).output_shape();
             });
 
-            printf(" | %*lu | %-*s | %*s | %-*s |\n",
+            // Print the layer line
+            printf(" | %-*lu | %-*s | %*s | %-*s |\n",
                    int(column_length[0]), I,
                    int(column_length[1]), layer.to_short_string("").c_str(),
                    int(column_length[2]), parameters_str.c_str(),
                    int(column_length[3]), output.c_str());
+
+            cpp::static_if<decay_layer_traits<decltype(layer)>::base_traits::is_multi>([&](auto f) {
+                sub_display_pretty(std::to_string(I), "", f(layer), column_length);
+            });
         });
 
         std::cout << " " << std::string(line_length, '-') << '\n';
