@@ -146,7 +146,7 @@ struct dyn_conv_layer_impl final : neural_layer<dyn_conv_layer_impl<Desc>, Desc>
      * \brief Returns the output shape
      * \return an std::string containing the description of the output shape
      */
-    std::string output_shape(std::string pre = "") const {
+    std::string output_shape() const {
         char buffer[512];
         snprintf(buffer, 512, "[Bx%lux%lux%lu]", k, nh1, nh2);
         return {buffer};
