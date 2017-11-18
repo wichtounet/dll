@@ -143,6 +143,18 @@ struct conv_rbm_mp_impl final : public standard_crbm_mp<conv_rbm_mp_impl<Desc>, 
     }
 
     /*!
+     * \brief Returns the output shape
+     * \return an std::string containing the description of the output shape
+     */
+    static std::string output_shape() {
+        char buffer[128];
+        snprintf(
+            buffer, 128, "[Bx%lux%lux%lu]",
+            K, NP1, NP2);
+        return {buffer};
+    }
+
+    /*!
      * \brief Prepare a set of empty outputs for this layer
      * \param samples The number of samples to prepare the output for
      * \return a container containing empty ETL matrices suitable to store samples output of this layer

@@ -93,8 +93,8 @@ struct deconv_layer_impl final : neural_layer<deconv_layer_impl<Desc>, Desc> {
     static std::string to_short_string(std::string pre = "") {
         cpp_unused(pre);
 
-        char buffer[1024];
-        snprintf(buffer, 1024, "Deconv(%s)", to_string(activation_function).c_str());
+        char buffer[128];
+        snprintf(buffer, 128, "Deconv(%s)", to_string(activation_function).c_str());
         return {buffer};
     }
 
@@ -107,6 +107,16 @@ struct deconv_layer_impl final : neural_layer<deconv_layer_impl<Desc>, Desc> {
 
         char buffer[1024];
         snprintf(buffer, 1024, "Deconv: %lux%lux%lu -> (%lux%lux%lu) -> %s -> %lux%lux%lu", NC, NV1, NV2, K, NW1, NW2, to_string(activation_function).c_str(), K, NH1, NH2);
+        return {buffer};
+    }
+
+    /*!
+     * \brief Returns the output shape
+     * \return an std::string containing the description of the output shape
+     */
+    static std::string output_shape() {
+        char buffer[128];
+        snprintf(buffer, 128, "[Bx%lux%lux%lu]", K, NH1, NH2);
         return {buffer};
     }
 

@@ -98,6 +98,14 @@ struct dyn_merge_layer_impl <dyn_merge_layer_desc<D, Layers...>> final : layer<d
         return str;
     }
 
+    /*!
+     * \brief Returns the output shape
+     * \return an std::string containing the description of the output shape
+     */
+    std::string output_shape() const {
+        return "TODO";
+    }
+
     using base_type::forward_batch;
     using base_type::train_forward_batch;
     using base_type::test_forward_batch;

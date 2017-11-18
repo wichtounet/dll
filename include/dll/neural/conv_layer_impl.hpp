@@ -132,6 +132,16 @@ struct conv_layer_impl final : neural_layer<conv_layer_impl<Desc>, Desc> {
         return {buffer};
     }
 
+    /*!
+     * \brief Returns the output shape
+     * \return an std::string containing the description of the output shape
+     */
+    static std::string output_shape() {
+        char buffer[512];
+        snprintf(buffer, 512, "[Bx%lux%lux%lu]", K, NH1, NH2);
+        return {buffer};
+    }
+
     using base_type::forward_batch;
 
     /*!

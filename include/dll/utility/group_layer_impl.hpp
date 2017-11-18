@@ -84,6 +84,14 @@ struct group_layer_impl<group_layer_desc<Layers...>> final : layer<group_layer_i
         return str;
     }
 
+    /*!
+     * \brief Returns the output shape
+     * \return an std::string containing the description of the output shape
+     */
+    std::string output_shape() const {
+        return std::get<n_layers - 1>(layers).output_shape();
+    }
+
     using base_type::forward_batch;
     using base_type::train_forward_batch;
     using base_type::test_forward_batch;

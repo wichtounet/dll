@@ -121,6 +121,16 @@ struct recurrent_layer_impl final : recurrent_neural_layer<recurrent_layer_impl<
     }
 
     /*!
+     * \brief Returns the output shape
+     * \return an std::string containing the description of the output shape
+     */
+    static std::string output_shape() {
+        char buffer[128];
+        snprintf(buffer, 128, "[Bx%lux%lu]", time_steps, hidden_units);
+        return {buffer};
+    }
+
+    /*!
      * \brief Apply the layer to the given batch of input.
      *
      * \param x A batch of input

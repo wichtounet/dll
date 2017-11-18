@@ -191,6 +191,18 @@ struct dyn_conv_rbm_mp_impl final : public standard_crbm_mp<dyn_conv_rbm_mp_impl
         return {buffer};
     }
 
+    /*!
+     * \brief Returns the output shape
+     * \return an std::string containing the description of the output shape
+     */
+    std::string output_shape() const {
+        char buffer[128];
+        snprintf(
+            buffer, 128, "[Bx%lux%lux%lu]",
+            to_string(hidden_unit).c_str(), k, np1, np2);
+        return {buffer};
+    }
+
     //Utilities for DBNs
 
     /*!

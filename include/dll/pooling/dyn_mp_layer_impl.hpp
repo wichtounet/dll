@@ -52,6 +52,16 @@ struct dyn_mp_2d_layer_impl final : dyn_pooling_2d_layer<dyn_mp_2d_layer_impl<De
     }
 
     /*!
+     * \brief Returns the output shape
+     * \return an std::string containing the description of the output shape
+     */
+    std::string output_shape() const {
+        char buffer[128];
+        snprintf(buffer, 128, "[Bx%lux%lux%lu]", base::o1, base::o2, base::o3);
+        return {buffer};
+    }
+
+    /*!
      * \brief Forward activation of the layer for one batch of sample
      * \param output The output matrix
      * \param input The input matrix
@@ -182,6 +192,16 @@ struct dyn_mp_3d_layer_impl final : dyn_pooling_3d_layer<dyn_mp_3d_layer_impl<De
         char buffer[1024];
         snprintf(buffer, 1024, "MP(3D): %lux%lux%lu -> (%lux%lux%lu) -> %lux%lux%lu",
                  base::i1, base::i2, base::i3, base::c1, base::c2, base::c3, base::o1, base::o2, base::o3);
+        return {buffer};
+    }
+
+    /*!
+     * \brief Returns the output shape
+     * \return an std::string containing the description of the output shape
+     */
+    std::string output_shape() const {
+        char buffer[128];
+        snprintf(buffer, 128, "[Bx%lux%lux%lu]", base::o1, base::o2, base::o3);
         return {buffer};
     }
 

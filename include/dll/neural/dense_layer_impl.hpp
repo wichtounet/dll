@@ -118,6 +118,14 @@ struct dense_layer_impl final : neural_layer<dense_layer_impl<Desc>, Desc> {
     }
 
     /*!
+     * \brief Returns the output shape
+     * \return an std::string containing the description of the output shape
+     */
+    static std::string output_shape() {
+        return "[Bx" + std::to_string(num_hidden) + "]";
+    }
+
+    /*!
      * \brief Apply the layer to the given batch of input.
      *
      * \param input A batch of input

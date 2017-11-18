@@ -109,6 +109,14 @@ struct merge_layer_impl <merge_layer_desc<D, Layers...>> final : layer<merge_lay
         return str;
     }
 
+    /*!
+     * \brief Returns the output shape
+     * \return an std::string containing the description of the output shape
+     */
+    std::string output_shape() const {
+        return "TODO";
+    }
+
     using base_type::forward_batch;
     using base_type::train_forward_batch;
     using base_type::test_forward_batch;

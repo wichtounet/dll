@@ -136,6 +136,20 @@ struct conv_rbm_impl final : public standard_crbm<conv_rbm_impl<Desc>, Desc> {
     }
 
     /*!
+     * \brief Returns the output shape
+     * \return an std::string containing the description of the output shape
+     */
+    static std::string output_shape() {
+        cpp_unused(pre);
+
+        char buffer[128];
+        snprintf(
+            buffer, 128, "[Bx%lux%lux%lu]",
+            K, NH1, NH2);
+        return {buffer};
+    }
+
+    /*!
      * \brief Apply the layer to the batch of input
      * \param output The batch of output
      * \param input The batch of input to apply the layer to

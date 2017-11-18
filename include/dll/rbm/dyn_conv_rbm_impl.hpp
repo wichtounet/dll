@@ -179,6 +179,19 @@ struct dyn_conv_rbm_impl final : public standard_crbm<dyn_conv_rbm_impl<Desc>, D
     }
 
     /*!
+     * \brief Returns the output shape
+     * \return an std::string containing the description of the output shape
+     */
+    std::string output_shape() const {
+        char buffer[128];
+        snprintf(
+            buffer, 128, "[Bx%lux%lux%lu]",
+            k, nh1, nh2
+            );
+        return {buffer};
+    }
+
+    /*!
      * \brief Apply the layer to the batch of input
      * \param output The batch of output
      * \param input The batch of input to apply the layer to

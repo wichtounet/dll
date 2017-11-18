@@ -111,6 +111,18 @@ struct dyn_embedding_layer_impl final : neural_layer_no_bias<dyn_embedding_layer
     }
 
     /*!
+     * \brief Returns the output shape
+     * \return an std::string containing the description of the output shape
+     */
+    std::string output_shape() const {
+        cpp_unused(pre);
+
+        char buffer[128];
+        snprintf(buffer, 128, "[Bx%lu]", K);
+        return {buffer};
+    }
+
+    /*!
      * \brief Apply the layer to the given batch of input.
      *
      * \param input A batch of input

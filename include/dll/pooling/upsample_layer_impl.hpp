@@ -53,6 +53,16 @@ struct upsample_3d_layer_impl final : unpooling_3d_layer<upsample_3d_layer_impl<
     }
 
     /*!
+     * \brief Returns a short description of the layer
+     * \return an std::string containing a short description of the layer
+     */
+    static std::string output_shape() {
+        char buffer[512];
+        snprintf(buffer, 512, "[Bx%lux%lux%lu]", base::O1, base::O2, base::O3);
+        return {buffer};
+    }
+
+    /*!
      * \brief Apply the layer to the given batch of input.
      *
      * \param input A batch of input

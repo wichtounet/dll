@@ -52,6 +52,16 @@ struct dyn_upsample_3d_layer_impl final : dyn_unpooling_3d_layer<dyn_upsample_3d
     }
 
     /*!
+     * \brief Returns the output shape
+     * \return an std::string containing the description of the output shape
+     */
+    std::string output_shape() const {
+        char buffer[128];
+        snprintf(buffer, 128, "[Bx%lux%lux%lu]", base::o1, base::o2, base::o3);
+        return {buffer};
+    }
+
+    /*!
      * \brief Forward activation of the layer for one batch of sample
      * \param output The output matrix
      * \param input The input matrix

@@ -119,6 +119,16 @@ struct conv_same_layer_impl final : neural_layer<conv_same_layer_impl<Desc>, Des
     }
 
     /*!
+     * \brief Returns the output shape
+     * \return an std::string containing the description of the output shape
+     */
+    static std::string output_shape() {
+        char buffer[128];
+        snprintf(buffer, 128, "[Bx%lux%lux%lu]", K, NH1, NH2);
+        return {buffer};
+    }
+
+    /*!
      * \brief Apply the layer to the given batch of input.
      *
      * \param input A batch of input

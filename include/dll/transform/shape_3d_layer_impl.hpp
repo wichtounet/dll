@@ -53,6 +53,14 @@ struct shape_3d_layer_impl : transform_layer<shape_3d_layer_impl<Desc>> {
     }
 
     /*!
+     * \brief Returns the output shape
+     * \return an std::string containing the description of the output shape
+     */
+    static std::string output_shape() {
+        return "[Bx" + std::to_string(C) + "x" + std::to_string(W) + "x" + std::to_string(H) + "]";
+    }
+
+    /*!
      * \brief Return the size of the input of this layer
      * \return The size of the input of this layer
      */
