@@ -259,6 +259,7 @@ struct layer_base_traits<merge_layer_impl<merge_layer_desc<D, Layers...>>> {
     static constexpr bool is_unpooling  = false; ///< Indicates if the layer is an unpooling laye
     static constexpr bool is_transform  = false; ///< Indicates if the layer is a transform layer
     static constexpr bool is_recurrent  = false; ///< Indicates if the layer is a recurrent layer
+    static constexpr bool is_multi      = true; ///< Indicates if the layer is a multi-layer layer
     static constexpr bool is_dynamic    = false; ///< Indicates if the layer is dynamic
     static constexpr bool pretrain_last = false; ///< Indicates if the layer is dynamic
     static constexpr bool sgd_supported = true;  ///< Indicates if the layer is supported by SGD

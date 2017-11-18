@@ -247,6 +247,7 @@ struct layer_base_traits<dyn_recurrent_layer_impl<Desc>> {
     static constexpr bool is_unpooling  = false; ///< Indicates if the layer is an unpooling laye
     static constexpr bool is_transform  = false; ///< Indicates if the layer is a transform layer
     static constexpr bool is_recurrent  = true; ///< Indicates if the layer is a recurrent layer
+    static constexpr bool is_multi      = false; ///< Indicates if the layer is a multi-layer layer
     static constexpr bool is_dynamic    = true;  ///< Indicates if the layer is dynamic
     static constexpr bool pretrain_last = false; ///< Indicates if the layer is dynamic
     static constexpr bool sgd_supported = true;  ///< Indicates if the layer is supported by SGD
