@@ -382,7 +382,9 @@ public:
                 parameters += f(layer).parameters();
             });
 
-            // TODO column_length[3]
+            cpp::static_if<!decay_layer_traits<decltype(layer)>::base_traits::is_transform>([&](auto f) {
+                column_length[3] = std::max(column_length[3], f(layer).output_shape().size());
+            });
         });
 
         const size_t line_length = (columns + 1) * 1 + 2 + (columns - 1) * 2 + std::accumulate(column_length.begin(), column_length.end(), 0);
@@ -397,6 +399,8 @@ public:
 
         std::cout << std::string(line_length, '-') << '\n';
 
+        std::string output;
+
         for_each_layer_i([&](size_t I, auto& layer) {
             std::string parameters_str = "0";
 
@@ -404,11 +408,15 @@ public:
                 parameters_str = std::to_string(f(layer).parameters());
             });
 
+            cpp::static_if<!decay_layer_traits<decltype(layer)>::base_traits::is_transform>([&](auto f) {
+                output = f(layer).output_shape();
+            });
+
             printf("| %*lu | %-*s | %*s | %-*s |\n",
                    int(column_length[0]), I,
                    int(column_length[1]), layer.to_short_string("").c_str(),
                    int(column_length[2]), parameters_str.c_str(),
-                   int(column_length[3]), ""); // TODO
+                   int(column_length[3]), output.c_str());
         });
 
         std::cout << std::string(line_length, '-') << '\n';
