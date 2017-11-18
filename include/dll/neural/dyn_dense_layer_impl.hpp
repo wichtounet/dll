@@ -113,9 +113,9 @@ struct dyn_dense_layer_impl final : neural_layer<dyn_dense_layer_impl<Desc>, Des
         char buffer[512];
 
         if /*constexpr*/ (activation_function == function::IDENTITY) {
-            snprintf(buffer, 512, "Dense(dyn) %lu", num_hidden);
+            snprintf(buffer, 512, "Dense(dyn): %lu -> %lu", num_visible, num_hidden);
         } else {
-            snprintf(buffer, 512, "Dense(dyn) %lu + %s", num_hidden, to_string(activation_function).c_str());
+            snprintf(buffer, 512, "Dense(dyn): %lu -> %s -> %lu", num_visible, to_string(activation_function).c_str(), num_hidden);
         }
 
         return {buffer};
