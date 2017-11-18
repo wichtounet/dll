@@ -99,6 +99,16 @@ struct dyn_merge_layer_impl <dyn_merge_layer_desc<D, Layers...>> final : layer<d
     }
 
     /*!
+     * \brief Returns a short description of the layer
+     * \return an std::string containing a short description of the layer
+     */
+    std::string to_short_string(std::string pre = "") const {
+        cpp_unused(pre);
+
+        return "Merge";
+    }
+
+    /*!
      * \brief Returns the output shape
      * \return an std::string containing the description of the output shape
      */

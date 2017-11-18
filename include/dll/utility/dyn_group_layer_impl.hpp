@@ -91,6 +91,16 @@ struct dyn_group_layer_impl<dyn_group_layer_desc<Layers...>> final : layer<dyn_g
     }
 
     /*!
+     * \brief Returns a short description of the layer
+     * \return an std::string containing a short description of the layer
+     */
+    std::string to_short_string(std::string pre = "") const {
+        cpp_unused(pre);
+
+        return "Group";
+    }
+
+    /*!
      * \brief Returns the output shape
      * \return an std::string containing the description of the output shape
      */
