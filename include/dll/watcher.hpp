@@ -374,7 +374,7 @@ struct default_dbn_watcher {
                 if (total_batch_duration) {
                     const size_t frequency_batch = frequency_ms / (1 + (total_batch_duration / total_batches));
 
-                    if (batch % frequency_batch == 0 || batch == batches - 1) {
+                    if (batch == batches - 1 || frequency_batch == 0 || batch % frequency_batch == 0) {
                         std::cout << "\r" << buffer;
 
                         if (strlen(buffer) < last_line_length) {
