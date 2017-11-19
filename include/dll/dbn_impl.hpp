@@ -388,7 +388,7 @@ public:
             row[0] = number;
             row[1] = sub_pre + sub_layer.to_short_string(sub_pre);
             row[2] = sub_parameters_str;
-            row[3] = shape_to_string(sub_output);
+            row[3] = this_type::shape_to_string(sub_output);
 
             cpp::static_if<decay_layer_traits<decltype(sub_layer)>::base_traits::is_multi>([&](auto f) {
                 sub_display_pretty(sub_output, number, sub_pre, f(sub_layer), rows);
@@ -435,7 +435,7 @@ public:
             row[0] = std::to_string(I);
             row[1] = layer.to_short_string("");
             row[2] = parameters_str;
-            row[3] = shape_to_string(output);
+            row[3] = this_type::shape_to_string(output);
 
             cpp::static_if<decay_layer_traits<decltype(layer)>::base_traits::is_multi>([&](auto f) {
                 sub_display_pretty(output, std::to_string(I), "", f(layer), rows);
