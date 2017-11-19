@@ -8,6 +8,7 @@
 #pragma once
 
 #include <fstream>
+#include <cstring>
 
 #include <sys/stat.h>
 
@@ -247,6 +248,10 @@ struct default_dbn_watcher {
         ft_max_epochs = max_epochs;
     }
 
+    size_t last_line_length = 0;
+    size_t total_batch_duration = 0;
+    size_t total_batches = 0;
+
     /*!
      * \brief One fine-tuning epoch is starting
      * \param epoch The current epoch
@@ -256,6 +261,8 @@ struct default_dbn_watcher {
         cpp_unused(epoch);
         cpp_unused(dbn);
         ft_epoch_timer.start();
+
+        last_line_length = 0;
     }
 
     /*!
@@ -267,12 +274,23 @@ struct default_dbn_watcher {
      */
     void ft_epoch_end(size_t epoch, double error, double loss, const DBN& dbn) {
         cpp_unused(dbn);
+
         auto duration = ft_epoch_timer.stop();
 
+        char buffer[512];
+
         if /*constexpr*/ (dbn_traits<DBN>::error_on_epoch()){
-            printf("Epoch %3ld/%ld - Classification error: %.5f Loss: %.5f Time %ldms \n", epoch, ft_max_epochs, error, loss, duration);
+            snprintf(buffer, 512, "epoch %3ld/%ld batch %4ld/%4ld - error: %.5f loss: %.5f time %ldms \n",
+                epoch, ft_max_epochs, max_batches, max_batches, error, loss, duration);
         } else {
-            printf("Epoch %3ld/%ld - Loss: %.5f Time %ldms \n", epoch, ft_max_epochs, loss, duration);
+            snprintf(buffer, 512, "epoch %3ld/%ld batch %4ld/%4ld - loss: %.5f time %ldms \n",
+                epoch, ft_max_epochs, max_batches, max_batches, loss, duration);
+        }
+
+        if /*constexpr*/ (dbn_traits<DBN>::is_verbose()){
+            std::cout << buffer;
+        } else {
+            std::cout << "\r" << buffer;
         }
 
         std::cout.flush();
@@ -287,13 +305,23 @@ struct default_dbn_watcher {
      */
     void ft_epoch_end(size_t epoch, double train_error, double train_loss, double val_error, double val_loss, const DBN& dbn) {
         cpp_unused(dbn);
+
         auto duration = ft_epoch_timer.stop();
 
+        char buffer[512];
+
         if /*constexpr*/ (dbn_traits<DBN>::error_on_epoch()){
-            printf("Epoch %3ld/%ld - error: %.5f loss: %.5f val_error: %.5f val_loss: %.5f Time %ldms \n",
+            snprintf(buffer, 512, "Epoch %3ld/%ld - error: %.5f loss: %.5f val_error: %.5f val_loss: %.5f time %ldms \n",
                 epoch, ft_max_epochs, train_error, train_loss, val_error, val_loss, duration);
         } else {
-            printf("Epoch %3ld/%ld - loss: %.5f val_loss: %.5f Time %ldms \n", epoch, ft_max_epochs, train_loss, val_loss, duration);
+            snprintf(buffer, 512, "Epoch %3ld/%ld - loss: %.5f val_loss: %.5f time %ldms \n",
+                epoch, ft_max_epochs, train_loss, val_loss, duration);
+        }
+
+        if /*constexpr*/ (dbn_traits<DBN>::is_verbose()){
+            std::cout << buffer;
+        } else {
+            std::cout << "\r" << buffer;
         }
 
         std::cout.flush();
@@ -310,6 +338,8 @@ struct default_dbn_watcher {
         ft_batch_timer.start();
     }
 
+    size_t max_batches;
+
     /*!
      * \brief Indicates the end of a fine-tuning batch
      * \param epoch The current epoch
@@ -321,25 +351,44 @@ struct default_dbn_watcher {
      */
     void ft_batch_end(size_t epoch, size_t batch, size_t batches, double batch_error, double batch_loss, const DBN& dbn) {
         auto duration = ft_batch_timer.stop();
-        printf("Epoch %3ld:%ld/%ld- B. Error: %.5f B. Loss: %.5f Time %ldms\n", epoch, batch, batches, batch_error, batch_loss, duration);
-        std::cout.flush();
+
+        char buffer[512];
+
+        if /*constexpr*/ (dbn_traits<DBN>::is_verbose()){
+            snprintf(buffer, 512, "Epoch %3ld/%ld batch %4ld/%4ld- B. Error: %.5f B. Loss: %.5f Time %ldms",
+                epoch, ft_max_epochs, batch + 1, batches, batch_error, batch_loss, duration);
+            std::cout << buffer << std::endl;
+        } else {
+            total_batch_duration += duration;
+            ++total_batches;
+
+            auto estimated_duration = ((total_batch_duration / total_batches) * (batches - batch)) / 1000;
+            snprintf(buffer, 512, "Epoch %3ld/%ld batch %4ld/%4ld - error: %.5f loss: %.5f ETA %lds",
+                epoch, ft_max_epochs, batch + 1, batches, batch_error, batch_loss, estimated_duration);
+
+            if (batch == 0) {
+                std::cout << buffer;
+            } else {
+                constexpr size_t frequency_ms = 100;
+                const size_t frequency_batch = frequency_ms / (total_batch_duration / total_batches);
+
+                if(batch % frequency_batch == 0 || batch == batches - 1){
+                    std::cout << "\r" << buffer;
+
+                    if(strlen(buffer) < last_line_length){
+                        std::cout << std::string(last_line_length - strlen(buffer), ' ');
+                    }
+
+                    std::cout.flush();
+                }
+            }
+
+            last_line_length = strlen(buffer);
+        }
 
         cpp_unused(dbn);
-    }
 
-    /*!
-     * \brief Indicates the end of a fine-tuning batch
-     * \param epoch The current epoch
-     * \param batch_error The batch error
-     * \param batch_loss The batch loss
-     * \param dbn The DBN being trained
-     */
-    void ft_batch_end(size_t epoch, double batch_error, double batch_loss, const DBN& dbn) {
-        auto duration = ft_batch_timer.stop();
-        printf("Epoch %3ld - B.Error: %.5f B.Loss: %.5f Time %ldms\n", epoch, batch_error, batch_loss, duration);
-        std::cout.flush();
-
-        cpp_unused(dbn);
+        max_batches = batches;
     }
 
     /*!

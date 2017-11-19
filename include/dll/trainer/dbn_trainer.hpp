@@ -400,9 +400,7 @@ struct dbn_trainer {
         while(generator.has_next_batch()){
             dll::auto_timer timer("net:trainer:train:epoch:batch");
 
-            if /*constexpr*/ (dbn_traits<dbn_t>::is_verbose()){
-                watcher.ft_batch_start(epoch, dbn);
-            }
+            watcher.ft_batch_start(epoch, dbn);
 
             double batch_error;
             double batch_loss;
@@ -411,9 +409,7 @@ struct dbn_trainer {
                 generator.data_batch(),
                 generator.label_batch());
 
-            if /*constexpr*/ (dbn_traits<dbn_t>::is_verbose()){
-                watcher.ft_batch_end(epoch, generator.current_batch(), generator.batches(), batch_error, batch_loss, dbn);
-            }
+            watcher.ft_batch_end(epoch, generator.current_batch(), generator.batches(), batch_error, batch_loss, dbn);
 
             generator.next_batch();
         }
