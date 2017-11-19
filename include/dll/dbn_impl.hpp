@@ -421,6 +421,8 @@ public:
             // Extract the number of parameters
             cpp::static_if<decay_layer_traits<decltype(layer)>::is_neural_layer()>([&](auto f) {
                 parameters_str = std::to_string(f(layer).parameters());
+
+                parameters += f(layer).parameters();
             });
 
             // Extract the output shape if possible
