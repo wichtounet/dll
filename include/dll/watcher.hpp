@@ -518,15 +518,6 @@ struct mute_dbn_watcher {
      */
     void ft_batch_end(size_t /*epoch*/, size_t /*batch*/, size_t /*batches*/, double /*batch_error*/, const DBN& /*dbn*/) {}
 
-    /*!
-     * \brief Indicates the end of a fine-tuning batch
-     * \param epoch The current epoch
-     * \param batch_error The batch error
-     * \param batch_loss The batch loss
-     * \param dbn The DBN being trained
-     */
-    void ft_batch_end(size_t /*epoch*/, double /*batch_error*/, const DBN& /*dbn*/) {}
-
     void lr_adapt(const DBN& /*dbn*/) {}
 
     /*!
