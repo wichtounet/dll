@@ -106,14 +106,13 @@ int main(int /*argc*/, char* /*argv*/ []) {
     auto net = std::make_unique<embedding_network_t>();
 
     // Display the network and dataset
-    net->display();
+    net->display_pretty();
 
     // Train the network for performance sake
     net->fine_tune(samples, labels, 50);
 
     // Test the network on train set
     net->evaluate(samples, labels);
-
 
     return 0;
 }
