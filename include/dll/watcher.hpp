@@ -370,16 +370,19 @@ struct default_dbn_watcher {
                 std::cout << buffer;
             } else {
                 constexpr size_t frequency_ms = 100;
-                const size_t frequency_batch = frequency_ms / (total_batch_duration / total_batches);
 
-                if(batch % frequency_batch == 0 || batch == batches - 1){
-                    std::cout << "\r" << buffer;
+                if (total_batch_duration) {
+                    const size_t frequency_batch = frequency_ms / (1 + (total_batch_duration / total_batches));
 
-                    if(strlen(buffer) < last_line_length){
-                        std::cout << std::string(last_line_length - strlen(buffer), ' ');
+                    if (batch % frequency_batch == 0 || batch == batches - 1) {
+                        std::cout << "\r" << buffer;
+
+                        if (strlen(buffer) < last_line_length) {
+                            std::cout << std::string(last_line_length - strlen(buffer), ' ');
+                        }
+
+                        std::cout.flush();
                     }
-
-                    std::cout.flush();
                 }
             }
 
