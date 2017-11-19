@@ -258,6 +258,8 @@ inline void dump_timers_pretty() {
         return;
     }
 
+    std::cout << std::endl;
+
     //Sort the timers by duration (DESC)
     std::sort(timers.begin(), timers.end(), [](auto& left, auto& right) {
         return left.duration > right.duration;
