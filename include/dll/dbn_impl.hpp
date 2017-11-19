@@ -351,16 +351,27 @@ public:
         std::cout << "Total parameters: " << parameters << std::endl;
     }
 
+    static std::string shape_to_string(const std::vector<size_t>& shape){
+        std::string s = "[Bx";
+
+        for(auto& d : shape){
+            s += "x" + std::to_string(d);
+        }
+
+        s += "]";
+
+        return s;
+    }
+
     template<typename Layer>
-    void sub_display_pretty(const std::string& parent, const std::string& pre, Layer& layer, std::vector<std::array<std::string, 4>>& rows) const {
-        std::string sub_output = "TODO";
+    void sub_display_pretty(const std::vector<size_t>& output, const std::string& parent, const std::string& pre, Layer& layer, std::vector<std::array<std::string, 4>>& rows) const {
+        std::vector<size_t> sub_output = output;
 
         cpp::for_each_i(layer.layers, [&](size_t i, auto& sub_layer) {
             rows.emplace_back();
             auto& row = rows.back();
 
             std::string sub_pre = pre + "  ";
-
             std::string sub_parameters_str = "0";
 
             // Extract the number of parameters
@@ -369,19 +380,17 @@ public:
             });
 
             // Extract the output shape if possible
-            cpp::static_if<!decay_layer_traits<decltype(sub_layer)>::base_traits::is_transform>([&](auto f) {
-                sub_output = f(sub_layer).output_shape();
-            });
+            sub_output = sub_layer.output_shape(sub_output);
 
             std::string number = parent + ":" + std::to_string(i);
 
             row[0] = number;
             row[1] = sub_pre + sub_layer.to_short_string(sub_pre);
             row[2] = sub_parameters_str;
-            row[3] = sub_output;
+            row[3] = shape_to_string(sub_output);
 
             cpp::static_if<decay_layer_traits<decltype(sub_layer)>::base_traits::is_multi>([&](auto f) {
-                sub_display_pretty(number, sub_pre, f(sub_layer), rows);
+                sub_display_pretty(sub_output, number, sub_pre, f(sub_layer), rows);
             });
         });
     }
@@ -398,13 +407,13 @@ public:
         column_name[0] = "Index";
         column_name[1] = "Layer";
         column_name[2] = "Parameters";
-        column_name[3] = "Output";
+        column_name[3] = "Output Shape";
 
         std::vector<std::array<std::string, columns>> rows;
 
         size_t parameters = 0;
 
-        std::string output;
+        std::vector<size_t> output;
 
         for_each_layer_i([&](size_t I, auto& layer) {
             std::string parameters_str = "0";
@@ -415,9 +424,7 @@ public:
             });
 
             // Extract the output shape if possible
-            cpp::static_if<!decay_layer_traits<decltype(layer)>::base_traits::is_transform>([&](auto f) {
-                output = f(layer).output_shape();
-            });
+            output = layer.output_shape(output);
 
             rows.emplace_back();
             auto& row = rows.back();
@@ -425,10 +432,10 @@ public:
             row[0] = std::to_string(I);
             row[1] = layer.to_short_string("");
             row[2] = parameters_str;
-            row[3] = output;
+            row[3] = shape_to_string(output);
 
             cpp::static_if<decay_layer_traits<decltype(layer)>::base_traits::is_multi>([&](auto f) {
-                sub_display_pretty(std::to_string(I), "", f(layer), rows);
+                sub_display_pretty(output, std::to_string(I), "", f(layer), rows);
             });
         });
 
