@@ -1627,7 +1627,7 @@ public:
 
         auto metrics = evaluate_metrics(generator);
 
-        printf("Evaluation Results\n");
+        printf("\nEvaluation Results\n");
         printf("   error: %.5f \n", std::get<0>(metrics));
         printf("    loss: %.5f \n", std::get<1>(metrics));
         printf("evaluation took %dms \n", int(watch.elapsed()));
