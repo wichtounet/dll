@@ -18,6 +18,7 @@
 
 #include "cpp_utils/static_if.hpp"
 #include "cpp_utils/maybe_parallel.hpp"
+#include "cpp_utils/tuple_utils.hpp"
 
 #include "generators.hpp"
 #include "unit_type.hpp"
