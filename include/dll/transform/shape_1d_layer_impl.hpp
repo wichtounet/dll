@@ -57,7 +57,7 @@ struct shape_1d_layer_impl : transform_layer<shape_1d_layer_impl<Desc>> {
     std::vector<size_t> output_shape(const std::vector<size_t>& input_shape) const {
         cpp_unused(input_shape);
 
-        return {S};
+        return {Size};
     }
 
     /*!
