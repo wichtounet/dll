@@ -15,48 +15,44 @@ namespace dll {
  * \brief Dropout layer
  */
 template <typename Desc>
-struct dropout_layer_impl : transform_layer<dropout_layer_impl<Desc>> {
-    using desc        = Desc;                       ///< The descriptor type
-    using this_type   = dropout_layer_impl<Desc>;   ///< This layer's type
-    using base_type   = transform_layer<this_type>; ///< The base type
-    using layer_t     = this_type;                  ///< This layer's type
-    using dyn_layer_t = typename desc::dyn_layer_t; ///< The dynamic version of this layer
+struct dyn_dropout_layer_impl : transform_layer<dyn_dropout_layer_impl<Desc>> {
+    using desc        = Desc;                         ///< The descriptor type
+    using this_type   = dyn_dropout_layer_impl<Desc>; ///< This layer's type
+    using base_type   = transform_layer<this_type>;   ///< The base type
+    using layer_t     = this_type;                    ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t;   ///< The dynamic version of this layer
 
-    static constexpr float p = float(desc::Drop) / 100.0f; ///< The dropout rate
+    float p;
 
-    dropout_layer_impl() = default;
+    dyn_dropout_layer_impl() = default;
+
+    /*!
+     * \brief Initialize the dynamic layer
+     */
+    void init_layer(float p) {
+        this->p = p;
+    }
 
     /*!
      * \brief Returns a full string representation of the layer
      */
-    static std::string to_short_string(std::string pre = "") {
+    std::string to_short_string(std::string pre = "") const {
         cpp_unused(pre);
 
         char buffer[128];
-        snprintf(buffer, 128, "Dropout(%.2f)", p);
+        snprintf(buffer, 128, "Dropout(%.2f)(dyn)", p);
         return {buffer};
     }
 
     /*!
      * \brief Returns a full string representation of the layer
      */
-    static std::string to_full_string(std::string pre = "") {
+    std::string to_full_string(std::string pre = "") const {
         cpp_unused(pre);
 
         char buffer[128];
-        snprintf(buffer, 128, "Dropout(%.2f)", p);
+        snprintf(buffer, 128, "Dropout(%.2f)(dyn)", p);
         return {buffer};
-    }
-
-    /*!
-     * \brief Initialize the dynamic version of the layer from the
-     * fast version of the layer
-     * \param dyn Reference to the dynamic version of the layer that
-     * needs to be initialized
-     */
-    template<typename DLayer>
-    static void dyn_init(DLayer& dyn){
-        dyn.init_layer(p);
     }
 
     using base_type::test_forward_batch;
@@ -89,7 +85,7 @@ struct dropout_layer_impl : transform_layer<dropout_layer_impl<Desc>> {
      * \param input The batch of input to apply the layer to
      */
     template <typename Input, typename Output>
-    static void train_forward_batch(Output& output, const Input& input) {
+    void train_forward_batch(Output& output, const Input& input) const {
         dll::auto_timer timer("dropout:train:forward");
 
         std::uniform_real_distribution<float> dist(0.0f, 1.0f);
@@ -139,7 +135,7 @@ struct dropout_layer_impl : transform_layer<dropout_layer_impl<Desc>> {
 // Declare the traits for the layer
 
 template<typename Desc>
-struct layer_base_traits<dropout_layer_impl<Desc>> {
+struct layer_base_traits<dyn_dropout_layer_impl<Desc>> {
     static constexpr bool is_neural     = false; ///< Indicates if the layer is a neural layer
     static constexpr bool is_dense      = false; ///< Indicates if the layer is dense
     static constexpr bool is_conv       = false; ///< Indicates if the layer is convolutional
@@ -151,17 +147,17 @@ struct layer_base_traits<dropout_layer_impl<Desc>> {
     static constexpr bool is_transform  = true;  ///< Indicates if the layer is a transform layer
     static constexpr bool is_recurrent  = false; ///< Indicates if the layer is a recurrent layer
     static constexpr bool is_multi      = false; ///< Indicates if the layer is a multi-layer layer
-    static constexpr bool is_dynamic    = false; ///< Indicates if the layer is dynamic
+    static constexpr bool is_dynamic    = true;  ///< Indicates if the layer is dynamic
     static constexpr bool pretrain_last = false; ///< Indicates if the layer is dynamic
     static constexpr bool sgd_supported = true;  ///< Indicates if the layer is supported by SGD
 };
 
 /*!
- * \brief Specialization of sgd_context for dropout_layer_impl
+ * \brief Specialization of sgd_context for dyn_dropout_layer_impl
  */
 template <typename DBN, typename Desc, size_t L>
-struct sgd_context<DBN, dropout_layer_impl<Desc>, L> {
-    using layer_t          = dropout_layer_impl<Desc>;                            ///< The current layer type
+struct sgd_context<DBN, dyn_dropout_layer_impl<Desc>, L> {
+    using layer_t          = dyn_dropout_layer_impl<Desc>;                      ///< The current layer type
     using previous_layer   = typename DBN::template layer_type<L - 1>;          ///< The previous layer type
     using previous_context = sgd_context<DBN, previous_layer, L - 1>;           ///< The previous layer's context
     using inputs_t         = decltype(std::declval<previous_context>().output); ///< The type of inputs

@@ -12,20 +12,11 @@ namespace dll {
 /*!
  * \brief A descriptor for a dropout layer.
  */
-template <size_t D>
-struct dropout_layer_desc {
-    static_assert(D > 0, "Invalid dropout factor");
-    static_assert(D < 101, "Invalid dropout factor");
-
-    /*!
-     * \brief Drop percentage
-     */
-    static constexpr size_t Drop  = D;
-
+struct dyn_dropout_layer_desc {
     /*!
      * The layer type
      */
-    using layer_t = dropout_layer_impl<dropout_layer_desc<D>>;
+    using layer_t = dyn_dropout_layer_impl<dyn_dropout_layer_desc>;
 
     /*!
      * The dynamic layer type
@@ -36,7 +27,6 @@ struct dropout_layer_desc {
 /*!
  * \brief A descriptor for a dropout layer.
  */
-template <size_t D>
-using dropout_layer = typename dropout_layer_desc<D>::layer_t;
+using dyn_dropout_layer = typename dyn_dropout_layer_desc::layer_t;
 
 } //end of dll namespace
