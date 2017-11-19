@@ -708,7 +708,7 @@ struct sgd_trainer {
     template <typename Layer, typename Context, cpp_enable_iff(is_utility_layer<Layer>)>
     void apply_gradients_layer(size_t epoch, size_t n, Layer& layer, Context& context){
         cpp::for_each(layer.layers, context.sub_contexts, [this, epoch, n](auto& sub_layer, auto& sub_context) {
-            apply_gradients_layer(epoch, n, sub_layer, sub_context);
+            this->apply_gradients_layer(epoch, n, sub_layer, sub_context);
         });
     }
 
