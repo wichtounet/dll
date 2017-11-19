@@ -353,7 +353,7 @@ public:
     }
 
     static std::string shape_to_string(const std::vector<size_t>& shape){
-        std::string s = "[Bx";
+        std::string s = "[B";
 
         for(auto& d : shape){
             s += "x" + std::to_string(d);
