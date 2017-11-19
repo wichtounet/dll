@@ -146,12 +146,10 @@ struct conv_rbm_mp_impl final : public standard_crbm_mp<conv_rbm_mp_impl<Desc>, 
      * \brief Returns the output shape
      * \return an std::string containing the description of the output shape
      */
-    static std::string output_shape() {
-        char buffer[128];
-        snprintf(
-            buffer, 128, "[Bx%lux%lux%lu]",
-            K, NP1, NP2);
-        return {buffer};
+    std::vector<size_t> output_shape(const std::vector<size_t>& input_shape) const {
+        cpp_unused(input_shape);
+
+        return {K, NP1, NP2};
     }
 
     /*!

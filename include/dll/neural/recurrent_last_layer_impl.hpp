@@ -83,10 +83,10 @@ struct recurrent_last_layer_impl final : layer<recurrent_last_layer_impl<Desc>> 
      * \brief Returns the output shape
      * \return an std::string containing the description of the output shape
      */
-    static std::string output_shape() {
-        char buffer[128];
-        snprintf(buffer, 128, "[Bx%lu]", hidden_units);
-        return {buffer};
+    std::vector<size_t> output_shape(const std::vector<size_t>& input_shape) const {
+        cpp_unused(input_shape);
+
+        return {hidden_units};
     }
 
     /*!

@@ -57,10 +57,10 @@ struct mp_2d_layer_impl final : pooling_2d_layer<mp_2d_layer_impl<Desc>, Desc> {
      * \brief Returns the output shape
      * \return an std::string containing the description of the output shape
      */
-    static std::string output_shape() {
-        char buffer[128];
-        snprintf(buffer, 128, "[Bx%lux%lux%lu]", base::O1, base::O2, base::O3);
-        return {buffer};
+    std::vector<size_t> output_shape(const std::vector<size_t>& input_shape) const {
+        cpp_unused(input_shape);
+
+        return {base::O1, base::O2, base::O3};
     }
 
     /*!
@@ -212,10 +212,10 @@ struct mp_3d_layer_impl final : pooling_3d_layer<mp_3d_layer_impl<Desc>, Desc> {
      * \brief Returns the output shape
      * \return an std::string containing the description of the output shape
      */
-    static std::string output_shape() {
-        char buffer[128];
-        snprintf(buffer, 128, "[Bx%lux%lux%lu]", base::O1, base::O2, base::O3);
-        return {buffer};
+    std::vector<size_t> output_shape(const std::vector<size_t>& input_shape) const {
+        cpp_unused(input_shape);
+
+        return {base::O1, base::O2, base::O3};
     }
 
     /*!

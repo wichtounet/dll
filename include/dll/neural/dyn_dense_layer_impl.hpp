@@ -125,8 +125,10 @@ struct dyn_dense_layer_impl final : neural_layer<dyn_dense_layer_impl<Desc>, Des
      * \brief Returns the output shape
      * \return an std::string containing the description of the output shape
      */
-    std::string output_shape() const {
-        return "[Bx" + std::to_string(num_hidden) + "]";
+    std::vector<size_t> output_shape(const std::vector<size_t>& input_shape) const {
+        cpp_unused(input_shape);
+
+        return {num_hidden};
     }
 
     /*!

@@ -42,6 +42,14 @@ struct transform_layer : layer<Derived> {
     }
 
     /*!
+     * \brief Returns the output shape
+     * \return an std::string containing the description of the output shape
+     */
+    std::vector<size_t> output_shape(const std::vector<size_t>& input_shape) const {
+        return input_shape;
+    }
+
+    /*!
      * \brief Initialize the dynamic version of the layer from the
      * fast version of the layer
      * \param dyn Reference to the dynamic version of the layer that

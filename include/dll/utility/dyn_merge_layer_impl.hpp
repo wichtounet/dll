@@ -112,8 +112,19 @@ struct dyn_merge_layer_impl <dyn_merge_layer_desc<D, Layers...>> final : layer<d
      * \brief Returns the output shape
      * \return an std::string containing the description of the output shape
      */
-    std::string output_shape() const {
-        return "TODO";
+    std::vector<size_t> output_shape(const std::vector<size_t>& input_shape) const {
+        std::vector<size_t> output;
+
+        cpp::for_each(layers, [&](auto& layer) {
+            if (output.empty()) {
+                output = layer.output_shape(input_shape);
+            } else {
+                auto next = layer.output_shape(input_shape);
+                output[D] += next[D];
+            }
+        });
+
+        return output;
     }
 
     using base_type::forward_batch;

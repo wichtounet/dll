@@ -89,12 +89,10 @@ struct dyn_recurrent_last_layer_impl final : layer<dyn_recurrent_last_layer_impl
      * \brief Returns the output shape
      * \return an std::string containing the description of the output shape
      */
-    std::string output_shape() const {
-        cpp_unused(pre);
+    std::vector<size_t> output_shape(const std::vector<size_t>& input_shape) const {
+        cpp_unused(input_shape);
 
-        char buffer[128];
-        snprintf(buffer, 128, "[Bx%lu]", hidden_units);
-        return {buffer};
+        return {hidden_units};
     }
 
     /*!

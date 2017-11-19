@@ -60,8 +60,10 @@ struct dyn_shape_1d_layer_impl : transform_layer<dyn_shape_1d_layer_impl<Desc>> 
      * \brief Returns the output shape
      * \return an std::string containing the description of the output shape
      */
-    std::string output_shape() const {
-        return "[Bx" + std::to_string(S) + "]";
+    std::vector<size_t> output_shape(const std::vector<size_t>& input_shape) const {
+        cpp_unused(input_shape);
+
+        return {S};
     }
 
     /*!

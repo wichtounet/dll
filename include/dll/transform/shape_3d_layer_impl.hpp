@@ -56,8 +56,10 @@ struct shape_3d_layer_impl : transform_layer<shape_3d_layer_impl<Desc>> {
      * \brief Returns the output shape
      * \return an std::string containing the description of the output shape
      */
-    static std::string output_shape() {
-        return "[Bx" + std::to_string(C) + "x" + std::to_string(W) + "x" + std::to_string(H) + "]";
+    std::vector<size_t> output_shape(const std::vector<size_t>& input_shape) const {
+        cpp_unused(input_shape);
+
+        return {C, W, H};
     }
 
     /*!
