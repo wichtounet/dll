@@ -12,7 +12,7 @@
 namespace dll {
 
 template<typename G>
-void fill_length(const char* name, std::unique_ptr<G>& generator, std::array<size_t, 4>& column_length){
+inline void fill_length(const char* name, std::unique_ptr<G>& generator, std::array<size_t, 4>& column_length){
     if(generator){
         column_length[0] = std::max(column_length[0], std::string(name).size());
         column_length[1] = std::max(column_length[1], std::to_string(generator->size()).size());
@@ -22,14 +22,14 @@ void fill_length(const char* name, std::unique_ptr<G>& generator, std::array<siz
 }
 
 template<>
-void fill_length(const char* name, std::unique_ptr<int>& g, std::array<size_t, 4>& column_length){
+inline void fill_length(const char* name, std::unique_ptr<int>& g, std::array<size_t, 4>& column_length){
     cpp_unused(g);
     cpp_unused(column_length);
     cpp_unused(name);
 }
 
 template<typename G>
-void print_line(const char* name, std::unique_ptr<G>& generator, std::array<size_t, 4>& column_length){
+inline void print_line(const char* name, std::unique_ptr<G>& generator, std::array<size_t, 4>& column_length){
     if(generator){
         printf(" | %-*s | %-*s | %-*s | %-*s |\n",
             int(column_length[0]), name,
@@ -40,7 +40,7 @@ void print_line(const char* name, std::unique_ptr<G>& generator, std::array<size
 }
 
 template<>
-void print_line(const char* name, std::unique_ptr<int>& g, std::array<size_t, 4>& column_length){
+inline void print_line(const char* name, std::unique_ptr<int>& g, std::array<size_t, 4>& column_length){
     cpp_unused(g);
     cpp_unused(column_length);
     cpp_unused(name);
