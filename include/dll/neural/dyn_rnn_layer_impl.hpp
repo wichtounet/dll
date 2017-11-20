@@ -158,7 +158,7 @@ struct dyn_rnn_layer_impl final : base_rnn_layer<dyn_rnn_layer_impl<Desc>, Desc>
      */
     template <typename H, typename V>
     void forward_batch(H&& output, const V& x) const {
-        dll::auto_timer timer("dyn_rnn:forward_batch");
+        dll::auto_timer timer("rnn:forward_batch");
 
         cpp_assert(etl::dim<0>(output) == etl::dim<0>(x), "The number of samples must be consistent");
 
@@ -223,7 +223,7 @@ struct dyn_rnn_layer_impl final : base_rnn_layer<dyn_rnn_layer_impl<Desc>, Desc>
      */
     template <typename H, typename C>
     void backward_batch(H&& output, C& context) const {
-        dll::auto_timer timer("dyn_rnn:backward_batch");
+        dll::auto_timer timer("rnn:backward_batch");
 
         base_type::backward_batch_impl(output, context, w, u, time_steps, sequence_length, hidden_units, bptt_steps);
     }
@@ -234,7 +234,7 @@ struct dyn_rnn_layer_impl final : base_rnn_layer<dyn_rnn_layer_impl<Desc>, Desc>
      */
     template <typename C>
     void compute_gradients(C& context) const {
-        dll::auto_timer timer("dyn_rnn:compute_gradients");
+        dll::auto_timer timer("rnn:compute_gradients");
 
         base_type::compute_gradients_impl(context, w, u, time_steps, sequence_length, hidden_units, bptt_steps);
     }
