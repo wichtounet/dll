@@ -47,12 +47,12 @@ TEST_CASE("unit/conv/sgd/7", "[unit][conv][dbn][mnist][sgd]") {
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 6, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
             dll::mp_2d_layer_desc<6, 24, 24, 2, 2>::layer_t,
-            dll::conv_layer_desc<6, 12, 12, 5, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
-            dll::dense_layer_desc<5 * 8 * 8, 100, dll::activation<dll::function::RELU>>::layer_t,
+            dll::conv_layer_desc<6, 12, 12, 5, 3, 3, dll::activation<dll::function::RELU>>::layer_t,
+            dll::dense_layer_desc<5 * 10 * 10, 100, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_layer_desc<100, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
         dll::updater<dll::updater_type::MOMENTUM>, dll::trainer<dll::sgd_trainer>, dll::batch_size<20>>::dbn_t dbn_t;
 
-    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(600);
+    auto dataset = mnist::read_dataset_direct<std::vector, etl::fast_dyn_matrix<float, 1, 28, 28>>(2000);
     REQUIRE(!dataset.training_images.empty());
 
     dll_test::mnist_scale(dataset);
