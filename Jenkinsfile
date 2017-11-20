@@ -31,7 +31,7 @@ pipeline {
         stage ('build'){
             steps {
                 sh 'make clean'
-                sh 'CXX=g++-6.3.0 LD=g++-6.3.0 ETL_MKL=true make -j6 release_debug'
+                sh 'CXX=g++-6.4.0 LD=g++-6.4.0 ETL_MKL=true make -j6 release_debug'
             }
         }
 
