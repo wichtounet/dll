@@ -80,7 +80,7 @@ struct unsafe_auto_timer {
 
 #else
 
-constexpr size_t max_timers = 64; ///< The maximum number of timers
+constexpr size_t max_timers = 128; ///< The maximum number of timers
 
 /*!
  * \brief A timer
