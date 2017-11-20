@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-       CXX = "g++-6.3.0"
-       LD = "g++-6.3.0"
+       CXX = "g++-6.4.0"
+       LD = "g++-6.4.0"
        ETL_MKL = 'true'
     }
 
