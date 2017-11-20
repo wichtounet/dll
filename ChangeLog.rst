@@ -4,6 +4,10 @@ DLL 1.1 - in development
 * Support for embeddings_layer
 * Support for group_layer
 * Support for merge_layer
+* Support for rnn_layer (Recurrent Neural Network (RNN))
+* Support for lstm_layer (Long Short Term Memory (LSTM))
+* Support for pretty printing and live printing
+* Faster Batch Normalization
 
 DLL 1.0 - 06.10.2017
 ++++++++++++++++++++
