@@ -92,14 +92,7 @@ struct dropout_layer_impl : transform_layer<dropout_layer_impl<Desc>> {
     static void train_forward_batch(Output& output, const Input& input) {
         dll::auto_timer timer("dropout:train:forward");
 
-        std::uniform_real_distribution<float> dist(0.0f, 1.0f);
-        auto& g = dll::rand_engine();
-
-        output = input;
-
-        for(size_t i = 0; i < etl::size(output); ++i){
-            output[i] = dist(g) < p ? 0.0 : (input[i] / p);
-        }
+        output = etl::inverted_dropout_mask(dll::rand_engine(), p) >> input;
     }
 
     /*!
