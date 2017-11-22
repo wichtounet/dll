@@ -311,10 +311,10 @@ struct default_dbn_watcher {
         char buffer[512];
 
         if /*constexpr*/ (dbn_traits<DBN>::error_on_epoch()){
-            snprintf(buffer, 512, "Epoch %3ld/%ld - error: %.5f loss: %.5f val_error: %.5f val_loss: %.5f time %ldms \n",
+            snprintf(buffer, 512, "epoch %3ld/%ld - error: %.5f loss: %.5f val_error: %.5f val_loss: %.5f time %ldms \n",
                 epoch, ft_max_epochs, train_error, train_loss, val_error, val_loss, duration);
         } else {
-            snprintf(buffer, 512, "Epoch %3ld/%ld - loss: %.5f val_loss: %.5f time %ldms \n",
+            snprintf(buffer, 512, "epoch %3ld/%ld - loss: %.5f val_loss: %.5f time %ldms \n",
                 epoch, ft_max_epochs, train_loss, val_loss, duration);
         }
 
@@ -355,7 +355,7 @@ struct default_dbn_watcher {
         char buffer[512];
 
         if /*constexpr*/ (dbn_traits<DBN>::is_verbose()){
-            snprintf(buffer, 512, "Epoch %3ld/%ld batch %4ld/%4ld- B. Error: %.5f B. Loss: %.5f Time %ldms",
+            snprintf(buffer, 512, "epoch %3ld/%ld batch %4ld/%4ld- B. Error: %.5f B. Loss: %.5f Time %ldms",
                 epoch, ft_max_epochs, batch + 1, batches, batch_error, batch_loss, duration);
             std::cout << buffer << std::endl;
         } else {
@@ -363,7 +363,7 @@ struct default_dbn_watcher {
             ++total_batches;
 
             auto estimated_duration = ((total_batch_duration / total_batches) * (batches - batch)) / 1000;
-            snprintf(buffer, 512, "Epoch %3ld/%ld batch %4ld/%4ld - error: %.5f loss: %.5f ETA %lds",
+            snprintf(buffer, 512, "epoch %3ld/%ld batch %4ld/%4ld - error: %.5f loss: %.5f ETA %lds",
                 epoch, ft_max_epochs, batch + 1, batches, batch_error, batch_loss, estimated_duration);
 
             if (batch == 0) {
