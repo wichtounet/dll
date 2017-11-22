@@ -8,6 +8,7 @@ DLL 1.1 - in development
 * Support for lstm_layer (Long Short Term Memory (LSTM))
 * Support for pretty printing and live printing
 * Faster Batch Normalization
+* GPU Support for dropout
 
 DLL 1.0 - 06.10.2017
 ++++++++++++++++++++
