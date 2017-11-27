@@ -154,6 +154,22 @@ struct dyn_lstm_layer_impl final : base_lstm_layer<dyn_lstm_layer_impl<Desc>, De
     std::string to_short_string(std::string pre = "") const {
         cpp_unused(pre);
 
+        if /*constexpr*/ (activation_function == function::IDENTITY) {
+            return "LSTM (dyn)";
+        } else {
+            char buffer[512];
+            snprintf(buffer, 512, "LSTM (%s) (dyn)", to_string(activation_function).c_str());
+            return {buffer};
+        }
+    }
+
+    /*!
+     * \brief Returns a short description of the layer
+     * \return an std::string containing a short description of the layer
+     */
+    std::string to_full_string(std::string pre = "") const {
+        cpp_unused(pre);
+
         char buffer[512];
 
         if /*constexpr*/ (activation_function == function::IDENTITY) {
@@ -163,6 +179,16 @@ struct dyn_lstm_layer_impl final : base_lstm_layer<dyn_lstm_layer_impl<Desc>, De
         }
 
         return {buffer};
+    }
+
+    /*!
+     * \brief Returns the output shape
+     * \return an std::string containing the description of the output shape
+     */
+    std::vector<size_t> output_shape(const std::vector<size_t>& input_shape) const {
+        cpp_unused(input_shape);
+
+        return {time_steps, hidden_units};
     }
 
     mutable etl::dyn_matrix<float, 3> g_t;
@@ -485,6 +511,7 @@ struct layer_base_traits<dyn_lstm_layer_impl<Desc>> {
     static constexpr bool is_unpooling  = false; ///< Indicates if the layer is an unpooling laye
     static constexpr bool is_transform  = false; ///< Indicates if the layer is a transform layer
     static constexpr bool is_dynamic    = false; ///< Indicates if the layer is dynamic
+    static constexpr bool is_multi      = false; ///< Indicates if the layer is multi
     static constexpr bool pretrain_last = false; ///< Indicates if the layer is dynamic
     static constexpr bool sgd_supported = true;  ///< Indicates if the layer is supported by SGD
 };
