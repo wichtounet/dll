@@ -481,15 +481,19 @@ struct dbn_trainer {
         for (; epoch < max_epochs; ++epoch) {
             dll::auto_timer timer("net:trainer:train:epoch");
 
-            // Shuffle before the epoch if necessary
-            if(dbn_traits<dbn_t>::shuffle()){
-                generator.reset_shuffle();
-            } else {
-                generator.reset();
-            }
+            {
+                dll::auto_timer timer("net:trainer:train:epoch:prepare");
 
-            // This will ensure maximum performance for the training
-            generator.prepare_epoch();
+                // Shuffle before the epoch if necessary
+                if(dbn_traits<dbn_t>::shuffle()){
+                    generator.reset_shuffle();
+                } else {
+                    generator.reset();
+                }
+
+                // This will ensure maximum performance for the training
+                generator.prepare_epoch();
+            }
 
             start_epoch(dbn, epoch);
 
