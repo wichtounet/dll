@@ -34,8 +34,8 @@ int main(int /*argc*/, char* /*argv*/ []) {
     auto net = std::make_unique<network_t>();
 
     // Display the network and dataset
-    net->display();
-    dataset.display();
+    net->display_pretty();
+    dataset.display_pretty();
 
     // Train the network for performance sake
     net->fine_tune(dataset.train(), 50);
