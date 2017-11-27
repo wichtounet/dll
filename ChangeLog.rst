@@ -9,6 +9,7 @@ DLL 1.1 - in development
 * Support for pretty printing and live printing
 * Faster Batch Normalization
 * GPU Support for dropout
+* GPU Support for shuffle
 
 DLL 1.0 - 06.10.2017
 ++++++++++++++++++++
