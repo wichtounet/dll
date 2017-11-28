@@ -62,27 +62,31 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_a
         data_cache_helper_t::init(n, first, input_cache);
         label_cache_helper_t::init(n, n_classes, lfirst, label_cache);
 
+        // Fill the cache
+
         size_t i = 0;
         while (first != last) {
             input_cache(i) = *first;
 
-            pre_scaler<desc>::transform(input_cache(i));
-            pre_normalizer<desc>::transform(input_cache(i));
-            pre_binarizer<desc>::transform(input_cache(i));
-
             label_cache_helper_t::set(i, lfirst, label_cache);
-
-            // In case of auto-encoders, the label images also need to be transformed
-            cpp::static_if<desc::AutoEncoder>([&](auto f) {
-                pre_scaler<desc>::transform(f(label_cache)(i));
-                pre_normalizer<desc>::transform(f(label_cache)(i));
-                pre_binarizer<desc>::transform(f(label_cache)(i));
-            });
 
             ++i;
             ++first;
             ++lfirst;
         }
+
+        // Transform if necessary
+
+        pre_scaler<desc>::transform_all(input_cache);
+        pre_normalizer<desc>::transform_all(input_cache);
+        pre_binarizer<desc>::transform_all(input_cache);
+
+        // In case of auto-encoders, the label images also need to be transformed
+        cpp::static_if<desc::AutoEncoder>([&](auto f) {
+            pre_scaler<desc>::transform_all(f(label_cache));
+            pre_normalizer<desc>::transform_all(f(label_cache));
+            pre_binarizer<desc>::transform_all(f(label_cache));
+        });
 
         cpp_unused(llast);
     }
@@ -278,18 +282,16 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_a
      * \brief Finalize the dataset if it was filled directly after having being prepared.
      */
     void finalize_prepared_data() {
-        for (size_t i = 0; i < size(); ++i) {
-            pre_scaler<desc>::transform(input_cache(i));
-            pre_normalizer<desc>::transform(input_cache(i));
-            pre_binarizer<desc>::transform(input_cache(i));
+        pre_scaler<desc>::transform_all(input_cache);
+        pre_normalizer<desc>::transform_all(input_cache);
+        pre_binarizer<desc>::transform_all(input_cache);
 
-            // In case of auto-encoders, the label images also need to be transformed
-            cpp::static_if<desc::AutoEncoder>([&](auto f) {
-                pre_scaler<desc>::transform(f(label_cache)(i));
-                pre_normalizer<desc>::transform(f(label_cache)(i));
-                pre_binarizer<desc>::transform(f(label_cache)(i));
-            });
-        }
+        // In case of auto-encoders, the label images also need to be transformed
+        cpp::static_if<desc::AutoEncoder>([&](auto f) {
+            pre_scaler<desc>::transform_all(f(label_cache));
+            pre_normalizer<desc>::transform_all(f(label_cache));
+            pre_binarizer<desc>::transform_all(f(label_cache));
+        });
     }
 
     /*!
@@ -357,27 +359,31 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_au
 
         label_cache_helper_t::init(n, n_classes, lfirst, label_cache);
 
+        // Fill the cache
+
         size_t i = 0;
         while (first != last) {
             input_cache(i) = *first;
 
-            pre_scaler<desc>::transform(input_cache(i));
-            pre_normalizer<desc>::transform(input_cache(i));
-            pre_binarizer<desc>::transform(input_cache(i));
-
             label_cache_helper_t::set(i, lfirst, label_cache);
-
-            // In case of auto-encoders, the label images also need to be transformed
-            cpp::static_if<desc::AutoEncoder>([&](auto f) {
-                pre_scaler<desc>::transform(f(label_cache)(i));
-                pre_normalizer<desc>::transform(f(label_cache)(i));
-                pre_binarizer<desc>::transform(f(label_cache)(i));
-            });
 
             ++i;
             ++first;
             ++lfirst;
         }
+
+        // Transform if necessary
+
+        pre_scaler<desc>::transform_all(input_cache);
+        pre_normalizer<desc>::transform_all(input_cache);
+        pre_binarizer<desc>::transform_all(input_cache);
+
+        // In case of auto-encoders, the label images also need to be transformed
+        cpp::static_if<desc::AutoEncoder>([&](auto f) {
+            pre_scaler<desc>::transform_all(f(label_cache));
+            pre_normalizer<desc>::transform_all(f(label_cache));
+            pre_binarizer<desc>::transform_all(f(label_cache));
+        });
 
         for (size_t b = 0; b < big_batch_size; ++b) {
             status[b]  = false;
