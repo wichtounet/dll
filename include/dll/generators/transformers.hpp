@@ -100,9 +100,7 @@ struct pre_binarizer <Desc, std::enable_if_t<Desc::BinarizePre != 0>> {
      */
     template<typename O>
     static void transform_all(O&& target){
-        for(auto& x : target){
-            x = x > B ? 1.0 : 0.0;
-        }
+        etl::binarize(target, B);
     }
 };
 
@@ -156,9 +154,7 @@ struct pre_normalizer <Desc, std::enable_if_t<Desc::NormalizePre>> {
      */
     template<typename O>
     static void transform_all(O&& target){
-        for(size_t i = 0; i < etl::dim<0>(target); ++i){
-            cpp::normalize(target(i));
-        }
+        etl::normalize_sub(target);
     }
 };
 
