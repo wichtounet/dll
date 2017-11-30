@@ -22,15 +22,30 @@ struct dyn_dropout_layer_impl : transform_layer<dyn_dropout_layer_impl<Desc>> {
     using layer_t     = this_type;                    ///< This layer's type
     using dyn_layer_t = typename desc::dyn_layer_t;   ///< The dynamic version of this layer
 
-    float p;
+    float p; ///< The dropout probability
+
+    using dropout_t = decltype(etl::state_inverted_dropout_mask(dll::rand_engine(), p));
+
+    dropout_t* dropout = nullptr; ///< The dropout mask generator (ETL)
 
     dyn_dropout_layer_impl() = default;
+
+    /*!
+     * \brief Delete the layer and frees all allocated resources
+     */
+    ~dyn_dropout_layer_impl() {
+        if (dropout) {
+            delete dropout;
+        }
+    }
 
     /*!
      * \brief Initialize the dynamic layer
      */
     void init_layer(float p) {
         this->p = p;
+
+        dropout = new dropout_t(dll::rand_engine(), p);
     }
 
     /*!
@@ -88,7 +103,9 @@ struct dyn_dropout_layer_impl : transform_layer<dyn_dropout_layer_impl<Desc>> {
     void train_forward_batch(Output& output, const Input& input) const {
         dll::auto_timer timer("dropout:train:forward");
 
-        output = etl::inverted_dropout_mask(dll::rand_engine(), p) >> input;
+        // Note: For now, cannot do on one pass because of state_inverted dropout not copy-able
+        output = *dropout;
+        output = output >> input;
     }
 
     /*!

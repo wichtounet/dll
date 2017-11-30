@@ -24,7 +24,11 @@ struct dropout_layer_impl : transform_layer<dropout_layer_impl<Desc>> {
 
     static constexpr float p = float(desc::Drop) / 100.0f; ///< The dropout rate
 
-    dropout_layer_impl() = default;
+    mutable decltype(etl::state_inverted_dropout_mask(dll::rand_engine(), p)) dropout; ///< The dropout mask generator (ETL)
+
+    dropout_layer_impl() : dropout(dll::rand_engine(), p) {
+        // Nothing else to init
+    }
 
     /*!
      * \brief Returns a full string representation of the layer
@@ -89,10 +93,12 @@ struct dropout_layer_impl : transform_layer<dropout_layer_impl<Desc>> {
      * \param input The batch of input to apply the layer to
      */
     template <typename Input, typename Output>
-    static void train_forward_batch(Output& output, const Input& input) {
+    void train_forward_batch(Output& output, const Input& input) const noexcept {
         dll::auto_timer timer("dropout:train:forward");
 
-        output = etl::inverted_dropout_mask(dll::rand_engine(), p) >> input;
+        // Note: For now, cannot do on one pass because of state_inverted dropout not copy-able
+        output = dropout;
+        output = output >> input;
     }
 
     /*!
