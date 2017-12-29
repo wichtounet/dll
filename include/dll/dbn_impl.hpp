@@ -1594,6 +1594,50 @@ public:
 
         return fine_tune_ae(*generator, max_epochs);
     }
+    
+    // Fine tune for regression
+    
+    /*!
+     * \brief Fine tune the network for regression.
+     * \param generator Generator for samples and outputs
+     * \param max_epochs The maximum number of epochs to train the network for.
+     * \return The final classification error
+     */
+    template <typename Generator, cpp_enable_iff(is_generator<Generator>)>
+    weight fine_tune_reg(Generator& generator, size_t max_epochs) {
+        dll::auto_timer timer("net:train:ft:reg");
+
+        validate_generator(generator);
+
+        //cpp_assert(dll::input_size(layer_get<0>()) == dll::output_size(layer_get<layers - 1>()), "The network is not build //as an autoencoder");
+
+        dll::dbn_trainer<this_type> trainer;
+        return trainer.train(*this, generator, max_epochs);
+    }
+    
+    /*!
+     * \brief Fine tune the network for regression.
+     * \param in_first Iterator to the first sample
+     * \param in_last Iterator to the last sample
+     * \param out_first Iterator to the first output
+     * \param out_last Iterator to the last output
+     * \param max_epochs The maximum number of epochs to train the network for.
+     * \return The final average loss
+     */
+    template <typename InIterator, typename OutIterator>
+    weight fine_tune_reg(InIterator&& in_first, InIterator&& in_last, OutIterator&& out_first, OutIterator&& out_last, size_t max_epochs) {
+        //return "";
+        // Create generator around the iterators
+        cpp_assert(std::distance(in_first, in_last) == std::distance(out_first, out_last), "The number of inputs does not match the number of outputs for training.");
+        auto generator = make_generator(
+            std::forward<InIterator>(in_first), std::forward<InIterator>(in_last),
+            std::forward<OutIterator>(out_first), std::forward<OutIterator>(out_last),
+            std::distance(in_first, in_last), output_size(), ae_generator_t{});
+
+        generator->set_safe();
+
+        return fine_tune_reg(*generator, max_epochs);
+    }
 
     template <size_t I, typename Input>
     auto prepare_output() const {
