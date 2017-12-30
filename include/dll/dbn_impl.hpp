@@ -1617,6 +1617,25 @@ public:
     
     /*!
      * \brief Fine tune the network for regression.
+     * \param inputs A container containing all the samples
+     * \param outputs A container containing the correct results
+     * \param max_epochs The maximum number of epochs to train the network for.
+     * \return The final average loss
+     */
+    template <typename Inputs, typename Outputs>
+    weight fine_tune_reg(const Inputs& inputs, const Outputs& outputs, size_t max_epochs) {
+        // Create generator around the containers
+        cpp_assert(inputs.size() == outputs.size(), "The number of inputs does not match the number of outputs for training.");
+        auto generator = dll::make_generator(
+            inputs, outputs,
+            inputs.size(), output_size(), ae_generator_t{});
+        generator->set_safe();
+
+        return fine_tune_reg(*generator, max_epochs);
+    }
+    
+    /*!
+     * \brief Fine tune the network for regression.
      * \param in_first Iterator to the first sample
      * \param in_last Iterator to the last sample
      * \param out_first Iterator to the first output
