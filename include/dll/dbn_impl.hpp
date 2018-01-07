@@ -34,6 +34,16 @@
 #include "dbn_detail.hpp" // dbn_detail namespace
 
 namespace dll {
+	
+struct nullbuffer : std::streambuf {
+	int overflow(int c) { return c; }
+};
+
+class nullstream : public std::ostream {
+	nullbuffer m_sb;
+public: 
+	nullstream() : std::ostream(&m_sb) {}
+};
 
 template<typename O, typename Enable = void>
 struct safe_value_type {
@@ -161,6 +171,8 @@ public:
 
     weight goal     = 0.0; ///< The learning goal
     size_t patience = 1;   ///< The patience for early stopping goals
+	
+	std::ostream *log = new nullstream();// &std::cout;
 
 #ifdef DLL_SVM_SUPPORT
     //TODO Ideally these fields should be private
@@ -1593,6 +1605,66 @@ public:
         generator->set_safe();
 
         return fine_tune_ae(*generator, max_epochs);
+    }
+    
+    // Fine tune for regression
+    
+    /*!
+     * \brief Fine tune the network for regression.
+     * \param generator Generator for samples and outputs
+     * \param max_epochs The maximum number of epochs to train the network for.
+     * \return The final average loss
+     */
+    template <typename Generator, cpp_enable_iff(is_generator<Generator>)>
+    weight fine_tune_reg(Generator& generator, size_t max_epochs) {
+        dll::auto_timer timer("net:train:ft:reg");
+
+        validate_generator(generator);
+
+        dll::dbn_trainer<this_type> trainer;
+        return trainer.train(*this, generator, max_epochs);
+    }
+    
+    /*!
+     * \brief Fine tune the network for regression.
+     * \param inputs A container containing all the samples
+     * \param outputs A container containing the correct results
+     * \param max_epochs The maximum number of epochs to train the network for.
+     * \return The final average loss
+     */
+    template <typename Inputs, typename Outputs>
+    weight fine_tune_reg(const Inputs& inputs, const Outputs& outputs, size_t max_epochs) {
+        // Create generator around the containers
+        cpp_assert(inputs.size() == outputs.size(), "The number of inputs does not match the number of outputs for training.");
+        auto generator = dll::make_generator(
+            inputs, outputs,
+            inputs.size(), output_size(), ae_generator_t{});
+        generator->set_safe();
+
+        return fine_tune_reg(*generator, max_epochs);
+    }
+    
+    /*!
+     * \brief Fine tune the network for regression.
+     * \param in_first Iterator to the first sample
+     * \param in_last Iterator to the last sample
+     * \param out_first Iterator to the first output
+     * \param out_last Iterator to the last output
+     * \param max_epochs The maximum number of epochs to train the network for.
+     * \return The final average loss
+     */
+    template <typename InIterator, typename OutIterator>
+    weight fine_tune_reg(InIterator&& in_first, InIterator&& in_last, OutIterator&& out_first, OutIterator&& out_last, size_t max_epochs) {
+        // Create generator around the iterators
+        cpp_assert(std::distance(in_first, in_last) == std::distance(out_first, out_last), "The number of inputs does not match the number of outputs for training.");
+        auto generator = make_generator(
+            std::forward<InIterator>(in_first), std::forward<InIterator>(in_last),
+            std::forward<OutIterator>(out_first), std::forward<OutIterator>(out_last),
+            std::distance(in_first, in_last), output_size(), ae_generator_t{});
+
+        generator->set_safe();
+
+        return fine_tune_reg(*generator, max_epochs);
     }
 
     template <size_t I, typename Input>
