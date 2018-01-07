@@ -108,9 +108,9 @@ struct dbn_trainer {
                     dbn.restore_weights();
 
                     if (is_error(s)) {
-                        std::cout << "Restore the best (error) weights from epoch " << best_epoch << std::endl;
+                        *dbn.log << "Restore the best (error) weights from epoch " << best_epoch << std::endl;
                     } else {
-                        std::cout << "Restore the best (loss) weights from epoch " << best_epoch << std::endl;
+                        *dbn.log << "Restore the best (loss) weights from epoch " << best_epoch << std::endl;
                     }
                 }
             }
@@ -175,15 +175,15 @@ struct dbn_trainer {
             // Stop according to goal on loss
             if /*constexpr*/ (s == strategy::LOSS_GOAL) {
                 if (loss <= dbn.goal) {
-                    std::cout << "Stopping: Loss below goal";
+                    *dbn.log << "Stopping: Loss below goal";
 
                     if(epoch != best_epoch){
                         dbn.restore_weights();
 
-                        std::cout << ", restore weights from epoch " << best_epoch;
+                        *dbn.log << ", restore weights from epoch " << best_epoch;
                     }
 
-                    std::cout << std::endl;
+                    *dbn.log << std::endl;
 
                     return true;
                 }
@@ -191,15 +191,15 @@ struct dbn_trainer {
             // Stop according to goal on error
             else if /*constexpr*/ (s == strategy::ERROR_GOAL) {
                 if (error <= dbn.goal) {
-                    std::cout << "Stopping: Error below goal";
+                    *dbn.log << "Stopping: Error below goal";
 
                     if(epoch != best_epoch){
                         dbn.restore_weights();
 
-                        std::cout << ", restore weights from epoch " << best_epoch;
+                        *dbn.log << ", restore weights from epoch " << best_epoch;
                     }
 
-                    std::cout << std::endl;
+                    *dbn.log << std::endl;
 
                     return true;
                 }
@@ -210,15 +210,15 @@ struct dbn_trainer {
                     --patience;
 
                     if (!patience) {
-                        std::cout << "Stopping: Loss has been increasing for " << dbn.patience << " epochs";
+                        *dbn.log << "Stopping: Loss has been increasing for " << dbn.patience << " epochs";
 
                         if (epoch != best_epoch) {
                             dbn.restore_weights();
 
-                            std::cout << ", restore weights from epoch " << best_epoch;
+                            *dbn.log << ", restore weights from epoch " << best_epoch;
                         }
 
-                        std::cout << std::endl;
+                        *dbn.log << std::endl;
 
                         return true;
                     }
@@ -232,15 +232,15 @@ struct dbn_trainer {
                     --patience;
 
                     if (!patience) {
-                        std::cout << "Stopping: Error has been increasing for " << dbn.patience << " epochs";
+                        *dbn.log << "Stopping: Error has been increasing for " << dbn.patience << " epochs";
 
                         if (epoch != best_epoch) {
                             dbn.restore_weights();
 
-                            std::cout << ", restore weights from epoch " << best_epoch;
+                            *dbn.log << ", restore weights from epoch " << best_epoch;
                         }
 
-                        std::cout << std::endl;
+                        *dbn.log << std::endl;
 
                         return true;
                     }
@@ -254,15 +254,15 @@ struct dbn_trainer {
                     --patience;
 
                     if (!patience) {
-                        std::cout << "Stopping: Loss has been increasing (from best) for " << dbn.patience << " epochs";
+                        *dbn.log << "Stopping: Loss has been increasing (from best) for " << dbn.patience << " epochs";
 
                         if (epoch != best_epoch) {
                             dbn.restore_weights();
 
-                            std::cout << ", restore weights from epoch " << best_epoch;
+                            *dbn.log << ", restore weights from epoch " << best_epoch;
                         }
 
-                        std::cout << std::endl;
+                        *dbn.log << std::endl;
 
                         return true;
                     }
@@ -276,15 +276,15 @@ struct dbn_trainer {
                     --patience;
 
                     if (!patience) {
-                        std::cout << "Stopping: Error has been increasing (from best) for " << dbn.patience << " epochs";
+                        *dbn.log << "Stopping: Error has been increasing (from best) for " << dbn.patience << " epochs";
 
                         if (epoch != best_epoch) {
                             dbn.restore_weights();
 
-                            std::cout << ", restore weights from epoch " << best_epoch;
+                            *dbn.log << ", restore weights from epoch " << best_epoch;
                         }
 
-                        std::cout << std::endl;
+                        *dbn.log << std::endl;
 
                         return true;
                     }

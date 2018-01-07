@@ -151,7 +151,7 @@ struct default_dbn_watcher {
      * \param max_epochs The maximum number of epochs
      */
     void pretraining_begin(const DBN& dbn, size_t max_epochs) {
-        std::cout << "DBN: Pretraining begin for " << max_epochs << " epochs" << std::endl;
+        *dbn.log << "DBN: Pretraining begin for " << max_epochs << " epochs" << std::endl;
         cpp_unused(dbn);
     }
 
@@ -165,9 +165,9 @@ struct default_dbn_watcher {
     template <typename RBM>
     void pretrain_layer(const DBN& dbn, size_t I, const RBM& rbm, size_t input_size) {
         if (input_size) {
-            std::cout << "DBN: Pretrain layer " << I << " (" << rbm.to_full_string() << ") with " << input_size << " entries" << std::endl;
+            *dbn.log << "DBN: Pretrain layer " << I << " (" << rbm.to_full_string() << ") with " << input_size << " entries" << std::endl;
         } else {
-            std::cout << "DBN: Pretrain layer " << I << " (" << rbm.to_full_string() << ")" << std::endl;
+            *dbn.log << "DBN: Pretrain layer " << I << " (" << rbm.to_full_string() << ")" << std::endl;
         }
 
         cpp_unused(dbn);
@@ -178,7 +178,7 @@ struct default_dbn_watcher {
      * \param dbn The DBN being pretrained
      */
     void pretraining_end(const DBN& dbn) {
-        std::cout << "DBN: Pretraining finished after " << watch.elapsed() << "s" << std::endl;
+        *dbn.log << "DBN: Pretraining finished after " << watch.elapsed() << "s" << std::endl;
 
         cpp_unused(dbn);
     }
@@ -187,7 +187,7 @@ struct default_dbn_watcher {
      * \brief Pretraining ended for the given batch for the given DBN
      */
     void pretraining_batch(const DBN& dbn, size_t batch) {
-        std::cout << "DBN: Pretraining batch " << batch << std::endl;
+        *dbn.log << "DBN: Pretraining batch " << batch << std::endl;
 
         cpp_unused(dbn);
     }
@@ -200,50 +200,50 @@ struct default_dbn_watcher {
     void fine_tuning_begin(const DBN& dbn, size_t max_epochs) {
         static constexpr auto UT = dbn_traits<DBN>::updater();
 
-        std::cout << "\nTrain the network with \"" << DBN::desc::template trainer_t<DBN>::name() << "\"" << std::endl;
-        std::cout << "    Updater: " << dll::to_string(UT) << std::endl;
-        std::cout << "       Loss: " << dll::to_string(DBN::loss) << std::endl;
-        std::cout << " Early Stop: " << dll::to_string(DBN::early) << std::endl << std::endl;
+        *dbn.log << "\nTrain the network with \"" << DBN::desc::template trainer_t<DBN>::name() << "\"" << std::endl;
+        *dbn.log << "    Updater: " << dll::to_string(UT) << std::endl;
+        *dbn.log << "       Loss: " << dll::to_string(DBN::loss) << std::endl;
+        *dbn.log << " Early Stop: " << dll::to_string(DBN::early) << std::endl << std::endl;
 
-        std::cout << "With parameters:" << std::endl;
-        std::cout << "          epochs=" << max_epochs << std::endl;
-        std::cout << "      batch_size=" << DBN::batch_size << std::endl;
+        *dbn.log << "With parameters:" << std::endl;
+        *dbn.log << "          epochs=" << max_epochs << std::endl;
+        *dbn.log << "      batch_size=" << DBN::batch_size << std::endl;
 
         // ADADELTA does not use the learning rate
         if (UT != updater_type::ADADELTA) {
-            std::cout << "   learning_rate=" << dbn.learning_rate << std::endl;
+            *dbn.log << "   learning_rate=" << dbn.learning_rate << std::endl;
         }
 
         if (UT == updater_type::MOMENTUM) {
-            std::cout << "        momentum=" << dbn.momentum << std::endl;
+            *dbn.log << "        momentum=" << dbn.momentum << std::endl;
         }
 
         if (UT == updater_type::NESTEROV) {
-            std::cout << "        momentum=" << dbn.momentum << std::endl;
+            *dbn.log << "        momentum=" << dbn.momentum << std::endl;
         }
 
         if (UT == updater_type::ADADELTA) {
-            std::cout << "            beta=" << dbn.adadelta_beta << std::endl;
+            *dbn.log << "            beta=" << dbn.adadelta_beta << std::endl;
         }
 
         if (UT == updater_type::ADAM || UT == updater_type::ADAM_CORRECT || UT == updater_type::ADAMAX || UT == updater_type::NADAM) {
-            std::cout << "           beta1=" << dbn.adam_beta1 << std::endl;
-            std::cout << "           beta2=" << dbn.adam_beta2 << std::endl;
+            *dbn.log << "           beta1=" << dbn.adam_beta1 << std::endl;
+            *dbn.log << "           beta2=" << dbn.adam_beta2 << std::endl;
         }
 
         if (UT == updater_type::RMSPROP) {
-            std::cout << "           decay=" << dbn.rmsprop_decay << std::endl;
+            *dbn.log << "           decay=" << dbn.rmsprop_decay << std::endl;
         }
 
         if (w_decay(dbn_traits<DBN>::decay()) == decay_type::L1 || w_decay(dbn_traits<DBN>::decay()) == decay_type::L1L2) {
-            std::cout << " weight_cost(L1)=" << dbn.l1_weight_cost << std::endl;
+            *dbn.log << " weight_cost(L1)=" << dbn.l1_weight_cost << std::endl;
         }
 
         if (w_decay(dbn_traits<DBN>::decay()) == decay_type::L2 || w_decay(dbn_traits<DBN>::decay()) == decay_type::L1L2) {
-            std::cout << " weight_cost(L2)=" << dbn.l2_weight_cost << std::endl;
+            *dbn.log << " weight_cost(L2)=" << dbn.l2_weight_cost << std::endl;
         }
 
-        std::cout << std::endl;
+        *dbn.log << std::endl;
 
         ft_max_epochs = max_epochs;
     }
@@ -288,12 +288,12 @@ struct default_dbn_watcher {
         }
 
         if /*constexpr*/ (dbn_traits<DBN>::is_verbose()){
-            std::cout << buffer;
+            *dbn.log << buffer;
         } else {
-            std::cout << "\r" << buffer;
+            *dbn.log << "\r" << buffer;
         }
 
-        std::cout.flush();
+        dbn.log->flush();
     }
 
     /*!
@@ -319,12 +319,12 @@ struct default_dbn_watcher {
         }
 
         if /*constexpr*/ (dbn_traits<DBN>::is_verbose()){
-            std::cout << buffer;
+            *dbn.log << buffer;
         } else {
-            std::cout << "\r" << buffer;
+            *dbn.log << "\r" << buffer;
         }
 
-        std::cout.flush();
+        *dbn.log.flush();
     }
 
     /*!
@@ -357,7 +357,7 @@ struct default_dbn_watcher {
         if /*constexpr*/ (dbn_traits<DBN>::is_verbose()){
             snprintf(buffer, 512, "epoch %3ld/%ld batch %4ld/%4ld- B. Error: %.5f B. Loss: %.5f Time %ldms",
                 epoch, ft_max_epochs, batch + 1, batches, batch_error, batch_loss, duration);
-            std::cout << buffer << std::endl;
+            *dbn.log << buffer << std::endl;
         } else {
             total_batch_duration += duration;
             ++total_batches;
@@ -367,7 +367,7 @@ struct default_dbn_watcher {
                 epoch, ft_max_epochs, batch + 1, batches, batch_error, batch_loss, estimated_duration);
 
             if (batch == 0) {
-                std::cout << buffer;
+                *dbn.log << buffer;
             } else {
                 constexpr size_t frequency_ms = 100;
 
@@ -375,13 +375,13 @@ struct default_dbn_watcher {
                     const size_t frequency_batch = frequency_ms / (1 + (total_batch_duration / total_batches));
 
                     if (batch == batches - 1 || frequency_batch == 0 || batch % frequency_batch == 0) {
-                        std::cout << "\r" << buffer;
+                        *dbn.log << "\r" << buffer;
 
                         if (strlen(buffer) < last_line_length) {
-                            std::cout << std::string(last_line_length - strlen(buffer), ' ');
+                            *dbn.log << std::string(last_line_length - strlen(buffer), ' ');
                         }
 
-                        std::cout.flush();
+                        dbn.log->flush();
                     }
                 }
             }
@@ -399,7 +399,7 @@ struct default_dbn_watcher {
      * \param dbn The DBN that is being trained
      */
     void fine_tuning_end(const DBN& dbn) {
-        std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
+        *dbn.log << "Training took " << watch.elapsed() << "s" << std::endl;
 
         cpp_unused(dbn);
     }

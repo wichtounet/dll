@@ -34,6 +34,16 @@
 #include "dbn_detail.hpp" // dbn_detail namespace
 
 namespace dll {
+	
+struct nullbuffer : std::streambuf {
+	int overflow(int c) { return c; }
+};
+
+class nullstream : public std::ostream {
+	nullbuffer m_sb;
+public: 
+	nullstream() : std::ostream(&m_sb) {}
+};
 
 template<typename O, typename Enable = void>
 struct safe_value_type {
@@ -161,6 +171,8 @@ public:
 
     weight goal     = 0.0; ///< The learning goal
     size_t patience = 1;   ///< The patience for early stopping goals
+	
+	std::ostream *log = new nullstream();// &std::cout;
 
 #ifdef DLL_SVM_SUPPORT
     //TODO Ideally these fields should be private
@@ -1626,7 +1638,7 @@ public:
         cpp_assert(inputs.size() == outputs.size(), "The number of inputs does not match the number of outputs for training.");
         auto generator = dll::make_generator(
             inputs, outputs,
-            inputs.size(), output_size(), reg_generator_t{});
+            inputs.size(), output_size(), ae_generator_t{});
         generator->set_safe();
 
         return fine_tune_reg(*generator, max_epochs);
@@ -1648,7 +1660,7 @@ public:
         auto generator = make_generator(
             std::forward<InIterator>(in_first), std::forward<InIterator>(in_last),
             std::forward<OutIterator>(out_first), std::forward<OutIterator>(out_last),
-            std::distance(in_first, in_last), output_size(), reg_generator_t{});
+            std::distance(in_first, in_last), output_size(), ae_generator_t{});
 
         generator->set_safe();
 
