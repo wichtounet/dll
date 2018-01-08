@@ -1629,9 +1629,11 @@ public:
     weight fine_tune_reg(const Inputs& inputs, const Outputs& outputs, size_t max_epochs) {
         // Create generator around the containers
         cpp_assert(inputs.size() == outputs.size(), "The number of inputs does not match the number of outputs for training.");
+
         auto generator = dll::make_generator(
             inputs, outputs,
             inputs.size(), output_size(), reg_generator_t{});
+
         generator->set_safe();
 
         return fine_tune_reg(*generator, max_epochs);
@@ -1650,6 +1652,7 @@ public:
     weight fine_tune_reg(InIterator&& in_first, InIterator&& in_last, OutIterator&& out_first, OutIterator&& out_last, size_t max_epochs) {
         // Create generator around the iterators
         cpp_assert(std::distance(in_first, in_last) == std::distance(out_first, out_last), "The number of inputs does not match the number of outputs for training.");
+
         auto generator = make_generator(
             std::forward<InIterator>(in_first), std::forward<InIterator>(in_last),
             std::forward<OutIterator>(out_first), std::forward<OutIterator>(out_last),
