@@ -1,0 +1,58 @@
+//=======================================================================
+// Copyright (c) 2014-2017 Baptiste Wicht
+// Distributed under the terms of the MIT License.
+// (See accompanying file LICENSE or copy at
+//  http://opensource.org/licenses/MIT)
+//=======================================================================
+
+#include "dll_test.hpp"
+
+#include "dll/neural/dense_layer.hpp"
+#include "dll/neural/rnn_layer.hpp"
+#include "dll/neural/recurrent_last_layer.hpp"
+#include "dll/network.hpp"
+#include "dll/datasets.hpp"
+
+namespace {
+
+void generate(std::vector<etl::fast_dyn_matrix<float, 3>>& samples, std::vector<size_t>& labels){
+    std::random_device rd;
+    std::mt19937_64 engine(rd());
+
+    std::uniform_int_distribution<int> dist(0, 25);
+
+    for(size_t i = 0; i < 1000; ++i){
+        samples.emplace_back();
+
+        auto& back = samples.back();
+
+        back[0] = dist(engine) / 25.0f;
+        back[1] = dist(engine) / 25.0f;
+        back[2] = dist(engine) / 25.0f;
+
+        labels.push_back((back[0] + back[1] + back[2]) / 3.0f);
+    }
+}
+
+} // end of anonymous namespace
+
+TEST_CASE("unit/reg/1", "[unit][reg]") {
+    std::vector<etl::fast_dyn_matrix<float, 3>> samples;
+    std::vector<size_t> labels;
+
+    generate(samples, labels);
+
+    using network_t = dll::dyn_network_desc<
+        dll::network_layers<
+            dll::dense_layer<3, 1, dll::tanh>
+        >
+        , dll::mean_squared_error
+        , dll::batch_size<10>
+        , dll::adadelta
+    >::network_t;
+
+    auto net = std::make_unique<network_t>();
+
+    REQUIRE(net->fine_tune_reg(samples, labels, 30) < 0.15);
+    //REQUIRE(net->evaluate_error(samples, labels) < 0.25);
+}
