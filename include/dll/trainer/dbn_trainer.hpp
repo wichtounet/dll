@@ -459,6 +459,16 @@ struct dbn_trainer {
         return std::make_pair(train_stats, val_stats);
     }
 
+    template<typename Generator, cpp_enable_iff(is_generator<Generator> && dbn_traits<dbn_t>::shuffle())>
+    void reset_shuffle(Generator& generator){
+        generator.reset_shuffle();
+    }
+
+    template<typename Generator, cpp_disable_iff(is_generator<Generator> && dbn_traits<dbn_t>::shuffle())>
+    void reset_shuffle(Generator& generator){
+        generator.reset();
+    }
+
     /*!
      * \brief Train the network for max_epochs
      *
@@ -485,11 +495,7 @@ struct dbn_trainer {
                 dll::auto_timer timer("net:trainer:train:epoch:prepare");
 
                 // Shuffle before the epoch if necessary
-                if(dbn_traits<dbn_t>::shuffle()){
-                    generator.reset_shuffle();
-                } else {
-                    generator.reset();
-                }
+                reset_shuffle(generator);
 
                 // This will ensure maximum performance for the training
                 generator.prepare_epoch();
