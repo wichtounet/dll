@@ -63,9 +63,21 @@ using binary_cross_entropy = loss<loss_function::BINARY_CROSS_ENTROPY>;
 using mean_squared_error = loss<loss_function::MEAN_SQUARED_ERROR>;
 
 /*!
- * \brief Specify that a network uses the adadelta updater for
+ * \brief Specify that a network uses the ADADELTA updater for
  * gradient descent.
  */
 using adadelta = updater<updater_type::ADADELTA>;
+
+/*!
+ * \brief Specify that a network uses the ADAM updater for
+ * gradient descent.
+ */
+using adam = updater<updater_type::ADAM>;
+
+/*!
+ * \brief Specify that a network uses the NADAM updater for
+ * gradient descent.
+ */
+using nadam = updater<updater_type::NADAM>;
 
 } //end of dll namespace
