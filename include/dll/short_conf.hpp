@@ -80,4 +80,9 @@ using adam = updater<updater_type::ADAM>;
  */
 using nadam = updater<updater_type::NADAM>;
 
+/*!
+ * \brief Specify that the network should not output anything
+ */
+using silent = dll::output_policy<dll::null_output_policy>;
+
 } //end of dll namespace

@@ -25,6 +25,7 @@
 #include "sparsity_method.hpp"
 #include "bias_mode.hpp"
 #include "initializer.hpp"
+#include "output.hpp"
 
 namespace dll {
 
@@ -110,6 +111,7 @@ struct hidden_id;
 struct pooling_id;
 struct activation_id;
 struct loss_id;
+struct output_policy_id;
 struct initializer_id;
 struct initializer_bias_id;
 struct initializer_forget_bias_id;
@@ -227,6 +229,14 @@ struct activation : value_conf_elt<activation_id, function, FT> {};
  */
 template <loss_function FT>
 struct loss : value_conf_elt<loss_id, loss_function, FT> {};
+
+/*!
+ * \brief Sets the output policy
+ *
+ * \tparam IT The output policy type
+ */
+template <typename P>
+struct output_policy : type_conf_elt<output_policy_id, P> {};
 
 /*!
  * \brief Sets the initializer

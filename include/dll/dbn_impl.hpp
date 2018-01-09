@@ -98,7 +98,8 @@ struct dbn final {
 
     static_assert(dbn_detail::validate_weight_type<this_type, weight>::value, "Every layer must have consistent weight type");
 
-    using watcher_t = typename desc::template watcher_t<this_type>; ///< The watcher type
+    using watcher_t       = typename desc::template watcher_t<this_type>;                            ///< The watcher type
+    using output_policy_t = typename desc::output_policy_t;                                          ///< The output policy
 
     static constexpr size_t input_layer_n   = 0;                                                   ///< The index of the input layer
     static constexpr size_t output_layer_n  = find_output_layer<layers_t::size - 1, this_type>::L; ///< The index of the output layer
@@ -168,6 +169,8 @@ public:
     svm::problem problem;    ///< libsvm is stupid, therefore, you cannot destroy the problem if you want to use the model...
     bool svm_loaded = false; ///< Indicates if a SVM model has been loaded (and therefore must be saved)
 #endif                       //DLL_SVM_SUPPORT
+
+    mutable output_policy_t out; ///< The output policy instance
 
     using categorical_generator_t = std::conditional_t<
         !dbn_traits<this_type>::batch_mode(),
@@ -342,19 +345,19 @@ public:
     void display() const {
         size_t parameters = 0;
 
-        std::cout << "Network with " << layers << " layers" << std::endl;
+        out << "Network with " << layers << " layers" << std::endl;
 
-        for_each_layer([&parameters](auto& layer) {
+        for_each_layer([&parameters, this](auto& layer) {
             std::string pre = "    ";
-            std::cout << pre;
-            std::cout << layer.to_full_string(pre) << std::endl;
+            out << pre;
+            out << layer.to_full_string(pre) << std::endl;
 
             cpp::static_if<decay_layer_traits<decltype(layer)>::is_neural_layer()>([&](auto f) {
                 parameters += f(layer).parameters();
             });
         });
 
-        std::cout << "Total parameters: " << parameters << std::endl;
+        out << "Total parameters: " << parameters << std::endl;
     }
 
     static std::string shape_to_string(const std::vector<size_t>& shape){
@@ -407,7 +410,7 @@ public:
     void display_pretty() const {
         constexpr size_t columns = 4;
 
-        std::cout << '\n';
+        out << '\n';
 
         std::array<std::string, columns> column_name;
         column_name[0] = "Index";
@@ -462,28 +465,36 @@ public:
 
         const size_t line_length = (columns + 1) * 1 + 2 + (columns - 1) * 2 + std::accumulate(column_length.begin(), column_length.end(), 0);
 
-        std::cout << " " << std::string(line_length, '-') << '\n';
+        out << " " << std::string(line_length, '-') << '\n';
 
-        printf(" | %-*s | %-*s | %-*s | %-*s |\n",
+        char buffer[512];
+
+        snprintf(buffer, 512, " | %-*s | %-*s | %-*s | %-*s |\n",
                int(column_length[0]), column_name[0].c_str(),
                int(column_length[1]), column_name[1].c_str(),
                int(column_length[2]), column_name[2].c_str(),
                int(column_length[3]), column_name[3].c_str());
 
-        std::cout << " " << std::string(line_length, '-') << '\n';
+        out << buffer;
+
+        out << " " << std::string(line_length, '-') << '\n';
 
         for(auto& row : rows){
             // Print the layer line
-            printf(" | %-*s | %-*s | %*s | %-*s |\n",
+            snprintf(buffer, 512, " | %-*s | %-*s | %*s | %-*s |\n",
                    int(column_length[0]), row[0].c_str(),
                    int(column_length[1]), row[1].c_str(),
                    int(column_length[2]), row[2].c_str(),
                    int(column_length[3]), row[3].c_str());
+
+            out << buffer;
         }
 
-        std::cout << " " << std::string(line_length, '-') << '\n';
+        out << " " << std::string(line_length, '-') << '\n';
 
-        printf("  %*s: %*lu\n", int(column_length[0] + column_length[1] + 5), "Total Parameters", int(column_length[2]), parameters);
+        snprintf(buffer, 512, "  %*s: %*lu\n", int(column_length[0] + column_length[1] + 5), "Total Parameters", int(column_length[2]), parameters);
+
+        out << buffer;
     }
 
     /*!
@@ -654,10 +665,10 @@ public:
 
         //Pretrain each layer one-by-one
         if /*constexpr*/ (batch_mode()) {
-            std::cout << "DBN: Pretraining done in batch mode" << std::endl;
+            out << "DBN: Pretraining done in batch mode" << std::endl;
 
             if (layers_t::has_shuffle_layer) {
-                std::cout << "warning: batch_mode dbn does not support shuffle in layers (will be ignored)";
+                out << "warning: batch_mode dbn does not support shuffle in layers (will be ignored)";
             }
 
             pretrain_layer_batch<0>(generator, watcher, max_epochs);
@@ -736,15 +747,15 @@ public:
 
         //Pretrain each layer one-by-one
         if /*constexpr*/ (batch_mode()) {
-            std::cout << "DBN: Denoising Pretraining done in batch mode" << std::endl;
+            out << "DBN: Denoising Pretraining done in batch mode" << std::endl;
 
             if (layers_t::has_shuffle_layer) {
-                std::cout << "warning: batch_mode dbn does not support shuffle in layers (will be ignored)";
+                out << "warning: batch_mode dbn does not support shuffle in layers (will be ignored)";
             }
 
             pretrain_layer_denoising_batch<0>(generator, watcher, max_epochs);
         } else {
-            std::cout << "DBN: Denoising Pretraining" << std::endl;
+            out << "DBN: Denoising Pretraining" << std::endl;
 
             pretrain_layer_denoising<0>(generator, watcher, max_epochs);
         }
@@ -1695,10 +1706,16 @@ public:
 
         auto metrics = evaluate_metrics(generator);
 
-        printf("\nEvaluation Results\n");
-        printf("   error: %.5f \n", std::get<0>(metrics));
-        printf("    loss: %.5f \n", std::get<1>(metrics));
-        printf("evaluation took %dms \n", int(watch.elapsed()));
+        char buffer[512];
+
+        snprintf(buffer, 512, "\nEvaluation Results\n");
+        out << buffer;
+        snprintf(buffer, 512, "   error: %.5f \n", std::get<0>(metrics));
+        out << buffer;
+        snprintf(buffer, 512, "    loss: %.5f \n", std::get<1>(metrics));
+        out << buffer;
+        snprintf(buffer, 512, "evaluation took %dms \n", int(watch.elapsed()));
+        out << buffer;
     }
 
     /*!
@@ -2282,7 +2299,7 @@ public:
 
         svm_loaded = true;
 
-        std::cout << "SVM training took " << watch.elapsed() << "s" << std::endl;
+        out << "SVM training took " << watch.elapsed() << "s" << std::endl;
 
         return true;
     }
@@ -2309,7 +2326,7 @@ public:
 
         svm_loaded = true;
 
-        std::cout << "SVM training took " << watch.elapsed() << "s" << std::endl;
+        out << "SVM training took " << watch.elapsed() << "s" << std::endl;
 
         return true;
     }

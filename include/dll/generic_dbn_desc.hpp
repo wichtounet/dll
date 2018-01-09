@@ -91,6 +91,8 @@ struct generic_dbn_desc {
     template <typename DBN>
     using watcher_t = typename detail::get_template_type<watcher<default_dbn_watcher>, Parameters...>::template value<DBN>;
 
+    using output_policy_t = detail::get_type_t<output_policy<default_output_policy>, Parameters...>; ///< The output policy
+
     /*! The DBN type */
     using dbn_t = DBN_T<generic_dbn_desc<DBN_T, Layers, Parameters...>>;
 
@@ -112,7 +114,7 @@ struct generic_dbn_desc {
                 trainer_id, watcher_id, weight_decay_id, big_batch_size_id, batch_size_id, verbose_id, no_epoch_error_id,
                 batch_mode_id, svm_concatenate_id, svm_scale_id, serial_id, shuffle_id, shuffle_pre_id, loss_id,
                 normalize_pre_id, binarize_pre_id, scale_pre_id, autoencoder_id, noise_id, updater_id,
-                early_stopping_id, early_training_id, clip_gradients_id>,
+                early_stopping_id, early_training_id, clip_gradients_id, output_policy_id>,
             Parameters...>,
         "Invalid parameters type");
 };
