@@ -54,5 +54,9 @@ TEST_CASE("unit/reg/1", "[unit][reg]") {
     auto net = std::make_unique<network_t>();
 
     REQUIRE(net->fine_tune_reg(samples, labels, 30) < 0.15);
-    //REQUIRE(net->evaluate_error(samples, labels) < 0.25);
+
+    // Mostly here for compilation's sake
+    net->evaluate_reg(samples, labels);
+
+    REQUIRE(net->evaluate_error_reg(samples, labels) < 0.25);
 }
