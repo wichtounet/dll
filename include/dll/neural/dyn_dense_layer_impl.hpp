@@ -84,7 +84,8 @@ struct dyn_dense_layer_impl final : neural_layer<dyn_dense_layer_impl<Desc>, Des
      * \brief Returns the number of parameters of this layer
      */
     size_t parameters() const noexcept {
-        return num_visible * num_hidden;
+        // Weights + Biases
+        return num_visible * num_hidden + num_hidden;
     }
 
     /*!

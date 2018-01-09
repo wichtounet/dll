@@ -80,7 +80,8 @@ struct dense_layer_impl final : neural_layer<dense_layer_impl<Desc>, Desc> {
      * \brief Returns the number of parameters of this layer
      */
     static constexpr size_t parameters() noexcept {
-        return num_visible * num_hidden;
+        // Weights + Biases
+        return num_visible * num_hidden + num_hidden;
     }
 
     /*!
