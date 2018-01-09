@@ -1897,6 +1897,61 @@ public:
         return evaluate_error(*generator);
     }
 
+    /*!
+     * \brief Evaluate the network on the given regression task
+     * and return the regression error.
+     *
+     * The result of the evaluation will be printed on the console.
+     *
+     * \param generator The data generator
+     */
+    template <typename Generator>
+    double evaluate_error_reg(Generator& generator){
+        validate_generator(generator);
+
+        auto metrics = evaluate_metrics(generator);
+
+        return std::get<0>(metrics);
+    }
+
+    /*!
+     * \brief Evaluate the network on the given regression task
+     * and return the regression error.
+     *
+     * \param samples The container containing the samples
+     * \param labels The container containing the labels
+     *
+     * \return The classification error
+     */
+    template <typename Samples, typename Labels>
+    double evaluate_error_reg(const Samples&  samples, const Labels& labels){
+        auto generator = make_generator(samples, labels, samples.size(), output_size(), reg_generator_t{});
+
+        generator->set_safe();
+
+        return evaluate_error_reg(*generator);
+    }
+
+    /*!
+     * \brief Evaluate the network on the given regression task
+     * and return the regression error.
+     *
+     * \param iit The beginning of the range of the samples
+     * \param iend The end of the range of the samples
+     * \param lit The beginning of the range of the labels
+     * \param lend The end of the range of the labels
+     *
+     * \return The classification error
+     */
+    template <typename InputIterator, typename LabelIterator>
+    double evaluate_error_reg(InputIterator&& iit, InputIterator&& iend, LabelIterator&& lit, LabelIterator&& lend){
+        auto generator = make_generator(iit, iend, lit, lend, std::distance(lit, lend), output_size(), reg_generator_t{});
+
+        generator->set_safe();
+
+        return evaluate_error_reg(*generator);
+    }
+
     using metrics_t = std::tuple<double, double>; ///< The metrics returned by evaluate_metrics
 
     template <loss_function F, typename Output, typename Labels, cpp_enable_iff((F == loss_function::CATEGORICAL_CROSS_ENTROPY))>
