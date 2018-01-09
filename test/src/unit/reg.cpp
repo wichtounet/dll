@@ -15,13 +15,13 @@
 
 namespace {
 
-void generate(std::vector<etl::fast_dyn_matrix<float, 3>>& samples, std::vector<size_t>& labels){
+void generate(std::vector<etl::fast_dyn_matrix<float, 3>>& samples, std::vector<size_t>& labels, size_t N){
     std::random_device rd;
     std::mt19937_64 engine(rd());
 
     std::uniform_int_distribution<int> dist(0, 25);
 
-    for(size_t i = 0; i < 1000; ++i){
+    for(size_t i = 0; i < N; ++i){
         samples.emplace_back();
 
         auto& back = samples.back();
@@ -40,7 +40,7 @@ TEST_CASE("unit/reg/1", "[unit][reg]") {
     std::vector<etl::fast_dyn_matrix<float, 3>> samples;
     std::vector<size_t> labels;
 
-    generate(samples, labels);
+    generate(samples, labels, 1000);
 
     using network_t = dll::dyn_network_desc<
         dll::network_layers<
@@ -65,7 +65,7 @@ TEST_CASE("unit/reg/2", "[unit][reg]") {
     std::vector<etl::fast_dyn_matrix<float, 3>> samples;
     std::vector<size_t> labels;
 
-    generate(samples, labels);
+    generate(samples, labels, 1000);
 
     using network_t = dll::dyn_network_desc<
         dll::network_layers<
@@ -78,6 +78,35 @@ TEST_CASE("unit/reg/2", "[unit][reg]") {
     >::network_t;
 
     auto net = std::make_unique<network_t>();
+
+    REQUIRE(net->fine_tune_reg(samples, labels, 30) < 0.15);
+
+    // Mostly here for compilation's sake
+    net->evaluate_reg(samples, labels);
+
+    REQUIRE(net->evaluate_error_reg(samples, labels) < 0.25);
+}
+
+TEST_CASE("unit/reg/3", "[unit][reg]") {
+    std::vector<etl::fast_dyn_matrix<float, 3>> samples;
+    std::vector<size_t> labels;
+
+    generate(samples, labels, 5000);
+
+    using network_t = dll::dyn_network_desc<
+        dll::network_layers<
+            dll::dense_layer<3, 10, dll::tanh>,
+            dll::dense_layer<10, 1, dll::tanh>
+        >
+        , dll::mean_squared_error
+        , dll::batch_size<10>
+        , dll::adadelta
+        , dll::shuffle
+    >::network_t;
+
+    auto net = std::make_unique<network_t>();
+
+    net->display_pretty();
 
     REQUIRE(net->fine_tune_reg(samples, labels, 30) < 0.15);
 
