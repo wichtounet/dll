@@ -60,3 +60,29 @@ TEST_CASE("unit/reg/1", "[unit][reg]") {
 
     REQUIRE(net->evaluate_error_reg(samples, labels) < 0.25);
 }
+
+TEST_CASE("unit/reg/2", "[unit][reg]") {
+    std::vector<etl::fast_dyn_matrix<float, 3>> samples;
+    std::vector<size_t> labels;
+
+    generate(samples, labels);
+
+    using network_t = dll::dyn_network_desc<
+        dll::network_layers<
+            dll::dense_layer<3, 1, dll::tanh>
+        >
+        , dll::mean_squared_error
+        , dll::batch_size<10>
+        , dll::adadelta
+        , dll::shuffle
+    >::network_t;
+
+    auto net = std::make_unique<network_t>();
+
+    REQUIRE(net->fine_tune_reg(samples, labels, 30) < 0.15);
+
+    // Mostly here for compilation's sake
+    net->evaluate_reg(samples, labels);
+
+    REQUIRE(net->evaluate_error_reg(samples, labels) < 0.25);
+}
