@@ -1788,6 +1788,56 @@ public:
     }
 
     /*!
+     * \brief Evaluate the network on the given regression task.
+     *
+     * The result of the evaluation will be printed on the console.
+     *
+     * \param generator The data generator
+     */
+    template <typename Generator, cpp_enable_iff(is_generator<Generator>)>
+    void evaluate_reg(Generator& generator){
+        validate_generator(generator);
+
+        evaluate(generator);
+    }
+
+    /*!
+     * \brief Evaluate the network on the given regressionon task.
+     *
+     * The result of the evaluation will be printed on the console.
+     *
+     * \param samples The container containing the samples
+     * \param labels The container containing the labels
+     */
+    template <typename Samples, typename Labels>
+    void evaluate_reg(const Samples&  samples, const Labels& labels){
+        auto generator = make_generator(samples, labels, samples.size(), output_size(), reg_generator_t{});
+
+        generator->set_safe();
+
+        return evaluate_reg(*generator);
+    }
+
+    /*!
+     * \brief Evaluate the network on the given regressionon task.
+     *
+     * The result of the evaluation will be printed on the console.
+     *
+     * \param iit The beginning of the range of the samples
+     * \param iend The end of the range of the samples
+     * \param lit The beginning of the range of the labels
+     * \param lend The end of the range of the labels
+     */
+    template <typename InputIterator, typename LabelIterator>
+    void evaluate_reg(InputIterator&& iit, InputIterator&& iend, LabelIterator&& lit, LabelIterator&& lend){
+        auto generator = make_generator(iit, iend, lit, lend, std::distance(lit, lend), output_size(), reg_generator_t{});
+
+        generator->set_safe();
+
+        evaluate_reg(*generator);
+    }
+
+    /*!
      * \brief Evaluate the network on the given classification task
      * and return the classification error.
      *
