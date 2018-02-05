@@ -5,6 +5,9 @@ default: release_debug/bin/dllp
 include make-utils/flags.mk
 include make-utils/cpp-utils.mk
 
+# Use C++17
+$(eval $(call use_cpp17))
+
 CXX_FLAGS += -pedantic -Werror -ftemplate-backtrace-limit=0
 
 # If asked, use libcxx (optional)
