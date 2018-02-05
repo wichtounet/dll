@@ -312,6 +312,8 @@ $(eval $(call add_executable,dll_compile_hybrid_crbm_one,workbench/src/compile_h
 $(eval $(call add_executable,dll_compile_hybrid_crbm,workbench/src/compile_hybrid_crbm.cpp))
 
 # Examples
+$(eval $(call add_executable,dll_mnist_dbn,examples/src/mnist_dbn.cpp))
+$(eval $(call add_executable_set,dll_mnist_dbn,dll_mnist_dbn))
 $(eval $(call add_executable,dll_mnist_mlp,examples/src/mnist_mlp.cpp))
 $(eval $(call add_executable_set,dll_mnist_mlp,dll_mnist_mlp))
 $(eval $(call add_executable,dll_mnist_cnn,examples/src/mnist_cnn.cpp))
