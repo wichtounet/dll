@@ -2911,4 +2911,9 @@ private:
 #endif //DLL_SVM_SUPPORT
 };
 
+//Allow odr-use of the constexpr static members
+
+template <typename Desc>
+const size_t dbn<Desc>::layers;
+
 } //end of namespace dll
