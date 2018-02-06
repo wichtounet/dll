@@ -776,27 +776,22 @@ struct sgd_trainer {
         }
     }
 
-    template <bool Train, size_t L, typename Layer, typename Inputs, typename Context, cpp_enable_iff(L == Layer::n_layers)>
+    template <bool Train, size_t L, typename Layer, typename Inputs, typename Context>
     static void forward_layer_group(Layer& layer, Inputs&& inputs, Context& context) {
-        cpp_unused(layer);
-        cpp_unused(inputs);
-        cpp_unused(context);
-    }
+        if constexpr (L < Layer::n_layers) {
+            auto& sub_layer   = std::get<L>(layer.layers);
+            auto& sub_context = std::get<L>(context.sub_contexts);
 
-    template <bool Train, size_t L, typename Layer, typename Inputs, typename Context, cpp_enable_iff(L < Layer::n_layers)>
-    static void forward_layer_group(Layer& layer, Inputs&& inputs, Context& context) {
-        auto& sub_layer   = std::get<L>(layer.layers);
-        auto& sub_context = std::get<L>(context.sub_contexts);
+            sub_context.input = inputs;
 
-        sub_context.input = inputs;
+            if constexpr (Train) {
+                sub_layer.train_forward_batch(sub_context.output, sub_context.input);
+            } else {
+                sub_layer.test_forward_batch(sub_context.output, sub_context.input);
+            }
 
-        if constexpr (Train) {
-            sub_layer.train_forward_batch(sub_context.output, sub_context.input);
-        } else {
-            sub_layer.test_forward_batch(sub_context.output, sub_context.input);
+            forward_layer_group<Train, L + 1>(layer, sub_context.output, context);
         }
-
-        forward_layer_group<Train, L + 1>(layer, sub_context.output, context);
     }
 
     template <bool Train, typename Layer, typename Inputs, typename Context, cpp_enable_iff(is_group_layer<Layer>)>
@@ -804,21 +799,16 @@ struct sgd_trainer {
         forward_layer_group<Train, 0>(layer, inputs, context);
     }
 
-    template <bool Train, size_t L, typename Layer, typename Inputs, typename Context, cpp_enable_iff(L == Layer::n_layers)>
+    template <bool Train, size_t L, typename Layer, typename Inputs, typename Context>
     static void forward_layer_merge(Layer& layer, Inputs&& inputs, Context& context) {
-        cpp_unused(layer);
-        cpp_unused(inputs);
-        cpp_unused(context);
-    }
+        if constexpr (L < Layer::n_layers) {
+            auto& sub_layer   = std::get<L>(layer.layers);
+            auto& sub_context = std::get<L>(context.sub_contexts);
 
-    template <bool Train, size_t L, typename Layer, typename Inputs, typename Context, cpp_enable_iff(L < Layer::n_layers)>
-    static void forward_layer_merge(Layer& layer, Inputs&& inputs, Context& context) {
-        auto& sub_layer   = std::get<L>(layer.layers);
-        auto& sub_context = std::get<L>(context.sub_contexts);
+            forward_layer<Train>(sub_layer, inputs, sub_context);
 
-        forward_layer<Train>(sub_layer, inputs, sub_context);
-
-        forward_layer_merge<Train, L + 1>(layer, inputs, context);
+            forward_layer_merge<Train, L + 1>(layer, inputs, context);
+        }
     }
 
     template <bool Train, typename Layer, typename Inputs, typename Context, cpp_enable_iff(is_merge_layer<Layer>)>
@@ -1256,63 +1246,32 @@ struct sgd_trainer {
     /*!
      * \brief Update the given gradients according to the given decay function
      */
-    template <typename D = dbn_t, typename G, cpp_enable_iff(dbn_traits<D>::has_clip_gradients())>
+    template <typename G>
     void clip_gradients(G& grad, size_t n) {
-        const auto t = dbn.gradient_clip;
-        const auto grad_l2_norm = std::sqrt(etl::sum(grad >> grad) / (n * n));
+        if constexpr (dbn_traits<dbn_t>::has_clip_gradients()) {
+            const auto t            = dbn.gradient_clip;
+            const auto grad_l2_norm = std::sqrt(etl::sum(grad >> grad) / (n * n));
 
-        if(grad_l2_norm > t){
-            grad = grad >> (t / grad_l2_norm);
+            if (grad_l2_norm > t) {
+                grad = grad >> (t / grad_l2_norm);
+            }
         }
     }
 
     /*!
      * \brief Update the given gradients according to the given decay function
      */
-    template <typename D = dbn_t, typename G, cpp_disable_if(dbn_traits<D>::has_clip_gradients())>
-    void clip_gradients(G& grad, size_t n) {
-        cpp_unused(grad);
-        cpp_unused(n);
-    }
-
-    /*!
-     * \brief Update the given gradients according to the given decay function
-     */
-    template <decay_type decay, typename V, typename G, cpp_enable_iff(decay == decay_type::L1)>
+    template <decay_type decay, typename V, typename G>
     void update_grad(const V& value, G& grad, size_t n) {
-        grad = grad - dbn.l1_weight_cost * abs(value);
+        if constexpr (decay == decay_type::L1) {
+            grad = grad - dbn.l1_weight_cost * abs(value);
+        } else if constexpr (decay == decay_type::L2) {
+            grad = grad - dbn.l2_weight_cost * value;
+        } else if constexpr (decay == decay_type::L1L2) {
+            grad = grad - dbn.l1_weight_cost * abs(value) - dbn.l2_weight_cost * value;
+        }
 
         clip_gradients(grad, n);
-    }
-
-    /*!
-     * \brief Update the given gradients according to the given decay function
-     */
-    template <decay_type decay, typename V, typename G, cpp_enable_iff(decay == decay_type::L2)>
-    void update_grad(const V& value, G& grad, size_t n) {
-        grad = grad - dbn.l2_weight_cost * value;
-
-        clip_gradients(grad, n);
-    }
-
-    /*!
-     * \brief Update the given gradients according to the given decay function
-     */
-    template <decay_type decay, typename V, typename G, cpp_enable_iff(decay == decay_type::L1L2)>
-    void update_grad(const V& value, G& grad, size_t n) {
-        grad = grad - dbn.l1_weight_cost * abs(value) - dbn.l2_weight_cost * value;
-
-        clip_gradients(grad, n);
-    }
-
-    /*!
-     * \brief Update the given gradients according to the given decay function
-     */
-    template <decay_type decay, typename V, typename G, cpp_enable_iff(decay == decay_type::NONE)>
-    void update_grad(const V& value, G& grad, size_t n) {
-        clip_gradients(grad, n);
-
-        cpp_unused(value);
     }
 
     /*!
