@@ -718,35 +718,26 @@ struct sgd_trainer {
         layer.backward_batch(errors, context);
     }
 
-    template <size_t L, typename Layer, typename Context, typename Errors, cpp_enable_iff(L == 0)>
+    template <size_t L, typename Layer, typename Context, typename Errors>
     static void backward_layer_group(Layer& layer, Context& context, Errors&& errors, bool& last){
-        auto& sub_layer        = std::get<L>(layer.layers);
-        auto& sub_context      = std::get<L>(context.sub_contexts);
+        auto& sub_layer   = std::get<L>(layer.layers);
+        auto& sub_context = std::get<L>(context.sub_contexts);
 
-        if(!last){
+        if (!last) {
             sub_layer.adapt_errors(sub_context);
         }
 
         last = false;
 
-        sub_layer.backward_batch(errors, sub_context);
-    }
+        if constexpr (L == 0) {
+            sub_layer.backward_batch(errors, sub_context);
+        } else {
+            auto& prev_sub_context = std::get<L - 1>(context.sub_contexts);
 
-    template <size_t L, typename Layer, typename Context, typename Errors, cpp_enable_iff(L > 0)>
-    static void backward_layer_group(Layer& layer, Context& context, Errors&& errors, bool& last){
-        auto& sub_layer        = std::get<L>(layer.layers);
-        auto& sub_context      = std::get<L>(context.sub_contexts);
-        auto& prev_sub_context = std::get<L - 1>(context.sub_contexts);
+            sub_layer.backward_batch(prev_sub_context.errors, sub_context);
 
-        if(!last){
-            sub_layer.adapt_errors(sub_context);
+            backward_layer_group<L - 1>(layer, context, errors, last);
         }
-
-        last = false;
-
-        sub_layer.backward_batch(prev_sub_context.errors, sub_context);
-
-        backward_layer_group<L - 1>(layer, context, errors, last);
     }
 
     template <typename Layer, typename Context, typename Errors, cpp_enable_iff(is_group_layer<Layer>)>
@@ -909,28 +900,20 @@ struct sgd_trainer {
         return last_ctx.output;
     }
 
-    // CPP17 Replace with if constexpr
-
-    template <updater_type UT, typename L, typename C, cpp_disable_if(decay_layer_traits<L>::is_neural_layer())>
-    void update_weights(size_t epoch, L& layer, C& context, size_t n) {
-        cpp_unused(epoch);
-        cpp_unused(layer);
-        cpp_unused(context);
-        cpp_unused(n);
-    }
-
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <updater_type UT, typename L, typename C, cpp_enable_iff(decay_layer_traits<L>::is_neural_layer())>
-    void update_weights(size_t epoch, L& layer, C& context, size_t n) {
-        dll::auto_timer timer("sgd::update_weights");
+    template <updater_type UT, typename L, typename C>
+    void update_weights([[maybe_unused]] size_t epoch, [[maybe_unused]] L& layer, [[maybe_unused]] C& context, [[maybe_unused]] size_t n) {
+        if constexpr (decay_layer_traits<L>::is_neural_layer()) {
+            dll::auto_timer timer("sgd::update_weights");
 
-        // Update all variables of the layer
+            // Update all variables of the layer
 
-        static constexpr size_t N = std::tuple_size<decltype(layer.trainable_parameters())>();
+            static constexpr size_t N = std::tuple_size<decltype(layer.trainable_parameters())>();
 
-        update_variables<UT>(epoch, layer, context, n, std::make_index_sequence<N>());
+            update_variables<UT>(epoch, layer, context, n, std::make_index_sequence<N>());
+        }
     }
 
     template <updater_type UT, typename L, typename C, size_t... I>

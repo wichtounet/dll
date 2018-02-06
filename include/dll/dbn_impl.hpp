@@ -2009,64 +2009,50 @@ public:
 
     using metrics_t = std::tuple<double, double>; ///< The metrics returned by evaluate_metrics
 
-    template <loss_function F, typename Output, typename Labels, cpp_enable_iff((F == loss_function::CATEGORICAL_CROSS_ENTROPY))>
-    std::tuple<double, double> compute_loss(size_t n, bool full_batch, double s, Output&& output, Labels&& labels){
-        dll::auto_timer timer("net:compute_loss:CCE");
-
+    template <typename Output, typename Labels>
+    std::tuple<double, double> compute_loss(size_t n, bool full_batch, double s, Output&& output, Labels&& labels) {
         double batch_loss;
         double batch_error;
 
-        if (cpp_unlikely(!full_batch)) {
-            auto soutput = slice(output, 0, n);
+        if constexpr (loss == loss_function::CATEGORICAL_CROSS_ENTROPY) {
+            dll::auto_timer timer("net:compute_loss:CCE");
 
-            batch_loss  = etl::ml::cce_loss(soutput, labels, -1.0 / s);
-            batch_error = etl::ml::cce_error(soutput, labels, 1.0 / s);
-        } else {
-            batch_loss  = etl::ml::cce_loss(output, labels, -1.0 / s);
-            batch_error = etl::ml::cce_error(output, labels, 1.0 / s);
-        }
+            if (cpp_unlikely(!full_batch)) {
+                auto soutput = slice(output, 0, n);
 
-        return std::make_tuple(batch_error, batch_loss);
-    }
+                batch_loss  = etl::ml::cce_loss(soutput, labels, -1.0 / s);
+                batch_error = etl::ml::cce_error(soutput, labels, 1.0 / s);
+            } else {
+                batch_loss  = etl::ml::cce_loss(output, labels, -1.0 / s);
+                batch_error = etl::ml::cce_error(output, labels, 1.0 / s);
+            }
+        } else if constexpr (loss == loss_function::BINARY_CROSS_ENTROPY) {
+            dll::auto_timer timer("net:compute_loss:BCE");
 
-    template <loss_function F, typename Output, typename Labels, cpp_enable_iff((F == loss_function::BINARY_CROSS_ENTROPY))>
-    std::tuple<double, double> compute_loss(size_t n, bool full_batch, double s, Output&& output, Labels&& labels){
-        dll::auto_timer timer("net:compute_loss:BCE");
+            // Avoid Nan in log(out) or log(1-out)
+            auto out = etl::force_temporary(etl::clip(output, 0.001, 0.999));
 
-        double batch_loss;
-        double batch_error;
+            if (cpp_unlikely(!full_batch)) {
+                auto sout = slice(out, 0, n);
 
-        // Avoid Nan in log(out) or log(1-out)
-        auto out = etl::force_temporary(etl::clip(output, 0.001, 0.999));
+                batch_loss  = (-1.0 / (s * output_size())) * sum((labels >> log(sout)) + ((1.0 - labels) >> log(1.0 - sout)));
+                batch_error = (1.0 / (s * output_size())) * asum(labels - sout);
+            } else {
+                batch_loss  = (-1.0 / (s * output_size())) * sum((labels >> log(out)) + ((1.0 - labels) >> log(1.0 - out)));
+                batch_error = (1.0 / (s * output_size())) * asum(labels - output);
+            }
+        } else { // MEAN_SQUARED_ERROR
+            dll::auto_timer timer("net:compute_loss:MSE");
 
-        if (cpp_unlikely(!full_batch)) {
-            auto sout = slice(out, 0, n);
+            if (cpp_unlikely(!full_batch)) {
+                auto soutput = slice(output, 0, n);
 
-            batch_loss  = (-1.0 / (s * output_size())) * sum((labels >> log(sout)) + ((1.0 - labels) >> log(1.0 - sout)));
-            batch_error = (1.0 / (s * output_size())) * asum(labels - sout);
-        } else {
-            batch_loss  = (-1.0 / (s * output_size())) * sum((labels >> log(out)) + ((1.0 - labels) >> log(1.0 - out)));
-            batch_error = (1.0 / (s * output_size())) * asum(labels - output);
-        }
-
-        return std::make_tuple(batch_error, batch_loss);
-    }
-
-    template <loss_function F, typename Output, typename Labels, cpp_enable_iff((F == loss_function::MEAN_SQUARED_ERROR))>
-    std::tuple<double, double> compute_loss(size_t n, bool full_batch, double s, Output&& output, Labels&& labels){
-        dll::auto_timer timer("net:compute_loss:MSE");
-
-        double batch_loss;
-        double batch_error;
-
-        if (cpp_unlikely(!full_batch)) {
-            auto soutput = slice(output, 0, n);
-
-            batch_loss  = (1.0 / (2.0 * s)) * sum((soutput - labels) >> (soutput - labels));
-            batch_error = (1.0 / s) * asum(labels - soutput);
-        } else {
-            batch_loss  = (1.0 / (2.0 * s)) * sum((output - labels) >> (output - labels));
-            batch_error = (1.0 / s) * asum(labels - output);
+                batch_loss  = (1.0 / (2.0 * s)) * sum((soutput - labels) >> (soutput - labels));
+                batch_error = (1.0 / s) * asum(labels - soutput);
+            } else {
+                batch_loss  = (1.0 / (2.0 * s)) * sum((output - labels) >> (output - labels));
+                batch_error = (1.0 / s) * asum(labels - output);
+            }
         }
 
         return std::make_tuple(batch_error, batch_loss);
@@ -2095,8 +2081,7 @@ public:
         // TODO Detect if labels are categorical already or not
         // And change the way this is done
 
-        // CPP17 Use if constexpr instaed of SFINAE
-        return compute_loss<loss>(n, full_batch, s, output, labels);
+        return compute_loss(n, full_batch, s, output, labels);
     }
 
     /*!
