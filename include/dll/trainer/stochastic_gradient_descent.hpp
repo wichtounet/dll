@@ -956,7 +956,7 @@ struct sgd_trainer {
         auto& w_grad = std::get<I>(context.up.context)->grad;
 
         // Note the distinction for w and b for decay is far from optimal...
-        if /* constexpr */ (I == 0) {
+        if constexpr (I == 0) {
             this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(w, w_grad, n);
         } else {
             this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(w, w_grad, n);
