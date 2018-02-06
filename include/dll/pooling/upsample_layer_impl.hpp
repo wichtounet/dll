@@ -101,29 +101,19 @@ struct upsample_3d_layer_impl final : unpooling_3d_layer<upsample_3d_layer_impl<
      * \param output The ETL expression into which write the output
      * \param context The training context
      */
-    template<typename H, typename C, cpp_enable_iff(etl::decay_traits<H>::dimensions() == 4)>
+    template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
         static constexpr size_t C1 = base::C1; ///< The pooling first dimension
         static constexpr size_t C2 = base::C2; ///< The pooling second dimension
         static constexpr size_t C3 = base::C3; ///< The pooling third dimension
 
-        output = etl::max_pool_3d<C1, C2, C3>(context.errors);
-    }
+        if constexpr (etl::decay_traits<H>::dimensions() == 4) {
+            output = etl::max_pool_3d<C1, C2, C3>(context.errors);
+        } else {
+            constexpr auto B = etl::decay_traits<H>::template dim<0>();
 
-    /*!
-     * \brief Backpropagate the errors to the previous layers
-     * \param output The ETL expression into which write the output
-     * \param context The training context
-     */
-    template<typename H, typename C, cpp_enable_iff(etl::decay_traits<H>::dimensions() != 4)>
-    void backward_batch(H&& output, C& context) const {
-        static constexpr size_t C1 = base::C1; ///< The pooling first dimension
-        static constexpr size_t C2 = base::C2; ///< The pooling second dimension
-        static constexpr size_t C3 = base::C3; ///< The pooling third dimension
-
-        constexpr auto B = etl::decay_traits<H>::template dim<0>();
-
-        etl::reshape<B, base::I1, base::I2, base::I3>(output) = etl::max_pool_3d<C1, C2, C3>(context.errors);
+            etl::reshape<B, base::I1, base::I2, base::I3>(output) = etl::max_pool_3d<C1, C2, C3>(context.errors);
+        }
     }
 
     /*!

@@ -524,16 +524,13 @@ struct base_cd_trainer : base_trainer<RBM> {
     etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_a; ///< Beginning of the contrastive divergence chain (activations)
     etl::fast_matrix<weight, batch_size, rbm_t::num_hidden> p_h_s; ///< Beginning of the contrastive divergence chain (samples)
 
-    template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_disable_if(M)>
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm), q_global_t(0.0), q_local_t(0.0) {
-        static_assert(!rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
-    }
-
-    template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_enable_iff(M)>
-    base_cd_trainer(rbm_t& rbm)
-            : rbm(rbm), w_inc(0.0), b_inc(0.0), c_inc(0.0), q_global_t(0.0), q_local_t(0.0) {
-        static_assert(rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
+        if constexpr (rbm_layer_traits<rbm_t>::has_momentum()) {
+            w_inc = 0;
+            b_inc = 0;
+            c_inc = 0;
+        }
     }
 
     /*!
@@ -762,18 +759,6 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<!layer_traits<RBM>::
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> h2_a;                                 ///< The hidden activation at step K
     conditional_fast_matrix_t<(Persistent || N > 1), weight, batch_size, K, NH1, NH2> h2_s; ///< The hidden samples at step K
 
-    template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_disable_if(M)>
-    base_cd_trainer(rbm_t& rbm)
-            : rbm(rbm),
-              q_global_t(0.0),
-              q_local_t(0.0),
-              w_bias(0.0),
-              b_bias(0.0),
-              c_bias(0.0) {
-        static_assert(!rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
-    }
-
-    template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_enable_iff(M)>
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm),
               w_inc(0.0),
@@ -784,7 +769,11 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<!layer_traits<RBM>::
               w_bias(0.0),
               b_bias(0.0),
               c_bias(0.0) {
-        static_assert(rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
+        if constexpr (rbm_layer_traits<rbm_t>::has_momentum()) {
+            w_inc = 0;
+            b_inc = 0;
+            c_inc = 0;
+        }
     }
 
     /*!

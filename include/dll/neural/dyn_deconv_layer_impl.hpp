@@ -220,20 +220,14 @@ struct dyn_deconv_layer_impl final : neural_layer<dyn_deconv_layer_impl<Desc>, D
      * \param output The ETL expression into which write the output
      * \param context The training context
      */
-    template<typename H, typename C, cpp_enable_iff(etl::decay_traits<H>::dimensions() == 4)>
+    template <typename H, typename C>
     void backward_batch(H&& output, C& context) const {
-        output = etl::conv_4d_valid_flipped(context.errors, w);
-    }
-
-    /*!
-     * \brief Backpropagate the errors to the previous layers
-     * \param output The ETL expression into which write the output
-     * \param context The training context
-     */
-    template<typename H, typename C, cpp_enable_iff(etl::decay_traits<H>::dimensions() != 4)>
-    void backward_batch(H&& output, C& context) const {
-        const auto B = etl::dim<0>(output);
-        etl::reshape(output, B, nc, nv1, nv2) = etl::conv_4d_valid_flipped(context.errors, w);
+        if constexpr (etl::decay_traits<H>::dimensions() == 4) {
+            output = etl::conv_4d_valid_flipped(context.errors, w);
+        } else {
+            const auto B                          = etl::dim<0>(output);
+            etl::reshape(output, B, nc, nv1, nv2) = etl::conv_4d_valid_flipped(context.errors, w);
+        }
     }
 
     /*!

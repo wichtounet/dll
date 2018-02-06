@@ -134,26 +134,16 @@ struct conv_same_layer_impl final : neural_layer<conv_same_layer_impl<Desc>, Des
      * \param input A batch of input
      * \param output A batch of output that will be filled
      */
-    template <typename H1, typename V, cpp_enable_iff(etl::dimensions<V>() == 4)>
+    template <typename H1, typename V>
     void forward_batch(H1&& output, const V& v) const {
         dll::auto_timer timer("conv:forward_batch");
 
-        output = etl::ml::convolution_forward<1, 1, P1, P2>(v, w);
-        output = bias_add_4d(output, b);
-        output = f_activate<activation_function>(output);
-    }
+        if constexpr (etl::dimensions<V>() == 4) {
+            output = etl::ml::convolution_forward<1, 1, P1, P2>(v, w);
+        } else {
+            output = etl::ml::convolution_forward<1, 1, P1, P2>(etl::reshape(v, etl::dim<0>(v), NC, NV1, NV2), w);
+        }
 
-    /*!
-     * \brief Apply the layer to the given batch of input.
-     *
-     * \param input A batch of input
-     * \param output A batch of output that will be filled
-     */
-    template <typename H1, typename V, cpp_enable_iff(etl::dimensions<V>() == 2)>
-    void forward_batch(H1&& output, const V& v) const {
-        dll::auto_timer timer("conv:forward_batch");
-
-        output = etl::ml::convolution_forward<1, 1, P1, P2>(etl::reshape(v, etl::dim<0>(v), NC, NV1, NV2), w);
         output = bias_add_4d(output, b);
         output = f_activate<activation_function>(output);
     }

@@ -193,20 +193,15 @@ struct standard_rbm : public rbm_base<Parent, Desc> {
      * \param h_a The batch output to set
      * \param v_a The batch input
      */
-    template <typename H, typename V, cpp_enable_iff(etl::decay_traits<V>::dimensions() == 2)>
+    template <typename H, typename V>
     void batch_activate_hidden(H&& h_a, const V& v_a) const {
-        batch_std_activate_hidden<true, false>(std::forward<H>(h_a), std::forward<H>(h_a), v_a, v_a, as_derived().b, as_derived().w);
-    }
-
-    /*!
-     * \brief Compute the hidden representation from a given batch of input
-     *
-     * \param h_a The batch output to set
-     * \param v_a The batch input
-     */
-    template <typename H, typename V, cpp_enable_iff(etl::decay_traits<V>::dimensions() != 2)>
-    void batch_activate_hidden(H&& h_a, const V& v_a) const {
-        batch_activate_hidden(h_a, etl::reshape(v_a, etl::dim(h_a, 0), as_derived().input_size()));
+        if constexpr (etl::decay_traits<V>::dimensions() == 2) {
+            batch_std_activate_hidden<true, false>(std::forward<H>(h_a), std::forward<H>(h_a), v_a, v_a, as_derived().b, as_derived().w);
+        } else {
+            batch_std_activate_hidden<true, false>(std::forward<H>(h_a), std::forward<H>(h_a),
+                                                   etl::reshape(v_a, etl::dim(h_a, 0), as_derived().input_size()),
+                                                   etl::reshape(v_a, etl::dim(h_a, 0), as_derived().input_size()), as_derived().b, as_derived().w);
+        }
     }
 
     //Display functions
@@ -489,45 +484,44 @@ private:
         }
     }
 
-    template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W, cpp_enable_iff((etl::decay_traits<V>::dimensions() != 1))>
+    template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W>
     void std_activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V&, const B& b, const W& w) const {
-        auto r = reshape(v_a, as_derived().num_visible);
-        std_activate_hidden(h_a, h_s, r, r, b, w);
-    }
+        if constexpr (etl::decay_traits<V>::dimensions() == 1) {
+            dll::auto_timer timer("rbm:std:activate_hidden");
 
-    template <bool P = true, bool S = true, typename H1, typename H2, typename V, typename B, typename W, cpp_enable_iff((etl::decay_traits<V>::dimensions() == 1))>
-    static void std_activate_hidden(H1&& h_a, H2&& h_s, const V& v_a, const V&, const B& b, const W& w) {
-        dll::auto_timer timer("rbm:std:activate_hidden");
+            using namespace etl;
 
-        using namespace etl;
+            //Compute activation probabilities
+            H_PROBS(unit_type::BINARY, h_a = etl::sigmoid(b + (v_a * w)));
+            H_PROBS(unit_type::RELU, h_a = max(b + (v_a * w), 0.0));
+            H_PROBS(unit_type::RELU1, h_a = min(max(b + (v_a * w), 0.0), 1.0));
+            H_PROBS(unit_type::RELU6, h_a = min(max(b + (v_a * w), 0.0), 6.0));
+            H_PROBS(unit_type::SOFTMAX, h_a = stable_softmax(b + (v_a * w)));
 
-        //Compute activation probabilities
-        H_PROBS(unit_type::BINARY, h_a = etl::sigmoid(b + (v_a * w)));
-        H_PROBS(unit_type::RELU, h_a = max(b + (v_a * w), 0.0));
-        H_PROBS(unit_type::RELU1, h_a = min(max(b + (v_a * w), 0.0), 1.0));
-        H_PROBS(unit_type::RELU6, h_a = min(max(b + (v_a * w), 0.0), 6.0));
-        H_PROBS(unit_type::SOFTMAX, h_a = stable_softmax(b + (v_a * w)));
+            //Sample values from input
+            H_SAMPLE_PROBS(unit_type::BINARY, h_s = bernoulli(h_a));
+            H_SAMPLE_PROBS(unit_type::RELU, h_s = max(logistic_noise(b + (v_a * w)), 0.0));
+            H_SAMPLE_PROBS(unit_type::RELU1, h_s = min(max(ranged_noise(b + (v_a * w), 1.0), 0.0), 1.0));
+            H_SAMPLE_PROBS(unit_type::RELU6, h_s = min(max(ranged_noise(b + (v_a * w), 6.0), 0.0), 6.0));
+            H_SAMPLE_PROBS(unit_type::SOFTMAX, h_s = one_if_max(h_a));
 
-        //Sample values from input
-        H_SAMPLE_PROBS(unit_type::BINARY, h_s = bernoulli(h_a));
-        H_SAMPLE_PROBS(unit_type::RELU, h_s = max(logistic_noise(b + (v_a * w)), 0.0));
-        H_SAMPLE_PROBS(unit_type::RELU1, h_s = min(max(ranged_noise(b + (v_a * w), 1.0), 0.0), 1.0));
-        H_SAMPLE_PROBS(unit_type::RELU6, h_s = min(max(ranged_noise(b + (v_a * w), 6.0), 0.0), 6.0));
-        H_SAMPLE_PROBS(unit_type::SOFTMAX, h_s = one_if_max(h_a));
+            //Sample values from probs
+            H_SAMPLE_INPUT(unit_type::BINARY, h_s = bernoulli(etl::sigmoid(b + (v_a * w))));
+            H_SAMPLE_INPUT(unit_type::RELU, h_s = max(logistic_noise(b + (v_a * w)), 0.0));
+            H_SAMPLE_INPUT(unit_type::RELU1, h_s = min(max(ranged_noise(b + (v_a * w), 1.0), 0.0), 1.0));
+            H_SAMPLE_INPUT(unit_type::RELU6, h_s = min(max(ranged_noise(b + (v_a * w), 6.0), 0.0), 6.0));
+            H_SAMPLE_INPUT(unit_type::SOFTMAX, h_s = one_if_max(stable_softmax(b + (v_a * w))));
 
-        //Sample values from probs
-        H_SAMPLE_INPUT(unit_type::BINARY, h_s = bernoulli(etl::sigmoid(b + (v_a * w))));
-        H_SAMPLE_INPUT(unit_type::RELU, h_s = max(logistic_noise(b + (v_a * w)), 0.0));
-        H_SAMPLE_INPUT(unit_type::RELU1, h_s = min(max(ranged_noise(b + (v_a * w), 1.0), 0.0), 1.0));
-        H_SAMPLE_INPUT(unit_type::RELU6, h_s = min(max(ranged_noise(b + (v_a * w), 6.0), 0.0), 6.0));
-        H_SAMPLE_INPUT(unit_type::SOFTMAX, h_s = one_if_max(stable_softmax(b + (v_a * w))));
+            if (P) {
+                nan_check_deep(h_a);
+            }
 
-        if (P) {
-            nan_check_deep(h_a);
-        }
-
-        if (S) {
-            nan_check_deep(h_s);
+            if (S) {
+                nan_check_deep(h_s);
+            }
+        } else {
+            auto r = reshape(v_a, as_derived().num_visible);
+            std_activate_hidden(h_a, h_s, r, r, b, w);
         }
     }
 

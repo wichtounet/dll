@@ -76,22 +76,11 @@ private:
  * \param output The output
  * \param input The input
  */
-template <typename Input, typename Output, cpp_enable_iff(!etl::decay_traits<Output>::is_value || etl::all_fast<Output>)>
-void inherit_dim(Output& output, const Input& input) {
-    cpp_unused(output);
-    cpp_unused(input);
-    //Nothing to do, the output is fast (fixed dimensions)
-}
-
-/*!
- * \brief Make the output inherit the dimensions of the input, if
- * necessary
- * \param output The output
- * \param input The input
- */
-template <typename Input, typename Output, cpp_enable_iff(etl::decay_traits<Output>::is_value && !etl::all_fast<Output>)>
-void inherit_dim(Output& output, const Input& input) {
-    output.inherit_if_null(input);
+template <typename Input, typename Output>
+void inherit_dim([[maybe_unused]] Output& output, [[maybe_unused]] const Input& input) {
+    if constexpr (etl::decay_traits<Output>::is_value && !etl::is_fast<Output>){
+        output.inherit_if_null(input);
+    }
 }
 
 } //end of dll namespace

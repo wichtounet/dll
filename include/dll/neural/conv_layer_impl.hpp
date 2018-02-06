@@ -123,7 +123,7 @@ struct conv_layer_impl final : neural_layer<conv_layer_impl<Desc>, Desc> {
 
         char buffer[512];
 
-        if constexpr (activation_function == function::IDENTITY) {
+        if (activation_function == function::IDENTITY) {
             snprintf(buffer, 512, "Conv: %lux%lux%lu -> (%lux%lux%lu) -> %lux%lux%lu", NC, NV1, NV2, K, NW1, NW2, K, NH1, NH2);
         } else {
             snprintf(buffer, 512, "Conv: %lux%lux%lu -> (%lux%lux%lu) -> %s -> %lux%lux%lu", NC, NV1, NV2, K, NW1, NW2, to_string(activation_function).c_str(), K, NH1, NH2);
@@ -150,11 +150,15 @@ struct conv_layer_impl final : neural_layer<conv_layer_impl<Desc>, Desc> {
      * \param input A batch of input
      * \param output A batch of output that will be filled
      */
-    template <typename H1, typename V, cpp_enable_iff(etl::dimensions<V>() == 4)>
+    template <typename H1, typename V>
     void forward_batch(H1&& output, const V& v) const {
         dll::auto_timer timer("conv:forward_batch");
 
-        output = etl::ml::convolution_forward(v, w);
+        if constexpr (etl::dimensions<V>() == 4) {
+            output = etl::ml::convolution_forward(v, w);
+        } else {
+            output = etl::ml::convolution_forward(etl::reshape(v, etl::dim<0>(v), NC, NV1, NV2), w);
+        }
 
         if constexpr (!no_bias) {
             output = bias_add_4d(output, b);
@@ -165,26 +169,6 @@ struct conv_layer_impl final : neural_layer<conv_layer_impl<Desc>, Desc> {
         }
     }
 
-    /*!
-     * \brief Apply the layer to the given batch of input.
-     *
-     * \param input A batch of input
-     * \param output A batch of output that will be filled
-     */
-    template <typename H1, typename V, cpp_enable_iff(etl::dimensions<V>() != 4)>
-    void forward_batch(H1&& output, const V& v) const {
-        dll::auto_timer timer("conv:forward_batch");
-
-        output = etl::ml::convolution_forward(etl::reshape(v, etl::dim<0>(v), NC, NV1, NV2), w);
-
-        if constexpr (!no_bias) {
-            output = bias_add_4d(output, b);
-        }
-
-        if constexpr (activation_function != function::IDENTITY) {
-            output = f_activate<activation_function>(output);
-        }
-    }
 
     /*!
      * \brief Prepare one empty output for this layer
@@ -237,18 +221,15 @@ struct conv_layer_impl final : neural_layer<conv_layer_impl<Desc>, Desc> {
      * \param output The ETL expression into which write the output
      * \param context The training context
      */
-    template<typename H, typename C, cpp_enable_iff(etl::dimensions<H>() == 4)>
+    template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
         dll::auto_timer timer("conv:backward_batch");
 
-        output = etl::ml::convolution_backward(context.errors, w);
-    }
-
-    template<typename H, typename C, cpp_enable_iff(etl::dimensions<H>() == 3)>
-    void backward_batch(H&& output, C& context) const {
-        dll::auto_timer timer("conv:backward_batch");
-
-        etl::reshape(output, etl::dim<0>(output), NC, NV1, NV2) = etl::ml::convolution_backward(context.errors, w);
+        if constexpr (etl::dimensions<H>() == 4) {
+            output = etl::ml::convolution_backward(context.errors, w);
+        } else {
+            etl::reshape(output, etl::dim<0>(output), NC, NV1, NV2) = etl::ml::convolution_backward(context.errors, w);
+        }
     }
 
     /*!

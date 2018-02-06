@@ -126,32 +126,23 @@ struct deconv_layer_impl final : neural_layer<deconv_layer_impl<Desc>, Desc> {
      * \param input A batch of input
      * \param output A batch of output that will be filled
      */
-    template <typename H1, typename V, cpp_enable_iff(etl::decay_traits<H1>::is_fast)>
+    template <typename H1, typename V>
     void forward_batch(H1&& output, const V& v) const {
         output = etl::conv_4d_full_flipped(v, w);
 
-        static constexpr auto batch_size = etl::decay_traits<H1>::template dim<0>();
+        if constexpr (etl::decay_traits<H1>::is_fast) {
+            static constexpr auto batch_size = etl::decay_traits<H1>::template dim<0>();
 
-        auto b_rep = etl::force_temporary(etl::rep_l<batch_size>(etl::rep<NH1, NH2>(b)));
+            auto b_rep = etl::force_temporary(etl::rep_l<batch_size>(etl::rep<NH1, NH2>(b)));
 
-        output = f_activate<activation_function>(b_rep + output);
-    }
+            output = f_activate<activation_function>(b_rep + output);
+        } else {
+            auto batch_size = etl::dim<0>(output);
 
-    /*!
-     * \brief Apply the layer to the given batch of input.
-     *
-     * \param input A batch of input
-     * \param output A batch of output that will be filled
-     */
-    template <typename H1, typename V, cpp_disable_if(etl::decay_traits<H1>::is_fast)>
-    void forward_batch(H1&& output, const V& v) const {
-        output = etl::conv_4d_full_flipped(v, w);
+            auto b_rep = etl::force_temporary(etl::rep_l(etl::rep<NH1, NH2>(b), batch_size));
 
-        auto batch_size = etl::dim<0>(output);
-
-        auto b_rep = etl::force_temporary(etl::rep_l(etl::rep<NH1, NH2>(b), batch_size));
-
-        output = f_activate<activation_function>(b_rep + output);
+            output = f_activate<activation_function>(b_rep + output);
+        }
     }
 
     /*!
@@ -206,20 +197,14 @@ struct deconv_layer_impl final : neural_layer<deconv_layer_impl<Desc>, Desc> {
      * \param output The ETL expression into which write the output
      * \param context The training context
      */
-    template<typename H, typename C, cpp_enable_iff(etl::decay_traits<H>::dimensions() == 4)>
+    template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
-        output = etl::conv_4d_valid_flipped(context.errors, w);
-    }
-
-    /*!
-     * \brief Backpropagate the errors to the previous layers
-     * \param output The ETL expression into which write the output
-     * \param context The training context
-     */
-    template<typename H, typename C, cpp_enable_iff(etl::decay_traits<H>::dimensions() != 4)>
-    void backward_batch(H&& output, C& context) const {
-        static constexpr auto B = etl::decay_traits<H>::template dim<0>();
-        etl::reshape<B, NC, NV1, NV2>(output) = etl::conv_4d_valid_flipped(context.errors, w);
+        if constexpr (etl::decay_traits<H>::dimensions() == 4) {
+            output = etl::conv_4d_valid_flipped(context.errors, w);
+        } else {
+            static constexpr auto B               = etl::decay_traits<H>::template dim<0>();
+            etl::reshape<B, NC, NV1, NV2>(output) = etl::conv_4d_valid_flipped(context.errors, w);
+        }
     }
 
     /*!

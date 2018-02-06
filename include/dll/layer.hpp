@@ -152,23 +152,13 @@ struct layer {
      * \param output The output to fill
      * \param input The input to compute the representation from
      */
-    template <bool Train, typename Input, typename Output, cpp_enable_iff(Train)>
+    template <bool Train, typename Input, typename Output>
     void select_forward_one(Output&& output, const Input& input) const {
-        as_derived().train_forward_batch(batch_reshape(output), batch_reshape(input));
-    }
-
-    /*!
-     * \brief Compute the presentation for a given input, selecting train or
-     * test at compile-time with Train template parameter
-     *
-     * \tparam Train if true compute the train representation, otherwise the test representation
-     *
-     * \param output The output to fill
-     * \param input The input to compute the representation from
-     */
-    template <bool Train, typename Input, typename Output, cpp_enable_iff(!Train)>
-    void select_forward_one(Output&& output, const Input& input) const {
-        as_derived().test_forward_batch(batch_reshape(output), batch_reshape(input));
+        if constexpr (Train) {
+            as_derived().train_forward_batch(batch_reshape(output), batch_reshape(input));
+        } else {
+            as_derived().test_forward_batch(batch_reshape(output), batch_reshape(input));
+        }
     }
 
     // Functions to forward propagate several samples (collection) at a time
@@ -220,24 +210,13 @@ struct layer {
      * \param output The collection of output to fill
      * \param input The collection of input to compute the representation from
      */
-    template <bool Train, typename Input, typename Output, cpp_enable_iff(Train)>
+    template <bool Train, typename Input, typename Output>
     void select_forward_many(Output&& output, const Input& input) const {
-        train_forward_many(output, input);
-    }
-
-    /*!
-     * \brief Compute the presentation for a collection of inputs, selecting train or
-     * test at compile-time with Train template parameter
-     *
-     * \tparam Train if true compute the train representation,
-     * otherwise the test representation
-     *
-     * \param output The collection of output to fill
-     * \param input The collection of input to compute the representation from
-     */
-    template <bool Train, typename Input, typename Output, cpp_enable_iff(!Train)>
-    void select_forward_many(Output&& output, const Input& input) const {
-        test_forward_many(output, input);
+        if constexpr (Train) {
+            train_forward_many(output, input);
+        } else {
+            test_forward_many(output, input);
+        }
     }
 
     // Functions to propagate one batch at time
@@ -336,24 +315,13 @@ struct layer {
      * \param output The output batch to fill
      * \param input The input batch to compute the representation from
      */
-    template <bool Train, typename Input, typename Output, cpp_enable_iff(Train)>
+    template <bool Train, typename Input, typename Output>
     void select_forward_batch(Output&& output, const Input& input) const {
-        train_forward_batch(output, input);
-    }
-
-    /*!
-     * \brief Compute the presentation for a batch of inputs, selecting train or
-     * test at compile-time with Train template parameter
-     *
-     * \tparam Train if true compute the train representation,
-     * otherwise the test representation
-     *
-     * \param output The output batch to fill
-     * \param input The input batch to compute the representation from
-     */
-    template <bool Train, typename Input, typename Output, cpp_enable_iff(!Train)>
-    void select_forward_batch(Output&& output, const Input& input) const {
-        test_forward_batch(output, input);
+        if constexpr (Train) {
+            train_forward_batch(output, input);
+        } else {
+            test_forward_batch(output, input);
+        }
     }
 
     // Prepare function
@@ -378,24 +346,22 @@ struct layer {
         return as_derived().template prepare_one_output<Input>();
     }
 
-    template <bool Train, typename Input, cpp_enable_iff(Train)>
+    template <bool Train, typename Input>
     auto select_prepare_output(size_t samples) const {
-        return as_derived().template prepare_train_output<Input>(samples);
+        if constexpr (Train) {
+            return as_derived().template prepare_train_output<Input>(samples);
+        } else {
+            return as_derived().template prepare_test_output<Input>(samples);
+        }
     }
 
-    template <bool Train, typename Input, cpp_enable_iff(!Train)>
-    auto select_prepare_output(size_t samples) const {
-        return as_derived().template prepare_test_output<Input>(samples);
-    }
-
-    template <bool Train, typename Input, cpp_enable_iff(Train)>
+    template <bool Train, typename Input>
     auto select_prepare_one_output() const {
-        return as_derived().template prepare_one_train_output<Input>();
-    }
-
-    template <bool Train, typename Input, cpp_enable_iff(!Train)>
-    auto select_prepare_one_output() const {
-        return as_derived().template prepare_one_test_output<Input>();
+        if constexpr (Train) {
+            return as_derived().template prepare_one_train_output<Input>();
+        } else {
+            return as_derived().template prepare_one_test_output<Input>();
+        }
     }
 
     //CG context

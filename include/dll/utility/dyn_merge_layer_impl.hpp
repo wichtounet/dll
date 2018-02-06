@@ -176,20 +176,19 @@ struct dyn_merge_layer_impl <dyn_merge_layer_desc<D, Layers...>> final : layer<d
         });
     }
 
-    template <typename Input, size_t I, cpp_enable_iff(I == D)>
+    template <typename Input, size_t I>
     size_t get_sub_dim() const {
-        size_t v = 0;
+        if constexpr (I == D) {
+            size_t v = 0;
 
-        cpp::for_each(layers, [&v](auto& layer){
-            v += etl::dim<I>(layer.template prepare_one_output<Input>());
-        });
+            cpp::for_each(layers, [&v](auto& layer) {
+                v += etl::dim<I>(layer.template prepare_one_output<Input>());
+            });
 
-        return v;
-    }
-
-    template <typename Input, size_t I, cpp_disable_iff(I == D)>
-    size_t get_sub_dim() const {
-        return etl::dim<I>(std::get<0>(layers).template prepare_one_output<Input>());
+            return v;
+        } else {
+            return etl::dim<I>(std::get<0>(layers).template prepare_one_output<Input>());
+        }
     }
 
     template <typename Input, size_t... I>

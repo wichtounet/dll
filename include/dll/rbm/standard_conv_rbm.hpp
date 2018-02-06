@@ -105,22 +105,17 @@ struct standard_conv_rbm : public rbm_base<Parent, Desc> {
      * \param h_a The output activations
      * \param input The batch of input
      */
-    template <typename V, typename H, cpp_enable_iff(etl::dimensions<V>() == 4)>
-    void batch_activate_hidden(H& h_a, const V& input) const {
-        as_derived().template batch_activate_hidden<true, false>(h_a, h_a, input, input);
-    }
-
-    /*!
-     * \brief Batch activation of inputs
-     * \param h_a The output activations
-     * \param input The batch of input
-     */
-    template <typename V, typename H, cpp_enable_iff(etl::dimensions<V>() == 2)>
+    template <typename V, typename H>
     void batch_activate_hidden(H& h_a, const V& input) const {
         decltype(auto) rbm = as_derived();
-        rbm.template batch_activate_hidden<true, false>(h_a, h_a,
-            etl::reshape(input, etl::dim<0>(input), get_nc(rbm), get_nv1(rbm), get_nv2(rbm)),
-            etl::reshape(input, etl::dim<0>(input), get_nc(rbm), get_nv1(rbm), get_nv2(rbm)));
+
+        if constexpr (etl::dimensions<V>() == 4) {
+            rbm.template batch_activate_hidden<true, false>(h_a, h_a, input, input);
+        } else {
+            rbm.template batch_activate_hidden<true, false>(h_a, h_a,
+                                                            etl::reshape(input, etl::dim<0>(input), get_nc(rbm), get_nv1(rbm), get_nv2(rbm)),
+                                                            etl::reshape(input, etl::dim<0>(input), get_nc(rbm), get_nv1(rbm), get_nv2(rbm)));
+        }
     }
 
     /*!

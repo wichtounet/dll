@@ -22,59 +22,27 @@ namespace dll {
  * \param expr The expression to reshape
  * \return the reshaped expression
  */
-template<typename Expr, cpp_enable_iff(etl::all_fast<Expr> && etl::dimensions<Expr>() == 1)>
+template<typename Expr>
 decltype(auto) batch_reshape(Expr&& expr){
-    return etl::reshape<1, etl::dim<0, Expr>()>(expr);
-}
+    if constexpr (etl::is_fast<Expr>) {
+        if constexpr (etl::dimensions<Expr>() == 1) {
+            return etl::reshape<1, etl::dim<0, Expr>()>(expr);
+        } else if constexpr (etl::dimensions<Expr>() == 2) {
+            return etl::reshape<1, etl::dim<0, Expr>(), etl::dim<1, Expr>()>(expr);
+        } else if constexpr (etl::dimensions<Expr>() == 3) {
+            return etl::reshape<1, etl::dim<0, Expr>(), etl::dim<1, Expr>(), etl::dim<2, Expr>()>(expr);
+        }
+    } else {
+        if constexpr (etl::dimensions<Expr>() == 1) {
+            return etl::reshape(expr, 1, etl::dim<0>(expr));
+        } else if constexpr (etl::dimensions<Expr>() == 2) {
+            return etl::reshape(expr, 1, etl::dim<0>(expr), etl::dim<1>(expr));
+        } else if constexpr (etl::dimensions<Expr>() == 3) {
+            return etl::reshape(expr, 1, etl::dim<0>(expr), etl::dim<1>(expr), etl::dim<2>(expr));
+        }
+    }
 
-/*!
- * \brief Reshape the given expression into a batch (1 sample)
- * \param expr The expression to reshape
- * \return the reshaped expression
- */
-template<typename Expr, cpp_enable_iff(etl::all_fast<Expr> && etl::dimensions<Expr>() == 2)>
-decltype(auto) batch_reshape(Expr&& expr){
-    return etl::reshape<1, etl::dim<0, Expr>(), etl::dim<1, Expr>()>(expr);
-}
-
-/*!
- * \brief Reshape the given expression into a batch (1 sample)
- * \param expr The expression to reshape
- * \return the reshaped expression
- */
-template<typename Expr, cpp_enable_iff(etl::all_fast<Expr> && etl::dimensions<Expr>() == 3)>
-decltype(auto) batch_reshape(Expr&& expr){
-    return etl::reshape<1, etl::dim<0, Expr>(), etl::dim<1, Expr>(), etl::dim<2, Expr>()>(expr);
-}
-
-/*!
- * \brief Reshape the given expression into a batch (1 sample)
- * \param expr The expression to reshape
- * \return the reshaped expression
- */
-template<typename Expr, cpp_enable_iff(!etl::all_fast<Expr> && etl::dimensions<Expr>() == 1)>
-decltype(auto) batch_reshape(Expr&& expr){
-    return etl::reshape(expr, 1, etl::dim<0>(expr));
-}
-
-/*!
- * \brief Reshape the given expression into a batch (1 sample)
- * \param expr The expression to reshape
- * \return the reshaped expression
- */
-template<typename Expr, cpp_enable_iff(!etl::all_fast<Expr> && etl::dimensions<Expr>() == 2)>
-decltype(auto) batch_reshape(Expr&& expr){
-    return etl::reshape(expr, 1, etl::dim<0>(expr), etl::dim<1>(expr));
-}
-
-/*!
- * \brief Reshape the given expression into a batch (1 sample)
- * \param expr The expression to reshape
- * \return the reshaped expression
- */
-template<typename Expr, cpp_enable_iff(!etl::all_fast<Expr> && etl::dimensions<Expr>() == 3)>
-decltype(auto) batch_reshape(Expr&& expr){
-    return etl::reshape(expr, 1, etl::dim<0>(expr), etl::dim<1>(expr), etl::dim<2>(expr));
+    cpp_unreachable("Invalid selection in batch_reshape");
 }
 
 } //end of dll namespace

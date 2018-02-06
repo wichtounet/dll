@@ -66,16 +66,6 @@ struct rbm_trainer {
     rbm_trainer(init_watcher_t /*init*/, Arg... args)
             : watcher(args...) {}
 
-    template <typename Generator, cpp_enable_if_cst(rbm_layer_traits<rbm_t>::init_weights())>
-    static void init_weights(RBM& rbm, Generator& generator) {
-        rbm.init_weights(generator);
-    }
-
-    template <typename Generator, cpp_disable_if_cst(rbm_layer_traits<rbm_t>::init_weights())>
-    static void init_weights(RBM&, Generator&) {
-        //NOP
-    }
-
     static constexpr size_t batch_size = RBM::batch_size; ///< The batch size for pretraining
 
     size_t total_batches  = 0;   ///< The total number of batches
@@ -135,7 +125,9 @@ struct rbm_trainer {
         //Some RBM may init weights based on the training data
         //Note: This can't be done in init_training, since it will
         //sometimes be called with the wrong input values
-        init_weights(rbm, generator);
+        if constexpr (rbm_layer_traits<rbm_t>::init_weights()){
+            rbm.init_weights(generator);
+        }
 
         //Allocate the trainer
         auto trainer = get_trainer(rbm);

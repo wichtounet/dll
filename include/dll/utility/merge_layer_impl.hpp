@@ -196,16 +196,9 @@ struct merge_layer_impl <merge_layer_desc<D, Layers...>> final : layer<merge_lay
         return output_t{samples};
     }
 
-    template<size_t I, typename DynLayer, cpp_enable_iff(I < n_layers)>
-    static void dyn_init(DynLayer& dyn){
-        cpp::nth_type_t<I, Layers...>::dyn_init(std::get<I>(dyn.layers));
-
-        dyn_init<I+1>(dyn);
-    }
-
-    template<size_t I, typename DynLayer, cpp_enable_iff(I == n_layers)>
-    static void dyn_init(DynLayer& dyn){
-        cpp_unused(dyn);
+    template<typename DynLayer, size_t... I>
+    static void dyn_init(DynLayer& dyn, std::index_sequence<I...> /* unused */){
+        (cpp::nth_type_t<I, Layers...>::dyn_init(std::get<I>(dyn.layers)), ...);
     }
 
     /*!
@@ -216,7 +209,7 @@ struct merge_layer_impl <merge_layer_desc<D, Layers...>> final : layer<merge_lay
      */
     template<typename DynLayer>
     static void dyn_init(DynLayer& dyn){
-        dyn_init<0>(dyn);
+        dyn_init(dyn, std::make_index_sequence<n_layers>());
     }
 
     /*!

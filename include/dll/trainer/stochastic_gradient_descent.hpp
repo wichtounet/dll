@@ -836,24 +836,22 @@ struct sgd_trainer {
         });
     }
 
-    template <typename Context, cpp_disable_iff(is_group_layer<typename Context::layer_t>)>
+    template <typename Context>
     static auto& get_output(Context& context) {
-        return context.output;
+        if constexpr (is_group_layer<typename Context::layer_t>) {
+            return get_output(std::get<Context::n_layers - 1>(context.sub_contexts));
+        } else {
+            return context.output;
+        }
     }
 
-    template <typename Context, cpp_enable_iff(is_group_layer<typename Context::layer_t>)>
-    static auto& get_output(Context& context) {
-        return get_output(std::get<Context::n_layers - 1>(context.sub_contexts));
-    }
-
-    template <typename Context, cpp_disable_iff(is_group_layer<typename Context::layer_t>)>
+    template <typename Context>
     static auto& get_errors(Context& context) {
-        return context.errors;
-    }
-
-    template <typename Context, cpp_enable_iff(is_group_layer<typename Context::layer_t>)>
-    static auto& get_errors(Context& context) {
-        return get_errors(std::get<Context::n_layers - 1>(context.sub_contexts));
+        if constexpr (is_group_layer < typename Context::layer_t>) {
+            return get_errors(std::get<Context::n_layers - 1>(context.sub_contexts));
+        } else {
+            return context.errors;
+        }
     }
 
     //TODO

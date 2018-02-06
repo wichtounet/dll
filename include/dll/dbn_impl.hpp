@@ -732,7 +732,7 @@ public:
      * \brief Pretrain the network by training all layers in an unsupervised
      * manner, the network will learn to reconstruct noisy input.
      */
-    template <typename Generator, cpp_enable_if(is_generator<Generator>)>
+    template <typename Generator, cpp_enable_iff(is_generator<Generator>)>
     void pretrain_denoising(Generator& generator, size_t max_epochs) {
         static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
 
@@ -954,25 +954,14 @@ public:
      *
      * \return The train representation of the LS layer forwarded from L
      */
-    template <size_t LS, size_t L, typename Input, cpp_enable_iff((L != LS))>
+    template <size_t LS, size_t L, typename Input>
     decltype(auto) train_forward_batch_impl(Input&& sample) {
-        decltype(auto) next = layer_get<L>().train_forward_batch(sample);
-        return train_forward_batch_impl<LS, L+1>(next);
-    }
-
-    /*
-     * \brief Return the train representation for the given input batch.
-     *
-     * \tparam LS The layer from which the representation is extracted
-     * \tparam L The layer to which the input is given
-     *
-     * \param sample The input batch to the layer L
-     *
-     * \return The train representation of the LS layer forwarded from L
-     */
-    template <size_t LS, size_t L, typename Input, cpp_enable_iff((L == LS))>
-    decltype(auto) train_forward_batch_impl(Input&& sample) {
-        return layer_get<L>().train_forward_batch(sample);
+        if constexpr (L != LS) {
+            decltype(auto) next = layer_get<L>().train_forward_batch(sample);
+            return train_forward_batch_impl<LS, L + 1>(next);
+        } else {
+            return layer_get<L>().train_forward_batch(sample);
+        }
     }
 
     /*
@@ -1035,25 +1024,14 @@ public:
      *
      * \return The test representation of the LS layer forwarded from L
      */
-    template <size_t LS, size_t L, typename Input, cpp_enable_iff((L != LS))>
+    template <size_t LS, size_t L, typename Input>
     decltype(auto) test_forward_one_impl(Input&& sample) const {
-        decltype(auto) next = layer_get<L>().test_forward_one(sample);
-        return test_forward_one_impl<LS, L+1>(next);
-    }
-
-    /*
-     * \brief Return the test representation for the given input sample.
-     *
-     * \tparam LS The layer from which the representation is extracted
-     * \tparam L The layer to which the input is given
-     *
-     * \param sample The input sample to the layer L
-     *
-     * \return The test representation of the LS layer forwarded from L
-     */
-    template <size_t LS, size_t L, typename Input, cpp_enable_iff((L == LS))>
-    decltype(auto) test_forward_one_impl(Input&& sample) const {
-        return layer_get<L>().test_forward_one(sample);
+        if constexpr (L != LS) {
+            decltype(auto) next = layer_get<L>().test_forward_one(sample);
+            return test_forward_one_impl<LS, L + 1>(next);
+        } else {
+            return layer_get<L>().test_forward_one(sample);
+        }
     }
 
     /*
@@ -1066,25 +1044,14 @@ public:
      *
      * \return The train representation of the LS layer forwarded from L
      */
-    template <size_t LS, size_t L, typename Input, cpp_enable_iff((L != LS))>
+    template <size_t LS, size_t L, typename Input>
     decltype(auto) train_forward_one_impl(Input&& sample) {
-        decltype(auto) next = layer_get<L>().train_forward_one(sample);
-        return train_forward_one_impl<LS, L+1>(next);
-    }
-
-    /*
-     * \brief Return the train representation for the given input sample.
-     *
-     * \tparam LS The layer from which the representation is extracted
-     * \tparam L The layer to which the input is given
-     *
-     * \param sample The input sample to the layer L
-     *
-     * \return The train representation of the LS layer forwarded from L
-     */
-    template <size_t LS, size_t L, typename Input, cpp_enable_iff((L == LS))>
-    decltype(auto) train_forward_one_impl(Input&& sample) {
-        return layer_get<L>().train_forward_one(sample);
+        if constexpr (L != LS) {
+            decltype(auto) next = layer_get<L>().train_forward_one(sample);
+            return train_forward_one_impl<LS, L + 1>(next);
+        } else {
+            return layer_get<L>().train_forward_one(sample);
+        }
     }
 
     /*
@@ -1147,7 +1114,7 @@ public:
      *
      * \return The test representation of the LS layer forwarded from L
      */
-    template <size_t LS, size_t L, typename Inputs, cpp_enable_iff((L != LS))>
+    template <size_t LS, size_t L, typename Inputs>
     decltype(auto) test_forward_many_impl(Inputs&& samples) const {
         decltype(auto) layer = layer_get<L>();
 
@@ -1155,28 +1122,11 @@ public:
 
         layer.test_forward_many(next, samples);
 
-        return test_forward_many_impl<LS, L+1>(next);
-    }
-
-    /*
-     * \brief Return the test representation for the given collection of inputs.
-     *
-     * \tparam LS The layer from which the representation is extracted
-     * \tparam L The layer to which the input is given
-     *
-     * \param samples The collection of inputs to the layer L
-     *
-     * \return The test representation of the LS layer forwarded from L
-     */
-    template <size_t LS, size_t L, typename Inputs, cpp_enable_iff((L == LS))>
-    decltype(auto) test_forward_many_impl(Inputs&& samples) const {
-        decltype(auto) layer = layer_get<L>();
-
-        auto out = prepare_many_ready_output(layer, samples[0], samples.size());
-
-        layer.test_forward_many(out, samples);
-
-        return out;
+        if constexpr (L != LS) {
+            return test_forward_many_impl<LS, L + 1>(next);
+        } else {
+            return next;
+        }
     }
 
     /*
@@ -1189,7 +1139,7 @@ public:
      *
      * \return The train representation of the LS layer forwarded from L
      */
-    template <size_t LS, size_t L, typename Inputs, cpp_enable_iff((L != LS))>
+    template <size_t LS, size_t L, typename Inputs>
     decltype(auto) train_forward_many_impl(Inputs&& samples) {
         decltype(auto) layer = layer_get<L>();
 
@@ -1197,28 +1147,11 @@ public:
 
         layer.train_forward_many(next, samples);
 
-        return train_forward_many_impl<LS, L+1>(next);
-    }
-
-    /*
-     * \brief Return the train representation for the given collection of inputs.
-     *
-     * \tparam LS The layer from which the representation is extracted
-     * \tparam L The layer to which the input is given
-     *
-     * \param samples The collection of inputs to the layer L
-     *
-     * \return The train representation of the LS layer forwarded from L
-     */
-    template <size_t LS, size_t L, typename Inputs, cpp_enable_iff((L == LS))>
-    decltype(auto) train_forward_many_impl(Inputs&& samples) {
-        decltype(auto) layer = layer_get<L>();
-
-        auto out = prepare_many_ready_output(layer, samples[0], samples.size());
-
-        layer.train_forward_many(out, samples);
-
-        return out;
+        if constexpr (L != LS) {
+            return train_forward_many_impl<LS, L + 1>(next);
+        } else {
+            return next;
+        }
     }
 
     /*
@@ -1282,45 +1215,22 @@ public:
      *
      * \return The test representation of the LS layer forwarded from L
      */
-    template <size_t LS, size_t L, typename Iterator, cpp_enable_iff((L != LS))>
+    template <size_t LS, size_t L, typename Iterator>
     decltype(auto) test_forward_many_impl(const Iterator& first, const Iterator& last) const {
         decltype(auto) layer = layer_get<L>();
 
-        auto n = std::distance(first, last);
-
+        auto n    = std::distance(first, last);
         auto next = prepare_many_ready_output(layer, *first, n);
 
         cpp::foreach_i(first, last, [&](auto& sample, size_t i) {
             layer.test_forward_one(next[i], sample);
         });
 
-        return test_forward_many_impl<LS, L+1>(next);
-    }
-
-    /*
-     * \brief Return the test representation for the given collection of inputs.
-     *
-     * \tparam LS The layer from which the representation is extracted
-     * \tparam L The layer to which the input is given
-     *
-     * \param first Iterator to the first element of the collection of inputs
-     * \param last Iterator to the past-the-end element of the collection of inputs
-     *
-     * \return The test representation of the LS layer forwarded from L
-     */
-    template <size_t LS, size_t L, typename Iterator, cpp_enable_iff((L == LS))>
-    decltype(auto) test_forward_many_impl(const Iterator& first, const Iterator& last) const {
-        decltype(auto) layer = layer_get<L>();
-
-        auto n = std::distance(first, last);
-
-        auto out = prepare_many_ready_output(layer, *first, n);
-
-        cpp::foreach_i(first, last, [&](auto& sample, size_t i) {
-            layer.test_forward_one(out[i], sample);
-        });
-
-        return out;
+        if constexpr (L != LS) {
+            return test_forward_many_impl<LS, L + 1>(next);
+        } else {
+            return next;
+        }
     }
 
     /*
@@ -1334,7 +1244,7 @@ public:
      *
      * \return The train representation of the LS layer forwarded from L
      */
-    template <size_t LS, size_t L, typename Iterator, cpp_enable_iff((L != LS))>
+    template <size_t LS, size_t L, typename Iterator>
     decltype(auto) train_forward_many_impl(const Iterator& first, const Iterator& last) {
         decltype(auto) layer = layer_get<L>();
 
@@ -1346,33 +1256,11 @@ public:
             layer.train_forward_one(next[i], sample);
         });
 
-        return train_forward_many_impl<LS, L+1>(next);
-    }
-
-    /*
-     * \brief Return the train representation for the given collection of inputs.
-     *
-     * \tparam LS The layer from which the representation is extracted
-     * \tparam L The layer to which the input is given
-     *
-     * \param first Iterator to the first element of the collection of inputs
-     * \param last Iterator to the past-the-end element of the collection of inputs
-     *
-     * \return The train representation of the LS layer forwarded from L
-     */
-    template <size_t LS, size_t L, typename Iterator, cpp_enable_iff((L == LS))>
-    decltype(auto) train_forward_many_impl(const Iterator& first, const Iterator& last) {
-        decltype(auto) layer = layer_get<L>();
-
-        auto n = std::distance(first, last);
-
-        auto out = prepare_many_ready_output(layer, *first, n);
-
-        cpp::foreach_i(first, last, [&](auto& sample, size_t i) {
-            layer.train_forward_one(out[i], sample);
-        });
-
-        return out;
+        if constexpr (L != LS) {
+            return train_forward_many_impl<LS, L + 1>(next);
+        } else {
+            return next;
+        }
     }
 
     /*
@@ -2146,20 +2034,15 @@ public:
     }
 
 public:
-    template <size_t I, size_t S, typename Input, cpp_enable_iff(I != S)>
+    template <size_t I, size_t S, typename Input>
     void full_activation_probabilities(const Input& input, full_output_t& result, size_t& i) const {
         auto output = forward_one<I, I>(input);
-        for(auto& feature : output){
+        for (auto& feature : output) {
             result[i++] = feature;
         }
-        full_activation_probabilities<I+1, S>(output, result, i);
-    }
 
-    template <size_t I, size_t S, typename Input, cpp_enable_iff(I == S)>
-    void full_activation_probabilities(const Input& input, full_output_t& result, size_t& i) const {
-        auto output = forward_one<I, I>(input);
-        for(auto& feature : output){
-            result[i++] = feature;
+        if constexpr (I != S) {
+            full_activation_probabilities<I + 1, S>(output, result, i);
         }
     }
 
@@ -2239,14 +2122,13 @@ public:
 #ifdef DLL_SVM_SUPPORT
 
 private:
-    template <typename Input, typename DBN = this_type, cpp_enable_iff(dbn_traits<DBN>::concatenate())>
+    template <typename Input>
     auto get_final_activation_probabilities(const Input& sample) const {
-        return full_activation_probabilities(sample);
-    }
-
-    template <typename Input, typename DBN = this_type, cpp_disable_if(dbn_traits<DBN>::concatenate())>
-    auto get_final_activation_probabilities(const Input& sample) const {
-        return forward_one(sample);
+        if constexpr (dbn_traits<this_type>::concatenate()) {
+            return full_activation_probabilities(sample);
+        } else {
+            return forward_one(sample);
+        }
     }
 
 public:
@@ -2412,132 +2294,128 @@ private:
         pretrain_layer<I + 2>(*next_generator, watcher, max_epochs);
     }
 
-    template <size_t I, typename Generator, cpp_enable_iff((I < layers))>
+    template <size_t I, typename Generator>
     void pretrain_layer(Generator& generator, watcher_t& watcher, size_t max_epochs) {
-        using layer_t = layer_type<I>;
+        if constexpr (I < layers) {
+            using layer_t = layer_type<I>;
 
-        decltype(auto) layer = layer_get<I>();
+            decltype(auto) layer = layer_get<I>();
 
-        watcher.pretrain_layer(*this, I, layer, generator.size());
+            watcher.pretrain_layer(*this, I, layer, generator.size());
 
-        if constexpr (layer_traits<layer_t>::is_pretrained()) {
-            // Train the RBM
-            layer.template train<!watcher_t::ignore_sub,               //Enable the RBM Watcher or not
-                                    dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
-                (generator, max_epochs);
-        }
-
-        //When the next layer is a pooling layer, a lot of memory can be saved by directly computing
-        //the activations of two layers at once
-        if constexpr (inline_next<I + 1>::value) {
-            this->template inline_layer_pretrain<I>(generator, watcher, max_epochs);
-        }
-
-        if constexpr (train_next<I + 1>::value && !inline_next<I + 1>::value) {
-            // Reset correctly the generator
-            generator.reset();
-            generator.set_test();
-
-            // Need one output in order to create the generator
-            auto one = prepare_one_ready_output(layer, generator.data_batch()(0));
-
-            // Prepare a generator to hold the data
-            auto next_generator = prepare_generator(
-                one, one,
-                generator.size(), output_size(),
-                get_rbm_ingenerator_inner_desc());
-
-            next_generator->set_safe();
-
-            // Compute the input of the next layer
-            // using batch activation
-
-            size_t i = 0;
-            while(generator.has_next_batch()){
-                auto next_batch = layer.train_forward_batch(generator.data_batch());
-
-                next_generator->set_data_batch(i, next_batch);
-                next_generator->set_label_batch(i, next_batch);
-
-                i += etl::dim<0>(next_batch);
-
-                generator.next_batch();
+            if constexpr (layer_traits<layer_t>::is_pretrained()) {
+                // Train the RBM
+                layer.template train<!watcher_t::ignore_sub,               //Enable the RBM Watcher or not
+                                     dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
+                    (generator, max_epochs);
             }
 
-            // Release the memory if possible
-            generator.clear();
+            //When the next layer is a pooling layer, a lot of memory can be saved by directly computing
+            //the activations of two layers at once
+            if constexpr (inline_next<I + 1>::value) {
+                this->template inline_layer_pretrain<I>(generator, watcher, max_epochs);
+            }
 
-            //Pass the output to the next layer
-            this->template pretrain_layer<I + 1>(*next_generator, watcher, max_epochs);
+            if constexpr (train_next<I + 1>::value && !inline_next<I + 1>::value) {
+                // Reset correctly the generator
+                generator.reset();
+                generator.set_test();
+
+                // Need one output in order to create the generator
+                auto one = prepare_one_ready_output(layer, generator.data_batch()(0));
+
+                // Prepare a generator to hold the data
+                auto next_generator = prepare_generator(
+                    one, one,
+                    generator.size(), output_size(),
+                    get_rbm_ingenerator_inner_desc());
+
+                next_generator->set_safe();
+
+                // Compute the input of the next layer
+                // using batch activation
+
+                size_t i = 0;
+                while (generator.has_next_batch()) {
+                    auto next_batch = layer.train_forward_batch(generator.data_batch());
+
+                    next_generator->set_data_batch(i, next_batch);
+                    next_generator->set_label_batch(i, next_batch);
+
+                    i += etl::dim<0>(next_batch);
+
+                    generator.next_batch();
+                }
+
+                // Release the memory if possible
+                generator.clear();
+
+                //Pass the output to the next layer
+                this->template pretrain_layer<I + 1>(*next_generator, watcher, max_epochs);
+            }
         }
     }
-
-    //Stop template recursion
-    template <size_t I, typename Generator, cpp_enable_iff((I == layers))>
-    void pretrain_layer(Generator&, watcher_t&, size_t) {}
 
     /* Pretrain with denoising */
 
-    template <size_t I, typename Generator, cpp_enable_iff((I < layers))>
+    template <size_t I, typename Generator>
     void pretrain_layer_denoising(Generator& generator, watcher_t& watcher, size_t max_epochs) {
-        using layer_t = layer_type<I>;
+        if constexpr (I < layers) {
+            using layer_t = layer_type<I>;
 
-        decltype(auto) layer = layer_get<I>();
+            decltype(auto) layer = layer_get<I>();
 
-        watcher.pretrain_layer(*this, I, layer, generator.size());
+            watcher.pretrain_layer(*this, I, layer, generator.size());
 
-        if constexpr (layer_traits<layer_t>::is_pretrained()) {
-            // Train the RBM
-            layer.template train_denoising<
-                !watcher_t::ignore_sub,               //Enable the RBM Watcher or not
-                dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
-                (generator, max_epochs);
-        }
-
-        if constexpr (train_next<I + 1>::value) {
-            // Reset correctly the generator
-            generator.reset();
-            generator.set_test();
-
-            // Need one output in order to create the generator
-            auto one_n = prepare_one_ready_output(layer, generator.data_batch()(0));
-            auto one_c = prepare_one_ready_output(layer, generator.label_batch()(0));
-
-            // Prepare a generator to hold the data
-            auto next_generator = prepare_generator(
-                one_n, one_c,
-                generator.size(), output_size(),
-                get_rbm_ingenerator_inner_desc());
-
-            next_generator->set_safe();
-
-            // Compute the input of the next layer
-            // using batch activation
-
-            size_t i = 0;
-            while(generator.has_next_batch()){
-                auto next_batch_n = layer.train_forward_batch(generator.data_batch());
-                auto next_batch_c = layer.train_forward_batch(generator.label_batch());
-
-                next_generator->set_data_batch(i, next_batch_n);
-                next_generator->set_label_batch(i, next_batch_c);
-
-                i += etl::dim<0>(next_batch_n);
-
-                generator.next_batch();
+            if constexpr (layer_traits<layer_t>::is_pretrained()) {
+                // Train the RBM
+                layer.template train_denoising<
+                    !watcher_t::ignore_sub,               //Enable the RBM Watcher or not
+                    dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
+                    (generator, max_epochs);
             }
 
-            // Release the memory if possible
-            generator.clear();
+            if constexpr (train_next<I + 1>::value) {
+                // Reset correctly the generator
+                generator.reset();
+                generator.set_test();
 
-            //In the standard case, pass the output to the next layer
-            pretrain_layer_denoising<I + 1>(*next_generator, watcher, max_epochs);
+                // Need one output in order to create the generator
+                auto one_n = prepare_one_ready_output(layer, generator.data_batch()(0));
+                auto one_c = prepare_one_ready_output(layer, generator.label_batch()(0));
+
+                // Prepare a generator to hold the data
+                auto next_generator = prepare_generator(
+                    one_n, one_c,
+                    generator.size(), output_size(),
+                    get_rbm_ingenerator_inner_desc());
+
+                next_generator->set_safe();
+
+                // Compute the input of the next layer
+                // using batch activation
+
+                size_t i = 0;
+                while (generator.has_next_batch()) {
+                    auto next_batch_n = layer.train_forward_batch(generator.data_batch());
+                    auto next_batch_c = layer.train_forward_batch(generator.label_batch());
+
+                    next_generator->set_data_batch(i, next_batch_n);
+                    next_generator->set_label_batch(i, next_batch_c);
+
+                    i += etl::dim<0>(next_batch_n);
+
+                    generator.next_batch();
+                }
+
+                // Release the memory if possible
+                generator.clear();
+
+                //In the standard case, pass the output to the next layer
+                pretrain_layer_denoising<I + 1>(*next_generator, watcher, max_epochs);
+            }
         }
     }
-
-    //Stop template recursion
-    template <size_t I, typename Generator, cpp_enable_iff((I == layers))>
-    void pretrain_layer_denoising(Generator&, watcher_t&, size_t) {}
 
     /* Pretrain in batch mode */
 
@@ -2826,15 +2704,14 @@ private:
 
 #ifdef DLL_SVM_SUPPORT
 
-    template <typename Samples, typename Input, typename DBN = this_type, cpp_enable_iff(dbn_traits<DBN>::concatenate())>
+    template <typename Samples, typename Input>
     void add_activation_probabilities(Samples& result, const Input& sample) {
-        result.emplace_back(full_output_size());
-        full_activation_probabilities(sample, result.back());
-    }
-
-    template <typename Samples,typename Input, typename DBN = this_type, cpp_disable_if(dbn_traits<DBN>::concatenate())>
-    void add_activation_probabilities(Samples& result, const Input& sample) {
-        result.push_back(forward_one(sample));
+        if constexpr (dbn_traits<this_type>::concatenate()) {
+            result.emplace_back(full_output_size());
+            full_activation_probabilities(sample, result.back());
+        } else {
+            result.push_back(forward_one(sample));
+        }
     }
 
     template <typename Input>

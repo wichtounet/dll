@@ -102,16 +102,15 @@ struct group_layer_impl<group_layer_desc<Layers...>> final : layer<group_layer_i
     using base_type::train_forward_batch;
     using base_type::test_forward_batch;
 
-    template <size_t L, typename H1, typename V, cpp_enable_iff(L != n_layers - 1)>
+    template <size_t L, typename H1, typename V>
     void test_forward_batch_sub(H1&& output, const V& input) const {
-        auto next_input = std::get<L>(layers).test_forward_batch(input);
+        if constexpr (L != n_layers - 1) {
+            auto next_input = std::get<L>(layers).test_forward_batch(input);
 
-        test_forward_batch_sub<L+1>(output, next_input);
-    }
-
-    template <size_t L, typename H1, typename V, cpp_enable_iff(L == n_layers - 1)>
-    void test_forward_batch_sub(H1&& output, const V& input) const {
-        std::get<L>(layers).test_forward_batch(output, input);
+            test_forward_batch_sub<L + 1>(output, next_input);
+        } else {
+            std::get<L>(layers).test_forward_batch(output, input);
+        }
     }
 
     /*!
@@ -125,16 +124,15 @@ struct group_layer_impl<group_layer_desc<Layers...>> final : layer<group_layer_i
         test_forward_batch_sub<0>(output, input);
     }
 
-    template <size_t L, typename H1, typename V, cpp_enable_iff(L != n_layers - 1)>
+    template <size_t L, typename H1, typename V>
     void train_forward_batch_sub(H1&& output, const V& input) const {
-        auto next_input = std::get<L>(layers).train_forward_batch(input);
+        if constexpr (L != n_layers - 1) {
+            auto next_input = std::get<L>(layers).train_forward_batch(input);
 
-        train_forward_batch_sub<L+1>(output, next_input);
-    }
-
-    template <size_t L, typename H1, typename V, cpp_enable_iff(L == n_layers - 1)>
-    void train_forward_batch_sub(H1&& output, const V& input) const {
-        std::get<L>(layers).train_forward_batch(output, input);
+            train_forward_batch_sub<L + 1>(output, next_input);
+        } else {
+            std::get<L>(layers).train_forward_batch(output, input);
+        }
     }
 
     /*!
@@ -148,16 +146,15 @@ struct group_layer_impl<group_layer_desc<Layers...>> final : layer<group_layer_i
         train_forward_batch_sub<0>(output, input);
     }
 
-    template <size_t L, typename H1, typename V, cpp_enable_iff(L != n_layers - 1)>
+    template <size_t L, typename H1, typename V>
     void forward_batch_sub(H1&& output, const V& input) const {
-        auto next_input = std::get<L>(layers).forward_batch(input);
+        if constexpr (L != n_layers - 1) {
+            auto next_input = std::get<L>(layers).forward_batch(input);
 
-        forward_batch_sub<L+1>(output, next_input);
-    }
-
-    template <size_t L, typename H1, typename V, cpp_enable_iff(L == n_layers - 1)>
-    void forward_batch_sub(H1&& output, const V& input) const {
-        std::get<L>(layers).forward_batch(output, input);
+            forward_batch_sub<L + 1>(output, next_input);
+        } else {
+            std::get<L>(layers).forward_batch(output, input);
+        }
     }
 
     /*!
@@ -190,16 +187,9 @@ struct group_layer_impl<group_layer_desc<Layers...>> final : layer<group_layer_i
         return output_t{samples};
     }
 
-    template<size_t I, typename DynLayer, cpp_enable_iff(I < n_layers)>
-    static void dyn_init(DynLayer& dyn){
-        cpp::nth_type_t<I, Layers...>::dyn_init(std::get<I>(dyn.layers));
-
-        dyn_init<I+1>(dyn);
-    }
-
-    template<size_t I, typename DynLayer, cpp_enable_iff(I == n_layers)>
-    static void dyn_init(DynLayer& dyn){
-        cpp_unused(dyn);
+    template<typename DynLayer, size_t... I>
+    static void dyn_init(DynLayer& dyn, std::index_sequence<I...> /* unused */){
+        (cpp::nth_type_t<I, Layers...>::dyn_init(std::get<I>(dyn.layers)), ...);
     }
 
     /*!
@@ -210,7 +200,7 @@ struct group_layer_impl<group_layer_desc<Layers...>> final : layer<group_layer_i
      */
     template<typename DynLayer>
     static void dyn_init(DynLayer& dyn){
-        dyn_init<0>(dyn);
+        dyn_init(dyn, std::make_index_sequence<n_layers>());
     }
 
     /*!

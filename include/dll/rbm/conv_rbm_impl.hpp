@@ -240,28 +240,26 @@ private:
         return etl::force_temporary(etl::rep<NV1, NV2>(c));
     }
 
-    template<typename V, cpp_enable_iff(etl::all_fast<V>)>
-    auto get_batch_b_rep(V&& /*h*/) const {
-        static constexpr auto batch_size = etl::decay_traits<V>::template dim<0>();
-        return etl::force_temporary(etl::rep_l<batch_size>(etl::rep<NH1, NH2>(b)));
-    }
-
-    template<typename V, cpp_disable_if(etl::all_fast<V>)>
+    template<typename V>
     auto get_batch_b_rep(V&& v) const {
-        const auto batch_size = etl::dim<0>(v);
-        return etl::force_temporary(etl::rep_l(etl::rep<NH1, NH2>(b), batch_size));
+        if constexpr (etl::all_fast<V>) {
+            static constexpr auto batch_size = etl::decay_traits<V>::template dim<0>();
+            return etl::force_temporary(etl::rep_l<batch_size>(etl::rep<NH1, NH2>(b)));
+        } else {
+            const auto batch_size = etl::dim<0>(v);
+            return etl::force_temporary(etl::rep_l(etl::rep<NH1, NH2>(b), batch_size));
+        }
     }
 
-    template<typename H, cpp_enable_iff(etl::all_fast<H>)>
-    auto get_batch_c_rep(H&& /*h*/) const {
-        static constexpr auto batch_size = etl::decay_traits<H>::template dim<0>();
-        return etl::force_temporary(etl::rep_l<batch_size>(etl::rep<NV1, NV2>(c)));
-    }
-
-    template<typename H, cpp_disable_if(etl::all_fast<H>)>
+    template <typename H>
     auto get_batch_c_rep(H&& h) const {
-        const auto batch_size = etl::dim<0>(h);
-        return etl::force_temporary(etl::rep_l(etl::rep<NV1, NV2>(c), batch_size));
+        if constexpr (etl::all_fast<H>) {
+            static constexpr auto batch_size = etl::decay_traits<H>::template dim<0>();
+            return etl::force_temporary(etl::rep_l<batch_size>(etl::rep<NV1, NV2>(c)));
+        } else {
+            const auto batch_size = etl::dim<0>(h);
+            return etl::force_temporary(etl::rep_l(etl::rep<NV1, NV2>(c), batch_size));
+        }
     }
 
     template<typename H>

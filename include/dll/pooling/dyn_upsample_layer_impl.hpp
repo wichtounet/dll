@@ -99,28 +99,19 @@ struct dyn_upsample_3d_layer_impl final : dyn_unpooling_3d_layer<dyn_upsample_3d
      * \param output The ETL expression into which write the output
      * \param context The training context
      */
-    template<typename H, typename C, cpp_enable_iff(etl::decay_traits<H>::dimensions() == 4)>
+    template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
         const size_t c1 = base::c1;
         const size_t c2 = base::c2;
         const size_t c3 = base::c3;
 
-        output = etl::max_pool_3d(context.errors, c1, c2, c3);
-    }
+        if constexpr (etl::decay_traits<H>::dimensions() == 4) {
+            output = etl::max_pool_3d(context.errors, c1, c2, c3);
+        } else {
+            const size_t B = etl::dim<0>(output);
 
-    /*!
-     * \brief Backpropagate the errors to the previous layers
-     * \param output The ETL expression into which write the output
-     * \param context The training context
-     */
-    template<typename H, typename C, cpp_enable_iff(etl::decay_traits<H>::dimensions() != 4)>
-    void backward_batch(H&& output, C& context) const {
-        const size_t c1 = base::c1;
-        const size_t c2 = base::c2;
-        const size_t c3 = base::c3;
-        const size_t B = etl::dim<0>(output);
-
-        etl::reshape(output, B, base::i1, base::i2, base::i3) = etl::max_pool_3d(context.errors, c1, c2, c3);
+            etl::reshape(output, B, base::i1, base::i2, base::i3) = etl::max_pool_3d(context.errors, c1, c2, c3);
+        }
     }
 
     /*!

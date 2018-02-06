@@ -55,41 +55,21 @@ inline std::string to_string(function f) {
  * \tparam F The activation function to use
  * \return The result of the activation function
  */
-template <function F, typename E, cpp_enable_iff(F == function::IDENTITY)>
+template <function F, typename E>
 decltype(auto) f_activate(E&& expr) {
-    return etl::identity(std::forward<E>(expr));
-}
-
-/*!
- * \copydoc f_activate
- */
-template <function F, typename E, cpp_enable_iff(F == function::SIGMOID)>
-decltype(auto) f_activate(E&& expr) {
-    return etl::sigmoid(std::forward<E>(expr));
-}
-
-/*!
- * \copydoc f_activate
- */
-template <function F, typename E, cpp_enable_iff(F == function::TANH)>
-decltype(auto) f_activate(E&& expr) {
-    return etl::tanh(std::forward<E>(expr));
-}
-
-/*!
- * \copydoc f_activate
- */
-template <function F, typename E, cpp_enable_iff(F == function::RELU)>
-decltype(auto) f_activate(E&& expr) {
-    return etl::relu(std::forward<E>(expr));
-}
-
-/*!
- * \copydoc f_activate
- */
-template <function F, typename E, cpp_enable_iff(F == function::SOFTMAX)>
-decltype(auto) f_activate(E&& expr) {
-    return etl::stable_softmax(std::forward<E>(expr));
+    if constexpr (F == function::IDENTITY) {
+        return etl::identity(std::forward<E>(expr));
+    } else if constexpr (F == function::SIGMOID) {
+        return etl::sigmoid(std::forward<E>(expr));
+    } else if constexpr (F == function::TANH) {
+        return etl::tanh(std::forward<E>(expr));
+    } else if constexpr (F == function::RELU) {
+        return etl::relu(std::forward<E>(expr));
+    } else if constexpr (F == function::SOFTMAX) {
+        return etl::stable_softmax(std::forward<E>(expr));
+    } else {
+        cpp_unreachable("Invalid function selection");
+    }
 }
 
 /*!
@@ -98,41 +78,21 @@ decltype(auto) f_activate(E&& expr) {
  * \tparam F The activation function to use
  * \return The derivative of the activation function
  */
-template <function F, typename E, cpp_enable_iff(F == function::IDENTITY)>
+template <function F, typename E>
 decltype(auto) f_derivative(E&& expr) {
-    return etl::ml::identity_derivative_out(std::forward<E>(expr));
-}
-
-/*!
- * \copydoc f_derivative
- */
-template <function F, typename E, cpp_enable_iff(F == function::SIGMOID)>
-decltype(auto) f_derivative(E&& expr) {
-    return etl::ml::sigmoid_derivative_out(std::forward<E>(expr));
-}
-
-/*!
- * \copydoc f_derivative
- */
-template <function F, typename E, cpp_enable_iff(F == function::TANH)>
-decltype(auto) f_derivative(E&& expr) {
-    return etl::ml::tanh_derivative_out(std::forward<E>(expr));
-}
-
-/*!
- * \copydoc f_derivative
- */
-template <function F, typename E, cpp_enable_iff(F == function::RELU)>
-decltype(auto) f_derivative(E&& expr) {
-    return etl::ml::relu_derivative_out(std::forward<E>(expr));
-}
-
-/*!
- * \copydoc f_derivative
- */
-template <function F, typename E, cpp_enable_iff(F == function::SOFTMAX)>
-decltype(auto) f_derivative(E&& expr) {
-    return etl::ml::softmax_derivative_out(std::forward<E>(expr));
+    if constexpr (F == function::IDENTITY) {
+        return etl::ml::identity_derivative_out(std::forward<E>(expr));
+    } else if constexpr (F == function::SIGMOID) {
+        return etl::ml::sigmoid_derivative_out(std::forward<E>(expr));
+    } else if constexpr (F == function::TANH) {
+        return etl::ml::tanh_derivative_out(std::forward<E>(expr));
+    } else if constexpr (F == function::RELU) {
+        return etl::ml::relu_derivative_out(std::forward<E>(expr));
+    } else if constexpr (F == function::SOFTMAX) {
+        return etl::ml::softmax_derivative_out(std::forward<E>(expr));
+    } else {
+        cpp_unreachable("Invalid function selection");
+    }
 }
 
 } //end of dll namespace
