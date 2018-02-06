@@ -165,7 +165,7 @@ struct base_rnn_layer : layer<Derived> {
             --ttt;
 
             // If only the last time step is used, no need to use the other errors
-            if /*constexpr*/ (desc::parameters::template contains<last_only>()) {
+            if constexpr (desc::parameters::template contains<last_only>()) {
                 break;
             }
         } while (ttt != 0);
@@ -187,7 +187,7 @@ struct base_rnn_layer : layer<Derived> {
      */
     template <typename C, typename W, typename U>
     void compute_gradients_impl(C& context, const W& w, const U& u, size_t time_steps, size_t sequence_length, size_t hidden_units, size_t bptt_steps) const {
-        if /*constexpr*/ (!C::layer){
+        if constexpr (!C::layer){
             backward_batch_impl(x_t, context, w, u, time_steps, sequence_length, hidden_units, bptt_steps, false);
         }
     }

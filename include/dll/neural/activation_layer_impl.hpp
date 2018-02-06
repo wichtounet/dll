@@ -79,7 +79,7 @@ struct activation_layer_impl : transform_layer<activation_layer_impl<Desc>> {
      */
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
-        if /*constexpr*/ (activation_function != function::IDENTITY) {
+        if constexpr (activation_function != function::IDENTITY) {
             output = f_derivative<activation_function>(context.output) >> context.errors;
         }
     }

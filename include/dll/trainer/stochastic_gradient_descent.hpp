@@ -782,7 +782,7 @@ struct sgd_trainer {
     static void forward_layer(Layer& layer, Inputs&& inputs, Context& context) {
         context.input = inputs;
 
-        if /*constexpr*/ (Train) {
+        if constexpr (Train) {
             layer.train_forward_batch(context.output, context.input);
         } else {
             layer.test_forward_batch(context.output, context.input);
@@ -803,7 +803,7 @@ struct sgd_trainer {
 
         sub_context.input = inputs;
 
-        if /*constexpr*/ (Train) {
+        if constexpr (Train) {
             sub_layer.train_forward_batch(sub_context.output, sub_context.input);
         } else {
             sub_layer.test_forward_batch(sub_context.output, sub_context.input);
@@ -900,7 +900,7 @@ struct sgd_trainer {
             first_ctx.input = inputs;
         }
 
-        if /*constexpr*/ (Train) {
+        if constexpr (Train) {
             first_layer.train_forward_batch(first_ctx.output, first_ctx.input);
         } else {
             first_layer.test_forward_batch(first_ctx.output, first_ctx.input);
@@ -1223,7 +1223,7 @@ struct sgd_trainer {
         weight m_schedule_new  = m_schedule * momentum_cache_t;
         weight m_schedule_next = m_schedule * momentum_cache_t * momentum_cache_t_1;
 
-        if /*constexpr*/ (I == 0) {
+        if constexpr (I == 0) {
             m_schedule = m_schedule_new;
         }
 

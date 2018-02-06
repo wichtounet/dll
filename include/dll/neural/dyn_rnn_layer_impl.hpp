@@ -113,7 +113,7 @@ struct dyn_rnn_layer_impl final : base_rnn_layer<dyn_rnn_layer_impl<Desc>, Desc>
     std::string to_short_string(std::string pre = "") const {
         cpp_unused(pre);
 
-        if /*constexpr*/ (activation_function == function::IDENTITY) {
+        if constexpr (activation_function == function::IDENTITY) {
             return "RNN (dyn)";
         } else {
             char buffer[512];
@@ -131,7 +131,7 @@ struct dyn_rnn_layer_impl final : base_rnn_layer<dyn_rnn_layer_impl<Desc>, Desc>
 
         char buffer[512];
 
-        if /*constexpr*/ (activation_function == function::IDENTITY) {
+        if constexpr (activation_function == function::IDENTITY) {
             snprintf(buffer, 512, "RNN(dyn): %lux%lu -> %lux%lu", time_steps, sequence_length, time_steps, hidden_units);
         } else {
             snprintf(buffer, 512, "RNN(dyn): %lux%lu -> %s -> %lux%lu", time_steps, sequence_length, to_string(activation_function).c_str(), time_steps, hidden_units);

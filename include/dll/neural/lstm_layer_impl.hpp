@@ -129,7 +129,7 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
     static std::string to_short_string(std::string pre = "") {
         cpp_unused(pre);
 
-        if /*constexpr*/ (activation_function == function::IDENTITY) {
+        if constexpr (activation_function == function::IDENTITY) {
             return "LSTM (dyn)";
         } else {
             char buffer[512];
@@ -147,7 +147,7 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
 
         char buffer[512];
 
-        if /*constexpr*/ (activation_function == function::IDENTITY) {
+        if constexpr (activation_function == function::IDENTITY) {
             snprintf(buffer, 512, "LSTM: %lux%lu -> %lux%lu", time_steps, sequence_length, time_steps, hidden_units);
         } else {
             snprintf(buffer, 512, "LSTM: %lux%lu -> %s -> %lux%lu", time_steps, sequence_length, to_string(activation_function).c_str(), time_steps, hidden_units);
@@ -437,7 +437,7 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
             --ttt;
 
             // If only the last time step is used, no need to use the other errors
-            if /*constexpr*/ (desc::parameters::template contains<last_only>()) {
+            if constexpr (desc::parameters::template contains<last_only>()) {
                 break;
             }
         } while (ttt != 0);
@@ -471,7 +471,7 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
      */
     template <typename C>
     void compute_gradients(C& context) const {
-        if /*constexpr*/ (!C::layer) {
+        if constexpr (!C::layer) {
             dll::auto_timer timer("lstm:compute_gradients");
             backward_pass(x_t, context, false);
         }

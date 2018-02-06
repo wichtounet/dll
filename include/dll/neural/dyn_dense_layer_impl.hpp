@@ -95,7 +95,7 @@ struct dyn_dense_layer_impl final : neural_layer<dyn_dense_layer_impl<Desc>, Des
     std::string to_short_string(std::string pre = "") const {
         cpp_unused(pre);
 
-        if /*constexpr*/ (activation_function == function::IDENTITY) {
+        if constexpr (activation_function == function::IDENTITY) {
             return "Dense (dyn)";
         } else {
             char buffer[512];
@@ -113,7 +113,7 @@ struct dyn_dense_layer_impl final : neural_layer<dyn_dense_layer_impl<Desc>, Des
 
         char buffer[512];
 
-        if /*constexpr*/ (activation_function == function::IDENTITY) {
+        if constexpr (activation_function == function::IDENTITY) {
             snprintf(buffer, 512, "Dense(dyn): %lu -> %lu", num_visible, num_hidden);
         } else {
             snprintf(buffer, 512, "Dense(dyn): %lu -> %s -> %lu", num_visible, to_string(activation_function).c_str(), num_hidden);
@@ -151,7 +151,7 @@ struct dyn_dense_layer_impl final : neural_layer<dyn_dense_layer_impl<Desc>, Des
 
         output = etl::reshape(input, Batch, num_visible) * w;
 
-        if /*constexpr*/ (!no_bias) {
+        if constexpr (!no_bias) {
             output = bias_add_2d(output, b);
         }
 
@@ -238,7 +238,7 @@ struct dyn_dense_layer_impl final : neural_layer<dyn_dense_layer_impl<Desc>, Des
 
         std::get<0>(context.up.context)->grad = batch_outer(context.input, context.errors);
 
-        if /*constexpr*/ (!no_bias) {
+        if constexpr (!no_bias) {
             std::get<1>(context.up.context)->grad = bias_batch_sum_2d(context.errors);
         }
     }

@@ -103,7 +103,7 @@ struct dbn_trainer {
             // The early stopping strategy
             static constexpr auto s = dbn_t::early;
 
-            if /*constexpr*/ (s != strategy::NONE) {
+            if constexpr (s != strategy::NONE) {
                 if(best_epoch < max_epochs - 1){
                     dbn.restore_weights();
 
@@ -151,8 +151,8 @@ struct dbn_trainer {
 
         // Depending on the strategy, try to save the best weights
 
-        if /*constexpr*/ (s != strategy::NONE) {
-            if /*constexpr*/ (is_error(s)) {
+        if constexpr (s != strategy::NONE) {
+            if constexpr (is_error(s)) {
                 if(!epoch || error < best_error){
                     best_error = error;
                     best_epoch = epoch;
@@ -171,9 +171,9 @@ struct dbn_trainer {
 
         // Depending on the strategy, decide to stop training
 
-        if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()) {
+        if constexpr (dbn_traits<dbn_t>::error_on_epoch()) {
             // Stop according to goal on loss
-            if /*constexpr*/ (s == strategy::LOSS_GOAL) {
+            if constexpr (s == strategy::LOSS_GOAL) {
                 if (loss <= dbn.goal) {
                     dbn.out << "Stopping: Loss below goal";
 
@@ -189,7 +189,7 @@ struct dbn_trainer {
                 }
             }
             // Stop according to goal on error
-            else if /*constexpr*/ (s == strategy::ERROR_GOAL) {
+            else if constexpr (s == strategy::ERROR_GOAL) {
                 if (error <= dbn.goal) {
                     dbn.out << "Stopping: Error below goal";
 
@@ -205,7 +205,7 @@ struct dbn_trainer {
                 }
             }
             // Stop if loss is increasing
-            else if /*constexpr*/ (s == strategy::LOSS_DIRECT) {
+            else if constexpr (s == strategy::LOSS_DIRECT) {
                 if (loss > prev_loss && epoch) {
                     --patience;
 
@@ -227,7 +227,7 @@ struct dbn_trainer {
                 }
             }
             // Stop if error is increasing
-            else if /*constexpr*/ (s == strategy::ERROR_DIRECT) {
+            else if constexpr (s == strategy::ERROR_DIRECT) {
                 if (error > prev_error && epoch) {
                     --patience;
 
@@ -249,7 +249,7 @@ struct dbn_trainer {
                 }
             }
             // Stop if loss is increasing (relative to best)
-            else if /*constexpr*/ (s == strategy::LOSS_BEST) {
+            else if constexpr (s == strategy::LOSS_BEST) {
                 if (loss > best_loss && epoch) {
                     --patience;
 
@@ -271,7 +271,7 @@ struct dbn_trainer {
                 }
             }
             // Stop if error is increasing (relative to best)
-            else if /*constexpr*/ (s == strategy::ERROR_BEST) {
+            else if constexpr (s == strategy::ERROR_BEST) {
                 if (error > best_error && epoch) {
                     --patience;
 
@@ -373,7 +373,7 @@ struct dbn_trainer {
         double new_error =  1.0;
         double new_loss  = -1.0;
 
-        if /*constexpr*/ (dbn_traits<dbn_t>::error_on_epoch()){
+        if constexpr (dbn_traits<dbn_t>::error_on_epoch()){
             dll::auto_timer timer("net:trainer:train:epoch:error");
 
             auto forward_helper = [this, &dbn](auto&& input_batch) -> decltype(auto) {

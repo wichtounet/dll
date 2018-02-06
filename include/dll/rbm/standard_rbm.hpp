@@ -441,14 +441,14 @@ private:
     weight energy(const parent_t& rbm, const V& v, const H& h) const {
         auto rv = reshape(v, as_derived().num_visible);
 
-        if /*constexpr*/ (visible_unit == unit_type::BINARY && hidden_unit == unit_type::BINARY) {
+        if constexpr (visible_unit == unit_type::BINARY && hidden_unit == unit_type::BINARY) {
             //Definition according to G. Hinton
             //E(v,h) = -sum(ai*vi) - sum(bj*hj) -sum(vi*hj*wij)
 
             auto x = rbm.b + rv * rbm.w;
 
             return -etl::dot(rbm.c, rv) - etl::dot(rbm.b, h) - etl::sum(x);
-        } else if /*constexpr*/ (visible_unit == unit_type::GAUSSIAN && hidden_unit == unit_type::BINARY) {
+        } else if constexpr (visible_unit == unit_type::GAUSSIAN && hidden_unit == unit_type::BINARY) {
             //Definition according to G. Hinton
             //E(v,h) = -sum((vi - ai)^2/(2*var*var)) - sum(bj*hj) -sum((vi/var)*hj*wij)
 
@@ -470,14 +470,14 @@ private:
     weight free_energy(const parent_t& rbm, const V& v) const {
         auto rv = reshape(v, as_derived().num_visible);
 
-        if /*constexpr*/ (visible_unit == unit_type::BINARY && hidden_unit == unit_type::BINARY) {
+        if constexpr (visible_unit == unit_type::BINARY && hidden_unit == unit_type::BINARY) {
             //Definition according to G. Hinton
             //F(v) = -sum(ai*vi) - sum(log(1 + e^(xj)))
 
             auto x = rbm.b + rv * rbm.w;
 
             return -etl::dot(rbm.c, rv) - etl::sum(etl::log(1.0 + etl::exp(x)));
-        } else if /*constexpr*/ (visible_unit == unit_type::GAUSSIAN && hidden_unit == unit_type::BINARY) {
+        } else if constexpr (visible_unit == unit_type::GAUSSIAN && hidden_unit == unit_type::BINARY) {
             //Definition computed from E(v,h)
             //F(v) = sum((vi-ai)^2/2) - sum(log(1 + e^(xj)))
 

@@ -98,7 +98,7 @@ struct rnn_layer_impl final : base_rnn_layer<rnn_layer_impl<Desc>, Desc> {
     static std::string to_short_string(std::string pre = "") {
         cpp_unused(pre);
 
-        if /*constexpr*/ (activation_function == function::IDENTITY) {
+        if constexpr (activation_function == function::IDENTITY) {
             return "RNN";
         } else {
             char buffer[512];
@@ -116,7 +116,7 @@ struct rnn_layer_impl final : base_rnn_layer<rnn_layer_impl<Desc>, Desc> {
 
         char buffer[512];
 
-        if /*constexpr*/ (activation_function == function::IDENTITY) {
+        if constexpr (activation_function == function::IDENTITY) {
             snprintf(buffer, 512, "RNN: %lux%lu -> %lux%lu", time_steps, sequence_length, time_steps, hidden_units);
         } else {
             snprintf(buffer, 512, "RNN: %lux%lu -> %s -> %lux%lu", time_steps, sequence_length, to_string(activation_function).c_str(), time_steps, hidden_units);

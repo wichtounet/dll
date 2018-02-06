@@ -105,7 +105,7 @@ struct conv_layer_impl final : neural_layer<conv_layer_impl<Desc>, Desc> {
     static std::string to_short_string(std::string pre = "") {
         cpp_unused(pre);
 
-        if /*constexpr*/ (activation_function == function::IDENTITY) {
+        if constexpr (activation_function == function::IDENTITY) {
             return "Conv";
         } else {
             char buffer[512];
@@ -123,7 +123,7 @@ struct conv_layer_impl final : neural_layer<conv_layer_impl<Desc>, Desc> {
 
         char buffer[512];
 
-        if /*constexpr*/ (activation_function == function::IDENTITY) {
+        if constexpr (activation_function == function::IDENTITY) {
             snprintf(buffer, 512, "Conv: %lux%lux%lu -> (%lux%lux%lu) -> %lux%lux%lu", NC, NV1, NV2, K, NW1, NW2, K, NH1, NH2);
         } else {
             snprintf(buffer, 512, "Conv: %lux%lux%lu -> (%lux%lux%lu) -> %s -> %lux%lux%lu", NC, NV1, NV2, K, NW1, NW2, to_string(activation_function).c_str(), K, NH1, NH2);
@@ -156,11 +156,11 @@ struct conv_layer_impl final : neural_layer<conv_layer_impl<Desc>, Desc> {
 
         output = etl::ml::convolution_forward(v, w);
 
-        if /*constexpr*/ (!no_bias) {
+        if constexpr (!no_bias) {
             output = bias_add_4d(output, b);
         }
 
-        if /*constexpr*/ (activation_function != function::IDENTITY) {
+        if constexpr (activation_function != function::IDENTITY) {
             output = f_activate<activation_function>(output);
         }
     }
@@ -177,11 +177,11 @@ struct conv_layer_impl final : neural_layer<conv_layer_impl<Desc>, Desc> {
 
         output = etl::ml::convolution_forward(etl::reshape(v, etl::dim<0>(v), NC, NV1, NV2), w);
 
-        if /*constexpr*/ (!no_bias) {
+        if constexpr (!no_bias) {
             output = bias_add_4d(output, b);
         }
 
-        if /*constexpr*/ (activation_function != function::IDENTITY) {
+        if constexpr (activation_function != function::IDENTITY) {
             output = f_activate<activation_function>(output);
         }
     }
@@ -227,7 +227,7 @@ struct conv_layer_impl final : neural_layer<conv_layer_impl<Desc>, Desc> {
     void adapt_errors(C& context) const {
         dll::auto_timer timer("conv:adapt_errors");
 
-        if /*constexpr*/ (activation_function != function::IDENTITY){
+        if constexpr (activation_function != function::IDENTITY){
             context.errors = f_derivative<activation_function>(context.output) >> context.errors;
         }
     }
@@ -261,7 +261,7 @@ struct conv_layer_impl final : neural_layer<conv_layer_impl<Desc>, Desc> {
 
         std::get<0>(context.up.context)->grad = etl::ml::convolution_backward_filter(context.input, context.errors);
 
-        if /*constexpr*/ (!no_bias) {
+        if constexpr (!no_bias) {
             std::get<1>(context.up.context)->grad = etl::bias_batch_sum_4d(context.errors);
         }
     }

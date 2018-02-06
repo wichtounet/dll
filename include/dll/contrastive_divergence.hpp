@@ -123,7 +123,7 @@ void update_normal(RBM& rbm, Trainer& t) {
     const auto n_samples = double(etl::dim<0>(t.v1));
 
     // Gradients clipping
-    if/*constexpr*/ (rbm_layer_traits<rbm_t>::has_clip_gradients()){
+    if constexpr (rbm_layer_traits<rbm_t>::has_clip_gradients()){
         auto grad_t = rbm.gradient_clip;
 
         apply_clip_gradients(t.w_grad, grad_t, n_samples);

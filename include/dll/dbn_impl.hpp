@@ -640,7 +640,7 @@ public:
      *
      * \return true if the training should save memory, false otherwise.
      */
-    constexpr bool batch_mode() const noexcept {
+    static constexpr bool batch_mode() noexcept {
         return dbn_traits<this_type>::batch_mode();
     }
 
@@ -663,7 +663,7 @@ public:
         watcher.pretraining_begin(*this, max_epochs);
 
         //Pretrain each layer one-by-one
-        if /*constexpr*/ (batch_mode()) {
+        if constexpr (batch_mode()) {
             out << "DBN: Pretraining done in batch mode" << std::endl;
 
             if (layers_t::has_shuffle_layer) {
@@ -745,7 +745,7 @@ public:
         watcher.pretraining_begin(*this, max_epochs);
 
         //Pretrain each layer one-by-one
-        if /*constexpr*/ (batch_mode()) {
+        if constexpr (batch_mode()) {
             out << "DBN: Denoising Pretraining done in batch mode" << std::endl;
 
             if (layers_t::has_shuffle_layer) {
@@ -2462,7 +2462,7 @@ private:
             this->template inline_layer_pretrain<I>(generator, watcher, max_epochs);
         }
 
-        if /*constexpr*/ (train_next<I + 1>::value && !inline_next<I + 1>::value) {
+        if constexpr (train_next<I + 1>::value && !inline_next<I + 1>::value) {
             // Reset correctly the generator
             generator.reset();
             generator.set_test();
@@ -2523,7 +2523,7 @@ private:
                 (generator, max_epochs);
         }
 
-        if /*constexpr*/ (train_next<I + 1>::value) {
+        if constexpr (train_next<I + 1>::value) {
             // Reset correctly the generator
             generator.reset();
             generator.set_test();

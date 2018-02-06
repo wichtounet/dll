@@ -279,7 +279,7 @@ struct default_dbn_watcher {
 
         char buffer[512];
 
-        if /*constexpr*/ (dbn_traits<DBN>::error_on_epoch()){
+        if (dbn_traits<DBN>::error_on_epoch()){
             snprintf(buffer, 512, "epoch %3ld/%ld batch %4ld/%4ld - error: %.5f loss: %.5f time %ldms \n",
                 epoch, ft_max_epochs, max_batches, max_batches, error, loss, duration);
         } else {
@@ -287,7 +287,7 @@ struct default_dbn_watcher {
                 epoch, ft_max_epochs, max_batches, max_batches, loss, duration);
         }
 
-        if /*constexpr*/ (dbn_traits<DBN>::is_verbose()){
+        if (dbn_traits<DBN>::is_verbose()){
             std::cout << buffer;
         } else {
             std::cout << "\r" << buffer;
@@ -310,7 +310,7 @@ struct default_dbn_watcher {
 
         char buffer[512];
 
-        if /*constexpr*/ (dbn_traits<DBN>::error_on_epoch()){
+        if constexpr (dbn_traits<DBN>::error_on_epoch()){
             snprintf(buffer, 512, "epoch %3ld/%ld - error: %.5f loss: %.5f val_error: %.5f val_loss: %.5f time %ldms \n",
                 epoch, ft_max_epochs, train_error, train_loss, val_error, val_loss, duration);
         } else {
@@ -318,7 +318,7 @@ struct default_dbn_watcher {
                 epoch, ft_max_epochs, train_loss, val_loss, duration);
         }
 
-        if /*constexpr*/ (dbn_traits<DBN>::is_verbose()){
+        if constexpr (dbn_traits<DBN>::is_verbose()){
             std::cout << buffer;
         } else {
             std::cout << "\r" << buffer;
@@ -354,7 +354,7 @@ struct default_dbn_watcher {
 
         char buffer[512];
 
-        if /*constexpr*/ (dbn_traits<DBN>::is_verbose()){
+        if constexpr (dbn_traits<DBN>::is_verbose()){
             snprintf(buffer, 512, "epoch %3ld/%ld batch %4ld/%4ld- B. Error: %.5f B. Loss: %.5f Time %ldms",
                 epoch, ft_max_epochs, batch + 1, batches, batch_error, batch_loss, duration);
             std::cout << buffer << std::endl;
