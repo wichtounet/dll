@@ -935,8 +935,7 @@ struct sgd_trainer {
 
     template <updater_type UT, typename L, typename C, size_t... I>
     void update_variables(size_t epoch, L& layer, C& context, size_t n, std::index_sequence<I...> /* args */) {
-        int unused[] = {(this->update_variable<I, UT>(epoch, layer, context, n), 1)...};
-        cpp_unused(unused);
+        (update_variable<I, UT>(epoch, layer, context, n), ...);
     }
 
     template <size_t I, updater_type UT, typename L, typename C>
