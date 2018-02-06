@@ -218,9 +218,9 @@ struct group_layer_impl<group_layer_desc<Layers...>> final : layer<group_layer_i
      */
     void backup_weights() {
         cpp::for_each(layers, [](auto& layer) {
-            cpp::static_if<decay_layer_traits<decltype(layer)>::is_trained()>([&layer](auto f) {
-                f(layer).backup_weights();
-            });
+            if constexpr (decay_layer_traits<decltype(layer)>::is_trained()) {
+                layer.backup_weights();
+            }
         });
     }
 
@@ -228,10 +228,10 @@ struct group_layer_impl<group_layer_desc<Layers...>> final : layer<group_layer_i
      * \brief Restore the weights from the secondary weights matrix
      */
     void restore_weights() {
-        cpp::for_each(layers, [](auto& layer){
-            cpp::static_if<decay_layer_traits<decltype(layer)>::is_trained()>([&layer](auto f) {
-                f(layer).restore_weights();
-            });
+        cpp::for_each(layers, [](auto& layer) {
+            if constexpr (decay_layer_traits<decltype(layer)>::is_trained()) {
+                layer.restore_weights();
+            }
         });
     }
 

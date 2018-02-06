@@ -30,7 +30,7 @@
 
 namespace dll {
 
-#define STATIC_IF_DECAY(d, ...) cpp::static_if<decay == d>([&](auto f) { __VA_ARGS__; });
+#define STATIC_IF_DECAY(d, ...) if constexpr (decay == d) { __VA_ARGS__; }
 
 /*!
  * \brief Base class for all standard trainer
@@ -50,10 +50,10 @@ struct base_trainer {
      */
     template <decay_type decay, typename V, typename G>
     void update_grad(G& grad, const V& value, const RBM& rbm, double penalty) {
-        STATIC_IF_DECAY(decay_type::NONE, f(grad) = grad - penalty);
-        STATIC_IF_DECAY(decay_type::L1, f(grad) = grad - rbm.l1_weight_cost * abs(value) - penalty);
-        STATIC_IF_DECAY(decay_type::L2, f(grad) = grad - rbm.l2_weight_cost * value - penalty);
-        STATIC_IF_DECAY(decay_type::L1L2, f(grad) = grad - rbm.l1_weight_cost * abs(value) - rbm.l2_weight_cost * value - penalty);
+        STATIC_IF_DECAY(decay_type::NONE, grad = grad - penalty);
+        STATIC_IF_DECAY(decay_type::L1, grad = grad - rbm.l1_weight_cost * abs(value) - penalty);
+        STATIC_IF_DECAY(decay_type::L2, grad = grad - rbm.l2_weight_cost * value - penalty);
+        STATIC_IF_DECAY(decay_type::L1L2, grad = grad - rbm.l1_weight_cost * abs(value) - rbm.l2_weight_cost * value - penalty);
     }
 };
 
@@ -84,15 +84,15 @@ void update_normal(RBM& rbm, Trainer& t) {
     typename rbm_t::weight v_penalty = 0.0;
 
     //Global sparsity method
-    cpp::static_if<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET>([&](auto f) {
+    if constexpr (rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET) {
         auto decay_rate = rbm.decay_rate;
         auto p          = rbm.sparsity_target;
         auto cost       = rbm.sparsity_cost;
 
-        f(t).q_global_t = decay_rate * t.q_global_t + (1.0 - decay_rate) * t.q_global_batch;
+        t.q_global_t = decay_rate * t.q_global_t + (1.0 - decay_rate) * t.q_global_batch;
 
-        f(w_penalty) = h_penalty = cost * (t.q_global_t - p);
-    });
+        w_penalty = h_penalty = cost * (t.q_global_t - p);
+    }
 
     //Apply L1/L2 regularization and penalties to the biases
 
@@ -101,23 +101,23 @@ void update_normal(RBM& rbm, Trainer& t) {
     t.template update_grad<b_decay(rbm_layer_traits<rbm_t>::decay())>(t.c_grad, rbm.c, rbm, v_penalty);
 
     //Local sparsity method
-    cpp::static_if<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f) {
+    if constexpr (rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET) {
         auto decay_rate = rbm.decay_rate;
         auto p          = rbm.sparsity_target;
         auto cost       = rbm.sparsity_cost;
 
-        f(t).q_local_t = decay_rate * t.q_local_t + (1.0 - decay_rate) * t.q_local_batch;
+        t.q_local_t = decay_rate * t.q_local_t + (1.0 - decay_rate) * t.q_local_batch;
 
         auto q_local_penalty = cost * (t.q_local_t - p);
 
-        f(t).b_grad -= q_local_penalty;
+        t.b_grad -= q_local_penalty;
 
         for (size_t i = 0; i < num_hidden(rbm); ++i) {
             for (size_t j = 0; j < num_visible(rbm); ++j) {
-                f(t).w_grad(j, i) -= q_local_penalty(i);
+                t.w_grad(j, i) -= q_local_penalty(i);
             }
         }
-    });
+    }
 
     //TODO the batch is not necessary full!
     const auto n_samples = double(etl::dim<0>(t.v1));
@@ -135,23 +135,23 @@ void update_normal(RBM& rbm, Trainer& t) {
     auto eps = rbm.learning_rate / n_samples;
 
     //Apply momentum and learning rate
-    cpp::static_if<rbm_layer_traits<rbm_t>::has_momentum()>([&](auto f) {
+    if constexpr (rbm_layer_traits<rbm_t>::has_momentum()) {
         auto momentum = rbm.momentum;
 
-        f(t).w_inc = momentum * t.w_inc + eps * t.w_grad;
-        f(t).b_inc = momentum * t.b_inc + eps * t.b_grad;
-        f(t).c_inc = momentum * t.c_inc + eps * t.c_grad;
+        t.w_inc = momentum * t.w_inc + eps * t.w_grad;
+        t.b_inc = momentum * t.b_inc + eps * t.b_grad;
+        t.c_inc = momentum * t.c_inc + eps * t.c_grad;
 
-        f(rbm).w += t.w_inc;
-        f(rbm).b += t.b_inc;
-        f(rbm).c += t.c_inc;
-    })
+        rbm.w += t.w_inc;
+        rbm.b += t.b_inc;
+        rbm.c += t.c_inc;
+    }
     //Apply the learning rate
-    .else_([&](auto f) {
-        f(rbm).w += eps * t.w_grad;
-        f(rbm).b += eps * t.b_grad;
-        f(rbm).c += eps * t.c_grad;
-    });
+    else {
+        rbm.w += eps * t.w_grad;
+        rbm.b += eps * t.b_grad;
+        rbm.c += eps * t.c_grad;
+    }
 
     //Check for NaN
     nan_check_deep_3(rbm.w, rbm.b, rbm.c);
@@ -174,15 +174,15 @@ void update_convolutional(RBM& rbm, Trainer& t) {
     weight v_penalty = 0.0;
 
     //Global sparsity method
-    cpp::static_if<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET>([&](auto f) {
+    if constexpr (rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::GLOBAL_TARGET) {
         auto decay_rate = rbm.decay_rate;
         auto p          = rbm.sparsity_target;
         auto cost       = rbm.sparsity_cost;
 
-        f(t).q_global_t = decay_rate * t.q_global_t + (1.0 - decay_rate) * t.q_global_batch;
+        t.q_global_t = decay_rate * t.q_global_t + (1.0 - decay_rate) * t.q_global_batch;
 
-        f(w_penalty) = h_penalty = cost * (t.q_global_t - p);
-    });
+        w_penalty = h_penalty = cost * (t.q_global_t - p);
+    }
 
     //Apply L1/L2 regularization and penalties to the biases
 
@@ -191,53 +191,53 @@ void update_convolutional(RBM& rbm, Trainer& t) {
     t.template update_grad<b_decay(rbm_layer_traits<rbm_t>::decay())>(t.c_grad, rbm.c, rbm, v_penalty);
 
     //Local sparsity method
-    cpp::static_if<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f) {
+    if constexpr (rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET) {
         auto decay_rate = rbm.decay_rate;
         auto p          = rbm.sparsity_target;
         auto cost       = rbm.sparsity_cost;
 
-        f(t).q_local_t = decay_rate * t.q_local_t + (1.0 - decay_rate) * t.q_local_batch;
+        t.q_local_t = decay_rate * t.q_local_t + (1.0 - decay_rate) * t.q_local_batch;
 
         auto q_local_penalty = cost * (t.q_local_t - p);
 
-        f(t).b_grad -= sum_r(q_local_penalty);
+        t.b_grad -= sum_r(q_local_penalty);
 
         const auto K   = get_k(rbm);
 
         auto k_penalty = sum_r(q_local_penalty);
         for (size_t k = 0; k < K; ++k) {
-            f(t).w_grad(k) = t.w_grad(k) - k_penalty(k);
+            t.w_grad(k) = t.w_grad(k) - k_penalty(k);
         }
-    });
+    }
 
     //Honglak Lee's sparsity method
-    cpp::static_if<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE>([&](auto f) {
-        f(t).w_grad -= rbm.pbias_lambda * t.w_bias;
-        f(t).b_grad -= rbm.pbias_lambda * t.b_bias;
-        f(t).c_grad -= rbm.pbias_lambda * t.c_bias;
-    });
+    if constexpr (rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE) {
+        t.w_grad -= rbm.pbias_lambda * t.w_bias;
+        t.b_grad -= rbm.pbias_lambda * t.b_bias;
+        t.c_grad -= rbm.pbias_lambda * t.c_bias;
+    }
 
     constexpr auto n_samples = RBM::batch_size;
     auto eps             = rbm.learning_rate / n_samples;
 
     //Apply momentum and learning rate
-    cpp::static_if<rbm_layer_traits<rbm_t>::has_momentum()>([&](auto f) {
+    if constexpr (rbm_layer_traits<rbm_t>::has_momentum()) {
         auto momentum = rbm.momentum;
 
-        f(t).w_inc = momentum * t.w_inc + eps * t.w_grad;
-        f(t).b_inc = momentum * t.b_inc + eps * t.b_grad;
-        f(t).c_inc = momentum * t.c_inc + eps * t.c_grad;
+        t.w_inc = momentum * t.w_inc + eps * t.w_grad;
+        t.b_inc = momentum * t.b_inc + eps * t.b_grad;
+        t.c_inc = momentum * t.c_inc + eps * t.c_grad;
 
-        f(rbm.w) += t.w_inc;
-        f(rbm.b) += t.b_inc;
-        f(rbm.c) += t.c_inc;
-    })
+        rbm.w += t.w_inc;
+        rbm.b += t.b_inc;
+        rbm.c += t.c_inc;
+    }
     //Apply learning rate only
-    .else_([&](auto f) {
-        f(rbm.w) += eps * t.w_grad;
-        f(rbm.b) += eps * t.b_grad;
-        f(rbm.c) += eps * t.c_grad;
-    });
+    else {
+        rbm.w += eps * t.w_grad;
+        rbm.b += eps * t.b_grad;
+        rbm.c += eps * t.c_grad;
+    }
 
     //Check for NaN
     nan_check_deep(rbm.w);
@@ -287,13 +287,13 @@ void compute_gradients_normal(InputBatch& input_batch, ExpectedBatch& expected_b
     }
 
     //CD-1
-    cpp::static_if<Persistent>([&](auto f) {
-        f(rbm).template batch_activate_visible<true, false>(t.p_h_a, t.p_h_s, t.v2_a, t.v2_s);
-        f(rbm).template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
-    }).else_([&](auto f) {
-        f(rbm).template batch_activate_visible<true, false>(t.h1_a, t.h1_s, t.v2_a, t.v2_s);
-        f(rbm).template batch_activate_hidden<true, (K > 1)>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
-    });
+    if constexpr (Persistent) {
+        rbm.template batch_activate_visible<true, false>(t.p_h_a, t.p_h_s, t.v2_a, t.v2_s);
+        rbm.template batch_activate_hidden<true, true>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
+    } else {
+        rbm.template batch_activate_visible<true, false>(t.h1_a, t.h1_s, t.v2_a, t.v2_s);
+        rbm.template batch_activate_hidden<true, (K > 1)>(t.h2_a, t.h2_s, t.v2_a, t.v2_s);
+    }
 
     //CD-k
     for (size_t k = 1; k < K; ++k) {
@@ -348,9 +348,9 @@ void train_normal(InputBatch& input_batch, ExpectedBatch& expected_batch, rbm_tr
     //Compute the mean activation probabilities
     t.q_global_batch = mean(t.h2_a);
 
-    cpp::static_if<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f) {
-        f(t).q_local_batch = mean_l(t.h2_a);
-    });
+    if constexpr (rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET) {
+        t.q_local_batch = mean_l(t.h2_a);
+    }
 
     context.batch_sparsity = t.q_global_batch;
 
@@ -445,16 +445,16 @@ void train_convolutional(InputBatch& input_batch, ExpectedBatch& expected_batch,
     //Compute the mean activation probabilities
     t.q_global_batch = mean(t.h2_a);
 
-    cpp::static_if<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET>([&](auto f) {
-        f(t).q_local_batch = mean_l(t.h2_a);
-    });
+    if constexpr (rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET) {
+        t.q_local_batch = mean_l(t.h2_a);
+    }
 
     //Compute the biases for sparsity
 
     //Only b_bias are supported for now
-    cpp::static_if<rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE && rbm_layer_traits<rbm_t>::bias_mode() == bias_mode::SIMPLE>([&](auto f) {
-        f(t).b_bias = mean_r(mean_l(t.h2_a)) - rbm.pbias;
-    });
+    if constexpr (rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE && rbm_layer_traits<rbm_t>::bias_mode() == bias_mode::SIMPLE) {
+        t.b_bias = mean_r(mean_l(t.h2_a)) - rbm.pbias;
+    }
 
     //Accumulate the sparsity
     context.batch_sparsity = t.q_global_batch;

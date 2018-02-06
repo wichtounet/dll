@@ -224,9 +224,9 @@ struct dyn_group_layer_impl<dyn_group_layer_desc<Layers...>> final : layer<dyn_g
      */
     void backup_weights() {
         cpp::for_each(layers, [](auto& layer) {
-            cpp::static_if<decay_layer_traits<decltype(layer)>::is_trained()>([&layer](auto f) {
-                f(layer).backup_weights();
-            });
+            if constexpr (decay_layer_traits<decltype(layer)>::is_trained()) {
+                layer.backup_weights();
+            }
         });
     }
 
@@ -235,9 +235,9 @@ struct dyn_group_layer_impl<dyn_group_layer_desc<Layers...>> final : layer<dyn_g
      */
     void restore_weights() {
         cpp::for_each(layers, [](auto& layer){
-            cpp::static_if<decay_layer_traits<decltype(layer)>::is_trained()>([&layer](auto f) {
-                f(layer).restore_weights();
-            });
+            if constexpr (decay_layer_traits<decltype(layer)>::is_trained()) {
+                layer.restore_weights();
+            }
         });
     }
 

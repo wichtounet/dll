@@ -15,7 +15,6 @@
 
 #pragma once
 
-#include "cpp_utils/static_if.hpp"
 #include "cpp_utils/tuple_utils.hpp"
 
 #include "dll/trainer/context_fwd.hpp" // For sgd_context

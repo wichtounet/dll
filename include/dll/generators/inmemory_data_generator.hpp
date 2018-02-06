@@ -82,11 +82,11 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_a
         pre_binarizer<desc>::transform_all(input_cache);
 
         // In case of auto-encoders, the label images also need to be transformed
-        cpp::static_if<desc::AutoEncoder>([&](auto f) {
-            pre_scaler<desc>::transform_all(f(label_cache));
-            pre_normalizer<desc>::transform_all(f(label_cache));
-            pre_binarizer<desc>::transform_all(f(label_cache));
-        });
+        if constexpr (desc::AutoEncoder) {
+            pre_scaler<desc>::transform_all(label_cache);
+            pre_normalizer<desc>::transform_all(label_cache);
+            pre_binarizer<desc>::transform_all(label_cache);
+        }
 
         cpp_unused(llast);
     }
@@ -287,11 +287,11 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_a
         pre_binarizer<desc>::transform_all(input_cache);
 
         // In case of auto-encoders, the label images also need to be transformed
-        cpp::static_if<desc::AutoEncoder>([&](auto f) {
-            pre_scaler<desc>::transform_all(f(label_cache));
-            pre_normalizer<desc>::transform_all(f(label_cache));
-            pre_binarizer<desc>::transform_all(f(label_cache));
-        });
+        if constexpr (desc::AutoEncoder) {
+            pre_scaler<desc>::transform_all(label_cache);
+            pre_normalizer<desc>::transform_all(label_cache);
+            pre_binarizer<desc>::transform_all(label_cache);
+        }
     }
 
     /*!
@@ -379,11 +379,11 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_au
         pre_binarizer<desc>::transform_all(input_cache);
 
         // In case of auto-encoders, the label images also need to be transformed
-        cpp::static_if<desc::AutoEncoder>([&](auto f) {
-            pre_scaler<desc>::transform_all(f(label_cache));
-            pre_normalizer<desc>::transform_all(f(label_cache));
-            pre_binarizer<desc>::transform_all(f(label_cache));
-        });
+        if constexpr (desc::AutoEncoder) {
+            pre_scaler<desc>::transform_all(label_cache);
+            pre_normalizer<desc>::transform_all(label_cache);
+            pre_binarizer<desc>::transform_all(label_cache);
+        }
 
         for (size_t b = 0; b < big_batch_size; ++b) {
             status[b]  = false;

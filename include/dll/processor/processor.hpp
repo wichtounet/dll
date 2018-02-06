@@ -251,14 +251,14 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
                 }
 
                 //Pretrain the network
-                cpp::static_if<dbn_t::pretrain_possible && dbn_t::layers_t::is_denoising>([&](auto f) {
-                    f(dbn).pretrain_denoising(pt_samples.begin(), pt_samples.end(), clean_samples.begin(), clean_samples.end(), task.pt_desc.epochs);
-                });
+                if constexpr(dbn_t::pretrain_possible && dbn_t::layers_t::is_denoising) {
+                    dbn.pretrain_denoising(pt_samples.begin(), pt_samples.end(), clean_samples.begin(), clean_samples.end(), task.pt_desc.epochs);
+                }
             } else {
-                cpp::static_if<dbn_t::pretrain_possible>([&](auto f) {
+                if constexpr (dbn_t::pretrain_possible) {
                     //Pretrain the network
-                    f(dbn).pretrain(pt_samples.begin(), pt_samples.end(), task.pt_desc.epochs);
-                });
+                    dbn.pretrain(pt_samples.begin(), pt_samples.end(), task.pt_desc.epochs);
+                }
             }
         } else if (action == "train") {
             print_title("Training");
@@ -291,11 +291,10 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
             }
 
             //Train the network
-            cpp::static_if<sgd_possible<last_layer>::value>([&](auto f) {
-                auto ft_error = f(dbn).fine_tune(ft_samples, ft_labels, task.ft_desc.epochs);
+            if constexpr(sgd_possible<last_layer>::value) {
+                auto ft_error = dbn.fine_tune(ft_samples, ft_labels, task.ft_desc.epochs);
                 std::cout << "Train Classification Error:" << ft_error << std::endl;
-            });
-
+            }
         } else if (action == "test") {
             print_title("Testing");
 

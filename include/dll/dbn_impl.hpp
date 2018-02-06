@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include "cpp_utils/static_if.hpp"
 #include "cpp_utils/maybe_parallel.hpp"
 #include "cpp_utils/tuple_utils.hpp"
 
@@ -304,9 +303,9 @@ public:
     dbn() : pool(etl::threads) {
         //Nothing else to init
 
-        cpp::static_if<!std::is_same<typename desc::base_layers, typename desc::layers>::value>([&](auto f){
-            f(this)->template dyn_init<0>();
-        });
+        if constexpr (!std::is_same<typename desc::base_layers, typename desc::layers>::value) {
+            this->template dyn_init<0>();
+        }
 
         // Update defaults for each updater type
 
@@ -352,9 +351,9 @@ public:
             out << pre;
             out << layer.to_full_string(pre) << std::endl;
 
-            cpp::static_if<decay_layer_traits<decltype(layer)>::is_neural_layer()>([&](auto f) {
-                parameters += f(layer).parameters();
-            });
+            if constexpr (decay_layer_traits<decltype(layer)>::is_neural_layer()) {
+                parameters += layer.parameters();
+            }
         });
 
         out << "Total parameters: " << parameters << std::endl;
@@ -384,9 +383,9 @@ public:
             std::string sub_parameters_str = "0";
 
             // Extract the number of parameters
-            cpp::static_if<decay_layer_traits<decltype(sub_layer)>::is_neural_layer()>([&](auto f) {
-                sub_parameters_str = std::to_string(f(sub_layer).parameters());
-            });
+            if constexpr (decay_layer_traits<decltype(sub_layer)>::is_neural_layer()) {
+                sub_parameters_str = std::to_string(sub_layer.parameters());
+            }
 
             // Extract the output shape if possible
             sub_output = sub_layer.output_shape(sub_output);
@@ -398,9 +397,9 @@ public:
             row[2] = sub_parameters_str;
             row[3] = this_type::shape_to_string(sub_output);
 
-            cpp::static_if<decay_layer_traits<decltype(sub_layer)>::base_traits::is_multi>([&](auto f) {
-                sub_display_pretty(sub_output, number, sub_pre, f(sub_layer), rows);
-            });
+            if constexpr (decay_layer_traits<decltype(sub_layer)>::base_traits::is_multi) {
+                sub_display_pretty(sub_output, number, sub_pre, sub_layer, rows);
+            }
         });
     }
 
@@ -428,11 +427,11 @@ public:
             std::string parameters_str = "0";
 
             // Extract the number of parameters
-            cpp::static_if<decay_layer_traits<decltype(layer)>::is_neural_layer()>([&](auto f) {
-                parameters_str = std::to_string(f(layer).parameters());
+            if constexpr (decay_layer_traits<decltype(layer)>::is_neural_layer()) {
+                parameters_str = std::to_string(layer.parameters());
 
-                parameters += f(layer).parameters();
-            });
+                parameters += layer.parameters();
+            }
 
             // Extract the output shape if possible
             output = layer.output_shape(output);
@@ -445,9 +444,9 @@ public:
             row[2] = parameters_str;
             row[3] = this_type::shape_to_string(output);
 
-            cpp::static_if<decay_layer_traits<decltype(layer)>::base_traits::is_multi>([&](auto f) {
-                sub_display_pretty(output, std::to_string(I), "", f(layer), rows);
-            });
+            if constexpr (decay_layer_traits<decltype(layer)>::base_traits::is_multi) {
+                sub_display_pretty(output, std::to_string(I), "", layer, rows);
+            }
         });
 
         std::array<size_t, columns> column_length;
@@ -545,9 +544,9 @@ public:
      */
     void store(std::ostream& os) const {
         for_each_layer([&os](auto& layer) {
-            cpp::static_if<decay_layer_traits<decltype(layer)>::is_neural_layer()>([&](auto f) {
-                f(layer).store(os);
-            });
+            if constexpr (decay_layer_traits<decltype(layer)>::is_neural_layer()) {
+                layer.store(os);
+            }
         });
 
 #ifdef DLL_SVM_SUPPORT
@@ -561,9 +560,9 @@ public:
      */
     void load(std::istream& is) {
         for_each_layer([&is](auto& layer) {
-            cpp::static_if<decay_layer_traits<decltype(layer)>::is_neural_layer()>([&](auto f) {
-                f(layer).load(is);
-            });
+            if constexpr (decay_layer_traits<decltype(layer)>::is_neural_layer()) {
+                layer.load(is);
+            }
         });
 
 #ifdef DLL_SVM_SUPPORT
@@ -2450,18 +2449,18 @@ private:
 
         watcher.pretrain_layer(*this, I, layer, generator.size());
 
-        cpp::static_if<layer_traits<layer_t>::is_pretrained()>([&](auto f) {
+        if constexpr (layer_traits<layer_t>::is_pretrained()) {
             // Train the RBM
-            f(layer).template train<!watcher_t::ignore_sub,               //Enable the RBM Watcher or not
+            layer.template train<!watcher_t::ignore_sub,               //Enable the RBM Watcher or not
                                     dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
                 (generator, max_epochs);
-        });
+        }
 
         //When the next layer is a pooling layer, a lot of memory can be saved by directly computing
         //the activations of two layers at once
-        cpp::static_if<inline_next<I + 1>::value>([&](auto f) {
-            f(this)->template inline_layer_pretrain<I>(generator, watcher, max_epochs);
-        });
+        if constexpr (inline_next<I + 1>::value) {
+            this->template inline_layer_pretrain<I>(generator, watcher, max_epochs);
+        }
 
         if /*constexpr*/ (train_next<I + 1>::value && !inline_next<I + 1>::value) {
             // Reset correctly the generator
@@ -2516,13 +2515,13 @@ private:
 
         watcher.pretrain_layer(*this, I, layer, generator.size());
 
-        cpp::static_if<layer_traits<layer_t>::is_pretrained()>([&](auto f) {
+        if constexpr (layer_traits<layer_t>::is_pretrained()) {
             // Train the RBM
-            f(layer).template train_denoising<
-                                              !watcher_t::ignore_sub,               //Enable the RBM Watcher or not
-                                              dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
+            layer.template train_denoising<
+                !watcher_t::ignore_sub,               //Enable the RBM Watcher or not
+                dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
                 (generator, max_epochs);
-        });
+        }
 
         if /*constexpr*/ (train_next<I + 1>::value) {
             // Reset correctly the generator
@@ -2764,11 +2763,11 @@ private:
 
         watcher.pretrain_layer(*this, I, layer, input_size);
 
-        cpp::static_if<layer_traits<layer_t>::is_trained()>([&](auto f) {
-            f(layer).template train<!watcher_t::ignore_sub,               //Enable the RBM Watcher or not
+        if constexpr (layer_traits<layer_t>::is_trained()) {
+            layer.template train<!watcher_t::ignore_sub,               //Enable the RBM Watcher or not
                                     dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
                 (first, last, max_epochs);
-        });
+        }
 
         if (I < layers - 1) {
             auto next_a = this_type::template forward_many<I, I>(first, last);

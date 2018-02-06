@@ -158,11 +158,11 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_
                 label_cache_helper_t::set(i, lit, label_cache(b));
 
                 // In case of auto-encoders, the label images also need to be transformed
-                cpp::static_if<desc::AutoEncoder>([&](auto f) {
-                    pre_scaler<desc>::transform(f(label_cache)(b)(i));
-                    pre_normalizer<desc>::transform(f(label_cache)(b)(i));
-                    pre_binarizer<desc>::transform(f(label_cache)(b)(i));
-                });
+                if constexpr (desc::AutoEncoder) {
+                    pre_scaler<desc>::transform(label_cache(b)(i));
+                    pre_normalizer<desc>::transform(label_cache(b)(i));
+                    pre_binarizer<desc>::transform(label_cache(b)(i));
+                }
 
                 ++i;
                 ++current_real;
@@ -433,11 +433,11 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_a
                         label_cache_helper_t::set(i, lit, label_cache(index));
 
                         // In case of auto-encoders, the label images also need to be transformed
-                        cpp::static_if<desc::AutoEncoder>([&](auto f) {
-                            pre_scaler<desc>::transform(f(label_cache)(index)(i));
-                            pre_normalizer<desc>::transform(f(label_cache)(index)(i));
-                            pre_binarizer<desc>::transform(f(label_cache)(index)(i));
-                        });
+                        if constexpr (desc::AutoEncoder){
+                            pre_scaler<desc>::transform(label_cache(index)(i));
+                            pre_normalizer<desc>::transform(label_cache(index)(i));
+                            pre_binarizer<desc>::transform(label_cache(index)(i));
+                        }
 
                         ++it;
                         ++lit;
