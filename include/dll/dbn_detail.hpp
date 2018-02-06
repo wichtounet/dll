@@ -156,38 +156,32 @@ struct for_each_impl<D, N, std::index_sequence<I...>> {
 
     template <typename Functor>
     void for_each_layer(Functor&& functor) {
-        int wormhole[] = {(functor(dbn.template layer_get<I>()), 0)...};
-        cpp_unused(wormhole);
+        (functor(dbn.template layer_get<I>()), ...);
     }
 
     template <typename Functor>
     void for_each_layer_i(Functor&& functor) {
-        int wormhole[] = {(functor(I, dbn.template layer_get<I>()), 0)...};
-        cpp_unused(wormhole);
+        (functor(I, dbn.template layer_get<I>()), ...);
     }
 
     template <typename Functor>
     void for_each_layer_pair(Functor&& functor) {
-        int wormhole[] = {(functor(dbn.template layer_get<I>(), dbn.template layer_get<I + 1>()), 0)...};
-        cpp_unused(wormhole);
+        (functor(dbn.template layer_get<I>(), dbn.template layer_get<I + 1>()), ...);
     }
 
     template <typename Functor>
     void for_each_layer_pair_i(Functor&& functor) {
-        int wormhole[] = {(functor(I, dbn.template layer_get<I>(), dbn.template layer_get<I + 1>()), 0)...};
-        cpp_unused(wormhole);
+        (functor(I, dbn.template layer_get<I>(), dbn.template layer_get<I + 1>()), ...);
     }
 
     template <typename Functor>
     void for_each_layer_rpair(Functor&& functor) {
-        int wormhole[] = {(functor(dbn.template layer_get<D::layers - I - 2>(), dbn.template layer_get<D::layers - I - 1>()), 0)...};
-        cpp_unused(wormhole);
+        (functor(dbn.template layer_get<D::layers - I - 2>(), dbn.template layer_get<D::layers - I - 1>()), ...);
     }
 
     template <typename Functor>
     void for_each_layer_rpair_i(Functor&& functor) {
-        int wormhole[] = {(functor(D::layers - I - 2, dbn.template layer_get<D::layers - I - 2>(), dbn.template layer_get<D::layers - I - 1>()), 0)...};
-        cpp_unused(wormhole);
+        (functor(D::layers - I - 2, dbn.template layer_get<D::layers - I - 2>(), dbn.template layer_get<D::layers - I - 1>()), ...);
     }
 };
 

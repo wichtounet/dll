@@ -17,19 +17,19 @@ namespace detail {
  * \brief Helper traits indicate if the set contains dynamic layers
  */
 template <typename... Layers>
-constexpr const bool is_dynamic = cpp::or_u<layer_traits<Layers>::is_dynamic()...>::value;
+constexpr const bool is_dynamic = (layer_traits<Layers>::is_dynamic() || ...);
 
 /*!
  * \brief Helper traits indicate if the set contains convolutional layers
  */
 template <typename... Layers>
-constexpr const bool is_convolutional = cpp::or_u<layer_traits<Layers>::is_convolutional_layer()...>::value;
+constexpr const bool is_convolutional = (layer_traits<Layers>::is_convolutional_layer() || ...);
 
 /*!
  * \brief Helper traits indicate if the set contains denoising layers
  */
 template <typename... Layers>
-constexpr const bool is_denoising = cpp::and_u<layer_traits<Layers>::is_dense_rbm_layer()...>::value;
+constexpr const bool is_denoising = (layer_traits<Layers>::is_dense_rbm_layer() && ...);
 
 /*!
  * \brief Indicates if the layer is a RBM shuffle layer
@@ -280,8 +280,7 @@ const layer_type_t<I, Layers>& layer_get(const Layers& layers) {
 
 template <typename DBN, typename Functor, size_t... I>
 void for_each_layer_type_sub(Functor&& functor, const std::index_sequence<I...>& /* i */) {
-    int wormhole[] = {(functor(static_cast<typename DBN::template layer_type<I>*>(nullptr)), 0)...};
-    cpp_unused(wormhole);
+    (functor(static_cast<typename DBN::template layer_type<I>*>(nullptr)), ...);
 }
 
 template <typename DBN, typename Functor>
