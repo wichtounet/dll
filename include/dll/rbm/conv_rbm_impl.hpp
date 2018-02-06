@@ -276,24 +276,20 @@ private:
         return etl::fast_dyn_matrix<weight, 1, K, NH1, NH2>();
     }
 
-    template <typename H1, typename H2, size_t Off = 0, cpp_enable_iff(etl::all_fast<H1, H2>)>
+    template <typename H1, typename H2, size_t Off = 0>
     static void validate_outputs() {
         static_assert(etl::decay_traits<H1>::dimensions() == 3 + Off, "Outputs must be 3D");
         static_assert(etl::decay_traits<H2>::dimensions() == 3 + Off, "Outputs must be 3D");
 
-        static_assert(etl::decay_traits<H1>::template dim<0 + Off>() == K, "Invalid number of output channels");
-        static_assert(etl::decay_traits<H1>::template dim<1 + Off>() == NH1, "Invalid output dimensions");
-        static_assert(etl::decay_traits<H1>::template dim<2 + Off>() == NH2, "Invalid output dimensions");
+        if constexpr (etl::all_fast<H1, H2>) {
+            static_assert(etl::decay_traits<H1>::template dim<0 + Off>() == K, "Invalid number of output channels");
+            static_assert(etl::decay_traits<H1>::template dim<1 + Off>() == NH1, "Invalid output dimensions");
+            static_assert(etl::decay_traits<H1>::template dim<2 + Off>() == NH2, "Invalid output dimensions");
 
-        static_assert(etl::decay_traits<H2>::template dim<0 + Off>() == K, "Invalid number of output channels");
-        static_assert(etl::decay_traits<H2>::template dim<1 + Off>() == NH1, "Invalid output dimensions");
-        static_assert(etl::decay_traits<H2>::template dim<2 + Off>() == NH2, "Invalid output dimensions");
-    }
-
-    template <typename H1, typename H2, size_t Off = 0, cpp_disable_iff(etl::all_fast<H1, H2>)>
-    static void validate_outputs() {
-        static_assert(etl::decay_traits<H1>::dimensions() == 3 + Off, "Outputs must be 3D");
-        static_assert(etl::decay_traits<H2>::dimensions() == 3 + Off, "Outputs must be 3D");
+            static_assert(etl::decay_traits<H2>::template dim<0 + Off>() == K, "Invalid number of output channels");
+            static_assert(etl::decay_traits<H2>::template dim<1 + Off>() == NH1, "Invalid output dimensions");
+            static_assert(etl::decay_traits<H2>::template dim<2 + Off>() == NH2, "Invalid output dimensions");
+        }
     }
 };
 
