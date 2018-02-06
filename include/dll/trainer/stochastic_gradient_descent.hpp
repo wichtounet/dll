@@ -683,16 +683,13 @@ struct sgd_trainer {
 
         // Compute error and loss
 
-        double error = 0.0;
-        double loss = 0.0;
-
         {
             dll::auto_timer timer("sgd::error");
 
-            std::tie(error, loss) = dbn.evaluate_metrics_batch(last_ctx.output, labels, n, true);
-        }
+            auto[error, loss] = dbn.evaluate_metrics_batch(last_ctx.output, labels, n, true);
 
-        return std::make_pair(error, loss);
+            return std::make_pair(error, loss);
+        }
     }
 
     template <typename Layer, typename Context, cpp_disable_iff(is_utility_layer<Layer>)>

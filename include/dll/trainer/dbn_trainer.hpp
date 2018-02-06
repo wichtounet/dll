@@ -402,9 +402,7 @@ struct dbn_trainer {
 
             watcher.ft_batch_start(epoch, dbn);
 
-            double batch_error;
-            double batch_loss;
-            std::tie(batch_error, batch_loss) = trainer->train_batch(
+            auto [batch_error, batch_loss] = trainer->train_batch(
                 epoch,
                 generator.data_batch(),
                 generator.label_batch());
@@ -503,9 +501,7 @@ struct dbn_trainer {
 
             start_epoch(dbn, epoch);
 
-            double error;
-            double loss;
-            std::tie(error, loss) = train_epoch(dbn, generator, epoch);
+            auto [error, loss] = train_epoch(dbn, generator, epoch);
 
             if(stop_epoch(dbn, epoch, error, loss)){
                 break;
@@ -552,9 +548,7 @@ struct dbn_trainer {
 
             start_epoch(dbn, epoch);
 
-            std::pair<double, double> train_stats;
-            std::pair<double, double> val_stats;
-            std::tie(train_stats, val_stats) = train_epoch(dbn, train_generator, val_generator, epoch);
+            auto [train_stats, val_stats] = train_epoch(dbn, train_generator, val_generator, epoch);
 
             if (stop_epoch(dbn, epoch, train_stats, val_stats)) {
                 break;

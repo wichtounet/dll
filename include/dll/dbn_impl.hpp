@@ -2157,10 +2157,7 @@ public:
 
             decltype(auto) output = helper(input_batch);
 
-            double batch_error;
-            double batch_loss;
-
-            std::tie(batch_error, batch_loss) = evaluate_metrics_batch(output, label_batch, etl::dim<0>(input_batch), false);
+            auto [batch_error, batch_loss] = evaluate_metrics_batch(output, label_batch, etl::dim<0>(input_batch), false);
 
             error += batch_error;
             loss += batch_loss;
