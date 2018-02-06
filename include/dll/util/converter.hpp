@@ -452,7 +452,7 @@ struct converter_many {
 };
 
 // Only convert the sub types not the outer container
-template<template<typename...> class Container, typename From, typename To>
+template<template<typename...> typename Container, typename From, typename To>
 struct converter_many <Container<From>, Container<To>> {
     template<typename L>
     static Container<To> convert(const L& l, const Container<From>& from){

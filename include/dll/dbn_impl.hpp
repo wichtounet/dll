@@ -2236,7 +2236,7 @@ public:
 
 private:
     //By default all layer are trained
-    template <size_t I, class Enable = void>
+    template <size_t I, typename Enable = void>
     struct train_next : std::true_type {};
 
     //The last layer is not always trained (softmax for instance)
@@ -2420,7 +2420,7 @@ private:
     /* Pretrain in batch mode */
 
     //By default no layer is ignored
-    template <size_t I, class Enable = void>
+    template <size_t I, typename Enable = void>
     struct batch_layer_ignore : std::false_type {};
 
     //Transform and pooling layers can safely be skipped

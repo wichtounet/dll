@@ -37,7 +37,7 @@ static constexpr bool is_utility_layer = is_group_layer<Layer> || is_merge_layer
  *
  * \param layer The layer to build the context for
  */
-template <template <typename, size_t, updater_type> class SubContext, updater_type UT, typename Layer, size_t... I>
+template <template <typename, size_t, updater_type> typename SubContext, updater_type UT, typename Layer, size_t... I>
 auto build_sub_context(const Layer& layer, std::index_sequence<I...> /*seq*/) {
     return std::make_tuple
         (
@@ -50,7 +50,7 @@ auto build_sub_context(const Layer& layer, std::index_sequence<I...> /*seq*/) {
  *
  * \param layer The layer to build the context for
  */
-template <template <typename, size_t, updater_type> class SubContext, updater_type UT, typename Layer>
+template <template <typename, size_t, updater_type> typename SubContext, updater_type UT, typename Layer>
 auto build_sub_context(const Layer& layer) {
     static constexpr size_t N = std::tuple_size<decltype(std::declval<Layer>().trainable_parameters())>();
 
@@ -461,7 +461,7 @@ struct full_sgd_context<DBN, dyn_merge_layer_impl<dyn_merge_layer_desc<D, Layers
  * \brief Build the context for a DBN for the given sequence of layers
  * \param dbn The DBN to build the context from
  */
-template<template<typename, typename, size_t> class Context, typename DBN, size_t... I>
+template<template<typename, typename, size_t> typename Context, typename DBN, size_t... I>
 auto build_context(DBN& dbn, std::index_sequence<I...> /*seq*/){
     return std::make_tuple
         (
@@ -476,7 +476,7 @@ auto build_context(DBN& dbn, std::index_sequence<I...> /*seq*/){
  * \brief Build the context for a DBN
  * \param dbn The DBN to build the context from
  */
-template<template<typename, typename, size_t> class Context, typename DBN>
+template<template<typename, typename, size_t> typename Context, typename DBN>
 auto build_context(DBN& dbn){
     return build_context<Context>(dbn, std::make_index_sequence<DBN::layers>());
 }

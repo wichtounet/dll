@@ -281,10 +281,10 @@ using conditional_fast_matrix_t = typename conditional_fast_matrix<C, W, Dims...
 
 /* Utilities to build dyn layer types from normal layer types */
 
-template <template <typename> class Layer, template<typename...> class Desc, typename Index, typename... Args>
+template <template <typename> typename Layer, template<typename...> typename Desc, typename Index, typename... Args>
 struct build_dyn_layer_t ;
 
-template <template <typename> class Layer, template<typename...> class Desc, size_t... I, typename... Args>
+template <template <typename> typename Layer, template<typename...> typename Desc, size_t... I, typename... Args>
 struct build_dyn_layer_t <Layer, Desc, std::index_sequence<I...>, Args...> {
     using type = Layer<Desc<cpp::nth_type_t<I, Args...>...>>;
 };

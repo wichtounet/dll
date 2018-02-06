@@ -19,7 +19,7 @@ struct dyn_layers_t <dll::detail::layers<Labels, Layers...>> {
     using dyn_t = dll::detail::layers<Labels, typename Layers::desc::dyn_layer_t...>;
 };
 
-template <template <typename> class DBN_T, typename Layers, typename... Parameters>
+template <template <typename> typename DBN_T, typename Layers, typename... Parameters>
 struct generic_dyn_dbn_desc : generic_dbn_desc<DBN_T, Layers, Parameters...> {
     /* Dynify the layers */
     using layers      = typename dyn_layers_t<Layers>::dyn_t;

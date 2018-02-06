@@ -28,7 +28,7 @@ using default_dbn_trainer_t = sgd_trainer<DBN>;
  * This struct should be used to define a DBN.
  * Once configured, the ::network_t member (or ::dbn_t) returns the type of the configured DBN.
  */
-template <template <typename> class DBN_T, typename Layers, typename... Parameters>
+template <template <typename> typename DBN_T, typename Layers, typename... Parameters>
 struct generic_dbn_desc {
     using layers      = Layers; ///< The network layers
     using base_layers = Layers; ///< The network layers before transformation

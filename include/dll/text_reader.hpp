@@ -88,7 +88,7 @@ void read_images(Container& images, const std::string& path, size_t limit, Funct
     }
 }
 
-template<template<typename...> class  Container = std::vector, typename Label = uint8_t>
+template<template<typename...> typename  Container = std::vector, typename Label = uint8_t>
 void read_labels(Container<Label>& labels, const std::string& path, size_t limit = 0){
     struct dirent* entry;
     auto dir = opendir(path.c_str());
@@ -134,14 +134,14 @@ void read_images_direct(Container& images, const std::string& path, size_t limit
     read_images(images, path, limit, [](size_t c, size_t h, size_t w){ return typename Container::value_type(c * h * w);});
 }
 
-template<template<typename...> class Container, typename Image, bool Three>
+template<template<typename...> typename Container, typename Image, bool Three>
 Container<Image> read_images(const std::string& path, size_t limit){
     Container<Image> images;
     read_images_direct<Three>(images, path, limit);
     return images;
 }
 
-template<template<typename...> class Container = std::vector, typename Label = uint8_t>
+template<template<typename...> typename Container = std::vector, typename Label = uint8_t>
 Container<Label> read_labels(const std::string& path, size_t limit){
     Container<Label> labels;
     read_labels<Container, Label>(labels, path, limit);

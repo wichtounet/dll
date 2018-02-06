@@ -54,7 +54,7 @@ struct type_conf_elt {
  *
  * The template type takes a single typename.
  */
-template <typename ID, template <typename...> class T>
+template <typename ID, template <typename...> typename T>
 struct template_type_conf_elt {
     using type_id = ID; ///< The unique identifier type of this element
 
@@ -70,7 +70,7 @@ struct template_type_conf_elt {
  *
  * The template type takes a typename and a bool.
  */
-template <typename ID, template <typename, bool> class T>
+template <typename ID, template <typename, bool> typename T>
 struct template_type_tb_conf_elt {
     using type_id = ID; ///< The unique identifier type of this element
 
@@ -322,21 +322,21 @@ struct weight_type : type_conf_elt<weight_type_id, T> {};
  * \brief sets the trainer for DBN
  * \tparam The trainer type
  */
-template <template <typename...> class T>
+template <template <typename...> typename T>
 struct trainer : template_type_conf_elt<trainer_id, T> {};
 
 /*!
  * \brief sets the trainer for RBM
  * \tparam The trainer type
  */
-template <template <typename> class T>
+template <template <typename> typename T>
 struct trainer_rbm : template_type_conf_elt<trainer_rbm_id, T> {};
 
 /*!
  * \brief sets the watcher
  * \tparam The watcher type
  */
-template <template <typename...> class T>
+template <template <typename...> typename T>
 struct watcher : template_type_conf_elt<watcher_id, T> {};
 
 /*!
