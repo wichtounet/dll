@@ -610,7 +610,7 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
     etl::dyn_matrix<weight> p_h_a; ///< Beginning of the contrastive divergence chain (activations)
     etl::dyn_matrix<weight> p_h_s; ///< Beginning of the contrastive divergence chain (samples)
 
-    template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_disable_if(M)>
+    template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_disable_iff(M)>
     base_cd_trainer(rbm_t& rbm)
             : rbm(rbm),
               v1(batch_size, rbm.num_visible),

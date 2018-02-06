@@ -250,7 +250,7 @@ size_t get_nc(const RBM& rbm) {
 /*!
  * \brief Return the number of input channels of the given CRBM
  */
-template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
+template <typename RBM, cpp_disable_iff(layer_traits<RBM>::is_dynamic())>
 constexpr size_t get_nc(const RBM&) {
     return RBM::NC;
 }
@@ -266,7 +266,7 @@ size_t get_k(const RBM& rbm) {
 /*!
  * \brief Return the number of filters of the given CRBM
  */
-template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
+template <typename RBM, cpp_disable_iff(layer_traits<RBM>::is_dynamic())>
 constexpr size_t get_k(const RBM&) {
     return RBM::K;
 }
@@ -282,7 +282,7 @@ size_t get_nv1(const RBM& rbm) {
 /*!
  * \brief Return the first dimension of the inputs
  */
-template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
+template <typename RBM, cpp_disable_iff(layer_traits<RBM>::is_dynamic())>
 constexpr size_t get_nv1(const RBM&) {
     return RBM::NV1;
 }
@@ -298,7 +298,7 @@ size_t get_nv2(const RBM& rbm) {
 /*!
  * \brief Return the second dimension of the inputs
  */
-template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
+template <typename RBM, cpp_disable_iff(layer_traits<RBM>::is_dynamic())>
 constexpr size_t get_nv2(const RBM&) {
     return RBM::NV2;
 }
@@ -314,7 +314,7 @@ size_t get_nw1(const RBM& rbm) {
 /*!
  * \brief Return the first dimension of the filters
  */
-template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
+template <typename RBM, cpp_disable_iff(layer_traits<RBM>::is_dynamic())>
 constexpr size_t get_nw1(const RBM&) {
     return RBM::NW1;
 }
@@ -330,7 +330,7 @@ size_t get_nw2(const RBM& rbm) {
 /*!
  * \brief Return the second dimension of the filters
  */
-template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
+template <typename RBM, cpp_disable_iff(layer_traits<RBM>::is_dynamic())>
 constexpr size_t get_nw2(const RBM&) {
     return RBM::NW2;
 }
@@ -348,7 +348,7 @@ size_t num_visible(const RBM& rbm) {
  * \brief Return the number of visible units of the given RBM
  * \param rbm The RBM to get the information from
  */
-template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
+template <typename RBM, cpp_disable_iff(layer_traits<RBM>::is_dynamic())>
 constexpr size_t num_visible(const RBM&) {
     return RBM::desc::num_visible;
 }
@@ -366,7 +366,7 @@ size_t num_hidden(const RBM& rbm) {
  * \brief Return the number of hidden units of the given RBM
  * \param rbm The RBM to get the information from
  */
-template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
+template <typename RBM, cpp_disable_iff(layer_traits<RBM>::is_dynamic())>
 constexpr size_t num_hidden(const RBM&) {
     return RBM::desc::num_hidden;
 }
@@ -375,7 +375,7 @@ constexpr size_t num_hidden(const RBM&) {
  * \brief Return the output size of the given RBM
  * \param rbm The RBM to get the information from
  */
-template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
+template <typename RBM, cpp_disable_iff(layer_traits<RBM>::is_dynamic())>
 constexpr size_t output_size(const RBM&) {
     return RBM::output_size();
 }
@@ -402,7 +402,7 @@ size_t input_size(const RBM& rbm) {
  * \brief Return the input size of the given RBM
  * \param rbm The RBM to get the information from
  */
-template <typename RBM, cpp_disable_if(layer_traits<RBM>::is_dynamic())>
+template <typename RBM, cpp_disable_iff(layer_traits<RBM>::is_dynamic())>
 constexpr size_t input_size(const RBM&) {
     return RBM::input_size();
 }

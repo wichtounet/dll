@@ -219,7 +219,7 @@ public:
 private:
     cpp::thread_pool<!dbn_traits<this_type>::is_serial()> pool;
 
-    template<size_t I, cpp_disable_if(I == layers)>
+    template<size_t I, cpp_disable_iff(I == layers)>
     void dyn_init(){
         using fast_t = detail::layer_type_t<I, typename desc::base_layers>;
 
@@ -766,7 +766,7 @@ public:
      * \brief Pretrain the network by training all layers in an unsupervised
      * manner, the network will learn to reconstruct noisy input.
      */
-    template <typename Clean, cpp_disable_if(is_generator<Clean>)>
+    template <typename Clean, cpp_disable_iff(is_generator<Clean>)>
     void pretrain_denoising(const Clean& clean, size_t max_epochs) {
         static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
 
@@ -1455,7 +1455,7 @@ public:
      * \param max_epochs The maximum number of epochs to train the network for.
      * \return The final classification error
      */
-    template <typename Samples, cpp_disable_if(is_generator<Samples>)>
+    template <typename Samples, cpp_disable_iff(is_generator<Samples>)>
     weight fine_tune_ae(const Samples& training_data, size_t max_epochs) {
         // Create generator around the containers
         auto generator = dll::make_generator(

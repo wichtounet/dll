@@ -517,7 +517,7 @@ struct sgd_trainer {
     /*!
      * \brief Inherit the layer dimensions from front
      */
-    template<typename L1, typename L2, cpp_disable_if(decay_layer_traits<typename L2::first_type>::is_transform_layer())>
+    template<typename L1, typename L2, cpp_disable_iff(decay_layer_traits<typename L2::first_type>::is_transform_layer())>
     static void inherit_from_front(L1& /*l1*/, L2& /*l2*/){ }
 
     /*!

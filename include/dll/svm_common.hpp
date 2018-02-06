@@ -94,7 +94,7 @@ void add_activation_probabilities(DBN& dbn, Result& result, Sample& sample) {
     dbn.smart_full_activation_probabilities(sample, result.back());
 }
 
-template <typename DBN, typename Result, typename Sample, cpp_disable_if(dbn_traits<std::decay_t<DBN>>::concatenate())>
+template <typename DBN, typename Result, typename Sample, cpp_disable_iff(dbn_traits<std::decay_t<DBN>>::concatenate())>
 void add_activation_probabilities(DBN& dbn, Result& result, Sample& sample) {
     result.emplace_back(dbn_output_size(dbn));
     dbn.activation_probabilities(sample, result.back());
@@ -105,7 +105,7 @@ etl::dyn_vector<typename DBN::weight> get_activation_probabilities(DBN& dbn, Sam
     return dbn.smart_full_activation_probabilities(sample);
 }
 
-template <typename DBN, typename Sample, cpp_disable_if(dbn_traits<std::decay_t<DBN>>::concatenate())>
+template <typename DBN, typename Sample, cpp_disable_iff(dbn_traits<std::decay_t<DBN>>::concatenate())>
 etl::dyn_vector<typename DBN::weight> get_activation_probabilities(DBN& dbn, Sample& sample) {
     return dbn.activation_probabilities(sample);
 }
