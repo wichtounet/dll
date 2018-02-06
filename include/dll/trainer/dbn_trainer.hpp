@@ -457,14 +457,13 @@ struct dbn_trainer {
         return std::make_pair(train_stats, val_stats);
     }
 
-    template<typename Generator, cpp_enable_iff(is_generator<Generator> && dbn_traits<dbn_t>::shuffle())>
+    template<typename Generator>
     void reset_shuffle(Generator& generator){
-        generator.reset_shuffle();
-    }
-
-    template<typename Generator, cpp_disable_iff(is_generator<Generator> && dbn_traits<dbn_t>::shuffle())>
-    void reset_shuffle(Generator& generator){
-        generator.reset();
+        if constexpr (is_generator<Generator> && dbn_traits<dbn_t>::shuffle()) {
+            generator.reset_shuffle();
+        } else {
+            generator.reset();
+        }
     }
 
     /*!

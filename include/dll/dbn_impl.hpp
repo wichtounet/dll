@@ -934,25 +934,14 @@ public:
      *
      * \return The test representation of the LS layer forwarded from L
      */
-    template <size_t LS, size_t L, typename Input, cpp_enable_iff((L != LS))>
+    template <size_t LS, size_t L, typename Input>
     decltype(auto) test_forward_batch_impl(Input&& sample) const {
-        decltype(auto) next = layer_get<L>().test_forward_batch(sample);
-        return test_forward_batch_impl<LS, L+1>(next);
-    }
-
-    /*
-     * \brief Return the test representation for the given input batch.
-     *
-     * \tparam LS The layer from which the representation is extracted
-     * \tparam L The layer to which the input is given
-     *
-     * \param sample The input batch to the layer L
-     *
-     * \return The test representation of the LS layer forwarded from L
-     */
-    template <size_t LS, size_t L, typename Input, cpp_enable_iff((L == LS))>
-    decltype(auto) test_forward_batch_impl(Input&& sample) const {
-        return layer_get<L>().test_forward_batch(sample);
+        if constexpr (L != LS) {
+            decltype(auto) next = layer_get<L>().test_forward_batch(sample);
+            return test_forward_batch_impl<LS, L + 1>(next);
+        } else {
+            return layer_get<L>().test_forward_batch(sample);
+        }
     }
 
     /*
