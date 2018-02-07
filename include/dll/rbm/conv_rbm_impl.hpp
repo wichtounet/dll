@@ -24,12 +24,12 @@ namespace dll {
  */
 template <typename Desc>
 struct conv_rbm_impl final : public standard_crbm<conv_rbm_impl<Desc>, Desc> {
-    using desc      = Desc; ///< The descriptor of the layer
-    using weight    = typename desc::weight; ///< The data type for this layer
-    using this_type = conv_rbm_impl<desc>; ///< The type of this layer
-    using base_type = standard_crbm<this_type, desc>;
-    using layer_t     = this_type;                     ///< This layer's type
-    using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
+    using desc        = Desc;                           ///< The descriptor of the layer
+    using weight      = typename desc::weight;          ///< The data type for this layer
+    using this_type   = conv_rbm_impl<desc>;            ///< The type of this layer
+    using base_type   = standard_crbm<this_type, desc>; ///< The base type
+    using layer_t     = this_type;                      ///< This layer's type
+    using dyn_layer_t = typename desc::dyn_layer_t;     ///< The dynamic version of this layer
 
     static constexpr unit_type visible_unit = desc::visible_unit; ///< The type of visible unit
     static constexpr unit_type hidden_unit  = desc::hidden_unit;  ///< The type of hidden unit
@@ -41,7 +41,7 @@ struct conv_rbm_impl final : public standard_crbm<conv_rbm_impl<Desc>, Desc> {
     static constexpr size_t NC  = desc::NC;  ///< The number of input channels
     static constexpr size_t K   = desc::K;   ///< The number of filters
 
-    static constexpr size_t batch_size  = desc::BatchSize;  ///< The mini-batch size
+    static constexpr size_t batch_size = desc::BatchSize; ///< The mini-batch size
 
     static constexpr size_t NH1 = NV1 - NW1 + 1; //By definition
     static constexpr size_t NH2 = NV2 - NW2 + 1; //By definition
@@ -49,12 +49,12 @@ struct conv_rbm_impl final : public standard_crbm<conv_rbm_impl<Desc>, Desc> {
     static constexpr bool dbn_only = rbm_layer_traits<this_type>::is_dbn_only();
 
     using w_type = etl::fast_matrix<weight, K, NC, NW1, NW2>; ///< The type of the weights
-    using b_type = etl::fast_vector<weight, K>; ///< The type of the biases
-    using c_type = etl::fast_vector<weight, NC>;
+    using b_type = etl::fast_vector<weight, K>;               ///< The type of the biases
+    using c_type = etl::fast_vector<weight, NC>;              //< The type of the visibele biases
 
-    using input_t      = typename rbm_base_traits<this_type>::input_t; ///< The type of the input
-    using output_t     = typename rbm_base_traits<this_type>::output_t; ///< The type of the output
-    using input_one_t  = typename rbm_base_traits<this_type>::input_one_t; ///< The type of one input
+    using input_t      = typename rbm_base_traits<this_type>::input_t;      ///< The type of the input
+    using output_t     = typename rbm_base_traits<this_type>::output_t;     ///< The type of the output
+    using input_one_t  = typename rbm_base_traits<this_type>::input_one_t;  ///< The type of one input
     using output_one_t = typename rbm_base_traits<this_type>::output_one_t; ///< The type of one output
 
     w_type w; ///< shared weights
