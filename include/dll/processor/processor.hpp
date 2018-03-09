@@ -138,7 +138,7 @@ bool read_samples(const datasource& ds, std::vector<Sample>& samples) {
     if (ds.reader == "mnist") {
         mnist::read_mnist_image_file<std::vector, Sample>(samples, ds.source_file, limit, [] { return Sample(1 * 28 * 28); });
     } else if(ds.reader == "text"){
-        dll::text::read_images_direct<Three, std::vector, Sample>(samples, ds.source_file, limit);
+        dll::text::read_images_direct<Three>(samples, ds.source_file, limit);
     } else {
         std::cout << "dllp: error: unknown samples reader: " << ds.reader << std::endl;
         return false;
