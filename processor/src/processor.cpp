@@ -679,7 +679,7 @@ bool compile(const options& opt) {
     compile_command += " -o .dbn.out ";
     compile_command += " -g ";
     compile_command += " -O2 -DETL_VECTORIZE_FULL ";
-    compile_command += " -std=c++1y ";
+    compile_command += " -std=c++1z ";
     compile_command += " -pthread ";
     compile_command += " .dbn.cpp ";
 
