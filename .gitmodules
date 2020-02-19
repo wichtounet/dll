@@ -2,10 +2,6 @@
 	path = make-utils
 	url = https://github.com/wichtounet/make-utils.git
 	branch = master
-[submodule "etl"]
-	path = etl
-	url = https://github.com/wichtounet/etl.git
-	branch = master
 [submodule "Catch"]
 	path = Catch
 	url = https://github.com/philsquared/Catch.git
@@ -20,3 +16,7 @@
 [submodule "cifar-10"]
 	path = cifar-10
 	url = https://github.com/wichtounet/cifar-10.git
+[submodule "etl"]
+	path = etl
+	url = https://github.com/BeatWolf/etl.git
+	branch = master
