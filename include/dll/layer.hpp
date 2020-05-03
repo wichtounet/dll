@@ -49,7 +49,7 @@ struct layer {
      */
     layer() {
 #ifdef __ARM_ARCH
-// do not set flush zero mode
+ // do not set flush zero mode
 #else
 #ifndef DLL_DENORMALS
         // Disable denormals for performance reason
