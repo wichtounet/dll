@@ -51,7 +51,7 @@ struct layer {
 #ifndef __ARM_ARCH
 #ifndef DLL_DENORMALS
         // Disable denormals for performance reason
-          _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+         _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 #endif
 #endif
 
