@@ -16,7 +16,3 @@
 [submodule "cifar-10"]
 	path = cifar-10
 	url = https://github.com/wichtounet/cifar-10.git
-[submodule "etl"]
-	path = etl
-	url = https://github.com/BeatWolf/etl.git
-	branch = master
