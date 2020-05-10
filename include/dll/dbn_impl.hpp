@@ -1923,11 +1923,11 @@ public:
             if (cpp_unlikely(!full_batch)) {
                 auto sout = slice(out, 0, n);
 
-                batch_loss  = (-1.0 / (s * output_size())) * sum((labels >> log(sout)) + ((1.0 - labels) >> log(1.0 - sout)));
-                batch_error = (1.0 / (s * output_size())) * asum(labels - sout);
+                batch_loss  = etl::ml::bce_loss(sout, labels, -1.0 / (s * output_size()));
+                batch_error = etl::ml::bce_error(sout, labels, 1.0 / (s * output_size()));
             } else {
-                batch_loss  = (-1.0 / (s * output_size())) * sum((labels >> log(out)) + ((1.0 - labels) >> log(1.0 - out)));
-                batch_error = (1.0 / (s * output_size())) * asum(labels - output);
+                batch_loss  = etl::ml::bce_loss(out, labels, -1.0 / (s * output_size()));
+                batch_error = etl::ml::bce_error(out, labels, 1.0 / (s * output_size()));
             }
         } else { // MEAN_SQUARED_ERROR
             dll::auto_timer timer("net:compute_loss:MSE");
