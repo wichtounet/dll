@@ -38,7 +38,7 @@ int main(int /*argc*/, char* /*argv*/ []) {
     dataset.display();
 
     // Train the network
-    net->fine_tune(dataset.train(), 25);
+    net->train(dataset.train(), 25);
 
     // Test the network on test set
     net->evaluate(dataset.test());

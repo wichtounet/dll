@@ -40,7 +40,7 @@ int main(int /*argc*/, char* /*argv*/ []) {
     net->display();
 
     // Train the network as auto-encoder
-    net->fine_tune_ae(dataset.train(), 50);
+    net->train_ae(dataset.train(), 50);
 
     // Test the network on test set
     net->evaluate_ae(dataset.test());
