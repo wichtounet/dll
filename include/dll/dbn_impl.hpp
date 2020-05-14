@@ -1550,6 +1550,140 @@ public:
         return fine_tune_reg(*generator, max_epochs);
     }
 
+    // To make it more standard, train is an alias to fine_tune
+
+    /*!
+     * \brief Fine tune the network for classifcation with a generator.
+     *
+     * \param generator A generator for data and labels
+     * \param max_epochs The maximum number of epochs to train the network for.
+     *
+     * \return The final classification error
+     */
+    template <typename Generator>
+    weight train(Generator& generator, size_t max_epochs) {
+        return fine_tune(generator, max_epochs);
+    }
+
+    /*!
+     * \brief Fine tune the network for classifcation with a generator.
+     *
+     * \param train_generator A generator for training data and labels
+     * \param val_generator A generator for validation data and labels
+     * \param max_epochs The maximum number of epochs to train the network for.
+     *
+     * \return The final classification error
+     */
+    template <typename Generator, typename ValGenerator>
+    weight train_val(Generator& train_generator, ValGenerator& val_generator, size_t max_epochs) {
+        return fine_tune_val(train_generator, val_generator, max_epochs);
+    }
+
+    /*!
+     * \brief Fine tune the network for classifcation.
+     * \param training_data A container containing all the samples
+     * \param labels A container containing all the labels
+     * \param max_epochs The maximum number of epochs to train the network for.
+     * \return The final classification error
+     */
+    template <typename Input, typename Labels>
+    weight train(const Input& training_data, Labels& labels, size_t max_epochs) {
+        return fine_tune(training_data, labels, max_epochs);
+    }
+
+    /*!
+     * \brief Fine tune the network for classifcation.
+     * \param first Iterator to the first sample
+     * \param last Iterator to the last sample
+     * \param lfirst Iterator the first label
+     * \param llast Iterator the last label
+     * \param max_epochs The maximum number of epochs to train the network for.
+     * \return The final classification error
+     */
+    template <typename Iterator, typename LIterator>
+    weight train(Iterator&& first, Iterator&& last, LIterator&& lfirst, LIterator&& llast, size_t max_epochs) {
+        return fine_tune(std::forward<Iterator>(first), std::forward<Iterator>(last),
+                         std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
+                         max_epochs);
+    }
+
+    // Fine-tune for auto-encoder
+
+    /*!
+     * \brief Fine tune the network for autoencoder.
+     * \param training_data A container containing all the samples
+     * \param max_epochs The maximum number of epochs to train the network for.
+     * \return The final classification error
+     */
+    template <typename Generator, cpp_enable_iff(is_generator<Generator>)>
+    weight train_ae(Generator& generator, size_t max_epochs) {
+        return fine_tune_ae(generator, max_epochs);
+    }
+
+    /*!
+     * \brief Fine tune the network for autoencoder.
+     * \param training_data A container containing all the samples
+     * \param max_epochs The maximum number of epochs to train the network for.
+     * \return The final classification error
+     */
+    template <typename Samples, cpp_disable_iff(is_generator<Samples>)>
+    weight train_ae(const Samples& training_data, size_t max_epochs) {
+        return fine_tune_ae(training_data, max_epochs);
+    }
+
+    /*!
+     * \brief Fine tune the network for autoencoder.
+     * \param first Iterator to the first sample
+     * \param last Iterator to the last sample
+     * \param max_epochs The maximum number of epochs to train the network for.
+     * \return The final classification error
+     */
+    template <typename Iterator>
+    weight train_ae(Iterator&& first, Iterator&& last, size_t max_epochs) {
+        return fine_tune_ae(std::forward<Iterator>(first), std::forward<Iterator>(last), max_epochs);
+    }
+
+    // Fine tune for regression
+
+    /*!
+     * \brief Fine tune the network for regression.
+     * \param generator Generator for samples and outputs
+     * \param max_epochs The maximum number of epochs to train the network for.
+     * \return The final average loss
+     */
+    template <typename Generator, cpp_enable_iff(is_generator<Generator>)>
+    weight train_reg(Generator& generator, size_t max_epochs) {
+        return fine_tune_reg(generator, max_epochs);
+    }
+
+    /*!
+     * \brief Fine tune the network for regression.
+     * \param inputs A container containing all the samples
+     * \param outputs A container containing the correct results
+     * \param max_epochs The maximum number of epochs to train the network for.
+     * \return The final average loss
+     */
+    template <typename Inputs, typename Outputs>
+    weight train_reg(const Inputs& inputs, const Outputs& outputs, size_t max_epochs) {
+        return fine_tune_reg(inputs, outputs, max_epochs);
+    }
+
+    /*!
+     * \brief Fine tune the network for regression.
+     * \param in_first Iterator to the first sample
+     * \param in_last Iterator to the last sample
+     * \param out_first Iterator to the first output
+     * \param out_last Iterator to the last output
+     * \param max_epochs The maximum number of epochs to train the network for.
+     * \return The final average loss
+     */
+    template <typename InIterator, typename OutIterator>
+    weight train_reg(InIterator&& in_first, InIterator&& in_last, OutIterator&& out_first, OutIterator&& out_last, size_t max_epochs) {
+        return fine_tune_reg(std::forward<InIterator>(in_first), std::forward<InIterator>(in_last),
+                             std::forward<OutIterator>(out_first), std::forward<OutIterator>(out_last),
+                             max_epochs);
+    }
+
     template <size_t I, typename Input>
     auto prepare_output() const {
         using layer_input_t = typename types_helper<I, Input>::input_t;
