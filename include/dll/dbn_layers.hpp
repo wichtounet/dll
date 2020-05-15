@@ -76,7 +76,7 @@ struct validate_layer_pair<L1, L2, std::enable_if_t<layer_traits<L1>::is_transfo
     : std::true_type {};
 
 template <typename L1, typename L2>
-struct validate_layer_pair<L1, L2, cpp::disable_if_t<layer_traits<L1>::is_transform_layer() || layer_traits<L2>::is_transform_layer()>> : cpp::bool_constant<L1::output_size() == L2::input_size()> {};
+struct validate_layer_pair<L1, L2, cpp::disable_if_t<layer_traits<L1>::is_transform_layer() || layer_traits<L2>::is_transform_layer()>> : std::bool_constant<L1::output_size() == L2::input_size()> {};
 
 template <typename... Layers>
 struct validate_layers_impl;
@@ -85,10 +85,9 @@ template <typename Layer>
 struct validate_layers_impl<Layer> : std::true_type {};
 
 template <typename L1, typename L2, typename... Layers>
-struct validate_layers_impl<L1, L2, Layers...> : cpp::bool_constant_c<
-                                                     cpp::and_u<
-                                                         validate_layer_pair<L1, L2>::value,
-                                                         validate_layers_impl<L2, Layers...>::value>> {};
+struct validate_layers_impl<L1, L2, Layers...> : std::bool_constant<
+                                                     validate_layer_pair<L1, L2>::value &&
+                                                     validate_layers_impl<L2, Layers...>::value> {};
 
 //Note: It is not possible to add a template parameter with default value (SFINAE) on a variadic struct
 //therefore, implementing the traits as function is nicer than nested structures
@@ -109,10 +108,9 @@ template <typename Layer>
 struct validate_label_layers<Layer> : std::true_type {};
 
 template <typename L1, typename L2, typename... Layers>
-struct validate_label_layers<L1, L2, Layers...> : cpp::bool_constant_c<
-                                                      cpp::and_u<
-                                                          L1::output_size() <= L2::input_size(),
-                                                          validate_label_layers<L2, Layers...>::value>> {};
+struct validate_label_layers<L1, L2, Layers...> : std::bool_constant<
+                                                      L1::output_size() <= L2::input_size() &&
+                                                      validate_label_layers<L2, Layers...>::value> {};
 
 } // end of namespace detail
 

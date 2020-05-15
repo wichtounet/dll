@@ -2375,13 +2375,13 @@ private:
 
     //The last layer is not always trained (softmax for instance)
     template <size_t I>
-    struct train_next<I, std::enable_if_t<(I == layers - 1)>> : cpp::bool_constant<layer_traits<layer_type<I>>::pretrain_last()> {};
+    struct train_next<I, std::enable_if_t<(I == layers - 1)>> : std::bool_constant<layer_traits<layer_type<I>>::pretrain_last()> {};
 
     template <size_t I, typename Enable = void>
     struct inline_next : std::false_type {};
 
     template <size_t I>
-    struct inline_next<I, std::enable_if_t<(I < layers)>> : cpp::bool_constant<layer_traits<layer_type<I>>::is_pooling_layer()> {};
+    struct inline_next<I, std::enable_if_t<(I < layers)>> : std::bool_constant<layer_traits<layer_type<I>>::is_pooling_layer()> {};
 
     template <size_t I, typename Generator>
     void inline_layer_pretrain(Generator& generator, watcher_t& watcher, size_t max_epochs) {

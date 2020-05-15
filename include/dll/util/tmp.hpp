@@ -59,7 +59,7 @@ template <typename V, typename... Args>
 struct is_valid;
 
 template <typename V, typename T1, typename... Args>
-struct is_valid<V, T1, Args...> : cpp::bool_constant_c<cpp::and_u<V::template contains<typename T1::type_id>(), is_valid<V, Args...>::value>> {};
+struct is_valid<V, T1, Args...> : std::bool_constant<V::template contains<typename T1::type_id>() && is_valid<V, Args...>::value> {};
 
 template <typename V>
 struct is_valid<V> : std::true_type {};
