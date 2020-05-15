@@ -5,8 +5,8 @@ default: release_debug/bin/dllp
 include make-utils/flags.mk
 include make-utils/cpp-utils.mk
 
-# Use C++17
-$(eval $(call use_cpp17))
+# Use C++20j
+$(eval $(call use_cpp20))
 
 CXX_FLAGS += -pedantic -Werror -ftemplate-backtrace-limit=0
 
