@@ -69,9 +69,11 @@ The folder **include** must be included with the **-I** option, as well as the
 This library is completely header-only, there is no need to build it.
 
 However, this library makes extensive use of C++11 and C++14, therefore,
-a recent compiler is necessary to use it. This library has been tested on clang
-3.9, clang 4.0, g++ 6.3.0 and g++ 7.1. If for some reasons, it should not work
-on one of the supported compilers, contact me and I'll fix it.
+a recent compiler is necessary to use it. Currently, this library is only tested
+with g++ 9.3.0.
+
+If for some reasons, it should not work on one of the supported compilers,
+contact me and I'll fix it. It should work fine on recent versions of clang.
 
 This has never been tested on Windows. While it should compile on Mingw, I don't
 expect Visual Studio to be able to compile it for now, although VS 2017 sounds
