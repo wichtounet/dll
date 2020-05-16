@@ -63,7 +63,7 @@ struct has_shuffle_helper <Layer, std::enable_if_t<!layer_traits<Layer>::is_rbm_
  * \brief Helper traits indicate if the set contains shuffle layers
  */
 template <typename... Layers>
-struct has_shuffle_layer : cpp::or_u<has_shuffle_helper<Layers>::value...> {};
+constexpr const bool has_shuffle_layer = (... || has_shuffle_helper<Layers>::value);
 
 // TODO validate_layer_pair should be made more robust when
 // transform layer are present between layers
@@ -160,7 +160,7 @@ struct layers <false, Layers...> {
     static constexpr bool is_dynamic        = detail::is_dynamic<Layers...>;        ///< Indicates if the set contains dynamic layers
     static constexpr bool is_convolutional  = detail::is_convolutional<Layers...>;  ///< Indicates if the set contains convolutional layers
     static constexpr bool is_denoising      = detail::is_denoising<Layers...>;      ///< Indicates if the set contains denoising layers
-    static constexpr bool has_shuffle_layer = detail::has_shuffle_layer<Layers...>(); ///< Indicates if the set contains shuffle layers
+    static constexpr bool has_shuffle_layer = detail::has_shuffle_layer<Layers...>; ///< Indicates if the set contains shuffle layers
 
     static_assert(size > 0, "A network must have at least 1 layer");
     static_assert(detail::are_layers_valid<Layers...>(), "The inner sizes of the layers must correspond");
@@ -181,7 +181,7 @@ struct layers <true, Layers...> {
     static constexpr bool is_dynamic        = false;                                  ///< Indicates if the set contains dynamic layers
     static constexpr bool is_convolutional  = false;                                  ///< Indicates if the set contains convolutional layers
     static constexpr bool is_denoising      = false;                                  ///< Indicates if the set contains denoising layers
-    static constexpr bool has_shuffle_layer = detail::has_shuffle_layer<Layers...>(); ///< Indicates if the set contains shuffle layers
+    static constexpr bool has_shuffle_layer = detail::has_shuffle_layer<Layers...>; ///< Indicates if the set contains shuffle layers
 
     static_assert(size > 0, "A network must have at least 1 layer");
     static_assert(detail::validate_label_layers<Layers...>::value, "The inner sizes of RBM must correspond");
