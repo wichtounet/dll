@@ -15,7 +15,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("conv_dbn/mnist_slow", "[cdbn][slow][benchmark]") {
+DLL_TEST_CASE("conv_dbn/mnist_slow", "[cdbn][slow][benchmark]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_square_desc<1, 28, 40, 17, dll::momentum, dll::batch_size<25>>::layer_t,

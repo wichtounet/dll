@@ -5,5 +5,5 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#define CATCH_CONFIG_MAIN
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include "dll_test.hpp"

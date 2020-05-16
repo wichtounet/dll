@@ -14,7 +14,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("crbm_mp/mnist_5", "crbm::sparsity") {
+DLL_TEST_CASE("crbm_mp/mnist_5", "crbm::sparsity") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 40, 17, 2,
         dll::batch_size<25>,
@@ -34,7 +34,7 @@ TEST_CASE("crbm_mp/mnist_5", "crbm::sparsity") {
     REQUIRE(error < 1e-1);
 }
 
-TEST_CASE("crbm_mp/mnist_110", "crbm::bias_mode_none") {
+DLL_TEST_CASE("crbm_mp/mnist_110", "crbm::bias_mode_none") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 40, 17, 2,
         dll::batch_size<10>,
@@ -52,7 +52,7 @@ TEST_CASE("crbm_mp/mnist_110", "crbm::bias_mode_none") {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE("crbm_mp/mnist_111", "crbm::bias_mode_simple") {
+DLL_TEST_CASE("crbm_mp/mnist_111", "crbm::bias_mode_simple") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 40, 17, 2,
         dll::batch_size<10>,
@@ -74,7 +74,7 @@ TEST_CASE("crbm_mp/mnist_111", "crbm::bias_mode_simple") {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE("crbm_mp/mnist_12", "crbm::lee") {
+DLL_TEST_CASE("crbm_mp/mnist_12", "crbm::lee") {
     //This test is not meant to be stable, just use it to experiment with
     //sparsity / gaussian
 

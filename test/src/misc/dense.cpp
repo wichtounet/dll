@@ -16,7 +16,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("dense/sgd/0", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dense/sgd/0", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,
@@ -37,7 +37,7 @@ TEST_CASE("dense/sgd/0", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("dense/sgd/1", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dense/sgd/1", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 100>::layer_t,
@@ -59,7 +59,7 @@ TEST_CASE("dense/sgd/1", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("dense/sgd/2", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dense/sgd/2", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 100, dll::activation<dll::function::TANH>>::layer_t,
@@ -83,7 +83,7 @@ TEST_CASE("dense/sgd/2", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("dense/sgd/3", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dense/sgd/3", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 100>::layer_t,
@@ -109,7 +109,7 @@ TEST_CASE("dense/sgd/3", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("dense/sgd/4", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dense/sgd/4", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 100>::layer_t,
@@ -135,7 +135,7 @@ TEST_CASE("dense/sgd/4", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("dense/sgd/5", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dense/sgd/5", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 100, dll::activation<dll::function::TANH>>::layer_t,
@@ -161,7 +161,7 @@ TEST_CASE("dense/sgd/5", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("dense/sgd/6", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dense/sgd/6", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 100, dll::activation<dll::function::IDENTITY>>::layer_t,
@@ -187,7 +187,7 @@ TEST_CASE("dense/sgd/6", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.4);
 }
 
-TEST_CASE("dense/sgd/7", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dense/sgd/7", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 100, dll::activation<dll::function::RELU>>::layer_t,
@@ -213,7 +213,7 @@ TEST_CASE("dense/sgd/7", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.4);
 }
 
-TEST_CASE("dense/sgd/8", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dense/sgd/8", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 100, dll::activation<dll::function::SIGMOID>>::layer_t,
@@ -239,7 +239,7 @@ TEST_CASE("dense/sgd/8", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("dense/sgd/9", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dense/sgd/9", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 100, dll::activation<dll::function::SIGMOID>>::layer_t,
@@ -263,7 +263,7 @@ TEST_CASE("dense/sgd/9", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("dense/sgd/10", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dense/sgd/10", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 100, dll::activation<dll::function::RELU>>::layer_t,
@@ -289,7 +289,7 @@ TEST_CASE("dense/sgd/10", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("dense/sgd/11", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dense/sgd/11", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 100, dll::activation<dll::function::RELU>>::layer_t,
@@ -316,7 +316,7 @@ TEST_CASE("dense/sgd/11", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("dense/sgd/12", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dense/sgd/12", "[dense][dbn][mnist][sgd]") {
     using dbn_t = dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 100>::layer_t,
@@ -342,7 +342,7 @@ TEST_CASE("dense/sgd/12", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("dense/sgd/13", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dense/sgd/13", "[dense][dbn][mnist][sgd]") {
     using dbn_t = dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 100>::layer_t,
@@ -374,7 +374,7 @@ TEST_CASE("dense/sgd/13", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("dense/sgd/14", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dense/sgd/14", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 100, dll::activation<dll::function::IDENTITY>>::layer_t,

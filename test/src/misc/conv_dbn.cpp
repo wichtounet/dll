@@ -15,7 +15,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("conv_dbn/mnist_1", "conv_dbn::simple") {
+DLL_TEST_CASE("conv_dbn/mnist_1", "conv_dbn::simple") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_square_desc<1, 28, 40, 17, dll::momentum, dll::batch_size<25>>::layer_t,
@@ -32,7 +32,7 @@ TEST_CASE("conv_dbn/mnist_1", "conv_dbn::simple") {
     dbn->pretrain(dataset.training_images, 5);
 }
 
-TEST_CASE("conv_dbn/mnist_2", "conv_dbn::svm_simple") {
+DLL_TEST_CASE("conv_dbn/mnist_2", "conv_dbn::svm_simple") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_square_desc<1, 28, 40, 17, dll::momentum, dll::batch_size<25>>::layer_t,
@@ -56,7 +56,7 @@ TEST_CASE("conv_dbn/mnist_2", "conv_dbn::svm_simple") {
     REQUIRE(test_error < 0.1);
 }
 
-TEST_CASE("conv_dbn/mnist_3", "conv_dbn::svm_concatenate") {
+DLL_TEST_CASE("conv_dbn/mnist_3", "conv_dbn::svm_concatenate") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_square_desc<1, 28, 40, 17, dll::momentum, dll::batch_size<25>>::layer_t,
@@ -81,7 +81,7 @@ TEST_CASE("conv_dbn/mnist_3", "conv_dbn::svm_concatenate") {
     REQUIRE(test_error < 0.1);
 }
 
-TEST_CASE("conv_dbn/mnist_4", "conv_dbn::svm_simple") {
+DLL_TEST_CASE("conv_dbn/mnist_4", "conv_dbn::svm_simple") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_square_desc<1, 28, 40, 17, dll::momentum, dll::batch_size<25>>::layer_t>>::dbn_t dbn_t;

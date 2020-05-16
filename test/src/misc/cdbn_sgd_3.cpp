@@ -14,7 +14,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("cdbn/sgd/3", "[dbn][mnist][sgd]") {
+DLL_TEST_CASE("cdbn/sgd/3", "[dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_square_desc<1, 28, 10, 9, dll::momentum, dll::batch_size<10>, dll::weight_type<float>>::layer_t,

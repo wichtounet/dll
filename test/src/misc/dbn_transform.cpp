@@ -20,7 +20,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("dbn/mnist_18", "binarize_layer_impl") {
+DLL_TEST_CASE("dbn/mnist_18", "binarize_layer_impl") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::shape_1d_layer_desc<28 * 28>::layer_t,
@@ -37,7 +37,7 @@ TEST_CASE("dbn/mnist_18", "binarize_layer_impl") {
     dbn->pretrain(dataset.training_images, 20);
 }
 
-TEST_CASE("dbn/mnist_19", "normalize_layer_impl") {
+DLL_TEST_CASE("dbn/mnist_19", "normalize_layer_impl") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::shape_1d_layer_desc<28 * 28>::layer_t,

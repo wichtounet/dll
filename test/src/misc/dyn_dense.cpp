@@ -15,7 +15,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("dyn_dense/sgd/1", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dyn_dense/sgd/1", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dyn_dense_layer_desc<>::layer_t,
@@ -40,7 +40,7 @@ TEST_CASE("dyn_dense/sgd/1", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("dyn_dense/sgd/2", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dyn_dense/sgd/2", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dyn_dense_layer_desc<dll::activation<dll::function::TANH>>::layer_t,
@@ -67,7 +67,7 @@ TEST_CASE("dyn_dense/sgd/2", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("dyn_dense/sgd/3", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dyn_dense/sgd/3", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dyn_dense_layer_desc<>::layer_t,
@@ -96,7 +96,7 @@ TEST_CASE("dyn_dense/sgd/3", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("dyn_dense/sgd/4", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dyn_dense/sgd/4", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dyn_dense_layer_desc<dll::activation<dll::function::RELU>>::layer_t,
@@ -125,7 +125,7 @@ TEST_CASE("dyn_dense/sgd/4", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.4);
 }
 
-TEST_CASE("dyn_dense/sgd/5", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dyn_dense/sgd/5", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dyn_dense_layer_desc<dll::activation<dll::function::SIGMOID>>::layer_t,
@@ -154,7 +154,7 @@ TEST_CASE("dyn_dense/sgd/5", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("dyn_dense/sgd/6", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dyn_dense/sgd/6", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dyn_dense_layer_desc<dll::activation<dll::function::SIGMOID>>::layer_t,
@@ -182,7 +182,7 @@ TEST_CASE("dyn_dense/sgd/6", "[dense][dbn][mnist][sgd]") {
 
 }
 
-TEST_CASE("dyn_dense/sgd/7", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dyn_dense/sgd/7", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dyn_dense_layer_desc<dll::activation<dll::function::RELU>>::layer_t,
@@ -213,7 +213,7 @@ TEST_CASE("dyn_dense/sgd/7", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("dyn_dense/sgd/8", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dyn_dense/sgd/8", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dyn_dense_layer_desc<dll::activation<dll::function::TANH>>::layer_t,

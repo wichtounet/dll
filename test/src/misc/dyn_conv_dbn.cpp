@@ -15,7 +15,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("dyn_conv_dbn/mnist_1", "conv_dbn::simple") {
+DLL_TEST_CASE("dyn_conv_dbn/mnist_1", "conv_dbn::simple") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dyn_conv_rbm_desc<dll::momentum, dll::batch_size<25>>::layer_t,

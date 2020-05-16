@@ -19,7 +19,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("unit/dyn_dbn/mnist/1", "[dyn_dbn][unit]") {
+DLL_TEST_CASE("unit/dyn_dbn/mnist/1", "[dyn_dbn][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dyn_rbm_desc<dll::momentum, dll::init_weights>::layer_t,
@@ -47,7 +47,7 @@ TEST_CASE("unit/dyn_dbn/mnist/1", "[dyn_dbn][unit]") {
     TEST_CHECK(0.25);
 }
 
-TEST_CASE("unit/dyn_dbn/mnist/2", "[dyn_dbn][sgd][unit]") {
+DLL_TEST_CASE("unit/dyn_dbn/mnist/2", "[dyn_dbn][sgd][unit]") {
     using dbn_t = dll::dbn_desc<
         dll::dbn_layers<
             dll::shape_1d_layer_desc<28 * 28>::layer_t,

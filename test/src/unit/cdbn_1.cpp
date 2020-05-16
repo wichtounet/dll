@@ -19,7 +19,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("unit/cdbn/mnist/1", "[cdbn][svm][unit]") {
+DLL_TEST_CASE("unit/cdbn/mnist/1", "[cdbn][svm][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_square_desc<1, 28, 20, 17, dll::momentum, dll::batch_size<10>>::layer_t,
@@ -42,7 +42,7 @@ TEST_CASE("unit/cdbn/mnist/1", "[cdbn][svm][unit]") {
     REQUIRE(test_error < 0.1);
 }
 
-TEST_CASE("unit/cdbn/mnist/2", "[cdbn][svm][unit]") {
+DLL_TEST_CASE("unit/cdbn/mnist/2", "[cdbn][svm][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_square_desc<1, 28, 10, 17, dll::momentum, dll::batch_size<25>>::layer_t,
@@ -72,7 +72,7 @@ TEST_CASE("unit/cdbn/mnist/2", "[cdbn][svm][unit]") {
     REQUIRE(test_error < 0.1);
 }
 
-TEST_CASE("unit/cdbn/mnist/3", "[cdbn][gaussian][svm][unit]") {
+DLL_TEST_CASE("unit/cdbn/mnist/3", "[cdbn][gaussian][svm][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_square_desc<1, 28, 20, 17, dll::visible<dll::unit_type::GAUSSIAN>, dll::momentum, dll::batch_size<20>>::layer_t,
@@ -95,7 +95,7 @@ TEST_CASE("unit/cdbn/mnist/3", "[cdbn][gaussian][svm][unit]") {
     REQUIRE(test_error < 0.15);
 }
 
-TEST_CASE("unit/cdbn/mnist/4", "[cdbn][gaussian][svm][unit]") {
+DLL_TEST_CASE("unit/cdbn/mnist/4", "[cdbn][gaussian][svm][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_square_desc<1, 28, 20, 17, dll::visible<dll::unit_type::GAUSSIAN>, dll::momentum, dll::batch_size<25>>::layer_t,
@@ -119,7 +119,7 @@ TEST_CASE("unit/cdbn/mnist/4", "[cdbn][gaussian][svm][unit]") {
     REQUIRE(test_error < 0.2);
 }
 
-TEST_CASE("unit/cdbn/mnist/5", "[cdbn][crbm_mp][svm][unit]") {
+DLL_TEST_CASE("unit/cdbn/mnist/5", "[cdbn][crbm_mp][svm][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_mp_desc_square<1, 28, 20, 11, 2, dll::momentum, dll::batch_size<8>>::layer_t,
@@ -142,7 +142,7 @@ TEST_CASE("unit/cdbn/mnist/5", "[cdbn][crbm_mp][svm][unit]") {
     REQUIRE(test_error < 0.2);
 }
 
-TEST_CASE("unit/cdbn/mnist/6", "[cdbn][mp][svm][unit]") {
+DLL_TEST_CASE("unit/cdbn/mnist/6", "[cdbn][mp][svm][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_desc<1, 28, 28, 10, 9, 8, dll::momentum, dll::batch_size<25>>::layer_t,

@@ -18,7 +18,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("dyn/conv/sgd/1", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dyn/conv/sgd/1", "[dense][dbn][mnist][sgd]") {
     using dbn_t = dll::dbn_desc<
         dll::dbn_layers<
             dll::dyn_conv_layer_desc<dll::activation<dll::function::SIGMOID>>::layer_t,
@@ -45,7 +45,7 @@ TEST_CASE("dyn/conv/sgd/1", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("dyn/conv/sgd/2", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dyn/conv/sgd/2", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dyn_conv_layer_desc<dll::activation<dll::function::RELU>>::layer_t,
@@ -78,7 +78,7 @@ TEST_CASE("dyn/conv/sgd/2", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("dyn/conv/sgd/3", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dyn/conv/sgd/3", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dyn_conv_layer_desc<dll::activation<dll::function::RELU>>::layer_t,
@@ -113,7 +113,7 @@ TEST_CASE("dyn/conv/sgd/3", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("dyn/conv/sgd/4", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("dyn/conv/sgd/4", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dyn_conv_layer_desc<dll::activation<dll::function::RELU>>::layer_t,

@@ -18,7 +18,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("perf/kws_square", "[perf][crbm][mp][cdbn]") {
+DLL_TEST_CASE("perf/kws_square", "[perf][crbm][mp][cdbn]") {
     using cdbn_t =
         dll::dbn_desc<
             dll::dbn_layers<
@@ -46,7 +46,7 @@ TEST_CASE("perf/kws_square", "[perf][crbm][mp][cdbn]") {
     dll::dump_timers();
 }
 
-TEST_CASE("perf/kws", "[perf][crbm][mp][cdbn]") {
+DLL_TEST_CASE("perf/kws", "[perf][crbm][mp][cdbn]") {
     using cdbn_t =
         dll::dbn_desc<
             dll::dbn_layers<
@@ -86,7 +86,7 @@ TEST_CASE("perf/kws", "[perf][crbm][mp][cdbn]") {
     dll::dump_timers();
 }
 
-TEST_CASE("perf/kws_sub", "[perf][crbm][mp][cdbn]") {
+DLL_TEST_CASE("perf/kws_sub", "[perf][crbm][mp][cdbn]") {
     using cdbn_t =
         dll::dbn_desc<
             dll::dbn_layers<

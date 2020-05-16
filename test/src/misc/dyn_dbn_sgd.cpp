@@ -17,7 +17,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("dyn_dbn/sgd/mnist/1", "dbn::simple") {
+DLL_TEST_CASE("dyn_dbn/sgd/mnist/1", "dbn::simple") {
     using dbn_t =
         dll::dbn_desc<
             dll::dbn_layers<

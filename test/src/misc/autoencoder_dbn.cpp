@@ -16,7 +16,7 @@
 #include "mnist/mnist_utils.hpp"
 
 //TODO: This test does not work (pretraining seems to break havoc)
-TEST_CASE("dbn/ae/2", "[rbm][dbn][mnist][sgd][ae]") {
+DLL_TEST_CASE("dbn/ae/2", "[rbm][dbn][mnist][sgd][ae]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 200, dll::hidden<dll::unit_type::RELU>>::layer_t,
@@ -46,7 +46,7 @@ TEST_CASE("dbn/ae/2", "[rbm][dbn][mnist][sgd][ae]") {
     REQUIRE(test_error < 0.1);
 }
 
-TEST_CASE("dbn/ae/3", "[rbm][dbn][mnist][sgd][ae]") {
+DLL_TEST_CASE("dbn/ae/3", "[rbm][dbn][mnist][sgd][ae]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 200>::layer_t,
@@ -77,7 +77,7 @@ TEST_CASE("dbn/ae/3", "[rbm][dbn][mnist][sgd][ae]") {
     REQUIRE(test_error < 0.1);
 }
 
-TEST_CASE("dbn/ae/4", "[dense][dbn][mnist][sgd][ae][momentum]") {
+DLL_TEST_CASE("dbn/ae/4", "[dense][dbn][mnist][sgd][ae][momentum]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 200>::layer_t,
@@ -110,7 +110,7 @@ TEST_CASE("dbn/ae/4", "[dense][dbn][mnist][sgd][ae][momentum]") {
     REQUIRE(test_error < 0.1);
 }
 
-TEST_CASE("dbn/ae/5", "[dense][dbn][mnist][sgd][ae][momentum][decay]") {
+DLL_TEST_CASE("dbn/ae/5", "[dense][dbn][mnist][sgd][ae][momentum][decay]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 200>::layer_t,

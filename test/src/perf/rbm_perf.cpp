@@ -13,7 +13,7 @@
 #include "mnist/mnist_utils.hpp"
 
 //Only here for debugging purposes
-TEST_CASE("rbm/perf/1", "rbm::fast") {
+DLL_TEST_CASE("rbm/perf/1", "rbm::fast") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<5>>::layer_t rbm;
@@ -30,7 +30,7 @@ TEST_CASE("rbm/perf/1", "rbm::fast") {
     dll::dump_timers();
 }
 
-TEST_CASE("rbm/perf/2", "rbm::slow") {
+DLL_TEST_CASE("rbm/perf/2", "rbm::slow") {
     dll::rbm_desc<
         28 * 28, 459,
         dll::batch_size<48>>::layer_t rbm;

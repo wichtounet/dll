@@ -196,7 +196,7 @@ dll::processor::options default_options() {
 
 // Dense (SGD)
 
-TEST_CASE("unit/processor/dense/sgd/1", "[unit][dense][dbn][mnist][sgd][proc]") {
+DLL_TEST_CASE("unit/processor/dense/sgd/1", "[unit][dense][dbn][mnist][sgd][proc]") {
     auto lines = get_result(default_options(), {"auto"}, "dense_sgd_1.conf");
     REQUIRE(!lines.empty());
 
@@ -204,7 +204,7 @@ TEST_CASE("unit/processor/dense/sgd/1", "[unit][dense][dbn][mnist][sgd][proc]") 
     TEST_ERROR_BELOW(0.3);
 }
 
-TEST_CASE("unit/processor/dense/sgd/2", "[unit][dense][dbn][mnist][sgd][proc]") {
+DLL_TEST_CASE("unit/processor/dense/sgd/2", "[unit][dense][dbn][mnist][sgd][proc]") {
     auto lines = get_result(default_options(), {"train", "test"}, "dense_sgd_2.conf");
     REQUIRE(!lines.empty());
 
@@ -214,7 +214,7 @@ TEST_CASE("unit/processor/dense/sgd/2", "[unit][dense][dbn][mnist][sgd][proc]") 
 
 // Conv+Dense (SGD)
 
-TEST_CASE("unit/processor/conv/sgd/1", "[unit][conv][dense][dbn][mnist][sgd][proc]") {
+DLL_TEST_CASE("unit/processor/conv/sgd/1", "[unit][conv][dense][dbn][mnist][sgd][proc]") {
     auto lines = get_result(default_options(), {"train", "test"}, "conv_sgd_1.conf");
     REQUIRE(!lines.empty());
 
@@ -222,7 +222,7 @@ TEST_CASE("unit/processor/conv/sgd/1", "[unit][conv][dense][dbn][mnist][sgd][pro
     TEST_ERROR_BELOW(0.2);
 }
 
-TEST_CASE("unit/processor/conv/sgd/2", "[unit][conv][dense][dbn][mnist][sgd][proc]") {
+DLL_TEST_CASE("unit/processor/conv/sgd/2", "[unit][conv][dense][dbn][mnist][sgd][proc]") {
     auto lines = get_result(default_options(), {"train", "test"}, "conv_sgd_2.conf");
     REQUIRE(!lines.empty());
 
@@ -230,7 +230,7 @@ TEST_CASE("unit/processor/conv/sgd/2", "[unit][conv][dense][dbn][mnist][sgd][pro
     TEST_ERROR_BELOW(0.3);
 }
 
-TEST_CASE("unit/processor/conv/sgd/3", "[unit][conv][dense][dbn][mnist][sgd][proc]") {
+DLL_TEST_CASE("unit/processor/conv/sgd/3", "[unit][conv][dense][dbn][mnist][sgd][proc]") {
     auto lines = get_result(default_options(), {"train", "test"}, "conv_sgd_3.conf");
     REQUIRE(!lines.empty());
 
@@ -239,7 +239,7 @@ TEST_CASE("unit/processor/conv/sgd/3", "[unit][conv][dense][dbn][mnist][sgd][pro
 }
 
 // Not include in standard unit tests (covered by unit/processor/conv/sgd/5)
-TEST_CASE("unit/processor/conv/sgd/4", "[unit_full][conv][dense][dbn][mnist][sgd][proc]") {
+DLL_TEST_CASE("unit/processor/conv/sgd/4", "[unit_full][conv][dense][dbn][mnist][sgd][proc]") {
     auto lines = get_result(default_options(), {"train", "test"}, "conv_sgd_4.conf");
     REQUIRE(!lines.empty());
 
@@ -247,7 +247,7 @@ TEST_CASE("unit/processor/conv/sgd/4", "[unit_full][conv][dense][dbn][mnist][sgd
     TEST_ERROR_BELOW(0.3);
 }
 
-TEST_CASE("unit/processor/conv/sgd/5", "[unit][conv][dense][dbn][mnist][sgd][proc]") {
+DLL_TEST_CASE("unit/processor/conv/sgd/5", "[unit][conv][dense][dbn][mnist][sgd][proc]") {
     auto lines = get_result(default_options(), {"train", "test"}, "conv_sgd_5.conf");
     REQUIRE(!lines.empty());
 
@@ -255,7 +255,7 @@ TEST_CASE("unit/processor/conv/sgd/5", "[unit][conv][dense][dbn][mnist][sgd][pro
     TEST_ERROR_BELOW(0.3);
 }
 
-TEST_CASE("unit/processor/conv/sgd/6", "[unit][conv][dense][dbn][mnist][sgd][proc]") {
+DLL_TEST_CASE("unit/processor/conv/sgd/6", "[unit][conv][dense][dbn][mnist][sgd][proc]") {
     auto lines = get_result(default_options(), {"train", "test"}, "conv_sgd_6.conf");
     REQUIRE(!lines.empty());
 
@@ -265,7 +265,7 @@ TEST_CASE("unit/processor/conv/sgd/6", "[unit][conv][dense][dbn][mnist][sgd][pro
 
 // Conv + Pool + Dense
 
-TEST_CASE("unit/processor/conv/pool/sgd/1", "[unit][conv][dense][dbn][mnist][sgd][proc]") {
+DLL_TEST_CASE("unit/processor/conv/pool/sgd/1", "[unit][conv][dense][dbn][mnist][sgd][proc]") {
     auto lines = get_result(default_options(), {"train", "test"}, "conv_pool_sgd_1.conf");
     REQUIRE(!lines.empty());
 
@@ -273,7 +273,7 @@ TEST_CASE("unit/processor/conv/pool/sgd/1", "[unit][conv][dense][dbn][mnist][sgd
     TEST_ERROR_BELOW(0.2);
 }
 
-TEST_CASE("unit/processor/conv/pool/sgd/2", "[unit][conv][dense][dbn][mnist][sgd][proc]") {
+DLL_TEST_CASE("unit/processor/conv/pool/sgd/2", "[unit][conv][dense][dbn][mnist][sgd][proc]") {
     auto lines = get_result(default_options(), {"train", "test"}, "conv_pool_sgd_2.conf");
     REQUIRE(!lines.empty());
 
@@ -283,49 +283,49 @@ TEST_CASE("unit/processor/conv/pool/sgd/2", "[unit][conv][dense][dbn][mnist][sgd
 
 // RBM
 
-TEST_CASE("unit/processor/rbm/1", "[unit][rbm][dbn][mnist][proc]") {
+DLL_TEST_CASE("unit/processor/rbm/1", "[unit][rbm][dbn][mnist][proc]") {
     auto lines = get_result(default_options(), {"pretrain"}, "rbm_1.conf");
     REQUIRE(!lines.empty());
 
     REC_ERROR_BELOW("epoch 24", 0.01);
 }
 
-TEST_CASE("unit/processor/rbm/2", "[unit][rbm][dbn][mnist][proc]") {
+DLL_TEST_CASE("unit/processor/rbm/2", "[unit][rbm][dbn][mnist][proc]") {
     auto lines = get_result(default_options(), {"pretrain"}, "rbm_2.conf");
     REQUIRE(!lines.empty());
 
     REC_ERROR_BELOW("epoch 24", 0.01);
 }
 
-TEST_CASE("unit/processor/rbm/3", "[unit][rbm][dbn][mnist][proc]") {
+DLL_TEST_CASE("unit/processor/rbm/3", "[unit][rbm][dbn][mnist][proc]") {
     auto lines = get_result(default_options(), {"pretrain"}, "rbm_3.conf");
     REQUIRE(!lines.empty());
 
     REC_ERROR_BELOW("epoch 99", 0.15);
 }
 
-TEST_CASE("unit/processor/rbm/4", "[unit][rbm][dbn][mnist][proc]") {
+DLL_TEST_CASE("unit/processor/rbm/4", "[unit][rbm][dbn][mnist][proc]") {
     auto lines = get_result(default_options(), {"pretrain"}, "rbm_4.conf");
     REQUIRE(!lines.empty());
 
     REC_ERROR_BELOW("epoch 49", 0.01);
 }
 
-TEST_CASE("unit/processor/rbm/5", "[unit][rbm][dbn][mnist][proc]") {
+DLL_TEST_CASE("unit/processor/rbm/5", "[unit][rbm][dbn][mnist][proc]") {
     auto lines = get_result(default_options(), {"pretrain"}, "rbm_5.conf");
     REQUIRE(!lines.empty());
 
     REC_ERROR_BELOW("epoch 49", 0.01);
 }
 
-TEST_CASE("unit/processor/rbm/6", "[unit][rbm][dbn][mnist][proc]") {
+DLL_TEST_CASE("unit/processor/rbm/6", "[unit][rbm][dbn][mnist][proc]") {
     auto lines = get_result(default_options(), {"pretrain"}, "rbm_6.conf");
     REQUIRE(!lines.empty());
 
     REC_ERROR_BELOW("epoch 99", 0.15);
 }
 
-TEST_CASE("unit/processor/rbm/7", "[unit][rbm][dbn][mnist][proc]") {
+DLL_TEST_CASE("unit/processor/rbm/7", "[unit][rbm][dbn][mnist][proc]") {
     auto lines = get_result(default_options(), {"pretrain"}, "rbm_7.conf");
     REQUIRE(!lines.empty());
 
@@ -333,7 +333,7 @@ TEST_CASE("unit/processor/rbm/7", "[unit][rbm][dbn][mnist][proc]") {
     SPARSITY_BELOW("epoch 49", 0.12);
 }
 
-TEST_CASE("unit/processor/rbm/8", "[unit][rbm][dbn][mnist][proc]") {
+DLL_TEST_CASE("unit/processor/rbm/8", "[unit][rbm][dbn][mnist][proc]") {
     auto lines = get_result(default_options(), {"pretrain"}, "rbm_8.conf");
     REQUIRE(!lines.empty());
 
@@ -341,7 +341,7 @@ TEST_CASE("unit/processor/rbm/8", "[unit][rbm][dbn][mnist][proc]") {
     SPARSITY_BELOW("epoch 49", 0.12);
 }
 
-TEST_CASE("unit/processor/rbm/9", "[unit][rbm][dbn][mnist][proc]") {
+DLL_TEST_CASE("unit/processor/rbm/9", "[unit][rbm][dbn][mnist][proc]") {
     auto lines = get_result(default_options(), {"pretrain"}, "rbm_9.conf");
     REQUIRE(!lines.empty());
 
@@ -350,14 +350,14 @@ TEST_CASE("unit/processor/rbm/9", "[unit][rbm][dbn][mnist][proc]") {
 
 // CRBM
 
-TEST_CASE("unit/processor/crbm/1", "[unit][crbm][dbn][mnist][proc]") {
+DLL_TEST_CASE("unit/processor/crbm/1", "[unit][crbm][dbn][mnist][proc]") {
     auto lines = get_result(default_options(), {"pretrain"}, "crbm_1.conf");
     REQUIRE(!lines.empty());
 
     REC_ERROR_BELOW("epoch 24", 0.01);
 }
 
-TEST_CASE("unit/processor/crbm/2", "[unit][crbm][dbn][mnist][proc]") {
+DLL_TEST_CASE("unit/processor/crbm/2", "[unit][crbm][dbn][mnist][proc]") {
     auto lines = get_result(default_options(), {"pretrain"}, "crbm_2.conf");
     REQUIRE(!lines.empty());
 
@@ -366,7 +366,7 @@ TEST_CASE("unit/processor/crbm/2", "[unit][crbm][dbn][mnist][proc]") {
 
 // CRBM (MP)
 
-TEST_CASE("unit/processor/crbm_mp/1", "[unit][crbm_mp][dbn][mnist][proc]") {
+DLL_TEST_CASE("unit/processor/crbm_mp/1", "[unit][crbm_mp][dbn][mnist][proc]") {
     auto lines = get_result(default_options(), {"pretrain"}, "crbm_mp_1.conf");
     REQUIRE(!lines.empty());
 
@@ -375,7 +375,7 @@ TEST_CASE("unit/processor/crbm_mp/1", "[unit][crbm_mp][dbn][mnist][proc]") {
 
 // DBN (SGD)
 
-TEST_CASE("unit/processor/dbn/sgd/1", "[unit][dense][dbn][mnist][sgd][proc]") {
+DLL_TEST_CASE("unit/processor/dbn/sgd/1", "[unit][dense][dbn][mnist][sgd][proc]") {
     auto lines = get_result(default_options(), {"pretrain", "train", "test"}, "dbn_sgd_1.conf");
     REQUIRE(!lines.empty());
 
@@ -385,7 +385,7 @@ TEST_CASE("unit/processor/dbn/sgd/1", "[unit][dense][dbn][mnist][sgd][proc]") {
 
 // DBN (CG)
 
-TEST_CASE("unit/processor/dbn/cg/1", "[unit][dense][dbn][mnist][sgd][proc]") {
+DLL_TEST_CASE("unit/processor/dbn/cg/1", "[unit][dense][dbn][mnist][sgd][proc]") {
     auto lines = get_result(default_options(), {"pretrain", "train", "test"}, "dbn_cg_1.conf");
     REQUIRE(!lines.empty());
 
@@ -396,7 +396,7 @@ TEST_CASE("unit/processor/dbn/cg/1", "[unit][dense][dbn][mnist][sgd][proc]") {
 // Conv DBN
 
 // Disable for time reasons (unit/processor/cdbn/2 is testing more anyway)
-TEST_CASE("unit/processor/cdbn/1", "[unit_full][dbn][mnist][conv][proc]") {
+DLL_TEST_CASE("unit/processor/cdbn/1", "[unit_full][dbn][mnist][conv][proc]") {
     auto lines = get_result(default_options(), {"pretrain"}, "cdbn_1.conf");
     REQUIRE(!lines.empty());
 
@@ -404,7 +404,7 @@ TEST_CASE("unit/processor/cdbn/1", "[unit_full][dbn][mnist][conv][proc]") {
     REC_ERROR_BELOW("epoch 24", 0.03, 1);
 }
 
-TEST_CASE("unit/processor/cdbn/2", "[unit][dbn][mnist][conv][proc]") {
+DLL_TEST_CASE("unit/processor/cdbn/2", "[unit][dbn][mnist][conv][proc]") {
     auto lines = get_result(default_options(), {"pretrain"}, "cdbn_2.conf");
     REQUIRE(!lines.empty());
 

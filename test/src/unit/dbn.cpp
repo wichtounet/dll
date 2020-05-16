@@ -20,7 +20,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("unit/dbn/mnist/1", "[dbn][unit]") {
+DLL_TEST_CASE("unit/dbn/mnist/1", "[dbn][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm<28 * 28, 150, dll::momentum, dll::batch_size<10>, dll::init_weights>,
@@ -63,7 +63,7 @@ TEST_CASE("unit/dbn/mnist/1", "[dbn][unit]") {
     REQUIRE((big == 1 || big == 2));
 }
 
-TEST_CASE("unit/dbn/mnist/2", "[dbn][unit]") {
+DLL_TEST_CASE("unit/dbn/mnist/2", "[dbn][unit]") {
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(350);
     REQUIRE(!dataset.training_images.empty());
 
@@ -86,7 +86,7 @@ TEST_CASE("unit/dbn/mnist/2", "[dbn][unit]") {
     REQUIRE(error < 0.3);
 }
 
-TEST_CASE("unit/dbn/mnist/3", "[dbn][unit]") {
+DLL_TEST_CASE("unit/dbn/mnist/3", "[dbn][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 200, dll::momentum, dll::batch_size<20>, dll::visible<dll::unit_type::GAUSSIAN>>::layer_t,
@@ -108,7 +108,7 @@ TEST_CASE("unit/dbn/mnist/3", "[dbn][unit]") {
     TEST_CHECK(0.25);
 }
 
-TEST_CASE("unit/dbn/mnist/4", "[dbn][cg][unit]") {
+DLL_TEST_CASE("unit/dbn/mnist/4", "[dbn][cg][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 150, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
@@ -142,7 +142,7 @@ TEST_CASE("unit/dbn/mnist/4", "[dbn][cg][unit]") {
     REQUIRE(out.size() > 0);
 }
 
-TEST_CASE("unit/dbn/mnist/5", "[dbn][sgd][unit]") {
+DLL_TEST_CASE("unit/dbn/mnist/5", "[dbn][sgd][unit]") {
     using dbn_t = dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 150, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
@@ -169,7 +169,7 @@ TEST_CASE("unit/dbn/mnist/5", "[dbn][sgd][unit]") {
     TEST_CHECK(0.3);
 }
 
-TEST_CASE("unit/dbn/mnist/6", "[dbn][dyn][unit]") {
+DLL_TEST_CASE("unit/dbn/mnist/6", "[dbn][dyn][unit]") {
     using dbn_t =
         dll::dbn_desc<
             dll::dbn_layers<
@@ -195,7 +195,7 @@ TEST_CASE("unit/dbn/mnist/6", "[dbn][dyn][unit]") {
     TEST_CHECK(1.0);
 }
 
-TEST_CASE("unit/dbn/mnist/7", "[dbn][svm][unit]") {
+DLL_TEST_CASE("unit/dbn/mnist/7", "[dbn][svm][unit]") {
     using dbn_t = dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
@@ -221,7 +221,7 @@ TEST_CASE("unit/dbn/mnist/7", "[dbn][svm][unit]") {
 }
 
 // Pretrain with binarize layer
-TEST_CASE("unit/dbn/mnist/8", "[dbn][unit]") {
+DLL_TEST_CASE("unit/dbn/mnist/8", "[dbn][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::shape_1d_layer_desc<28 * 28>::layer_t,
@@ -240,7 +240,7 @@ TEST_CASE("unit/dbn/mnist/8", "[dbn][unit]") {
 
 // Pretrain in denoising mode
 // Not include in standard test suite (covered by unit/dbn/mnist/10)
-TEST_CASE("unit/dbn/mnist/9", "[dbn][denoising][unit_full]") {
+DLL_TEST_CASE("unit/dbn/mnist/9", "[dbn][denoising][unit_full]") {
     using dbn_t =
         dll::dbn_desc<
             dll::dbn_layers<
@@ -279,7 +279,7 @@ TEST_CASE("unit/dbn/mnist/9", "[dbn][denoising][unit_full]") {
     dbn->pretrain_denoising(noisy, dataset.training_images, 50);
 }
 
-TEST_CASE("unit/dbn/mnist/10", "[dbn][denoising][unit]") {
+DLL_TEST_CASE("unit/dbn/mnist/10", "[dbn][denoising][unit]") {
     using dbn_t =
         dll::dbn_desc<
             dll::dbn_layers<
@@ -324,7 +324,7 @@ TEST_CASE("unit/dbn/mnist/10", "[dbn][denoising][unit]") {
     dbn->pretrain_denoising(noisy, dataset.training_images, 50);
 }
 
-TEST_CASE("unit/dbn/mnist/102", "[dbn][denoising][unit]") {
+DLL_TEST_CASE("unit/dbn/mnist/102", "[dbn][denoising][unit]") {
     using dbn_t =
         dll::dbn_desc<
             dll::dbn_layers<
@@ -358,7 +358,7 @@ TEST_CASE("unit/dbn/mnist/102", "[dbn][denoising][unit]") {
     dbn->pretrain_denoising(dataset.training_images, 50);
 }
 
-TEST_CASE("unit/dbn/mnist/11", "[dbn][denoising][unit]") {
+DLL_TEST_CASE("unit/dbn/mnist/11", "[dbn][denoising][unit]") {
     using dbn_t =
         dll::dbn_desc<
             dll::dbn_layers<
@@ -392,7 +392,7 @@ TEST_CASE("unit/dbn/mnist/11", "[dbn][denoising][unit]") {
 }
 
 // Batch mode
-TEST_CASE("unit/dbn/mnist/12", "[dbn][unit]") {
+DLL_TEST_CASE("unit/dbn/mnist/12", "[dbn][unit]") {
     dll::reset_timers();
 
     typedef dll::dbn_desc<

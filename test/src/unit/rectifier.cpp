@@ -17,7 +17,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("unit/cdbn/rectifier/mnist/1", "[cdbn][rectifier][svm][unit]") {
+DLL_TEST_CASE("unit/cdbn/rectifier/mnist/1", "[cdbn][rectifier][svm][unit]") {
     using dbn_t =
         dll::dbn_desc<dll::dbn_layers<
               dll::conv_rbm_square_desc<1, 28, 20, 17, dll::momentum, dll::batch_size<10>>::layer_t
@@ -44,7 +44,7 @@ TEST_CASE("unit/cdbn/rectifier/mnist/1", "[cdbn][rectifier][svm][unit]") {
     REQUIRE(test_error < 0.1);
 }
 
-TEST_CASE("unit/cdbn/rectifier/mnist/2", "[cdbn][rectifier][svm][unit]") {
+DLL_TEST_CASE("unit/cdbn/rectifier/mnist/2", "[cdbn][rectifier][svm][unit]") {
     using dbn_t =
         dll::dbn_desc<dll::dbn_layers<
               dll::conv_rbm_square_desc<1, 28, 20, 17, dll::momentum, dll::batch_size<10>>::layer_t
@@ -72,7 +72,7 @@ TEST_CASE("unit/cdbn/rectifier/mnist/2", "[cdbn][rectifier][svm][unit]") {
     REQUIRE(test_error < 0.1);
 }
 
-TEST_CASE("unit/cdbn/rectifier/mnist/3", "[cdbn][rectifier][svm][unit]") {
+DLL_TEST_CASE("unit/cdbn/rectifier/mnist/3", "[cdbn][rectifier][svm][unit]") {
     using dbn_t =
         dll::dbn_desc<dll::dbn_layers<
               dll::dyn_conv_rbm_desc<dll::momentum>::layer_t

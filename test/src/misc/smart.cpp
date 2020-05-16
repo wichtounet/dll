@@ -19,7 +19,7 @@
  * on different types of network with several multiplex layers
  */
 
-TEST_CASE("smart/mnist/1", "[dbn][smart]") {
+DLL_TEST_CASE("smart/mnist/1", "[dbn][smart]") {
     using dbn_t = dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t
@@ -39,7 +39,7 @@ TEST_CASE("smart/mnist/1", "[dbn][smart]") {
     REQUIRE(dbn->full_activation_probabilities(dataset.training_images[0]).size() == 100);
 }
 
-TEST_CASE("smart/mnist/2", "[dbn][smart]") {
+DLL_TEST_CASE("smart/mnist/2", "[dbn][smart]") {
     using dbn_t = dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,

@@ -9,7 +9,7 @@
 
 #include "dll/text_reader.hpp"
 
-TEST_CASE("unit/text_reader/labels/1", "[unit][reader]") {
+DLL_TEST_CASE("unit/text_reader/labels/1", "[unit][reader]") {
     auto labels = dll::text::read_labels<std::vector, uint8_t>("test/text_db/labels", 20);
 
     REQUIRE(labels.size() == 9);
@@ -25,7 +25,7 @@ TEST_CASE("unit/text_reader/labels/1", "[unit][reader]") {
     REQUIRE(labels[8] == 5);
 }
 
-TEST_CASE("unit/text_reader/labels/2", "[unit][reader]") {
+DLL_TEST_CASE("unit/text_reader/labels/2", "[unit][reader]") {
     auto labels = dll::text::read_labels<std::vector, char>("test/text_db/labels", 5);
 
     REQUIRE(labels.size() == 5);
@@ -37,7 +37,7 @@ TEST_CASE("unit/text_reader/labels/2", "[unit][reader]") {
     REQUIRE(labels[4] == 4);
 }
 
-TEST_CASE("unit/text_reader/images/1", "[unit][reader]") {
+DLL_TEST_CASE("unit/text_reader/images/1", "[unit][reader]") {
     auto samples = dll::text::read_images<std::vector, std::vector<uint8_t>, false>("test/text_db/images", 20);
 
     REQUIRE(samples.size() == 9);
@@ -57,13 +57,13 @@ TEST_CASE("unit/text_reader/images/1", "[unit][reader]") {
     REQUIRE(samples[8][17 * 28 + 15] == 253);
 }
 
-TEST_CASE("unit/text_reader/images/2", "[unit][reader]") {
+DLL_TEST_CASE("unit/text_reader/images/2", "[unit][reader]") {
     auto samples = dll::text::read_images<std::vector, std::vector<uint8_t>, false>("test/text_db/images", 4);
 
     REQUIRE(samples.size() == 4);
 }
 
-TEST_CASE("unit/text_reader/images/3", "[unit][reader]") {
+DLL_TEST_CASE("unit/text_reader/images/3", "[unit][reader]") {
     std::vector<std::vector<uint8_t>> samples;
     dll::text::read_images_direct<false>(samples, "test/text_db/images", 20);
 
@@ -84,7 +84,7 @@ TEST_CASE("unit/text_reader/images/3", "[unit][reader]") {
     REQUIRE(samples[8][17 * 28 + 15] == 253);
 }
 
-TEST_CASE("unit/text_reader/images/4", "[unit][reader]") {
+DLL_TEST_CASE("unit/text_reader/images/4", "[unit][reader]") {
     std::vector<etl::dyn_matrix<float, 3>> samples;
     dll::text::read_images_direct<true>(samples, "test/text_db/images", 20);
 
@@ -108,7 +108,7 @@ TEST_CASE("unit/text_reader/images/4", "[unit][reader]") {
     REQUIRE(samples[8](0, 17, 15) == 253);
 }
 
-TEST_CASE("unit/text_reader/images/5", "[unit][reader]") {
+DLL_TEST_CASE("unit/text_reader/images/5", "[unit][reader]") {
     std::vector<etl::fast_dyn_matrix<float, 1, 28, 28>> samples;
     dll::text::read_images_direct<true>(samples, "test/text_db/images", 20);
 

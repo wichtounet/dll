@@ -16,7 +16,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("unit/dyn_crbm_mp/mnist/3", "[dyn_crbm_mp][denoising][unit]") {
+DLL_TEST_CASE("unit/dyn_crbm_mp/mnist/3", "[dyn_crbm_mp][denoising][unit]") {
     dll::dyn_conv_rbm_mp_desc<
         dll::momentum,
         dll::weight_decay<dll::decay_type::L2>,
@@ -52,7 +52,7 @@ TEST_CASE("unit/dyn_crbm_mp/mnist/3", "[dyn_crbm_mp][denoising][unit]") {
     cpp_unused(error);
 }
 
-TEST_CASE("unit/dyn_crbm_mp/mnist/4", "[dyn_crbm_mp][relu][unit]") {
+DLL_TEST_CASE("unit/dyn_crbm_mp/mnist/4", "[dyn_crbm_mp][relu][unit]") {
     dll::dyn_conv_rbm_mp_desc<dll::hidden<dll::unit_type::RELU>>::layer_t rbm;
 
     rbm.init_layer(1, 28, 28, 20, 17, 17, 2);

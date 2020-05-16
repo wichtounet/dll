@@ -12,7 +12,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("rbm/mnist_9", "rbm::relu") {
+DLL_TEST_CASE("rbm/mnist_9", "rbm::relu") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
@@ -28,7 +28,7 @@ TEST_CASE("rbm/mnist_9", "rbm::relu") {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE("rbm/mnist_10", "rbm::relu1") {
+DLL_TEST_CASE("rbm/mnist_10", "rbm::relu1") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
@@ -46,7 +46,7 @@ TEST_CASE("rbm/mnist_10", "rbm::relu1") {
     REQUIRE(error < 1e-1);
 }
 
-TEST_CASE("rbm/mnist_11", "rbm::relu6") {
+DLL_TEST_CASE("rbm/mnist_11", "rbm::relu6") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
@@ -62,7 +62,7 @@ TEST_CASE("rbm/mnist_11", "rbm::relu6") {
     REQUIRE(error < 1e-1);
 }
 
-TEST_CASE("rbm/relu/1", "[relu][rbm][clip]") {
+DLL_TEST_CASE("rbm/relu/1", "[relu][rbm][clip]") {
     using rbm_t = dll::rbm_desc<
             28 * 28, 100
             , dll::momentum

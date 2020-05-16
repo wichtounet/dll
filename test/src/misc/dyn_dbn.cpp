@@ -17,7 +17,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("dyn_dbn/mnist_1", "dbn::simple") {
+DLL_TEST_CASE("dyn_dbn/mnist_1", "dbn::simple") {
     using dbn_t =
         dll::dbn_desc<
             dll::dbn_layers<
@@ -41,7 +41,7 @@ TEST_CASE("dyn_dbn/mnist_1", "dbn::simple") {
     TEST_CHECK(1.0);
 }
 
-TEST_CASE("dyn_dbn/mnist_3", "dbn::labels") {
+DLL_TEST_CASE("dyn_dbn/mnist_3", "dbn::labels") {
     using dbn_t =
         dll::dbn_desc<
             dll::dbn_layers<
@@ -66,7 +66,7 @@ TEST_CASE("dyn_dbn/mnist_3", "dbn::labels") {
     REQUIRE(error < 0.3);
 }
 
-TEST_CASE("dyn_dbn/mnist_4", "dbn::svm_simple") {
+DLL_TEST_CASE("dyn_dbn/mnist_4", "dbn::svm_simple") {
     using dbn_t =
         dll::dbn_desc<
             dll::dbn_layers<
@@ -96,7 +96,7 @@ TEST_CASE("dyn_dbn/mnist_4", "dbn::svm_simple") {
 
 //This test is mostly here to ensure compilation
 
-TEST_CASE("dyn_dbn/mnist_5", "dbn::simple_single") {
+DLL_TEST_CASE("dyn_dbn/mnist_5", "dbn::simple_single") {
     using dbn_t =
         dll::dbn_desc<
             dll::dbn_layers<
@@ -116,7 +116,7 @@ TEST_CASE("dyn_dbn/mnist_5", "dbn::simple_single") {
 }
 
 //This test is here for debugging purposes
-TEST_CASE("dyn_dbn/mnist_6", "dbn::labels_fast") {
+DLL_TEST_CASE("dyn_dbn/mnist_6", "dbn::labels_fast") {
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(25, 25);
 
     REQUIRE(!dataset.training_images.empty());

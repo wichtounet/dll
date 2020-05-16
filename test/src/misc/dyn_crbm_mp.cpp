@@ -14,7 +14,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("dyn_crbm_mp/mnist_1", "crbm::simple") {
+DLL_TEST_CASE("dyn_crbm_mp/mnist_1", "crbm::simple") {
     dll::dyn_conv_rbm_mp_desc<>::layer_t rbm;
 
     rbm.init_layer(1, 28, 28, 40, 12, 12, 2);
@@ -29,7 +29,7 @@ TEST_CASE("dyn_crbm_mp/mnist_1", "crbm::simple") {
     REQUIRE(error < 1e-1);
 }
 
-TEST_CASE("dyn_crbm_mp/mnist_2", "crbm::momentum") {
+DLL_TEST_CASE("dyn_crbm_mp/mnist_2", "crbm::momentum") {
     dll::dyn_conv_rbm_mp_desc<dll::momentum>::layer_t rbm;
 
     rbm.init_layer(1, 28, 28, 40, 12, 12, 2);

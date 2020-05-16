@@ -16,7 +16,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("unit/crbm/mnist/1", "[crbm][unit]") {
+DLL_TEST_CASE("unit/crbm/mnist/1", "[crbm][unit]") {
     dll::conv_rbm_square_desc<
         1, 28, 20, 17,
         dll::batch_size<10>,
@@ -42,7 +42,7 @@ TEST_CASE("unit/crbm/mnist/1", "[crbm][unit]") {
     REQUIRE(free_energy < 0.0);
 }
 
-TEST_CASE("unit/crbm/mnist/2", "[crbm][parallel][unit]") {
+DLL_TEST_CASE("unit/crbm/mnist/2", "[crbm][parallel][unit]") {
     dll::conv_rbm_square_desc<
         1, 28, 20, 5,
         dll::batch_size<25>,
@@ -59,7 +59,7 @@ TEST_CASE("unit/crbm/mnist/2", "[crbm][parallel][unit]") {
     REQUIRE(error < 0.1);
 }
 
-TEST_CASE("unit/crbm/mnist/4", "[crbm][unit]") {
+DLL_TEST_CASE("unit/crbm/mnist/4", "[crbm][unit]") {
     dll::conv_rbm_square_desc<
         1, 28, 20, 17,
         dll::batch_size<25>,
@@ -94,7 +94,7 @@ TEST_CASE("unit/crbm/mnist/4", "[crbm][unit]") {
     REQUIRE(error < 0.1);
 }
 
-TEST_CASE("unit/crbm/mnist/5", "[crbm][unit]") {
+DLL_TEST_CASE("unit/crbm/mnist/5", "[crbm][unit]") {
     dll::conv_rbm_square_desc<
         1, 28, 20, 9,
         dll::batch_size<20>,
@@ -114,7 +114,7 @@ TEST_CASE("unit/crbm/mnist/5", "[crbm][unit]") {
     REQUIRE(error < 5e-2);
 }
 
-TEST_CASE("unit/crbm/mnist/6", "[crbm][unit]") {
+DLL_TEST_CASE("unit/crbm/mnist/6", "[crbm][unit]") {
     using layer_type = dll::conv_rbm_square_desc<
         1, 28, 20, 17,
         dll::batch_size<10>,
@@ -140,7 +140,7 @@ TEST_CASE("unit/crbm/mnist/6", "[crbm][unit]") {
     REQUIRE(error < 0.1);
 }
 
-TEST_CASE("unit/crbm/mnist/7", "[crbm][unit]") {
+DLL_TEST_CASE("unit/crbm/mnist/7", "[crbm][unit]") {
     using layer_type = dll::conv_rbm_square_desc<
         1, 28, 20, 17,
         dll::batch_size<5>,

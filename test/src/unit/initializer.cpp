@@ -16,7 +16,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("initializer/none", "[dense][unit][mnist][sgd]") {
+DLL_TEST_CASE("initializer/none", "[dense][unit][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 100, dll::initializer<dll::init_none>, dll::initializer_bias<dll::init_none>>::layer_t,
@@ -39,7 +39,7 @@ TEST_CASE("initializer/none", "[dense][unit][mnist][sgd]") {
     CHECK(ft_error < 0.9);
 }
 
-TEST_CASE("initializer/zero", "[dense][unit][mnist][sgd]") {
+DLL_TEST_CASE("initializer/zero", "[dense][unit][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 100, dll::initializer<dll::init_zero>, dll::initializer_bias<dll::init_zero>>::layer_t,
@@ -62,7 +62,7 @@ TEST_CASE("initializer/zero", "[dense][unit][mnist][sgd]") {
     CHECK(ft_error < 0.9);
 }
 
-TEST_CASE("initializer/gaussian", "[dense][unit][mnist][sgd]") {
+DLL_TEST_CASE("initializer/gaussian", "[dense][unit][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 100, dll::initializer<dll::init_normal<>>, dll::initializer_bias<dll::init_normal<>>>::layer_t,
@@ -88,7 +88,7 @@ TEST_CASE("initializer/gaussian", "[dense][unit][mnist][sgd]") {
     TEST_CHECK(0.4);
 }
 
-TEST_CASE("initializer/small_gaussian", "[dense][unit][mnist][sgd]") {
+DLL_TEST_CASE("initializer/small_gaussian", "[dense][unit][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 100,
@@ -120,7 +120,7 @@ TEST_CASE("initializer/small_gaussian", "[dense][unit][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("initializer/lecun", "[dense][unit][mnist][sgd]") {
+DLL_TEST_CASE("initializer/lecun", "[dense][unit][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 100, dll::initializer<dll::init_lecun>, dll::initializer_bias<dll::init_lecun>>::layer_t,
@@ -145,7 +145,7 @@ TEST_CASE("initializer/lecun", "[dense][unit][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("initializer/xavier", "[dense][unit][mnist][sgd]") {
+DLL_TEST_CASE("initializer/xavier", "[dense][unit][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 100, dll::initializer<dll::init_xavier>, dll::initializer_bias<dll::init_xavier>>::layer_t,
@@ -170,7 +170,7 @@ TEST_CASE("initializer/xavier", "[dense][unit][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("initializer/xavier_full", "[dense][unit][mnist][sgd]") {
+DLL_TEST_CASE("initializer/xavier_full", "[dense][unit][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 100, dll::initializer<dll::init_xavier_full>, dll::initializer_bias<dll::init_xavier>>::layer_t,
@@ -195,7 +195,7 @@ TEST_CASE("initializer/xavier_full", "[dense][unit][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("initializer/he", "[dense][unit][mnist][sgd]") {
+DLL_TEST_CASE("initializer/he", "[dense][unit][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer<28 * 28, 100, dll::initializer<dll::init_he>, dll::initializer_bias<dll::init_constant<constant(0.1)>>>,

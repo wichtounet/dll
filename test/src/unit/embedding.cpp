@@ -79,7 +79,7 @@ auto generate_samples(std::vector<size_t>& labels){
 } // end of anonymous namespace
 
 // Simple embedding with one CNN
-TEST_CASE("unit/embedding/1", "[unit][embedding]") {
+DLL_TEST_CASE("unit/embedding/1", "[unit][embedding]") {
     std::vector<size_t> labels;
     auto samples = generate_samples(labels);
 
@@ -105,7 +105,7 @@ TEST_CASE("unit/embedding/1", "[unit][embedding]") {
 }
 
 // Simple embedding with three group CNN
-TEST_CASE("unit/embedding/2", "[unit][embedding]") {
+DLL_TEST_CASE("unit/embedding/2", "[unit][embedding]") {
     std::vector<size_t> labels;
     auto samples = generate_samples(labels);
 

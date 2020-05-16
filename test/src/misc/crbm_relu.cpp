@@ -14,7 +14,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("crbm/mnist_7", "crbm::relu") {
+DLL_TEST_CASE("crbm/mnist_7", "crbm::relu") {
     dll::conv_rbm_square_desc<
         1, 28, 40, 17,
         dll::batch_size<25>,
@@ -32,7 +32,7 @@ TEST_CASE("crbm/mnist_7", "crbm::relu") {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE("crbm/mnist_8", "crbm::relu6") {
+DLL_TEST_CASE("crbm/mnist_8", "crbm::relu6") {
     dll::conv_rbm_square_desc<
         1, 28, 40, 17,
         dll::batch_size<25>,
@@ -50,7 +50,7 @@ TEST_CASE("crbm/mnist_8", "crbm::relu6") {
     REQUIRE(error < 5e-3);
 }
 
-TEST_CASE("crbm/mnist_9", "crbm::relu1") {
+DLL_TEST_CASE("crbm/mnist_9", "crbm::relu1") {
     dll::conv_rbm_square_desc<
         1, 28, 40, 17,
         dll::batch_size<25>,

@@ -16,7 +16,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("dbn/mnist_1", "dbn::simple") {
+DLL_TEST_CASE("dbn/mnist_1", "dbn::simple") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
@@ -41,7 +41,7 @@ TEST_CASE("dbn/mnist_1", "dbn::simple") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("dbn/mnist_2", "dbn::containers") {
+DLL_TEST_CASE("dbn/mnist_2", "dbn::containers") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
@@ -65,7 +65,7 @@ TEST_CASE("dbn/mnist_2", "dbn::containers") {
     REQUIRE(error < 5e-2);
 }
 
-TEST_CASE("dbn/mnist_3", "dbn::labels") {
+DLL_TEST_CASE("dbn/mnist_3", "dbn::labels") {
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_matrix<float, 1>>(1000);
     REQUIRE(!dataset.training_images.empty());
 
@@ -87,7 +87,7 @@ TEST_CASE("dbn/mnist_3", "dbn::labels") {
     REQUIRE(error < 0.3);
 }
 
-TEST_CASE("dbn/mnist_6", "dbn::cg_gaussian") {
+DLL_TEST_CASE("dbn/mnist_6", "dbn::cg_gaussian") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 200, dll::momentum, dll::batch_size<25>, dll::visible<dll::unit_type::GAUSSIAN>>::layer_t,
@@ -112,7 +112,7 @@ TEST_CASE("dbn/mnist_6", "dbn::cg_gaussian") {
 }
 
 //This test should not perform well, but should not fail
-TEST_CASE("dbn/mnist_8", "dbn::cg_relu") {
+DLL_TEST_CASE("dbn/mnist_8", "dbn::cg_relu") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::RELU>, dll::init_weights>::layer_t,
@@ -137,7 +137,7 @@ TEST_CASE("dbn/mnist_8", "dbn::cg_relu") {
     std::cout << "test_error:" << test_error << std::endl;
 }
 
-TEST_CASE("dbn/mnist_17", "dbn::memory") {
+DLL_TEST_CASE("dbn/mnist_17", "dbn::memory") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
@@ -168,7 +168,7 @@ TEST_CASE("dbn/mnist_17", "dbn::memory") {
     REQUIRE(out.size() > 0);
 }
 
-TEST_CASE("dbn/mnist/text/1", "dbn::simple") {
+DLL_TEST_CASE("dbn/mnist/text/1", "dbn::simple") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
@@ -205,7 +205,7 @@ TEST_CASE("dbn/mnist/text/1", "dbn::simple") {
     REQUIRE(test_error < 0.2);
 }
 
-TEST_CASE("mnist_original", "dbn::simple") {
+DLL_TEST_CASE("mnist_original", "dbn::simple") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 500, dll::momentum, dll::batch_size<64>, dll::init_weights>::layer_t,

@@ -2737,7 +2737,8 @@ private:
     /* Train with labels */
 
     template <size_t I, typename Iterator, typename LabelIterator>
-    std::enable_if_t<(I < layers)> train_with_labels(Iterator first, Iterator last, watcher_t& watcher, LabelIterator lit, LabelIterator lend, size_t labels, [[maybe_unused]] size_t max_epochs) {
+    std::enable_if_t<(I < layers)> train_with_labels(Iterator first, Iterator last, watcher_t& watcher, [[maybe_unused]] LabelIterator lit,
+                                                     [[maybe_unused]] LabelIterator lend, [[maybe_unused]] size_t labels, [[maybe_unused]] size_t max_epochs) {
         using layer_t = layer_type<I>;
 
         decltype(auto) layer = layer_get<I>();

@@ -12,7 +12,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("rbm/mnist_3", "rbm::pcd_trainer") {
+DLL_TEST_CASE("rbm/mnist_3", "rbm::pcd_trainer") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
@@ -30,7 +30,7 @@ TEST_CASE("rbm/mnist_3", "rbm::pcd_trainer") {
 }
 
 //TODO Still not very convincing
-TEST_CASE("rbm/mnist_15", "rbm::pcd_gaussian") {
+DLL_TEST_CASE("rbm/mnist_15", "rbm::pcd_gaussian") {
     dll::rbm_desc<
         28 * 28, 144,
         dll::batch_size<25>,

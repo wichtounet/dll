@@ -36,7 +36,7 @@ void generate(std::vector<etl::fast_dyn_matrix<float, 3>>& samples, std::vector<
 
 } // end of anonymous namespace
 
-TEST_CASE("unit/reg/1", "[unit][reg]") {
+DLL_TEST_CASE("unit/reg/1", "[unit][reg]") {
     std::vector<etl::fast_dyn_matrix<float, 3>> samples;
     std::vector<size_t> labels;
 
@@ -61,7 +61,7 @@ TEST_CASE("unit/reg/1", "[unit][reg]") {
     REQUIRE(net->evaluate_error_reg(samples, labels) < 0.25);
 }
 
-TEST_CASE("unit/reg/2", "[unit][reg]") {
+DLL_TEST_CASE("unit/reg/2", "[unit][reg]") {
     std::vector<etl::fast_dyn_matrix<float, 3>> samples;
     std::vector<size_t> labels;
 
@@ -87,7 +87,7 @@ TEST_CASE("unit/reg/2", "[unit][reg]") {
     REQUIRE(net->evaluate_error_reg(samples, labels) < 0.25);
 }
 
-TEST_CASE("unit/reg/3", "[unit][reg]") {
+DLL_TEST_CASE("unit/reg/3", "[unit][reg]") {
     std::vector<etl::fast_dyn_matrix<float, 3>> samples;
     std::vector<size_t> labels;
 

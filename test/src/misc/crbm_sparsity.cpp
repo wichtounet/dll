@@ -12,7 +12,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("crbm/mnist_60", "crbm::global_sparsity") {
+DLL_TEST_CASE("crbm/mnist_60", "crbm::global_sparsity") {
     using rbm_type = dll::conv_rbm_square_desc<
         1, 28, 40, 17,
         dll::batch_size<25>,
@@ -36,7 +36,7 @@ TEST_CASE("crbm/mnist_60", "crbm::global_sparsity") {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE("crbm/mnist_61", "crbm::local_sparsity") {
+DLL_TEST_CASE("crbm/mnist_61", "crbm::local_sparsity") {
     using rbm_type = dll::conv_rbm_square_desc<
         1, 28, 40, 17,
         dll::batch_size<25>,
@@ -58,7 +58,7 @@ TEST_CASE("crbm/mnist_61", "crbm::local_sparsity") {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE("crbm/mnist_11", "crbm::bias_mode_simple") {
+DLL_TEST_CASE("crbm/mnist_11", "crbm::bias_mode_simple") {
     dll::conv_rbm_square_desc<
         1, 28, 40, 17,
         dll::batch_size<25>,
@@ -75,7 +75,7 @@ TEST_CASE("crbm/mnist_11", "crbm::bias_mode_simple") {
     REQUIRE(error < 5e-2);
 }
 
-TEST_CASE("crbm/mnist_12", "crbm::bias_mode_none") {
+DLL_TEST_CASE("crbm/mnist_12", "crbm::bias_mode_none") {
     dll::conv_rbm_square_desc<
         1, 28, 40, 17,
         dll::batch_size<25>,

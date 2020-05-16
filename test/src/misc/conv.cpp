@@ -19,7 +19,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("conv/sgd/1", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("conv/sgd/1", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t,
@@ -41,7 +41,7 @@ TEST_CASE("conv/sgd/1", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("conv/sgd/2", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("conv/sgd/2", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::TANH>>::layer_t,
@@ -65,7 +65,7 @@ TEST_CASE("conv/sgd/2", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("conv/sgd/3", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("conv/sgd/3", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
@@ -89,7 +89,7 @@ TEST_CASE("conv/sgd/3", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("conv/sgd/4", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("conv/sgd/4", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t,
@@ -112,7 +112,7 @@ TEST_CASE("conv/sgd/4", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("conv/sgd/5", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("conv/sgd/5", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
@@ -138,7 +138,7 @@ TEST_CASE("conv/sgd/5", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("conv/sgd/6", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("conv/sgd/6", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 8, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
@@ -165,7 +165,7 @@ TEST_CASE("conv/sgd/6", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("conv/sgd/7", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("conv/sgd/7", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
@@ -192,7 +192,7 @@ TEST_CASE("conv/sgd/7", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("lenet", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("lenet", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 20, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
@@ -223,7 +223,7 @@ TEST_CASE("lenet", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("conv/sgd/8", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("conv/sgd/8", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::TANH>>::layer_t,

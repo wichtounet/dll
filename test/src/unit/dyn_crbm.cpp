@@ -16,7 +16,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("unit/dyn_crbm/mnist/1", "[dyn_crbm][unit]") {
+DLL_TEST_CASE("unit/dyn_crbm/mnist/1", "[dyn_crbm][unit]") {
     dll::dyn_conv_rbm_desc<
         dll::weight_decay<dll::decay_type::L2_FULL>,
         dll::momentum>::layer_t rbm;
@@ -42,7 +42,7 @@ TEST_CASE("unit/dyn_crbm/mnist/1", "[dyn_crbm][unit]") {
     REQUIRE(free_energy < 0.0);
 }
 
-TEST_CASE("unit/dyn_crbm/mnist/2", "[dyn_crbm][unit]") {
+DLL_TEST_CASE("unit/dyn_crbm/mnist/2", "[dyn_crbm][unit]") {
     dll::dyn_conv_rbm_desc<
         dll::momentum,
         dll::weight_decay<dll::decay_type::L2>,
@@ -59,7 +59,7 @@ TEST_CASE("unit/dyn_crbm/mnist/2", "[dyn_crbm][unit]") {
     REQUIRE(error < 0.25);
 }
 
-TEST_CASE("unit/dyn_crbm/mnist/4", "[dyn_crbm][unit]") {
+DLL_TEST_CASE("unit/dyn_crbm/mnist/4", "[dyn_crbm][unit]") {
     dll::dyn_conv_rbm_desc<
         dll::momentum,
         dll::weight_decay<dll::decay_type::L2>,

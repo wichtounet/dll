@@ -14,7 +14,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("crbm/mnist_140", "crbm::slow") {
+DLL_TEST_CASE("crbm/mnist_140", "crbm::slow") {
     dll::conv_rbm_square_desc<
         2, 28, 40, 17,
         dll::batch_size<100>,
@@ -32,7 +32,7 @@ TEST_CASE("crbm/mnist_140", "crbm::slow") {
     dll::dump_timers();
 }
 
-TEST_CASE("crbm/mnist_142", "crbm::slow_second") {
+DLL_TEST_CASE("crbm/mnist_142", "crbm::slow_second") {
     dll::conv_rbm_square_desc<
         40, 12, 40, 7,
         dll::batch_size<100>,
@@ -48,7 +48,7 @@ TEST_CASE("crbm/mnist_142", "crbm::slow_second") {
     REQUIRE(error < 1);
 }
 
-TEST_CASE("crbm/mnist_144", "crbm::slow") {
+DLL_TEST_CASE("crbm/mnist_144", "crbm::slow") {
     dll::conv_rbm_square_desc<
         1, 28, 40, 5,
         dll::batch_size<100>,

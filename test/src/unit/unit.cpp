@@ -12,7 +12,7 @@
 #include "dll/rbm/rbm.hpp"
 #include "dll/ocv_visualizer.hpp"
 
-TEST_CASE("unit/unit_1", "[unit]") {
+DLL_TEST_CASE("unit/unit_1", "[unit]") {
     REQUIRE(dll::detail::ct_sqrt(1) == 1);
     REQUIRE(dll::detail::ct_sqrt(4) == 2);
     REQUIRE(dll::detail::ct_sqrt(9) == 3);
@@ -20,14 +20,14 @@ TEST_CASE("unit/unit_1", "[unit]") {
     REQUIRE(dll::detail::ct_sqrt(39601) == 199);
 }
 
-TEST_CASE("unit/unit_2", "[unit]") {
+DLL_TEST_CASE("unit/unit_2", "[unit]") {
     REQUIRE(dll::detail::ct_pow(1) == 1);
     REQUIRE(dll::detail::ct_pow(2) == 4);
     REQUIRE(dll::detail::ct_pow(4) == 16);
     REQUIRE(dll::detail::ct_pow(199) == 39601);
 }
 
-TEST_CASE("unit/unit_3", "[unit]") {
+DLL_TEST_CASE("unit/unit_3", "[unit]") {
     REQUIRE(dll::detail::best_height(1) == 1);
     REQUIRE(dll::detail::best_height(4) == 2);
     REQUIRE(dll::detail::best_height(9) == 3);
@@ -38,7 +38,7 @@ TEST_CASE("unit/unit_3", "[unit]") {
     REQUIRE(dll::detail::best_height(200) == 14);
 }
 
-TEST_CASE("unit/unit_4", "[unit]") {
+DLL_TEST_CASE("unit/unit_4", "[unit]") {
     REQUIRE(dll::detail::best_width(1) == 1);
     REQUIRE(dll::detail::best_width(4) == 2);
     REQUIRE(dll::detail::best_width(9) == 3);
@@ -47,7 +47,7 @@ TEST_CASE("unit/unit_4", "[unit]") {
     REQUIRE(dll::detail::best_width(200) == 15);
 }
 
-TEST_CASE("unit/unit_5", "[unit]") {
+DLL_TEST_CASE("unit/unit_5", "[unit]") {
     //200 => 15 x 14
     REQUIRE(dll::detail::best_width(200) == 15);
     REQUIRE(dll::detail::best_height(200) == 14);

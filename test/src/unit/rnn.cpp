@@ -14,7 +14,7 @@
 #include "dll/datasets.hpp"
 
 // Simple RNN
-TEST_CASE("unit/rnn/1", "[unit][rnn]") {
+DLL_TEST_CASE("unit/rnn/1", "[unit][rnn]") {
     auto dataset = dll::make_mnist_dataset_nc_sub(0, 2000, dll::batch_size<100>{}, dll::scale_pre<255>{});
 
     constexpr size_t time_steps      = 28;
@@ -38,7 +38,7 @@ TEST_CASE("unit/rnn/1", "[unit][rnn]") {
 }
 
 // Simple RNN with truncation
-TEST_CASE("unit/rnn/2", "[unit][rnn]") {
+DLL_TEST_CASE("unit/rnn/2", "[unit][rnn]") {
     auto dataset = dll::make_mnist_dataset_nc_sub(0, 2000, dll::batch_size<100>{}, dll::scale_pre<255>{});
 
     constexpr size_t time_steps      = 28;
@@ -62,7 +62,7 @@ TEST_CASE("unit/rnn/2", "[unit][rnn]") {
 }
 
 // Deep RNN
-TEST_CASE("unit/rnn/3", "[unit][rnn]") {
+DLL_TEST_CASE("unit/rnn/3", "[unit][rnn]") {
     auto dataset = dll::make_mnist_dataset_nc_sub(0, 2000, dll::batch_size<100>{}, dll::scale_pre<255>{});
 
     constexpr size_t time_steps      = 28;

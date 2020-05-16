@@ -17,7 +17,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("dyn_dbn/cg/mnist/1", "dbn::simple") {
+DLL_TEST_CASE("dyn_dbn/cg/mnist/1", "dbn::simple") {
     using dbn_t =
         dll::dbn_desc<
             dll::dbn_layers<
@@ -46,7 +46,7 @@ TEST_CASE("dyn_dbn/cg/mnist/1", "dbn::simple") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("dyn_dbn/cg/mnist/2", "dbn::memory") {
+DLL_TEST_CASE("dyn_dbn/cg/mnist/2", "dbn::memory") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dyn_rbm_desc<dll::momentum, dll::init_weights>::layer_t,

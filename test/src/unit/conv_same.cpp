@@ -18,7 +18,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("unit/conv/same/1", "[conv][dbn][mnist][sgd]") {
+DLL_TEST_CASE("unit/conv/same/1", "[conv][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_same_desc<1, 28, 28, 6, 3, 3, dll::activation<dll::function::SIGMOID>>::layer_t,
@@ -38,7 +38,7 @@ TEST_CASE("unit/conv/same/1", "[conv][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("unit/conv/same/2", "[conv][dbn][mnist][sgd]") {
+DLL_TEST_CASE("unit/conv/same/2", "[conv][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_same_desc<1, 28, 28, 6, 3, 3, dll::activation<dll::function::SIGMOID>>::layer_t,

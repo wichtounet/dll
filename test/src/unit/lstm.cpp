@@ -14,7 +14,7 @@
 #include "dll/datasets.hpp"
 
 // Simple LSTM
-TEST_CASE("unit/lstm/1", "[unit][lstm]") {
+DLL_TEST_CASE("unit/lstm/1", "[unit][lstm]") {
     auto dataset = dll::make_mnist_dataset_nc_sub(0, 2000, dll::batch_size<100>{}, dll::scale_pre<255>{});
 
     constexpr size_t time_steps      = 28;
@@ -38,7 +38,7 @@ TEST_CASE("unit/lstm/1", "[unit][lstm]") {
 }
 
 // Simple LSTM with truncation
-TEST_CASE("unit/lstm/2", "[unit][lstm]") {
+DLL_TEST_CASE("unit/lstm/2", "[unit][lstm]") {
     auto dataset = dll::make_mnist_dataset_nc_sub(0, 2000, dll::batch_size<100>{}, dll::scale_pre<255>{});
 
     constexpr size_t time_steps      = 28;
@@ -62,7 +62,7 @@ TEST_CASE("unit/lstm/2", "[unit][lstm]") {
 }
 
 // Deep LSTM
-TEST_CASE("unit/lstm/3", "[unit][lstm]") {
+DLL_TEST_CASE("unit/lstm/3", "[unit][lstm]") {
     auto dataset = dll::make_mnist_dataset_nc_sub(0, 1000, dll::batch_size<100>{}, dll::scale_pre<255>{});
 
     constexpr size_t time_steps      = 28;

@@ -19,7 +19,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("conv_dbn/mnist_9", "max_pooling") {
+DLL_TEST_CASE("conv_dbn/mnist_9", "max_pooling") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_desc<1, 28, 28, 40, 15, 17, dll::momentum, dll::batch_size<25>>::layer_t,
@@ -50,7 +50,7 @@ TEST_CASE("conv_dbn/mnist_9", "max_pooling") {
     REQUIRE(test_error < 0.1);
 }
 
-TEST_CASE("conv_dbn/mnist_10", "max_pooling") {
+DLL_TEST_CASE("conv_dbn/mnist_10", "max_pooling") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_desc<1, 28, 28, 40, 9, 8, dll::momentum, dll::batch_size<25>>::layer_t,
@@ -83,7 +83,7 @@ TEST_CASE("conv_dbn/mnist_10", "max_pooling") {
     REQUIRE(test_error < 1.0);
 }
 
-TEST_CASE("conv_dbn/mnist_11", "avg_pooling") {
+DLL_TEST_CASE("conv_dbn/mnist_11", "avg_pooling") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_desc<1, 28, 28, 40, 15, 17, dll::momentum, dll::batch_size<25>>::layer_t,
@@ -115,7 +115,7 @@ TEST_CASE("conv_dbn/mnist_11", "avg_pooling") {
     REQUIRE(test_error < 0.1);
 }
 
-TEST_CASE("conv_dbn/mnist_12", "avgp_pooling") {
+DLL_TEST_CASE("conv_dbn/mnist_12", "avgp_pooling") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_desc<1, 28, 28, 40, 9, 8, dll::momentum, dll::batch_size<25>>::layer_t,
@@ -148,7 +148,7 @@ TEST_CASE("conv_dbn/mnist_12", "avgp_pooling") {
     REQUIRE(test_error < 1.0);
 }
 
-TEST_CASE("conv_dbn/mnist_13", "nop_layers") {
+DLL_TEST_CASE("conv_dbn/mnist_13", "nop_layers") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_desc<1, 28, 28, 40, 15, 17, dll::momentum, dll::batch_size<25>>::layer_t,

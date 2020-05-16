@@ -17,7 +17,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("dbn/svm/1", "dbn::svm_simple") {
+DLL_TEST_CASE("dbn/svm/1", "dbn::svm_simple") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
@@ -40,7 +40,7 @@ TEST_CASE("dbn/svm/1", "dbn::svm_simple") {
     REQUIRE(test_error < 0.2);
 }
 
-TEST_CASE("dbn/svm/2", "dbn::svm_concatenate") {
+DLL_TEST_CASE("dbn/svm/2", "dbn::svm_concatenate") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
@@ -64,7 +64,7 @@ TEST_CASE("dbn/svm/2", "dbn::svm_concatenate") {
     REQUIRE(test_error < 0.2);
 }
 
-TEST_CASE("dbn/svm/3", "dbn::svm_simple") {
+DLL_TEST_CASE("dbn/svm/3", "dbn::svm_simple") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t>, dll::trainer<dll::cg_trainer>>::dbn_t dbn_t;

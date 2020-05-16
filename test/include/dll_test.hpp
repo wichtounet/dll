@@ -7,7 +7,13 @@
 
 #pragma once
 
-#include "catch.hpp"
+#define DOCTEST_CONFIG_ASSERTION_PARAMETERS_BY_VALUE
+#define DOCTEST_CONFIG_SUPER_FAST_ASSERTS
+#include <limits>
+#include "doctest/doctest.h"
+
+// The second part of the test case is not used with doctest
+#define DLL_TEST_CASE(name, description) TEST_CASE(name)
 
 namespace dll_test {
 

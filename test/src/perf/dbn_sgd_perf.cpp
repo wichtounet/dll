@@ -16,7 +16,7 @@
 #include "mnist/mnist_utils.hpp"
 
 // This test case is done to benchmark the performance of SGD
-TEST_CASE("dbn/sgd/perf/1", "[dbn][mnist][sgd][perf]") {
+DLL_TEST_CASE("dbn/sgd/perf/1", "[dbn][mnist][sgd][perf]") {
     using dbn_t = dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 500>::layer_t,

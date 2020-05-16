@@ -17,7 +17,7 @@
 #include "mnist/mnist_utils.hpp"
 
 // Test Sigmoid -> Sigmoid network
-TEST_CASE("unit/dyn_dense/sgd/1", "[unit][dyn_dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("unit/dyn_dense/sgd/1", "[unit][dyn_dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dyn_dense_layer_desc<>::layer_t,
@@ -39,7 +39,7 @@ TEST_CASE("unit/dyn_dense/sgd/1", "[unit][dyn_dense][dbn][mnist][sgd]") {
 }
 
 // Test tanh -> tanh network
-TEST_CASE("unit/dyn_dense/sgd/2", "[unit][dyn_dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("unit/dyn_dense/sgd/2", "[unit][dyn_dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dyn_dense_layer_desc<dll::activation<dll::function::TANH>>::layer_t,
@@ -63,7 +63,7 @@ TEST_CASE("unit/dyn_dense/sgd/2", "[unit][dyn_dense][dbn][mnist][sgd]") {
 }
 
 // test momentum and weight decay
-TEST_CASE("unit/dyn_dense/sgd/3", "[unit][dyn_dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("unit/dyn_dense/sgd/3", "[unit][dyn_dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dyn_dense_layer_desc<>::layer_t,
@@ -89,7 +89,7 @@ TEST_CASE("unit/dyn_dense/sgd/3", "[unit][dyn_dense][dbn][mnist][sgd]") {
 }
 
 // Test Sigmoid -> Softmax network
-TEST_CASE("unit/dyn_dense/sgd/4", "[unit][dyn_dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("unit/dyn_dense/sgd/4", "[unit][dyn_dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dyn_dense_layer_desc<dll::activation<dll::function::SIGMOID>>::layer_t,
@@ -115,7 +115,7 @@ TEST_CASE("unit/dyn_dense/sgd/4", "[unit][dyn_dense][dbn][mnist][sgd]") {
 }
 
 // Test scale layer
-TEST_CASE("unit/dyn_dense/sgd/5", "[unit][dyn_dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("unit/dyn_dense/sgd/5", "[unit][dyn_dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::shape_1d_layer_desc<28 * 28>::layer_t,
@@ -140,7 +140,7 @@ TEST_CASE("unit/dyn_dense/sgd/5", "[unit][dyn_dense][dbn][mnist][sgd]") {
 }
 
 // Test Relu -> Softmax network
-TEST_CASE("unit/dyn_dense/sgd/6", "[unit][dyn_dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("unit/dyn_dense/sgd/6", "[unit][dyn_dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dyn_dense_layer_desc<dll::activation<dll::function::RELU>>::layer_t,
@@ -166,7 +166,7 @@ TEST_CASE("unit/dyn_dense/sgd/6", "[unit][dyn_dense][dbn][mnist][sgd]") {
 }
 
 // Test Relu -> Relu -> Softmax network
-TEST_CASE("unit/dyn_dense/sgd/7", "[unit][dyn_dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("unit/dyn_dense/sgd/7", "[unit][dyn_dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dyn_dense_layer_desc<dll::activation<dll::function::RELU>>::layer_t,

@@ -13,7 +13,7 @@
 #include "mnist/mnist_utils.hpp"
 
 //Only here for benchmarking purposes
-TEST_CASE("dyn_rbm/mnist_14", "rbm::slow") {
+DLL_TEST_CASE("dyn_rbm/mnist_14", "rbm::slow") {
     dll::dyn_rbm_desc<>::layer_t rbm(28 * 28, 400);
 
     auto dataset = mnist::read_dataset_direct<std::vector, etl::dyn_vector<float>>(100);

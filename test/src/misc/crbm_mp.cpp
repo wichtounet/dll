@@ -16,7 +16,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("crbm_mp/mnist_1", "crbm::simple") {
+DLL_TEST_CASE("crbm_mp/mnist_1", "crbm::simple") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 40, 17, 2,
         dll::batch_size<25>>::layer_t rbm;
@@ -33,7 +33,7 @@ TEST_CASE("crbm_mp/mnist_1", "crbm::simple") {
     REQUIRE(error < 1e-1);
 }
 
-TEST_CASE("crbm_mp/mnist_2", "crbm::momentum") {
+DLL_TEST_CASE("crbm_mp/mnist_2", "crbm::momentum") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 40, 17, 2,
         dll::batch_size<25>,
@@ -49,7 +49,7 @@ TEST_CASE("crbm_mp/mnist_2", "crbm::momentum") {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE("crbm_mp/mnist_3", "crbm::decay_l1") {
+DLL_TEST_CASE("crbm_mp/mnist_3", "crbm::decay_l1") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 40, 17, 2,
         dll::batch_size<25>,
@@ -65,7 +65,7 @@ TEST_CASE("crbm_mp/mnist_3", "crbm::decay_l1") {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE("crbm_mp/mnist_4", "crbm::decay_l2") {
+DLL_TEST_CASE("crbm_mp/mnist_4", "crbm::decay_l2") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 40, 17, 2,
         dll::batch_size<25>,
@@ -81,7 +81,7 @@ TEST_CASE("crbm_mp/mnist_4", "crbm::decay_l2") {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE("crbm_mp/mnist_6", "crbm::gaussian") {
+DLL_TEST_CASE("crbm_mp/mnist_6", "crbm::gaussian") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 40, 17, 2,
         dll::batch_size<25>,
@@ -99,7 +99,7 @@ TEST_CASE("crbm_mp/mnist_6", "crbm::gaussian") {
     REQUIRE(error < 5e-2);
 }
 
-TEST_CASE("crbm_mp/mnist_10", "crbm::pcd_trainer") {
+DLL_TEST_CASE("crbm_mp/mnist_10", "crbm::pcd_trainer") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 40, 17, 2,
         dll::batch_size<10>,
@@ -118,7 +118,7 @@ TEST_CASE("crbm_mp/mnist_10", "crbm::pcd_trainer") {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE("crbm_mp/mnist_13", "crbm::multi_channel") {
+DLL_TEST_CASE("crbm_mp/mnist_13", "crbm::multi_channel") {
     dll::conv_rbm_mp_desc_square<
         2, 28, 40, 17, 2,
         dll::batch_size<25>,
@@ -134,7 +134,7 @@ TEST_CASE("crbm_mp/mnist_13", "crbm::multi_channel") {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE("crbm_mp/mnist_15", "crbm::denoising") {
+DLL_TEST_CASE("crbm_mp/mnist_15", "crbm::denoising") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 40, 17, 2,
         dll::batch_size<25>,

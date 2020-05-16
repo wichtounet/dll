@@ -15,7 +15,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("dense/ae/1", "[dense][dbn][mnist][sgd][ae]") {
+DLL_TEST_CASE("dense/ae/1", "[dense][dbn][mnist][sgd][ae]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 200>::layer_t,
@@ -43,7 +43,7 @@ TEST_CASE("dense/ae/1", "[dense][dbn][mnist][sgd][ae]") {
     REQUIRE(test_error < 0.1);
 }
 
-TEST_CASE("dense/ae/2", "[dense][dbn][mnist][sgd][ae]") {
+DLL_TEST_CASE("dense/ae/2", "[dense][dbn][mnist][sgd][ae]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 200, dll::activation<dll::function::TANH>>::layer_t,
@@ -71,7 +71,7 @@ TEST_CASE("dense/ae/2", "[dense][dbn][mnist][sgd][ae]") {
     REQUIRE(test_error < 0.1);
 }
 
-TEST_CASE("dense/ae/3", "[dense][dbn][mnist][sgd][ae]") {
+DLL_TEST_CASE("dense/ae/3", "[dense][dbn][mnist][sgd][ae]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 200, dll::activation<dll::function::RELU>>::layer_t,
@@ -99,7 +99,7 @@ TEST_CASE("dense/ae/3", "[dense][dbn][mnist][sgd][ae]") {
     REQUIRE(test_error < 0.1);
 }
 
-TEST_CASE("dense/ae/4", "[dense][dbn][mnist][sgd][ae]") {
+DLL_TEST_CASE("dense/ae/4", "[dense][dbn][mnist][sgd][ae]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 200>::layer_t,
@@ -128,7 +128,7 @@ TEST_CASE("dense/ae/4", "[dense][dbn][mnist][sgd][ae]") {
     REQUIRE(test_error < 0.1);
 }
 
-TEST_CASE("dense/ae/5", "[dense][dbn][mnist][sgd][ae][momentum]") {
+DLL_TEST_CASE("dense/ae/5", "[dense][dbn][mnist][sgd][ae][momentum]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 200>::layer_t,
@@ -159,7 +159,7 @@ TEST_CASE("dense/ae/5", "[dense][dbn][mnist][sgd][ae][momentum]") {
     REQUIRE(test_error < 0.1);
 }
 
-TEST_CASE("dense/ae/6", "[dense][dbn][mnist][sgd][ae][momentum][decay]") {
+DLL_TEST_CASE("dense/ae/6", "[dense][dbn][mnist][sgd][ae][momentum][decay]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 200>::layer_t,

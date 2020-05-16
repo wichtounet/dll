@@ -15,7 +15,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("dbn/perf/1", "[dbn][bench][fast]") {
+DLL_TEST_CASE("dbn/perf/1", "[dbn][bench][fast]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<5>, dll::init_weights>::layer_t,
@@ -41,7 +41,7 @@ TEST_CASE("dbn/perf/1", "[dbn][bench][fast]") {
     dll::dump_timers();
 }
 
-TEST_CASE("dbn/perf/3", "[dbn][bench][slow]") {
+DLL_TEST_CASE("dbn/perf/3", "[dbn][bench][slow]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 300, dll::momentum, dll::batch_size<24>, dll::init_weights>::layer_t,

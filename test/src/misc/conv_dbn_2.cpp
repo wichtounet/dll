@@ -15,7 +15,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("conv_dbn/mnist_5", "conv_dbn::svm_simple") {
+DLL_TEST_CASE("conv_dbn/mnist_5", "conv_dbn::svm_simple") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_square_desc<1, 28, 40, 17, dll::momentum, dll::batch_size<25>>::layer_t>,
@@ -39,7 +39,7 @@ TEST_CASE("conv_dbn/mnist_5", "conv_dbn::svm_simple") {
     REQUIRE(test_error < 0.1);
 }
 
-TEST_CASE("conv_dbn/mnist_6", "conv_dbn::svm_gaussian") {
+DLL_TEST_CASE("conv_dbn/mnist_6", "conv_dbn::svm_gaussian") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_square_desc<1, 28, 20, 9, dll::visible<dll::unit_type::GAUSSIAN>, dll::momentum, dll::batch_size<25>>::layer_t,
@@ -64,7 +64,7 @@ TEST_CASE("conv_dbn/mnist_6", "conv_dbn::svm_gaussian") {
     REQUIRE(test_error < 0.1);
 }
 
-TEST_CASE("conv_dbn/mnist_7", "conv_dbn::svm_scale") {
+DLL_TEST_CASE("conv_dbn/mnist_7", "conv_dbn::svm_scale") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_square_desc<1, 28, 40, 17, dll::visible<dll::unit_type::GAUSSIAN>, dll::momentum, dll::batch_size<25>>::layer_t,
@@ -89,7 +89,7 @@ TEST_CASE("conv_dbn/mnist_7", "conv_dbn::svm_scale") {
     REQUIRE(test_error < 0.1);
 }
 
-TEST_CASE("conv_dbn/mnist_8", "conv_dbn::unsquare_svm") {
+DLL_TEST_CASE("conv_dbn/mnist_8", "conv_dbn::unsquare_svm") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_desc<1, 28, 28, 40, 15, 17, dll::momentum, dll::batch_size<25>>::layer_t,

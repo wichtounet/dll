@@ -21,7 +21,7 @@
 #include "mnist/mnist_utils.hpp"
 
 // (Dense) BN after the non-linearity
-TEST_CASE("unit/bn/1", "[unit][bn]") {
+DLL_TEST_CASE("unit/bn/1", "[unit][bn]") {
     using network_t = dll::network_desc<
         dll::network_layers<
             dll::dense_layer_desc<28 * 28, 200, dll::no_bias, dll::activation<dll::function::SIGMOID>>::layer_t,
@@ -50,7 +50,7 @@ TEST_CASE("unit/bn/1", "[unit][bn]") {
 }
 
 // (Dense) BN before the non-linearity
-TEST_CASE("unit/bn/2", "[unit][bn]") {
+DLL_TEST_CASE("unit/bn/2", "[unit][bn]") {
     using network_t = dll::network_desc<
         dll::network_layers<
             dll::dense_layer_desc<28 * 28, 200, dll::no_bias, dll::no_activation>::layer_t,
@@ -82,7 +82,7 @@ TEST_CASE("unit/bn/2", "[unit][bn]") {
 }
 
 // (Conv) BN after the non-linearity
-TEST_CASE("unit/bn/3", "[unit][bn]") {
+DLL_TEST_CASE("unit/bn/3", "[unit][bn]") {
     using network_t = dll::network_desc<
         dll::network_layers<
             dll::conv_layer_desc<1, 28, 28, 6, 5, 5, dll::no_bias, dll::no_activation>::layer_t,
@@ -122,7 +122,7 @@ TEST_CASE("unit/bn/3", "[unit][bn]") {
 }
 
 // (Conv) BN before the non-linearity
-TEST_CASE("unit/bn/4", "[unit][bn]") {
+DLL_TEST_CASE("unit/bn/4", "[unit][bn]") {
     using network_t = dll::network_desc<
         dll::network_layers<
             dll::conv_layer_desc<1, 28, 28, 6, 5, 5, dll::no_bias, dll::no_activation>::layer_t,
@@ -162,7 +162,7 @@ TEST_CASE("unit/bn/4", "[unit][bn]") {
 }
 
 // (Conv+MP) BN after the non-linearity
-TEST_CASE("unit/bn/5", "[unit][bn]") {
+DLL_TEST_CASE("unit/bn/5", "[unit][bn]") {
     constexpr size_t K = 6;
 
     using network_t = dll::network_desc<

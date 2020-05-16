@@ -16,7 +16,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("unit/crbm_mp/mnist/1", "[crbm_mp][unit]") {
+DLL_TEST_CASE("unit/crbm_mp/mnist/1", "[crbm_mp][unit]") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 5, 17, 2,
         dll::weight_type<float>,
@@ -42,7 +42,7 @@ TEST_CASE("unit/crbm_mp/mnist/1", "[crbm_mp][unit]") {
     REQUIRE(free_energy < 0.0);
 }
 
-TEST_CASE("unit/crbm_mp/mnist/2", "[crbm_mp][gaussian][unit]") {
+DLL_TEST_CASE("unit/crbm_mp/mnist/2", "[crbm_mp][gaussian][unit]") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 20, 5, 2,
         dll::weight_type<double>,
@@ -62,7 +62,7 @@ TEST_CASE("unit/crbm_mp/mnist/2", "[crbm_mp][gaussian][unit]") {
     REQUIRE(error < 0.15);
 }
 
-TEST_CASE("unit/crbm_mp/mnist/4", "[crbm_mp][denoising][unit]") {
+DLL_TEST_CASE("unit/crbm_mp/mnist/4", "[crbm_mp][denoising][unit]") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 30, 17, 2,
         dll::batch_size<25>,
@@ -97,7 +97,7 @@ TEST_CASE("unit/crbm_mp/mnist/4", "[crbm_mp][denoising][unit]") {
     cpp_unused(error);
 }
 
-TEST_CASE("unit/crbm_mp/mnist/5", "[crbm_mp][relu][unit]") {
+DLL_TEST_CASE("unit/crbm_mp/mnist/5", "[crbm_mp][relu][unit]") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 20, 17, 2,
         dll::batch_size<5>,
@@ -114,7 +114,7 @@ TEST_CASE("unit/crbm_mp/mnist/5", "[crbm_mp][relu][unit]") {
     REQUIRE(error < 5e-2);
 }
 
-TEST_CASE("unit/crbm_mp/mnist/6", "[crbm_mp][lee][unit]") {
+DLL_TEST_CASE("unit/crbm_mp/mnist/6", "[crbm_mp][lee][unit]") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 20, 17, 2,
         dll::batch_size<10>,
@@ -135,7 +135,7 @@ TEST_CASE("unit/crbm_mp/mnist/6", "[crbm_mp][lee][unit]") {
     REQUIRE(error < 3e-2);
 }
 
-TEST_CASE("unit/crbm_mp/mnist/7", "[crbm_mp][lee][gaussian][unit]") {
+DLL_TEST_CASE("unit/crbm_mp/mnist/7", "[crbm_mp][lee][gaussian][unit]") {
     dll::conv_rbm_mp_desc_square<
         1, 28, 20, 9, 2,
         dll::weight_type<double>,

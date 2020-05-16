@@ -22,7 +22,7 @@
 #include "mnist/mnist_utils.hpp"
 
 // Use a simple in-memory generator for fine-tuning
-TEST_CASE("unit/augment/mnist/1", "[dbn][unit]") {
+DLL_TEST_CASE("unit/augment/mnist/1", "[dbn][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 300>::layer_t,
@@ -56,7 +56,7 @@ TEST_CASE("unit/augment/mnist/1", "[dbn][unit]") {
 }
 
 // Use a simple in-memory generator for pretraining and fine-tuning
-TEST_CASE("unit/augment/mnist/2", "[dbn][unit]") {
+DLL_TEST_CASE("unit/augment/mnist/2", "[dbn][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 200, dll::momentum, dll::batch_size<10>>::layer_t,
@@ -99,7 +99,7 @@ TEST_CASE("unit/augment/mnist/2", "[dbn][unit]") {
 }
 
 // Use a simple out-memory generator for fine-tuning
-TEST_CASE("unit/augment/mnist/3", "[dbn][unit]") {
+DLL_TEST_CASE("unit/augment/mnist/3", "[dbn][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 300>::layer_t,
@@ -133,7 +133,7 @@ TEST_CASE("unit/augment/mnist/3", "[dbn][unit]") {
 }
 
 // Use a simple out-memory generator for pretraining and fine-tuning
-TEST_CASE("unit/augment/mnist/4", "[dbn][unit]") {
+DLL_TEST_CASE("unit/augment/mnist/4", "[dbn][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 200, dll::momentum, dll::batch_size<10>>::layer_t,
@@ -176,7 +176,7 @@ TEST_CASE("unit/augment/mnist/4", "[dbn][unit]") {
 }
 
 // Use a simple in-memory generator for fine-tuning with augmentation
-TEST_CASE("unit/augment/mnist/5", "[dbn][unit]") {
+DLL_TEST_CASE("unit/augment/mnist/5", "[dbn][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 300>::layer_t,
@@ -210,7 +210,7 @@ TEST_CASE("unit/augment/mnist/5", "[dbn][unit]") {
 }
 
 // Use a simple in-memory generator for pretraining and fine-tuning with augmentation
-TEST_CASE("unit/augment/mnist/6", "[dbn][unit]") {
+DLL_TEST_CASE("unit/augment/mnist/6", "[dbn][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 200, dll::momentum, dll::batch_size<10>>::layer_t,
@@ -253,7 +253,7 @@ TEST_CASE("unit/augment/mnist/6", "[dbn][unit]") {
 }
 
 // Use a simple out-memory generator for fine-tuning with augmentation
-TEST_CASE("unit/augment/mnist/7", "[dbn][unit]") {
+DLL_TEST_CASE("unit/augment/mnist/7", "[dbn][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 300>::layer_t,
@@ -287,7 +287,7 @@ TEST_CASE("unit/augment/mnist/7", "[dbn][unit]") {
 }
 
 // Use a simple out-memory generator for pretraining and fine-tuning with augmentation
-TEST_CASE("unit/augment/mnist/8", "[dbn][unit]") {
+DLL_TEST_CASE("unit/augment/mnist/8", "[dbn][unit]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 200, dll::momentum, dll::batch_size<10>>::layer_t,

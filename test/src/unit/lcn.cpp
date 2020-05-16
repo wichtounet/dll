@@ -21,7 +21,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("unit/cdbn/lcn/mnist/1", "[cdbn][lcn][svm][unit]") {
+DLL_TEST_CASE("unit/cdbn/lcn/mnist/1", "[cdbn][lcn][svm][unit]") {
     using dbn_t =
         dll::dbn_desc<dll::dbn_layers<
               dll::conv_rbm_square_desc<1, 28, 20, 17, dll::momentum, dll::batch_size<10>>::layer_t
@@ -48,7 +48,7 @@ TEST_CASE("unit/cdbn/lcn/mnist/1", "[cdbn][lcn][svm][unit]") {
     REQUIRE(test_error < 0.1);
 }
 
-TEST_CASE("unit/cdbn/lcn/mnist/2", "[cdbn][lcn][svm][unit]") {
+DLL_TEST_CASE("unit/cdbn/lcn/mnist/2", "[cdbn][lcn][svm][unit]") {
     using dbn_t =
         dll::dbn_desc<dll::dbn_layers<
               dll::conv_rbm_square_desc<1, 28, 20, 17, dll::momentum, dll::batch_size<10>>::layer_t
@@ -80,7 +80,7 @@ TEST_CASE("unit/cdbn/lcn/mnist/2", "[cdbn][lcn][svm][unit]") {
     REQUIRE(test_error < 0.5); //Note: This is not very stable
 }
 
-TEST_CASE("unit/cdbn/lcn/mnist/3", "[cdbn][lcn][svm][unit]") {
+DLL_TEST_CASE("unit/cdbn/lcn/mnist/3", "[cdbn][lcn][svm][unit]") {
     using dbn_t =
         dll::dbn_desc<dll::dbn_layers<
               dll::conv_rbm_square_desc<1, 28, 20, 17, dll::momentum, dll::batch_size<10>>::layer_t
@@ -109,7 +109,7 @@ TEST_CASE("unit/cdbn/lcn/mnist/3", "[cdbn][lcn][svm][unit]") {
     REQUIRE(test_error < 0.1);
 }
 
-TEST_CASE("unit/cdbn/lcn/mnist/4", "[cdbn][lcn][svm][unit]") {
+DLL_TEST_CASE("unit/cdbn/lcn/mnist/4", "[cdbn][lcn][svm][unit]") {
     using dbn_t =
         dll::dbn_desc<dll::dbn_layers<
               dll::conv_rbm_square_desc<1, 28, 20, 17, dll::momentum, dll::batch_size<10>>::layer_t
@@ -138,7 +138,7 @@ TEST_CASE("unit/cdbn/lcn/mnist/4", "[cdbn][lcn][svm][unit]") {
     REQUIRE(test_error <= 0.12);
 }
 
-TEST_CASE("unit/cdbn/lcn/mnist/5", "[cdbn][lcn][svm][unit]") {
+DLL_TEST_CASE("unit/cdbn/lcn/mnist/5", "[cdbn][lcn][svm][unit]") {
     using dbn_t =
         dll::dbn_desc<dll::dbn_layers<
               dll::conv_rbm_square_desc<1, 28, 20, 17, dll::momentum, dll::batch_size<10>>::layer_t
@@ -169,7 +169,7 @@ TEST_CASE("unit/cdbn/lcn/mnist/5", "[cdbn][lcn][svm][unit]") {
     REQUIRE(test_error < 0.2);
 }
 
-TEST_CASE("unit/cdbn/lcn/mnist/6", "[cdbn][lcn][unit]") {
+DLL_TEST_CASE("unit/cdbn/lcn/mnist/6", "[cdbn][lcn][unit]") {
     using dbn_t =
         dll::dbn_desc<dll::dbn_layers<
               dll::conv_rbm_square_desc<1, 28, 20, 17, dll::momentum, dll::batch_size<10>>::layer_t
@@ -200,7 +200,7 @@ TEST_CASE("unit/cdbn/lcn/mnist/6", "[cdbn][lcn][unit]") {
     dbn->pretrain(dataset.training_images, 20);
 }
 
-TEST_CASE("unit/cdbn/lcn/mnist/7", "[cdbn][lcn][svm][unit]") {
+DLL_TEST_CASE("unit/cdbn/lcn/mnist/7", "[cdbn][lcn][svm][unit]") {
     using dbn_t =
         dll::dbn_desc<dll::dbn_layers<
               dll::dyn_conv_rbm_desc<dll::momentum>::layer_t
@@ -230,7 +230,7 @@ TEST_CASE("unit/cdbn/lcn/mnist/7", "[cdbn][lcn][svm][unit]") {
     REQUIRE(test_error < 0.1);
 }
 
-TEST_CASE("unit/cdbn/lcn/mnist/8", "[cdbn][lcn][svm][unit]") {
+DLL_TEST_CASE("unit/cdbn/lcn/mnist/8", "[cdbn][lcn][svm][unit]") {
     using dbn_t =
         dll::dbn_desc<dll::dbn_layers<
               dll::dyn_conv_rbm_desc<dll::momentum>::layer_t

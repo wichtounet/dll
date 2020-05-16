@@ -17,7 +17,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("lenet_rbm", "[dbn][mnist][sgd]") {
+DLL_TEST_CASE("lenet_rbm", "[dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::shape_3d_layer_desc<1, 28, 28>::layer_t,

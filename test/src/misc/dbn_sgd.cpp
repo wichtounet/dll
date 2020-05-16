@@ -15,7 +15,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("dbn/sgd/1", "[dbn][mnist][sgd]") {
+DLL_TEST_CASE("dbn/sgd/1", "[dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
@@ -39,7 +39,7 @@ TEST_CASE("dbn/sgd/1", "[dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("dbn/sgd/2", "[dbn][mnist][sgd]") {
+DLL_TEST_CASE("dbn/sgd/2", "[dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
@@ -63,7 +63,7 @@ TEST_CASE("dbn/sgd/2", "[dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("dbn/sgd/3", "[dbn][mnist][sgd][gaussian]") {
+DLL_TEST_CASE("dbn/sgd/3", "[dbn][mnist][sgd][gaussian]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 200, dll::momentum, dll::batch_size<25>, dll::visible<dll::unit_type::GAUSSIAN>>::layer_t,
@@ -88,7 +88,7 @@ TEST_CASE("dbn/sgd/3", "[dbn][mnist][sgd][gaussian]") {
 
 //This test should not perform well, but should not fail
 //TODO This should be improved
-TEST_CASE("dbn/sgd/4", "[dbn][mnist][sgd][relu]") {
+DLL_TEST_CASE("dbn/sgd/4", "[dbn][mnist][sgd][relu]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::hidden<dll::unit_type::RELU>, dll::init_weights>::layer_t,
@@ -109,7 +109,7 @@ TEST_CASE("dbn/sgd/4", "[dbn][mnist][sgd][relu]") {
     REQUIRE(std::isfinite(error));
 }
 
-TEST_CASE("dbn/sgd/5", "[dbn][mnist][sgd]") {
+DLL_TEST_CASE("dbn/sgd/5", "[dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
@@ -131,7 +131,7 @@ TEST_CASE("dbn/sgd/5", "[dbn][mnist][sgd]") {
 }
 
 //Here to test large batch size
-TEST_CASE("dbn/sgd/6", "[dbn][mnist][sgd]") {
+DLL_TEST_CASE("dbn/sgd/6", "[dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
@@ -152,7 +152,7 @@ TEST_CASE("dbn/sgd/6", "[dbn][mnist][sgd]") {
     REQUIRE(error < 1e-1);
 }
 
-TEST_CASE("dbn/sgd/7", "[dbn][mnist][sgd][memory]") {
+DLL_TEST_CASE("dbn/sgd/7", "[dbn][mnist][sgd][memory]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,

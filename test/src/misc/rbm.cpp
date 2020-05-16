@@ -14,7 +14,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("rbm/mnist_1", "rbm::simple") {
+DLL_TEST_CASE("rbm/mnist_1", "rbm::simple") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
@@ -34,7 +34,7 @@ TEST_CASE("rbm/mnist_1", "rbm::simple") {
     REQUIRE(rec_error < 3e-2);
 }
 
-TEST_CASE("rbm/mnist_2", "rbm::momentum") {
+DLL_TEST_CASE("rbm/mnist_2", "rbm::momentum") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
@@ -50,7 +50,7 @@ TEST_CASE("rbm/mnist_2", "rbm::momentum") {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE("rbm/mnist_40", "rbm::decay_l1") {
+DLL_TEST_CASE("rbm/mnist_40", "rbm::decay_l1") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
@@ -66,7 +66,7 @@ TEST_CASE("rbm/mnist_40", "rbm::decay_l1") {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE("rbm/mnist_41", "rbm::decay_l2") {
+DLL_TEST_CASE("rbm/mnist_41", "rbm::decay_l2") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
@@ -82,7 +82,7 @@ TEST_CASE("rbm/mnist_41", "rbm::decay_l2") {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE("rbm/mnist_42", "rbm::decay_l1l2") {
+DLL_TEST_CASE("rbm/mnist_42", "rbm::decay_l1l2") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
@@ -98,7 +98,7 @@ TEST_CASE("rbm/mnist_42", "rbm::decay_l1l2") {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE("rbm/mnist_43", "rbm::decay_l1l2_full") {
+DLL_TEST_CASE("rbm/mnist_43", "rbm::decay_l1l2_full") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
@@ -114,7 +114,7 @@ TEST_CASE("rbm/mnist_43", "rbm::decay_l1l2_full") {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE("rbm/mnist_7", "rbm::gaussian") {
+DLL_TEST_CASE("rbm/mnist_7", "rbm::gaussian") {
     dll::rbm_desc<
         28 * 28, 333,
         dll::batch_size<20>,
@@ -134,7 +134,7 @@ TEST_CASE("rbm/mnist_7", "rbm::gaussian") {
     REQUIRE(error < 1e-1);
 }
 
-TEST_CASE("rbm/mnist_8", "rbm::softmax") {
+DLL_TEST_CASE("rbm/mnist_8", "rbm::softmax") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
@@ -150,7 +150,7 @@ TEST_CASE("rbm/mnist_8", "rbm::softmax") {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE("rbm/mnist_12", "rbm::init_weights") {
+DLL_TEST_CASE("rbm/mnist_12", "rbm::init_weights") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
@@ -166,7 +166,7 @@ TEST_CASE("rbm/mnist_12", "rbm::init_weights") {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE("rbm/mnist_16", "rbm::iterators") {
+DLL_TEST_CASE("rbm/mnist_16", "rbm::iterators") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>>::layer_t rbm;
@@ -184,7 +184,7 @@ TEST_CASE("rbm/mnist_16", "rbm::iterators") {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE("rbm/mnist_19", "rbm::simple_double") {
+DLL_TEST_CASE("rbm/mnist_19", "rbm::simple_double") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
@@ -200,7 +200,7 @@ TEST_CASE("rbm/mnist_19", "rbm::simple_double") {
     REQUIRE(error < 3e-2);
 }
 
-TEST_CASE("rbm/mnist_20", "rbm::simple_float") {
+DLL_TEST_CASE("rbm/mnist_20", "rbm::simple_float") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
@@ -216,7 +216,7 @@ TEST_CASE("rbm/mnist_20", "rbm::simple_float") {
     REQUIRE(error < 3e-2);
 }
 
-TEST_CASE("rbm/mnist_21", "rbm::shuffle") {
+DLL_TEST_CASE("rbm/mnist_21", "rbm::shuffle") {
     dll::rbm_desc<
         28 * 28, 400,
         dll::batch_size<48>,
@@ -232,7 +232,7 @@ TEST_CASE("rbm/mnist_21", "rbm::shuffle") {
     REQUIRE(error < 5e-2);
 }
 
-TEST_CASE("rbm/mnist_22", "rbm::denoising") {
+DLL_TEST_CASE("rbm/mnist_22", "rbm::denoising") {
     dll::rbm_desc<
         28 * 28, 200,
         dll::batch_size<25>,

@@ -18,7 +18,7 @@
 
 // Fully-Connected Network on CIFAR-10
 
-TEST_CASE("cifar/dense/sgd/1", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("cifar/dense/sgd/1", "[dense][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<3 * 32 * 32, 1000>::layer_t,
@@ -39,7 +39,7 @@ TEST_CASE("cifar/dense/sgd/1", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK_DATASET(0.2);
 }
 
-TEST_CASE("cifar/conv/sgd/1", "[unit][conv][dbn][mnist][sgd]") {
+DLL_TEST_CASE("cifar/conv/sgd/1", "[unit][conv][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<3, 32, 32, 6, 5, 5>::layer_t,
@@ -63,7 +63,7 @@ TEST_CASE("cifar/conv/sgd/1", "[unit][conv][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("cifar/conv/sgd/2", "[unit][conv][dbn][mnist][sgd]") {
+DLL_TEST_CASE("cifar/conv/sgd/2", "[unit][conv][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<3, 32, 32, 12, 5, 5, dll::activation<dll::function::RELU>>::layer_t,

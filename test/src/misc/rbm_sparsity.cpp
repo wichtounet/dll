@@ -12,7 +12,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("rbm/mnist_60", "rbm::global_sparsity") {
+DLL_TEST_CASE("rbm/mnist_60", "rbm::global_sparsity") {
     using rbm_type = dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
@@ -36,7 +36,7 @@ TEST_CASE("rbm/mnist_60", "rbm::global_sparsity") {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE("rbm/mnist_61", "rbm::local_sparsity") {
+DLL_TEST_CASE("rbm/mnist_61", "rbm::local_sparsity") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
@@ -55,7 +55,7 @@ TEST_CASE("rbm/mnist_61", "rbm::local_sparsity") {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE("rbm/mnist_62", "rbm::sparsity_gaussian") {
+DLL_TEST_CASE("rbm/mnist_62", "rbm::sparsity_gaussian") {
     dll::rbm_desc<
         28 * 28, 300,
         dll::batch_size<10>,

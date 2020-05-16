@@ -16,7 +16,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("unit/rbm/mnist/1", "[rbm][momentum][unit]") {
+DLL_TEST_CASE("unit/rbm/mnist/1", "[rbm][momentum][unit]") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
@@ -38,7 +38,7 @@ TEST_CASE("unit/rbm/mnist/1", "[rbm][momentum][unit]") {
     REQUIRE(rec_error < 1e-2);
 }
 
-TEST_CASE("unit/rbm/mnist/3", "[rbm][momemtum][gaussian][unit]") {
+DLL_TEST_CASE("unit/rbm/mnist/3", "[rbm][momemtum][gaussian][unit]") {
     dll::rbm_desc<
         28 * 28, 150,
         dll::batch_size<25>,
@@ -56,7 +56,7 @@ TEST_CASE("unit/rbm/mnist/3", "[rbm][momemtum][gaussian][unit]") {
     REQUIRE(error < 1e-1);
 }
 
-TEST_CASE("unit/rbm/mnist/4", "[rbm][shuffle][unit]") {
+DLL_TEST_CASE("unit/rbm/mnist/4", "[rbm][shuffle][unit]") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
@@ -72,7 +72,7 @@ TEST_CASE("unit/rbm/mnist/4", "[rbm][shuffle][unit]") {
     REQUIRE(error < 5e-2);
 }
 
-TEST_CASE("unit/rbm/mnist/5", "[rbm][denoising][unit]") {
+DLL_TEST_CASE("unit/rbm/mnist/5", "[rbm][denoising][unit]") {
     dll::rbm_desc<
         28 * 28, 200,
         dll::batch_size<25>,
@@ -107,7 +107,7 @@ TEST_CASE("unit/rbm/mnist/5", "[rbm][denoising][unit]") {
     REQUIRE(error < 1e-1);
 }
 
-TEST_CASE("unit/rbm/mnist/6", "[rbm][pcd][unit]") {
+DLL_TEST_CASE("unit/rbm/mnist/6", "[rbm][pcd][unit]") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<5>,
@@ -126,7 +126,7 @@ TEST_CASE("unit/rbm/mnist/6", "[rbm][pcd][unit]") {
     }
 }
 
-TEST_CASE("unit/rbm/mnist/7", "[rbm][relu][unit]") {
+DLL_TEST_CASE("unit/rbm/mnist/7", "[rbm][relu][unit]") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
@@ -144,7 +144,7 @@ TEST_CASE("unit/rbm/mnist/7", "[rbm][relu][unit]") {
     REQUIRE(error < 1e-2);
 }
 
-TEST_CASE("unit/rbm/mnist/8", "[rbm][sparse][unit]") {
+DLL_TEST_CASE("unit/rbm/mnist/8", "[rbm][sparse][unit]") {
     using rbm_type = dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
@@ -170,7 +170,7 @@ TEST_CASE("unit/rbm/mnist/8", "[rbm][sparse][unit]") {
     REQUIRE(error < 5e-2);
 }
 
-TEST_CASE("unit/rbm/mnist/9", "[rbm][sparse][unit]") {
+DLL_TEST_CASE("unit/rbm/mnist/9", "[rbm][sparse][unit]") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<25>,
@@ -194,7 +194,7 @@ TEST_CASE("unit/rbm/mnist/9", "[rbm][sparse][unit]") {
 template <typename RBM>
 using pcd2_trainer_t = dll::persistent_cd_trainer<2, RBM>;
 
-TEST_CASE("unit/rbm/mnist/10", "[rbm][pcd][unit]") {
+DLL_TEST_CASE("unit/rbm/mnist/10", "[rbm][pcd][unit]") {
     dll::rbm_desc<
         28 * 28, 100,
         dll::batch_size<5>,

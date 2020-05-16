@@ -19,7 +19,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("unit/conv/sgd/9", "[conv][dbn][mnist][sgd]") {
+DLL_TEST_CASE("unit/conv/sgd/9", "[conv][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 5, 5, 5, dll::activation<dll::function::TANH>>::layer_t,
@@ -38,7 +38,7 @@ TEST_CASE("unit/conv/sgd/9", "[conv][dbn][mnist][sgd]") {
     TEST_CHECK(0.3);
 }
 
-TEST_CASE("unit/conv/sgd/10", "[unit][conv][dbn][mnist][sgd]") {
+DLL_TEST_CASE("unit/conv/sgd/10", "[unit][conv][dbn][mnist][sgd]") {
     //Note: This is a reduced lenet version
     //Note: The activation layers are here to test compilation
     typedef dll::dbn_desc<

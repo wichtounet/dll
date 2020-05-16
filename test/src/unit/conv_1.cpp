@@ -17,7 +17,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("unit/conv/sgd/1", "[conv][dbn][mnist][sgd]") {
+DLL_TEST_CASE("unit/conv/sgd/1", "[conv][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 6, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t,
@@ -35,7 +35,7 @@ TEST_CASE("unit/conv/sgd/1", "[conv][dbn][mnist][sgd]") {
     TEST_CHECK_DATASET(0.25);
 }
 
-TEST_CASE("unit/conv/sgd/2", "[conv][dbn][mnist][sgd]") {
+DLL_TEST_CASE("unit/conv/sgd/2", "[conv][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 6, 5, 5, dll::activation<dll::function::TANH>>::layer_t,
@@ -55,7 +55,7 @@ TEST_CASE("unit/conv/sgd/2", "[conv][dbn][mnist][sgd]") {
     TEST_CHECK(0.4);
 }
 
-TEST_CASE("unit/conv/sgd/3", "[unit][conv][dbn][mnist][sgd]") {
+DLL_TEST_CASE("unit/conv/sgd/3", "[unit][conv][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 4, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
@@ -75,7 +75,7 @@ TEST_CASE("unit/conv/sgd/3", "[unit][conv][dbn][mnist][sgd]") {
     TEST_CHECK(0.25);
 }
 
-TEST_CASE("unit/conv/sgd/4", "[unit][conv][dbn][mnist][sgd]") {
+DLL_TEST_CASE("unit/conv/sgd/4", "[unit][conv][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 6, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t,
@@ -94,7 +94,7 @@ TEST_CASE("unit/conv/sgd/4", "[unit][conv][dbn][mnist][sgd]") {
     TEST_CHECK(0.25);
 }
 
-TEST_CASE("unit/conv/sgd/5", "[conv][dbn][mnist][sgd]") {
+DLL_TEST_CASE("unit/conv/sgd/5", "[conv][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 6, 5, 5, dll::activation<dll::function::RELU>, dll::initializer<dll::init_he>>::layer_t,
@@ -117,7 +117,7 @@ TEST_CASE("unit/conv/sgd/5", "[conv][dbn][mnist][sgd]") {
 }
 
 // Test custom training
-TEST_CASE("unit/conv/sgd/partial/1", "[conv][dbn][mnist][sgd]") {
+DLL_TEST_CASE("unit/conv/sgd/partial/1", "[conv][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 6, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t,

@@ -27,7 +27,7 @@
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
 
-TEST_CASE("hybrid/mnist/1", "[hybrid]") {
+DLL_TEST_CASE("hybrid/mnist/1", "[hybrid]") {
     typedef dll::dyn_dbn_desc<
         dll::dbn_layers<
             dll::rbm_desc<28 * 28, 100, dll::momentum, dll::batch_size<25>, dll::init_weights>::layer_t,
@@ -52,7 +52,7 @@ TEST_CASE("hybrid/mnist/1", "[hybrid]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("hybrid/mnist/2", "") {
+DLL_TEST_CASE("hybrid/mnist/2", "") {
     typedef dll::dyn_dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 10, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
@@ -80,7 +80,7 @@ TEST_CASE("hybrid/mnist/2", "") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("hybrid/mnist/3", "") {
+DLL_TEST_CASE("hybrid/mnist/3", "") {
     typedef dll::dyn_dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_mp_desc_square<1, 28, 40, 17, 2, dll::momentum, dll::batch_size<25>>::layer_t,
@@ -97,7 +97,7 @@ TEST_CASE("hybrid/mnist/3", "") {
     dbn->pretrain(dataset.training_images, 5);
 }
 
-TEST_CASE("hybrid/mnist/4", "") {
+DLL_TEST_CASE("hybrid/mnist/4", "") {
     typedef dll::dyn_dbn_desc<
         dll::dbn_layers<
             dll::conv_rbm_square_desc<1, 28, 40, 17, dll::momentum, dll::batch_size<25>>::layer_t,
@@ -114,7 +114,7 @@ TEST_CASE("hybrid/mnist/4", "") {
     dbn->pretrain(dataset.training_images, 5);
 }
 
-TEST_CASE("hybrid/mnist/6", "") {
+DLL_TEST_CASE("hybrid/mnist/6", "") {
     typedef dll::dyn_dbn_desc<
         dll::dbn_layers<
             dll::shape_1d_layer_desc<28 * 28>::layer_t,
@@ -131,7 +131,7 @@ TEST_CASE("hybrid/mnist/6", "") {
     dbn->pretrain(dataset.training_images, 20);
 }
 
-TEST_CASE("hybrid/mnist/7", "") {
+DLL_TEST_CASE("hybrid/mnist/7", "") {
     typedef dll::dyn_dbn_desc<
         dll::dbn_layers<
             dll::shape_1d_layer_desc<28 * 28>::layer_t,
@@ -148,7 +148,7 @@ TEST_CASE("hybrid/mnist/7", "") {
     dbn->pretrain(dataset.training_images, 20);
 }
 
-TEST_CASE("hybrid/mnist/8", "[dense][dbn][mnist][sgd]") {
+DLL_TEST_CASE("hybrid/mnist/8", "[dense][dbn][mnist][sgd]") {
     typedef dll::dyn_dbn_desc<
         dll::dbn_layers<
             dll::dense_layer_desc<28 * 28, 100, dll::activation<dll::function::SIGMOID>>::layer_t,
@@ -168,7 +168,7 @@ TEST_CASE("hybrid/mnist/8", "[dense][dbn][mnist][sgd]") {
     TEST_CHECK(0.2);
 }
 
-TEST_CASE("hybrid/mnist/10", "") {
+DLL_TEST_CASE("hybrid/mnist/10", "") {
     using dbn_t =
         dll::dyn_dbn_desc<dll::dbn_layers<
               dll::conv_rbm_square_desc<1, 28, 20, 17, dll::momentum, dll::batch_size<10>>::layer_t

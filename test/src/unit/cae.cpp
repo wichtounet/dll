@@ -20,7 +20,7 @@
 #include "mnist/mnist_utils.hpp"
 
 // With deconv
-TEST_CASE("conv/ae/deconv/1", "[dense][dbn][mnist][sgd][ae]") {
+DLL_TEST_CASE("conv/ae/deconv/1", "[dense][dbn][mnist][sgd][ae]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 2, 5, 5, dll::activation<dll::function::SIGMOID>>::layer_t,
@@ -52,7 +52,7 @@ TEST_CASE("conv/ae/deconv/1", "[dense][dbn][mnist][sgd][ae]") {
 }
 
 // Conv <> Conv
-TEST_CASE("conv/ae/1", "[dense][dbn][mnist][sgd][ae]") {
+DLL_TEST_CASE("conv/ae/1", "[dense][dbn][mnist][sgd][ae]") {
     using network_t = dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_same_layer<1, 28, 28, 8, 3, 3, dll::relu>,
@@ -83,7 +83,7 @@ TEST_CASE("conv/ae/1", "[dense][dbn][mnist][sgd][ae]") {
 }
 
 // Conv <> Conv + Noise
-TEST_CASE("conv/ae/2", "[dense][dbn][mnist][sgd][ae]") {
+DLL_TEST_CASE("conv/ae/2", "[dense][dbn][mnist][sgd][ae]") {
     using network_t = dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_same_layer<1, 28, 28, 8, 3, 3, dll::relu>,
