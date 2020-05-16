@@ -68,6 +68,8 @@ struct dyn_mp_2d_layer_impl final : dyn_pooling_2d_layer<dyn_mp_2d_layer_impl<De
      */
     template <typename Input, typename Output>
     void forward_batch(Output& output, const Input& input) const {
+        dll::auto_timer timer("mp:forward_batch");
+
         output = etl::ml::max_pool_forward(input, base::c1, base::c2);
     }
 
@@ -101,6 +103,8 @@ struct dyn_mp_2d_layer_impl final : dyn_pooling_2d_layer<dyn_mp_2d_layer_impl<De
      */
     template<typename H, typename C>
     void backward_batch(H&& output, C& context) const {
+        dll::auto_timer timer("mp:backward_batch");
+
         size_t c1 = base::c1;
         size_t c2 = base::c2;
 
