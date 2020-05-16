@@ -4,8 +4,7 @@
 ---
 BasedOnStyle: Google
 IndentWidth: 4
-# clang-format is not very good to break long lines, don't let it do it
-ColumnLimit: 0
+ColumnLimit: 160
 ---
 Language: Cpp
 Standard: Cpp11
