@@ -13,7 +13,7 @@
 
 int main(int /*argc*/, char* /*argv*/ []) {
     // Load the dataset
-    auto dataset = dll::make_mnist_dataset(dll::batch_size<100>{}, dll::scale_pre<255>{});
+    auto dataset = dll::make_mnist_dataset(dll::batch_size<200>{}, dll::scale_pre<255>{});
 
     // Build the network
 
@@ -27,7 +27,7 @@ int main(int /*argc*/, char* /*argv*/ []) {
             dll::dense_layer<150, 10, dll::softmax>
         >
         , dll::updater<dll::updater_type::NADAM>     // Momentum
-        , dll::batch_size<100>                       // The mini-batch size
+        , dll::batch_size<200>                       // The mini-batch size
         , dll::shuffle                               // Shuffle the dataset before each epoch
     >::network_t;
 
