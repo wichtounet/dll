@@ -186,7 +186,8 @@ struct base_rnn_layer : layer<Derived> {
      * \param context The trainng context
      */
     template <typename C, typename W, typename U>
-    void compute_gradients_impl(C& context, const W& w, const U& u, size_t time_steps, size_t sequence_length, size_t hidden_units, size_t bptt_steps) const {
+    void compute_gradients_impl([[maybe_unused]] C& context, [[maybe_unused]] const W& w, [[maybe_unused]] const U& u, [[maybe_unused]] size_t time_steps,
+                                [[maybe_unused]] size_t sequence_length, [[maybe_unused]] size_t hidden_units, [[maybe_unused]] size_t bptt_steps) const {
         if constexpr (!C::layer){
             backward_batch_impl(x_t, context, w, u, time_steps, sequence_length, hidden_units, bptt_steps, false);
         }

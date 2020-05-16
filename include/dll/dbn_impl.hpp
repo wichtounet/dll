@@ -2429,7 +2429,7 @@ private:
     }
 
     template <size_t I, typename Generator>
-    void pretrain_layer(Generator& generator, watcher_t& watcher, size_t max_epochs) {
+    void pretrain_layer(Generator& generator, watcher_t& watcher, [[maybe_unused]] size_t max_epochs) {
         if constexpr (I < layers) {
             using layer_t = layer_type<I>;
 
@@ -2493,7 +2493,7 @@ private:
     /* Pretrain with denoising */
 
     template <size_t I, typename Generator>
-    void pretrain_layer_denoising(Generator& generator, watcher_t& watcher, size_t max_epochs) {
+    void pretrain_layer_denoising(Generator& generator, watcher_t& watcher, [[maybe_unused]] size_t max_epochs) {
         if constexpr (I < layers) {
             using layer_t = layer_type<I>;
 
@@ -2737,7 +2737,7 @@ private:
     /* Train with labels */
 
     template <size_t I, typename Iterator, typename LabelIterator>
-    std::enable_if_t<(I < layers)> train_with_labels(Iterator first, Iterator last, watcher_t& watcher, LabelIterator lit, LabelIterator lend, size_t labels, size_t max_epochs) {
+    std::enable_if_t<(I < layers)> train_with_labels(Iterator first, Iterator last, watcher_t& watcher, LabelIterator lit, LabelIterator lend, size_t labels, [[maybe_unused]] size_t max_epochs) {
         using layer_t = layer_type<I>;
 
         decltype(auto) layer = layer_get<I>();
@@ -2752,7 +2752,7 @@ private:
                 (first, last, max_epochs);
         }
 
-        if (I < layers - 1) {
+        if constexpr (I < layers - 1) {
             auto next_a = this_type::template forward_many<I, I>(first, last);
 
             //If the next layer is the last layer
