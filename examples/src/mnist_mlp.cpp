@@ -36,7 +36,7 @@ int main(int /*argc*/, char* /*argv*/ []) {
     dataset.display_pretty();
 
     // Train the network for performance sake
-    net->train(dataset.train(), 50);
+    net->train(dataset.train(), 5);
 
     // Test the network on test set
     net->evaluate(dataset.test());

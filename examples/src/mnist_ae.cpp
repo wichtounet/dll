@@ -31,14 +31,18 @@ int main(int /*argc*/, char* /*argv*/ []) {
 
     auto net = std::make_unique<network_t>();
 
-    // Display the network
-    net->display();
+    // Display the network and dataset
+    net->display_pretty();
+    dataset.display_pretty();
 
     // Train the network as auto-encoder
-    net->train_ae(dataset.train(), 50);
+    net->train_ae(dataset.train(), 10);
 
     // Test the network on test set
     net->evaluate_ae(dataset.test());
+
+    // Show where the time was spent
+    dll::dump_timers_pretty();
 
     return 0;
 }
