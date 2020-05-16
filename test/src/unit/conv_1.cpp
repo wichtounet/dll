@@ -145,11 +145,8 @@ DLL_TEST_CASE("unit/conv/sgd/partial/1", "[conv][dbn][mnist][sgd]") {
 
         generator->reset();
 
-        double error;
-        double loss;
-
         // Train for one epoch
-        std::tie(error, loss) = trainer.train_epoch(*dbn, *generator, epoch);
+        auto [error, loss] = trainer.train_epoch(*dbn, *generator, epoch);
 
         if(trainer.stop_epoch(*dbn, epoch, error, loss)){
             break;

@@ -1714,15 +1714,15 @@ public:
 
         validate_generator(generator);
 
-        auto metrics = evaluate_metrics(generator);
+        auto [error, loss] = evaluate_metrics(generator);
 
         char buffer[512];
 
         snprintf(buffer, 512, "\nEvaluation Results\n");
         out << buffer;
-        snprintf(buffer, 512, "   error: %.5f \n", std::get<0>(metrics));
+        snprintf(buffer, 512, "   error: %.5f \n", error);
         out << buffer;
-        snprintf(buffer, 512, "    loss: %.5f \n", std::get<1>(metrics));
+        snprintf(buffer, 512, "    loss: %.5f \n", loss);
         out << buffer;
         snprintf(buffer, 512, "evaluation took %dms \n", int(watch.elapsed()));
         out << buffer;
@@ -1876,9 +1876,8 @@ public:
     double evaluate_error(Generator& generator){
         validate_generator(generator);
 
-        auto metrics = evaluate_metrics(generator);
-
-        return std::get<0>(metrics);
+        auto [error, loss] = evaluate_metrics(generator);
+        return error;
     }
 
     /*!
@@ -1931,9 +1930,8 @@ public:
     double evaluate_error_ae(Generator& generator){
         validate_generator(generator);
 
-        auto metrics = evaluate_metrics(generator);
-
-        return std::get<0>(metrics);
+        auto [error, loss] = evaluate_metrics(generator);
+        return error;
     }
 
     /*!
@@ -1986,9 +1984,8 @@ public:
     double evaluate_error_reg(Generator& generator){
         validate_generator(generator);
 
-        auto metrics = evaluate_metrics(generator);
-
-        return std::get<0>(metrics);
+        auto [error, loss] = evaluate_metrics(generator);
+        return error;
     }
 
     /*!
