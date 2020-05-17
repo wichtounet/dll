@@ -42,9 +42,9 @@ struct default_rbm_watcher {
 
         std::cout << "With parameters:" << std::endl;
 
-        if(std::is_same<typename rbm_t::weight, float>::value){
+        if(std::is_same_v<typename rbm_t::weight, float>){
             std::cout << "   single-precision" << std::endl;
-        } else if(std::is_same<typename rbm_t::weight, double>::value){
+        } else if(std::is_same_v<typename rbm_t::weight, double>){
             std::cout << "   double-precision" << std::endl;
         } else {
             std::cout << "   unknown-precision (something is wrong...)" << std::endl;

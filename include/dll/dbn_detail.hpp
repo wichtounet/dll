@@ -68,7 +68,7 @@ struct weight_type_same<I, DBN, T, cpp::disable_if_t<layer_traits<typename DBN::
      * \brief Boolean flag indicating if the weight type of the two
      * layers is the same
      */
-    static constexpr bool value = std::is_same<T, type>::value;
+    static constexpr bool value = std::is_same_v<T, type>;
 };
 
 // validate the weight type of the layers
@@ -95,7 +95,7 @@ struct validate_weight_type {
 
 template <typename Iterator>
 size_t fast_distance(Iterator& first, Iterator& last) {
-    if constexpr (std::is_same<typename std::iterator_traits<Iterator>::iterator_category, std::random_access_iterator_tag>::value) {
+    if constexpr (std::is_same_v<typename std::iterator_traits<Iterator>::iterator_category, std::random_access_iterator_tag>) {
         return std::distance(first, last);
     } else {
         return 0;

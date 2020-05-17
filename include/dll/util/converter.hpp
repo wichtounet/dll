@@ -21,19 +21,14 @@ namespace dll {
  * \brief Simple helper to form nicer display for static_assert
  */
 template<typename From, typename To>
-struct cannot_convert {
-    /*!
-     * \brief False flag for TMP purpose
-     */
-    static constexpr bool value = false;
-};
+inline constexpr bool value = false;
 
 /*!
  * \brief Converter utility to converty from type *From* to type *To*.
  */
 template<typename From, typename To, typename Enable = void>
 struct converter_one {
-    static_assert(cannot_convert<From, To>::value, "DLL does not know how to convert your input type (one)");
+    static_assert(cannot_convert<From, To>, "DLL does not know how to convert your input type (one)");
 };
 
 // No conversion
@@ -63,7 +58,7 @@ struct converter_one <From, From> {
  */
 template<typename T_F, typename T_T, typename A>
 struct converter_one<std::vector<T_F, A>, etl::dyn_matrix<T_T, 1>> {
-    static_assert(std::is_convertible<T_F, T_T>::value, "DLL cannot convert your value type to the weight type (one)");
+    static_assert(std::is_convertible_v<T_F, T_T>, "DLL cannot convert your value type to the weight type (one)");
 
     /*!
      * \brief Convert from the given container into the specific type
@@ -87,7 +82,7 @@ struct converter_one<std::vector<T_F, A>, etl::dyn_matrix<T_T, 1>> {
  */
 template<typename T_F, typename T_T, typename A>
 struct converter_one<std::list<T_F, A>, etl::dyn_matrix<T_T, 1>> {
-    static_assert(std::is_convertible<T_F, T_T>::value, "DLL cannot convert your value type to the weight type (one)");
+    static_assert(std::is_convertible_v<T_F, T_T>, "DLL cannot convert your value type to the weight type (one)");
 
     /*!
      * \brief Convert from the given container into the specific type
@@ -111,7 +106,7 @@ struct converter_one<std::list<T_F, A>, etl::dyn_matrix<T_T, 1>> {
  */
 template<typename T_F, typename T_T, typename A>
 struct converter_one<std::deque<T_F, A>, etl::dyn_matrix<T_T, 1>> {
-    static_assert(std::is_convertible<T_F, T_T>::value, "DLL cannot convert your value type to the weight type (one)");
+    static_assert(std::is_convertible_v<T_F, T_T>, "DLL cannot convert your value type to the weight type (one)");
 
     /*!
      * \brief Convert from the given container into the specific type
@@ -135,7 +130,7 @@ struct converter_one<std::deque<T_F, A>, etl::dyn_matrix<T_T, 1>> {
  */
 template<typename T_F, typename T_T, typename A, size_t D>
 struct converter_one<std::vector<T_F, A>, etl::dyn_matrix<T_T, D>> {
-    static_assert(std::is_convertible<T_F, T_T>::value, "DLL cannot convert your value type to the weight type (one)");
+    static_assert(std::is_convertible_v<T_F, T_T>, "DLL cannot convert your value type to the weight type (one)");
 
     /*!
      * \brief Convert from the given container into the specific type
@@ -160,7 +155,7 @@ struct converter_one<std::vector<T_F, A>, etl::dyn_matrix<T_T, D>> {
  */
 template<typename T_F, typename T_T, typename A, size_t D>
 struct converter_one<std::list<T_F, A>, etl::dyn_matrix<T_T, D>> {
-    static_assert(std::is_convertible<T_F, T_T>::value, "DLL cannot convert your value type to the weight type (one)");
+    static_assert(std::is_convertible_v<T_F, T_T>, "DLL cannot convert your value type to the weight type (one)");
 
     /*!
      * \brief Convert from the given container into the specific type
@@ -185,7 +180,7 @@ struct converter_one<std::list<T_F, A>, etl::dyn_matrix<T_T, D>> {
  */
 template<typename T_F, typename T_T, typename A, size_t D>
 struct converter_one<std::deque<T_F, A>, etl::dyn_matrix<T_T, D>> {
-    static_assert(std::is_convertible<T_F, T_T>::value, "DLL cannot convert your value type to the weight type (one)");
+    static_assert(std::is_convertible_v<T_F, T_T>, "DLL cannot convert your value type to the weight type (one)");
 
     /*!
      * \brief Convert from the given container into the specific type
@@ -210,7 +205,7 @@ struct converter_one<std::deque<T_F, A>, etl::dyn_matrix<T_T, D>> {
  */
 template<typename T_F, typename T_T, typename A, size_t... Dims>
 struct converter_one<std::vector<T_F, A>, etl::fast_dyn_matrix<T_T, Dims...>> {
-    static_assert(std::is_convertible<T_F, T_T>::value, "DLL cannot convert your value type to the weight type (one)");
+    static_assert(std::is_convertible_v<T_F, T_T>, "DLL cannot convert your value type to the weight type (one)");
 
     /*!
      * \brief Convert from the given container into the specific type
@@ -234,7 +229,7 @@ struct converter_one<std::vector<T_F, A>, etl::fast_dyn_matrix<T_T, Dims...>> {
  */
 template<typename T_F, typename T_T, typename A, size_t... Dims>
 struct converter_one<std::list<T_F, A>, etl::fast_dyn_matrix<T_T, Dims...>> {
-    static_assert(std::is_convertible<T_F, T_T>::value, "DLL cannot convert your value type to the weight type (one)");
+    static_assert(std::is_convertible_v<T_F, T_T>, "DLL cannot convert your value type to the weight type (one)");
 
     /*!
      * \brief Convert from the given container into the specific type
@@ -258,7 +253,7 @@ struct converter_one<std::list<T_F, A>, etl::fast_dyn_matrix<T_T, Dims...>> {
  */
 template<typename T_F, typename T_T, typename A, size_t... Dims>
 struct converter_one<std::deque<T_F, A>, etl::fast_dyn_matrix<T_T, Dims...>> {
-    static_assert(std::is_convertible<T_F, T_T>::value, "DLL cannot convert your value type to the weight type (one)");
+    static_assert(std::is_convertible_v<T_F, T_T>, "DLL cannot convert your value type to the weight type (one)");
 
     /*!
      * \brief Convert from the given container into the specific type
@@ -282,7 +277,7 @@ struct converter_one<std::deque<T_F, A>, etl::fast_dyn_matrix<T_T, Dims...>> {
  */
 template<typename T_F, typename T_T, size_t... Dims, size_t... Dims2>
 struct converter_one<etl::fast_dyn_matrix<T_F, Dims...>, etl::fast_dyn_matrix<T_T, Dims2...>> {
-    static_assert(std::is_convertible<T_F, T_T>::value, "DLL cannot convert your value type to the weight type (one)");
+    static_assert(std::is_convertible_v<T_F, T_T>, "DLL cannot convert your value type to the weight type (one)");
 
     /*!
      * \brief Convert from the given container into the specific type
@@ -306,7 +301,7 @@ struct converter_one<etl::fast_dyn_matrix<T_F, Dims...>, etl::fast_dyn_matrix<T_
  */
 template<typename T_F, typename T_T, size_t... Dims, size_t... Dims2>
 struct converter_one<etl::fast_matrix<T_F, Dims...>, etl::fast_dyn_matrix<T_T, Dims2...>> {
-    static_assert(std::is_convertible<T_F, T_T>::value, "DLL cannot convert your value type to the weight type (one)");
+    static_assert(std::is_convertible_v<T_F, T_T>, "DLL cannot convert your value type to the weight type (one)");
 
     /*!
      * \brief Convert from the given container into the specific type
@@ -330,7 +325,7 @@ struct converter_one<etl::fast_matrix<T_F, Dims...>, etl::fast_dyn_matrix<T_T, D
  */
 template<typename T_F, typename T_T, size_t... Dims, size_t D>
 struct converter_one<etl::fast_dyn_matrix<T_F, Dims...>, etl::dyn_matrix<T_T, D>> {
-    static_assert(std::is_convertible<T_F, T_T>::value, "DLL cannot convert your value type to the weight type (one)");
+    static_assert(std::is_convertible_v<T_F, T_T>, "DLL cannot convert your value type to the weight type (one)");
 
     /*!
      * \brief Convert from the given container into the specific type
@@ -355,7 +350,7 @@ struct converter_one<etl::fast_dyn_matrix<T_F, Dims...>, etl::dyn_matrix<T_T, D>
  */
 template<typename T_F, typename T_T, size_t... Dims, size_t D>
 struct converter_one<etl::fast_matrix<T_F, Dims...>, etl::dyn_matrix<T_T, D>> {
-    static_assert(std::is_convertible<T_F, T_T>::value, "DLL cannot convert your value type to the weight type (one)");
+    static_assert(std::is_convertible_v<T_F, T_T>, "DLL cannot convert your value type to the weight type (one)");
 
     /*!
      * \brief Convert from the given container into the specific type
@@ -380,7 +375,7 @@ struct converter_one<etl::fast_matrix<T_F, Dims...>, etl::dyn_matrix<T_T, D>> {
  */
 template<typename T_F, typename T_T, size_t D, size_t... Dims>
 struct converter_one<etl::dyn_matrix<T_F, D>, etl::fast_dyn_matrix<T_T, Dims...>> {
-    static_assert(std::is_convertible<T_F, T_T>::value, "DLL cannot convert your value type to the weight type (one)");
+    static_assert(std::is_convertible_v<T_F, T_T>, "DLL cannot convert your value type to the weight type (one)");
 
     /*!
      * \brief Convert from the given container into the specific type
@@ -403,8 +398,8 @@ struct converter_one<etl::dyn_matrix<T_F, D>, etl::fast_dyn_matrix<T_T, Dims...>
  * \copydoc converter_one
  */
 template<typename T_F, typename T_T, size_t D>
-struct converter_one<etl::dyn_matrix<T_F, D>, etl::dyn_matrix<T_T, D>, std::enable_if_t<!std::is_same<T_F, T_T>::value>> {
-    static_assert(std::is_convertible<T_F, T_T>::value, "DLL cannot convert your value type to the weight type (one)");
+struct converter_one<etl::dyn_matrix<T_F, D>, etl::dyn_matrix<T_T, D>, std::enable_if_t<!std::is_same_v<T_F, T_T>>> {
+    static_assert(std::is_convertible_v<T_F, T_T>, "DLL cannot convert your value type to the weight type (one)");
 
     /*!
      * \brief Convert from the given container into the specific type
@@ -428,7 +423,7 @@ struct converter_one<etl::dyn_matrix<T_F, D>, etl::dyn_matrix<T_T, D>, std::enab
  */
 template<typename T_F, typename T_T, size_t D, size_t D2>
 struct converter_one<etl::dyn_matrix<T_F, D>, etl::dyn_matrix<T_T, D2>, std::enable_if_t<(D != D2)>> {
-    static_assert(std::is_convertible<T_F, T_T>::value, "DLL cannot convert your value type to the weight type (one)");
+    static_assert(std::is_convertible_v<T_F, T_T>, "DLL cannot convert your value type to the weight type (one)");
 
     /*!
      * \brief Convert from the given container into the specific type
@@ -448,7 +443,7 @@ struct converter_one<etl::dyn_matrix<T_F, D>, etl::dyn_matrix<T_T, D2>, std::ena
 
 template<typename From, typename To>
 struct converter_many {
-    static_assert(cannot_convert<From, To>::value, "DLL does not know how to convert your input type (many)");
+    static_assert(cannot_convert<From, To>, "DLL does not know how to convert your input type (many)");
 };
 
 // Only convert the sub types not the outer container

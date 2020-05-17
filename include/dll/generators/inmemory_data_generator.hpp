@@ -774,12 +774,12 @@ struct inmemory_data_generator_desc {
     /*!
      * \brief The random cropping X
      */
-    static constexpr size_t random_crop_x = detail::get_value_1<random_crop<0, 0>, Parameters...>::value;
+    static constexpr size_t random_crop_x = detail::get_value_1_v<random_crop<0, 0>, Parameters...>;
 
     /*!
      * \brief The random cropping Y
      */
-    static constexpr size_t random_crop_y = detail::get_value_2<random_crop<0, 0>, Parameters...>::value;
+    static constexpr size_t random_crop_y = detail::get_value_2_v<random_crop<0, 0>, Parameters...>;
 
     /*!
      * \brief The elastic distortion kernel

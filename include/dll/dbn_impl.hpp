@@ -303,7 +303,7 @@ public:
     dbn() : pool(etl::threads) {
         //Nothing else to init
 
-        if constexpr (!std::is_same<typename desc::base_layers, typename desc::layers>::value) {
+        if constexpr (!std::is_same_v<typename desc::base_layers, typename desc::layers>) {
             this->template dyn_init<0>();
         }
 
@@ -2368,17 +2368,23 @@ public:
 private:
     //By default all layer are trained
     template <size_t I, typename Enable = void>
-    struct train_next : std::true_type {};
+    struct train_next_impl : std::true_type {};
 
     //The last layer is not always trained (softmax for instance)
     template <size_t I>
-    struct train_next<I, std::enable_if_t<(I == layers - 1)>> : std::bool_constant<layer_traits<layer_type<I>>::pretrain_last()> {};
+    struct train_next_impl<I, std::enable_if_t<(I == layers - 1)>> : std::bool_constant<layer_traits<layer_type<I>>::pretrain_last()> {};
 
     template <size_t I, typename Enable = void>
-    struct inline_next : std::false_type {};
+    struct inline_next_impl : std::false_type {};
 
     template <size_t I>
-    struct inline_next<I, std::enable_if_t<(I < layers)>> : std::bool_constant<layer_traits<layer_type<I>>::is_pooling_layer()> {};
+    struct inline_next_impl<I, std::enable_if_t<(I < layers)>> : std::bool_constant<layer_traits<layer_type<I>>::is_pooling_layer()> {};
+
+    template <size_t I>
+    static inline constexpr bool train_next = train_next_impl<I>::value;
+
+    template <size_t I>
+    static inline constexpr bool inline_next = inline_next_impl<I>::value;
 
     template <size_t I, typename Generator>
     void inline_layer_pretrain(Generator& generator, watcher_t& watcher, size_t max_epochs) {
@@ -2443,11 +2449,11 @@ private:
 
             //When the next layer is a pooling layer, a lot of memory can be saved by directly computing
             //the activations of two layers at once
-            if constexpr (inline_next<I + 1>::value) {
+            if constexpr (inline_next<I + 1>) {
                 this->template inline_layer_pretrain<I>(generator, watcher, max_epochs);
             }
 
-            if constexpr (train_next<I + 1>::value && !inline_next<I + 1>::value) {
+            if constexpr (train_next<I + 1> && !inline_next<I + 1>) {
                 // Reset correctly the generator
                 generator.reset();
                 generator.set_test();
@@ -2506,7 +2512,7 @@ private:
                     (generator, max_epochs);
             }
 
-            if constexpr (train_next<I + 1>::value) {
+            if constexpr (train_next<I + 1>) {
                 // Reset correctly the generator
                 generator.reset();
                 generator.set_test();
@@ -2552,19 +2558,22 @@ private:
 
     //By default no layer is ignored
     template <size_t I, typename Enable = void>
-    struct batch_layer_ignore : std::false_type {};
+    struct batch_layer_ignore_impl : std::false_type {};
 
     //Transform and pooling layers can safely be skipped
     template <size_t I>
-    struct batch_layer_ignore<I, std::enable_if_t<(I < layers)>> : cpp::or_u<
+    struct batch_layer_ignore_impl<I, std::enable_if_t<(I < layers)>> : cpp::or_u<
         layer_traits<layer_type<I>>::is_pooling_layer(),
         layer_traits<layer_type<I>>::is_transform_layer(),
         layer_traits<layer_type<I>>::is_standard_layer(),
         !layer_traits<layer_type<I>>::pretrain_last()> {};
 
+    template <size_t I>
+    static inline constexpr bool batch_layer_ignore = batch_layer_ignore_impl<I>::value;
+
     //Special handling for the layer 0
     //data is coming from iterators not from input
-    template <size_t I, typename Generator, cpp_enable_iff((I == 0 && !batch_layer_ignore<I>::value))>
+    template <size_t I, typename Generator, cpp_enable_iff((I == 0 && !batch_layer_ignore<I>))>
     void pretrain_layer_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
         decltype(auto) rbm = layer_get<I>();
 
@@ -2582,14 +2591,14 @@ private:
     }
 
     //Special handling for untrained layers
-    template <size_t I, typename Generator, cpp_enable_iff(batch_layer_ignore<I>::value)>
+    template <size_t I, typename Generator, cpp_enable_iff(batch_layer_ignore<I>)>
     void pretrain_layer_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
         //We simply go up one layer on untrained layers
         pretrain_layer_batch<I + 1>(generator, watcher, max_epochs);
     }
 
     //Normal version
-    template <size_t I, typename Generator, cpp_enable_iff((I > 0 && I < layers && !batch_layer_ignore<I>::value))>
+    template <size_t I, typename Generator, cpp_enable_iff((I > 0 && I < layers && !batch_layer_ignore<I>))>
     void pretrain_layer_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
         using layer_t = layer_type<I>;
 
@@ -2649,7 +2658,7 @@ private:
 
     //Special handling for the layer 0
     //data is coming from iterators not from input
-    template <size_t I, typename Generator, cpp_enable_iff((I == 0 && !batch_layer_ignore<I>::value))>
+    template <size_t I, typename Generator, cpp_enable_iff((I == 0 && !batch_layer_ignore<I>))>
     void pretrain_layer_denoising_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
         decltype(auto) rbm = layer_get<I>();
 
@@ -2667,14 +2676,14 @@ private:
     }
 
     //Special handling for untrained layers
-    template <size_t I, typename Generator, cpp_enable_iff(batch_layer_ignore<I>::value)>
+    template <size_t I, typename Generator, cpp_enable_iff(batch_layer_ignore<I>)>
     void pretrain_layer_denoising_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
         //We simply go up one layer on untrained layers
         pretrain_layer_denoising_batch<I + 1>(generator, watcher, max_epochs);
     }
 
     //Normal version
-    template <size_t I, typename Generator, cpp_enable_iff((I > 0 && I < layers && !batch_layer_ignore<I>::value))>
+    template <size_t I, typename Generator, cpp_enable_iff((I > 0 && I < layers && !batch_layer_ignore<I>))>
     void pretrain_layer_denoising_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
         using layer_t = layer_type<I>;
 

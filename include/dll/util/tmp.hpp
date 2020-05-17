@@ -79,7 +79,7 @@ struct get_value;
  * \copydoc get_value
  */
 template <typename D, typename T2, typename... Args>
-struct get_value<D, T2, Args...> : cpp::conditional_constant<std::is_same<typename D::type_id, typename T2::type_id>::value, T2, get_value<D, Args...>> {};
+struct get_value<D, T2, Args...> : cpp::conditional_constant<std::is_same_v<typename D::type_id, typename T2::type_id>, T2, get_value<D, Args...>> {};
 
 /*!
  * \copydoc get_value
@@ -107,13 +107,16 @@ struct get_value_1;
  * \copydoc get_value_1
  */
 template <typename D, typename T2, typename... Args>
-struct get_value_1<D, T2, Args...> : conditional_constant_v1<std::is_same<typename D::type_id, typename T2::type_id>::value, T2, get_value_1<D, Args...>> {};
+struct get_value_1<D, T2, Args...> : conditional_constant_v1<std::is_same_v<typename D::type_id, typename T2::type_id>, T2, get_value_1<D, Args...>> {};
 
 /*!
  * \copydoc get_value_1
  */
 template <typename D>
 struct get_value_1<D> : std::integral_constant<decltype(D::value_1), D::value_1> {};
+
+template <typename D, typename... Args>
+constexpr const auto get_value_1_v = get_value_1<D, Args...>::value;
 
 /*!
  * \brief Extract the second value corresponding to the given configuration element from the parameters.
@@ -127,13 +130,16 @@ struct get_value_2;
  * \copydoc get_value_2
  */
 template <typename D, typename T2, typename... Args>
-struct get_value_2<D, T2, Args...> : conditional_constant_v2<std::is_same<typename D::type_id, typename T2::type_id>::value, T2, get_value_2<D, Args...>> {};
+struct get_value_2<D, T2, Args...> : conditional_constant_v2<std::is_same_v<typename D::type_id, typename T2::type_id>, T2, get_value_2<D, Args...>> {};
 
 /*!
  * \copydoc get_value_2
  */
 template <typename D>
 struct get_value_2<D> : std::integral_constant<decltype(D::value_2), D::value_2> {};
+
+template <typename D, typename... Args>
+constexpr const auto get_value_2_v = get_value_2<D, Args...>::value;
 
 /*!
  * \brief Extract the value corresponding to the given configuration element from the list of type of the parameters.
@@ -168,7 +174,7 @@ struct get_type<D, T2, Args...> {
     /*!
      * \brief The extracted value type
      */
-    using value = typename cpp::conditional_type_constant_c<std::is_same<typename D::type_id, typename T2::type_id>::value, T2, get_type<D, Args...>>::type;
+    using value = typename cpp::conditional_type_constant_c<std::is_same_v<typename D::type_id, typename T2::type_id>, T2, get_type<D, Args...>>::type;
 };
 
 /*!
@@ -207,7 +213,7 @@ struct get_template_type<D, T2, Args...> {
      * \brief The extracted value template type
      */
     template <typename RBM>
-    using value = typename cpp::conditional_template_type_constant_c<std::is_same<typename D::type_id, typename T2::type_id>::value, T2, get_template_type<D, Args...>>::template type<RBM>;
+    using value = typename cpp::conditional_template_type_constant_c<std::is_same_v<typename D::type_id, typename T2::type_id>, T2, get_template_type<D, Args...>>::template type<RBM>;
 };
 
 /*!
@@ -243,7 +249,7 @@ struct get_template_type_tb;
 template <typename D, typename T2, typename... Args>
 struct get_template_type_tb<D, T2, Args...> {
     template <typename RBM, bool Denoising>
-    using value = typename conditional_template_type_tb_constant_c<std::is_same<typename D::type_id, typename T2::type_id>::value, T2, get_template_type_tb<D, Args...>>::template type<RBM, Denoising>;
+    using value = typename conditional_template_type_tb_constant_c<std::is_same_v<typename D::type_id, typename T2::type_id>, T2, get_template_type_tb<D, Args...>>::template type<RBM, Denoising>;
 };
 
 template <typename D>
@@ -300,7 +306,7 @@ struct sequence_add <std::index_sequence<I...>, N> {
 template <typename T, size_t F, size_t L, typename Acc, typename... Args>
 struct remove_type_id_impl {
     using new_acc = std::conditional_t<
-        std::is_same<typename cpp::nth_type_t<F, Args...>::type_id, T>::value,
+        std::is_same_v<typename cpp::nth_type_t<F, Args...>::type_id, T>,
         Acc,
         typename sequence_add<Acc, F>::type
         >;
