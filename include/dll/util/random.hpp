@@ -11,10 +11,43 @@
 
 namespace dll {
 
+/*
+ * \brief Lehmer random number generator
+ */
+struct lehmer64_generator {
+    using result_type = uint64_t;
+
+    __uint128_t state;
+
+    static inline uint64_t split_seed(uint64_t index) {
+        uint64_t z = index + 0x9E3779B97F4A7C15UL;
+        z          = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9UL;
+        z          = (z ^ (z >> 27)) * 0x94D049BB133111EBUL;
+        return z ^ (z >> 31);
+    }
+
+    lehmer64_generator(uint64_t seed) {
+        state = (((__uint128_t)split_seed(seed)) << 64) + split_seed(seed + 1);
+    }
+
+    inline result_type operator()(){
+        state *= 0xda942042e4dd58b5UL;
+        return state >> 64;
+    }
+
+    static constexpr result_type max() {
+        return std::numeric_limits<result_type>::max();
+    }
+
+    static constexpr result_type min() {
+        return std::numeric_limits<result_type>::min();
+    }
+};
+
 /*!
  * \brief The random engine used by the library
  */
-using random_engine = etl::random_engine;
+using random_engine = lehmer64_generator;
 
 namespace detail {
 
