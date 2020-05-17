@@ -103,7 +103,8 @@ struct dyn_dropout_layer_impl : transform_layer<dyn_dropout_layer_impl<Desc>> {
     void train_forward_batch(Output& output, const Input& input) const {
         dll::auto_timer timer("dropout:train:forward");
 
-        // Note: For now, cannot do on one pass because of state_inverted dropout not copy-able
+        // For performance reasoons, we do on two pass since dropout is not
+        // threadsafe and and not vectorizable
         output = *dropout;
         output = output >> input;
     }
