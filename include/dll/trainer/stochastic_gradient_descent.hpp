@@ -274,24 +274,22 @@ struct updater_sub_context <Layer, I, updater_type::NADAM> {
 
     type grad; ///< The gradients of the variable
     type m;    ///< Estimates of the first moment of the gradient
-    type mt;   ///< Corrected estimates of the first moment of the gradient
     type v;    ///< Estimates of the second moment of the gradient
-    type vt;   ///< Corrected estimates of the second moment of the gradient
 
-    double m_schedule;
+    // Simplified for performance's sake
+    // type mt;   ///< Corrected estimates of the first moment of the gradient
+    // type vt;   ///< Corrected estimates of the second moment of the gradient
+
+    double m_schedule = 1.0;
 
     /*!
      * \brief Construct the sub_context for the given layer
      * \param layer The layer to build the context for
      */
-    updater_sub_context(const Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), m(grad), mt(grad), v(grad), vt(grad) {
+    updater_sub_context(const Layer& layer) : grad(std::get<I>(layer.trainable_parameters())), m(grad), v(grad) {
         grad = 0;
         m = 0;
-        mt = 0;
         v = 0;
-        vt = 0;
-
-        m_schedule = 1.0;
     }
 };
 
@@ -1167,6 +1165,7 @@ struct sgd_trainer {
     void apply_gradients(size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:nadam");
 
+        // The scalar parameters
         const weight beta1          = dbn.adam_beta1;
         const weight beta2          = dbn.adam_beta2;
         const weight schedule_decay = dbn.nadam_schedule_decay;
@@ -1176,9 +1175,7 @@ struct sgd_trainer {
         auto& w          = std::get<I>(layer.trainable_parameters());
         auto& w_grad     = std::get<I>(context.up.context)->grad;
         auto& w_m        = std::get<I>(context.up.context)->m;
-        auto& w_mt       = std::get<I>(context.up.context)->mt;
         auto& w_v        = std::get<I>(context.up.context)->v;
-        auto& w_vt       = std::get<I>(context.up.context)->vt;
         auto& m_schedule = std::get<I>(context.up.context)->m_schedule;
 
         // Compute the schedule for momentum
@@ -1195,13 +1192,14 @@ struct sgd_trainer {
 
         // Standard Adam estimations of the first and second order moments
 
-        w_m = beta1 * w_m + ((1.0 - beta1) >> w_grad);
-        w_v = beta2 * w_v + ((1.0 - beta2) >> (w_grad >> w_grad));
+        w_m = beta1 * w_m + ((weight(1) - beta1) >> w_grad);
+        w_v = beta2 * w_v + ((weight(1) - beta2) >> (w_grad >> w_grad));
 
         // Correct the bias (towards zero) of the first and second moments
 
-        w_mt = w_m / (1.0 - m_schedule_next);
-        w_vt = w_v / (1.0 - std::pow(beta2, t));
+        // Inlined into the final expression for performance
+        //w_mt = w_m / (1.0 - m_schedule_next);
+        //w_vt = w_v / (1.0 - std::pow(beta2, t));
 
         // Update the parameters
 
@@ -1211,7 +1209,10 @@ struct sgd_trainer {
         weight m1 = eps * (f1 / f2);
         weight m2 = eps * momentum_cache_t_1;
 
-        w += (m1 * w_grad + m2 * w_mt) / (etl::sqrt(w_vt) + e);
+        // Compute the new weights
+        // Basic version: w += (m1 * w_grad + m2 * w_mt) / (etl::sqrt(w_vt) + e);
+        // Optimized for performance into:
+        w += (m1 * w_grad + m2 * (w_m / (weight(1) - m_schedule_next))) / (etl::sqrt(w_v / (weight(1) - std::pow(beta2, t))) + e);
 
         nan_check_deep(w);
 
