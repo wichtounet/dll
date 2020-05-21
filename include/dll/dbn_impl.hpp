@@ -2039,11 +2039,9 @@ public:
             if (cpp_unlikely(!full_batch)) {
                 auto soutput = slice(output, 0, n);
 
-                batch_loss  = etl::ml::cce_loss(soutput, labels, -1.0 / s);
-                batch_error = etl::ml::cce_error(soutput, labels, 1.0 / s);
+                std::tie(batch_loss, batch_error) = etl::ml::cce(soutput, labels, -1.0f / s, 1.0f / s);
             } else {
-                batch_loss  = etl::ml::cce_loss(output, labels, -1.0 / s);
-                batch_error = etl::ml::cce_error(output, labels, 1.0 / s);
+                std::tie(batch_loss, batch_error) = etl::ml::cce(output, labels, -1.0f / s, 1.0f / s);
             }
         } else if constexpr (loss == loss_function::BINARY_CROSS_ENTROPY) {
             dll::auto_timer timer("net:compute_loss:BCE");
@@ -2054,11 +2052,9 @@ public:
             if (cpp_unlikely(!full_batch)) {
                 auto sout = slice(out, 0, n);
 
-                batch_loss  = etl::ml::bce_loss(sout, labels, -1.0 / (s * output_size()));
-                batch_error = etl::ml::bce_error(sout, labels, 1.0 / (s * output_size()));
+                std::tie(batch_loss, batch_error) = etl::ml::bce(sout, labels, -1.0f / (s * output_size()), 1.0f / (s * output_size()));
             } else {
-                batch_loss  = etl::ml::bce_loss(out, labels, -1.0 / (s * output_size()));
-                batch_error = etl::ml::bce_error(out, labels, 1.0 / (s * output_size()));
+                std::tie(batch_loss, batch_error) = etl::ml::bce(out, labels, -1.0f / (s * output_size()), 1.0f / (s * output_size()));
             }
         } else { // MEAN_SQUARED_ERROR
             dll::auto_timer timer("net:compute_loss:MSE");
