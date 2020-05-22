@@ -153,11 +153,10 @@ struct standard_crbm_mp : public standard_conv_rbm<Derived, Desc> {
         static_assert(hidden_unit == unit_type::BINARY || is_relu(hidden_unit), "Invalid hidden unit type");
         static_assert(P, "Computing S without P is not implemented");
 
-        const auto Batch = etl::dim<0>(h_a);
+        [[maybe_unused]] const auto Batch = etl::dim<0>(h_a);
 
         cpp_assert(etl::dim<0>(h_s) == Batch, "The number of batch must be consistent");
         cpp_assert(etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
-        cpp_unused(Batch);
 
         h_a = etl::conv_4d_valid_flipped(v_a, as_derived().w);
 
@@ -192,11 +191,10 @@ struct standard_crbm_mp : public standard_conv_rbm<Derived, Desc> {
         static_assert(pooling_unit == unit_type::BINARY, "Invalid pooling unit type");
         static_assert(P, "Computing S without P is not implemented");
 
-        const auto Batch = etl::dim<0>(p_a);
+        [[maybe_unused]] const auto Batch = etl::dim<0>(p_a);
 
         cpp_assert(etl::dim<0>(p_s) == Batch, "The number of batch must be consistent");
         cpp_assert(etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
-        cpp_unused(Batch);
 
         auto b_rep = as_derived().get_batch_b_rep(v_a);
 
@@ -228,11 +226,11 @@ struct standard_crbm_mp : public standard_conv_rbm<Derived, Desc> {
 
         auto c_rep = as_derived().get_batch_c_rep(h_s);
 
-        const auto Batch = etl::dim<0>(h_a);
+        [[maybe_unused]] const auto Batch = etl::dim<0>(h_a);
+
         cpp_assert(etl::dim<0>(h_s) == Batch, "The number of batch must be consistent");
         cpp_assert(etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
         cpp_assert(etl::dim<0>(v_s) == Batch, "The number of batch must be consistent");
-        cpp_unused(Batch);
 
         V_PROBS(unit_type::BINARY, v_a = etl::sigmoid(c_rep + v_a));
         V_PROBS(unit_type::GAUSSIAN, v_a = c_rep + v_a);

@@ -102,9 +102,7 @@ struct dyn_merge_layer_impl <dyn_merge_layer_desc<D, Layers...>> final : layer<d
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    std::string to_short_string(std::string pre = "") const {
-        cpp_unused(pre);
-
+    std::string to_short_string([[maybe_unused]] std::string pre = "") const {
         return "Merge";
     }
 
@@ -226,9 +224,7 @@ struct dyn_merge_layer_impl <dyn_merge_layer_desc<D, Layers...>> final : layer<d
      * needs to be initialized
      */
     template<typename DynLayer>
-    static void dyn_init(DynLayer& dyn){
-        cpp_unused(dyn);
-
+    static void dyn_init([[maybe_unused]] DynLayer& dyn){
         // Nothing to do here
     }
 

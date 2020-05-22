@@ -57,18 +57,14 @@ struct batch_normalization_2d_layer_impl : neural_layer<batch_normalization_2d_l
     /*!
      * \brief Returns a string representation of the layer
      */
-    static std::string to_short_string(std::string pre = "") {
-        cpp_unused(pre);
-
+    static std::string to_short_string([[maybe_unused]] std::string pre = "") {
         return "batch_norm";
     }
 
     /*!
      * \brief Returns a string representation of the layer
      */
-    static std::string to_full_string(std::string pre = "") {
-        cpp_unused(pre);
-
+    static std::string to_full_string([[maybe_unused]] std::string pre = "") {
         return "batch_norm";
     }
 
@@ -161,10 +157,8 @@ struct batch_normalization_2d_layer_impl : neural_layer<batch_normalization_2d_l
      *
      * \param context the training context
      */
-    template<typename C>
-    void adapt_errors(C& context) const {
-        cpp_unused(context);
-    }
+    template <typename C>
+    void adapt_errors([[maybe_unused]] C& context) const {}
 
     /*!
      * \brief Backpropagate the errors to the previous layers

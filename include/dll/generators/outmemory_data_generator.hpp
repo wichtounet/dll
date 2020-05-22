@@ -64,15 +64,12 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_
      * \param n_classes The number of classes
      * \param size The size of the entire dataset
      */
-    outmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, size_t size)
+    outmemory_data_generator(Iterator first, [[maybe_unused]] Iterator last, LIterator lfirst, [[maybe_unused]] LIterator llast, size_t n_classes, size_t size)
             : _size(size), orig_it(first), orig_lit(lfirst), it(orig_it), lit(orig_lit) {
         data_cache_helper_t::init_big(first, batch_cache);
         label_cache_helper_t::init_big(n_classes, lfirst, label_cache);
 
         reset();
-
-        cpp_unused(last);
-        cpp_unused(llast);
     }
 
     outmemory_data_generator(const outmemory_data_generator& rhs) = delete;
@@ -348,13 +345,10 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_a
      * \param n_classes The number of classes
      * \param size The size of the entire dataset
      */
-    outmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes, size_t size)
+    outmemory_data_generator(Iterator first, [[maybe_unused]] Iterator last, LIterator lfirst, [[maybe_unused]] LIterator llast, size_t n_classes, size_t size)
             : _size(size), orig_it(first), orig_lit(lfirst), it(orig_it), lit(orig_lit), cropper(*first), mirrorer(*first), distorter(*first), noiser(*first) {
         data_cache_helper_t::init_big(first, batch_cache);
         label_cache_helper_t::init_big(n_classes, lfirst, label_cache);
-
-        cpp_unused(last);
-        cpp_unused(llast);
 
         main_thread = std::thread([this] {
             while (true) {

@@ -90,9 +90,7 @@ struct deconv_layer_impl final : neural_layer<deconv_layer_impl<Desc>, Desc> {
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    static std::string to_short_string(std::string pre = "") {
-        cpp_unused(pre);
-
+    static std::string to_short_string([[maybe_unused]] std::string pre = "") {
         char buffer[128];
         snprintf(buffer, 128, "Deconv(%s)", to_string(activation_function).c_str());
         return {buffer};
@@ -102,9 +100,7 @@ struct deconv_layer_impl final : neural_layer<deconv_layer_impl<Desc>, Desc> {
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    static std::string to_full_string(std::string pre = "") {
-        cpp_unused(pre);
-
+    static std::string to_full_string([[maybe_unused]] std::string pre = "") {
         char buffer[1024];
         snprintf(buffer, 1024, "Deconv: %lux%lux%lu -> (%lux%lux%lu) -> %s -> %lux%lux%lu", NC, NV1, NV2, K, NW1, NW2, to_string(activation_function).c_str(), K, NH1, NH2);
         return {buffer};
@@ -114,9 +110,7 @@ struct deconv_layer_impl final : neural_layer<deconv_layer_impl<Desc>, Desc> {
      * \brief Returns the output shape
      * \return an std::string containing the description of the output shape
      */
-    std::vector<size_t> output_shape(const std::vector<size_t>& input_shape) const {
-        cpp_unused(input_shape);
-
+    std::vector<size_t> output_shape([[maybe_unused]] const std::vector<size_t>& input_shape) const {
         return {K, NH1, NH2};
     }
 

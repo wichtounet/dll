@@ -35,11 +35,9 @@ struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<Desc::Categorical
      * \param it An iterator to an element
      * \param cache The cache to initialize
      */
-    static void init(size_t n, size_t n_classes, const LIterator& it, cache_type& cache) {
+    static void init(size_t n, size_t n_classes, [[maybe_unused]] const LIterator& it, cache_type& cache) {
         cache = cache_type(n, n_classes);
         cache = T(0);
-
-        cpp_unused(it);
     }
 
     /*!
@@ -48,10 +46,8 @@ struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<Desc::Categorical
      * \param it An iterator to an element
      * \param cache The big cache to initialize
      */
-    static void init_big(size_t n_classes, const LIterator& it, big_cache_type& cache) {
+    static void init_big(size_t n_classes, [[maybe_unused]] const LIterator& it, big_cache_type& cache) {
         cache = big_cache_type(big_batch_size, batch_size, n_classes);
-
-        cpp_unused(it);
     }
 
     /*!
@@ -87,11 +83,8 @@ struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<!Desc::Categorica
      * \param it An iterator to an element
      * \param cache The cache to initialize
      */
-    static void init(size_t n, size_t n_classes, const LIterator& it, cache_type& cache) {
+    static void init(size_t n, [[maybe_unused]] size_t n_classes, [[maybe_unused]] const LIterator& it, cache_type& cache) {
         cache = cache_type(n);
-
-        cpp_unused(it);
-        cpp_unused(n_classes);
     }
 
     /*!
@@ -100,11 +93,8 @@ struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<!Desc::Categorica
      * \param it An iterator to an element
      * \param cache The big cache to initialize
      */
-    static void init_big(size_t n_classes, const LIterator& it, big_cache_type& cache) {
+    static void init_big([[maybe_unused]] size_t n_classes, [[maybe_unused]] const LIterator& it, big_cache_type& cache) {
         cache = big_cache_type(big_batch_size, batch_size);
-
-        cpp_unused(it);
-        cpp_unused(n_classes);
     }
 
     /*!
@@ -141,12 +131,9 @@ struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<etl::is_1d<typena
      * \param it An iterator to an element
      * \param cache The cache to initialize
      */
-    static void init(size_t n, size_t n_classes, const LIterator& it, cache_type& cache) {
+    static void init(size_t n, [[maybe_unused]] size_t n_classes, [[maybe_unused]] const LIterator& it, cache_type& cache) {
         auto one = *it;
         cache    = cache_type(n, etl::dim<0>(one));
-
-        cpp_unused(it);
-        cpp_unused(n_classes);
     }
 
     /*!
@@ -155,12 +142,9 @@ struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<etl::is_1d<typena
      * \param it An iterator to an element
      * \param cache The big cache to initialize
      */
-    static void init_big(size_t n_classes, const LIterator& it, big_cache_type& cache) {
+    static void init_big([[maybe_unused]] size_t n_classes, [[maybe_unused]] const LIterator& it, big_cache_type& cache) {
         auto one = *it;
         cache    = big_cache_type(big_batch_size, batch_size, etl::dim<0>(one));
-
-        cpp_unused(it);
-        cpp_unused(n_classes);
     }
 
     /*!
@@ -197,12 +181,9 @@ struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<etl::is_3d<typena
      * \param it An iterator to an element
      * \param cache The cache to initialize
      */
-    static void init(size_t n, size_t n_classes, const LIterator& it, cache_type& cache) {
+    static void init(size_t n, [[maybe_unused]] size_t n_classes, [[maybe_unused]] const LIterator& it, cache_type& cache) {
         auto one = *it;
         cache    = cache_type(n, etl::dim<0>(one), etl::dim<1>(one), etl::dim<2>(one));
-
-        cpp_unused(it);
-        cpp_unused(n_classes);
     }
 
     /*!
@@ -211,12 +192,9 @@ struct label_cache_helper<Desc, T, LIterator, std::enable_if_t<etl::is_3d<typena
      * \param it An iterator to an element
      * \param cache The big cache to initialize
      */
-    static void init_big(size_t n_classes, const LIterator& it, big_cache_type& cache) {
+    static void init_big([[maybe_unused]] size_t n_classes, [[maybe_unused]] const LIterator& it, big_cache_type& cache) {
         auto one = *it;
         cache    = big_cache_type(big_batch_size, batch_size, etl::dim<0>(one), etl::dim<1>(one), etl::dim<2>(one));
-
-        cpp_unused(it);
-        cpp_unused(n_classes);
     }
 
     /*!

@@ -104,9 +104,8 @@ struct base_rnn_layer : layer<Derived> {
      * \param context The training context
      */
     template <typename H, typename C, typename W, typename U>
-    void backward_batch_impl(H&& output, C& context, const W& w, const U& u, size_t time_steps, size_t sequence_length, size_t hidden_units, size_t bptt_steps, bool direct = true) const {
-        cpp_unused(sequence_length);
-
+    void backward_batch_impl(H&& output, C& context, const W& w, const U& u, size_t time_steps, size_t sequence_length, size_t hidden_units, size_t bptt_steps,
+                             bool direct = true) const {
         const size_t Batch = etl::dim<0>(context.errors);
 
         etl::dyn_matrix<float, 3> delta_t(time_steps, Batch, hidden_units);

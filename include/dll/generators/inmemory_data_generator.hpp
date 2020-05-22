@@ -56,7 +56,7 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_a
     /*!
      * \brief Construct an inmemory data generator
      */
-    inmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes){
+    inmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, [[maybe_unused]] LIterator llast, size_t n_classes){
         const size_t n = std::distance(first, last);
 
         data_cache_helper_t::init(n, first, input_cache);
@@ -87,8 +87,6 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_a
             pre_normalizer<desc>::transform_all(label_cache);
             pre_binarizer<desc>::transform_all(label_cache);
         }
-
-        cpp_unused(llast);
     }
 
     inmemory_data_generator(const inmemory_data_generator& rhs) = delete;
@@ -350,7 +348,7 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_au
     /*!
      * \brief Construct an inmemory data generator
      */
-    inmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n_classes)
+    inmemory_data_generator(Iterator first, Iterator last, LIterator lfirst, [[maybe_unused]] LIterator llast, size_t n_classes)
             : cropper(*first), mirrorer(*first), distorter(*first), noiser(*first) {
         const size_t n = std::distance(first, last);
 
@@ -389,8 +387,6 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_au
             status[b]  = false;
             indices[b] = b;
         }
-
-        cpp_unused(llast);
 
         main_thread = std::thread([this] {
             while (true) {
@@ -855,9 +851,8 @@ auto make_generator(const Container& container, const LContainer& lcontainer, si
  * \brief Make an out of memory data generator from iterators
  */
 template <typename Iterator, typename LIterator, typename... Parameters>
-auto make_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, size_t n, size_t n_classes, const inmemory_data_generator_desc<Parameters...>& /*desc*/) {
-    cpp_unused(n);
-
+auto make_generator(Iterator first, Iterator last, LIterator lfirst, LIterator llast, [[maybe_unused]] size_t n, size_t n_classes,
+                    const inmemory_data_generator_desc<Parameters...>& /*desc*/) {
     using generator_t = typename inmemory_data_generator_desc<Parameters...>::template generator_t<Iterator, LIterator>;
     return std::make_unique<generator_t>(first, last, lfirst, llast, n_classes);
 }
@@ -866,9 +861,8 @@ auto make_generator(Iterator first, Iterator last, LIterator lfirst, LIterator l
  * \brief Make an out of memory data generator from containers
  */
 template <typename Container, typename LContainer, typename... Parameters>
-auto make_generator(const Container& container, const LContainer& lcontainer, size_t n, size_t n_classes, const inmemory_data_generator_desc<Parameters...>& /*desc*/) {
-    cpp_unused(n);
-
+auto make_generator(const Container& container, const LContainer& lcontainer, [[maybe_unused]] size_t n, size_t n_classes,
+                    const inmemory_data_generator_desc<Parameters...>& /*desc*/) {
     using generator_t = typename inmemory_data_generator_desc<Parameters...>::template generator_t<typename Container::const_iterator, typename LContainer::const_iterator>;
     return std::make_unique<generator_t>(container.begin(), container.end(), lcontainer.begin(), lcontainer.end(), n_classes);
 }

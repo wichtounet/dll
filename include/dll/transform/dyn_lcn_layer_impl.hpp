@@ -42,9 +42,7 @@ struct dyn_lcn_layer_impl : transform_layer<dyn_lcn_layer_impl<Desc>> {
     /*!
      * \brief Returns a string representation of the layer
      */
-    std::string to_short_string(std::string pre = "") const {
-        cpp_unused(pre);
-
+    std::string to_short_string([[maybe_unused]] std::string pre = "") const {
         std::string desc("LCN(dyn): ");
         desc += std::to_string(K) + 'x' + std::to_string(K);
         return desc;
@@ -53,9 +51,7 @@ struct dyn_lcn_layer_impl : transform_layer<dyn_lcn_layer_impl<Desc>> {
     /*!
      * \brief Returns a string representation of the layer
      */
-    std::string to_full_string(std::string pre = "") const {
-        cpp_unused(pre);
-
+    std::string to_full_string([[maybe_unused]] std::string pre = "") const {
         std::string desc("LCN(dyn): ");
         desc += std::to_string(K) + 'x' + std::to_string(K);
         return desc;

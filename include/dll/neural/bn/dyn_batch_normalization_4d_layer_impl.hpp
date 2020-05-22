@@ -79,18 +79,14 @@ struct dyn_batch_normalization_4d_layer_impl : neural_layer<dyn_batch_normalizat
     /*!
      * \brief Returns a string representation of the layer
      */
-    static std::string to_short_string(std::string pre = "") {
-        cpp_unused(pre);
-
+    static std::string to_short_string([[maybe_unused]] std::string pre = "") {
         return "batch_norm";
     }
 
     /*!
      * \brief Returns a string representation of the layer
      */
-    static std::string to_full_string(std::string pre = "") {
-        cpp_unused(pre);
-
+    static std::string to_full_string([[maybe_unused]] std::string pre = "") {
         return "batch_norm";
     }
 
@@ -156,8 +152,6 @@ struct dyn_batch_normalization_4d_layer_impl : neural_layer<dyn_batch_normalizat
      */
     template <typename Input, typename Output>
     void train_forward_batch(Output& output, const Input& input) {
-        cpp_unused(output);
-
         const auto B = etl::dim<0>(input);
         const auto S = B * W * H;
 
@@ -198,10 +192,8 @@ struct dyn_batch_normalization_4d_layer_impl : neural_layer<dyn_batch_normalizat
      *
      * \param context the training context
      */
-    template<typename C>
-    void adapt_errors(C& context) const {
-        cpp_unused(context);
-    }
+    template <typename C>
+    void adapt_errors([[maybe_unused]] C& context) const {}
 
     /*!
      * \brief Backpropagate the errors to the previous layers

@@ -27,10 +27,8 @@ struct init_none {
      * \param nin The neurons output
      */
     template<typename B>
-    static void initialize(B& b, size_t nin, size_t nout){
-        cpp_unused(b);
-        cpp_unused(nin);
-        cpp_unused(nout);
+    static void initialize([[maybe_unused]] B& b, [[maybe_unused]] size_t nin, [[maybe_unused]] size_t nout){
+        // Nothing to init
     }
 };
 
@@ -47,10 +45,7 @@ struct init_constant {
      * \param nin The neurons output
      */
     template<typename B>
-    static void initialize(B& b, size_t nin, size_t nout){
-        cpp_unused(nin);
-        cpp_unused(nout);
-
+    static void initialize(B& b, [[maybe_unused]] size_t nin, [[maybe_unused]] size_t nout){
         b = etl::value_t<B>(Ratio::num) / etl::value_t<B>(Ratio::den);
     }
 };
@@ -77,11 +72,8 @@ struct init_normal {
      * \param nin The neurons input
      * \param nin The neurons output
      */
-    template<typename B>
-    static void initialize(B& b, size_t nin, size_t nout){
-        cpp_unused(nin);
-        cpp_unused(nout);
-
+    template <typename B>
+    static void initialize(B& b, [[maybe_unused]] size_t nin, [[maybe_unused]] size_t nout) {
         constexpr auto mean   = etl::value_t<B>(Mean::num) / etl::value_t<B>(Mean::den);
         constexpr auto stddev = etl::value_t<B>(Std::num) / etl::value_t<B>(Std::den);
 
@@ -102,10 +94,7 @@ struct init_uniform {
      * \param nin The neurons output
      */
     template<typename W>
-    static void initialize(W& w, size_t nin, size_t nout){
-        cpp_unused(nin);
-        cpp_unused(nout);
-
+    static void initialize(W& w, [[maybe_unused]] size_t nin, [[maybe_unused]] size_t nout){
         constexpr auto a = etl::value_t<W>(A::num) / etl::value_t<W>(A::den);
         constexpr auto b = etl::value_t<W>(B::num) / etl::value_t<W>(B::den);
 
@@ -127,9 +116,7 @@ struct init_lecun {
      * \param nin The neurons output
      */
     template<typename B>
-    static void initialize(B& b, size_t nin, size_t nout){
-        cpp_unused(nout);
-
+    static void initialize(B& b, size_t nin, [[maybe_unused]] size_t nout){
         b = etl::normal_generator<etl::value_t<B>>(dll::rand_engine(), 0.0, 1.0) / sqrt(double(nin));
     }
 };
@@ -146,9 +133,7 @@ struct init_xavier {
      * \param nin The neurons output
      */
     template<typename B>
-    static void initialize(B& b, size_t nin, size_t nout){
-        cpp_unused(nout);
-
+    static void initialize(B& b, size_t nin, [[maybe_unused]] size_t nout){
         b = etl::normal_generator<etl::value_t<B>>(dll::rand_engine(), 0.0, 1.0) * sqrt(1.0 / nin);
     }
 };
@@ -182,9 +167,7 @@ struct init_he {
      * \param nin The neurons output
      */
     template<typename B>
-    static void initialize(B& b, size_t nin, size_t nout){
-        cpp_unused(nout);
-
+    static void initialize(B& b, size_t nin, [[maybe_unused]] size_t nout){
         b = etl::normal_generator<etl::value_t<B>>(dll::rand_engine(), 0.0, 1.0) * sqrt(2.0 / nin);
     }
 };

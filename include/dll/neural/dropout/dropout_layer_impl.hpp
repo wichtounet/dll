@@ -33,9 +33,7 @@ struct dropout_layer_impl : transform_layer<dropout_layer_impl<Desc>> {
     /*!
      * \brief Returns a full string representation of the layer
      */
-    static std::string to_short_string(std::string pre = "") {
-        cpp_unused(pre);
-
+    static std::string to_short_string([[maybe_unused]] std::string pre = "") {
         char buffer[128];
         snprintf(buffer, 128, "Dropout(%.2f)", p);
         return {buffer};
@@ -44,9 +42,7 @@ struct dropout_layer_impl : transform_layer<dropout_layer_impl<Desc>> {
     /*!
      * \brief Returns a full string representation of the layer
      */
-    static std::string to_full_string(std::string pre = "") {
-        cpp_unused(pre);
-
+    static std::string to_full_string([[maybe_unused]] std::string pre = "") {
         char buffer[128];
         snprintf(buffer, 128, "Dropout(%.2f)", p);
         return {buffer};
@@ -109,10 +105,8 @@ struct dropout_layer_impl : transform_layer<dropout_layer_impl<Desc>> {
      *
      * \param context the training context
      */
-    template<typename C>
-    void adapt_errors(C& context) const {
-        cpp_unused(context);
-    }
+    template <typename C>
+    void adapt_errors([[maybe_unused]] C& context) const {}
 
     /*!
      * \brief Backpropagate the errors to the previous layers
@@ -130,10 +124,8 @@ struct dropout_layer_impl : transform_layer<dropout_layer_impl<Desc>> {
      * \brief Compute the gradients for this layer, if any
      * \param context The trainng context
      */
-    template<typename C>
-    void compute_gradients(C& context) const {
-        cpp_unused(context);
-    }
+    template <typename C>
+    void compute_gradients([[maybe_unused]] C& context) const {}
 };
 
 // Declare the traits for the layer

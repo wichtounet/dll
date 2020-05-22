@@ -123,26 +123,22 @@ struct for_each_impl<D, 1, std::index_sequence<I...>> {
     }
 
     template <typename Functor>
-    void for_each_layer_pair(Functor&& functor) {
-        cpp_unused(functor);
+    void for_each_layer_pair([[maybe_unused]] Functor&& functor) {
         // Nothing to do here
     }
 
     template <typename Functor>
-    void for_each_layer_pair_i(Functor&& functor) {
-        cpp_unused(functor);
+    void for_each_layer_pair_i([[maybe_unused]] Functor&& functor) {
         // Nothing to do here
     }
 
     template <typename Functor>
-    void for_each_layer_rpair(Functor&& functor) {
-        cpp_unused(functor);
+    void for_each_layer_rpair([[maybe_unused]] Functor&& functor) {
         // Nothing to do here
     }
 
     template <typename Functor>
-    void for_each_layer_rpair_i(Functor&& functor) {
-        cpp_unused(functor);
+    void for_each_layer_rpair_i([[maybe_unused]] Functor&& functor) {
         // Nothing to do here
     }
 };

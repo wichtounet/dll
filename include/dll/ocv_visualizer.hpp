@@ -185,13 +185,11 @@ struct base_ocv_rbm_visualizer {
      * \brief Indicates that the training has finished for the given RBM
      * \param rbm The RBM stopped training
      */
-    void training_end(const RBM& rbm) {
+    void training_end([[maybe_unused]] const RBM& rbm) {
         std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
 
         std::cout << "Press on any key to close the window..." << std::endl;
         cv::waitKey(0);
-
-        cpp_unused(rbm);
     }
 
     /*!
@@ -201,11 +199,9 @@ struct base_ocv_rbm_visualizer {
      * \param batch The batch that ended
      * \param batches The total number of batches
      */
-    void batch_end(const RBM& rbm, const rbm_training_context& context, size_t batch, size_t batches) {
+    void batch_end([[maybe_unused]] const RBM& rbm, const rbm_training_context& context, size_t batch, size_t batches) {
         printf("Batch %ld/%ld - Reconstruction error: %.5f - Sparsity: %.5f\n", batch, batches,
                context.batch_error, context.batch_sparsity);
-
-        cpp_unused(rbm);
     }
 
     /*!
@@ -423,9 +419,7 @@ struct opencv_dbn_visualizer {
      * \param dbn The DBN to pretrain
      * \param max_epochs The total number of epochs
      */
-    void pretraining_begin(const DBN& dbn, size_t max_epochs) {
-        cpp_unused(dbn);
-
+    void pretraining_begin([[maybe_unused]] const DBN& dbn, size_t max_epochs) {
         std::cout << "DBN: Pretraining begin for " << max_epochs << " epochs" << std::endl;
 
         cv::namedWindow("DBN Training", cv::WINDOW_NORMAL);
@@ -607,10 +601,8 @@ struct opencv_dbn_visualizer {
     /*!
      * \brief Pretraining ended for the given batch for the given DBN
      */
-    void pretraining_batch(const DBN& dbn, size_t batch) {
+    void pretraining_batch([[maybe_unused]] const DBN& dbn, size_t batch) {
         std::cout << "DBN: Pretraining batch " << batch << std::endl;
-
-        cpp_unused(dbn);
     }
 
     //Fine-tuning phase
@@ -637,10 +629,8 @@ struct opencv_dbn_visualizer {
      * \param loss The current loss
      * \param dbn The network being trained
      */
-    void ft_epoch_end(size_t epoch, double error, const DBN& dbn) {
+    void ft_epoch_end(size_t epoch, double error, [[maybe_unused]] const DBN& dbn) {
         printf("epoch %ld - Classification error: %.5f \n", epoch, error);
-
-        cpp_unused(dbn);
 
         //TODO Would be interesting to update RBM images here
     }
@@ -695,12 +685,10 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynami
      * \param dbn The DBN being pretrained
      * \param max_epochs The maximum number of epochs
      */
-    void pretraining_begin(const DBN& dbn, size_t max_epochs) {
+    void pretraining_begin([[maybe_unused]] const DBN& dbn, size_t max_epochs) {
         std::cout << "DBN: Pretraining begin for " << max_epochs << " epochs" << std::endl;
 
         cv::namedWindow("DBN Training", cv::WINDOW_NORMAL);
-
-        cpp_unused(dbn);
     }
 
     /*!
@@ -711,11 +699,9 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynami
      * \param input_size the number of inputs
      */
     template <typename RBM>
-    void pretrain_layer(const DBN& dbn, size_t I, size_t input_size) {
+    void pretrain_layer([[maybe_unused]] const DBN& dbn, size_t I, size_t input_size) {
         printf("DBN: Train layer %lu with %lu entries\n", I, input_size);
         current_image = I;
-
-        cpp_unused(dbn);
     }
 
     /*!
@@ -856,17 +842,15 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynami
     /*!
      * \brief Pretraining ended for the given DBN
      */
-    void pretraining_end(const DBN& /*dbn*/) {
+    void pretraining_end([[maybe_unused]] const DBN& /*dbn*/) {
         std::cout << "DBN: Pretraining end" << std::endl;
     }
 
     /*!
      * \brief Pretraining ended for the given batch for the given DBN
      */
-    void pretraining_batch(const DBN& dbn, size_t batch) {
+    void pretraining_batch([[maybe_unused]] const DBN& dbn, size_t batch) {
         std::cout << "DBN: Pretraining batch " << batch << std::endl;
-
-        cpp_unused(dbn);
     }
 
     //Utility functions
@@ -908,16 +892,14 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
      * \param dbn The DBN being pretrained
      * \param max_epochs The maximum number of epochs
      */
-    void pretraining_begin(const DBN& dbn, size_t max_epochs) {
+    void pretraining_begin([[maybe_unused]] const DBN& dbn, size_t max_epochs) {
         std::cout << "CDBN: Pretraining begin for " << max_epochs << " epochs" << std::endl;
 
         cv::namedWindow("CDBN Training", cv::WINDOW_NORMAL);
-
-        cpp_unused(dbn);
     }
 
     template <typename RBM>
-    void pretrain_layer(const DBN& dbn, size_t I, size_t input_size) {
+    void pretrain_layer([[maybe_unused]] const DBN& dbn, size_t I, size_t input_size) {
         using rbm_t = RBM;
 
         static constexpr auto NC  = rbm_t::NC;
@@ -932,8 +914,6 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
         printf("CDBN: Train layer %lu (%lux%lux%lu -> %lux%lu -> %lux%lux%lu) with %lu entries \n", I, NV1, NV2, NC, NW1, NW2, NH1, NH2, K, input_size);
 
         current_image = I;
-
-        cpp_unused(dbn);
     }
 
     /*!

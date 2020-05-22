@@ -142,9 +142,7 @@ struct dyn_rbm_impl final : public standard_rbm<dyn_rbm_impl<Desc>, Desc> {
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    std::string to_short_string(std::string pre = "") const {
-        cpp_unused(pre);
-
+    std::string to_short_string([[maybe_unused]] std::string pre = "") const {
         char buffer[1024];
         snprintf(
             buffer, 1024, "RBM(%s) (dyn)",
@@ -156,9 +154,7 @@ struct dyn_rbm_impl final : public standard_rbm<dyn_rbm_impl<Desc>, Desc> {
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    std::string to_full_string(std::string pre = "") const {
-        cpp_unused(pre);
-
+    std::string to_full_string([[maybe_unused]] std::string pre = "") const {
         char buffer[1024];
         snprintf(
             buffer, 1024, "RBM(dyn)(%s): %lu -> %lu",
@@ -170,9 +166,7 @@ struct dyn_rbm_impl final : public standard_rbm<dyn_rbm_impl<Desc>, Desc> {
      * \brief Returns the output shape
      * \return an std::string containing the description of the output shape
      */
-    std::vector<size_t> output_shape(const std::vector<size_t>& input_shape) const {
-        cpp_unused(input_shape);
-
+    std::vector<size_t> output_shape([[maybe_unused]] const std::vector<size_t>& input_shape) const {
         return {num_hidden};
     }
 

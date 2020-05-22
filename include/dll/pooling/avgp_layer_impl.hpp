@@ -33,18 +33,14 @@ struct avgp_2d_layer_impl final : pooling_2d_layer<avgp_2d_layer_impl<Desc>, Des
     /*!
      * \brief Get a string representation of the layer
      */
-    static std::string to_short_string(std::string pre = "") {
-        cpp_unused(pre);
-
+    static std::string to_short_string([[maybe_unused]] std::string pre = "") {
         return "AVGP(2D)";
     }
 
     /*!
      * \brief Get a string representation of the layer
      */
-    static std::string to_full_string(std::string pre = "") {
-        cpp_unused(pre);
-
+    static std::string to_full_string([[maybe_unused]] std::string pre = "") {
         char buffer[1024];
         snprintf(buffer, 1024, "AVGP(2d): %lux%lux%lu -> (%lux%lu) -> %lux%lux%lu",
                  base::I1, base::I2, base::I3, base::C1, base::C2, base::O1, base::O2, base::O3);
@@ -55,9 +51,7 @@ struct avgp_2d_layer_impl final : pooling_2d_layer<avgp_2d_layer_impl<Desc>, Des
      * \brief Returns the output shape
      * \return an std::string containing the description of the output shape
      */
-    std::vector<size_t> output_shape(const std::vector<size_t>& input_shape) const {
-        cpp_unused(input_shape);
-
+    std::vector<size_t> output_shape([[maybe_unused]] const std::vector<size_t>& input_shape) const {
         return {base::O1, base::O2, base::O3};
     }
 
@@ -89,10 +83,8 @@ struct avgp_2d_layer_impl final : pooling_2d_layer<avgp_2d_layer_impl<Desc>, Des
      *
      * \param context the training context
      */
-    template<typename C>
-    void adapt_errors(C& context) const {
-        cpp_unused(context);
-    }
+    template <typename C>
+    void adapt_errors([[maybe_unused]] C& context) const {}
 
     /*!
      * \brief Backpropagate the errors to the previous layers
@@ -112,10 +104,8 @@ struct avgp_2d_layer_impl final : pooling_2d_layer<avgp_2d_layer_impl<Desc>, Des
      * \brief Compute the gradients for this layer, if any
      * \param context The trainng context
      */
-    template<typename C>
-    void compute_gradients(C& context) const {
-        cpp_unused(context);
-    }
+    template <typename C>
+    void compute_gradients([[maybe_unused]] C& context) const {}
 };
 
 // Declare the traits for the Layer
@@ -185,18 +175,14 @@ struct avgp_3d_layer_impl final : pooling_3d_layer<avgp_3d_layer_impl<Desc>, Des
     /*!
      * \brief Get a string representation of the layer
      */
-    static std::string to_short_string(std::string pre = "") {
-        cpp_unused(pre);
-
+    static std::string to_short_string([[maybe_unused]] std::string pre = "") {
         return "AVGP(3D)";
     }
 
     /*!
      * \brief Get a string representation of the layer
      */
-    static std::string to_full_string(std::string pre = "") {
-        cpp_unused(pre);
-
+    static std::string to_full_string([[maybe_unused]] std::string pre = "") {
         char buffer[1024];
         snprintf(buffer, 1024, "AVGP(3D): %lux%lux%lu -> (%lux%lux%lu) -> %lux%lux%lu",
                  base::I1, base::I2, base::I3, base::C1, base::C2, base::C3, base::O1, base::O2, base::O3);
@@ -207,9 +193,7 @@ struct avgp_3d_layer_impl final : pooling_3d_layer<avgp_3d_layer_impl<Desc>, Des
      * \brief Returns the output shape
      * \return an std::string containing the description of the output shape
      */
-    std::vector<size_t> output_shape(const std::vector<size_t>& input_shape) const {
-        cpp_unused(input_shape);
-
+    std::vector<size_t> output_shape([[maybe_unused]] const std::vector<size_t>& input_shape) const {
         return {base::O1, base::O2, base::O3};
     }
 
@@ -241,10 +225,8 @@ struct avgp_3d_layer_impl final : pooling_3d_layer<avgp_3d_layer_impl<Desc>, Des
      *
      * \param context the training context
      */
-    template<typename C>
-    void adapt_errors(C& context) const {
-        cpp_unused(context);
-    }
+    template <typename C>
+    void adapt_errors([[maybe_unused]] C& context) const {}
 
     /*!
      * \brief Backpropagate the errors to the previous layers
@@ -264,10 +246,8 @@ struct avgp_3d_layer_impl final : pooling_3d_layer<avgp_3d_layer_impl<Desc>, Des
      * \brief Compute the gradients for this layer, if any
      * \param context The trainng context
      */
-    template<typename C>
-    void compute_gradients(C& context) const {
-        cpp_unused(context);
-    }
+    template <typename C>
+    void compute_gradients([[maybe_unused]] C& context) const {}
 };
 
 // Declare the traits for the Layer

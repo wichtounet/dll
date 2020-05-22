@@ -288,10 +288,8 @@ private:
     }
 
     template<typename Generator>
-    void validate_generator(const Generator& generator){
+    void validate_generator([[maybe_unused]] const Generator& generator){
         static_assert(batch_size == Generator::batch_size, "Invalid batch size for generator");
-
-        cpp_unused(generator);
     }
 
 public:
@@ -2620,7 +2618,7 @@ private:
             //Create a new context for this epoch
             rbm_training_context context;
 
-            r_trainer.init_epoch();
+            r_trainer.init_epoch(epoch);
 
             generator.reset();
             generator.set_train();
@@ -2705,7 +2703,7 @@ private:
             //Create a new context for this epoch
             rbm_training_context context;
 
-            r_trainer.init_epoch();
+            r_trainer.init_epoch(epoch);
 
             generator.reset();
             generator.set_train();

@@ -110,9 +110,7 @@ struct dyn_rnn_layer_impl final : base_rnn_layer<dyn_rnn_layer_impl<Desc>, Desc>
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    std::string to_short_string(std::string pre = "") const {
-        cpp_unused(pre);
-
+    std::string to_short_string([[maybe_unused]] std::string pre = "") const {
         if constexpr (activation_function == function::IDENTITY) {
             return "RNN (dyn)";
         } else {
@@ -126,9 +124,7 @@ struct dyn_rnn_layer_impl final : base_rnn_layer<dyn_rnn_layer_impl<Desc>, Desc>
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    std::string to_full_string(std::string pre = "") const {
-        cpp_unused(pre);
-
+    std::string to_full_string([[maybe_unused]] std::string pre = "") const {
         char buffer[512];
 
         if constexpr (activation_function == function::IDENTITY) {
@@ -144,9 +140,7 @@ struct dyn_rnn_layer_impl final : base_rnn_layer<dyn_rnn_layer_impl<Desc>, Desc>
      * \brief Returns the output shape
      * \return an std::string containing the description of the output shape
      */
-    std::vector<size_t> output_shape(const std::vector<size_t>& input_shape) const {
-        cpp_unused(input_shape);
-
+    std::vector<size_t> output_shape([[maybe_unused]] const std::vector<size_t>& input_shape) const {
         return {time_steps, hidden_units};
     }
 
@@ -199,9 +193,7 @@ struct dyn_rnn_layer_impl final : base_rnn_layer<dyn_rnn_layer_impl<Desc>, Desc>
      * needs to be initialized
      */
     template <typename DLayer>
-    static void dyn_init(DLayer& dyn) {
-        cpp_unused(dyn);
-    }
+    static void dyn_init([[maybe_unused]] DLayer& dyn) {}
 
     /*!
      * \brief Adapt the errors, called before backpropagation of the errors.
@@ -211,9 +203,8 @@ struct dyn_rnn_layer_impl final : base_rnn_layer<dyn_rnn_layer_impl<Desc>, Desc>
      * \param context the training context
      */
     template <typename C>
-    void adapt_errors(C& context) const {
+    void adapt_errors([[maybe_unused]] C& context) const {
         // Nothing to do here (done in BPTT)
-        cpp_unused(context);
     }
 
     /*!

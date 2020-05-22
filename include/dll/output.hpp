@@ -57,9 +57,7 @@ struct null_output_policy {
      * \param value The value to display
      */
     template <typename T>
-    null_output_policy& operator<<(T&& value) {
-        cpp_unused(value);
-
+    null_output_policy& operator<<([[maybe_unused]] T&& value) {
         return *this;
     }
 
@@ -68,9 +66,7 @@ struct null_output_policy {
      *
      * \param m The manipulator to apply
      */
-    null_output_policy& operator<<(manipulator& m) {
-        cpp_unused(m);
-
+    null_output_policy& operator<<([[maybe_unused]] manipulator& m) {
         return *this;
     }
 };

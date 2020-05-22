@@ -92,9 +92,7 @@ struct dyn_embedding_layer_impl final : neural_layer_no_bias<dyn_embedding_layer
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    std::string to_short_string(std::string pre = "") const {
-        cpp_unused(pre);
-
+    std::string to_short_string([[maybe_unused]] std::string pre = "") const {
         return "Embedding";
     }
 
@@ -102,9 +100,7 @@ struct dyn_embedding_layer_impl final : neural_layer_no_bias<dyn_embedding_layer
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    std::string to_full_string(std::string pre = "") const {
-        cpp_unused(pre);
-
+    std::string to_full_string([[maybe_unused]] std::string pre = "") const {
         char buffer[256];
         snprintf(buffer, 256, "Embedding: %lu -> (%lux%lu) -> %lu", I, V, K, K);
         return {buffer};
@@ -114,9 +110,7 @@ struct dyn_embedding_layer_impl final : neural_layer_no_bias<dyn_embedding_layer
      * \brief Returns the output shape
      * \return an std::string containing the description of the output shape
      */
-    std::vector<size_t> output_shape(const std::vector<size_t>& input_shape) const {
-        cpp_unused(input_shape);
-
+    std::vector<size_t> output_shape([[maybe_unused]] const std::vector<size_t>& input_shape) const {
         return {K};
     }
 
@@ -170,10 +164,8 @@ struct dyn_embedding_layer_impl final : neural_layer_no_bias<dyn_embedding_layer
      * \param dyn Reference to the dynamic version of the layer that
      * needs to be initialized
      */
-    template<typename DRBM>
-    static void dyn_init(DRBM& dyn){
-        cpp_unused(dyn);
-    }
+    template <typename DRBM>
+    static void dyn_init([[maybe_unused]] DRBM& dyn) {}
 
     /*!
      * \brief Adapt the errors, called before backpropagation of the errors.
@@ -182,10 +174,8 @@ struct dyn_embedding_layer_impl final : neural_layer_no_bias<dyn_embedding_layer
      *
      * \param context the training context
      */
-    template<typename C>
-    void adapt_errors(C& context) const {
-        cpp_unused(context);
-
+    template <typename C>
+    void adapt_errors([[maybe_unused]] C& context) const {
         // Nothing to adapt
     }
 

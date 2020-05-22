@@ -55,19 +55,15 @@ struct pre_scaler <Desc, std::enable_if_t<Desc::ScalePre == 0>> {
      * \brief Apply the transform on the input
      * \param target The input to transform
      */
-    template<typename O>
-    static void transform(O&& target){
-        cpp_unused(target);
-    }
+    template <typename O>
+    static void transform([[maybe_unused]] O&& target) {}
 
     /*!
      * \brief Apply the transform on the input
      * \param target The input to transform
      */
-    template<typename O>
-    static void transform_all(O&& target){
-        cpp_unused(target);
-    }
+    template <typename O>
+    static void transform_all([[maybe_unused]] O&& target) {}
 };
 
 /*!
@@ -113,19 +109,15 @@ struct pre_binarizer <Desc, std::enable_if_t<Desc::BinarizePre == 0>> {
      * \brief Apply the transform on the input
      * \param target The input to transform
      */
-    template<typename O>
-    static void transform(O&& target){
-        cpp_unused(target);
-    }
+    template <typename O>
+    static void transform([[maybe_unused]] O&& target) {}
 
     /*!
      * \brief Apply the transform on the input
      * \param target The input to transform
      */
-    template<typename O>
-    static void transform_all(O&& target){
-        cpp_unused(target);
-    }
+    template <typename O>
+    static void transform_all([[maybe_unused]] O&& target) {}
 };
 
 /*!
@@ -167,19 +159,15 @@ struct pre_normalizer <Desc, std::enable_if_t<!Desc::NormalizePre>> {
      * \brief Apply the transform on the input
      * \param target The input to transform
      */
-    template<typename O>
-    static void transform(O&& target){
-        cpp_unused(target);
-    }
+    template <typename O>
+    static void transform([[maybe_unused]] O&& target) {}
 
     /*!
      * \brief Apply the transform on the input
      * \param target The input to transform
      */
-    template<typename O>
-    static void transform_all(O&& target){
-        cpp_unused(target);
-    }
+    template <typename O>
+    static void transform_all([[maybe_unused]] O&& target) {}
 };
 
 } //end of dll namespace

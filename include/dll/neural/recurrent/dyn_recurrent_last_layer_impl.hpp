@@ -66,9 +66,7 @@ struct dyn_recurrent_last_layer_impl final : layer<dyn_recurrent_last_layer_impl
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    std::string to_short_string(std::string pre = "") const {
-        cpp_unused(pre);
-
+    std::string to_short_string([[maybe_unused]] std::string pre = "") const {
         return "RNN(last)";
     }
 
@@ -76,9 +74,7 @@ struct dyn_recurrent_last_layer_impl final : layer<dyn_recurrent_last_layer_impl
      * \brief Returns a short description of the layer
      * \return an std::string containing a short description of the layer
      */
-    std::string to_full_string(std::string pre = "") const {
-        cpp_unused(pre);
-
+    std::string to_full_string([[maybe_unused]] std::string pre = "") const {
         char buffer[512];
         snprintf(buffer, 512, "RNN(last): %lux%lu -> %lu", time_steps, hidden_units, hidden_units);
         return {buffer};
@@ -88,9 +84,7 @@ struct dyn_recurrent_last_layer_impl final : layer<dyn_recurrent_last_layer_impl
      * \brief Returns the output shape
      * \return an std::string containing the description of the output shape
      */
-    std::vector<size_t> output_shape(const std::vector<size_t>& input_shape) const {
-        cpp_unused(input_shape);
-
+    std::vector<size_t> output_shape([[maybe_unused]] const std::vector<size_t>& input_shape) const {
         return {hidden_units};
     }
 
@@ -146,10 +140,8 @@ struct dyn_recurrent_last_layer_impl final : layer<dyn_recurrent_last_layer_impl
      * \param dyn Reference to the dynamic version of the layer that
      * needs to be initialized
      */
-    template<typename DLayer>
-    static void dyn_init(DLayer& dyn){
-        cpp_unused(dyn);
-    }
+    template <typename DLayer>
+    static void dyn_init([[maybe_unused]] DLayer& dyn) {}
 
     /*!
      * \brief Adapt the errors, called before backpropagation of the errors.
@@ -159,9 +151,8 @@ struct dyn_recurrent_last_layer_impl final : layer<dyn_recurrent_last_layer_impl
      * \param context the training context
      */
     template<typename C>
-    void adapt_errors(C& context) const {
+    void adapt_errors([[maybe_unused]] C& context) const {
         // Nothing to do here
-        cpp_unused(context);
     }
 
     /*!
@@ -187,9 +178,8 @@ struct dyn_recurrent_last_layer_impl final : layer<dyn_recurrent_last_layer_impl
      * \param context The trainng context
      */
     template<typename C>
-    void compute_gradients(C& context) const {
+    void compute_gradients([[maybe_unused]] C& context) const {
         // Nothing to do here
-        cpp_unused(context);
     }
 };
 

@@ -21,12 +21,8 @@ inline void fill_length(const char* name, std::unique_ptr<G>& generator, std::ar
     }
 }
 
-template<>
-inline void fill_length(const char* name, std::unique_ptr<int>& g, std::array<size_t, 4>& column_length){
-    cpp_unused(g);
-    cpp_unused(column_length);
-    cpp_unused(name);
-}
+template <>
+inline void fill_length([[maybe_unused]] const char* name, [[maybe_unused]] std::unique_ptr<int>& g, [[maybe_unused]] std::array<size_t, 4>& column_length) {}
 
 template<typename G>
 inline void print_line(const char* name, std::unique_ptr<G>& generator, std::array<size_t, 4>& column_length){
@@ -39,12 +35,8 @@ inline void print_line(const char* name, std::unique_ptr<G>& generator, std::arr
     }
 }
 
-template<>
-inline void print_line(const char* name, std::unique_ptr<int>& g, std::array<size_t, 4>& column_length){
-    cpp_unused(g);
-    cpp_unused(column_length);
-    cpp_unused(name);
-}
+template <>
+inline void print_line([[maybe_unused]] const char* name, [[maybe_unused]] std::unique_ptr<int>& g, [[maybe_unused]] std::array<size_t, 4>& column_length) {}
 
 /*!
  * \brief A dataset.

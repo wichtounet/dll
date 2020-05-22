@@ -41,18 +41,14 @@ struct dyn_shape_1d_layer_impl : transform_layer<dyn_shape_1d_layer_impl<Desc>> 
     /*!
      * \brief Returns a string representation of the layer
      */
-    static std::string to_short_string(std::string pre = "") {
-        cpp_unused(pre);
-
+    static std::string to_short_string([[maybe_unused]] std::string pre = "") {
         return "Shape1D(dyn)";
     }
 
     /*!
      * \brief Returns a string representation of the layer
      */
-    static std::string to_full_string(std::string pre = "") {
-        cpp_unused(pre);
-
+    static std::string to_full_string([[maybe_unused]] std::string pre = "") {
         return "Shape1D(dyn)";
     }
 
@@ -60,9 +56,7 @@ struct dyn_shape_1d_layer_impl : transform_layer<dyn_shape_1d_layer_impl<Desc>> 
      * \brief Returns the output shape
      * \return an std::string containing the description of the output shape
      */
-    std::vector<size_t> output_shape(const std::vector<size_t>& input_shape) const {
-        cpp_unused(input_shape);
-
+    std::vector<size_t> output_shape([[maybe_unused]] const std::vector<size_t>& input_shape) const {
         return {S};
     }
 
@@ -99,30 +93,23 @@ struct dyn_shape_1d_layer_impl : transform_layer<dyn_shape_1d_layer_impl<Desc>> 
      *
      * \param context the training context
      */
-    template<typename C>
-    void adapt_errors(C& context) const {
-        cpp_unused(context);
-    }
+    template <typename C>
+    void adapt_errors([[maybe_unused]] C& context) const {}
 
     /*!
      * \brief Backpropagate the errors to the previous layers
      * \param output The ETL expression into which write the output
      * \param context The training context
      */
-    template<typename H, typename C>
-    void backward_batch(H&& output, C& context) const {
-        cpp_unused(output);
-        cpp_unused(context);
-    }
+    template <typename H, typename C>
+    void backward_batch([[maybe_unused]] H&& output, [[maybe_unused]] C& context) const {}
 
     /*!
      * \brief Compute the gradients for this layer, if any
      * \param context The trainng context
      */
-    template<typename C>
-    void compute_gradients(C& context) const {
-        cpp_unused(context);
-    }
+    template <typename C>
+    void compute_gradients([[maybe_unused]] C& context) const {}
 };
 
 // Declare the traits for the layer

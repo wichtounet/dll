@@ -26,18 +26,14 @@ struct random_layer_impl : transform_layer<random_layer_impl<Desc>> {
     /*!
      * \brief Returns a string representation of the layer
      */
-    static std::string to_short_string(std::string pre = "") {
-        cpp_unused(pre);
-
+    static std::string to_short_string([[maybe_unused]] std::string pre = "") {
         return "Random";
     }
 
     /*!
      * \brief Returns a string representation of the layer
      */
-    static std::string to_full_string(std::string pre = "") {
-        cpp_unused(pre);
-
+    static std::string to_full_string([[maybe_unused]] std::string pre = "") {
         return "Random";
     }
 

@@ -112,9 +112,7 @@ struct random_cropper<Desc, std::enable_if_t<Desc::random_crop_x == 0 || Desc::r
      * \param image The image to crop from
      */
     template <typename T>
-    random_cropper(const T& image) {
-        cpp_unused(image);
-    }
+    random_cropper([[maybe_unused]] const T& image) {}
 
     /*!
      * \brief The number of generated images from one input image
@@ -172,7 +170,7 @@ struct random_mirrorer<Desc, std::enable_if_t<Desc::HorizontalMirroring || Desc:
      * \param image The image to crop from
      */
     template <typename T>
-    random_mirrorer(const T& image){
+    random_mirrorer([[maybe_unused]] const T& image){
         static_assert(etl::dimensions<T>() == 3, "random_mirrorer can only be used with 3D images");
 
         if (horizontal && vertical) {
@@ -180,8 +178,6 @@ struct random_mirrorer<Desc, std::enable_if_t<Desc::HorizontalMirroring || Desc:
         } else {
             dist = std::uniform_int_distribution<size_t>{0, 2};
         }
-
-        cpp_unused(image);
     }
 
     /*!
@@ -238,9 +234,7 @@ struct random_mirrorer<Desc, std::enable_if_t<!Desc::HorizontalMirroring && !Des
      * \param image The image to crop from
      */
     template <typename T>
-    random_mirrorer(const T& image) {
-        cpp_unused(image);
-    }
+    random_mirrorer([[maybe_unused]] const T& image) {}
 
     /*!
      * \brief The number of generated images from one input image
@@ -255,9 +249,7 @@ struct random_mirrorer<Desc, std::enable_if_t<!Desc::HorizontalMirroring && !Des
      * \param target The input to transform
      */
     template <typename O>
-    static void transform(O&& target) {
-        cpp_unused(target);
-    }
+    static void transform([[maybe_unused]] O&& target) {}
 };
 
 /*!
@@ -280,9 +272,7 @@ struct random_noise<Desc, std::enable_if_t<Desc::Noise != 0>> {
      * \param image The image to crop from
      */
     template <typename T>
-    random_noise(const T& image) : dist(0, 1000) {
-        cpp_unused(image);
-    }
+    random_noise([[maybe_unused]] const T& image) : dist(0, 1000) {}
 
     /*!
      * \brief The number of generated images from one input image
@@ -316,9 +306,7 @@ struct random_noise<Desc, std::enable_if_t<Desc::Noise == 0>> {
      * \param image The image to crop from
      */
     template <typename T>
-    random_noise(const T& image) {
-        cpp_unused(image);
-    }
+    random_noise([[maybe_unused]] const T& image) {}
 
     /*!
      * \brief The number of generated images from one input image
@@ -333,9 +321,7 @@ struct random_noise<Desc, std::enable_if_t<Desc::Noise == 0>> {
      * \param target The input to transform
      */
     template <typename O>
-    static void transform(O&& target) {
-        cpp_unused(target);
-    }
+    static void transform([[maybe_unused]] O&& target) {}
 };
 
 /*!
@@ -366,10 +352,8 @@ struct elastic_distorter<Desc, std::enable_if_t<Desc::ElasticDistortion != 0>> {
      * \param image The image to distort
      */
     template <typename T>
-    elastic_distorter(const T& image) {
+    elastic_distorter([[maybe_unused]] const T& image) {
         static_assert(etl::dimensions<T>() == 3, "elastic_distorter can only be used with 3D images");
-
-        cpp_unused(image);
 
         // Precompute the gaussian kernel
 
@@ -495,9 +479,7 @@ struct elastic_distorter<Desc, std::enable_if_t<Desc::ElasticDistortion == 0>> {
      * \param image The image to distort
      */
     template <typename T>
-    elastic_distorter(const T& image) {
-        cpp_unused(image);
-    }
+    elastic_distorter([[maybe_unused]] const T& image) {}
 
     /*!
      * \brief The number of generated images from one input image
@@ -512,9 +494,7 @@ struct elastic_distorter<Desc, std::enable_if_t<Desc::ElasticDistortion == 0>> {
      * \param target The input to transform
      */
     template <typename O>
-    static void transform(O&& target) {
-        cpp_unused(target);
-    }
+    static void transform([[maybe_unused]] O&& target) {}
 };
 
 } //end of dll namespace
