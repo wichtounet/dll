@@ -148,7 +148,7 @@ struct rbm_trainer {
             rbm_training_context context;
 
             //Start a new epoch
-            init_epoch();
+            init_epoch(epoch);
 
             //Train on all the data
             train_sub(generator, trainer, context, rbm);
@@ -166,9 +166,14 @@ struct rbm_trainer {
     /*!
      * \brief Initialization of the epoch
      */
-    void init_epoch() {
+    void init_epoch(size_t epoch) {
         batches = 0;
         samples = 0;
+
+        //Notify the watcher
+        if (EnableWatcher) {
+            watcher.epoch_start(epoch);
+        }
     }
 
     template <typename Generator>

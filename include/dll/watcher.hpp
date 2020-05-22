@@ -26,7 +26,8 @@ namespace dll {
  */
 template <typename R>
 struct default_rbm_watcher {
-    cpp::stop_watch<std::chrono::seconds> watch; ///< Timer for the entire training
+    cpp::stop_watch<std::chrono::seconds> full_timer; ///< Timer for the entire training
+    dll::stop_timer epoch_timer;                      ///< Timer for an epoch
 
     /*!
      * \brief Indicates that the training of the given RBM started.
@@ -82,6 +83,14 @@ struct default_rbm_watcher {
     }
 
     /*!
+     * \brief Indicates the beginning of an epoch of pretraining.
+     * \param epoch The epoch that just started training
+     */
+    void epoch_start([[maybe_unused]] size_t epoch) {
+        epoch_timer.start();
+    }
+
+    /*!
      * \brief Indicates the end of an epoch of pretraining.
      * \param epoch The epoch that just finished training
      * \param context The RBM's training context
@@ -89,12 +98,15 @@ struct default_rbm_watcher {
      */
     template <typename RBM = R>
     void epoch_end(size_t epoch, const rbm_training_context& context, const RBM& rbm) {
+        auto duration = epoch_timer.stop();
+
         char formatted[1024];
         if (rbm_layer_traits<RBM>::free_energy()) {
-            snprintf(formatted, 1024, "epoch %ld - Reconstruction error: %.5f - Free energy: %.3f - Sparsity: %.5f", epoch,
-                     context.reconstruction_error, context.free_energy, context.sparsity);
+            snprintf(formatted, 1024, "epoch %ld - Reconstruction error: %.5f - Free energy: %.3f - Sparsity: %.5f - Time: %ldms", epoch,
+                     context.reconstruction_error, context.free_energy, context.sparsity, duration);
         } else {
-            snprintf(formatted, 1024, "epoch %ld - Reconstruction error: %.5f - Sparsity: %.5f", epoch, context.reconstruction_error, context.sparsity);
+            snprintf(formatted, 1024, "epoch %ld - Reconstruction error: %.5f - Sparsity: %.5f - Time: %ldms", epoch, context.reconstruction_error,
+                     context.sparsity, duration);
         }
 
         std::cout << formatted << std::endl;
@@ -125,7 +137,7 @@ struct default_rbm_watcher {
      */
     template <typename RBM = R>
     void training_end(const RBM& rbm) {
-        std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
+        std::cout << "Training took " << full_timer.elapsed() << "s" << std::endl;
 
         cpp_unused(rbm);
     }
@@ -139,10 +151,10 @@ struct default_dbn_watcher {
     static constexpr bool ignore_sub  = false; ///< For pretraining of a DBN, indicates if the regular RBM watcher should be used (false) or ignored (true)
     static constexpr bool replace_sub = false; ///< For pretraining of a DBN, indicates if the DBN watcher should replace (true) the RBM watcher or not (false)
 
-    size_t ft_max_epochs = 0;                    ///< The maximum number of epochs
-    dll::stop_timer ft_epoch_timer;              ///< Timer for an epoch
-    dll::stop_timer ft_batch_timer;              ///< Timer for a batch
-    cpp::stop_watch<std::chrono::seconds> watch; ///< Timer for the entire training
+    size_t ft_max_epochs = 0;                         ///< The maximum number of epochs
+    dll::stop_timer ft_epoch_timer;                   ///< Timer for an epoch
+    dll::stop_timer ft_batch_timer;                   ///< Timer for a batch
+    cpp::stop_watch<std::chrono::seconds> full_timer; ///< Timer for the entire training
 
     /*!
      * \brief Indicates that the pretraining has begun for the given
@@ -178,7 +190,7 @@ struct default_dbn_watcher {
      * \param dbn The DBN being pretrained
      */
     void pretraining_end(const DBN& dbn) {
-        std::cout << "DBN: Pretraining finished after " << watch.elapsed() << "s" << std::endl;
+        std::cout << "DBN: Pretraining finished after " << full_timer.elapsed() << "s" << std::endl;
 
         cpp_unused(dbn);
     }
@@ -399,7 +411,7 @@ struct default_dbn_watcher {
      * \param dbn The DBN that is being trained
      */
     void fine_tuning_end(const DBN& dbn) {
-        std::cout << "Training took " << watch.elapsed() << "s" << std::endl;
+        std::cout << "Training took " << full_timer.elapsed() << "s" << std::endl;
 
         cpp_unused(dbn);
     }

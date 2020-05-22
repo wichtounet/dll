@@ -295,6 +295,8 @@ struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
         }
     }
 
+    void epoch_start([[maybe_unused]] size_t epoch) {}
+
     /*!
      * \brief Indicates the end of an epoch of pretraining.
      * \param epoch The epoch that just finished training
@@ -377,6 +379,8 @@ struct opencv_rbm_visualizer<RBM, C, std::enable_if_t<layer_traits<RBM>::is_conv
             }
         }
     }
+
+    void epoch_start([[maybe_unused]] size_t epoch) {}
 
     /*!
      * \brief Indicates the end of an epoch of pretraining.
@@ -493,6 +497,8 @@ struct opencv_dbn_visualizer {
 
         refresh();
     }
+
+    void epoch_start([[maybe_unused]] size_t epoch) {}
 
     /*!
      * \brief Indicates the end of an epoch of pretraining.
@@ -756,6 +762,8 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynami
         refresh();
     }
 
+    void epoch_start([[maybe_unused]] size_t epoch) {}
+
     template <typename RBM>
     void epoch_end(size_t epoch, const rbm_training_context& context, const RBM& rbm) {
         printf("epoch %ld - Reconstruction error: %.5f - Free energy: %.3f - Sparsity: %.5f\n", epoch,
@@ -970,6 +978,8 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
 
         refresh();
     }
+
+    void epoch_start([[maybe_unused]] size_t epoch) {}
 
     template <typename RBM>
     void epoch_end(size_t epoch, const rbm_training_context& context, const RBM& rbm) {
