@@ -9,7 +9,7 @@
 
 #include <deque>
 
-#include "catch.hpp"
+#include "dll_test.hpp"
 
 #include "dll/transform/shape_1d_layer.hpp"
 #include "dll/transform/binarize_layer.hpp"

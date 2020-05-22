@@ -9,10 +9,10 @@
 
 #include "cpp_utils/tuple_utils.hpp"
 
-#include "dll/neural/embedding_layer.hpp"
-#include "dll/neural/conv_layer.hpp"
+#include "dll/neural/recurrent/embedding_layer.hpp"
+#include "dll/neural/conv/conv_layer.hpp"
 #include "dll/pooling/mp_layer.hpp"
-#include "dll/neural/dense_layer.hpp"
+#include "dll/neural/dense/dense_layer.hpp"
 #include "dll/utility/group_layer.hpp"
 #include "dll/utility/merge_layer.hpp"
 #include "dll/network.hpp"

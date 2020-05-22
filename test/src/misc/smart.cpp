@@ -5,7 +5,7 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "catch.hpp"
+#include "dll_test.hpp"
 
 #include "dll/rbm/rbm.hpp"
 #include "dll/rbm/conv_rbm.hpp"

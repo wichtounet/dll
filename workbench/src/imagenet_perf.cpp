@@ -9,9 +9,9 @@
 
 #define ETL_COUNTERS
 
-#include "dll/neural/conv_layer.hpp"
-#include "dll/neural/conv_same_layer.hpp"
-#include "dll/neural/dense_layer.hpp"
+#include "dll/neural/conv/conv_layer.hpp"
+#include "dll/neural/conv/conv_same_layer.hpp"
+#include "dll/neural/dense/dense_layer.hpp"
 #include "dll/pooling/mp_layer.hpp"
 #include "dll/test.hpp"
 #include "dll/dbn.hpp"

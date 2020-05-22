@@ -9,7 +9,7 @@
 
 #include "dll_test.hpp"
 
-#include "dll/neural/dyn_dense_layer.hpp"
+#include "dll/neural/dense/dyn_dense_layer.hpp"
 #include "dll/dbn.hpp"
 
 #include "mnist/mnist_reader.hpp"

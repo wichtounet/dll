@@ -5,8 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "dll/neural/dense_layer.hpp"
-#include "dll/neural/dropout_layer.hpp"
+#include "dll/neural/dense/dense_layer.hpp"
+#include "dll/neural/dropout/dropout_layer.hpp"
 #include "dll/network.hpp"
 #include "dll/datasets.hpp"
 

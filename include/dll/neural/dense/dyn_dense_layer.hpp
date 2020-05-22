@@ -7,5 +7,5 @@
 
 #pragma once
 
-#include "dll/neural/dyn_dense_layer_impl.hpp"
-#include "dll/neural/dyn_dense_layer_desc.hpp"
+#include "dll/neural/dense/dyn_dense_layer_impl.hpp"
+#include "dll/neural/dense/dyn_dense_layer_desc.hpp"

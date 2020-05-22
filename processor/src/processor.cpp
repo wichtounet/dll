@@ -555,11 +555,11 @@ void generate(const std::vector<std::unique_ptr<dllp::layer>>& layers, const dll
     out_stream << "#include \"dll/rbm/rbm.hpp\"\n";
     out_stream << "#include \"dll/rbm/conv_rbm.hpp\"\n";
     out_stream << "#include \"dll/rbm/conv_rbm_mp.hpp\"\n";
-    out_stream << "#include \"dll/neural/dense_layer.hpp\"\n";
-    out_stream << "#include \"dll/neural/conv_layer.hpp\"\n";
+    out_stream << "#include \"dll/neural/dense/dense_layer.hpp\"\n";
+    out_stream << "#include \"dll/neural/conv/conv_layer.hpp\"\n";
     out_stream << "#include \"dll/pooling/mp_layer.hpp\"\n";
     out_stream << "#include \"dll/pooling/avgp_layer.hpp\"\n";
-    out_stream << "#include \"dll/neural/activation_layer.hpp\"\n";
+    out_stream << "#include \"dll/neural/activation/activation_layer.hpp\"\n";
     out_stream << "#include \"dll/dbn.hpp\"\n";
 
     out_stream << "using dbn_t = dll::dbn_desc<dll::dbn_layers<\n";

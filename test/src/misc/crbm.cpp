@@ -7,7 +7,7 @@
 
 #include <numeric>
 
-#include "catch.hpp"
+#include "dll_test.hpp"
 
 #include "cpp_utils/data.hpp"
 

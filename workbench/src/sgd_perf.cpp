@@ -9,7 +9,7 @@
 
 #define ETL_COUNTERS
 
-#include "dll/neural/dense_layer.hpp"
+#include "dll/neural/dense/dense_layer.hpp"
 #include "dll/test.hpp"
 #include "dll/dbn.hpp"
 

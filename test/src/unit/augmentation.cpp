@@ -16,7 +16,7 @@
 
 #include "dll/dbn.hpp"
 #include "dll/rbm/rbm.hpp"
-#include "dll/neural/dense_layer.hpp"
+#include "dll/neural/dense/dense_layer.hpp"
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"

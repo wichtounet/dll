@@ -7,7 +7,7 @@
 
 #include <numeric>
 
-#include "catch.hpp"
+#include "dll_test.hpp"
 
 #include "dll/rbm/dyn_conv_rbm.hpp"
 

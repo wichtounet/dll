@@ -9,9 +9,9 @@
 
 #include "dll_test.hpp"
 
-#include "dll/neural/conv_layer.hpp"
-#include "dll/neural/conv_same_layer.hpp"
-#include "dll/neural/deconv_layer.hpp"
+#include "dll/neural/conv/conv_layer.hpp"
+#include "dll/neural/conv/conv_same_layer.hpp"
+#include "dll/neural/conv/deconv_layer.hpp"
 #include "dll/pooling/mp_layer.hpp"
 #include "dll/pooling/upsample_layer.hpp"
 #include "dll/dbn.hpp"

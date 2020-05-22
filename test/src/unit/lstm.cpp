@@ -7,9 +7,9 @@
 
 #include "dll_test.hpp"
 
-#include "dll/neural/dense_layer.hpp"
-#include "dll/neural/lstm_layer.hpp"
-#include "dll/neural/recurrent_last_layer.hpp"
+#include "dll/neural/dense/dense_layer.hpp"
+#include "dll/neural/lstm/lstm_layer.hpp"
+#include "dll/neural/recurrent/recurrent_last_layer.hpp"
 #include "dll/network.hpp"
 #include "dll/datasets.hpp"
 

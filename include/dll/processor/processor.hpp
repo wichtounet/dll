@@ -19,8 +19,8 @@
 
 #include "dll/rbm/rbm.hpp"
 #include "dll/rbm/conv_rbm.hpp"
-#include "dll/neural/dense_layer.hpp"
-#include "dll/neural/conv_layer.hpp"
+#include "dll/neural/dense/dense_layer.hpp"
+#include "dll/neural/conv/conv_layer.hpp"
 #include "dll/dbn.hpp"
 #include "dll/text_reader.hpp"
 

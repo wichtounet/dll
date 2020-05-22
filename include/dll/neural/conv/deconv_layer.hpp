@@ -8,7 +8,7 @@
 #pragma once
 
 // Include the dyn version (for dyn_dbn)
-#include "dll/neural/dyn_deconv_layer.hpp"
+#include "dll/neural/conv/dyn_deconv_layer.hpp"
 
-#include "dll/neural/deconv_layer_impl.hpp"
-#include "dll/neural/deconv_layer_desc.hpp"
+#include "dll/neural/conv/deconv_layer_impl.hpp"
+#include "dll/neural/conv/deconv_layer_desc.hpp"

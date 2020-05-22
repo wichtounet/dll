@@ -7,9 +7,9 @@
 
 #include <deque>
 
-#include "dll/neural/conv_layer.hpp"
-#include "dll/neural/dense_layer.hpp"
-#include "dll/neural/activation_layer.hpp"
+#include "dll/neural/conv/conv_layer.hpp"
+#include "dll/neural/dense/dense_layer.hpp"
+#include "dll/neural/activation/activation_layer.hpp"
 #include "dll/pooling/mp_layer.hpp"
 #include "dll/pooling/avgp_layer.hpp"
 #include "dll/test.hpp"

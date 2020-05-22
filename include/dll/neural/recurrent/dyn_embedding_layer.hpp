@@ -7,5 +7,5 @@
 
 #pragma once
 
-#include "dll/neural/dyn_embedding_layer_impl.hpp"
-#include "dll/neural/dyn_embedding_layer_desc.hpp"
+#include "dll/neural/recurrent/dyn_embedding_layer_impl.hpp"
+#include "dll/neural/recurrent/dyn_embedding_layer_desc.hpp"

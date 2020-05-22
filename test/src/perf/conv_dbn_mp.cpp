@@ -7,7 +7,7 @@
 
 #include <deque>
 
-#include "catch.hpp"
+#include "dll_test.hpp"
 
 #define DLL_SVM_SUPPORT
 

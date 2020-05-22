@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "dll/neural/dyn_dropout_layer.hpp"
+#include "dll/neural/dropout/dyn_dropout_layer.hpp"
 
-#include "dll/neural/dropout_layer_impl.hpp"
-#include "dll/neural/dropout_layer_desc.hpp"
+#include "dll/neural/dropout/dropout_layer_impl.hpp"
+#include "dll/neural/dropout/dropout_layer_desc.hpp"

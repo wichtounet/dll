@@ -17,8 +17,8 @@
 #include "dll/dbn.hpp"
 #include "dll/rbm/rbm.hpp"
 #include "dll/rbm/conv_rbm.hpp"
-#include "dll/neural/dense_layer.hpp"
-#include "dll/neural/conv_layer.hpp"
+#include "dll/neural/dense/dense_layer.hpp"
+#include "dll/neural/conv/conv_layer.hpp"
 #include "dll/pooling/mp_layer.hpp"
 
 #include "mnist/mnist_reader.hpp"

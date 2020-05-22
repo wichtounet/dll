@@ -9,8 +9,8 @@
 
 #include "dll_test.hpp"
 
-#include "dll/neural/dense_layer.hpp"
-#include "dll/neural/activation_layer.hpp"
+#include "dll/neural/dense/dense_layer.hpp"
+#include "dll/neural/activation/activation_layer.hpp"
 #include "dll/dbn.hpp"
 
 #include "mnist/mnist_reader.hpp"
