@@ -5,30 +5,31 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "dll/neural/conv/conv_layer.hpp"
+#define ETL_COUNTERS
+
 #include "dll/neural/dense/dense_layer.hpp"
-#include "dll/pooling/mp_layer.hpp"
+#include "dll/neural/dropout/dropout_layer.hpp"
 #include "dll/network.hpp"
 #include "dll/datasets.hpp"
 
 int main(int /*argc*/, char* /*argv*/ []) {
     // Load the dataset
-    auto dataset = dll::make_mnist_dataset(dll::batch_size<200>{}, dll::scale_pre<255>{});
+    auto dataset = dll::make_mnist_dataset(dll::batch_size<256>{}, dll::normalize_pre{});
 
     // Build the network
 
     using network_t = dll::dyn_network_desc<
         dll::network_layers<
-            dll::conv_layer<1, 28, 28, 8, 5, 5>,
-            dll::mp_2d_layer<8, 24, 24, 2, 2>,
-            dll::conv_layer<8, 12, 12, 8, 5, 5>,
-            dll::mp_2d_layer<8, 8, 8, 2, 2>,
-            dll::dense_layer<8 * 4 * 4, 150>,
-            dll::dense_layer<150, 10, dll::softmax>
+            dll::dense_layer<28 * 28, 500>,
+            dll::dropout_layer<50>,
+            dll::dense_layer<500, 1000>,
+            dll::dropout_layer<50>,
+            dll::dense_layer<1000, 1000>,
+            dll::dense_layer<1000, 10, dll::softmax>
         >
-        , dll::updater<dll::updater_type::NADAM>     // Momentum
-        , dll::batch_size<200>                       // The mini-batch size
-        , dll::shuffle                               // Shuffle the dataset before each epoch
+        , dll::updater<dll::updater_type::NADAM>     // Nesterov Adam (NADAM)
+        , dll::batch_size<256>                       // The mini-batch size
+        , dll::shuffle                               // Shuffle before each epoch
     >::network_t;
 
     auto net = std::make_unique<network_t>();
@@ -37,11 +38,17 @@ int main(int /*argc*/, char* /*argv*/ []) {
     net->display_pretty();
     dataset.display_pretty();
 
-    // Train the network
+    // Train the network for performance sake
     net->train(dataset.train(), 5);
 
     // Test the network on test set
     net->evaluate(dataset.test());
+
+    // Show where the time was spent
+    dll::dump_timers_pretty();
+
+    // Show ETL performance counters
+    etl::dump_counters_pretty();
 
     return 0;
 }

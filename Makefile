@@ -297,6 +297,12 @@ $(eval $(call add_executable,dll_perf_conv,workbench/src/perf_conv.cpp))
 $(eval $(call add_executable,dll_conv_types,workbench/src/conv_types.cpp))
 $(eval $(call add_executable,dll_dyn_perf,workbench/src/dyn_perf.cpp))
 
+# Perf examples
+$(eval $(call add_executable,dll_mnist_mlp_perf,workbench/src/mnist_mlp_perf.cpp))
+$(eval $(call add_executable,dll_mnist_cnn_perf,workbench/src/mnist_cnn_perf.cpp))
+$(eval $(call add_executable,dll_mnist_ae_perf,workbench/src/mnist_ae_perf.cpp))
+$(eval $(call add_executable,dll_mnist_deep_ae_perf,workbench/src/mnist_deep_ae_perf.cpp))
+
 # Analysis of performance and compilation time
 $(eval $(call add_executable,dll_compile_rbm_one,workbench/src/compile_rbm_one.cpp))
 $(eval $(call add_executable,dll_compile_dyn_rbm_one,workbench/src/compile_dyn_rbm_one.cpp))
@@ -345,6 +351,11 @@ release_workbench: release/bin/dll_sgd_perf release/bin/dll_conv_sgd_perf releas
 debug_examples: debug/bin/dll_mnist_mlp debug/bin/dll_mnist_cnn debug/bin/dll_mnist_ae debug/bin/dll_mnist_deep_ae debug/bin/dll_mnist_dbn
 release_debug_examples: release_debug/bin/dll_mnist_mlp release_debug/bin/dll_mnist_cnn release_debug/bin/dll_mnist_ae release_debug/bin/dll_mnist_deep_ae release_debug/bin/dll_mnist_dbn
 release_examples: release/bin/dll_mnist_mlp release/bin/dll_mnist_cnn release/bin/dll_mnist_ae release/bin/dll_mnist_deep_ae release/bin/dll_mnist_dbn
+
+# Build sets for perf examples
+debug_examples_perf: debug/bin/dll_mnist_mlp_perf debug/bin/dll_mnist_cnn_perf debug/bin/dll_mnist_ae_perf debug/bin/dll_mnist_deep_ae_perf
+release_debug_examples_perf: release_debug/bin/dll_mnist_mlp_perf release_debug/bin/dll_mnist_cnn_perf release_debug/bin/dll_mnist_ae_perf release_debug/bin/dll_mnist_deep_ae_perf
+release_examples_perf: release/bin/dll_mnist_mlp_perf release/bin/dll_mnist_cnn_perf release/bin/dll_mnist_ae_perf release/bin/dll_mnist_deep_ae_perf
 
 debug: debug_dllp debug_dll_test_unit debug_dll_test_perf debug_dll_test_misc debug_dll_view debug_examples
 release_debug: release_debug_dllp release_debug_dll_test_unit release_debug_dll_test_perf release_debug_dll_test_misc release_debug_dll_view release_debug_examples

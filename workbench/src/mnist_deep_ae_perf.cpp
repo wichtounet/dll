@@ -5,6 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+#define ETL_COUNTERS
+
 #include "dll/neural/dense/dense_layer.hpp"
 #include "dll/network.hpp"
 #include "dll/datasets.hpp"
@@ -20,8 +22,13 @@ int main(int /*argc*/, char* /*argv*/ []) {
 
     using network_t = dll::dyn_network_desc<
         dll::network_layers<
-            dll::dense_layer<28 * 28, 32, dll::relu>,
-            dll::dense_layer<32, 28 * 28, dll::sigmoid>
+            dll::dense_layer_desc<784, 1024, dll::relu>::layer_t,
+            dll::dense_layer_desc<1024, 256 , dll::relu>::layer_t,
+            dll::dense_layer_desc<256 , 128 , dll::relu>::layer_t,
+            // Encoded Features
+            dll::dense_layer_desc<128 , 256 , dll::relu>::layer_t,
+            dll::dense_layer_desc<256 , 1024, dll::relu>::layer_t,
+            dll::dense_layer_desc<1024, 784, dll::sigmoid>::layer_t
         >
         , dll::batch_size<256>       // The mini-batch size
         , dll::shuffle               // Shuffle the dataset before each epoch
@@ -31,15 +38,20 @@ int main(int /*argc*/, char* /*argv*/ []) {
 
     auto net = std::make_unique<network_t>();
 
-    // Display the network and dataset
-    net->display_pretty();
-    dataset.display_pretty();
+    // Display the network
+    net->display();
 
     // Train the network as auto-encoder
-    net->train_ae(dataset.train(), 10);
+    net->train_ae(dataset.train(), 5);
 
     // Test the network on test set
     net->evaluate_ae(dataset.test());
+
+    // Show where the time was spent
+    dll::dump_timers_pretty();
+
+    // Show ETL performance counters
+    etl::dump_counters_pretty();
 
     return 0;
 }

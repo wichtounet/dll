@@ -5,6 +5,8 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+#define ETL_COUNTERS
+
 #include "dll/neural/dense/dense_layer.hpp"
 #include "dll/network.hpp"
 #include "dll/datasets.hpp"
@@ -20,8 +22,8 @@ int main(int /*argc*/, char* /*argv*/ []) {
 
     using network_t = dll::dyn_network_desc<
         dll::network_layers<
-            dll::dense_layer<28 * 28, 32, dll::relu>,
-            dll::dense_layer<32, 28 * 28, dll::sigmoid>
+            dll::dense_layer<28 * 28, 128, dll::relu>,
+            dll::dense_layer<128, 28 * 28, dll::sigmoid>
         >
         , dll::batch_size<256>       // The mini-batch size
         , dll::shuffle               // Shuffle the dataset before each epoch
@@ -40,6 +42,12 @@ int main(int /*argc*/, char* /*argv*/ []) {
 
     // Test the network on test set
     net->evaluate_ae(dataset.test());
+
+    // Show where the time was spent
+    dll::dump_timers_pretty();
+
+    // Show ETL performance counters
+    etl::dump_counters_pretty();
 
     return 0;
 }

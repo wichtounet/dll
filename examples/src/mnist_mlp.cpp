@@ -41,8 +41,5 @@ int main(int /*argc*/, char* /*argv*/ []) {
     // Test the network on test set
     net->evaluate(dataset.test());
 
-    // Show where the time was spent
-    dll::dump_timers_pretty();
-
     return 0;
 }
