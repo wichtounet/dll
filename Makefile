@@ -342,9 +342,9 @@ release_debug_workbench: release_debug/bin/dll_sgd_perf release_debug/bin/dll_co
 release_workbench: release/bin/dll_sgd_perf release/bin/dll_conv_sgd_perf release/bin/dll_imagenet_perf release/bin/dll_sgd_debug release/bin/dll_dae release/bin/dll_rbm_dae release/bin/dll_perf_paper release/bin/dll_perf_paper_conv release/bin/dll_perf_conv release/bin/dll_conv_types release/bin/dll_dyn_perf
 
 # Build sets for the examples
-debug_examples: debug/bin/dll_mnist_mlp debug/bin/dll_mnist_cnn debug/bin/dll_mnist_ae debug/bin/dll_mnist_deep_ae
-release_debug_examples: release_debug/bin/dll_mnist_mlp release_debug/bin/dll_mnist_cnn release_debug/bin/dll_mnist_ae release_debug/bin/dll_mnist_deep_ae
-release_examples: release/bin/dll_mnist_mlp release/bin/dll_mnist_cnn release/bin/dll_mnist_ae release/bin/dll_mnist_deep_ae
+debug_examples: debug/bin/dll_mnist_mlp debug/bin/dll_mnist_cnn debug/bin/dll_mnist_ae debug/bin/dll_mnist_deep_ae debug/bin/dll_mnist_dbn
+release_debug_examples: release_debug/bin/dll_mnist_mlp release_debug/bin/dll_mnist_cnn release_debug/bin/dll_mnist_ae release_debug/bin/dll_mnist_deep_ae release_debug/bin/dll_mnist_dbn
+release_examples: release/bin/dll_mnist_mlp release/bin/dll_mnist_cnn release/bin/dll_mnist_ae release/bin/dll_mnist_deep_ae release/bin/dll_mnist_dbn
 
 debug: debug_dllp debug_dll_test_unit debug_dll_test_perf debug_dll_test_misc debug_dll_view debug_examples
 release_debug: release_debug_dllp release_debug_dll_test_unit release_debug_dll_test_perf release_debug_dll_test_misc release_debug_dll_view release_debug_examples
