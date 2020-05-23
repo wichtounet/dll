@@ -28,6 +28,8 @@
 
 namespace dll {
 
+// TODO: This should be retested and rechecked, likely not working
+
 /*!
  * \brief Convolutional Restricted Boltzmann Machine with Probabilistic
  * Max-Pooling.
