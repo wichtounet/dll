@@ -35,14 +35,19 @@ int main(int /*argc*/, char* /*argv*/ []) {
     net->display_pretty();
     dataset.display_pretty();
 
-    // Pretrain the network with contrastive divergence
-    net->pretrain(ae_dataset.train(), 10);
+    {
+        // Use an extra timer for normalization
+        dll::auto_timer timer("full_train");
 
-    // Train the network for performance sake
-    net->fine_tune(dataset.train(), 10);
+        // Pretrain the network with contrastive divergence
+        net->pretrain(ae_dataset.train(), 10);
 
-    // Test the network on test set
-    net->evaluate(dataset.test());
+        // Train the network for performance sake
+        net->fine_tune(dataset.train(), 10);
+
+        // Test the network on test set
+        net->evaluate(dataset.test());
+    }
 
     // Show where the time was spent
     dll::dump_timers_pretty();
