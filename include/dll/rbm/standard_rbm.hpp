@@ -492,25 +492,72 @@ private:
             using namespace etl;
 
             //Compute activation probabilities
-            H_PROBS(unit_type::BINARY, h_a = etl::sigmoid(b + (v_a * w)));
-            H_PROBS(unit_type::RELU, h_a = max(b + (v_a * w), 0.0));
-            H_PROBS(unit_type::RELU1, h_a = min(max(b + (v_a * w), 0.0), 1.0));
-            H_PROBS(unit_type::RELU6, h_a = min(max(b + (v_a * w), 0.0), 6.0));
-            H_PROBS(unit_type::SOFTMAX, h_a = stable_softmax(b + (v_a * w)));
 
-            //Sample values from input
-            H_SAMPLE_PROBS(unit_type::BINARY, h_s = bernoulli(h_a));
-            H_SAMPLE_PROBS(unit_type::RELU, h_s = max(logistic_noise(b + (v_a * w)), 0.0));
-            H_SAMPLE_PROBS(unit_type::RELU1, h_s = min(max(ranged_noise(b + (v_a * w), 1.0), 0.0), 1.0));
-            H_SAMPLE_PROBS(unit_type::RELU6, h_s = min(max(ranged_noise(b + (v_a * w), 6.0), 0.0), 6.0));
-            H_SAMPLE_PROBS(unit_type::SOFTMAX, h_s = one_if_max(h_a));
+            if constexpr (P && hidden_unit == unit_type::BINARY) {
+                h_a = etl::sigmoid(b + (v_a * w));
+            }
 
-            //Sample values from probs
-            H_SAMPLE_INPUT(unit_type::BINARY, h_s = bernoulli(etl::sigmoid(b + (v_a * w))));
-            H_SAMPLE_INPUT(unit_type::RELU, h_s = max(logistic_noise(b + (v_a * w)), 0.0));
-            H_SAMPLE_INPUT(unit_type::RELU1, h_s = min(max(ranged_noise(b + (v_a * w), 1.0), 0.0), 1.0));
-            H_SAMPLE_INPUT(unit_type::RELU6, h_s = min(max(ranged_noise(b + (v_a * w), 6.0), 0.0), 6.0));
-            H_SAMPLE_INPUT(unit_type::SOFTMAX, h_s = one_if_max(stable_softmax(b + (v_a * w))));
+            if constexpr (P && hidden_unit == unit_type::RELU) {
+                h_a = max(b + (v_a * w), 0.0);
+            }
+
+            if constexpr (P && hidden_unit == unit_type::RELU1) {
+                h_a = min(max(b + (v_a * w), 0.0), 1.0);
+            }
+
+            if constexpr (P && hidden_unit == unit_type::RELU6) {
+                h_a = min(max(b + (v_a * w), 0.0), 6.0);
+            }
+
+            if constexpr (P && hidden_unit == unit_type::SOFTMAX) {
+                h_a = stable_softmax(b + (v_a * w));
+            }
+
+            // Sample the values from the probs
+
+            if constexpr (P && S && hidden_unit == unit_type::BINARY) {
+                h_s = bernoulli(h_a);
+            }
+
+            if constexpr (P && S && hidden_unit == unit_type::RELU) {
+                h_s = max(logistic_noise(b + (v_a * w)), 0.0);
+            }
+
+            if constexpr (P && S && hidden_unit == unit_type::RELU1) {
+                h_s = min(max(ranged_noise(b + (v_a * w), 1.0), 0.0), 1.0);
+            }
+
+            if constexpr (P && S && hidden_unit == unit_type::RELU6) {
+                h_s = min(max(ranged_noise(b + (v_a * w), 6.0), 0.0), 6.0);
+            }
+
+            if constexpr (P && S && hidden_unit == unit_type::SOFTMAX) {
+                h_s = one_if_max(h_a);
+            }
+
+            // Sample the values directly from the input
+
+            if constexpr (!P && S && hidden_unit == unit_type::BINARY) {
+                h_s = bernoulli(etl::sigmoid(b + (v_a * w)));
+            }
+
+            if constexpr (!P && S && hidden_unit == unit_type::RELU) {
+                h_s = max(logistic_noise(b + (v_a * w)), 0.0);
+            }
+
+            if constexpr (!P && S && hidden_unit == unit_type::RELU1) {
+                h_s = min(max(ranged_noise(b + (v_a * w), 1.0), 0.0), 1.0);
+            }
+
+            if constexpr (!P && S && hidden_unit == unit_type::RELU6) {
+                min(max(ranged_noise(b + (v_a * w), 6.0), 0.0), 6.0);
+            }
+
+            if constexpr (!P && S && hidden_unit == unit_type::SOFTMAX) {
+                h_s = one_if_max(stable_softmax(b + (v_a * w)));
+            }
+
+            // NaN Checks
 
             if (P) {
                 nan_check_deep(h_a);
@@ -531,13 +578,35 @@ private:
 
         using namespace etl;
 
-        V_PROBS(unit_type::BINARY, v_a = etl::sigmoid(c + (w * h_s)));
-        V_PROBS(unit_type::GAUSSIAN, v_a = c + (w * h_s));
-        V_PROBS(unit_type::RELU, v_a = max(c + (w * h_s), 0.0));
+        // Compute the visible activation probabilities
 
-        V_SAMPLE_INPUT(unit_type::BINARY, v_s = bernoulli(etl::sigmoid(c + (w * h_s))));
-        V_SAMPLE_INPUT(unit_type::GAUSSIAN, v_s = normal_noise(c + (w * h_s)));
-        V_SAMPLE_INPUT(unit_type::RELU, v_s = logistic_noise(max(c + (w * h_s), 0.0)));
+        if constexpr (P && visible_unit == unit_type::BINARY) {
+            v_a = etl::sigmoid(c + (w * h_s));
+        }
+
+        if constexpr (P && visible_unit == unit_type::GAUSSIAN) {
+            v_a = c + (w * h_s);
+        }
+
+        if constexpr (P && visible_unit == unit_type::RELU) {
+            v_a = max(c + (w * h_s), 0.0);
+        }
+
+        // Sample the visible values from the input
+
+        if constexpr (!P && S && visible_unit == unit_type::BINARY) {
+            v_s = bernoulli(etl::sigmoid(c + (w * h_s)));
+        }
+
+        if constexpr (!P && S && visible_unit == unit_type::GAUSSIAN) {
+            v_s = normal_noise(c + (w * h_s));
+        }
+
+        if constexpr (!P && S && visible_unit == unit_type::RELU) {
+            v_s = logistic_noise(max(c + (w * h_s), 0.0));
+        }
+
+        // NaN Checks
 
         if (P) {
             nan_check_deep(v_a);
@@ -558,12 +627,25 @@ private:
 
         cpp_assert(etl::dim<0>(h_s) == Batch && etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
 
-        H_PROBS(unit_type::BINARY, h_a = etl::sigmoid(rep_l(b, Batch) + v_a * w));
-        H_PROBS(unit_type::RELU, h_a = max(rep_l(b, Batch) + v_a * w, 0.0));
-        H_PROBS(unit_type::RELU1, h_a = min(max(rep_l(b, Batch) + v_a * w, 0.0), 1.0));
-        H_PROBS(unit_type::RELU6, h_a = min(max(rep_l(b, Batch) + v_a * w, 0.0), 6.0));
+        // Compute activation probabilities
 
-        H_PROBS_MULTI(unit_type::SOFTMAX){
+        if constexpr (P && hidden_unit == unit_type::BINARY) {
+            h_a = etl::sigmoid(rep_l(b, Batch) + v_a * w);
+        }
+
+        if constexpr (P && hidden_unit == unit_type::RELU) {
+            h_a = max(rep_l(b, Batch) + v_a * w, 0.0);
+        }
+
+        if constexpr (P && hidden_unit == unit_type::RELU1) {
+            h_a = min(max(rep_l(b, Batch) + v_a * w, 0.0), 1.0);
+        }
+
+        if constexpr (P && hidden_unit == unit_type::RELU6) {
+            h_a = min(max(rep_l(b, Batch) + v_a * w, 0.0), 6.0);
+        }
+
+        if constexpr (P && hidden_unit == unit_type::SOFTMAX) {
             auto x = etl::force_temporary(rep_l(b, Batch) + v_a * w);
 
             for (size_t b = 0; b < Batch; ++b) {
@@ -571,27 +653,57 @@ private:
             }
         }
 
-        H_SAMPLE_PROBS(unit_type::BINARY, h_s = bernoulli(h_a));
-        H_SAMPLE_PROBS(unit_type::RELU, h_s = max(logistic_noise(rep_l(b, Batch) + v_a * w), 0.0));
-        H_SAMPLE_PROBS(unit_type::RELU1, h_s = min(max(ranged_noise(rep_l(b, Batch) + v_a * w, 1.0), 0.0), 1.0));
-        H_SAMPLE_PROBS(unit_type::RELU6, h_s = min(max(ranged_noise(rep_l(b, Batch) + v_a * w, 6.0), 0.0), 6.0));
-        H_SAMPLE_PROBS_MULTI(unit_type::SOFTMAX){
+        // Samples values from the probabilities
+
+        if constexpr (P && S && hidden_unit == unit_type::BINARY) {
+            h_s = bernoulli(h_a);
+        }
+
+        if constexpr (P && S && hidden_unit == unit_type::RELU) {
+            h_s = max(logistic_noise(rep_l(b, Batch) + v_a * w), 0.0);
+        }
+
+        if constexpr (P && S && hidden_unit == unit_type::RELU1) {
+            h_s = min(max(ranged_noise(rep_l(b, Batch) + v_a * w, 1.0), 0.0), 1.0);
+        }
+
+        if constexpr (P && S && hidden_unit == unit_type::RELU6) {
+            h_s = min(max(ranged_noise(rep_l(b, Batch) + v_a * w, 6.0), 0.0), 6.0);
+        }
+
+        if constexpr (P && S && hidden_unit == unit_type::SOFTMAX) {
             for (size_t b = 0; b < Batch; ++b) {
-                h_s(b) = stable_softmax(h_a(b));
+                h_s(b) = one_if_max(h_a(b));
             }
         }
 
-        H_SAMPLE_INPUT(unit_type::BINARY, h_s = bernoulli(etl::sigmoid(rep_l(b, Batch) + v_a * w)));
-        H_SAMPLE_INPUT(unit_type::RELU, h_s = max(logistic_noise(rep_l(b, Batch) + v_a * w), 0.0));
-        H_SAMPLE_INPUT(unit_type::RELU1, h_s = min(max(ranged_noise(rep_l(b, Batch) + v_a * w, 1.0), 0.0), 1.0));
-        H_SAMPLE_INPUT(unit_type::RELU6, h_s = min(max(ranged_noise(rep_l(b, Batch) + v_a * w, 6.0), 0.0), 6.0));
-        H_SAMPLE_INPUT_MULTI(unit_type::RELU1){
+        // Sample values directly from the input
+
+        if constexpr (!P && S && hidden_unit == unit_type::BINARY) {
+            h_s = bernoulli(etl::sigmoid(rep_l(b, Batch) + v_a * w));
+        }
+
+        if constexpr (!P && S && hidden_unit == unit_type::RELU) {
+            h_s = max(logistic_noise(rep_l(b, Batch) + v_a * w), 0.0);
+        }
+
+        if constexpr (!P && S && hidden_unit == unit_type::RELU1) {
+            h_s = min(max(ranged_noise(rep_l(b, Batch) + v_a * w, 1.0), 0.0), 1.0);
+        }
+
+        if constexpr (!P && S && hidden_unit == unit_type::RELU6) {
+            h_s = min(max(ranged_noise(rep_l(b, Batch) + v_a * w, 6.0), 0.0), 6.0);
+        }
+
+        if constexpr (!P && S && hidden_unit == unit_type::SOFTMAX) {
             auto x = etl::force_temporary(rep_l(b, Batch) + v_a * w);
 
             for (size_t b = 0; b < Batch; ++b) {
                 h_s(b) = one_if_max(stable_softmax(x(b)));
             }
         }
+
+        // NaN Checks
 
         if (P) {
             nan_check_deep(h_a);
@@ -612,13 +724,35 @@ private:
 
         cpp_assert(etl::dim<0>(h_s) == Batch && etl::dim<0>(v_a) == Batch, "The number of batch must be consistent");
 
-        V_PROBS(unit_type::BINARY, v_a = etl::sigmoid(rep_l(c, Batch) + transpose(w * transpose(h_s))));
-        V_PROBS(unit_type::GAUSSIAN, v_a = rep_l(c, Batch) + transpose(w * transpose(h_s)));
-        V_PROBS(unit_type::RELU, v_a = max(rep_l(c, Batch) + transpose(w * transpose(h_s)), 0.0));
+        // Compute the visible activation probabilities
 
-        V_SAMPLE_INPUT(unit_type::BINARY, v_s = bernoulli(etl::sigmoid(rep_l(c, Batch) + transpose(w * transpose(h_s)))));
-        V_SAMPLE_INPUT(unit_type::GAUSSIAN, v_s = normal_noise(rep_l(c, Batch) + transpose(w * transpose(h_s))));
-        V_SAMPLE_INPUT(unit_type::RELU, v_s = logistic_noise(max(rep_l(c, Batch) + transpose(w * transpose(h_s)), 0.0)));
+        if constexpr (P && visible_unit == unit_type::BINARY) {
+            v_a = etl::sigmoid(rep_l(c, Batch) + transpose(w * transpose(h_s)));
+        }
+
+        if constexpr (P && visible_unit == unit_type::GAUSSIAN) {
+            v_a = rep_l(c, Batch) + transpose(w * transpose(h_s));
+        }
+
+        if constexpr (P && visible_unit == unit_type::RELU) {
+            v_a = max(rep_l(c, Batch) + transpose(w * transpose(h_s)), 0.0);
+        }
+
+        // Sample the visible values from the input
+
+        if constexpr (!P && S && visible_unit == unit_type::BINARY) {
+            v_s = bernoulli(etl::sigmoid(rep_l(c, Batch) + transpose(w * transpose(h_s))));
+        }
+
+        if constexpr (!P && S && visible_unit == unit_type::GAUSSIAN) {
+            v_s = normal_noise(rep_l(c, Batch) + transpose(w * transpose(h_s)));
+        }
+
+        if constexpr (!P && S && visible_unit == unit_type::RELU) {
+            v_s = logistic_noise(max(rep_l(c, Batch) + transpose(w * transpose(h_s)), 0.0));
+        }
+
+        // NaN Checks
 
         if (P) {
             nan_check_deep(v_a);
