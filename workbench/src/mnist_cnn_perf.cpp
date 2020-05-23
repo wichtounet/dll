@@ -20,7 +20,7 @@ int main(int /*argc*/, char* /*argv*/ []) {
 
     // Build the network
 
-    using network_t = dll::dyn_network_desc<
+    using network_t = dll::network_desc<
         dll::network_layers<
             dll::conv_layer<1, 28, 28, 16, 5, 5>,
             dll::mp_2d_layer<16, 24, 24, 2, 2>,
