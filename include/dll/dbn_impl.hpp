@@ -1708,6 +1708,8 @@ public:
      */
     template <typename Generator>
     void evaluate(Generator& generator){
+        dll::auto_timer timer("net:evaluate");
+
         cpp::stop_watch<std::chrono::milliseconds> watch;
 
         validate_generator(generator);
