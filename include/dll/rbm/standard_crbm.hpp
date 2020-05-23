@@ -67,24 +67,55 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
 
         using namespace etl;
 
+        // TODO This code is a huge mess!
+
         auto b_rep = as_derived().get_b_rep();
 
         as_derived().reshape_h_a(h_a) = etl::conv_4d_valid_flipped(as_derived().reshape_v_a(v_a), as_derived().w);
 
         // Need to be done before h_a is computed!
-        H_SAMPLE_PROBS(unit_type::RELU, h_s = max(logistic_noise(b_rep + h_a), 0.0));
-        H_SAMPLE_PROBS(unit_type::RELU6, h_s = min(max(ranged_noise(b_rep + h_a, 6.0), 0.0), 6.0));
-        H_SAMPLE_PROBS(unit_type::RELU1, h_s = min(max(ranged_noise(b_rep + h_a, 1.0), 0.0), 1.0));
 
-        H_PROBS2(unit_type::BINARY, unit_type::BINARY, h_a = etl::sigmoid(b_rep + h_a));
-        H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, h_a = etl::sigmoid((1.0 / (0.1 * 0.1)) >> (b_rep + h_a)));
-        H_PROBS(unit_type::RELU, h_a = max(b_rep + h_a, 0.0));
-        H_PROBS(unit_type::RELU6, h_a = min(max(b_rep + h_a, 0.0), 6.0));
-        H_PROBS(unit_type::RELU1, h_a = min(max(b_rep + h_a, 0.0), 1.0));
+        if constexpr (P && S && hidden_unit == unit_type::RELU) {
+            h_s = max(logistic_noise(b_rep + h_a), 0.0);
+        }
 
-        H_SAMPLE_PROBS(unit_type::BINARY, h_s = bernoulli(h_a));
+        if constexpr (P && S && hidden_unit == unit_type::RELU1) {
+            h_s = min(max(ranged_noise(b_rep + h_a, 1.0), 0.0), 1.0);
+        }
 
-        nan_check_deep(h_a);
+        if constexpr (P && S && hidden_unit == unit_type::RELU6) {
+            h_s = min(max(ranged_noise(b_rep + h_a, 6.0), 0.0), 6.0):
+        }
+
+        if constexpr (P && hidden_unit == unit_type::BINARY && visible_unit == unit_type::BINARY) {
+            h_a = etl::sigmoid(b_rep + h_a);
+        }
+
+        if constexpr (P && hidden_unit == unit_type::BINARY && visible_unit == unit_type::GAUSSIAN) {
+            h_a = etl::sigmoid((1.0 / (0.1 * 0.1)) >> (b_rep + h_a));
+        }
+
+        if constexpr (P && hidden_unit == unit_type::RELU) {
+            h_a = max(b_rep + h_a, 0.0);
+        }
+
+        if constexpr (P && hidden_unit == unit_type::RELU1) {
+            h_a = min(max(b_rep + h_a, 0.0), 1.0);
+        }
+
+        if constexpr (P && hidden_unit == unit_type::RELU6) {
+            h_a = min(max(b_rep + h_a, 0.0), 6.0);
+        }
+
+        if constexpr (P && S && hidden_unit == unit_type::BINARY) {
+            h_s = bernoulli(h_a);
+        }
+
+        // NaN checks
+
+        if (P) {
+            nan_check_deep(h_a);
+        }
 
         if (S) {
             nan_check_deep(h_s);
@@ -107,17 +138,36 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
 
         using namespace etl;
 
+        // Note: we reuse v_a as a temporary here, before adding the biases
         as_derived().reshape_v_a(v_a) = etl::conv_4d_full(as_derived().reshape_h_a(h_s), as_derived().w);
 
         auto c_rep = as_derived().get_c_rep();
 
-        V_PROBS(unit_type::BINARY, v_a = etl::sigmoid(c_rep + v_a));
-        V_PROBS(unit_type::GAUSSIAN, v_a = c_rep + v_a);
+        // Compute the activation probabilities
 
-        nan_check_deep(v_a);
+        if constexpr (P && visible_unit == unit_type::BINARY) {
+            v_a = etl::sigmoid(c_rep + v_a);
+        }
 
-        V_SAMPLE_PROBS(unit_type::BINARY, v_s = bernoulli(v_a));
-        V_SAMPLE_PROBS(unit_type::GAUSSIAN, v_s = normal_noise(v_a));
+        if constexpr (P && visible_unit == unit_type::GAUSSIAN) {
+            v_a = c_rep + v_a;
+        }
+
+        // Sample the values from the probabilities
+
+        if constexpr (P && S && visible_unit == unit_type::BINARY) {
+            v_s = bernoulli(v_a);
+        }
+
+        if constexpr (P && S && visible_unit == unit_type::GAUSSIAN) {
+            v_s = normal_noise(v_a);
+        }
+
+        // NaN checks
+
+        if (P) {
+            nan_check_deep(v_a);
+        }
 
         if (S) {
             nan_check_deep(v_s);
@@ -135,24 +185,54 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
 
         using namespace etl;
 
+        // TODO This code is a huge mess!
+
         h_a = etl::conv_4d_valid_flipped(v_a, as_derived().w);
 
         auto b_rep = as_derived().get_batch_b_rep(v_a);
 
         // Need to be done before h_a is computed!
-        H_SAMPLE_PROBS(unit_type::RELU, h_s = max(logistic_noise(b_rep + h_a), 0.0));
-        H_SAMPLE_PROBS(unit_type::RELU6, h_s = min(max(ranged_noise(b_rep + h_a, 6.0), 0.0), 6.0));
-        H_SAMPLE_PROBS(unit_type::RELU1, h_s = min(max(ranged_noise(b_rep + h_a, 1.0), 0.0), 1.0));
+        if constexpr (P && S && hidden_unit == unit_type::RELU) {
+            h_s = max(logistic_noise(b_rep + h_a), 0.0);
+        }
 
-        H_PROBS2(unit_type::BINARY, unit_type::BINARY, h_a = etl::sigmoid(b_rep + h_a));
-        H_PROBS2(unit_type::BINARY, unit_type::GAUSSIAN, h_a = etl::sigmoid((1.0 / (0.1 * 0.1)) >> (b_rep + h_a)));
-        H_PROBS(unit_type::RELU, h_a = max(b_rep + h_a, 0.0));
-        H_PROBS(unit_type::RELU6, h_a = min(max(b_rep + h_a, 0.0), 6.0));
-        H_PROBS(unit_type::RELU1, h_a = min(max(b_rep + h_a, 0.0), 1.0));
+        if constexpr (P && S && hidden_unit == unit_type::RELU1) {
+            h_s = min(max(ranged_noise(b_rep + h_a, 1.0), 0.0), 1.0);
+        }
 
-        nan_check_deep(h_a);
+        if constexpr (P && S && hidden_unit == unit_type::RELU6) {
+            h_s = min(max(ranged_noise(b_rep + h_a, 6.0), 0.0), 6.0);
+        }
 
-        H_SAMPLE_PROBS(unit_type::BINARY, h_s = bernoulli(h_a));
+        if constexpr (P && hidden_unit == unit_type::BINARY && visible_unit == unit_type::BINARY) {
+            h_a = etl::sigmoid(b_rep + h_a);
+        }
+
+        if constexpr (P && hidden_unit == unit_type::BINARY && visible_unit == unit_type::GAUSSIAN) {
+            h_a = etl::sigmoid((1.0 / (0.1 * 0.1)) >> (b_rep + h_a));
+        }
+
+        if constexpr (P && hidden_unit == unit_type::RELU) {
+            h_a = max(b_rep + h_a, 0.0);
+        }
+
+        if constexpr (P && hidden_unit == unit_type::RELU1) {
+            h_a = min(max(b_rep + h_a, 0.0), 1.0);
+        }
+
+        if constexpr (P && hidden_unit == unit_type::RELU6) {
+            h_a = min(max(b_rep + h_a, 0.0), 6.0);
+        }
+
+        if constexpr (P && S && hidden_unit == unit_type::BINARY) {
+            h_s = bernoulli(h_a);
+        }
+
+        // NaN checks
+
+        if (P) {
+            nan_check_deep(h_a);
+        }
 
         if (S) {
             nan_check_deep(h_s);
@@ -168,17 +248,36 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
 
         as_derived().template validate_outputs<H1, H2, 1>();
 
+        // Note: we reuse v_a as a temporary here, before adding the biases
         v_a = etl::conv_4d_full(h_s, as_derived().w);
 
         auto c_rep = as_derived().get_batch_c_rep(h_s);
 
-        V_PROBS(unit_type::BINARY, v_a = etl::sigmoid(c_rep + v_a));
-        V_PROBS(unit_type::GAUSSIAN, v_a = c_rep + v_a);
+        // Compute the activation probabilities
 
-        nan_check_deep(v_a);
+        if constexpr (P && visible_unit == unit_type::BINARY) {
+            v_a = etl::sigmoid(c_rep + v_a);
+        }
 
-        V_SAMPLE_PROBS(unit_type::BINARY, v_s = bernoulli(v_a));
-        V_SAMPLE_PROBS(unit_type::GAUSSIAN, v_s = normal_noise(v_a));
+        if constexpr (P && visible_unit == unit_type::GAUSSIAN) {
+            v_a = c_rep + v_a;
+        }
+
+        // Sample the values from the probabilities
+
+        if constexpr (P && S && visible_unit == unit_type::BINARY) {
+            v_s = bernoulli(v_a);
+        }
+
+        if constexpr (P && S && visible_unit == unit_type::GAUSSIAN) {
+            v_s = normal_noise(v_a);
+        }
+
+        // NaN Checks
+
+        if (P) {
+            nan_check_deep(v_a);
+        }
 
         if (S) {
             nan_check_deep(v_s);
