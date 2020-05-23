@@ -6,6 +6,7 @@
 //=======================================================================
 
 #define ETL_COUNTERS
+#define ETL_GPU_POOL
 
 #include "dll/neural/conv/conv_layer.hpp"
 #include "dll/neural/dense/dense_layer.hpp"

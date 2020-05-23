@@ -6,6 +6,7 @@
 //=======================================================================
 
 #define ETL_COUNTERS
+#define ETL_GPU_POOL
 
 #include "dll/neural/dense/dense_layer.hpp"
 #include "dll/neural/dropout/dropout_layer.hpp"

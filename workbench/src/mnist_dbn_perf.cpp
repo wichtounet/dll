@@ -6,6 +6,7 @@
 //=======================================================================
 
 #define ETL_COUNTERS
+#define ETL_GPU_POOL
 
 #include "dll/rbm/rbm.hpp"
 #include "dll/network.hpp"
