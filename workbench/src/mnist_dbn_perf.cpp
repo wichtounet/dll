@@ -28,6 +28,8 @@ int main(int /*argc*/, char* /*argv*/ []) {
         , dll::updater<dll::updater_type::NADAM>     // Nesterov Adam (NADAM)
         , dll::batch_size<100>                       // The mini-batch size
         , dll::shuffle                               // Shuffle before each epoch
+        , dll::no_batch_display                      // Disable pretty print of each every batch
+        , dll::no_epoch_error                        // Disable computation of the error at each epoch
     >::network_t;
 
     auto net = std::make_unique<network_t>();

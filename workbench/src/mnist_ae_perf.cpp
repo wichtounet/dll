@@ -30,6 +30,8 @@ int main(int /*argc*/, char* /*argv*/ []) {
         , dll::shuffle               // Shuffle the dataset before each epoch
         , dll::binary_cross_entropy  // Use a Binary Cross Entropy Loss
         , dll::adadelta              // Adadelta updates for gradient descent
+        , dll::no_batch_display      // Disable pretty print of each every batch
+        , dll::no_epoch_error        // Disable computation of the error at each epoch
     >::network_t;
 
     auto net = std::make_unique<network_t>();
