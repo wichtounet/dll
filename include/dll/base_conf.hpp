@@ -126,6 +126,7 @@ struct bias_id;
 struct momentum_id;
 struct serial_id;
 struct verbose_id;
+struct no_batch_display_id;
 struct horizontal_id;
 struct vertical_id;
 struct shuffle_id;
@@ -353,6 +354,14 @@ struct serial : basic_conf_elt<serial_id> {};
  * \brief Make execution as verbose as possible
  */
 struct verbose : basic_conf_elt<verbose_id> {};
+
+/*!
+ * \brief Disable the display of reporting for each batch
+ *
+ * This should speed up processing since loss does not have to be computed for
+ * each batch.
+ */
+struct no_batch_display : basic_conf_elt<no_batch_display_id> {};
 
 /*!
  * \brief Concatenate the features of each layer for SVM training

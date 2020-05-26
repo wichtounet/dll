@@ -101,6 +101,13 @@ struct dbn_traits {
     }
 
     /*!
+     * \brief Indicates if the DBN is verbose
+     */
+    static constexpr bool should_display_batch() noexcept {
+        return !desc::parameters::template contains<no_batch_display>();
+    }
+
+    /*!
      * \brief Indicates if the DBN scales its features before sending to SVM.
      */
     static constexpr bool scale() noexcept {

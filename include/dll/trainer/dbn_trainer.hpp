@@ -400,15 +400,26 @@ struct dbn_trainer {
         while(generator.has_next_batch()){
             dll::auto_timer timer("net:trainer:train:epoch:batch");
 
-            watcher.ft_batch_start(epoch, dbn);
+            // By default, we will compute the error on each batch
+            // But this can be overriden for speed reason
+            if constexpr (dbn_traits<dbn_t>::should_display_batch()) {
+                watcher.ft_batch_start(epoch, dbn);
 
-            auto [batch_error, batch_loss] = trainer->train_batch(
-                epoch,
-                generator.data_batch(),
-                generator.label_batch());
+                auto [batch_error, batch_loss] = trainer->template train_batch<true>(
+                    epoch,
+                    generator.data_batch(),
+                    generator.label_batch());
 
-            watcher.ft_batch_end(epoch, generator.current_batch(), generator.batches(), batch_error, batch_loss, dbn);
+                watcher.ft_batch_end(epoch, generator.current_batch(), generator.batches(), batch_error, batch_loss, dbn);
+            } else {
+                trainer->template train_batch<false>(
+                    epoch,
+                    generator.data_batch(),
+                    generator.label_batch());
 
+            }
+
+            // Go to the next batch
             generator.next_batch();
         }
     }

@@ -274,12 +274,22 @@ struct default_dbn_watcher {
 
         char buffer[512];
 
-        if (dbn_traits<DBN>::error_on_epoch()){
-            snprintf(buffer, 512, "epoch %3ld/%ld batch %4ld/%4ld - error: %.5f loss: %.5f time %ldms \n",
-                epoch, ft_max_epochs, max_batches, max_batches, error, loss, duration);
+        if (dbn_traits<DBN>::should_display_batch()) {
+            if (dbn_traits<DBN>::error_on_epoch()){
+                snprintf(buffer, 512, "epoch %3ld/%ld batch %4ld/%4ld - error: %.5f loss: %.5f time %ldms \n",
+                    epoch, ft_max_epochs, max_batches, max_batches, error, loss, duration);
+            } else {
+                snprintf(buffer, 512, "epoch %3ld/%ld batch %4ld/%4ld - time %ldms \n",
+                    epoch, ft_max_epochs, max_batches, max_batches, duration);
+            }
         } else {
-            snprintf(buffer, 512, "epoch %3ld/%ld batch %4ld/%4ld - time %ldms \n",
-                epoch, ft_max_epochs, max_batches, max_batches, duration);
+            if (dbn_traits<DBN>::error_on_epoch()){
+                snprintf(buffer, 512, "epoch %3ld/%ld - error: %.5f loss: %.5f time %ldms \n",
+                    epoch, ft_max_epochs, error, loss, duration);
+            } else {
+                snprintf(buffer, 512, "epoch %3ld/%ld - time %ldms \n",
+                    epoch, ft_max_epochs, duration);
+            }
         }
 
         if (dbn_traits<DBN>::is_verbose()){

@@ -621,7 +621,7 @@ struct sgd_trainer {
      * \param labels A batch of labels
      * \return a pair containing the error and the loss for the batch
      */
-    template <typename Inputs, typename Labels>
+    template <bool Error, typename Inputs, typename Labels>
     std::pair<double, double> train_batch(size_t epoch, const Inputs& inputs, const Labels& labels) {
         dll::auto_timer timer("sgd::train_batch");
 
@@ -679,12 +679,14 @@ struct sgd_trainer {
 
         // Compute error and loss
 
-        {
+        if constexpr (Error) {
             dll::auto_timer timer("sgd::error");
 
             auto[error, loss] = dbn.evaluate_metrics_batch(last_ctx.output, labels, n, true);
 
             return std::make_pair(error, loss);
+        } else {
+            return {0, 0};
         }
     }
 
