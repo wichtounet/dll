@@ -1,5 +1,5 @@
 
-# This format file is made especially for clang-format-3.7
+# This format file is made especially for clang-format-9
 
 ---
 BasedOnStyle: Google
@@ -9,12 +9,28 @@ ColumnLimit: 160
 Language: Cpp
 Standard: Cpp11
 
+# Don't fuck with my includes
+SortIncludes: false
+
+# Don't fuck with my using declarations either
+SortUsingDeclarations: false
+
 # Tune some indentations
 AccessModifierOffset: -4
 ConstructorInitializerIndentWidth: 8
+ContinuationIndentWidth: 8
 
-# Only control statements should have spaces
+# General Space Configuration
 SpaceBeforeParens: ControlStatements
+SpaceBeforeAssignmentOperators: true
+SpaceAfterTemplateKeyword: true
+SpaceAfterCStyleCast: true
+SpaceInEmptyParentheses: false
+SpacesInAngles: false
+SpacesInCStyleCastParentheses: false
+SpacesInContainerLiterals: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
 
 # No block and its body should EVER be on a single line
 AllowShortFunctionsOnASingleLine: Empty
@@ -23,20 +39,35 @@ AllowShortCaseLabelsOnASingleLine: false
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 
+# Functions
+IndentWrappedFunctionNames: false
+AlwaysBreakAfterReturnType: None
+BreakConstructorInitializers: AfterColon
+
+# Switch
+IndentCaseLabels: false
+
 # Better C++11 support
 Cpp11BracedListStyle: true
 
 # Avoid too many empty lines
 MaxEmptyLinesToKeep: 1
+KeepEmptyLinesAtTheStartOfBlocks: false
 
 # Templates should always be on a separate line
 AlwaysBreakTemplateDeclarations: true
 
 # Nice alignement
 AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+AlignOperands: true
+AlignAfterOpenBracket: Align
+BinPackParameters: false
+BinPackArguments: false
 
 # Improve ternary operators alignement
 BreakBeforeTernaryOperators: true
+BreakBeforeBinaryOperators: NonAssignment
 
 # Tabs are bad news
 UseTab: Never
@@ -45,13 +76,17 @@ UseTab: Never
 AlignTrailingComments: true
 SpacesBeforeTrailingComments: 1
 
-# Don't mess with my comments
-CommentPragmas:  '^[^ ]'
-
 # Avoid empty lines
 KeepEmptyLinesAtTheStartOfBlocks: false
-MaxEmptyLinesToKeep: 1
 
 # Force pointers to the type
 DerivePointerAlignment: false
 PointerAlignment: Left
+
+# Strings
+BreakStringLiterals: false
+
+# Namespaces
+NamespaceIndentation: None
+CompactNamespaces: false
+FixNamespaceComments: true
