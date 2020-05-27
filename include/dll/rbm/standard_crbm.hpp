@@ -84,7 +84,7 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
         }
 
         if constexpr (P && S && hidden_unit == unit_type::RELU6) {
-            h_s = min(max(ranged_noise(b_rep + h_a, 6.0), 0.0), 6.0):
+            h_s = min(max(ranged_noise(b_rep + h_a, 6.0), 0.0), 6.0);
         }
 
         if constexpr (P && hidden_unit == unit_type::BINARY && visible_unit == unit_type::BINARY) {
