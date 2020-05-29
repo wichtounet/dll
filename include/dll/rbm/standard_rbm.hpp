@@ -672,9 +672,7 @@ private:
         }
 
         if constexpr (P && S && hidden_unit == unit_type::SOFTMAX) {
-            for (size_t b = 0; b < Batch; ++b) {
-                h_s(b) = one_if_max(h_a(b));
-            }
+            h_s = one_if_max_sub(h_a);
         }
 
         // Sample values directly from the input
@@ -698,9 +696,7 @@ private:
         if constexpr (!P && S && hidden_unit == unit_type::SOFTMAX) {
             auto x = etl::force_temporary(stable_softmax(bias_add_2d(v_a * w, b)));
 
-            for (size_t b = 0; b < Batch; ++b) {
-                h_s(b) = one_if_max(x(b));
-            }
+            h_s = one_if_max_sub(x);
         }
 
         // NaN Checks
