@@ -1188,7 +1188,9 @@ struct sgd_trainer {
         // Compute the new weights
         // Basic version: w += (m1 * w_grad + m2 * w_mt) / (etl::sqrt(w_vt) + e);
         // Optimized for performance into:
-        w += (m1 * w_grad + m2 * (w_m / (weight(1) - m_schedule_next))) / (etl::sqrt(w_v / (weight(1) - std::pow(beta2, t))) + e);
+        //w += (m1 * w_grad + m2 * (w_m / (weight(1) - m_schedule_next))) / (etl::sqrt(w_v / (weight(1) - std::pow(beta2, t))) + e);
+        // Optimized into
+        w += (m1 * w_grad + (m2 / (weight(1) - m_schedule_next)) * w_m) / (etl::sqrt(w_v / (weight(1) - std::pow(beta2, t))) + e);
 
         nan_check_deep(w);
     }
