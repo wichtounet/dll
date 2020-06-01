@@ -306,8 +306,7 @@ void compute_gradients_normal(InputBatch& input_batch, ExpectedBatch& expected_b
     {
         dll::auto_timer timer("cd:batch_compute_gradients:std");
 
-        t.w_grad = batch_outer(t.vf, t.h1_a);
-        t.w_grad -= batch_outer(t.v2_a, t.h2_a);
+        t.w_grad = batch_outer(t.vf, t.h1_a) - batch_outer(t.v2_a, t.h2_a);
 
         t.b_grad = t.h1_a(0) - t.h2_a(0);
         for (size_t b = 1; b < B; b++) {
