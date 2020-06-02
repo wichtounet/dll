@@ -99,18 +99,20 @@ struct dbn_trainer {
     error_type stop_training(dbn_t& dbn, size_t epoch, size_t max_epochs){
         // Depending on the strategy, try to restore the best weights
 
-        if(epoch == max_epochs){
-            // The early stopping strategy
-            static constexpr auto s = dbn_t::early;
+        if constexpr (dbn_traits<dbn_t>::error_on_epoch()) {
+            if (epoch == max_epochs) {
+                // The early stopping strategy
+                static constexpr auto s = dbn_t::early;
 
-            if constexpr (s != strategy::NONE) {
-                if(best_epoch < max_epochs - 1){
-                    dbn.restore_weights();
+                if constexpr (s != strategy::NONE) {
+                    if (best_epoch < max_epochs - 1) {
+                        dbn.restore_weights();
 
-                    if (is_error(s)) {
-                        dbn.out << "Restore the best (error) weights from epoch " << best_epoch << std::endl;
-                    } else {
-                        dbn.out << "Restore the best (loss) weights from epoch " << best_epoch << std::endl;
+                        if (is_error(s)) {
+                            dbn.out << "Restore the best (error) weights from epoch " << best_epoch << std::endl;
+                        } else {
+                            dbn.out << "Restore the best (loss) weights from epoch " << best_epoch << std::endl;
+                        }
                     }
                 }
             }
