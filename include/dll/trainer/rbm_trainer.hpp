@@ -141,6 +141,9 @@ struct rbm_trainer {
                 generator.reset();
             }
 
+            // This will ensure maximum performance for the training
+            generator.prepare_epoch();
+
             // Set the the generator in train mode
             generator.set_train();
 
