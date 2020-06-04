@@ -262,9 +262,8 @@ void compute_gradients_normal(InputBatch& input_batch, ExpectedBatch& expected_b
     cpp_assert(etl::size(t.v1) >= etl::size(input_batch), "Invalid input to compute_gradients_normal");
     cpp_assert(etl::size(t.vf) >= etl::size(expected_batch), "Invalid input to compute_gradients_normal");
 
-    const auto B          = etl::dim<0>(t.v1);
-    const size_t IB       = etl::dim<0>(input_batch);
-    const bool full_batch = (IB == RBM::batch_size);
+    const size_t IB         = etl::dim<0>(input_batch);
+    const bool   full_batch = (IB == RBM::batch_size);
 
     //Copy input/expected for computations
     if(cpp_likely(full_batch)){
@@ -308,15 +307,8 @@ void compute_gradients_normal(InputBatch& input_batch, ExpectedBatch& expected_b
 
         t.w_grad = batch_outer(t.vf, t.h1_a) - batch_outer(t.v2_a, t.h2_a);
 
-        t.b_grad = t.h1_a(0) - t.h2_a(0);
-        for (size_t b = 1; b < B; b++) {
-            t.b_grad += t.h1_a(b) - t.h2_a(b);
-        }
-
-        t.c_grad = t.vf(0) - t.v2_a(0);
-        for (size_t b = 1; b < B; b++) {
-            t.c_grad += t.vf(b) - t.v2_a(b);
-        }
+        t.b_grad = bias_batch_sum_2d(t.h1_a - t.h2_a);
+        t.c_grad = bias_batch_sum_2d(t.vf - t.v2_a);
     }
 }
 
