@@ -94,6 +94,14 @@ struct batch_normalization_4d_layer_impl : neural_layer<batch_normalization_4d_l
         return Kernels * W * H;
     }
 
+    /*!
+     * \brief Returns the output shape
+     * \return an std::string containing the description of the output shape
+     */
+    std::vector<size_t> output_shape([[maybe_unused]] const std::vector<size_t>& input_shape) const {
+        return {Kernels, W, H};
+    }
+
     using base_type::test_forward_batch;
     using base_type::train_forward_batch;
 

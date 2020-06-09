@@ -118,6 +118,14 @@ struct dyn_batch_normalization_4d_layer_impl : neural_layer<dyn_batch_normalizat
     using base_type::train_forward_batch;
 
     /*!
+     * \brief Returns the output shape
+     * \return an std::string containing the description of the output shape
+     */
+    std::vector<size_t> output_shape([[maybe_unused]] const std::vector<size_t>& input_shape) const {
+        return {Kernels, W, H};
+    }
+
+    /*!
      * \brief Apply the layer to the batch of input
      * \param output The batch of output
      * \param input The batch of input to apply the layer to

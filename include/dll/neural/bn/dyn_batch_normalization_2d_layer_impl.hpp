@@ -110,6 +110,14 @@ struct dyn_batch_normalization_2d_layer_impl : neural_layer<dyn_batch_normalizat
         return Input;
     }
 
+    /*!
+     * \brief Returns the output shape
+     * \return an std::string containing the description of the output shape
+     */
+    std::vector<size_t> output_shape([[maybe_unused]] const std::vector<size_t>& input_shape) const {
+        return {Input};
+    }
+
     using base_type::test_forward_batch;
     using base_type::train_forward_batch;
 
