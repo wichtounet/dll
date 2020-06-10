@@ -116,6 +116,7 @@ struct conv_rbm_impl final : public standard_crbm<conv_rbm_impl<Desc>, Desc> {
         char buffer[1024];
         snprintf(
             buffer, 1024, "CRBM(%s->%s)",
+            to_string(hidden_unit).c_str(),
             to_string(visible_unit).c_str());
         return {buffer};
     }
