@@ -2137,6 +2137,9 @@ public:
         // Set the generator in test mode
         generator.set_test();
 
+        // Make sure all the data is available at once
+        generator.prepare_epoch();
+
         double error = 0.0;
         double loss  = 0.0;
 
