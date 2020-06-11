@@ -2468,6 +2468,9 @@ private:
 
                 next_generator->set_safe();
 
+                // Prepare the data of the next generator
+                next_generator->prepare_epoch();
+
                 // Compute the input of the next layer
                 // using batch activation
 
