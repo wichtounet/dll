@@ -200,8 +200,8 @@ struct rbm_trainer {
         context.sparsity += context.batch_sparsity;
 
         if constexpr (EnableWatcher && rbm_layer_traits<rbm_t>::free_energy()) {
-            for (auto& v : input) {
-                context.free_energy += rbm.free_energy(v);
+            for (size_t i = 0; i < etl::dim<0>(input); ++i) {
+                context.free_energy += rbm.free_energy(input(i));
             }
         }
 
