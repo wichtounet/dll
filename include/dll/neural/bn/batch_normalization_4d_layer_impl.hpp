@@ -122,6 +122,8 @@ struct batch_normalization_4d_layer_impl : neural_layer<batch_normalization_4d_l
      */
     template <typename Input, typename Output>
     void test_forward_batch(Output& output, const Input& input) const {
+        dll::auto_timer timer("bn:4d:test:forward");
+
         const auto B = etl::dim<0>(input);
 
         auto inv_var = etl::force_temporary(1.0 / etl::sqrt(var + e));
@@ -140,6 +142,8 @@ struct batch_normalization_4d_layer_impl : neural_layer<batch_normalization_4d_l
      */
     template <typename Input, typename Output>
     void train_forward_batch(Output& output, const Input& input) {
+        dll::auto_timer timer("bn:4d:train:forward");
+
         const auto B = etl::dim<0>(input);
         const auto S = B * W * H;
 
@@ -190,6 +194,8 @@ struct batch_normalization_4d_layer_impl : neural_layer<batch_normalization_4d_l
      */
     template<typename HH, typename C>
     void backward_batch(HH&& output, C& context) const {
+        dll::unsafe_auto_timer timer("bn:4d:backward");
+
         const auto B = etl::dim<0>(context.input);
         const auto S = B * W * H;
 
@@ -220,6 +226,8 @@ struct batch_normalization_4d_layer_impl : neural_layer<batch_normalization_4d_l
      */
     template<typename C>
     void compute_gradients(C& context) const {
+        dll::unsafe_auto_timer timer("bn:4d:gradients");
+
         // Gradients of gamma
         std::get<0>(context.up.context)->grad = etl::bias_batch_sum_4d(input_pre >> context.errors);
 
