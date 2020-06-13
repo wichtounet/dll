@@ -203,7 +203,7 @@ struct batch_normalization_4d_layer_impl : neural_layer<batch_normalization_4d_l
 
         for(size_t b = 0; b < B; ++b){
             for (size_t k = 0; k < Kernels; ++k) {
-                dxhat(b)(k) = context.errors(b)(k) >> gamma(k);
+                dxhat(b)(k) = gamma(k) >> context.errors(b)(k);
             }
         }
 
