@@ -196,6 +196,9 @@ public:
     using rbm_ingenerator_fast_inner_t = inmemory_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::autoencoder>;
 
     template<size_t B>
+    using rbm_ingenerator_fast_single_inner_t = inmemory_single_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::autoencoder>;
+
+    template<size_t B>
     using rbm_generator_fast_inner_t = std::conditional_t<
         !dbn_traits<this_type>::batch_mode(),
         inmemory_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::autoencoder>,
@@ -259,6 +262,13 @@ private:
         static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_inner_desc");
 
         return rbm_ingenerator_fast_inner_t<layer_type<L>::batch_size>{};
+    }
+
+    template<size_t L = rbm_layer_n>
+    auto get_rbm_ingenerator_single_inner_desc(){
+        static_assert(decay_layer_traits<layer_type<L>>::is_rbm_layer(), "Invalid use of get_rbm_generator_inner_desc");
+
+        return rbm_ingenerator_fast_single_inner_t<layer_type<L>::batch_size>{};
     }
 
     template <size_t L, cpp_enable_iff((L < layers - 1) && decay_layer_traits<layer_type<L>>::is_rbm_layer())>
@@ -2402,9 +2412,9 @@ private:
 
         // Prepare a generator to hold the data
         auto next_generator = prepare_generator(
-            two, two,
-            generator.size(), output_size(),
-            get_rbm_ingenerator_inner_desc());
+            two,
+            generator.size(),
+            get_rbm_ingenerator_single_inner_desc());
 
         next_generator->set_safe();
 
@@ -2417,7 +2427,6 @@ private:
             auto next_batch = next_layer.train_forward_batch(batch);
 
             next_generator->set_data_batch(i, next_batch);
-            next_generator->set_label_batch(i, next_batch);
 
             i += etl::dim<0>(next_batch);
 
@@ -2462,9 +2471,9 @@ private:
 
                 // Prepare a generator to hold the data
                 auto next_generator = prepare_generator(
-                    one, one,
-                    generator.size(), output_size(),
-                    get_rbm_ingenerator_inner_desc());
+                    one,
+                    generator.size(), 
+                    get_rbm_ingenerator_single_inner_desc());
 
                 next_generator->set_safe();
 
@@ -2479,7 +2488,6 @@ private:
                     auto next_batch = layer.train_forward_batch(generator.data_batch());
 
                     next_generator->set_data_batch(i, next_batch);
-                    next_generator->set_label_batch(i, next_batch);
 
                     i += etl::dim<0>(next_batch);
 
