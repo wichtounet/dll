@@ -5,6 +5,10 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+// Note: This example currently does not run on GPU since it consumes too much
+// memory
+// This should be retested with the new inmemory generator that should help
+
 #define ETL_COUNTERS
 #define ETL_GPU_POOL
 
