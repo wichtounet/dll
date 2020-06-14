@@ -26,7 +26,7 @@ struct binarize_layer_impl : transform_layer<binarize_layer_impl<Desc>> {
     using layer_t     = this_type;                                  ///< This layer's type
     using dyn_layer_t = typename desc::dyn_layer_t;                 ///< The dynamic version of this layer
 
-    static constexpr size_t Threshold = desc::T;
+    static inline constexpr size_t Threshold = desc::T;
 
     binarize_layer_impl() = default;
 
@@ -83,11 +83,6 @@ struct binarize_layer_impl : transform_layer<binarize_layer_impl<Desc>> {
     template <typename C>
     void compute_gradients([[maybe_unused]] C& context) const {}
 };
-
-//Allow odr-use of the constexpr static members
-
-template <typename Desc>
-const size_t binarize_layer_impl<Desc>::Threshold;
 
 // Declare the traits for the layer
 

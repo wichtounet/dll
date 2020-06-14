@@ -25,9 +25,9 @@ struct embedding_layer_impl final : neural_layer_no_bias<embedding_layer_impl<De
     using layer_t     = this_type;                     ///< This layer's type
     using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
 
-    static constexpr size_t V = desc::V; ///< The vocabulary size
-    static constexpr size_t I = desc::I; ///< The input size
-    static constexpr size_t K = desc::K; ///< The embedding size
+    static inline constexpr size_t V = desc::V; ///< The vocabulary size
+    static inline constexpr size_t I = desc::I; ///< The input size
+    static inline constexpr size_t K = desc::K; ///< The embedding size
 
     using w_initializer = typename desc::w_initializer; ///< The initializer for the weights
 
@@ -167,17 +167,6 @@ struct embedding_layer_impl final : neural_layer_no_bias<embedding_layer_impl<De
         std::get<0>(context.up.context)->grad = batch_embedding_gradients(context.input, context.errors, w);;
     }
 };
-
-//Allow odr-use of the constexpr static members
-
-template <typename Desc>
-const size_t embedding_layer_impl<Desc>::V;
-
-template <typename Desc>
-const size_t embedding_layer_impl<Desc>::I;
-
-template <typename Desc>
-const size_t embedding_layer_impl<Desc>::K;
 
 // Declare the traits for the Layer
 

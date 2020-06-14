@@ -26,11 +26,11 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
     using layer_t     = this_type;                        ///< This layer's type
     using dyn_layer_t = typename desc::dyn_layer_t;       ///< The dynamic version of this layer
 
-    static constexpr size_t time_steps      = desc::time_steps;               ///< The number of time steps
-    static constexpr size_t sequence_length = desc::sequence_length;          ///< The length of the sequences
-    static constexpr size_t hidden_units    = desc::hidden_units;             ///< The number of hidden units
+    static inline constexpr size_t time_steps      = desc::time_steps;               ///< The number of time steps
+    static inline constexpr size_t sequence_length = desc::sequence_length;          ///< The length of the sequences
+    static inline constexpr size_t hidden_units    = desc::hidden_units;             ///< The number of hidden units
 
-    static constexpr size_t bptt_steps = desc::Truncate == 0 ? time_steps : desc::Truncate; ///< The number of bptt steps
+    static inline constexpr size_t bptt_steps = desc::Truncate == 0 ? time_steps : desc::Truncate; ///< The number of bptt steps
 
     static constexpr auto activation_function = desc::activation_function; ///< The layer's activation function
 
@@ -470,17 +470,6 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
         }
     }
 };
-
-//Allow odr-use of the constexpr static members
-
-template <typename Desc>
-const size_t lstm_layer_impl<Desc>::time_steps;
-
-template <typename Desc>
-const size_t lstm_layer_impl<Desc>::sequence_length;
-
-template <typename Desc>
-const size_t lstm_layer_impl<Desc>::hidden_units;
 
 // Declare the traits for the Layer
 

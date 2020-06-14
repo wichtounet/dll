@@ -38,7 +38,7 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_a
 
     static constexpr bool dll_generator = true; ///< Simple flag to indicate that the class is a DLL generator
 
-    static constexpr size_t batch_size = desc::BatchSize; ///< The size of the generated batches
+    static inline constexpr size_t batch_size = desc::BatchSize; ///< The size of the generated batches
 
     data_cache_type input_cache;  ///< The input cache
     label_cache_type label_cache; ///< The label cache
@@ -317,8 +317,8 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_au
 
     static constexpr bool dll_generator    = true;               ///< Simple flag to indicate that the class is a DLL generator
 
-    static constexpr size_t batch_size     = desc::BatchSize;    ///< The size of the generated batches
-    static constexpr size_t big_batch_size = desc::BigBatchSize; ///< The number of batches kept in cache
+    static constexpr inline size_t batch_size     = desc::BatchSize;    ///< The size of the generated batches
+    static constexpr inline size_t big_batch_size = desc::BigBatchSize; ///< The number of batches kept in cache
 
     data_cache_type input_cache;  ///< The data cache
     big_cache_type batch_cache;   ///< The data batch cache
@@ -711,15 +711,6 @@ struct inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_au
         return etl::dimensions<data_cache_type>() - 1;
     }
 };
-
-template <typename Iterator, typename LIterator, typename Desc>
-const size_t inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_augmented<Desc>>>::batch_size;
-
-template <typename Iterator, typename LIterator, typename Desc>
-const size_t inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_augmented<Desc>>>::batch_size;
-
-template <typename Iterator, typename LIterator, typename Desc>
-const size_t inmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_augmented<Desc>>>::big_batch_size;
 
 /*!
  * \brief Display the given generator on the given stream

@@ -24,8 +24,8 @@ struct shape_1d_layer_impl : transform_layer<shape_1d_layer_impl<Desc>> {
     using layer_t     = this_type;                     ///< This layer's type
     using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
 
-    static constexpr size_t Size = desc::S; ///< The input size
-    static constexpr size_t D    = 1;       ///< The number of dimensions
+    static inline constexpr size_t Size = desc::S; ///< The input size
+    static inline constexpr size_t D    = 1;       ///< The number of dimensions
 
     using input_one_t  = etl::fast_dyn_matrix<weight, Size>; ///< The preferred type of input
     using output_one_t = etl::fast_dyn_matrix<weight, Size>; ///< The type of output
@@ -105,11 +105,6 @@ struct shape_1d_layer_impl : transform_layer<shape_1d_layer_impl<Desc>> {
     template <typename C>
     void compute_gradients([[maybe_unused]] C& context) const {}
 };
-
-//Allow odr-use of the constexpr static members
-
-template <typename Desc>
-const size_t shape_1d_layer_impl<Desc>::Size;
 
 // Declare the traits for the layer
 

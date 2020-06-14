@@ -25,7 +25,7 @@ struct rectifier_layer_impl : transform_layer<rectifier_layer_impl<Desc>> {
     using layer_t     = this_type;                                   ///< This layer's type
     using dyn_layer_t = typename desc::dyn_layer_t;                  ///< The dynamic version of this layer
 
-    static constexpr rectifier_method method = desc::method; ///< The rectifier method
+    static inline constexpr rectifier_method method = desc::method; ///< The rectifier method
 
     static_assert(method == rectifier_method::ABS, "Only ABS rectifier has been implemented");
 
@@ -55,11 +55,6 @@ struct rectifier_layer_impl : transform_layer<rectifier_layer_impl<Desc>> {
         }
     }
 };
-
-//Allow odr-use of the constexpr static members
-
-template <typename Desc>
-const rectifier_method rectifier_layer_impl<Desc>::method;
 
 // Declare the traits for the layer
 

@@ -24,10 +24,10 @@ struct shape_3d_layer_impl : transform_layer<shape_3d_layer_impl<Desc>> {
     using layer_t     = this_type;                     ///< This layer's type
     using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
 
-    static constexpr size_t D = 3;       ///< The number of dimensions
-    static constexpr size_t C = desc::C; ///< The number of channels
-    static constexpr size_t W = desc::W; ///< The height of the input
-    static constexpr size_t H = desc::H; ///< The width of the input
+    static inline constexpr size_t D = 3;       ///< The number of dimensions
+    static inline constexpr size_t C = desc::C; ///< The number of channels
+    static inline constexpr size_t W = desc::W; ///< The height of the input
+    static inline constexpr size_t H = desc::H; ///< The width of the input
 
     using input_one_t  = etl::fast_dyn_matrix<weight, C, W, H>; ///< The preferred type of input
     using output_one_t = etl::fast_dyn_matrix<weight, C, W, H>; ///< The type of output
@@ -107,17 +107,6 @@ struct shape_3d_layer_impl : transform_layer<shape_3d_layer_impl<Desc>> {
     template <typename C>
     void compute_gradients([[maybe_unused]] C& context) const {}
 };
-
-//Allow odr-use of the constexpr static members
-
-template <typename Desc>
-const size_t shape_3d_layer_impl<Desc>::C;
-
-template <typename Desc>
-const size_t shape_3d_layer_impl<Desc>::H;
-
-template <typename Desc>
-const size_t shape_3d_layer_impl<Desc>::W;
 
 // Declare the traits for the layer
 

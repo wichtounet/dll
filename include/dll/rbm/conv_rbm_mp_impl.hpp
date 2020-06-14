@@ -36,18 +36,18 @@ struct conv_rbm_mp_impl final : public standard_crbm_mp<conv_rbm_mp_impl<Desc>, 
     static constexpr unit_type hidden_unit  = desc::hidden_unit;  ///< The type of hidden unit
     static constexpr unit_type pooling_unit = desc::pooling_unit; ///< The type of pooling unit
 
-    static constexpr size_t NV1 = desc::NV1; ///< The first dimension of the visible units
-    static constexpr size_t NV2 = desc::NV2; ///< The second dimension of the visible units
-    static constexpr size_t NW1 = desc::NW1; ///< The first dimension of the hidden units
-    static constexpr size_t NW2 = desc::NW2; ///< The second dimension of the hidden units
-    static constexpr size_t NC  = desc::NC;  ///< The number of input channels
-    static constexpr size_t K   = desc::K;   ///< The number of filters
-    static constexpr size_t C   = desc::C;
+    static inline constexpr size_t NV1 = desc::NV1; ///< The first dimension of the visible units
+    static inline constexpr size_t NV2 = desc::NV2; ///< The second dimension of the visible units
+    static inline constexpr size_t NW1 = desc::NW1; ///< The first dimension of the hidden units
+    static inline constexpr size_t NW2 = desc::NW2; ///< The second dimension of the hidden units
+    static inline constexpr size_t NC  = desc::NC;  ///< The number of input channels
+    static inline constexpr size_t K   = desc::K;   ///< The number of filters
+    static inline constexpr size_t C   = desc::C;
 
-    static constexpr size_t NH1 = NV1 - NW1 + 1; //By definition
-    static constexpr size_t NH2 = NV2 - NW2 + 1; //By definition
-    static constexpr size_t NP1 = NH1 / C;       //By definition
-    static constexpr size_t NP2 = NH2 / C;       //By definition
+    static inline constexpr size_t NH1 = NV1 - NW1 + 1; //By definition
+    static inline constexpr size_t NH2 = NV2 - NW2 + 1; //By definition
+    static inline constexpr size_t NP1 = NH1 / C;       //By definition
+    static inline constexpr size_t NP2 = NH2 / C;       //By definition
 
     static constexpr size_t batch_size  = desc::BatchSize;  ///< The mini-batch size
 
@@ -256,41 +256,6 @@ struct rbm_base_traits<conv_rbm_mp_impl<Desc>> {
     using input_t             = std::vector<input_one_t>; ///< The type of the input
     using output_t            = std::vector<output_one_t>; ///< The type of the output
 };
-
-//Allow odr-use of the constexpr static members
-
-template <typename Desc>
-const size_t conv_rbm_mp_impl<Desc>::NV1;
-
-template <typename Desc>
-const size_t conv_rbm_mp_impl<Desc>::NV2;
-
-template <typename Desc>
-const size_t conv_rbm_mp_impl<Desc>::NH1;
-
-template <typename Desc>
-const size_t conv_rbm_mp_impl<Desc>::NH2;
-
-template <typename Desc>
-const size_t conv_rbm_mp_impl<Desc>::NC;
-
-template <typename Desc>
-const size_t conv_rbm_mp_impl<Desc>::NW1;
-
-template <typename Desc>
-const size_t conv_rbm_mp_impl<Desc>::NW2;
-
-template <typename Desc>
-const size_t conv_rbm_mp_impl<Desc>::NP1;
-
-template <typename Desc>
-const size_t conv_rbm_mp_impl<Desc>::NP2;
-
-template <typename Desc>
-const size_t conv_rbm_mp_impl<Desc>::K;
-
-template <typename Desc>
-const size_t conv_rbm_mp_impl<Desc>::C;
 
 // Declare the traits for the RBM
 

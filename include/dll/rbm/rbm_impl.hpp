@@ -42,9 +42,9 @@ struct rbm_impl final : public standard_rbm<rbm_impl<Desc>, Desc> {
     using input_one_t  = typename rbm_base_traits<this_type>::input_one_t; ///< The type of one input
     using output_one_t = typename rbm_base_traits<this_type>::output_one_t; ///< The type of one output
 
-    static constexpr size_t num_visible = desc::num_visible; ///< The number of visible units
-    static constexpr size_t num_hidden  = desc::num_hidden;  ///< The number of hidden units
-    static constexpr size_t batch_size  = desc::BatchSize;  ///< The mini-batch size
+    static constexpr inline size_t num_visible = desc::num_visible; ///< The number of visible units
+    static constexpr inline size_t num_hidden  = desc::num_hidden;  ///< The number of hidden units
+    static constexpr inline size_t batch_size  = desc::BatchSize;  ///< The mini-batch size
 
     static constexpr unit_type visible_unit = desc::visible_unit; ///< The type of visible units
     static constexpr unit_type hidden_unit  = desc::hidden_unit;  ///< The type of hidden units
@@ -221,14 +221,6 @@ struct rbm_base_traits<rbm_impl<Desc>> {
     using input_t      = std::vector<input_one_t>; ///< The type of the input
     using output_t     = std::vector<output_one_t>; ///< The type of the output
 };
-
-//Allow odr-use of the constexpr static members
-
-template <typename Desc>
-const size_t rbm_impl<Desc>::num_visible;
-
-template <typename Desc>
-const size_t rbm_impl<Desc>::num_hidden;
 
 // Declare the traits for the RBM
 

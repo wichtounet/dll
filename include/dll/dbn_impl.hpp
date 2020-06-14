@@ -131,9 +131,10 @@ public:
     using const_for_each_impl_t      = dbn_detail::for_each_impl<const this_type, layers_t::size, std::make_index_sequence<layers_t::size>>;
     using const_for_each_pair_impl_t = dbn_detail::for_each_impl<const this_type, layers_t::size, std::make_index_sequence<layers_t::size - 1>>;
 
-    static constexpr size_t layers         = layers_t::size;     ///< The number of layers
-    static constexpr size_t batch_size     = desc::BatchSize;    ///< The batch size (for finetuning)
-    static constexpr size_t big_batch_size = desc::BigBatchSize; ///< The number of pretraining batch to do at once
+    static inline constexpr size_t layers         = layers_t::size;     ///< The number of layers
+    static inline constexpr size_t batch_size     = desc::BatchSize;    ///< The batch size (for finetuning)
+    static inline constexpr size_t big_batch_size = desc::BigBatchSize; ///< The number of pretraining batch to do at once
+
     static constexpr auto loss             = desc::Loss;         ///< The loss function
     static constexpr auto updater          = desc::Updater;      ///< The Updater type
     static constexpr auto early            = desc::Early;        ///< The Early Stopping stragy
@@ -2908,10 +2909,5 @@ private:
 
 #endif //DLL_SVM_SUPPORT
 };
-
-//Allow odr-use of the constexpr static members
-
-template <typename Desc>
-const size_t dbn<Desc>::layers;
 
 } //end of namespace dll

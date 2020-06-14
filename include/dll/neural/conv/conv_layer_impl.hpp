@@ -25,15 +25,15 @@ struct conv_layer_impl final : neural_layer<conv_layer_impl<Desc>, Desc> {
     using layer_t     = this_type;                     ///< The type of this layer
     using dyn_layer_t = typename desc::dyn_layer_t;    ///< The type of this layer
 
-    static constexpr size_t NV1 = desc::NV1; ///< The first dimension of the visible units
-    static constexpr size_t NV2 = desc::NV2; ///< The second dimension of the visible units
-    static constexpr size_t NW1 = desc::NW1; ///< The first dimension of the filter
-    static constexpr size_t NW2 = desc::NW2; ///< The second dimension of the filter
-    static constexpr size_t NC  = desc::NC;  ///< The number of input channels
-    static constexpr size_t K   = desc::K;   ///< The number of filters
+    static inline constexpr size_t NV1 = desc::NV1; ///< The first dimension of the visible units
+    static inline constexpr size_t NV2 = desc::NV2; ///< The second dimension of the visible units
+    static inline constexpr size_t NW1 = desc::NW1; ///< The first dimension of the filter
+    static inline constexpr size_t NW2 = desc::NW2; ///< The second dimension of the filter
+    static inline constexpr size_t NC  = desc::NC;  ///< The number of input channels
+    static inline constexpr size_t K   = desc::K;   ///< The number of filters
 
-    static constexpr size_t NH1 = NV1 - NW1 + 1; //By definition
-    static constexpr size_t NH2 = NV2 - NW2 + 1; //By definition
+    static inline constexpr size_t NH1 = NV1 - NW1 + 1; //By definition
+    static inline constexpr size_t NH2 = NV2 - NW2 + 1; //By definition
 
     static constexpr auto activation_function = desc::activation_function; ///< The activation function
     static constexpr auto no_bias             = desc::parameters::template contains<dll::no_bias>(); ///< Disable the biases
@@ -241,32 +241,6 @@ struct conv_layer_impl final : neural_layer<conv_layer_impl<Desc>, Desc> {
         }
     }
 };
-
-//Allow odr-use of the constexpr static members
-
-template <typename Desc>
-const size_t conv_layer_impl<Desc>::NV1;
-
-template <typename Desc>
-const size_t conv_layer_impl<Desc>::NV2;
-
-template <typename Desc>
-const size_t conv_layer_impl<Desc>::NH1;
-
-template <typename Desc>
-const size_t conv_layer_impl<Desc>::NH2;
-
-template <typename Desc>
-const size_t conv_layer_impl<Desc>::NC;
-
-template <typename Desc>
-const size_t conv_layer_impl<Desc>::NW1;
-
-template <typename Desc>
-const size_t conv_layer_impl<Desc>::NW2;
-
-template <typename Desc>
-const size_t conv_layer_impl<Desc>::K;
 
 // Declare the traits for the Layer
 

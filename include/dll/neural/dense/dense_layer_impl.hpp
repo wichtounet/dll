@@ -26,8 +26,8 @@ struct dense_layer_impl final : neural_layer<dense_layer_impl<Desc>, Desc> {
     using layer_t     = this_type;                     ///< This layer's type
     using dyn_layer_t = typename desc::dyn_layer_t;    ///< The dynamic version of this layer
 
-    static constexpr size_t num_visible = desc::num_visible; ///< The number of visible units
-    static constexpr size_t num_hidden  = desc::num_hidden;  ///< The number of hidden units
+    static inline constexpr size_t num_visible = desc::num_visible; ///< The number of visible units
+    static inline constexpr size_t num_hidden  = desc::num_hidden;  ///< The number of hidden units
 
     static constexpr auto activation_function = desc::activation_function;                           ///< The layer's activation function
     static constexpr auto no_bias             = desc::parameters::template contains<dll::no_bias>(); ///< Disable the biases
@@ -226,14 +226,6 @@ struct dense_layer_impl final : neural_layer<dense_layer_impl<Desc>, Desc> {
         }
     }
 };
-
-//Allow odr-use of the constexpr static members
-
-template <typename Desc>
-const size_t dense_layer_impl<Desc>::num_visible;
-
-template <typename Desc>
-const size_t dense_layer_impl<Desc>::num_hidden;
 
 // Declare the traits for the Layer
 

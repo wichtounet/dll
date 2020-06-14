@@ -37,8 +37,8 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_
     using big_label_cache_type = typename label_cache_helper_t::big_cache_type; ///< The type of the big label cache
 
     static constexpr bool dll_generator    = true;               ///< Simple flag to indicate that the class is a DLL generator
-    static constexpr size_t batch_size     = desc::BatchSize;    ///< The size of the batch
-    static constexpr size_t big_batch_size = desc::BigBatchSize; ///< The number of batches kept in cache
+    static inline constexpr size_t batch_size     = desc::BatchSize;    ///< The size of the batch
+    static inline constexpr size_t big_batch_size = desc::BigBatchSize; ///< The number of batches kept in cache
 
     big_data_cache_type batch_cache;  ///< The data batch cache
     big_label_cache_type label_cache; ///< The label batch cache
@@ -303,8 +303,8 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_a
     using big_label_cache_type = typename label_cache_helper_t::big_cache_type; ///< The type of the big label cache
 
     static constexpr bool dll_generator    = true;               ///< Simple flag to indicate that the class is a DLL generator
-    static constexpr size_t batch_size     = desc::BatchSize;    ///< The size of the generated batches
-    static constexpr size_t big_batch_size = desc::BigBatchSize; ///< The number of batches kept in cache
+    static inline constexpr size_t batch_size     = desc::BatchSize;    ///< The size of the generated batches
+    static inline constexpr size_t big_batch_size = desc::BigBatchSize; ///< The number of batches kept in cache
 
     big_data_cache_type batch_cache;  ///< The data batch cache
     big_label_cache_type label_cache; ///< The label batch cache
@@ -692,20 +692,6 @@ struct outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_a
         return etl::dimensions<big_data_cache_type>() - 2;
     }
 };
-
-// Allow odr-use of the constexpr static members
-
-template <typename Iterator, typename LIterator, typename Desc>
-const size_t outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_augmented<Desc> && !is_threaded<Desc>>>::batch_size;
-
-template <typename Iterator, typename LIterator, typename Desc>
-const size_t outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<!is_augmented<Desc> && !is_threaded<Desc>>>::big_batch_size;
-
-template <typename Iterator, typename LIterator, typename Desc>
-const size_t outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_augmented<Desc> || is_threaded<Desc>>>::batch_size;
-
-template <typename Iterator, typename LIterator, typename Desc>
-const size_t outmemory_data_generator<Iterator, LIterator, Desc, std::enable_if_t<is_augmented<Desc> || is_threaded<Desc>>>::big_batch_size;
 
 /*!
  * \brief Display the given generator on the given stream

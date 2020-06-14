@@ -25,8 +25,8 @@ struct recurrent_last_layer_impl final : layer<recurrent_last_layer_impl<Desc>> 
     using layer_t     = this_type;                       ///< This layer's type
     using dyn_layer_t = typename desc::dyn_layer_t;      ///< The dynamic version of this layer
 
-    static constexpr size_t time_steps   = desc::time_steps;   ///< The number of time steps
-    static constexpr size_t hidden_units = desc::hidden_units; ///< The number of hidden units
+    static inline constexpr size_t time_steps   = desc::time_steps;   ///< The number of time steps
+    static inline constexpr size_t hidden_units = desc::hidden_units; ///< The number of hidden units
 
     using input_one_t  = etl::fast_dyn_matrix<weight, time_steps, hidden_units>; ///< The type of one input
     using output_one_t = etl::fast_dyn_matrix<weight, hidden_units>;             ///< The type of one output
@@ -173,14 +173,6 @@ struct recurrent_last_layer_impl final : layer<recurrent_last_layer_impl<Desc>> 
         // Nothing to do here
     }
 };
-
-//Allow odr-use of the constexpr static members
-
-template <typename Desc>
-const size_t recurrent_last_layer_impl<Desc>::time_steps;
-
-template <typename Desc>
-const size_t recurrent_last_layer_impl<Desc>::hidden_units;
 
 // Declare the traits for the Layer
 

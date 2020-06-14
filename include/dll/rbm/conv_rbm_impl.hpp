@@ -34,17 +34,17 @@ struct conv_rbm_impl final : public standard_crbm<conv_rbm_impl<Desc>, Desc> {
     static constexpr unit_type visible_unit = desc::visible_unit; ///< The type of visible unit
     static constexpr unit_type hidden_unit  = desc::hidden_unit;  ///< The type of hidden unit
 
-    static constexpr size_t NV1 = desc::NV1; ///< The first dimension of the visible units
-    static constexpr size_t NV2 = desc::NV2; ///< The second dimension of the visible units
-    static constexpr size_t NW1 = desc::NW1; ///< The first dimension of the hidden units
-    static constexpr size_t NW2 = desc::NW2; ///< The second dimension of the hidden units
-    static constexpr size_t NC  = desc::NC;  ///< The number of input channels
-    static constexpr size_t K   = desc::K;   ///< The number of filters
+    static inline constexpr size_t NV1 = desc::NV1; ///< The first dimension of the visible units
+    static inline constexpr size_t NV2 = desc::NV2; ///< The second dimension of the visible units
+    static inline constexpr size_t NW1 = desc::NW1; ///< The first dimension of the hidden units
+    static inline constexpr size_t NW2 = desc::NW2; ///< The second dimension of the hidden units
+    static inline constexpr size_t NC  = desc::NC;  ///< The number of input channels
+    static inline constexpr size_t K   = desc::K;   ///< The number of filters
 
-    static constexpr size_t batch_size = desc::BatchSize; ///< The mini-batch size
+    static inline constexpr size_t batch_size = desc::BatchSize; ///< The mini-batch inline size
 
-    static constexpr size_t NH1 = NV1 - NW1 + 1; //By definition
-    static constexpr size_t NH2 = NV2 - NW2 + 1; //By definition
+    static inline constexpr size_t NH1 = NV1 - NW1 + 1; //By definition
+    static inline constexpr size_t NH2 = NV2 - NW2 + 1; //By definition
 
     static constexpr bool dbn_only = rbm_layer_traits<this_type>::is_dbn_only();
 
@@ -303,32 +303,6 @@ struct rbm_base_traits<conv_rbm_impl<Desc>> {
     using input_t             = std::vector<input_one_t>; ///< The type of the input
     using output_t            = std::vector<output_one_t>; ///< The type of the output
 };
-
-//Allow odr-use of the constexpr static members
-
-template <typename Desc>
-const size_t conv_rbm_impl<Desc>::NV1;
-
-template <typename Desc>
-const size_t conv_rbm_impl<Desc>::NV2;
-
-template <typename Desc>
-const size_t conv_rbm_impl<Desc>::NH1;
-
-template <typename Desc>
-const size_t conv_rbm_impl<Desc>::NH2;
-
-template <typename Desc>
-const size_t conv_rbm_impl<Desc>::NC;
-
-template <typename Desc>
-const size_t conv_rbm_impl<Desc>::NW1;
-
-template <typename Desc>
-const size_t conv_rbm_impl<Desc>::NW2;
-
-template <typename Desc>
-const size_t conv_rbm_impl<Desc>::K;
 
 // Declare the traits for the RBM
 
