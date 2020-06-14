@@ -868,7 +868,7 @@ auto make_generator(const Container& container, const LContainer& lcontainer, [[
 }
 
 /*!
- * \brief Prepare an out of memory data generator from an example. The generator
+ * \brief Prepare an in-memory data generator from an example. The generator
  * will be constructed to hold the given size and can then be filled.
  */
 template <typename Input, typename Label, typename... Parameters>
