@@ -32,15 +32,13 @@ auto make_mnist_ae_generator_train(const std::string& folder, size_t start, size
     }
 
     // Prepare the empty generator
-    auto generator = prepare_generator(input, input, n, 10, dll::inmemory_data_generator_desc<Parameters..., dll::autoencoder>{});
+    auto generator = prepare_generator(input, n, dll::inmemory_single_data_generator_desc<Parameters..., dll::autoencoder>{});
 
     // Read all the necessary images
     if(!mnist::read_mnist_image_file_flat(generator->input_cache, folder + "/train-images-idx3-ubyte", m, start)){
         std::cerr << "Something went wrong, impossible to load MNIST training images" << std::endl;
         return generator;
     }
-
-    generator->label_cache = generator->input_cache;
 
     // Apply the transformations on the input
     generator->finalize_prepared_data();
@@ -69,15 +67,13 @@ auto make_mnist_ae_generator_test(const std::string& folder, size_t start, size_
     }
 
     // Prepare the empty generator
-    auto generator = prepare_generator(input, input, n, 10, dll::inmemory_data_generator_desc<Parameters..., dll::autoencoder>{});
+    auto generator = prepare_generator(input, n, dll::inmemory_single_data_generator_desc<Parameters..., dll::autoencoder>{});
 
     // Read all the necessary images
     if(!mnist::read_mnist_image_file_flat(generator->input_cache, folder + "/t10k-images-idx3-ubyte", m, start)){
         std::cerr << "Something went wrong, impossible to load MNIST test images" << std::endl;
         return generator;
     }
-
-    generator->label_cache = generator->input_cache;
 
     // Apply the transformations on the input
     generator->finalize_prepared_data();

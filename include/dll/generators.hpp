@@ -57,4 +57,5 @@ static constexpr bool is_threaded = Desc::Threaded;
 } // end of namespace dll
 
 #include "dll/generators/inmemory_data_generator.hpp"
+#include "dll/generators/inmemory_single_data_generator.hpp"
 #include "dll/generators/outmemory_data_generator.hpp"
