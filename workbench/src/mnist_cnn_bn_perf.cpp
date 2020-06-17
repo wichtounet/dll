@@ -39,8 +39,8 @@ int main(int /*argc*/, char* /*argv*/ []) {
         , dll::updater<dll::updater_type::ADADELTA>  // ADADELTA
         , dll::batch_size<256>                       // The mini-batch size
         , dll::shuffle                               // Shuffle the dataset before each epoch
-        //, dll::no_batch_display                    // Disable pretty print of each every batch
-        //, dll::no_epoch_error                      // Disable computation of the error at each epoch
+        , dll::no_batch_display                    // Disable pretty print of each every batch
+        , dll::no_epoch_error                      // Disable computation of the error at each epoch
         , dll::early_training                        // Do not use validation error for early stopping (BN)
     >::network_t;
 
