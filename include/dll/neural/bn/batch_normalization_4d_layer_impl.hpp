@@ -151,17 +151,9 @@ struct batch_normalization_4d_layer_impl : neural_layer<batch_normalization_4d_l
         last_mean = etl::bias_batch_mean_4d(input);
 
         // Compute the variance of the mini-batch
-        last_var  = 0;
+        last_var = etl::bias_batch_var_4d(input, last_mean);
 
-        for (size_t b = 0; b < B; ++b) {
-            for (size_t k = 0; k < Kernels; ++k) {
-                last_var(k) += etl::sum((input(b)(k) - last_mean(k)) >> (input(b)(k) - last_mean(k)));
-            }
-        }
-
-        last_var /= S;
-
-        inv_var  = 1.0 / etl::sqrt(last_var + e);
+        inv_var = 1.0 / etl::sqrt(last_var + e);
 
         input_pre.inherit_if_null(input);
 
