@@ -124,15 +124,10 @@ struct batch_normalization_4d_layer_impl : neural_layer<batch_normalization_4d_l
     void test_forward_batch(Output& output, const Input& input) const {
         dll::auto_timer timer("bn:4d:test:forward");
 
-        const auto B = etl::dim<0>(input);
-
         auto inv_var = etl::force_temporary(1.0 / etl::sqrt(var + e));
 
-        for (size_t b = 0; b < B; ++b) {
-            for (size_t k = 0; k < Kernels; ++k) {
-                output(b)(k) = (gamma(k) >> ((input(b)(k) - mean(k)) >> inv_var(k))) + beta(k);
-            }
-        }
+        output = batch_hint(inv_var >> (input - mean));
+        output = batch_hint((gamma >> output) + beta);
     }
 
     /*!
@@ -157,14 +152,10 @@ struct batch_normalization_4d_layer_impl : neural_layer<batch_normalization_4d_l
 
         input_pre.inherit_if_null(input);
 
-        for(size_t b = 0; b < B; ++b){
-            for (size_t k = 0; k < Kernels; ++k) {
-                input_pre(b)(k) = (input(b)(k) - last_mean(k)) >> inv_var(k);
-                output(b)(k)    = (gamma(k) >> input_pre(b)(k)) + beta(k);
-            }
-        }
+        input_pre = batch_hint(inv_var >> (input - last_mean));
+        output    = batch_hint((gamma >> input_pre) + beta);
 
-        //// Update the current mean and variance
+        // Update the current mean and variance
         mean = momentum * mean + (1.0 - momentum) * last_mean;
         var  = momentum * var + (1.0 - momentum) * (S / (S - 1) * last_var);
     }
@@ -185,19 +176,13 @@ struct batch_normalization_4d_layer_impl : neural_layer<batch_normalization_4d_l
      * \param context The training context
      */
     template<typename HH, typename C>
-    void backward_batch(HH&& output, C& context) const {
+    void backward_batch(HH&& output, C& context) {
         dll::unsafe_auto_timer timer("bn:4d:backward");
 
         const auto B = etl::dim<0>(context.input);
         const auto S = B * W * H;
 
-        auto dxhat = etl::force_temporary_dim_only(context.errors);
-
-        for(size_t b = 0; b < B; ++b){
-            for (size_t k = 0; k < Kernels; ++k) {
-                dxhat(b)(k) = gamma(k) >> context.errors(b)(k);
-            }
-        }
+        auto dxhat = force_temporary(batch_hint(gamma >> context.errors));
 
         auto dxhat_l      = etl::bias_batch_sum_4d(dxhat);
         auto dxhat_xhat_l = etl::bias_batch_sum_4d(dxhat >> input_pre);
@@ -205,11 +190,14 @@ struct batch_normalization_4d_layer_impl : neural_layer<batch_normalization_4d_l
         *dxhat_l;
         *dxhat_xhat_l;
 
-        for(size_t b = 0; b < B; ++b){
-            for (size_t k = 0; k < Kernels; ++k) {
-                output(b)(k) = ((1.0 / S) * inv_var(k)) >> (S * dxhat(b)(k) - dxhat_l(k) - (input_pre(b)(k) >> dxhat_xhat_l(k)));
-            }
-        }
+        // Pre scale factors
+        inv_var *= (1.0 / S);
+        dxhat *= S;
+
+        // output = inv_var >> (dxhat - dxhat_l - (input_pre >> dxhat_xhat_l));
+        auto t1 = etl::batch_hint((dxhat_xhat_l >> input_pre) + dxhat_l);
+        output  = dxhat - t1;
+        output = etl::batch_hint(dxhat_xhat_l >> output);
     }
 
     /*!
