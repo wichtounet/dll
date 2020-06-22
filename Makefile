@@ -28,7 +28,7 @@ OPENCV_LD_FLAGS=-lopencv_core -lopencv_imgproc -lopencv_highgui
 LIBSVM_LD_FLAGS=-lsvm
 TEST_LD_FLAGS=$(LIBSVM_LD_FLAGS)
 
-CXX_FLAGS += -DETL_PARALLEL -DETL_VECTORIZE_FULL
+CXX_FLAGS += -DETL_PARALLEL -DETL_VECTORIZE_FULL -DETL_RELAXED
 
 # Use the recommended limit
 CXX_FLAGS += -ftemplate-depth=1024
