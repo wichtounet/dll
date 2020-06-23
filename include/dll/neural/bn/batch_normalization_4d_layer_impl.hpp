@@ -124,9 +124,7 @@ struct batch_normalization_4d_layer_impl : neural_layer<batch_normalization_4d_l
     void test_forward_batch(Output& output, const Input& input) const {
         dll::auto_timer timer("bn:4d:test:forward");
 
-        auto inv_var = etl::force_temporary(1.0 / etl::sqrt(var + e));
-
-        output = batch_hint(inv_var >> (input - mean));
+        output = batch_hint((1.0 / etl::sqrt(var + e)) >> (input - mean));
         output = batch_hint((gamma >> output) + beta);
     }
 
@@ -187,17 +185,9 @@ struct batch_normalization_4d_layer_impl : neural_layer<batch_normalization_4d_l
         auto dxhat_l      = etl::bias_batch_sum_4d(dxhat);
         auto dxhat_xhat_l = etl::bias_batch_sum_4d(dxhat >> input_pre);
 
-        *dxhat_l;
-        *dxhat_xhat_l;
-
-        // Pre scale factors
-        inv_var *= (1.0 / S);
-        dxhat *= S;
-
         // output = inv_var >> (dxhat - dxhat_l - (input_pre >> dxhat_xhat_l));
         auto t1 = etl::batch_hint((dxhat_xhat_l >> input_pre) + dxhat_l);
-        output  = dxhat - t1;
-        output = etl::batch_hint(inv_var >> output);
+        output = etl::batch_hint(((1.0 / S) * inv_var) >> ((S * dxhat) - t1));
     }
 
     /*!
