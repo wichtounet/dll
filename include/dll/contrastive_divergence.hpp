@@ -108,15 +108,10 @@ void update_normal(RBM& rbm, Trainer& t) {
 
         t.q_local_t = decay_rate * t.q_local_t + (1.0 - decay_rate) * t.q_local_batch;
 
-        auto q_local_penalty = cost * (t.q_local_t - p);
+        auto q_local_penalty = -1 * cost * (t.q_local_t - p);
 
-        t.b_grad -= q_local_penalty;
-
-        for (size_t i = 0; i < num_hidden(rbm); ++i) {
-            for (size_t j = 0; j < num_visible(rbm); ++j) {
-                t.w_grad(j, i) -= q_local_penalty(i);
-            }
-        }
+        t.b_grad += q_local_penalty;
+        t.w_grad = bias_add_2d(t.w_grad, q_local_penalty);
     }
 
     //TODO the batch is not necessary full!
@@ -340,7 +335,7 @@ void train_normal(InputBatch& input_batch, ExpectedBatch& expected_batch, rbm_tr
     t.q_global_batch = mean(t.h2_a);
 
     if constexpr (rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET) {
-        t.q_local_batch = mean_l(t.h2_a);
+        t.q_local_batch = bias_batch_mean_2d(t.h2_a);
     }
 
     context.batch_sparsity = t.q_global_batch;
@@ -437,7 +432,7 @@ void train_convolutional(InputBatch& input_batch, ExpectedBatch& expected_batch,
     t.q_global_batch = mean(t.h2_a);
 
     if constexpr (rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET) {
-        t.q_local_batch = mean_l(t.h2_a);
+        t.q_local_batch = bias_batch_mean_2d(t.h2_a);
     }
 
     //Compute the biases for sparsity
