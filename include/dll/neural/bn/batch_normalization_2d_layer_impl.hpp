@@ -122,13 +122,8 @@ struct batch_normalization_2d_layer_impl : neural_layer<batch_normalization_2d_l
     void test_forward_batch(Output& output, const Input& input) const {
         dll::auto_timer timer("bn:2d:test:forward");
 
-        const auto B = etl::dim<0>(input);
-
-        auto inv_var = etl::force_temporary(1.0 / etl::sqrt(var + e));
-
-        for(size_t b = 0; b < B; ++b){
-            output(b) = (gamma >> ((input(b) - mean) >> inv_var)) + beta;
-        }
+        output = batch_hint((1.0 / etl::sqrt(var + e)) >> (input - mean));
+        output = batch_hint((gamma >> output) + beta);
     }
 
     /*!
@@ -148,10 +143,8 @@ struct batch_normalization_2d_layer_impl : neural_layer<batch_normalization_2d_l
 
         input_pre.inherit_if_null(input);
 
-        for(size_t b = 0; b < B; ++b){
-            input_pre(b) = (input(b) - last_mean) >> inv_var;
-            output(b)    = (input_pre(b) >> gamma) + beta;
-        }
+        input_pre = batch_hint(inv_var >> (input - last_mean));
+        output    = batch_hint((gamma >> input_pre) + beta);
 
         // Update the current mean and variance
         mean = momentum * mean + (1.0 - momentum) * last_mean;
@@ -185,9 +178,8 @@ struct batch_normalization_2d_layer_impl : neural_layer<batch_normalization_2d_l
         dbeta  = bias_batch_sum_2d(context.errors);
         dgamma = bias_batch_sum_2d(input_pre >> context.errors);
 
-        for(size_t b = 0; b < B; ++b){
-            output(b) = (1.0 / B) >> inv_var >> gamma >> ((B >> context.errors(b)) - (input_pre(b) >> dgamma) - dbeta);
-        }
+        output = batch_hint((dgamma >> input_pre) + dbeta);
+        output = batch_hint(((1.0 / B) >> inv_var >> gamma) >> ((B >> context.errors) - output));
     }
 
     /*!
