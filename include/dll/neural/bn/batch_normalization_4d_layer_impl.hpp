@@ -197,7 +197,7 @@ struct batch_normalization_4d_layer_impl : neural_layer<batch_normalization_4d_l
         // output = inv_var >> (dxhat - dxhat_l - (input_pre >> dxhat_xhat_l));
         auto t1 = etl::batch_hint((dxhat_xhat_l >> input_pre) + dxhat_l);
         output  = dxhat - t1;
-        output = etl::batch_hint(dxhat_xhat_l >> output);
+        output = etl::batch_hint(inv_var >> output);
     }
 
     /*!
