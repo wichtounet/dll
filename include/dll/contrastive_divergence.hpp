@@ -421,8 +421,8 @@ void train_convolutional(InputBatch& input_batch, ExpectedBatch& expected_batch,
 
     //Compute the gradients
     t.w_grad = t.w_pos - t.w_neg;
-    t.b_grad = mean_r(sum_l(t.h1_a - t.h2_a));
-    t.c_grad = mean_r(sum_l(t.vf - t.v2_a));
+    t.b_grad = bias_batch_mean_4d(t.h1_a - t.h2_a);
+    t.c_grad = bias_batch_mean_4d(t.vf - t.v2_a);
 
     nan_check_deep(t.w_grad);
     nan_check_deep(t.b_grad);
