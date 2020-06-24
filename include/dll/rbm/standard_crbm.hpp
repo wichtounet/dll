@@ -189,39 +189,37 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
 
         h_a = etl::conv_4d_valid_flipped(v_a, as_derived().w);
 
-        auto b_rep = as_derived().get_batch_b_rep(v_a);
-
         // Need to be done before h_a is computed!
         if constexpr (P && S && hidden_unit == unit_type::RELU) {
-            h_s = max(logistic_noise(b_rep + h_a), 0.0);
+            h_s = max(logistic_noise(bias_add_4d(h_a, as_derived().b)), 0.0);
         }
 
         if constexpr (P && S && hidden_unit == unit_type::RELU1) {
-            h_s = min(max(ranged_noise(b_rep + h_a, 1.0), 0.0), 1.0);
+            h_s = min(max(ranged_noise(bias_add_4d(h_a, as_derived().b), 1.0), 0.0), 1.0);
         }
 
         if constexpr (P && S && hidden_unit == unit_type::RELU6) {
-            h_s = min(max(ranged_noise(b_rep + h_a, 6.0), 0.0), 6.0);
+            h_s = min(max(ranged_noise(bias_add_4d(h_a, as_derived().b), 6.0), 0.0), 6.0);
         }
 
         if constexpr (P && hidden_unit == unit_type::BINARY && visible_unit == unit_type::BINARY) {
-            h_a = etl::sigmoid(b_rep + h_a);
+            h_a = etl::sigmoid(bias_add_4d(h_a, as_derived().b));
         }
 
         if constexpr (P && hidden_unit == unit_type::BINARY && visible_unit == unit_type::GAUSSIAN) {
-            h_a = etl::sigmoid((1.0 / (0.1 * 0.1)) >> (b_rep + h_a));
+            h_a = etl::sigmoid((1.0 / (0.1 * 0.1)) >> (bias_add_4d(h_a, as_derived().b)));
         }
 
         if constexpr (P && hidden_unit == unit_type::RELU) {
-            h_a = max(b_rep + h_a, 0.0);
+            h_a = max(bias_add_4d(h_a, as_derived().b), 0.0);
         }
 
         if constexpr (P && hidden_unit == unit_type::RELU1) {
-            h_a = min(max(b_rep + h_a, 0.0), 1.0);
+            h_a = min(max(bias_add_4d(h_a, as_derived().b), 0.0), 1.0);
         }
 
         if constexpr (P && hidden_unit == unit_type::RELU6) {
-            h_a = min(max(b_rep + h_a, 0.0), 6.0);
+            h_a = min(max(bias_add_4d(h_a, as_derived().b), 0.0), 6.0);
         }
 
         if constexpr (P && S && hidden_unit == unit_type::BINARY) {
@@ -251,16 +249,14 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
         // Note: we reuse v_a as a temporary here, before adding the biases
         v_a = etl::conv_4d_full(h_s, as_derived().w);
 
-        auto c_rep = as_derived().get_batch_c_rep(h_s);
-
         // Compute the activation probabilities
 
         if constexpr (P && visible_unit == unit_type::BINARY) {
-            v_a = etl::sigmoid(c_rep + v_a);
+            v_a = etl::sigmoid(bias_add_4d(v_a, as_derived().c));
         }
 
         if constexpr (P && visible_unit == unit_type::GAUSSIAN) {
-            v_a = c_rep + v_a;
+            v_a = bias_add_4d(v_a, as_derived().c);
         }
 
         // Sample the values from the probabilities
