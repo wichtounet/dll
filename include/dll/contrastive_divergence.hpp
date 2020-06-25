@@ -396,8 +396,8 @@ void compute_gradients_conv(InputBatch& input_batch, ExpectedBatch& expected_bat
     {
         dll::auto_timer timer("cd:batch_compute_gradients_conv");
 
-        t.w_pos = conv_4d_valid_filter_flipped(t.vf, t.h1_a);
-        t.w_neg = conv_4d_valid_filter_flipped(t.v2_a, t.h2_a);
+        t.w_pos = etl::ml::convolution_backward_filter(t.vf, t.h1_a);
+        t.w_neg = etl::ml::convolution_backward_filter(t.v2_a, t.h2_a);
     }
 }
 
