@@ -119,7 +119,7 @@ struct for_each_impl<D, 1, std::index_sequence<I...>> {
 
     template <typename Functor>
     void for_each_layer_i(Functor&& functor) {
-        functor(dbn.template layer_get<0>(), 0);
+        functor(0, dbn.template layer_get<0>());
     }
 
     template <typename Functor>
