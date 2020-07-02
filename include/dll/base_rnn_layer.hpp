@@ -72,12 +72,7 @@ struct base_rnn_layer : layer<Derived> {
         prepare_cache(Batch, time_steps, sequence_length, hidden_units);
 
         // 1. Rearrange input
-
-        for (size_t b = 0; b < Batch; ++b) {
-            for (size_t t = 0; t < time_steps; ++t) {
-                x_t(t)(b) = x(b)(t);
-            }
-        }
+        x_t = transpose_front(x);
 
         // 2. Forward propagation through time
 
@@ -91,11 +86,7 @@ struct base_rnn_layer : layer<Derived> {
 
         // 3. Rearrange the output
 
-        for (size_t b = 0; b < Batch; ++b) {
-            for (size_t t = 0; t < time_steps; ++t) {
-                output(b)(t) = s_t(t)(b);
-            }
-        }
+        output = transpose_front(s_t);
     }
 
     /*!
@@ -114,11 +105,7 @@ struct base_rnn_layer : layer<Derived> {
 
         // 1. Rearrange errors
 
-        for (size_t b = 0; b < Batch; ++b) {
-            for (size_t t = 0; t < time_steps; ++t) {
-                delta_t(t)(b) = context.errors(b)(t);
-            }
-        }
+        delta_t = transpose_front(context.errors);
 
         // 2. Get the gradients from the context
 
@@ -172,11 +159,7 @@ struct base_rnn_layer : layer<Derived> {
         // 3. Rearrange for the output
 
         if (direct) {
-            for (size_t b = 0; b < Batch; ++b) {
-                for (size_t t = 0; t < time_steps; ++t) {
-                    output(b)(t) = d_x_t(t)(b);
-                }
-            }
+            output = transpose_front(d_x_t);
         }
     }
 
