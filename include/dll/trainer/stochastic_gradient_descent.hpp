@@ -1031,6 +1031,10 @@ struct sgd_trainer {
         auto& w_v    = std::get<I>(context.up.context)->v;
         auto& w_x    = std::get<I>(context.up.context)->x;
 
+        // Performance note: the sqrt/sqrt could be computed as one sqrt
+        // However, this causes significant precision loss and is probably not
+        // worth it
+
         w_g = beta * w_g + ((1.0 - beta) * (w_grad >> w_grad));
         w_v = (sqrt(w_x + e) >> w_grad) / sqrt(w_g + e);
         w_x = beta * w_x + ((1.0 - beta) * (w_v >> w_v));
