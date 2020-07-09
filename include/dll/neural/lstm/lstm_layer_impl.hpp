@@ -238,11 +238,7 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
 
         // 1. Rearrange input
 
-        for (size_t b = 0; b < Batch; ++b) {
-            for (size_t t = 0; t < time_steps; ++t) {
-                x_t(t)(b) = x(b)(t);
-            }
-        }
+        x_t = transpose_front(x);
 
         // 2. Forward propagation through time
 
@@ -268,11 +264,7 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
 
         // 3. Rearrange the output
 
-        for (size_t b = 0; b < Batch; ++b) {
-            for (size_t t = 0; t < time_steps; ++t) {
-                output(b)(t) = h_t(t)(b);
-            }
-        }
+        output = transpose_front(h_t);
     }
 
     /*!
@@ -328,11 +320,7 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
 
         etl::dyn_matrix<float, 3> delta_t(time_steps, Batch, hidden_units);
 
-        for (size_t b = 0; b < Batch; ++b) {
-            for (size_t t = 0; t < time_steps; ++t) {
-                delta_t(t)(b) = context.errors(b)(t);
-            }
-        }
+        delta_t = transpose_front(context.errors);
 
         // 2. Get gradients from the context
 
@@ -438,11 +426,7 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
         // 3. Rearrange for the output
 
         if (direct) {
-            for (size_t b = 0; b < Batch; ++b) {
-                for (size_t t = 0; t < time_steps; ++t) {
-                    output(b)(t) = d_x_t(t)(b);
-                }
-            }
+            output = transpose_front(d_x_t);
         }
     }
 
