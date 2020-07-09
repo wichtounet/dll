@@ -305,6 +305,8 @@ $(eval $(call add_executable,dll_mnist_ae_perf,workbench/src/mnist_ae_perf.cpp))
 $(eval $(call add_executable,dll_mnist_deep_ae_perf,workbench/src/mnist_deep_ae_perf.cpp))
 $(eval $(call add_executable,dll_mnist_dbn_perf,workbench/src/mnist_dbn_perf.cpp))
 $(eval $(call add_executable,dll_mnist_cdbn_perf,workbench/src/mnist_cdbn_perf.cpp))
+$(eval $(call add_executable,dll_mnist_rnn_perf,workbench/src/mnist_rnn_perf.cpp))
+$(eval $(call add_executable,dll_mnist_lstm_perf,workbench/src/mnist_lstm_perf.cpp))
 
 # Analysis of performance and compilation time
 $(eval $(call add_executable,dll_compile_rbm_one,workbench/src/compile_rbm_one.cpp))
