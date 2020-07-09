@@ -26,7 +26,7 @@ int main(int /*argc*/, char* /*argv*/ []) {
 
     using network_t = dll::network_desc<
         dll::network_layers<
-            dll::rnn_layer<time_steps, sequence_length, hidden_units>,
+            dll::rnn_layer<time_steps, sequence_length, hidden_units, dll::last_only>,
             dll::recurrent_last_layer<time_steps, hidden_units>,
             dll::dense_layer<hidden_units, 10, dll::softmax>
         >
