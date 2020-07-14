@@ -92,12 +92,17 @@ struct recurrent_last_layer_impl final : layer<recurrent_last_layer_impl<Desc>> 
     void forward_batch(H&& output, const V& input) const {
         dll::auto_timer timer("recurrent_last:forward_batch");
 
-        const auto Batch = etl::dim<0>(input);
+        if constexpr (etl::cuda_enabled) {
+            auto tmp = force_temporary(transpose_front(input));
+            output   = tmp(time_steps - 1);
+        } else {
+            const auto Batch = etl::dim<0>(input);
 
-        cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
+            cpp_assert(etl::dim<0>(output) == Batch, "The number of samples must be consistent");
 
-        for(size_t b = 0; b < Batch; ++b){
-            output(b) = input(b)(time_steps - 1);
+            for (size_t b = 0; b < Batch; ++b) {
+                output(b) = input(b)(time_steps - 1);
+            }
         }
     }
 
@@ -152,15 +157,22 @@ struct recurrent_last_layer_impl final : layer<recurrent_last_layer_impl<Desc>> 
      * \param context The training context
      */
     template<typename H, typename C>
-    void backward_batch(H&& output, C& context) const {
+    void backward_batch(H&& output, [[maybe_unused]] C& context) const {
         dll::auto_timer timer("recurrent_last:backward_batch");
 
-        const auto Batch = etl::dim<0>(output);
+        if constexpr (etl::cuda_enabled) {
+            auto tmp = force_temporary(transpose_front(output));
 
-        output = 0;
+            tmp                 = 0;
+            tmp(time_steps - 1) = context.errors;
 
-        for(size_t b = 0; b < Batch; ++b){
-            output(b)(time_steps - 1) = context.errors(b);
+            output = force_temporary(tmp);
+        } else {
+            const auto Batch = etl::dim<0>(output);
+
+            for (size_t b = 0; b < Batch; ++b) {
+                output(b)(time_steps - 1) = context.errors(b);
+            }
         }
     }
 
