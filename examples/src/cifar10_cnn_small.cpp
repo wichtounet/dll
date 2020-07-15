@@ -5,8 +5,6 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#define ETL_COUNTERS
-#define ETL_GPU_TOOLS
 #define ETL_GPU_POOL
 
 #include "dll/neural/conv/conv_layer.hpp"
@@ -41,15 +39,11 @@ int main(int /*argc*/, char* /*argv*/ []) {
     dbn->momentum = 0.9;
     dbn->goal = -1.0;
 
-    dbn->display();
+    dbn->display_pretty();
 
     dbn->fine_tune(dataset.train(), 5);
 
     dbn->evaluate(dataset.test());
-
-    dll::dump_timers_pretty();
-
-    etl::dump_counters_pretty();
 
     return 0;
 }
