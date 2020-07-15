@@ -2073,9 +2073,9 @@ public:
             if (cpp_unlikely(!full_batch)) {
                 auto soutput = slice(output, 0, n);
 
-                std::tie(batch_loss, batch_error) = etl::ml::mse(soutput, labels, 1, 1);
+                std::tie(batch_loss, batch_error) = etl::ml::mse(soutput, labels, (1.0f / s), (1.0 / (2.0 * s)));
             } else {
-                std::tie(batch_loss, batch_error) = etl::ml::mse(output, labels, 1, 1);
+                std::tie(batch_loss, batch_error) = etl::ml::mse(output, labels, (1.0f / s), (1.0 / (2.0 * s)));
             }
         }
 
