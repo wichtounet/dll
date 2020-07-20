@@ -174,7 +174,7 @@ struct base_rnn_layer : layer<Derived> {
     void compute_gradients_impl([[maybe_unused]] C& context, [[maybe_unused]] const W& w, [[maybe_unused]] const U& u, [[maybe_unused]] size_t time_steps,
                                 [[maybe_unused]] size_t sequence_length, [[maybe_unused]] size_t hidden_units, [[maybe_unused]] size_t bptt_steps) const {
         if constexpr (!C::layer){
-            backward_batch_impl(x_t, context, w, u, time_steps, sequence_length, hidden_units, bptt_steps, false);
+            backward_batch_impl(x_t, context, w, u, time_steps, bptt_steps, false);
         }
     }
 
