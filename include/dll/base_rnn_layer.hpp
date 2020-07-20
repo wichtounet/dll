@@ -64,6 +64,17 @@ struct base_rnn_layer : layer<Derived> {
             delta_t.resize(time_steps, Batch, hidden_units);
             d_h_t.resize(time_steps, Batch, hidden_units);
             d_x_t.resize(time_steps, Batch, sequence_length);
+
+#ifdef ETL_GPU
+            // Note: all these matrices are only accessed through sub views
+            // So, the base CPU/GPU is never fully updated.
+            // Starting with valid GPU status ensures that we never copy between
+            // CPU and GPU
+            d_h_t.ensure_gpu_up_to_date();
+            s_t.ensure_gpu_up_to_date();
+            d_h_t.ensure_gpu_up_to_date();
+            d_x_t.ensure_gpu_up_to_date();
+#endif
         }
     }
 
