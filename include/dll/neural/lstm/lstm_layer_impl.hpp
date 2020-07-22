@@ -217,6 +217,40 @@ struct lstm_layer_impl final : base_lstm_layer<lstm_layer_impl<Desc>, Desc> {
             d_xh_f_t.resize(time_steps, Batch, hidden_units);
             d_xh_i_t.resize(time_steps, Batch, hidden_units);
             d_xh_c_t.resize(time_steps, Batch, hidden_units);
+
+#ifdef ETL_GPU
+            // Note: all these matrices are only accessed through sub views
+            // So, the base CPU/GPU is never fully updated.
+            // Starting with valid GPU status ensures that we never copy between
+            // CPU and GPU
+            g_t.ensure_gpu_up_to_date();
+            i_t.ensure_gpu_up_to_date();
+            f_t.ensure_gpu_up_to_date();
+            o_t.ensure_gpu_up_to_date();
+
+            x_t.ensure_gpu_up_to_date();
+            s_t.ensure_gpu_up_to_date();
+            h_t.ensure_gpu_up_to_date();
+
+            d_h_t.ensure_gpu_up_to_date();
+            d_c_t.ensure_gpu_up_to_date();
+            d_x_t.ensure_gpu_up_to_date();
+
+            d_h_o_t.ensure_gpu_up_to_date();
+            d_h_f_t.ensure_gpu_up_to_date();
+            d_h_i_t.ensure_gpu_up_to_date();
+            d_h_c_t.ensure_gpu_up_to_date();
+
+            d_x_o_t.ensure_gpu_up_to_date();
+            d_x_f_t.ensure_gpu_up_to_date();
+            d_x_i_t.ensure_gpu_up_to_date();
+            d_x_c_t.ensure_gpu_up_to_date();
+
+            d_xh_o_t.ensure_gpu_up_to_date();
+            d_xh_f_t.ensure_gpu_up_to_date();
+            d_xh_i_t.ensure_gpu_up_to_date();
+            d_xh_c_t.ensure_gpu_up_to_date();
+#endif
         }
     }
 
