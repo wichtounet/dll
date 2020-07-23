@@ -1,11 +1,9 @@
 //=======================================================================
-// Copyright (c) 2016 Baptiste Wicht
+// Copyright (c) 2014-2020 Baptiste Wicht
 // Distributed under the terms of the MIT License.
 // (See accompanying file LICENSE or copy at
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
-
-#define ETL_GPU_POOL
 
 #include "dll/neural/conv/conv_layer.hpp"
 #include "dll/neural/dense/dense_layer.hpp"
@@ -17,7 +15,9 @@ int main(int /*argc*/, char* /*argv*/ []) {
     // Load the dataset
     auto dataset = dll::make_cifar10_dataset(dll::batch_size<256>{}, dll::scale_pre<255>{});
 
-    using dbn_t = dll::dbn_desc<
+    // Build the network
+
+    using network_t = dll::dyn_network_desc<
             dll::dbn_layers<
                     dll::conv_layer<3, 32, 32, 12, 5, 5, dll::relu>,
                     dll::mp_3d_layer<12, 28, 28, 1, 2, 2>,
@@ -30,20 +30,19 @@ int main(int /*argc*/, char* /*argv*/ []) {
             dll::batch_size<256>,
             dll::no_batch_display,
             dll::no_epoch_error
-    >::dbn_t;
+    >::network_t;
 
-    auto dbn = std::make_unique<dbn_t>();
+    auto net = std::make_unique<network_t>();
 
-    dbn->learning_rate = 0.001;
-    dbn->initial_momentum = 0.9;
-    dbn->momentum = 0.9;
-    dbn->goal = -1.0;
+    // Display the network and dataset
+    net->display_pretty();
+    dataset.display_pretty();
 
-    dbn->display_pretty();
+    // Train the network
+    net->train(dataset.train(), 5);
 
-    dbn->fine_tune(dataset.train(), 5);
-
-    dbn->evaluate(dataset.test());
+    // Test the network on test set
+    net->evaluate(dataset.test());
 
     return 0;
 }
