@@ -50,7 +50,11 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
     static constexpr unit_type visible_unit = desc::visible_unit; ///< The visible unit type
     static constexpr unit_type hidden_unit  = desc::hidden_unit;  ///< The hidden unit type
 
-    standard_crbm() = default;
+    std::shared_ptr<void*> states; ///< The states for random number generaton
+
+    standard_crbm() {
+        states = std::make_shared<void*>();
+    }
 
     // Make base class them participate in overload resolution
     using base_type::activate_hidden;
@@ -108,7 +112,7 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
         }
 
         if constexpr (P && S && hidden_unit == unit_type::BINARY) {
-            h_s = bernoulli(h_a);
+            h_s = state_bernoulli(h_a, states);
         }
 
         // NaN checks
@@ -156,7 +160,7 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
         // Sample the values from the probabilities
 
         if constexpr (P && S && visible_unit == unit_type::BINARY) {
-            v_s = bernoulli(v_a);
+            v_s = state_bernoulli(v_a, states);
         }
 
         if constexpr (P && S && visible_unit == unit_type::GAUSSIAN) {
@@ -223,7 +227,7 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
         }
 
         if constexpr (P && S && hidden_unit == unit_type::BINARY) {
-            h_s = bernoulli(h_a);
+            h_s = state_bernoulli(h_a, states);
         }
 
         // NaN checks
@@ -262,7 +266,7 @@ struct standard_crbm : public standard_conv_rbm<Derived, Desc> {
         // Sample the values from the probabilities
 
         if constexpr (P && S && visible_unit == unit_type::BINARY) {
-            v_s = bernoulli(v_a);
+            v_s = state_bernoulli(v_a, states);
         }
 
         if constexpr (P && S && visible_unit == unit_type::GAUSSIAN) {
