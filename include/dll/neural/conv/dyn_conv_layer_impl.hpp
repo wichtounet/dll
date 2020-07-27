@@ -58,6 +58,12 @@ struct dyn_conv_layer_impl final : neural_layer<dyn_conv_layer_impl<Desc>, Desc>
     size_t nw1; ///< The first dimension of the filters
     size_t nw2; ///< The second dimension of the filters
 
+    size_t p1; ///< The first dimension padding
+    size_t p2; ///< The second dimension padding
+
+    size_t s1; ///< The first dimension stride
+    size_t s2; ///< The second dimension stride
+
     dyn_conv_layer_impl(): base_type() {
         // Nothing else to init
     }
@@ -65,7 +71,7 @@ struct dyn_conv_layer_impl final : neural_layer<dyn_conv_layer_impl<Desc>, Desc>
     /*!
      * \brief Initialize the dynamic layer
      */
-    void init_layer(size_t nc, size_t nv1, size_t nv2, size_t k, size_t nw1, size_t nw2){
+    void init_layer(size_t nc, size_t nv1, size_t nv2, size_t k, size_t nw1, size_t nw2, size_t s1 = 1, size_t s2 = 1, size_t p1 = 0, size_t p2 = 0){
         this->nv1 = nv1;
         this->nv2 = nv2;
         this->nw1 = nw1;
@@ -73,8 +79,13 @@ struct dyn_conv_layer_impl final : neural_layer<dyn_conv_layer_impl<Desc>, Desc>
         this->nc = nc;
         this->k = k;
 
-        this->nh1 = nv1 - nw1 + 1;
-        this->nh2 = nv2 - nw2 + 1;
+        this->s1 = s1;
+        this->s2 = s2;
+        this->p1 = p1;
+        this->p2 = p2;
+
+        this->nh1 = (nv1 - nw1 + 2 * p2) / s1 + 1;
+        this->nh2 = (nv2 - nw2 + 2 * p1) / s2 + 1;
 
         w = etl::dyn_matrix<weight, 4>(k, nc, nw1, nw2);
 
@@ -159,9 +170,9 @@ struct dyn_conv_layer_impl final : neural_layer<dyn_conv_layer_impl<Desc>, Desc>
         dll::auto_timer timer("conv:forward_batch");
 
         if constexpr (etl::dimensions<V>() == 4) {
-            output = etl::ml::convolution_forward(v, w);
+            output = etl::ml::convolution_forward(v, w, s1, s2, p1, p2);
         } else {
-            output = etl::ml::convolution_forward(etl::reshape(v, etl::dim<0>(v), nc, nv1, nv2), w);
+            output = etl::ml::convolution_forward(etl::reshape(v, etl::dim<0>(v), nc, nv1, nv2, s1, s2, p1, p2), w);
         }
 
         if constexpr (!no_bias) {
@@ -241,9 +252,9 @@ struct dyn_conv_layer_impl final : neural_layer<dyn_conv_layer_impl<Desc>, Desc>
         dll::auto_timer timer("conv:backward_batch");
 
         if constexpr (etl::dimensions<H>() == 4) {
-            output = etl::ml::convolution_backward(context.errors, w);
+            output = etl::ml::convolution_backward(context.errors, w, s1, s2, p1, p2);
         } else {
-            etl::reshape(output, etl::dim<0>(output), nc, nv1, nv2) = etl::ml::convolution_backward(context.errors, w);
+            etl::reshape(output, etl::dim<0>(output), nc, nv1, nv2) = etl::ml::convolution_backward(context.errors, w, s1, s2, p1, p2);
         }
     }
 
@@ -255,7 +266,7 @@ struct dyn_conv_layer_impl final : neural_layer<dyn_conv_layer_impl<Desc>, Desc>
     void compute_gradients(C& context) const {
         dll::auto_timer timer("conv:compute_gradients");
 
-        std::get<0>(context.up.context)->grad = etl::ml::convolution_backward_filter(context.input, context.errors);
+        std::get<0>(context.up.context)->grad = etl::ml::convolution_backward_filter(context.input, context.errors, s1, s2, p1, p2);
 
         if constexpr (!no_bias) {
             std::get<1>(context.up.context)->grad = etl::bias_batch_sum_4d(context.errors);

@@ -195,7 +195,7 @@ struct conv_layer_impl final : neural_layer<conv_layer_impl<Desc>, Desc> {
      */
     template<typename DRBM>
     static void dyn_init(DRBM& dyn){
-        dyn.init_layer(NC, NV1, NV2, K, NW1, NW2);
+        dyn.init_layer(NC, NV1, NV2, K, NW1, NW2, S1, S2, P1, P2);
     }
 
     /*!
