@@ -24,6 +24,14 @@ struct conv_layer_desc {
     static constexpr size_t NC  = NC_T; ///< The number of input channels
     static constexpr size_t K   = K_T;  ///< The number of filters
 
+    // The strides
+    static constexpr size_t S1 = detail::get_value_1_v<stride<1, 1>, Parameters...>;
+    static constexpr size_t S2 = detail::get_value_2_v<stride<1, 1>, Parameters...>;
+
+    // The strides
+    static constexpr size_t P1 = detail::get_value_1_v<padding<0, 0>, Parameters...>;
+    static constexpr size_t P2 = detail::get_value_2_v<padding<0, 0>, Parameters...>;
+
     /*!
      * \brief A list of all the parameters of the descriptor
      */
@@ -52,8 +60,8 @@ struct conv_layer_desc {
 
     //Make sure only valid types are passed to the configuration list
     static_assert(
-        detail::is_valid_v<cpp::type_list<weight_type_id, activation_id, initializer_id, initializer_bias_id, no_bias_id>, Parameters...>,
-        "Invalid parameters type for rbm_desc");
+        detail::is_valid_v<cpp::type_list<weight_type_id, activation_id, initializer_id, initializer_bias_id, no_bias_id, stride_id, padding_id>, Parameters...>,
+        "Invalid parameters type for conv_layer_desc");
 };
 
 /*!

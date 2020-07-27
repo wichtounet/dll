@@ -106,6 +106,8 @@ struct copy_id;
 struct elastic_id;
 struct batch_size_id;
 struct big_batch_size_id;
+struct stride_id;
+struct padding_id;
 struct visible_id;
 struct hidden_id;
 struct pooling_id;
@@ -175,6 +177,22 @@ struct batch_size : value_conf_elt<batch_size_id, size_t, B> {};
  */
 template <size_t B>
 struct big_batch_size : value_conf_elt<big_batch_size_id, size_t, B> {};
+
+/*!
+ * \brief Sets the stride of a convoluational layer
+ * \tparam S1 The stride in the first dimension
+ * \tparam S2 The stride in the second dimension
+ */
+template <size_t S1, size_t S2>
+struct stride : value_pair_conf_elt<stride_id, size_t, S1, S2> {};
+
+/*!
+ * \brief Sets the padding of a convoluational layer
+ * \tparam S1 The padding in the first dimension
+ * \tparam S2 The padding in the second dimension
+ */
+template <size_t S1, size_t S2>
+struct padding : value_pair_conf_elt<padding_id, size_t, S1, S2> {};
 
 /*!
  * \brief Sets the updater type

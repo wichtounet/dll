@@ -31,9 +31,13 @@ struct conv_layer_impl final : neural_layer<conv_layer_impl<Desc>, Desc> {
     static inline constexpr size_t NW2 = desc::NW2; ///< The second dimension of the filter
     static inline constexpr size_t NC  = desc::NC;  ///< The number of input channels
     static inline constexpr size_t K   = desc::K;   ///< The number of filters
+    static inline constexpr size_t S1 = desc::S1; ///< The stride in the first dimension
+    static inline constexpr size_t S2 = desc::S2; ///< The stride in the second dimension
+    static inline constexpr size_t P1 = desc::P1; ///< The padding in the first dimension
+    static inline constexpr size_t P2 = desc::P2; ///< The padding in the second dimension
 
-    static inline constexpr size_t NH1 = NV1 - NW1 + 1; //By definition
-    static inline constexpr size_t NH2 = NV2 - NW2 + 1; //By definition
+    static inline constexpr size_t NH1 = (NV1 - NW1 + 2 * P1) / S1 + 1; //By definition
+    static inline constexpr size_t NH2 = (NV2 - NW2 + 2 * P1) / S2 + 1; //By definition
 
     static constexpr auto activation_function = desc::activation_function; ///< The activation function
     static constexpr auto no_bias             = desc::parameters::template contains<dll::no_bias>(); ///< Disable the biases
@@ -149,9 +153,9 @@ struct conv_layer_impl final : neural_layer<conv_layer_impl<Desc>, Desc> {
         dll::auto_timer timer("conv:forward_batch");
 
         if constexpr (etl::dimensions<V>() == 4) {
-            output = etl::ml::convolution_forward(v, w);
+            output = etl::ml::convolution_forward<S1, S2, P1, P2>(v, w);
         } else {
-            output = etl::ml::convolution_forward(etl::reshape(v, etl::dim<0>(v), NC, NV1, NV2), w);
+            output = etl::ml::convolution_forward<S1, S2, P1, P2>(etl::reshape(v, etl::dim<0>(v), NC, NV1, NV2), w);
         }
 
         if constexpr (!no_bias) {
@@ -220,9 +224,9 @@ struct conv_layer_impl final : neural_layer<conv_layer_impl<Desc>, Desc> {
         dll::auto_timer timer("conv:backward_batch");
 
         if constexpr (etl::dimensions<H>() == 4) {
-            output = etl::ml::convolution_backward(context.errors, w);
+            output = etl::ml::convolution_backward<S1, S2, P1, P2>(context.errors, w);
         } else {
-            etl::reshape(output, etl::dim<0>(output), NC, NV1, NV2) = etl::ml::convolution_backward(context.errors, w);
+            etl::reshape(output, etl::dim<0>(output), NC, NV1, NV2) = etl::ml::convolution_backward<S1, S2, P1, P2>(context.errors, w);
         }
     }
 
@@ -234,7 +238,7 @@ struct conv_layer_impl final : neural_layer<conv_layer_impl<Desc>, Desc> {
     void compute_gradients(C& context) const {
         dll::auto_timer timer("conv:compute_gradients");
 
-        std::get<0>(context.up.context)->grad = etl::ml::convolution_backward_filter(context.input, context.errors);
+        std::get<0>(context.up.context)->grad = etl::ml::convolution_backward_filter<S1, S2, P1, P2>(context.input, context.errors);
 
         if constexpr (!no_bias) {
             std::get<1>(context.up.context)->grad = etl::bias_batch_sum_4d(context.errors);
