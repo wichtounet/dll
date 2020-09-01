@@ -66,7 +66,7 @@ struct mp_2d_layer_impl final : pooling_2d_layer<mp_2d_layer_impl<Desc>, Desc> {
     static void forward_batch(Output& output, const Input& input) {
         dll::auto_timer timer("mp:forward_batch");
 
-        output = etl::ml::max_pool_forward<base::C1, base::C2>(input);
+        output = etl::ml::max_pool_forward<base::C1, base::C2, base::S1, base::S2, base::P1, base::P2>(input);
     }
 
     /*!
@@ -102,7 +102,7 @@ struct mp_2d_layer_impl final : pooling_2d_layer<mp_2d_layer_impl<Desc>, Desc> {
         static constexpr size_t C1 = base::C1; ///< The pooling first dimension
         static constexpr size_t C2 = base::C2; ///< The pooling second dimension
 
-        output = etl::ml::max_pool_backward<C1, C2>(context.input, context.output, context.errors);
+        output = etl::ml::max_pool_backward<C1, C2, base::S1, base::S2, base::P1, base::P2>(context.input, context.output, context.errors);
     }
 
     /*!

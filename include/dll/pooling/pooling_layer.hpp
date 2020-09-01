@@ -26,12 +26,16 @@ struct pooling_2d_layer : layer<Parent> {
     static constexpr size_t I3 = desc::I3; ///< The third dimension of the input
     static constexpr size_t C1 = desc::C1; ///< The first dimension pooling ratio
     static constexpr size_t C2 = desc::C2; ///< The second dimension pooling ratio
+    static constexpr size_t S1 = desc::S1; ///< The first dimension stride
+    static constexpr size_t S2 = desc::S2; ///< The second dimension stride
+    static constexpr size_t P1 = desc::P1; ///< The first dimension stride
+    static constexpr size_t P2 = desc::P2; ///< The second dimension stride
 
-    static constexpr size_t O1 = I1;      ///< The first dimension of the output
-    static constexpr size_t O2 = I2 / C1; ///< The second dimension of the output
-    static constexpr size_t O3 = I3 / C2; ///< The third dimension of the output
+    static constexpr size_t O1 = I1;                      ///< The first dimension of the output
+    static constexpr size_t O2 = (I2 - C1 + 2 * P1) / S1 + 1; ///< The second dimension of the output
+    static constexpr size_t O3 = (I3 - C2 + 2 * P2) / S2 + 1; ///< The third dimension of the output
 
-    static constexpr bool is_nop = C1 * C2 == 1; ///< Indicate if the operation has no effect
+    static constexpr bool is_nop = C1 * C2 == 1 && P1 + P2 == 0 && S1 * S1 == 1; ///< Indicate if the operation has no effect
 
     using input_one_t  = etl::fast_dyn_matrix<weight, I1, I2, I3>; ///< The type of one input
     using output_one_t = etl::fast_dyn_matrix<weight, O1, O2, O3>; ///< The type of one output
