@@ -118,8 +118,15 @@ struct dyn_pooling_2d_layer : layer<Parent> {
     size_t i1; ///< The first dimension of the input
     size_t i2; ///< The second dimension of the input
     size_t i3; ///< The third dimension of the input
+
     size_t c1; ///< The first dimension pooling ratio
     size_t c2; ///< The second dimension pooling ratio
+
+    size_t s1; ///< The first dimension stride
+    size_t s2; ///< The second dimension stride
+
+    size_t p1; ///< The first dimension pooling
+    size_t p2; ///< The second dimension pooling
 
     size_t o1; ///< The first dimension of the output
     size_t o2; ///< The second dimension of the output
@@ -130,15 +137,19 @@ struct dyn_pooling_2d_layer : layer<Parent> {
     /*!
      * \brief Initialize the dynamic layer
      */
-    void init_layer(size_t i1, size_t i2, size_t i3, size_t c1, size_t c2){
+    void init_layer(size_t i1, size_t i2, size_t i3, size_t c1, size_t c2, size_t s1, size_t s2, size_t p1, size_t p2){
         this->i1 = i1;
         this->i2 = i2;
         this->i3 = i3;
         this->c1 = c1;
         this->c2 = c2;
+        this->s1 = s1;
+        this->s2 = s2;
+        this->p1 = p1;
+        this->p2 = p2;
         this->o1 = i1;
-        this->o2 = i2 / c1;
-        this->o3 = i3 / c2;
+        this->o2 = (i2 - c1 + 2 * p1) / s1 + 1;
+        this->o3 = (i3 - c2 + 2 * p2) / s2 + 1;
     }
 
     /*!

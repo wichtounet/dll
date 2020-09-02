@@ -77,7 +77,7 @@ struct mp_2d_layer_impl final : pooling_2d_layer<mp_2d_layer_impl<Desc>, Desc> {
      */
     template<typename DLayer>
     static void dyn_init(DLayer& dyn){
-        dyn.init_layer(base::I1, base::I2, base::I3, base::C1, base::C2);
+        dyn.init_layer(base::I1, base::I2, base::I3, base::C1, base::C2, base::S1, base::S2, base::P1, base::P2);
     }
 
     /*!

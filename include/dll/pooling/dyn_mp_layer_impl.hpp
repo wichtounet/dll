@@ -64,7 +64,7 @@ struct dyn_mp_2d_layer_impl final : dyn_pooling_2d_layer<dyn_mp_2d_layer_impl<De
     void forward_batch(Output& output, const Input& input) const {
         dll::auto_timer timer("mp:forward_batch");
 
-        output = etl::ml::max_pool_forward(input, base::c1, base::c2);
+        output = etl::ml::max_pool_forward(input, base::c1, base::c2, base::s1, base::s2, base::p1, base::p2);
     }
 
     /*!
@@ -100,7 +100,7 @@ struct dyn_mp_2d_layer_impl final : dyn_pooling_2d_layer<dyn_mp_2d_layer_impl<De
         size_t c1 = base::c1;
         size_t c2 = base::c2;
 
-        output = etl::ml::max_pool_backward(context.input, context.output, context.errors, c1, c2);
+        output = etl::ml::max_pool_backward(context.input, context.output, context.errors, c1, c2, base::s1, base::s2, base::p1, base::p2);
     }
 
     /*!
@@ -147,8 +147,8 @@ struct sgd_context<DBN, dyn_mp_2d_layer_impl<Desc>, L> {
 
     sgd_context(const layer_t& layer)
             : input(batch_size, layer.i1, layer.i2, layer.i3),
-              output(batch_size, layer.i1, layer.i2 / layer.c1, layer.i3 / layer.c2),
-              errors(batch_size, layer.i1, layer.i2 / layer.c1, layer.i3 / layer.c2) {}
+              output(batch_size, layer.o1, layer.o2, layer.o3),
+              errors(batch_size, layer.o1, layer.o2, layer.o3) {}
 };
 
 /*!
