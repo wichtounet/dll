@@ -42,8 +42,25 @@ struct dyn_avgp_2d_layer_impl final : dyn_pooling_2d_layer<dyn_avgp_2d_layer_imp
      */
     std::string to_full_string([[maybe_unused]] std::string pre = "") const {
         char buffer[1024];
-        snprintf(buffer, 1024, "AVGP(2d): %lux%lux%lu -> (%lux%lu) -> %lux%lux%lu",
-                 base::i1, base::i2, base::i3, base::c1, base::c2, base::o1, base::o2, base::o3);
+
+        if (base::p1 || base::p2) {
+            if (base::s1 != base::c1 || base::s2 != base::c2) {
+                snprintf(buffer, 1024, "AVGP(2D,dyn): %lux%lux%lu -> (c:%lux%lu s:%lux%lu p:%lux%lu) -> %lux%lux%lu",
+                         base::i1, base::i2, base::i3, base::c1, base::c2, base::s1, base::s2, base::p1, base::p2, base::o1, base::o2, base::o3);
+            } else {
+                snprintf(buffer, 1024, "AVGP(2D,dyn): %lux%lux%lu -> (c:%lux%lu p:%lux%lu) -> %lux%lux%lu",
+                         base::i1, base::i2, base::i3, base::c1, base::c2, base::p1, base::p2, base::o1, base::o2, base::o3);
+            }
+        } else {
+            if (base::s1 != base::c1 || base::s2 != base::c2) {
+                snprintf(buffer, 1024, "AVGP(2D,dyn): %lux%lux%lu -> (c:%lux%lu s:%lux%lu) -> %lux%lux%lu",
+                         base::i1, base::i2, base::i3, base::c1, base::c2, base::s1, base::s2, base::o1, base::o2, base::o3);
+            } else {
+                snprintf(buffer, 1024, "AVGP(2D,dyn): %lux%lux%lu -> (%lux%lu) -> %lux%lux%lu",
+                         base::i1, base::i2, base::i3, base::c1, base::c2, base::o1, base::o2, base::o3);
+            }
+        }
+
         return {buffer};
     }
 

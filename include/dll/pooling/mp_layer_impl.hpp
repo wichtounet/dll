@@ -44,8 +44,25 @@ struct mp_2d_layer_impl final : pooling_2d_layer<mp_2d_layer_impl<Desc>, Desc> {
      */
     static std::string to_full_string([[maybe_unused]] std::string pre = "") {
         char buffer[1024];
-        snprintf(buffer, 1024, "MP(2D): %lux%lux%lu -> (%lux%lu) -> %lux%lux%lu",
-                 base::I1, base::I2, base::I3, base::C1, base::C2, base::O1, base::O2, base::O3);
+
+        if (base::P1 || base::P2) {
+            if (base::S1 != base::C1 || base::S2 != base::C2) {
+                snprintf(buffer, 1024, "MP(2D): %lux%lux%lu -> (c:%lux%lu s:%lux%lu p:%lux%lu) -> %lux%lux%lu",
+                         base::I1, base::I2, base::I3, base::C1, base::C2, base::S1, base::S2, base::P1, base::P2, base::O1, base::O2, base::O3);
+            } else {
+                snprintf(buffer, 1024, "MP(2D): %lux%lux%lu -> (c:%lux%lu p:%lux%lu) -> %lux%lux%lu",
+                         base::I1, base::I2, base::I3, base::C1, base::C2, base::P1, base::P2, base::O1, base::O2, base::O3);
+            }
+        } else {
+            if (base::S1 != base::C1 || base::S2 != base::C2) {
+                snprintf(buffer, 1024, "MP(2D): %lux%lux%lu -> (c:%lux%lu s:%lux%lu) -> %lux%lux%lu",
+                         base::I1, base::I2, base::I3, base::C1, base::C2, base::S1, base::S2, base::O1, base::O2, base::O3);
+            } else {
+                snprintf(buffer, 1024, "MP(2D): %lux%lux%lu -> (%lux%lu) -> %lux%lux%lu",
+                         base::I1, base::I2, base::I3, base::C1, base::C2, base::O1, base::O2, base::O3);
+            }
+        }
+
         return {buffer};
     }
 
