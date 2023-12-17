@@ -68,21 +68,20 @@ The folder **include** must be included with the **-I** option, as well as the
 
 This library is completely header-only, there is no need to build it.
 
-However, this library makes extensive use of C++11 and C++14, therefore,
+However, this library makes extensive use of C++20 and C++23, therefore,
 a recent compiler is necessary to use it. Currently, this library is only tested
-with g++ 9.3.0.
+with g++ 13.
 
 If for some reasons, it should not work on one of the supported compilers,
 contact me and I'll fix it. It should work fine on recent versions of clang.
 
 This has never been tested on Windows. While it should compile on Mingw, I don't
-expect Visual Studio to be able to compile it for now, although VS 2017 sounds
+expect Visual Studio to be able to compile it for now, although recent versions of VS sound
 promising. If you have problems compiling this library, I'd be glad to help, but
 cannot guarantee that this will work on other compilers.
 
-If you want to use GPU, you should use CUDA 8.0 or superior and CUDNN 5.0.1 or
-superior. I haven't tried other versions, but lower versions of CUDA, such as 7,
-should work, and higher versions as well. If you got issues with different
+If you want to use GPU, you should use CUDA 12 or superior and CUDNN 8 or
+superior. If you got issues with different
 versions of CUDA and CUDNN, please open an issue on Github.
 
 License
