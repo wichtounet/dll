@@ -33,3 +33,6 @@ latex
 dll_file_list
 tidy_report_light
 tidy_report
+
+# Ignore clangd cache
+.cache
