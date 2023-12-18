@@ -90,7 +90,7 @@ struct cg_trainer_base {
      *
      * \return the error and the loss of the batch
      */
-    template <typename Inputs, typename Labels>
+    template <bool Error, typename Inputs, typename Labels>
     std::pair<double, double> train_batch(size_t epoch, const Inputs& inputs, const Labels& labels) {
         using T = etl::dyn_matrix<etl::value_t<Inputs>, etl::decay_traits<Inputs>::dimensions() - 1>;
         using L = etl::dyn_matrix<etl::value_t<Labels>, etl::decay_traits<Labels>::dimensions() - 1>;
