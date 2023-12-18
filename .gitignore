@@ -36,3 +36,4 @@ tidy_report
 
 # Ignore clangd cache
 .cache
+*.plist
