@@ -352,14 +352,14 @@ struct updater_context<UT, true, Layer> {
  * \brief The full SGD context, it contains the context of the layer as well as
  * the context for the SGD updater
  */
-template <typename DBN, typename Layer, size_t L>
-struct full_sgd_context : sgd_context<DBN, Layer, L> {
-    using context_type = sgd_context<DBN, Layer, L>; ///< The parent context type
+template <typename Network, typename Layer, size_t L>
+struct full_sgd_context : sgd_context<Network, Layer, L> {
+    using context_type = sgd_context<Network, Layer, L>; ///< The parent context type
 
     /*!
      * \brief The updater context
      */
-    updater_context<DBN::updater, decay_layer_traits<Layer>::is_neural_layer(), Layer> up;
+    updater_context<Network::updater, decay_layer_traits<Layer>::is_neural_layer(), Layer> up;
 
     /*!
      * \brief Construct the full_sgd_context for the given layer
@@ -373,14 +373,14 @@ struct full_sgd_context : sgd_context<DBN, Layer, L> {
  * \brief The full SGD context, it contains the context of the layer as well as
  * the context for the SGD updater
  */
-template <typename DBN, typename... Layers, size_t L>
-struct full_sgd_context <DBN, group_layer_impl<group_layer_desc<Layers...>>, L>  {
+template <typename Network, typename... Layers, size_t L>
+struct full_sgd_context <Network, group_layer_impl<group_layer_desc<Layers...>>, L>  {
     using layer_t      = group_layer_impl<group_layer_desc<Layers...>>; ///< The layer
-    using context_type = sgd_context<DBN, layer_t, L>;                  ///< The parent context type
+    using context_type = sgd_context<Network, layer_t, L>;                  ///< The parent context type
 
     static constexpr size_t n_layers = sizeof...(Layers); ///< The number of layers
 
-    std::tuple<full_sgd_context<DBN, Layers, L>...> sub_contexts; ///< The sub contexts
+    std::tuple<full_sgd_context<Network, Layers, L>...> sub_contexts; ///< The sub contexts
 
     /*!
      * \brief Construct the full_sgd_context for the given layer
@@ -394,14 +394,14 @@ struct full_sgd_context <DBN, group_layer_impl<group_layer_desc<Layers...>>, L> 
  * \brief The full SGD context, it contains the context of the layer as well as
  * the context for the SGD updater
  */
-template <typename DBN, typename... Layers, size_t L>
-struct full_sgd_context <DBN, dyn_group_layer_impl<dyn_group_layer_desc<Layers...>>, L>  {
+template <typename Network, typename... Layers, size_t L>
+struct full_sgd_context <Network, dyn_group_layer_impl<dyn_group_layer_desc<Layers...>>, L>  {
     using layer_t      = dyn_group_layer_impl<dyn_group_layer_desc<Layers...>>; ///< The layer
-    using context_type = sgd_context<DBN, layer_t, L>;                  ///< The parent context type
+    using context_type = sgd_context<Network, layer_t, L>;                  ///< The parent context type
 
     static constexpr size_t n_layers = sizeof...(Layers); ///< The number of layers
 
-    std::tuple<full_sgd_context<DBN, Layers, L>...> sub_contexts; ///< The sub contexts
+    std::tuple<full_sgd_context<Network, Layers, L>...> sub_contexts; ///< The sub contexts
 
     /*!
      * \brief Construct the full_sgd_context for the given layer
@@ -415,14 +415,14 @@ struct full_sgd_context <DBN, dyn_group_layer_impl<dyn_group_layer_desc<Layers..
  * \brief The full SGD context, it contains the context of the layer as well as
  * the context for the SGD updater
  */
-template <typename DBN, size_t D, typename... Layers, size_t L>
-struct full_sgd_context<DBN, merge_layer_impl<merge_layer_desc<D, Layers...>>, L> : sgd_context<DBN, merge_layer_impl<merge_layer_desc<D, Layers...>>, L> {
+template <typename Network, size_t D, typename... Layers, size_t L>
+struct full_sgd_context<Network, merge_layer_impl<merge_layer_desc<D, Layers...>>, L> : sgd_context<Network, merge_layer_impl<merge_layer_desc<D, Layers...>>, L> {
     using layer_t      = merge_layer_impl<merge_layer_desc<D, Layers...>>; ///< The layer
-    using context_type = sgd_context<DBN, layer_t, L>;                     ///< The parent context type
+    using context_type = sgd_context<Network, layer_t, L>;                     ///< The parent context type
 
     static constexpr size_t n_layers = sizeof...(Layers); ///< The number of layers
 
-    std::tuple<full_sgd_context<DBN, Layers, L>...> sub_contexts; ///< The sub contexts
+    std::tuple<full_sgd_context<Network, Layers, L>...> sub_contexts; ///< The sub contexts
 
     /*!
      * \brief Construct the full_sgd_context for the given layer
@@ -436,14 +436,14 @@ struct full_sgd_context<DBN, merge_layer_impl<merge_layer_desc<D, Layers...>>, L
  * \brief The full SGD context, it contains the context of the layer as well as
  * the context for the SGD updater
  */
-template <typename DBN, size_t D, typename... Layers, size_t L>
-struct full_sgd_context<DBN, dyn_merge_layer_impl<dyn_merge_layer_desc<D, Layers...>>, L> : sgd_context<DBN, dyn_merge_layer_impl<dyn_merge_layer_desc<D, Layers...>>, L> {
+template <typename Network, size_t D, typename... Layers, size_t L>
+struct full_sgd_context<Network, dyn_merge_layer_impl<dyn_merge_layer_desc<D, Layers...>>, L> : sgd_context<Network, dyn_merge_layer_impl<dyn_merge_layer_desc<D, Layers...>>, L> {
     using layer_t      = dyn_merge_layer_impl<dyn_merge_layer_desc<D, Layers...>>; ///< The layer
-    using context_type = sgd_context<DBN, layer_t, L>;                     ///< The parent context type
+    using context_type = sgd_context<Network, layer_t, L>;                     ///< The parent context type
 
     static constexpr size_t n_layers = sizeof...(Layers); ///< The number of layers
 
-    std::tuple<full_sgd_context<DBN, Layers, L>...> sub_contexts; ///< The sub contexts
+    std::tuple<full_sgd_context<Network, Layers, L>...> sub_contexts; ///< The sub contexts
 
     /*!
      * \brief Construct the full_sgd_context for the given layer
@@ -454,43 +454,43 @@ struct full_sgd_context<DBN, dyn_merge_layer_impl<dyn_merge_layer_desc<D, Layers
 };
 
 /*!
- * \brief Build the context for a DBN for the given sequence of layers
- * \param dbn The DBN to build the context from
+ * \brief Build the context for a Network for the given sequence of layers
+ * \param network The Network to build the context from
  */
-template<template<typename, typename, size_t> typename Context, typename DBN, size_t... I>
-auto build_context(DBN& dbn, std::index_sequence<I...> /*seq*/){
+template<template<typename, typename, size_t> typename Context, typename Network, size_t... I>
+auto build_context(Network& network, std::index_sequence<I...> /*seq*/){
     return std::make_tuple
         (
             (std::make_pair(
-                std::ref(dbn.template layer_get<I>()),  // Reference to the layer
-                std::make_shared<Context<DBN, typename DBN::template layer_type<I>, I>>(dbn.template layer_get<I>()))
+                std::ref(network.template layer_get<I>()),  // Reference to the layer
+                std::make_shared<Context<Network, typename Network::template layer_type<I>, I>>(network.template layer_get<I>()))
             )...
         );
 }
 
 /*!
- * \brief Build the context for a DBN
- * \param dbn The DBN to build the context from
+ * \brief Build the context for a Network
+ * \param network The Network to build the context from
  */
-template<template<typename, typename, size_t> typename Context, typename DBN>
-auto build_context(DBN& dbn){
-    return build_context<Context>(dbn, std::make_index_sequence<DBN::layers>());
+template<template<typename, typename, size_t> typename Context, typename Network>
+auto build_context(Network& network){
+    return build_context<Context>(network, std::make_index_sequence<Network::layers>());
 }
 
 /*!
  * \brief Simple gradient descent trainer
  */
-template <typename DBN>
+template <typename Network>
 struct sgd_trainer {
-    using dbn_t     = DBN;                    ///< The type of DBN being trained
-    using weight    = typename dbn_t::weight; ///< The data type for this layer
-    using this_type = sgd_trainer<dbn_t>;     ///< The type of this layer
+    using network_t     = Network;                    ///< The type of Network being trained
+    using weight    = typename network_t::weight; ///< The data type for this layer
+    using this_type = sgd_trainer<network_t>;     ///< The type of this layer
 
-    static constexpr auto layers     = dbn_t::layers;     ///< The number of layers
-    static constexpr auto batch_size = dbn_t::batch_size; ///< The batch size for training
+    static constexpr auto layers     = network_t::layers;     ///< The number of layers
+    static constexpr auto batch_size = network_t::batch_size; ///< The batch size for training
 
-    dbn_t& dbn;                                                  ///< The DBN being trained
-    decltype(build_context<full_sgd_context>(dbn)) full_context; ///< The context
+    network_t& network;                                                  ///< The Network being trained
+    decltype(build_context<full_sgd_context>(network)) full_context; ///< The context
     size_t iteration;                                            ///< The current iteration
 
     // Transform layers need to inherit dimensions from back
@@ -518,9 +518,9 @@ struct sgd_trainer {
 
     /*!
      * \brief construct a new sgd_trainer
-     * \param dbn The DBN being trained
+     * \param network The Network being trained
      */
-    explicit sgd_trainer(dbn_t& dbn) : dbn(dbn), full_context(build_context<full_sgd_context>(dbn)), iteration(1) {
+    explicit sgd_trainer(network_t& network) : network(network), full_context(build_context<full_sgd_context>(network)), iteration(1) {
         // Inherit dimensions from front to end (for transform layers)
 
         cpp::for_each_pair(full_context, [](auto& layer_ctx_1, auto& layer_ctx_2) {
@@ -651,7 +651,7 @@ struct sgd_trainer {
 
             //Compute the errors of the last layer
 
-            last_errors<dbn_t::loss>(full_batch, n, labels);
+            last_errors<network_t::loss>(full_batch, n, labels);
 
             // Backpropagate the error
 
@@ -682,7 +682,7 @@ struct sgd_trainer {
         if constexpr (Error) {
             dll::auto_timer timer("sgd::error");
 
-            auto[error, loss] = dbn.evaluate_metrics_batch(last_ctx.output, labels, n, true);
+            auto[error, loss] = network.evaluate_metrics_batch(last_ctx.output, labels, n, true);
 
             return std::make_pair(error, loss);
         } else {
@@ -701,7 +701,7 @@ struct sgd_trainer {
             layer.compute_gradients(context);
 
             // Apply the gradients
-            this->update_weights<dbn_traits<dbn_t>::updater()>(epoch, layer, context, n);
+            this->update_weights<dbn_traits<network_t>::updater()>(epoch, layer, context, n);
         }
     }
 
@@ -844,7 +844,7 @@ struct sgd_trainer {
 
     //TODO
     template <bool Train, typename Inputs>
-    auto& forward_batch_helper([[maybe_unused]] dbn_t& dbn, Inputs&& inputs) {
+    auto& forward_batch_helper([[maybe_unused]] network_t& network, Inputs&& inputs) {
         return this->template forward_batch_helper<Train>(inputs);
     }
 
@@ -909,8 +909,8 @@ struct sgd_trainer {
     void update_variable(size_t epoch, L& layer, C& context, size_t n) {
         // 1. Decay the learning rate (if necessary)
 
-        auto eps             = dbn.learning_rate;
-        const auto eps_decay = dbn.learning_rate_decay;
+        auto eps             = network.learning_rate;
+        const auto eps_decay = network.learning_rate_decay;
 
         if (eps_decay > 0.0) {
             eps *= 1.0 / (1.0 + eps_decay * iteration);
@@ -923,9 +923,9 @@ struct sgd_trainer {
 
         // Note the distinction for w and b for decay is far from optimal...
         if constexpr (I == 0) {
-            this->update_grad<w_decay(dbn_traits<dbn_t>::decay())>(w, w_grad, n);
+            this->update_grad<w_decay(dbn_traits<network_t>::decay())>(w, w_grad, n);
         } else {
-            this->update_grad<b_decay(dbn_traits<dbn_t>::decay())>(w, w_grad, n);
+            this->update_grad<b_decay(dbn_traits<network_t>::decay())>(w, w_grad, n);
         }
 
         // 3. Apply the gradients
@@ -955,7 +955,7 @@ struct sgd_trainer {
     void apply_gradients([[maybe_unused]] size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:momentum");
 
-        const auto momentum = dbn.momentum;
+        const auto momentum = network.momentum;
 
         auto& w      = std::get<I>(layer.trainable_parameters());
         auto& w_grad = std::get<I>(context.up.context)->grad;
@@ -977,7 +977,7 @@ struct sgd_trainer {
     void apply_gradients([[maybe_unused]] size_t epoch, L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:nesterov");
 
-        const auto momentum = dbn.momentum;
+        const auto momentum = network.momentum;
 
         auto& w          = std::get<I>(layer.trainable_parameters());
         auto& w_grad     = std::get<I>(context.up.context)->grad;
@@ -1022,7 +1022,7 @@ struct sgd_trainer {
     void apply_gradients([[maybe_unused]] size_t epoch, L& layer, C& context, [[maybe_unused]] size_t n, [[maybe_unused]] weight eps) {
         dll::auto_timer timer("sgd::apply_grad:adadelta");
 
-        const auto beta = dbn.adadelta_beta;
+        const auto beta = network.adadelta_beta;
         const auto e = 1e-8;
 
         auto& w      = std::get<I>(layer.trainable_parameters());
@@ -1051,8 +1051,8 @@ struct sgd_trainer {
     void apply_gradients([[maybe_unused]] size_t epoch, L& layer, C& context, [[maybe_unused]] size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:adam");
 
-        const auto beta1 = dbn.adam_beta1;
-        const auto beta2 = dbn.adam_beta2;
+        const auto beta1 = network.adam_beta1;
+        const auto beta2 = network.adam_beta2;
         const auto e = 1e-8;
 
         auto& w      = std::get<I>(layer.trainable_parameters());
@@ -1079,8 +1079,8 @@ struct sgd_trainer {
     void apply_gradients([[maybe_unused]] size_t epoch, L& layer, C& context, [[maybe_unused]] size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:adam_correct");
 
-        const auto beta1 = dbn.adam_beta1;
-        const auto beta2 = dbn.adam_beta2;
+        const auto beta1 = network.adam_beta1;
+        const auto beta2 = network.adam_beta2;
         const auto e = 1e-8;
         const auto t = iteration;
 
@@ -1115,8 +1115,8 @@ struct sgd_trainer {
     void apply_gradients([[maybe_unused]] size_t epoch, L& layer, C& context, [[maybe_unused]] size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:adamax");
 
-        const auto beta1 = dbn.adam_beta1;
-        const auto beta2 = dbn.adam_beta2;
+        const auto beta1 = network.adam_beta1;
+        const auto beta2 = network.adam_beta2;
 
         auto& w      = std::get<I>(layer.trainable_parameters());
         auto& w_grad = std::get<I>(context.up.context)->grad;
@@ -1146,9 +1146,9 @@ struct sgd_trainer {
         dll::auto_timer timer("sgd::apply_grad:nadam");
 
         // The scalar parameters
-        const weight beta1          = dbn.adam_beta1;
-        const weight beta2          = dbn.adam_beta2;
-        const weight schedule_decay = dbn.nadam_schedule_decay;
+        const weight beta1          = network.adam_beta1;
+        const weight beta2          = network.adam_beta2;
+        const weight schedule_decay = network.nadam_schedule_decay;
         const weight e              = 1e-8;
         const weight t              = iteration;
 
@@ -1206,7 +1206,7 @@ struct sgd_trainer {
     void apply_gradients([[maybe_unused]] size_t epoch, L& layer, C& context, [[maybe_unused]] size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:rmsprop");
 
-        const auto decay = dbn.rmsprop_decay;
+        const auto decay = network.rmsprop_decay;
         const auto e = 1e-8;
 
         auto& w      = std::get<I>(layer.trainable_parameters());
@@ -1225,8 +1225,8 @@ struct sgd_trainer {
      */
     template <typename G>
     void clip_gradients(G& grad, size_t n) {
-        if constexpr (dbn_traits<dbn_t>::has_clip_gradients()) {
-            const auto t            = dbn.gradient_clip;
+        if constexpr (dbn_traits<network_t>::has_clip_gradients()) {
+            const auto t            = network.gradient_clip;
             const auto grad_l2_norm = std::sqrt(etl::sum(grad >> grad) / (n * n));
 
             if (grad_l2_norm > t) {
@@ -1241,11 +1241,11 @@ struct sgd_trainer {
     template <decay_type decay, typename V, typename G>
     void update_grad(const V& value, G& grad, size_t n) {
         if constexpr (decay == decay_type::L1) {
-            grad = grad - dbn.l1_weight_cost * abs(value);
+            grad = grad - network.l1_weight_cost * abs(value);
         } else if constexpr (decay == decay_type::L2) {
-            grad = grad - dbn.l2_weight_cost * value;
+            grad = grad - network.l2_weight_cost * value;
         } else if constexpr (decay == decay_type::L1L2) {
-            grad = grad - dbn.l1_weight_cost * abs(value) - dbn.l2_weight_cost * value;
+            grad = grad - network.l1_weight_cost * abs(value) - network.l2_weight_cost * value;
         }
 
         clip_gradients(grad, n);
