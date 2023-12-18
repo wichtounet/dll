@@ -2665,145 +2665,135 @@ private:
 
     /* Pretrain layer denoising batch  */
 
-    //Special handling for the layer 0
-    //data is coming from iterators not from input
-    template <size_t I, typename Generator, cpp_enable_iff((I == 0 && !batch_layer_ignore<I>))>
-    void pretrain_layer_denoising_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
-        decltype(auto) rbm = layer_get<I>();
-
-        watcher.pretrain_layer(*this, I, rbm, 0);
-
-        // The train function can be used directly because the
-        // batch mode will be done by the generator itself
-        rbm.template train_denoising<
-                !watcher_t::ignore_sub,               //Enable the RBM Watcher or not
-                dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
-            (generator, max_epochs);
-
-        //Train the next layer
-        pretrain_layer_denoising_batch<I + 1>(generator, watcher, max_epochs);
-    }
-
-    //Special handling for untrained layers
-    template <size_t I, typename Generator, cpp_enable_iff(batch_layer_ignore<I>)>
-    void pretrain_layer_denoising_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
-        //We simply go up one layer on untrained layers
-        pretrain_layer_denoising_batch<I + 1>(generator, watcher, max_epochs);
-    }
-
-    //Normal version
     template <size_t I, typename Generator, cpp_enable_iff((I > 0 && I < layers && !batch_layer_ignore<I>))>
     void pretrain_layer_denoising_batch(Generator& generator, watcher_t& watcher, size_t max_epochs) {
-        using layer_t = layer_type<I>;
+        if constexpr (I == 0 && !batch_layer_ignore<I>) {
+            //Special handling for the layer 0 (data is coming from iterators not from input)
 
-        decltype(auto) rbm = layer_get<I>();
+            decltype(auto) rbm = layer_get<I>();
 
-        watcher.pretrain_layer(*this, I, rbm, 0);
+            watcher.pretrain_layer(*this, I, rbm, 0);
 
-        using rbm_trainer_t = dll::rbm_trainer<layer_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>>;
+            // The train function can be used directly because the
+            // batch mode will be done by the generator itself
+            rbm.template train_denoising<
+                    !watcher_t::ignore_sub,               //Enable the RBM Watcher or not
+                    dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
+                (generator, max_epochs);
 
-        //Initialize the RBM trainer
-        rbm_trainer_t r_trainer;
+            //Train the next layer
+            pretrain_layer_denoising_batch<I + 1>(generator, watcher, max_epochs);
+        } else if constexpr (batch_layer_ignore<I>) {
+            //We simply go up one layer on untrained layers
+            pretrain_layer_denoising_batch<I + 1>(generator, watcher, max_epochs);
+        } else if constexpr (I > 0 && I < layers && !batch_layer_ignore<I>) {
+            //Normal version
 
-        //Init the RBM and training parameters
-        r_trainer.init_training(rbm, generator);
+            using layer_t = layer_type<I>;
 
-        //Get the specific trainer (CD)
-        auto trainer = rbm_trainer_t::get_trainer(rbm);
+            decltype(auto) rbm = layer_get<I>();
 
-        //Train for max_epochs epoch
-        for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
-            size_t big_batch = 0;
+            watcher.pretrain_layer(*this, I, rbm, 0);
 
-            //Create a new context for this epoch
-            rbm_training_context context;
+            using rbm_trainer_t = dll::rbm_trainer<layer_t, !watcher_t::ignore_sub, dbn_detail::rbm_watcher_t<watcher_t>>;
 
-            r_trainer.init_epoch(epoch);
+            //Initialize the RBM trainer
+            rbm_trainer_t r_trainer;
 
-            generator.reset();
-            generator.set_train();
+            //Init the RBM and training parameters
+            r_trainer.init_training(rbm, generator);
 
-            while (generator.has_next_batch()) {
-                auto next_batch_n = forward_batch<I - 1>(generator.data_batch());
-                auto next_batch_c = forward_batch<I - 1>(generator.label_batch());
+            //Get the specific trainer (CD)
+            auto trainer = rbm_trainer_t::get_trainer(rbm);
 
-                r_trainer.train_batch(next_batch_n, next_batch_c, trainer, context, rbm);
+            //Train for max_epochs epoch
+            for (size_t epoch = 0; epoch < max_epochs; ++epoch) {
+                size_t big_batch = 0;
 
-                if (dbn_traits<this_type>::is_verbose()) {
-                    watcher.pretraining_batch(*this, big_batch);
+                //Create a new context for this epoch
+                rbm_training_context context;
+
+                r_trainer.init_epoch(epoch);
+
+                generator.reset();
+                generator.set_train();
+
+                while (generator.has_next_batch()) {
+                    auto next_batch_n = forward_batch<I - 1>(generator.data_batch());
+                    auto next_batch_c = forward_batch<I - 1>(generator.label_batch());
+
+                    r_trainer.train_batch(next_batch_n, next_batch_c, trainer, context, rbm);
+
+                    if (dbn_traits<this_type>::is_verbose()) {
+                        watcher.pretraining_batch(*this, big_batch);
+                    }
+
+                    generator.next_batch();
                 }
 
-                generator.next_batch();
+                r_trainer.finalize_epoch(epoch, context, rbm);
             }
 
-            r_trainer.finalize_epoch(epoch, context, rbm);
+            r_trainer.finalize_training(rbm);
+
+            //train the next layer, if any
+            pretrain_layer_denoising_batch<I + 1>(generator, watcher, max_epochs);
         }
-
-        r_trainer.finalize_training(rbm);
-
-        //train the next layer, if any
-        pretrain_layer_denoising_batch<I + 1>(generator, watcher, max_epochs);
     }
-
-    //Stop template recursion
-    template <size_t I, typename Generator, cpp_enable_iff(I == layers)>
-    void pretrain_layer_denoising_batch(Generator&, watcher_t&, size_t) {}
 
     /* Train with labels */
 
     template <size_t I, typename Iterator, typename LabelIterator>
-    std::enable_if_t<(I < layers)> train_with_labels(Iterator first, Iterator last, watcher_t& watcher, [[maybe_unused]] LabelIterator lit,
-                                                     [[maybe_unused]] LabelIterator lend, [[maybe_unused]] size_t labels, [[maybe_unused]] size_t max_epochs) {
-        using layer_t = layer_type<I>;
+    void train_with_labels(Iterator first, Iterator last, watcher_t& watcher, LabelIterator lit, LabelIterator lend, size_t labels, size_t max_epochs) {
+        if constexpr (I < layers) {
+            using layer_t = layer_type<I>;
 
-        decltype(auto) layer = layer_get<I>();
+            decltype(auto) layer = layer_get<I>();
 
-        auto input_size = std::distance(first, last);
+            auto input_size = std::distance(first, last);
 
-        watcher.pretrain_layer(*this, I, layer, input_size);
+            watcher.pretrain_layer(*this, I, layer, input_size);
 
-        if constexpr (layer_traits<layer_t>::is_trained()) {
-            layer.template train<!watcher_t::ignore_sub,               //Enable the RBM Watcher or not
-                                    dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
-                (first, last, max_epochs);
-        }
+            if constexpr (layer_traits<layer_t>::is_trained()) {
+                layer.template train<!watcher_t::ignore_sub,               //Enable the RBM Watcher or not
+                                        dbn_detail::rbm_watcher_t<watcher_t>> //Replace the RBM watcher if not void
+                    (first, last, max_epochs);
+            }
 
-        if constexpr (I < layers - 1) {
-            auto next_a = this_type::template forward_many<I, I>(first, last);
+            if constexpr (I < layers - 1) {
+                auto next_a = this_type::template forward_many<I, I>(first, last);
 
-            //If the next layer is the last layer
-            if (I == layers - 2) {
-                using input_t = std::decay_t<decltype(*first)>;
-                auto big_next_a = layer.template prepare_output<input_t>(input_size, true, labels);
+                //If the next layer is the last layer
+                if (I == layers - 2) {
+                    using input_t = std::decay_t<decltype(*first)>;
+                    auto big_next_a = layer.template prepare_output<input_t>(input_size, true, labels);
 
-                //Cannot use std copy since the sub elements have different size
-                for (size_t i = 0; i < next_a.size(); ++i) {
-                    for (size_t j = 0; j < next_a[i].size(); ++j) {
-                        big_next_a[i][j] = next_a[i][j];
-                    }
-                }
-
-                size_t i = 0;
-                while (lit != lend) {
-                    decltype(auto) label = *lit;
-
-                    for (size_t l = 0; l < labels; ++l) {
-                        big_next_a[i][dll::output_size(layer) + l] = label == l ? 1.0 : 0.0;
+                    //Cannot use std copy since the sub elements have different size
+                    for (size_t i = 0; i < next_a.size(); ++i) {
+                        for (size_t j = 0; j < next_a[i].size(); ++j) {
+                            big_next_a[i][j] = next_a[i][j];
+                        }
                     }
 
-                    ++i;
-                    ++lit;
-                }
+                    size_t i = 0;
+                    while (lit != lend) {
+                        decltype(auto) label = *lit;
 
-                train_with_labels<I + 1>(big_next_a.begin(), big_next_a.end(), watcher, lit, lend, labels, max_epochs);
-            } else {
-                train_with_labels<I + 1>(next_a.begin(), next_a.end(), watcher, lit, lend, labels, max_epochs);
+                        for (size_t l = 0; l < labels; ++l) {
+                            big_next_a[i][dll::output_size(layer) + l] = label == l ? 1.0 : 0.0;
+                        }
+
+                        ++i;
+                        ++lit;
+                    }
+
+                    train_with_labels<I + 1>(big_next_a.begin(), big_next_a.end(), watcher, lit, lend, labels, max_epochs);
+                } else {
+                    train_with_labels<I + 1>(next_a.begin(), next_a.end(), watcher, lit, lend, labels, max_epochs);
+                }
             }
         }
     }
-
-    template <size_t I, typename Iterator, typename LabelIterator>
-    std::enable_if_t<(I == layers)> train_with_labels(Iterator, Iterator, watcher_t&, LabelIterator, LabelIterator, size_t, size_t) {}
 
     /* Predict with labels */
 
@@ -2811,44 +2801,42 @@ private:
      * \brief Predict the output labels (only when pretrain with labels)
      */
     template <size_t I, typename Input, typename Output>
-    std::enable_if_t<(I < layers)> predict_labels(const Input& input, Output& output, size_t labels) const {
-        decltype(auto) layer = layer_get<I>();
+    void predict_labels(const Input& input, Output& output, size_t labels) const {
+        if constexpr (I < layers) {
+            decltype(auto) layer = layer_get<I>();
 
-        auto next_a = prepare_one_ready_output(layer, input);
-        auto next_s = prepare_one_ready_output(layer, input);
+            auto next_a = prepare_one_ready_output(layer, input);
+            auto next_s = prepare_one_ready_output(layer, input);
 
-        layer.activate_hidden(next_a, next_s, input, input);
+            layer.activate_hidden(next_a, next_s, input, input);
 
-        if (I == layers - 1) {
-            auto output_a = layer.prepare_one_input();
-            auto output_s = layer.prepare_one_input();
+            if (I == layers - 1) {
+                auto output_a = layer.prepare_one_input();
+                auto output_s = layer.prepare_one_input();
 
-            layer.activate_visible(next_a, next_s, output_a, output_s);
+                layer.activate_visible(next_a, next_s, output_a, output_s);
 
-            output = std::move(output_a);
-        } else {
-            bool is_last = I == layers - 2;
-
-            //If the next layers is the last layer
-            if (is_last) {
-                auto big_next_a = layer.template prepare_one_output<Input>(true, labels);
-
-                for (size_t i = 0; i < next_a.size(); ++i) {
-                    big_next_a[i] = next_a[i];
-                }
-
-                std::fill(big_next_a.begin() + dll::output_size(layer), big_next_a.end(), 0.1);
-
-                predict_labels<I + 1>(big_next_a, output, labels);
+                output = std::move(output_a);
             } else {
-                predict_labels<I + 1>(next_a, output, labels);
+                bool is_last = I == layers - 2;
+
+                //If the next layers is the last layer
+                if (is_last) {
+                    auto big_next_a = layer.template prepare_one_output<Input>(true, labels);
+
+                    for (size_t i = 0; i < next_a.size(); ++i) {
+                        big_next_a[i] = next_a[i];
+                    }
+
+                    std::fill(big_next_a.begin() + dll::output_size(layer), big_next_a.end(), 0.1);
+
+                    predict_labels<I + 1>(big_next_a, output, labels);
+                } else {
+                    predict_labels<I + 1>(next_a, output, labels);
+                }
             }
         }
     }
-
-    //Stop recursion
-    template <size_t I, typename Input, typename Output>
-    std::enable_if_t<(I == layers)> predict_labels(const Input&, Output&, size_t) const {}
 
     /* Activation Probabilities */
 
