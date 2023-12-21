@@ -498,23 +498,19 @@ struct sgd_trainer {
     /*!
      * \brief Inherit the layer dimensions from front
      */
-    template<typename L1, typename L2, cpp_enable_iff(decay_layer_traits<typename L2::first_type>::is_transform_layer())>
+    template<typename L1, typename L2>
     static void inherit_from_front(L1& l1, L2& l2){
-        auto& ctx1 = *l1.second;
-        auto& ctx2 = *l2.second;
+        if (decay_layer_traits<typename L2::first_type>::is_transform_layer()) {
+            const auto & ctx1 = *l1.second;
+            auto&        ctx2 = *l2.second;
 
-        if (ctx2.errors.size() == 0) {
-            ctx2.output = ctx1.output;
-            ctx2.errors = ctx1.output;
-            ctx2.input  = ctx1.output;
+            if (ctx2.errors.size() == 0) {
+                ctx2.output = ctx1.output;
+                ctx2.errors = ctx1.output;
+                ctx2.input  = ctx1.output;
+            }
         }
     }
-
-    /*!
-     * \brief Inherit the layer dimensions from front
-     */
-    template<typename L1, typename L2, cpp_disable_iff(decay_layer_traits<typename L2::first_type>::is_transform_layer())>
-    static void inherit_from_front(L1& /*l1*/, L2& /*l2*/){ }
 
     /*!
      * \brief construct a new sgd_trainer
