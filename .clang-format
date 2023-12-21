@@ -81,7 +81,8 @@ KeepEmptyLinesAtTheStartOfBlocks: false
 
 # Force pointers to the type
 DerivePointerAlignment: false
-PointerAlignment: Left
+PointerAlignment: Middle
+ReferenceAlignment: Middle
 
 # Strings
 BreakStringLiterals: false
