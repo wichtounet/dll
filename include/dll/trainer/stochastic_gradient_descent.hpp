@@ -502,7 +502,7 @@ struct sgd_trainer {
     static void inherit_from_front(L1& l1, L2& l2){
         if (decay_layer_traits<typename L2::first_type>::is_transform_layer()) {
             const auto & ctx1 = *l1.second;
-            auto&        ctx2 = *l2.second;
+            auto &       ctx2 = *l2.second;
 
             if (ctx2.errors.size() == 0) {
                 ctx2.output = ctx1.output;
@@ -540,7 +540,7 @@ struct sgd_trainer {
      */
     template<loss_function F, typename Labels, cpp_enable_iff(F == loss_function::CATEGORICAL_CROSS_ENTROPY)>
     void last_errors(bool full_batch, size_t n, const Labels& labels){
-        auto& last_ctx   = *std::get<layers - 1>(full_context).second;
+        auto & last_ctx = *std::get<layers - 1>(full_context).second;
 
         if (cpp_unlikely(!full_batch)) {
             last_ctx.errors = 0;
@@ -562,8 +562,8 @@ struct sgd_trainer {
      */
     template<loss_function F, typename Labels, cpp_enable_iff(F == loss_function::MEAN_SQUARED_ERROR)>
     void last_errors(bool full_batch, size_t n, const Labels& labels){
-        auto& last_layer = std::get<layers - 1>(full_context).first;
-        auto& last_ctx   = *std::get<layers - 1>(full_context).second;
+        auto & last_layer = std::get<layers - 1>(full_context).first;
+        auto & last_ctx   = *std::get<layers - 1>(full_context).second;
 
         if (cpp_unlikely(!full_batch)) {
             last_ctx.errors = 0;
@@ -584,8 +584,8 @@ struct sgd_trainer {
      */
     template<loss_function F, typename Labels, cpp_enable_iff(F == loss_function::BINARY_CROSS_ENTROPY)>
     void last_errors(bool full_batch, size_t n, const Labels& labels){
-        auto& last_layer = std::get<layers - 1>(full_context).first;
-        auto& last_ctx   = *std::get<layers - 1>(full_context).second;
+        auto & last_layer = std::get<layers - 1>(full_context).first;
+        auto & last_ctx   = *std::get<layers - 1>(full_context).second;
 
         // Avoid Nan from division by ((1 - out) * out)
         auto out = etl::force_temporary(etl::clip(last_ctx.output, 0.001, 0.999));
