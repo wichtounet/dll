@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "dll/layer_traits.hpp"
 #include "util/tmp.hpp"
 
 namespace dll {
@@ -34,14 +35,14 @@ constexpr const bool is_denoising = (layer_traits<Layers>::is_dense_rbm_layer() 
 /*!
  * \brief Indicates if the layer is a RBM shuffle layer
  */
-template <typename Layer, typename Enable = void>
+template <typename Layer>
 struct has_shuffle_helper;
 
 /*!
  * \brief Indicates if the layer is a RBM shuffle layer
  */
-template <typename Layer>
-struct has_shuffle_helper <Layer, std::enable_if_t<layer_traits<Layer>::is_rbm_layer()>> {
+template <rbm_layer_c Layer>
+struct has_shuffle_helper <Layer> {
     /*!
      * \brief true if the layer can be shuffled, false otherwise.
      */
@@ -51,8 +52,8 @@ struct has_shuffle_helper <Layer, std::enable_if_t<layer_traits<Layer>::is_rbm_l
 /*!
  * \brief Indicates if the layer is a RBM shuffle layer
  */
-template <typename Layer>
-struct has_shuffle_helper <Layer, std::enable_if_t<!layer_traits<Layer>::is_rbm_layer()>> {
+template <non_rbm_layer_c Layer>
+struct has_shuffle_helper <Layer> {
     /*!
      * \brief true if the layer can be shuffled, false otherwise.
      */

@@ -669,7 +669,7 @@ struct sgd_trainer {
             dll::auto_timer timer("sgd::grad");
 
             cpp::for_each(full_context, [this, epoch, n](auto& layer_ctx) {
-                this->apply_gradients_layer(epoch, n, layer_ctx.first, *layer_ctx.second);
+                this->apply_gradients_layer(n, layer_ctx.first, *layer_ctx.second);
             });
         }
 
@@ -690,19 +690,19 @@ struct sgd_trainer {
     }
 
     template <utility_layer Layer, typename Context>
-    void apply_gradients_layer(size_t epoch, size_t n, Layer& layer, Context& context){
-        cpp::for_each(layer.layers, context.sub_contexts, [this, epoch, n](auto & sub_layer, auto & sub_context) {
-            this->apply_gradients_layer(epoch, n, sub_layer, sub_context);
+    void apply_gradients_layer(size_t n, Layer& layer, Context& context){
+        cpp::for_each(layer.layers, context.sub_contexts, [this, n](auto & sub_layer, auto & sub_context) {
+            this->apply_gradients_layer(n, sub_layer, sub_context);
         });
     }
 
     template <standard_layer Layer, typename Context>
-    void apply_gradients_layer(size_t epoch, size_t n, Layer& layer, Context& context){
+    void apply_gradients_layer(size_t n, Layer& layer, Context& context){
         // Compute the gradients
         layer.compute_gradients(context);
 
         // Apply the gradients
-        this->update_weights<dbn_traits<network_t>::updater()>(epoch, layer, context, n);
+        this->update_weights<dbn_traits<network_t>::updater()>(layer, context, n);
     }
 
     template <size_t L, group_layer_c Layer, typename Context, typename Errors>
@@ -886,7 +886,7 @@ struct sgd_trainer {
      * \brief Apply the gradients to the given layer
      */
     template <updater_type UT, typename L, typename C>
-    void update_weights([[maybe_unused]] size_t epoch, [[maybe_unused]] L& layer, [[maybe_unused]] C& context, [[maybe_unused]] size_t n) {
+    void update_weights([[maybe_unused]] L& layer, [[maybe_unused]] C& context, [[maybe_unused]] size_t n) {
         if constexpr (decay_layer_traits<L>::is_neural_layer()) {
             dll::auto_timer timer("sgd::update_weights");
 
@@ -894,17 +894,17 @@ struct sgd_trainer {
 
             static constexpr size_t N = std::tuple_size<decltype(layer.trainable_parameters())>();
 
-            update_variables<UT>(epoch, layer, context, n, std::make_index_sequence<N>());
+            update_variables<UT>(layer, context, n, std::make_index_sequence<N>());
         }
     }
 
     template <updater_type UT, typename L, typename C, size_t... I>
-    void update_variables(size_t epoch, L& layer, C& context, size_t n, std::index_sequence<I...> /* args */) {
-        (update_variable<I, UT>(epoch, layer, context, n), ...);
+    void update_variables(L& layer, C& context, size_t n, std::index_sequence<I...> /* args */) {
+        (update_variable<I, UT>(layer, context, n), ...);
     }
 
     template <size_t I, updater_type UT, typename L, typename C>
-    void update_variable(size_t epoch, L& layer, C& context, size_t n) {
+    void update_variable(L& layer, C& context, size_t n) {
         // 1. Decay the learning rate (if necessary)
 
         auto eps             = network.learning_rate;
@@ -928,29 +928,57 @@ struct sgd_trainer {
 
         // 3. Apply the gradients
 
-        apply_gradients<I, UT>(epoch, layer, context, n, eps);
+        apply_gradients<I, UT>(layer, context, n, eps);
     }
 
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_iff(UT == updater_type::SGD)>
-    void apply_gradients([[maybe_unused]] size_t epoch, L& layer, C& context, size_t n, weight eps) {
+    template <size_t I, updater_type UT, typename L, typename C>
+    void apply_gradients(L& layer, C& context, size_t n, weight eps) {
+        if constexpr (UT == updater_type::SGD) {
+            apply_gradients_sgd<I>(layer, context, n, eps);
+        } else if constexpr (UT == updater_type::MOMENTUM) {
+            apply_gradients_momentum<I>(layer, context, n, eps);
+        } else if constexpr (UT == updater_type::NESTEROV) {
+            apply_gradients_nesterov<I>(layer, context, n, eps);
+        } else if constexpr (UT == updater_type::ADAGRAD) {
+            apply_gradients_adagrad<I>(layer, context, eps);
+        } else if constexpr (UT == updater_type::RMSPROP) {
+            apply_gradients_rmsprop<I>(layer, context, eps);
+        } else if constexpr (UT == updater_type::ADAM) {
+            apply_gradients_adam<I>(layer, context, eps);
+        } else if constexpr (UT == updater_type::ADAM_CORRECT) {
+            apply_gradients_adam_correct<I>(layer, context, eps);
+        } else if constexpr (UT == updater_type::ADAMAX) {
+            apply_gradients_adamax<I>(layer, context, eps);
+        } else if constexpr (UT == updater_type::NADAM) {
+            apply_gradients_nadam<I>(layer, context, eps);
+        } else if constexpr (UT == updater_type::ADADELTA) {
+            apply_gradients_adadelta<I>(layer, context);
+        }
+
+        nan_check_deep(std::get<I>(layer.trainable_parameters()));
+    }
+
+    /*!
+     * \brief Apply the gradients to the given layer
+     */
+    template <size_t I, typename L, typename C>
+    void apply_gradients_sgd(L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:sgd");
 
         auto& w      = std::get<I>(layer.trainable_parameters());
         auto& w_grad = std::get<I>(context.up.context)->grad;
 
         w += (eps / n) * w_grad;
-
-        nan_check_deep(w);
     }
 
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_iff(UT == updater_type::MOMENTUM)>
-    void apply_gradients([[maybe_unused]] size_t epoch, L& layer, C& context, size_t n, weight eps) {
+    template <size_t I, typename L, typename C>
+    void apply_gradients_momentum(L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:momentum");
 
         const auto momentum = network.momentum;
@@ -964,15 +992,13 @@ struct sgd_trainer {
         w_inc = momentum * w_inc + (eps / n) * w_grad;
 
         w += w_inc;
-
-        nan_check_deep(w);
     }
 
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_iff(UT == updater_type::NESTEROV)>
-    void apply_gradients([[maybe_unused]] size_t epoch, L& layer, C& context, size_t n, weight eps) {
+    template <size_t I, typename L, typename C>
+    void apply_gradients_nesterov(L& layer, C& context, size_t n, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:nesterov");
 
         const auto momentum = network.momentum;
@@ -989,15 +1015,13 @@ struct sgd_trainer {
         w_inc = momentum * w_inc + (eps / n) * w_grad;
 
         w += -momentum * w_inc_prev + (1.0 + momentum) * w_inc;
-
-        nan_check_deep(w);
     }
 
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_iff(UT == updater_type::ADAGRAD)>
-    void apply_gradients([[maybe_unused]] size_t epoch, L& layer, C& context, [[maybe_unused]] size_t n, weight eps) {
+    template <size_t I, typename L, typename C>
+    void apply_gradients_adagrad(L& layer, C& context, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:adagrad");
 
         const auto e = 1e-8;
@@ -1009,15 +1033,13 @@ struct sgd_trainer {
         w_inc = w_inc + (w_grad >> w_grad);
 
         w += (eps * w_grad) / etl::sqrt(w_inc + e);
-
-        nan_check_deep(w);
     }
 
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_iff(UT == updater_type::ADADELTA)>
-    void apply_gradients([[maybe_unused]] size_t epoch, L& layer, C& context, [[maybe_unused]] size_t n, [[maybe_unused]] weight eps) {
+    template <size_t I, typename L, typename C>
+    void apply_gradients_adadelta(L& layer, C& context) {
         dll::auto_timer timer("sgd::apply_grad:adadelta");
 
         const auto beta = network.adadelta_beta;
@@ -1038,15 +1060,13 @@ struct sgd_trainer {
         w_x = beta * w_x + ((1.0 - beta) * (w_v >> w_v));
 
         w += w_v;
-
-        nan_check_deep(w);
     }
 
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_iff(UT == updater_type::ADAM)>
-    void apply_gradients([[maybe_unused]] size_t epoch, L& layer, C& context, [[maybe_unused]] size_t n, weight eps) {
+    template <size_t I, typename L, typename C>
+    void apply_gradients_adam(L& layer, C& context, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:adam");
 
         const auto beta1 = network.adam_beta1;
@@ -1066,15 +1086,13 @@ struct sgd_trainer {
         // Update the parameters
 
         w += (eps * w_m) / (etl::sqrt(w_v) + e);
-
-        nan_check_deep(w);
     }
 
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_iff(UT == updater_type::ADAM_CORRECT)>
-    void apply_gradients([[maybe_unused]] size_t epoch, L& layer, C& context, [[maybe_unused]] size_t n, weight eps) {
+    template <size_t I, typename L, typename C>
+    void apply_gradients_adam_correct(L& layer, C& context, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:adam_correct");
 
         const auto beta1 = network.adam_beta1;
@@ -1102,15 +1120,13 @@ struct sgd_trainer {
         // Update the parameters
 
         w += (eps * w_m) / (etl::sqrt(w_v) + e);
-
-        nan_check_deep(w);
     }
 
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_iff(UT == updater_type::ADAMAX)>
-    void apply_gradients([[maybe_unused]] size_t epoch, L& layer, C& context, [[maybe_unused]] size_t n, weight eps) {
+    template <size_t I, typename L, typename C>
+    void apply_gradients_adamax(L& layer, C& context, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:adamax");
 
         const auto beta1 = network.adam_beta1;
@@ -1132,15 +1148,13 @@ struct sgd_trainer {
         // Update the parameters
 
         w += (eps >> w_m) / w_v;
-
-        nan_check_deep(w);
     }
 
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_iff(UT == updater_type::NADAM)>
-    void apply_gradients([[maybe_unused]] size_t epoch, L& layer, C& context, [[maybe_unused]] size_t n, weight eps) {
+    template <size_t I, typename L, typename C>
+    void apply_gradients_nadam(L& layer, C& context, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:nadam");
 
         // The scalar parameters
@@ -1193,15 +1207,13 @@ struct sgd_trainer {
         //w += (m1 * w_grad + m2 * (w_m / (weight(1) - m_schedule_next))) / (etl::sqrt(w_v / (weight(1) - std::pow(beta2, t))) + e);
         // Optimized into
         w += (m1 * w_grad + (m2 / (weight(1) - m_schedule_next)) * w_m) / (etl::sqrt(w_v / (weight(1) - std::pow(beta2, t))) + e);
-
-        nan_check_deep(w);
     }
 
     /*!
      * \brief Apply the gradients to the given layer
      */
-    template <size_t I, updater_type UT, typename L, typename C, cpp_enable_iff(UT == updater_type::RMSPROP)>
-    void apply_gradients([[maybe_unused]] size_t epoch, L& layer, C& context, [[maybe_unused]] size_t n, weight eps) {
+    template <size_t I, typename L, typename C>
+    void apply_gradients_rmsprop(L& layer, C& context, weight eps) {
         dll::auto_timer timer("sgd::apply_grad:rmsprop");
 
         const auto decay = network.rmsprop_decay;
@@ -1214,8 +1226,6 @@ struct sgd_trainer {
         w_inc = decay * w_inc + (1 - decay) * (w_grad >> w_grad);
 
         w += (eps >> w_grad) / etl::sqrt(w_inc + e);
-
-        nan_check_deep(w);
     }
 
     /*!

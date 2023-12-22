@@ -245,6 +245,12 @@ concept dynamic_layer = layer_traits<T>::is_dynamic();
 template <typename T>
 concept static_layer = !layer_traits<T>::is_dynamic();
 
+template <typename T>
+concept rbm_layer_c = layer_traits<T>::is_rbm_layer();
+
+template <typename T>
+concept non_rbm_layer_c = !layer_traits<T>::is_rbm_layer();
+
 /*!
  * \brief Return the number of input channels of the given CRBM
  */
