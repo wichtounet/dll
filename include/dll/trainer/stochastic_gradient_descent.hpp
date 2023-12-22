@@ -24,13 +24,16 @@
 namespace dll {
 
 template <typename Layer>
-static constexpr bool is_group_layer = cpp::is_specialization_of_v<dll::group_layer_impl, Layer> || cpp::is_specialization_of_v<dll::dyn_group_layer_impl, Layer>;
+concept group_layer_c = cpp::is_specialization_of_v<dll::group_layer_impl, Layer> || cpp::is_specialization_of_v<dll::dyn_group_layer_impl, Layer>;
 
 template <typename Layer>
-static constexpr bool is_merge_layer = cpp::is_specialization_of_v<dll::merge_layer_impl, Layer> || cpp::is_specialization_of_v<dll::dyn_merge_layer_impl, Layer>;
+concept merge_layer_c = cpp::is_specialization_of_v<dll::merge_layer_impl, Layer> || cpp::is_specialization_of_v<dll::dyn_merge_layer_impl, Layer>;
 
 template <typename Layer>
-static constexpr bool is_utility_layer = is_group_layer<Layer> || is_merge_layer<Layer>;
+concept utility_layer = group_layer_c<Layer> || merge_layer_c<Layer>;
+
+template <typename Layer>
+concept standard_layer = !utility_layer<Layer>;
 
 /*!
  * \brief Build the sub context for a updater context
@@ -686,34 +689,24 @@ struct sgd_trainer {
         }
     }
 
-    template <typename Layer, typename Context>
+    template <utility_layer Layer, typename Context>
     void apply_gradients_layer(size_t epoch, size_t n, Layer& layer, Context& context){
-        if constexpr (is_utility_layer<Layer>) {
-            cpp::for_each(layer.layers, context.sub_contexts, [this, epoch, n](auto& sub_layer, auto& sub_context) {
-                this->apply_gradients_layer(epoch, n, sub_layer, sub_context);
-            });
-        } else {
-            // Compute the gradients
-            layer.compute_gradients(context);
-
-            // Apply the gradients
-            this->update_weights<dbn_traits<network_t>::updater()>(epoch, layer, context, n);
-        }
+        cpp::for_each(layer.layers, context.sub_contexts, [this, epoch, n](auto & sub_layer, auto & sub_context) {
+            this->apply_gradients_layer(epoch, n, sub_layer, sub_context);
+        });
     }
 
-    template <typename Layer, typename Context, typename Errors, cpp_disable_iff(is_utility_layer<Layer>)>
-    static void backward_layer(Layer& layer, Context& context, Errors&& errors, bool& last){
-        if(!last){
-            layer.adapt_errors(context);
-        }
+    template <standard_layer Layer, typename Context>
+    void apply_gradients_layer(size_t epoch, size_t n, Layer& layer, Context& context){
+        // Compute the gradients
+        layer.compute_gradients(context);
 
-        last = false;
-
-        layer.backward_batch(errors, context);
+        // Apply the gradients
+        this->update_weights<dbn_traits<network_t>::updater()>(epoch, layer, context, n);
     }
 
-    template <size_t L, typename Layer, typename Context, typename Errors>
-    static void backward_layer_group(Layer& layer, Context& context, Errors&& errors, bool& last){
+    template <size_t L, group_layer_c Layer, typename Context, typename Errors>
+    static void backward_layer_group(Layer & layer, Context & context, Errors && errors, bool & last) {
         auto& sub_layer   = std::get<L>(layer.layers);
         auto& sub_context = std::get<L>(context.sub_contexts);
 
@@ -734,18 +727,18 @@ struct sgd_trainer {
         }
     }
 
-    template <typename Layer, typename Context, typename Errors, cpp_enable_iff(is_group_layer<Layer>)>
-    static void backward_layer(Layer& layer, Context& context, Errors&& errors, bool& last){
+    template <size_t L, group_layer_c Layer, typename Context, typename Errors>
+    static void backward_layer(Layer & layer, Context & context, Errors && errors, bool & last) {
         backward_layer_group<Layer::n_layers - 1>(layer, context, errors, last);
     }
 
-    template <typename Layer, typename Context, typename Errors, cpp_enable_iff(is_merge_layer<Layer>)>
-    static void backward_layer(Layer& layer, Context& context, Errors&& errors, bool& last){
+    template <merge_layer_c Layer, typename Context, typename Errors>
+    static void backward_layer(Layer & layer, Context & context, Errors && errors, bool & last) {
         errors = 0;
 
         // Dispatch all the sub contexts
 
-        cpp::for_each_i(layer.layers, context.sub_contexts, [&context, &errors, &last](size_t i, auto& sub_layer, auto& sub_context){
+        cpp::for_each_i(layer.layers, context.sub_contexts, [&context, &errors, &last](size_t i, auto & sub_layer, auto & sub_context) {
             batch_dispatch(get_errors(sub_context), context.errors, i);
 
             auto back_errors = errors;
@@ -759,15 +752,15 @@ struct sgd_trainer {
         last = false;
     }
 
-    template <bool Train, typename Layer, typename Inputs, typename Context, cpp_disable_iff(is_utility_layer<Layer>)>
-    static void forward_layer(Layer& layer, Inputs&& inputs, Context& context) {
-        context.input = inputs;
-
-        if constexpr (Train) {
-            layer.train_forward_batch(context.output, context.input);
-        } else {
-            layer.test_forward_batch(context.output, context.input);
+    template <standard_layer Layer, typename Context, typename Errors>
+    static void backward_layer(Layer & layer, Context & context, Errors && errors, bool & last) {
+        if (!last) {
+            layer.adapt_errors(context);
         }
+
+        last = false;
+
+        layer.backward_batch(errors, context);
     }
 
     template <bool Train, size_t L, typename Layer, typename Inputs, typename Context>
@@ -788,11 +781,6 @@ struct sgd_trainer {
         }
     }
 
-    template <bool Train, typename Layer, typename Inputs, typename Context, cpp_enable_iff(is_group_layer<Layer>)>
-    static void forward_layer(Layer& layer, Inputs&& inputs, Context& context) {
-        forward_layer_group<Train, 0>(layer, inputs, context);
-    }
-
     template <bool Train, size_t L, typename Layer, typename Inputs, typename Context>
     static void forward_layer_merge(Layer& layer, Inputs&& inputs, Context& context) {
         if constexpr (L < Layer::n_layers) {
@@ -805,8 +793,13 @@ struct sgd_trainer {
         }
     }
 
-    template <bool Train, typename Layer, typename Inputs, typename Context, cpp_enable_iff(is_merge_layer<Layer>)>
-    static void forward_layer(Layer& layer, Inputs&& inputs, Context& context) {
+    template <bool Train, group_layer_c Layer, typename Inputs, typename Context>
+    static void forward_layer(Layer & layer, Inputs && inputs, Context & context) {
+        forward_layer_group<Train, 0>(layer, inputs, context);
+    }
+
+    template <bool Train, merge_layer_c Layer, typename Inputs, typename Context>
+    static void forward_layer(Layer & layer, Inputs && inputs, Context & context) {
         context.input = inputs;
 
         // Fully forward each group
@@ -815,14 +808,23 @@ struct sgd_trainer {
 
         // Concatenate all the sub contexts
 
-        cpp::for_each_i(context.sub_contexts, [&context](size_t i, auto& sub_context){
-            batch_merge(context.output, get_output(sub_context), i);
-        });
+        cpp::for_each_i(context.sub_contexts, [&context](size_t i, auto & sub_context) { batch_merge(context.output, get_output(sub_context), i); });
+    }
+
+    template <bool Train, standard_layer Layer, typename Inputs, typename Context>
+    static void forward_layer(Layer & layer, Inputs && inputs, Context & context) {
+        context.input = inputs;
+
+        if constexpr (Train) {
+            layer.train_forward_batch(context.output, context.input);
+        } else {
+            layer.test_forward_batch(context.output, context.input);
+        }
     }
 
     template <typename Context>
     static auto& get_output(Context& context) {
-        if constexpr (is_group_layer<typename Context::layer_t>) {
+        if constexpr (group_layer_c<typename Context::layer_t>) {
             return get_output(std::get<Context::n_layers - 1>(context.sub_contexts));
         } else {
             return context.output;
@@ -831,7 +833,7 @@ struct sgd_trainer {
 
     template <typename Context>
     static auto& get_errors(Context& context) {
-        if constexpr (is_group_layer < typename Context::layer_t>) {
+        if constexpr (group_layer_c< typename Context::layer_t>) {
             return get_errors(std::get<Context::n_layers - 1>(context.sub_contexts));
         } else {
             return context.errors;
