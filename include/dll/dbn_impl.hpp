@@ -223,19 +223,18 @@ public:
 private:
     cpp::thread_pool<!dbn_traits<this_type>::is_serial()> pool;
 
-    template<size_t I, cpp_disable_iff(I == layers)>
-    void dyn_init(){
-        using fast_t = detail::layer_type_t<I, typename desc::base_layers>;
+    template <size_t I>
+    void dyn_init() {
+        if constexpr (I < layers) {
+            using fast_t = detail::layer_type_t<I, typename desc::base_layers>;
 
-        decltype(auto) dyn_rbm = layer_get<I>();
+            decltype(auto) dyn_rbm = layer_get<I>();
 
-        fast_t::dyn_init(dyn_rbm);
+            fast_t::dyn_init(dyn_rbm);
 
-        dyn_init<I+1>();
+            dyn_init<I + 1>();
+        }
     }
-
-    template<size_t I, cpp_enable_iff(I == layers)>
-    void dyn_init(){}
 
     template<size_t L = rbm_layer_n>
     auto get_rbm_generator_desc(){
@@ -272,26 +271,18 @@ private:
         return rbm_ingenerator_fast_single_inner_t<layer_type<L>::batch_size>{};
     }
 
-    template <size_t L, cpp_enable_iff((L < layers - 1) && decay_layer_traits<layer_type<L>>::is_rbm_layer())>
+    template <size_t L>
     void validate_pretraining_base() const {
-        static_assert(layer_type<L>::batch_size == layer_type<rbm_layer_n>::batch_size, "Incoherent batch sizes in network");
-
-        validate_pretraining_base<L + 1>();
-    }
-
-    template <size_t L, cpp_enable_iff((L == layers - 1) && decay_layer_traits<layer_type<L>>::is_rbm_layer())>
-    void validate_pretraining_base() const {
-        static_assert(layer_type<L>::batch_size == layer_type<rbm_layer_n>::batch_size, "Incoherent batch sizes in network");
-    }
-
-    template <size_t L, cpp_enable_iff((L < layers - 1) && !decay_layer_traits<layer_type<L>>::is_rbm_layer())>
-    void validate_pretraining_base() const {
-        validate_pretraining_base<L + 1>();
-    }
-
-    template <size_t L, cpp_enable_iff((L == layers - 1) && !decay_layer_traits<layer_type<L>>::is_rbm_layer())>
-    void validate_pretraining_base() const {
-        // Nothing to do
+        if constexpr (decay_layer_traits<layer_type<L>>::is_rbm_layer()) {
+            static_assert(layer_type<L>::batch_size == layer_type<rbm_layer_n>::batch_size, "Incoherent batch sizes in network");
+            if constexpr (L < layers - 1) {
+                validate_pretraining_base<L + 1>();
+            }
+        } else {
+            if constexpr (L < layers - 1) {
+                validate_pretraining_base<L + 1>();
+            }
+        }
     }
 
     void validate_pretraining() const {
