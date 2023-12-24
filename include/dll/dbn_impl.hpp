@@ -650,53 +650,41 @@ public:
      * \brief Pretrain the network by training all layers in an unsupervised
      * manner.
      */
-    template <typename Generator, cpp_enable_iff(is_generator<Generator>)>
-    void pretrain(Generator& generator, size_t max_epochs) {
+    template <typename Input>
+    void pretrain(Input& input, size_t max_epochs) {
         static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
 
         validate_pretraining();
 
-        dll::auto_timer timer("net:pretrain");
+        if constexpr (is_generator<Input>) {
+            dll::auto_timer timer("net:pretrain");
 
-        watcher_t watcher;
+            watcher_t watcher;
 
-        watcher.pretraining_begin(*this, max_epochs);
+            watcher.pretraining_begin(*this, max_epochs);
 
-        //Pretrain each layer one-by-one
-        if constexpr (batch_mode()) {
-            out << "DBN: Pretraining done in batch mode" << std::endl;
+            //Pretrain each layer one-by-one
+            if constexpr (batch_mode()) {
+                out << "DBN: Pretraining done in batch mode" << std::endl;
 
-            if (layers_t::has_shuffle_layer) {
-                out << "warning: batch_mode dbn does not support shuffle in layers (will be ignored)";
+                if (layers_t::has_shuffle_layer) {
+                    out << "warning: batch_mode dbn does not support shuffle in layers (will be ignored)";
+                }
+
+                pretrain_layer_batch<0>(input, watcher, max_epochs);
+            } else {
+                pretrain_layer<0>(input, watcher, max_epochs);
             }
 
-            pretrain_layer_batch<0>(generator, watcher, max_epochs);
+            watcher.pretraining_end(*this);
         } else {
-            pretrain_layer<0>(generator, watcher, max_epochs);
+            // Create generator around the data
+            auto generator = make_generator(input, input, input.size(), output_size(), get_rbm_generator_desc());
+
+            generator->set_safe();
+
+            pretrain(*generator, max_epochs);
         }
-
-        watcher.pretraining_end(*this);
-    }
-
-    /*!
-     * \brief Pretrain the network by training all layers in an unsupervised
-     * manner.
-     */
-    template <typename Input, cpp_enable_iff(!is_generator<Input>)>
-    void pretrain(const Input& training_data, size_t max_epochs) {
-        static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
-
-        validate_pretraining();
-
-        // Create generator around the data
-        auto generator = make_generator(
-            training_data, training_data,
-            training_data.size(), output_size(),
-            get_rbm_generator_desc());
-
-        generator->set_safe();
-
-        pretrain(*generator, max_epochs);
     }
 
     /*!
@@ -732,55 +720,43 @@ public:
      * \brief Pretrain the network by training all layers in an unsupervised
      * manner, the network will learn to reconstruct noisy input.
      */
-    template <typename Generator, cpp_enable_iff(is_generator<Generator>)>
-    void pretrain_denoising(Generator& generator, size_t max_epochs) {
+    template <typename Input>
+    void pretrain_denoising(Input & input, size_t max_epochs) {
         static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
 
         validate_pretraining();
 
-        dll::auto_timer timer("net:pretrain:denoising");
+        if constexpr (is_generator<Input>) {
+            dll::auto_timer timer("net:pretrain:denoising");
 
-        watcher_t watcher;
+            watcher_t watcher;
 
-        watcher.pretraining_begin(*this, max_epochs);
+            watcher.pretraining_begin(*this, max_epochs);
 
-        //Pretrain each layer one-by-one
-        if constexpr (batch_mode()) {
-            out << "DBN: Denoising Pretraining done in batch mode" << std::endl;
+            // Pretrain each layer one-by-one
+            if constexpr (batch_mode()) {
+                out << "DBN: Denoising Pretraining done in batch mode" << std::endl;
 
-            if (layers_t::has_shuffle_layer) {
-                out << "warning: batch_mode dbn does not support shuffle in layers (will be ignored)";
+                if (layers_t::has_shuffle_layer) {
+                    out << "warning: batch_mode dbn does not support shuffle in layers (will be ignored)";
+                }
+
+                pretrain_layer_denoising_batch<0>(input, watcher, max_epochs);
+            } else {
+                out << "DBN: Denoising Pretraining" << std::endl;
+
+                pretrain_layer_denoising<0>(input, watcher, max_epochs);
             }
 
-            pretrain_layer_denoising_batch<0>(generator, watcher, max_epochs);
+            watcher.pretraining_end(*this);
         } else {
-            out << "DBN: Denoising Pretraining" << std::endl;
+            // Create generator around the data
+            auto generator = make_generator(input, input, input.size(), output_size(), get_rbm_denoising_generator_desc());
 
-            pretrain_layer_denoising<0>(generator, watcher, max_epochs);
+            generator->set_safe();
+
+            pretrain_denoising(*generator, max_epochs);
         }
-
-        watcher.pretraining_end(*this);
-    }
-
-    /*!
-     * \brief Pretrain the network by training all layers in an unsupervised
-     * manner, the network will learn to reconstruct noisy input.
-     */
-    template <typename Clean, cpp_disable_iff(is_generator<Clean>)>
-    void pretrain_denoising(const Clean& clean, size_t max_epochs) {
-        static_assert(pretrain_possible, "Only networks with RBM can be pretrained");
-
-        validate_pretraining();
-
-        // Create generator around the data
-        auto generator = make_generator(
-            clean, clean,
-            clean.size(), output_size(),
-            get_rbm_denoising_generator_desc());
-
-        generator->set_safe();
-
-        pretrain_denoising(*generator, max_epochs);
     }
 
     /*!
