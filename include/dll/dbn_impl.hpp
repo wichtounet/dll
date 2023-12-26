@@ -1409,38 +1409,30 @@ public:
 
     /*!
      * \brief Fine tune the network for autoencoder.
-     * \param training_data A container containing all the samples
+     * \param input A container containing all the samples
      * \param max_epochs The maximum number of epochs to train the network for.
      * \return The final classification error
      */
-    template <typename Generator, cpp_enable_iff(is_generator<Generator>)>
-    weight fine_tune_ae(Generator& generator, size_t max_epochs) {
-        dll::auto_timer timer("net:train:ft:ae");
+    template <typename Input>
+    weight fine_tune_ae(Input & input, size_t max_epochs) {
+        if constexpr (is_generator<Input>) {
+            dll::auto_timer timer("net:train:ft:ae");
 
-        validate_generator(generator);
+            validate_generator(input);
 
-        cpp_assert(dll::input_size(layer_get<0>()) == dll::output_size(layer_get<layers - 1>()), "The network is not build as an autoencoder");
+            cpp_assert(dll::input_size(layer_get<0>()) == dll::output_size(layer_get<layers - 1>()), "The network is not build as an autoencoder");
 
-        dll::dbn_trainer<this_type> trainer;
-        return trainer.train(*this, generator, max_epochs);
-    }
+            dll::dbn_trainer<this_type> trainer;
+            return trainer.train(*this, input, max_epochs);
 
-    /*!
-     * \brief Fine tune the network for autoencoder.
-     * \param training_data A container containing all the samples
-     * \param max_epochs The maximum number of epochs to train the network for.
-     * \return The final classification error
-     */
-    template <typename Samples, cpp_disable_iff(is_generator<Samples>)>
-    weight fine_tune_ae(const Samples& training_data, size_t max_epochs) {
-        // Create generator around the containers
-        auto generator = dll::make_generator(
-            training_data, training_data,
-            training_data.size(), output_size(), ae_generator_t{});
+        } else {
+            // Create generator around the containers
+            auto generator = dll::make_generator(input, input, input.size(), output_size(), ae_generator_t{});
 
-        generator->set_safe();
+            generator->set_safe();
 
-        return fine_tune_ae(*generator, max_epochs);
+            return fine_tune_ae(*generator, max_epochs);
+        }
     }
 
     /*!
@@ -1471,7 +1463,7 @@ public:
      * \param max_epochs The maximum number of epochs to train the network for.
      * \return The final average loss
      */
-    template <typename Generator, cpp_enable_iff(is_generator<Generator>)>
+    template <generator Generator>
     weight fine_tune_reg(Generator& generator, size_t max_epochs) {
         dll::auto_timer timer("net:train:ft:reg");
 
@@ -1591,20 +1583,9 @@ public:
      * \param max_epochs The maximum number of epochs to train the network for.
      * \return The final classification error
      */
-    template <typename Generator, cpp_enable_iff(is_generator<Generator>)>
-    weight train_ae(Generator& generator, size_t max_epochs) {
-        return fine_tune_ae(generator, max_epochs);
-    }
-
-    /*!
-     * \brief Fine tune the network for autoencoder.
-     * \param training_data A container containing all the samples
-     * \param max_epochs The maximum number of epochs to train the network for.
-     * \return The final classification error
-     */
-    template <typename Samples, cpp_disable_iff(is_generator<Samples>)>
-    weight train_ae(const Samples& training_data, size_t max_epochs) {
-        return fine_tune_ae(training_data, max_epochs);
+    template <typename Input>
+    weight train_ae(Input& input, size_t max_epochs) {
+        return fine_tune_ae(input, max_epochs);
     }
 
     /*!
@@ -1627,7 +1608,7 @@ public:
      * \param max_epochs The maximum number of epochs to train the network for.
      * \return The final average loss
      */
-    template <typename Generator, cpp_enable_iff(is_generator<Generator>)>
+    template <generator Generator>
     weight train_reg(Generator& generator, size_t max_epochs) {
         return fine_tune_reg(generator, max_epochs);
     }
@@ -1749,28 +1730,19 @@ public:
      *
      * \param generator The data generator
      */
-    template <typename Generator, cpp_enable_iff(is_generator<Generator>)>
-    void evaluate_ae(Generator& generator){
-        validate_generator(generator);
+    template <typename Input>
+    void evaluate_ae(Input & input) {
+        if constexpr (is_generator<Input>) {
+            validate_generator(input);
 
-        evaluate(generator);
-    }
+            evaluate(input);
+        } else {
+            auto generator = make_generator(input, input, input.size(), output_size(), ae_generator_t{});
 
-    /*!
-     * \brief Evaluate the network on the given auto-encoder task.
-     *
-     * The result of the evaluation will be printed on the console.
-     *
-     * \param samples The container containing the samples
-     * \param labels The container containing the labels
-     */
-    template <typename Samples, cpp_enable_iff(!is_generator<Samples>)>
-    void evaluate_ae(const Samples&  samples){
-        auto generator = make_generator(samples, samples, samples.size(), output_size(), ae_generator_t{});
+            generator->set_safe();
 
-        generator->set_safe();
-
-        return evaluate(*generator);
+            return evaluate(*generator);
+        }
     }
 
     /*!
