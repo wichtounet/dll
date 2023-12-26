@@ -503,7 +503,7 @@ struct sgd_trainer {
      */
     template<typename L1, typename L2>
     static void inherit_from_front(L1& l1, L2& l2){
-        if (decay_layer_traits<typename L2::first_type>::is_transform_layer()) {
+        if constexpr (decay_layer_traits<typename L2::first_type>::is_transform_layer()) {
             const auto & ctx1 = *l1.second;
             auto &       ctx2 = *l2.second;
 
