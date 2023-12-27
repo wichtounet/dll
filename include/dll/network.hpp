@@ -10,6 +10,6 @@
 #include "dll/generators.hpp"
 
 #include "dll/layer_traits.hpp"
-#include "dll/dbn_layers.hpp"
-#include "dll/dbn_impl.hpp"
-#include "dll/dbn_desc.hpp"
+#include "dll/network_layers.hpp"
+#include "dll/network_impl.hpp"
+#include "dll/network_desc.hpp"
