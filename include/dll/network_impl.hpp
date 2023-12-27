@@ -1770,8 +1770,8 @@ public:
      *
      * \param generator The data generator
      */
-    template <typename Generator, cpp_enable_iff(is_generator<Generator>)>
-    void evaluate_reg(Generator& generator){
+    template <generator Generator>
+    void evaluate_reg(Generator & generator) {
         validate_generator(generator);
 
         evaluate(generator);
@@ -1873,32 +1873,22 @@ public:
      *
      * The result of the evaluation will be printed on the console.
      *
-     * \param generator The data generator
+     * \param input The data generator
      */
-    template <typename Generator, cpp_enable_iff(is_generator<Generator>)>
-    double evaluate_error_ae(Generator& generator){
-        validate_generator(generator);
+    template <typename Input>
+    double evaluate_error_ae(Input & input) {
+        if constexpr (is_generator<Input>) {
+            validate_generator(input);
 
-        auto [error, loss] = evaluate_metrics(generator);
-        return error;
-    }
+            auto [error, loss] = evaluate_metrics(input);
+            return error;
+        } else {
+            auto generator = make_generator(input, input, input.size(), output_size(), ae_generator_t{});
 
-    /*!
-     * \brief Evaluate the network on the given classification task
-     * and return the classification error.
-     *
-     * \param samples The container containing the samples
-     * \param labels The container containing the labels
-     *
-     * \return The classification error
-     */
-    template <typename Samples, cpp_enable_iff(!is_generator<Samples>)>
-    double evaluate_error_ae(const Samples&  samples){
-        auto generator = make_generator(samples, samples, samples.size(), output_size(), ae_generator_t{});
+            generator->set_safe();
 
-        generator->set_safe();
-
-        return evaluate_error(*generator);
+            return evaluate_error(*generator);
+        }
     }
 
     /*!
