@@ -7,10 +7,9 @@
 
 /*!
  * \file
- * \brief Deep Belief Network implementation.
+ * \brief Neural Network implementation.
  *
- * In this library, a DBN can also be used with standard neural network layers,
- * in which case, it acts as a standard neural network and cannot be
+ * In this library, the network can be used for both a standard neural network or as a DBN, in which case it can be
  * pretrained.
  */
 
