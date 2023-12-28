@@ -13,43 +13,43 @@
 namespace dll {
 
 /*!
- * \brief Type Traits to get information on DBN type
+ * \brief Type Traits to get information on the network type
  */
-template <typename DBN>
+template <typename Network>
 struct dbn_traits {
-    using dbn_t = DBN;
-    using desc  = typename dbn_t::desc; ///< The descriptor of the layer
+    using network_t = Network;
+    using desc      = typename network_t::desc; ///< The descriptor of the layer
 
     /*!
-     * \brief Indicates if the DBN is convolutional
+     * \brief Indicates if the network is convolutional
      */
     static constexpr bool is_convolutional() noexcept {
         return desc::layers::is_convolutional;
     }
 
     /*!
-     * \brief Indicates if the DBN is dynamic
+     * \brief Indicates if the network is dynamic
      */
     static constexpr bool is_dynamic() noexcept {
         return desc::layers::is_dynamic;
     }
 
     /*!
-     * \brief Get the updater type of the DBN.
+     * \brief Get the updater type of the network.
      */
     static constexpr updater_type updater() noexcept {
         return desc::Updater;
     }
 
     /*!
-     * \brief Indicates if the DBN runs in batch mode
+     * \brief Indicates if the network runs in batch mode
      */
     static constexpr bool batch_mode() noexcept {
         return desc::parameters::template contains<dll::batch_mode>();
     }
 
     /*!
-     * \brief Indicates if the DBN computes error on epoch.
+     * \brief Indicates if the network computes error on epoch.
      */
     static constexpr bool error_on_epoch() noexcept {
         return !desc::parameters::template contains<dll::no_epoch_error>();
@@ -64,7 +64,7 @@ struct dbn_traits {
     }
 
     /*!
-     * \brief Indicates if the DBN shuffles the inputs before each
+     * \brief Indicates if the network shuffles the inputs before each
      * fine-tuning epoch.
      */
     static constexpr bool shuffle() noexcept {
@@ -72,7 +72,7 @@ struct dbn_traits {
     }
 
     /*!
-     * \brief Indicates if the DBN shuffles the inputs before
+     * \brief Indicates if the network shuffles the inputs before
      * each pretraining epoch in batch mode.
      */
     static constexpr bool shuffle_pretrain() noexcept {
@@ -80,42 +80,42 @@ struct dbn_traits {
     }
 
     /*!
-     * \brief Indicates if the DBN features are concatenated from all levels
+     * \brief Indicates if the network features are concatenated from all levels
      */
     static constexpr bool concatenate() noexcept {
         return desc::parameters::template contains<svm_concatenate>();
     }
 
     /*!
-     * \brief Indicates if the DBN cannot use threading
+     * \brief Indicates if the network cannot use threading
      */
     static constexpr bool is_serial() noexcept {
         return desc::parameters::template contains<serial>();
     }
 
     /*!
-     * \brief Indicates if the DBN is verbose
+     * \brief Indicates if the network is verbose
      */
     static constexpr bool is_verbose() noexcept {
         return desc::parameters::template contains<verbose>();
     }
 
     /*!
-     * \brief Indicates if the DBN is verbose
+     * \brief Indicates if the network is verbose
      */
     static constexpr bool should_display_batch() noexcept {
         return !desc::parameters::template contains<no_batch_display>();
     }
 
     /*!
-     * \brief Indicates if the DBN scales its features before sending to SVM.
+     * \brief Indicates if the network scales its features before sending to SVM.
      */
     static constexpr bool scale() noexcept {
         return desc::parameters::template contains<svm_scale>();
     }
 
     /*!
-     * \brief Indicates if the DBN clip its gradients
+     * \brief Indicates if the network clip its gradients
      */
     static constexpr bool has_clip_gradients() noexcept {
         return desc::parameters::template contains<clip_gradients>();
