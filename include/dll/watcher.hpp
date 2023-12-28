@@ -16,7 +16,7 @@
 
 #include "trainer/rbm_training_context.hpp"
 #include "layer_traits.hpp"
-#include "dbn_traits.hpp"
+#include "network_traits.hpp"
 
 namespace dll {
 

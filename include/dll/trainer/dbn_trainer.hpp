@@ -16,7 +16,7 @@
 #include "dll/util/random.hpp"
 #include "dll/util/batch.hpp" // For make_batch
 #include "dll/test.hpp"
-#include "dll/dbn_traits.hpp"
+#include "dll/network_traits.hpp"
 
 namespace dll {
 

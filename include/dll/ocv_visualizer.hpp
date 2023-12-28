@@ -10,7 +10,7 @@
 #include "cpp_utils/stop_watch.hpp"
 
 #include "layer_traits.hpp"
-#include "dbn_traits.hpp"
+#include "network_traits.hpp"
 
 #ifndef DLL_DETAIL_ONLY
 #include <opencv2/opencv.hpp>
