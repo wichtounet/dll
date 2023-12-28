@@ -702,7 +702,7 @@ struct sgd_trainer {
         layer.compute_gradients(context);
 
         // Apply the gradients
-        this->update_weights<dbn_traits<network_t>::updater()>(layer, context, n);
+        this->update_weights<network_traits<network_t>::updater()>(layer, context, n);
     }
 
     template <size_t L, group_layer_c Layer, typename Context, typename Errors>
@@ -921,9 +921,9 @@ struct sgd_trainer {
 
         // Note the distinction for w and b for decay is far from optimal...
         if constexpr (I == 0) {
-            this->update_grad<w_decay(dbn_traits<network_t>::decay())>(w, w_grad, n);
+            this->update_grad<w_decay(network_traits<network_t>::decay())>(w, w_grad, n);
         } else {
-            this->update_grad<b_decay(dbn_traits<network_t>::decay())>(w, w_grad, n);
+            this->update_grad<b_decay(network_traits<network_t>::decay())>(w, w_grad, n);
         }
 
         // 3. Apply the gradients
@@ -1233,7 +1233,7 @@ struct sgd_trainer {
      */
     template <typename G>
     void clip_gradients(G& grad, size_t n) {
-        if constexpr (dbn_traits<network_t>::has_clip_gradients()) {
+        if constexpr (network_traits<network_t>::has_clip_gradients()) {
             const auto t            = network.gradient_clip;
             const auto grad_l2_norm = std::sqrt(etl::sum(grad >> grad) / (n * n));
 

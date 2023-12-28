@@ -99,7 +99,7 @@ struct dbn_trainer {
     error_type stop_training(dbn_t& dbn, size_t epoch, size_t max_epochs){
         // Depending on the strategy, try to restore the best weights
 
-        if constexpr (dbn_traits<dbn_t>::error_on_epoch()) {
+        if constexpr (network_traits<dbn_t>::error_on_epoch()) {
             if (epoch == max_epochs) {
                 // The early stopping strategy
                 static constexpr auto s = dbn_t::early;
@@ -173,7 +173,7 @@ struct dbn_trainer {
 
         // Depending on the strategy, decide to stop training
 
-        if constexpr (dbn_traits<dbn_t>::error_on_epoch()) {
+        if constexpr (network_traits<dbn_t>::error_on_epoch()) {
             // Stop according to goal on loss
             if constexpr (s == strategy::LOSS_GOAL) {
                 if (loss <= dbn.goal) {
@@ -310,7 +310,7 @@ struct dbn_trainer {
      */
     bool stop_epoch(dbn_t& dbn, size_t epoch, double error, double loss){
         //After some time increase the momentum
-        if (dbn_traits<dbn_t>::updater() == updater_type::MOMENTUM && epoch == dbn.final_momentum_epoch) {
+        if (network_traits<dbn_t>::updater() == updater_type::MOMENTUM && epoch == dbn.final_momentum_epoch) {
             dbn.momentum = dbn.final_momentum;
         }
 
@@ -338,7 +338,7 @@ struct dbn_trainer {
         double error = train_stats.first;
 
         //After some time increase the momentum
-        if (dbn_traits<dbn_t>::updater() == updater_type::MOMENTUM && epoch == dbn.final_momentum_epoch) {
+        if (network_traits<dbn_t>::updater() == updater_type::MOMENTUM && epoch == dbn.final_momentum_epoch) {
             dbn.momentum = dbn.final_momentum;
         }
 
@@ -347,7 +347,7 @@ struct dbn_trainer {
         // Early stopping with validation (or training) error/loss
 
         bool stop;
-        if (dbn_traits<dbn_t>::early_uses_training()) {
+        if (network_traits<dbn_t>::early_uses_training()) {
             stop = early_stop(dbn, epoch, train_stats.first, train_stats.second, current_error, current_loss);
         } else {
             stop = early_stop(dbn, epoch, val_stats.first, val_stats.second, current_val_error, current_val_loss);
@@ -375,7 +375,7 @@ struct dbn_trainer {
         double new_error =  1.0;
         double new_loss  = -1.0;
 
-        if constexpr (dbn_traits<dbn_t>::error_on_epoch()){
+        if constexpr (network_traits<dbn_t>::error_on_epoch()){
             dll::auto_timer timer("net:trainer:train:epoch:error");
 
             auto forward_helper = [this, &dbn](auto&& input_batch) -> decltype(auto) {
@@ -404,7 +404,7 @@ struct dbn_trainer {
 
             // By default, we will compute the error on each batch
             // But this can be overriden for speed reason
-            if constexpr (dbn_traits<dbn_t>::should_display_batch()) {
+            if constexpr (network_traits<dbn_t>::should_display_batch()) {
                 watcher.ft_batch_start(epoch, dbn);
 
                 auto [batch_error, batch_loss] = trainer->template train_batch<true>(
@@ -472,7 +472,7 @@ struct dbn_trainer {
 
     template<typename Generator>
     void reset_shuffle(Generator& generator){
-        if constexpr (is_generator<Generator> && dbn_traits<dbn_t>::shuffle()) {
+        if constexpr (is_generator<Generator> && network_traits<dbn_t>::shuffle()) {
             generator.reset_shuffle();
         } else {
             generator.reset();
@@ -552,7 +552,7 @@ struct dbn_trainer {
             dll::auto_timer timer("net:trainer:train:epoch");
 
             // Shuffle before the epoch if necessary
-            if(dbn_traits<dbn_t>::shuffle()){
+            if(network_traits<dbn_t>::shuffle()){
                 train_generator.reset_shuffle();
             } else {
                 train_generator.reset();

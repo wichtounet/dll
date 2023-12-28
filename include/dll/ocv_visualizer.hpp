@@ -617,7 +617,7 @@ struct opencv_dbn_visualizer {
         std::cout << "With parameters:" << std::endl;
         std::cout << "   learning_rate=" << dbn.learning_rate << std::endl;
 
-        if (dbn_traits<DBN>::has_momentum()) {
+        if (network_traits<DBN>::has_momentum()) {
             std::cout << "   momentum=" << dbn.momentum << std::endl;
         }
     }
@@ -664,7 +664,7 @@ template <typename DBN, typename C, typename Enable>
 size_t opencv_dbn_visualizer<DBN, C, Enable>::current_image;
 
 template <typename DBN, typename C>
-struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynamic()>> {
+struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<network_traits<DBN>::is_dynamic()>> {
     static constexpr bool ignore_sub  = false; ///< For pretraining of a DBN, indicates if the regular RBM watcher should be used (false) or ignored (true)
     static constexpr bool replace_sub = true; ///< For pretraining of a DBN, indicates if the DBN watcher should replace (true) the RBM watcher or not (false)
 
@@ -865,13 +865,13 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynami
 };
 
 template <typename DBN, typename C>
-std::vector<cv::Mat> opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynamic()>>::buffer_images;
+std::vector<cv::Mat> opencv_dbn_visualizer<DBN, C, std::enable_if_t<network_traits<DBN>::is_dynamic()>>::buffer_images;
 
 template <typename DBN, typename C>
-size_t opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_dynamic()>>::current_image;
+size_t opencv_dbn_visualizer<DBN, C, std::enable_if_t<network_traits<DBN>::is_dynamic()>>::current_image;
 
 template <typename DBN, typename C>
-struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convolutional_rbm_layer()>> {
+struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<network_traits<DBN>::is_convolutional_rbm_layer()>> {
     static constexpr bool ignore_sub  = false; ///< For pretraining of a DBN, indicates if the regular RBM watcher should be used (false) or ignored (true)
     static constexpr bool replace_sub = true; ///< For pretraining of a DBN, indicates if the DBN watcher should replace (true) the RBM watcher or not (false)
 
@@ -1061,10 +1061,10 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convol
 };
 
 template <typename DBN, typename C>
-std::vector<cv::Mat> opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convolutional_rbm_layer()>>::buffer_images;
+std::vector<cv::Mat> opencv_dbn_visualizer<DBN, C, std::enable_if_t<network_traits<DBN>::is_convolutional_rbm_layer()>>::buffer_images;
 
 template <typename DBN, typename C>
-size_t opencv_dbn_visualizer<DBN, C, std::enable_if_t<dbn_traits<DBN>::is_convolutional_rbm_layer()>>::current_image;
+size_t opencv_dbn_visualizer<DBN, C, std::enable_if_t<network_traits<DBN>::is_convolutional_rbm_layer()>>::current_image;
 
 template <typename RBM>
 void visualize_rbm(const RBM& rbm) {

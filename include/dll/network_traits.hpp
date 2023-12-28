@@ -16,7 +16,7 @@ namespace dll {
  * \brief Type Traits to get information on the network type
  */
 template <typename Network>
-struct dbn_traits {
+struct network_traits {
     using network_t = Network;
     using desc      = typename network_t::desc; ///< The descriptor of the layer
 
@@ -130,10 +130,10 @@ struct dbn_traits {
 };
 
 template <typename Network>
-concept dynamic_network = dbn_traits<Network>::is_dynamic();
+concept dynamic_network = network_traits<Network>::is_dynamic();
 
 template <typename Network>
-concept static_network = !dbn_traits<Network>::is_dynamic();
+concept static_network = !network_traits<Network>::is_dynamic();
 
 /** Functions to get the dimensions of network regardless of dynamic or not **/
 
@@ -187,7 +187,7 @@ size_t dbn_input_size(const Network& network) {
 
 template <typename Network, typename Layer>
 struct transform_output_type {
-    static constexpr auto dimensions = dbn_traits<Network>::is_convolutional() ? 4 : 2;
+    static constexpr auto dimensions = network_traits<Network>::is_convolutional() ? 4 : 2;
 
     using weight  = typename Network::weight; ///< The data type for this layer
     using type = etl::dyn_matrix<weight, dimensions>;

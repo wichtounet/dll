@@ -197,7 +197,7 @@ struct default_dbn_watcher {
      * \param max_epochs The maximum number of epochs to train the network
      */
     void fine_tuning_begin(const DBN& dbn, size_t max_epochs) {
-        static constexpr auto UT = dbn_traits<DBN>::updater();
+        static constexpr auto UT = network_traits<DBN>::updater();
 
         std::cout << "\nTrain the network with \"" << DBN::desc::template trainer_t<DBN>::name() << "\"" << std::endl;
         std::cout << "    Updater: " << dll::to_string(UT) << std::endl;
@@ -234,11 +234,11 @@ struct default_dbn_watcher {
             std::cout << "           decay=" << dbn.rmsprop_decay << std::endl;
         }
 
-        if (w_decay(dbn_traits<DBN>::decay()) == decay_type::L1 || w_decay(dbn_traits<DBN>::decay()) == decay_type::L1L2) {
+        if (w_decay(network_traits<DBN>::decay()) == decay_type::L1 || w_decay(network_traits<DBN>::decay()) == decay_type::L1L2) {
             std::cout << " weight_cost(L1)=" << dbn.l1_weight_cost << std::endl;
         }
 
-        if (w_decay(dbn_traits<DBN>::decay()) == decay_type::L2 || w_decay(dbn_traits<DBN>::decay()) == decay_type::L1L2) {
+        if (w_decay(network_traits<DBN>::decay()) == decay_type::L2 || w_decay(network_traits<DBN>::decay()) == decay_type::L1L2) {
             std::cout << " weight_cost(L2)=" << dbn.l2_weight_cost << std::endl;
         }
 
@@ -274,8 +274,8 @@ struct default_dbn_watcher {
 
         char buffer[512];
 
-        if (dbn_traits<DBN>::should_display_batch()) {
-            if (dbn_traits<DBN>::error_on_epoch()){
+        if (network_traits<DBN>::should_display_batch()) {
+            if (network_traits<DBN>::error_on_epoch()){
                 snprintf(buffer, 512, "epoch %3ld/%ld batch %4ld/%4ld - error: %.5f loss: %.5f time %ldms \n",
                     epoch, ft_max_epochs, max_batches, max_batches, error, loss, duration);
             } else {
@@ -283,7 +283,7 @@ struct default_dbn_watcher {
                     epoch, ft_max_epochs, max_batches, max_batches, duration);
             }
         } else {
-            if (dbn_traits<DBN>::error_on_epoch()){
+            if (network_traits<DBN>::error_on_epoch()){
                 snprintf(buffer, 512, "epoch %3ld/%ld - error: %.5f loss: %.5f time %ldms \n",
                     epoch, ft_max_epochs, error, loss, duration);
             } else {
@@ -292,7 +292,7 @@ struct default_dbn_watcher {
             }
         }
 
-        if (dbn_traits<DBN>::is_verbose()){
+        if (network_traits<DBN>::is_verbose()){
             std::cout << buffer;
         } else {
             std::cout << "\r" << buffer;
@@ -313,7 +313,7 @@ struct default_dbn_watcher {
 
         char buffer[512];
 
-        if constexpr (dbn_traits<DBN>::error_on_epoch()){
+        if constexpr (network_traits<DBN>::error_on_epoch()){
             snprintf(buffer, 512, "epoch %3ld/%ld - error: %.5f loss: %.5f val_error: %.5f val_loss: %.5f time %ldms \n",
                 epoch, ft_max_epochs, train_error, train_loss, val_error, val_loss, duration);
         } else {
@@ -321,7 +321,7 @@ struct default_dbn_watcher {
                 epoch, ft_max_epochs, train_loss, val_loss, duration);
         }
 
-        if constexpr (dbn_traits<DBN>::is_verbose()){
+        if constexpr (network_traits<DBN>::is_verbose()){
             std::cout << buffer;
         } else {
             std::cout << "\r" << buffer;
@@ -355,7 +355,7 @@ struct default_dbn_watcher {
 
         char buffer[512];
 
-        if constexpr (dbn_traits<DBN>::is_verbose()){
+        if constexpr (network_traits<DBN>::is_verbose()){
             snprintf(buffer, 512, "epoch %3ld/%ld batch %4ld/%4ld- B. Error: %.5f B. Loss: %.5f Time %ldms",
                 epoch, ft_max_epochs, batch + 1, batches, batch_error, batch_loss, duration);
             std::cout << buffer << std::endl;

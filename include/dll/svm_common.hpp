@@ -90,7 +90,7 @@ void svm_load(DBN& dbn, std::istream& is) {
 
 template <typename DBN, typename Result, typename Sample>
 void add_activation_probabilities(DBN& dbn, Result& result, Sample& sample) {
-    if constexpr (dbn_traits<std::decay_t<DBN>>::concatenate()) {
+    if constexpr (network_traits<std::decay_t<DBN>>::concatenate()) {
         result.emplace_back(dbn_full_output_size(dbn));
         dbn.smart_full_activation_probabilities(sample, result.back());
     } else {
@@ -101,7 +101,7 @@ void add_activation_probabilities(DBN& dbn, Result& result, Sample& sample) {
 
 template <typename DBN, typename Sample>
 etl::dyn_vector<typename DBN::weight> get_activation_probabilities(DBN& dbn, Sample& sample) {
-    if constexpr (dbn_traits<std::decay_t<DBN>>::concatenate()) {
+    if constexpr (network_traits<std::decay_t<DBN>>::concatenate()) {
         return dbn.smart_full_activation_probabilities(sample);
     } else {
         return dbn.activation_probabilities(sample);
@@ -142,7 +142,7 @@ template <typename DBN, typename Samples, typename Labels>
 bool svm_train(DBN& dbn, const Samples& training_data, const Labels& labels, const svm_parameter& parameters) {
     cpp::stop_watch<std::chrono::seconds> watch;
 
-    make_problem(dbn, training_data, labels, dbn_traits<DBN>::scale());
+    make_problem(dbn, training_data, labels, network_traits<DBN>::scale());
 
     //Make libsvm quiet
     svm::make_quiet();
@@ -169,7 +169,7 @@ bool svm_train(DBN& dbn, Iterator&& first, Iterator&& last, LIterator&& lfirst, 
     make_problem(dbn,
                  std::forward<Iterator>(first), std::forward<Iterator>(last),
                  std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
-                 dbn_traits<DBN>::scale());
+                 network_traits<DBN>::scale());
 
     //Make libsvm quiet
     svm::make_quiet();
@@ -191,7 +191,7 @@ bool svm_train(DBN& dbn, Iterator&& first, Iterator&& last, LIterator&& lfirst, 
 
 template <typename DBN, typename Samples, typename Labels>
 bool svm_grid_search(DBN& dbn, const Samples& training_data, const Labels& labels, size_t n_fold = 5, const svm::rbf_grid& g = svm::rbf_grid()) {
-    make_problem(dbn, training_data, labels, dbn_traits<DBN>::scale());
+    make_problem(dbn, training_data, labels, network_traits<DBN>::scale());
 
     //Make libsvm quiet
     svm::make_quiet();
@@ -214,7 +214,7 @@ bool svm_grid_search(DBN& dbn, Iterator&& first, Iterator&& last, LIterator&& lf
     make_problem(dbn,
                  std::forward<Iterator>(first), std::forward<Iterator>(last),
                  std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
-                 dbn_traits<DBN>::scale());
+                 network_traits<DBN>::scale());
 
     //Make libsvm quiet
     svm::make_quiet();

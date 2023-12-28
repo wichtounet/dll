@@ -83,9 +83,9 @@ struct dbn final {
 
     using layers_t = typename desc::layers; ///< The layers container type
 
-    static_assert(!(dbn_traits<this_type>::batch_mode() && layers_t::has_shuffle_layer),
+    static_assert(!(network_traits<this_type>::batch_mode() && layers_t::has_shuffle_layer),
         "batch_mode dbn does not support shuffle in layers");
-    static_assert(!dbn_traits<this_type>::shuffle_pretrain() || dbn_traits<this_type>::batch_mode(),
+    static_assert(!network_traits<this_type>::shuffle_pretrain() || network_traits<this_type>::batch_mode(),
         "shuffle_pre is only compatible with batch mode, for normal mode, use shuffle in layers");
 
     template <size_t N>
@@ -172,23 +172,23 @@ public:
     mutable output_policy_t out; ///< The output policy instance
 
     using categorical_generator_t = std::conditional_t<
-        !dbn_traits<this_type>::batch_mode(),
+        !network_traits<this_type>::batch_mode(),
         inmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>, dll::categorical, dll::scale_pre<desc::ScalePre>, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>,
         outmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>, dll::categorical, dll::scale_pre<desc::ScalePre>, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>>;
 
     using ae_generator_t = std::conditional_t<
-        !dbn_traits<this_type>::batch_mode(),
+        !network_traits<this_type>::batch_mode(),
         inmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::noise<desc::Noise>, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>,
         outmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::noise<desc::Noise>, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>>;
 
     using reg_generator_t = std::conditional_t<
-        !dbn_traits<this_type>::batch_mode(),
+        !network_traits<this_type>::batch_mode(),
         inmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::noise<desc::Noise>, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>,
         outmemory_data_generator_desc<dll::batch_size<batch_size>, dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::noise<desc::Noise>, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>>;
 
     template<size_t B>
     using rbm_generator_fast_t = std::conditional_t<
-        !dbn_traits<this_type>::batch_mode(),
+        !network_traits<this_type>::batch_mode(),
         inmemory_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>,
         outmemory_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>>;
 
@@ -200,13 +200,13 @@ public:
 
     template<size_t B>
     using rbm_generator_fast_inner_t = std::conditional_t<
-        !dbn_traits<this_type>::batch_mode(),
+        !network_traits<this_type>::batch_mode(),
         inmemory_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::autoencoder>,
         outmemory_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::autoencoder>>;
 
     template<size_t B>
     using rbm_denoising_generator_fast_t = std::conditional_t<
-        !dbn_traits<this_type>::batch_mode(),
+        !network_traits<this_type>::batch_mode(),
         inmemory_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::noise<desc::Noise>, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>,
         outmemory_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::scale_pre<desc::ScalePre>, dll::autoencoder, dll::noise<desc::Noise>, dll::binarize_pre<desc::BinarizePre>, dll::normalize_pre_cond<desc::NormalizePre>>>;
 
@@ -215,12 +215,12 @@ public:
 
     template<size_t B>
     using rbm_denoising_generator_fast_inner_t = std::conditional_t<
-        !dbn_traits<this_type>::batch_mode(),
+        !network_traits<this_type>::batch_mode(),
         inmemory_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::autoencoder, dll::noise<desc::Noise>>,
         outmemory_data_generator_desc<dll::batch_size<B>, dll::big_batch_size<big_batch_size>, dll::autoencoder, dll::noise<desc::Noise>>>;
 
 private:
-    cpp::thread_pool<!dbn_traits<this_type>::is_serial()> pool;
+    cpp::thread_pool<!network_traits<this_type>::is_serial()> pool;
 
     template <size_t I>
     void dyn_init() {
@@ -640,7 +640,7 @@ public:
      * \return true if the training should save memory, false otherwise.
      */
     static constexpr bool batch_mode() noexcept {
-        return dbn_traits<this_type>::batch_mode();
+        return network_traits<this_type>::batch_mode();
     }
 
     /* pretrain */
@@ -2191,7 +2191,7 @@ public:
 private:
     template <typename Input>
     auto get_final_activation_probabilities(const Input& sample) const {
-        if constexpr (dbn_traits<this_type>::concatenate()) {
+        if constexpr (network_traits<this_type>::concatenate()) {
             return full_activation_probabilities(sample);
         } else {
             return forward_one(sample);
@@ -2203,7 +2203,7 @@ public:
     bool svm_train(const Samples& training_data, const Labels& labels, const svm_parameter& parameters = default_svm_parameters()) {
         cpp::stop_watch<std::chrono::seconds> watch;
 
-        make_problem(training_data, labels, dbn_traits<this_type>::scale());
+        make_problem(training_data, labels, network_traits<this_type>::scale());
 
         //Make libsvm quiet
         svm::make_quiet();
@@ -2230,7 +2230,7 @@ public:
         make_problem(
             std::forward<Iterator>(first), std::forward<Iterator>(last),
             std::forward<LIterator>(lfirst), std::forward<LIterator>(llast),
-            dbn_traits<this_type>::scale());
+            network_traits<this_type>::scale());
 
         //Make libsvm quiet
         svm::make_quiet();
@@ -2252,7 +2252,7 @@ public:
 
     template <typename Samples, typename Labels>
     bool svm_grid_search(const Samples& training_data, const Labels& labels, size_t n_fold = 5, const svm::rbf_grid& g = svm::rbf_grid()) {
-        make_problem(training_data, labels, dbn_traits<this_type>::scale());
+        make_problem(training_data, labels, network_traits<this_type>::scale());
 
         //Make libsvm quiet
         svm::make_quiet();
@@ -2275,7 +2275,7 @@ public:
         make_problem(
             std::forward<It>(first), std::forward<It>(last),
             std::forward<LIt>(lfirst), std::forward<LIt>(llast),
-            dbn_traits<this_type>::scale());
+            network_traits<this_type>::scale());
 
         //Make libsvm quiet
         svm::make_quiet();
@@ -2571,7 +2571,7 @@ private:
 
                 r_trainer.train_batch(next_batch, next_batch, trainer, context, rbm);
 
-                if (dbn_traits<this_type>::is_verbose()) {
+                if (network_traits<this_type>::is_verbose()) {
                     watcher.pretraining_batch(*this, big_batch);
                 }
 
@@ -2652,7 +2652,7 @@ private:
 
                     r_trainer.train_batch(next_batch_n, next_batch_c, trainer, context, rbm);
 
-                    if (dbn_traits<this_type>::is_verbose()) {
+                    if (network_traits<this_type>::is_verbose()) {
                         watcher.pretraining_batch(*this, big_batch);
                     }
 
@@ -2772,7 +2772,7 @@ private:
 
     template <typename Samples, typename Input>
     void add_activation_probabilities(Samples& result, const Input& sample) {
-        if constexpr (dbn_traits<this_type>::concatenate()) {
+        if constexpr (network_traits<this_type>::concatenate()) {
             result.emplace_back(full_output_size());
             full_activation_probabilities(sample, result.back());
         } else {
@@ -2782,7 +2782,7 @@ private:
 
     template <typename Input>
     using svm_sample_t = std::conditional_t<
-        dbn_traits<this_type>::concatenate(),
+        network_traits<this_type>::concatenate(),
         etl::dyn_vector<weight>,                             //In full mode, use a simple 1D vector
         typename types_helper<layers - 1, Input>::output_t>; //In normal mode, use the output of the last layer
 
