@@ -129,65 +129,71 @@ struct dbn_traits {
     }
 };
 
-/** Functions to get the dimensions of DBN regardless of dynamic or not **/
+template <typename Network>
+concept dynamic_network = dbn_traits<Network>::is_dynamic();
+
+template <typename Network>
+concept static_network = !dbn_traits<Network>::is_dynamic();
+
+/** Functions to get the dimensions of network regardless of dynamic or not **/
 
 /*!
- * \brief Return the DBN output size
+ * \brief Return the network output size
  */
-template <typename DBN, cpp_disable_iff(dbn_traits<DBN>::is_dynamic())>
-constexpr size_t dbn_output_size(const DBN& /*dbn*/) {
-    return DBN::output_size();
+template <static_network Network>
+constexpr size_t dbn_output_size(const Network& /*network*/) {
+    return Network::output_size();
 }
 
 /*!
- * \brief Return the DBN output size
+ * \brief Return the network output size
  */
-template <typename DBN, cpp_enable_iff(dbn_traits<DBN>::is_dynamic())>
-size_t dbn_output_size(const DBN& dbn) {
-    return dbn.output_size();
+template <dynamic_network Network>
+size_t dbn_output_size(const Network& network) {
+    return network.output_size();
 }
 
 /*!
- * \brief Return the DBN concatenated output size
+ * \brief Return the network concatenated output size
  */
-template <typename DBN, cpp_disable_iff(dbn_traits<DBN>::is_dynamic())>
-constexpr size_t dbn_full_output_size(const DBN& /*dbn*/) {
-    return DBN::full_output_size();
+template <static_network Network>
+constexpr size_t dbn_full_output_size(const Network& /*network*/) {
+    return Network::full_output_size();
 }
 
 /*!
- * \brief Return the DBN concatenated output size
+ * \brief Return the network concatenated output size
  */
-template <typename DBN, cpp_enable_iff(dbn_traits<DBN>::is_dynamic())>
-size_t dbn_full_output_size(const DBN& dbn) {
-    return dbn.full_output_size();
+template <dynamic_network Network>
+size_t dbn_full_output_size(const Network& network) {
+    return network.full_output_size();
 }
 
 /*!
- * \brief Return the DBN input size
+ * \brief Return the network input size
  */
-template <typename DBN, cpp_disable_iff(dbn_traits<DBN>::is_dynamic())>
-constexpr size_t dbn_input_size(const DBN& /*dbn*/) {
-    return DBN::input_size();
+template <static_network Network>
+constexpr size_t dbn_input_size(const Network& /*network*/) {
+    return Network::input_size();
 }
 
 /*!
- * \brief Return the DBN input size
+ * \brief Return the network input size
  */
-template <typename DBN, cpp_enable_iff(dbn_traits<DBN>::is_dynamic())>
-size_t dbn_input_size(const DBN& dbn) {
-    return dbn.input_size();
+template <dynamic_network Network>
+size_t dbn_input_size(const Network& network) {
+    return network.input_size();
 }
 
-template <typename DBN, typename Layer>
+template <typename Network, typename Layer>
 struct transform_output_type {
-    static constexpr auto dimensions = dbn_traits<DBN>::is_convolutional() ? 4 : 2;
+    static constexpr auto dimensions = dbn_traits<Network>::is_convolutional() ? 4 : 2;
 
-    using weight  = typename DBN::weight; ///< The data type for this layer
+    using weight  = typename Network::weight; ///< The data type for this layer
     using type = etl::dyn_matrix<weight, dimensions>;
 };
 
-template <typename DBN, typename Layer>
-using transform_output_type_t = typename transform_output_type<DBN, Layer>::type;
+template <typename Network, typename Layer>
+using transform_output_type_t = typename transform_output_type<Network, Layer>::type;
 
 } //end of dll namespace
