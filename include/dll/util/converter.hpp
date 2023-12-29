@@ -21,12 +21,12 @@ namespace dll {
  * \brief Simple helper to form nicer display for static_assert
  */
 template<typename From, typename To>
-inline constexpr bool value = false;
+inline constexpr bool cannot_convert = false;
 
 /*!
  * \brief Converter utility to converty from type *From* to type *To*.
  */
-template<typename From, typename To, typename Enable = void>
+template<typename From, typename To>
 struct converter_one {
     static_assert(cannot_convert<From, To>, "DLL does not know how to convert your input type (one)");
 };
@@ -398,7 +398,8 @@ struct converter_one<etl::dyn_matrix<T_F, D>, etl::fast_dyn_matrix<T_T, Dims...>
  * \copydoc converter_one
  */
 template<typename T_F, typename T_T, size_t D>
-struct converter_one<etl::dyn_matrix<T_F, D>, etl::dyn_matrix<T_T, D>, std::enable_if_t<!std::is_same_v<T_F, T_T>>> {
+requires(!std::is_same_v<T_F, T_T>)
+struct converter_one<etl::dyn_matrix<T_F, D>, etl::dyn_matrix<T_T, D>> {
     static_assert(std::is_convertible_v<T_F, T_T>, "DLL cannot convert your value type to the weight type (one)");
 
     /*!
@@ -422,7 +423,8 @@ struct converter_one<etl::dyn_matrix<T_F, D>, etl::dyn_matrix<T_T, D>, std::enab
  * \copydoc converter_one
  */
 template<typename T_F, typename T_T, size_t D, size_t D2>
-struct converter_one<etl::dyn_matrix<T_F, D>, etl::dyn_matrix<T_T, D2>, std::enable_if_t<(D != D2)>> {
+requires(D != D2)
+struct converter_one<etl::dyn_matrix<T_F, D>, etl::dyn_matrix<T_T, D2>> {
     static_assert(std::is_convertible_v<T_F, T_T>, "DLL cannot convert your value type to the weight type (one)");
 
     /*!

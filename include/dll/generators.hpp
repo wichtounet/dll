@@ -45,6 +45,12 @@ template <typename T>
 concept generator = is_generator_impl<T>::value;
 
 /*!
+ * \brief Traits to test if a type is DLL generator or not
+ */
+template <typename T>
+concept not_generator = !generator<T>;
+
+/*!
  * \brief Helper to tell from the generator description if it is
  * augmenting the data
  */
