@@ -255,14 +255,8 @@ struct random_mirrorer<Desc, std::enable_if_t<!Desc::HorizontalMirroring && !Des
 /*!
  * \brief Data augmenter by noise
  */
-template <typename Desc, typename Enable = void>
-struct random_noise;
-
-/*!
- * \copydoc random_noise
- */
 template <typename Desc>
-struct random_noise<Desc, std::enable_if_t<Desc::Noise != 0>> {
+struct random_noise {
     static constexpr size_t N = Desc::Noise; ///< The amount of noise (in percent)
 
     std::uniform_int_distribution<size_t> dist; ///< The random distribution
@@ -278,8 +272,8 @@ struct random_noise<Desc, std::enable_if_t<Desc::Noise != 0>> {
      * \brief The number of generated images from one input image
      * \return The augmentation factor
      */
-    size_t scaling() const {
-        return 10;
+    static constexpr size_t scaling() {
+        return N == 0 ? 1 : 10;
     }
 
     /*!
@@ -287,41 +281,15 @@ struct random_noise<Desc, std::enable_if_t<Desc::Noise != 0>> {
      * \param target The input to transform
      */
     template <typename O>
-    void transform(O&& target) {
-        auto& g = dll::rand_engine();
+    void transform(O && target) {
+        if constexpr (N) {
+            auto & g = dll::rand_engine();
 
-        for (auto& v : target) {
-            v *= dist(g) < N * 10 ? 0.0 : 1.0;
+            for (auto & v : target) {
+                v *= dist(g) < N * 10 ? 0.0 : 1.0;
+            }
         }
     }
-};
-
-/*!
- * \copydoc random_noise
- */
-template <typename Desc>
-struct random_noise<Desc, std::enable_if_t<Desc::Noise == 0>> {
-    /*!
-     * \brief Initialize the random_noise
-     * \param image The image to crop from
-     */
-    template <typename T>
-    random_noise([[maybe_unused]] const T& image) {}
-
-    /*!
-     * \brief The number of generated images from one input image
-     * \return The augmentation factor
-     */
-    static constexpr size_t scaling() {
-        return 1;
-    }
-
-    /*!
-     * \brief Apply the transform on the input
-     * \param target The input to transform
-     */
-    template <typename O>
-    static void transform([[maybe_unused]] O&& target) {}
 };
 
 /*!
