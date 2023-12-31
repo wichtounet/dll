@@ -39,15 +39,8 @@ struct options {
     bool cache  = false;
 };
 
-template <typename LastLayer, typename Enable = void>
-struct sgd_possible {
-    static constexpr bool value = false;
-};
-
 template <typename LastLayer>
-struct sgd_possible<LastLayer, std::enable_if_t<decay_layer_traits<LastLayer>::base_traits::sgd_supported>> {
-    static constexpr bool value = true;
-};
+static constexpr bool sgd_possible = decay_layer_traits<LastLayer>::base_traits::sgd_supported;
 
 //These functions are only exposed to be able to unit-test the program
 int process_file(const options& opt, const std::vector<std::string>& actions, const std::string& source_file);
@@ -285,13 +278,13 @@ void execute(DBN& dbn, task& task, const std::vector<std::string>& actions) {
 
             using last_layer = typename dbn_t::template layer_type<dbn_t::layers - 1>;
 
-            if(!sgd_possible<last_layer>::value){
+            if(!sgd_possible<last_layer>){
                 std::cout << "dllp: error: The network is not trainable by SGD" << std::endl;
                 return;
             }
 
             //Train the network
-            if constexpr(sgd_possible<last_layer>::value) {
+            if constexpr(sgd_possible<last_layer>) {
                 auto ft_error = dbn.fine_tune(ft_samples, ft_labels, task.ft_desc.epochs);
                 std::cout << "Train Classification Error:" << ft_error << std::endl;
             }
