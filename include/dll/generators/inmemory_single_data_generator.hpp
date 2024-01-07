@@ -289,7 +289,7 @@ struct inmemory_single_data_generator<Iterator, Desc, std::enable_if_t<is_augmen
 
     random_cropper<Desc> cropper;      ///< The random cropper
     random_mirrorer<Desc> mirrorer;    ///< The random mirrorer
-    elastic_distorter<Desc> distorter; ///< The elastic distorter
+    elastic_distorter<weight, Desc> distorter; ///< The elastic distorter
     random_noise<Desc> noiser;         ///< The random noiser
 
 
