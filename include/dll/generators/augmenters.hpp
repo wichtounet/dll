@@ -17,14 +17,8 @@ namespace dll {
 /*!
  * \brief Randomly extract crops of a certain size from images
  */
-template <typename Desc, typename Enable = void>
-struct random_cropper;
-
-/*!
- * \copydoc random_cropper
- */
 template <typename Desc>
-struct random_cropper<Desc, std::enable_if_t<Desc::random_crop_x != 0 && Desc::random_crop_y!= 0 >> {
+struct random_cropper {
     static constexpr size_t random_crop_x = Desc::random_crop_x; ///< The width of the crop
     static constexpr size_t random_crop_y = Desc::random_crop_y; ///< The height of the crop
 
@@ -40,13 +34,15 @@ struct random_cropper<Desc, std::enable_if_t<Desc::random_crop_x != 0 && Desc::r
      */
     template <typename T>
     random_cropper(const T& image){
-        static_assert(etl::dimensions<T>() == 3, "random_cropper can only be used with 3D images");
+        if constexpr (random_crop_x && random_crop_y) {
+            static_assert(etl::dimensions<T>() == 3, "random_cropper can only be used with 3D images");
 
-        y = etl::dim<1>(image);
-        x = etl::dim<2>(image);
+            y = etl::dim<1>(image);
+            x = etl::dim<2>(image);
 
-        dist_x = std::uniform_int_distribution<size_t>{0, x - random_crop_x};
-        dist_y = std::uniform_int_distribution<size_t>{0, y - random_crop_y};
+            dist_x = std::uniform_int_distribution<size_t>{0, x - random_crop_x};
+            dist_y = std::uniform_int_distribution<size_t>{0, y - random_crop_y};
+        }
     }
 
     /*!
@@ -54,7 +50,11 @@ struct random_cropper<Desc, std::enable_if_t<Desc::random_crop_x != 0 && Desc::r
      * \return The augmentation factor
      */
     size_t scaling() const {
-        return (x - random_crop_x) * (y - random_crop_y);
+        if constexpr (!random_crop_x && !random_crop_y) {
+            return (x - random_crop_x) * (y - random_crop_y);
+        } else {
+            return 1;
+        }
     }
 
     /*!
@@ -66,14 +66,16 @@ struct random_cropper<Desc, std::enable_if_t<Desc::random_crop_x != 0 && Desc::r
      * \param image The input image
      */
     template <typename O, typename T>
-    void transform_first(O&& target, const T& image) {
-        const size_t y_offset = dist_y(dll::rand_engine());
-        const size_t x_offset = dist_x(dll::rand_engine());
+    void transform_first(O && target, const T & image) {
+        if constexpr (random_crop_x && random_crop_y) {
+            const size_t y_offset = dist_y(dll::rand_engine());
+            const size_t x_offset = dist_x(dll::rand_engine());
 
-        for (size_t c = 0; c < etl::dim<0>(image); ++c) {
-            for (size_t y = 0; y < random_crop_y; ++y) {
-                for (size_t x = 0; x < random_crop_x; ++x) {
-                    target(c, y, x) = image(c, y_offset + y, x_offset + x);
+            for (size_t c = 0; c < etl::dim<0>(image); ++c) {
+                for (size_t y = 0; y < random_crop_y; ++y) {
+                    for (size_t x = 0; x < random_crop_x; ++x) {
+                        target(c, y, x) = image(c, y_offset + y, x_offset + x);
+                    }
                 }
             }
         }
@@ -89,77 +91,26 @@ struct random_cropper<Desc, std::enable_if_t<Desc::random_crop_x != 0 && Desc::r
      */
     template <typename O, typename T>
     void transform_first_test(O&& target, const T& image) {
-        const size_t y_offset = (x - random_crop_x) / 2;
-        const size_t x_offset = (y - random_crop_y) / 2;
+        if constexpr (random_crop_x && random_crop_y) {
+            const size_t y_offset = (x - random_crop_x) / 2;
+            const size_t x_offset = (y - random_crop_y) / 2;
 
-        for (size_t c = 0; c < etl::dim<0>(image); ++c) {
-            for (size_t y = 0; y < random_crop_y; ++y) {
-                for (size_t x = 0; x < random_crop_x; ++x) {
-                    target(c, y, x) = image(c, y_offset + y, x_offset + x);
+            for (size_t c = 0; c < etl::dim<0>(image); ++c) {
+                for (size_t y = 0; y < random_crop_y; ++y) {
+                    for (size_t x = 0; x < random_crop_x; ++x) {
+                        target(c, y, x) = image(c, y_offset + y, x_offset + x);
+                    }
                 }
             }
         }
     }
 };
-
-/*!
- * \copydoc random_cropper
- */
-template <typename Desc>
-struct random_cropper<Desc, std::enable_if_t<Desc::random_crop_x == 0 || Desc::random_crop_y == 0>> {
-    /*!
-     * \brief Initialize the random_cropper
-     * \param image The image to crop from
-     */
-    template <typename T>
-    random_cropper([[maybe_unused]] const T& image) {}
-
-    /*!
-     * \brief The number of generated images from one input image
-     * \return The augmentation factor
-     */
-    static constexpr size_t scaling() {
-        return 1;
-    }
-
-    /*!
-     * \brief Transform an image.
-     *
-     * This is used as the first step for data augmentation.
-     *
-     * \param target The target output
-     * \param image The input image
-     */
-    template <typename O, typename T>
-    void transform_first(O&& target, const T& image) {
-        target = image;
-    }
-
-    /*!
-     * \brief Transform an image for test.
-     *
-     * This is used as the first step for data augmentation.
-     *
-     * \param target The target output
-     * \param image The input image
-     */
-    template <typename O, typename T>
-    void transform_first_test(O&& target, const T& image) {
-        target = image;
-    }
-};
-
-/*!
- * \brief Image augmenter by random horizontal and/or vertical mirroring
- */
-template <typename Desc, typename Enable = void>
-struct random_mirrorer;
 
 /*!
  * \copydoc random_mirrorer
  */
 template <typename Desc>
-struct random_mirrorer<Desc, std::enable_if_t<Desc::HorizontalMirroring || Desc::VerticalMirroring>> {
+struct random_mirrorer {
     static constexpr bool horizontal = Desc::HorizontalMirroring; ///< Indicates if random mirroring is done
     static constexpr bool vertical   = Desc::VerticalMirroring;   ///< Indicates if vertical mirroring is done
 
@@ -171,12 +122,14 @@ struct random_mirrorer<Desc, std::enable_if_t<Desc::HorizontalMirroring || Desc:
      */
     template <typename T>
     random_mirrorer([[maybe_unused]] const T& image){
-        static_assert(etl::dimensions<T>() == 3, "random_mirrorer can only be used with 3D images");
+        if constexpr (horizontal || vertical) {
+            static_assert(etl::dimensions<T>() == 3, "random_mirrorer can only be used with 3D images");
 
-        if (horizontal && vertical) {
-            dist = std::uniform_int_distribution<size_t>{0, 3};
-        } else {
-            dist = std::uniform_int_distribution<size_t>{0, 2};
+            if (horizontal && vertical) {
+                dist = std::uniform_int_distribution<size_t>{0, 3};
+            } else {
+                dist = std::uniform_int_distribution<size_t>{0, 2};
+            }
         }
     }
 
@@ -187,8 +140,10 @@ struct random_mirrorer<Desc, std::enable_if_t<Desc::HorizontalMirroring || Desc:
     size_t scaling() const {
         if (horizontal && vertical) {
             return 3;
-        } else {
+        } else if (horizontal || vertical) {
             return 2;
+        } else {
+            return 1;
         }
     }
 
@@ -197,59 +152,33 @@ struct random_mirrorer<Desc, std::enable_if_t<Desc::HorizontalMirroring || Desc:
      * \param target The input to transform
      */
     template <typename O>
-    void transform(O&& target) {
-        auto choice = dist(dll::rand_engine());
+    void transform(O && target) {
+        if constexpr (horizontal || vertical) {
+            auto choice = dist(dll::rand_engine());
 
-        if (horizontal && vertical && choice == 1) {
-            for (size_t c = 0; c < etl::dim<0>(target); ++c) {
-                target(c) = vflip(target(c));
+            if (horizontal && vertical && choice == 1) {
+                for (size_t c = 0; c < etl::dim<0>(target); ++c) {
+                    target(c) = vflip(target(c));
+                }
+            } else if (horizontal && vertical && choice == 2) {
+                for (size_t c = 0; c < etl::dim<0>(target); ++c) {
+                    target(c) = hflip(target(c));
+                }
             }
-        } else if (horizontal && vertical && choice == 2) {
-            for (size_t c = 0; c < etl::dim<0>(target); ++c) {
-                target(c) = hflip(target(c));
-            }
-        }
 
-        if (horizontal && choice == 1) {
-            for (size_t c = 0; c < etl::dim<0>(target); ++c) {
-                target(c) = hflip(target(c));
+            if (horizontal && choice == 1) {
+                for (size_t c = 0; c < etl::dim<0>(target); ++c) {
+                    target(c) = hflip(target(c));
+                }
             }
-        }
 
-        if (vertical && choice == 1) {
-            for (size_t c = 0; c < etl::dim<0>(target); ++c) {
-                target(c) = vflip(target(c));
+            if (vertical && choice == 1) {
+                for (size_t c = 0; c < etl::dim<0>(target); ++c) {
+                    target(c) = vflip(target(c));
+                }
             }
         }
     }
-};
-
-/*!
- * \copydoc random_mirrorer
- */
-template <typename Desc>
-struct random_mirrorer<Desc, std::enable_if_t<!Desc::HorizontalMirroring && !Desc::VerticalMirroring>> {
-    /*!
-     * \brief Initialize the random_mirrorer
-     * \param image The image to crop from
-     */
-    template <typename T>
-    random_mirrorer([[maybe_unused]] const T& image) {}
-
-    /*!
-     * \brief The number of generated images from one input image
-     * \return The augmentation factor
-     */
-    static constexpr size_t scaling() {
-        return 1;
-    }
-
-    /*!
-     * \brief Apply the transform on the input
-     * \param target The input to transform
-     */
-    template <typename O>
-    static void transform([[maybe_unused]] O&& target) {}
 };
 
 /*!
