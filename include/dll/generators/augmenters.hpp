@@ -33,7 +33,7 @@ struct random_cropper {
      * \param image The image to crop from
      */
     template <typename T>
-    random_cropper(const T& image){
+    explicit random_cropper(const T& image){
         if constexpr (random_crop_x && random_crop_y) {
             static_assert(etl::dimensions<T>() == 3, "random_cropper can only be used with 3D images");
 
@@ -121,7 +121,7 @@ struct random_mirrorer {
      * \param image The image to crop from
      */
     template <typename T>
-    random_mirrorer([[maybe_unused]] const T& image){
+    explicit random_mirrorer([[maybe_unused]] const T& image){
         if constexpr (horizontal || vertical) {
             static_assert(etl::dimensions<T>() == 3, "random_mirrorer can only be used with 3D images");
 
@@ -195,7 +195,7 @@ struct random_noise {
      * \param image The image to crop from
      */
     template <typename T>
-    random_noise([[maybe_unused]] const T& image) : dist(0, 1000) {}
+    explicit random_noise([[maybe_unused]] const T& image) : dist(0, 1000) {}
 
     /*!
      * \brief The number of generated images from one input image
@@ -241,7 +241,7 @@ struct elastic_distorter {
      * \param image The image to distort
      */
     template <typename T>
-    elastic_distorter([[maybe_unused]] const T& image) {
+    explicit elastic_distorter([[maybe_unused]] const T& image) {
         if constexpr (K) {
             static_assert(etl::dimensions<T>() == 3, "elastic_distorter can only be used with 3D images");
             static_assert(K % 2 == 1, "The kernel size must be odd");
