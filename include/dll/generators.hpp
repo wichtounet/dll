@@ -50,21 +50,18 @@ concept generator = is_generator_impl<T>::value;
 template <typename T>
 concept not_generator = !generator<T>;
 
-/*!
- * \brief Helper to tell from the generator description if it is
- * augmenting the data
- */
-template<typename Desc>
-constexpr bool is_augmented =
-            (Desc::random_crop_x > 0 && Desc::random_crop_y > 0)
-        ||  Desc::HorizontalMirroring || Desc::VerticalMirroring || Desc::Noise || Desc::ElasticDistortion;
+template <typename Desc>
+concept augmented_generator = (Desc::random_crop_x > 0 && Desc::random_crop_y > 0) || Desc::HorizontalMirroring || Desc::VerticalMirroring || Desc::Noise != 0
+                              || Desc::ElasticDistortion != 0;
 
-/*!
- * \brief Helper to tell from the generator description if it is
- * threaded.
- */
 template<typename Desc>
-static constexpr bool is_threaded = Desc::Threaded;
+concept threaded_generator = Desc::Threaded;
+
+template<typename Desc>
+concept standard_generator = !augmented_generator<Desc> && !threaded_generator<Desc>;
+
+template<typename Desc>
+concept special_generator = augmented_generator<Desc> || threaded_generator<Desc>;
 
 } // end of namespace dll
 

@@ -20,14 +20,14 @@ namespace dll {
 /*!
  * \brief a in-memory data generator
  */
-template <typename Iterator, typename Desc, typename Enable = void>
+template <typename Iterator, typename Desc>
 struct inmemory_single_data_generator;
 
 /*!
  * \copydoc inmemory_single_data_generator
  */
-template <typename Iterator, typename Desc>
-struct inmemory_single_data_generator<Iterator, Desc, std::enable_if_t<!is_augmented<Desc>>> {
+template <typename Iterator, standard_generator Desc>
+struct inmemory_single_data_generator<Iterator, Desc> {
     using desc                 = Desc;                                                              ///< The generator descriptor
     using weight               = etl::value_t<typename std::iterator_traits<Iterator>::value_type>; ///< The data type
     using data_cache_helper_t  = cache_helper<Desc, Iterator>;                                      ///< The helper for the data cache
@@ -270,8 +270,8 @@ struct inmemory_single_data_generator<Iterator, Desc, std::enable_if_t<!is_augme
 /*!
  * \copydoc inmemory_single_data_generator
  */
-template <typename Iterator, typename Desc>
-struct inmemory_single_data_generator<Iterator, Desc, std::enable_if_t<is_augmented<Desc>>> {
+template <typename Iterator, augmented_generator Desc>
+struct inmemory_single_data_generator<Iterator, Desc> {
     using desc                 = Desc;                                        ///< The generator descriptor
     using weight               = etl::value_t<typename Iterator::value_type>; ///< The data type
     using data_cache_helper_t  = cache_helper<desc, Iterator>;                ///< The helper for the data cache
