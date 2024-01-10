@@ -18,14 +18,15 @@ namespace dll {
  * The cache is for putting all the inputs inside.
  * The big cache is for storing several batches.
  */
-template <typename Desc, typename Iterator, typename Enable = void>
+template <typename Desc, typename Iterator>
 struct cache_helper;
 
 /*!
  * \brief cache_helper implementation for 1D inputs
  */
 template <typename Desc, typename Iterator>
-struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_1d<typename std::iterator_traits<Iterator>::value_type>>> {
+requires(etl::is_1d<typename std::iterator_traits<Iterator>::value_type>)
+struct cache_helper<Desc, Iterator>  {
     using T = etl::value_t<typename std::iterator_traits<Iterator>::value_type>; ///< Input type
 
     using cache_type     = etl::dyn_matrix<T, 2>; ///< The type of the cache
@@ -60,7 +61,8 @@ struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_1d<typename std::it
  * \brief cache_helper implementation for 3D inputs
  */
 template <typename Desc, typename Iterator>
-struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_3d<typename std::iterator_traits<Iterator>::value_type>>> {
+requires(etl::is_3d<typename std::iterator_traits<Iterator>::value_type>)
+struct cache_helper<Desc, Iterator> {
     using T = etl::value_t<typename std::iterator_traits<Iterator>::value_type>; ///< Input type
 
     using cache_type     = etl::dyn_matrix<T, 4>; ///< The type of the cache
@@ -100,7 +102,8 @@ struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_3d<typename std::it
  * \brief cache_helper implementation for 3D inputs
  */
 template <typename Desc, typename Iterator>
-struct cache_helper<Desc, Iterator, std::enable_if_t<etl::is_2d<typename std::iterator_traits<Iterator>::value_type>>> {
+requires(etl::is_2d<typename std::iterator_traits<Iterator>::value_type>)
+struct cache_helper<Desc, Iterator> {
     using T = etl::value_t<typename std::iterator_traits<Iterator>::value_type>; ///< Input type
 
     using cache_type     = etl::dyn_matrix<T, 3>; ///< The type of the cache
