@@ -21,7 +21,7 @@ LD_FLAGS += -lpthread
 
 CXX_FLAGS+= -isystem /usr/include/opencv4/
 
-OPENCV_LD_FLAGS=-lopencv_core -lopencv_imgproc -lopencv_highgui
+OPENCV_LD_FLAGS=-lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_imgcodecs
 LIBSVM_LD_FLAGS=-lsvm
 TEST_LD_FLAGS=$(LIBSVM_LD_FLAGS)
 
