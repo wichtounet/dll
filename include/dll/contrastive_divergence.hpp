@@ -902,13 +902,13 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
 /*!
  * \brief Contrastive Divergence Trainer for RBM.
  */
-template <size_t N, typename RBM, typename Enable = void>
+template <size_t N, typename RBM>
 using cd_trainer = base_cd_trainer<N, RBM, false>;
 
 /*!
  * \brief Persistent Contrastive Divergence Trainer for RBM.
  */
-template <size_t N, typename RBM, typename Enable = void>
+template <size_t N, typename RBM>
 using persistent_cd_trainer = base_cd_trainer<N, RBM, true>;
 
 /*!
