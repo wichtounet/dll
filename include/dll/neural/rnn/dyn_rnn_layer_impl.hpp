@@ -227,7 +227,7 @@ struct dyn_rnn_layer_impl final : base_rnn_layer<dyn_rnn_layer_impl<Desc>, Desc>
     void compute_gradients(C& context) const {
         dll::auto_timer timer("dyn_rnn:compute_gradients");
 
-        base_type::compute_gradients_impl(context, w, u, time_steps, sequence_length, hidden_units, bptt_steps);
+        base_type::compute_gradients_impl(context, w, u, time_steps, bptt_steps);
     }
 };
 
