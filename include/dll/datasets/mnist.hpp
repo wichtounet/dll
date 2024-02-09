@@ -25,7 +25,7 @@ template<typename Example, typename... Parameters>
 auto make_mnist_generator_train_impl(const std::string& folder, size_t start, size_t limit, Parameters&&... /*parameters*/){
     // Create examples for the caches
     Example input;
-    float label;
+    float label = 0.0f;
 
     size_t n = 60000 - start;
     size_t m = 0;
@@ -68,7 +68,7 @@ template<typename Example, typename... Parameters>
 auto make_mnist_generator_test_impl(const std::string& folder, size_t start, size_t limit, Parameters&&... /*parameters*/){
     // Create examples for the caches
     Example input;
-    float label;
+    float label = 0.0f;
 
     size_t n = 10000 - start;
     size_t m = 0;
