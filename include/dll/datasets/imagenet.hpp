@@ -58,15 +58,12 @@ inline void read_files(std::vector<std::pair<size_t, size_t>>& files, std::unord
     }
 }
 
-struct image_iterator : std::iterator<
-                                     std::input_iterator_tag,
-                                     etl::fast_dyn_matrix<float, 3, 256, 256>,
-                                     ptrdiff_t,
-                                     etl::fast_dyn_matrix<float, 3, 256, 256>*,
-                                     etl::fast_dyn_matrix<float, 3, 256, 256>&
-                                 > {
-
-    using value_type = etl::fast_dyn_matrix<float, 3, 256, 256>;
+struct image_iterator {
+    using iterator_category = std::input_iterator_tag;
+    using value_type        = etl::fast_dyn_matrix<float, 3, 256, 256>;
+    using difference_type   = ptrdiff_t;
+    using pointer           = value_type *;
+    using reference         = value_type &;
 
     std::string imagenet_path;
     std::shared_ptr<std::vector<std::pair<size_t, size_t>>> files;
@@ -157,13 +154,12 @@ struct image_iterator : std::iterator<
     }
 };
 
-struct label_iterator : std::iterator<
-                                     std::input_iterator_tag,
-                                     float,
-                                     ptrdiff_t,
-                                     float*,
-                                     float&
-                                 > {
+struct label_iterator {
+    using iterator_category = std::input_iterator_tag;
+    using value_type        = float;
+    using difference_type   = ptrdiff_t;
+    using pointer           = value_type *;
+    using reference         = value_type &;
 
     std::shared_ptr<std::vector<std::pair<size_t, size_t>>> files;
     std::shared_ptr<std::unordered_map<size_t, float>> labels;
