@@ -23,7 +23,6 @@
 #include "trainer/dbn_trainer.hpp"
 #include "trainer/rbm_trainer_fwd.hpp"
 #include "dll/trainer/rbm_training_context.hpp"
-#include "dbn_common.hpp"
 #include "svm_common.hpp"
 #include "util/export.hpp"
 #include "util/timers.hpp"
@@ -32,6 +31,13 @@
 #include "dbn_detail.hpp" // dbn_detail namespace
 
 namespace dll {
+
+namespace dbn_detail {
+
+template <typename W>
+using rbm_watcher_t = std::conditional_t<W::replace_sub, W, void>;
+
+} //end of namespace dbn_detail
 
 template<typename O, typename Enable = void>
 struct safe_value_type {
