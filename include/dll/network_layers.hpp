@@ -69,15 +69,16 @@ constexpr const bool has_shuffle_layer = (... || has_shuffle_helper<Layers>::val
 // TODO validate_layer_pair should be made more robust when
 // transform layer are present between layers
 
-template <typename L1, typename L2, typename Enable = void>
+template <typename L1, typename L2>
 struct validate_layer_pair;
 
 template <typename L1, typename L2>
-struct validate_layer_pair<L1, L2, std::enable_if_t<layer_traits<L1>::is_transform_layer() || layer_traits<L2>::is_transform_layer()>>
-    : std::true_type {};
+requires(transform_layer_c<L1> || transform_layer_c<L2>)
+struct validate_layer_pair<L1, L2> : std::true_type {};
 
 template <typename L1, typename L2>
-struct validate_layer_pair<L1, L2, cpp::disable_if_t<layer_traits<L1>::is_transform_layer() || layer_traits<L2>::is_transform_layer()>> : std::bool_constant<L1::output_size() == L2::input_size()> {};
+requires(!transform_layer_c<L1> && !transform_layer_c<L2>)
+struct validate_layer_pair<L1, L2> : std::bool_constant<L1::output_size() == L2::input_size()> {};
 
 template <typename... Layers>
 struct validate_layers_impl;

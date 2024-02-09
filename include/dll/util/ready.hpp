@@ -25,7 +25,7 @@ namespace dll {
  */
 template <typename Layer, typename Input>
 auto prepare_one_ready_output(Layer& layer, const Input& input) {
-    if constexpr (decay_layer_traits<Layer>::is_transform_layer()) {
+    if constexpr (transform_layer_c<Layer>) {
         if constexpr (etl::all_fast<Input>) {
             // A transform layer using fast input does not need inherit
             return layer.template prepare_one_output<Input>();
@@ -55,7 +55,7 @@ auto prepare_one_ready_output(Layer& layer, const Input& input) {
  */
 template <typename Layer, typename Input>
 auto prepare_many_ready_output(Layer& layer, const Input& input, size_t n) {
-    if constexpr (decay_layer_traits<Layer>::is_transform_layer()) {
+    if constexpr (transform_layer_c<Layer>) {
         if constexpr (etl::all_fast<Input>) {
             // A transform layer using fast input does not need inherit
             return layer.template prepare_output<Input>(n);

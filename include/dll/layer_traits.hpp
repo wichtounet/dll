@@ -240,16 +240,19 @@ template <typename T>
 using decay_layer_traits = layer_traits<std::decay_t<T>>;
 
 template <typename T>
-concept dynamic_layer = layer_traits<T>::is_dynamic();
+concept dynamic_layer = decay_layer_traits<T>::is_dynamic();
 
 template <typename T>
-concept static_layer = !layer_traits<T>::is_dynamic();
+concept static_layer = !decay_layer_traits<T>::is_dynamic();
 
 template <typename T>
-concept rbm_layer_c = layer_traits<T>::is_rbm_layer();
+concept rbm_layer_c = decay_layer_traits<T>::is_rbm_layer();
 
 template <typename T>
-concept non_rbm_layer_c = !layer_traits<T>::is_rbm_layer();
+concept non_rbm_layer_c = !decay_layer_traits<T>::is_rbm_layer();
+
+template <typename T>
+concept transform_layer_c = decay_layer_traits<T>::is_transform_layer();
 
 /*!
  * \brief Return the number of input channels of the given CRBM
