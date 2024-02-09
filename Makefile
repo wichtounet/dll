@@ -19,6 +19,8 @@ RELEASE_FLAGS += -fno-rtti
 CXX_FLAGS += -Ietl/lib/include -Ietl/include/ -Imnist/include/ -Icifar-10/include/ -Idoctest -Inice_svm/include
 LD_FLAGS += -lpthread
 
+CXX_FLAGS+= -isystem /usr/include/opencv4/
+
 OPENCV_LD_FLAGS=-lopencv_core -lopencv_imgproc -lopencv_highgui
 LIBSVM_LD_FLAGS=-lsvm
 TEST_LD_FLAGS=$(LIBSVM_LD_FLAGS)
