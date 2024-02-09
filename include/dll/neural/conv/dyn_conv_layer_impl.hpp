@@ -169,10 +169,10 @@ struct dyn_conv_layer_impl final : neural_layer<dyn_conv_layer_impl<Desc>, Desc>
     void forward_batch(H1&& output, const V& v) const {
         dll::auto_timer timer("conv:forward_batch");
 
-        if constexpr (etl::dimensions<V>() == 4) {
+        if constexpr (etl::etl_4d<V>) {
             output = etl::ml::convolution_forward(v, w, s1, s2, p1, p2);
         } else {
-            output = etl::ml::convolution_forward(etl::reshape(v, etl::dim<0>(v), nc, nv1, nv2, s1, s2, p1, p2), w);
+            output = etl::ml::convolution_forward(etl::reshape(v, etl::dim<0>(v), nc, nv1, nv2), w, s1, s2, p1, p2);
         }
 
         if constexpr (!no_bias) {
