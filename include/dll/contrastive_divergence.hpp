@@ -596,8 +596,7 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
     etl::dyn_matrix<weight> p_h_a; ///< Beginning of the contrastive divergence chain (activations)
     etl::dyn_matrix<weight> p_h_s; ///< Beginning of the contrastive divergence chain (samples)
 
-    template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_disable_iff(M)>
-    base_cd_trainer(rbm_t& rbm)
+    explicit base_cd_trainer(rbm_t& rbm)requires(!rbm_layer_traits<rbm_t>::has_momentum())
             : rbm(rbm),
               v1(batch_size, rbm.num_visible),
               vf(batch_size, rbm.num_visible),
@@ -617,12 +616,11 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
               q_local_batch(rbm.num_hidden),
               q_local_t(rbm.num_hidden, static_cast<weight>(0.0)),
               p_h_a(batch_size, rbm.num_hidden),
-              p_h_s(batch_size, rbm.num_hidden){
+              p_h_s(batch_size, rbm.num_hidden)  {
         static_assert(!rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used without momentum support");
     }
 
-    template <bool M = rbm_layer_traits<rbm_t>::has_momentum(), cpp_enable_iff(M)>
-    base_cd_trainer(rbm_t& rbm)
+    explicit base_cd_trainer(rbm_t& rbm)requires(rbm_layer_traits<rbm_t>::has_momentum())
             : rbm(rbm),
               v1(batch_size, rbm.num_visible),
               vf(batch_size, rbm.num_visible),
@@ -642,7 +640,7 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<layer_traits<RBM>::i
               q_local_batch(rbm.num_hidden),
               q_local_t(rbm.num_hidden, static_cast<weight>(0.0)),
               p_h_a(batch_size, rbm.num_hidden),
-              p_h_s(batch_size, rbm.num_hidden){
+              p_h_s(batch_size, rbm.num_hidden)  {
         static_assert(rbm_layer_traits<rbm_t>::has_momentum(), "This constructor should only be used with momentum support");
     }
 
