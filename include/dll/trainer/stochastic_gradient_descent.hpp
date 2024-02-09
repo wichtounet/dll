@@ -727,7 +727,7 @@ struct sgd_trainer {
         }
     }
 
-    template <size_t L, group_layer_c Layer, typename Context, typename Errors>
+    template <group_layer_c Layer, typename Context, typename Errors>
     static void backward_layer(Layer & layer, Context & context, Errors && errors, bool & last) {
         backward_layer_group<Layer::n_layers - 1>(layer, context, errors, last);
     }
