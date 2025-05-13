@@ -621,7 +621,7 @@ struct sgd_trainer {
      * \return a pair containing the error and the loss for the batch
      */
     template <bool Error, typename Inputs, typename Labels>
-    std::pair<double, double> train_batch(size_t epoch, const Inputs& inputs, const Labels& labels) {
+    std::pair<double, double> train_batch([[maybe_unused]] size_t epoch, const Inputs& inputs, const Labels& labels) {
         dll::auto_timer timer("sgd::train_batch");
 
         auto& first_layer = std::get<0>(full_context).first;
@@ -668,7 +668,7 @@ struct sgd_trainer {
         {
             dll::auto_timer timer("sgd::grad");
 
-            cpp::for_each(full_context, [this, epoch, n](auto& layer_ctx) {
+            cpp::for_each(full_context, [this, n](auto& layer_ctx) {
                 this->apply_gradients_layer(n, layer_ctx.first, *layer_ctx.second);
             });
         }
