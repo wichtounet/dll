@@ -305,7 +305,7 @@ struct opencv_rbm_visualizer : base_ocv_rbm_visualizer<RBM> {
 
         buffer_image = cv::Scalar(255);
 
-        cv::putText(buffer_image, "epoch " + std::to_string(epoch), cv::Point(10, 12), CV_FONT_NORMAL, 0.3, cv::Scalar(0), 1, 2);
+        cv::putText(buffer_image, "epoch " + std::to_string(epoch), cv::Point(10, 12), cv::FONT_HERSHEY_SIMPLEX, 0.3, cv::Scalar(0), 1, 2);
 
         draw_weights(rbm);
 
@@ -390,7 +390,7 @@ struct opencv_rbm_visualizer<RBM, C, std::enable_if_t<layer_traits<RBM>::is_conv
 
         buffer_image = cv::Scalar(255);
 
-        cv::putText(buffer_image, "epoch " + std::to_string(epoch), cv::Point(10, 12), CV_FONT_NORMAL, 0.3, cv::Scalar(0), 1, 2);
+        cv::putText(buffer_image, "epoch " + std::to_string(epoch), cv::Point(10, 12), cv::FONT_HERSHEY_SIMPLEX, 0.3, cv::Scalar(0), 1, 2);
 
         draw_weights(rbm);
 
@@ -522,7 +522,7 @@ struct opencv_dbn_visualizer {
 
         cv::putText(buffer_image,
                     "layer: " + std::to_string(current_image) + " epoch " + std::to_string(epoch),
-                    cv::Point(10, 12), CV_FONT_NORMAL, 0.3, cv::Scalar(0), 1, 2);
+                    cv::Point(10, 12), cv::FONT_HERSHEY_SIMPLEX, 0.3, cv::Scalar(0), 1, 2);
 
         for (size_t hi = 0; hi < tile_shape.width; ++hi) {
             for (size_t hj = 0; hj < tile_shape.height; ++hj) {
@@ -770,7 +770,7 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<network_traits<DBN>::is_dy
 
         cv::putText(buffer_image,
                     "layer: " + std::to_string(current_image) + " epoch " + std::to_string(epoch),
-                    cv::Point(10, 12), CV_FONT_NORMAL, 0.3, cv::Scalar(0), 1, 2);
+                    cv::Point(10, 12), cv::FONT_HERSHEY_SIMPLEX, 0.3, cv::Scalar(0), 1, 2);
 
         for (size_t hi = 0; hi < tile_shape.width; ++hi) {
             for (size_t hj = 0; hj < tile_shape.height; ++hj) {
@@ -980,7 +980,7 @@ struct opencv_dbn_visualizer<DBN, C, std::enable_if_t<network_traits<DBN>::is_co
 
         cv::putText(buffer_image,
                     "layer: " + std::to_string(current_image) + " epoch " + std::to_string(epoch),
-                    cv::Point(10, 12), CV_FONT_NORMAL, 0.3, cv::Scalar(0), 1, 2);
+                    cv::Point(10, 12), cv::FONT_HERSHEY_SIMPLEX, 0.3, cv::Scalar(0), 1, 2);
 
         size_t channel = 0;
 
