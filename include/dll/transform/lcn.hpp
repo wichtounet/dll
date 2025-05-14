@@ -44,9 +44,9 @@ void lcn_compute(Output&& y, const Input& x, const W& w, size_t K, size_t Mid){
                 weight_t sum(0.0);
 
                 for (size_t p = 0; p < K; ++p) {
-                    if (long(j) + p - Mid >= 0 && long(j) + p - Mid < etl::dim<1>(x)) {
+                    if (long(j) + long(p) - long(Mid) >= 0 && long(j) + long(p) - long(Mid) < long(etl::dim<1>(x))) {
                         for (size_t q = 0; q < K; ++q) {
-                            if (long(k) + q - Mid >= 0 && long(k) + q - Mid < etl::dim<2>(x)) {
+                            if (long(k) + long(q) - long(Mid) >= 0 && long(k) + long(q) - long(Mid) < long(etl::dim<2>(x))) {
                                 sum += w(p, q) * x(c, j + p - Mid, k + q - Mid);
                             }
                         }
@@ -64,9 +64,9 @@ void lcn_compute(Output&& y, const Input& x, const W& w, size_t K, size_t Mid){
                 weight_t sum(0.0);
 
                 for (size_t p = 0; p < K; ++p) {
-                    if (long(j) + p - Mid >= 0 && long(j) + p - Mid < etl::dim<1>(x)) {
+                    if (long(j) + long(p) - long(Mid) >= 0 && long(j) + long(p) - long(Mid) < long(etl::dim<1>(x))) {
                         for (size_t q = 0; q < K; ++q) {
-                            if (long(k) + q - Mid >= 0 && long(k) + q - Mid < etl::dim<2>(x)) {
+                            if (long(k) + long(q) - long(Mid) >= 0 && long(k) + long(q) - long(Mid) < long(etl::dim<2>(x))) {
                                 sum += w(p, q) * x(c, j + p - Mid, k + q - Mid) * x(c, j + p - Mid, k + q - Mid);
                             }
                         }
