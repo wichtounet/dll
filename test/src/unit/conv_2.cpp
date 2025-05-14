@@ -46,7 +46,7 @@ DLL_TEST_CASE("unit/conv/sgd/7", "[unit][conv][dbn][mnist][sgd]") {
     typedef dll::dbn_desc<
         dll::dbn_layers<
             dll::conv_layer_desc<1, 28, 28, 6, 5, 5, dll::activation<dll::function::RELU>>::layer_t,
-            dll::mp_2d_layer_desc<6, 24, 24, 2, 2>::layer_t,
+            dll::mp_2d_layer<6, 24, 24, 2, 2>,
             dll::conv_layer_desc<6, 12, 12, 5, 3, 3, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_layer_desc<5 * 10 * 10, 100, dll::activation<dll::function::RELU>>::layer_t,
             dll::dense_layer_desc<100, 10, dll::activation<dll::function::SOFTMAX>>::layer_t>,

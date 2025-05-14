@@ -432,7 +432,7 @@ void train_convolutional(InputBatch& input_batch, ExpectedBatch& expected_batch,
     t.q_global_batch = mean(t.h2_a);
 
     if constexpr (rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET) {
-        t.q_local_batch = bias_batch_mean_2d(t.h2_a);
+        t.q_local_batch = mean_l(t.h2_a);
     }
 
     //Compute the biases for sparsity
