@@ -29,6 +29,8 @@ struct layer {
      */
     virtual void print(std::ostream& out) const = 0;
 
+    virtual ~layer() {};
+
     /*!
      * \brief Returns the number of hidden unit
      */
@@ -121,7 +123,7 @@ struct base_rbm_layer : layer {
     parse_result base_parse(const std::vector<std::string>& lines, size_t& i);
 };
 
-struct rbm_layer : base_rbm_layer {
+struct rbm_layer final : base_rbm_layer {
     size_t visible = 0; ///< The number of visible units
     size_t hidden  = 0; ///< The number of hidden units
 
@@ -131,7 +133,7 @@ struct rbm_layer : base_rbm_layer {
     size_t hidden_get() const override;
 };
 
-struct conv_rbm_layer : base_rbm_layer {
+struct conv_rbm_layer final : base_rbm_layer {
     size_t c  = 0; ///< The number of channels
     size_t v1 = 0; ///< The first dimension of the output
     size_t v2 = 0; ///< The second dimension of the output
@@ -149,7 +151,7 @@ struct conv_rbm_layer : base_rbm_layer {
     size_t hidden_get_3() const override;
 };
 
-struct conv_rbm_mp_layer : base_rbm_layer {
+struct conv_rbm_mp_layer final : base_rbm_layer {
     size_t c  = 0; ///< The number of channels
     size_t v1 = 0; ///< The first dimension of the output
     size_t v2 = 0; ///< The second dimension of the output
@@ -168,7 +170,7 @@ struct conv_rbm_mp_layer : base_rbm_layer {
     size_t hidden_get_3() const override;
 };
 
-struct dense_layer : layer {
+struct dense_layer final : layer {
     size_t visible = 0; ///< The number of visible units
     size_t hidden  = 0; ///< The number of hidden units
 
@@ -180,7 +182,7 @@ struct dense_layer : layer {
     size_t hidden_get() const override;
 };
 
-struct conv_layer : layer {
+struct conv_layer final : layer {
     size_t c  = 0; ///< The number of channels
     size_t v1 = 0; ///< The first dimension of the input
     size_t v2 = 0; ///< The second dimension of the input
@@ -218,12 +220,12 @@ struct pooling_layer : layer {
     size_t hidden_get_3() const override;
 };
 
-struct mp_layer : pooling_layer {
+struct mp_layer final : pooling_layer {
     void print(std::ostream& out) const override;
     bool parse(const layers_t& layers, const std::vector<std::string>& lines, size_t& i) override;
 };
 
-struct avgp_layer : pooling_layer {
+struct avgp_layer final : pooling_layer {
     void print(std::ostream& out) const override;
     bool parse(const layers_t& layers, const std::vector<std::string>& lines, size_t& i) override;
 };
