@@ -360,6 +360,8 @@ release: release_dllp release_dll_test_unit release_dll_test_perf release_dll_te
 
 all: release debug release_debug
 
+debug_binaries: debug_dllp debug_dll_test_perf debug_dll_test_misc debug_dll_view debug_examples
+
 debug_test: debug_dll_test_unit
 	./$(debug)/bin/dll_test_unit
 
