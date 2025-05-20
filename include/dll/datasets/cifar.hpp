@@ -22,7 +22,7 @@ template<typename... Parameters>
 auto make_cifar10_generator_train(const std::string& folder, size_t limit, Parameters&&... /*parameters*/){
     // Create examples for the caches
     etl::fast_dyn_matrix<float, 3, 32, 32> input;
-    float label;
+    float label = 1.0f;
 
     size_t n = 50000;
     size_t m = 0;
@@ -57,7 +57,7 @@ template<typename... Parameters>
 auto make_cifar10_generator_test(const std::string& folder, size_t limit, Parameters&&... /*parameters*/){
     // Create examples for the caches
     etl::fast_dyn_matrix<float, 3, 32, 32> input;
-    float label;
+    float label = 1.0f;
 
     size_t n = 10000;
     size_t m = 0;
