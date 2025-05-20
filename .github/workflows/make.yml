@@ -1,0 +1,32 @@
+name: Linux Build
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    name: Compile and test on Linux
+    runs-on: ubuntu-latest
+    container:
+      image: wichtounet/cpp:latest
+    strategy:
+        matrix:
+            compiler: [gcc, clang]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Build binaries
+      run: make -j5 debug compiler=${{ matrix.compiler }}
+
+    - name: Build tests
+      run: make -j5 debug_dll_test_unit compiler=${{ matrix.compiler }}
+
+    - name: Run tests
+      run: make debug_test compiler=${{ matrix.compiler }}
