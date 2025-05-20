@@ -1,16 +1,16 @@
-default: release_debug/bin/dllp
-
-.PHONY: default release debug all clean
-
 include make-utils/flags.mk
 include make-utils/cpp-utils.mk
+
+default: $(release_debug)/bin/dllp
+
+.PHONY: default release debug all clean
 
 # Use C++26
 $(eval $(call use_cpp26))
 
 CXX_FLAGS += -pedantic -Werror -ftemplate-backtrace-limit=0
 
-ifneq (,$(findstring clang,$(CXX)))
+ifeq (clang, $(compiler))
 CXX_FLAGS += -Wno-documentation
 endif
 
@@ -31,10 +31,8 @@ CXX_FLAGS += -DETL_PARALLEL -DETL_VECTORIZE_FULL -DETL_RELAXED
 CXX_FLAGS += -ftemplate-depth=1024
 
 # Tune GCC warnings
-ifeq (,$(findstring clang,$(CXX)))
-ifneq (,$(findstring g++,$(CXX)))
+ifeq (gcc, $(compiler))
 CXX_FLAGS += -Wno-ignored-attributes -Wno-misleading-indentation
-endif
 endif
 
 # Sometimes more performance
@@ -62,7 +60,7 @@ CXX_FLAGS += -DETL_MKL_MODE $(shell pkg-config --cflags $(DLL_BLAS_PKG))
 LD_FLAGS += $(shell pkg-config --libs $(DLL_BLAS_PKG))
 
 # Disable warning for MKL
-ifneq (,$(findstring clang,$(CXX)))
+ifeq (clang, $(compiler))
 CXX_FLAGS += -Wno-tautological-compare
 endif
 
@@ -72,16 +70,11 @@ CXX_FLAGS += -DETL_BLAS_MODE $(shell pkg-config --cflags cblas)
 LD_FLAGS += $(shell pkg-config --libs cblas)
 
 # Disable warning for MKL
-ifneq (,$(findstring clang,$(CXX)))
+ifeq (clang, $(compiler))
 CXX_FLAGS += -Wno-tautological-compare
 endif
 
 endif
-endif
-
-# Disable documentation warnings (too many false positives)
-ifneq (,$(findstring clang,$(CXX)))
-CXX_FLAGS += -Wno-documentation
 endif
 
 # On demand activation of full GPU support
@@ -128,7 +121,7 @@ LD_FLAGS += $(shell pkg-config --libs egblas)
 endif
 
 # Enable Clang sanitizers in debug mode
-ifneq (,$(findstring clang,$(CXX)))
+ifeq (clang, $(compiler))
 ifeq (,$(ETL_CUBLAS))
 ifneq (,$(DLL_SAN_THREAD))
 DEBUG_FLAGS += -fsanitize=undefined,thread
@@ -347,19 +340,19 @@ $(eval $(call add_executable,dll_cifar10_cnn,examples/src/cifar10_cnn.cpp))
 $(eval $(call add_executable_set,dll_cifar10_cnn,dll_cifar10_cnn))
 
 # Build sets for workbench sources
-debug_workbench: debug/bin/dll_sgd_perf debug/bin/dll_conv_sgd_perf debug/bin/dll_imagenet_perf debug/bin/dll_sgd_debug debug/bin/dll_dae debug/bin/dll_rbm_dae debug/bin/dll_perf_paper debug/bin/dll_perf_paper_conv debug/bin/dll_perf_conv debug/bin/dll_conv_types debug/bin/dll_dyn_perf
-release_debug_workbench: release_debug/bin/dll_sgd_perf release_debug/bin/dll_conv_sgd_perf release_debug/bin/dll_imagenet_perf release_debug/bin/dll_sgd_debug release_debug/bin/dll_dae release_debug/bin/dll_rbm_dae release_debug/bin/dll_perf_paper release_debug/bin/dll_perf_paper_conv release_debug/bin/dll_perf_conv release_debug/bin/dll_conv_types release_debug/bin/dll_dyn_perf
-release_workbench: release/bin/dll_sgd_perf release/bin/dll_conv_sgd_perf release/bin/dll_imagenet_perf release/bin/dll_sgd_debug release/bin/dll_dae release/bin/dll_rbm_dae release/bin/dll_perf_paper release/bin/dll_perf_paper_conv release/bin/dll_perf_conv release/bin/dll_conv_types release/bin/dll_dyn_perf
+debug_workbench: $(debug)/bin/dll_sgd_perf $(debug)/bin/dll_conv_sgd_perf $(debug)/bin/dll_imagenet_perf $(debug)/bin/dll_sgd_debug $(debug)/bin/dll_dae $(debug)/bin/dll_rbm_dae $(debug)/bin/dll_perf_paper $(debug)/bin/dll_perf_paper_conv $(debug)/bin/dll_perf_conv $(debug)/bin/dll_conv_types $(debug)/bin/dll_dyn_perf
+release_debug_workbench: $(release_debug)/bin/dll_sgd_perf $(release_debug)/bin/dll_conv_sgd_perf $(release_debug)/bin/dll_imagenet_perf $(release_debug)/bin/dll_sgd_debug $(release_debug)/bin/dll_dae $(release_debug)/bin/dll_rbm_dae $(release_debug)/bin/dll_perf_paper $(release_debug)/bin/dll_perf_paper_conv $(release_debug)/bin/dll_perf_conv $(release_debug)/bin/dll_conv_types $(release_debug)/bin/dll_dyn_perf
+release_workbench: $(release)/bin/dll_sgd_perf $(release)/bin/dll_conv_sgd_perf $(release)/bin/dll_imagenet_perf $(release)/bin/dll_sgd_debug $(release)/bin/dll_dae $(release)/bin/dll_rbm_dae $(release)/bin/dll_perf_paper $(release)/bin/dll_perf_paper_conv $(release)/bin/dll_perf_conv $(release)/bin/dll_conv_types $(release)/bin/dll_dyn_perf
 
 # Build sets for the examples
-debug_examples: debug/bin/dll_mnist_mlp debug/bin/dll_mnist_cnn debug/bin/dll_mnist_ae debug/bin/dll_mnist_deep_ae debug/bin/dll_mnist_dbn debug/bin/dll_mnist_cdbn debug/bin/dll_cifar10_cnn debug/bin/dll_char_cnn debug/bin/dll_imagenet_cnn debug/bin/dll_mnist_lstm debug/bin/dll_mnist_rnn
-release_debug_examples: release_debug/bin/dll_mnist_mlp release_debug/bin/dll_mnist_cnn release_debug/bin/dll_mnist_ae release_debug/bin/dll_mnist_deep_ae release_debug/bin/dll_mnist_dbn release_debug/bin/dll_mnist_cdbn release_debug/bin/dll_cifar10_cnn release_debug/bin/dll_char_cnn release_debug/bin/dll_imagenet_cnn release_debug/bin/dll_mnist_lstm release_debug/bin/dll_mnist_rnn
-release_examples: release/bin/dll_mnist_mlp release/bin/dll_mnist_cnn release/bin/dll_mnist_ae release/bin/dll_mnist_deep_ae release/bin/dll_mnist_dbn release/bin/dll_mnist_cdbn release/bin/dll_cifar10_cnn release/bin/dll_char_cnn release/bin/dll_imagenet_cnn release/bin/dll_mnist_lstm release/bin/dll_mnist_rnn
+debug_examples: $(debug)/bin/dll_mnist_mlp $(debug)/bin/dll_mnist_cnn $(debug)/bin/dll_mnist_ae $(debug)/bin/dll_mnist_deep_ae $(debug)/bin/dll_mnist_dbn $(debug)/bin/dll_mnist_cdbn $(debug)/bin/dll_cifar10_cnn $(debug)/bin/dll_char_cnn $(debug)/bin/dll_imagenet_cnn $(debug)/bin/dll_mnist_lstm $(debug)/bin/dll_mnist_rnn
+release_debug_examples: $(release_debug)/bin/dll_mnist_mlp $(release_debug)/bin/dll_mnist_cnn $(release_debug)/bin/dll_mnist_ae $(release_debug)/bin/dll_mnist_deep_ae $(release_debug)/bin/dll_mnist_dbn $(release_debug)/bin/dll_mnist_cdbn $(release_debug)/bin/dll_cifar10_cnn $(release_debug)/bin/dll_char_cnn $(release_debug)/bin/dll_imagenet_cnn $(release_debug)/bin/dll_mnist_lstm $(release_debug)/bin/dll_mnist_rnn
+release_examples: $(release)/bin/dll_mnist_mlp $(release)/bin/dll_mnist_cnn $(release)/bin/dll_mnist_ae $(release)/bin/dll_mnist_deep_ae $(release)/bin/dll_mnist_dbn $(release)/bin/dll_mnist_cdbn $(release)/bin/dll_cifar10_cnn $(release)/bin/dll_char_cnn $(release)/bin/dll_imagenet_cnn $(release)/bin/dll_mnist_lstm $(release)/bin/dll_mnist_rnn
 
 # Build sets for perf examples
-debug_examples_perf: debug/bin/dll_mnist_mlp_perf debug/bin/dll_mnist_cnn_perf debug/bin/dll_mnist_cnn_bn_perf debug/bin/dll_mnist_ae_perf debug/bin/dll_mnist_deep_ae_perf debug/bin/dll_mnist_dbn_perf debug/bin/dll_mnist_cdbn_perf debug/bin/dll_cifar10_cnn_small_perf debug/bin/dll_cifar10_cnn_med_perf debug/bin/dll_cifar10_cnn_big_perf
-release_debug_examples_perf: release_debug/bin/dll_mnist_mlp_perf release_debug/bin/dll_mnist_cnn_perf release_debug/bin/dll_mnist_cnn_bn_perf release_debug/bin/dll_mnist_ae_perf release_debug/bin/dll_mnist_deep_ae_perf release_debug/bin/dll_mnist_dbn_perf release_debug/bin/dll_mnist_cdbn_perf release_debug/bin/dll_cifar10_cnn_small_perf release_debug/bin/dll_cifar10_cnn_med_perf release_debug/bin/dll_cifar10_cnn_big_perf
-release_examples_perf: release/bin/dll_mnist_mlp_perf release/bin/dll_mnist_cnn_perf release/bin/dll_mnist_cnn_bn_perf release/bin/dll_mnist_ae_perf release/bin/dll_mnist_deep_ae_perf release/bin/dll_mnist_dbn_perf release/bin/dll_mnist_cdbn_perf release/bin/dll_cifar10_cnn_small_perf release/bin/dll_cifar10_cnn_med_perf release/bin/dll_cifar10_cnn_big_perf
+debug_examples_perf: $(debug)/bin/dll_mnist_mlp_perf $(debug)/bin/dll_mnist_cnn_perf $(debug)/bin/dll_mnist_cnn_bn_perf $(debug)/bin/dll_mnist_ae_perf $(debug)/bin/dll_mnist_deep_ae_perf $(debug)/bin/dll_mnist_dbn_perf $(debug)/bin/dll_mnist_cdbn_perf $(debug)/bin/dll_cifar10_cnn_small_perf $(debug)/bin/dll_cifar10_cnn_med_perf $(debug)/bin/dll_cifar10_cnn_big_perf
+release_debug_examples_perf: $(release_debug)/bin/dll_mnist_mlp_perf $(release_debug)/bin/dll_mnist_cnn_perf $(release_debug)/bin/dll_mnist_cnn_bn_perf $(release_debug)/bin/dll_mnist_ae_perf $(release_debug)/bin/dll_mnist_deep_ae_perf $(release_debug)/bin/dll_mnist_dbn_perf $(release_debug)/bin/dll_mnist_cdbn_perf $(release_debug)/bin/dll_cifar10_cnn_small_perf $(release_debug)/bin/dll_cifar10_cnn_med_perf $(release_debug)/bin/dll_cifar10_cnn_big_perf
+release_examples_perf: $(release)/bin/dll_mnist_mlp_perf $(release)/bin/dll_mnist_cnn_perf $(release)/bin/dll_mnist_cnn_bn_perf $(release)/bin/dll_mnist_ae_perf $(release)/bin/dll_mnist_deep_ae_perf $(release)/bin/dll_mnist_dbn_perf $(release)/bin/dll_mnist_cdbn_perf $(release)/bin/dll_cifar10_cnn_small_perf $(release)/bin/dll_cifar10_cnn_med_perf $(release)/bin/dll_cifar10_cnn_big_perf
 
 debug: debug_dllp debug_dll_test_unit debug_dll_test_perf debug_dll_test_misc debug_dll_view debug_examples
 release_debug: release_debug_dllp release_debug_dll_test_unit release_debug_dll_test_perf release_debug_dll_test_misc release_debug_dll_view release_debug_examples
@@ -368,18 +361,18 @@ release: release_dllp release_dll_test_unit release_dll_test_perf release_dll_te
 all: release debug release_debug
 
 debug_test: debug_dll_test_unit
-	./debug/bin/dll_test_unit
+	./$(debug)/bin/dll_test_unit
 
 release_test: release_dll_test_unit
-	./release/bin/dll_test_unit
+	./$(release)/bin/dll_test_unit
 
 release_debug_test: release_debug_dll_test_unit
-	./release_debug/bin/dll_test_unit
+	./$(release_debug)/bin/dll_test_unit
 
 test: all
-	./debug/bin/dll_test_unit
-	./release/bin/dll_test_unit
-	./release_debug/bin/dll_test_unit
+	./$(debug)/bin/dll_test_unit
+	./$(release)/bin/dll_test_unit
+	./$(release_debug)/bin/dll_test_unit
 
 CLANG_FORMAT ?= clang-format-3.7
 CLANG_MODERNIZE ?= clang-modernize-3.7
@@ -407,11 +400,11 @@ prefix = /usr
 bindir = $(prefix)/bin
 incdir = $(prefix)/include
 
-install: release_debug/bin/dllp
+install: $(release_debug)/bin/dllp
 	@ echo "Installation of dll"
 	@ echo "============================="
 	@ echo ""
-	install release_debug/bin/dllp $(bindir)/dllp
+	install $(release_debug)/bin/dllp $(bindir)/dllp
 	cp -r include/dll $(incdir)/
 	cp -r etl/include/etl $(incdir)/
 	cp -r etl/lib/include/cpp_utils $(incdir)/
