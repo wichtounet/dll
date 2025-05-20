@@ -7,8 +7,6 @@
 
 #include "dll_test.hpp"
 
-#define DLL_SVM_SUPPORT
-
 #include "dll/rbm/conv_rbm.hpp"
 #include "dll/dbn.hpp"
 
@@ -31,6 +29,8 @@ DLL_TEST_CASE("conv_dbn/mnist_1", "conv_dbn::simple") {
 
     dbn->pretrain(dataset.training_images, 5);
 }
+
+#ifdef DLL_SVM_SUPPORT
 
 DLL_TEST_CASE("conv_dbn/mnist_2", "conv_dbn::svm_simple") {
     typedef dll::dbn_desc<
@@ -103,3 +103,5 @@ DLL_TEST_CASE("conv_dbn/mnist_4", "conv_dbn::svm_simple") {
     std::cout << "test_error:" << test_error << std::endl;
     REQUIRE(test_error < 0.1);
 }
+
+#endif

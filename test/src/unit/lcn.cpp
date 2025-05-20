@@ -7,8 +7,6 @@
 
 #include "dll_test.hpp"
 
-#define DLL_SVM_SUPPORT
-
 #include "dll/rbm/conv_rbm.hpp"
 #include "dll/rbm/dyn_conv_rbm.hpp"
 #include "dll/transform/rectifier_layer.hpp"
@@ -20,6 +18,8 @@
 
 #include "mnist/mnist_reader.hpp"
 #include "mnist/mnist_utils.hpp"
+
+#ifdef DLL_SVM_SUPPORT
 
 DLL_TEST_CASE("unit/cdbn/lcn/mnist/1", "[cdbn][lcn][svm][unit]") {
     using dbn_t =
@@ -169,6 +169,8 @@ DLL_TEST_CASE("unit/cdbn/lcn/mnist/5", "[cdbn][lcn][svm][unit]") {
     REQUIRE(test_error < 0.2);
 }
 
+#endif
+
 DLL_TEST_CASE("unit/cdbn/lcn/mnist/6", "[cdbn][lcn][unit]") {
     using dbn_t =
         dll::dbn_desc<dll::dbn_layers<
@@ -199,6 +201,8 @@ DLL_TEST_CASE("unit/cdbn/lcn/mnist/6", "[cdbn][lcn][unit]") {
 
     dbn->pretrain(dataset.training_images, 20);
 }
+
+#ifdef DLL_SVM_SUPPORT
 
 DLL_TEST_CASE("unit/cdbn/lcn/mnist/7", "[cdbn][lcn][svm][unit]") {
     using dbn_t =
@@ -260,3 +264,5 @@ DLL_TEST_CASE("unit/cdbn/lcn/mnist/8", "[cdbn][lcn][svm][unit]") {
     std::cout << "test_error:" << test_error << std::endl;
     REQUIRE(test_error < 0.1);
 }
+
+#endif

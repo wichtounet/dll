@@ -5,9 +5,9 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "dll_test.hpp"
+#ifdef DLL_SVM_SUPPORT
 
-#define DLL_SVM_SUPPORT
+#include "dll_test.hpp"
 
 #include "dll/rbm/dyn_conv_rbm.hpp"
 #include "dll/rbm/conv_rbm.hpp"
@@ -102,3 +102,5 @@ DLL_TEST_CASE("unit/cdbn/rectifier/mnist/3", "[cdbn][rectifier][svm][unit]") {
     std::cout << "test_error:" << test_error << std::endl;
     REQUIRE(test_error < 0.1);
 }
+
+#endif

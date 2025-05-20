@@ -9,8 +9,6 @@
 
 #include "dll_test.hpp"
 
-#define DLL_SVM_SUPPORT
-
 #include "dll/rbm/dyn_rbm.hpp"
 #include "dll/dbn.hpp"
 
@@ -66,6 +64,8 @@ DLL_TEST_CASE("dyn_dbn/mnist_3", "dbn::labels") {
     REQUIRE(error < 0.3);
 }
 
+#ifdef DLL_SVM_SUPPORT
+
 DLL_TEST_CASE("dyn_dbn/mnist_4", "dbn::svm_simple") {
     using dbn_t =
         dll::dbn_desc<
@@ -93,6 +93,8 @@ DLL_TEST_CASE("dyn_dbn/mnist_4", "dbn::svm_simple") {
     std::cout << "test_error:" << test_error << std::endl;
     REQUIRE(test_error < 0.2);
 }
+
+#endif
 
 //This test is mostly here to ensure compilation
 

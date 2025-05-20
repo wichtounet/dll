@@ -9,8 +9,6 @@
 
 #include "dll_test.hpp"
 
-#define DLL_SVM_SUPPORT
-
 #include "dll/rbm/conv_rbm_mp.hpp"
 #include "dll/dbn.hpp"
 

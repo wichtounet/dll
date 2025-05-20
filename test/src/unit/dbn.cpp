@@ -9,8 +9,6 @@
 
 #include "dll_test.hpp"
 
-#define DLL_SVM_SUPPORT
-
 #include "dll/dbn.hpp"
 #include "dll/rbm/rbm.hpp"
 #include "dll/rbm/dyn_rbm.hpp"
@@ -195,6 +193,8 @@ DLL_TEST_CASE("unit/dbn/mnist/6", "[dbn][dyn][unit]") {
     TEST_CHECK(1.0);
 }
 
+#ifdef DLL_SVM_SUPPORT
+
 DLL_TEST_CASE("unit/dbn/mnist/7", "[dbn][svm][unit]") {
     using dbn_t = dll::dbn_desc<
         dll::dbn_layers<
@@ -219,6 +219,8 @@ DLL_TEST_CASE("unit/dbn/mnist/7", "[dbn][svm][unit]") {
     std::cout << "test_error:" << test_error << std::endl;
     REQUIRE(test_error < 0.2);
 }
+
+#endif
 
 // Pretrain with binarize layer
 DLL_TEST_CASE("unit/dbn/mnist/8", "[dbn][unit]") {

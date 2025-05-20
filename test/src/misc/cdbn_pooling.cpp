@@ -1,15 +1,17 @@
 //=======================================================================
 // Copyright (c) 2014-2023 Baptiste Wicht
+//
+// #endif
 // Distributed under the terms of the MIT License.
 // (See accompanying file LICENSE or copy at
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+#ifdef DLL_SVM_SUPPORT
+
 #include <deque>
 
 #include "dll_test.hpp"
-
-#define DLL_SVM_SUPPORT
 
 #include "dll/rbm/conv_rbm.hpp"
 #include "dll/dbn.hpp"
@@ -181,3 +183,5 @@ DLL_TEST_CASE("conv_dbn/mnist_13", "nop_layers") {
     std::cout << "test_error:" << test_error << std::endl;
     REQUIRE(test_error < 0.9);
 }
+
+#endif

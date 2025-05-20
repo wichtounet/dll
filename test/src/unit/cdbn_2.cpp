@@ -5,9 +5,9 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
-#include "dll_test.hpp"
+#ifdef DLL_SVM_SUPPORT
 
-#define DLL_SVM_SUPPORT
+#include "dll_test.hpp"
 
 #include "dll/transform/rectifier_layer.hpp"
 #include "dll/transform/random_layer.hpp"
@@ -92,3 +92,5 @@ DLL_TEST_CASE("hybrid/mnist/5", "[cdbn][rectifier][svm][unit]") {
     auto dbn = std::make_unique<dbn_t>();
     dbn->display();
 }
+
+#endif

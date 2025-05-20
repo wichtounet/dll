@@ -7,8 +7,6 @@
 
 #include "dll_test.hpp"
 
-#define DLL_SVM_SUPPORT
-
 #include "dll/rbm/dyn_conv_rbm.hpp"
 #include "dll/dbn.hpp"
 

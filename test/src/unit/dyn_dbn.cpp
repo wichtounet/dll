@@ -9,8 +9,6 @@
 
 #include "dll_test.hpp"
 
-#define DLL_SVM_SUPPORT
-
 #include "dll/rbm/dyn_rbm.hpp"
 #include "dll/dbn.hpp"
 #include "dll/transform/shape_1d_layer.hpp"

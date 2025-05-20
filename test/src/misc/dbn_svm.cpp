@@ -5,11 +5,11 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+#ifdef DLL_SVM_SUPPORT
+
 #include <deque>
 
 #include "dll_test.hpp"
-
-#define DLL_SVM_SUPPORT
 
 #include "dll/rbm/rbm.hpp"
 #include "dll/dbn.hpp"
@@ -85,3 +85,5 @@ DLL_TEST_CASE("dbn/svm/3", "dbn::svm_simple") {
     std::cout << "test_error:" << test_error << std::endl;
     REQUIRE(test_error < 0.2);
 }
+
+#endif
