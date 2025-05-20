@@ -146,7 +146,6 @@ ifneq (,$(DLL_COVERAGE))
 $(eval $(call enable_coverage_release_debug))
 endif
 
-CPP_FILES=$(wildcard view/*.cpp)
 PROCESSOR_CPP_FILES=$(wildcard processor/src/*.cpp)
 PROCESSOR_TEST_CPP_FILES := $(filter-out processor/src/main.cpp,$(PROCESSOR_CPP_FILES))
 
@@ -163,7 +162,6 @@ $(eval $(call auto_folder_compile,processor/src,-Iprocessor/include))
 $(eval $(call auto_folder_compile,test/src/unit,-Itest/include))
 $(eval $(call auto_folder_compile,test/src/perf,-Itest/include))
 $(eval $(call auto_folder_compile,test/src/misc,-Itest/include))
-$(eval $(call auto_folder_compile,view/src))
 $(eval $(call auto_folder_compile,workbench/src,-DDLL_SILENT))
 $(eval $(call auto_folder_compile,examples/src))
 
