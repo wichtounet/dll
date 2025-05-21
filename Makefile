@@ -165,6 +165,10 @@ $(eval $(call auto_folder_compile,test/src/misc,-Itest/include))
 $(eval $(call auto_folder_compile,workbench/src,-DDLL_SILENT))
 $(eval $(call auto_folder_compile,examples/src))
 
+ifneq (,$(DLL_VIEW))
+$(eval $(call auto_folder_compile,view/src))
+endif
+
 # Generate executable for the prepropcessor
 $(eval $(call add_executable,dllp,$(PROCESSOR_CPP_FILES)))
 $(eval $(call add_executable_set,dllp,dllp))
@@ -264,6 +268,7 @@ $(eval $(call add_executable,dll_test_misc_rbm_smart,test/src/misc/test.cpp test
 
 
 # Generate executables for visualization
+ifneq (,$(DLL_VIEW))
 $(eval $(call add_executable,dll_view_rbm,view/src/rbm_view.cpp,$(OPENCV_LD_FLAGS)))
 $(eval $(call add_executable,dll_view_crbm,view/src/crbm_view.cpp,$(OPENCV_LD_FLAGS)))
 $(eval $(call add_executable,dll_view_crbm_mp,view/src/crbm_mp_view.cpp,$(OPENCV_LD_FLAGS)))
@@ -271,6 +276,7 @@ $(eval $(call add_executable_set,dll_view_rbm,dll_view_rbm))
 $(eval $(call add_executable_set,dll_view_crbm,dll_view_crbm))
 $(eval $(call add_executable_set,dll_view_crbm_mp,dll_view_crbm_mp))
 $(eval $(call add_executable_set,dll_view,dll_view_rbm, dll_view_crbm, dll_view_crbm_mp))
+endif
 
 # Generate executables for performance analysis
 $(eval $(call add_executable,dll_sgd_perf,workbench/src/sgd_perf.cpp))
@@ -358,7 +364,11 @@ release: release_dllp release_dll_test_unit release_dll_test_perf release_dll_te
 
 all: release debug release_debug
 
+ifeq (,$(DLL_VIEW))
+debug_binaries: debug_dllp debug_dll_test_perf debug_dll_test_misc debug_examples
+else
 debug_binaries: debug_dllp debug_dll_test_perf debug_dll_test_misc debug_dll_view debug_examples
+endif
 
 debug_test: debug_dll_test_unit
 	./$(debug)/bin/dll_test_unit
