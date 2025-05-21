@@ -23,7 +23,7 @@ CXX_FLAGS+= -isystem /usr/include/opencv4/
 
 OPENCV_LD_FLAGS=-lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_imgcodecs
 
-ifneq(, $(DLL_SVM))
+ifneq (, $(DLL_SVM))
 LIBSVM_LD_FLAGS=-lsvm
 TEST_LD_FLAGS=$(LIBSVM_LD_FLAGS)
 endif
