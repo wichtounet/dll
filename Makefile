@@ -389,8 +389,9 @@ all: release debug release_debug
 
 ifeq (,$(DLL_VIEW))
 debug_binaries: debug_dllp debug_dll_test_perf debug_dll_test_misc debug_examples
+release_debug_binaries: release_debug_dllp release_debug_dll_test_perf release_debug_dll_test_misc release_debug_examples
 else
-debug_binaries: debug_dllp debug_dll_test_perf debug_dll_test_misc debug_dll_view debug_examples
+release_debug_binaries: release_debug_dllp release_debug_dll_test_perf release_debug_dll_test_misc release_debug_dll_view release_debug_examples
 endif
 
 debug_test: debug_dll_test_unit
