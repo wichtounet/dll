@@ -14,6 +14,12 @@ ifeq (clang, $(compiler))
 CXX_FLAGS += -Wno-documentation
 endif
 
+ifeq (gcc, $(compiler))
+# This is causing some false positives
+# TODO: See if there is a better way of doing that
+CXX_FLAGS += -Wno-error=aggressive-loop-optimizations
+endif
+
 RELEASE_FLAGS += -fno-rtti
 
 CXX_FLAGS += -Ietl/lib/include -Ietl/include/ -Imnist/include/ -Icifar-10/include/ -Idoctest -Inice_svm/include
