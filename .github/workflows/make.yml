@@ -23,10 +23,10 @@ jobs:
         submodules: recursive
 
     - name: Build binaries
-      run: make -j5 debug_binaries compiler=${{ matrix.compiler }}
+      run: make -j5 release_debug_binaries compiler=${{ matrix.compiler }}
 
     - name: Build tests
-      run: make -j5 debug_dll_test_unit compiler=${{ matrix.compiler }}
+      run: make -j5 release_debug_dll_test_unit compiler=${{ matrix.compiler }}
 
     - name: Run tests
-      run: make debug_test compiler=${{ matrix.compiler }}
+      run: make release_debug_test compiler=${{ matrix.compiler }}
