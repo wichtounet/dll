@@ -82,6 +82,8 @@ DLL_TEST_CASE("unit/augment/conv/mnist/2", "[dbn][unit]") {
         dataset.training_images.size(), 10,
         pretrain_generator_t{});
 
+    REQUIRE(pretrain_generator->size() == 400);
+
     auto train_generator = dll::make_generator(
         dataset.training_images, dataset.training_labels,
         dataset.training_images.size(), 10,
