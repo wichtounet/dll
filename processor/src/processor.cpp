@@ -679,8 +679,9 @@ bool compile(const options& opt) {
     compile_command += " -o .dbn.out ";
     compile_command += " -g ";
     compile_command += " -O2 -DETL_VECTORIZE_FULL ";
-    compile_command += " -std=c++1z ";
+    compile_command += " -std=c++26 ";
     compile_command += " -pthread ";
+    compile_command += " -I include -I etl/include -I etl/lib/include -I mnist/include ";
     compile_command += " .dbn.cpp ";
 
     if (opt.mkl) {
