@@ -395,13 +395,13 @@ release_debug_binaries: release_debug_dllp release_debug_dll_test_perf release_d
 endif
 
 debug_test: debug_dll_test_unit
-	./$(debug)/bin/dll_test_unit
+	CXX=$(cc_out) ./$(debug)/bin/dll_test_unit
 
 release_test: release_dll_test_unit
-	./$(release)/bin/dll_test_unit
+	CXX=$(cc_out) ./$(release)/bin/dll_test_unit
 
 release_debug_test: release_debug_dll_test_unit
-	./$(release_debug)/bin/dll_test_unit
+	CXX=$(cc_out) ./$(release_debug)/bin/dll_test_unit
 
 test: all
 	./$(debug)/bin/dll_test_unit
