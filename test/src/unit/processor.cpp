@@ -5,6 +5,10 @@
 //  http://opensource.org/licenses/MIT)
 //=======================================================================
 
+#if 0
+
+// TODO Fix the processor linking errors
+
 #include <deque>
 
 #include "cpp_utils/string.hpp"
@@ -193,10 +197,6 @@ dll::processor::options default_options() {
     }
 
 #define SPARSITY_BELOW(...) GET_MACRO(__VA_ARGS__, SPARSITY_BELOW3, SPARSITY_BELOW2, FAKE)(__VA_ARGS__)
-
-#if 0
-
-// TODO Fix the processor linking errors
 
 // Dense (SGD)
 
