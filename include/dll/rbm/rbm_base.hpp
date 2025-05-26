@@ -134,7 +134,7 @@ struct rbm_base : layer<Parent> {
     template <bool EnableWatcher = true, typename RW = void, not_generator Input, typename... Args>
     double train(const Input& training_data, size_t max_epochs, Args... args) {
         // Create a new generator around the data
-        auto generator = make_generator(training_data, training_data, training_data.size(), generator_t{});
+        auto generator = make_generator_from_container(training_data, training_data, training_data.size(), generator_t{});
 
         generator->set_safe();
 
@@ -150,7 +150,7 @@ struct rbm_base : layer<Parent> {
     template <bool EnableWatcher = true, typename RW = void, typename Iterator, typename... Args>
     double train(Iterator&& first, Iterator&& last, size_t max_epochs, Args... args) {
         // Create a new generator around the data
-        auto generator = make_generator(first, last, first, last, std::distance(first, last), generator_t{});
+        auto generator = make_generator_from_iterators(first, last, first, last, std::distance(first, last), generator_t{});
 
         generator->set_safe();
 
@@ -182,7 +182,7 @@ struct rbm_base : layer<Parent> {
     template <bool EnableWatcher = true, typename RW = void, typename Noisy, typename Clean, typename... Args>
     double train_denoising(const Noisy& noisy, const Clean& clean, size_t max_epochs, Args... args) {
         // Create a new generator around the data
-        auto generator = make_generator(noisy, clean, noisy.size(), generator_t{});
+        auto generator = make_generator_from_container(noisy, clean, noisy.size(), generator_t{});
 
         generator->set_safe();
 
@@ -201,7 +201,7 @@ struct rbm_base : layer<Parent> {
     template <typename NIterator, typename CIterator, bool EnableWatcher = true, typename RW = void, typename... Args>
     double train_denoising(NIterator noisy_it, NIterator noisy_end, CIterator clean_it, CIterator clean_end, size_t max_epochs, Args... args) {
         // Create a new generator around the data
-        auto generator = make_generator(
+        auto generator = make_generator_from_iterators(
             noisy_it, noisy_end,
             clean_it, clean_end,
             std::distance(clean_it, clean_end),
