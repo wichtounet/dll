@@ -739,16 +739,18 @@ struct base_cd_trainer<N, RBM, Persistent, std::enable_if_t<!layer_traits<RBM>::
     etl::fast_matrix<weight, batch_size, K, NH1, NH2> h2_a;                                 ///< The hidden activation at step K
     conditional_fast_matrix_t<(Persistent || N > 1), weight, batch_size, K, NH1, NH2> h2_s; ///< The hidden samples at step K
 
-    base_cd_trainer(rbm_t& rbm)
-            : rbm(rbm),
-              w_inc(0.0),
-              b_inc(0.0),
-              c_inc(0.0),
-              q_global_t(0.0),
-              q_local_t(0.0),
-              w_bias(0.0),
-              b_bias(0.0),
-              c_bias(0.0) {
+    base_cd_trainer(rbm_t& rbm) : rbm(rbm) {
+        if constexpr (rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LOCAL_TARGET) {
+            q_local_t = 0.0;
+            q_global_t = 0.0;
+        }
+
+        if constexpr (rbm_layer_traits<rbm_t>::sparsity_method() == sparsity_method::LEE) {
+            w_bias=0.0;
+            b_bias=0.0;
+            c_bias=0.0;
+        }
+
         if constexpr (rbm_layer_traits<rbm_t>::has_momentum()) {
             w_inc = 0;
             b_inc = 0;
