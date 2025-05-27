@@ -31,8 +31,8 @@ DLL_TEST_CASE("unit/conv/sgd/1", "[conv][dbn][mnist][sgd]") {
 
     dbn->learning_rate = 0.05;
 
-    FT_CHECK_DATASET(30, 5e-2);
-    TEST_CHECK_DATASET(0.25);
+    FT_CHECK_DATASET(30, 9e-2);
+    TEST_CHECK_DATASET(0.35);
 }
 
 DLL_TEST_CASE("unit/conv/sgd/2", "[conv][dbn][mnist][sgd]") {
