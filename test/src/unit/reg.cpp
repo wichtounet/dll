@@ -49,6 +49,7 @@ DLL_TEST_CASE("unit/reg/1", "[unit][reg]") {
         , dll::mean_squared_error
         , dll::batch_size<10>
         , dll::adadelta
+        , dll::no_batch_display
     >::network_t;
 
     auto net = std::make_unique<network_t>();
@@ -75,6 +76,7 @@ DLL_TEST_CASE("unit/reg/2", "[unit][reg]") {
         , dll::batch_size<10>
         , dll::adadelta
         , dll::shuffle
+        , dll::no_batch_display
     >::network_t;
 
     auto net = std::make_unique<network_t>();
@@ -100,6 +102,7 @@ DLL_TEST_CASE("unit/reg/3", "[unit][reg]") {
         >
         , dll::mean_squared_error
         , dll::batch_size<10>
+        , dll::no_batch_display
         , dll::adadelta
         , dll::shuffle
     >::network_t;
